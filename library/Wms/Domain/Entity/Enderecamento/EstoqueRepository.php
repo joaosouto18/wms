@@ -120,7 +120,7 @@ class EstoqueRepository extends EntityRepository
         if (isset($estoqueEn) && is_object($estoqueEn)) {
             $validadeEsttoque = $estoqueEn->getValidade();
         }
-        if ($qtd != 0 ) {
+//        if ($qtd != 0 ) {
             if (isset($params['validade']) and !empty($params['validade'])) {
                 $validadeParam = new \Zend_Date($params['validade']);
                 $validadeParam = $validadeParam->toString('Y-MM-dd');
@@ -128,21 +128,13 @@ class EstoqueRepository extends EntityRepository
             } elseif (isset($dataValidade['dataValidade']) and !empty($dataValidade['dataValidade'])) {
                 $validadeParam = (is_string($dataValidade['dataValidade']))? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
             }
-        }
+//        }
 
         if (isset($validadeParam) && !empty($validadeParam)) {
             $validade = $validadeParam;
         } elseif (isset($validadeEsttoque) && !empty($validadeEsttoque)) {
             $validade = $validadeEsttoque;
         }
-
-//        if (!empty($validadeEsttoque) && !empty($validadeParam)){
-//            $validade = ($validadeParam < $validadeEsttoque)? $validadeParam : $validadeEsttoque;
-//        } elseif (!empty($validadeEsttoque)) {
-//            $validade = $validadeEsttoque;
-//        } elseif (!empty($validadeParam)) {
-//            $validade = $validadeParam;
-//        }
 
         //ATUALIZA A TABELA ESTOQUE COM O SALDO DE ESTOQUE
         if ($estoqueEn == NULL) {
@@ -258,7 +250,8 @@ class EstoqueRepository extends EntityRepository
                     AND RS.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
                     AND ((RS.VOLUME = ESTQ.COD_PRODUTO_VOLUME) OR (RS.VOLUME = 0 AND ESTQ.COD_PRODUTO_VOLUME IS NULL))
                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
-                  WHERE ((ESTQ.QTD + NVL(RS.QTD_RESERVA,0)) >0)";
+                  WHERE ((ESTQ.QTD + NVL(RS.QTD_RESERVA,0)) >0) 
+                    AND DE.IND_SITUACAO = 'D'";
 
         $SqlOrder = " ORDER BY DT_MOVIMENTACAO , ESTQ.QTD";
         $SqlWhere = "";

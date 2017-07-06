@@ -764,6 +764,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+            if (empty($modeloSeparacaoEn))
+                throw new \Exception("O modelo de separação $idModeloSeparacao não foi encontrado");
             $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
             $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
 
