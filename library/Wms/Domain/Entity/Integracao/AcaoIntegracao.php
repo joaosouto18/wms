@@ -20,6 +20,8 @@ class AcaoIntegracao
     const INTEGRACAO_NOTAS_FISCAIS = 605;
     const INTEGRACAO_RECEBIMENTO = 606;
     const INTEGRACAO_CORTES = 607;
+    const INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA = 608;
+    const INTEGRACAO_FINALIZACAO_CARGA = 609;
 
     /**
      * @Id

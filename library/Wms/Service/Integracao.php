@@ -144,6 +144,10 @@ class Integracao
                     return $this->processaCorteERP($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
                     return $this->_dados;
+                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA:
+                    return true;
+                case AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
+                    return true;
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
