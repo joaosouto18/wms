@@ -26,7 +26,8 @@ class FornecedorRepository extends AtorRepository
         $SQL = "SELECT F.COD_EXTERNO,
                        P.NOM_PESSOA
                   FROM FORNECEDOR F
-                  LEFT JOIN PESSOA P ON P.COD_PESSOA = F.COD_FORNECEDOR";
+                  LEFT JOIN PESSOA P ON P.COD_PESSOA = F.COD_FORNECEDOR
+                  ORDER BY P.NOM_PESSOA";
         $resultado = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $arrayResult = array();
