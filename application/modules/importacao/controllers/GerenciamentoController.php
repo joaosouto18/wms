@@ -58,7 +58,7 @@ class Importacao_GerenciamentoController extends Action
                     $idFiltro = AcaoIntegracaoFiltro::CONJUNTO_CODIGO;
                     $string = $codigo.'-'.$serie.'-'.$fornecedor;
                     $string = str_replace('--','',$string);
-                    $options[] = explode('-',$string);
+                    $options = explode('-',$string);
                 } else if ($intervaloCodigo == true) {
                     $idFiltro = AcaoIntegracaoFiltro::INTERVALO_CODIGO;
                     $string = $codigo.'-'.$serie.'-'.$fornecedor;
@@ -68,7 +68,7 @@ class Importacao_GerenciamentoController extends Action
                     $idFiltro = AcaoIntegracaoFiltro::CODIGO_ESPECIFICO;
                     $string = $codigo.'-'.$serie.'-'.$fornecedor;
                     $string = str_replace('--','',$string);
-                    $options[] = explode('-',$string);
+                    $options = explode('-',$string);
                 }
 
             }
