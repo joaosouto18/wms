@@ -33,31 +33,44 @@ class Importacao_GerenciamentoController extends Action
         try {
             /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
             $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            /** @var \Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository $fornecedorRepo */
+            $fornecedorRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Papel\Fornecedor');
+            $this->view->getFornecedores = $fornecedorRepo->getAll();
             $acoesId = explode(",", $acao);
-            $dataUltimaExecucao = $acaoIntRepo->findOneBy(array('id' => $acoesId[0]))->getDthUltimaExecucao();
-            $dataUltimaExecucao = $dataUltimaExecucao->format('d/m/Y H:i:s');
-            $form = new \Wms\Module\Expedicao\Form\Pedidos();
-            $form->start($dataUltimaExecucao);
-            $form->populate($params);
-            $this->view->form = $form;
+            $acaoIntEntity = $acaoIntRepo->findOneBy(array('id' => $acoesId[0]));
+            $this->view->tipoAcao = $acaoIntEntity->getTipoAcao()->getId();
+            $dataUltimaExecucao = $acaoIntEntity->getDthUltimaExecucao();
+            $this->view->dataInicio = $dataUltimaExecucao->format('d/m/Y H:i:s');
 
             $idFiltro = AcaoIntegracaoFiltro::DATA_ESPECIFICA;
             $options = null;
             if (isset($params['submitCodigos'])) {
-                $string = $params['codigo'];
+                $codigo = isset($params['codigo']) ? $params['codigo'] : null;
+                $serie = isset($params['serie']) ? $params['serie'] : null;
+                $fornecedor = isset($params['fornecedor']) ? $params['fornecedor'] : null;
+
                 /** verifica se existe o caracter especifico para cada tipo de filtro */
-                $conjuntoCodigo  = strpos($string,',');
-                $intervaloCodigo = strpos($string,'-');
+                $conjuntoCodigo  = strpos($codigo,',');
+                $intervaloCodigo = strpos($codigo,'-');
+
+                $string = null;
                 if ($conjuntoCodigo == true) {
                     $idFiltro = AcaoIntegracaoFiltro::CONJUNTO_CODIGO;
+                    $string = $codigo.','.$serie.','.$fornecedor;
+                    $string = str_replace(',,','',$string);
                     $options[] = $string;
                 } else if ($intervaloCodigo == true) {
                     $idFiltro = AcaoIntegracaoFiltro::INTERVALO_CODIGO;
+                    $string = $codigo.'-'.$serie.'-'.$fornecedor;
+                    $string = str_replace('--','',$string);
                     $options = explode('-',$string);
-                } else {
+                } else if ($conjuntoCodigo === false && $intervaloCodigo === false) {
                     $idFiltro = AcaoIntegracaoFiltro::CODIGO_ESPECIFICO;
+                    $string = $codigo.','.$serie.','.$fornecedor;
+                    $string = str_replace(',,','',$string);
                     $options[] = $string;
                 }
+
             }
 
             $integracoes = array();
