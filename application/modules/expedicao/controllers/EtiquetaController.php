@@ -90,7 +90,6 @@ class Expedicao_EtiquetaController  extends Action
                 $this->gerarMapaEtiqueta($idExpedicao,$central,$cargas,$arrayRepositorios);
             }
 
-            $this->getEntityManager()->commit();
             //GERA ETIQUETA MAPA ERP
             if ($this->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S' ) {
                 $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS');
@@ -111,7 +110,7 @@ class Expedicao_EtiquetaController  extends Action
                     throw new \Wms\Util\WMS_Exception($result);
                 }
             }
-
+            $this->getEntityManager()->commit();
 
             $this->_helper->json(array('status' => 'success'));
         } catch (\Wms\Util\WMS_Exception $e) {
