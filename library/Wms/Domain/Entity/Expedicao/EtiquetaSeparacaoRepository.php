@@ -1222,22 +1222,25 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $idProduto, 'grade' => $grade, 'dataInativacao' => null),array('quantidade'=>'DESC'));
 
                 $mapaProdutos = $mapaProdutoRepo->getMapaProdutoByProdutoAndMapa($idMapaSeparacao, $idProduto, $grade);
-                $mapa = $mapaProdutoRepo->findOneBy(array('mapaSeparacao' => $idMapaSeparacao, 'codProduto' => $idProduto, 'dscGrade' => $grade));
-                $qtdTotalMapaProdutos = $mapaProdutos[0]['qtdSeparar'];
-                $idPedidoProduto = $mapa->getCodPedidoProduto();
-                $pedidoProduto = $pedidoProdutoRepo->find($idPedidoProduto);
-                $depositoEnderecoEn = $mapa->getCodDepositoEndereco();
+                foreach ($mapaProdutos as $mapaProduto) {
+                    $depositoEnderecoEn = $mapaProduto['codDepositoEndereco'];
+                    $qtdTotalMapaProdutos = $mapaProdutos['qtdSeparar'];
 
-                $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade));
-                foreach ($mapaProdutosEn as $mapaProdutoRemover) {
-                    $this->_em->remove($mapaProdutoRemover);
-                }
-                $this->_em->flush();
+                    $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade, 'codDepositoEndereco' => $depositoEnderecoEn));
+                    $mapa = $mapaProdutoRepo->findOneBy(array('mapaSeparacao' => $idMapaSeparacao, 'codProduto' => $idProduto, 'dscGrade' => $grade, 'codDepositoEndereco' => $depositoEnderecoEn));
+                    $idPedidoProduto = $mapa->getCodPedidoProduto();
+                    $pedidoProduto = $pedidoProdutoRepo->find($idPedidoProduto);
 
-                foreach ($embalagensEn as $embalagem) {
-                    while (number_format($qtdTotalMapaProdutos,2,'.','') >= number_format($embalagem->getQuantidade(),2,'.','')) {
-                        $qtdTotalMapaProdutos = number_format($qtdTotalMapaProdutos,2,'.','') - number_format($embalagem->getQuantidade(),2,'.','');
-                        $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagem, $pedidoProduto,$depositoEnderecoEn);
+                    foreach ($mapaProdutosEn as $mapaProdutoRemover) {
+                        $this->_em->remove($mapaProdutoRemover);
+                    }
+                    $this->_em->flush();
+
+                    foreach ($embalagensEn as $embalagem) {
+                        while (number_format($qtdTotalMapaProdutos,2,'.','') >= number_format($embalagem->getQuantidade(),2,'.','')) {
+                            $qtdTotalMapaProdutos = number_format($qtdTotalMapaProdutos,2,'.','') - number_format($embalagem->getQuantidade(),2,'.','');
+                            $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagem, $pedidoProduto,$depositoEnderecoEn);
+                        }
                     }
                 }
             }
