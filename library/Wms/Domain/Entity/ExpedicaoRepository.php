@@ -804,6 +804,34 @@ class ExpedicaoRepository extends EntityRepository
             }
 
             $result = $this->finalizar($idExpedicao,$central,$tipoFinalizacao);
+
+            //Finaliza Expedição ERP
+            if ($this->getSystemParameterValue('IND_FINALIZA_CONFERENCIA_ERP_INTEGRACAO') == 'S' ) {
+                $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_FINALIZA_CONFERENCIA_ERP');
+
+                /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+                $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+                $acaoEn = $acaoIntRepo->find($idIntegracao);
+                $options = array();
+
+                $cargasEn = $expedicaoEn->getCarga();
+                $cargas = array();
+                foreach ($cargasEn as $cargaEn) {
+                    $cargas[] = $cargaEn->getCodCargaExterno();
+                }
+
+                if(!is_null($cargas) && is_array($cargas)) {
+                    $options[] = implode(',',$cargas);
+                } else if (!is_null($cargas)) {
+                    $options = $cargas;
+                }
+
+                $resultAcao = $acaoIntRepo->processaAcao($acaoEn,$options,'E',"P",null,612);
+                if (!$resultAcao === true) {
+                    throw new \Exception($resultAcao);
+                }
+            }
+
             $this->getEntityManager()->commit();
             return $result;
         } catch(\Exception $e) {
