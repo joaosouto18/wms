@@ -56,9 +56,9 @@ class Importacao_GerenciamentoController extends Action
                 $string = null;
                 if ($conjuntoCodigo == true) {
                     $idFiltro = AcaoIntegracaoFiltro::CONJUNTO_CODIGO;
-                    $string = $codigo.','.$serie.','.$fornecedor;
-                    $string = str_replace(',,','',$string);
-                    $options[] = $string;
+                    $string = $codigo.'-'.$serie.'-'.$fornecedor;
+                    $string = str_replace('--','',$string);
+                    $options[] = explode('-',$string);
                 } else if ($intervaloCodigo == true) {
                     $idFiltro = AcaoIntegracaoFiltro::INTERVALO_CODIGO;
                     $string = $codigo.'-'.$serie.'-'.$fornecedor;
@@ -66,9 +66,9 @@ class Importacao_GerenciamentoController extends Action
                     $options = explode('-',$string);
                 } else if ($conjuntoCodigo === false && $intervaloCodigo === false) {
                     $idFiltro = AcaoIntegracaoFiltro::CODIGO_ESPECIFICO;
-                    $string = $codigo.','.$serie.','.$fornecedor;
-                    $string = str_replace(',,','',$string);
-                    $options[] = $string;
+                    $string = $codigo.'-'.$serie.'-'.$fornecedor;
+                    $string = str_replace('--','',$string);
+                    $options[] = explode('-',$string);
                 }
 
             }
