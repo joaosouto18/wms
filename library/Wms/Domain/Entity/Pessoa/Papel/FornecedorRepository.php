@@ -23,7 +23,7 @@ class FornecedorRepository extends AtorRepository
     }
 
     public function getAllByExterno(){
-        $SQL = "SELECT F.COD_FORNECEDOR_EXTERNO,
+        $SQL = "SELECT F.COD_EXTERNO,
                        P.NOM_PESSOA
                   FROM FORNECEDOR F
                   LEFT JOIN PESSOA P ON P.COD_PESSOA = F.COD_FORNECEDOR";
@@ -31,7 +31,7 @@ class FornecedorRepository extends AtorRepository
 
         $arrayResult = array();
         foreach ($resultado as $linha) {
-            $arrayResult[$linha['COD_FORNECEDOR_EXTERNO']] = $linha['NOM_PESSOA'];
+            $arrayResult[$linha['COD_EXTERNO']] = $linha['NOM_PESSOA'];
         }
         return $arrayResult;
 
