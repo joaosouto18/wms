@@ -22,6 +22,21 @@ class FornecedorRepository extends AtorRepository
         
     }
 
+    public function getAllByExterno(){
+        $SQL = "SELECT F.COD_FORNECEDOR_EXTERNO,
+                       P.NOM_PESSOA
+                  FROM FORNECEDOR F
+                  LEFT JOIN PESSOA P ON P.COD_PESSOA = F.COD_FORNECEDOR";
+        $resultado = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $arrayResult = array();
+        foreach ($resultado as $linha) {
+            $arrayResult[$linha['COD_FORNECEDOR_EXTERNO']] = $linha['NOM_PESSOA'];
+        }
+        return $arrayResult;
+
+    }
+
     public function save($idFornecedor)
     {
         $em = $this->getEntityManager();

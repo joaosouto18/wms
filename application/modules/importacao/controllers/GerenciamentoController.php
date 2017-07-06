@@ -35,7 +35,7 @@ class Importacao_GerenciamentoController extends Action
             $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
             /** @var \Wms\Domain\Entity\Pessoa\Papel\FornecedorRepository $fornecedorRepo */
             $fornecedorRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Papel\Fornecedor');
-            $this->view->getFornecedores = $fornecedorRepo->getAll();
+            $this->view->getFornecedores = $fornecedorRepo->getAllByExterno();
             $acoesId = explode(",", $acao);
             $acaoIntEntity = $acaoIntRepo->findOneBy(array('id' => $acoesId[0]));
             $this->view->tipoAcao = $acaoIntEntity->getTipoAcao()->getId();
