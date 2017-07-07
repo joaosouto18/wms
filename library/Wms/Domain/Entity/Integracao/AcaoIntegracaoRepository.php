@@ -176,11 +176,16 @@ class AcaoIntegracaoRepository extends EntityRepository
         try {
             $this->_em->beginTransaction();
 
+            $conexaoEn = $acaoEn->getConexao();
+
             if ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
-                $options[] = $acaoEn->getDthUltimaExecucao()->format("d/m/Y H:i:s");
+                if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
+                    $options[] = $acaoEn->getDthUltimaExecucao()->format("Y-m-d");
+                } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE) {
+                    $options[] = $acaoEn->getDthUltimaExecucao()->format("d/m/Y H:i:s");
+                }
             }
 
-            $conexaoEn = $acaoEn->getConexao();
             //STRING DA QUERY DE INTEGRAÇÃO
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro);
 
