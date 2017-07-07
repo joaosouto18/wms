@@ -16,7 +16,7 @@
         return true;
     }
 </script>
-<div class="col-xs-12" >
+<div class="row" >
     <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'validar-endereco')) ?>" method="post">
         <div>
             <div class="table-responsive">
@@ -26,9 +26,9 @@
                             <td colspan="3"><b><?php echo $this->dscProduto ?></b></td>
                         </tr>
                         <tr>
-                            <td class="col-xs-4"><B>Cod:</B> <div class="row"><?php echo $this->codProduto ?></div></td>
-                            <td class="col-xs-4"><B>Grade:</B> <div class="row"><?php echo $this->grade ?></div></td>
-                            <td class="col-xs-4" style="font-size: 12px"><B>Qtd:</B>
+                            <td><B>Cod:</B> <div class="row"><?php echo $this->codProduto ?></div></td>
+                            <td><B>Grade:</B> <div class="row"><?php echo $this->grade ?></div></td>
+                            <td style="font-size: 12px"><B>Qtd:</B>
                                 <?php foreach ($this->qtd as $qtd) { ?>
                                     <div class="row"><?php echo $qtd; ?></div>
                                 <?php } ?>
@@ -51,10 +51,10 @@
                 </div>
             </div>
             <br />
-            <div class="col-xs-12" >
+            <div class="row" >
                 <input type="submit" name="submit" class="btn gradientBtn" id="submit" value="Buscar" />
             </div>
-            <div class="col-xs-2 pull-right" >
+            <div class="pull-right" >
                 <a class="btn finalizar" style="width: auto;" href="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'divergencia', 'idOnda' => $this->idOnda)); ?> " onclick="return confirm('Confirma divergencia de estoque?')">Divergencia de Estoque</a>
             </div>
             <input type="hidden" name="idOnda" id="idOnda" value="<?php echo $this->idOnda ?>"/>

@@ -13,8 +13,8 @@ class Mobile_OndaRessuprimentoController extends Action
         $codProduto = null;
         $grade = null;
         $html = '
-            <div class="col-xs-12 pull-right" >
-         <a  class="finalizar btn" style="width: auto;float: none; margin: 0px 0px 6px 0px" href="/mobile/onda-ressuprimento/filtrar" title="filtrar" >Filtrar Produto</a>
+            <div class="row pull-right" >
+         <a  class="btn" style="width: auto;float: none; margin: 0px 0px 6px 0px" href="/mobile/onda-ressuprimento/filtrar" title="filtrar" >Filtrar Produto</a>
         </div>';
 
         if ($this->_getParam('codProduto') != null) {

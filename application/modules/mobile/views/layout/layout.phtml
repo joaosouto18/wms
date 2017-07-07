@@ -32,16 +32,16 @@ echo $this->doctype();
 
         <?php
         echo $this->jQuery()
-                ->setLocalPath($this->baseUrl() . "/jquery/jquery.js")
+                ->setLocalPath($this->baseUrl() . "/jquery/jquery-1.11.1.min.js")
                 ->uiEnable()
                 ->setUiLocalPath($this->baseUrl() . "/wms/resources/ui.js");
 
         echo $this->headScript();
         ?> 
         <script>
-            $(window).on("load", function () {
-                $('.focus').focus();
-            });
+            window.load = function (e) {
+                jQuery('.focus').focus();
+            };
             $(document).ready(function () {
                 $('.focus').focus();
                 //Fechar as mensagens
@@ -59,8 +59,9 @@ echo $this->doctype();
                     <?php if ($this->urlVoltar) : ?>
                         <a style="padding: 2x;" href="<?php echo $this->urlVoltar ?>"title="Voltar para tela anterior" ><img src="/img/back.png" alt="Voltar"></a>
                     <?php else : ?>
-                        <a style="padding: 2px;" href="#" onclick="history.go(-1);return false" title="Voltar para tela anterior" ><img src="/img/back.png" alt="Voltar"></a>
-                    <?php endif; ?>
+                        <a style="padding: 2px;" href="#" onclick="history.go(-1);
+                                return false" title="Voltar para tela anterior" ><img src="/img/back.png" alt="Voltar"></a>
+                       <?php endif; ?>
                     <a style="padding: 2px;" href="<?php echo $this->baseUrl('mobile'); ?>" title="Inicio" ><img src="/img/home.png" alt="Home"></a>
                     <a style="padding: 2px;" href="<?php echo $this->url(array('controller' => 'auth', 'action' => 'logout')); ?>" title="Desconectar" ><img src="/img/power.png" alt="Sair"></a>
                 </div>
@@ -81,3 +82,6 @@ echo $this->doctype();
         </div>
     </div>
 </html>
+<script>
+    jQuery('.focus').focus();
+</script>

@@ -1,5 +1,5 @@
 <?php echo $this->render('recebimento/produto-detalhes.phtml'); ?>
-<div class="col-xs-12" >
+<div class="row" >
     <form method="post" id="recebimento-embalagem-quantidade-form" action="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'produto-conferencia')); ?>" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
 
         <input type="hidden" id="idRecebimento" name="idRecebimento" value="<?php echo $this->recebimento->getId() ?>" />
