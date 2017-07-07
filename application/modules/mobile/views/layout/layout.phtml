@@ -39,9 +39,11 @@ echo $this->doctype();
         echo $this->headScript();
         ?> 
         <script>
+            $(window).on("load", function () {
+                $('.focus').focus();
+            });
             $(document).ready(function () {
                 $('.focus').focus();
-
                 //Fechar as mensagens
                 $('a.fmBtnClose').click(function () {
                     // remove li

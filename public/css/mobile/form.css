@@ -44,7 +44,6 @@ form input {
     border-left: 1px solid #999;
     border-bottom: 2px solid #999;
     border-right: 2px solid #999;
-    background: #ffffff!important;
     /*width: 400px!important;*/
 }
 
@@ -54,4 +53,9 @@ form ul.errors li, label.error {
     line-height: 10px;
     font-size: 9px;
     font-style: italic;
+}
+
+.focus {
+    background: #FFF;
+    color: black;
 }
