@@ -1055,12 +1055,12 @@ class MapaSeparacao extends eFPDF {
 
                 $embalagemEn = $produto->getProdutoEmbalagem();
                 if (isset($embalagemEn) && !empty($embalagemEn)) {
-                    //$codigoBarras = '...'.substr($embalagemEn->getCodigoBarras(), -5);
-                    $codigoBarras = $embalagemEn->getCodigoBarras();
+                    $codigoBarras = '...'.substr($embalagemEn->getCodigoBarras(), -5);
+//                    $codigoBarras = $embalagemEn->getCodigoBarras();
                     $embalagem = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
                 }
 
-                $endereco = $produto->getCodDepositoEndereco();
+                $endereco = $produto->getDepositoEndereco();
                 $codProduto = $produto->getCodProduto();
                 $descricao = utf8_decode($produto->getProduto()->getDescricao());
                 $referencia = $produto->getProduto()->getReferencia();
@@ -1068,7 +1068,7 @@ class MapaSeparacao extends eFPDF {
                 $caixas = $produto->getNumCaixaInicio() . ' - ' . $produto->getNumCaixaFim();
                 $dscEndereco = "";
 
-
+//                var_dump($endereco);
                 if ($endereco != null)
                     $dscEndereco = $endereco->getDescricao();
 
