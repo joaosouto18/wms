@@ -49,6 +49,11 @@ class EstoqueErp
     protected $estoqueDisponivel;
 
     /**
+     * @Column(name="ESTOQUE_AVARIA", type="decimal", nullable=false)
+     */
+    protected $estoqueAvaria;
+
+    /**
      * @Column(name="VLR_ESTOQUE_TOTAL", type="decimal", nullable=false)
      */
     protected $vlrEstoqueTotal;
@@ -226,6 +231,22 @@ class EstoqueErp
     public function setUnVenda($unVenda)
     {
         $this->unVenda = $unVenda;
+    }
+
+    /**
+     * @param mixed $estoqueAvaria
+     */
+    public function setEstoqueAvaria($estoqueAvaria)
+    {
+        $this->estoqueAvaria = $estoqueAvaria;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEstoqueAvaria()
+    {
+        return $this->estoqueAvaria;
     }
 
 }
