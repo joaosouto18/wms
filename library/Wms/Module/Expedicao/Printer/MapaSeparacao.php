@@ -167,7 +167,7 @@ class MapaSeparacao extends eFPDF {
                 $embalagem = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
                 $quantidade = $produto->getQtdSeparar();
                 $caixas = $produto->getNumCaixaInicio() . ' - ' . $produto->getNumCaixaFim();
-                $endereco = $produto->getCodDepositoEndereco();
+                $endereco = $produto->getDepositoEndereco();
                 if ($endereco != null)
                     $dscEndereco = $endereco->getDescricao();
 
@@ -387,7 +387,7 @@ class MapaSeparacao extends eFPDF {
                     }
                 }
 
-                $endereco     = $produto->getCodDepositoEndereco();
+                $endereco     = $produto->getDepositoEndereco();
                 $codProduto   = $produto->getCodProduto();
                 $descricao    = utf8_decode($produto->getProduto()->getDescricao());
                 $referencia   = $produto->getProduto()->getReferencia();
@@ -585,7 +585,7 @@ class MapaSeparacao extends eFPDF {
                 $embalagemEn = $embalagemRepo->findOneBy(array('codProduto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade(), 'isPadrao' => 'S'));
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
-                $endereco = $produto->getCodDepositoEndereco();
+                $endereco = $produto->getDepositoEndereco();
                 $codProduto = $produto->getCodProduto();
                 $descricao = utf8_decode($produto->getProduto()->getDescricao());
                 $referencia = $produto->getProduto()->getReferencia();
@@ -682,6 +682,7 @@ class MapaSeparacao extends eFPDF {
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $pesoProdutoRepo = $em->getRepository('wms:Produto\DadoLogistico');
+        /** @var Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
         $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $expedicaoRepo = $em->getRepository('wms:Expedicao');
 
@@ -752,7 +753,7 @@ class MapaSeparacao extends eFPDF {
 
                 $embalagemEn = $produto->getProdutoEmbalagem();
                 $rua = null;
-                $endereco = $produto->getCodDepositoEndereco();
+                $endereco = $produto->getDepositoEndereco();
                 $codProduto = $produto->getCodProduto();
                 $descricao = utf8_decode($produto->getProduto()->getDescricao());
                 $quantidade = $produto->getQtdSeparar();

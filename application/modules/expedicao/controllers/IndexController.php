@@ -578,7 +578,6 @@ class Expedicao_IndexController extends Action
     }
 
     public function cancelarExpedicaoAjaxAction()
-
     {
         $idExpedicao = $this->_getParam('id', 0);
 
@@ -606,6 +605,22 @@ class Expedicao_IndexController extends Action
             }
             $cargaRepository->removeCarga($cargaEntity->getId());
         }
+
+        //GERA ETIQUETA MAPA ERP
+        if ($this->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S' ) {
+            $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_CANCELA_CARGA_ERP');
+
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+            $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            $acaoEn = $acaoIntRepo->find($idIntegracao);
+            $options[] = (!is_null($idCargas)) ? $idCargas : null;
+
+            $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E',"P",null,612);
+            if (!$result === true) {
+                throw new \Wms\Util\WMS_Exception($result);
+            }
+        }
+
         $expedicaoEntity = $expedicaoRepository->find($idExpedicao);
         $expedicaoRepository->alteraStatus($expedicaoEntity, Expedicao::STATUS_CANCELADO);
         $expedicaoAndamentoRepository->save("cargas $idCargas removidas", $idExpedicao);

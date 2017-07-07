@@ -266,6 +266,7 @@ class Integracao
                 $estoqueErp->setCodProduto($codProduto);
                 $estoqueErp->setGrade($grade);
                 $estoqueErp->setEstoqueDisponivel(str_replace(',','.',$valorEstoque['ESTOQUE_DISPONIVEL']));
+                $estoqueErp->setEstoqueAvaria(str_replace(',','.',$valorEstoque['ESTOQUE_AVARIA']));
                 $estoqueErp->setEstoqueGerencial(str_replace(',','.',$valorEstoque['ESTOQUE_GERENCIAL']));
                 $estoqueErp->setFatorUnVenda(str_replace(',','.',$valorEstoque['FATOR_UNIDADE_VENDA']));
                 $estoqueErp->setUnVenda($valorEstoque['DSC_UNIDADE']);
