@@ -90,7 +90,28 @@ class Expedicao_EtiquetaController  extends Action
                 $this->gerarMapaEtiqueta($idExpedicao,$central,$cargas,$arrayRepositorios);
             }
 
+            //GERA ETIQUETA MAPA ERP
+            if ($this->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S' ) {
+                $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS');
+
+                /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+                $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+                $acaoEn = $acaoIntRepo->find($idIntegracao);
+                $options = array();
+
+                if(!is_null($cargas) && is_array($cargas)) {
+                    $options[] = implode(',',$cargas);
+                } else if (!is_null($cargas)) {
+                    $options = $cargas;
+                }
+
+                $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E',"P",null,612);
+                if (!$result === true) {
+                    throw new \Wms\Util\WMS_Exception($result);
+                }
+            }
             $this->getEntityManager()->commit();
+
             $this->_helper->json(array('status' => 'success'));
         } catch (\Wms\Util\WMS_Exception $e) {
             $this->getEntityManager()->rollback();

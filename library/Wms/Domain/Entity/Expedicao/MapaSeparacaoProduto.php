@@ -92,6 +92,11 @@ class MapaSeparacaoProduto
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco")
      * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
      */
+    protected $depositoEndereco;
+
+    /**
+     * * @Column(name="COD_DEPOSITO_ENDERECO", type="integer", nullable=false)
+     */
     protected $codDepositoEndereco;
 
     /**
@@ -294,6 +299,22 @@ class MapaSeparacaoProduto
     public function getCodPedidoProduto()
     {
         return $this->codPedidoProduto;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDepositoEndereco()
+    {
+        return $this->depositoEndereco;
+    }
+
+    /**
+     * @param mixed $depositoEndereco
+     */
+    public function setDepositoEndereco($depositoEndereco)
+    {
+        $this->depositoEndereco = $depositoEndereco;
     }
 
     /**

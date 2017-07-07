@@ -144,6 +144,10 @@ class Integracao
                     return $this->processaCorteERP($this->_dados, $this->_options);
                 case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
                     return $this->_dados;
+                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA:
+                    return true;
+                case AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
+                    return true;
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
@@ -262,6 +266,7 @@ class Integracao
                 $estoqueErp->setCodProduto($codProduto);
                 $estoqueErp->setGrade($grade);
                 $estoqueErp->setEstoqueDisponivel(str_replace(',','.',$valorEstoque['ESTOQUE_DISPONIVEL']));
+                $estoqueErp->setEstoqueAvaria(str_replace(',','.',$valorEstoque['ESTOQUE_AVARIA']));
                 $estoqueErp->setEstoqueGerencial(str_replace(',','.',$valorEstoque['ESTOQUE_GERENCIAL']));
                 $estoqueErp->setFatorUnVenda(str_replace(',','.',$valorEstoque['FATOR_UNIDADE_VENDA']));
                 $estoqueErp->setUnVenda($valorEstoque['DSC_UNIDADE']);
