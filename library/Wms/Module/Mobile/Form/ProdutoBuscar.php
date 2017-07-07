@@ -60,7 +60,7 @@ class ProdutoBuscar extends \Core\Form
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addDisplayGroup(
-                array('idRecebimento', 'codigoBarras', 'submit'), 'identification', array('legend' => 'Busca do Produto', 'class' => 'col-xs-12')
+                array('idRecebimento', 'codigoBarras', 'submit'), 'identification', array('legend' => 'Busca do Produto')
         );
     }
 

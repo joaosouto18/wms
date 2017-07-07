@@ -12,7 +12,7 @@ class ReabastecimentoManual extends \Core\Form
                 'required' => true,
                 'label' => 'Etiqueta:',
                 'size' => 40,
-                'class' => 'focus form-control',
+                'class' => 'focus',
                 'maxlength' => 100,
                 'style' => 'width: 99%',
             ))
@@ -20,7 +20,6 @@ class ReabastecimentoManual extends \Core\Form
                 'required' => true,
                 'label' => 'Quantidade:',
                 'size' => 40,
-                'class' => 'form-control',
                 'maxlength' => 100,
                 'style' => 'width: 99%',
             ))

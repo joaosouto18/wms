@@ -1,4 +1,4 @@
-<div class="col-xs-12">
+<div class="row">
     <form id="formGrid" method="post" action="">
         <div class="table-responsive">
             <table class="gTable  table-condensed">
@@ -8,7 +8,7 @@
                             <td width=""><span><?php echo utf8_encode('Placa Carga'); ?></span></td>
                         </tr>
                         <tr>
-                            <td><input class="form-control" type="text" name="placa" id="placa"></td>
+                            <td><input type="text" name="placa" id="placa"></td>
                         </tr>
                         <tr>
                             <td bgcolor="aqua" width=""><span>EXPEDIÇÃO TRANSBORDO</span></td>
@@ -17,7 +17,7 @@
                             <td width=""><span>Expedição</span></td>
                         </tr>
                         <tr>
-                            <td><input type="text" class="form-control" name="idExpedicao" id="idExpedicao"></td>
+                            <td><input type="text" name="idExpedicao" id="idExpedicao"></td>
                         </tr>
                     <?php else : ?>
                         <tr>
@@ -42,8 +42,6 @@
                 </tbody>
             </table>
         </div>
-        <div class="col-xs-12">
-            <button class="btn gradientBtn" type="submit"><span>Vincular</span></button>
-        </div>
+        <button class="btn gradientBtn" type="submit"><span>Vincular</span></button>
     </form>
 </div>

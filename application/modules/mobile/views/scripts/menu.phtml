@@ -1,14 +1,14 @@
-<div id="userInfo" class="row">
+<div id="userInfo">
 <?php if (isset($this->header)) { ?>
     <div><p><?php echo $this->header; ?></label></p></div>
 <?php } ?>
-<div class="row">
+<!--<div class="row">-->
     <?php foreach ($this->menu as $menu): ?>
-        <div class="row col-xs-12">
+        <div class="row">
             <a class="btn gradientBtn" href="<?php echo $menu['url'] ?>" title="<?php echo $menu['label'] ?>" ><?php echo $menu['label'] ?></a>
         </div>
 <?php endforeach; ?>
-</div>
+<!--</div>-->
 
 <?php if (isset($this->bottom)) { ?>
     <p><label style="font-size:17px"><?php echo $this->bottom; ?></label></p>

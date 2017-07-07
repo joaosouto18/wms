@@ -7,6 +7,8 @@
 @import url("form.css");
 @import url("messenger.css");
 
+body { overflow-x: hidden!important; }
+
 * {
     margin: 0;
     padding: 0;
@@ -22,6 +24,7 @@
 }
 
 #content{
+    /*width: 100%;*/
     /*    min-height: 142px;
         margin-bottom: 15px;*/
 }
@@ -30,6 +33,7 @@
   Top
 *********************/
 .top {
+    width: 111%!important;
     /*background: repeat-x top left url(../../img/admin/header_top_bg.gif);*/
     /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#4c4c4c+0,595959+12,666666+25,474747+39,2c2c2c+50,111111+60,2b2b2b+85,1c1c1c+91,131313+100 */
     background: #4c4c4c; /* Old browsers */
@@ -40,12 +44,12 @@
 }
 #top #userInfo {
     float:right;
-    padding: 2px 5px;
+    padding: 0px 0px;
     line-height: 25px;
 }
 #top #userInfo a {
     display: inline-block;
-    width: 60px;
+    /*width: 60px;*/
     line-height: 20px;
     text-align: center;
     moz-border-radius: 2px;
@@ -72,7 +76,7 @@
     background:no-repeat center center url(../../img/admin/logo.gif);
     text-overflow:hidden;
     text-indent:-9999px;
-    margin: 10px 0px 10px 35px;
+    margin: 10px 0px 0px 5px;
 }
 
 /*********************
@@ -128,6 +132,23 @@ button, .btn, button.back, .btnBack, .btnAjuda, .btnAlert {
     padding: 2px 11px;
     text-align: center !important;
     white-space: nowrap;
+    line-height: 20px;
+    display: inline-block;
+}
+button, .btn-menu{
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#1e5799+26,1e5799+93 */
+    background: #1e5799; /* Old browsers */
+    background: -moz-linear-gradient(top,  #1e5799 26%, #1e5799 93%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #1e5799 26%,#1e5799 93%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #1e5799 26%,#1e5799 93%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1e5799', endColorstr='#1e5799',GradientType=0 ); /* IE6-9 */
+
+    width: 5px;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 11px;
+    padding: 10px 5px;
     line-height: 20px;
     display: inline-block;
 }
@@ -288,8 +309,17 @@ table tr.title td {
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffac47', endColorstr='#f56d06', GradientType=0 );
 }
 
-#loginBlock {
-    width: 500px !important;
-    height: 500px !important;
+.row{
+    width: 100%!important;
+    margin: 0px 0px 0px 0px!important;
+    padding: 0px 0px 0px 0px!important;
     text-align: center!important;
+}
+
+dt, dd, dl {
+    /*line-height: 0!important;*/
+    display: inline!important;
+    margin: 5px 0px 0px 0px!important;
+    padding: 0px 0px 0px 0px!important;
+    margin-left: 0px!important;
 }

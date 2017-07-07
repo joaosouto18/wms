@@ -1,4 +1,4 @@
-<div class="col-xs-12">
+<div class="row" style="text-align: center">
     <form id="formGrid" method="post" action="">
         <div class="table-responsive">
             <table class="gTable  table-condensed">
@@ -10,7 +10,7 @@
                         <tr>
                             <td width=""><span>Expedição</span></td>
                         </tr>
-                    <td><input class="form-control" type="text" name="idExpedicao" id="idExpedicao"></td>
+                    <td><input type="text" name="idExpedicao" id="idExpedicao"></td>
 
                 <?php elseif (isset($this->idExpedicao)) : ?>
 
@@ -23,9 +23,9 @@
                         <?php $usuarioChecked = $this->equipeRepo->findOneBy(array('usuario' => $operador['id'], 'expedicao' => $this->idExpedicao)); ?>
                         <tr>
                             <?php if (count($usuarioChecked) > 0) : ?>
-                                <td><input class="form-control" type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]" checked ></td>
+                                <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]" checked ></td>
                             <?php else : ?>
-                                <td><input class="form-control" type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]" ></td>
+                                <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]" ></td>
                             <?php endif; ?>
                             <td style="text-align:left">&nbsp;<?php echo $operador['nome'] ?></td>
                         </tr>
@@ -34,8 +34,10 @@
                 </tbody>
             </table>
         </div>
-        <div class="col-xs-12">
-            <button class="btn gradientBtn" type="submit"><span>Vincular</span></button>
+        <div class="row">
+            <div class="field">
+                <button class="btn gradientBtn" type="submit"><span>Vincular</span></button>
+            </div>
         </div>
     </form>
 </div>

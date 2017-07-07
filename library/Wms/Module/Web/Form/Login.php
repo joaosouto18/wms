@@ -18,7 +18,7 @@ class Login extends \Core\Form
 	    //'validators' => array('emailAddress'),
 	    'label' => 'Usuário',
 	    'size' => 25,
-            'class'=>'focus form-control',
+            'class'=>'focus',
 	    'maxlength' => 15
 	));
 
@@ -26,7 +26,6 @@ class Login extends \Core\Form
 	    'required' => true,
 	    'label' => 'Senha',
 	    'size' => 25,
-            'class'=>'form-control',
 	    'maxlength' => 15
 	));
 
@@ -37,7 +36,7 @@ class Login extends \Core\Form
 	));
 
 	$this->addDisplayGroup(
-		array('username', 'password', 'submit'), 'identification', array('legend' => 'Bem Vindo ao Wms', 'class' => 'col-xs-12')
+		array('username', 'password', 'submit'), 'identification', array('legend' => 'Bem Vindo ao Wms')
 	);
     }
 

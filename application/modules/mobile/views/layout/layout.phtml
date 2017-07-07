@@ -20,46 +20,62 @@ echo $this->doctype();
         <meta name="category" content="Internet" />
         <meta name="Robots" content="Index,Follow" />
         <!--<meta name="viewport" content="width=200, initial-scale=2">-->
-        <meta content="width=240, height=320">
-            <meta name="mobileoptimized" content="200">
-                <link rel="shortcut icon" href="<?php echo $this->baseUrl('img/admin/favicon.ico') ?>" type="image/x-icon" />
-                <script type="text/javascript" src="<?php echo $this->baseUrl() . "/jquery/jquery-1.11.1.min.js" ?>"></script>
-                <script language="JavaScript" src="/bootstrap/js/bootstrap.min.js"></script>
-                <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" type="text/css" media="screen" />
-                <link rel="stylesheet" href="/bootstrap/css/bootstrap-theme.min.css" type="text/css" media="screen" />
-                <link rel="stylesheet" href="/css/mobile/style.css" type="text/css" media="screen" />
+        <meta content="width=40, height=320, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1" />
+        <meta name="mobileoptimized" content="0" />
+        <link rel="shortcut icon" href="<?php echo $this->baseUrl('img/admin/favicon.ico') ?>" type="image/x-icon" />
+        <script type="text/javascript" src="<?php echo $this->baseUrl() . "/jquery/jquery-1.11.1.min.js" ?>"></script>
+        <script language="JavaScript" src="/bootstrap/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" type="text/css" media="screen" />
+        <link rel="stylesheet" href="/bootstrap/css/bootstrap-theme.min.css" type="text/css" media="screen" />
+        <link rel="stylesheet" href="/css/mobile/style.css" type="text/css" media="screen" />
 
-                <?php
-                echo $this->jQuery()
-                        ->setLocalPath($this->baseUrl() . "/jquery/jquery-1.11.1.min.js")
-                        ->uiEnable()
-                        ->setUiLocalPath($this->baseUrl() . "/wms/resources/ui.js");
+        <?php
+        echo $this->jQuery()
+                ->setLocalPath($this->baseUrl() . "/jquery/jquery.js")
+                ->uiEnable()
+                ->setUiLocalPath($this->baseUrl() . "/wms/resources/ui.js");
 
-                echo $this->headScript();
-                ?> 
-                <script>
-                    $(document).ready(function () {
-                        $('.focus').focus();
+        echo $this->headScript();
+        ?> 
+        <script>
+            $(document).ready(function () {
+                $('.focus').focus();
 
-                        //Fechar as mensagens
-                        $('a.fmBtnClose').click(function () {
-                            // remove li
-                            $(this).parent('div').parent('li').fadeOut();
-                        });
-                    });
-                </script>
-                </head>
-                <div id="content" class="container-fluid  text-center row">
-                    <div id="body" class="row col-xs-12">
-                        <div id="userInfo" class="row">
-                            <div class="row">
-                                <div class="row col-xs-12 top">
-                                    <h1 class="top"><a class=" " href="#" title="WMS - Imperium">WMS - Imperium</a></h1>
-                                </div>
-                            </div>
-                        </div>
-                        <?php $this->messenger(); ?>
-                        <?php echo $this->layout()->content; ?>
-                    </div>
+                //Fechar as mensagens
+                $('a.fmBtnClose').click(function () {
+                    // remove li
+                    $(this).parent('div').parent('li').fadeOut();
+                });
+            });
+        </script>
+    </head>
+    <div class="top">
+        <div class="row">
+            <div>
+                <div class="" style="float: right;margin: 10px 19px 10px 10px;">
+                    <?php if ($this->urlVoltar) : ?>
+                        <a style="padding: 2x;" href="<?php echo $this->urlVoltar ?>"title="Voltar para tela anterior" ><img src="/img/back.png" alt="Voltar"></a>
+                    <?php else : ?>
+                        <a style="padding: 2px;" href="#" onclick="history.go(-1);return false" title="Voltar para tela anterior" ><img src="/img/back.png" alt="Voltar"></a>
+                    <?php endif; ?>
+                    <a style="padding: 2px;" href="<?php echo $this->baseUrl('mobile'); ?>" title="Inicio" ><img src="/img/home.png" alt="Home"></a>
+                    <a style="padding: 2px;" href="<?php echo $this->url(array('controller' => 'auth', 'action' => 'logout')); ?>" title="Desconectar" ><img src="/img/power.png" alt="Sair"></a>
                 </div>
-                </html>
+                <div class="" style="float: left;">
+                    <h1><a href="#" title="WMS - Imperium">WMS - Imperium</a></h1>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="content">
+        <div id="body">
+            <center>
+                <div class="row">
+                    <?php $this->messenger(); ?>
+                    <?php echo $this->layout()->content; ?>
+                </div>
+            </center>
+        </div>
+    </div>
+</html>

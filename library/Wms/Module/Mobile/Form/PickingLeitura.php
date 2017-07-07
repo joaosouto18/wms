@@ -63,7 +63,7 @@ class PickingLeitura extends \Core\Form
                     'required' => true,
                     'label' => $this->_labelElement,
                     'size' => 40,
-                    'class' => 'focus form-control',
+                    'class' => 'focus',
                     'maxlength' => 100,
                     'style' => 'width: 99%',
                 ))

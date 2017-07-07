@@ -120,23 +120,25 @@
         <div id="descricao"></div>
         <div>
             <label>Produto:</label>
-            <input class="focus form-control" type="text" name="codigoBarras" id="codigoBarras" required onkeydown="nextInput(event)" />
+            <input class="focus" type="text" name="codigoBarras" id="codigoBarras" required onkeydown="nextInput(event)" />
             <input type="hidden" name="isEmbalagem" id="isEmbalagem" />
         </div>
 
-        <div>
-            <label>End: -------------------- Cap:</label>
-            <input type="text" name="endereco" id="endereco" class="valid form-control" required onkeydown="nextInputEndereco(event)" />
-            <br>
-                <input type="text"  name="capacidade" id="capacidade" required size=6 maxlength=5 value="" />
-            <br>
-            <br>
+        <div class="row">
+            <label>End:</label>
+            <input type="text" name="endereco" id="endereco" class="valid" required onkeydown="nextInputEndereco(event)" />
         </div>
+        <div class="row">
+            <label>Cap:</label>
+            <input type="text"  name="capacidade" id="capacidade" required size=6 maxlength=5 value="" />
+        </div>
+        <br>
 
         <div id="divEmb" style="display: none">
             <label>Emb:</label>
-            <input type="text" class="form-control" name="embalado" id="embalado" size=1 maxlength=1 value="" />
+            <input type="text"  name="embalado" id="embalado" size=1 maxlength=1 value="" />
         </div>
+        <br>
         <div class="col-xs-12">
             <input type="submit" class="btn gradientBtn" name="submit" id="submit" value="Cadastrar" />
         </div>

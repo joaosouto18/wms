@@ -16,16 +16,16 @@
         return true;
     }
 </script>
-﻿<div class="col-xs-12" >
+﻿<div class="row" >
     <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'ressuprimento', 'action' => 'endereco-estoque')) ?>" method="post">
 
         <div>
             <label>Endereço:</label>
-            <input class="focus form-control" type="text" name="codigoBarras" id="codigoBarras" value="<?php echo $this->codigoBarras; ?>" onkeydown="nextInput(event)" />
+            <input class="focus" type="text" name="codigoBarras" id="codigoBarras" value="<?php echo $this->codigoBarras; ?>" onkeydown="nextInput(event)" />
         </div>
         <div>
             <label>Nível:</label>
-            <input class="form-control" type="text" name="nivel" id="nivel" value="" />
+            <input type="text" name="nivel" id="nivel" value="" />
         </div>
         <br>
         <input class="btn gradientBtn" type="submit" name="submit" id="submit" value="Buscar" />
