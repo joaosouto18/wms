@@ -1027,8 +1027,8 @@ class MapaSeparacao extends eFPDF {
             if ($tipoQebra == true) {
                 $this->Cell(21, 5, utf8_decode("Endereço"), 1, 0);
                 $this->Cell(13, 5, utf8_decode("Cod."), 1, 0);
-                $this->Cell(85, 5, utf8_decode("Produto"), 1, 0);
-                $this->Cell(25, 5, utf8_decode("Cod. Barras"), 1, 0);
+                $this->Cell(90, 5, utf8_decode("Produto"), 1, 0);
+                $this->Cell(20, 5, utf8_decode("Cod. Barras"), 1, 0);
                 $this->Cell(25, 5, utf8_decode("Refer."), 1, 0);
                 $this->Cell(15, 5, utf8_decode("Emb."), 1, 0);
                 $this->Cell(12, 5, utf8_decode("Qtd."), 1, 0);
@@ -1036,8 +1036,8 @@ class MapaSeparacao extends eFPDF {
             } else {
                 $this->Cell(21, 5, utf8_decode("Endereço"), 1, 0);
                 $this->Cell(13, 5, utf8_decode("Cod."), 1, 0);
-                $this->Cell(85, 5, utf8_decode("Produto"), 1, 0);
-                $this->Cell(25, 5, utf8_decode("Cod. Barras"), 1, 0);
+                $this->Cell(90, 5, utf8_decode("Produto"), 1, 0);
+                $this->Cell(20, 5, utf8_decode("Cod. Barras"), 1, 0);
                 $this->Cell(25, 5, utf8_decode("Refer."), 1, 0);
                 $this->Cell(12, 5, utf8_decode("Emb."), 1, 0);
                 $this->Cell(12, 5, utf8_decode("Qtd."), 1, 1);
@@ -1080,8 +1080,8 @@ class MapaSeparacao extends eFPDF {
                 if ($tipoQebra == true) {
                     $this->Cell(21, 4, $dscEndereco, 0, 0);
                     $this->Cell(13, 4, $codProduto, 0, 0);
-                    $this->Cell(85, 4, substr($descricao, 0, 45), 0, 0);
-                    $this->Cell(25, 4, $codigoBarras, 0, 0);
+                    $this->Cell(90, 4, substr($descricao, 0, 45), 0, 0);
+                    $this->Cell(20, 4, $codigoBarras, 0, 0);
                     $this->Cell(25, 4, $referencia, 0, 0);
                     $this->Cell(10, 4, $embalagem, 0, 0);
                     $this->SetFont('Arial', "B", 10);
@@ -1090,8 +1090,8 @@ class MapaSeparacao extends eFPDF {
                 } else {
                     $this->Cell(21, 4, $dscEndereco, 0, 0);
                     $this->Cell(13, 4, $codProduto, 0, 0);
-                    $this->Cell(85, 4, substr($descricao, 0, 45), 0, 0);
-                    $this->Cell(25, 4, $codigoBarras, 0, 0);
+                    $this->Cell(90, 4, substr($descricao, 0, 45), 0, 0);
+                    $this->Cell(20, 4, $codigoBarras, 0, 0);
                     $this->Cell(25, 4, $referencia, 0, 0);
                     $this->Cell(10, 4, $embalagem, 0, 0);
                     $this->SetFont('Arial', "B", 10);
