@@ -917,10 +917,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $quantidadeAtender = $quantidadeRestantePedido;
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
-                            foreach ($enderecosPulmao as $enderecoPulmao) {
-                                if (isset($enderecoPulmao['quantidade']))
-                                    if ($enderecoPulmao['quantidade'] > 0) {
-                                        $quantidadeAtender = $enderecoPulmao['quantidade'];
+                            foreach ($enderecosPulmao as $key => $enderecoPulmao) {
+                                if (isset($enderecoPulmao['QUANTIDADE']))
+                                    if ($enderecoPulmao['QUANTIDADE'] > 0 ) {
+                                        $quantidadeAtender = $enderecoPulmao['QUANTIDADE'];
                                         break;
                                     }
                             }
@@ -947,8 +947,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $quantidadeRestantePedido = number_format($quantidadeRestantePedido, 3, '.', '') - number_format($embalagemAtual->getQuantidade(), 3, '.', '');
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
-                            $enderecoPulmao['QUANTIDADE'] = $enderecoPulmao['QUANTIDADE'] - $embalagemAtual->getQuantidade();
-                            $idDepositoEndereco = $enderecoPulmao['COD_DEPOSITO_ENDERECO'];
+                            $enderecosPulmao[$key]['QUANTIDADE'] = $enderecosPulmao[$key]['QUANTIDADE'] - $embalagemAtual->getQuantidade();
+                            $idDepositoEndereco = $enderecosPulmao[$key]['COD_DEPOSITO_ENDERECO'];
                             $depositoEnderecoEn = $depositoEnderecoRepo->find($idDepositoEndereco);
                         }
 
@@ -1221,17 +1221,22 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $idProduto, 'grade' => $grade, 'dataInativacao' => null),array('quantidade'=>'DESC'));
 
-                $mapaProdutos = $mapaProdutoRepo->getMapaProdutoByProdutoAndMapa($idMapaSeparacao, $idProduto, $grade);
-                foreach ($mapaProdutos as $mapaProduto) {
-                    $depositoEnderecoEn = $mapaProduto['codDepositoEndereco'];
-                    $qtdTotalMapaProdutos = $mapaProdutos['qtdSeparar'];
+                $produtosMapa = $mapaProdutoRepo->getMapaProdutoByProdutoAndMapa($idMapaSeparacao, $idProduto, $grade);
+                foreach ($produtosMapa as $produtoMapa) {
+                    $qtdTotalMapaProdutos = $produtoMapa['qtdSeparar'];
 
-                    $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade, 'codDepositoEndereco' => $depositoEnderecoEn));
-                    $mapa = $mapaProdutoRepo->findOneBy(array('mapaSeparacao' => $idMapaSeparacao, 'codProduto' => $idProduto, 'dscGrade' => $grade, 'codDepositoEndereco' => $depositoEnderecoEn));
-                    $idPedidoProduto = $mapa->getCodPedidoProduto();
-                    $pedidoProduto = $pedidoProdutoRepo->find($idPedidoProduto);
+                    $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade, 'codDepositoEndereco' => $produtoMapa['codDepositoEndereco']));
+                    $depositoEnderecoEn = null;
+                    $pedidoProduto = null;
+                    $first = true;
 
+                    /** @var MapaSeparacaoProduto $mapaProdutoRemover */
                     foreach ($mapaProdutosEn as $mapaProdutoRemover) {
+                        if ($first) {
+                            $depositoEnderecoEn = $mapaProdutoRemover->getDepositoEndereco();
+                            $pedidoProduto = $mapaProdutoRemover->getPedidoProduto();
+                            $first = false;
+                        }
                         $this->_em->remove($mapaProdutoRemover);
                     }
                     $this->_em->flush();
@@ -1253,7 +1258,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $produtoId = $produtoEntity->getId();
         $grade = $produtoEntity->getGrade();
 
-        $sql = "SELECT RE.COD_DEPOSITO_ENDERECO, NVL(SUM(REP.QTD_RESERVADA),0) + NVL(SUM(ES.QTD_PRODUTO), 0) + NVL(SUM(MS.QTD_EMBALAGEM), 0) quantidade
+        $sql = "SELECT RE.COD_DEPOSITO_ENDERECO, (NVL(SUM(REP.QTD_RESERVADA),0) + NVL(SUM(ES.QTD_PRODUTO), 0) + NVL(SUM(MS.QTD_EMBALAGEM), 0))* - 1 quantidade
                 FROM RESERVA_ESTOQUE RE
                 INNER JOIN RESERVA_ESTOQUE_EXPEDICAO REE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                 INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
@@ -1679,7 +1684,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         if ($embalagemEntity != null) {
             $quantidadeEmbalagem = $embalagemEntity->getQuantidade();
             $mapaProduto = null;
-            $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoEmbalagem'=>$embalagemEntity));
+            $mapaProdutos = $mapaProdutoRepo->findBy(array("mapaSeparacao"=>$mapaSeparacaoEntity,'produtoEmbalagem'=>$embalagemEntity, 'depositoEndereco' => $depositoEndereco));
             if (!empty($mapaProdutos)) {
                 if ($consolidado == 'S') {
                     foreach ($mapaProdutos as $value) {
@@ -1726,7 +1731,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setCodPedidoProduto($pedidoProduto->getId());
             $mapaProduto->setQtdCortado(0);
             $mapaProduto->setIndConferido('N');
-            $mapaProduto->setCodDepositoEndereco($depositoEndereco);
+            $mapaProduto->setDepositoEndereco($depositoEndereco);
             $mapaProduto->setPedidoProduto($pedidoProduto);
             $mapaProduto->setCubagem($cubagem);
         } else {
