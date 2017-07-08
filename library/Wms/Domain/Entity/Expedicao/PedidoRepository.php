@@ -221,16 +221,12 @@ class PedidoRepository extends EntityRepository
 
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
 
-        $SQL = "SELECT * FROM ETIQUETA_SEPARACAO WHERE COD_PEDIDO = " . $idPedido;
-        $countEtiquetas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-
         $SQL = "SELECT *
                   FROM MAPA_SEPARACAO_PEDIDO MSP
                   LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
-                 WHERE PP.COD_PEDIDO = " . $idPedido;
+                 WHERE PP.COD_PEDIDO = " . $idPedido . "
+                   AND PP.QUANTIDADE = NVL(PP.QTD_CORTADA,0) ";
         $countMapas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-
-
 
         $EntPedido = $this->find($idPedido);
         $idExpedicao = $EntPedido->getCarga()->getExpedicao()->getId();
@@ -238,7 +234,7 @@ class PedidoRepository extends EntityRepository
         $EntPedido->setDataCancelamento(new \DateTime());
         $this->_em->persist($EntPedido);
 
-        if ((count($countEtiquetas) == 0) && (count($countMapas) == 0)) {
+        if (count($countMapas) == 0) {
             $this->_em->remove($EntPedido);
         }
 
