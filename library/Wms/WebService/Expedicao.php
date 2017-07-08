@@ -306,7 +306,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
         } catch (\Exception $e) {
             $this->_em->rollback();
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
-            return false;
         }
     }
 
@@ -785,6 +784,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $EtiquetaRepo = $repositorios['etiquetaRepo'];
 
         foreach ($pedidos as $pedido) {
+            /** @var Expedicao\Pedido $PedidoEntity */
             $PedidoEntity = $PedidoRepo->find($pedido['codPedido']);
 
             if ($PedidoEntity != null) {
@@ -796,7 +796,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $SQL = "SELECT *
                           FROM PEDIDO_PRODUTO PP
                          WHERE PP.COD_PEDIDO = " . $pedido['codPedido'] . "
-                           AND PP.QUANTIDADE = NVL(PP.QTD_CORTADA,0) ";
+                           AND PP.QUANTIDADE != NVL(PP.QTD_CORTADA,0) ";
                 $countProdutosPendentesCorte = count($this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC));
 
                 if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
