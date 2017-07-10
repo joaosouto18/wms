@@ -195,7 +195,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 if (strtoupper($words[0]) == "SELECT") {
                     $update = false;
                 }
-                $result = $conexaoRepo->runQuery($query,$conexaoEn, $update);
+                $result = $conexaoRepo->runQuery($query, $conexaoEn, $update);
             } else {
                 $result = $dados;
             }
