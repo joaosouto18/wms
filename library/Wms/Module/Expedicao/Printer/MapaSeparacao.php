@@ -1174,7 +1174,7 @@ class MapaSeparacao extends eFPDF {
         $object->SetFont('Arial', 'B', 10);
         $object->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
         $object->SetFont('Arial', null, 10);
-        $object->Cell(120, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
+        $object->Cell(120, 6, self::SetStringByMaxWidth(utf8_decode($this->quebrasEtiqueta), 120),0,0);
         $object->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
 
         $object->SetFont('Arial', 'B', 9);
