@@ -70,7 +70,7 @@ class PickingLeitura extends \Core\Form
                 ->addElement('hidden', 'uma')
                 ->addElement('submit', 'submit', array(
                     'label' => 'Buscar',
-                    'class' => 'btn',
+                    'class' => 'btn gradientBtn',
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addDisplayGroup(
