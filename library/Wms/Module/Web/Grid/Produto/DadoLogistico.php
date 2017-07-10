@@ -138,6 +138,13 @@ class DadoLogistico extends Grid
                     'pkIndex' => array('id', 'grade'),
                     'cssClass' => 'pdf'
                 ))
+                ->addAction(array(
+                    'label' => 'Logs',
+                    'controllerName' => 'produto',
+                    'cssClass' => 'database-table dialogAjax',
+                    'actionName' => 'log-ajax',
+                    'pkIndex' => array('id', 'grade'),
+                ))
                 ->setHasOrdering(true);
 
         return $this;

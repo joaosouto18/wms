@@ -5,6 +5,7 @@ namespace Wms\Service;
 
 use Core\Util\String;
 use Doctrine\ORM\EntityManager;
+use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
 use Wms\Domain\Entity\Integracao\TabelaTemporaria;
 use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
@@ -391,6 +392,7 @@ class Integracao
         $fornecedores = array();
         $itens = array();
         $notasFiscais = array();
+        $idProdutos = array();
 
         foreach ($dados as $key => $notaFiscal) {
 
@@ -417,6 +419,8 @@ class Integracao
                 );
             }
 
+            /** OBTEM O CODIGO DO PRODUTO PARA CADASTRO */
+            $idProdutos[] = $notaFiscal['COD_PRODUTO'];
             $itens[] = array(
                 'idProduto' => $notaFiscal['COD_PRODUTO'],
                 'grade' => $notaFiscal['DSC_GRADE'],
@@ -455,6 +459,15 @@ class Integracao
 
             }
         }
+
+        /** CADASTRA OS PRODUTOS DAS NOTAS FISCAIS */
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepo */
+        $acaoIntegracaoRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracao');
+        $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
+        $idIntegracao = $parametroRepo->findOneBy(array('constante' => 'ID_INTEGRACAO_PRODUTOS'));
+        $acaoEn = $acaoIntegracaoRepo->find($idIntegracao->getValor());
+        $options[] = implode(',',$idProdutos);
+        $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
 
         if ($this->getTipoExecucao() == "L") {
             return $notasFiscais;
@@ -690,8 +703,8 @@ class Integracao
                     $pedido->setCarga($row['CARGA']);
                     $pedido->setPlaca($row['PLACA']);
                     $pedido->setPedido($row['PEDIDO']);
-                    $pedido->setCodPraca($row['COD_PRACA']);
-                    $pedido->setDscPraca($row['DSC_PRACA']);
+                    $pedido->setCodPraca((isset($row['COD_PRACA']) && !empty($row['COD_PRACA']))? $row['COD_PRACA'] : null);
+                    $pedido->setDscPraca((isset($row['DSC_PRACA']) && !empty($row['DSC_PRACA']))? $row['DSC_PRACA'] : null);
                     $pedido->setCodRota($row['COD_ROTA']);
                     $pedido->setDscRota($row['DSC_ROTA']);
                     $pedido->setCodCliente($row['COD_CLIENTE']);
