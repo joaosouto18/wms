@@ -29,13 +29,15 @@
             <td>Descrição:</td>
         </tr>
         <?php
-        foreach ($this->vetLog as $key => $log) {
-            ?>
-            <tr>
-                <td  style="padding: 6px;"><?php echo $log->getDataAndamento()->format('d/m/Y h:i:s'); ?></td>
-                <td  style="padding: 6px;"><?php echo $log->getDscObservacao(); ?></td>
-            </tr>
-            <?php
+        if (is_array($this->vetLog)) {
+            foreach ($this->vetLog as $key => $log) {
+                ?>
+                <tr>
+                    <td  style="padding: 6px;"><?php echo $log->getDataAndamento()->format('d/m/Y h:i:s'); ?></td>
+                    <td  style="padding: 6px;"><?php echo $log->getDscObservacao(); ?></td>
+                </tr>
+                <?php
+            }
         }
         ?>
     </table>
