@@ -56,13 +56,13 @@ echo $this->doctype();
         <div class="row">
             <div class="" style="float: right;margin: 10px 11% 10px 10px;">
                 <?php if ($this->urlVoltar) : ?>
-                    <a style="padding: 2x;" href="<?php echo $this->urlVoltar ?>"title="Voltar para tela anterior" ><img src="/img/back.png" alt="Voltar"></a>
+                <a style="padding: 5x;" href="<?php echo $this->urlVoltar ?>"title="Voltar para tela anterior" ><img style="width: 20px;" src="/img/back.png" alt="Voltar"></a>
                 <?php else : ?>
-                    <a style="padding: 2px;" href="#" onclick="history.go(-1);
-                                    return false" title="Voltar para tela anterior" ><img src="/img/back.png" alt="Voltar"></a>
+                    <a style="padding: 5px;" href="#" onclick="history.go(-1);
+                                    return false" title="Voltar para tela anterior" ><img style="width: 20px;" src="/img/back.png" alt="Voltar"></a>
                    <?php endif; ?>
-                <a style="padding: 2px;" href="<?php echo $this->baseUrl('mobile'); ?>" title="Inicio" ><img src="/img/home.png" alt="Home"></a>
-                <a style="padding: 2px;" href="<?php echo $this->url(array('controller' => 'auth', 'action' => 'logout')); ?>" title="Desconectar" ><img src="/img/power.png" alt="Sair"></a>
+                <a style="padding: 5px;" href="<?php echo $this->baseUrl('mobile'); ?>" title="Inicio" ><img style="width: 20px;" src="/img/home.png" alt="Home"></a>
+                <a style="padding: 5px;" href="<?php echo $this->url(array('controller' => 'auth', 'action' => 'logout')); ?>" title="Desconectar" ><img style="width: 20px;" src="/img/power.png" alt="Sair"></a>
             </div>
             <div class="" style="float: left;">
                 <h1><a href="#" title="WMS - Imperium">WMS - Imperium</a></h1>
