@@ -222,8 +222,6 @@ class Produto {
      * @param Fabricante $fabricante 
      */
     public function setFabricante(Fabricante $fabricante) {
-        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this, 'Fabricante', $this->fabricante, $fabricante);
         $this->fabricante = $fabricante;
         return $this;
     }
@@ -241,8 +239,6 @@ class Produto {
      * @param Classe $classe 
      */
     public function setClasse(Classe $classe) {
-        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this, 'Classe', $this->classe, $classe);
         $this->classe = $classe;
         return $this;
     }
@@ -339,8 +335,6 @@ class Produto {
      * @param LinhaSeparacao $linhaSeparacao 
      */
     public function setLinhaSeparacao(LinhaSeparacao $linhaSeparacao) {
-        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this, 'LinhaSeparacao', $this->linhaSeparacao, $linhaSeparacao);
         $this->linhaSeparacao = $linhaSeparacao;
         return $this;
     }
