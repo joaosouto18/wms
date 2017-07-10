@@ -11,8 +11,8 @@ class PickingLeitura extends \Core\Form
 {
 
     protected $_controllerUrl = 'enderecamento';
-    protected $_label = 'Busca de Endereços de Picking';
-    protected $_labelElement = 'Etiqueta de Endereço de Picking';
+    protected $_label = 'Busca de End. de Picking';
+    protected $_labelElement = 'Etiqueta de End. de Picking';
     protected $_actionUrl = 'leitura-picking';
 
 
