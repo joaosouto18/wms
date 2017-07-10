@@ -306,7 +306,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
         } catch (\Exception $e) {
             $this->_em->rollback();
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
-            return false;
         }
     }
 
@@ -785,55 +784,40 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $EtiquetaRepo = $repositorios['etiquetaRepo'];
 
         foreach ($pedidos as $pedido) {
+            /** @var Expedicao\Pedido $PedidoEntity */
             $PedidoEntity = $PedidoRepo->find($pedido['codPedido']);
-            if ($PedidoEntity != null) {
-                /*
-                 * PEDIDO DA SONOSHOW, ELES QUEREM LIBERAR O SISTEMA SEM VALIDAR O CORTE, ISTO NÂO DEVE SER PARAMETRO
-                 * DEVE SER ACERTO DE PROCESSO, PORÉM ATÈ ACERTAREM O PROCESSO FOI PEDIDO PARA NÃO FAZER VALIDAÇÃO
-                 * ATÉ ACERTAREM ESTE PROCESSO CRIEI O BOOLEAN CHAMADO SONOSHOW PARA DELETAR QUANDO ACERTAREM O PROCESSO
-                 */
-                $sonoshow = false;
 
-                if ($sonoshow == true) {
+            if ($PedidoEntity != null) {
+
+                $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus();
+                $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
+                $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
+
+                $SQL = "SELECT *
+                          FROM PEDIDO_PRODUTO PP
+                         WHERE PP.COD_PEDIDO = " . $pedido['codPedido'] . "
+                           AND PP.QUANTIDADE != NVL(PP.QTD_CORTADA,0) ";
+                $countProdutosPendentesCorte = count($this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC));
+
+                if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
+                    ($countProdutosPendentesCorte == 0)) {
 
                     $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
                     $PedidoRepo->remove($PedidoEntity,false);
 
                 } else {
 
-                    $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus();
-                    $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
-                    $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
-
-                    if (($statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
-                        ($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
-                        ($statusExpedicao->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) ||
-                        ($qtdCortadas == $qtdTotal)) {
-
-                        $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
-                        $PedidoRepo->remove($PedidoEntity,false);
-
-                    } else {
-
-                        if (count($EtiquetaRepo->getMapaByPedido($pedido['codPedido'])) > 0) {
-                            if (!$isIntegracaoSQL)
-                                throw new Exception("Pedido $pedido[codPedido] possui mapa de separacao em conferencia");
-                            else
-                                return false;
-                        }
-
-                        if ($qtdCortadas > 0) {
-                            if (!$isIntegracaoSQL)
-                                throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
-                            else
-                                return false;
-                        }
-
+                    if ($qtdTotal != $qtdCortadas) {
                         if (!$isIntegracaoSQL)
-                            throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
+                            throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
                         else
                             return false;
                     }
+
+                    if (!$isIntegracaoSQL)
+                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
+                    else
+                        return false;
                 }
             }
         }
