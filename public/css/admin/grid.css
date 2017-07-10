@@ -181,6 +181,9 @@ div.gFilter {
 .gOpcRow a.pdf {
     background-image: url(../../img/icons/page_white_acrobat.png);
 }
+.gOpcRow a.database-table {
+    background-image: url(../../img/icons/database_table.png);
+}
 .fieldGrid {
     
 }

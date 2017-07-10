@@ -12,8 +12,8 @@ use Wms\Domain\Entity\Produto,
  * @Entity(repositoryClass="Wms\Domain\Entity\Produto\DadoLogisticoRepository")
  * @author Renato Medina
  */
-class DadoLogistico
-{    
+class DadoLogistico {
+
     /**
      * @Id
      * @Column(name="COD_PRODUTO_DADO_LOGISTICO", type="integer", nullable=false)
@@ -22,12 +22,14 @@ class DadoLogistico
      * @var integer
      */
     protected $id;
+
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Embalagem")
      * @JoinColumn(name="COD_PRODUTO_EMBALAGEM", referencedColumnName="COD_PRODUTO_EMBALAGEM")
      * @var Wms\Domain\Entity\Produto\Embalagem $embalagem
      */
     protected $embalagem;
+
     /**
      * Norma de paletizacao do dado logistico
      * 
@@ -36,6 +38,7 @@ class DadoLogistico
      * @var \Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
      */
     protected $normaPaletizacao;
+
     /**
      * @Column(type="decimal", name="NUM_ALTURA")
      * @var decimal altura do volume
@@ -70,27 +73,24 @@ class DadoLogistico
      * Retorna o código do volume
      * @return integer
      */
-    public function getId()
-    {
+    public function getId() {
         return $this->id;
     }
-    
-    public function getEmbalagem()
-    {
+
+    public function getEmbalagem() {
         return $this->embalagem;
     }
 
-    public function setEmbalagem($embalagem)
-    {
+    public function setEmbalagem($embalagem) {
         $this->embalagem = $embalagem;
         return $this;
     }
+
     /**
      * Retorna a norma de paletizacao
      * @return \Wms\Domain\Entity\Produto\NormaPaletizacao
      */
-    public function getNormaPaletizacao()
-    {
+    public function getNormaPaletizacao() {
         return $this->normaPaletizacao;
     }
 
@@ -98,17 +98,16 @@ class DadoLogistico
      * Registra a norma de paletizacao
      * @param integer $normaPaletizacaoEntity
      */
-    public function setNormaPaletizacao($normaPaletizacaoEntity)
-    {
+    public function setNormaPaletizacao($normaPaletizacaoEntity) {
         $this->normaPaletizacao = $normaPaletizacaoEntity;
         return $this;
     }
+
     /**
      * Retorna a altura do produto
      * @return decimal
      */
-    public function getAltura()
-    {
+    public function getAltura() {
         return Converter::enToBr($this->altura, 3);
     }
 
@@ -116,8 +115,9 @@ class DadoLogistico
      * Informa a altura do volume
      * @param decimal $altura 
      */
-    public function setAltura($altura)
-    {
+    public function setAltura($altura) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Altura', $this->altura, $altura);
         $this->altura = Converter::brToEn($altura, 3);
         return $this;
     }
@@ -126,8 +126,7 @@ class DadoLogistico
      * Retorna a largura do volume
      * @return decimal
      */
-    public function getLargura()
-    {
+    public function getLargura() {
         return Converter::enToBr($this->largura, 3);
     }
 
@@ -135,8 +134,9 @@ class DadoLogistico
      * Informa a largura do volume
      * @param decimal $largura 
      */
-    public function setLargura($largura)
-    {
+    public function setLargura($largura) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Largura', $this->largura, $largura);
         $this->largura = Converter::brToEn($largura, 3);
         return $this;
     }
@@ -145,8 +145,7 @@ class DadoLogistico
      * Retorna a profundidade do volume
      * @return decimal
      */
-    public function getProfundidade()
-    {
+    public function getProfundidade() {
         return Converter::enToBr($this->profundidade, 3);
     }
 
@@ -154,8 +153,9 @@ class DadoLogistico
      * Informa a profundidade do volume
      * @param decimal $profundidade 
      */
-    public function setProfundidade($profundidade)
-    {
+    public function setProfundidade($profundidade) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Profundidade', $this->profundidade, $profundidade);
         $this->profundidade = Converter::brToEn($profundidade, 3);
         return $this;
     }
@@ -164,8 +164,7 @@ class DadoLogistico
      * Retorna a cubagem do volume
      * @return decimal
      */
-    public function getCubagem()
-    {
+    public function getCubagem() {
         return Converter::enToBr($this->cubagem, 4);
     }
 
@@ -173,8 +172,9 @@ class DadoLogistico
      * Informa a cubagem do volume
      * @param decimal $cubagem 
      */
-    public function setCubagem($cubagem)
-    {
+    public function setCubagem($cubagem) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Cubagem', $this->cubagem, $cubagem);
         $this->cubagem = Converter::brToEn($cubagem, 4);
         return $this;
     }
@@ -183,8 +183,7 @@ class DadoLogistico
      * Retorna o peso do volume
      * @return decimal
      */
-    public function getPeso()
-    {
+    public function getPeso() {
         return Converter::enToBr($this->peso, 3);
     }
 
@@ -193,13 +192,15 @@ class DadoLogistico
      * @param decimal $peso 
      * @param bool $importacao
      */
-    public function setPeso($peso, $importacao = null)
-    {
-        if(empty($importacao)) {
+    public function setPeso($peso, $importacao = null) {
+        if (empty($importacao)) {
             $this->peso = Converter::brToEn($peso, 3);
         } else {
             $this->peso = $peso;
         }
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Peso', $this->peso, $peso);
         return $this;
     }
+
 }

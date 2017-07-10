@@ -1,0 +1,45 @@
+<?php
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+?>
+<fieldset id="fieldset-produto">
+    <legend>Identificação</legend>
+    <table class="gTable">
+        <tr class="gTTitle">
+            <td>Produto:</td>
+            <td>Código:</td>
+            <td>Grade:</td>
+        </tr>
+        <tr>
+            <td style="padding: 6px;"><?php echo $this->vetLog[0]->getProduto()->getDescricao(); ?></td>
+            <td style="padding: 6px;"><?php echo $this->id; ?></td>
+            <td style="padding: 6px;"><?php echo $this->grade; ?></td>
+        </tr>
+    </table>
+</fieldset>
+
+<fieldset id="fieldset-produto">
+    <legend>Logs</legend>
+    <table class="gTable">
+        <tr class="gTTitle">
+            <td>Data Andamento:</td>
+            <td>Descrição:</td>
+        </tr>
+        <?php
+        foreach ($this->vetLog as $key => $log) {
+            ?>
+            <tr>
+                <td  style="padding: 6px;"><?php echo $log->getDataAndamento()->format('d/m/Y h:i:s'); ?></td>
+                <td  style="padding: 6px;"><?php echo $log->getDscObservacao(); ?></td>
+            </tr>
+            <?php
+        }
+        ?>
+    </table>
+</fieldset>
+
+<?php
+
