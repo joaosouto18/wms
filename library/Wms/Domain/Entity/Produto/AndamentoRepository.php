@@ -14,9 +14,11 @@ class AndamentoRepository extends EntityRepository {
      */
     public function save($idProduto, $grade, $usuarioId = false, $observacao = false, $flush = true, $integracao = false) {
         $usuario = null;
-        if ($integracao == false) {
-//            $usuarioId = ($usuarioId) ? $usuarioId : \Zend_Auth::getInstance()->getIdentity()->getId();
-//            $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+        if ($integracao == false && is_object(\Zend_Auth::getInstance())) {
+            if (is_object(\Zend_Auth::getInstance()->getIdentity())) {
+                $usuarioId = ($usuarioId) ? $usuarioId : \Zend_Auth::getInstance()->getIdentity()->getId();
+                $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+            }
         }
 
         $andamento = new Andamento();

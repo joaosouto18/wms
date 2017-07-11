@@ -27,14 +27,20 @@
         <tr class="gTTitle">
             <td>Data Andamento:</td>
             <td>Descrição:</td>
+            <td>Usuário:</td>
         </tr>
         <?php
         if (is_array($this->vetLog)) {
             foreach ($this->vetLog as $key => $log) {
+                $usuario = 'INTEGRAÇÃO';
+                if(is_object($log->getUsuario())){
+                    $usuario = $log->getUsuario()->getPessoa()->getNome();
+                }
                 ?>
                 <tr>
                     <td  style="padding: 6px;"><?php echo $log->getDataAndamento()->format('d/m/Y h:i:s'); ?></td>
                     <td  style="padding: 6px;"><?php echo $log->getDscObservacao(); ?></td>
+                    <td  style="padding: 6px;"><?php echo $usuario; ?></td>
                 </tr>
                 <?php
             }
