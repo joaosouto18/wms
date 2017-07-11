@@ -38,12 +38,20 @@ class AndamentoRepository extends EntityRepository {
     }
 
     public function checksChange($oject, $field, $value, $newValue) {
-        if ($value != $newValue) {
-            if ($value != null) {
-                $url = $_SERVER['REQUEST_URI'];
-                $obs = "$field alterado(a) de " . $value . ' para ' . $newValue . ' - URL: ' . $url;
-                $this->save($oject->getId(), $oject->getGrade(), false, $obs, false);
+        $alterou = false;
+
+        if ($value != null) {
+            if (is_numeric($value)) {
+                if (str_replace(",",".",$newValue) != $value) $alterou = true;
+            } else {
+                if ($value != $newValue) $alterou = true;
             }
+        }
+
+        if ($alterou === true) {
+            $url = $_SERVER['REQUEST_URI'];
+            $obs = "$field alterado(a) de " . $value . ' para ' . $newValue . ' - URL: ' . $url;
+            $this->save($oject->getId(), $oject->getGrade(), false, $obs, false);
         }
     }
 

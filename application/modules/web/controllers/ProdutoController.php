@@ -445,8 +445,10 @@ class Web_ProdutoController extends Crud {
         $orderBy = array('dataAndamento' => 'DESC');
         
         $andamentoRepo = $this->_em->getRepository('wms:Produto\Andamento');
+        $produtoEn = $this->_em->getRepository('wms:Produto')->findOneBy(array('id' => $codProduto, 'grade' => $grade));
         $this->view->id = $codProduto;
         $this->view->grade = $grade;
+        $this->view->produto = $produtoEn->getDescricao();;
         $this->view->vetLog = $andamentoRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade), $orderBy);
     }
 
