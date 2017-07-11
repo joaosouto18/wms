@@ -382,6 +382,9 @@ class Produto {
      * @return Produto
      */
     public function setValidade($validade) {
+        var_dump($this->validade);
+        var_dump($validade);
+        exit;
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
         $andamentoRepo->checksChange($this, 'Validade', $this->validade, $validade);
         $this->validade = $validade;
