@@ -3,6 +3,7 @@
 use Wms\Module\Web\Controller\Action;
 use \Wms\Module\Web\Page;
 use \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro as AcaoIntegracaoFiltro;
+use \Wms\Domain\Entity\Integracao\AcaoIntegracao as AcaoIntegracao;
 
 class Importacao_GerenciamentoController extends Action
 {
@@ -86,10 +87,17 @@ class Importacao_GerenciamentoController extends Action
                 $result = $acaoIntRepo->efetivaTemporaria($integracoes);
                 if (!($result === true)) {
                     $this->addFlashMessage('error',$result);
+                    $this->redirect('index','gerenciamento','importacao', array('id' => $acao));
+                } else {
+                    if ($acaoIntEntity->getTipoAcao()->getId() ==  AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS) {
+                        $this->addFlashMessage('success','Notas Fiscais enviadas com sucesso!');
+                        $this->redirect('index','recebimento','web');
+                    } else if ($acaoIntEntity->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PEDIDOS) {
+                        $this->addFlashMessage('success','Cargas enviadas com sucesso!');
+                        $this->redirect('index','index','expedicao');
+                    }
                 }
             }
-
-
             $this->view->valores = $arrayFinal;
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());

@@ -5,16 +5,16 @@ namespace Wms\Domain\Entity\Produto;
 use Doctrine\Common\Collections\ArrayCollection,
     Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Deposito\Endereco;
-
+$andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
 /**
  * Description of Embalagem
  * @Table(name="PRODUTO_EMBALAGEM")
  * @Entity(repositoryClass="Wms\Domain\Entity\Produto\EmbalagemRepository")
  * @author daniel
  */
-class Embalagem
-{
+class Embalagem {
 
+    
     /**
      * @Id
      * @Column(name="COD_PRODUTO_EMBALAGEM", type="integer", nullable=false)
@@ -115,7 +115,7 @@ class Embalagem
      * @Column(name="CAPACIDADE_PICKING", type="decimal", nullable=false)
      */
     protected $capacidadePicking;
-    
+
     /**
      * @Column(name="DTH_INATIVACAO", type="datetime", nullable=true)
      * @var datetime
@@ -127,9 +127,8 @@ class Embalagem
      * @var int
      */
     protected $usuarioInativacao;
-    
-    public function __construct()
-    {
+
+    public function __construct() {
         $this->dadosLogisticos = new ArrayCollection;
         $this->recebimentoEmbalagens = new ArrayCollection;
     }
@@ -138,8 +137,7 @@ class Embalagem
      * Retorna o código da embalagem
      * @return integer
      */
-    public function getId()
-    {
+    public function getId() {
         return $this->id;
     }
 
@@ -147,8 +145,7 @@ class Embalagem
      * Retorna o produto que esta embalagem pertence
      * @return Produto
      */
-    public function getProduto()
-    {
+    public function getProduto() {
         return $this->produto;
     }
 
@@ -156,19 +153,20 @@ class Embalagem
      * Informa qual o produto que esta embalagem pertence
      * @param Produto $produto 
      */
-    public function setProduto(Produto $produto)
-    {
+    public function setProduto(Produto $produto) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Produto', $this->produto, $produto);
         $this->produto = $produto;
         return $this;
     }
 
-    public function getGrade()
-    {
+    public function getGrade() {
         return $this->grade;
     }
 
-    public function setGrade($grade)
-    {
+    public function setGrade($grade) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Grade', $this->grade, $grade);
         $this->grade = $grade;
         return $this;
     }
@@ -177,8 +175,7 @@ class Embalagem
      * Retorna a descrição (nome) da embalagem
      * @return string
      */
-    public function getDescricao()
-    {
+    public function getDescricao() {
         return $this->descricao;
     }
 
@@ -186,8 +183,9 @@ class Embalagem
      * Informa a descrição (nome) da embalagem 
      * @param type $descricao 
      */
-    public function setDescricao($descricao)
-    {
+    public function setDescricao($descricao) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Descrição Embalagem', $this->descricao, $descricao);
         $this->descricao = $descricao;
         return $this;
     }
@@ -196,8 +194,7 @@ class Embalagem
      * Retorna a quantidade que contem nesta embalagem
      * @return integer 
      */
-    public function getQuantidade()
-    {
+    public function getQuantidade() {
         return $this->quantidade;
     }
 
@@ -205,8 +202,9 @@ class Embalagem
      * Informa a quantidade que contem nesta embalagem
      * @param integer $quantidade 
      */
-    public function setQuantidade($quantidade)
-    {
+    public function setQuantidade($quantidade) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Quantidade', $this->quantidade, $quantidade);
         $this->quantidade = $quantidade;
         return $this;
     }
@@ -215,8 +213,7 @@ class Embalagem
      * Retorna se a embalagem é padrão
      * @return string
      */
-    public function getIsPadrao()
-    {
+    public function getIsPadrao() {
         return $this->isPadrao;
     }
 
@@ -224,10 +221,12 @@ class Embalagem
      * Informa se esta embalagem usada como padrão pelo produto
      * @param string $isPadrao 
      */
-    public function setIsPadrao($isPadrao)
-    {
+    public function setIsPadrao($isPadrao) {
         if (!in_array($isPadrao, array('S', 'N')))
             throw new \InvalidArgumentException('Valor inválido para Padrao de Embalagem');
+        
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Padrão', $this->isPadrao, $isPadrao);
 
         $this->isPadrao = $isPadrao;
         return $this;
@@ -237,8 +236,7 @@ class Embalagem
      * Retorna o código de barras da embalagem
      * @return string
      */
-    public function getCodigoBarras()
-    {
+    public function getCodigoBarras() {
         return $this->codigoBarras;
     }
 
@@ -246,32 +244,29 @@ class Embalagem
      * Informa o código de barras da embalagem
      * @param string $codigoBarras 
      */
-    public function setCodigoBarras($codigoBarras)
-    {
+    public function setCodigoBarras($codigoBarras) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Código de Barras', $this->codigoBarras, $codigoBarras);
         $this->codigoBarras = $codigoBarras;
         return $this;
     }
 
-    public function getDadosLogisticos()
-    {
+    public function getDadosLogisticos() {
         return $this->dadosLogisticos;
     }
 
-    public function getRecebimentoEmbalagens()
-    {
+    public function getRecebimentoEmbalagens() {
         return $this->recebimentoEmbalagens;
     }
 
     /**
      * @return Endereco
      */
-    public function getEndereco()
-    {
+    public function getEndereco() {
         return $this->endereco;
     }
 
-    public function setEndereco($endereco)
-    {
+    public function setEndereco($endereco) {
 
         $dscOrigem = "Nenhum";
         if ($this->endereco != null) {
@@ -290,144 +285,126 @@ class Embalagem
                 $dscDestino = $endereco->getDescricao();
             }
         }
-
-        if ($dscDestino != $dscOrigem) {
-            $url = $_SERVER['REQUEST_URI'];
-            $em = \Zend_Registry::get('doctrine')->getEntityManager();
-            $obs = " Endereço de picking alterado de " . $dscOrigem . ' para ' . $dscDestino .' - URL: ' . $url;
-            $andamentoRepo = $em->getRepository('wms:Produto\Andamento');
-            $andamentoRepo->save($this->getProduto()->getId(),
-                $this->getProduto()->getGrade(),
-                false,$obs,false);
-        }
+        
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Endereço de Picking', $dscOrigem, $dscDestino);
 
         $this->endereco = $endereco;
 
         return $this;
     }
 
-    public function getCBInterno()
-    {
+    public function getCBInterno() {
         return $this->CBInterno;
     }
 
-    public function setCBInterno($CBInterno)
-    {
+    public function setCBInterno($CBInterno) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Código de barras interno', $this->CBInterno, $CBInterno);
         $this->CBInterno = $CBInterno;
         return $this;
     }
 
-    public function getImprimirCB()
-    {
+    public function getImprimirCB() {
         return $this->imprimirCB;
     }
 
-    public function setImprimirCB($imprimirCB)
-    {
+    public function setImprimirCB($imprimirCB) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Imprimir código de barras interno', $this->imprimirCB, $imprimirCB);
         $this->imprimirCB = $imprimirCB;
         return $this;
     }
 
-    public function setEmbalado($embalado)
-    {
+    public function setEmbalado($embalado) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Embalado', $this->embalado, $embalado);
         $this->embalado = $embalado;
     }
 
-    public function getEmbalado()
-    {
+    public function getEmbalado() {
         return $this->embalado;
     }
 
     /**
      * @param mixed $capacidadePicking
      */
-    public function setCapacidadePicking($capacidadePicking)
-    {
-        if ($this->capacidadePicking != $capacidadePicking) {
-            if ($this->capacidadePicking != null) {
-                $url = $_SERVER['REQUEST_URI'];
-                $em = \Zend_Registry::get('doctrine')->getEntityManager();
-                $obs = " Capacidade de picking alterada de " . $this->capacidadePicking . ' para ' . $capacidadePicking .' - URL: ' . $url;
-                $andamentoRepo = $em->getRepository('wms:Produto\Andamento');
-                $andamentoRepo->save($this->getProduto()->getId(),
-                    $this->getProduto()->getGrade(),
-                    false,$obs,false);
-            }
-        }
+    public function setCapacidadePicking($capacidadePicking) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Capacidade de Picking', $this->capacidadePicking, $capacidadePicking);
 
-        $this->capacidadePicking = str_replace(',','.',$capacidadePicking);
+        $this->capacidadePicking = str_replace(',', '.', $capacidadePicking);
     }
 
     /**
      * @return mixed
      */
-    public function getCapacidadePicking()
-    {
-        return str_replace('.',',',$this->capacidadePicking);
+    public function getCapacidadePicking() {
+        return str_replace('.', ',', $this->capacidadePicking);
     }
 
     /**
      * @param mixed $pontoReposicao
      */
-    public function setPontoReposicao($pontoReposicao)
-    {
+    public function setPontoReposicao($pontoReposicao) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Ponto de Reposição', $this->pontoReposicao, $pontoReposicao);
         $this->pontoReposicao = $pontoReposicao;
     }
 
     /**
      * @return mixed
      */
-    public function getPontoReposicao()
-    {
+    public function getPontoReposicao() {
         return $this->pontoReposicao;
     }
 
     /**
-<<<<<<< HEAD
+      <<<<<<< HEAD
      * @return datetime
      */
-    public function getDataInativacao()
-    {
+    public function getDataInativacao() {
         return $this->dataInativacao;
     }
 
     /**
      * @param datetime $dataInativacao
      */
-    public function setDataInativacao($dataInativacao)
-    {
+    public function setDataInativacao($dataInativacao) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Data de Inativação', $this->dataInativacao, $dataInativacao);
         $this->dataInativacao = $dataInativacao;
     }
 
     /**
      * @return int
      */
-    public function getUsuarioInativacao()
-    {
+    public function getUsuarioInativacao() {
         return $this->usuarioInativacao;
     }
 
     /**
      * @param int $usuarioInativacao
      */
-    public function setUsuarioInativacao($usuarioInativacao)
-    {
+    public function setUsuarioInativacao($usuarioInativacao) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Usuario inativação', $this->usuarioInativacao, $usuarioInativacao);
         $this->usuarioInativacao = $usuarioInativacao;
     }
 
     /**
      * @return string
      */
-    public function getCodProduto()
-    {
+    public function getCodProduto() {
         return $this->codProduto;
     }
 
     /**
      * @param string $codProduto
      */
-    public function setCodProduto($codProduto)
-    {
+    public function setCodProduto($codProduto) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Código do Produto', $this->codProduto, $codProduto);
         $this->codProduto = $codProduto;
     }
 

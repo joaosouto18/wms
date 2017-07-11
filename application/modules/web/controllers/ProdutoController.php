@@ -25,10 +25,10 @@ class Web_ProdutoController extends Crud {
         if ($values) {
             $grid = new DadoLogisticoGrid;
             $this->view->grid = $grid->init($values)
-                ->render();
+                    ->render();
 
             $form->setSession($values)
-                ->populate($values);
+                    ->populate($values);
         }
 
         $this->view->form = $form;
@@ -43,16 +43,16 @@ class Web_ProdutoController extends Crud {
         $params = $this->getRequest()->getParams();
 
         $dql = $em->createQueryBuilder()
-            ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
+                ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
                     u.id idUnitizador, u.descricao unitizador, e.id embalagem')
-            ->from('wms:Produto\Embalagem', 'e')
-            ->innerJoin('e.dadosLogisticos', 'dl')
-            ->innerJoin('dl.normaPaletizacao', 'np')
-            ->innerJoin('np.unitizador', 'u')
-            ->where('e.codProduto = ?1')
-            ->setParameter(1, $params['idProduto'])
-            ->andWhere('e.grade = :grade')
-            ->setParameter('grade', $params['grade']);
+                ->from('wms:Produto\Embalagem', 'e')
+                ->innerJoin('e.dadosLogisticos', 'dl')
+                ->innerJoin('dl.normaPaletizacao', 'np')
+                ->innerJoin('np.unitizador', 'u')
+                ->where('e.codProduto = ?1')
+                ->setParameter(1, $params['idProduto'])
+                ->andWhere('e.grade = :grade')
+                ->setParameter('grade', $params['grade']);
 
         $normasPaletizacao = array();
 
@@ -87,7 +87,7 @@ class Web_ProdutoController extends Crud {
             }
 
             $dadosLogisticos = $em->getRepository('wms:Produto\DadoLogistico')
-                ->findBy(array('normaPaletizacao' => $normaPaletizacao['id'], 'embalagem' => $normaPaletizacao['embalagem']));
+                    ->findBy(array('normaPaletizacao' => $normaPaletizacao['id'], 'embalagem' => $normaPaletizacao['embalagem']));
 
             foreach ($dadosLogisticos as $dadoLogistico) {
 
@@ -192,22 +192,21 @@ class Web_ProdutoController extends Crud {
                 $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
 
                 $result = $this->repository->save($entity, $this->getRequest()->getParams(), true);
-                if (is_string($result)){
+                if (is_string($result)) {
                     $this->addFlashMessage('error', $result);
-                    $this->_redirect('/produto/edit/id/'.$params['id'].'/grade/'.$params['grade']);
+                    $this->_redirect('/produto/edit/id/' . $params['id'] . '/grade/' . $params['grade']);
                 } else {
                     $this->em->flush();
                 }
 
-                $andamentoRepo  = $this->_em->getRepository('wms:Produto\Andamento');
+                $andamentoRepo = $this->_em->getRepository('wms:Produto\Andamento');
                 $andamentoRepo->save($params['id'], $params['grade'], false, 'Produto alterado com sucesso.');
 
                 $this->addFlashMessage('success', 'Produto alterado com sucesso.');
                 $this->_redirect('/produto');
-
             }
             $form->setDefaultsFromEntity($entity); // pass values to form
-            $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+            $fornecedorRefRepo = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
             $this->view->codigosFornecedores = $fornecedorRefRepo->findBy(array('idProduto' => $entity->getIdProduto()));
             $repoEmbalagem = $this->_em->getRepository('wms:Produto\Embalagem');
 
@@ -227,40 +226,35 @@ class Web_ProdutoController extends Crud {
             $embalagens = $repoEmbalagem->findBy($criterio, $orderBy);
             $options = array();
             /** @var Produto\Embalagem $embalagem */
-            foreach ($embalagens as $embalagem){
+            foreach ($embalagens as $embalagem) {
                 $options[$embalagem->getId()] = $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
             }
 
             $selectEmbalagem->setMultiOptions($options);
-
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
         $this->view->form = $form;
     }
 
-    public function semCapacidadeAjaxAction()
-    {
+    public function semCapacidadeAjaxAction() {
         $produtoRepo = $this->em->getRepository("wms:Produto");
         $produtosSemCapacidade = $produtoRepo->getProdutosEstoqueSemCapacidade();
-        $this->exportPDF($produtosSemCapacidade,'sem-capacidade.pdf','Produtos Sem Capacidade no Estoque','L');
-
+        $this->exportPDF($produtosSemCapacidade, 'sem-capacidade.pdf', 'Produtos Sem Capacidade no Estoque', 'L');
     }
 
-    public function codigoFornecedorAjaxAction()
-    {
+    public function codigoFornecedorAjaxAction() {
         $term = $this->getRequest()->getParam('term');
         /** @var $fornecedorRefRepo */
-        $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+        $fornecedorRefRepo = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
         $result = $fornecedorRefRepo->buscarFornecedorByNome($term);
 
         $this->_helper->json($result);
     }
 
-    public function excluirCodFornecedorAjaxAction()
-    {
+    public function excluirCodFornecedorAjaxAction() {
         $id = $this->getRequest()->getParam('id');
-        $fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+        $fornecedorRefRepo = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
         try {
             $fornEn = $fornecedorRefRepo->find($id);
             $this->_em->remove($fornEn);
@@ -269,7 +263,6 @@ class Web_ProdutoController extends Crud {
         } catch (Exception $e) {
             $this->_helper->json(array('msg' => $e->getMessage()));
         }
-
     }
 
     /**
@@ -355,16 +348,16 @@ class Web_ProdutoController extends Crud {
             }
 
             $dql = $em->createQueryBuilder()
-                ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
+                    ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
                     u.id idUnitizador, u.descricao unitizador, e.id embalagem')
-                ->from('wms:Produto\Embalagem', 'e')
-                ->innerJoin('e.dadosLogisticos', 'dl')
-                ->innerJoin('dl.normaPaletizacao', 'np')
-                ->innerJoin('np.unitizador', 'u')
-                ->where('e.codProduto = ?1')
-                ->setParameter(1, $params['id'])
-                ->andWhere('e.grade = :grade')
-                ->setParameter('grade', $params['grade']);
+                    ->from('wms:Produto\Embalagem', 'e')
+                    ->innerJoin('e.dadosLogisticos', 'dl')
+                    ->innerJoin('dl.normaPaletizacao', 'np')
+                    ->innerJoin('np.unitizador', 'u')
+                    ->where('e.codProduto = ?1')
+                    ->setParameter(1, $params['id'])
+                    ->andWhere('e.grade = :grade')
+                    ->setParameter('grade', $params['grade']);
 
             // loop para agrupar normas repetidas, já que a bosta do oracle não faz
             foreach ($dql->getQuery()->getResult() as $row) {
@@ -386,7 +379,7 @@ class Web_ProdutoController extends Crud {
             foreach ($normasPaletizacao as $key => $normaPaletizacao) {
 
                 $dadosLogisticos = $em->getRepository('wms:Produto\DadoLogistico')
-                    ->findBy(array('normaPaletizacao' => $normaPaletizacao['id'], 'embalagem' => $normaPaletizacao['embalagem']));
+                        ->findBy(array('normaPaletizacao' => $normaPaletizacao['id'], 'embalagem' => $normaPaletizacao['embalagem']));
 
                 foreach ($dadosLogisticos as $dadoLogistico) {
 
@@ -425,27 +418,36 @@ class Web_ProdutoController extends Crud {
         $codProduto = $this->getRequest()->getParam('id');
         $grade = $this->getRequest()->getParam('grade');
 
-        switch($modelo) {
+        switch ($modelo) {
             case 1:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
-            break;
+                break;
             case 2:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
-            break;
+                break;
             case 3:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
-            break;
+                break;
         }
-        $result = $gerarEtiqueta->init(null,array(
+        $result = $gerarEtiqueta->init(null, array(
             'codProduto' => $codProduto,
-            'grade'      => $grade),
-            $modelo);
+            'grade' => $grade), $modelo);
     }
 
-    public function verificarParametroCodigoBarrasAjaxAction()
-    {
+    public function verificarParametroCodigoBarrasAjaxAction() {
         $parametro = $this->getSystemParameterValue("ALTERAR_CODIGO_BARRAS");
         $this->_helper->json($parametro, true);
+    }
+
+    public function logAjaxAction() {
+        $codProduto = $this->getRequest()->getParam('id');
+        $grade = $this->getRequest()->getParam('grade');
+        $orderBy = array('dataAndamento' => 'DESC');
+        
+        $andamentoRepo = $this->_em->getRepository('wms:Produto\Andamento');
+        $this->view->id = $codProduto;
+        $this->view->grade = $grade;
+        $this->view->vetLog = $andamentoRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade), $orderBy);
     }
 
 }
