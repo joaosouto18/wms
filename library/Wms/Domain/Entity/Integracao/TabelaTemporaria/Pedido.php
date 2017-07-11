@@ -15,7 +15,7 @@ class Pedido
      * @Id
      * @Column(name="COD_INTEGRACAO_PEDIDO", type="integer", nullable=false)
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_INTEGRACAO_NF_PEDIDO_01", initialValue=1, allocationSize=100)
+     * @SequenceGenerator(sequenceName="SQ_INTEGRACAO_NF_PEDIDO_01", initialValue=1, allocationSize=10000)
      */
     protected $id;
 
