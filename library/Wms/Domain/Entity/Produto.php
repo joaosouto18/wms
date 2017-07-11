@@ -17,8 +17,7 @@ use Wms\Domain\Entity\ProdutoRepository,
  * @Table(name="PRODUTO")
  * @Entity(repositoryClass="Wms\Domain\Entity\ProdutoRepository")
  */
-class Produto
-{
+class Produto {
 
     const TIPO_UNITARIO = 1;
     const TIPO_COMPOSTO = 2;
@@ -37,7 +36,7 @@ class Produto
      * @Column(name="ID_PRODUTO", type="integer", nullable=false)
      */
     protected $idProduto;
-    
+
     /**
      * @Id
      * @Column(name="COD_PRODUTO", type="string", nullable=false)
@@ -116,7 +115,6 @@ class Produto
      */
     protected $linhaSeparacao;
 
-
     /**
      * @Column(name="DIAS_VIDA_UTIL", type="integer")
      * @var int
@@ -153,8 +151,7 @@ class Produto
      */
     protected $possuiPesoVariavel;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->volumes = new ArrayCollection;
         $this->embalagens = new ArrayCollection;
     }
@@ -163,13 +160,13 @@ class Produto
      * Retorna o código do produto
      * @return string
      */
-    public function getId()
-    {
+    public function getId() {
         return $this->id;
     }
 
-    public function setId($id)
-    {
+    public function setId($id) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Id', $this->id, $id);
         $this->id = $id;
         return $this;
     }
@@ -178,8 +175,7 @@ class Produto
      * Retorna a descrição do produto
      * @return string
      */
-    public function getDescricao()
-    {
+    public function getDescricao() {
         return $this->descricao;
     }
 
@@ -187,8 +183,9 @@ class Produto
      * Informa a descriação (nome) do produto
      * @param string $descricao 
      */
-    public function setDescricao($descricao)
-    {
+    public function setDescricao($descricao) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Descrição do produto', $this->descricao, $descricao);
         $this->descricao = $descricao;
         return $this;
     }
@@ -197,8 +194,7 @@ class Produto
      * Retorna a grade do produto
      * @return string
      */
-    public function getGrade()
-    {
+    public function getGrade() {
         return $this->grade;
     }
 
@@ -206,8 +202,9 @@ class Produto
      * Informa a grade do produto
      * @param string $grade 
      */
-    public function setGrade($grade)
-    {
+    public function setGrade($grade) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Grade', $this->grade, $grade);
         $this->grade = $grade;
         return $this;
     }
@@ -216,8 +213,7 @@ class Produto
      * Retorna o fabricante do produto
      * @return Fabricante
      */
-    public function getFabricante()
-    {
+    public function getFabricante() {
         return $this->fabricante;
     }
 
@@ -225,8 +221,7 @@ class Produto
      * Informa o fabricante do produto
      * @param Fabricante $fabricante 
      */
-    public function setFabricante(Fabricante $fabricante)
-    {
+    public function setFabricante(Fabricante $fabricante) {
         $this->fabricante = $fabricante;
         return $this;
     }
@@ -235,8 +230,7 @@ class Produto
      * Retorna a classe que o produto pertence 
      * @return Classe
      */
-    public function getClasse()
-    {
+    public function getClasse() {
         return $this->classe;
     }
 
@@ -244,8 +238,7 @@ class Produto
      * Informa a qual classe o produto pertence
      * @param Classe $classe 
      */
-    public function setClasse(Classe $classe)
-    {
+    public function setClasse(Classe $classe) {
         $this->classe = $classe;
         return $this;
     }
@@ -254,8 +247,7 @@ class Produto
      * Retorna a tipoComercializacao que o produto pertence 
      * @return TipoComercializacao
      */
-    public function getTipoComercializacao()
-    {
+    public function getTipoComercializacao() {
         return $this->tipoComercializacao;
     }
 
@@ -263,30 +255,31 @@ class Produto
      * Informa a qual tipoComercializacao o produto pertence
      * @param TipoComercializacao $tipoComercializacao 
      */
-    public function setTipoComercializacao(TipoComercializacao $tipoComercializacao)
-    {
+    public function setTipoComercializacao(TipoComercializacao $tipoComercializacao) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Tipo de Comercialização', ( $this->tipoComercializacao == null ? null : $this->tipoComercializacao->getDescricao()), $tipoComercializacao->getDescricao());
         $this->tipoComercializacao = $tipoComercializacao;
         return $this;
     }
 
-    public function getCodigoBarrasBase()
-    {
+    public function getCodigoBarrasBase() {
         return $this->codigoBarrasBase;
     }
 
-    public function setCodigoBarrasBase($codigoBarrasBase)
-    {
+    public function setCodigoBarrasBase($codigoBarrasBase) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Código de barras base', $this->codigoBarrasBase, $codigoBarrasBase);
         $this->codigoBarrasBase = $codigoBarrasBase;
         return $this;
     }
 
-    public function getReferencia()
-    {
+    public function getReferencia() {
         return $this->referencia;
     }
 
-    public function setReferencia($referencia)
-    {
+    public function setReferencia($referencia) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Referência', $this->referencia, $referencia);
         $this->referencia = $referencia;
         return $this;
     }
@@ -295,8 +288,7 @@ class Produto
      * Adicona um volume que compoe o produto
      * @param Volume $volume 
      */
-    public function addVolume(Volume $volume)
-    {
+    public function addVolume(Volume $volume) {
         //$codigoSequencial = count($this->volumes);
         //$codigoSequencial++;
         //$volume->setCodigoSequencial($codigoSequencial);
@@ -309,8 +301,7 @@ class Produto
     /**
      * 
      */
-    public function getVolumes()
-    {
+    public function getVolumes() {
         return $this->volumes;
     }
 
@@ -318,8 +309,7 @@ class Produto
      * Adiciona uma embalagem que contem o produto
      * @param Embalagem $embalagem 
      */
-    public function addEmbalagem(Embalagem $embalagem)
-    {
+    public function addEmbalagem(Embalagem $embalagem) {
         $embalagem->setProduto($this);
         $this->embalagens[] = $embalagem;
         return $this;
@@ -328,8 +318,7 @@ class Produto
     /**
      * 
      */
-    public function getEmbalagens()
-    {
+    public function getEmbalagens() {
         return $this->embalagens;
     }
 
@@ -337,8 +326,7 @@ class Produto
      * Retorna a linha de separação a qual o produto pertence
      * @return LinhaSeparacao
      */
-    public function getLinhaSeparacao()
-    {
+    public function getLinhaSeparacao() {
         return $this->linhaSeparacao;
     }
 
@@ -346,19 +334,20 @@ class Produto
      * Informa a linha de separação a qual o produto pertence
      * @param LinhaSeparacao $linhaSeparacao 
      */
-    public function setLinhaSeparacao(LinhaSeparacao $linhaSeparacao)
-    {
+    public function setLinhaSeparacao(LinhaSeparacao $linhaSeparacao) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Linha de Separação', ( $this->linhaSeparacao == null ? null : $this->linhaSeparacao->getDescricao()), $linhaSeparacao->getDescricao());
         $this->linhaSeparacao = $linhaSeparacao;
         return $this;
     }
 
-    public function getNumVolumes()
-    {
+    public function getNumVolumes() {
         return $this->numVolumes;
     }
 
-    public function setNumVolumes($numVolumes)
-    {
+    public function setNumVolumes($numVolumes) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Número Volumes', $this->numVolumes, $numVolumes);
         $this->numVolumes = $numVolumes;
         return $this;
     }
@@ -366,8 +355,7 @@ class Produto
     /**
      * @return int
      */
-    public function getDiasVidaUtil()
-    {
+    public function getDiasVidaUtil() {
         return $this->diasVidaUtil;
     }
 
@@ -375,8 +363,9 @@ class Produto
      * @param int $diasVidaUtil
      * @return Produto
      */
-    public function setDiasVidaUtil($diasVidaUtil)
-    {
+    public function setDiasVidaUtil($diasVidaUtil) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Dias vida Util', $this->diasVidaUtil, $diasVidaUtil);
         $this->diasVidaUtil = $diasVidaUtil;
         return $this;
     }
@@ -384,8 +373,7 @@ class Produto
     /**
      * @return string
      */
-    public function getValidade()
-    {
+    public function getValidade() {
         return $this->validade;
     }
 
@@ -393,8 +381,9 @@ class Produto
      * @param string $validade
      * @return Produto
      */
-    public function setValidade($validade)
-    {
+    public function setValidade($validade) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Validade', $this->validade, $validade);
         $this->validade = $validade;
         return $this;
     }
@@ -402,72 +391,71 @@ class Produto
     /**
      * @param mixed $enderecoReferencia
      */
-    public function setEnderecoReferencia($enderecoReferencia)
-    {
+    public function setEnderecoReferencia($enderecoReferencia) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Endereço Referencia', $this->enderecoReferencia, $enderecoReferencia);
         $this->enderecoReferencia = $enderecoReferencia;
     }
 
     /**
      * @return mixed
      */
-    public function getEnderecoReferencia()
-    {
+    public function getEnderecoReferencia() {
         return $this->enderecoReferencia;
     }
 
     /**
      * @param float $percTolerancia
      */
-    public function setPercTolerancia($percTolerancia)
-    {
+    public function setPercTolerancia($percTolerancia) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Percentual de Tolerancia', $this->percTolerancia, $percTolerancia);
         $this->percTolerancia = $percTolerancia;
     }
 
     /**
      * @return float
      */
-    public function getPercTolerancia()
-    {
+    public function getPercTolerancia() {
         return $this->percTolerancia;
     }
 
     /**
      * @param float $toleranciaNominal
      */
-    public function setToleranciaNominal($toleranciaNominal)
-    {
+    public function setToleranciaNominal($toleranciaNominal) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Tolerancia Nominal', $this->toleranciaNominal, $toleranciaNominal);
         $this->toleranciaNominal = $toleranciaNominal;
     }
 
     /**
      * @return float
      */
-    public function getToleranciaNominal()
-    {
+    public function getToleranciaNominal() {
         return $this->toleranciaNominal;
     }
 
     /**
      * @return mixed
      */
-    public function getIdProduto()
-    {
+    public function getIdProduto() {
         return $this->idProduto;
     }
 
     /**
      * @param mixed $idProduto
      */
-    public function setIdProduto($idProduto)
-    {
+    public function setIdProduto($idProduto) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Id Produto', $this->idProduto, $idProduto);
         $this->idProduto = $idProduto;
     }
 
     /**
      * @return string
      */
-    public function getPossuiPesoVariavel()
-    {
+    public function getPossuiPesoVariavel() {
         return $this->possuiPesoVariavel;
     }
 
@@ -475,8 +463,9 @@ class Produto
      * @param string $possuiPesoVariavel
      * @return Produto
      */
-    public function setPossuiPesoVariavel($possuiPesoVariavel)
-    {
+    public function setPossuiPesoVariavel($possuiPesoVariavel) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Possui peso variavel', $this->possuiPesoVariavel, $possuiPesoVariavel);
         $this->possuiPesoVariavel = $possuiPesoVariavel;
         return $this;
     }

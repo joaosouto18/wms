@@ -703,8 +703,8 @@ class Integracao
                     $pedido->setCarga($row['CARGA']);
                     $pedido->setPlaca($row['PLACA']);
                     $pedido->setPedido($row['PEDIDO']);
-                    $pedido->setCodPraca($row['COD_PRACA']);
-                    $pedido->setDscPraca($row['DSC_PRACA']);
+                    $pedido->setCodPraca((isset($row['COD_PRACA']) && !empty($row['COD_PRACA']))? $row['COD_PRACA'] : null);
+                    $pedido->setDscPraca((isset($row['DSC_PRACA']) && !empty($row['DSC_PRACA']))? $row['DSC_PRACA'] : null);
                     $pedido->setCodRota($row['COD_ROTA']);
                     $pedido->setDscRota($row['DSC_ROTA']);
                     $pedido->setCodCliente($row['COD_CLIENTE']);
