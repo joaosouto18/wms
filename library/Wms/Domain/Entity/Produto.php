@@ -257,7 +257,7 @@ class Produto {
      */
     public function setTipoComercializacao(TipoComercializacao $tipoComercializacao) {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this, 'Tipo de Comercialização', $this->tipoComercializacao, $tipoComercializacao);
+        $andamentoRepo->checksChange($this, 'Tipo de Comercialização', $this->tipoComercializacao->getDescricao(), $tipoComercializacao->getDescricao());
         $this->tipoComercializacao = $tipoComercializacao;
         return $this;
     }
