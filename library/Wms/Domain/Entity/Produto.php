@@ -383,7 +383,7 @@ class Produto {
      */
     public function setValidade($validade) {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this, 'Validade', $this->validade, $validade->format('d/m/Y'));
+        $andamentoRepo->checksChange($this, 'Validade', $this->validade, $validade);
         $this->validade = $validade;
         return $this;
     }
