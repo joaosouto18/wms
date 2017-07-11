@@ -372,7 +372,7 @@ class Embalagem {
      */
     public function setDataInativacao($dataInativacao) {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-//        $andamentoRepo->checksChange($this->getProduto(), 'Data de Inativação', $this->dataInativacao, $dataInativacao);
+        $andamentoRepo->checksChange($this->getProduto(), 'Data de Inativação', $this->dataInativacao, $dataInativacao);
         $this->dataInativacao = $dataInativacao;
     }
 
