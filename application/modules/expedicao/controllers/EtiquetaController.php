@@ -471,7 +471,7 @@ class Expedicao_EtiquetaController  extends Action
                 $this->addFlashMessage('error', 'Não existe volume embalado para ser reimpresso!');
                 $this->_redirect('/expedicao/index');
             }
-            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105, 75));
+            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75, 45));
             $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$mapaSeparacaoEmbaladoRepo);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
