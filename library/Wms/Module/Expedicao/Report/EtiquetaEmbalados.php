@@ -17,7 +17,7 @@ class EtiquetaEmbalados extends eFPDF
         $this->SetMargins(3, 1.5, 0);
         $this->SetAutoPageBreak(0,0);
 
-        self::bodyExpedicaoModelo2($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
+        self::bodyExpedicaoModelo1($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
 
         $this->Output('Volume-Embalado.pdf','I');
         exit;
