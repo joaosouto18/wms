@@ -39,11 +39,6 @@ class ComparativoEstoque extends Grid
                     'index' => 'ESTOQUE_AVARIA',
                     'render' => 'N3'
                 ));
-                $this->addColumn(array(
-                    'label' => 'Divergência',
-                    'index' => 'DIVERGENCIA',
-//                    'render' => 'N3'
-                ));
         $this->setShowExport(false);
         $pg = new Pager(count($restult),0,count($restult));
         $this->setPager($pg);
