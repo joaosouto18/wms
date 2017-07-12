@@ -43,7 +43,7 @@ INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRA
  * INTEGRAÇÃO DE ESTOQUE
  */
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
-  VALUES (2,1,'select e.codprod as COD_PRODUTO, e.qtestger as ESTOQUE_GERENCIAL, sum(e.qtestger-e.qtreserv-e.qtbloqueada) as ESTOQUE_DISPONIVEL, trunc(sum(e.qtestger*e.custoultent),2) VALOR_ESTOQUE, trunc(e.custoultent,2) CUSTO_UNITARIO, p.qtunit FATOR_UNIDADE_VENDA, p.unidade DSC_UNIDADE from pcest e, pcprodut p where e.codprod=p.codprod and e.codfilial=:codFilial AND e.qtestger > 0 group by e.codprod,e.qtestger,e.custoultent,p.qtunit,p.unidade',
+  VALUES (2,1,'select e.codprod as COD_PRODUTO, e.qtestger as ESTOQUE_GERENCIAL, sum(e.qtestger-e.qtreserv-e.qtbloqueada) as ESTOQUE_DISPONIVEL, trunc(sum(e.qtestger*e.custoultent),2) VALOR_ESTOQUE, trunc(e.custoultent,2) CUSTO_UNITARIO, p.qtunit FATOR_UNIDADE_VENDA, p.unidade DSC_UNIDADE, qtindeniz as ESTOQUE_AVARIA from pcest e, pcprodut p where e.codprod=p.codprod and e.codfilial=:codFilial AND e.qtestger > 0 group by e.codprod,e.qtestger,e.custoultent,p.qtunit,p.unidade, qtindeniz ',
   601,'S',NULL);
 
 /*
@@ -182,13 +182,13 @@ INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRA
   VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 610, ' AND m.dtmovlog > TO_DATE('||''':?1'''||','||'''DD/MM/YYYY HH24:MI:SS'''||') ');
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
-  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 611, ' AND n.numnota = :?1 AND n.serie = :?2 AND f.fornecedor = :?3 ');
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 611, ' AND n.numnota = :?1 AND n.serie = :?2 AND n.codfornec = :?3 ');
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
-  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 612, ' AND n.numnota IN (:?1) AND n.serie IN (:?2) AND f.fornecedor IN (:?3) ');
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 612, ' AND n.numnota IN (:?1) AND n.serie IN (:?2) AND n.codfornec IN (:?3) ');
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
-  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 613, ' AND n.numnota BETWEEN :?1 AND :?2 AND n.serie BETWEEN :?3 AND :?4 AND f.fornecedor IN (:?5) ');
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 613, ' AND n.numnota BETWEEN :?1 AND :?2 AND n.serie BETWEEN :?3 AND :?4 AND n.codfornec IN (:?5) ');
 
 /*
  * INTEGRAÇÃO DE CORTES COM ERP

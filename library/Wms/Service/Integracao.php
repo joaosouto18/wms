@@ -466,7 +466,9 @@ class Integracao
         $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
         $idIntegracao = $parametroRepo->findOneBy(array('constante' => 'ID_INTEGRACAO_PRODUTOS'));
         $acaoEn = $acaoIntegracaoRepo->find($idIntegracao->getValor());
-        $options[] = implode(',',$idProdutos);
+        $produtos = implode(',',$idProdutos);
+        if ($produtos == "") $produtos = "0";
+        $options[] = $produtos;
         $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
 
         if ($this->getTipoExecucao() == "L") {

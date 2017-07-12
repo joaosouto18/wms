@@ -179,7 +179,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 			$produtoEntity->setPossuiPesoVariavel((isset($possuiPesoVariavel) && !empty($possuiPesoVariavel))? $possuiPesoVariavel : "N");
 
 			$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
-			$produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
+            if ($produtoEntity->getId() == null) {
+                $produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
+            }
 
 			if (isset($values['fornecedor']) && !empty($values['fornecedor']))
 				$this->saveFornecedorReferencia($em, $values, $produtoEntity);
@@ -537,18 +539,23 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 				switch ($acao) {
 					case 'incluir':
 						$normaPaletizacaoEntity = new NormaPaletizacaoEntity;
-						$normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
-						$andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:
-			  '.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+						$normasPaletizacao[$key]['id'] = $en->getId();
+
+                        if ($normaPaletizacaoEntity != $en) {
+                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:'.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+                        }
 						break;
 					case 'alterar':
 
 						$normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
-						$andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização alterada. Unitizador:
-			  '.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+						$normasPaletizacao[$key]['id'] = $en->getId();
 
-						$normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
-						break;
+                        if ($en != $normaPaletizacaoEntity) {
+                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização alterada. Unitizador:'.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+                        }
+                    break;
 				}
 			}
 		}
@@ -635,18 +642,23 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 				switch ($acao) {
 					case 'incluir':
 						$normaPaletizacaoEntity = new NormaPaletizacaoEntity;
-						$normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+						$normasPaletizacao[$key]['id'] = $en->getId();
 
-						$andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:
-			  '.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+                        if ($en != $normaPaletizacaoEntity) {
+                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:'.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+                        }
+
 						break;
 					case 'alterar':
 						$normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
-						$andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização alterada. Unitizador:
-			  '.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+						$normasPaletizacao[$key]['id'] = $en->getId();
 
-						$normasPaletizacao[$key]['id'] = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
-						break;
+                        if ($en != $normaPaletizacaoEntity) {
+                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização alterada. Unitizador:'.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+                        }
+                        break;
 				}
 			}
 		}
