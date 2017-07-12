@@ -640,7 +640,7 @@ class Integracao
             foreach ($arrayProdutos as $produto) {
                 $embalagensObj = array();
                 foreach ($produto['embalagem'] as $embalagem) {
-                    if ($parametroEmbalagemAtiva == 'S') {
+                    if ($parametroEmbalagemAtiva->getValor() == 'S') {
                         $embalagem['ativa'] = 'S';
                     }
                     if ($embalagem['ativa'] == 'S') {
