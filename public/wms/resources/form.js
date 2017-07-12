@@ -17,8 +17,10 @@
             mousey = mouse.pageY;
         });
         $('.gTdOpcRow').hover(function () {
-            if (($('body').height() - (mousey)) <= ($(this).find('.gOpcRow ul li ul').height()  + $(window).scrollTop())) {
-                $(this).find('.gOpcRow ul li ul').css('top', '-100px');
+            if (($('body').height() - (mousey)) <= ($(this).find('.gOpcRow ul li ul').height() + $(window).scrollTop())) {
+                if ($(this).find('.gOpcRow ul li ul').height() > 150) {
+                    $(this).find('.gOpcRow ul li ul').css('top', '-200px');
+                }
             } else {
                 $(this).find('.gOpcRow ul li ul').css('top', '0px');
             }
