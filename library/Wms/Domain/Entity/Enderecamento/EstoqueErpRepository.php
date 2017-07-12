@@ -10,16 +10,22 @@ class EstoqueErpRepository extends EntityRepository
     public function getProdutosDivergentesByInventario($idInventario,$params) {
 
         $where = '';
+
+        $fieldEstoqueERP = 'NVL(ERP.ESTOQUE_GERENCIAL,0)';
+        if ($params['desconsideraAvaria'] == 'S') {
+            $fieldEstoqueERP = "(" . $fieldEstoqueERP . " - NVL(ERP.ESTOQUE_AVARIA,0))";
+        }
+
         if ($params['divergencia'] == 'S') {
-            $where .= ' AND NVL(WMS.QTD,0) <> NVL(ERP.ESTOQUE_GERENCIAL,0)';
+            $where .= ' AND NVL(WMS.QTD,0) <> ' . $fieldEstoqueERP;
         } elseif ($params['divergencia'] == 'N') {
-            $where .= ' AND NVL(WMS.QTD,0) = NVL(ERP.ESTOQUE_GERENCIAL,0)';
+            $where .= ' AND NVL(WMS.QTD,0) = ' . $fieldEstoqueERP;
         }
 
         if ($params['tipoDivergencia'] == 'S') {
-            $where .= ' AND NVL(WMS.QTD,0) > NVL(ERP.ESTOQUE_GERENCIAL,0)';
+            $where .= ' AND NVL(WMS.QTD,0) > ' . $fieldEstoqueERP;
         } elseif ($params['tipoDivergencia'] == 'F') {
-            $where .= ' AND NVL(WMS.QTD,0) < NVL(ERP.ESTOQUE_GERENCIAL,0)';
+            $where .= ' AND NVL(WMS.QTD,0) < '. $fieldEstoqueERP;
         }
 
         if ($params['estoqueErp'] == 'S') {
@@ -44,6 +50,7 @@ class EstoqueErpRepository extends EntityRepository
                P.DSC_PRODUTO,
                NVL(ERP.ESTOQUE_GERENCIAL,0) as ESTOQUE_ERP,
                NVL(WMS.QTD,0) as ESTOQUE_WMS,
+               NVL(ERP.ESTOQUE_AVARIA,0) as ESTOQUE_AVARIA,
                NVL(WMS.QTD,0) - NVL(ERP.ESTOQUE_GERENCIAL,0) DIVERGENCIA
           FROM ESTOQUE_ERP ERP
           FULL OUTER JOIN (SELECT E.COD_PRODUTO,

@@ -40,7 +40,7 @@ class NormaPaletizacaoRepository extends EntityRepository
         $em->flush();
 
         // atualiza id no array de normas de paletizacao
-        return $normaPaletizacaoEntity->getId();
+        return $normaPaletizacaoEntity;
     }
 
     public function getUnitizadoresByProduto($codProduto, $grade) {
