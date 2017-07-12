@@ -92,7 +92,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             $this->getEntityManager()->commit();
         }
 
-        $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75, 45));
+        $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105, 75));
         $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$mapaSeparacaoEmbaladoRepo);
 
     }
