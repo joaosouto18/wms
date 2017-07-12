@@ -14,9 +14,11 @@ class AndamentoRepository extends EntityRepository {
      */
     public function save($idProduto, $grade, $usuarioId = false, $observacao = false, $flush = true, $integracao = false) {
         $usuario = null;
-        if ($integracao == false) {
-//            $usuarioId = ($usuarioId) ? $usuarioId : \Zend_Auth::getInstance()->getIdentity()->getId();
-//            $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+        if ($integracao == false && is_object(\Zend_Auth::getInstance())) {
+            if (is_object(\Zend_Auth::getInstance()->getIdentity())) {
+                $usuarioId = ($usuarioId) ? $usuarioId : \Zend_Auth::getInstance()->getIdentity()->getId();
+                $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+            }
         }
 
         $andamento = new Andamento();
@@ -36,12 +38,20 @@ class AndamentoRepository extends EntityRepository {
     }
 
     public function checksChange($oject, $field, $value, $newValue) {
-        if ($value != $newValue) {
-            if ($value != null) {
-                $url = $_SERVER['REQUEST_URI'];
-                $obs = "$field alterado(a) de " . $value . ' para ' . $newValue . ' - URL: ' . $url;
-                $this->save($oject->getId(), $oject->getGrade(), false, $obs, false);
+        $alterou = false;
+
+        if ($value != null) {
+            if (is_numeric($value)) {
+                if (str_replace(",",".",$newValue) != $value) $alterou = true;
+            } else {
+                if ($value != $newValue) $alterou = true;
             }
+        }
+
+        if ($alterou === true) {
+            $url = $_SERVER['REQUEST_URI'];
+            $obs = "$field alterado(a) de " . $value . ' para ' . $newValue . ' - URL: ' . $url;
+            $this->save($oject->getId(), $oject->getGrade(), false, $obs, false);
         }
     }
 

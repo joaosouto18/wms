@@ -22,7 +22,7 @@ class AuditoriaRepository extends EntityRepository
         
         $usuario = $em->getReference('wms:Usuario', (int) $usuarioId);
         $recurso = $em->getReference('wms:Sistema\Recurso', (int) $recursoId);
-	$deposito = $em->getReference('wms:Deposito', (int) $sessao->idDepositoLogado);
+	    $deposito = $em->getReference('wms:Deposito', (int) $sessao->idDepositoLogado);
         $filial = $em->getReference('wms:Filial', (int) $deposito->getIdFilial());
 
         $auditoriaEntity = new AuditoriaEntity;

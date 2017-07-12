@@ -1035,7 +1035,7 @@ class MapaSeparacao extends eFPDF {
 
                 $endereco = $produto->getDepositoEndereco();
                 $codProduto = $produto->getCodProduto();
-                $descricao = utf8_decode($produto->getProduto()->getDescricao());
+                $descricao = self::SetStringByMaxWidth(utf8_decode($produto->getProduto()->getDescricao()), 90);
                 $referencia = $produto->getProduto()->getReferencia();
                 $quantidade = $produto->getQtdSeparar();
                 $caixas = $produto->getNumCaixaInicio() . ' - ' . $produto->getNumCaixaFim();
@@ -1052,7 +1052,7 @@ class MapaSeparacao extends eFPDF {
                 if ($tipoQebra == true) {
                     $this->Cell(21, 4, $dscEndereco, 0, 0);
                     $this->Cell(13, 4, $codProduto, 0, 0);
-                    $this->Cell(90, 4, substr($descricao, 0, 45), 0, 0);
+                    $this->Cell(90, 4, $descricao, 0, 0);
                     $this->Cell(20, 4, $codigoBarras, 0, 0);
                     $this->Cell(25, 4, $referencia, 0, 0);
                     $this->Cell(10, 4, $embalagem, 0, 0);
@@ -1062,7 +1062,7 @@ class MapaSeparacao extends eFPDF {
                 } else {
                     $this->Cell(21, 4, $dscEndereco, 0, 0);
                     $this->Cell(13, 4, $codProduto, 0, 0);
-                    $this->Cell(90, 4, substr($descricao, 0, 45), 0, 0);
+                    $this->Cell(90, 4, $descricao, 0, 0);
                     $this->Cell(20, 4, $codigoBarras, 0, 0);
                     $this->Cell(25, 4, $referencia, 0, 0);
                     $this->Cell(10, 4, $embalagem, 0, 0);
@@ -1077,7 +1077,9 @@ class MapaSeparacao extends eFPDF {
             /**
              * Cria rodape
              */
-            $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total);
+            if ($contadorPg > 0) {
+                $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total);
+            }
         }
         /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
         $ExpedicaoEntity = $expedicaoRepo->find($idExpedicao);
@@ -1174,7 +1176,7 @@ class MapaSeparacao extends eFPDF {
         $object->SetFont('Arial', 'B', 10);
         $object->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
         $object->SetFont('Arial', null, 10);
-        $object->Cell(120, 6, self::SetStringByMaxWidth(utf8_decode($this->quebrasEtiqueta), 120),0,0);
+        $object->Cell(120, 6, self::SetStringByMaxWidth(utf8_decode($this->quebrasEtiqueta), 120), 0, 0);
         $object->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
 
         $object->SetFont('Arial', 'B', 9);

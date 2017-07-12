@@ -179,10 +179,14 @@ class AcaoIntegracaoRepository extends EntityRepository
             $conexaoEn = $acaoEn->getConexao();
 
             if ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
+                $data = $acaoEn->getDthUltimaExecucao();
+                if ($data == null) {
+                    $data = new \DateTime();
+                }
                 if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
-                    $options[] = $acaoEn->getDthUltimaExecucao()->format("Y-m-d");
+                    $options[] = $data->format("Y-m-d");
                 } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE) {
-                    $options[] = $acaoEn->getDthUltimaExecucao()->format("d/m/Y H:i:s");
+                    $options[] = $data->format("d/m/Y H:i:s");
                 }
             }
 
