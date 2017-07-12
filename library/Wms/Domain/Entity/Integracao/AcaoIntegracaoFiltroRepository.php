@@ -27,7 +27,9 @@ class AcaoIntegracaoFiltroRepository extends EntityRepository
         $query = $acaoEn->getQuery();
 
         $acaoIntegracaoFiltroEntity = $this->findOneBy(array('acaoIntegracao' => $acaoEn->getId(),'tipoRegistro' => $filtro));
-        $query = str_replace(":where", $acaoIntegracaoFiltroEntity->getFiltro(), $query);
+        if ($acaoIntegracaoFiltroEntity != null) {
+            $query = str_replace(":where", $acaoIntegracaoFiltroEntity->getFiltro(), $query);
+        }
 
         if (!is_null($options)) {
             foreach ($options as $key => $value) {

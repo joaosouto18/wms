@@ -18,7 +18,7 @@
         });
         $('.gTdOpcRow').hover(function () {
             if (($('body').height() - (mousey)) <= ($(this).find('.gOpcRow ul li ul').height()  + $(window).scrollTop())) {
-                $(this).find('.gOpcRow ul li ul').css('top', '-130px');
+                $(this).find('.gOpcRow ul li ul').css('top', '-100px');
             } else {
                 $(this).find('.gOpcRow ul li ul').css('top', '0px');
             }
