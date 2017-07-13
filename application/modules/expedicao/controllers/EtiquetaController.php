@@ -473,6 +473,8 @@ class Expedicao_EtiquetaController  extends Action
             }
             $modeloEtiqueta = $this->getSystemParameterValue('MODELO_VOLUME_EMBALADO');
 
+            var_dump($this->getSystemParameterValue('TAMANHO_ETIQUETA_VOLUME_EMBALADO'));
+            exit;
             $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array($this->getSystemParameterValue('TAMANHO_ETIQUETA_VOLUME_EMBALADO')));
             $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta);
 
