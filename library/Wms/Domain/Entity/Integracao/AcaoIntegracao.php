@@ -60,6 +60,11 @@ class AcaoIntegracao
     protected $dthUltimaExecucao;
 
     /**
+     * @Column(name="IND_EXECUCAO", type="string", nullable=true)
+     */
+    protected $indExecucao;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -153,6 +158,22 @@ class AcaoIntegracao
     public function setDthUltimaExecucao($dthUltimaExecucao)
     {
         $this->dthUltimaExecucao = $dthUltimaExecucao;
+    }
+
+    /**
+     * @param mixed $indExecucao
+     */
+    public function setIndExecucao($indExecucao)
+    {
+        $this->indExecucao = $indExecucao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIndExecucao()
+    {
+        return $this->indExecucao;
     }
 
 }
