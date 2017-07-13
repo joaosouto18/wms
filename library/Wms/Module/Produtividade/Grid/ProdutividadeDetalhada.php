@@ -73,7 +73,7 @@ class ProdutividadeDetalhada extends Grid
                 
 
         $this->setShowExport(true);
-        $pg = new Pager(count($params),0,count($params));
+        $pg = new Pager((count($params) - 1),0,count($params));
         $this->setPager($pg);
         return $this;
     }
