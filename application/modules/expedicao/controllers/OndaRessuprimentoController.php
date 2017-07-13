@@ -71,6 +71,7 @@ class Expedicao_OndaRessuprimentoController  extends Action
             }
 
             ini_set('max_execution_time', 300);
+            ini_set('memory_limit', '-1');
 
             $result = $expedicaoRepo->gerarOnda($expedicoes);
             ini_set('max_execution_time', 30);

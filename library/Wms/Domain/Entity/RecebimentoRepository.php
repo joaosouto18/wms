@@ -1615,10 +1615,16 @@ class RecebimentoRepository extends EntityRepository {
                    B.COD_BOX AS idBox,
                    S.DSC_SIGLA AS status,
                    S.COD_SIGLA AS idStatus,
-                   P.NOM_PESSOA AS fornecedor,
                    OS.COD_OS AS idOrdemServicoManual,
                    OS2.COD_OS AS idOrdemServicoColetor,
                    'S' AS indImprimirCB,
+                   (
+                        SELECT 
+                        LISTAGG(P.NOM_PESSOA, ', ') WITHIN GROUP (ORDER BY NF4.COD_FORNECEDOR) AS fornecedor
+                        FROM (SELECT DISTINCT COD_FORNECEDOR, COD_RECEBIMENTO FROM NOTA_FISCAL)  NF4
+                        INNER JOIN PESSOA P ON (NF4.COD_FORNECEDOR = P.COD_PESSOA)
+                        WHERE NF4.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
+                    ) AS fornecedor,
                     (
                         SELECT 
                         COUNT(NF2.COD_NOTA_FISCAL)
@@ -1658,7 +1664,6 @@ class RecebimentoRepository extends EntityRepository {
                    INNER JOIN RECEBIMENTO R ON (NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
                    LEFT JOIN BOX B ON (R.COD_BOX = B.COD_BOX)
                    INNER JOIN SIGLA S ON (R.COD_STATUS = S.COD_SIGLA)
-                   INNER JOIN PESSOA P ON (NF.COD_FORNECEDOR = P.COD_PESSOA)
                    LEFT JOIN ORDEM_SERVICO OS ON (NF.COD_RECEBIMENTO = OS.COD_RECEBIMENTO AND OS.COD_FORMA_CONFERENCIA = 'M' AND OS.DTH_FINAL_ATIVIDADE IS NULL)
                    LEFT JOIN ORDEM_SERVICO OS2 ON (NF.COD_RECEBIMENTO = OS2.COD_RECEBIMENTO AND OS2.COD_FORMA_CONFERENCIA = 'C' AND OS2.DTH_FINAL_ATIVIDADE IS NULL)
                  WHERE 

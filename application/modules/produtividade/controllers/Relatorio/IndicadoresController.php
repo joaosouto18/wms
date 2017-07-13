@@ -22,7 +22,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $this->view->form = $form;
 
         $hoje = date('d/m/Y');
-        $procedureSQL = "CALL PROC_ATUALIZA_APONTAMENTO('$hoje','$hoje')";
+        $procedureSQL = "CALL PROC_PRODUTIVIDADE_DETALHE('$hoje','$hoje')";
 
         $procedure = $this->em->getConnection()->prepare($procedureSQL);
         $procedure->execute();
@@ -40,12 +40,12 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
         $sqlOrderTipo = "";
         if ($tipo == 'detalhado' ) {
-            $sqlOrderTipo = " TO_CHAR(AP.DTH_ATIVIDADE,'DD/MM/YYYY'), ";
+            $sqlOrderTipo = " TO_CHAR(P.DTH_INICIO,'DD/MM/YYYY'), ";
         }
         if ($orientacao == 'atividade') {
-            $SQLOrder = " ORDER BY $sqlOrderTipo AP.DSC_ATIVIDADE, PE.NOM_PESSOA ";
+            $SQLOrder = " ORDER BY $sqlOrderTipo P.DSC_ATIVIDADE, PE.NOM_PESSOA ";
         } else {
-            $SQLOrder = " ORDER BY $sqlOrderTipo PE.NOM_PESSOA, AP.DSC_ATIVIDADE";
+            $SQLOrder = " ORDER BY $sqlOrderTipo PE.NOM_PESSOA, P.DSC_ATIVIDADE";
         }
 
         $SQLWHere = "";
@@ -55,25 +55,25 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
         $sql = "SELECT ";
         if ($tipo == 'detalhado') {
-            $sql .= " TO_CHAR(AP.DTH_ATIVIDADE,'DD/MM/YYYY') as DIA,";
+            $sql .= " TO_CHAR(P.DTH_INICIO,'DD/MM/YYYY') as DIA,";
         }
-        $sql .=      " AP.DSC_ATIVIDADE,
+        $sql .=      " P.DSC_ATIVIDADE,
                        PE.NOM_PESSOA,
-                       SUM(AP.QTD_PRODUTOS)as QTD_PRODUTOS,
-                       SUM(AP.QTD_VOLUMES) as QTD_VOLUMES,
-                       SUM(AP.QTD_CUBAGEM) as QTD_CUBAGEM,
-                       SUM(AP.QTD_PESO)    as QTD_PESO,
-                       SUM(AP.QTD_PALETES) as QTD_PALETES,
-                       SUM(AP.QTD_CARGA)   as QTD_CARGA
-                   FROM APONTAMENTO_PRODUTIVIDADE AP
-                  INNER JOIN PESSOA PE ON PE.COD_PESSOA = AP.COD_PESSOA
-                  WHERE TO_DATE(AP.DTH_ATIVIDADE) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
+                       COUNT(P.QTD_PRODUTOS)as QTD_PRODUTOS,
+                       SUM(P.QTD_VOLUMES) as QTD_VOLUMES,
+                       SUM(P.QTD_CUBAGEM) as QTD_CUBAGEM,
+                       SUM(P.QTD_PESO)    as QTD_PESO,
+                       SUM(P.QTD_PALETES) as QTD_PALETES,
+                       SUM(P.QTD_CARGA)   as QTD_CARGA
+                   FROM PRODUTIVIDADE_DETALHE P
+                  INNER JOIN PESSOA PE ON PE.COD_PESSOA = P.COD_PESSOA
+                  WHERE TO_DATE(P.DTH_INICIO) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
                   $SQLWHere
                   GROUP BY ";
         if ($tipo == 'detalhado') {
-            $sql .= " TO_CHAR(AP.DTH_ATIVIDADE,'DD/MM/YYYY'), ";
+            $sql .= " TO_CHAR(P.DTH_INICIO,'DD/MM/YYYY'), ";
         }
-        $sql .= "AP.DSC_ATIVIDADE, PE.NOM_PESSOA" . $SQLOrder;
+        $sql .= "P.DSC_ATIVIDADE, PE.NOM_PESSOA" . $SQLOrder;
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
         $grid = new \Wms\Module\Produtividade\Grid\Produtividade();
         $this->view->grid = $grid->init($result,$orientacao,$tipo);

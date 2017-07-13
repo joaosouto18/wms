@@ -63,13 +63,13 @@ class FormProdutividadeDetalhada extends Form {
             'label' => 'Atividade:',
             'value' => 'operacao',
             'multiOptions' => array(
-                'CONF. RECEBIMENTO' => 'CONF. RECEBIMENTO',
-                'ENDERECAMENTO' => 'ENDERECAMENTO',
-                'DESCARREGAMENTO' => 'DESCARREGAMENTO',
-                'SEPARACAO' => 'SEPARACAO',
                 'CARREGAMENTO' => 'CARREGAMENTO',
+                'CONF. RECEBIMENTO' => 'CONF. RECEBIMENTO',
                 'CONF. SEPARACAO' => 'CONF. SEPARACAO',
+                'DESCARREGAMENTO' => 'DESCARREGAMENTO',
+                'ENDERECAMENTO' => 'ENDERECAMENTO',
                 'RESSUPRIMENTO' => 'RESSUPRIMENTO',
+                'SEPARACAO' => 'SEPARACAO',
             ),
             'decorators' => array('ViewHelper'),
         ));
