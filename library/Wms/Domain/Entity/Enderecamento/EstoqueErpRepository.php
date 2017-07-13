@@ -12,7 +12,7 @@ class EstoqueErpRepository extends EntityRepository
         $where = '';
 
         $fieldEstoqueERP = 'NVL(ERP.ESTOQUE_GERENCIAL,0)';
-        if ($params['desconsideraAvaria'] == 'S') {
+        if ($params['deduzirAvaria'] == 'S') {
             $fieldEstoqueERP = "(" . $fieldEstoqueERP . " - NVL(ERP.ESTOQUE_AVARIA,0))";
         }
 
@@ -48,7 +48,7 @@ class EstoqueErpRepository extends EntityRepository
         SELECT P.COD_PRODUTO,
                P.DSC_GRADE,
                P.DSC_PRODUTO,
-               NVL(ERP.ESTOQUE_GERENCIAL,0) as ESTOQUE_ERP,
+               $fieldEstoqueERP as ESTOQUE_ERP,
                NVL(WMS.QTD,0) as ESTOQUE_WMS,
                NVL(ERP.ESTOQUE_AVARIA,0) as ESTOQUE_AVARIA,
                NVL(WMS.QTD,0) - NVL(ERP.ESTOQUE_GERENCIAL,0) DIVERGENCIA

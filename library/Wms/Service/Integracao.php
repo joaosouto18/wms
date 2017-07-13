@@ -469,7 +469,7 @@ class Integracao
         $produtos = implode(',',$idProdutos);
         if ($produtos == "") $produtos = "0";
         $options[] = $produtos;
-        $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+//        $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
 
         if ($this->getTipoExecucao() == "L") {
             return $notasFiscais;
@@ -642,7 +642,7 @@ class Integracao
             foreach ($arrayProdutos as $produto) {
                 $embalagensObj = array();
                 foreach ($produto['embalagem'] as $embalagem) {
-                    if ($parametroEmbalagemAtiva == 'S') {
+                    if ($parametroEmbalagemAtiva->getValor() == 'S') {
                         $embalagem['ativa'] = 'S';
                     }
                     if ($embalagem['ativa'] == 'S') {

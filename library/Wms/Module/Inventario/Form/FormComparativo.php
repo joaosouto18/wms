@@ -30,7 +30,7 @@ class FormComparativo extends Form
             'S' => 'SIM',
             'N' => 'NÃO'
         );
-        $desconsideraAvaria = array(
+        $deduzirAvaria = array(
             'S' => 'SIM',
             'N' => 'NÃO'
         );
@@ -59,10 +59,10 @@ class FormComparativo extends Form
                 'label' => 'Divergência',
                 'multiOptions' => $divergenciaArray
             ))
-            ->addElement('select', 'desconsideraAvaria', array(
-                'label' => 'Desconsiderar Avaria no Comparativo',
+            ->addElement('select', 'deduzirAvaria', array(
+                'label' => 'Deduzir Avaria no Estoque ERP',
                 'mostrarSelecione' => false,
-                'multiOptions' => $desconsideraAvaria
+                'multiOptions' => $deduzirAvaria
             ))
             ->addElement('select', 'tipoDivergencia', array(
                 'label' => 'Tipo Divergência',
@@ -90,7 +90,7 @@ class FormComparativo extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('inventario', 'divergencia','desconsideraAvaria', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
+            ->addDisplayGroup(array('inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'deduzirAvaria', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
         );
     }
 }
