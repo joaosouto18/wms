@@ -51,7 +51,7 @@ INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUE
  */
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO,DSC_QUERY,COD_TIPO_ACAO_INTEGRACAO,IND_UTILIZA_LOG,DTH_ULTIMA_EXECUCAO)
   VALUES (3,1,
-  'SELECT c.numcar CARGA, v.placa PLACA, c.numped PEDIDO, c.codpraca COD_PRACA, pr.praca DSC_PRACA, pr.rota COD_ROTA, rota.descricao DSC_ROTA, c.codcli COD_CLIENTE, cli.cliente NOME, cli.cgcent CPF_CNPJ, cli.tipofj TIPO_PESSOA, cli.enderent LOGRADOURO, cli.numeroent NUMERO, cli.bairroent BAIRRO, cli.municent CIDADE, cli.estent UF, cli.complementoent COMPLEMENTO, cli.pontorefer REFERENCIA, cli.cepent CEP, i.codprod PRODUTO, '||'''UNICA'''||' GRADE, i.qt QTD, SUM(i.qt*i.pvenda) VLR_VENDA, TO_CHAR(TO_DATE(g.datamon || '||''' '''||'||g.horamon||'||''':'''||'||g.minutomon,'||'''DD/MM/YY HH24:MI:SS'''||'),'||'''DD/MM/YYYY HH24:MI:SS'''||') AS DTH FROM pcpedc c, pcpedi i, pcpraca pr, pcrotaexp rota, pcclient cli, pccarreg g, pcveicul v WHERE c.numped=i.numped AND c.codcli=cli.codcli AND pr.codpraca=c.codpraca AND pr.rota=rota.codrota AND c.numcar=g.numcar AND g.codveiculo=v.codveiculo AND c.posicao NOT IN ('||'''C'''||') AND g.datamon IS NOT NULL AND g.horamon IS NOT NULL AND g.minutomon IS NOT NULL :where GROUP BY c.numcar, v.placa, c.numped, c.codpraca, pr.praca, pr.rota, rota.descricao, c.codcli, cli.cliente, cli.cgcent, cli.tipofj, cli.enderent, cli.numeroent, cli.bairroent, cli.municent, cli.estent, cli.complementoent, cli.pontorefer, cli.cepent, i.codprod, i.qt, i.numseq, g.datamon, g.horamon, g.minutomon ORDER BY c.numped',
+  'SELECT c.numcar CARGA, v.placa PLACA, c.numped PEDIDO, c.codpraca COD_PRACA, pr.praca DSC_PRACA, pr.rota COD_ROTA, rota.descricao DSC_ROTA, c.codcli COD_CLIENTE, cli.cliente NOME, cli.cgcent CPF_CNPJ, cli.tipofj TIPO_PESSOA, cli.enderent LOGRADOURO, cli.numeroent NUMERO, cli.bairroent BAIRRO, cli.municent CIDADE, cli.estent UF, cli.complementoent COMPLEMENTO, cli.pontorefer REFERENCIA, cli.cepent CEP, i.codprod PRODUTO, '||'''UNICA'''||' GRADE, i.qt QTD, SUM(i.qt*i.pvenda) VLR_VENDA, TO_CHAR(TO_DATE(g.datamon || '||''' '''||'||g.horamon||'||''':'''||'||g.minutomon,'||'''DD/MM/YY HH24:MI:SS'''||'),'||'''DD/MM/YYYY HH24:MI:SS'''||') AS DTH FROM pcpedc c LEFT JOIN pcpedi i ON c.numped=i.numped LEFT JOIN pcpraca pr ON pr.codpraca=c.codpraca LEFT JOIN pcrotaexp rota ON pr.rota=rota.codrota LEFT JOIN pcclient cli ON c.codcli=cli.codcli LEFT JOIN pccarreg g ON c.numcar=g.numcar LEFT JOIN pcveicul v ON g.codveiculo=v.codveiculo WHERE 1 = 1 AND c.posicao IN ('||'''M'''||') AND g.datamon IS NOT NULL AND g.horamon IS NOT NULL AND g.minutomon IS NOT NULL :where GROUP BY c.numcar, v.placa, c.numped, c.codpraca, pr.praca, pr.rota, rota.descricao, c.codcli, cli.cliente, cli.cgcent, cli.tipofj, cli.enderent, cli.numeroent, cli.bairroent, cli.municent, cli.estent, cli.complementoent, cli.pontorefer, cli.cepent, i.codprod, i.qt, i.numseq, g.datamon, g.horamon, g.minutomon ORDER BY c.numped',
   602,'S',SYSDATE);
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
@@ -201,7 +201,7 @@ INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRA
   VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 14, 611, ' AND numcar in (:?1) ');
 
 UPDATE PARAMETRO SET DSC_VALOR_PARAMETRO = '6,13' WHERE DSC_PARAMETRO = 'COD_INTEGRACAO_NOTAS_FISCAIS';
-UPDATE PARAMETRO SET DSC_VALOR_PARAMETRO = '3' WHERE DSC_PARAMETRO = 'COD_INTEGRACAO_PEDIDOS';
+UPDATE PARAMETRO SET DSC_VALOR_PARAMETRO = '3,8' WHERE DSC_PARAMETRO = 'COD_INTEGRACAO_PEDIDOS';
 UPDATE PARAMETRO SET DSC_VALOR_PARAMETRO = '2' WHERE DSC_PARAMETRO = 'COD_ACAO_INTEGRACAO_ESTOQUE';
 UPDATE PARAMETRO SET DSC_VALOR_PARAMETRO = '4' WHERE DSC_PARAMETRO = 'COD_ACAO_INTEGRACAO_RESUMO_CONFERENCIA_EXPEDICAO';
 UPDATE PARAMETRO SET DSC_VALOR_PARAMETRO = '5' WHERE DSC_PARAMETRO = 'COD_ACAO_INTEGRACAO_CONFERENCIA_EXPEDICAO';
@@ -238,7 +238,7 @@ UPDATE PARAMETRO SET DSC_VALOR_PARAMETRO = 'S' WHERE DSC_PARAMETRO = 'IND_FINALI
  * INTEGRAÇÂO DE CANCELAMENTO DE CARGAS
  */
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO,DSC_QUERY,COD_TIPO_ACAO_INTEGRACAO,IND_UTILIZA_LOG,DTH_ULTIMA_EXECUCAO)
-  VALUES (17,1,'update pccarreg set numviasmapa = null, datamapa = null where 1 = 1 :where ',
+  VALUES (17,1,'update pccarreg set numviasmapa = 0, datamapa = null where 1 = 1 :where ',
   608,'S',SYSDATE);
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
