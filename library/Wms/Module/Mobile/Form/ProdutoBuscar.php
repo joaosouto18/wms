@@ -56,7 +56,7 @@ class ProdutoBuscar extends \Core\Form
                 ))
                 ->addElement('submit', 'submit', array(
                     'label' => 'Buscar',
-                    'class' => 'btn',
+                    'class' => 'btn gradientBtn',
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addDisplayGroup(

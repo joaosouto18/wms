@@ -31,12 +31,12 @@ class Login extends \Core\Form
 
 	$this->addElement('submit', 'submit', array(
 	    'label' => 'Entrar',
-	    'class' => 'btn',
+	    'class' => 'btn  gradientBtn',
             'decorators' => array('ViewHelper'),
 	));
 
 	$this->addDisplayGroup(
-		array('username', 'password', 'submit'), 'identification', array('legend' => 'Bem Vindo ao Wms-MS')
+		array('username', 'password', 'submit'), 'identification', array('legend' => 'Bem Vindo ao Wms')
 	);
     }
 
