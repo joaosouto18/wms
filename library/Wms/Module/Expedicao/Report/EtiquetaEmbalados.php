@@ -8,7 +8,7 @@ use Wms\Util\Barcode\eFPDF,
 class EtiquetaEmbalados extends eFPDF
 {
 
-    public function imprimirExpedicaoModelo1($volumePatrimonio,$mapaSeparacaoEmbaladoRepo)
+    public function imprimirExpedicaoModelo($volumePatrimonio,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta)
     {
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
@@ -17,15 +17,26 @@ class EtiquetaEmbalados extends eFPDF
         $this->SetMargins(3, 1.5, 0);
         $this->SetAutoPageBreak(0,0);
 
-        self::bodyExpedicaoModelo2($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
+        switch ($modeloEtiqueta) {
+            case 1:
+                //LAYOUT CASA DO CONFEITEIRO
+                self::bodyExpedicaoModelo1($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
+                break;
+            case 2:
+                //LAYOUT WILSO - ABRAFER ...
+                self::bodyExpedicaoModelo2($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
+                break;
+            default:
+                self::bodyExpedicaoModelo1($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
+                break;
 
+        }
         $this->Output('Volume-Embalado.pdf','I');
         exit;
     }
 
     private function bodyExpedicaoModelo1($volumes,$mapaSeparacaoEmbaladoRepo)
     {
-//        $this->SetFont('Arial', 'B', 20);
 
         foreach ($volumes as $volume) {
 
@@ -61,7 +72,6 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
             $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 6, 20 , 33, 9.5);
-//            $this->Image(APPLICATION_PATH . '/../public/img/logo_quebec.jpg', 32, 17, 18, 5);
         }
     }
 
@@ -118,35 +128,6 @@ class EtiquetaEmbalados extends eFPDF
             $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 45, 35 , 40, 13);
             $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 77, 0, 25, 12);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//            $this->SetFont('Arial', '', 10);
-//            $impressao = utf8_decode(substr('CARGA: '.$volume['COD_CARGA_EXTERNO']."\n",0,20));
-//            $this->MultiCell(110, 3.9, $impressao, 0, 'L');
-//
-//            $this->SetFont('Arial', '', 7);
-//
-//            $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
-//            if ($existeItensPendentes == false)
-//                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
-
-//            $this->MultiCell(110, 3.9, $impressao, 0, 'L');
-
-//            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 6, 20 , 33, 9.5);
-//            $this->Image(APPLICATION_PATH . '/../public/img/logo_quebec.jpg', 32, 17, 18, 5);
         }
     }
 }
