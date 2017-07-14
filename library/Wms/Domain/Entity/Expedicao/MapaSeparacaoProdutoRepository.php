@@ -191,7 +191,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                                   LEFT JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
                                  WHERE REE.COD_PEDIDO = '$idPedido'
                                    AND REE.COD_EXPEDICAO = '$idExpedicao'
-                                   AND RE.COD_DEPOSITO_ENDERECO = $$idEndereco
+                                   AND RE.COD_DEPOSITO_ENDERECO = $idEndereco
                                    AND REP.COD_PRODUTO = '$idProduto'
                                    AND REP.DSC_GRADE = '$dscGrade'
                                    AND RE.IND_ATENDIDA = 'N'";
