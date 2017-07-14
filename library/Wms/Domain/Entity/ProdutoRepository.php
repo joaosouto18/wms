@@ -1704,7 +1704,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       NVL(PES.NOM_PESSOA,'NÃO IDENTIFICADO') AS fornecedor, 
                       DE.DSC_DEPOSITO_ENDERECO AS endereco, 
                       TO_CHAR(E.DTH_VALIDADE,'DD/MM/YYYY') AS VALIDADE,
-                      SUM(E.QTD / PE.QTD_EMBALAGEM) AS qtd
+                      SUM(E.QTD) AS qtd
                   FROM ESTOQUE E 
                   INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
                   INNER JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE AND P.POSSUI_VALIDADE = 'S'
