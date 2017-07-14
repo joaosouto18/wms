@@ -673,20 +673,36 @@ class ExpedicaoRepository extends EntityRepository
     public function importaCortesERP($idExpedicao) {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
 
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
         $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
+        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
+
+        $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTES');
+        $idIntegracaoVerificaCargaFinalizada = $this->getSystemParameterValue('COD_INTEGRACAO_VERIFICA_CARGA_FINALIZADA');
+
+        $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
+        $acaoVerificaCargaFinalizadaEn = $acaoIntRepo->find($idIntegracaoVerificaCargaFinalizada);
 
         $cargaEntities = $cargaRepository->findBy(array('codExpedicao' => $idExpedicao));
         $cargas = array();
         foreach ($cargaEntities as $cargaEntity) {
-            $cargas[] = $cargaEntity->getCodCargaExterno();
+            $result = $acaoIntRepo->processaAcao($acaoVerificaCargaFinalizadaEn,array(0=>$cargaEntity->getCodCargaExterno()),'E',"P",null,611);
+            if ($result === false) {
+                $cargas[] = $cargaEntity->getCodCargaExterno();
+            } else if (is_string($result)) {
+                return $result;
+            } else {
+                $andamentoRepo->save("Carga " . $cargaEntity->getCodCargaExterno() . " se encontra faturada no ERP, não é possível consultar seus cortes", $idExpedicao);
+            }
         }
         $idCargas[] = implode(',',$cargas);
 
-        $idCorte= $this->getSystemParameterValue('COD_INTEGRACAO_CORTES');
-        $acaoEn = $acaoIntRepo->find($idCorte);
-        $result = $acaoIntRepo->processaAcao($acaoEn,$idCargas,'E',"P",null,611);
+        if (count($idCargas) >0) {
+            $result = $acaoIntRepo->processaAcao($acaoCorteEn,$idCargas,'E',"P",null,611);
+        }
+
 
         if (!($result === true)) {
             return $result;

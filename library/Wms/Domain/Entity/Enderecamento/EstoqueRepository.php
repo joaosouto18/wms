@@ -686,6 +686,7 @@ class EstoqueRepository extends EntityRepository
         $dadosPalete['idUma'] = 0;
         $dadosPalete['endereco'] = $endereco;
         $dadosPalete['qtd'] = $quantidade;
+
         $paletes[] = $dadosPalete;
 
         $dadosRelatorio['idRecebimento'] = 0;

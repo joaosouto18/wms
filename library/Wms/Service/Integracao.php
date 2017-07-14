@@ -149,9 +149,23 @@ class Integracao
                     return true;
                 case AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
                     return true;
+                case AcaoIntegracao::INTEGRACAO_VERIFICA_CARGA_FINALIZADA:
+                    return $this->verificaCargasFaturadas($this->_dados);
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
+        }
+    }
+
+    public function verificaCargasFaturadas($result) {
+        if (count($result) ==0) {
+            throw new \Exception("Formato de dados incorreto na integração");
+        }
+
+        if ($result[0]['IND_CARGA_FATURADA'] == 'S') {
+            return true;
+        } else {
+            return false;
         }
     }
 
