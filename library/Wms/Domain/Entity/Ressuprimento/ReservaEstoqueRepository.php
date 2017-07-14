@@ -94,27 +94,30 @@ class ReservaEstoqueRepository extends EntityRepository
                 continue;
             }
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto $reservaProduto */
-            foreach ($reservaProdutos as $reservaProduto) {
-                foreach ($produtos as $produto) {
-                    if (($produto['codProduto'] == $reservaProduto->getProduto()->getId()) &&
-                        ($produto['grade'] == $reservaProduto->getProduto()->getGrade()) ) {
-                        if ($origemReserva == "U") {
-                            if (($reservaEstoqueEn->getEndereco()->getId() == $idEndereco) &&
-                                ($reservaProduto->getQtd() == $produto['qtd']) &&
-                                ($reservaEstoqueEn->getTipoReserva() == $tipoReserva)) {
+            if (is_array($reservaProdutos) && !empty($reservaProdutos)){
+                foreach ($reservaProdutos as $reservaProduto) {
+                    foreach ($produtos as $produto) {
+                        if (($produto['codProduto'] == $reservaProduto->getProduto()->getId()) &&
+                            ($produto['grade'] == $reservaProduto->getProduto()->getGrade()) ) {
+                            if ($origemReserva == "U") {
+                                if (($reservaEstoqueEn->getEndereco()->getId() == $idEndereco) &&
+                                    ($reservaProduto->getQtd() == $produto['qtd']) &&
+                                    ($reservaEstoqueEn->getTipoReserva() == $tipoReserva)) {
+                                    return $reservaEstoqueEn;
+                                }
+                            } elseif ($origemReserva == "O") {
+                                if (($reservaEstoqueEn->getTipoReserva() == $tipoReserva)) {
+                                    return $reservaEstoqueEn;
+                                }
+                            } elseif ($origemReserva == "E") {
                                 return $reservaEstoqueEn;
                             }
-                        } elseif ($origemReserva == "O") {
-                            if (($reservaEstoqueEn->getTipoReserva() == $tipoReserva)) {
-                                return $reservaEstoqueEn;
-                            }
-                        } elseif ($origemReserva == "E") {
-                            return $reservaEstoqueEn;
                         }
                     }
                 }
             }
         }
+        return null;
     }
 
     /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
