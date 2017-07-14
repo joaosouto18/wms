@@ -20,8 +20,8 @@ class ProdutosAVencer extends Pdf
         $this->Cell($this->body, 10, utf8_decode("Produtos vencidos ou à vencer até $dataReferencia"),0,0,"C");
     }
 
-    private function addProdutoRow($produto, $i)
-    { 
+    private function addProdutoRow($produto, $i, $produtoEmbalagemRepository)
+    {
         $lineH = $this->lineH;
 
         // LINHA 1
@@ -66,9 +66,20 @@ class ProdutosAVencer extends Pdf
         $str = self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[FORNECEDOR]"), $cellWidth);
         $this->Cell($cellWidth, $lineH, $str ,1 ,0 ,'' , true);
 
+        $qtdEstoque = $produtoEmbalagemRepository->getQtdEmbalagensProduto($produto['COD_PRODUTO'], $produto['GRADE'], $produto['QTD']);
+        if(!empty($qtdEstoque[0])){
+            $maiorEmbalagem = $qtdEstoque[0];
+        }else{
+            $maiorEmbalagem = ' - ';
+        }
+        if(!empty($vetEmbalagens[1])){
+            $menorEmbalagem = $vetEmbalagens[1];
+        }else{
+            $menorEmbalagem = ' - ';
+        }
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(220);
-        $this->Cell(40, $lineH, utf8_decode("Qtd em estoque: $produto[QTD]") ,1 ,0 ,'' , true);
+        $this->Cell(40, $lineH, utf8_decode('Qtd: ' . $maiorEmbalagem . $menorEmbalagem) ,1 ,0 ,'' , true);
 
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(175);
@@ -100,6 +111,9 @@ class ProdutosAVencer extends Pdf
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $produtoEmbalagemRepository = $em->getRepository('wms:Produto\Embalagem');
         $this->body = $this->pageW - (2 * $this->marginLeft);
 
         self::startPage($dataReferencia);
@@ -110,7 +124,7 @@ class ProdutosAVencer extends Pdf
                 self::startPage($dataReferencia);
                 $i = 0;
             }
-            self::addProdutoRow($produto, $i);
+            self::addProdutoRow($produto, $i, $produtoEmbalagemRepository);
             $i++;
         }
 
