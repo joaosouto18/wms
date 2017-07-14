@@ -18,6 +18,7 @@
  * 16 - 609 - SETANDO A CARGA COMO CONFERIDA NO WINTHOR
  * 17 - 608 - SETANDO A CARGA A SITUACAO INICIAL NO WINTHOR PARA PERMITIR CANCELAMENTO/ALTERAÇÃO DE CARGAS
  * 18 - 614 - VERIFICANDO SE A CARGA ESTA FATURADA
+ & 19 - 602 - NOTAS BALCÃO
  */
 
 DELETE FROM ACAO_INTEGRACAO_ANDAMENTO WHERE COD_ACAO_INTEGRACAO NOT IN (10,11,12);
@@ -269,3 +270,23 @@ INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRA
 
 UPDATE PARAMETRO SET DSC_VALOR_PARAMETRO = '18' WHERE DSC_PARAMETRO = 'COD_INTEGRACAO_VERIFICA_CARGA_FINALIZADA';
 
+
+/*
+ * NOTAS BALCÃO
+ */
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO,DSC_QUERY,COD_TIPO_ACAO_INTEGRACAO,IND_UTILIZA_LOG,DTH_ULTIMA_EXECUCAO)
+  VALUES (19,1,
+  'SELECT c.numcar CARGA, v.placa PLACA, c.numped PEDIDO, c.codpraca COD_PRACA, pr.praca DSC_PRACA, pr.rota COD_ROTA, rota.descricao DSC_ROTA, c.codcli COD_CLIENTE, cli.cliente NOME, cli.cgcent CPF_CNPJ, cli.tipofj TIPO_PESSOA, cli.enderent LOGRADOURO, cli.numeroent NUMERO, cli.bairroent BAIRRO, cli.municent CIDADE, cli.estent UF, cli.complementoent COMPLEMENTO, cli.pontorefer REFERENCIA, cli.cepent CEP, i.codprod PRODUTO, '||'''UNICA'''||' GRADE, i.qt QTD, SUM(i.qt*i.pvenda) VLR_VENDA, TO_CHAR(TO_DATE(g.datamon || '||''' '''||'||g.horamon||'||''':'''||'||g.minutomon,'||'''DD/MM/YY HH24:MI:SS'''||'),'||'''DD/MM/YYYY HH24:MI:SS'''||') AS DTH FROM pcpedc c LEFT JOIN pcpedi i ON c.numped=i.numped LEFT JOIN pcpraca pr ON pr.codpraca=c.codpraca LEFT JOIN pcrotaexp rota ON pr.rota=rota.codrota LEFT JOIN pcclient cli ON c.codcli=cli.codcli LEFT JOIN pccarreg g ON c.numcar=g.numcar LEFT JOIN pcveicul v ON g.codveiculo=v.codveiculo WHERE 1 = 1 AND pcpedc.origemped = ' || '''B''' || ' AND g.datamon IS NOT NULL AND g.horamon IS NOT NULL AND g.minutomon IS NOT NULL :where GROUP BY c.numcar, v.placa, c.numped, c.codpraca, pr.praca, pr.rota, rota.descricao, c.codcli, cli.cliente, cli.cgcent, cli.tipofj, cli.enderent, cli.numeroent, cli.bairroent, cli.municent, cli.estent, cli.complementoent, cli.pontorefer, cli.cepent, i.codprod, i.qt, i.numseq, g.datamon, g.horamon, g.minutomon ORDER BY c.numped',
+  602,'S',SYSDATE);
+
+INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 19, 610, ' AND TO_DATE(g.datamon || ' || ''' ''' || '||g.horamon||' || ''':''' || '||g.minutomon,' || '''DD/MM/YY HH24:MI:SS''' || ') > TO_DATE('||''':?1'''||','||'''DD/MM/YYYY HH24:MI:SS'''||') AND c.codfilial in ( :codFilial )');
+
+INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 19, 611, ' AND c.numcar = :?1 ');
+
+INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 19, 612, ' AND c.numcar IN (:?1) ');
+
+INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 19, 613, ' AND c.numcar BETWEEN :?1 AND :?2 ');

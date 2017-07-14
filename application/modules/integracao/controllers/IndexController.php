@@ -45,11 +45,13 @@ class Integracao_IndexController extends Core\Controller\Action\WebService
         $acaoEn = $acaoIntRepo->find($idAcao);
         $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E','P',null,$idFiltro);
 
+        /*
         if ($result === true) {
             $msg = 'Integração realizada com sucesso';
         } else {
             $msg = $result;
         }
+
 
         $filtroEn = $siglaRepo->find($idFiltro);
 
@@ -69,5 +71,6 @@ class Integracao_IndexController extends Core\Controller\Action\WebService
                 echo "<html> <br> </html>";
             }
         }
+        */
     }
 }
