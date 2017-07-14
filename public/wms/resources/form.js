@@ -41,6 +41,10 @@
                 //P
                 window.open( URL_SISTEMA + "/produto");
             }
+            if (e.which == 77 && pressedCtrl == true) {
+                //M
+                window.open( URL_SISTEMA + "/mobile");
+            }
         };
 
 
