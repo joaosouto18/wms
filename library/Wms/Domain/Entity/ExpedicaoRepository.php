@@ -713,7 +713,6 @@ class ExpedicaoRepository extends EntityRepository
                 return $result;
             }
         }
-
         if ($this->validaPedidosImpressos($idExpedicao) == false) {
             return 'Existem produtos sem etiquetas impressas';
         }
@@ -931,8 +930,9 @@ class ExpedicaoRepository extends EntityRepository
      * @param array $cargas
      * @return bool
      */
-    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false)
+    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false, $motivo = '')
     {
+        var_dump('her');die;
         $codCargaExterno = $this->validaCargaFechada($idExpedicao);
         if (isset($codCargaExterno) && !empty($codCargaExterno)) {
             return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
@@ -962,7 +962,7 @@ class ExpedicaoRepository extends EntityRepository
                     $andamentoRepo->save("Conferencia finalizada com sucesso via desktop", $expedicaoEntity->getId());
                     break;
                 case 'S':
-                    $andamentoRepo->save("Conferencia finalizada com sucesso via desktop com senha de autorização", $expedicaoEntity->getId());
+                    $andamentoRepo->save("Conferencia finalizada com sucesso via desktop com senha de autorização - Motivo: $motivo", $expedicaoEntity->getId());
                     break;
                 default:
                     $andamentoRepo->save("Expedição Finalizada com Sucesso", $expedicaoEntity->getId());
