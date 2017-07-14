@@ -66,20 +66,20 @@ class ProdutosAVencer extends Pdf
         $str = self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[FORNECEDOR]"), $cellWidth);
         $this->Cell($cellWidth, $lineH, $str ,1 ,0 ,'' , true);
 
-        $qtdEstoque = $produtoEmbalagemRepository->getQtdEmbalagensProduto($produto['COD_PRODUTO'], $produto['GRADE'], $produto['QTD']);
-        if(!empty($qtdEstoque[0])){
-            $maiorEmbalagem = $qtdEstoque[0];
-        }else{
-            $maiorEmbalagem = ' - ';
-        }
-        if(!empty($vetEmbalagens[1])){
-            $menorEmbalagem = $vetEmbalagens[1];
-        }else{
-            $menorEmbalagem = ' - ';
-        }
+//        $qtdEstoque = $produtoEmbalagemRepository->getQtdEmbalagensProduto($produto['COD_PRODUTO'], $produto['GRADE'], $produto['QTD']);
+//        if(!empty($qtdEstoque[0])){
+//            $maiorEmbalagem = $qtdEstoque[0];
+//        }else{
+//            $maiorEmbalagem = ' - ';
+//        }
+//        if(!empty($vetEmbalagens[1])){
+//            $menorEmbalagem = $vetEmbalagens[1];
+//        }else{
+//            $menorEmbalagem = ' - ';
+//        }
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(220);
-        $this->Cell(40, $lineH, utf8_decode('Qtd: ' . $maiorEmbalagem . $menorEmbalagem) ,1 ,0 ,'' , true);
+        $this->Cell(40, $lineH, utf8_decode('Qtd: ' . $produto['QTD_MAIOR'].'-'.$produto['QTD_MENOR']) ,1 ,0 ,'' , true);
 
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(175);
