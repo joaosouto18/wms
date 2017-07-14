@@ -699,13 +699,11 @@ class ExpedicaoRepository extends EntityRepository
         }
         $idCargas[] = implode(',',$cargas);
 
-        if (count($idCargas) >0) {
+        if ((count($idCargas) >0) && ($idCargas[0] != '')) {
             $result = $acaoIntRepo->processaAcao($acaoCorteEn,$idCargas,'E',"P",null,611);
-        }
-
-
-        if (!($result === true)) {
-            return $result;
+            if (!($result === true)) {
+                return $result;
+            }
         }
 
         return true;
