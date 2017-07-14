@@ -696,7 +696,7 @@ class ExpedicaoRepository extends EntityRepository
     }
 
 
-    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null)
+    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null, $motivo = '')
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -790,12 +790,11 @@ class ExpedicaoRepository extends EntityRepository
                     }
                 }
             }
-
             if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
                 $this->finalizarReentrega($idExpedicao);
             }
 
-            $result = $this->finalizar($idExpedicao,$central,$tipoFinalizacao);
+            $result = $this->finalizar($idExpedicao,$central,$tipoFinalizacao, $motivo);
 
             //Finaliza Expedição ERP
             if ($this->getSystemParameterValue('IND_FINALIZA_CONFERENCIA_ERP_INTEGRACAO') == 'S' ) {
@@ -932,7 +931,6 @@ class ExpedicaoRepository extends EntityRepository
      */
     private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false, $motivo = '')
     {
-        var_dump('her');die;
         $codCargaExterno = $this->validaCargaFechada($idExpedicao);
         if (isset($codCargaExterno) && !empty($codCargaExterno)) {
             return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
