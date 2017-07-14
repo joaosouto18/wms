@@ -109,29 +109,6 @@
         <td><div id="dados-produtos"></div> </td>
     </tr>
 
-    <?php if(count($this->produtosMapa) > 0) : ?>
-        <script type="text/javascript">
-            $(document).ready(function(){
-                $('#carousel').cycle({
-                    fx:   'turnDown',
-                    next: '#next',
-                    timeout:  0
-                });
-            });
-        </script>
-
-        <tr>
-            <td>
-                <div id="carousel">
-                    <?php foreach ($this->produtosMapa as $produto): ?>
-                        <div id="lista-produto<?php echo $produto['COD_PRODUTO'] ?>"><?php echo $produto['COD_PRODUTO'] ?> - <?php echo $produto['DSC_PRODUTO'] ?> - <?php echo $produto['QTD_CONFERIDA'] ?></div>
-                    <?php endforeach; ?>
-                </div>
-            </td>
-            <td style="width: 20%"> <button id="next"> >| </button></td>
-        </tr>
-    <?php endif; ?>
-
     <?php if(count($this->produtosClientes) > 0) : ?>
         <script type="text/javascript">
             $(document).ready(function(){
@@ -257,6 +234,20 @@
                             if (data.retorno.resposta == 'error') {
                                 alert(data.retorno.message);
                             }
+
+                            $('#carousel').cycle({
+                                fx:   'turnDown',
+                                next: '#next',
+                                timeout:  0
+                            });
+
+                            var produtosMapas = '<tr><td><div id="carousel">';
+                            for (var i = 0; i < data.dados.length; i++) {
+                                produtosMapas += '<div id="lista-produto'+data.dados[i]['COD_PRODUTO']+'">'+data.dados[i]['COD_PRODUTO'] +' - '+ data.dados[i]['DSC_PRODUTO'] +' - '+ data.dados[i]['QTD_CONFERIDA'] +'</div>';
+                            }
+                            produtosMapas += '</div></td><td style="width: 20%"> <button id="next"> >| </button></td></tr>';
+                            $('#dados-produtos').html(produtosMapas);
+
                         }
                     }
                 });
