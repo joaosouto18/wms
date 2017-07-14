@@ -736,16 +736,12 @@ class Importacao
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
 
+                    $fator = $embalagemCadastrada->getQuantidade();
                     foreach ($embalagens as $embalagemWs) {
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
                             $encontrouEmbalagem = true;
                             $descricaoEmbalagem =  $embalagemWs->descricao;
-
-                            $quantidadeWs = str_replace(',','.',$embalagemWs->qtdEmbalagem);
-                            if ($quantidadeWs != $embalagemCadastrada->getQuantidade()) {
-                                var_dump($idProduto.'--'.$embalagemWs->codBarras.'--'.$embalagemCadastrada->getQuantidade().'--'.$quantidadeWs);
-//                                throw new \Exception ("Não é possivel trocar a quantidade por embalagem da unidade com código de barras " . $embalagemWs->codBarras . " para " . $embalagemWs->qtdEmbalagem . " - Produto: " . $idProduto);
-                            }
+                            $fator = str_replace(',','.',$embalagemWs->qtdEmbalagem);
 
                             continue;
                         }
@@ -757,12 +753,12 @@ class Importacao
 
                     $embalagemArray = array(
                         'acao'=> 'alterar',
+                        'quantidade' => $fator ,
                         'id' =>$embalagemCadastrada->getId(),
                         'endereco' => $endPicking,
                         'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
                         'CBInterno' => $embalagemCadastrada->getCBInterno(),
                         'embalado' => $embalagemCadastrada->getEmbalado(),
-                        'quantidade' => $embalagemCadastrada->getQuantidade(),
                         'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
                         'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
                         'descricao' => $descricaoEmbalagem
