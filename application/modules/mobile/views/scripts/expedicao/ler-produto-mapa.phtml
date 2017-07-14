@@ -85,8 +85,6 @@
     <body onLoad="load()"></body>
 <?php endif; ?>
 
-
-
 <table class="info">
     <caption>Mapa:  <?php echo $this->idMapa ?> </caption>
     <tr>
@@ -103,6 +101,9 @@
     <tr>
         <td colspan="2"><b>Produtos a serem conferidos</b></td>
     </tr>
+    <tr>
+        <td><div id="produtos-conferir" class="row"></div> </td>
+    </tr>
 
     <tr></tr>
     <tr>
@@ -110,7 +111,7 @@
     </tr>
 
     <tr>
-        <td colspan="4"><div id="produtos-conferir"></div> </td>
+        <td colspan="4"> </td>
     </tr>
 
     <?php if(count($this->produtosClientes) > 0) : ?>
@@ -137,7 +138,6 @@
         </tr>
     <?php endif; ?>
 </table>
-
 
 <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
     <input type="hidden" name="uma" value="" id="uma">
@@ -240,11 +240,11 @@
                                 alert(data.retorno.message);
                             }
 
-                            var produtosMapas = '<tr><td><div id="carousel">';
+                            var produtosMapas = '<div id="carousel">';
                             for (var i = 0; i < data.dados.length; i++) {
                                 produtosMapas += '<div id="lista-produto'+data.dados[i]['COD_PRODUTO']+'">'+data.dados[i]['COD_PRODUTO'] +' - '+ data.dados[i]['DSC_PRODUTO'] +' - '+ data.dados[i]['QTD_CONFERIDA'] +'</div>';
                             }
-                            produtosMapas += '</div></td><td style="width: 20%"> <button id="next"> >| </button></td></tr>';
+                            produtosMapas += '</div></td><td style="width: 20%"> <button id="next"> >| </button>';
                             $('#produtos-conferir').html(produtosMapas);
 
                             $('#carousel').cycle({

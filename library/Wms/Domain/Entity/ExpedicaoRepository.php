@@ -712,7 +712,7 @@ class ExpedicaoRepository extends EntityRepository
     }
 
 
-    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null)
+    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null, $motivo = '')
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -729,7 +729,6 @@ class ExpedicaoRepository extends EntityRepository
                 return $result;
             }
         }
-
         if ($this->validaPedidosImpressos($idExpedicao) == false) {
             return 'Existem produtos sem etiquetas impressas';
         }
@@ -807,12 +806,11 @@ class ExpedicaoRepository extends EntityRepository
                     }
                 }
             }
-
             if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
                 $this->finalizarReentrega($idExpedicao);
             }
 
-            $result = $this->finalizar($idExpedicao,$central,$tipoFinalizacao);
+            $result = $this->finalizar($idExpedicao,$central,$tipoFinalizacao, $motivo);
 
             //Finaliza Expedição ERP
             if ($this->getSystemParameterValue('IND_FINALIZA_CONFERENCIA_ERP_INTEGRACAO') == 'S' ) {
@@ -947,7 +945,7 @@ class ExpedicaoRepository extends EntityRepository
      * @param array $cargas
      * @return bool
      */
-    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false)
+    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false, $motivo = '')
     {
         $codCargaExterno = $this->validaCargaFechada($idExpedicao);
         if (isset($codCargaExterno) && !empty($codCargaExterno)) {
@@ -978,7 +976,7 @@ class ExpedicaoRepository extends EntityRepository
                     $andamentoRepo->save("Conferencia finalizada com sucesso via desktop", $expedicaoEntity->getId());
                     break;
                 case 'S':
-                    $andamentoRepo->save("Conferencia finalizada com sucesso via desktop com senha de autorização", $expedicaoEntity->getId());
+                    $andamentoRepo->save("Conferencia finalizada com sucesso via desktop com senha de autorização - Motivo: $motivo", $expedicaoEntity->getId());
                     break;
                 default:
                     $andamentoRepo->save("Expedição Finalizada com Sucesso", $expedicaoEntity->getId());
