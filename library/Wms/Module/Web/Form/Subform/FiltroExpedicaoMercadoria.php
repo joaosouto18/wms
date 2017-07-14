@@ -57,7 +57,7 @@ class FiltroExpedicaoMercadoria extends \Wms\Module\Web\Form
                 ))
                 ->addElement('select', 'status', array(
                     'label' => 'Status da Expedição',
-                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoSigla->getIdValue(53, $notStatus)),
+                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoSigla->getIdValue(53)),
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addElement('text', 'codCargaExterno', array(
