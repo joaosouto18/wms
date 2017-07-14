@@ -95,7 +95,6 @@ class Enderecamento_PaleteController extends Action
         foreach ($paletes as $paleteId) {
             /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
             $paleteEn = $PaleteRepository->find($paleteId);
-
             $dadosPalete = array();
             $dadosPalete['idUma'] = $paleteId;
             if ($paleteEn->getDepositoEndereco() != null) {
