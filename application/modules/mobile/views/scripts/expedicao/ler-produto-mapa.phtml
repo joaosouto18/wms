@@ -109,6 +109,10 @@
         <td><div id="dados-produtos"></div> </td>
     </tr>
 
+    <tr>
+        <td colspan="4"><div id="produtos-conferir"></div> </td>
+    </tr>
+
     <?php if(count($this->produtosClientes) > 0) : ?>
         <script type="text/javascript">
             $(document).ready(function(){
@@ -139,6 +143,7 @@
     <input type="hidden" name="uma" value="" id="uma">
     <dt id="identification-label">&nbsp;</dt>
     <dd id="identification-element">
+
         <fieldset id="fieldset-identification">
             <legend>Ler Código de Barras</legend>
             <dl>
@@ -235,18 +240,18 @@
                                 alert(data.retorno.message);
                             }
 
+                            var produtosMapas = '<tr><td><div id="carousel">';
+                            for (var i = 0; i < data.dados.length; i++) {
+                                produtosMapas += '<div id="lista-produto'+data.dados[i]['COD_PRODUTO']+'">'+data.dados[i]['COD_PRODUTO'] +' - '+ data.dados[i]['DSC_PRODUTO'] +' - '+ data.dados[i]['QTD_CONFERIDA'] +'</div>';
+                            }
+                            produtosMapas += '</div></td><td colspan="3" style="width: 20%"> <button id="next"> >| </button></td></tr>';
+                            $('#produtos-conferir').html(produtosMapas);
+
                             $('#carousel').cycle({
                                 fx:   'turnDown',
                                 next: '#next',
                                 timeout:  0
                             });
-
-                            var produtosMapas = '<tr><td><div id="carousel">';
-                            for (var i = 0; i < data.dados.length; i++) {
-                                produtosMapas += '<div id="lista-produto'+data.dados[i]['COD_PRODUTO']+'">'+data.dados[i]['COD_PRODUTO'] +' - '+ data.dados[i]['DSC_PRODUTO'] +' - '+ data.dados[i]['QTD_CONFERIDA'] +'</div>';
-                            }
-                            produtosMapas += '</div></td><td style="width: 20%"> <button id="next"> >| </button></td></tr>';
-                            $('#dados-produtos').html(produtosMapas);
 
                         }
                     }
@@ -255,6 +260,7 @@
         }
         return ret;
     });
+
 
 </script>
 
