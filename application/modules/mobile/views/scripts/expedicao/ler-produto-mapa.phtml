@@ -85,8 +85,6 @@
     <body onLoad="load()"></body>
 <?php endif; ?>
 
-
-
 <table class="info">
     <caption>Mapa:  <?php echo $this->idMapa ?> </caption>
     <tr>
@@ -103,34 +101,18 @@
     <tr>
         <td colspan="2"><b>Produtos a serem conferidos</b></td>
     </tr>
+    <tr>
+        <td><div id="produtos-conferir" class="row"></div> </td>
+    </tr>
 
     <tr></tr>
     <tr>
         <td><div id="dados-produtos"></div> </td>
     </tr>
 
-    <?php if(count($this->produtosMapa) > 0) : ?>
-        <script type="text/javascript">
-            $(document).ready(function(){
-                $('#carousel').cycle({
-                    fx:   'turnDown',
-                    next: '#next',
-                    timeout:  0
-                });
-            });
-        </script>
-
-        <tr>
-            <td>
-                <div id="carousel">
-                    <?php foreach ($this->produtosMapa as $produto): ?>
-                        <div id="lista-produto<?php echo $produto['COD_PRODUTO'] ?>"><?php echo $produto['COD_PRODUTO'] ?> - <?php echo $produto['DSC_PRODUTO'] ?> - <?php echo $produto['QTD_CONFERIDA'] ?></div>
-                    <?php endforeach; ?>
-                </div>
-            </td>
-            <td style="width: 20%"> <button id="next"> >| </button></td>
-        </tr>
-    <?php endif; ?>
+    <tr>
+        <td colspan="4"> </td>
+    </tr>
 
     <?php if(count($this->produtosClientes) > 0) : ?>
         <script type="text/javascript">
@@ -157,11 +139,11 @@
     <?php endif; ?>
 </table>
 
-
 <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
     <input type="hidden" name="uma" value="" id="uma">
     <dt id="identification-label">&nbsp;</dt>
     <dd id="identification-element">
+
         <fieldset id="fieldset-identification">
             <legend>Ler Código de Barras</legend>
             <dl>
@@ -257,6 +239,20 @@
                             if (data.retorno.resposta == 'error') {
                                 alert(data.retorno.message);
                             }
+
+                            var produtosMapas = '<div id="carousel">';
+                            for (var i = 0; i < data.dados.length; i++) {
+                                produtosMapas += '<div id="lista-produto'+data.dados[i]['COD_PRODUTO']+'">'+data.dados[i]['COD_PRODUTO'] +' - '+ data.dados[i]['DSC_PRODUTO'] +' - '+ data.dados[i]['QTD_CONFERIDA'] +'</div>';
+                            }
+                            produtosMapas += '</div></td><td style="width: 20%"> <button id="next"> >| </button>';
+                            $('#produtos-conferir').html(produtosMapas);
+
+                            $('#carousel').cycle({
+                                fx:   'turnDown',
+                                next: '#next',
+                                timeout:  0
+                            });
+
                         }
                     }
                 });
@@ -264,6 +260,7 @@
         }
         return ret;
     });
+
 
 </script>
 
