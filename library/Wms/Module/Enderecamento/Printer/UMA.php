@@ -79,7 +79,6 @@ class UMA extends Pdf
     public function imprimir(array $params = array(),$modelo)
     {
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
-
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
@@ -112,9 +111,9 @@ class UMA extends Pdf
 
         $font_size = 55;
         $line_width = 300;
-
         foreach($paletes as $palete) {
             $PaleteProdutoEntity = $PaleteProdutoRepository->findOneBy(array('uma' => $palete['idUma']));
+            $palete['conferente'] = $PaleteRepository->findConferente($palete['idUma'],$params['codProduto'],$params['grade']);
             $picking = null;
             if (isset($PaleteProdutoEntity))
                 $produtoEn = $PaleteProdutoEntity->getProduto();
@@ -168,7 +167,6 @@ class UMA extends Pdf
     public function layout05($palete, $produtoEn, $font_size, $line_width, $params)
     {
         $this->AddPage();
-
         $descricaoProduto = $produtoEn->getDescricao();
         $codigoProduto = $produtoEn->getId();
         if (strlen($descricaoProduto) >= 42) {
@@ -208,7 +206,7 @@ class UMA extends Pdf
         $this->Cell(25,-60,"Qtd",0,0);
 
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(75,-60,$palete['qtd']/$palete['qtdEmbalagem'].' - '.$palete['unMedida'],0,40);
+        $this->Cell(75,-60,$palete['qtd']/$palete['qtdEmbalagem'].' - '.$palete['unMedida'].' - '.$palete['conferente']['NOM_PESSOA'],0,40);
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(55,-115,utf8_decode("End.: "),0,0);
