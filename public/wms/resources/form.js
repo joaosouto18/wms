@@ -25,6 +25,25 @@
                 $(this).find('.gOpcRow ul li ul').css('top', '0px');
             }
         });
+        document.onkeydown = function (e) {
+            if (e.which == 17)
+                pressedCtrl = true;
+
+            if (e.which == 82 && pressedCtrl == true) {
+                //R
+                window.open( URL_SISTEMA + "/recebimento");
+            }
+            if (e.which == 69 && pressedCtrl == true) {
+                //E
+                window.open( URL_SISTEMA + "/expedicao");
+            }
+            if (e.which == 80 && pressedCtrl == true) {
+                //P
+                window.open( URL_SISTEMA + "/produto");
+            }
+        };
+
+
     });
     /*
      Usage Note:
