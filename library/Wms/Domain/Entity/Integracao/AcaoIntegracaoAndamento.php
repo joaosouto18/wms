@@ -16,7 +16,7 @@ class   AcaoIntegracaoAndamento
      * @Id
      * @Column(name="COD_ACAO_INTEGRACAO_ANDAMENTO", type="integer", nullable=false)
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_ACAO_INTEGRACAO_AND_01", initialValue=1, allocationSize=10000)
+     * @SequenceGenerator(sequenceName="SQ_ACAO_INTEGRACAO_AND_01", initialValue=1)
      */
     protected $id;
     
