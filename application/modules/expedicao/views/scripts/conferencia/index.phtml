@@ -60,14 +60,15 @@
                     </div></td>
             </tr>
             <tr style="line-height: 50px;">
-                <td colspan="3">
+                <td>
                     <?php
                     echo '<label>Senha para confirmação: </label>';
                     echo $this->formPassword("senhaConfirmacao", '', array(
-                        'size' => '50',
+                        'size' => '20',
                         'maxlength' => '20',
                     ));
                     ?>
+                    <label>Motivo: </label> <input style="width: 290px;" type="text" id="motivo" name="motivo" >
                     <button name="btnFinalizar" type="submit" value="semConferencia">Finalizar Conferencia Cega</button>
                 </td>
             </tr>
