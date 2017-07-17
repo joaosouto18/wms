@@ -1413,11 +1413,11 @@ class Mobile_EnderecamentoController extends Action
         $embalagemEn = $embalagemRepository->getEmbalagemByCodigo($codigoBarras);
 
         if (empty($embalagemEn)) {
-            echo 'vazio';
+            $mensagem = 'vazio';
         } else {
-            echo 'populado';
+            $mensagem = 'populado';
         }
-        exit;
+
         if (empty($embalagemEn) ) {
             /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
             $volumeRepo = $this->em->getRepository('wms:Produto\Volume');
@@ -1427,7 +1427,7 @@ class Mobile_EnderecamentoController extends Action
 
         if (empty($embalagemEn) && empty($volumeEn)) {
             $status = 'error';
-            $mensagem = 'Codigo de Barras nao encontrado!';
+//            $mensagem = 'Codigo de Barras nao encontrado!';
         } elseif (!empty($embalagemEn)) {
             $status = 'ok';
             $result['endereco'] = $embalagemEn[0]['descricao'];
