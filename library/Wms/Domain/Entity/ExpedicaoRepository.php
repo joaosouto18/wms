@@ -3026,11 +3026,6 @@ class ExpedicaoRepository extends EntityRepository
                             }
                         }
                         $this->getEntityManager()->persist($mapa);
-                    } else {
-                        $produto = $mapa->getCodProduto();
-                        $grade = $mapa->getDscGrade();
-                        $idMapa = $mapa->getId();
-                        throw new \Exception("O produto $produto grade $grade do mapa $idMapa não tem mais saldo para corte!");
                     }
                 }
             }

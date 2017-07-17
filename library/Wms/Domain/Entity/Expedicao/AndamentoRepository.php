@@ -11,7 +11,7 @@ class AndamentoRepository extends EntityRepository
      * @param $idExpedicao
      * @param bool $usuarioId
      */
-    public function save($observacao = false, $idExpedicao, $usuarioId = false, $flush = true, $codigoBarras = null, $codBarrasProdutos = null, $integracao = false, $corteAutomatico = 'N')
+    public function save($observacao = false, $idExpedicao, $usuarioId = false, $flush = true, $codigoBarras = null, $codBarrasProdutos = null, $integracao = false)
     {
         $usuario = null;
         if ($integracao == false) {
