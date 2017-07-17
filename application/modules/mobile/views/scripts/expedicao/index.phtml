@@ -1,24 +1,28 @@
-
-<form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/definir-operacao" method="post">
-    <input type="hidden" name="uma" value="" id="uma">
-    <dt id="identification-label">&nbsp;</dt>
-    <dd id="identification-element">
-        <fieldset id="fieldset-identification">
-            <legend>Iniciar Expedição</legend>
-            <dl>
-                <div class="field"><label for="codigoBarras" class="field required">*Código de Barras</label>
-                    <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%"></div>
-                <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
-            </dl>
-        </fieldset>
-    </dd>
-</form>
-
-<ul style="margin-top: 10px" class="menu">
-    <li>
-        <a href="/mobile/onda-ressuprimento/listar-ondas" >ONDA DE RESSUPRIMENTO</a>
-        <a href="/mobile/expedicao/expedicao-carregamento" >EQUIPE DE CARREGAMENTO</a>
-        <a href="/mobile/expedicao/vincular-Lacre" >VINCULAR LACRE</a>
-    </li>
-</ul>
+<div class="row">
+    <form  class="text-left"enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="/mobile/expedicao/definir-operacao" method="post">
+        <input type="hidden" name="uma" value="" id="uma">
+        <dt id="identification-label">&nbsp;</dt>
+        <dd id="identification-element">
+            <fieldset id="fieldset-identification">
+                <legend>Iniciar Expedição</legend>
+                <dl>
+                    <div class="field" style="text-align: center"><label for="codigoBarras" class="field required">*Código de Barras</label>
+                        <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
+                        <input class="btn gradientBtn text-center" style="text-align: center" type="submit" name="submit" id="submit" value="Buscar" class="btn gradientBtn">
+                    </div>
+                </dl>
+            </fieldset>
+        </dd>
+    </form>
+    <br>
+</div>
+<div class="row" >
+    <a class="btn gradientBtn" href="/mobile/onda-ressuprimento/listar-ondas" >ONDA DE RESSUPRIMENTO</a>
+</div>
+<div class="row" >
+    <a class="btn gradientBtn" href="/mobile/expedicao/expedicao-carregamento" >EQUIPE DE CARREGAMENTO</a>
+</div>
+<div class="row" >
+    <a class="btn gradientBtn" href="/mobile/expedicao/vincular-Lacre" >VINCULAR LACRE</a>
+</div>
 

@@ -81,14 +81,18 @@ class Importacao_GerenciamentoController extends Action
                 $acaoEn = $acaoIntRepo->find($id);
                 $integracoes[] = $acaoEn;
             }
+
             if (isset($params['submit']) || isset($params['submitCodigos'])) {
-                $arrayFinal = $acaoIntRepo->listaTemporaria($integracoes, $options, $idFiltro);
+                $result = $acaoIntRepo->listaTemporaria($integracoes, $options, $idFiltro);
             } else if (isset($params['efetivar'])) {
-                $result = $acaoIntRepo->efetivaTemporaria($integracoes);
-                if (!($result === true)) {
+                $result = $acaoIntRepo->efetivaTemporaria($integracoes, $idFiltro);
+            }
+
+            if (isset($result)) {
+                if (is_string($result)) {
                     $this->addFlashMessage('error',$result);
                     $this->redirect('index','gerenciamento','importacao', array('id' => $acao));
-                } else {
+                } else if ($result === true) {
                     if ($acaoIntEntity->getTipoAcao()->getId() ==  AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS) {
                         $this->addFlashMessage('success','Notas Fiscais enviadas com sucesso!');
                         $this->redirect('index','recebimento','web');
@@ -96,8 +100,15 @@ class Importacao_GerenciamentoController extends Action
                         $this->addFlashMessage('success','Cargas enviadas com sucesso!');
                         $this->redirect('index','index','expedicao');
                     }
+                } else {
+                    $arrayFinal = $result;
                 }
             }
+
+            if (count($arrayFinal) == 1) {
+                $this->addFlashMessage('info','Nenhum registro encontrado para integrar');
+            }
+
             $this->view->valores = $arrayFinal;
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());

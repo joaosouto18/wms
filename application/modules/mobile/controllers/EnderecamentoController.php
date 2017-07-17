@@ -1406,9 +1406,12 @@ class Mobile_EnderecamentoController extends Action
         $mensagem = null;
         $result = array();
 
-        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-        /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
-        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+        $recebimentoService = new \Wms\Service\Recebimento;
+        $codigoBarras = $recebimentoService->analisarCodigoBarras($codBarras);
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepository */
+        $embalagemRepository = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $embalagemEn = $embalagemRepository->getEmbalagemByCodigo($codigoBarras);
+
         if (empty($embalagemEn) ) {
             /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
             $volumeRepo = $this->em->getRepository('wms:Produto\Volume');
@@ -1420,14 +1423,13 @@ class Mobile_EnderecamentoController extends Action
             $status = 'error';
             $mensagem = 'Codigo de Barras nao encontrado!';
         } elseif (!empty($embalagemEn)) {
-            $enderecoEmbalagem = $embalagemEn->getEndereco();
             $status = 'ok';
-            $result['endereco'] = (!empty($enderecoEmbalagem)) ? $enderecoEmbalagem->getDescricao() : null;
+            $result['endereco'] = $embalagemEn[0]['descricao'];
             $result['isEmbalagem'] = true;
-            $result['capacidade'] = $embalagemEn->getCapacidadePicking();
-            $result['embalado']   = $embalagemEn->getEmbalado();
-            $result['referencia'] = $embalagemEn->getProduto()->getReferencia();
-            $result['descricao']  = $embalagemEn->getProduto()->getDescricao();
+            $result['capacidade'] = $embalagemEn[0]['capacidadePicking'];
+            $result['embalado']   = $embalagemEn[0]['embalado'];
+            $result['referencia'] = $embalagemEn[0]['referencia'];
+            $result['descricao']  = $embalagemEn[0]['descricaoProduto'];
         } else {
             $enderecoVolume = $volumeEn->getEndereco();
             $status = 'ok';

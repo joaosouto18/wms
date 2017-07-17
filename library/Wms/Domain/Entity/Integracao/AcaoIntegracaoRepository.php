@@ -108,7 +108,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function efetivaTemporaria($acoes) {
+    public function efetivaTemporaria($acoes, $IdFiltro) {
 
         /* Para efetivar no banco de dados, só vou efetivar uma unica vez mesmo que tenham sido disparados n consultas.
            Porem todas tem que compartilhar a mesma tabela temporaria, ou seja, ser da mesma ação */
@@ -119,7 +119,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId());
 
         /* Executo uma unica ação com todos os dados retornados */
-        $result = $this->processaAcao($acaoEn,null,"E","P", $dados);
+        $result = $this->processaAcao($acaoEn,null,"E","P", $dados,$IdFiltro);
 
         /* Limpo os dados da tabela temporaria */
         $this->limpaDadosTemporarios($acaoEn->getTipoAcao()->getId());
@@ -136,9 +136,12 @@ class AcaoIntegracaoRepository extends EntityRepository
         $this->limpaDadosTemporarios($acaoEn->getTipoAcao()->getId());
         /* Executa cada ação salvando os dados na tabela temporaria */
         foreach ($acoes as $acaoEn) {
-            $this->processaAcao($acaoEn,$options,"E","T",null,$idFiltro);
+            $result = $this->processaAcao($acaoEn,$options,"E","T",null,$idFiltro);
+            if (!($result === true)) {
+                $this->limpaDadosTemporarios($acaoEn->getTipoAcao()->getId());
+                return $result;
+            }
         }
-
 
         /* Faz a consulta na tabela temporaria, para retornar as informações no mesmo modelo do ERP */
         $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId());
@@ -167,14 +170,34 @@ class AcaoIntegracaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltroRepository $acaoFiltroRepo */
         $acaoFiltroRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracaoFiltro');
         $idAcao = $acaoEn->getId();
+
+        $this->_em->clear();
+        $acaoEn = $this->findOneBy(array('id'=>$idAcao));
+
         $sucess = "S";
         $observacao = "";
         $trace = "";
         $query = "";
+        $existeOutraTransacaoAtiva = "N";
+        $iniciouTransacaoAtual = 'N';
         $integracaoService = null;
 
+        if ($acaoEn->getIndExecucao() == 'S') {
+            $existeOutraTransacaoAtiva = "S";
+        } else {
+            $iniciouTransacaoAtual = 'S';
+            $acaoEn->setIndExecucao("S");
+            $this->_em->persist($acaoEn);
+            $this->_em->flush();
+        }
+
         try {
+
             $this->_em->beginTransaction();
+
+            if ($existeOutraTransacaoAtiva == 'S') {
+                throw new \Exception("Integração em andamento em outro processo");
+            }
 
             $conexaoEn = $acaoEn->getConexao();
 
@@ -208,7 +231,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $integracaoService = new Integracao($this->getEntityManager(),
                     array('acao'=>$acaoEn,
                         'dados'=>$result));
-                $integracaoService->salvaTemporario();
+                $result = $integracaoService->salvaTemporario();
             } else {
                 $integracaoService = new Integracao($this->getEntityManager(),
                     array('acao'=>$acaoEn,
@@ -220,6 +243,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $this->_em->flush();
             $this->_em->commit();
+            $this->_em->clear();
             $errNumber = "";
             $trace = "";
             $query = "";
@@ -245,13 +269,24 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->clear();
         }
 
+
         try {
+
+            $iniciouBeginTransaction = false;
             if ($this->_em->isOpen() == false) {
                 $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
             }
-            $this->_em->beginTransaction();
 
             $acaoEn = $this->_em->find("wms:Integracao\AcaoIntegracao",$idAcao);
+
+            if ($iniciouTransacaoAtual == "S") {
+                $acaoEn->setIndExecucao("N");
+                $this->_em->persist($acaoEn);
+                $this->_em->flush();
+            }
+
+            $this->_em->beginTransaction();
+            $iniciouBeginTransaction = true;
 
             if (($tipoExecucao == "E") || ($dados == null)) {
                 /*
@@ -278,7 +313,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             }
 
-            if (($tipoExecucao == "E") && ($destino == "P")) {
+            if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) ) {
                 /*
                  * Se estiver salvando os dados ja nas tabelas de produção, atualizo a data da ultima execução indicando que a operação foi finalizada para aquela data
                  * Caso estja salvando em tabelas temporarias (com o fim de listagem e validação), a data da ultima execução não deve ser alterada dois a operação ainda não foi concluida
@@ -294,9 +329,12 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $this->_em->flush();
             $this->_em->commit();
+            $this->_em->clear();
 
         } catch (\Exception $e) {
-            $this->_em->rollback();
+            if ($iniciouBeginTransaction == true) {
+                $this->_em->rollback();
+            }
             throw new \Exception($e->getMessage());
 
         }

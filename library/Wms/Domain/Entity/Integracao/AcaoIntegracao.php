@@ -22,6 +22,7 @@ class AcaoIntegracao
     const INTEGRACAO_CORTES = 607;
     const INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA = 608;
     const INTEGRACAO_FINALIZACAO_CARGA = 609;
+    const INTEGRACAO_VERIFICA_CARGA_FINALIZADA = 614;
 
     /**
      * @Id
@@ -58,6 +59,11 @@ class AcaoIntegracao
      * @Column(name="DTH_ULTIMA_EXECUCAO", type="datetime", nullable=true)
      */
     protected $dthUltimaExecucao;
+
+    /**
+     * @Column(name="IND_EXECUCAO", type="string", nullable=true)
+     */
+    protected $indExecucao;
 
     /**
      * @return mixed
@@ -153,6 +159,22 @@ class AcaoIntegracao
     public function setDthUltimaExecucao($dthUltimaExecucao)
     {
         $this->dthUltimaExecucao = $dthUltimaExecucao;
+    }
+
+    /**
+     * @param mixed $indExecucao
+     */
+    public function setIndExecucao($indExecucao)
+    {
+        $this->indExecucao = $indExecucao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIndExecucao()
+    {
+        return $this->indExecucao;
     }
 
 }
