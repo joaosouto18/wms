@@ -1,5 +1,5 @@
 ﻿<script>
-    $(document).ready(function(){
+    $(document).ready(function () {
 
         $('#codigoBarras').change(function () {
             var codBarras = $('#codigoBarras').val();
@@ -61,10 +61,10 @@
                 }
             }
             if (document.getElementById('endereco').value == "") {
-                endereco   = document.getElementById('endereco');
+                endereco = document.getElementById('endereco');
                 if (endereco) {
                     endereco.focus();
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -72,10 +72,10 @@
                 }
             }
             if (document.getElementById('endereco').value != "") {
-                capacidade   = document.getElementById('capacidade');
+                capacidade = document.getElementById('capacidade');
                 if (capacidade) {
                     capacidade.focus();
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -88,20 +88,20 @@
     function nextInputEndereco(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('endereco').value == "") {
-                endereco   = document.getElementById('endereco');
+                endereco = document.getElementById('endereco');
                 if (endereco) {
                     endereco.focus();
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
                     }
                 }
             } else if (document.getElementById('endereco').value != "") {
-                capacidade   = document.getElementById('capacidade');
+                capacidade = document.getElementById('capacidade');
                 if (capacidade) {
                     capacidade.focus();
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -114,25 +114,33 @@
     }
 
 </script>
-<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'cadastro-produto-endereco')) ?>" method="post">
+<div class="row">
+    <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'cadastro-produto-endereco')) ?>" method="post">
 
-    <div id="descricao"></div>
-    <div>
-        <label>Produto:</label>
-        <input class="focus" type="text" name="codigoBarras" id="codigoBarras" required onkeydown="nextInput(event)" />
-        <input type="hidden" name="isEmbalagem" id="isEmbalagem" />
-    </div>
+        <div id="descricao"></div>
+        <div>
+            <label>Produto:</label>
+            <input class="focus" type="text" name="codigoBarras" id="codigoBarras" required onkeydown="nextInput(event)" />
+            <input type="hidden" name="isEmbalagem" id="isEmbalagem" />
+        </div>
 
-    <div>
-        <label>End: -------------------- Cap:</label>
-        <input type="text" name="endereco" id="endereco" class="valid" required onkeydown="nextInputEndereco(event)" />
-        <input type="text" name="capacidade" id="capacidade" required size=6 maxlength=5 value="" />
-    </div>
+        <div class="row">
+            <label>End:</label>
+            <input type="text" name="endereco" id="endereco" class="valid" required onkeydown="nextInputEndereco(event)" />
+        </div>
+        <div class="row">
+            <label>Cap:</label>
+            <input type="text"  name="capacidade" id="capacidade" required size=6 maxlength=5 value="" />
+        </div>
+        <br>
 
-    <div id="divEmb" style="display: none">
-        <label>Emb:</label>
-        <input type="text" name="embalado" id="embalado" size=1 maxlength=1 value="" />
-    </div>
-
-    <input type="submit" name="submit" id="submit" value="Cadastrar" />
-</form>
+        <div id="divEmb" style="display: none">
+            <label>Emb:</label>
+            <input type="text"  name="embalado" id="embalado" size=1 maxlength=1 value="" />
+        </div>
+        <br>
+        <div class="row">
+            <input type="submit" class="btn gradientBtn" name="submit" id="submit" value="Cadastrar" />
+        </div>
+    </form>
+</div>

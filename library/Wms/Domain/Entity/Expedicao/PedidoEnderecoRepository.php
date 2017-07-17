@@ -21,7 +21,7 @@ class PedidoEnderecoRepository extends EntityRepository
 
             $enPedidoEndereco->setCodPedido($pedidoEntity->getId());
             //LINHA COMENTADA POR RODRIGO PQ NA WILSO SÓ FUNCIONOU DESSA MANEIRA
-//            $enPedidoEndereco->setPedido($pedidoEntity);
+            $enPedidoEndereco->setPedido($pedidoEntity);
             $enPedidoEndereco->setIdTipo(\Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA);
             $enPedidoEndereco->setUf($entitySigla);
             $enPedidoEndereco->setComplemento($pedidoCliente['complemento']);

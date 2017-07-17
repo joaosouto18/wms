@@ -672,30 +672,44 @@ class ExpedicaoRepository extends EntityRepository
     public function importaCortesERP($idExpedicao) {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
 
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
         $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
+        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
+
+        $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTES');
+        $idIntegracaoVerificaCargaFinalizada = $this->getSystemParameterValue('COD_INTEGRACAO_VERIFICA_CARGA_FINALIZADA');
+
+        $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
+        $acaoVerificaCargaFinalizadaEn = $acaoIntRepo->find($idIntegracaoVerificaCargaFinalizada);
 
         $cargaEntities = $cargaRepository->findBy(array('codExpedicao' => $idExpedicao));
         $cargas = array();
         foreach ($cargaEntities as $cargaEntity) {
-            $cargas[] = $cargaEntity->getCodCargaExterno();
+            $result = $acaoIntRepo->processaAcao($acaoVerificaCargaFinalizadaEn,array(0=>$cargaEntity->getCodCargaExterno()),'E',"P",null,611);
+            if ($result === false) {
+                $cargas[] = $cargaEntity->getCodCargaExterno();
+            } else if (is_string($result)) {
+                return $result;
+            } else {
+                $andamentoRepo->save("Carga " . $cargaEntity->getCodCargaExterno() . " se encontra faturada no ERP, não é possível consultar seus cortes", $idExpedicao);
+            }
         }
         $idCargas[] = implode(',',$cargas);
 
-        $idCorte= $this->getSystemParameterValue('COD_INTEGRACAO_CORTES');
-        $acaoEn = $acaoIntRepo->find($idCorte);
-        $result = $acaoIntRepo->processaAcao($acaoEn,$idCargas,'E',"P",null,611);
-
-        if (!($result === true)) {
-            return $result;
+        if ((count($idCargas) >0) && ($idCargas[0] != '')) {
+            $result = $acaoIntRepo->processaAcao($acaoCorteEn,$idCargas,'E',"P",null,611);
+            if (!($result === true)) {
+                return $result;
+            }
         }
 
         return true;
     }
 
 
-    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null)
+    public function finalizarExpedicao ($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null, $motivo = '')
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -712,7 +726,6 @@ class ExpedicaoRepository extends EntityRepository
                 return $result;
             }
         }
-
         if ($this->validaPedidosImpressos($idExpedicao) == false) {
             return 'Existem produtos sem etiquetas impressas';
         }
@@ -790,12 +803,11 @@ class ExpedicaoRepository extends EntityRepository
                     }
                 }
             }
-
             if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
                 $this->finalizarReentrega($idExpedicao);
             }
 
-            $result = $this->finalizar($idExpedicao,$central,$tipoFinalizacao);
+            $result = $this->finalizar($idExpedicao,$central,$tipoFinalizacao, $motivo);
 
             //Finaliza Expedição ERP
             if ($this->getSystemParameterValue('IND_FINALIZA_CONFERENCIA_ERP_INTEGRACAO') == 'S' ) {
@@ -930,7 +942,7 @@ class ExpedicaoRepository extends EntityRepository
      * @param array $cargas
      * @return bool
      */
-    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false)
+    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false, $motivo = '')
     {
         $codCargaExterno = $this->validaCargaFechada($idExpedicao);
         if (isset($codCargaExterno) && !empty($codCargaExterno)) {
@@ -961,7 +973,7 @@ class ExpedicaoRepository extends EntityRepository
                     $andamentoRepo->save("Conferencia finalizada com sucesso via desktop", $expedicaoEntity->getId());
                     break;
                 case 'S':
-                    $andamentoRepo->save("Conferencia finalizada com sucesso via desktop com senha de autorização", $expedicaoEntity->getId());
+                    $andamentoRepo->save("Conferencia finalizada com sucesso via desktop com senha de autorização - Motivo: $motivo", $expedicaoEntity->getId());
                     break;
                 default:
                     $andamentoRepo->save("Expedição Finalizada com Sucesso", $expedicaoEntity->getId());

@@ -281,7 +281,7 @@ class Mobile_ExpedicaoController extends Action {
 
             if ($confereQtd == true) {
                 if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
-                    $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg']));
+                    $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg']), 'dados' => $produtosMapa);
                     $this->_helper->json($vetRetorno);
                 }
             } else {

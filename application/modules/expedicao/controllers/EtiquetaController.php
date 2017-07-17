@@ -471,8 +471,25 @@ class Expedicao_EtiquetaController  extends Action
                 $this->addFlashMessage('error', 'Não existe volume embalado para ser reimpresso!');
                 $this->_redirect('/expedicao/index');
             }
-            $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105, 75));
-            $gerarEtiqueta->imprimirExpedicaoModelo1($etiqueta,$mapaSeparacaoEmbaladoRepo);
+            $modeloEtiqueta = $this->getSystemParameterValue('MODELO_VOLUME_EMBALADO');
+
+            switch ($modeloEtiqueta) {
+                case 1:
+                    //LAYOUT CASA DO CONFEITEIRO
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
+                    break;
+                case 2:
+                    //LAYOUT WILSO - ABRAFER ...
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
+                    break;
+                default:
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
+                    break;
+
+            }
+
+            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta);
+
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

@@ -236,7 +236,7 @@ class ApontamentoMapaRepository extends EntityRepository {
         $dataFim = str_replace('-', '/', $dataFim);
 
         if (isset($idUsuario) && !empty($idUsuario)) {
-            $andWhere .= " AND COD_PESSOA = $idUsuario";
+            $andWhere .= " AND PE.COD_PESSOA = $idUsuario";
         }
 
         if (isset($atividade) && !empty($atividade)) {
@@ -304,9 +304,8 @@ class ApontamentoMapaRepository extends EntityRepository {
             $result[$key]['QTD_PESO'] = number_format($value['QTD_PESO'], 2, ',', '');
             $result[$key]['QTD_CUBAGEM'] = number_format($value['QTD_CUBAGEM'], 2, ',', '.');
             $intervalo = date_diff($tempoInicial, $tempoFinal);
-
             $result[$key]['TEMPO_GASTO'] = $intervalo->format('%H:%I:%S');
-            $pesoTotal = $pesoTotal + $value['QTD_PESO'];
+            $pesoTotal = $pesoTotal + number_format($value['QTD_PESO'], 2, ',', '');
             $volumeTotal = $volumeTotal + $value['QTD_VOLUMES'];
             $cubagemTotal = $cubagemTotal + $value['QTD_CUBAGEM'];
             $quantidadeTotal = $quantidadeTotal + $value['QTD_PRODUTOS'];
@@ -336,7 +335,7 @@ class ApontamentoMapaRepository extends EntityRepository {
         }
         $result[$qtdRows]['NOM_PESSOA'] = 'TOTAIS';
         $result[$qtdRows]['IDENTIDADE'] = '-';
-        $result[$qtdRows]['QTD_PESO'] = number_format($pesoTotal, 2, ',', '.');
+        $result[$qtdRows]['QTD_PESO'] = $pesoTotal;
         $result[$qtdRows]['QTD_VOLUMES'] = number_format($volumeTotal, 2, ',', '.');
         $result[$qtdRows]['QTD_PRODUTOS'] = number_format($quantidadeTotal, 0, ',', '.');
         $result[$qtdRows]['QTD_CUBAGEM'] = number_format($cubagemTotal, 2, ',', '.');

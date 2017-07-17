@@ -21,7 +21,6 @@ class Expedicao_ConferenciaController extends Action
     {
         $request = $this->getRequest();
         $params = $this->_getAllParams();
-
         if ($request->isPost()) {
             $idExpedicao      = $request->getParam('id');
             $senhaDigitada    = $request->getParam('senhaConfirmacao');
@@ -29,6 +28,7 @@ class Expedicao_ConferenciaController extends Action
             $origin           = $request->getParam('origin');
             $senhaAutorizacao = $this->getSystemParameterValue('SENHA_FINALIZAR_EXPEDICAO');
             $submit           = $request->getParam('btnFinalizar');
+            $motivo           = $request->getParam('motivo');
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
             $expedicaoRepo    = $this->em->getRepository('wms:Expedicao');
@@ -76,8 +76,7 @@ class Expedicao_ConferenciaController extends Action
 
                         $mapaSeparacaoRepository->adicionaQtdConferidaMapa($embalagemEntity,$volumeEntity,$mapaSeparacaoEntity,null,$mapaSeparacaoConferenciaEntity['QTD_CONFERIR'], null, $ordemServicoId, true);
                     }
-
-                    $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false, 'S');
+                    $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais[0],false, 'S', null, null, $motivo);
                     if ($result === true) {
                         $result = 'Expedição Finalizada com Sucesso!';
                         if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
@@ -96,7 +95,7 @@ class Expedicao_ConferenciaController extends Action
                     $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
                 }
             } else {
-                $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M');
+                $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M', null, null,  $motivo);
                 if ($origin == 'coletor') {
                     if ($result === true) {
                         $result = 'Expedição Finalizada com Sucesso!';

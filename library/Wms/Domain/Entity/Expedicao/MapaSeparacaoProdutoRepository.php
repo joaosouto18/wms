@@ -12,8 +12,12 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
     public function efetivaCorteMapasERP($pedidosCortar, $produtosCortar) {
 
-        $math = new Math();
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
 
+        $idExpedicao = null;
+        $math = new Math();
+        $cortarReservas = array();
         //* SE NÃO TIVER NENHUM PRODUTO PARA CORTAR, ENTÂO NAO PRECISO FAZER NENHUM CORTE EM NENHUM MAPA, RETORNO TRUE
         if (count($produtosCortar) == 0) return true;
 
@@ -26,13 +30,18 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             $SQLWherePP .= "(PP.COD_PRODUTO = '" . $pp['codProduto'] . "' AND PP.DSC_GRADE = '" . $pp['grade'] ."')";
         }
         $SQLWherePP .= ")";
-        $SQL = " SELECT PP.COD_PEDIDO_PRODUTO, PP.QTD_CORTADA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.COD_PEDIDO, P.DSC_PRODUTO
+        $SQL = " SELECT PP.COD_PEDIDO_PRODUTO, PP.QTD_CORTADA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.COD_PEDIDO, P.DSC_PRODUTO, C.COD_EXPEDICAO
                    FROM PEDIDO_PRODUTO PP
                    LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
+                   LEFT JOIN PEDIDO PED ON PED.COD_PEDIDO = PP.COD_PEDIDO
+                   LEFT JOIN CARGA C ON C.COD_CARGA = PED.COD_CARGA
                   WHERE PP.COD_PEDIDO IN($pedidosCortar)
                     AND $SQLWherePP
                     AND QTD_CORTADA > 0";
         $ppCortar = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($ppCortar) >0) {
+            $idExpedicao = $ppCortar[0]['COD_EXPEDICAO'];
+        }
 
         foreach ($ppCortar as $pp) {
             $qtdCortar = $pp['QTD_CORTADA'];
@@ -95,6 +104,16 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                     if ($qtdPendente >0) {
                         $mspEn = $this->find($mspId);
                         if ($mspEn != null) {
+                            $qtdCortarReserva = $qtdPendente - $mspEn->getQtdCortado();
+                            if ($qtdCortarReserva >0) {
+                                if (isset($cortarReservas[$codProduto][$dscGrade][$mspEn->getCodDepositoEndereco()][$codPedido])){
+                                    $vlr = $cortarReservas[$codProduto][$dscGrade][$mspEn->getCodDepositoEndereco()][$codPedido];
+                                    $cortarReservas[$codProduto][$dscGrade][$mspEn->getCodDepositoEndereco()][$codPedido] = $vlr + $qtdCortarReserva;
+                                } else {
+                                    $cortarReservas[$codProduto][$dscGrade][$mspEn->getCodDepositoEndereco()][$codPedido] = $qtdCortarReserva;
+                                }
+                            }
+
                             $mspEn->setQtdCortado($qtdPendente);
                             $this->getEntityManager()->persist($mspEn);
                             $qtdCortar = $math->totalSubtracao($qtdCortar,$qtdPendente);// $qtdCortar - $qtdPendente;
@@ -131,6 +150,15 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                     if ($qtdPendente >0) {
                         $mspEn = $this->find($mspId);
                         if ($mspEn != null) {
+                            $qtdCortarReserva = $qtdPendente - $mspEn->getQtdCortado();
+                            if ($qtdCortarReserva >0) {
+                                if (isset($cortarReservas[$codProduto][$dscGrade][$mspEn->getCodDepositoEndereco()][$codPedido])){
+                                    $vlr = $cortarReservas[$codProduto][$dscGrade][$mspEn->getCodDepositoEndereco()][$codPedido];
+                                    $cortarReservas[$codProduto][$dscGrade][$mspEn->getCodDepositoEndereco()][$codPedido] = $vlr + $qtdCortarReserva;
+                                } else {
+                                    $cortarReservas[$codProduto][$dscGrade][$mspEn->getCodDepositoEndereco()][$codPedido] = $qtdCortarReserva;
+                                }
+                            }
                             $mspEn->setQtdCortado($qtdPendente);
                             $this->getEntityManager()->persist($mspEn);
 
@@ -145,6 +173,49 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                 throw new \Exception("Quantidade Cortada + Quantidade Conferida do Produto excede a quantidade solicitada no pedido $codPedido para o produto $codProduto/$dscGrade - $dscProduto");
             }
 
+        }
+
+        $reservaEstoqueProdutoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
+
+        foreach ($cortarReservas as $idProduto => $arrGrade) {
+            foreach ($arrGrade as $dscGrade => $arrEndereco) {
+                foreach ($arrEndereco as $idEndereco => $arrPedido) {
+                    foreach ($arrPedido as $idPedido => $qtdCortar) {
+
+                        $observacao = 'Produto '. $idProduto.' Grade '.$dscGrade.' referente ao pedido '.$idPedido.' cortado com a quantidade '. $qtdCortar . '- motivo: '. 'Cortes importados via integração';
+                        $andamentoRepo->save($observacao, $idExpedicao);
+
+                        $SQL = "SELECT REE.COD_RESERVA_ESTOQUE
+                                  FROM RESERVA_ESTOQUE_EXPEDICAO REE
+                                  LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
+                                  LEFT JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+                                 WHERE REE.COD_PEDIDO = '$idPedido'
+                                   AND REE.COD_EXPEDICAO = '$idExpedicao'
+                                   AND RE.COD_DEPOSITO_ENDERECO = $idEndereco
+                                   AND REP.COD_PRODUTO = '$idProduto'
+                                   AND REP.DSC_GRADE = '$dscGrade'
+                                   AND RE.IND_ATENDIDA = 'N'";
+
+                        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+                        if (count($result) >0) {
+                            $idReservaEstoque = $result[0]['COD_RESERVA_ESTOQUE'];
+                            $entityReservaEstoqueProduto = $reservaEstoqueProdutoRepo->findBy(array('reservaEstoque' => $idReservaEstoque));
+                            foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
+                                $qtdReservada = $reservaEstoqueProduto->getQtd();
+                                if ($qtdCortar + $qtdReservada == 0) {
+                                    $reservaEstoqueEn = $reservaEstoqueProduto->getReservaEstoque();
+                                    $reservaEstoqueEn->setAtendida("C");
+                                    $this->getEntityManager()->remove($reservaEstoqueProduto);
+                                } else {
+                                    $reservaEstoqueProduto->setQtd($qtdReservada + $qtdCortar);
+                                    $this->getEntityManager()->persist($reservaEstoqueProduto);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         $this->getEntityManager()->flush();
@@ -201,7 +272,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                                GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) C ON C.COD_PRODUTO = MSP.COD_PRODUTO AND C.DSC_GRADE = MSP.DSC_GRADE
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = MSP.COD_PRODUTO AND PROD.DSC_GRADE = MSP.DSC_GRADE
                  WHERE MS.COD_MAPA_SEPARACAO IN ($mapas)
-                   AND C.CORTE >0
+                      AND C.CORTE >0
                  GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE, C.CORTE, PROD.DSC_PRODUTO";
         $produtos =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         $produtosCortar = array();
