@@ -12,7 +12,7 @@
         $('#qtd').select();
     }
 
-    function load() {
+    function load(e) {
         qtd = document.getElementById('qtd');
         qtd.style.display = 'none';
         qtdLabel = document.getElementById('label-qtd');
@@ -63,6 +63,7 @@
     }
 
     function nextInput(event) {
+
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('qtd').value != "") {
                 codigoBarras = document.getElementById('codigoBarras');
@@ -77,6 +78,19 @@
             }
         }
         return true;
+    }
+
+    document.onkeyup=function(e){
+
+        if(e.which == 113) {
+            qtd = document.getElementById('qtd');
+            qtd.focus();
+            if(event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
+        }
     }
 
 </script>
