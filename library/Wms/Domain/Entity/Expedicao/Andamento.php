@@ -39,7 +39,7 @@ class Andamento
     protected $dataAndamento;
 
     /**
-     * @var Wms\Domain\Entity\Usuario $usuario
+     * @var \Wms\Domain\Entity\Usuario $usuario
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario", cascade={"persist"}, fetch="EAGER")
      * @JoinColumn(name="COD_USUARIO", referencedColumnName="COD_USUARIO")
      */
@@ -66,7 +66,13 @@ class Andamento
     protected $codBarrasProduto;
 
     /**
-     * @param \Wms\Domain\Entity\Expedicao\datetime $dataAndamento
+     * @var string
+     * @Column(name="IND_CORTE_AUTOMATICO", type="string")
+     */
+    protected $corteAutomatico;
+
+    /**
+     * @param \DateTime $dataAndamento
      */
     public function setDataAndamento($dataAndamento)
     {
@@ -127,7 +133,7 @@ class Andamento
     }
 
     /**
-     * @param \Wms\Domain\Entity\Expedicao\Wms\Domain\Entity\Usuario $usuario
+     * @param \Wms\Domain\Entity\Usuario $usuario
      */
     public function setUsuario($usuario)
     {
@@ -136,7 +142,7 @@ class Andamento
     }
 
     /**
-     * @return \Wms\Domain\Entity\Expedicao\Wms\Domain\Entity\Usuario
+     * @return \Wms\Domain\Entity\Usuario
      */
     public function getUsuario()
     {
@@ -173,6 +179,22 @@ class Andamento
     public function setCodBarrasProduto($codBarrasProduto)
     {
         $this->codBarrasProduto = $codBarrasProduto;
+    }
+
+    /**
+     * @return string
+     */
+    public function isCorteAutomatico()
+    {
+        return $this->corteAutomatico;
+    }
+
+    /**
+     * @param string $corteAutomatico
+     */
+    public function setCorteAutomatico($corteAutomatico)
+    {
+        $this->corteAutomatico = $corteAutomatico;
     }
 
 }

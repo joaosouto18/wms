@@ -25,6 +25,9 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $repositorios['reservaEstoqueRepo'];
 
+        $arrItensReserva = array();
+        $arrEstoqueReservado = array();
+
         foreach ($produtos as $produto) {
             $idExpedicao = $produto['idExpedicao'];
             $idPedido = $produto['idPedido'];
@@ -39,14 +42,30 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
                 'idVolume'=>$idVolume,
                 'idCaracteristigaIgnorar' => Endereco::ENDERECO_PICKING
             );
+
             $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
             foreach ($estoquePulmao as $estoque) {
                 if ($qtdRestante > 0) {
                     $qtdEstoque = $estoque['SALDO'];
                     $idPulmao = $estoque['COD_DEPOSITO_ENDERECO'];
+                    $zerouEstoque = false;
+                    $nextEndereco = false;
 
-                    if ($qtdRestante > $qtdEstoque) {
+                    if(isset($arrEstoqueReservado[$idPulmao][$codProduto][$grade])) {
+                        $reserva = $arrEstoqueReservado[$idPulmao][$codProduto][$grade];
+                        if ($reserva['estoqueReservado']){
+                            $nextEndereco = true;
+                        } else {
+                            $qtdEstoque -= $reserva['qtdReservada'];
+                        }
+                    }
+
+                    if ($nextEndereco)
+                        continue;
+
+                    if ($qtdRestante >= $qtdEstoque) {
                         $qtdSeparar = $qtdEstoque;
+                        $zerouEstoque = true;
                     } else {
                         $qtdSeparar = $qtdRestante;
                     }
@@ -57,12 +76,30 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
                         $produtosSeparar[$key]['qtd'] = ($qtdSeparar * -1);
                     }
 
-                    $reservaEstoqueRepo->adicionaReservaEstoque($idPulmao,$produtosSeparar,"S","E",$idExpedicao,null,null,null,$idPedido, $repositorios);
+                    $arrItensReserva[$idExpedicao][$idPedido][$codProduto][$grade][$idPulmao]['itens'] = $produtosSeparar;
+                    if(isset($arrEstoqueReservado[$idPulmao][$codProduto][$grade]['qtdReservada'])) {
+                        $arrEstoqueReservado[$idPulmao][$codProduto][$grade]['qtdReservada'] += ($qtdSeparar * -1);
+                    } else {
+                        $arrEstoqueReservado[$idPulmao][$codProduto][$grade]['qtdReservada'] = ($qtdSeparar * -1);
+                    }
+                    $arrEstoqueReservado[$idPulmao][$codProduto][$grade]['estoqueReservado'] = $zerouEstoque;
                 }
             }
-
-            $this->getEntityManager()->flush();
         }
-    }
 
+        foreach ($arrItensReserva as $idExpedicao => $expedicao){
+            foreach ($expedicao as $idPedido => $pedido) {
+                foreach ($pedido as $produto) {
+                    foreach ($produto as $grade) {
+                        foreach ($grade as $idPulmao => $endPulmao){
+                            $itens = $endPulmao['itens'];
+                            $reservaEstoqueRepo->adicionaReservaEstoque($idPulmao,$itens,"S","E",$idExpedicao,null,null,null,$idPedido, $repositorios);
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->getEntityManager()->flush();
+    }
 }

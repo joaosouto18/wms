@@ -61,13 +61,25 @@ class Expedicao_OndaRessuprimentoController  extends Action
             $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
 
             if (count($verificaDisponibilidadeEstoquePedido) > 0){
-                $idExp = $expedicoes = implode(',', $expedicoes);
+                $cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
 
-                $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $idExp)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
-                $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
+                if ($cortarAutomatico == 'S') {
+                    $itensSemEstoque = array();
+                    foreach ($verificaDisponibilidadeEstoquePedido as $item) {
+                        $itensSemEstoque[$item['PEDIDO']][$item['CODIGO']][$item['GRADE']] = ($item['SALDO_FINAL'] * - 1);
+                    }
+                    $motivo = "Saldo insuficiente";
+                    $expedicaoRepo->executaCortePedido($itensSemEstoque, $motivo);
 
-                $this->addFlashMessage("error", $mensagem);
-                $this->redirect("index","onda-ressuprimento","expedicao");
+                } else {
+                    $idExp = $expedicoes = implode(',', $expedicoes);
+
+                    $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $idExp)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
+                    $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
+
+                    $this->addFlashMessage("error", $mensagem);
+                    $this->redirect("index", "onda-ressuprimento", "expedicao");
+                }
             }
 
             ini_set('max_execution_time', 300);

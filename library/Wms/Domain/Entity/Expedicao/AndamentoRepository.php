@@ -11,7 +11,7 @@ class AndamentoRepository extends EntityRepository
      * @param $idExpedicao
      * @param bool $usuarioId
      */
-    public function save($observacao = false, $idExpedicao, $usuarioId = false, $flush = true, $codigoBarras = null, $codBarrasProdutos = null, $integracao = false)
+    public function save($observacao = false, $idExpedicao, $usuarioId = false, $flush = true, $codigoBarras = null, $codBarrasProdutos = null, $integracao = false, $corteAutomatico = false)
     {
         $usuario = null;
         if ($integracao == false) {
@@ -30,6 +30,7 @@ class AndamentoRepository extends EntityRepository
         $andamento->setDataAndamento(new \DateTime);
         $andamento->setCodBarras($codigoBarras);
         $andamento->setCodBarrasProduto($codBarrasProdutos);
+        $andamento->setCorteAutomatico($corteAutomatico);
 
         $this->_em->persist($andamento);
 

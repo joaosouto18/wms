@@ -2,14 +2,12 @@
 
 namespace Wms\Domain\Entity;
 
-use Core\Grid\Exception;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao as ExpedicaoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
     Wms\Service\Coletor as LeituraColetor,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
-    Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
-    Wms\Domain\Entity\Expedicao\Andamento;
+    Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
 
 
 class ExpedicaoRepository extends EntityRepository
@@ -325,19 +323,21 @@ class ExpedicaoRepository extends EntityRepository
         $sql = "
          SELECT *
            FROM (SELECT DISTINCT
+                        PEDIDO.COD_EXPEDICAO AS Expedicao,
+                        PEDIDO.COD_PEDIDO AS Pedido,
                         PEDIDO.COD_PRODUTO AS Codigo,
                         PEDIDO.DSC_GRADE AS Grade,
                         PROD.DSC_PRODUTO as Produto,
                         DE.DSC_DEPOSITO_ENDERECO as Picking,
                         NVL(E.QTD,0) AS Estoque,
                         (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo_Final
-                   FROM (SELECT SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO
+                   FROM (SELECT P.COD_PEDIDO, SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO
                            FROM PEDIDO P
                           INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                           LEFT JOIN ONDA_RESSUPRIMENTO_PEDIDO ORP ON PP.COD_PEDIDO = ORP.COD_PEDIDO AND PP.COD_PRODUTO = ORP.COD_PRODUTO AND PP.DSC_GRADE = ORP.DSC_GRADE
                           INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
                           WHERE P.CENTRAL_ENTREGA = $central  AND ORP.COD_PEDIDO IS NULL AND P.DTH_CANCELAMENTO IS NULL
-                          GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO) PEDIDO
+                          GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, P.COD_PEDIDO, C.COD_EXPEDICAO) PEDIDO
               LEFT JOIN (SELECT P.COD_PRODUTO, P.DSC_GRADE, MIN(NVL(E.QTD,0)) as QTD
                            FROM PRODUTO P
                            LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
@@ -2934,13 +2934,15 @@ class ExpedicaoRepository extends EntityRepository
 
     public function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo){
 
+        /** @var ExpedicaoEntity\AndamentoRepository $expedicaoAndamentoRepo */
+        $expedicaoAndamentoRepo    = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
         $reservaEstoqueProdutoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
         $pedidoProdutoRepo         = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
         $mapaSeparacaoPedidoRepo   = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $mapaSeparacaoProdutoRepo  = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaConferenciaRepo       = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-        $mapaEmbaladoRepo          = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
+        /** @var ExpedicaoEntity\PedidoProduto $entidadePedidoProduto */
         $entidadePedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido'=>$codPedido,
             'codProduto'=>$codProduto,
             'grade'=>$grade));
@@ -2978,32 +2980,47 @@ class ExpedicaoRepository extends EntityRepository
         $entidadePedidoProduto->setQtdCortada($entidadePedidoProduto->getQtdCortada() + $qtdCortar);
         $this->getEntityManager()->persist($entidadePedidoProduto);
 
-        $qtdMapa = 0;
+        $expedicaoEn = $entidadePedidoProduto->getPedido()->getCarga()->getExpedicao();
+        $observacao = "Item $codProduto - $grade do pedido $codPedido teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
+        $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(),false, false);
+
         $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array('codPedidoProduto'=>$entidadePedidoProduto->getId()));
 
-        if (isset($mapaSeparacaoPedido) && !empty($mapaSeparacaoPedido)) {
+        if (!empty($mapaSeparacaoPedido)) {
             $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao'=>$mapaSeparacaoPedido->getMapaSeparacao(),
                 'codProduto'=>$codProduto,
                 'dscGrade'=>$grade));
 
-            foreach ($entidadeMapaProduto as $mapa) {
-                $qtdMapa = $qtdMapa + ($mapa->getQtdEmbalagem() * $mapa->getQtdSeparar());
-                $qtdCortadoMapa = $mapa->getQtdCortado();
-                $qtdCortarMapa = $qtdCortar;
-                if ($qtdCortarMapa > ($qtdMapa - $qtdCortadoMapa)) {
-                    $qtdCortarMapa = $qtdMapa - $qtdCortadoMapa;
-                }
-
-                if ((int)$qtdCortarMapa + $qtdCortadoMapa == $qtdMapa) {
-                    $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
-                    foreach ($mapaConferenciaEn as $conferencia) {
-                        $this->getEntityManager()->remove($conferencia);
+            if (!empty($entidadeMapaProduto)){
+                for ($i = 0; $qtdCortar !== 0; $i++) {
+                    /** @var ExpedicaoEntity\MapaSeparacaoProduto $mapa */
+                    $mapa = $entidadeMapaProduto[$i];
+                    $qtdCortadaMapa = $mapa->getQtdCortado();
+                    $qtdSeparar = $mapa->getQtdEmbalagem() * $mapa->getQtdSeparar();
+                    if ($qtdCortadaMapa < $qtdSeparar) {
+                        $qtdDisponivelDeCorte = $qtdSeparar - $qtdCortadaMapa;
+                        if ($qtdDisponivelDeCorte >= $qtdCortar) {
+                            $mapa->setQtdCortado($qtdCortar + $qtdCortadaMapa);
+                            $qtdCortar -= $qtdCortar;
+                        } else {
+                            $mapa->setQtdCortado($mapa->getQtdSeparar());
+                            $qtdCortar -= $qtdDisponivelDeCorte;
+                        }
+                        $qtdResult = ($mapa->getQtdSeparar() * $mapa->getQtdEmbalagem()) - $mapa->getQtdCortado();
+                        if( $qtdResult == 0) {
+                            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
+                            foreach ($mapaConferenciaEn as $conferencia) {
+                                $this->getEntityManager()->remove($conferencia);
+                            }
+                        }
+                        $this->getEntityManager()->persist($mapa);
+                    } else {
+                        $produto = $mapa->getCodProduto();
+                        $grade = $mapa->getDscGrade();
+                        $idMapa = $mapa->getId();
+                        throw new \Exception("O produto $produto grade $grade do mapa $idMapa não tem mais saldo para corte!");
                     }
                 }
-
-                $mapa->setQtdCortado($qtdCortarMapa + $qtdCortadoMapa);
-                $this->getEntityManager()->persist($mapa);
-                $qtdCortar = $qtdCortar - $qtdCortarMapa;
             }
         }
 
