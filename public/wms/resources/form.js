@@ -37,8 +37,8 @@
                 //E
                 window.open( URL_SISTEMA + "/expedicao");
             }
-            if (e.which == 80 && pressedCtrl == true) {
-                //P
+            if (e.which == 68 && pressedCtrl == true) {
+                //D
                 window.open( URL_SISTEMA + "/produto");
             }
             if (e.which == 77 && pressedCtrl == true) {
