@@ -66,12 +66,6 @@ class Andamento
     protected $codBarrasProduto;
 
     /**
-     * @var string
-     * @Column(name="IND_CORTE_AUTOMATICO", type="string")
-     */
-    protected $corteAutomatico;
-
-    /**
      * @param \DateTime $dataAndamento
      */
     public function setDataAndamento($dataAndamento)
@@ -180,21 +174,5 @@ class Andamento
     {
         $this->codBarrasProduto = $codBarrasProduto;
     }
-
-    /**
-     * @return string
-     */
-    public function isCorteAutomatico()
-    {
-        return $this->corteAutomatico;
-    }
-
-    /**
-     * @param string $corteAutomatico
-     */
-    public function setCorteAutomatico($corteAutomatico)
-    {
-        $this->corteAutomatico = $corteAutomatico;
-    }
-
+    
 }
