@@ -114,8 +114,8 @@ class Mobile_ExpedicaoController extends Action {
 
     public function lerProdutoMapaAction() {
 
+        $produtosMapa = array();
         try {
-
             $idMapa = $this->_getParam("idMapa");
             $idVolume = $this->_getParam("idVolume");
             $idExpedicao = $this->_getParam("idExpedicao");
