@@ -1412,12 +1412,6 @@ class Mobile_EnderecamentoController extends Action
         $embalagemRepository = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $embalagemEn = $embalagemRepository->getEmbalagemByCodigo($codigoBarras);
 
-        if (empty($embalagemEn)) {
-            $mensagem = 'vazio';
-        } else {
-            $mensagem = 'populado';
-        }
-
         if (empty($embalagemEn) ) {
             /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
             $volumeRepo = $this->em->getRepository('wms:Produto\Volume');
@@ -1427,7 +1421,7 @@ class Mobile_EnderecamentoController extends Action
 
         if (empty($embalagemEn) && empty($volumeEn)) {
             $status = 'error';
-//            $mensagem = 'Codigo de Barras nao encontrado!';
+            $mensagem = 'Codigo de Barras nao encontrado!';
         } elseif (!empty($embalagemEn)) {
             $status = 'ok';
             $result['endereco'] = $embalagemEn[0]['descricao'];
