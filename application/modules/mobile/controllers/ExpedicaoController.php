@@ -291,7 +291,7 @@ class Mobile_ExpedicaoController extends Action {
             }
         } catch (\Exception $e) {
             if ($confereQtd == true) {
-                $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()));
+                $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()), 'dados' => $produtosMapa);
                 $this->_helper->json($vetRetorno);
             } else {
                 $this->addFlashMessage('error',$e->getMessage());
