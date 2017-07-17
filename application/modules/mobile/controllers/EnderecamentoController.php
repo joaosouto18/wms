@@ -1412,6 +1412,12 @@ class Mobile_EnderecamentoController extends Action
         $embalagemRepository = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $embalagemEn = $embalagemRepository->getEmbalagemByCodigo($codigoBarras);
 
+        if (empty($embalagemEn)) {
+            echo 'vazio';
+        } else {
+            echo 'populado';
+        }
+        exit;
         if (empty($embalagemEn) ) {
             /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
             $volumeRepo = $this->em->getRepository('wms:Produto\Volume');
