@@ -209,56 +209,57 @@
 </form>
 
 
-<script>
+<script type="text/javascript">
     $('#formulario').on('submit', function (e) {
         var ret = true;
         if (<?php if ($this->exibeQtd == true) {echo "'S'";} else {echo "'N'";}?> == 'S') {
-            //if (e.which == 13) {
-                $.ajax({
-                    url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
-                    data: $('form').serialize(),
-                    async: false,
-                    type: 'post',
-                    success: function (data) {
-                        if (data.retorno.resposta.length > 0) {
-                            ret = false;
-                            document.getElementById('qtd').value = "1";
-                            codigoBarras = document.getElementById('codigoBarras').value = "";
+            $.ajax({
+                url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
+                data: $('form').serialize(),
+                async: false,
+                type: 'post',
+                success: function (data) {
+                    if (data.retorno.resposta.length > 0) {
+                        ret = false;
+                        document.getElementById('qtd').value = "1";
+                        codigoBarras = document.getElementById('codigoBarras').value = "";
 
-                            var error = "";
-                            var success = "";
-                            var song = "";
+                        var error = "";
+                        var success = "";
+                        var song = "";
 
-                            if (data.retorno.resposta == 'error') {
-                                error = data.retorno.message;
-                                success = "";
-                                song = "/alarme.mp3";
-                            } else {
-                                success = data.retorno.message;
-                                error = "";
-                                song = "/confirm2.mp3";
-                            }
+                        if (data.retorno.resposta == 'error') {
+                            error = data.retorno.message;
+                            success = "";
+                            song = "/alarme.mp3";
+                        } else {
+                            success = data.retorno.message;
+                            error = "";
+                            song = "/confirm2.mp3";
+                        }
 
-                            document.getElementById('codigoBarras').focus();
+                        document.getElementById('codigoBarras').focus();
 
-                            $("#erro").html(error);
-                            $("#success").html(success);
+                        $("#erro").html(error);
+                        $("#success").html(success);
 
-                            try {
-                                playSound(song);
-                            } catch (e) {
-                                alert(message);
-                            }
+                        try {
+                            playSound(song);
+                        } catch (e) {
+                            alert(message);
+                        }
 
-                            if (data.retorno.resposta == 'error') {
-                                alert(data.retorno.message);
-                            }
+                        if (data.retorno.resposta == 'error') {
+                            alert(data.retorno.message);
+                        }
 
+                        if (data.dados.length != 0) {
                             var produtosMapas = '<div id="carousel">';
                             for (var i = 0; i < data.dados.length; i++) {
                                 produtosMapas += '<div id="lista-produto'+data.dados[i]['COD_PRODUTO']+'">'+data.dados[i]['COD_PRODUTO'] +' - '+ data.dados[i]['DSC_PRODUTO'] +' - '+ data.dados[i]['QTD_CONFERIDA'] +'</div>';
                             }
-                            produtosMapas += '</div></td><td style="width: 20%"> <button id="next"> >| </button>';
+                            console.log(data);
+                            produtosMapas += '</div><button id="next"> >| </button>';
                             $('#produtos-conferir').html(produtosMapas);
 
                             $('#carousel').cycle({
@@ -266,11 +267,10 @@
                                 next: '#next',
                                 timeout:  0
                             });
-
                         }
                     }
-                });
-            //}
+                }
+            });
         }
         return ret;
     });
