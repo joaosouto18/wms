@@ -3,6 +3,7 @@
     .gTable {
         width: 100%;
         margin-bottom: 5px;
+        margin-left: 7px;
     }
     .gTable tr.gRowColor td {
         background: #EDEDED;
@@ -64,119 +65,121 @@
 </style>
 <div class="row">
     <?php echo $this->form; ?>
+    <div class="row">
+        <?php if ($this->exibe == true): ?>
+            <table id="tabela" style="margin-left: 2%; width: 90%; margin-right: 2%; margin-top: 2%; margin-bottom: 5%">
+                <div style="margin-left: 2%; margin-top: 2%; margin-right: 2%">
+                    <label><h4><?php echo $this->descricao; ?></h4></label>
+                </div>
+                <tbody>
+                    <tr>
+                        <td><b>Código:</b> <?php echo $this->codProduto; ?></td>
+                        <td><b>Tipo:</b> <?php echo $this->tipo; ?></td>
+                    </tr>
+
+                    <tr>
+                        <td><b>Grade:</b> <?php echo $this->grade; ?></td>
+                        <td><b>Emb.:</b> <?php echo $this->embalagem; ?></td>
+                    </tr>
+                    <tr>
+                        <td><b>Norma:</b> <?php echo $this->lastro; ?>x<?php echo $this->camadas; ?>=<?php echo $this->norma; ?></td>
+                        <td><b>Peso:</b> <?php echo $this->peso; ?></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><b>Unit.:</b> <?php echo $this->unitizador; ?></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2"><b>Linha Separação:</b> <?php echo $this->linhaSeparacao; ?></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2"><b>Dias p/ Vencimento:</b> <?php echo $this->diasVidaUtil; ?></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2"><b>Cod.Barras:</b> <?php echo $this->codigoBarras; ?></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2"><b>Picking:</b> <?php echo $this->picking; ?></td>
+                    </tr>
+
+
+                </tbody>
+            </table>
+
+            <?php if (isset($this->pulmoes) && count($this->pulmoes) > 0) : ?>
+                <h3>Estoque do produto:</h3>
+                <table class="gTable ">
+                    <tbody>
+                        <tr class ="gTTitle">
+                            <td><b>Endereço</b></td>
+                            <td><b>Tipo</b></td>
+                            <td><b>U.M.A</b></td>
+                            <td><b>Qtd.Estoque</b></td>
+                            <td><b>Validade</b></td>
+                        </tr>
+                        <?php foreach ($this->pulmoes as $pulmao) : ?>
+                            <tr>
+                                <td><?php echo $pulmao['ENDERECO'] ?></td>
+                                <td><?php echo $pulmao['TIPO'] ?></td>
+                                <td><?php echo $pulmao['UMA'] ?></td>
+                                <td><?php echo $pulmao['QTD'] ?></td>
+                                <?php $dataValidade = new Zend_Date($pulmao['DTH_VALIDADE']); ?>
+                                <td><?php echo $dataValidade->toString('dd/MM/YY')   ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+
+            <?php if (isset($this->reservas) && count($this->reservas) > 0) : ?>
+                <h2>Reservas do produto:</h2>
+                <table class="gTable ">
+                    <tbody>
+                        <tr class ="gTTitle">
+                            <td><b>Endereço</b></td>
+                            <td><b>Origem</b></td>
+                            <td><b>Data Reserva</b></td>
+                            <td><b>Tipo</b></td>
+                            <td><b>Qtd Reservada</b></td>
+                        </tr>
+
+                        <?php
+                        $qtdEntrada = 0;
+                        $qtdSaida = 0;
+
+                        foreach ($this->reservas as $reserva) {
+                            ?>
+                            <tr>
+                                <td><?php echo $reserva['DSC_DEPOSITO_ENDERECO'] ?></td>
+                                <td><?php echo $reserva['ORIGEM'] ?></td>
+                                <td><?php echo $reserva['DTH_RESERVA'] ?></td>
+                                <td><?php echo $reserva['TIPO'] ?></td>
+                                <td><?php echo $reserva['QTD_RESERVADA'] ?></td>
+                            </tr>
+                            <?php
+                            if ($reserva['QTD_RESERVADA'] > 0) {
+                                $qtdEntrada = $qtdEntrada + $reserva['QTD_RESERVADA'];
+                            } else {
+                                $qtdSaida = $qtdSaida + $reserva['QTD_RESERVADA'];
+                            }
+                        }
+                        ?>
+
+                        <tr class="bottom">
+                            <td colspan="2" style="padding-top: 20px"></td>
+                            <td style="padding-top: 20px"><b>Total Entradas</b></td>
+                            <td style="padding-top: 20px"><b><?php echo $qtdEntrada ?></b></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"></td>
+                            <td><b>Total Saídas</b></td>
+                            <td><b><?php echo $qtdSaida ?></b></td>
+                        </tr>
+                </table>
+            <?php endif; ?>
+        <?php endif; ?>
+    </div>
 </div>
-<?php if ($this->exibe == true): ?>
-<table id="tabela" style="margin-left: 2%; width: 90%; margin-right: 2%; margin-top: 2%; margin-bottom: 5%">
-        <div style="margin-left: 2%; margin-top: 2%; margin-right: 2%">
-            <label><h4><?php echo $this->descricao; ?></h4></label>
-        </div>
-        <tbody>
-            <tr>
-                <td><b>Código:</b> <?php echo $this->codProduto; ?></td>
-                <td><b>Tipo:</b> <?php echo $this->tipo; ?></td>
-            </tr>
-
-            <tr>
-                <td><b>Grade:</b> <?php echo $this->grade; ?></td>
-                <td><b>Emb.:</b> <?php echo $this->embalagem; ?></td>
-            </tr>
-            <tr>
-                <td><b>Norma:</b> <?php echo $this->lastro; ?>x<?php echo $this->camadas; ?>=<?php echo $this->norma; ?></td>
-                <td><b>Peso:</b> <?php echo $this->peso; ?></td>
-            </tr>
-            <tr>
-                <td colspan="2"><b>Unit.:</b> <?php echo $this->unitizador; ?></td>
-            </tr>
-
-            <tr>
-                <td colspan="2"><b>Linha Separação:</b> <?php echo $this->linhaSeparacao; ?></td>
-            </tr>
-
-            <tr>
-                <td colspan="2"><b>Dias p/ Vencimento:</b> <?php echo $this->diasVidaUtil; ?></td>
-            </tr>
-
-            <tr>
-                <td colspan="2"><b>Cod.Barras:</b> <?php echo $this->codigoBarras; ?></td>
-            </tr>
-
-            <tr>
-                <td colspan="2"><b>Picking:</b> <?php echo $this->picking; ?></td>
-            </tr>
-
-
-        </tbody>
-    </table>
-
-    <?php if (isset($this->pulmoes) && count($this->pulmoes) > 0) : ?>
-        <h2>Estoque do produto:</h2>
-        <table class="gTable ">
-            <tbody>
-                <tr class ="gTTitle">
-                    <td><b>Endereço</b></td>
-                    <td><b>Tipo</b></td>
-                    <td><b>U.M.A</b></td>
-                    <td><b>Qtd.Estoque</b></td>
-                    <td><b>Validade</b></td>
-                </tr>
-                <?php foreach ($this->pulmoes as $pulmao) : ?>
-                    <tr>
-                        <td><?php echo $pulmao['ENDERECO'] ?></td>
-                        <td><?php echo $pulmao['TIPO'] ?></td>
-                        <td><?php echo $pulmao['UMA'] ?></td>
-                        <td><?php echo $pulmao['QTD'] ?></td>
-                        <?php $dataValidade = new Zend_Date($pulmao['DTH_VALIDADE']); ?>
-                        <td><?php echo $dataValidade->toString('dd/MM/YY') ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
-
-    <?php if (isset($this->reservas) && count($this->reservas) > 0) : ?>
-        <h2>Reservas do produto:</h2>
-        <table class="gTable ">
-            <tbody>
-                <tr class ="gTTitle">
-                    <td><b>Endereço</b></td>
-                    <td><b>Origem</b></td>
-                    <td><b>Data Reserva</b></td>
-                    <td><b>Tipo</b></td>
-                    <td><b>Qtd Reservada</b></td>
-                </tr>
-
-                <?php
-                $qtdEntrada = 0;
-                $qtdSaida = 0;
-
-                foreach ($this->reservas as $reserva) {
-                    ?>
-                    <tr>
-                        <td><?php echo $reserva['DSC_DEPOSITO_ENDERECO'] ?></td>
-                        <td><?php echo $reserva['ORIGEM'] ?></td>
-                        <td><?php echo $reserva['DTH_RESERVA'] ?></td>
-                        <td><?php echo $reserva['TIPO'] ?></td>
-                        <td><?php echo $reserva['QTD_RESERVADA'] ?></td>
-                    </tr>
-                    <?php
-                    if ($reserva['QTD_RESERVADA'] > 0) {
-                        $qtdEntrada = $qtdEntrada + $reserva['QTD_RESERVADA'];
-                    } else {
-                        $qtdSaida = $qtdSaida + $reserva['QTD_RESERVADA'];
-                    }
-                }
-                ?>
-
-                <tr class="bottom">
-                    <td colspan="2" style="padding-top: 20px"></td>
-                    <td style="padding-top: 20px"><b>Total Entradas</b></td>
-                    <td style="padding-top: 20px"><b><?php echo $qtdEntrada ?></b></td>
-                </tr>
-                <tr>
-                    <td colspan="2"></td>
-                    <td><b>Total Saídas</b></td>
-                    <td><b><?php echo $qtdSaida ?></b></td>
-                </tr>
-        </table>
-    <?php endif; ?>
-<?php endif; ?>

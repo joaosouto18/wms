@@ -7,7 +7,7 @@
 @import url("form.css");
 @import url("messenger.css");
 
-body { overflow-x: hidden!important; }
+/*body { overflow-x: hidden!important; }*/
 
 * {
     margin: 0;
@@ -15,7 +15,7 @@ body { overflow-x: hidden!important; }
     text-decoration: none;
     border-collapse: collapse;
     font-family: 'Arial';
-    font-size: 11px;
+    font-size: 12px;
 }
 
 #top, #menu, #content, #footer {
@@ -298,7 +298,9 @@ table tr.title td {
 #enderecos .divergencia { color: #e0ce06; font-weight: bold }
 
 .gradientBtn{
-    font-size: 11px;
+    width: 111%!important;
+    font-size: 13px;
+    word-wrap: break-word;
     background: rgba(255,172,71,1);
     background: -moz-linear-gradient(top, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%);
     background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(255,172,71,1)), color-stop(100%, rgba(245,109,6,1)));
