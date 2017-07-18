@@ -177,7 +177,5 @@ class Expedicao_CorteController  extends Action
                 $this->_redirect('/expedicao');
             }
         }
-
     }
-
 }
