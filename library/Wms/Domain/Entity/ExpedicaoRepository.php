@@ -2930,34 +2930,33 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
     }
 
-    public function diluirCorte($arr) {
-        $arrExpedicoes = array();
-        $arrProdutos = array();
-
-        foreach ($arr as $expedicao => $itens) {
-            $arrExpedicoes[] = $expedicao;
-            foreach($itens as $produto => $grades) {
-                foreach ($grades as $grade => $qtd) {
-                    $arrProdutos[] = array(
-                        'produto' => $produto,
-                        'grade' => $grade,
-                        'qtdFaltante' => $qtd
-                    );
-                }
-            }
-        }//
-
+    public function diluirCorte($arrExpedicoes, $itensSemEstoque)
+    {
+        $arrResult = array();
         $expedicoes = implode(',', $arrExpedicoes);
-        //foreach ($arrProdutos)
-        //$produtos
 
-        $dql = "select e.cod_expedicao, p.cod_pedido, pp.cod_produto, pp.dsc_grade, pp.quantidade, pp.qtd_cortada 
+        foreach ($itensSemEstoque as $item){
+            $sql = "select e.cod_expedicao, p.cod_pedido, pp.cod_produto, pp.dsc_grade, pp.quantidade, pp.qtd_cortada 
                 from expedicao e
                 inner join carga c on c.cod_expedicao = e.cod_expedicao
                 inner join pedido p on p.cod_carga = c.cod_carga
                 inner join pedido_produto pp on pp.cod_pedido = p.cod_pedido
-                where e.cod_expedicao in ($expedicoes) 
-                  and ($produtos)";
+                where e.cod_expedicao in ($expedicoes) and (pp.cod_produto = '$item[CODIGO]' and dsc_grade = '$item[GRADE]')";
+
+            $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+            $divisor = count($result);
+            $resto = $item['SALDO_FINAL'] % $divisor;
+            $qtdCortar = ($item['SALDO_FINAL'] - $resto) / $divisor;
+
+            foreach($result as $pedido) {
+                if ($pedido === end($result)) {
+                    $qtdCortar += $resto;
+                }
+                $arrResult[$pedido['COD_PEDIDO']][$pedido['COD_PRODUTO']][$pedido['DSC_GRADE']] = ($qtdCortar * -1);
+            }
+        }
+
+        return $arrResult;
     }
 
     public function executaCortePedido($cortes, $motivo) {
