@@ -78,9 +78,9 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
 
                     $arrItensReserva[$idExpedicao][$idPedido][$codProduto][$grade][$idPulmao]['itens'] = $produtosSeparar;
                     if(isset($arrEstoqueReservado[$idPulmao][$codProduto][$grade]['qtdReservada'])) {
-                        $arrEstoqueReservado[$idPulmao][$codProduto][$grade]['qtdReservada'] += ($qtdSeparar * -1);
+                        $arrEstoqueReservado[$idPulmao][$codProduto][$grade]['qtdReservada'] += $qtdSeparar;
                     } else {
-                        $arrEstoqueReservado[$idPulmao][$codProduto][$grade]['qtdReservada'] = ($qtdSeparar * -1);
+                        $arrEstoqueReservado[$idPulmao][$codProduto][$grade]['qtdReservada'] = $qtdSeparar;
                     }
                     $arrEstoqueReservado[$idPulmao][$codProduto][$grade]['estoqueReservado'] = $zerouEstoque;
                 }
