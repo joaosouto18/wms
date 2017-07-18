@@ -253,21 +253,6 @@
                             alert(data.retorno.message);
                         }
 
-                        if (data.dados.length != 0) {
-                            var produtosMapas = '<div id="carousel">';
-                            for (var i = 0; i < data.dados.length; i++) {
-                                produtosMapas += '<div id="lista-produto'+data.dados[i]['COD_PRODUTO']+'">'+data.dados[i]['COD_PRODUTO'] +' - '+ data.dados[i]['DSC_PRODUTO'] +' - '+ data.dados[i]['QTD_CONFERIDA'] +'</div>';
-                            }
-                            console.log(data);
-                            produtosMapas += '</div><button id="next"> >| </button>';
-                            $('#produtos-conferir').html(produtosMapas);
-
-                            $('#carousel').cycle({
-                                fx:   'turnDown',
-                                next: '#next',
-                                timeout:  0
-                            });
-                        }
                     }
                 }
             });
