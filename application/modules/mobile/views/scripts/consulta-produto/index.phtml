@@ -69,7 +69,7 @@
         <?php if ($this->exibe == true): ?>
             <table id="tabela" style="margin-left: 2%; width: 90%; margin-right: 2%; margin-top: 2%; margin-bottom: 5%">
                 <div style="margin-left: 2%; margin-top: 2%; margin-right: 2%">
-                    <label><h4><?php echo $this->descricao; ?></h4></label>
+                    <label><h4 style="font-size: 15px;"><?php echo $this->descricao; ?></h4></label>
                 </div>
                 <tbody>
                     <tr>
@@ -110,7 +110,7 @@
             </table>
 
             <?php if (isset($this->pulmoes) && count($this->pulmoes) > 0) : ?>
-                <h3>Estoque do produto:</h3>
+               <h4 style="font-size: 15px; font-weight: bold;">Estoque do produto:</h4>
                 <table class="gTable ">
                     <tbody>
                         <tr class ="gTTitle">
@@ -126,8 +126,7 @@
                                 <td><?php echo $pulmao['TIPO'] ?></td>
                                 <td><?php echo $pulmao['UMA'] ?></td>
                                 <td><?php echo $pulmao['QTD'] ?></td>
-                                <?php $dataValidade = new Zend_Date($pulmao['DTH_VALIDADE']); ?>
-                                <td><?php echo $dataValidade->toString('dd/MM/YY')   ?></td>
+                                <td><?php echo ($pulmao['DTH_VALIDADE'] == '' || $pulmao['DTH_VALIDADE'] == null ? '' : date('d/m/y', strtotime($pulmao['DTH_VALIDADE']))) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
