@@ -261,7 +261,8 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
 
             /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
-            $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
+            //$produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
+            $produtosMapa = null;
             if (count($produtosMapa) > 0) {
                 $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
                 $this->view->produtosMapa = $produtosMapa;
