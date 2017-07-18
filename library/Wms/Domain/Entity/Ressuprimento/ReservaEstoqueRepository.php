@@ -94,7 +94,7 @@ class ReservaEstoqueRepository extends EntityRepository
                 continue;
             }
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto $reservaProduto */
-            if (is_array($reservaProdutos) && !empty($reservaProdutos)){
+            if (!empty($reservaProdutos)){
                 foreach ($reservaProdutos as $reservaProduto) {
                     foreach ($produtos as $produto) {
                         if (($produto['codProduto'] == $reservaProduto->getProduto()->getId()) &&

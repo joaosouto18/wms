@@ -2932,6 +2932,18 @@ class ExpedicaoRepository extends EntityRepository
         return $result;
     }
 
+    public function diluirCorte($arr) {
+        $strExpedicoes = '';
+        $strProdutos = '';
+
+        foreach ($arr as $expedicao => $itens)
+            foreach($itens as $produto => $grades)
+                foreach ($grades as $grade => $qtd) {
+
+                }
+
+    }
+
     public function executaCortePedido($cortes, $motivo) {
         foreach ($cortes as $codPedido => $produtos) {
             foreach ($produtos as $codProduto => $grades) {

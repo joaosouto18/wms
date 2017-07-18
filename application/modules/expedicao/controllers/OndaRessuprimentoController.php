@@ -60,12 +60,12 @@ class Expedicao_OndaRessuprimentoController  extends Action
             $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
 
             if (count($verificaDisponibilidadeEstoquePedido) > 0){
-                //$cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
+                /*$cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
 
-             /*   if ($cortarAutomatico == 'S') {
+                if ($cortarAutomatico == 'S') {
                     $itensSemEstoque = array();
                     foreach ($verificaDisponibilidadeEstoquePedido as $item) {
-                        $itensSemEstoque[$item['PEDIDO']][$item['CODIGO']][$item['GRADE']] = ($item['SALDO_FINAL'] * - 1);
+                        $itensSemEstoque[$item['EXPEDICAO']][$item['CODIGO']][$item['GRADE']] = ($item['SALDO_FINAL'] * - 1);
                     }
                     $motivo = "Saldo insuficiente";
                     $expedicaoRepo->executaCortePedido($itensSemEstoque, $motivo);
