@@ -3,6 +3,7 @@
 
         $('#codigoBarras').change(function () {
             var codBarras = $('#codigoBarras').val();
+            alert(codBarras);
             if (codBarras !== null && codBarras !== '') {
                 $.ajax({
                     url: '/mobile/enderecamento/dados-embalagem/codigoBarras/' + codBarras,
