@@ -323,20 +323,19 @@ class ExpedicaoRepository extends EntityRepository
         $sql = "
          SELECT *
            FROM (SELECT DISTINCT
-                        PEDIDO.COD_EXPEDICAO AS Expedicao,
                         PEDIDO.COD_PRODUTO AS Codigo,
                         PEDIDO.DSC_GRADE AS Grade,
                         PROD.DSC_PRODUTO as Produto,
                         DE.DSC_DEPOSITO_ENDERECO as Picking,
                         NVL(E.QTD,0) AS Estoque,
                         (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo_Final
-                   FROM (SELECT SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO
+                   FROM (SELECT SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) quantidade_pedido , PP.COD_PRODUTO, PP.DSC_GRADE
                            FROM PEDIDO P
                           INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                           LEFT JOIN ONDA_RESSUPRIMENTO_PEDIDO ORP ON PP.COD_PEDIDO = ORP.COD_PEDIDO AND PP.COD_PRODUTO = ORP.COD_PRODUTO AND PP.DSC_GRADE = ORP.DSC_GRADE
                           INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
-                          WHERE P.CENTRAL_ENTREGA = $central  AND ORP.COD_PEDIDO IS NULL AND P.DTH_CANCELAMENTO IS NULL
-                          GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO) PEDIDO
+                          WHERE P.CENTRAL_ENTREGA = $central AND ORP.COD_PEDIDO IS NULL AND P.DTH_CANCELAMENTO IS NULL AND C.COD_EXPEDICAO IN ($expedicoes)
+                          GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) PEDIDO
               LEFT JOIN (SELECT P.COD_PRODUTO, P.DSC_GRADE, MIN(NVL(E.QTD,0)) as QTD
                            FROM PRODUTO P
                            LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
@@ -366,8 +365,7 @@ class ExpedicaoRepository extends EntityRepository
                                             AND PE.DSC_GRADE = PROD.DSC_GRADE
               LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
                                              OR DE.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
-                  WHERE PEDIDO.COD_EXPEDICAO IN ($expedicoes)
-                    AND (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido < 0) PROD
+                  WHERE (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido < 0) PROD
                   ORDER BY Codigo, Grade, Produto
         ";
 
@@ -2933,15 +2931,33 @@ class ExpedicaoRepository extends EntityRepository
     }
 
     public function diluirCorte($arr) {
-        $strExpedicoes = '';
-        $strProdutos = '';
+        $arrExpedicoes = array();
+        $arrProdutos = array();
 
-        foreach ($arr as $expedicao => $itens)
-            foreach($itens as $produto => $grades)
+        foreach ($arr as $expedicao => $itens) {
+            $arrExpedicoes[] = $expedicao;
+            foreach($itens as $produto => $grades) {
                 foreach ($grades as $grade => $qtd) {
-
+                    $arrProdutos[] = array(
+                        'produto' => $produto,
+                        'grade' => $grade,
+                        'qtdFaltante' => $qtd
+                    );
                 }
+            }
+        }//
 
+        $expedicoes = implode(',', $arrExpedicoes);
+        //foreach ($arrProdutos)
+        //$produtos
+
+        $dql = "select e.cod_expedicao, p.cod_pedido, pp.cod_produto, pp.dsc_grade, pp.quantidade, pp.qtd_cortada 
+                from expedicao e
+                inner join carga c on c.cod_expedicao = e.cod_expedicao
+                inner join pedido p on p.cod_carga = c.cod_carga
+                inner join pedido_produto pp on pp.cod_pedido = p.cod_pedido
+                where e.cod_expedicao in ($expedicoes) 
+                  and ($produtos)";
     }
 
     public function executaCortePedido($cortes, $motivo) {
