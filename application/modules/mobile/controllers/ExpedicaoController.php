@@ -115,6 +115,7 @@ class Mobile_ExpedicaoController extends Action {
     public function lerProdutoMapaAction() {
 
         $produtosMapa = array();
+        $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
         try {
             $idMapa = $this->_getParam("idMapa");
             $idVolume = $this->_getParam("idVolume");
@@ -305,11 +306,6 @@ class Mobile_ExpedicaoController extends Action {
 
         /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
         $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
-        if (count($produtosMapa) > 0) {
-            $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-            $this->view->produtosMapa = $produtosMapa;
-        }
-
         $this->_helper->json(array('resposta' => 'success', 'dados' => $produtosMapa));
     }
 

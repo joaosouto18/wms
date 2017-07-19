@@ -116,8 +116,12 @@
         <td colspan="2"><b>Produtos a serem conferidos</b></td>
     </tr>
     <tr>
-        <td><div id="produtos-conferir" class="row"></div> </td>
-        <button id="next"> >| </button>
+        <td>
+            <div id="produtos-conferir">
+                <div id="carousel"></div>
+                <button id="next"> >| </button>
+            </div>
+        </td>
     </tr>
 
     <tr></tr>
@@ -255,6 +259,7 @@
                         }
 
                     }
+                    $(".item-lista").remove();
                 }
             });
         }
@@ -262,10 +267,8 @@
         return ret;
     });
 
-    $('#next').click(function () {
-        //var divCarrousel = $("#carrousel");
-        alert($("#carrousel"));
-        if (typeof($("div#carrousel")) === "undefined") {
+    $('#next').click(function (e) {
+        if ($(".item-lista").length === 0) {
             $.ajax({
                 url: '/mobile/expedicao/get-produtos-conferir',
                 type: 'POST',
@@ -275,19 +278,18 @@
                     idExpedicao: $('#idExpedicao').val()
                 },
                 success: function (data) {
-                    var divCarrousel = $('<div id="carousel"></div>');
+                    var divCarrousel = $('#carousel');
                     for (var i = 0; i < data.dados.length; i++) {
                         divCarrousel.append('<div class="item-lista" id="lista-produto' + data.dados[i]['COD_PRODUTO'] + '">' + data.dados[i]['COD_PRODUTO'] + ' - ' + data.dados[i]['DSC_PRODUTO'] + ' - ' + data.dados[i]['QTD_CONFERIDA'] + '</div>');
                     }
-                    $('#produtos-conferir').append(divCarrousel);
                 }
             });
         }
-        /*$('#carousel').cycle({
+        $('#carousel').cycle({
             fx: 'turnDown',
             next: '#next',
             timeout: 0
-        });*/
+        });
     });
 
 </script>
