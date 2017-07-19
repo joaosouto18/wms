@@ -66,7 +66,7 @@ class Expedicao_OndaRessuprimentoController  extends Action
                     $motivo = "Saldo insuficiente";
                     $itensPCortar = $expedicaoRepo->diluirCorte($expedicoes, $result);
                     $expedicaoRepo->executaCortePedido($itensPCortar, $motivo);
-                    $this->addFlashMessage("alert", "Nessa requisição de onda alguns itens foram cortados automaticamente por falta de estoque.");
+                    $this->addFlashMessage("warning", "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque.");
                 } else {
                     $idExp = $expedicoes = implode(',', $expedicoes);
 
