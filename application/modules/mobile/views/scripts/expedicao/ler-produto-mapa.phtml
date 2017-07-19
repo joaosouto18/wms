@@ -28,7 +28,7 @@
                 qtd.style.display = 'block';
                 qtdLabel.style.display = 'block';
                 qtd.focus();
-                if(event.preventDefault) {
+                if (event.preventDefault) {
                     event.preventDefault();
                 } else {
                     event.returnValue = false;
@@ -42,18 +42,18 @@
                 type: 'get',
                 success: function (data) {
 
-                    var codProduto         = data['result']['codProduto'];
-                    var grade              = data['result']['grade'];
-                    var descricao          = data['result']['descricao'];
-                    var quantidade         = data['result']['quantidade'];
+                    var codProduto = data['result']['codProduto'];
+                    var grade = data['result']['grade'];
+                    var descricao = data['result']['descricao'];
+                    var quantidade = data['result']['quantidade'];
                     var descricaoEmbalagem = data['result']['descricaoEmbalagem'];
 
                     dadosProdutos =
-                        '<table class="info">' +
-                        '<tr><td colspan="2"><b>Cod Produto: </b>'+codProduto+' - <b>Grade: </b>'+grade+'</td></tr>' +
-                        '<tr><td colspan="2"><b>Descrição: </b>'+descricao+'</td></tr>' +
-                        '<tr><td colspan="2"><b>Embalagem: </b>'+descricaoEmbalagem+' ('+quantidade+')</td></tr>' +
-                        '</table>';
+                            '<table class="info">' +
+                            '<tr><td colspan="2"><b>Cod Produto: </b>' + codProduto + ' - <b>Grade: </b>' + grade + '</td></tr>' +
+                            '<tr><td colspan="2"><b>Descrição: </b>' + descricao + '</td></tr>' +
+                            '<tr><td colspan="2"><b>Embalagem: </b>' + descricaoEmbalagem + ' (' + quantidade + ')</td></tr>' +
+                            '</table>';
                     ;
                     $('#dados-produtos').html(dadosProdutos);
                 }
@@ -69,7 +69,7 @@
                 codigoBarras = document.getElementById('codigoBarras');
                 if (codigoBarras) {
                     codigoBarras.focus();
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -80,12 +80,12 @@
         return true;
     }
 
-    document.onkeyup=function(e){
+    document.onkeyup = function (e) {
 
-        if(e.which == 113) {
+        if (e.which == 113) {
             qtd = document.getElementById('qtd');
             qtd.focus();
-            if(event.preventDefault) {
+            if (event.preventDefault) {
                 event.preventDefault();
             } else {
                 event.returnValue = false;
@@ -117,9 +117,9 @@
     </tr>
     <tr>
         <td>
-            <div id="produtos-conferir">
+            <div id="produtos-conferir" style="margin-bottom: 10px;">
+                <button style="width: 30px;" class="btn gradientBtn"id="next"> > </button>
                 <div id="carousel"></div>
-                <button id="next"> >| </button>
             </div>
         </td>
     </tr>
@@ -133,13 +133,13 @@
         <td colspan="4"> </td>
     </tr>
 
-    <?php if(count($this->produtosClientes) > 0) : ?>
+    <?php if (count($this->produtosClientes) > 0) : ?>
         <script type="text/javascript">
-            $(document).ready(function(){
+            $(document).ready(function () {
                 $('#carousel-produtos').cycle({
-                    fx:   'turnDown',
+                    fx: 'turnDown',
                     next: '#next',
-                    timeout:  0
+                    timeout: 0
                 });
 
             });
@@ -167,10 +167,10 @@
             <legend>Ler Código de Barras</legend>
             <dl>
                 <div class="field">
-                    <input type="hidden" name="idVolume" id="idVolume" value="<?php echo $this->idVolume?>" size="40" maxlength="100" style="width: 99%">
-                    <input type="hidden" name="idMapa" id="idMapa" value="<?php echo $this->idMapa?>" size="40" maxlength="100" style="width: 99%">
-                    <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao?>" size="40" maxlength="100" style="width: 99%">
-                    <input type="hidden" name="cliente" id="cliente" value="<?php echo $this->idPessoa?>" >
+                    <input type="hidden" name="idVolume" id="idVolume" value="<?php echo $this->idVolume ?>" size="40" maxlength="100" style="width: 99%">
+                    <input type="hidden" name="idMapa" id="idMapa" value="<?php echo $this->idMapa ?>" size="40" maxlength="100" style="width: 99%">
+                    <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>" size="40" maxlength="100" style="width: 99%">
+                    <input type="hidden" name="cliente" id="cliente" value="<?php echo $this->idPessoa ?>" >
 
                     <table>
                         <tr>
@@ -197,19 +197,19 @@
                 </div>
                 <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
             </dl>
-            <?php if ($this->idVolume != "") :?>
+            <?php if ($this->idVolume != "") : ?>
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
-                <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/'. $this->idExpedicao . '/idVolume/' .$this->idVolume ?>" >Fechar</a></td>
+                <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a></td>
             <?php endif; ?>
-<!--            --><?php //if ($this->mapaSeparacaoEmbalado == true) : ?>
-                <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/'. $this->idExpedicao . '/cliente/' .$this->idPessoa ?>" >Fechar Caixa</a></td>
-<!--            --><?php //endif; ?>
+            <!--            --><?php //if ($this->mapaSeparacaoEmbalado == true) :    ?>
+            <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>" >Fechar Caixa</a></td>
+            <!--            --><?php //endif;    ?>
 
         </fieldset>
     </dd>
     <?php if ($this->mapaSeparacaoEmbalado == false) : ?>
-        <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/'. $this->idExpedicao . '/idMapa/' .$this->idMapa .'/mapa/S' ?>" >Finalizar</a></td>
-        <td><a class="finalizarAmarelo" href="<?php echo '/mobile/expedicao/index/idCentral/'. $this->central ?>" >Alt. Mapa</a></td>
+        <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/' . $this->idExpedicao . '/idMapa/' . $this->idMapa . '/mapa/S' ?>" >Finalizar</a></td>
+        <td><a class="finalizarAmarelo" href="<?php echo '/mobile/expedicao/index/idCentral/' . $this->central ?>" >Alt. Mapa</a></td>
     <?php endif; ?>
 </form>
 
@@ -217,7 +217,13 @@
 <script type="text/javascript">
     $('#formulario').on('submit', function (e) {
         var ret = true;
-        if (<?php if ($this->exibeQtd == true) {echo "'S'";} else {echo "'N'";}?> == 'S') {
+        if (<?php
+    if ($this->exibeQtd == true) {
+        echo "'S'";
+    } else {
+        echo "'N'";
+    }
+    ?> == 'S') {
             $.ajax({
                 url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
                 data: $('form').serialize(),
@@ -284,12 +290,18 @@
                     }
                 }
             });
+            $('#carousel').cycle({
+                fx: 'turnDown',
+                timeout: 0
+            });
+        } else {
+            $('#carousel').cycle('next');
         }
-        $('#carousel').cycle({
-            fx: 'turnDown',
-            next: '#next',
-            timeout: 0
+        $('.item-lista').each(function () {
+            $(this).css('position', 'relative');
+            $(this).css('width', '100%');
         });
+
     });
 
 </script>
