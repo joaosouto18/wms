@@ -117,6 +117,7 @@
     </tr>
     <tr>
         <td><div id="produtos-conferir" class="row"></div> </td>
+        <button id="next"> >| </button>
     </tr>
 
     <tr></tr>
@@ -253,28 +254,41 @@
                             alert(data.retorno.message);
                         }
 
-                        if (data.dados.length != 0) {
-                            var produtosMapas = '<div id="carousel">';
-                            for (var i = 0; i < data.dados.length; i++) {
-                                produtosMapas += '<div id="lista-produto'+data.dados[i]['COD_PRODUTO']+'">'+data.dados[i]['COD_PRODUTO'] +' - '+ data.dados[i]['DSC_PRODUTO'] +' - '+ data.dados[i]['QTD_CONFERIDA'] +'</div>';
-                            }
-                            console.log(data);
-                            produtosMapas += '</div><button id="next"> >| </button>';
-                            $('#produtos-conferir').html(produtosMapas);
-
-                            $('#carousel').cycle({
-                                fx:   'turnDown',
-                                next: '#next',
-                                timeout:  0
-                            });
-                        }
                     }
                 }
             });
         }
+
         return ret;
     });
 
+    $('#next').click(function () {
+        //var divCarrousel = $("#carrousel");
+        alert($("#carrousel"));
+        if (typeof($("div#carrousel")) === "undefined") {
+            $.ajax({
+                url: '/mobile/expedicao/get-produtos-conferir',
+                type: 'POST',
+                async: false,
+                data: {
+                    idMapa: $('#idMapa').val(),
+                    idExpedicao: $('#idExpedicao').val()
+                },
+                success: function (data) {
+                    var divCarrousel = $('<div id="carousel"></div>');
+                    for (var i = 0; i < data.dados.length; i++) {
+                        divCarrousel.append('<div class="item-lista" id="lista-produto' + data.dados[i]['COD_PRODUTO'] + '">' + data.dados[i]['COD_PRODUTO'] + ' - ' + data.dados[i]['DSC_PRODUTO'] + ' - ' + data.dados[i]['QTD_CONFERIDA'] + '</div>');
+                    }
+                    $('#produtos-conferir').append(divCarrousel);
+                }
+            });
+        }
+        /*$('#carousel').cycle({
+            fx: 'turnDown',
+            next: '#next',
+            timeout: 0
+        });*/
+    });
 
 </script>
 
