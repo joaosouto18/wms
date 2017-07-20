@@ -179,7 +179,8 @@ class Bootstrap extends \Zend_Application_Bootstrap_Bootstrap //BaseBootstrap
             ->registerPlugin(new \Core\Plugin\SenhaProvisoria)
             ->registerPlugin(new \Core\Plugin\NavigationTitle)
             ->registerPlugin(new \Core\Plugin\Defaults)
-            ->registerPlugin(new \Wms\Plugin\Deposito);
+            ->registerPlugin(new \Wms\Plugin\Deposito)
+            ->registerPlugin(new \Core\Plugin\Produtividade);
     }
 
     public function validadeInitFunction()
