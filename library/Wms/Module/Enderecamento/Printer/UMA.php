@@ -118,10 +118,10 @@ class UMA extends Pdf
             if (isset($PaleteProdutoEntity)) {
                 $produtoEn = $PaleteProdutoEntity->getProduto();
                 $params['dataValidade']['dataValidade'] = $PaleteProdutoEntity->getValidade()->format('Y-m-d H:i:s');
-                $params['codProduto'] = $produtoEn->getId();
-                $params['grade'] = $produtoEn->getGrade();
             }
 
+            $params['codProduto'] = $produtoEn->getId();
+            $params['grade'] = $produtoEn->getGrade();
             $palete['conferente'] = $PaleteRepository->findConferente($palete['idUma'],$params['codProduto'],$params['grade']);
 
             if (isset($palete['picking'])) {
