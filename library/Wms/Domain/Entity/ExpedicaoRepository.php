@@ -182,14 +182,14 @@ class ExpedicaoRepository extends EntityRepository {
         return $resultado;
     }
 
-    public function gerarOnda($expedicoes) {
+    public function gerarOnda($strExpedicao) {
         try {
-            $strExpedicao = "";
+            /*$strExpedicao = "";
             foreach ($expedicoes as $expedicao) {
                 $strExpedicao = $strExpedicao . $expedicao;
                 if ($expedicao != end($expedicoes))
                     $strExpedicao = $strExpedicao . ",";
-            }
+            }*/
 
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
@@ -308,8 +308,6 @@ class ExpedicaoRepository extends EntityRepository {
         $sessao = new \Zend_Session_Namespace('deposito');
         $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
         $central = $deposito->getFilial()->getCodExterno();
-
-        $expedicoes = implode(',', $expedicoes);
 
         $sql = "
          SELECT *
@@ -2860,12 +2858,11 @@ class ExpedicaoRepository extends EntityRepository {
         return $result;
     }
 
-    public function diluirCorte($arrExpedicoes, $itensSemEstoque) {
+    public function diluirCorte($expedicoes, $itensSemEstoque) {
         $arrResult = array();
-        $expedicoes = implode(',', $arrExpedicoes);
 
         foreach ($itensSemEstoque as $item) {
-            $sql = "select e.cod_expedicao, p.cod_pedido, pp.cod_produto, pp.dsc_grade, pp.quantidade, pp.qtd_cortada 
+            $sql = "select p.cod_pedido, pp.cod_produto, pp.dsc_grade, pp.quantidade, pp.qtd_cortada 
                 from expedicao e
                 inner join carga c on c.cod_expedicao = e.cod_expedicao
                 inner join pedido p on p.cod_carga = c.cod_carga
@@ -3070,7 +3067,7 @@ class ExpedicaoRepository extends EntityRepository {
                 PEDIDO P ON (CG.COD_CARGA = P.COD_CARGA) INNER JOIN
                 PEDIDO_PRODUTO PP ON (P.COD_PEDIDO = PP.COD_PEDIDO) INNER JOIN
                 PRODUTO PR ON (PR.COD_PRODUTO = PP.COD_PRODUTO)
-                WHERE CG.COD_EXPEDICAO IN ($expedicao) ";
+                WHERE CG.COD_EXPEDICAO IN ($expedicao) AND PP.QTD_CORTADA > 0";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

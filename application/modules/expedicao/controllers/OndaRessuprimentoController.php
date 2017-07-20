@@ -48,27 +48,28 @@ class Expedicao_OndaRessuprimentoController extends Action {
     public function gerarAction() {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
-        $expedicoes = $this->_getParam("expedicao");
+        $idsExpedicoes = $this->_getParam("expedicao");
         try {
             $this->em->beginTransaction();
-            if (empty($expedicoes))
+            if (empty($idsExpedicoes))
                 throw new \Exception("Nenhuma expedição selecionada");
+
+            $expedicoes = implode(',', $idsExpedicoes);
 
             $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
 
             if (count($result) > 0) {
                 $cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
 
-                $idExp = $expedicoes = implode(',', $expedicoes);
                 if ($cortarAutomatico == 'S') {
                     $motivo = "Saldo insuficiente";
                     $itensPCortar = $expedicaoRepo->diluirCorte($expedicoes, $result);
                     $expedicaoRepo->executaCortePedido($itensPCortar, $motivo);
-                    $link = '<a href="' . $this->view->url(array('controller' => 'corte', 'action' => 'relatorio-corte-ajax', 'id' => $idExp)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de cortes automaticos da onda de ressuprimento</a>';
+                    $link = '<a href="' . $this->view->url(array('controller' => 'corte', 'action' => 'relatorio-corte-ajax', 'id' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de cortes automaticos da onda de ressuprimento</a>';
                     $this->addFlashMessage("warning", "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque. Clique para exibir " . $link);
                 } else {
 
-                    $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $idExp)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
+                    $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
                     $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
 
                     $this->addFlashMessage("error", $mensagem);

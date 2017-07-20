@@ -173,6 +173,7 @@ class Expedicao_CorteController extends Action {
     }
 
     public function relatorioCorteAjaxAction() {
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $expedicao = $this->_getParam("id");
 
