@@ -990,7 +990,6 @@ class ExpedicaoRepository extends EntityRepository
 
     public function efetivaReservaEstoqueByExpedicao($idExpedicao)
     {
-        $expedicaoEntity = $this->find($idExpedicao);
 
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
@@ -998,7 +997,7 @@ class ExpedicaoRepository extends EntityRepository
         $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
 
         $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
-        $reservaEstoqueArray = $reservaEstoqueExpedicaoRepo->findBy(array('expedicao'=> $expedicaoEntity->getId()));
+        $reservaEstoqueArray = $reservaEstoqueExpedicaoRepo->findBy(array('expedicao'=> $idExpedicao));
 
         $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuarioEn = $usuarioRepo->find($idUsuario);
