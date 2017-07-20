@@ -267,6 +267,15 @@ class Expedicao extends Grid
                 'actionName' => 'imprimir',
                 'cssClass' => 'pdf',
                 'pkIndex' => 'id'
+            ))
+            ->addAction(array(
+                'label' => 'Relatório de Corte Automático',
+                'target' => '_blank',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'corte',
+                'actionName' => 'relatorio-corte-ajax',
+                'cssClass' => 'pdf',
+                'pkIndex' => 'id'
             ));
 
         if ($params['usaDeclaracaoVP'] === 'S'){
