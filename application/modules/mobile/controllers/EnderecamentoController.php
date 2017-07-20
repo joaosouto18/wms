@@ -1424,7 +1424,7 @@ class Mobile_EnderecamentoController extends Action
             $mensagem = 'Codigo de Barras nao encontrado!';
         } elseif (!empty($embalagemEn)) {
             $status = 'ok';
-            $result['endereco'] = $embalagemEn[0]['descricao'];
+            $result['endereco'] = $embalagemEn[0]['descricao'].'0';
             $result['isEmbalagem'] = true;
             $result['capacidade'] = $embalagemEn[0]['capacidadePicking'];
             $result['embalado']   = $embalagemEn[0]['embalado'];

@@ -115,6 +115,7 @@ class Mobile_ExpedicaoController extends Action {
     public function lerProdutoMapaAction() {
 
         $produtosMapa = array();
+        $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
         try {
             $idMapa = $this->_getParam("idMapa");
             $idVolume = $this->_getParam("idVolume");
@@ -260,22 +261,6 @@ class Mobile_ExpedicaoController extends Action {
             }
             $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
 
-            /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
-            $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
-            if (count($produtosMapa) > 0) {
-                $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-                $this->view->produtosMapa = $produtosMapa;
-            }
-
-            /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
-            if (isset($codPessoa) && !empty($codPessoa)) {
-                $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa, $codPessoa);
-                if (count($produtosClientes) > 0) {
-                    $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
-                    $this->view->produtosClientes = $produtosClientes;
-                }
-            }
-
             $this->view->dscVolume = $dscVolume;
             $this->view->exibeQtd = $confereQtd;
 
@@ -298,6 +283,26 @@ class Mobile_ExpedicaoController extends Action {
             }
         }
 
+    }
+
+    public function getProdutosConferirAction()
+    {
+        $idMapa = $this->_getParam("idMapa");
+        $idExpedicao = $this->_getParam("idExpedicao");
+        $codPessoa = $this->_getParam("cliente");
+        $produtosClientes = array();
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+
+        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
+        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
+
+        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
+        if (isset($codPessoa) && !empty($codPessoa)) {
+            $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa, $codPessoa);
+        }
+        $this->_helper->json(array('resposta' => 'success', 'dados' => $produtosMapa, 'dadosClientes' => $produtosClientes));
     }
 
     public function consultaProdutoAction() {
