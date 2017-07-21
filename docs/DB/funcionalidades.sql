@@ -110,6 +110,9 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx,  'Correções no log da integração - Definindo allocationSize = 1',null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx,  'Consultando cortes no ERP apenas quando a carga não estiver faturada',null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (1XX, 'Correção view qtd recebimento com union', 'XX-correcao-v_qtd_recebimento.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (1XX, 'Correção da impressão da data de validade nos paletes', 'XX-correcao-v_qtd_recebimento.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (1XX, 'Trava para validar a reserva de estoque após a geração do ressuprimento', 'XX-correcao-v_qtd_recebimento.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (1XX, 'Trava para validar a reserva de estoque antes da finalização da expedição', 'XX-correcao-v_qtd_recebimento.sql',SYSDATE);
 
 
 
