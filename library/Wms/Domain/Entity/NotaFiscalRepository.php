@@ -85,13 +85,12 @@ class NotaFiscalRepository extends EntityRepository {
      * @return bool
      * @throws \Exception
      */
-    public function compareItensBancoComArray($itens, $notaFiscalEn, $showExpt = true) {
-        $notaItensRepo = $this->_em->getRepository('wms:NotaFiscal\Item');
-        $recebimentoConferenciaRepo = $this->_em->getRepository('wms:Recebimento\Conferencia');
+    private function compareItensBancoComArray($itens, $notaItensRepo, $recebimentoConferenciaRepo, $notaFiscalEn, $em)
+    {
         //VERIFICA TODOS OS ITENS DO BD
         $notaItensBDEn = $notaItensRepo->findBy(array('notaFiscal' => $notaFiscalEn->getId()));
 
-        if (count($itens) <= 0 && $showExpt) {
+        if (count($itens) <= 0) {
             throw new \Exception("Nenhum item informado na nota");
         }
 
@@ -101,38 +100,36 @@ class NotaFiscalRepository extends EntityRepository {
 
         try {
             foreach ($notaItensBDEn as $itemBD) {
-                $continueBD = false;
+                $matemItem = false;
                 //VERIFICA TODOS OS ITENS DA NF
                 foreach ($itens as $itemNf) {
                     //VERIFICA SE PRODUTO DO BANCO AINDA EXISTE NA NF
                     if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade'])) {
                         //VERIFICA SE A QUANTIDADE É A MESMA
                         if ($itemBD->getQuantidade() == trim($itemNf['quantidade'])) {
-                            //VERIFICA SE O PESO É O MESMO
-                            if ($itemBD->getNumPeso() == trim($itemNf['peso'])) {
-                                //SE TODOS OS DADOS FOREM IGUAIS, NAO FAZ NADA
-                                $continueBD = true;
-                                break;
-                            }
+                            //SE TODOS OS DADOS FOREM IGUAIS, NAO FAZ NADA
+                            $matemItem = true;
+                            break;
                         } else {
                             //VERIFICA SE EXISTE CONFERENCIA DO PRODUTO
                             $recebimentoConferenciaEn = $recebimentoConferenciaRepo->findOneBy(array('codProduto' => $itemBD->getProduto()->getId(), 'grade' => $itemBD->getGrade(), 'recebimento' => $notaFiscalEn->getRecebimento()));
                             //SE EXISTIR CONFERENCIA E A QUANTIDADE FOR DIFERENTE FINALIZA O PROCESSO
-                            if ($recebimentoConferenciaEn && $showExpt)
-                                throw new \Exception("Não é possível sobrescrever a NF com itens já conferidos!");
+                            if ($recebimentoConferenciaEn)
+                                throw new \Exception ("Não é possível sobrescrever a NF com itens já conferidos!");
                         }
                     }
                 }
-                if ($continueBD == false) {
+                if ($matemItem == false) {
                     // SE PRODUTO EXISTIR NO BD, NAO EXISTIR NO WS E NAO TIVER CONFERENCIA REMOVE O PRODUTO
-                    $this->_em->remove($itemBD);
+                    $em->remove($itemBD);
                 }
             }
-            $this->_em->flush();
+            $em->flush();
             return true;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
+
     }
 
     /**
@@ -141,12 +138,10 @@ class NotaFiscalRepository extends EntityRepository {
      * @return bool
      * @throws \Exception
      */
-    public function compareItensWsComBanco($itens, $notaFiscalEn, $showExpt = true) {
-
-        $notaItensRepo = $this->_em->getRepository('wms:NotaFiscal\Item');
-
+    private function compareItensWsComBanco($itens, $notaItensRepo, $notaFiscalRepo, $notaFiscalEn, $em)
+    {
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-        if ($itens <= 0 && $showExpt) {
+        if ($itens <= 0) {
             throw new \Exception("Nenhum item informado na nota");
         }
 
@@ -157,34 +152,33 @@ class NotaFiscalRepository extends EntityRepository {
             $itensNf = array();
             $pesoTotal = 0;
             foreach ($itens as $itemNf) {
-                $pesoTotal = trim((float) $itemNf['peso']) + $pesoTotal;
-                $continueNF = false;
+                $pesoTotal = trim((float)$itemNf['peso']) + $pesoTotal;
+                $encontrouItemNF = false;
                 foreach ($notaItensBDEn as $itemBD) {
                     //VERIFICA SE PRODUTO DA NF JÁ EXISTE NO BD
-                    if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade']) && $itemBD->getNumPeso() == trim($itemNf['peso'])) {
-                        $continueNF = true;
+                    if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade'])) {
+                        $encontrouItemNF = true;
                         break;
                     }
                 }
                 //INSERE SE O PRODUTO NÃO EXISTIR NO BD
-                if ($continueNF == false) {
+                if ($encontrouItemNF == false) {
                     $itemWs['idProduto'] = trim($itemNf['idProduto']);
                     $itemWs['grade'] = trim($itemNf['grade']);
-                    $itemWs['quantidade'] = trim(str_replace(',', '.', $itemNf['quantidade']));
-                    $itemWs['peso'] = trim(str_replace(',', '.', $itemNf['peso']));
+                    $itemWs['quantidade'] = trim(str_replace(',','.',$itemNf['quantidade']));
+                    $itemWs['peso'] = trim(str_replace(',','.',$itemNf['peso']));
                     if (is_null($itemNf['peso']) || strlen(trim($itemNf['peso'])) == 0) {
-                        $itemWs['peso'] = trim(str_replace(',', '.', $itemNf['quantidade']));
+                        $itemWs['peso'] = trim(str_replace(',','.',$itemNf['quantidade']));
                     }
-
 
                     $itensNf[] = $itemWs;
                 }
             }
             if (count($itensNf) > 0) {
-                $this->salvarItens($itensNf, $notaFiscalEn);
+                $notaFiscalRepo->salvarItens($itensNf, $notaFiscalEn);
                 $notaFiscalEn->setPesoTotal($pesoTotal);
-                $this->_em->persist($notaFiscalEn);
-                $this->_em->flush($notaFiscalEn);
+                $em->persist($notaFiscalEn);
+                $em->flush($notaFiscalEn);
             }
             return true;
         } catch (\Exception $e) {

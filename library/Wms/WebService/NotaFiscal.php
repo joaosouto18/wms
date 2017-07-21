@@ -505,19 +505,16 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         try {
             foreach ($notaItensBDEn as $itemBD) {
-                $continueBD = false;
+                $matemItem = false;
                 //VERIFICA TODOS OS ITENS DA NF
                 foreach ($itens as $itemNf) {
                     //VERIFICA SE PRODUTO DO BANCO AINDA EXISTE NA NF
                     if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade'])) {
                         //VERIFICA SE A QUANTIDADE É A MESMA
                         if ($itemBD->getQuantidade() == trim($itemNf['quantidade'])) {
-                            //VERIFICA SE O PESO É O MESMO
-                            if ($itemBD->getNumPeso() == trim($itemNf['peso'])) {
-                                //SE TODOS OS DADOS FOREM IGUAIS, NAO FAZ NADA
-                                $continueBD = true;
-                                break;
-                            }
+                            //SE TODOS OS DADOS FOREM IGUAIS, NAO FAZ NADA
+                            $matemItem = true;
+                            break;
                         } else {
                             //VERIFICA SE EXISTE CONFERENCIA DO PRODUTO
                             $recebimentoConferenciaEn = $recebimentoConferenciaRepo->findOneBy(array('codProduto' => $itemBD->getProduto()->getId(), 'grade' => $itemBD->getGrade(), 'recebimento' => $notaFiscalEn->getRecebimento()));
@@ -527,7 +524,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                         }
                     }
                 }
-                if ($continueBD == false) {
+                if ($matemItem == false) {
                     // SE PRODUTO EXISTIR NO BD, NAO EXISTIR NO WS E NAO TIVER CONFERENCIA REMOVE O PRODUTO
                     $em->remove($itemBD);
                 }
@@ -570,16 +567,16 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $pesoTotal = 0;
             foreach ($itens as $itemNf) {
                 $pesoTotal = trim((float)$itemNf['peso']) + $pesoTotal;
-                $continueNF = false;
+                $encontrouItemNF = false;
                 foreach ($notaItensBDEn as $itemBD) {
                     //VERIFICA SE PRODUTO DA NF JÁ EXISTE NO BD
-                    if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade']) && $itemBD->getNumPeso() == trim($itemNf['peso'])) {
-                        $continueNF = true;
+                    if ($itemBD->getProduto()->getId() == trim($itemNf['idProduto']) && $itemBD->getGrade() == trim($itemNf['grade'])) {
+                        $encontrouItemNF = true;
                         break;
                     }
                 }
                 //INSERE SE O PRODUTO NÃO EXISTIR NO BD
-                if ($continueNF == false) {
+                if ($encontrouItemNF == false) {
                     $itemWs['idProduto'] = trim($itemNf['idProduto']);
                     $itemWs['grade'] = trim($itemNf['grade']);
                     $itemWs['quantidade'] = trim(str_replace(',','.',$itemNf['quantidade']));
@@ -587,7 +584,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     if (is_null($itemNf['peso']) || strlen(trim($itemNf['peso'])) == 0) {
                         $itemWs['peso'] = trim(str_replace(',','.',$itemNf['quantidade']));
                     }
-
 
                     $itensNf[] = $itemWs;
                 }
