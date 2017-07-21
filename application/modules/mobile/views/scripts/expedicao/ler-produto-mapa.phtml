@@ -81,8 +81,8 @@
     }
 
     document.onkeyup = function (e) {
-
-        if (e.which == 113) {
+        var string = $('#codigoBarras').val();
+        if(string.substring(0,1) === 'b' || string.substring(0,1) === 'B') {
             qtd = document.getElementById('qtd');
             qtd.focus();
             if (event.preventDefault) {
