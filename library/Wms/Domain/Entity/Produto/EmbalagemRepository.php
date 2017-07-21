@@ -135,7 +135,7 @@ class EmbalagemRepository extends EntityRepository {
         $dql = $this->_em->createQueryBuilder()
             ->select('de.descricao, pe.capacidadePicking, pe.embalado, p.referencia, p.descricao descricaoProduto')
             ->from('wms:Produto\Embalagem','pe')
-            ->innerJoin('pe.endereco','de')
+            ->leftJoin('pe.endereco','de')
             ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = pe.codProduto AND p.grade = pe.grade')
             ->where("pe.codProduto = '$codigo'")
             ->orWhere("pe.codigoBarras = '$codigo'");

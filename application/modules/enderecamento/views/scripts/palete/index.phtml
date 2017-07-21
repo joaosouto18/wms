@@ -22,7 +22,7 @@
                 <?php if (is_array($this->endPicking)) echo $this->endPicking[0]; ?>
                 - Saldo: <?php if (is_array($this->qtdTotal)) echo $this->qtdTotal[0]['QUANTIDADE'].' ('.$this->qtdTotal[0]['QUANTIDADE_TOTAL'].')' ?>
             </p>
-            <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
+            <p><label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></label></p>
             <tbody>
                 <tr class ="gTTitle">
                     <td>Check</td>
@@ -80,7 +80,7 @@
         <div id="quantidade-grid" class="grid">
             <table class="gTable ">
                 <caption>Recebimento <?php echo $this->idRecebimento ?></caption>
-                <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
+                <p><label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></label></p>
                 <tbody>
                 <tr class ="gTTitle">
                     <td>Check</td>
