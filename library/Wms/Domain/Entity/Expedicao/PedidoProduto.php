@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Wms\Domain\Entity\Produto;
 
 /**
  * Carga
@@ -109,6 +110,9 @@ class PedidoProduto
         $this->produto = $produto;
     }
 
+    /**
+     * @return Produto
+     */
     public function getProduto()
     {
         return $this->produto;

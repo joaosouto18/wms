@@ -637,13 +637,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
 
         $cubagemPedido = array();
+        /** @var PedidoProduto $pedidoProduto */
         foreach ($pedidosProdutos as $pedidoProduto) {
             $depositoEnderecoEn = null;
             $pedidoId           = $pedidoProduto->getPedido()->getId();
             $quantidade         = number_format($pedidoProduto->getQuantidade(),3,'.','') - number_format($pedidoProduto->getQtdCortada(),3,'.','');
             $codProduto         = $pedidoProduto->getProduto()->getId();
             $grade              = $pedidoProduto->getProduto()->getGrade();
-            $embalagensEn = $pedidoProduto->getProduto()->getEmbalagens()->matching(Criteria::create()
+            $produtoEn          = $pedidoProduto->getProduto();
+            $embalagensEn       = $produtoEn->getEmbalagens()->matching(Criteria::create()
                 ->orderBy(array("quantidade" => Criteria::DESC)))->filter(
                 function($item) {
                     return is_null($item->getDataInativacao());
@@ -887,6 +889,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                     )->toArray();
 
+                    if (empty($embalagensEn)) {
+                        $msg = "O produto $codProduto grade $grade não possui embalagens ativas!";
+                        throw new WMS_Exception($msg);
+                    }
+
                     $quantidadeRestantePedido = $quantidade;
 
                     $qtdEmbalagemPadraoRecebimento = 1;
@@ -912,12 +919,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                     }
 
-                    if (!isset($embalagensEn[count($embalagensEn) - 1]) || empty($embalagensEn[count($embalagensEn) - 1])) {
-                        $msg = "O produto $codProduto GRADE $grade não possui embalagens ativas!";
-                        throw new WMS_Exception($msg);
-                    }
-
-                    $menorEmbalagem = $embalagensEn[count($embalagensEn) - 1];
+                    $menorEmbalagem = end($embalagensEn);
 
                     while ($quantidadeRestantePedido > 0) {
 
