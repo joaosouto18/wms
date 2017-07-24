@@ -287,8 +287,9 @@
     });
 
     $("input").keydown(function (e) {
-        if (e.which == 66) {
+        if (e.which == 40) {
             $('#qtd').focus();
+            $('#qtd').select();
             return false;
         }
     });
