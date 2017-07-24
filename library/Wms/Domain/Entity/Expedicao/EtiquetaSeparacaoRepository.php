@@ -644,13 +644,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $quantidade         = number_format($pedidoProduto->getQuantidade(),3,'.','') - number_format($pedidoProduto->getQtdCortada(),3,'.','');
             $codProduto         = $pedidoProduto->getProduto()->getId();
             $grade              = $pedidoProduto->getProduto()->getGrade();
-            $produtoEn          = $pedidoProduto->getProduto();
-            $embalagensEn       = $produtoEn->getEmbalagens()->matching(Criteria::create()
-                ->orderBy(array("quantidade" => Criteria::DESC)))->filter(
-                function($item) {
-                    return is_null($item->getDataInativacao());
-                }
-            )->toArray();
+            $embalagensEn       = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'DESC'));
 
             $quantidadeRestantePedido      = $quantidade;
             $qtdEmbalagemPadraoRecebimento = 1;
