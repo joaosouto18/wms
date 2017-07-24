@@ -119,7 +119,7 @@ class UMA extends Pdf
                 $produtoEn = $PaleteProdutoEntity->getProduto();
                 $dataValidade = $PaleteProdutoEntity->getValidade();
                 if (!is_null($dataValidade)) {
-                    $params['dataValidade']['dataValidade'] = $PaleteProdutoEntity->getValidade()->format('Y-m-d H:i:s');
+                    $params['dataValidade']['dataValidade'] = $dataValidade->format('Y-m-d H:i:s');
                 }
             }
 
