@@ -452,7 +452,7 @@ class ExpedicaoRepository extends EntityRepository {
                         INNER JOIN wms:Expedicao\VProdutoEndereco e
                          WITH p.id = e.codProduto AND p.grade = e.grade
                         INNER JOIN ped.carga c
-                        WHERE ped.indEtiquetaMapaGerado != 'S' and pp.quantidade > pp.qtdCortada
+                        WHERE ped.indEtiquetaMapaGerado != 'S'
                           $whereCargas
                           AND ped.centralEntrega = '$central'
                           AND ped.dataCancelamento is null
@@ -486,7 +486,11 @@ class ExpedicaoRepository extends EntityRepository {
                                     p.id";
         }
 
-        return $this->getEntityManager()->createQuery($query . $order)->getResult();
+        $result = $this->getEntityManager()->createQuery($query . $order)->getResult();
+
+        return array_filter($result, function($item){
+            return ($item->getQuantidade() > $item->getQtdCortada());
+        });
     }
 
     /**
