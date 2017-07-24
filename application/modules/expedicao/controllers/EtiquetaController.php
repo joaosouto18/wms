@@ -388,7 +388,7 @@ class Expedicao_EtiquetaController  extends Action
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
             $ExpedicaoRepo = $arrayRepositorios['expedicao'];
-            $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas);
+            $pedidosProdutos = $ExpedicaoRepo->findPedidosProdutosSemEtiquetaById($central, $cargas);
 
             $idModeloSeparacaoPadrao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
 

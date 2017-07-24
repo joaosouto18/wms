@@ -1,14 +1,9 @@
 <?php
 namespace Wms\Domain\Entity\Expedicao;
 
-use Core\Grid\Exception;
-use Doctrine\ORM\EntityRepository,
-    Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
-use Doctrine\ORM\Query;
-use Symfony\Component\Console\Output\NullOutput;
-use Wms\Domain\Entity\Enderecamento\Modelo;
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Entity\Expedicao;
-use Wms\Domain\Entity\NotaFiscal;
 use Wms\Math;
 use Wms\Util\WMS_Exception;
 
@@ -648,7 +643,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $quantidade         = number_format($pedidoProduto->getQuantidade(),3,'.','') - number_format($pedidoProduto->getQtdCortada(),3,'.','');
             $codProduto         = $pedidoProduto->getProduto()->getId();
             $grade              = $pedidoProduto->getProduto()->getGrade();
-            $embalagensEn       = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto'=>$codProduto,'grade'=>$grade,'dataInativacao'=>null),array('quantidade'=>'DESC'));
+            $embalagensEn = $pedidoProduto->getProduto()->getEmbalagens()->matching(Criteria::create()
+                ->orderBy(array("quantidade" => Criteria::DESC)))->filter(
+                function($item) {
+                    return is_null($item->getDataInativacao());
+                }
+            )->toArray();
 
             $quantidadeRestantePedido      = $quantidade;
             $qtdEmbalagemPadraoRecebimento = 1;
@@ -879,7 +879,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $depositoEnderecoEn = null;
                     $codProduto = $pedidoProduto->getProduto()->getId();
                     $grade = $pedidoProduto->getProduto()->getGrade();
-                    $embalagensEn = $arrayRepositorios['produtoEmbalagem']->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
+
+                    $embalagensEn = $produtoEntity->getEmbalagens()->matching(Criteria::create()
+                        ->orderBy(array("quantidade" => Criteria::DESC)))->filter(
+                        function($item) {
+                            return is_null($item->getDataInativacao());
+                        }
+                    )->toArray();
 
                     $quantidadeRestantePedido = $quantidade;
 
@@ -943,10 +949,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $embalagemAtual = $menorEmbalagem;
                         }
 
-                        if (!is_null($embalagemAtual->getDataInativacao()))
-                            continue;
-
-                        //$quantidadeRestantePedido = number_format($quantidadeRestantePedido, 3, '.', '') - number_format($embalagemAtual->getQuantidade(), 3, '.', '');
                         $quantidadeRestantePedido = $math->totalSubtracao($quantidadeRestantePedido,$embalagemAtual->getQuantidade());
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {

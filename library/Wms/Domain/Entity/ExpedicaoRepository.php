@@ -433,7 +433,7 @@ class ExpedicaoRepository extends EntityRepository {
         return "Divergencia de conferencia com o ERP na carga " . $idCargaExterno;
     }
 
-    public function findPedidosProdutosSemEtiquetaById($idExpedicao, $central, $cargas = null) {
+    public function findPedidosProdutosSemEtiquetaById($central, $cargas = null) {
         $sequencia = $this->getSystemParameterValue("SEQUENCIA_ETIQUETA_SEPARACAO");
 
         $whereCargas = null;
@@ -452,7 +452,7 @@ class ExpedicaoRepository extends EntityRepository {
                         INNER JOIN wms:Expedicao\VProdutoEndereco e
                          WITH p.id = e.codProduto AND p.grade = e.grade
                         INNER JOIN ped.carga c
-                        WHERE ped.indEtiquetaMapaGerado != 'S'
+                        WHERE ped.indEtiquetaMapaGerado != 'S' and ped.quantidade > ped.qtdCortada
                           $whereCargas
                           AND ped.centralEntrega = '$central'
                           AND ped.dataCancelamento is null
