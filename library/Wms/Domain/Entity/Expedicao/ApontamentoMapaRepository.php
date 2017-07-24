@@ -273,7 +273,7 @@ class ApontamentoMapaRepository extends EntityRepository {
                     SUM(QTD_CUBAGEM) AS QTD_CUBAGEM,
                     SUM(QTD_PRODUTOS) AS QTD_PRODUTOS,
                     SUM(QTD_PALETES) AS QTD_PALETES,
-                    SUM(QTD_CARGA) AS QTD_CARGA
+                    1 AS QTD_CARGA
                     FROM PRODUTIVIDADE_DETALHE PD
                   INNER JOIN PESSOA PE ON PE.COD_PESSOA = PD.COD_PESSOA
                   WHERE 1 = 1

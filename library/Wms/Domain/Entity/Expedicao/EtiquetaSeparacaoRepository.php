@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Enderecamento\Modelo;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\NotaFiscal;
+use Wms\Math;
 use Wms\Util\WMS_Exception;
 
 class EtiquetaSeparacaoRepository extends EntityRepository
@@ -747,6 +748,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     public function gerarMapaEtiqueta($idExpedicao, array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $idModeloSeparacao, $arrayRepositorios)
     {
+        $math = new Math();
         $depositoEnderecoRepo = $arrayRepositorios['depositoEndereco'];
         $filialRepository = $arrayRepositorios['filial'];
         /** @var ModeloSeparacaoRepository $modeloSeparacaoRepo */
@@ -944,7 +946,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         if (!is_null($embalagemAtual->getDataInativacao()))
                             continue;
 
-                        $quantidadeRestantePedido = number_format($quantidadeRestantePedido, 3, '.', '') - number_format($embalagemAtual->getQuantidade(), 3, '.', '');
+                        //$quantidadeRestantePedido = number_format($quantidadeRestantePedido, 3, '.', '') - number_format($embalagemAtual->getQuantidade(), 3, '.', '');
+                        $quantidadeRestantePedido = $math->totalSubtracao($quantidadeRestantePedido,$embalagemAtual->getQuantidade());
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
                             $enderecosPulmao[$key]['QUANTIDADE'] = $enderecosPulmao[$key]['QUANTIDADE'] - $embalagemAtual->getQuantidade();

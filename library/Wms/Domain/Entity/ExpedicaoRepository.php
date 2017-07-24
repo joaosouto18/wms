@@ -278,6 +278,13 @@ class ExpedicaoRepository extends EntityRepository {
 
             $this->getEntityManager()->flush();
             $ondaRepo->sequenciaOndasOs();
+
+            if ($this->getSystemParameterValue('VALIDA_RESERVA_SAIDA_GERACAO_RESSUPRIMENTO') == 'S') {
+                if ($this->validaReservaSaidaCorretaByExpedicao($strExpedicao) === false) {
+                    throw new \Exception("Existiram falhas gerando reserva de estoque para estas expedições. Consulte a equipe de desenvolvimento");
+                }
+            }
+
             $this->getEntityManager()->commit();
 
             $resultado = array();
@@ -650,6 +657,7 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
         $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
         $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
@@ -733,6 +741,12 @@ class ExpedicaoRepository extends EntityRepository {
             } else {
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
                 $MapaSeparacaoRepo->forcaConferencia($idExpedicao);
+            }
+
+            if ($this->getSystemParameterValue('VALIDA_RESERVA_SAIDA_FINALIZACA_EXPEDICAO') == 'S') {
+                if ($this->validaReservaSaidaCorretaByExpedicao($idExpedicao) === false) {
+                    throw new \Exception("Existiram falhas gerando ao finalizar esta expedição. Consulte a equipe de desenvolvimento");
+                }
             }
 
             if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
@@ -1415,7 +1429,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         $FullWhere = $WhereExpedicao . $WhereCarga . $WhereSigla;
         $FullWhereFinal = $WhereExpedicao . $WhereFinalCarga . $WhereSigla;
-        ;
+
         if ($whereSubQuery != "")
             $cond = " WHERE ";
 
@@ -2428,7 +2442,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         //ETIQUETA DE VOLUME
-        $volumeRepo = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+        $volumeRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
         $volumeEn = $volumeRepo->find($codBarras);
         if ($volumeEn != null) {
             $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
@@ -3049,10 +3063,92 @@ class ExpedicaoRepository extends EntityRepository {
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
+
     }
 
-    public function checkStatusConferencia($id, $tipo) {
-        
+    public function getSaidaEstoqueByExpedicao($idExpedicoes) {
+        $params = array(
+            'idExpedicoes' => $idExpedicoes,
+            'reservaAtendida' => 'S',
+            'statusExpedicoes' => Expedicao::STATUS_FINALIZADO
+        );
+        return $this->getMovimentacaoEstoqueExpedicaoByParams($params);
+    }
+
+    public function validaReservaSaidaCorretaByExpedicao($idExpedicoes) {
+        $params = array(
+            'idExpedicoes' => $idExpedicoes,
+            'apenasDivergencias' => 'S',
+            'reservaAtendida' => 'N'
+        );
+        if (count($this->getMovimentacaoEstoqueExpedicaoByParams($params)) >0) {
+            return false;
+        }
+        return true;
+    }
+
+    public function getMovimentacaoEstoqueExpedicaoByParams($params) {
+
+        $whereReserva = "";
+        $whereFinal = "";
+
+        if (isset($params['reservaAtendida'])) {
+            $whereReserva .= " AND RE.IND_ATENDIDA = '" . $params['reservaAtendida'] . "'";
+        }
+
+        if (isset($params['apenasDivergencias'])){
+            $whereFinal .= " AND (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0))  <> NVL(R.RESERVA,0)";
+        }
+
+        if (isset($params['idExpedicoes'])) {
+            $whereFinal .= " AND E.COD_EXPEDICAO IN (" . $params['idExpedicoes'] . ")";
+        }
+
+        if (isset($params['statusExpedicoes'])) {
+            $whereFinal .= " AND AND E.COD_STATUS = " . $params['statusExpedicoes'] . "";
+        }
+
+        $SQL = "SELECT C.COD_EXPEDICAO,
+                       TO_CHAR(E.DTH_INICIO,'DD/MM/YYYY HH24:MI:SS') as INICIO_EXPEDICAO,
+                       TO_CHAR(E.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI:SS') as FIM_EXPEDICAO,
+                       C.COD_CARGA_EXTERNO as CARGA,
+                       P.COD_PEDIDO,
+                       CL.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+                       CLI.NOM_PESSOA as CLIENTE,
+                       PP.COD_PRODUTO,
+                       NVL(PP.QUANTIDADE,0) as QTD_PEDIDO,
+                       NVL(PP.QTD_CORTADA,0) as QTD_CORTE,
+                       NVL(R.RESERVA,0) as QTD_SAIDA,
+                       DTH_RESERVA,
+                       DTH_ATENDIMENTO,
+                       USUARIO_RESERVA,
+                       USUARIO_ATENDIMENTO
+                  FROM PEDIDO P
+                  LEFT JOIN CLIENTE CL ON CL.COD_PESSOA = P.COD_PESSOA
+                  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                  LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                  LEFT JOIN PESSOA CLI ON CLI.COD_PESSOA = P.COD_PESSOA
+                  LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                  LEFT JOIN (SELECT REE.COD_EXPEDICAO, REE.COD_PEDIDO, REP.COD_PRODUTO, REP.QTD_RESERVADA *-1 as RESERVA,
+                                    TO_CHAR(RE.DTH_RESERVA,'DD/MM/YYYY HH24:MI:SS') as DTH_RESERVA,
+                                    TO_CHAR(RE.DTH_ATENDIMENTO,'DD/MM/YYYY HH24:MI:SS') as DTH_ATENDIMENTO,
+                                    USU_RES.NOM_PESSOA as USUARIO_RESERVA,
+                                    USU_AT.NOM_PESSOA as USUARIO_ATENDIMENTO
+                                FROM RESERVA_ESTOQUE_EXPEDICAO REE
+                               INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                               INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                               LEFT JOIN PESSOA USU_AT  ON USU_AT.COD_PESSOA = RE.COD_USUARIO_ATENDIMENTO
+                               LEFT JOIN PESSOA USU_RES ON USU_RES.COD_PESSOA = RE.COD_USUARIO
+                               WHERE 1 = 1
+                               $whereReserva) R
+                        ON R.COD_EXPEDICAO = E.COD_EXPEDICAO
+                       AND R.COD_PEDIDO = PP.COD_PEDIDO
+                       AND R.COD_PRODUTO = PP.COD_PRODUTO
+                  WHERE 1 = 1
+                        $whereFinal
+                  ORDER BY COD_EXPEDICAO, COD_CLIENTE_EXTERNO, COD_PEDIDO, COD_PRODUTO";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
     }
 
     public function getCortePedido($expedicao) {
