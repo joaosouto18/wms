@@ -452,7 +452,7 @@ class ExpedicaoRepository extends EntityRepository {
                         INNER JOIN wms:Expedicao\VProdutoEndereco e
                          WITH p.id = e.codProduto AND p.grade = e.grade
                         INNER JOIN ped.carga c
-                        WHERE ped.indEtiquetaMapaGerado != 'S' and ped.quantidade > ped.qtdCortada
+                        WHERE ped.indEtiquetaMapaGerado != 'S' and pp.quantidade > pp.qtdCortada
                           $whereCargas
                           AND ped.centralEntrega = '$central'
                           AND ped.dataCancelamento is null
