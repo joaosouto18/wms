@@ -36,6 +36,10 @@ class Enderecamento_EnderecoController extends Action
             $this->view->origin = $origin;
         }
 
+        if (empty($idProduto) && empty($grade)) {
+            $this->view->isIndividual = 'S';
+        }
+
     if ($values = $form->getParams()) {
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
@@ -53,6 +57,7 @@ class Enderecamento_EnderecoController extends Action
     {
         $idPaletes = $this->_getParam("umas");
         $enderecos = $this->_getParam("enderecos");
+        $isIndividual = $this->_getParam("isIndividual");
         $arrayPaletes = explode(',',$idPaletes);
         unset($arrayPaletes[0]);
 
@@ -87,7 +92,6 @@ class Enderecamento_EnderecoController extends Action
                 if($enderecoRepo->verificaBloqueioInventario($idEndereco)) {
                     $this->addFlashMessage('error',"Endereço(s) bloqueado(s) por inventário");
                     $this->_redirect("/enderecamento/palete/index/id/$idRecebimento/codigo/$codProduto/grade/" . urlencode($grade));
-                    return false;
                 }
 
                 $tipoEstruturaArmazenamento = $enderecoRepo->getTipoArmazenamentoByEndereco($idEndereco);
@@ -102,7 +106,13 @@ class Enderecamento_EnderecoController extends Action
                     if ($permiteEnderecar == false) {
                         $this->getEntityManager()->flush();
                         $this->addFlashMessage('error',"Não foram realizados todos endereçamentos. O palete $idPalete não cabe no endereço selecionado");
-                        $this->_redirect("/enderecamento/palete/index/id/$idRecebimento/codigo/$codProduto/grade/" . urlencode($grade));
+
+                        if ($isIndividual != "S") {
+                            $this->_redirect("/enderecamento/palete/index/id/$idRecebimento/codigo/$codProduto/grade/" . urlencode($grade));
+                        } else {
+                            $this->_redirect("/enderecamento/palete/index/id/$idRecebimento");
+                        }
+
                     }
                     $paleteRepo->alocaEnderecoPalete($idPalete,$idEndereco);
                 }
@@ -112,7 +122,10 @@ class Enderecamento_EnderecoController extends Action
 
         $this->em->flush();
 
-        $this->_redirect("/enderecamento/palete/index/id/$idRecebimento/codigo/$codProduto/grade/" . urlencode($grade));
+        if ($isIndividual != "S") {
+            $this->_redirect("/enderecamento/palete/index/id/$idRecebimento/codigo/$codProduto/grade/" . urlencode($grade));
+        } else {
+            $this->_redirect("/enderecamento/palete/index/id/$idRecebimento");
+        }
     }
-
 }

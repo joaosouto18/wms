@@ -113,6 +113,9 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (113, 'Correção da impressão da data de validade nos paletes', 'XX-correcao-v_qtd_recebimento.sql',SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (114, 'Trava para validar a reserva de estoque após a geração do ressuprimento', 'XX-correcao-v_qtd_recebimento.sql',SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (115, 'Trava para validar a reserva de estoque antes da finalização da expedição', 'XX-correcao-v_qtd_recebimento.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (116, 'Correção consulta de disponibilidade de saldo p/ expedição', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (117, 'Funcionalidade de corte automático', 'XX-permissao-corte-automatico.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (118, 'Alterada integração permitindo data nula pra trazer todos os registros', null,SYSDATE);
 
 
 

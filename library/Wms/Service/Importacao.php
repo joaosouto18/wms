@@ -691,7 +691,6 @@ class Importacao
                 $produto->setGrade($grade);
                 $produto->setTipoComercializacao($tipoComercializacaoEntity);
                 $produto->setNumVolumes(1);
-                $produto->setPossuiPesoVariavel($indPesoVariavel);
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
                 $produto->setIdProduto($sqcGenerator->generate($em, $produto));
             }

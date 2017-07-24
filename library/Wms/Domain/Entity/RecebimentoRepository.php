@@ -1345,11 +1345,13 @@ class RecebimentoRepository extends EntityRepository {
             $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
             $embalagem = $produtoEmbalagemRepo->find($idEmbalagem);
 
+            $norma = null;
             $dadosLogisticos = $embalagem->getDadosLogisticos();
             if (count($dadosLogisticos) > 0) {
-                $norma = $dadosLogisticos[0]->getNormaPaletizacao()->getId();
-            } else {
-                $norma = null;
+                $normaEntity = $dadosLogisticos[0]->getNormaPaletizacao();
+                if (!empty($normaEntity)) {
+                    $norma = $normaEntity->getId();
+                }
             }
             $this->gravarConferenciaItemEmbalagem($idRecebimento, $idOs, $idEmbalagem, $qtd, $norma, $dataValidade, $numPeso);
         } else {

@@ -579,6 +579,7 @@ class Integracao
                 $embalagemAtiva = $linha['EMBALAGEM_ATIVA'];
                 $possuiValidade = (isset($linha['POSSUI_VALIDADE']))? $linha['POSSUI_VALIDADE'] : null;
                 $diasVidaUtil = (isset($linha['DIAS_VIDA_UTIL']))? (int)$linha['DIAS_VIDA_UTIL'] : null;
+                $refFornecedor = (isset($linha['REF_FORNECEDOR']))? (int)$linha['REF_FORNECEDOR'] : '';
 
                 $codClasseProduto = $codClasseNivel1;
                 if (empty($codClasseNivel1) AND !empty($codClasseNivel2)) {
@@ -594,6 +595,7 @@ class Integracao
                                                         'indPesoVariavel'=>$indPesoVariavel,
                                                         'possuiValidade'=>$possuiValidade,
                                                         'diasVidaUtil'=>$diasVidaUtil,
+                                                        'refFornecedor'=>$refFornecedor,
                                                         'embalagem'=>array());
                 }
 
@@ -677,7 +679,7 @@ class Integracao
                                                   $produto['codClasse'],
                                                   $produto['indPesoVariavel'],
                                                   $embalagensObj,
-                                                  '',
+                                                  $produto['refFornecedor'],
                                                   $produto['possuiValidade'],
                                                   $produto['diasVidaUtil']);
 
