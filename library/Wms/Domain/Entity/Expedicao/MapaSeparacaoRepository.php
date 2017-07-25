@@ -244,7 +244,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
           $sql = " SELECT M.COD_MAPA_SEPARACAO,
                           M.COD_PRODUTO,
-                          M.DSC_GRADE,
+                          NVL(M.DSC_GRADE, '') AS ,
                           P.DSC_PRODUTO,
                           M.QTD_SEPARAR,
                           NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIDA,

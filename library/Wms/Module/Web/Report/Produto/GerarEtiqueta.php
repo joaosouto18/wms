@@ -151,7 +151,7 @@ class GerarEtiqueta extends eFPDF
         $this->Ln(2);
         $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
         $this->Ln(4);
-        $this->Cell(100, 0, 'Fabricante: ' . utf8_decode($produto['fabricante']) . $fornecedor, 0, 0);
+        $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode('Fabricante: ' .$produto['fabricante'] . $fornecedor), 100), 0, 0);
 
         if ($produto['idEmbalagem'] != null) {
             $this->Ln(4);
@@ -165,12 +165,12 @@ class GerarEtiqueta extends eFPDF
             $this->Cell(100, 0, utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
         }
 
-        if ($produto['dataValidade'] != null) {
-            $this->Ln(3);
-            $dataValidade = new \DateTime($produto['dataValidade']);
-            $dataValidade = $dataValidade->format('d/m/Y');
-            $this->Cell(100, 0, 'Data Validade: ' . utf8_decode($dataValidade), 0, 0);
-        }
+//        if ($produto['dataValidade'] != null) {
+//            $this->Ln(3);
+//            $dataValidade = new \DateTime($produto['dataValidade']);
+//            $dataValidade = $dataValidade->format('d/m/Y');
+//            $this->Cell(100, 0, 'Data Validade: ' . utf8_decode($dataValidade), 0, 0);
+//        }
 
 
         $x        = 55;
@@ -179,7 +179,7 @@ class GerarEtiqueta extends eFPDF
         $angle    = 0;
         $type     = 'code128';
         $black    = '000000';
-        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.8,12);
+        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.5,12);
         $len = $this->GetStringWidth($data['hri']);
 
         $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 12,$codigo);
