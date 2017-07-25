@@ -49,7 +49,7 @@
                     var descricaoEmbalagem = data['result']['descricaoEmbalagem'];
 
                     dadosProdutos =
-                            '<table class="info">' +
+                            '<table style="border: solid 2px;"class="info">' +
                             '<tr><td colspan="2"><b>Cod Produto: </b>' + codProduto + ' - <b>Grade: </b>' + grade + '</td></tr>' +
                             '<tr><td colspan="2"><b>Descrição: </b>' + descricao + '</td></tr>' +
                             '<tr><td colspan="2"><b>Embalagem: </b>' + descricaoEmbalagem + ' (' + quantidade + ')</td></tr>' +
@@ -194,13 +194,16 @@
 
 <script type="text/javascript">
     $('#formulario').on('submit', function (e) {
+        if($('#qtd').val() == ''){
+            return false;
+        }
         var ret = true;
         if (<?php
-    if ($this->exibeQtd == true) {
-        echo "'S'";
-    } else {
-        echo "'N'";
-    }
+                if ($this->exibeQtd == true) {
+                    echo "'S'";
+                } else {
+                    echo "'N'";
+                }
     ?> == 'S') {
             $.ajax({
                 url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
