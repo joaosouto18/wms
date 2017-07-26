@@ -219,12 +219,12 @@ class MapaSeparacaoRepository extends EntityRepository
     public function validaConferencia($expedicao, $setDivergencia = false, $idMapa = null, $tipoRetorno = 'D')
     {
 
-        if ($tipoRetorno == "D") {
+        if ($tipoRetorno == 'D') {
             // EXIBE SOMENTE AS DIVERGENCIAS
-            $sinal = " < ";
+            $sinal = ' < ';
         } else {
             // EXIBE SOMENTE OS ACERTOS
-            $sinal = " = ";
+            $sinal = ' = ';
         }
 
         $modeloSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\ModeloSeparacao',$this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO'));
