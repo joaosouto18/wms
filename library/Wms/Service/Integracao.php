@@ -908,6 +908,7 @@ class Integracao
     public function comparaNotasFiscais($notasFiscaisWms,$notasFiscaisErp)
     {
         $erpRecebimento = array();
+        $qtdNotasComBonus = 0;
         foreach ($notasFiscaisWms as $idNotaFiscal) {
             $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
             $constaNoErp = false;
@@ -924,7 +925,11 @@ class Integracao
                 }
             }
             if ($constaNoErp == false) {
-                throw new \Exception('Nota Fiscal número '.$numeroNota.' série '.$numeroSerie .' não consta no recebimento do ERP!');
+                if ($qtdNotasComBonus >0) {
+                    throw new \Exception('Nota Fiscal número '.$numeroNota.' série '.$numeroSerie .' não consta no recebimento do ERP!');
+                }
+            } else{
+                $qtdNotasComBonus = $qtdNotasComBonus +1;
             }
         }
 
