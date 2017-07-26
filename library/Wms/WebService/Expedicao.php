@@ -1049,8 +1049,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 /* @var pedidoFaturado $pedidoNf */
                 foreach ($notaFiscal->pedidos as $pedidoNf) {
-                    var_dump($pedidoNf);exit;
-
                     $nfPedidoEntity = new Expedicao\NotaFiscalSaidaPedido();
                     $nfPedidoEntity->setNotaFiscalSaida($nfEntity);
                     $nfPedidoEntity->setCodNotaFiscalSaida($nfEntity->getId());
