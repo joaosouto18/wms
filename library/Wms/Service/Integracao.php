@@ -296,7 +296,7 @@ class Integracao
             $nfSaida->serieNf = $nf['serie'];
             $nfSaida->valorVenda = 0;
             $nfSaida->itens = $produtos;
-            $nfSaida->pedidos = $pedido;
+            $nfSaida->pedidos = $pedidos;
             $nfs[] = $nfSaida;
         }
         $wsExpedicao = new \Wms_WebService_Expedicao();
