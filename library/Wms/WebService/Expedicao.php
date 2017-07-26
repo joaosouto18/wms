@@ -1046,9 +1046,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 if ((count($notaFiscal->pedidos) == 0) || ($notaFiscal->pedidos == null)) {
                     throw new \Exception("Nenhuma pedido informado na nota fiscal " .$notaFiscal->numeroNf . " / " . $notaFiscal->serieNf);
                 }
-                var_dump($notaFiscal);exit;
+
                 /* @var pedidoFaturado $pedidoNf */
                 foreach ($notaFiscal->pedidos as $pedidoNf) {
+                    var_dump($pedidoNf);exit;
+
                     $nfPedidoEntity = new Expedicao\NotaFiscalSaidaPedido();
                     $nfPedidoEntity->setNotaFiscalSaida($nfEntity);
                     $nfPedidoEntity->setCodNotaFiscalSaida($nfEntity->getId());
