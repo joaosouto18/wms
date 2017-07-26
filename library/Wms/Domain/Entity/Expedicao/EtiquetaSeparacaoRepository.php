@@ -758,6 +758,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $mapaSeparacaoRepo = $arrayRepositorios['mapaSeparacaoProduto'];
         $verificaReentrega = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
 
+        $math = new Math();
+
         try {
             if (empty($status)) {
                 $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
@@ -930,7 +932,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                             foreach ($embalagensEn as $embalagem) {
-                                if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+                                if ($math->compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                                     $embalagemAtual = $embalagem;
                                     break;
                                 }
@@ -946,8 +948,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         if (!is_null($embalagemAtual->getDataInativacao()))
                             continue;
 
-                        //$quantidadeRestantePedido = number_format($quantidadeRestantePedido, 3, '.', '') - number_format($embalagemAtual->getQuantidade(), 3, '.', '');
-                        $quantidadeRestantePedido = $math->totalSubtracao($quantidadeRestantePedido,$embalagemAtual->getQuantidade());
+                        $quantidadeRestantePedido = $math->totalSubtracao($quantidadeRestantePedido, $embalagemAtual->getQuantidade());
 
                         if (isset($enderecosPulmao) && !empty($enderecosPulmao)) {
                             $enderecosPulmao[$key]['QUANTIDADE'] = $enderecosPulmao[$key]['QUANTIDADE'] - $embalagemAtual->getQuantidade();
@@ -1182,6 +1183,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     private function atualizaMapaSeparacaoProduto($idExpedicao, $arrRepo = null)
     {
+        $math = new Math();
 
         if ($arrRepo == null) {
             /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
@@ -1245,8 +1247,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $this->_em->flush();
 
                     foreach ($embalagensEn as $embalagem) {
-                        while (number_format($qtdTotalMapaProdutos,2,'.','') >= number_format($embalagem->getQuantidade(),2,'.','')) {
-                            $qtdTotalMapaProdutos = number_format($qtdTotalMapaProdutos,2,'.','') - number_format($embalagem->getQuantidade(),2,'.','');
+                        while ($math->compare($qtdTotalMapaProdutos, $embalagem->getQuantidade() , ">=" )) {
+                            $qtdTotalMapaProdutos = $math->totalSubtracao($qtdTotalMapaProdutos,$embalagem->getQuantidade());
                             $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagem, $pedidoProduto,$depositoEnderecoEn);
                         }
                     }

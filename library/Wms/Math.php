@@ -42,6 +42,22 @@ Class Math
         return $x % $y;
     }
 
+    public function compare($x,$y,$oper = ">") {
+        $quantidade = $this->maiorPrecisao($x,$y);
+        $x = $x * $quantidade;
+        $y = $y * $quantidade;
+
+        if ($oper == ">") {
+            return $x > $y;
+        } elseif ($oper == ">=") {
+            return $x >= $y;
+        } elseif ($oper == "<=") {
+            return $x <= $y;
+        } elseif ($oper == "<") {
+            return $x < $y;
+        }
+    }
+
     public function totalAdicao($x,$y)
     {
         $quantidade = $this->maiorPrecisao($x,$y);
