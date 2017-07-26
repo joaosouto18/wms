@@ -1556,7 +1556,7 @@ class RecebimentoRepository extends EntityRepository {
                                FROM (SELECT DISTINCT P.UMA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, P.COD_RECEBIMENTO
                                        FROM PALETE P
                                        LEFT JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
-                                      WHERE (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_RECEBIMENTO."".Palete::STATUS_CANCELADO."))) P
+                                      WHERE (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_RECEBIMENTO.",".Palete::STATUS_CANCELADO."))) P
                               GROUP BY COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO) P
                          ON P.COD_PRODUTO = V.COD_PRODUTO
                         AND P.DSC_GRADE = V.DSC_GRADE
