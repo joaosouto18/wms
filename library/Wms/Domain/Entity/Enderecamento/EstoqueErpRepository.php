@@ -51,7 +51,7 @@ class EstoqueErpRepository extends EntityRepository
                $fieldEstoqueERP as ESTOQUE_ERP,
                NVL(WMS.QTD,0) as ESTOQUE_WMS,
                NVL(ERP.ESTOQUE_AVARIA,0) as ESTOQUE_AVARIA,
-               NVL(WMS.QTD,0) - NVL(ERP.ESTOQUE_GERENCIAL,0) DIVERGENCIA
+               NVL(WMS.QTD,0) - $fieldEstoqueERP DIVERGENCIA
           FROM ESTOQUE_ERP ERP
           FULL OUTER JOIN (SELECT E.COD_PRODUTO,
                                   E.DSC_GRADE, 
