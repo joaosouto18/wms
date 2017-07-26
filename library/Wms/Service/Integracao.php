@@ -275,7 +275,7 @@ class Integracao
 
             $produtos = array();
             foreach($nf['itens'] as $nfProd) {
-                $produto = new \notaFiscalProduto();
+                $produto = new notaFiscalProduto();
                 $produto->codProduto = $nfProd['idProduto'];
                 $produto->grade= $nfProd['grade'];
                 $produto->qtd = $nfProd['quantidade'];
