@@ -297,7 +297,7 @@ INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRA
  */
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO,DSC_QUERY,COD_TIPO_ACAO_INTEGRACAO,IND_UTILIZA_LOG,DTH_ULTIMA_EXECUCAO)
   VALUES (20,1,
-  'SELECT nf.numnota as NUMERO_NF, nf.serie as SERIE_NF, nf.cgcfilial as CNPJ_EMITENTE, c.numped as PEDIDO, i.codprod PRODUTO, ''' || 'UNICA' || ''' GRADE,  i.qt QTD, TO_CHAR(nf.dthoraautorizacaosefaz,''' || 'DD/MM/YYYY hh24:MI:SS' || ''') as DTH SUM(i.qt*i.pvenda) VLR_VENDA FROM pcpedc c INNER JOIN pcpedi i ON c.numped=i.numped INNER JOIN pcnfsaid nf ON nf.numnota = c.numnota WHERE 1 = 1  AND c.posicao IN (''' || 'F' || ''') :where GROUP BY nf.numnota, nf.serie, nf.cgcfilial, c.numped, i.codprod, i.qt, nf.dthoraautorizacaosefaz ',
+  'SELECT nf.numnota as NUMERO_NF, nf.serie as SERIE_NF, nf.cgcfilial as CNPJ_EMITENTE, c.numped as PEDIDO, i.codprod COD_PRODUTO, ''' || 'UNICA' || ''' DSC_GRADE,  i.qt QTD_ITEM, TO_CHAR(nf.dthoraautorizacaosefaz,''' || 'DD/MM/YYYY hh24:MI:SS' || ''') as DTH, SUM(i.qt*i.pvenda) VLR_VENDA FROM pcpedc c INNER JOIN pcpedi i ON c.numped=i.numped INNER JOIN pcnfsaid nf ON nf.numnota = c.numnota WHERE 1 = 1  AND c.posicao IN (''' || 'F' || ''') :where GROUP BY nf.numnota, nf.serie, nf.cgcfilial, c.numped, i.codprod, i.qt, nf.dthoraautorizacaosefaz ',
   615,'S',SYSDATE);
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)

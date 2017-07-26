@@ -19,6 +19,39 @@ class embalagem {
     public $descricao;
 }
 
+class pedidoFaturado {
+    /** @var string */
+    public $codPedido;
+    /** @var string */
+    public $tipoPedido;
+}
+
+class notaFiscal {
+    /** @var pedidoFaturado[] */
+    public $pedidos;
+    /** @var integer */
+    public $numeroNf;
+    /** @var string */
+    public $serieNf;
+    /** @var string */
+    public $cnpjEmitente;
+    /** @var double */
+    public $valorVenda;
+    /** @var notaFiscalProduto[] */
+    public $itens;
+}
+
+class notaFiscalProduto {
+    /** @var string */
+    public $codProduto;
+    /** @var string */
+    public $grade;
+    /** @var integer */
+    public $qtd;
+    /** @var double */
+    public $valorVenda;
+}
+
 class Integracao
 {
     protected $_acao;
@@ -238,8 +271,7 @@ class Integracao
 
         $nfs = array();
         foreach ($notasFiscais as $nf) {
-
-            $nfSaida = new \notaFiscal();
+            $nfSaida = new notaFiscal();
 
             $produtos = array();
             foreach($nf['itens'] as $nfProd) {
