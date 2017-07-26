@@ -460,14 +460,14 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdProdutoMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn,$codPessoa);
 
         if (!empty($qtdProdutoMapa)){
-            $qtdMapa = number_format($qtdProdutoMapa[0]['QTD'],2,'.','');
-            $qtdCortada = number_format($qtdProdutoMapa[0]['QTD_CORTADO'],2,'.','');
+            $qtdMapa = number_format($qtdProdutoMapa[0]['QTD'],3,'.','');
+            $qtdCortada = number_format($qtdProdutoMapa[0]['QTD_CORTADO'],3,'.','');
         }
 
         $qtdEmbalagem = 1;
         if ($embalagemEn != null) {
             $produtoEn = $embalagemEn->getProduto();
-            $qtdEmbalagem = number_format($embalagemEn->getQuantidade(),2,'.','');
+            $qtdEmbalagem = number_format($embalagemEn->getQuantidade(),3,'.','');
         } else {
             $produtoEn = $volumeEn->getProduto();
         }
@@ -477,7 +477,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
         if ($ultConferencia != null) {
             $numConferencia = $ultConferencia['numConferencia'];
-            $qtdConferida = number_format($ultConferencia['qtd'],2,'.','');
+            $qtdConferida = number_format($ultConferencia['qtd'],3,'.','');
         } else {
             $mapaSeparacaoConferenciaEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia')
                 ->findBy(array('mapaSeparacao' => $mapaEn, 'codProduto' => $produtoEn->getId(), 'dscGrade' => $produtoEn->getGrade(), 'indConferenciaFechada' => 'S'), array('id' => 'DESC'));
