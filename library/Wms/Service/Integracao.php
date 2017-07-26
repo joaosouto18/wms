@@ -285,7 +285,7 @@ class Integracao
 
             $pedidos = array();
             foreach($nf['pedidos'] as $nfPed) {
-                $pedido = new \pedidoFaturado();
+                $pedido = new pedidoFaturado();
                 $pedido->codPedido = $nfPed;
                 $pedido->tipoPedido = 'C';
                 $pedidos[] = $pedido;
