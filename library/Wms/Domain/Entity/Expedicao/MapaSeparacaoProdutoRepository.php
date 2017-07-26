@@ -16,7 +16,6 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
         $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
 
         $idExpedicao = null;
-        $math = new Math();
         $cortarReservas = array();
         //* SE NÃO TIVER NENHUM PRODUTO PARA CORTAR, ENTÂO NAO PRECISO FAZER NENHUM CORTE EM NENHUM MAPA, RETORNO TRUE
         if (count($produtosCortar) == 0) return true;
@@ -100,7 +99,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                     } else {
                         $qtdConfMSP = $qtdConferida;
                     }
-                    $qtdPendente = $math->totalSubtracao($qtdSepararMapa,$qtdConfMSP );// $qtdSepararMapa - $qtdConfMSP;
+                    $qtdPendente = Math::totalSubtracao($qtdSepararMapa,$qtdConfMSP );// $qtdSepararMapa - $qtdConfMSP;
                     if ($qtdPendente >0) {
                         $mspEn = $this->find($mspId);
                         if ($mspEn != null) {
@@ -116,10 +115,10 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
                             $mspEn->setQtdCortado($qtdPendente);
                             $this->getEntityManager()->persist($mspEn);
-                            $qtdCortar = $math->totalSubtracao($qtdCortar,$qtdPendente);// $qtdCortar - $qtdPendente;
+                            $qtdCortar = Math::totalSubtracao($qtdCortar,$qtdPendente);// $qtdCortar - $qtdPendente;
                         }
                     }
-                    $qtdConferida = $math->totalSubtracao($qtdConferida,$qtdConfMSP); //$qtdConferida - $qtdConfMSP;
+                    $qtdConferida = Math::totalSubtracao($qtdConferida,$qtdConfMSP); //$qtdConferida - $qtdConfMSP;
                 }
             }
 
@@ -146,7 +145,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                     } else {
                         $qtdConfMSP = $qtdConferida;
                     }
-                    $qtdPendente = $math->totalSubtracao($qtdSepararMapa,$qtdConfMSP);// $qtdSepararMapa - $qtdConfMSP;
+                    $qtdPendente = Math::totalSubtracao($qtdSepararMapa,$qtdConfMSP);// $qtdSepararMapa - $qtdConfMSP;
                     if ($qtdPendente >0) {
                         $mspEn = $this->find($mspId);
                         if ($mspEn != null) {
@@ -162,10 +161,10 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                             $mspEn->setQtdCortado($qtdPendente);
                             $this->getEntityManager()->persist($mspEn);
 
-                            $qtdCortar = $math->totalSubtracao($qtdCortar,$qtdPendente);// $qtdCortar - $qtdPendente;
+                            $qtdCortar = Math::totalSubtracao($qtdCortar,$qtdPendente);// $qtdCortar - $qtdPendente;
                         }
                     }
-                    $qtdConferida = $math->totalSubtracao($qtdConferida,$qtdConfMSP);// $qtdConferida - $qtdConfMSP;
+                    $qtdConferida = Math::totalSubtracao($qtdConferida,$qtdConfMSP);// $qtdConferida - $qtdConfMSP;
                 }
             }
 

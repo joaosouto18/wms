@@ -1296,6 +1296,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 		$volumes = $produtoEntity->getVolumes();
 
 		$idNorma = NULL;
+        $idUnitizador = 0;
 		$unidadePadrao = "";
 		$unitizador = "";
 		$qtdNorma = 0;
@@ -1312,7 +1313,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 				$lastro = $volume->getNormaPaletizacao()->getNumLastro();
 				$camadas = $volume->getNormaPaletizacao()->getNumCamadas();
 				$unitizador = $volume->getNormaPaletizacao()->getUnitizador()->getDescricao();
-				$IdUnitizador = $volume->getNormaPaletizacao()->getUnitizador()->getId();
+                $idUnitizador = $volume->getNormaPaletizacao()->getUnitizador()->getId();
 				$idNorma = $norma;
 				break;
 			}
@@ -1320,7 +1321,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
 		$result[0]['idNorma'] = $idNorma;
 		$result[0]['unidade'] = $unidadePadrao;
-		$result[0]['idUnitizador'] = $IdUnitizador;
+		$result[0]['idUnitizador'] = $idUnitizador;
 		$result[0]['unitizador'] = $unitizador;
 		$result[0]['qtdNorma'] = $qtdNorma;
 		$result[0]['lastro'] = $lastro;

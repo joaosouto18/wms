@@ -166,9 +166,4 @@ class Action extends \Core\Controller\Action
             return $parametro->getValor();
         }
     }
-
-    public function math()
-    {
-        return new Math();
-    }
 }

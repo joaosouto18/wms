@@ -38,7 +38,7 @@ class ProdutosCarregamento extends Pdf
             $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
             $qtdTotal = $data['QUANTIDADE_CONFERIDA'];
             foreach ($embalagemEntities as $embalagemEntity) {
-                if ($this->math->restoDivisao($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
+                if (Math::restoDivisao($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
                     $this->Cell(20, 6, $data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade() . ' ' . $embalagemEntity->getDescricao());
                     break;
                 }
@@ -51,7 +51,6 @@ class ProdutosCarregamento extends Pdf
     {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
-        $this->math = new Math();
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);

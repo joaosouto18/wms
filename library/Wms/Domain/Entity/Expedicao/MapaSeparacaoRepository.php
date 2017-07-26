@@ -6,6 +6,7 @@ use Doctrine\ORM\Query;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as Etiqueta;
+use Wms\Math;
 
 class MapaSeparacaoRepository extends EntityRepository
 {
@@ -493,7 +494,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdBanco    = number_format($qtdConferida,3,'.','') + number_format($qtdCortada,3,'.','');
         $qtdMapa     = number_format($qtdMapa,3,'.','');
 
-        $quantidadeConferida = $this->math->totalAdicao($qtdBanco, $qtdDigitada);
+        $quantidadeConferida = Math::totalAdicao($qtdBanco, $qtdDigitada);
         if ($quantidadeConferida > $qtdMapa) {
             throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa para esse cliente! Produto: " .$produtoEn->getId() . " Mapa:" . $mapaEn->getId());
         }

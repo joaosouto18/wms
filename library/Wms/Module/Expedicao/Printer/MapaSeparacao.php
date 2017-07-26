@@ -669,7 +669,7 @@ class MapaSeparacao extends eFPDF {
     }
 
     private function layoutModelo4($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null) {
-        $this->math = new Math();
+
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
         if ($codBarras == null) {
@@ -771,8 +771,8 @@ class MapaSeparacao extends eFPDF {
                     $codigoBarras = $embalagemEn->getCodigoBarras();
                 $embalagem = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
-                    $pesoTotal += $this->math->produtoMultiplicacao(str_replace(',', '.', $pesoProduto->getPeso()), str_replace(',', '.', $quantidade));
-                    $cubagemTotal += $this->math->produtoMultiplicacao(str_replace(',', '.', $pesoProduto->getCubagem()), str_replace(',', '.', $quantidade));
+                    $pesoTotal += Math::produtoMultiplicacao(str_replace(',', '.', $pesoProduto->getPeso()), str_replace(',', '.', $quantidade));
+                    $cubagemTotal += Math::produtoMultiplicacao(str_replace(',', '.', $pesoProduto->getCubagem()), str_replace(',', '.', $quantidade));
                 }
 
                 if ($ruaAnterior != $rua) {

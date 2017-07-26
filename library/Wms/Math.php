@@ -4,7 +4,7 @@ namespace Wms;
 
 Class Math
 {
-    private function maiorPrecisao($x, $y)
+    private static function maiorPrecisao($x, $y)
     {
         $precisaoA = 0;
         $precisaoB = 0;
@@ -32,9 +32,9 @@ Class Math
         return $quantidade;
     }
 
-    public function restoDivisao($x, $y)
+    public static function restoDivisao($x, $y)
     {
-        $quantidade = $this->maiorPrecisao($x, $y);
+        $quantidade = self::maiorPrecisao($x, $y);
 
         $x = $x * $quantidade;
         $y = $y * $quantidade;
@@ -42,9 +42,24 @@ Class Math
         return $x % $y;
     }
 
-    public function totalAdicao($x,$y)
+    /**
+     * @param float|int $x Dividendo
+     * @param float|int $y Divisor
+     * @return float|int
+     */
+    public static function divisao($x, $y)
     {
-        $quantidade = $this->maiorPrecisao($x,$y);
+        $quantidade = self::maiorPrecisao($x, $y);
+
+        $x = $x * $quantidade;
+        $y = $y * $quantidade;
+
+        return $x / $y;
+    }
+
+    public static function totalAdicao($x,$y)
+    {
+        $quantidade = self::maiorPrecisao($x,$y);
 
         $x = $x * $quantidade;
         $y = $y * $quantidade;
@@ -53,9 +68,9 @@ Class Math
 
     }
 
-    public function totalSubtracao($x,$y) {
+    public static function totalSubtracao($x,$y) {
 
-        $quantidade = $this->maiorPrecisao($x,$y);
+        $quantidade = self::maiorPrecisao($x,$y);
 
         $x = $x * $quantidade;
         $y = $y * $quantidade;
@@ -64,9 +79,9 @@ Class Math
 
     }
 
-    public function produtoMultiplicacao($x,$y)
+    public static function produtoMultiplicacao($x,$y)
     {
-        $quantidade = $this->maiorPrecisao($x,$y);
+        $quantidade = self::maiorPrecisao($x,$y);
 
         $x = $x * $quantidade;
         $y = $y * $quantidade;

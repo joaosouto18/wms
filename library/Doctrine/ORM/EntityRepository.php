@@ -71,7 +71,6 @@ class EntityRepository implements ObjectRepository, Selectable
         $this->_entityName = $class->name;
         $this->_em         = $em;
         $this->_class      = $class;
-        $this->math        = new Math();
     }
 
     /**
