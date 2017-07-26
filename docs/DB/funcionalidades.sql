@@ -114,6 +114,7 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (1XX, 'Trava para validar a reserva de estoque após a geração do ressuprimento', 'XX-correcao-v_qtd_recebimento.sql',SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (1XX, 'Trava para validar a reserva de estoque antes da finalização da expedição', 'XX-correcao-v_qtd_recebimento.sql',SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (1XX, 'Integração de Notas Fiscais de Saída para Reentrega', '28-integracao-nfsaida.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (1XX, 'Correção da Geração dos Mapas de Separação para produtos com precisão acima de 3 casas decimais', null,SYSDATE);
 
 
 
