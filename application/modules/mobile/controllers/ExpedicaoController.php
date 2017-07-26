@@ -172,6 +172,11 @@ class Mobile_ExpedicaoController extends Action {
                         $sessao->lerProdutoMapa['confereQtd'] = true;
                     }
                 }
+                if ($sessao->lerProdutoMapa['mapaQuebraEn']->getTipoQuebra() != Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                    if ($sessao->lerProdutoMapa['conferenciaNaoEmbalado'] == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
+                        $sessao->lerProdutoMapa['confereQtd'] = true;
+                    }
+                }
             }
             $modeloSeparacaoEn = $sessao->lerProdutoMapa['modeloSeparacaoRepo'];
             $mapaEn = $sessao->lerProdutoMapa['mapaEn'];
