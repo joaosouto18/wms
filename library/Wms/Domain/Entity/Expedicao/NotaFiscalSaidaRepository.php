@@ -15,7 +15,7 @@ class NotaFiscalSaidaRepository extends EntityRepository
 
     }
 
-    public function getNotaFiscalOuCarga($data)
+    public function getNotaFiscalOuCarga($data, $recursive = false)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('nfs.numeroNf', 'c.codCargaExterno carga', 'nfs.serieNf', 'nfs.id' , 'pj.cnpj','pes.nome')
@@ -40,7 +40,30 @@ class NotaFiscalSaidaRepository extends EntityRepository
         }
         $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id','pj.cnpj','pes.nome');
 
-        return $sql->getQuery()->getResult();
+        $result = $sql->getQuery()->getResult();
+
+        if ($recursive == false) {
+            if (count($result) == 0) {
+                if ($this->getSystemParameterValue('IND_UTILIZA_INTEGRACAO_NF_SAIDA') == 'S') {
+                    if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
+                        $options = array() ;
+                        $options[] = $data['notaFiscal'];
+
+                        $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_NOTA_FISCAL_SAIDA');
+
+                        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+                        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+                        $acaoEn = $acaoIntRepo->find($idIntegracao);
+                        $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E',"P",null,611);
+                        if ($result == true) {
+                            return $this->getNotaFiscalOuCarga($data, true);
+                        }
+                    }
+                }
+            }
+        }
+
+        return $result;
     }
 
     public function getQtdProdutoDivergentesByNota($data)

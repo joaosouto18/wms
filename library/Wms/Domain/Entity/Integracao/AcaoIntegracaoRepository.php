@@ -201,20 +201,20 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $conexaoEn = $acaoEn->getConexao();
 
-            if ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
-                $data = $acaoEn->getDthUltimaExecucao();
-                if ($data == null) {
-                    $data = new \DateTime();
-                }
-                if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
-                    $options[] = $data->format("Y-m-d");
-                } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE) {
-                    $options[] = $data->format("d/m/Y H:i:s");
+            $data = $acaoEn->getDthUltimaExecucao();
+
+            if (!empty($data)) {
+                if ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
+                    if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
+                        $options[] = $data->format("Y-m-d");
+                    } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE) {
+                        $options[] = $data->format("d/m/Y H:i:s");
+                    }
                 }
             }
 
             //STRING DA QUERY DE INTEGRAÇÃO
-            $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro);
+            $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro, $data);
 
             if ($dados == null) {
                 $words = explode(" ",trim($query));

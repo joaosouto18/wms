@@ -36,13 +36,13 @@
                     url: '/mobile/consulta-endereco/index/codigoBarras/' + val,
                     success: function (data) {
                         if (data.status === 'ok') {
+                            var txt = '';
                             $.each(data.result, function (key, value) {
-                                var txt = value.produto;
                                 if (value.grade != '') {
                                     txt += ' (' + value.grade + ')';
                                 }
                                 txt += ' - ' + value.desc + ' <br>';
-                                $('#lista-endereco').html(txt)
+                                $('#lista-endereco').html(txt);
                             });
                         } else {
                             showErro(data.msg)

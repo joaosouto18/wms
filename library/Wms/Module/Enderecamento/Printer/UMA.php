@@ -117,7 +117,10 @@ class UMA extends Pdf
             $picking = null;
             if (isset($PaleteProdutoEntity)) {
                 $produtoEn = $PaleteProdutoEntity->getProduto();
-                $params['dataValidade']['dataValidade'] = $PaleteProdutoEntity->getValidade()->format('Y-m-d H:i:s');
+                $dataValidade = $PaleteProdutoEntity->getValidade();
+                if (!is_null($dataValidade)) {
+                    $params['dataValidade']['dataValidade'] = $dataValidade->format('Y-m-d H:i:s');
+                }
             }
 
             $params['codProduto'] = $produtoEn->getId();
