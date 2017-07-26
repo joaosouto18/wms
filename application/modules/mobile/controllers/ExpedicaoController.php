@@ -296,7 +296,7 @@ class Mobile_ExpedicaoController extends Action {
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
 
         /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
-        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
+        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, true, $idMapa,'D');
 
         /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
         if (isset($codPessoa) && !empty($codPessoa)) {

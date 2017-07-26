@@ -1002,16 +1002,19 @@ class MapaSeparacao extends eFPDF {
             /**
              * Cria cabeçalho
              */
-            $this->buildHead($this, $imgCodBarras, $tipoQebra, $stringCargas);
             //Select Arial bold 8
             $this->Cell(20, 1, "", 0, 1);
             $total = 0;
             $contadorPg = 0;
             $limitPg = 45;
+            $totalPg = ceil (count($produtos) / $limitPg);
+            $pgAtual = 1;
+            $this->buildHead($this, $imgCodBarras, $tipoQebra, $stringCargas, '1 de '.$totalPg);
             foreach ($produtos as $key => $produto) {
                 $contadorPg++;
                 if ($contadorPg == $limitPg) {
                     $contadorPg = 0;
+                    $pgAtual++;
                     /**
                      * Cria rodape
                      */
@@ -1019,7 +1022,8 @@ class MapaSeparacao extends eFPDF {
                     /**
                      * Cria cabeçalho
                      */
-                    $this->buildHead($this, $imgCodBarras, $tipoQebra, $stringCargas);
+                    $paginas = $pgAtual.' de '.$totalPg;
+                    $this->buildHead($this, $imgCodBarras, $tipoQebra, $stringCargas, $paginas);
                 }
                 $this->SetFont('Arial', null, 8);
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
@@ -1117,9 +1121,10 @@ class MapaSeparacao extends eFPDF {
         
     }
 
-    public function buildHead($object, $imgCodBarras, $tipoQebra, $stringCargas) {
+    public function buildHead($object, $imgCodBarras, $tipoQebra, $stringCargas, $paginas = '') {
         $object->SetFont('Arial', 'B', 10);
-        $object->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO " . $object->idMapa), 0, 1, "C");
+        $object->Cell(200, 3, utf8_decode($paginas), 0, 1);
+        $object->Cell(200, 3, utf8_decode(" MAPA DE SEPARAÇÃO " . $object->idMapa), 0, 1, "C");
         $object->Cell(20, 1, "_______________________________________________________________________________________________", 0, 1);
         $object->Cell(20, 3, "", 0, 1);
         $object->SetFont('Arial', 'B', 10);

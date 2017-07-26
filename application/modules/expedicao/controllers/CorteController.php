@@ -1,15 +1,14 @@
 <?php
+
 use Wms\Module\Web\Controller\Action,
     Wms\Service\Recebimento as LeituraColetor;
 
-class Expedicao_CorteController  extends Action
-{
+class Expedicao_CorteController extends Action {
 
-    public function indexAction()
-    {
+    public function indexAction() {
         $id = $this->_getParam('id');
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
-        $etiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $etiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $codEtiqueta = $etiquetaRepo->getEtiquetasByExpedicao($id, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_CORTE, null);
 
         if (isset($codEtiqueta) && !empty($codEtiqueta)) {
@@ -18,28 +17,27 @@ class Expedicao_CorteController  extends Action
         //$this->view->codBarras = $codEtiqueta[0]['codBarras'];
     }
 
-    public function salvarAction()
-    {
+    public function salvarAction() {
         $LeituraColetor = new LeituraColetor();
         $request = $this->getRequest();
         $idExpedicao = $this->getRequest()->getParam('id');
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
-        $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $EtiquetaReentregaRepo */
-        $EtiquetaReentregaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
+        $EtiquetaReentregaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
 
         if ($request->isPost()) {
-            $senhaDigitada    = $request->getParam('senhaConfirmacao');
+            $senhaDigitada = $request->getParam('senhaConfirmacao');
 
             if ($EtiquetaRepo->checkAutorizacao($senhaDigitada)) {
-                $codBarra    = $request->getParam('codBarra');
+                $codBarra = $request->getParam('codBarra');
 
                 if (!$codBarra) {
                     $this->addFlashMessage('error', 'É necessário preencher todos os campos');
                     $this->_redirect('/expedicao');
                 }
                 $etiquetaEntity = $EtiquetaRepo->findOneBy(array('id' => $LeituraColetor->retiraDigitoIdentificador($codBarra)));
-                if ($etiquetaEntity == null ) {
+                if ($etiquetaEntity == null) {
                     $this->addFlashMessage('error', 'Etiqueta não encontrada');
                     $this->_redirect('/expedicao');
                 }
@@ -47,7 +45,7 @@ class Expedicao_CorteController  extends Action
                 $encontrouEtiqueta = true;
                 if ($etiquetaEntity->getPedido()->getCarga()->getExpedicao()->getId() != $idExpedicao) {
                     $encontrouEtiqueta = false;
-                    $etiquetasReentrega = $EtiquetaReentregaRepo->findBy(array('codEtiquetaSeparacao'=>$etiquetaEntity->getId()));
+                    $etiquetasReentrega = $EtiquetaReentregaRepo->findBy(array('codEtiquetaSeparacao' => $etiquetaEntity->getId()));
                     foreach ($etiquetasReentrega as $etiquetaReentregaEn) {
                         $idExpedicaoEtqReentrega = $etiquetaReentregaEn->getReentrega()->getCarga()->getExpedicao()->getId();
                         if ($idExpedicao == $idExpedicaoEtqReentrega) {
@@ -62,7 +60,7 @@ class Expedicao_CorteController  extends Action
                     $this->_redirect('/expedicao');
                 }
                 if ($etiquetaEntity->getCodStatus() == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO) {
-                    $this->addFlashMessage('error',"Etiqueta já cortada!");
+                    $this->addFlashMessage('error', "Etiqueta já cortada!");
                     $this->_redirect('/expedicao');
                 }
 
@@ -75,21 +73,18 @@ class Expedicao_CorteController  extends Action
                 }
 
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-                $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save('Etiqueta '. $LeituraColetor->retiraDigitoIdentificador($codBarra) .' cortada', $idExpedicao, false, true, $codBarra, $codBarrasProdutos);
+                $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
+                $andamentoRepo->save('Etiqueta ' . $LeituraColetor->retiraDigitoIdentificador($codBarra) . ' cortada', $idExpedicao, false, true, $codBarra, $codBarrasProdutos);
                 $this->addFlashMessage('success', 'Etiqueta cortada com sucesso');
-
-            }else {
+            } else {
                 $this->addFlashMessage('error', 'Senha informada não é válida');
             }
-
         }
 
-        $this->_redirect('/expedicao/os/index/id/'.$idExpedicao);
-
+        $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
     }
 
-    public function corteAntecipadoAjaxAction(){
+    public function corteAntecipadoAjaxAction() {
 
         $this->view->id = $id = $this->_getParam('id');
         $grade = $this->_getParam('grade');
@@ -98,7 +93,7 @@ class Expedicao_CorteController  extends Action
 
         $permiteCortes = $this->getSystemParameterValue('PERMITE_REALIZAR_CORTES_WMS');
         $this->view->permiteCortes = $permiteCortes;
-        $this->view->idMapa = $idMapa = $this->_getParam('COD_MAPA_SEPARACAO',null);
+        $this->view->idMapa = $idMapa = $this->_getParam('COD_MAPA_SEPARACAO', null);
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
@@ -106,12 +101,12 @@ class Expedicao_CorteController  extends Action
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
 
         if (isset($idMapa) && !empty($idMapa))
-            $pedidos = $mapaSeparacaoRepo->getPedidosByMapa($idMapa,$codProduto,$grade);
+            $pedidos = $mapaSeparacaoRepo->getPedidosByMapa($idMapa, $codProduto, $grade);
         else
-            $pedidos = $pedidoRepo->getPedidoByExpedicao($id,$codProduto,$grade);
+            $pedidos = $pedidoRepo->getPedidoByExpedicao($id, $codProduto, $grade);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CortePedido();
-        $grid = $grid->init($pedidos,$id);
+        $grid = $grid->init($pedidos, $id);
         $this->view->grid = $grid;
 
         $form = new \Wms\Module\Web\Form\CortePedido();
@@ -122,28 +117,26 @@ class Expedicao_CorteController  extends Action
         }
     }
 
-    public function listAction()
-    {
+    public function listAction() {
         $idExpedicao = $this->_getParam('expedicao');
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
-        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($this->_getParam('id',0));
+        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($this->_getParam('id', 0));
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CorteAntecipado();
-        $this->view->grid = $grid->init($produtos,$this->_getParam('id',0),$idExpedicao);
+        $this->view->grid = $grid->init($produtos, $this->_getParam('id', 0), $idExpedicao);
     }
 
-    public function cortarItemAction()
-    {
-        $this->view->pedido    = $pedido    = $this->_getParam('id',0);
-        $this->view->produto   = $produto   = $this->_getParam('COD_PRODUTO',0);
-        $this->view->grade     = $grade     = $this->_getParam('DSC_GRADE',0);
+    public function cortarItemAction() {
+        $this->view->pedido = $pedido = $this->_getParam('id', 0);
+        $this->view->produto = $produto = $this->_getParam('COD_PRODUTO', 0);
+        $this->view->grade = $grade = $this->_getParam('DSC_GRADE', 0);
         $this->view->expedicao = $expedicao = $this->_getParam('expedicao');
-        $quantidade            = $this->_getParam('quantidade');
-        $motivo                = $this->_getParam('motivoCorte');
+        $quantidade = $this->_getParam('quantidade');
+        $motivo = $this->_getParam('motivoCorte');
 
-        $senha    = $this->_getParam('senha');
+        $senha = $this->_getParam('senha');
 
         if (isset($senha) && !empty($senha) && isset($quantidade) && !empty($quantidade) && isset($motivo) && !empty($motivo)) {
 
@@ -158,26 +151,34 @@ class Expedicao_CorteController  extends Action
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepo */
                 $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
                 $pedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
-                    ->findOneBy(array('codPedido' => $pedido, 'codProduto' => $produto, 'grade' => $grade));
+                        ->findOneBy(array('codPedido' => $pedido, 'codProduto' => $produto, 'grade' => $grade));
 
                 if (!isset($pedidoProduto) || empty($pedidoProduto))
                     throw new \Exception("Produto $produto grade $grade não encontrado para o pedido $pedido");
 
-                $expedicaoRepo->cortaPedido($pedido, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $this->_getParam('motivoCorte',null));
-                $observacao = 'Produto '.$pedidoProduto->getCodProduto().' Grade '.$pedidoProduto->getGrade().' referente ao pedido '.$pedido.' cortado - motivo: '.$motivo;
+                $expedicaoRepo->cortaPedido($pedido, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $this->_getParam('motivoCorte', null));
+                $observacao = 'Produto ' . $pedidoProduto->getCodProduto() . ' Grade ' . $pedidoProduto->getGrade() . ' referente ao pedido ' . $pedido . ' cortado - motivo: ' . $motivo;
                 $expedicaoAndamentoRepo->save($observacao, $expedicao);
 
                 $this->getEntityManager()->flush();
                 $this->getEntityManager()->commit();
-                $this->addFlashMessage('success','Produto ' .$produto. ' grade ' .$grade. ' pedido '.$pedido.' cortado com Sucesso');
+                $this->addFlashMessage('success', 'Produto ' . $produto . ' grade ' . $grade . ' pedido ' . $pedido . ' cortado com Sucesso');
                 $this->_redirect('/expedicao');
             } catch (\Exception $e) {
                 $this->getEntityManager()->rollback();
-                $this->addFlashMessage('error',$e->getMessage());
+                $this->addFlashMessage('error', $e->getMessage());
                 $this->_redirect('/expedicao');
             }
         }
+    }
 
+    public function relatorioCorteAjaxAction() {
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+        $expedicao = $this->_getParam("id");
+
+        $pedidosCortados = $expedicaoRepo->getCortePedido($expedicao);
+        $this->exportPDF($pedidosCortados, 'relatorio-corte', 'Cortes automáticos da onda de ressuprimento', 'P');
     }
 
 }

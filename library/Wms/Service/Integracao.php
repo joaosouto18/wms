@@ -149,12 +149,129 @@ class Integracao
                     return true;
                 case AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
                     return true;
-                case AcaoIntegracao::INTEGRACAO_VERIFICA_CARGA_FINALIZADA:
-                    return $this->verificaCargasFaturadas($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:
+                    return $this->processaNotaFiscalSaida($this->_dados);
+
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    public function processaNotaFiscalSaida($dados) {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', '-1');
+
+        $itens = array();
+        $pedidos = array();
+        $notasFiscais = array();
+        $idProdutos = array();
+
+        foreach ($dados as $key => $notaFiscal) {
+            /** OBTEM O CODIGO DO PRODUTO PARA CADASTRO */
+            $idProdutos[] = $notaFiscal['COD_PRODUTO'];
+            $itens[] = array(
+                'idProduto' => $notaFiscal['COD_PRODUTO'],
+                'grade' => $notaFiscal['DSC_GRADE'],
+                'quantidade' => $notaFiscal['QTD_ITEM'],
+            );
+
+            $numPedido = $notaFiscal['PEDIDO'];
+            if (!isset($pedidos[$numPedido])) {
+                $pedidos[$numPedido] = $numPedido;
+            }
+
+            $numNfAtual = $notaFiscal['NUMERO_NF'];
+            $serieNfAtual = $notaFiscal['SERIE_NF'];
+            $cnpjEmitenteNfAtual = $notaFiscal['CNPJ_EMITENTE'];
+
+            $FimNotaAtual = false;
+            if (isset($dados[$key+1])) {
+                $numProxNfNota = $dados[$key+1]['NUMERO_NF'];
+                $serieProxNfNota = $dados[$key+1]['SERIE_NF'];
+                $cnpjEmitenteProxNf = $dados[$key+1]['CNPJ_EMITENTE'];
+
+                if (($numNfAtual != $numProxNfNota) || ($serieNfAtual != $serieProxNfNota) || ($cnpjEmitenteNfAtual != $cnpjEmitenteProxNf)) {
+                    $FimNotaAtual = true;
+                }
+            } else {
+                $FimNotaAtual = true;
+            }
+
+            if ($FimNotaAtual == true) {
+                $notasFiscais[] = array(
+                    'cnpjEmitente' => $notaFiscal['CNPJ_EMITENTE'],
+                    'numNota' => $notaFiscal['NUMERO_NF'],
+                    'serie' => $notaFiscal['SERIE_NF'],
+                    'dtEmissao' => $notaFiscal['DTH'],
+                    'itens'=> $itens,
+                    'pedidos' => $pedidos
+                );
+
+                unset($itens);
+                $itens = array();
+                unset($pedidos);
+                $pedidos = array();
+
+            }
+        }
+
+        if ($this->getTipoExecucao() == "L") {
+            return $notasFiscais;
+        } else if ($this->getTipoExecucao() == "R") {
+            foreach($notasFiscais as $nf) {
+                $resumo[] = array(
+                    'Numero NF'=>$nf['numNota'],
+                    'Serie' => $nf['serie'],
+                    'Dt. Emissão' => $nf['dtEmissao'],
+                    'Qtd. Produtos' =>count($nf['itens'])
+                );
+            }
+            $resumo[] = array(
+                'Numero NF'=>'',
+                'Serie'=>'',
+                'Dt. Emissão'=>'',
+                'Qtd. Produtos'=>''
+            );
+            return $resumo;
+        }
+
+        $nfs = array();
+        foreach ($notasFiscais as $nf) {
+
+            $nfSaida = new \notaFiscal();
+
+            $produtos = array();
+            foreach($nf['itens'] as $nfProd) {
+                $produto = new \notaFiscalProduto();
+                $produto->codProduto = $nfProd['idProduto'];
+                $produto->grade= $nfProd['grade'];
+                $produto->qtd = $nfProd['quantidade'];
+                $produto->valorVenda = 0;
+                $produtos[] = $produto;
+            }
+
+            $pedidos = array();
+            foreach($nf['pedidos'] as $nfPed) {
+                $pedido = new \pedidoFaturado();
+                $pedido->codPedido = $nfPed;
+                $pedido->tipoPedido = 'C';
+                $pedidos[] = $pedido;
+            }
+
+            $nfSaida->cnpjEmitente = $nf['cnpjEmitente'];
+            $nfSaida->numeroNf = $nf['numNota'];
+            $nfSaida->serieNf = $nf['serie'];
+            $nfSaida->valorVenda = 0;
+            $nfSaida->itens = $produtos;
+            $nfSaida->pedidos = $pedido;
+            $nfs[] = $nfSaida;
+        }
+
+        $wsExpedicao = new \Wms_WebService_Expedicao();
+        $wsExpedicao->informarNotaFiscal($nfs);
+
+        return true;
     }
 
     public function verificaCargasFaturadas($result) {
@@ -579,6 +696,7 @@ class Integracao
                 $embalagemAtiva = $linha['EMBALAGEM_ATIVA'];
                 $possuiValidade = (isset($linha['POSSUI_VALIDADE']))? $linha['POSSUI_VALIDADE'] : null;
                 $diasVidaUtil = (isset($linha['DIAS_VIDA_UTIL']))? (int)$linha['DIAS_VIDA_UTIL'] : null;
+                $refFornecedor = (isset($linha['REF_FORNECEDOR']))? (int)$linha['REF_FORNECEDOR'] : '';
 
                 $codClasseProduto = $codClasseNivel1;
                 if (empty($codClasseNivel1) AND !empty($codClasseNivel2)) {
@@ -594,6 +712,7 @@ class Integracao
                                                         'indPesoVariavel'=>$indPesoVariavel,
                                                         'possuiValidade'=>$possuiValidade,
                                                         'diasVidaUtil'=>$diasVidaUtil,
+                                                        'refFornecedor'=>$refFornecedor,
                                                         'embalagem'=>array());
                 }
 
@@ -677,7 +796,7 @@ class Integracao
                                                   $produto['codClasse'],
                                                   $produto['indPesoVariavel'],
                                                   $embalagensObj,
-                                                  '',
+                                                  $produto['refFornecedor'],
                                                   $produto['possuiValidade'],
                                                   $produto['diasVidaUtil']);
 

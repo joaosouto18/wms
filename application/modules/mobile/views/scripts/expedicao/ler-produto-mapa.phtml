@@ -49,7 +49,7 @@
                     var descricaoEmbalagem = data['result']['descricaoEmbalagem'];
 
                     dadosProdutos =
-                            '<table class="info">' +
+                            '<table style="border: solid 2px;"class="info">' +
                             '<tr><td colspan="2"><b>Cod Produto: </b>' + codProduto + ' - <b>Grade: </b>' + grade + '</td></tr>' +
                             '<tr><td colspan="2"><b>Descrição: </b>' + descricao + '</td></tr>' +
                             '<tr><td colspan="2"><b>Embalagem: </b>' + descricaoEmbalagem + ' (' + quantidade + ')</td></tr>' +
@@ -80,18 +80,20 @@
         return true;
     }
 
-    document.onkeyup = function (e) {
-        var string = $('#codigoBarras').val();
-        if(string.substring(0,1) === 'b' || string.substring(0,1) === 'B') {
-            qtd = document.getElementById('qtd');
-            qtd.focus();
-            if (event.preventDefault) {
-                event.preventDefault();
-            } else {
-                event.returnValue = false;
-            }
-        }
-    }
+
+
+//    document.onkeyup = function (e) {
+//        var string = $('#codigoBarras').val();
+//        if(string.substring(0,1) === 'b' || string.substring(0,1) === 'B') {
+//            qtd = document.getElementById('qtd');
+//            qtd.focus();
+//            if (event.preventDefault) {
+//                event.preventDefault();
+//            } else {
+//                event.returnValue = false;
+//            }
+//        }
+//    }
 
 </script>
 
@@ -99,7 +101,7 @@
     <body onLoad="load()"></body>
 <?php endif; ?>
 
-<table class="info">
+<table class="info row">
     <caption>Mapa:  <?php echo $this->idMapa ?> </caption>
     <tr>
         <td>
@@ -177,9 +179,9 @@
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
                 <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a></td>
             <?php endif; ?>
-            <!--            --><?php //if ($this->mapaSeparacaoEmbalado == true) :    ?>
+            <!--            --><?php //if ($this->mapaSeparacaoEmbalado == true) :      ?>
             <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>" >Fechar Caixa</a></td>
-            <!--            --><?php //endif;    ?>
+            <!--            --><?php //endif;      ?>
 
         </fieldset>
     </dd>
@@ -192,13 +194,16 @@
 
 <script type="text/javascript">
     $('#formulario').on('submit', function (e) {
+        if($('#qtd').val() == ''){
+            return false;
+        }
         var ret = true;
         if (<?php
-    if ($this->exibeQtd == true) {
-        echo "'S'";
-    } else {
-        echo "'N'";
-    }
+                if ($this->exibeQtd == true) {
+                    echo "'S'";
+                } else {
+                    echo "'N'";
+                }
     ?> == 'S') {
             $.ajax({
                 url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
@@ -263,10 +268,10 @@
                 success: function (data) {
                     var divCarrousel = $('#carousel');
                     for (var i = 0; i < data.dados.length; i++) {
-                        divCarrousel.append('<div class="item-lista" id="lista-produto' + data.dados[i]['COD_PRODUTO'] + '">' + data.dados[i]['COD_PRODUTO'] + ' - ' + data.dados[i]['DSC_PRODUTO'] + ' - ' + data.dados[i]['QTD_CONFERIDA'] + '</div>');
+                        divCarrousel.append('<div class="item-lista" id="lista-produto' + data.dados[i]['COD_PRODUTO'] + '">' + data.dados[i]['COD_PRODUTO'] + ' - ' + data.dados[i]['DSC_PRODUTO'] + ' - ' + data.dados[i]['DSC_GRADE'] + ' - ' + data.dados[i]['QTD_CONFERIDA'] + '</div>');
                     }
                     for (var j = 0; j < data.dadosClientes.length; j++) {
-                        divCarrousel.append('<div class="item-lista" id="lista-produto' + data.dadosClientes[j]['COD_PRODUTO'] + '">' + data.dadosClientes[j]['COD_PRODUTO'] + ' - ' + data.dadosClientes[j]['DSC_PRODUTO'] + ' - ' + data.dadosClientes[j]['QTD_CONFERIDA'] + '</div>');
+                        divCarrousel.append('<div class="item-lista" id="lista-produto' + data.dadosClientes[j]['COD_PRODUTO'] + '">' + data.dadosClientes[j]['COD_PRODUTO'] + ' - ' + data.dadosClientes[j]['DSC_PRODUTO'] + ' ' + data.dadosClientes[j]['DSC_GRADE'] + '</div>');
                     }
                 }
             });
@@ -283,6 +288,13 @@
         });
 
     });
-
+    $("input").keydown(function (e) {
+        if (e.which == 113) {
+            var qtd = $('#qtd');
+            qtd.focus();
+            qtd.select();
+            return false;
+        }
+    });
 </script>
 

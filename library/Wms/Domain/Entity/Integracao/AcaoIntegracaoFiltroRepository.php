@@ -22,13 +22,17 @@ class AcaoIntegracaoFiltroRepository extends EntityRepository
      * @param $acaoEn
      * @param $options
      */
-    public function getQuery($acaoEn, $options, $filtro)
+    public function getQuery($acaoEn, $options, $filtro, $data)
     {
         $query = $acaoEn->getQuery();
 
-        $acaoIntegracaoFiltroEntity = $this->findOneBy(array('acaoIntegracao' => $acaoEn->getId(),'tipoRegistro' => $filtro));
-        if ($acaoIntegracaoFiltroEntity != null) {
-            $query = str_replace(":where", $acaoIntegracaoFiltroEntity->getFiltro(), $query);
+        if ($filtro === AcaoIntegracaoFiltro::DATA_ESPECIFICA && empty($data)) {
+            $query = str_replace(":where", '', $query);
+        } else {
+            $acaoIntegracaoFiltroEntity = $this->findOneBy(array('acaoIntegracao' => $acaoEn->getId(), 'tipoRegistro' => $filtro));
+            if ($acaoIntegracaoFiltroEntity != null) {
+                $query = str_replace(":where", $acaoIntegracaoFiltroEntity->getFiltro(), $query);
+            }
         }
 
         if (!is_null($options)) {

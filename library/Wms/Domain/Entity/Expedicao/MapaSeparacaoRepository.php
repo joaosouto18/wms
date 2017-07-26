@@ -40,7 +40,7 @@ class MapaSeparacaoRepository extends EntityRepository
                        SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) as QTD_SEPARAR,
                        SUM(MSP.QTD_CORTADO) as QTD_CORTADO,
                        NVL(CONF.QTD_CONFERIDA,0) as QTD_CONFERIDA,
-                       CASE WHEN (MSP.IND_CONFERIDO = 'S') OR NVL(CONF.QTD_CONFERIDA,0) + SUM(MSP.QTD_CORTADO) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) OR NVL(CONF.QTD_CONFERIDA,0) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) THEN 'CONFERIDO'
+                       CASE WHEN (MSP.IND_CONFERIDO = 'S') AND ((CONF.QTD_CONFERIDA <> 0 AND (CONF.QTD_CONFERIDA + SUM(MSP.QTD_CORTADO)) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR)) OR (CONF.QTD_CONFERIDA <> 0 AND (CONF.QTD_CONFERIDA = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR)))) THEN 'CONFERIDO'
                             WHEN (SUM(MSP.QTD_CORTADO) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR)) THEN 'CORTADO'
                             ELSE 'PENDENTE'
                        END AS CONFERIDO
@@ -219,12 +219,12 @@ class MapaSeparacaoRepository extends EntityRepository
     public function validaConferencia($expedicao, $setDivergencia = false, $idMapa = null, $tipoRetorno = 'D')
     {
 
-        if ($tipoRetorno == "D") {
+        if ($tipoRetorno == 'D') {
             // EXIBE SOMENTE AS DIVERGENCIAS
-            $sinal = " < ";
+            $sinal = ' < ';
         } else {
             // EXIBE SOMENTE OS ACERTOS
-            $sinal = " = ";
+            $sinal = ' = ';
         }
 
         $modeloSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\ModeloSeparacao',$this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO'));
@@ -460,14 +460,14 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdProdutoMapa = $this->getQtdProdutoMapa($embalagemEn,$volumeEn,$mapaEn,$codPessoa);
 
         if (!empty($qtdProdutoMapa)){
-            $qtdMapa = number_format($qtdProdutoMapa[0]['QTD'],2,'.','');
-            $qtdCortada = number_format($qtdProdutoMapa[0]['QTD_CORTADO'],2,'.','');
+            $qtdMapa = number_format($qtdProdutoMapa[0]['QTD'],3,'.','');
+            $qtdCortada = number_format($qtdProdutoMapa[0]['QTD_CORTADO'],3,'.','');
         }
 
         $qtdEmbalagem = 1;
         if ($embalagemEn != null) {
             $produtoEn = $embalagemEn->getProduto();
-            $qtdEmbalagem = number_format($embalagemEn->getQuantidade(),2,'.','');
+            $qtdEmbalagem = number_format($embalagemEn->getQuantidade(),3,'.','');
         } else {
             $produtoEn = $volumeEn->getProduto();
         }
@@ -477,7 +477,7 @@ class MapaSeparacaoRepository extends EntityRepository
 
         if ($ultConferencia != null) {
             $numConferencia = $ultConferencia['numConferencia'];
-            $qtdConferida = number_format($ultConferencia['qtd'],2,'.','');
+            $qtdConferida = number_format($ultConferencia['qtd'],3,'.','');
         } else {
             $mapaSeparacaoConferenciaEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia')
                 ->findBy(array('mapaSeparacao' => $mapaEn, 'codProduto' => $produtoEn->getId(), 'dscGrade' => $produtoEn->getGrade(), 'indConferenciaFechada' => 'S'), array('id' => 'DESC'));

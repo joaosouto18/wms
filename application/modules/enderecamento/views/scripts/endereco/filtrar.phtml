@@ -54,6 +54,7 @@
  ?>
 <?php if($this->parametros != true) : ?>
 <form id="confirmar-selecionados" action="<?php echo $this->url(array('module' => 'enderecamento', 'controller' => 'endereco', 'action' => 'enderecar')) ?>" method="post">
+    <input type="hidden" value="<?php echo $this->isIndividual ?>" name="isIndividual" />
     <div id="selecionados">
         <table>
         </table>
