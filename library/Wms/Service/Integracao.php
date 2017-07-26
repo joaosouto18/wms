@@ -299,7 +299,6 @@ class Integracao
             $nfSaida->pedidos = $pedido;
             $nfs[] = $nfSaida;
         }
-        var_dump($nfs);exit;
         $wsExpedicao = new \Wms_WebService_Expedicao();
         $wsExpedicao->informarNotaFiscal($nfs);
 
