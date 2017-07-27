@@ -127,6 +127,7 @@ class Mobile_ExpedicaoController extends Action {
             $sessao = new \Zend_Session_Namespace('coletor');
             $central = $sessao->centralSelecionada;
 
+
             $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
             $dscVolume = "";
             $this->view->idVolume = $idVolume;
@@ -153,26 +154,33 @@ class Mobile_ExpedicaoController extends Action {
                 if (!empty($volumePatrimonioEn))
                     $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
             }
+            if (isset($sessao->lerProdutoMapa) && $sessao->lerProdutoMapa['idMapa'] != $idMapa) {
+                unset($sessao->lerProdutoMapa);
+            }
+            if (!is_array($sessao->lerProdutoMapa)) {
+                $sessao->lerProdutoMapa['idMapa'] = $idMapa;
+                $sessao->lerProdutoMapa['modeloSeparacaoRepo'] = $modeloSeparacaoRepo->find($idModeloSeparacao);
+                $sessao->lerProdutoMapa['mapaEn'] = $mapaSeparacaoRepo->find($idMapa);
+                $sessao->lerProdutoMapa['confereQtd'] = false;
+                $sessao->lerProdutoMapa['conferenciaNaoEmbalado'] = $sessao->lerProdutoMapa['modeloSeparacaoRepo']->getTipoConferenciaNaoEmbalado();
+                $sessao->lerProdutoMapa['conferenciaEmbalado'] = $sessao->lerProdutoMapa['modeloSeparacaoRepo']->getTipoConferenciaEmbalado();
+                /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
+                $sessao->lerProdutoMapa['mapaQuebraEn'] = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $sessao->lerProdutoMapa['mapaEn']));
 
-            $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
-            $mapaEn = $mapaSeparacaoRepo->find($idMapa);
-            $confereQtd = false;
-            $conferenciaNaoEmbalado = $modeloSeparacaoEn->getTipoConferenciaNaoEmbalado();
-            $conferenciaEmbalado = $modeloSeparacaoEn->getTipoConferenciaEmbalado();
-            /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
-            $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaEn));
-
-            if ($mapaQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
-                if ($conferenciaEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
-                    $confereQtd = true;
+                if ($sessao->lerProdutoMapa['mapaQuebraEn']->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                    if ($sessao->lerProdutoMapa['conferenciaEmbalado'] == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
+                        $sessao->lerProdutoMapa['confereQtd'] = true;
+                    }
+                }
+                if ($sessao->lerProdutoMapa['mapaQuebraEn']->getTipoQuebra() != Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                    if ($sessao->lerProdutoMapa['conferenciaNaoEmbalado'] == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
+                        $sessao->lerProdutoMapa['confereQtd'] = true;
+                    }
                 }
             }
-
-            if ($mapaQuebraEn->getTipoQuebra() != Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
-                if ($conferenciaNaoEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
-                    $confereQtd = true;
-                }
-            }
+            $modeloSeparacaoEn = $sessao->lerProdutoMapa['modeloSeparacaoRepo'];
+            $mapaEn = $sessao->lerProdutoMapa['mapaEn'];
+            $confereQtd = $sessao->lerProdutoMapa['confereQtd'];
 
             if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
                 try {
@@ -271,7 +279,7 @@ class Mobile_ExpedicaoController extends Action {
                 }
             } else {
                 if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
-                    $this->addFlashMessage('success',$msg['msg']);
+                    $this->addFlashMessage('success', $msg['msg']);
                 }
             }
         } catch (\Exception $e) {
@@ -279,14 +287,12 @@ class Mobile_ExpedicaoController extends Action {
                 $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()), 'dados' => $produtosMapa);
                 $this->_helper->json($vetRetorno);
             } else {
-                $this->addFlashMessage('error',$e->getMessage());
+                $this->addFlashMessage('error', $e->getMessage());
             }
         }
-
     }
 
-    public function getProdutosConferirAction()
-    {
+    public function getProdutosConferirAction() {
         $idMapa = $this->_getParam("idMapa");
         $idExpedicao = $this->_getParam("idExpedicao");
         $codPessoa = $this->_getParam("cliente");
@@ -296,7 +302,7 @@ class Mobile_ExpedicaoController extends Action {
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
 
         /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
-        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, false, $idMapa, 'D');
+        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, true, $idMapa, 'D');
 
         /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
         if (isset($codPessoa) && !empty($codPessoa)) {
@@ -608,7 +614,7 @@ class Mobile_ExpedicaoController extends Action {
         $this->renderScript('menu.phtml');
     }
 
-    public function divergenciaAction(){
+    public function divergenciaAction() {
         $request = $this->getRequest();
         $idExpedicao = $request->getParam('idExpedicao');
         $idMapa = $request->getParam('idMapa');
@@ -654,7 +660,7 @@ class Mobile_ExpedicaoController extends Action {
 
         if (is_string($result)) {
 
-            if (substr($result,0,46) == "Existem produtos para serem Conferidos no mapa") {
+            if (substr($result, 0, 46) == "Existem produtos para serem Conferidos no mapa") {
                 $linkImpressao = '<a href="' . $this->view->url(array('controller' => 'expedicao', 'action' => 'divergencia', 'idExpedicao' => $idExpedicao, 'idMapa' => $idMapa)) . '" target="_self" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Ver Divergencias</a>';
                 $result = "$result - $linkImpressao";
             }

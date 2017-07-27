@@ -99,7 +99,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                     } else {
                         $qtdConfMSP = $qtdConferida;
                     }
-                    $qtdPendente = Math::totalSubtracao($qtdSepararMapa,$qtdConfMSP );// $qtdSepararMapa - $qtdConfMSP;
+                    $qtdPendente = Math::subtracao($qtdSepararMapa,$qtdConfMSP );// $qtdSepararMapa - $qtdConfMSP;
                     if ($qtdPendente >0) {
                         $mspEn = $this->find($mspId);
                         if ($mspEn != null) {
@@ -115,10 +115,10 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
                             $mspEn->setQtdCortado($qtdPendente);
                             $this->getEntityManager()->persist($mspEn);
-                            $qtdCortar = Math::totalSubtracao($qtdCortar,$qtdPendente);// $qtdCortar - $qtdPendente;
+                            $qtdCortar = Math::subtracao($qtdCortar,$qtdPendente);// $qtdCortar - $qtdPendente;
                         }
                     }
-                    $qtdConferida = Math::totalSubtracao($qtdConferida,$qtdConfMSP); //$qtdConferida - $qtdConfMSP;
+                    $qtdConferida = Math::subtracao($qtdConferida,$qtdConfMSP); //$qtdConferida - $qtdConfMSP;
                 }
             }
 
@@ -145,7 +145,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                     } else {
                         $qtdConfMSP = $qtdConferida;
                     }
-                    $qtdPendente = Math::totalSubtracao($qtdSepararMapa,$qtdConfMSP);// $qtdSepararMapa - $qtdConfMSP;
+                    $qtdPendente = Math::subtracao($qtdSepararMapa,$qtdConfMSP);// $qtdSepararMapa - $qtdConfMSP;
                     if ($qtdPendente >0) {
                         $mspEn = $this->find($mspId);
                         if ($mspEn != null) {
@@ -161,10 +161,10 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                             $mspEn->setQtdCortado($qtdPendente);
                             $this->getEntityManager()->persist($mspEn);
 
-                            $qtdCortar = Math::totalSubtracao($qtdCortar,$qtdPendente);// $qtdCortar - $qtdPendente;
+                            $qtdCortar = Math::subtracao($qtdCortar,$qtdPendente);// $qtdCortar - $qtdPendente;
                         }
                     }
-                    $qtdConferida = Math::totalSubtracao($qtdConferida,$qtdConfMSP);// $qtdConferida - $qtdConfMSP;
+                    $qtdConferida = Math::subtracao($qtdConferida,$qtdConfMSP);// $qtdConferida - $qtdConfMSP;
                 }
             }
 
