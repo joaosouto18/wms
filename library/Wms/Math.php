@@ -32,6 +32,23 @@ Class Math
         return $quantidade;
     }
 
+    public static function compare($x,$y,$oper = ">") {
+        $quantidade = self::maiorPrecisao($x,$y);
+        $x = $x * $quantidade;
+        $y = $y * $quantidade;
+
+        if ($oper == ">") {
+            return $x > $y;
+        } elseif ($oper == ">=") {
+            return $x >= $y;
+        } elseif ($oper == "<=") {
+            return $x <= $y;
+        } elseif ($oper == "<") {
+            return $x < $y;
+        }
+    }
+
+
     public static function restoDivisao($x, $y)
     {
         $quantidade = self::maiorPrecisao($x, $y);
@@ -57,7 +74,7 @@ Class Math
         return $x / $y;
     }
 
-    public static function totalAdicao($x,$y)
+    public static function adicao($x,$y)
     {
         $quantidade = self::maiorPrecisao($x,$y);
 
@@ -68,7 +85,8 @@ Class Math
 
     }
 
-    public static function totalSubtracao($x,$y) {
+    public static function subtracao($x,$y)
+    {
 
         $quantidade = self::maiorPrecisao($x,$y);
 

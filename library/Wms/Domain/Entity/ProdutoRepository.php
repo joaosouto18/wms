@@ -1387,7 +1387,10 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                  END AS \"PROBLEMA CADASTRAL\",
                  PE.COD_PRODUTO_EMBALAGEM,
                  PE.IND_PADRAO,
-                 NVL(PE.IND_IMPRIMIR_CB,PV.IND_IMPRIMIR_CB) IND_IMPRIMIR_CB
+                 NVL(PE.IND_IMPRIMIR_CB,PV.IND_IMPRIMIR_CB) IND_IMPRIMIR_CB,                 
+                 CASE WHEN PE.DTH_INATIVACAO IS NULL THEN 'SIM'
+                      ELSE 'NÃO'
+                 END AS ATIVO                 
                  FROM PRODUTO P
            LEFT JOIN LINHA_SEPARACAO L ON P.COD_LINHA_SEPARACAO = L.COD_LINHA_SEPARACAO
            INNER JOIN FABRICANTE F ON P.COD_FABRICANTE = F.COD_FABRICANTE

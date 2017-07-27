@@ -639,18 +639,25 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
 
         $cubagemPedido = array();
+        /** @var PedidoProduto $pedidoProduto */
         foreach ($pedidosProdutos as $pedidoProduto) {
             $depositoEnderecoEn = null;
             $pedidoId           = $pedidoProduto->getPedido()->getId();
             $quantidade         = number_format($pedidoProduto->getQuantidade(),3,'.','') - number_format($pedidoProduto->getQtdCortada(),3,'.','');
             $codProduto         = $pedidoProduto->getProduto()->getId();
             $grade              = $pedidoProduto->getProduto()->getGrade();
-            $embalagensEn = $pedidoProduto->getProduto()->getEmbalagens()->matching(Criteria::create()
-                ->orderBy(array("quantidade" => Criteria::DESC)))->filter(
+
+            $produtoEntity = $pedidoProduto->getProduto();
+            $embalagensEn = $produtoEntity->getEmbalagens()->filter(
                 function($item) {
                     return is_null($item->getDataInativacao());
                 }
             )->toArray();
+
+
+            usort($embalagensEn,function ($itemA, $itemB) {
+                return $itemA->getQuantidade() < $itemB->getQuantidade();
+            });
 
             $quantidadeRestantePedido      = $quantidade;
             $qtdEmbalagemPadraoRecebimento = 1;
@@ -779,7 +786,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->qtdIteracoesMapa = 0;
             $this->qtdIteracoesMapaProduto = 0;
-            $arrMapas = array();
             $arrMapasEmbPP = array();
             $arrEnds = array();
 
@@ -935,7 +941,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 } //caso não a qtd atender recebe restante disponivel
                                 else {
                                     $qtdVinculada = $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'];
-                                    $quantidadeAtender = Math::totalSubtracao($enderecoPulmao['QUANTIDADE'],$qtdVinculada);
+                                    $quantidadeAtender = Math::subtracao($enderecoPulmao['QUANTIDADE'],$qtdVinculada);
                                     break;
                                 }
                             } //se não a qtd a atender é a qtd disponivel no endereco
@@ -949,7 +955,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                             foreach ($embalagensEn as $embalagem) {
-                                if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+                                if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                                     $embalagemAtual = $embalagem;
                                     break;
                                 }
@@ -1305,6 +1311,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     private function atualizaMapaSeparacaoProduto($idExpedicao, $arrRepo = null)
     {
+        $math = new Math();
 
         if ($arrRepo == null) {
             /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
@@ -1368,8 +1375,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $this->_em->flush();
 
                     foreach ($embalagensEn as $embalagem) {
-                        while (number_format($qtdTotalMapaProdutos,2,'.','') >= number_format($embalagem->getQuantidade(),2,'.','')) {
-                            $qtdTotalMapaProdutos = number_format($qtdTotalMapaProdutos,2,'.','') - number_format($embalagem->getQuantidade(),2,'.','');
+                        while ($math->compare($qtdTotalMapaProdutos, $embalagem->getQuantidade() , ">=" )) {
+                            $qtdTotalMapaProdutos = $math->totalSubtracao($qtdTotalMapaProdutos,$embalagem->getQuantidade());
                             $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagem, $pedidoProduto,$depositoEnderecoEn);
                         }
                     }
