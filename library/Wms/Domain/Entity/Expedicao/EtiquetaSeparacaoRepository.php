@@ -639,18 +639,25 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
 
         $cubagemPedido = array();
+        /** @var PedidoProduto $pedidoProduto */
         foreach ($pedidosProdutos as $pedidoProduto) {
             $depositoEnderecoEn = null;
             $pedidoId           = $pedidoProduto->getPedido()->getId();
             $quantidade         = number_format($pedidoProduto->getQuantidade(),3,'.','') - number_format($pedidoProduto->getQtdCortada(),3,'.','');
             $codProduto         = $pedidoProduto->getProduto()->getId();
             $grade              = $pedidoProduto->getProduto()->getGrade();
-            $embalagensEn = $pedidoProduto->getProduto()->getEmbalagens()->matching(Criteria::create()
-                ->orderBy(array("quantidade" => Criteria::DESC)))->filter(
+
+            $produtoEntity = $pedidoProduto->getProduto();
+            $embalagensEn = $produtoEntity->getEmbalagens()->filter(
                 function($item) {
                     return is_null($item->getDataInativacao());
                 }
             )->toArray();
+
+
+            usort($embalagensEn,function ($itemA, $itemB) {
+                return $itemA->getQuantidade() < $itemB->getQuantidade();
+            });
 
             $quantidadeRestantePedido      = $quantidade;
             $qtdEmbalagemPadraoRecebimento = 1;
