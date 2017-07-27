@@ -759,8 +759,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $mapaSeparacaoRepo = $arrayRepositorios['mapaSeparacaoProduto'];
         $verificaReentrega = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
 
-        $math = new Math();
-
         try {
             if (empty($status)) {
                 $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
@@ -781,7 +779,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->qtdIteracoesMapa = 0;
             $this->qtdIteracoesMapaProduto = 0;
-            $arrMapas = array();
             $arrMapasEmbPP = array();
             $arrEnds = array();
 
@@ -951,7 +948,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                             foreach ($embalagensEn as $embalagem) {
-                                if ($math->compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
+                                if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                                     $embalagemAtual = $embalagem;
                                     break;
                                 }
