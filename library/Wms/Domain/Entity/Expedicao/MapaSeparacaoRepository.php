@@ -508,6 +508,16 @@ class MapaSeparacaoRepository extends EntityRepository
             $ordemServicoId = $sessao->osID;
         }
 
+        $idMapa = $mapaEn->getId();
+        $grade = $produtoEn->getGrade();
+        $insert = 'INSERT INTO MAPA_SEPARACAO_CONFERENCIA (COD_MAPA_SEPARACAO_CONFERENCIA, COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, COD_PRODUTO_VOLUME, COD_PRODUTO_EMBALAGEM, QTD_EMBALAGEM, QTD_CONFERIDA, COD_OS, NUM_CONFERENCIA, IND_CONFERENCIA_FECHADA, DTH_CONFERENCIA, COD_VOLUME_PATRIMONIO, COD_MAPA_SEPARACAO_EMBALADO, COD_PESSOA)
+                        VALUES (SQ_MAPA_SEPARACAO_CONF_01.NEXTVAL, '.
+                                $idMapa.', '.$produtoEn->getId().', '."'$grade'".', null, '.$embalagemEn->getId().', '.$qtdEmbalagem.', '.$quantidade.', '.$ordemServicoId.', '.$numConferencia.", 'N', SYSDATE, null, null, null)";
+
+        $this->getEntityManager()->getConnection()->query($insert);
+        ini_set('memory_limit', '-1');
+
+        /*
         $novaConferencia = new MapaSeparacaoConferencia();
         $novaConferencia->setMapaSeparacao($mapaEn);
         $novaConferencia->setCodOS($ordemServicoId);
@@ -526,6 +536,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $novaConferencia->setCodPessoa($codPessoa);
         $this->getEntityManager()->persist($novaConferencia);
         $this->getEntityManager()->flush();
+        */
 
     }
 
