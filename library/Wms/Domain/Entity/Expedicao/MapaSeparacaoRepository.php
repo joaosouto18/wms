@@ -514,7 +514,7 @@ class MapaSeparacaoRepository extends EntityRepository
                         VALUES (SQ_MAPA_SEPARACAO_CONF_01.NEXTVAL, '.
                                 $idMapa.', '.$produtoEn->getId().', '."'$grade'".', null, '.$embalagemEn->getId().', '.$qtdEmbalagem.', '.$quantidade.', '.$ordemServicoId.', '.$numConferencia.", 'N', SYSDATE, null, null, null)";
 
-        $this->getEntityManager()->getConnection()->query($insert)->execute();
+        $this->getEntityManager()->getConnection()->query($insert);
         ini_set('memory_limit', '-1');
 
         /*
