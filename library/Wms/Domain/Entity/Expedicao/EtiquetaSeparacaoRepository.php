@@ -786,6 +786,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->qtdIteracoesMapa = 0;
             $this->qtdIteracoesMapaProduto = 0;
+            $arrPedidos = array();
             $arrMapasEmbPP = array();
             $arrEnds = array();
 
@@ -1013,8 +1014,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $consolidado = 'N';
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()])) {
                                     $cubagem[$pedidoEntity->getId()][$embalagemAtual->getId()] = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
-                                    $quebra = array();
-                                    $quebra[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
+                                    $quebras = array();
+                                    $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
                                     $consolidado = 'S';
                                 }
 
@@ -1044,8 +1045,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $consolidado = 'N';
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()])) {
                                     $cubagem[$pedidoEntity->getId()][$embalagemAtual->getId()] = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
-                                    $quebra = array();
-                                    $quebra[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
+                                    $quebras = array();
+                                    $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
                                     $consolidado = 'S';
                                 }
 
@@ -1073,9 +1074,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     throw new WMS_Exception($msg, $link);
                 }
 
-                if ($pedidoProduto == end($pedidosProdutos) ){
+                if (!isset($arrPedidos[$pedidoEntity->getId()])){
                     $pedidoEntity->setIndEtiquetaMapaGerado("S");
-                    $this->getEntityManager()->persist($pedidoEntity);
+                    $arrPedidos[$pedidoEntity->getId()] = $pedidoEntity;
                 }
             }
 
@@ -1097,13 +1098,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
                 }
             }
-
-            //$this->atualizaMapaSeparacaoProduto($idExpedicao, $arrayRepositorios);
             $this->atualizaMapaSeparacaoQuebra($expedicaoEntity, $statusEntity);
-//            $this->removeMapaSeparacaoVazio($idExpedicao);
 
-//            $this->_em->flush();
-//            $this->_em->clear();
+            foreach($arrPedidos as $pedido) {
+                $this->_em->persist($pedido);
+            }
 
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
             if ($parametroConsistencia == 'S') {
