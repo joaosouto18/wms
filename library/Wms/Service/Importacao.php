@@ -17,7 +17,7 @@ use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Inventario;
-use Wms\Domain\Entity\NotaFiscal;
+use Wms\Domain\Entity\NotaFiscal as NFEntity;
 use Wms\Domain\Entity\NotaFiscalRepository;
 use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Pessoa\Fisica;
