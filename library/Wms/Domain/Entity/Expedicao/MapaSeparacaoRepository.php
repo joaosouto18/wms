@@ -514,42 +514,8 @@ class MapaSeparacaoRepository extends EntityRepository
                         VALUES (SQ_MAPA_SEPARACAO_CONF_01.NEXTVAL, '.
                                 $idMapa.', '.$produtoEn->getId().', '."'$grade'".', null, '.$embalagemEn->getId().', '.$qtdEmbalagem.', '.$quantidade.', '.$ordemServicoId.', '.$numConferencia.", 'N', SYSDATE, null, null, null)";
 
-
+        $this->getEntityManager()->getConnection()->query($insert)->execute();
         ini_set('memory_limit', '-1');
-        $usuario = 'wms_wilso';
-        $senha = 'wms_adm';
-        $servidor = 'localhost';
-        $porta = '1521';
-        $sid = 'xe';
-
-        $connectionString = "$servidor:$porta/$sid";
-        $conexao = oci_connect($usuario,$senha,$connectionString);
-
-        if (!$conexao) {
-            $erro = oci_error();
-            throw new \Exception($erro['message']);
-        }
-
-        $res = oci_parse($conexao, $insert) or die ("erro");
-        if (!$res) {
-            $erro = oci_error($conexao);
-            oci_close($conexao);
-            throw new \Exception($erro['message']);
-        }
-
-        $e = oci_execute($res);
-        if (!$e) {
-            $erro = oci_error($res);
-            oci_free_statement($res);
-            oci_close($conexao);
-            throw new \Exception($erro['message']);
-        }
-
-        $arrayResult = array();
-
-        //fecha a conexão atual
-        oci_free_statement($res);
-        oci_close($conexao);
 
         /*
         $novaConferencia = new MapaSeparacaoConferencia();
