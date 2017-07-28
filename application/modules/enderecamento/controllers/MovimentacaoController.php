@@ -499,17 +499,17 @@ class Enderecamento_MovimentacaoController extends Action
         if ((isset($params['tipo'])) && ($params['tipo'] == 'C')) {
             /** @var \Wms\Domain\Entity\Enderecamento\VSaldoRepository $SaldoRepository */
             $SaldoCompletoRepository   = $this->_em->getRepository('wms:Enderecamento\VSaldoCompleto');
-            $saldo = $SaldoCompletoRepository->saldo($this->_getAllParams());
+            $saldo = $SaldoCompletoRepository->saldo($params);
         } else {
             /** @var \Wms\Domain\Entity\Enderecamento\VSaldoRepository $SaldoRepository */
             $SaldoRepository   = $this->_em->getRepository('wms:Enderecamento\VSaldo');
-            $saldo = $SaldoRepository->saldo($this->_getAllParams());
+            $saldo = $SaldoRepository->saldo($params);
         }
 
         $file = '';
 
         foreach($saldo as $produto) {
-            $linha = $produto['codProduto'].';'.$produto['grade'].';'.$produto['dscLinhaSeparacao'].';'.$produto['qtd'].';'.$produto['dscEndereco'].';'.$produto['unitizador'].';'.$produto['descricao'].';'.$produto['volume'].';'.utf8_decode($produto['tipoComercializacao']).';'.$produto['quantidade'];
+            $linha = $produto['codProduto'].';'.$produto['grade'].';'.$produto['dscLinhaSeparacao'].';'.$produto['qtd'].';'.$produto['dscEndereco'].';'.$produto['unitizador'].';'.$produto['descricao'].';'.$produto['volume'].';'.utf8_decode($produto['tipoComercializacao']);
             $file .= $linha . PHP_EOL;
             unset($linha);
         }

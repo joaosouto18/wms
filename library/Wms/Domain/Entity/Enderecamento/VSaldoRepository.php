@@ -20,28 +20,28 @@ class VSaldoRepository extends EntityRepository
         ->leftJoin("s.depositoEndereco", "e")
         ->orderBy("e.rua, lado, e.nivel, e.predio, e.apartamento, s.codProduto, s.grade, s.volume");
 
-        if (!empty($params['grandeza'])) {
+        if (isset($params['grandeza']) && !empty($params['grandeza'])) {
             $grandeza = $params['grandeza'];
             $grandeza = implode(',',$grandeza);
             $query->andWhere("s.codLinhaSeparacao in ($grandeza)");
         }
 
-        if (!empty($params['inicioRua'])) {
+        if (isset($params['inicioRua']) && !empty($params['inicioRua'])) {
             $query->andWhere('e.rua >= :inicioRua');
             $query->setParameter('inicioRua',$params['inicioRua']);
         }
 
-        if (!empty($params['fimRua'])) {
+        if (isset($params['fimRua']) && !empty($params['fimRua'])) {
             $query->andWhere('e.rua <= :fimRua');
             $query->setParameter('fimRua',$params['fimRua']);
         }
-		
-        if (($params['pulmao'] == 1) && ($params['picking'] == 0)) {
-            $query->andWhere("e.idCaracteristica NOT IN ($tipoPicking, $tipoPickingRotativo)");
-        }
-		
-        if (($params['pulmao'] == 0) && ($params['picking'] == 1)) {
-            $query->andWhere("e.idCaracteristica IN ($tipoPicking, $tipoPickingRotativo)");
+
+        if (isset($params['pulmao']) && isset($params['picking']) ) {
+            if (($params['pulmao'] == 1) && ($params['picking'] == 0)) {
+                $query->andWhere("e.idCaracteristica NOT IN ($tipoPicking, $tipoPickingRotativo)");
+            } else if (($params['pulmao'] == 0) && ($params['picking'] == 1)) {
+                $query->andWhere("e.idCaracteristica IN ($tipoPicking, $tipoPickingRotativo)");
+            }
         }
 
 		$result = $query->getQuery()->getResult();
