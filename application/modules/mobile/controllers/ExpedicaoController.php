@@ -157,6 +157,7 @@ class Mobile_ExpedicaoController extends Action {
             if (isset($sessao->lerProdutoMapa) && $sessao->lerProdutoMapa['idMapa'] != $idMapa) {
                 unset($sessao->lerProdutoMapa);
             }
+
             if (!is_array($sessao->lerProdutoMapa)) {
                 $sessao->lerProdutoMapa['idMapa'] = $idMapa;
                 $sessao->lerProdutoMapa['modeloSeparacaoRepo'] = $modeloSeparacaoRepo->find($idModeloSeparacao);

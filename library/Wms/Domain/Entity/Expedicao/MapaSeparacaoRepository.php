@@ -508,6 +508,50 @@ class MapaSeparacaoRepository extends EntityRepository
             $ordemServicoId = $sessao->osID;
         }
 
+        $idMapa = $mapaEn->getId();
+        $grade = $produtoEn->getGrade();
+        $insert = 'INSERT INTO MAPA_SEPARACAO_CONFERENCIA (COD_MAPA_SEPARACAO_CONFERENCIA, COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, COD_PRODUTO_VOLUME, COD_PRODUTO_EMBALAGEM, QTD_EMBALAGEM, QTD_CONFERIDA, COD_OS, NUM_CONFERENCIA, IND_CONFERENCIA_FECHADA, DTH_CONFERENCIA, COD_VOLUME_PATRIMONIO, COD_MAPA_SEPARACAO_EMBALADO, COD_PESSOA)
+                        VALUES (SQ_MAPA_SEPARACAO_CONF_01.NEXTVAL, '.
+                                $idMapa.', '.$produtoEn->getId().', '."'$grade'".', null, '.$embalagemEn->getId().', '.$qtdEmbalagem.', '.$quantidade.', '.$ordemServicoId.', '.$numConferencia.", 'N', SYSDATE, null, null, null)";
+
+
+        ini_set('memory_limit', '-1');
+        $usuario = 'wms_wilso';
+        $senha = 'wms_adm';
+        $servidor = 'localhost';
+        $porta = '1521';
+        $sid = 'xe';
+
+        $connectionString = "$servidor:$porta/$sid";
+        $conexao = oci_connect($usuario,$senha,$connectionString);
+
+        if (!$conexao) {
+            $erro = oci_error();
+            throw new \Exception($erro['message']);
+        }
+
+        $res = oci_parse($conexao, $insert) or die ("erro");
+        if (!$res) {
+            $erro = oci_error($conexao);
+            oci_close($conexao);
+            throw new \Exception($erro['message']);
+        }
+
+        $e = oci_execute($res);
+        if (!$e) {
+            $erro = oci_error($res);
+            oci_free_statement($res);
+            oci_close($conexao);
+            throw new \Exception($erro['message']);
+        }
+
+        $arrayResult = array();
+
+        //fecha a conexão atual
+        oci_free_statement($res);
+        oci_close($conexao);
+
+        /*
         $novaConferencia = new MapaSeparacaoConferencia();
         $novaConferencia->setMapaSeparacao($mapaEn);
         $novaConferencia->setCodOS($ordemServicoId);
@@ -526,6 +570,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $novaConferencia->setCodPessoa($codPessoa);
         $this->getEntityManager()->persist($novaConferencia);
         $this->getEntityManager()->flush();
+        */
 
     }
 
