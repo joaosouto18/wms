@@ -672,7 +672,6 @@ class ExpedicaoRepository extends EntityRepository {
         $cargas = array();
         foreach ($cargaEntities as $cargaEntity) {
             $result = $acaoIntRepo->processaAcao($acaoVerificaCargaFinalizadaEn, array(0 => $cargaEntity->getCodCargaExterno()), 'E', "P", null, 611);
-            var_dump($result); exit;
             if ($result === false) {
                 $cargas[] = $cargaEntity->getCodCargaExterno();
             } else if (is_string($result)) {
