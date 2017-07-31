@@ -680,6 +680,7 @@ class ExpedicaoRepository extends EntityRepository {
                 $andamentoRepo->save("Carga " . $cargaEntity->getCodCargaExterno() . " se encontra faturada no ERP, não é possível consultar seus cortes", $idExpedicao);
             }
         }
+        var_dump($cargas); exit;
         $idCargas[] = implode(',', $cargas);
 
         if ((count($idCargas) > 0) && ($idCargas[0] != '')) {
