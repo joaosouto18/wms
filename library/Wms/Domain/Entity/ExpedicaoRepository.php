@@ -672,6 +672,7 @@ class ExpedicaoRepository extends EntityRepository {
         $cargas = array();
         foreach ($cargaEntities as $cargaEntity) {
             $result = $acaoIntRepo->processaAcao($acaoVerificaCargaFinalizadaEn, array(0 => $cargaEntity->getCodCargaExterno()), 'E', "P", null, 611);
+            var_dump($result); exit;
             if ($result === false) {
                 $cargas[] = $cargaEntity->getCodCargaExterno();
             } else if (is_string($result)) {
@@ -680,7 +681,6 @@ class ExpedicaoRepository extends EntityRepository {
                 $andamentoRepo->save("Carga " . $cargaEntity->getCodCargaExterno() . " se encontra faturada no ERP, não é possível consultar seus cortes", $idExpedicao);
             }
         }
-        var_dump($cargas); exit;
         $idCargas[] = implode(',', $cargas);
 
         if ((count($idCargas) > 0) && ($idCargas[0] != '')) {
