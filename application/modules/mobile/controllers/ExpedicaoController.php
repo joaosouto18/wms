@@ -127,7 +127,6 @@ class Mobile_ExpedicaoController extends Action {
             $sessao = new \Zend_Session_Namespace('coletor');
             $central = $sessao->centralSelecionada;
 
-
             $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
             $dscVolume = "";
             $this->view->idVolume = $idVolume;
@@ -154,34 +153,26 @@ class Mobile_ExpedicaoController extends Action {
                 if (!empty($volumePatrimonioEn))
                     $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
             }
-            if (isset($sessao->lerProdutoMapa) && $sessao->lerProdutoMapa['idMapa'] != $idMapa) {
-                unset($sessao->lerProdutoMapa);
-            }
 
-            if (!is_array($sessao->lerProdutoMapa)) {
-                $sessao->lerProdutoMapa['idMapa'] = $idMapa;
-                $sessao->lerProdutoMapa['modeloSeparacaoRepo'] = $modeloSeparacaoRepo->find($idModeloSeparacao);
-                $sessao->lerProdutoMapa['mapaEn'] = $mapaSeparacaoRepo->find($idMapa);
-                $sessao->lerProdutoMapa['confereQtd'] = false;
-                $sessao->lerProdutoMapa['conferenciaNaoEmbalado'] = $sessao->lerProdutoMapa['modeloSeparacaoRepo']->getTipoConferenciaNaoEmbalado();
-                $sessao->lerProdutoMapa['conferenciaEmbalado'] = $sessao->lerProdutoMapa['modeloSeparacaoRepo']->getTipoConferenciaEmbalado();
+            $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+            $mapaEn = $mapaSeparacaoRepo->find($idMapa);
+            $confereQtd = false;
+            $conferenciaNaoEmbalado = $modeloSeparacaoEn->getTipoConferenciaNaoEmbalado();
+            $conferenciaEmbalado = $modeloSeparacaoEn->getTipoConferenciaEmbalado();
                 /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
-                $sessao->lerProdutoMapa['mapaQuebraEn'] = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $sessao->lerProdutoMapa['mapaEn']));
+            $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaEn));
 
-                if ($sessao->lerProdutoMapa['mapaQuebraEn']->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
-                    if ($sessao->lerProdutoMapa['conferenciaEmbalado'] == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
-                        $sessao->lerProdutoMapa['confereQtd'] = true;
+            if ($mapaQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                if ($conferenciaEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
+                    $confereQtd = true;
                     }
                 }
-                if ($sessao->lerProdutoMapa['mapaQuebraEn']->getTipoQuebra() != Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
-                    if ($sessao->lerProdutoMapa['conferenciaNaoEmbalado'] == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
-                        $sessao->lerProdutoMapa['confereQtd'] = true;
+
+            if ($mapaQuebraEn->getTipoQuebra() != Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                if ($conferenciaNaoEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
+                    $confereQtd = true;
                     }
                 }
-            }
-            $modeloSeparacaoEn = $sessao->lerProdutoMapa['modeloSeparacaoRepo'];
-            $mapaEn = $sessao->lerProdutoMapa['mapaEn'];
-            $confereQtd = $sessao->lerProdutoMapa['confereQtd'];
 
             if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
                 try {
