@@ -895,7 +895,7 @@ class Inventario
 
                 foreach ($contagemEndEntities as $contagemEn) {
                  if (($contagemEn->getNumContagem() == $maiorContagem) && ($contagemEn->getCodProduto() == $codProduto) && ($contagemEn->getGrade() == $grade)) {
-                        if ((($contagemEn->getCodProdutoVolume == null) && ($idVolume == null)) || ($contagemEn->getCodProdutoVolume == $idVolume)) {
+                        if ((($contagemEn->getCodProdutoVolume() == null) && ($idVolume == null)) || ($contagemEn->getCodProdutoVolume() == $idVolume)) {
                             $encontrouProduto = true;
                             break;
                         }
