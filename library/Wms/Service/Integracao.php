@@ -333,9 +333,11 @@ class Integracao
             ->orderBy('p.id, pp.codProduto, pp.grade');
 
         $pedidosProdutosWMS = $sql->getQuery()->getResult();
-        $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
-        $pedidoProdutoRepository->aplicaCortesbyERP($pedidosProdutosWMS,$pedidosProdutosERP);
-        $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosWMS);
+        if (count($pedidosProdutosWMS) >0) {
+            $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
+            $pedidoProdutoRepository->aplicaCortesbyERP($pedidosProdutosWMS,$pedidosProdutosERP);
+            $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosWMS);
+        }
 
         return true;
     }
