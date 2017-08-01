@@ -184,6 +184,9 @@ class Integracao
                     return true;
                 case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:
                     return $this->processaNotaFiscalSaida($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_VERIFICA_CARGA_FINALIZADA:
+                    return $this->verificaCargasFaturadas($this->_dados);
+
 
             }
         } catch (\Exception $e) {
