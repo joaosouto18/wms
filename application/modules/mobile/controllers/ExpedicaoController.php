@@ -123,6 +123,7 @@ class Mobile_ExpedicaoController extends Action {
             $qtd = $this->_getParam("qtd");
             $codBarras = $this->_getParam("codigoBarras");
             $codPessoa = $this->_getParam('cliente');
+            if ($codPessoa == "") {$codPessoa = null;}
             $msg['msg'] = "";
             $sessao = new \Zend_Session_Namespace('coletor');
             $central = $sessao->centralSelecionada;
