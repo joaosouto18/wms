@@ -149,6 +149,7 @@
                     <input type="hidden" name="idMapa" id="idMapa" value="<?php echo $this->idMapa ?>" size="40" maxlength="100" style="width: 99%">
                     <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>" size="40" maxlength="100" style="width: 99%">
                     <input type="hidden" name="cliente" id="cliente" value="<?php echo $this->idPessoa ?>" >
+                    <input type="hidden" name="exibeQtd" id="exibeQtd" value="<?php echo $this->exibeQtd ?>" >
 
                     <table>
                         <tr>
@@ -173,15 +174,15 @@
                         </tr>
                     </table>
                 </div>
-                <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
+                <input type="button" name="submit" id="submit" value="Buscar" class="btn">
             </dl>
             <?php if ($this->idVolume != "") : ?>
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
                 <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a></td>
             <?php endif; ?>
-            <!--            --><?php //if ($this->mapaSeparacaoEmbalado == true) :      ?>
+            <!--            --><?php //if ($this->mapaSeparacaoEmbalado == true) :         ?>
             <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>" >Fechar Caixa</a></td>
-            <!--            --><?php //endif;      ?>
+            <!--            --><?php //endif;         ?>
 
         </fieldset>
     </dd>
@@ -193,20 +194,80 @@
 
 
 <script type="text/javascript">
+
+    $('#submit').on('click', function (e) {
+        if ($('#qtd').val() != '') {
+            $.ajax({
+                url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'conferte-produto-ajax')) ?>',
+                data: $('form').serialize(),
+                async: false,
+                type: 'post',
+                success: function (data) {
+                    if (data.retorno.resposta.length > 0) {
+                        ret = false;
+                        document.getElementById('qtd').value = "1";
+                        codigoBarras = document.getElementById('codigoBarras').value = "";
+
+                        var error = "";
+                        var success = "";
+                        var song = "";
+
+                        if (data.retorno.resposta == 'error') {
+                            error = data.retorno.message;
+                            success = "";
+                            song = "/alarme.mp3";
+                        } else {
+                            success = data.retorno.message;
+                            error = "";
+                            song = "/confirm2.mp3";
+                        }
+
+                        document.getElementById('codigoBarras').focus();
+
+                        $("#erro").html(error);
+                        $("#success").html(success);
+
+                        try {
+                            playSound(song);
+                        } catch (e) {
+                            alert(message);
+                        }
+
+                        if (data.retorno.resposta == 'error') {
+                            alert(data.retorno.message);
+                        }
+
+                    }
+                    $(".item-lista").remove();
+                }
+            });
+        }
+    });
+
+
+
+
+
+
+
+
+
+
+
     $('#formulario').on('submit', function (e) {
-        if($('#qtd').val() == ''){
+        if ($('#qtd').val() == '') {
             return false;
         }
         var ret = true;
         if (<?php
-                if ($this->exibeQtd == true) {
-                    echo "'S'";
-                } else {
-                    echo "'N'";
-                }
+    if ($this->exibeQtd == true) {
+        echo "'S'";
+    } else {
+        echo "'N'";
+    }
     ?> == 'S') {
             $.ajax({
-                url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-produto-mapa')) ?>',
+                url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'conferte-produto-ajax')) ?>',
                 data: $('form').serialize(),
                 async: false,
                 type: 'post',

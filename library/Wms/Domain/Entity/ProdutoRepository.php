@@ -5,14 +5,14 @@ namespace Wms\Domain\Entity;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver\OCI8\OCI8Exception;
 use Doctrine\ORM\EntityRepository,
-	Wms\Domain\Entity\Produto as ProdutoEntity,
-	Wms\Domain\Entity\Produto\Embalagem as EmbalagemEntity,
-	Wms\Domain\Entity\Produto\NormaPaletizacao as NormaPaletizacaoEntity,
-	Doctrine\Common\Persistence\ObjectRepository,
-	Doctrine\ORM\Id\SequenceGenerator,
-	Wms\Util\CodigoBarras,
-	Wms\Util\Endereco as EnderecoUtil,
-	Core\Util\Produto as ProdutoUtil;
+    Wms\Domain\Entity\Produto as ProdutoEntity,
+    Wms\Domain\Entity\Produto\Embalagem as EmbalagemEntity,
+    Wms\Domain\Entity\Produto\NormaPaletizacao as NormaPaletizacaoEntity,
+    Doctrine\Common\Persistence\ObjectRepository,
+    Doctrine\ORM\Id\SequenceGenerator,
+    Wms\Util\CodigoBarras,
+    Wms\Util\Endereco as EnderecoUtil,
+    Core\Util\Produto as ProdutoUtil;
 use Doctrine\ORM\ORMException;
 use DoctrineExtensions\Versionable\Exception;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
@@ -25,13 +25,12 @@ use Wms\Domain\Entity\Produto\Embalagem;
  */
 class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
-	/**
-	 * Persiste dados produto no sistema
-	 *
-	 * @param Produto $produtoEntity
-	 * @param array $values valores vindo de um formulário
-	 */
-
+    /**
+     * Persiste dados produto no sistema
+     *
+     * @param Produto $produtoEntity
+     * @param array $values valores vindo de um formulário
+     */
     public function atualizaPesoProduto($codProduto, $dscGrade) {
 
         $procedureSQL = "CALL PROC_ATUALIZA_PESO_PRODUTO($codProduto,'$dscGrade')";
@@ -41,155 +40,153 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         $this->getEntityManager()->flush();
     }
 
-	public function getProdutosSemPickingByExpedicoes($expedicoes) {
-		$sessao = new \Zend_Session_Namespace('deposito');
-		$deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
-		$central = $deposito->getFilial()->getCodExterno();
+    public function getProdutosSemPickingByExpedicoes($expedicoes) {
+        $sessao = new \Zend_Session_Namespace('deposito');
+        $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+        $central = $deposito->getFilial()->getCodExterno();
 
-		$produtosRessuprir = $this->getEntityManager()->getRepository("wms:Expedicao")->getProdutosSemOnda($expedicoes, $central);
-		$produtosSemPicking = array();
+        $produtosRessuprir = $this->getEntityManager()->getRepository("wms:Expedicao")->getProdutosSemOnda($expedicoes, $central);
+        $produtosSemPicking = array();
 
-		foreach ($produtosRessuprir as $produto){
-			$codProduto = $produto['COD_PRODUTO'];
-			$grade = $produto['DSC_GRADE'];
+        foreach ($produtosRessuprir as $produto) {
+            $codProduto = $produto['COD_PRODUTO'];
+            $grade = $produto['DSC_GRADE'];
 
-			$produtoEn = $this->findOneBy(array('id'=>$codProduto,'grade'=>$grade));
-			$idPicking = $this->getEnderecoPicking($produtoEn,"ID");
-			if ($idPicking == NULL) {
-				$produtoSp = array();
-				$produtoSp['Codigo'] = $codProduto;
-				$produtoSp['Grade'] = $grade;
-				$produtoSp['Produto'] = $produtoEn->getDescricao();
-				$produtoSp['Quantidade'] = $produto['QTD'];
-				$produtosSemPicking[] = $produtoSp;
-			}
-		}
+            $produtoEn = $this->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+            $idPicking = $this->getEnderecoPicking($produtoEn, "ID");
+            if ($idPicking == NULL) {
+                $produtoSp = array();
+                $produtoSp['Codigo'] = $codProduto;
+                $produtoSp['Grade'] = $grade;
+                $produtoSp['Produto'] = $produtoEn->getDescricao();
+                $produtoSp['Quantidade'] = $produto['QTD'];
+                $produtosSemPicking[] = $produtoSp;
+            }
+        }
 
-		return $produtosSemPicking;
-	}
+        return $produtosSemPicking;
+    }
 
-	private function setParamEndAutomatico( $produtoEn, $values, $tipo) {
-		if ($tipo == 'AreaArmazenagem') {
-			$repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoAreaArmazenagem');
-		}
-		if ($tipo == 'TipoEndereco') {
-			$repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoTipoEndereco');
-		}
-		if ($tipo == 'TipoEstrutura') {
-			$repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoTipoEstrutura');
-		}
-		if ($tipo == 'CaracteristicaEndereco') {
-			$repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoCaracteristicaEndereco');
-		}
+    private function setParamEndAutomatico($produtoEn, $values, $tipo) {
+        if ($tipo == 'AreaArmazenagem') {
+            $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoAreaArmazenagem');
+        }
+        if ($tipo == 'TipoEndereco') {
+            $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoTipoEndereco');
+        }
+        if ($tipo == 'TipoEstrutura') {
+            $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoTipoEstrutura');
+        }
+        if ($tipo == 'CaracteristicaEndereco') {
+            $repo = $this->getEntityManager()->getRepository('wms:Produto\EnderecamentoCaracteristicaEndereco');
+        }
 
-		$registros = $repo->findBy(array('codProduto'=>$produtoEn->getId(), 'grade'=>$produtoEn->getGrade()));
-		foreach ($registros as $registro) {
-			$this->getEntityManager()->remove($registro);
-		}
+        $registros = $repo->findBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
+        foreach ($registros as $registro) {
+            $this->getEntityManager()->remove($registro);
+        }
 
-		foreach ($values as $key=> $value) {
-			if (($value != "") && (is_numeric($value))) {
-				if ($tipo == 'AreaArmazenagem') {
-					$sequencia = new ProdutoEntity\EnderecamentoAreaArmazenagem();
-					$sequencia->setCodAreaArmazenagem($key);
-				}
-				if ($tipo == 'TipoEndereco') {
-					$sequencia = new ProdutoEntity\EnderecamentoTipoEndereco();
-					$sequencia->setCodTipoEndereco($key);
-				}
-				if ($tipo == 'TipoEstrutura') {
-					$sequencia = new ProdutoEntity\EnderecamentoTipoEstrutura();
-					$sequencia->setCodTipoEstrutura($key);
+        foreach ($values as $key => $value) {
+            if (($value != "") && (is_numeric($value))) {
+                if ($tipo == 'AreaArmazenagem') {
+                    $sequencia = new ProdutoEntity\EnderecamentoAreaArmazenagem();
+                    $sequencia->setCodAreaArmazenagem($key);
+                }
+                if ($tipo == 'TipoEndereco') {
+                    $sequencia = new ProdutoEntity\EnderecamentoTipoEndereco();
+                    $sequencia->setCodTipoEndereco($key);
+                }
+                if ($tipo == 'TipoEstrutura') {
+                    $sequencia = new ProdutoEntity\EnderecamentoTipoEstrutura();
+                    $sequencia->setCodTipoEstrutura($key);
+                }
+                if ($tipo == 'CaracteristicaEndereco') {
+                    $sequencia = new ProdutoEntity\EnderecamentoCaracteristicaEndereco();
+                    $sequencia->setCodCaracteristica($key);
+                }
+                $sequencia->setCodProduto($produtoEn->getId());
+                $sequencia->setGrade($produtoEn->getGrade());
+                $sequencia->setPrioridade($value);
+                $this->getEntityManager()->persist($sequencia);
+            }
+        }
+    }
 
-				}
-				if ($tipo == 'CaracteristicaEndereco') {
-					$sequencia = new ProdutoEntity\EnderecamentoCaracteristicaEndereco();
-					$sequencia->setCodCaracteristica($key);
-				}
-				$sequencia->setCodProduto($produtoEn->getId());
-				$sequencia->setGrade($produtoEn->getGrade());
-				$sequencia->setPrioridade($value);
-				$this->getEntityManager()->persist($sequencia);
-			}
-		}
-	}
+    protected function saveFornecedorReferencia($em, $dados, $produtoEntity) {
+        $idProduto = $produtoEntity->getIdProduto();
+        $fornecedorRefRepo = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
 
-	protected  function saveFornecedorReferencia($em, $dados, $produtoEntity)
-	{
-		$idProduto = $produtoEntity->getIdProduto();
-		$fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+        foreach ($dados['fornecedor'] as $key => $fornecedorRef) {
 
-		foreach($dados['fornecedor'] as $key => $fornecedorRef) {
+            /** @var Embalagem $embalagem */
+            $fornRefEntity = $fornecedorRefRepo->findBy(array('fornecedor' => $fornecedorRef['id'], 'idProduto' => $idProduto));
+            if (!$fornRefEntity) {
+                $fornRefEntity = new Referencia();
+                $fornRefEntity->setIdProduto($idProduto);
+                $fornRefEntity->setEmbalagem($em->getReference('wms:Produto\Embalagem', $fornecedorRef['embalagem']));
+                $fornRefEntity->setFornecedor($em->getReference('wms:Pessoa\Papel\Fornecedor', $fornecedorRef['id']));
+            }
+            $fornRefEntity->setDscReferencia($fornecedorRef['cod']);
 
-			/** @var Embalagem $embalagem */
-			$fornRefEntity = $fornecedorRefRepo->findBy(array('fornecedor' => $fornecedorRef['id'], 'idProduto' => $idProduto));
-			if (!$fornRefEntity) {
-				$fornRefEntity = new Referencia();
-				$fornRefEntity->setIdProduto($idProduto);
-				$fornRefEntity->setEmbalagem($em->getReference('wms:Produto\Embalagem', $fornecedorRef['embalagem']));
-				$fornRefEntity->setFornecedor($em->getReference('wms:Pessoa\Papel\Fornecedor', $fornecedorRef['id']));
-			}
-			$fornRefEntity->setDscReferencia($fornecedorRef['cod']);
+            $em->persist($fornRefEntity);
+        }
+    }
 
-			$em->persist($fornRefEntity);
-		}
-	}
+    public function save(ProdutoEntity $produtoEntity, array $values) {
 
-	public function save(ProdutoEntity $produtoEntity, array $values) {
+        extract($values['produto']);
 
-		extract($values['produto']);
+        $em = $this->getEntityManager();
+        $em->beginTransaction();
 
-		$em = $this->getEntityManager();
-		$em->beginTransaction();
+        try {
 
-		try {
+            $dscEndereco = $values['enderecamento']['enderecoReferencia'];
+            if ($dscEndereco != "") {
+                $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('descricao' => $dscEndereco));
+                if ($enderecoEn == null) {
+                    throw new \Exception("Endereço de referencia para endereçamento automático inválido");
+                } else {
+                    $produtoEntity->setEnderecoReferencia($enderecoEn);
+                }
+            } else {
+                $produtoEntity->setEnderecoReferencia(null);
+            }
 
-			$dscEndereco = $values['enderecamento']['enderecoReferencia'];
-			if ($dscEndereco != "") {
-				$enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('descricao'=>$dscEndereco));
-				if ($enderecoEn == null) {
-					throw new \Exception("Endereço de referencia para endereçamento automático inválido");
-				} else {
-					$produtoEntity->setEnderecoReferencia($enderecoEn);
-				}
-			} else {
-				$produtoEntity->setEnderecoReferencia(null);
-			}
+            if (isset($values['areaArmazenagem']) && !empty($values['areaArmazenagem']))
+                $this->setParamEndAutomatico($produtoEntity, $values['areaArmazenagem'], 'AreaArmazenagem');
 
-			if (isset($values['areaArmazenagem']) && !empty($values['areaArmazenagem']))
-				$this->setParamEndAutomatico($produtoEntity,$values['areaArmazenagem'],'AreaArmazenagem');
+            if (isset($values['estruturaArmazenagem']) && !empty($values['estruturaArmazenagem']))
+                $this->setParamEndAutomatico($produtoEntity, $values['estruturaArmazenagem'], 'TipoEstrutura');
 
-			if (isset($values['estruturaArmazenagem']) && !empty($values['estruturaArmazenagem']))
-				$this->setParamEndAutomatico($produtoEntity,$values['estruturaArmazenagem'],'TipoEstrutura');
+            if (isset($values['tipoEndereco']) && !empty($values['tipoEndereco']))
+                $this->setParamEndAutomatico($produtoEntity, $values['tipoEndereco'], 'TipoEndereco');
 
-			if (isset($values['tipoEndereco']) && !empty($values['tipoEndereco']))
-				$this->setParamEndAutomatico($produtoEntity,$values['tipoEndereco'],'TipoEndereco');
+            if (isset($values['caracteristicaEndereco']) && !empty($values['caracteristicaEndereco']))
+                $this->setParamEndAutomatico($produtoEntity, $values['caracteristicaEndereco'], 'CaracteristicaEndereco');
 
-			if (isset($values['caracteristicaEndereco']) && !empty($values['caracteristicaEndereco']))
-				$this->setParamEndAutomatico($produtoEntity,$values['caracteristicaEndereco'],'CaracteristicaEndereco');
+            $linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $idLinhaSeparacao);
+            $tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $idTipoComercializacao);
 
-			$linhaSeparacaoEntity = $em->getReference('wms:Armazenagem\LinhaSeparacao', $idLinhaSeparacao);
-			$tipoComercializacaoEntity = $em->getReference('wms:Produto\TipoComercializacao', $idTipoComercializacao);
+            $produtoEntity->setLinhaSeparacao($linhaSeparacaoEntity);
+            $produtoEntity->setTipoComercializacao($tipoComercializacaoEntity);
+            $produtoEntity->setNumVolumes($numVolumes);
+            $produtoEntity->setReferencia($referencia);
+            $produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
+            $produtoEntity->setPossuiPesoVariavel((isset($possuiPesoVariavel) && !empty($possuiPesoVariavel)) ? $possuiPesoVariavel : "N");
 
-			$produtoEntity->setLinhaSeparacao($linhaSeparacaoEntity);
-			$produtoEntity->setTipoComercializacao($tipoComercializacaoEntity);
-			$produtoEntity->setNumVolumes($numVolumes);
-			$produtoEntity->setReferencia($referencia);
-			$produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
-			$produtoEntity->setPossuiPesoVariavel((isset($possuiPesoVariavel) && !empty($possuiPesoVariavel))? $possuiPesoVariavel : "N");
-
-			$sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
+            $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01", 1);
             if ($produtoEntity->getId() == null) {
                 $produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
             }
 
-			if (isset($values['fornecedor']) && !empty($values['fornecedor']))
-				$this->saveFornecedorReferencia($em, $values, $produtoEntity);
+            if (isset($values['fornecedor']) && !empty($values['fornecedor']))
+                $this->saveFornecedorReferencia($em, $values, $produtoEntity);
 
-			$em->persist($produtoEntity);
+            $em->persist($produtoEntity);
 
-			switch ($idTipoComercializacao) {
-				case ProdutoEntity::TIPO_UNITARIO:
+            switch ($idTipoComercializacao) {
+                case ProdutoEntity::TIPO_UNITARIO:
                     // limpo os volumes se houver
                     /** @var ProdutoEntity\VolumeRepository $volumeRepo */
                     $volumeRepo = $em->getRepository('wms:Produto\Volume');
@@ -203,32 +200,32 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $em->remove($volumeEntity);
                     }
 
-					// gravo embalagens
-					$result = $this->persistirEmbalagens($produtoEntity, $values);
+                    // gravo embalagens
+                    $result = $this->persistirEmbalagens($produtoEntity, $values);
 
-					if (is_string($result)){
-						$em->rollback();
-						return $result;
-					}
-					// gravo dados logisticos
-					$this->persistirDadosLogisticos($values, $produtoEntity);
+                    if (is_string($result)) {
+                        $em->rollback();
+                        return $result;
+                    }
+                    // gravo dados logisticos
+                    $this->persistirDadosLogisticos($values, $produtoEntity);
 
-					//aguardando teste por parte da simonetti
-					//WebService da Simonetti para persistir os dados logisticos
-					if ($this->getSystemParameterValue("CONSOME_WEBSERVICE_PRODUTOS") == "S") {
-						$retorno = $this->enviaDadosLogisticosEmbalagem($produtoEntity);
+                    //aguardando teste por parte da simonetti
+                    //WebService da Simonetti para persistir os dados logisticos
+                    if ($this->getSystemParameterValue("CONSOME_WEBSERVICE_PRODUTOS") == "S") {
+                        $retorno = $this->enviaDadosLogisticosEmbalagem($produtoEntity);
 
-						//Se estiver em ambiente de desenvolvimento lanço o debug na tela
-						if (array_key_exists('erro', $retorno) && APPLICATION_ENV == 'development')
-							throw new \Exception($retorno['debug']);
+                        //Se estiver em ambiente de desenvolvimento lanço o debug na tela
+                        if (array_key_exists('erro', $retorno) && APPLICATION_ENV == 'development')
+                            throw new \Exception($retorno['debug']);
 
-						//Se não for ambiente de desenvolvimento lanço apenas a mensagem de erro
-						if (array_key_exists('erro', $retorno) && APPLICATION_ENV !== 'development')
-							throw new \Exception($retorno['debug']);
-					}
+                        //Se não for ambiente de desenvolvimento lanço apenas a mensagem de erro
+                        if (array_key_exists('erro', $retorno) && APPLICATION_ENV !== 'development')
+                            throw new \Exception($retorno['debug']);
+                    }
 
-					break;
-				case ProdutoEntity::TIPO_COMPOSTO:
+                    break;
+                case ProdutoEntity::TIPO_COMPOSTO:
                     // limpo os embalagens se houver
                     /** @var ProdutoEntity\EmbalagemRepository $embalagemRepo */
                     $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
@@ -242,490 +239,489 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $em->remove($embalagemEntity);
                     }
 
-					// gravo volumes
-					$this->persistirVolumes($produtoEntity, $values);
+                    // gravo volumes
+                    $this->persistirVolumes($produtoEntity, $values);
 
-					//aguardando teste por parte da simonetti
-					//WebService da Simonetti para persistir os dados logisticos
-					if ($this->getSystemParameterValue("CONSOME_WEBSERVICE_PRODUTOS") == "S") {
-						$retorno = $this->enviaDadosLogisticosVolumes($produtoEntity, $values);
+                    //aguardando teste por parte da simonetti
+                    //WebService da Simonetti para persistir os dados logisticos
+                    if ($this->getSystemParameterValue("CONSOME_WEBSERVICE_PRODUTOS") == "S") {
+                        $retorno = $this->enviaDadosLogisticosVolumes($produtoEntity, $values);
 
-						//Se estiver em ambiente de desenvolvimento lanço o debug na tela
-						if (array_key_exists('erro', $retorno) && APPLICATION_ENV == 'development')
-							throw new Exception($retorno['debug']);
+                        //Se estiver em ambiente de desenvolvimento lanço o debug na tela
+                        if (array_key_exists('erro', $retorno) && APPLICATION_ENV == 'development')
+                            throw new Exception($retorno['debug']);
 
-						//Se não for ambiente de desenvolvimento lanço apenas a mensagem de erro
-						if (array_key_exists('erro', $retorno) && APPLICATION_ENV !== 'development')
-							throw new Exception($retorno['erro']);
-					}
+                        //Se não for ambiente de desenvolvimento lanço apenas a mensagem de erro
+                        if (array_key_exists('erro', $retorno) && APPLICATION_ENV !== 'development')
+                            throw new Exception($retorno['erro']);
+                    }
 
-					break;
-			}
+                    break;
+            }
 
             $em->flush();
-            $this->atualizaPesoProduto($produtoEntity->getId(),$produtoEntity->getGrade());
+            $this->atualizaPesoProduto($produtoEntity->getId(), $produtoEntity->getGrade());
             $em->commit();
+        } catch (\Exception $e) {
+            $em->rollback();
+            throw new \Exception($e->getMessage());
+        }
+        return true;
+    }
+
+    /**
+     * Persiste as embalagens do produto
+     *
+     * @param ProdutoEntity $produtoEntity
+     * @param array $values
+     * @return boolean
+     */
+    public function persistirEmbalagens(ProdutoEntity $produtoEntity, array &$values, $webservice = false, $flush = true, $repositorios = null) {
+        try {
+
+            $em = $this->getEntityManager();
+            if ($webservice == true) {
+                $idUsuario = null;
+            } else {
+                $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
+            }
+
+            if ($repositorios == null) {
+                /** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
+                $andamentoRepo = $em->getRepository('wms:Produto\Andamento');
+
+                /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+                $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
+
+                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+                $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+            } else {
+                /** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
+                $andamentoRepo = $repositorios['produtoAndamentoRepo'];
+
+                /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+                $enderecoRepo = $repositorios['enderecoRepo'];
+
+                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+                $embalagemRepo = $repositorios['embalagemRepo'];
+            }
 
 
-		} catch (\Exception $e) {
-			$em->rollback();
-			throw new \Exception($e->getMessage());
-		}
-		return true;
-	}
-
-	/**
-	 * Persiste as embalagens do produto
-	 *
-	 * @param ProdutoEntity $produtoEntity
-	 * @param array $values
-	 * @return boolean
-	 */
-	public function persistirEmbalagens(ProdutoEntity $produtoEntity, array &$values, $webservice = false, $flush = true, $repositorios = null) {
-		try{
-
-			$em = $this->getEntityManager();
-			if ($webservice == true) {
-				$idUsuario = null;
-			}else {
-				$idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
-			}
-
-			if ($repositorios == null) {
-				/** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
-				$andamentoRepo = $em->getRepository('wms:Produto\Andamento');
-
-				/** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-				$enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
-
-				/** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-				$embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
-
-			} else {
-				/** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepo */
-				$andamentoRepo = $repositorios['produtoAndamentoRepo'];
-
-				/** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-				$enderecoRepo = $repositorios['enderecoRepo'];
-
-				/** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-				$embalagemRepo = $repositorios['embalagemRepo'];
-			}
+            //embalagens do produto
+            if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
+                return false;
 
 
-			//embalagens do produto
-			if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
-				return false;
+            foreach ($values['embalagens'] as $id => $itemEmbalagem) {
+                $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
+                extract($itemEmbalagem);
+                switch ($itemEmbalagem['acao']) {
+                    case 'incluir':
 
+                        $embalagemEntity = new EmbalagemEntity;
 
-			foreach ($values['embalagens'] as $id => $itemEmbalagem) {
-				$itemEmbalagem['quantidade'] = str_replace(',','.',$itemEmbalagem['quantidade']);
-				extract($itemEmbalagem);
-				switch ($itemEmbalagem['acao']) {
-					case 'incluir':
+                        $embalagemEntity->setProduto($produtoEntity);
+                        $embalagemEntity->setGrade($produtoEntity->getGrade());
+                        $embalagemEntity->setDescricao($descricao);
+                        $embalagemEntity->setQuantidade($quantidade);
+                        $embalagemEntity->setIsPadrao($isPadrao);
+                        $embalagemEntity->setCBInterno($CBInterno);
+                        $embalagemEntity->setImprimirCB($imprimirCB);
+                        $embalagemEntity->setCodigoBarras(trim($codigoBarras));
+                        $embalagemEntity->setEmbalado($embalado);
+                        $embalagemEntity->setCapacidadePicking($capacidadePicking);
+                        $embalagemEntity->setPontoReposicao($pontoReposicao);
+                        $embalagemEntity->setEndereco(null);
 
-						$embalagemEntity = new EmbalagemEntity;
+                        //valida o endereco informado
+                        if (!empty($endereco)) {
+                            $endereco = EnderecoUtil::separar($endereco);
+                            $enderecoEntity = $enderecoRepo->findOneBy($endereco);
 
-						$embalagemEntity->setProduto($produtoEntity);
-						$embalagemEntity->setGrade($produtoEntity->getGrade());
-						$embalagemEntity->setDescricao($descricao);
-						$embalagemEntity->setQuantidade($quantidade);
-						$embalagemEntity->setIsPadrao($isPadrao);
-						$embalagemEntity->setCBInterno($CBInterno);
-						$embalagemEntity->setImprimirCB($imprimirCB);
-						$embalagemEntity->setCodigoBarras(trim($codigoBarras));
-						$embalagemEntity->setEmbalado($embalado);
-						$embalagemEntity->setCapacidadePicking($capacidadePicking);
-						$embalagemEntity->setPontoReposicao($pontoReposicao);
-						$embalagemEntity->setEndereco(null);
+                            if (!$enderecoEntity) {
+                                throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
+                            }
 
-						//valida o endereco informado
-						if (!empty($endereco)) {
-							$endereco = EnderecoUtil::separar($endereco);
-							$enderecoEntity = $enderecoRepo->findOneBy($endereco);
+                            $embalagemEntity->setEndereco($enderecoEntity);
+                        }
 
-							if (!$enderecoEntity) {
-								throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
-							}
+                        if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])) {
+                            if ($webservice == true) {
+                                $embalagemEntity->setDataInativacao(null);
+                                $embalagemEntity->setUsuarioInativacao($idUsuario);
+                                $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso', true, $webservice);
+                            } elseif (is_null($embalagemEntity->getDataInativacao())) {
+                                $embalagemEntity->setDataInativacao(new \DateTime());
+                                $embalagemEntity->setUsuarioInativacao($idUsuario);
+                                $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso', false, $webservice);
+                            }
+                        } else {
+                            if (!is_null($embalagemEntity->getDataInativacao())) {
+                                $embalagemEntity->setDataInativacao(null);
+                                $embalagemEntity->setUsuarioInativacao(null);
+                                $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso', false, $webservice);
+                            }
+                        }
 
-							$embalagemEntity->setEndereco($enderecoEntity);
-						}
+                        $em->persist($embalagemEntity);
+                        if ($flush == true)
+                            $em->flush();
 
-						if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
-							if ($webservice == true) {
-								$embalagemEntity->setDataInativacao(null);
-								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',true,$webservice);
-							} elseif (is_null($embalagemEntity->getDataInativacao())) {
-								$embalagemEntity->setDataInativacao(new \DateTime());
-								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
-							}
-						} else {
-							if (!is_null($embalagemEntity->getDataInativacao())) {
-								$embalagemEntity->setDataInativacao(null);
-								$embalagemEntity->setUsuarioInativacao(null);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
-							}
-						}
+                        if ($embalagemEntity->getIsPadrao() === 'S') {
+                            $result = $embalagemRepo->checkEmbalagemDefault($embalagemEntity);
+                            if (!is_bool($result))
+                                throw $result;
+                        }
 
-						$em->persist($embalagemEntity);
-						if ($flush == true) $em->flush();
+                        $produtoEntity->addEmbalagem($embalagemEntity);
 
-						if ($embalagemEntity->getIsPadrao() === 'S') {
-							$result = $embalagemRepo->checkEmbalagemDefault($embalagemEntity);
-							if (!is_bool($result))
-								throw $result;
-						}
+                        $values['embalagens'][$id]['id'] = $embalagemEntity->getId();
 
-						$produtoEntity->addEmbalagem($embalagemEntity);
+                        if ($CBInterno == 'S') {
+                            $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20" . $embalagemEntity->getId());
+                            $embalagemEntity->setCodigoBarras(trim($codigoBarras));
+                        }
 
-						$values['embalagens'][$id]['id'] = $embalagemEntity->getId();
+                        break;
+                    case 'alterar':
 
-						if ($CBInterno == 'S') {
-							$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20" . $embalagemEntity->getId());
-							$embalagemEntity->setCodigoBarras(trim($codigoBarras));
-						}
+                        $embalagemEntity = $em->getReference('wms:Produto\Embalagem', $id);
 
-						break;
-					case 'alterar':
+                        \Zend\Stdlib\Configurator::configure($embalagemEntity, $itemEmbalagem);
 
-						$embalagemEntity = $em->getReference('wms:Produto\Embalagem', $id);
+                        $embalagemEntity->setEndereco(null);
 
-						\Zend\Stdlib\Configurator::configure($embalagemEntity, $itemEmbalagem);
+                        //valida o endereco informado
+                        if (!empty($endereco)) {
+                            $endereco = EnderecoUtil::separar($endereco);
+                            $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
+                            $enderecoEntity = $enderecoRepo->findOneBy($endereco);
 
-						$embalagemEntity->setEndereco(null);
+                            if (!$enderecoEntity) {
+                                throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
+                            }
 
-						//valida o endereco informado
-						if (!empty($endereco)) {
-							$endereco = EnderecoUtil::separar($endereco);
-							$enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
-							$enderecoEntity = $enderecoRepo->findOneBy($endereco);
+                            $embalagemEntity->setEndereco($enderecoEntity);
+                        }
 
-							if (!$enderecoEntity) {
-								throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
-							}
+                        // verifica se o codigo de barras é automatico
+                        if ($CBInterno == 'S') {
+                            $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20" . $id);
+                            $embalagemEntity->setCodigoBarras(trim($codigoBarras));
+                        }
+                        $embalagemEntity->setEmbalado($embalado);
+                        $embalagemEntity->setCapacidadePicking($capacidadePicking);
+                        $embalagemEntity->setPontoReposicao($pontoReposicao);
 
-							$embalagemEntity->setEndereco($enderecoEntity);
-						}
-
-						// verifica se o codigo de barras é automatico
-						if ($CBInterno == 'S') {
-							$codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20". $id);
-							$embalagemEntity->setCodigoBarras(trim($codigoBarras));
-						}
-						$embalagemEntity->setEmbalado($embalado);
-						$embalagemEntity->setCapacidadePicking($capacidadePicking);
-						$embalagemEntity->setPontoReposicao($pontoReposicao);
-
-						if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
-							if ($webservice == true) {
-								$embalagemEntity->setDataInativacao(null);
-								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto ativado com sucesso',false,$webservice);
-							} elseif (is_null($embalagemEntity->getDataInativacao())) {
-								$embalagemEntity->setDataInativacao(new \DateTime());
+                        if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])) {
+                            if ($webservice == true) {
+                                $embalagemEntity->setDataInativacao(null);
+                                $embalagemEntity->setUsuarioInativacao($idUsuario);
+                                $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto ativado com sucesso', false, $webservice);
+                            } elseif (is_null($embalagemEntity->getDataInativacao())) {
+                                $embalagemEntity->setDataInativacao(new \DateTime());
 //								$embalagemEntity->setDataInativacao(null);
-								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false,$webservice);
-							}
-						} else {
-							if ($webservice == true) {
-								if (is_null($embalagemEntity->getDataInativacao())) {
-									$embalagemEntity->setDataInativacao(new \DateTime());
+                                $embalagemEntity->setUsuarioInativacao($idUsuario);
+                                $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso', false, $webservice);
+                            }
+                        } else {
+                            if ($webservice == true) {
+                                if (is_null($embalagemEntity->getDataInativacao())) {
+                                    $embalagemEntity->setDataInativacao(new \DateTime());
 //									$embalagemEntity->setDataInativacao(null);
-									$embalagemEntity->setUsuarioInativacao(null);
-									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto desativado com sucesso',false,$webservice);
-								}
-							} else {
-								if (!is_null($embalagemEntity->getDataInativacao())) {
-									$embalagemEntity->setDataInativacao(null);
-									$embalagemEntity->setUsuarioInativacao(null);
-									$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false,$webservice);
-								}
-							}
-						}
-
-						if (isset($descricao) && ($descricao != null)) {
-							$embalagemEntity->setDescricao($descricao);
-						}
-
-						$em->persist($embalagemEntity);
-
-						if ($embalagemEntity->getIsPadrao() === 'S') {
-							$result = $embalagemRepo->checkEmbalagemDefault($embalagemEntity);
-							if (!is_bool($result))
-								throw $result;
-						}
-
-						break;
-					case 'excluir':
-
-						$embalagemEntity = $em->getRepository('wms:Produto\Embalagem')->find($id);
-
-						if (!$embalagemEntity) {
-							throw new \Exception('Codigo da Embalagem inválido.');
-						}
-						try {
-							$em->remove($embalagemEntity);
-							if ($flush == true) $em->flush();
-						}catch (\Exception $e) {
-							$previus = $e->getPrevious();
-							if ($previus->getCode() == 2292){
-								$return = "A embalagem com código de barras " . $embalagemEntity->getCodigoBarras() . ' não pode ser excluida por estar ligada à um fornecedor.';
-								return $return;
-							}
-						}
-						break;
-
-					default:
-						$embalagemEntity = $em->getReference('wms:Produto\Embalagem', $id);
-
-						if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])){
-							if (is_null($embalagemEntity->getDataInativacao())) {
-								$embalagemEntity->setDataInativacao(new \DateTime());
-								$embalagemEntity->setUsuarioInativacao($idUsuario);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso',false, true);
-							}
-						} else {
-							if (!is_null($embalagemEntity->getDataInativacao())) {
-								$embalagemEntity->setDataInativacao(null);
-								$embalagemEntity->setUsuarioInativacao(null);
-								$andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso',false, true);
-							}
-						}
-
-						$em->persist($embalagemEntity);
-						break;
-				}
-			}
-		} catch (\Exception $e) {
-			throw new \Exception ($e->getMessage());
-		}
-
-		return true;
-	}
-
-	/**
-	 * Persiste as volumes do produto
-	 *
-	 * @param ProdutoEntity $produtoEntity
-	 * @param array $values
-	 * @return boolean
-	 */
-	public function persistirVolumes(ProdutoEntity $produtoEntity, array &$values, $webservice = false) {
-		$em = $this->getEntityManager();
-		extract($values);
-
-		// volumes
-		if (!isset($volumes))
-			return false;
-
-		$normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
-
-		// normas de paletizacao
-		if (isset($normasPaletizacao)) {
-
-			$andamentoRepo  = $this->_em->getRepository('wms:Produto\Andamento');
-			$idProduto   = $produtoEntity->getID();
-			$grade       = $produtoEntity->getGrade();
-
-			foreach ($normasPaletizacao as $key => $normaPaletizacao) {
-				extract($normaPaletizacao);
-
-				if (!isset($acao))
-					continue;
-
-				switch ($acao) {
-					case 'incluir':
-						$normaPaletizacaoEntity = new NormaPaletizacaoEntity;
-                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
-						$normasPaletizacao[$key]['id'] = $en->getId();
-
-                        if ($normaPaletizacaoEntity != $en) {
-                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:'.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
-                        }
-						break;
-					case 'alterar':
-
-						$normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
-                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
-						$normasPaletizacao[$key]['id'] = $en->getId();
-
-                        if ($en != $normaPaletizacaoEntity) {
-                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização alterada. Unitizador:'.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
-                        }
-                    break;
-				}
-			}
-		}
-
-		$volumeRepo = $em->getRepository('wms:Produto\Volume');
-
-		foreach ($volumes as $id => $itemVolume) {
-			extract($itemVolume);
-
-			if (!isset($acao))
-				continue;
-
-			// id
-			$itemVolume['id'] = $id;
-			// pega infos de normas de produtos
-			if (!empty($itemVolume['idNormaPaletizacao']))
-				$itemVolume['idNormaPaletizacao'] = $normasPaletizacao[$itemVolume['idNormaPaletizacao']]['id'];
-
-			switch ($acao) {
-				case 'incluir':
-					$volumeRepo->save($produtoEntity, $itemVolume, $webservice);
-					break;
-				case 'alterar':
-					$volumeRepo->save($produtoEntity, $itemVolume, $webservice);
-					break;
-				case 'excluir':
-					$volumeRepo->remove($id);
-					break;
-			}
-		}
-
-		// normas de paletizacao
-		if (isset($normasPaletizacao)) {
-
-			foreach ($normasPaletizacao as $key => $normaPaletizacao) {
-				extract($normaPaletizacao);
-
-				if (!isset($acao))
-					continue;
-
-				switch ($acao) {
-					case 'excluir':
-						$andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização excluida. Unitizador:
-			  '.$normaPaletizacaoEntity->getUnitizador()->getDescricao().'Norma:'.$normaPaletizacaoEntity->getNumNorma());
-						$normaPaletizacaoEntity = $normaPaletizacaoRepo->remove($id);
-						break;
-				}
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Persiste as dadosLogisticos do produto
-	 * @param ProdutoEntity $produtoEntity
-	 * @param array $values
-	 */
-	public function persistirDadosLogisticos(array &$values, $produtoEntity) {
-		$em = $this->getEntityManager();
-		extract($values);
-
-		// dadosLogisticos
-		if (!isset($dadosLogisticos))
-			return false;
-
-		$normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
-
-		// normas de paletizacao
-		if (isset($normasPaletizacao)) {
-
-
-			$andamentoRepo  = $this->_em->getRepository('wms:Produto\Andamento');
-			$idProduto   = $produtoEntity->getID();
-			$grade       = $produtoEntity->getGrade();
-
-			foreach ($normasPaletizacao as $key => $normaPaletizacao) {
-				extract($normaPaletizacao);
-
-				if (!isset($acao))
-					continue;
-
-
-				switch ($acao) {
-					case 'incluir':
-						$normaPaletizacaoEntity = new NormaPaletizacaoEntity;
-                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
-						$normasPaletizacao[$key]['id'] = $en->getId();
-
-                        if ($en != $normaPaletizacaoEntity) {
-                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:'.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+                                    $embalagemEntity->setUsuarioInativacao(null);
+                                    $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto desativado com sucesso', false, $webservice);
+                                }
+                            } else {
+                                if (!is_null($embalagemEntity->getDataInativacao())) {
+                                    $embalagemEntity->setDataInativacao(null);
+                                    $embalagemEntity->setUsuarioInativacao(null);
+                                    $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso', false, $webservice);
+                                }
+                            }
                         }
 
-						break;
-					case 'alterar':
-						$normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
-                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
-						$normasPaletizacao[$key]['id'] = $en->getId();
+                        if (isset($descricao) && ($descricao != null)) {
+                            $embalagemEntity->setDescricao($descricao);
+                        }
 
-                        if ($en != $normaPaletizacaoEntity) {
-                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização alterada. Unitizador:'.$normaPaletizacaoEntity->getUnitizador()->getDescricao().' Norma:'.$normaPaletizacaoEntity->getNumNorma());
+                        $em->persist($embalagemEntity);
+
+                        if ($embalagemEntity->getIsPadrao() === 'S') {
+                            $result = $embalagemRepo->checkEmbalagemDefault($embalagemEntity);
+                            if (!is_bool($result))
+                                throw $result;
+                        }
+
+                        break;
+                    case 'excluir':
+
+                        $embalagemEntity = $em->getRepository('wms:Produto\Embalagem')->find($id);
+
+                        if (!$embalagemEntity) {
+                            throw new \Exception('Codigo da Embalagem inválido.');
+                        }
+                        try {
+                            $em->remove($embalagemEntity);
+                            if ($flush == true)
+                                $em->flush();
+                        } catch (\Exception $e) {
+                            $previus = $e->getPrevious();
+                            if ($previus->getCode() == 2292) {
+                                $return = "A embalagem com código de barras " . $embalagemEntity->getCodigoBarras() . ' não pode ser excluida por estar ligada à um fornecedor.';
+                                return $return;
+                            }
                         }
                         break;
-				}
-			}
-		}
 
-		$dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
+                    default:
+                        $embalagemEntity = $em->getReference('wms:Produto\Embalagem', $id);
 
-		foreach ($dadosLogisticos as $id => $itemDadoLogistico) {
-			extract($itemDadoLogistico);
+                        if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])) {
+                            if (is_null($embalagemEntity->getDataInativacao())) {
+                                $embalagemEntity->setDataInativacao(new \DateTime());
+                                $embalagemEntity->setUsuarioInativacao($idUsuario);
+                                $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso', false, true);
+                            }
+                        } else {
+                            if (!is_null($embalagemEntity->getDataInativacao())) {
+                                $embalagemEntity->setDataInativacao(null);
+                                $embalagemEntity->setUsuarioInativacao(null);
+                                $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Ativado com sucesso', false, true);
+                            }
+                        }
 
-			if (!isset($acao))
-				continue;
+                        $em->persist($embalagemEntity);
+                        break;
+                }
+            }
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
 
-			// id
-			$itemDadoLogistico['id'] = $id;
+        return true;
+    }
 
-			// pega infos de normas de produtos
-			if (!empty($itemDadoLogistico['idNormaPaletizacao'])) {
-				$itemDadoLogistico['idNormaPaletizacao'] = $normasPaletizacao[$itemDadoLogistico['idNormaPaletizacao']]['id'];
-			}
-			// pego id da embalagem
-			if (!empty($itemDadoLogistico['idEmbalagem'])) {
-				$itemDadoLogistico['idEmbalagem'] = $values['embalagens'][$itemDadoLogistico['idEmbalagem']]['id'];
-			}
+    /**
+     * Persiste as volumes do produto
+     *
+     * @param ProdutoEntity $produtoEntity
+     * @param array $values
+     * @return boolean
+     */
+    public function persistirVolumes(ProdutoEntity $produtoEntity, array &$values, $webservice = false) {
+        $em = $this->getEntityManager();
+        extract($values);
 
-			switch ($acao) {
-				case 'incluir':
-					$dadoLogisticoRepo->save($itemDadoLogistico);
-					break;
-				case 'alterar':
-					$dadoLogisticoRepo->save($itemDadoLogistico);
-					break;
-				case 'excluir':
-					$dadoLogisticoRepo->remove($id);
-					break;
-			}
-		}
+        // volumes
+        if (!isset($volumes))
+            return false;
 
-		// normas de paletizacao
-		if (isset($normasPaletizacao)) {
+        $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
 
-			foreach ($normasPaletizacao as $key => $normaPaletizacao) {
-				extract($normaPaletizacao);
+        // normas de paletizacao
+        if (isset($normasPaletizacao)) {
 
-				if (!isset($acao))
-					continue;
+            $andamentoRepo = $this->_em->getRepository('wms:Produto\Andamento');
+            $idProduto = $produtoEntity->getID();
+            $grade = $produtoEntity->getGrade();
 
-				switch ($acao) {
-					case 'excluir':
-						$normaPaletizacaoEntity = $normaPaletizacaoRepo->remove($id);
-						break;
-				}
-			}
-		}
+            foreach ($normasPaletizacao as $key => $normaPaletizacao) {
+                extract($normaPaletizacao);
 
-		return true;
-	}
+                if (!isset($acao))
+                    continue;
 
-	/**
-	 *
-	 * @param type $id
-	 * @param type $grade
-	 * @return type
-	 */
-	public function buscarDadoLogistico($id, $grade = false) {
-		$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('p, tc.id idTipoComercializacao, tc.descricao tipoComercializacao')
-			->addSelect("
+                switch ($acao) {
+                    case 'incluir':
+                        $normaPaletizacaoEntity = new NormaPaletizacaoEntity;
+                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+                        $normasPaletizacao[$key]['id'] = $en->getId();
+
+                        if ($normaPaletizacaoEntity != $en) {
+                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:' . $normaPaletizacaoEntity->getUnitizador()->getDescricao() . ' Norma:' . $normaPaletizacaoEntity->getNumNorma());
+                        }
+                        break;
+                    case 'alterar':
+
+                        $normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
+                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+                        $normasPaletizacao[$key]['id'] = $en->getId();
+
+                        if ($en != $normaPaletizacaoEntity) {
+                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização alterada. Unitizador:' . $normaPaletizacaoEntity->getUnitizador()->getDescricao() . ' Norma:' . $normaPaletizacaoEntity->getNumNorma());
+                        }
+                        break;
+                }
+            }
+        }
+
+        $volumeRepo = $em->getRepository('wms:Produto\Volume');
+
+        foreach ($volumes as $id => $itemVolume) {
+            extract($itemVolume);
+
+            if (!isset($acao))
+                continue;
+
+            // id
+            $itemVolume['id'] = $id;
+            // pega infos de normas de produtos
+            if (!empty($itemVolume['idNormaPaletizacao']))
+                $itemVolume['idNormaPaletizacao'] = $normasPaletizacao[$itemVolume['idNormaPaletizacao']]['id'];
+
+            switch ($acao) {
+                case 'incluir':
+                    $volumeRepo->save($produtoEntity, $itemVolume, $webservice);
+                    break;
+                case 'alterar':
+                    $volumeRepo->save($produtoEntity, $itemVolume, $webservice);
+                    break;
+                case 'excluir':
+                    $volumeRepo->remove($id);
+                    break;
+            }
+        }
+
+        // normas de paletizacao
+        if (isset($normasPaletizacao)) {
+
+            foreach ($normasPaletizacao as $key => $normaPaletizacao) {
+                extract($normaPaletizacao);
+
+                if (!isset($acao))
+                    continue;
+
+                switch ($acao) {
+                    case 'excluir':
+                        $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização excluida. Unitizador:
+			  ' . $normaPaletizacaoEntity->getUnitizador()->getDescricao() . 'Norma:' . $normaPaletizacaoEntity->getNumNorma());
+                        $normaPaletizacaoEntity = $normaPaletizacaoRepo->remove($id);
+                        break;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Persiste as dadosLogisticos do produto
+     * @param ProdutoEntity $produtoEntity
+     * @param array $values
+     */
+    public function persistirDadosLogisticos(array &$values, $produtoEntity) {
+        $em = $this->getEntityManager();
+        extract($values);
+
+        // dadosLogisticos
+        if (!isset($dadosLogisticos))
+            return false;
+
+        $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
+
+        // normas de paletizacao
+        if (isset($normasPaletizacao)) {
+
+
+            $andamentoRepo = $this->_em->getRepository('wms:Produto\Andamento');
+            $idProduto = $produtoEntity->getID();
+            $grade = $produtoEntity->getGrade();
+
+            foreach ($normasPaletizacao as $key => $normaPaletizacao) {
+                extract($normaPaletizacao);
+
+                if (!isset($acao))
+                    continue;
+
+
+                switch ($acao) {
+                    case 'incluir':
+                        $normaPaletizacaoEntity = new NormaPaletizacaoEntity;
+                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+                        $normasPaletizacao[$key]['id'] = $en->getId();
+
+                        if ($en != $normaPaletizacaoEntity) {
+                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:' . $normaPaletizacaoEntity->getUnitizador()->getDescricao() . ' Norma:' . $normaPaletizacaoEntity->getNumNorma());
+                        }
+
+                        break;
+                    case 'alterar':
+                        $normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
+                        $en = $normaPaletizacaoRepo->save($normaPaletizacaoEntity, $normaPaletizacao);
+                        $normasPaletizacao[$key]['id'] = $en->getId();
+
+                        if ($en != $normaPaletizacaoEntity) {
+                            $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização alterada. Unitizador:' . $normaPaletizacaoEntity->getUnitizador()->getDescricao() . ' Norma:' . $normaPaletizacaoEntity->getNumNorma());
+                        }
+                        break;
+                }
+            }
+        }
+
+        $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
+
+        foreach ($dadosLogisticos as $id => $itemDadoLogistico) {
+            extract($itemDadoLogistico);
+
+            if (!isset($acao))
+                continue;
+
+            // id
+            $itemDadoLogistico['id'] = $id;
+
+            // pega infos de normas de produtos
+            if (!empty($itemDadoLogistico['idNormaPaletizacao'])) {
+                $itemDadoLogistico['idNormaPaletizacao'] = $normasPaletizacao[$itemDadoLogistico['idNormaPaletizacao']]['id'];
+            }
+            // pego id da embalagem
+            if (!empty($itemDadoLogistico['idEmbalagem'])) {
+                $itemDadoLogistico['idEmbalagem'] = $values['embalagens'][$itemDadoLogistico['idEmbalagem']]['id'];
+            }
+
+            switch ($acao) {
+                case 'incluir':
+                    $dadoLogisticoRepo->save($itemDadoLogistico);
+                    break;
+                case 'alterar':
+                    $dadoLogisticoRepo->save($itemDadoLogistico);
+                    break;
+                case 'excluir':
+                    $dadoLogisticoRepo->remove($id);
+                    break;
+            }
+        }
+
+        // normas de paletizacao
+        if (isset($normasPaletizacao)) {
+
+            foreach ($normasPaletizacao as $key => $normaPaletizacao) {
+                extract($normaPaletizacao);
+
+                if (!isset($acao))
+                    continue;
+
+                switch ($acao) {
+                    case 'excluir':
+                        $normaPaletizacaoEntity = $normaPaletizacaoRepo->remove($id);
+                        break;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     *
+     * @param type $id
+     * @param type $grade
+     * @return type
+     */
+    public function buscarDadoLogistico($id, $grade = false) {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+                ->select('p, tc.id idTipoComercializacao, tc.descricao tipoComercializacao')
+                ->addSelect("
                         (
                             SELECT COUNT(pe)
                             FROM wms:Produto\Embalagem pe
@@ -733,7 +729,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         )
                         AS qtdEmbalagem
                     ")
-			->addSelect("
+                ->addSelect("
                         (
                             SELECT COUNT(pv)
                             FROM wms:Produto\Volume pv
@@ -741,240 +737,240 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         )
                         AS qtdVolume
                     ")
-			->from('wms:Produto', 'p')
-			->innerJoin('p.tipoComercializacao', 'tc')
-			->where('p.id = ?1')
-			->setParameter(1, $id);
+                ->from('wms:Produto', 'p')
+                ->innerJoin('p.tipoComercializacao', 'tc')
+                ->where('p.id = ?1')
+                ->setParameter(1, $id);
 
-		if ($grade)
-			$dql->andWhere("p.grade = '" . $grade . "'");
+        if ($grade)
+            $dql->andWhere("p.grade = '" . $grade . "'");
 
-		return $dql->getQuery()->getResult(\PDO::FETCH_ASSOC);
-	}
+        return $dql->getQuery()->getResult(\PDO::FETCH_ASSOC);
+    }
 
-	/**
-	 * Migra dados logisticos de uma grade para outra em um mesmo produto
-	 *
-	 * @param string $id Codigo do Produto
-	 * @param string $gradeOrigem Grade de origem dos dados
-	 * @param string $gradeDestino
-	 */
-	public function migrarDadoLogistico($id, $gradeOrigem, $gradeDestino) {
-		$em = $this->getEntityManager();
-		$produtoRepo = $em->getRepository('wms:Produto');
+    /**
+     * Migra dados logisticos de uma grade para outra em um mesmo produto
+     *
+     * @param string $id Codigo do Produto
+     * @param string $gradeOrigem Grade de origem dos dados
+     * @param string $gradeDestino
+     */
+    public function migrarDadoLogistico($id, $gradeOrigem, $gradeDestino) {
+        $em = $this->getEntityManager();
+        $produtoRepo = $em->getRepository('wms:Produto');
 
-		$produtoOrigemEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeOrigem));
-		$produtoDestinoEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
+        $produtoOrigemEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeOrigem));
+        $produtoDestinoEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
 
-		$tipoComercializacao = $produtoOrigemEntity->getTipoComercializacao();
-		$codigoBarrasBase = $produtoOrigemEntity->getCodigoBarrasBase();
-		$numVolumes = $produtoOrigemEntity->getNumVolumes();
-		$linhaSeparacao = $produtoOrigemEntity->getLinhaSeparacao();
+        $tipoComercializacao = $produtoOrigemEntity->getTipoComercializacao();
+        $codigoBarrasBase = $produtoOrigemEntity->getCodigoBarrasBase();
+        $numVolumes = $produtoOrigemEntity->getNumVolumes();
+        $linhaSeparacao = $produtoOrigemEntity->getLinhaSeparacao();
 
-		$produtoDestinoEntity->setTipoComercializacao($tipoComercializacao)
-			->setCodigoBarrasBase('')
-			->setNumVolumes($numVolumes)
-			->setLinhaSeparacao($linhaSeparacao);
+        $produtoDestinoEntity->setTipoComercializacao($tipoComercializacao)
+                ->setCodigoBarrasBase('')
+                ->setNumVolumes($numVolumes)
+                ->setLinhaSeparacao($linhaSeparacao);
 
-		$em->persist($produtoDestinoEntity);
-		$em->flush();
+        $em->persist($produtoDestinoEntity);
+        $em->flush();
 
-		$this->migrarVolume($id, $gradeOrigem, $gradeDestino);
-		$this->migrarEmbalagem($id, $gradeOrigem, $gradeDestino);
-	}
+        $this->migrarVolume($id, $gradeOrigem, $gradeDestino);
+        $this->migrarEmbalagem($id, $gradeOrigem, $gradeDestino);
+    }
 
-	/**
-	 * Migro os volumes
-	 *
-	 * @param string $id Codigo do produto
-	 * @param string $gradeOrigem Grade de Origem
-	 * @param string $gradeDestino Grade de destinho
-	 */
-	public function migrarVolume($id, $gradeOrigem, $gradeDestino) {
-		$em = $this->getEntityManager();
+    /**
+     * Migro os volumes
+     *
+     * @param string $id Codigo do produto
+     * @param string $gradeOrigem Grade de Origem
+     * @param string $gradeDestino Grade de destinho
+     */
+    public function migrarVolume($id, $gradeOrigem, $gradeDestino) {
+        $em = $this->getEntityManager();
 
-		$produtoRepo = $em->getRepository('wms:Produto');
-		$volumeRepo = $em->getRepository('wms:Produto\Volume');
-		$normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
+        $produtoRepo = $em->getRepository('wms:Produto');
+        $volumeRepo = $em->getRepository('wms:Produto\Volume');
+        $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
 
-		$volumesOrigem = $volumeRepo->findBy(array('codProduto' => $id, 'grade' => $gradeOrigem));
+        $volumesOrigem = $volumeRepo->findBy(array('codProduto' => $id, 'grade' => $gradeOrigem));
 
-		$idsNormaPaletizacao = array();
+        $idsNormaPaletizacao = array();
 
-		$produtoDestinoEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
-		$volumesDestino = $volumeRepo->findBy(array('codProduto' => $id, 'grade' => $gradeDestino));
+        $produtoDestinoEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
+        $volumesDestino = $volumeRepo->findBy(array('codProduto' => $id, 'grade' => $gradeDestino));
 
-		// limpo os volumes existentes
-		foreach ($volumesDestino as $volumeEntity) {
-			$em->remove($volumeEntity);
-		}
+        // limpo os volumes existentes
+        foreach ($volumesDestino as $volumeEntity) {
+            $em->remove($volumeEntity);
+        }
 
-		// clono os de origem
-		foreach ($volumesOrigem as $key => $volumeEntity) {
-			// novo volume
-			$novoVolumeEntity = clone $volumeEntity;
-			$idsNormaPaletizacao[$volumeEntity->getNormaPaletizacao()->getId()] = null;
-			// alterando dados do volume
-			$novoVolumeEntity->setGrade($produtoDestinoEntity->getGrade())
-				->setProduto($produtoDestinoEntity)
-				->setCodigoBarras('')
-				->setEndereco(null);
+        // clono os de origem
+        foreach ($volumesOrigem as $key => $volumeEntity) {
+            // novo volume
+            $novoVolumeEntity = clone $volumeEntity;
+            $idsNormaPaletizacao[$volumeEntity->getNormaPaletizacao()->getId()] = null;
+            // alterando dados do volume
+            $novoVolumeEntity->setGrade($produtoDestinoEntity->getGrade())
+                    ->setProduto($produtoDestinoEntity)
+                    ->setCodigoBarras('')
+                    ->setEndereco(null);
 
-			$produtoDestinoEntity->addVolume($novoVolumeEntity);
-		}
+            $produtoDestinoEntity->addVolume($novoVolumeEntity);
+        }
 
-		$em->persist($produtoDestinoEntity);
-		$em->flush();
-		$em->clear();
+        $em->persist($produtoDestinoEntity);
+        $em->flush();
+        $em->clear();
 
-		foreach ($idsNormaPaletizacao as $idNormaPaletizacao => $valor) {
-			$normaPaletizacaoEntity = $normaPaletizacaoRepo->find($idNormaPaletizacao);
-			$novaNormaPaletizacaoEntity = clone $normaPaletizacaoEntity;
+        foreach ($idsNormaPaletizacao as $idNormaPaletizacao => $valor) {
+            $normaPaletizacaoEntity = $normaPaletizacaoRepo->find($idNormaPaletizacao);
+            $novaNormaPaletizacaoEntity = clone $normaPaletizacaoEntity;
 
-			$em->persist($novaNormaPaletizacaoEntity);
-			$em->flush();
+            $em->persist($novaNormaPaletizacaoEntity);
+            $em->flush();
 
-			$query = $em->createQuery('
+            $query = $em->createQuery('
                 UPDATE wms:Produto\Volume pv 
                 SET pv.normaPaletizacao =  ' . $novaNormaPaletizacaoEntity->getId() . ' 
                     WHERE pv.codProduto = :produto
                         AND pv.grade = :grade 
                         AND pv.normaPaletizacao = :normaPaletizacao
                     ')
-				->setParameters(array(
-					'produto' => $id,
-					'grade' => $gradeDestino,
-					'normaPaletizacao' => $idNormaPaletizacao,
-				));
+                    ->setParameters(array(
+                'produto' => $id,
+                'grade' => $gradeDestino,
+                'normaPaletizacao' => $idNormaPaletizacao,
+            ));
 
-			$query->execute();
-		}
+            $query->execute();
+        }
 
-		$em->flush();
-	}
+        $em->flush();
+    }
 
-	/**
-	 * Migro as embalagens
-	 *
-	 * @param string $id Codigo do produto
-	 * @param string $gradeOrigem Grade de Origem
-	 * @param string $gradeDestino Grade de destinho
-	 */
-	public function migrarEmbalagem($id, $gradeOrigem, $gradeDestino) {
-		$em = $this->getEntityManager();
+    /**
+     * Migro as embalagens
+     *
+     * @param string $id Codigo do produto
+     * @param string $gradeOrigem Grade de Origem
+     * @param string $gradeDestino Grade de destinho
+     */
+    public function migrarEmbalagem($id, $gradeOrigem, $gradeDestino) {
+        $em = $this->getEntityManager();
 
-		$produtoRepo = $em->getRepository('wms:Produto');
-		$embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
-		$dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
-		$normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
+        $produtoRepo = $em->getRepository('wms:Produto');
+        $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+        $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
+        $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
 
-		$embalagemsOrigem = $embalagemRepo->findBy(array('codProduto' => $id, 'grade' => $gradeOrigem));
+        $embalagemsOrigem = $embalagemRepo->findBy(array('codProduto' => $id, 'grade' => $gradeOrigem));
 
-		$produtoDestinoEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
-		$embalagemsDestino = $embalagemRepo->findBy(array('codProduto' => $id, 'grade' => $gradeDestino));
+        $produtoDestinoEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
+        $embalagemsDestino = $embalagemRepo->findBy(array('codProduto' => $id, 'grade' => $gradeDestino));
 
-		// limpo os embalagems existentes
-		foreach ($embalagemsDestino as $embalagemEntity) {
-			$em->remove($embalagemEntity);
-		}
+        // limpo os embalagems existentes
+        foreach ($embalagemsDestino as $embalagemEntity) {
+            $em->remove($embalagemEntity);
+        }
 
-		// clono os de origem
-		foreach ($embalagemsOrigem as $key => $embalagemEntity) {
-			// novo embalagem
-			$novoEmbalagemEntity = clone $embalagemEntity;
+        // clono os de origem
+        foreach ($embalagemsOrigem as $key => $embalagemEntity) {
+            // novo embalagem
+            $novoEmbalagemEntity = clone $embalagemEntity;
 
-			// alterando dados do embalagem
-			$novoEmbalagemEntity->setGrade($produtoDestinoEntity->getGrade())
-				->setProduto($produtoDestinoEntity)
-				->setCodigoBarras('')
-				->setEndereco(null);
+            // alterando dados do embalagem
+            $novoEmbalagemEntity->setGrade($produtoDestinoEntity->getGrade())
+                    ->setProduto($produtoDestinoEntity)
+                    ->setCodigoBarras('')
+                    ->setEndereco(null);
 
-			$em->persist($novoEmbalagemEntity);
+            $em->persist($novoEmbalagemEntity);
 
-			foreach ($embalagemEntity->getDadosLogisticos() as $dadoLogisticoEntity) {
-				$novoDadoLogisticoEntity = clone $dadoLogisticoEntity;
+            foreach ($embalagemEntity->getDadosLogisticos() as $dadoLogisticoEntity) {
+                $novoDadoLogisticoEntity = clone $dadoLogisticoEntity;
 
-				$novoDadoLogisticoEntity->setEmbalagem($novoEmbalagemEntity);
-				$em->persist($novoDadoLogisticoEntity);
-			}
-		}
+                $novoDadoLogisticoEntity->setEmbalagem($novoEmbalagemEntity);
+                $em->persist($novoDadoLogisticoEntity);
+            }
+        }
 
-		$em->persist($produtoDestinoEntity);
-		$em->flush();
-		$em->clear();
+        $em->persist($produtoDestinoEntity);
+        $em->flush();
+        $em->clear();
 
-		$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('dl.id idDadoLogistico, np.id idNormaPaletizacao')
-			->from('wms:Produto\Embalagem', 'pe')
-			->innerJoin('pe.dadosLogisticos', 'dl')
-			->innerJoin('dl.normaPaletizacao', 'np')
-			->where('pe.codProduto = :produto AND pe.grade = :grade')
-			->setParameters(array(
-				'produto' => $id,
-				'grade' => $gradeDestino,
-			));
+        $dql = $this->getEntityManager()->createQueryBuilder()
+                ->select('dl.id idDadoLogistico, np.id idNormaPaletizacao')
+                ->from('wms:Produto\Embalagem', 'pe')
+                ->innerJoin('pe.dadosLogisticos', 'dl')
+                ->innerJoin('dl.normaPaletizacao', 'np')
+                ->where('pe.codProduto = :produto AND pe.grade = :grade')
+                ->setParameters(array(
+            'produto' => $id,
+            'grade' => $gradeDestino,
+        ));
 
-		$resultSet = $dql->getQuery()->getResult(\PDO::FETCH_ASSOC);
+        $resultSet = $dql->getQuery()->getResult(\PDO::FETCH_ASSOC);
 
-		// clono os de origem
-		foreach ($resultSet as $row) {
+        // clono os de origem
+        foreach ($resultSet as $row) {
 
-			$normaPaletizacaoEntity = $normaPaletizacaoRepo->find($row['idNormaPaletizacao']);
-			$novaNormaPaletizacaoEntity = clone $normaPaletizacaoEntity;
-			$em->persist($novaNormaPaletizacaoEntity);
+            $normaPaletizacaoEntity = $normaPaletizacaoRepo->find($row['idNormaPaletizacao']);
+            $novaNormaPaletizacaoEntity = clone $normaPaletizacaoEntity;
+            $em->persist($novaNormaPaletizacaoEntity);
 
-			$dadoLogisticoEntity = $dadoLogisticoRepo->find($row['idDadoLogistico']);
+            $dadoLogisticoEntity = $dadoLogisticoRepo->find($row['idDadoLogistico']);
 
-			$dadoLogisticoEntity->setNormaPaletizacao($novaNormaPaletizacaoEntity);
-			$em->persist($dadoLogisticoEntity);
-		}
-		$em->flush();
-	}
+            $dadoLogisticoEntity->setNormaPaletizacao($novaNormaPaletizacaoEntity);
+            $em->persist($dadoLogisticoEntity);
+        }
+        $em->flush();
+    }
 
-	/**
-	 * Busca todos os dados de produto, produto volume, produto embalagem, dados logisticos e norma paletizacao
-	 *
-	 * @param array $params
-	 */
-	public function buscarDadosProduto(array $params) {
-		extract($params);
+    /**
+     * Busca todos os dados de produto, produto volume, produto embalagem, dados logisticos e norma paletizacao
+     *
+     * @param array $params
+     */
+    public function buscarDadosProduto(array $params) {
+        extract($params);
 
-		$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('p, c, f, ls, pe, pdl, pv ')
-			->from('wms:Produto', 'p')
-			->innerJoin('p.classe', 'c')
-			->innerJoin('p.fabricante', 'f')
-			->leftJoin('p.linhaSeparacao', 'ls')
-			->leftJoin('p.embalagens', 'pe')
-			->leftJoin('pe.dadosLogisticos', 'pdl')
-			->leftJoin('p.volumes', 'pv')
-			->where('p.id = :id AND p.grade = :grade')
-			->setParameters(array(
-				'id' => $id,
-				'grade' => $grade,
-			))
-			->orderBy('p.id', 'DESC');
+        $dql = $this->getEntityManager()->createQueryBuilder()
+                ->select('p, c, f, ls, pe, pdl, pv ')
+                ->from('wms:Produto', 'p')
+                ->innerJoin('p.classe', 'c')
+                ->innerJoin('p.fabricante', 'f')
+                ->leftJoin('p.linhaSeparacao', 'ls')
+                ->leftJoin('p.embalagens', 'pe')
+                ->leftJoin('pe.dadosLogisticos', 'pdl')
+                ->leftJoin('p.volumes', 'pv')
+                ->where('p.id = :id AND p.grade = :grade')
+                ->setParameters(array(
+                    'id' => $id,
+                    'grade' => $grade,
+                ))
+                ->orderBy('p.id', 'DESC');
 
-		return $dql->getQuery()->getResult();
-	}
+        return $dql->getQuery()->getResult();
+    }
 
-	/**
-	 * Verifica se existe produtos com impressão automática do código de barras
-	 * @param int $idRecebimento
-	 */
-	public function verificarProdutosImprimirCodigoBarras($idRecebimento) {
-		$sql = "SELECT PRODUTO_IMPRIMIR_CODIGO_BARRAS($idRecebimento) AS IND_IMPRIMIR_CB FROM DUAL";
+    /**
+     * Verifica se existe produtos com impressão automática do código de barras
+     * @param int $idRecebimento
+     */
+    public function verificarProdutosImprimirCodigoBarras($idRecebimento) {
+        $sql = "SELECT PRODUTO_IMPRIMIR_CODIGO_BARRAS($idRecebimento) AS IND_IMPRIMIR_CB FROM DUAL";
 
-		$result = $this->getEntityManager()->getConnection()->query($sql)->fetch();
-		return $result['IND_IMPRIMIR_CB'];
-	}
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetch();
+        return $result['IND_IMPRIMIR_CB'];
+    }
 
-	/**
-	 * Busca a quantidade de produtos com ou sem dados logisticos.
-	 */
-	public function buscarQtdProdutosDadosLogisticos() {
+    /**
+     * Busca a quantidade de produtos com ou sem dados logisticos.
+     */
+    public function buscarQtdProdutosDadosLogisticos() {
 
-		$sql = "SELECT COUNT(*) as QTD, POSSUI
+        $sql = "SELECT COUNT(*) as QTD, POSSUI
                FROM (SELECT DISTINCT
                        CASE WHEN NVL(PE.COD_PRODUTO_EMBALAGEM, PV.COD_PRODUTO_VOLUME) IS NULL THEN 'NAO' ELSE 'SIM' END as POSSUI,
                             P.COD_PRODUTO,
@@ -985,120 +981,119 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       GROUP BY POSSUI
                       ORDER BY POSSUI";
 
-		$result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-		$sim = 0;
-		$nao = 0;
-		foreach ($result as $row) {
-			if ($row['POSSUI'] == 'SIM') {
-				$sim = $row['QTD'];
-			} else {
-				$nao = $row['QTD'];
-			}
-		}
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $sim = 0;
+        $nao = 0;
+        foreach ($result as $row) {
+            if ($row['POSSUI'] == 'SIM') {
+                $sim = $row['QTD'];
+            } else {
+                $nao = $row['QTD'];
+            }
+        }
 
-		return array('SIM'=>$sim,
-			'NAO'=>$nao);
-	}
+        return array('SIM' => $sim,
+            'NAO' => $nao);
+    }
 
-	private function enviaDadosLogisticosEmbalagem(ProdutoEntity $produtoEntity) {
-		$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
-			->from('wms:Produto\DadoLogistico', 'pdl')
-			->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
-			->where('pe.codProduto = ?1')
-			->andWhere('pe.grade = ?2')
-			->andWhere('pe.isPadrao like ?3')
-			->setParameters(array(
-				1 => $produtoEntity->getId(),
-				2 => $produtoEntity->getGrade(),
-				3 => 'N'
-			));
+    private function enviaDadosLogisticosEmbalagem(ProdutoEntity $produtoEntity) {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+                ->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
+                ->from('wms:Produto\DadoLogistico', 'pdl')
+                ->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
+                ->where('pe.codProduto = ?1')
+                ->andWhere('pe.grade = ?2')
+                ->andWhere('pe.isPadrao like ?3')
+                ->setParameters(array(
+            1 => $produtoEntity->getId(),
+            2 => $produtoEntity->getGrade(),
+            3 => 'N'
+        ));
 
-		$dadosLogisticosEmbalagens = $dql->getQuery()->getResult();
+        $dadosLogisticosEmbalagens = $dql->getQuery()->getResult();
 
-		if (empty($dadosLogisticosEmbalagens)) {
-			$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
-				->from('wms:Produto\DadoLogistico', 'pdl')
-				->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
-				->where('pe.codProduto = ?1')
-				->andWhere('pe.grade = ?2')
-				->andWhere('pe.isPadrao like ?3')
-				->setParameters(array(
-					1 => $produtoEntity->getId(),
-					2 => $produtoEntity->getGrade(),
-					3 => 'S'
-				));
+        if (empty($dadosLogisticosEmbalagens)) {
+            $dql = $this->getEntityManager()->createQueryBuilder()
+                    ->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
+                    ->from('wms:Produto\DadoLogistico', 'pdl')
+                    ->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
+                    ->where('pe.codProduto = ?1')
+                    ->andWhere('pe.grade = ?2')
+                    ->andWhere('pe.isPadrao like ?3')
+                    ->setParameters(array(
+                1 => $produtoEntity->getId(),
+                2 => $produtoEntity->getGrade(),
+                3 => 'S'
+            ));
 
-			$dadosLogisticosEmbalagens = $dql->getQuery()->getResult();
-		}
+            $dadosLogisticosEmbalagens = $dql->getQuery()->getResult();
+        }
 
-		$dadosLogisticos = array();
+        $dadosLogisticos = array();
 
-		$client = $this->getSoapClient();
+        $client = $this->getSoapClient();
 
-		$i = 0;
-		foreach ($dadosLogisticosEmbalagens as $embalagem) {
+        $i = 0;
+        foreach ($dadosLogisticosEmbalagens as $embalagem) {
 
-			$dadosLogisticos[$i] = array(
-				'altura' => $embalagem['altura'],
-				'largura' => $embalagem['largura'],
-				'profundidade' => $embalagem['profundidade'],
-				'cubagem' => $embalagem['cubagem'],
-				'peso' => $embalagem['peso'],
-				'descricao' => $embalagem['descricao'],
-				'quantidade' => $embalagem['quantidade'],
-		        'codigoBarras' =>$embalagem['codigoBarras']
-			);
+            $dadosLogisticos[$i] = array(
+                'altura' => $embalagem['altura'],
+                'largura' => $embalagem['largura'],
+                'profundidade' => $embalagem['profundidade'],
+                'cubagem' => $embalagem['cubagem'],
+                'peso' => $embalagem['peso'],
+                'descricao' => $embalagem['descricao'],
+                'quantidade' => $embalagem['quantidade'],
+                'codigoBarras' => $embalagem['codigoBarras']
+            );
 
-			$i++;
-		}
+            $i++;
+        }
 
-	return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticos);
-	}
+        return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticos);
+    }
 
-	private function enviaDadosLogisticosVolumes($produtoEntity, array $values = array()) {
+    private function enviaDadosLogisticosVolumes($produtoEntity, array $values = array()) {
 
-		extract($values);
-		// volumes
-		if (!isset($volumes))
-			return false;
+        extract($values);
+        // volumes
+        if (!isset($volumes))
+            return false;
 
-		$client = $this->getSoapClient();
+        $client = $this->getSoapClient();
 
-		$dadosLogisticosVolume = array();
+        $dadosLogisticosVolume = array();
 
-		$i = 0;
-		foreach ($volumes as $id => $itemVolume) {
-			extract($itemVolume);
+        $i = 0;
+        foreach ($volumes as $id => $itemVolume) {
+            extract($itemVolume);
 
-			$dadosLogisticosVolume[$i] = array(
-				'largura' => \Core\Util\Converter::brToEn($largura, 3),
-				'altura' => \Core\Util\Converter::brToEn($altura, 3),
-				'profundidade' => \Core\Util\Converter::brToEn($profundidade, 3),
-				'cubagem' => \Core\Util\Converter::brToEn($cubagem, 4),
-				'peso' => \Core\Util\Converter::brToEn($peso, 3),
-				'descricao' => $descricao,
+            $dadosLogisticosVolume[$i] = array(
+                'largura' => \Core\Util\Converter::brToEn($largura, 3),
+                'altura' => \Core\Util\Converter::brToEn($altura, 3),
+                'profundidade' => \Core\Util\Converter::brToEn($profundidade, 3),
+                'cubagem' => \Core\Util\Converter::brToEn($cubagem, 4),
+                'peso' => \Core\Util\Converter::brToEn($peso, 3),
+                'descricao' => $descricao,
                 'quantidade' => 1,
-		        'codigoBarras' => $codigoBarras
-			);
-			$i++;
-		}
-	return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticosVolume);
-	}
+                'codigoBarras' => $codigoBarras
+            );
+            $i++;
+        }
+        return $client->salvar((string) $produtoEntity->getId(), $produtoEntity->getGrade(), $dadosLogisticosVolume);
+    }
 
-	private function getSoapClient() {
-		$conf = new \Zend_Config_Ini(APPLICATION_PATH . '/configs/webservices.ini', APPLICATION_ENV);
+    private function getSoapClient() {
+        $conf = new \Zend_Config_Ini(APPLICATION_PATH . '/configs/webservices.ini', APPLICATION_ENV);
 
-		$dadosLogisticosUrl = 'integrarDadosLogisticos';
+        $dadosLogisticosUrl = 'integrarDadosLogisticos';
 
-		return new \Zend_Soap_Client($conf->soap->$dadosLogisticosUrl->url, array('soapVersion' => SOAP_1_2, 'uri' => $conf->soap->$dadosLogisticosUrl->url)); //,
-	}
+        return new \Zend_Soap_Client($conf->soap->$dadosLogisticosUrl->url, array('soapVersion' => SOAP_1_2, 'uri' => $conf->soap->$dadosLogisticosUrl->url)); //,
+    }
 
-	public function buscarProdutosImprimirCodigoBarras($codProduto, $grade)
-	{
-		$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('
+    public function buscarProdutosImprimirCodigoBarras($codProduto, $grade) {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+                ->select('
                       1 as qtdItem,
                       p.id as idProduto,
                       p.grade,
@@ -1112,98 +1107,94 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       pv.codigoSequencial as codSequencialVolume,
                       pv.descricao as dscVolume,
                       NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras')
-			->from('wms:Produto', 'p')
-			->innerJoin('p.tipoComercializacao', 'tc')
-			->leftJoin('p.linhaSeparacao', 'ls')
-			->leftJoin('p.fabricante', 'fb');
+                ->from('wms:Produto', 'p')
+                ->innerJoin('p.tipoComercializacao', 'tc')
+                ->leftJoin('p.linhaSeparacao', 'ls')
+                ->leftJoin('p.fabricante', 'fb');
 
-		if (isset($codProduto) && !empty($codProduto)) {
-			$dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade');
-		} else {
-			$dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.isPadrao = \'S\'');
-		}
+        if (isset($codProduto) && !empty($codProduto)) {
+            $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade');
+        } else {
+            $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.isPadrao = \'S\'');
+        }
 
-		$dql
-			->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
-			->where('p.id = :codProduto')
-			->andWhere("p.grade = :grade")
-			->setParameter('codProduto', $codProduto)
-			->setParameter('grade', $grade)
-			->andWhere('(pe.codigoBarras IS NOT NULL OR pv.codigoBarras IS NOT NULL)');
+        $dql
+                ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
+                ->where('p.id = :codProduto')
+                ->andWhere("p.grade = :grade")
+                ->setParameter('codProduto', $codProduto)
+                ->setParameter('grade', $grade)
+                ->andWhere('(pe.codigoBarras IS NOT NULL OR pv.codigoBarras IS NOT NULL)');
 
-		return $dql->getQuery()->getResult();
-	}
+        return $dql->getQuery()->getResult();
+    }
 
+    public function buscaGradesProduto($codProduto) {
+        $queryBuilder = $this->getEntityManager()->createQueryBuilder()
+                ->select('p.grade')
+                ->from('wms:Produto', 'p')
+                ->where('p.id = :codProduto')
+                ->setParameter('codProduto', ProdutoUtil::formatar($codProduto));
 
-	public function buscaGradesProduto($codProduto)
-	{
-		$queryBuilder = $this->getEntityManager()->createQueryBuilder()
-			->select('p.grade')
-			->from('wms:Produto','p')
-			->where('p.id = :codProduto')
-			->setParameter('codProduto',ProdutoUtil::formatar($codProduto));
+        $produtos = $queryBuilder->getQuery()->getArrayResult();
+        $grades = array();
+        foreach ($produtos as $produto) {
+            $grades[] = $produto['grade'];
+        }
+        return $grades;
+    }
 
-		$produtos = $queryBuilder->getQuery()->getArrayResult();
-		$grades = array();
-		foreach($produtos as $produto) {
-			$grades[] = $produto['grade'];
-		}
-		return $grades;
-	}
+    public function getProdutoByCodBarrasOrCodProduto($codigo) {
+        $LeituraColetor = new \Wms\Service\Coletor();
 
-	public function getProdutoByCodBarrasOrCodProduto($codigo) {
-		$LeituraColetor = new \Wms\Service\Coletor();
+        $codigoBarrasProduto = $LeituraColetor->adequaCodigoBarras($codigo);
 
-		$codigoBarrasProduto = $LeituraColetor->adequaCodigoBarras($codigo);
+        $info = $this->getProdutoByCodBarras($codigoBarrasProduto);
+        $produtoEn = null;
+        if ($info) {
+            $produtoEn = $this->findOneBy(array('id' => $info[0]['idProduto'], 'grade' => $info[0]['grade']));
+        } else {
+            $produtoEn = $this->findOneBy(array('id' => $codigo, 'grade' => 'UNICA'));
+        }
 
-		$info = $this->getProdutoByCodBarras($codigoBarrasProduto);
-		$produtoEn      = null;
-		if ($info) {
-			$produtoEn  = $this->findOneBy(array('id'=>$info[0]['idProduto'], 'grade' =>$info[0]['grade']));
-		} else {
-			$produtoEn  = $this->findOneBy(array('id'=>$codigo, 'grade' =>'UNICA'));
-		}
+        if (!isset($produtoEn)) {
+            throw new \Exception("Produto não encontrado");
+        }
 
-		if (!isset($produtoEn)) {
-			throw new \Exception("Produto não encontrado");
-		}
+        return $produtoEn;
+    }
 
-		return $produtoEn;
+    public function getEnderecoPicking($produtoEntity, $tipoRetorno = "DSC") {
+        $enderecoPicking = null;
+        if ($produtoEntity == null) {
+            return $enderecoPicking;
+        }
 
-	}
+        if (count($produtoEntity->getEmbalagens()) > 0) {
+            $embalagemEn = $produtoEntity->getEmbalagens();
+        } else {
+            $embalagemEn = $produtoEntity->getVolumes();
+        }
 
-	public function getEnderecoPicking($produtoEntity,$tipoRetorno = "DSC")
-	{
-		$enderecoPicking = null;
-		if ($produtoEntity == null) {
-			return $enderecoPicking;
-		}
+        if ($embalagemEn[0] == null) {
+            return null;
+        }
 
-		if (count($produtoEntity->getEmbalagens()) > 0) {
-			$embalagemEn = $produtoEntity->getEmbalagens();
-		} else {
-			$embalagemEn = $produtoEntity->getVolumes();
-		}
-
-		if ($embalagemEn[0] == null) {
-			return null;
-		}
-
-		$enderecoPicking = array();
-		foreach($embalagemEn as $key => $embalagem) {
-			if ($embalagem->getEndereco() != null) {
-				if ($tipoRetorno == "DSC"){
-					$enderecoPicking[$key] = $embalagem->getEndereco()->getDescricao();
-				} else {
-					$enderecoPicking[$key] = $embalagem->getEndereco()->getId();
-				}
-			} else{
-				$enderecoPicking = null;
-				break;
-			}
-		}
-		return $enderecoPicking;
-	}
+        $enderecoPicking = array();
+        foreach ($embalagemEn as $key => $embalagem) {
+            if ($embalagem->getEndereco() != null) {
+                if ($tipoRetorno == "DSC") {
+                    $enderecoPicking[$key] = $embalagem->getEndereco()->getDescricao();
+                } else {
+                    $enderecoPicking[$key] = $embalagem->getEndereco()->getId();
+                }
+            } else {
+                $enderecoPicking = null;
+                break;
+            }
+        }
+        return $enderecoPicking;
+    }
 
     public function getDadosLogisticos($codProduto, $grade) {
         $SQL = "
@@ -1219,7 +1210,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
               LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
              WHERE PE.COD_PRODUTO = '$codProduto'
                AND PE.DSC_GRADE = '$grade'";
-        $embalagens = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        $embalagens = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $SQL = "
         SELECT PV.COD_BARRAS,
@@ -1232,7 +1223,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
           FROM PRODUTO_VOLUME PV
          WHERE PV.COD_PRODUTO = '$codProduto'
            AND PV.DSC_GRADE = '$grade'";
-        $volumes = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        $volumes = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $SQL = "
         SELECT PP.NUM_CUBAGEM,
@@ -1240,11 +1231,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
           FROM PRODUTO_PESO PP
          WHERE PP.COD_PRODUTO = '$codProduto'
            AND PP.DSC_GRADE = '$grade'";
-        $dadosPeso = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        $dadosPeso = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $cubagem = 0;
         $peso = 0;
-        if (count($dadosPeso)>0) {
+        if (count($dadosPeso) > 0) {
             $cubagem = $dadosPeso[0]['NUM_CUBAGEM'];
             $peso = $dadosPeso[0]['NUM_PESO'];
         }
@@ -1256,9 +1247,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         );
     }
 
-	public function getEmbalagensOrVolumesByProduto($codProduto, $grade = "UNICA")
-	{
-		$sql = "SELECT PV.COD_PRODUTO_VOLUME,
+    public function getEmbalagensOrVolumesByProduto($codProduto, $grade = "UNICA") {
+        $sql = "SELECT PV.COD_PRODUTO_VOLUME,
                    PE.COD_PRODUTO_EMBALAGEM
               FROM PRODUTO P
               LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
@@ -1268,73 +1258,71 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             AND NOT (PV.COD_PRODUTO_VOLUME IS NULL AND PE.COD_PRODUTO_EMBALAGEM IS NULL)
             ";
 
-		$resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
-		return $resultado;
-	}
+        $resultado = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return $resultado;
+    }
 
-	public function getNormaPaletizacaoPadrao($codProduto, $grade, $norma = null) {
+    public function getNormaPaletizacaoPadrao($codProduto, $grade, $norma = null) {
 
-		$sql = $this->getEntityManager()->createQueryBuilder()
-			->select('e.descricao unidade, u.descricao unitizador, np.numLastro lastro, np.numCamadas camadas, np.numNorma qtdNorma, u.id idUnitizador, np.id idNorma, p.descricao dscProduto')
-			->from('wms:Produto\NormaPaletizacao', 'np')
-			->innerJoin('wms:Armazenagem\Unitizador','u','WITH','u.id = np.unitizador')
-			->innerJoin('wms:Produto\DadoLogistico','pdl', 'WITH', 'pdl.normaPaletizacao = np.id')
-			->innerJoin('wms:Produto\Embalagem', 'e', 'WITH', 'e.id = pdl.embalagem')
-			->innerJoin('wms:Produto','p','WITH','p.id = e.codProduto AND p.grade = e.grade')
-			->where("e.codProduto = '$codProduto' AND e.grade = '$grade'");
+        $sql = $this->getEntityManager()->createQueryBuilder()
+                ->select('e.descricao unidade, u.descricao unitizador, np.numLastro lastro, np.numCamadas camadas, np.numNorma qtdNorma, u.id idUnitizador, np.id idNorma, p.descricao dscProduto')
+                ->from('wms:Produto\NormaPaletizacao', 'np')
+                ->innerJoin('wms:Armazenagem\Unitizador', 'u', 'WITH', 'u.id = np.unitizador')
+                ->innerJoin('wms:Produto\DadoLogistico', 'pdl', 'WITH', 'pdl.normaPaletizacao = np.id')
+                ->innerJoin('wms:Produto\Embalagem', 'e', 'WITH', 'e.id = pdl.embalagem')
+                ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = e.codProduto AND p.grade = e.grade')
+                ->where("e.codProduto = '$codProduto' AND e.grade = '$grade'");
 
-		if (isset($norma) && !is_null($norma)) {
-			$sql->andWhere("np.id = $norma");
-		}
-		$result = $sql->getQuery()->getResult();
-		if (count($result) > 0)
-			return $result;
+        if (isset($norma) && !is_null($norma)) {
+            $sql->andWhere("np.id = $norma");
+        }
+        $result = $sql->getQuery()->getResult();
+        if (count($result) > 0)
+            return $result;
 
-		$produtoEntity = $this->findOneBy(array('id' => $codProduto, 'grade' => $grade));
-		if (empty($produtoEntity))
-		    throw new \Exception("Nenhum produto ou norma foi encontrado para $codProduto de grade $grade");
-		$volumes = $produtoEntity->getVolumes();
+        $produtoEntity = $this->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+        if (empty($produtoEntity))
+            throw new \Exception("Nenhum produto ou norma foi encontrado para $codProduto de grade $grade");
+        $volumes = $produtoEntity->getVolumes();
 
-		$idNorma = NULL;
+        $idNorma = NULL;
         $idUnitizador = 0;
-		$unidadePadrao = "";
-		$unitizador = "";
-		$qtdNorma = 0;
-		$lastro = 0;
-		$camadas = 0;
-		$dscProduto = $produtoEntity->getDescricao();
+        $unidadePadrao = "";
+        $unitizador = "";
+        $qtdNorma = 0;
+        $lastro = 0;
+        $camadas = 0;
+        $dscProduto = $produtoEntity->getDescricao();
 
-		foreach ($volumes as $volume) {
-			$result = array();
-			$norma = $volume->getNormaPaletizacao()->getId();
-			if ($norma != NULL) {
-				$unidadePadrao = $volume->getDescricao();
-				$qtdNorma = $volume->getNormaPaletizacao()->getNumNorma();
-				$lastro = $volume->getNormaPaletizacao()->getNumLastro();
-				$camadas = $volume->getNormaPaletizacao()->getNumCamadas();
-				$unitizador = $volume->getNormaPaletizacao()->getUnitizador()->getDescricao();
+        foreach ($volumes as $volume) {
+            $result = array();
+            $norma = $volume->getNormaPaletizacao()->getId();
+            if ($norma != NULL) {
+                $unidadePadrao = $volume->getDescricao();
+                $qtdNorma = $volume->getNormaPaletizacao()->getNumNorma();
+                $lastro = $volume->getNormaPaletizacao()->getNumLastro();
+                $camadas = $volume->getNormaPaletizacao()->getNumCamadas();
+                $unitizador = $volume->getNormaPaletizacao()->getUnitizador()->getDescricao();
                 $idUnitizador = $volume->getNormaPaletizacao()->getUnitizador()->getId();
-				$idNorma = $norma;
-				break;
-			}
-		}
+                $idNorma = $norma;
+                break;
+            }
+        }
 
-		$result[0]['idNorma'] = $idNorma;
-		$result[0]['unidade'] = $unidadePadrao;
-		$result[0]['idUnitizador'] = $idUnitizador;
-		$result[0]['unitizador'] = $unitizador;
-		$result[0]['qtdNorma'] = $qtdNorma;
-		$result[0]['lastro'] = $lastro;
-		$result[0]['camadas'] = $camadas;
-		$result[0]['dscProduto'] = $dscProduto;
+        $result[0]['idNorma'] = $idNorma;
+        $result[0]['unidade'] = $unidadePadrao;
+        $result[0]['idUnitizador'] = $idUnitizador;
+        $result[0]['unitizador'] = $unitizador;
+        $result[0]['qtdNorma'] = $qtdNorma;
+        $result[0]['lastro'] = $lastro;
+        $result[0]['camadas'] = $camadas;
+        $result[0]['dscProduto'] = $dscProduto;
 
-		return $result;
+        return $result;
+    }
 
-	}
-
-	public function getPesoProduto( $params )
-	{
-		$sql = "SELECT
+    public function getPesoProduto($params) {
+        $sql = "SELECT
                  COD_PRODUTO,
                  DSC_GRADE,
                  NUM_PESO,
@@ -1346,13 +1334,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                   AND DSC_GRADE = '$params[DSC_GRADE]'
            ";
 
-		$resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
-		return $resultado;
-	}
+        $resultado = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return $resultado;
+    }
 
-	public function getDadosProdutos($params)
-	{
-		$sql = "SELECT
+    public function getDadosProdutos($params) {
+        $sql = "SELECT
                  P.COD_PRODUTO \"COD.PRODUTO\",
                  P.DSC_GRADE \"GRADE\",
                  P.DSC_PRODUTO \"PRODUTO\",
@@ -1405,25 +1392,24 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             LEFT JOIN UNITIZADOR U2 ON NP2.COD_UNITIZADOR = U2.COD_UNITIZADOR
             LEFT JOIN DEPOSITO_ENDERECO DEE ON DEE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
             LEFT JOIN DEPOSITO_ENDERECO DEV ON DEV.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO";
-		$queryWhere = "";
-		if (!empty($params['grandeza'])) {
-			$queryWhere = " WHERE ";
-			$grandeza = $params['grandeza'];
-			$grandeza = implode(',',$grandeza);
-			$queryWhere = $queryWhere . " P.COD_LINHA_SEPARACAO IN ($grandeza) ";
-		}
-		$sql = $sql . $queryWhere . " ORDER BY P.COD_PRODUTO, P.DSC_GRADE, NVL(PV.COD_SEQUENCIAL_VOLUME,PE.QTD_EMBALAGEM)";
+        $queryWhere = "";
+        if (!empty($params['grandeza'])) {
+            $queryWhere = " WHERE ";
+            $grandeza = $params['grandeza'];
+            $grandeza = implode(',', $grandeza);
+            $queryWhere = $queryWhere . " P.COD_LINHA_SEPARACAO IN ($grandeza) ";
+        }
+        $sql = $sql . $queryWhere . " ORDER BY P.COD_PRODUTO, P.DSC_GRADE, NVL(PV.COD_SEQUENCIAL_VOLUME,PE.QTD_EMBALAGEM)";
 
-		$resultado = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
-		return $resultado;
-	}
+        $resultado = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return $resultado;
+    }
 
-	public function relatorioListagemProdutos(array $params = array())
-	{
-		extract ($params);
-		$linhaseparacao = $params['idLinhaSeparacao'];
+    public function relatorioListagemProdutos(array $params = array()) {
+        extract($params);
+        $linhaseparacao = $params['idLinhaSeparacao'];
 
-		$sql = "SELECT DISTINCT P.COD_PRODUTO,
+        $sql = "SELECT DISTINCT P.COD_PRODUTO,
                        P.DSC_PRODUTO,
                        P.DSC_GRADE,
                        P.NUM_VOLUMES,
@@ -1440,35 +1426,34 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       AND P.COD_LINHA_SEPARACAO = $linhaseparacao
                 ORDER BY PICKING";
 
-		return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-	}
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 
-	public function getEmbalagensByCodBarras($codBarras){
-        $embalagenEn =null;
+    public function getEmbalagensByCodBarras($codBarras) {
+        $embalagenEn = null;
         $volumeEn = null;
         $produtoEn = null;
-        $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codigoBarras'=>$codBarras, 'dataInativacao' => null));
+        $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('codigoBarras' => $codBarras, 'dataInativacao' => null));
         if ($embalagenEn == null) {
-            $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('codigoBarras'=>$codBarras, 'dataInativacao' => null));
-			if ($volumeEn == null) {
-				throw new \Exception("Produto não encontrado para o código de barras $codBarras.");
-			} else {
-				$produtoEn = $volumeEn->getProduto();
-			}
+            $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('codigoBarras' => $codBarras, 'dataInativacao' => null));
+            if ($volumeEn == null) {
+                throw new \Exception("Produto não encontrado para o código de barras $codBarras.");
+            } else {
+                $produtoEn = $volumeEn->getProduto();
+            }
         } else {
             $produtoEn = $embalagenEn->getProduto();
         }
 
-		return array('embalagem'=>$embalagenEn,
-        	         'volume'=>$volumeEn,
-                     'produto'=>$produtoEn);
-	}
+        return array('embalagem' => $embalagenEn,
+            'volume' => $volumeEn,
+            'produto' => $produtoEn);
+    }
 
-	public function getProdutoByCodBarras($codigoBarras)
-	{
-		// busco produto
-		$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('  p.id idProduto, p.descricao, p.grade,
+    public function getProdutoByCodBarras($codigoBarras) {
+        // busco produto
+        $dql = $this->getEntityManager()->createQueryBuilder()
+                ->select('  p.id idProduto, p.descricao, p.grade,
                         pe.id idEmbalagem, pv.id idVolume, p.numVolumes, ls.descricao as linhaSeparacao,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                         NVL(unitizador_embalagem.id, unitizador_volume.id) idUnitizador,
@@ -1484,52 +1469,50 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         NVL(de1.descricao, de2.descricao) picking,
                         NVL(pv.codigoSequencial, \'\') sequenciaVolume,
                         NVL(p.diasVidaUtil, \'0\') diasVidaUtil'
-			)
-			->from('wms:Produto', 'p')
-			->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
-			->leftJoin('p.linhaSeparacao', 'ls')
-			->leftJoin('pe.dadosLogisticos', 'dl')
-			->leftJoin('pe.endereco', 'de1')
-			->leftJoin('dl.normaPaletizacao', 'np_embalagem')
-			->leftJoin('np_embalagem.unitizador', 'unitizador_embalagem')
-			->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade AND pv.dataInativacao is null')
-			->leftJoin('pv.endereco', 'de2')
-			->leftJoin('pv.normaPaletizacao', 'np_volume')
-			->leftJoin('np_volume.unitizador', 'unitizador_volume')
-			->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras OR p.id = :codigoBarras)')
-			->setParameters(array('codigoBarras' => $codigoBarras));
-
-		return $dql->getQuery()->getArrayResult();
-	}
-
-    public function getEmbalagemByCodBarras($codigoBarras)
-    {
-        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('  p.id idProduto, p.descricao, p.grade,
-                        pe.id idEmbalagem, pv.id idVolume, p.numVolumes,
-                        NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
-                        NVL(pe.descricao, pv.descricao) descricaoEmbalagem,
-                        NVL(pe.quantidade, \'0\') quantidadeEmbalagem'
-            )
-            ->from('wms:Produto', 'p')
-            ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
-            ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade AND pv.dataInativacao is null')
-            ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras OR p.id = :codigoBarras)')
-            ->setParameters(array('codigoBarras' => $codigoBarras));
+                )
+                ->from('wms:Produto', 'p')
+                ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
+                ->leftJoin('p.linhaSeparacao', 'ls')
+                ->leftJoin('pe.dadosLogisticos', 'dl')
+                ->leftJoin('pe.endereco', 'de1')
+                ->leftJoin('dl.normaPaletizacao', 'np_embalagem')
+                ->leftJoin('np_embalagem.unitizador', 'unitizador_embalagem')
+                ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade AND pv.dataInativacao is null')
+                ->leftJoin('pv.endereco', 'de2')
+                ->leftJoin('pv.normaPaletizacao', 'np_volume')
+                ->leftJoin('np_volume.unitizador', 'unitizador_volume')
+                ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras OR p.id = :codigoBarras)')
+                ->setParameters(array('codigoBarras' => $codigoBarras));
 
         return $dql->getQuery()->getArrayResult();
     }
 
-	public function relatorioProdutosSemPicking(array $params = array())
-	{
-		extract ($params);
-		$cond="";
-		if (!empty($params['rua'])){
-			$rua = $params['rua'];
-			$cond=" AND  DE.NUM_RUA = ".$rua." ";
-		}
+    public function getEmbalagemByCodBarras($codigoBarras) {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+                ->select('  p.id idProduto, p.descricao, p.grade,
+                        pe.id idEmbalagem, pv.id idVolume, p.numVolumes,
+                        NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
+                        NVL(pe.descricao, pv.descricao) descricaoEmbalagem,
+                        NVL(pe.quantidade, \'0\') quantidadeEmbalagem'
+                )
+                ->from('wms:Produto', 'p')
+                ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
+                ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade AND pv.dataInativacao is null')
+                ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras OR p.id = :codigoBarras)')
+                ->setParameters(array('codigoBarras' => $codigoBarras));
 
-		$sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO as \"descricao\",
+        return $dql->getQuery()->getArrayResult();
+    }
+
+    public function relatorioProdutosSemPicking(array $params = array()) {
+        extract($params);
+        $cond = "";
+        if (!empty($params['rua'])) {
+            $rua = $params['rua'];
+            $cond = " AND  DE.NUM_RUA = " . $rua . " ";
+        }
+
+        $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO as \"descricao\",
                        DE.COD_DEPOSITO_ENDERECO as \"codigo\",
                        DE.COD_AREA_ARMAZENAGEM as \"areaArmazenagem\",
                        DE.IND_ATIVO  as \"ativo\",
@@ -1539,168 +1522,164 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 LEFT JOIN PRODUTO_VOLUME    PV ON PV.COD_DEPOSITO_ENDERECO=DE.COD_DEPOSITO_ENDERECO
                 WHERE (PV.COD_DEPOSITO_ENDERECO IS NULL AND PE.COD_DEPOSITO_ENDERECO IS NULL)
                     AND DE.COD_CARACTERISTICA_ENDERECO <> 37 AND DE.IND_SITUACAO='D'
-                      ".$cond."
+                      " . $cond . "
                 ORDER BY \"descricao\"";
 
-		return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-	}
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 
-	public function verificaSeEProdutoComposto($idProduto)
-	{
-		$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('p.numVolumes')
-			->from('wms:Produto', 'p')
-			->where('p.id = :codProduto')
-			->setParameter('codProduto', $idProduto);
+    public function verificaSeEProdutoComposto($idProduto) {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+                ->select('p.numVolumes')
+                ->from('wms:Produto', 'p')
+                ->where('p.id = :codProduto')
+                ->setParameter('codProduto', $idProduto);
 
-		return $dql->getQuery()->getResult();
-	}
+        return $dql->getQuery()->getResult();
+    }
 
-	public function getProdutoEmbalagem()
-	{
-		$dql = $this->getEntityManager()->createQueryBuilder()
-			->select('pe.descricao, IDENTITY(pe.produto) AS produto, pe.grade, pe.id')
-			->from('wms:Produto\Embalagem', 'pe')
-			->orderBy('pe.isPadrao', 'desc');
+    public function getProdutoEmbalagem() {
+        $dql = $this->getEntityManager()->createQueryBuilder()
+                ->select('pe.descricao, IDENTITY(pe.produto) AS produto, pe.grade, pe.id')
+                ->from('wms:Produto\Embalagem', 'pe')
+                ->orderBy('pe.isPadrao', 'desc');
 
-		return $dql->getQuery()->getResult();
+        return $dql->getQuery()->getResult();
+    }
 
-	}
+    public function getSequenciaEndAutomaticoCaracEndereco($codProduto, $grade, $inner = false) {
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
 
-	public function getSequenciaEndAutomaticoCaracEndereco($codProduto,$grade, $inner = false) {
-		if ($inner == true) {
-			$join = " INNER ";
-		} else {
-			$join = " LEFT ";
-		}
-
-		$SQL = "  SELECT TP.COD_CARACTERISTICA_ENDERECO as ID, TP.DSC_CARACTERISTICA_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+        $SQL = "  SELECT TP.COD_CARACTERISTICA_ENDERECO as ID, TP.DSC_CARACTERISTICA_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
                     FROM CARACTERISTICA_ENDERECO TP
                     $join JOIN PRODUTO_END_CARACT_END P
                       ON P.COD_CARACTERISTICA_ENDERECO = TP.COD_CARACTERISTICA_ENDERECO
                      AND P.COD_PRODUTO = '$codProduto'
                      AND P.DSC_GRADE = '$grade'
                    ORDER BY TP.DSC_CARACTERISTICA_ENDERECO";
-		$result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-		return $result;
-	}
+        return $result;
+    }
 
-	public function getSequenciaEndAutomaticoTpEndereco($codProduto,$grade, $inner = false) {
-		if ($inner == true) {
-			$join = " INNER ";
-		} else {
-			$join = " LEFT ";
-		}
+    public function getSequenciaEndAutomaticoTpEndereco($codProduto, $grade, $inner = false) {
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
 
-		$SQL = "  SELECT TP.COD_TIPO_ENDERECO as ID, TP.DSC_TIPO_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+        $SQL = "  SELECT TP.COD_TIPO_ENDERECO as ID, TP.DSC_TIPO_ENDERECO as DESCRICAO, P.NUM_PRIORIDADE as VALUE
                     FROM TIPO_ENDERECO TP
                     $join JOIN PRODUTO_END_TIPO_ENDERECO P
                       ON P.COD_TIPO_ENDERECO = TP.COD_TIPO_ENDERECO
                      AND P.COD_PRODUTO = '$codProduto'
                      AND P.DSC_GRADE = '$grade'
                    ORDER BY TP.DSC_TIPO_ENDERECO";
-		$result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-		return $result;
-	}
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
 
-	public function getSequenciaEndAutomaticoAreaArmazenagem($codProduto,$grade, $inner = false) {
-		if ($inner == true) {
-			$join = " INNER ";
-		} else {
-			$join = " LEFT ";
-		}
+    public function getSequenciaEndAutomaticoAreaArmazenagem($codProduto, $grade, $inner = false) {
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
 
-		$SQL = "  SELECT TP.COD_AREA_ARMAZENAGEM as ID, TP.DSC_AREA_ARMAZENAGEM as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+        $SQL = "  SELECT TP.COD_AREA_ARMAZENAGEM as ID, TP.DSC_AREA_ARMAZENAGEM as DESCRICAO, P.NUM_PRIORIDADE as VALUE
                     FROM AREA_ARMAZENAGEM TP
                    $join JOIN PRODUTO_END_AREA_ARMAZENAGEM P
                       ON P.COD_AREA_ARMAZENAGEM = TP.COD_AREA_ARMAZENAGEM
                      AND P.COD_PRODUTO = '$codProduto'
                      AND P.DSC_GRADE = '$grade'
                    ORDER BY TP.DSC_AREA_ARMAZENAGEM";
-		$result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-		return $result;
-	}
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
 
-	public function getSequenciaEndAutomaticoTpEstrutura($codProduto,$grade, $inner = false) {
+    public function getSequenciaEndAutomaticoTpEstrutura($codProduto, $grade, $inner = false) {
 
-		if ($inner == true) {
-			$join = " INNER ";
-		} else {
-			$join = " LEFT ";
-		}
-		$SQL = "  SELECT TP.COD_TIPO_EST_ARMAZ as ID, TP.DSC_TIPO_EST_ARMAZ as DESCRICAO, P.NUM_PRIORIDADE as VALUE
+        if ($inner == true) {
+            $join = " INNER ";
+        } else {
+            $join = " LEFT ";
+        }
+        $SQL = "  SELECT TP.COD_TIPO_EST_ARMAZ as ID, TP.DSC_TIPO_EST_ARMAZ as DESCRICAO, P.NUM_PRIORIDADE as VALUE
                     FROM TIPO_EST_ARMAZ TP
                    $join JOIN PRODUTO_END_TIPO_EST_ARMAZ P
                       ON P.COD_TIPO_EST_ARMAZ = TP.COD_TIPO_EST_ARMAZ
                      AND P.COD_PRODUTO = '$codProduto'
                      AND P.DSC_GRADE = '$grade'
                    ORDER BY TP.DSC_TIPO_EST_ARMAZ";
-		$result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-		return $result;
-	}
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
 
-	public function getEnderecoReferencia($produtoEn, $modeloEnderecamentoEn) {
-		$enderecoReferencia = null;
+    public function getEnderecoReferencia($produtoEn, $modeloEnderecamentoEn) {
+        $enderecoReferencia = null;
 
-		//PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
-		$enderecoReferencia = $produtoEn->getEnderecoReferencia();
+        //PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
+        $enderecoReferencia = $produtoEn->getEnderecoReferencia();
 
-		//SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
-		if ($enderecoReferencia == null) {
-			$embalagens = $produtoEn->getEmbalagens();
-			foreach ($embalagens as $embalagem) {
-				if ($embalagem->getEndereco() != null) {
-					$enderecoReferencia = $embalagem->getEndereco();
-					break;
-				}
-			}
-		}
-		if ($enderecoReferencia == null) {
-			$volumes = $produtoEn->getVolumes();
-			foreach ($volumes as $volume) {
-				if ($volume->getEndereco() != null) {
-					$enderecoReferencia = $volume->getEndereco();
-					break;
-				}
-			}
-		}
+        //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
+        if ($enderecoReferencia == null) {
+            $embalagens = $produtoEn->getEmbalagens();
+            foreach ($embalagens as $embalagem) {
+                if ($embalagem->getEndereco() != null) {
+                    $enderecoReferencia = $embalagem->getEndereco();
+                    break;
+                }
+            }
+        }
+        if ($enderecoReferencia == null) {
+            $volumes = $produtoEn->getVolumes();
+            foreach ($volumes as $volume) {
+                if ($volume->getEndereco() != null) {
+                    $enderecoReferencia = $volume->getEndereco();
+                    break;
+                }
+            }
+        }
 
-		//SE O PRODUTO NÂO TIVER PICKING NEM ENDEREÇO DE REFERENCIA, ENTÂO VEJO O ENDEREÇO DO MODELO
-		if ($enderecoReferencia == null) {
-			$enderecoReferencia = $modeloEnderecamentoEn->getCodReferencia();
-		}
+        //SE O PRODUTO NÂO TIVER PICKING NEM ENDEREÇO DE REFERENCIA, ENTÂO VEJO O ENDEREÇO DO MODELO
+        if ($enderecoReferencia == null) {
+            $enderecoReferencia = $modeloEnderecamentoEn->getCodReferencia();
+        }
 
-		return $enderecoReferencia;
-	}
+        return $enderecoReferencia;
+    }
 
-	public function getProdutoByParametroVencimento($params)
-	{
-		$where = " WHERE (E.DTH_VALIDADE <= TO_DATE('$params[dataReferencia]','DD/MM/YYYY') OR E.DTH_VALIDADE IS NULL)";
-		if (isset($params['codProduto']) && !empty($params['codProduto'])) {
-			$where .= " AND P.COD_PRODUTO = '$params[codProduto]' ";
-		}
-		if (isset($params['linhaSeparacao']) && !empty($params['linhaSeparacao'])) {
-			$where .= "AND P.COD_LINHA_SEPARACAO = '$params[linhaSeparacao]' ";
-		}
-		if (isset($params['descricao']) && !empty($params['descricao'])) {
-			$where .= "AND LOWER(P.DSC_PRODUTO) LIKE LOWER('%$params[descricao]%') ";
-		}
-		if (isset($params['fornecedor']) && !empty($params['fornecedor'])) {
-			$where .= "AND LOWER(PES.NOM_PESSOA) LIKE LOWER('%$params[fornecedor]%') ";
-		}
+    public function getProdutoByParametroVencimento($params) {
+        $where = " WHERE (E.DTH_VALIDADE <= TO_DATE('$params[dataReferencia]','DD/MM/YYYY') OR E.DTH_VALIDADE IS NULL)";
+        if (isset($params['codProduto']) && !empty($params['codProduto'])) {
+            $where .= " AND P.COD_PRODUTO = '$params[codProduto]' ";
+        }
+        if (isset($params['linhaSeparacao']) && !empty($params['linhaSeparacao'])) {
+            $where .= "AND P.COD_LINHA_SEPARACAO = '$params[linhaSeparacao]' ";
+        }
+        if (isset($params['descricao']) && !empty($params['descricao'])) {
+            $where .= "AND LOWER(P.DSC_PRODUTO) LIKE LOWER('%$params[descricao]%') ";
+        }
+        if (isset($params['fornecedor']) && !empty($params['fornecedor'])) {
+            $where .= "AND LOWER(PES.NOM_PESSOA) LIKE LOWER('%$params[fornecedor]%') ";
+        }
 
         $picking = Endereco::ENDERECO_PICKING;
         $pulmao = Endereco::ENDERECO_PULMAO;
         if (isset($params['endereco']) && !empty($params['endereco'])) {
             if ($params['endereco'] == $picking) {
-                $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = ".$picking;
+                $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = " . $picking;
             } elseif ($params['endereco'] == $pulmao) {
-                $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = ".$pulmao;
+                $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = " . $pulmao;
             }
         }
 
-		$query = "SELECT 
+        $query = "SELECT 
                       P.COD_PRODUTO AS cod_produto, 
                       P.DSC_GRADE AS grade, 
                       P.DSC_PRODUTO AS descricao, 
@@ -1731,26 +1710,23 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       TO_CHAR(E.DTH_VALIDADE,'DD/MM/YYYY')
                   ORDER BY TO_DATE(VALIDADE, 'DD/MM/YYYY')";
 
-		return $this->_em->getConnection()->query($query)->fetchAll();
-	}
+        return $this->_em->getConnection()->query($query)->fetchAll();
+    }
 
-	public function getProdutos($codProduto)
-	{
-		$sql = "SELECT COD_PRODUTO, DSC_GRADE, DSC_PRODUTO
+    public function getProdutos($codProduto) {
+        $sql = "SELECT COD_PRODUTO, DSC_GRADE, DSC_PRODUTO
 					FROM PRODUTO P
 					WHERE P.COD_PRODUTO IN ($codProduto)";
-		return $this->_em->getConnection()->query($sql)->fetchAll();
-
-	}
+        return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
 
     /**
      * @param $produto
      * @param string $validade
      * @return boolean
      */
-	public function checkShelfLifeProduto($produto, $validade)
-    {
-        if (is_a($produto,'Produto')) {
+    public function checkShelfLifeProduto($produto, $validade) {
+        if (is_a($produto, 'Produto')) {
             $produtoEn = $this->findOneBy(array('id' => $produto->getId(), 'grade' => $produto->getGrade()));
         } else {
             $produtoEn = $this->findOneBy(array('id' => $produto->id, 'grade' => $produto->grade));
@@ -1760,7 +1736,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $hoje = new \DateTime('now');
             $periodoUtil = $hoje->add(date_interval_create_from_date_string("$dias days"));
             $validade = date_create($validade);
-            return ($validade >= $periodoUtil)? true : false;
+            return ($validade >= $periodoUtil) ? true : false;
         }
         return false;
     }
@@ -1787,7 +1763,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
      *
      * @return array
      */
-    public function getCortePorDiaProduto($params){
+    public function getCortePorDiaProduto($params) {
         $sql = "SELECT TO_CHAR(E.DTH_INICIO, 'DD/MM/YYYY') as DTH_INICIO, E.COD_EXPEDICAO, C.COD_CARGA_EXTERNO as COD_CARGA, PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.QUANTIDADE, PP.QTD_CORTADA, PP.QUANTIDADE - PP.QTD_CORTADA as QTD_ATENDIDA,
                 CASE WHEN (PP.QUANTIDADE - PP.QTD_CORTADA) = 0 THEN 'CORTE TOTAL' ELSE 'CORTE PARCIAL' END AS TIPO_CORTE
                 FROM PEDIDO_PRODUTO PP
@@ -1810,7 +1786,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         }
 
         if (isset($params['dataInicial']) && !empty($params['dataInicial'])) {
-            $sql .= " AND TO_DATE(E.DTH_INICIO) >= TO_DATE('".$params['dataInicial']." 00:00:00','DD/MM/YYYY HH24:MI:SS')";
+            $sql .= " AND TO_DATE(E.DTH_INICIO) >= TO_DATE('" . $params['dataInicial'] . " 00:00:00','DD/MM/YYYY HH24:MI:SS')";
         }
 
         $sql .= " ORDER BY E.DTH_INICIO DESC, PP.COD_PRODUTO";
