@@ -3167,7 +3167,8 @@ class ExpedicaoRepository extends EntityRepository {
                 PEDIDO P ON (CG.COD_CARGA = P.COD_CARGA) INNER JOIN
                 PEDIDO_PRODUTO PP ON (P.COD_PEDIDO = PP.COD_PEDIDO) INNER JOIN
                 PRODUTO PR ON (PR.COD_PRODUTO = PP.COD_PRODUTO)
-                WHERE CG.COD_EXPEDICAO IN ($expedicao) AND PP.QTD_CORTADA > 0";
+                WHERE CG.COD_EXPEDICAO IN ($expedicao) AND PP.QTD_CORTADA > 0
+                ORDER BY PP.COD_PEDIDO, PR.COD_PRODUTO, PR.DSC_GRADE, PP.QUANTIDADE, PP.QTD_CORTADA";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
