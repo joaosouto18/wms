@@ -416,8 +416,8 @@ class Importacao
                 }
             }
 
-            if ($notaFiscalEn->getStatus()->getId() == NotaFiscal::STATUS_CANCELADA) {
-                $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscal::STATUS_INTEGRADA);
+            if ($notaFiscalEn->getStatus()->getId() == \Wms\Domain\Entity\NotaFiscal::STATUS_CANCELADA) {
+                $statusEntity = $em->getReference('wms:Util\Sigla', \Wms\Domain\Entity\NotaFiscal::STATUS_INTEGRADA);
                 $notaFiscalEn->setRecebimento(null);
                 $notaFiscalEn->setStatus($statusEntity);
                 $em->persist($notaFiscalEn);
