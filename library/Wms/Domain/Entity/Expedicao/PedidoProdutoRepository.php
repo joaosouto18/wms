@@ -12,7 +12,13 @@ class PedidoProdutoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
         $pedidoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
 
-        var_dump($pedidosProdutosERP);exit;
+        $result = array();
+        foreach ($pedidosProdutosERP as $line) {
+            if ($line['PEDIDO'] == '16002240') {
+                $result[] = $line;
+            }
+        }
+        var_dump($result);exit;
 
         foreach ($pedidosProdutosWMS as $produtoWms) {
             $encontrouProdutoERP = false;
