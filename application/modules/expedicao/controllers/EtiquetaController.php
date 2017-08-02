@@ -55,7 +55,7 @@ class Expedicao_EtiquetaController  extends Action
         ini_set('memory_limit', '-1');
         $idExpedicao    = $this->getRequest()->getParam('id');
         $central        = $this->getRequest()->getParam('central');
-        $cargas         = '339';
+        $cargas         = $this->getRequest()->getParam('cargas');
 
         if (empty($idExpedicao) || empty($central)) {
             $this->_redirect('/');
