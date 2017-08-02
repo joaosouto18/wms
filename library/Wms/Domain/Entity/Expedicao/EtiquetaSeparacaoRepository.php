@@ -918,6 +918,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
                         if ($filial->getIndUtilizaRessuprimento() == "S") {
                             $enderecosPulmao = $this->getDepositoEnderecoProdutoSeparacao($produtoEntity, $idExpedicao);
+                            if (empty($enderecosPulmao)) {
+                                throw new \Exception("O item $codProduto - $grade não tem picking e não teve reservas feitas no pulmão, contate o suporte");
+                            }
                         }
                     }
 
@@ -1136,9 +1139,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $this->_em->flush();
             $this->_em->clear();
         } catch (WMS_Exception $WMS_Exception){
-            throw new WMS_Exception($WMS_Exception->getMessage(), $WMS_Exception->getLink());
+            throw $WMS_Exception;
         }catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 

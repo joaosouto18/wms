@@ -412,9 +412,9 @@ class Expedicao_EtiquetaController  extends Action
                 $EtiquetaRepo->gerarMapaEtiqueta($idExpedicao, $pedidosProdutos, null, $idModeloSeparacaoPadrao, $arrayRepositorios);
             }
         } catch (\Wms\Util\WMS_Exception $WMS_Exception) {
-            throw new \Wms\Util\WMS_Exception($WMS_Exception->getMessage(), $WMS_Exception->getLink());
+            throw $WMS_Exception;
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
