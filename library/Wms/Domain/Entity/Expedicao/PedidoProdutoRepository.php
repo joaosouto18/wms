@@ -15,14 +15,10 @@ class PedidoProdutoRepository extends EntityRepository
         $debugar = false;
         foreach ($pedidosProdutosWMS as $produtoWms) {
 
-            if (($produtoWms['pedido'] == '16002240') && ($produtoWms['produto'] == '27')) {
-                $debugar = true;
-            }
-
             $encontrouProdutoERP = false;
             foreach ($pedidosProdutosERP as $key => $produtoERP) {
 
-                if (($produtoERP['PEDIDO'] == '16002240') && ($produtoERP['PRODUTO'] == '27')) {
+                if (($produtoERP['PEDIDO'] == '16002240') && ($produtoERP['PRODUTO'] == '27') && ($produtoWms['pedido'] == '16002240') && ($produtoWms['produto'] == '27')) {
                     $debugar = true;
                 }
 
