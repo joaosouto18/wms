@@ -22,7 +22,7 @@ class PedidoProdutoRepository extends EntityRepository
             $encontrouProdutoERP = false;
             foreach ($pedidosProdutosERP as $key => $produtoERP) {
                 if (in_array($produtoWms['pedido'],$produtoERP)) {
-                    if ($debugar ==true) {var_dump('ok1');}
+                    if ($debugar ==true) {var_dump('ok1'); var_dump($produtoERP;)}
                     if (in_array($produtoWms['produto'],$produtoERP)) {
                         if ($debugar ==true) {var_dump('ok2');}
                         if (in_array($produtoWms['grade'],$produtoERP)) {
