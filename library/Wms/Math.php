@@ -59,21 +59,6 @@ Class Math
         return ($x % $y) / $quantidade;
     }
 
-    /**
-     * @param float|int $x Dividendo
-     * @param float|int $y Divisor
-     * @return float|int
-     */
-    public static function dividir($x, $y)
-    {
-        $quantidade = self::maiorPrecisao($x, $y);
-
-        $x = $x * $quantidade;
-        $y = $y * $quantidade;
-
-        return $x / $y;
-    }
-
     public static function adicionar($x, $y)
     {
         $quantidade = self::maiorPrecisao($x,$y);
@@ -106,5 +91,38 @@ Class Math
 
         return ($x * $y) / ($quantidade * $quantidade);
 
+    }
+
+    /**
+     * @param float|int $divisor
+     * @param float|int $dividendo
+     * @return float|int
+     */
+    public static function dividir($divisor, $dividendo)
+    {
+        $quantidade = self::maiorPrecisao($divisor, $dividendo);
+
+        $x = $divisor * $quantidade;
+        $y = $dividendo * $quantidade;
+
+        return $x / $y;
+    }
+
+    /**
+     * @param $x
+     * @return float|int
+     */
+    public static function decrementar($x)
+    {
+        return self::subtrair($x,$x);
+    }
+
+    /**
+     * @param $x
+     * @return float|int
+     */
+    public static function incrementar($x)
+    {
+        return self::adicionar($x,$x);
     }
 }

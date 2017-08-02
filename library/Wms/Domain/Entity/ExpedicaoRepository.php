@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Service\Coletor as LeituraColetor,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
+use Wms\Math;
 
 class ExpedicaoRepository extends EntityRepository {
 
@@ -2979,18 +2980,18 @@ class ExpedicaoRepository extends EntityRepository {
                     /** @var ExpedicaoEntity\MapaSeparacaoProduto $mapa */
                     $mapa = $entidadeMapaProduto[$i];
                     $qtdCortadaMapa = $mapa->getQtdCortado();
-                    $qtdSeparar = $mapa->getQtdEmbalagem() * $mapa->getQtdSeparar();
-                    if ($qtdCortadaMapa < $qtdSeparar) {
-                        $qtdDisponivelDeCorte = $qtdSeparar - $qtdCortadaMapa;
-                        if ($qtdDisponivelDeCorte >= $qtdCortar) {
-                            $mapa->setQtdCortado($qtdCortar + $qtdCortadaMapa);
-                            $qtdCortar -= $qtdCortar;
+                    $qtdSeparar = Math::multiplicar($mapa->getQtdEmbalagem(), $mapa->getQtdSeparar());
+                    if (Math::compare($qtdCortadaMapa, $qtdSeparar,'<')) {
+                        $qtdDisponivelDeCorte = Math::subtrair($qtdSeparar,$qtdCortadaMapa);
+                        if (Math::compare($qtdDisponivelDeCorte, $qtdCortar, '>=')) {
+                            $mapa->setQtdCortado(Math::adicionar($qtdCortar , $qtdCortadaMapa));
+                            $qtdCortar = Math::decrementar($qtdCortar);
                         } else {
                             $mapa->setQtdCortado($mapa->getQtdSeparar());
-                            $qtdCortar -= $qtdDisponivelDeCorte;
+                            $qtdCortar = Math::decrementar($qtdCortar);
                         }
-                        $qtdResult = ($mapa->getQtdSeparar() * $mapa->getQtdEmbalagem()) - $mapa->getQtdCortado();
-                        if ($qtdResult == 0) {
+                        $result = Math::subtrair($qtdSeparar, $mapa->getQtdCortado());
+                        if (empty($result)) {
                             $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
                             foreach ($mapaConferenciaEn as $conferencia) {
                                 $this->getEntityManager()->remove($conferencia);

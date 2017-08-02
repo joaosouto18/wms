@@ -88,7 +88,7 @@ class Mobile_Enderecamento_ReabastecimentoManualController extends Action
 
             if (count($result) == 0)
             {
-                throw new Exception('error', 'Nenhum produto encontrado para este endereço');
+                throw new Exception('Nenhum produto encontrado para este endereço');
             }
 
             $reabastEnt = $reabasteceRepo->findOneBy(array('os' => $codOS, 'depositoEndereco' => $enderecoEn));
