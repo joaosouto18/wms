@@ -12,29 +12,17 @@ class PedidoProdutoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
         $pedidoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
 
-        $debugar = false;
         foreach ($pedidosProdutosWMS as $produtoWms) {
-
             $encontrouProdutoERP = false;
             foreach ($pedidosProdutosERP as $key => $produtoERP) {
-
-                if (($produtoERP['PEDIDO'] == '16002240') && ($produtoERP['PRODUTO'] == '27') && ($produtoWms['pedido'] == '16002240') && ($produtoWms['produto'] == '27')) {
-                    $debugar = true;
-                }
-
-
                 if (in_array($produtoWms['pedido'],$produtoERP)) {
-                    if ($debugar ==true) {var_dump('ok1'); var_dump($produtoERP);}
                     if (in_array($produtoWms['produto'],$produtoERP)) {
-                        if ($debugar ==true) {var_dump('ok2');}
                         if (in_array($produtoWms['grade'],$produtoERP)) {
-                            if ($debugar ==true) {var_dump('ok3');}
                             $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
                                 'codPedido' => $produtoWms['pedido'],
                                 'codProduto' => $produtoWms['produto'],
                                 'grade' => $produtoWms['grade']));
                             if (isset($pedidoProdutoEntity) && !empty($pedidoProdutoEntity)) {
-                                if ($debugar ==true) {var_dump('ok4');}
                                 $encontrouProdutoERP = true;
                                 $cortesProduto = array(
                                     'codPedido' => $produtoWms['pedido'],
@@ -53,7 +41,6 @@ class PedidoProdutoRepository extends EntityRepository
                         }
                     }
                 }
-                if ($debugar == true) {exit;}
             }
             if (!$encontrouProdutoERP) {
                 $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
