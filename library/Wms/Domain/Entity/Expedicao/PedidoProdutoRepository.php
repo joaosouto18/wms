@@ -12,6 +12,8 @@ class PedidoProdutoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
         $pedidoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
 
+        var_dump($pedidosProdutosERP);exit;
+
         foreach ($pedidosProdutosWMS as $produtoWms) {
             $encontrouProdutoERP = false;
             foreach ($pedidosProdutosERP as $key => $produtoERP) {
