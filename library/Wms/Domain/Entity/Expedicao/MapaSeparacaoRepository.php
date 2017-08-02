@@ -494,7 +494,7 @@ class MapaSeparacaoRepository extends EntityRepository
         $qtdBanco    = number_format($qtdConferida,3,'.','') + number_format($qtdCortada,3,'.','');
         $qtdMapa     = number_format($qtdMapa,3,'.','');
 
-        $quantidadeConferida = Math::adicao($qtdBanco, $qtdDigitada);
+        $quantidadeConferida = Math::adicionar($qtdBanco, $qtdDigitada);
         if ($quantidadeConferida > $qtdMapa) {
             throw new \Exception("Quantidade informada(".$qtdEmbalagem * $quantidade.") + $qtdConferida excede a quantidade solicitada no mapa para esse cliente! Produto: " .$produtoEn->getId() . " Mapa:" . $mapaEn->getId());
         }

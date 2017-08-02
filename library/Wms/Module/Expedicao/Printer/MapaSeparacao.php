@@ -771,8 +771,8 @@ class MapaSeparacao extends eFPDF {
                     $codigoBarras = $embalagemEn->getCodigoBarras();
                 $embalagem = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
-                    $pesoTotal += Math::produtoMultiplicacao(str_replace(',', '.', $pesoProduto->getPeso()), str_replace(',', '.', $quantidade));
-                    $cubagemTotal += Math::produtoMultiplicacao(str_replace(',', '.', $pesoProduto->getCubagem()), str_replace(',', '.', $quantidade));
+                    $pesoTotal += Math::multiplicar(str_replace(',', '.', $pesoProduto->getPeso()), str_replace(',', '.', $quantidade));
+                    $cubagemTotal += Math::multiplicar(str_replace(',', '.', $pesoProduto->getCubagem()), str_replace(',', '.', $quantidade));
                 }
 
                 if ($ruaAnterior != $rua) {

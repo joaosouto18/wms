@@ -924,11 +924,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $menorEmbalagem = end($embalagensEn);
 
                     $quantidadeRestantePedido = $quantidade;
+                    $qtdOriginal = 0;
 
                     while ($quantidadeRestantePedido > 0) {
                         $idDepositoEndereco = null;
                         $embalagemAtual = null;
-                        $quantidadeAtender = $quantidadeRestantePedido;
+                        $qtdPulmaoDisponivel = null;
 
                         foreach ($enderecosPulmao as $item => $enderecoPulmao) {
                             $idDepositoEndereco = $enderecoPulmao['ID_ENDERECO'];
@@ -938,61 +939,77 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if ($arrEnds[$idDepositoEndereco][$codProduto][$grade]['totalVinculado'] === true){
                                     //caso sim removo item do array
                                     unset($enderecosPulmao[$item]);
-                                    continue;
                                 } //caso não a qtd atender recebe restante disponivel
                                 else {
                                     $qtdVinculada = $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'];
-                                    $quantidadeAtender = Math::subtracao($enderecoPulmao['QUANTIDADE'],$qtdVinculada);
+                                    $qtdPulmaoDisponivel = Math::subtrair($enderecoPulmao['QUANTIDADE'],$qtdVinculada);
                                     break;
                                 }
                             } //se não a qtd a atender é a qtd disponivel no endereco
                             else {
                                 if ($enderecoPulmao['QUANTIDADE'] > 0 ) {
-                                    $quantidadeAtender = $enderecoPulmao['QUANTIDADE'];
+                                    $qtdPulmaoDisponivel = $qtdOriginal = $enderecoPulmao['QUANTIDADE'];
                                     break;
                                 }
                             }
                         }
 
+                        // Define qual é a qtdBase do cálculo, caso seja separação aérea se é a qtdDisponivel no pulmão ou a qtdRestante do pedido
+                        $qtdBase = $quantidadeRestantePedido;
+                        if (!empty($qtdPulmaoDisponivel)) {
+                            if (Math::compare($qtdPulmaoDisponivel, $quantidadeRestantePedido , "<")) {
+                                $qtdBase = $qtdPulmaoDisponivel;
+                            }
+                        }
+
+                        $semEmbalagemValida = false;
                         if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                             foreach ($embalagensEn as $embalagem) {
-                                if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
+                                if (Math::compare($embalagem->getQuantidade(), $qtdBase,"<=")) {
                                     $embalagemAtual = $embalagem;
                                     break;
                                 }
                             }
-                            if ($embalagemAtual == null) {
-                                $msg = "O produto $codProduto grade $grade não tem embalgem ativa com quantidade menor ou igual o restante de $quantidadeAtender item(ns)";
-                                throw new WMS_Exception($msg);
+                            if (empty($embalagemAtual)) {
+                                $semEmbalagemValida = true;
                             }
                         } else {
                             $embalagemAtual = $menorEmbalagem;
+                            if (!Math::compare($embalagemAtual->getQuantidade(), $qtdBase, "<=")) {
+                                $semEmbalagemValida = true;
+                            }
                         }
 
-                        // Define qual é a qtdBase do cálculo, se é a qtdDisponivel no pulmão ou a qtdRestante do pedido
-                        if ($quantidadeRestantePedido <= $quantidadeAtender) {
-                            $qtdBase = $quantidadeRestantePedido;
-                        } else {
-                            $qtdBase = $quantidadeAtender;
+                        if ($semEmbalagemValida) {
+                            $msg = "O produto $codProduto grade $grade não tem embalgem ativa para atender a quantidade restante de $qtdBase item(ns)";
+                            throw new WMS_Exception($msg);
                         }
 
                         $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
                         // Identifico o resto possivel da embalagem atual em relação a qtdBase
-                        $restoByFator = Math::restoDivisao($qtdBase, $qtdEmbalagemAtual);
+                        $restoByFator = Math::resto($qtdBase, $qtdEmbalagemAtual);
                         // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
-                        $qtdSepararEmbalagemAtual = Math::divisao(($qtdBase - $restoByFator), $qtdEmbalagemAtual);
+                        $qtdSepararEmbalagemAtual = Math::dividir(($qtdBase - $restoByFator), $qtdEmbalagemAtual);
 
-                        // A partir disso o restante do pedido é igual ao resto da divisão do fator atual
+                        // A partir disso o restante a separar do pedido é igual ao resto da divisão do fator atual
                         $quantidadeRestantePedido = $restoByFator;
 
                         if (!empty($enderecosPulmao)) {
                             if (isset($arrEnds[$idDepositoEndereco][$codProduto][$grade])) {
-                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] += Math::produtoMultiplicacao($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
+                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] += Math::multiplicar($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
                             } else {
-                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] = Math::produtoMultiplicacao($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
+                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] = Math::multiplicar($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
                                 $arrEnds[$idDepositoEndereco]['entity'] = $depositoEnderecoRepo->find($idDepositoEndereco);
+                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['totalVinculado'] = false;
+                            }
+                            $qtdVinculadaEndereco = $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'];
+                            if (Math::compare($qtdVinculadaEndereco, $qtdOriginal, "==")) {
+                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['totalVinculado'] = true;
                             }
                         }
+
+
+
 
                         if (empty($depositoEnderecoEn) && empty($idDepositoEndereco)) {
                             $idEndereco = null;
@@ -1194,9 +1211,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
                         // Identifico o resto possivel da embalagem atual em relação a qtdBase
-                        $restoByFator = Math::restoDivisao($qtdTemp, $qtdEmbalagemAtual);
+                        $restoByFator = Math::resto($qtdTemp, $qtdEmbalagemAtual);
                         // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
-                        $qtdEmbs = Math::divisao(($qtdTemp - $restoByFator), $qtdEmbalagemAtual);
+                        $qtdEmbs = Math::dividir(($qtdTemp - $restoByFator), $qtdEmbalagemAtual);
 
                         // A partir disso o restante do pedido é igual ao resto da divisão do fator atual
                         $qtdTemp = $restoByFator;

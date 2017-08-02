@@ -49,14 +49,14 @@ Class Math
     }
 
 
-    public static function restoDivisao($x, $y)
+    public static function resto($x, $y)
     {
         $quantidade = self::maiorPrecisao($x, $y);
 
         $x = $x * $quantidade;
         $y = $y * $quantidade;
 
-        return $x % $y;
+        return ($x % $y) / $quantidade;
     }
 
     /**
@@ -64,7 +64,7 @@ Class Math
      * @param float|int $y Divisor
      * @return float|int
      */
-    public static function divisao($x, $y)
+    public static function dividir($x, $y)
     {
         $quantidade = self::maiorPrecisao($x, $y);
 
@@ -74,7 +74,7 @@ Class Math
         return $x / $y;
     }
 
-    public static function adicao($x,$y)
+    public static function adicionar($x, $y)
     {
         $quantidade = self::maiorPrecisao($x,$y);
 
@@ -85,7 +85,7 @@ Class Math
 
     }
 
-    public static function subtracao($x,$y)
+    public static function subtrair($x, $y)
     {
 
         $quantidade = self::maiorPrecisao($x,$y);
@@ -97,7 +97,7 @@ Class Math
 
     }
 
-    public static function produtoMultiplicacao($x,$y)
+    public static function multiplicar($x, $y)
     {
         $quantidade = self::maiorPrecisao($x,$y);
 

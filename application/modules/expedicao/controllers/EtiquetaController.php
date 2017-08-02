@@ -116,7 +116,11 @@ class Expedicao_EtiquetaController  extends Action
         } catch (\Wms\Util\WMS_Exception $e) {
             $this->getEntityManager()->rollback();
             $this->_helper->json(array('status' => 'error', 'msg' => $e->getMessage(), 'link' => $e->getLink()));
+        } catch (\Exception $e) {
+            $this->getEntityManager()->rollback();
+            $this->_helper->json(array('status' => 'error', 'msg' => $e->getMessage(), 'link' => ''));
         }
+
     }
 
     public function listarMapasQuebraAjaxAction()

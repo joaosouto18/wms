@@ -43,7 +43,7 @@ class ProdutosClienteCarregamento extends Pdf
 
             foreach ($embalagemEntities as $embalagemEntity) {
 
-                if(Math::restoDivisao($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
+                if(Math::resto($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
                     $this->Cell(20, 6, $data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade() . ' ' . $embalagemEntity->getDescricao());
                     break;
                 }
