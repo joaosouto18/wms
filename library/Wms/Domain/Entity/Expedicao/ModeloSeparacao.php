@@ -2,6 +2,8 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
+use Doctrine\Common\Collections\ArrayCollection;
+
 /**
  *
  * @Table(name="MODELO_SEPARACAO")
@@ -77,6 +79,11 @@ class ModeloSeparacao
      * @Column(name="IND_SEPARACAO_PC", type="string", nullable=false)
      */
     protected $separacaoPC;
+
+    /**
+     * @Column(name="TIPO_SEPARACAO_EMBALADO", type="string", nullable=false)
+     */
+    protected $tipoSeparacaoEmbalado;
 
     /**
      * @Column(name="TIPO_DEFAUL_EMBALADO", type="string", nullable=true)
@@ -369,6 +376,22 @@ class ModeloSeparacao
     public function setSeparacaoPC($separacaoPC)
     {
         $this->separacaoPC = $separacaoPC;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoSeparacaoEmbalado()
+    {
+        return $this->tipoSeparacaoEmbalado;
+    }
+
+    /**
+     * @param mixed $tipoSeparacaoEmbalado
+     */
+    public function setTipoSeparacaoEmbalado($tipoSeparacaoEmbalado)
+    {
+        $this->tipoSeparacaoEmbalado = $tipoSeparacaoEmbalado;
     }
 
     /**

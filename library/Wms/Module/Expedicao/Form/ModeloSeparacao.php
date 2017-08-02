@@ -52,6 +52,11 @@ class ModeloSeparacao extends Form
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_PRODUTO => 'Por Produto',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_FRACIONADOS => 'Todos os fracionados'),
+        ))->addElement('select', 'tipoSeparacaoEmbalado', array(
+            'label' => 'Tipo de Separação',
+            'multiOptions' => array(
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
         ))->addElement('select', 'tipoConferenciaEmbalado', array(
             'label' => 'Tipo de Conferência para Embalados',
             'multiOptions' => array(
@@ -65,13 +70,13 @@ class ModeloSeparacao extends Form
         ))->addElement('select', 'tipoSeparacaoFracionado', array(
             'label' => 'Tipo de Separação',
             'multiOptions' => array(
-                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa de Separação',
-                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta de Separação'),
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
         ))->addElement('select', 'tipoSeparacaoNaoFracionado', array(
             'label' => 'Tipo de Separação',
             'multiOptions' => array(
-                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa de Separação',
-                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta de Separação'),
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
         ))->addElement('checkbox', 'ruaFracionados', array(
             'label' => 'Rua',
             'checkedValue' => MapaSeparacaoQuebra::QUEBRA_RUA

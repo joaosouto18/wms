@@ -116,6 +116,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
             $dados['quebraPulmaDoca'] = $entity->getQuebraPulmaDoca();
             $dados['tipoQuebraVolume'] = $entity->getTipoQuebraVolume();
             $dados['separacaoPc'] = $entity->getSeparacaoPC();
+            $dados['tipoSeparacaoEmbalado'] = $entity->getTipoSeparacaoEmbalado();
             $dados['tipoDefaultEmbalado'] = $entity->getTipoDefaultEmbalado();
             $dados['tipoConferenciaEmbalado'] = $entity->getTipoConferenciaEmbalado();
             $dados['tipoConferenciaNaoEmbalado'] = $entity->getTipoConferenciaNaoEmbalado();
@@ -164,6 +165,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
                 $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
                 $entity->setTipoQuebraVolume($params['tipoQuebraVolume']);
                 $entity->setSeparacaoPC($params['separacaoPc']);
+                $entity->setTipoSeparacaoEmbalado($params['tipoSeparacaoEmbalado']);
                 $entity->setTipoDefaultEmbalado($params['tipoDefaultEmbalado']);
                 $entity->setTipoConferenciaEmbalado($params['tipoConferenciaEmbalado']);
                 $entity->setTipoConferenciaNaoEmbalado($params['tipoConferenciaNaoEmbalado']);
