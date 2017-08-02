@@ -22,7 +22,6 @@ function mask($val, $mask){
             <td style="text-align:center; padding-right: 10pt;"><span><b>Nota Fiscal</b></span></td>
             <td style="text-align:center; padding-right: 10pt;"><span><b>Carga</b></span></td>
             <td style="text-align:center; padding-right: 10pt;"><span><b>Emitente</b></span></td>
-            <td><input class="checkbox" type="checkbox" <?php if($this->selecionado == "S") {echo "checked";}?> value="" name="mass-id[]"></td>
         </tr>
         <?php foreach($this->notasFiscaisByCarga as $notaFiscal) : ?>
             <tr style="margin-bottom: 10pt; padding-bottom: 10pt">
