@@ -1124,7 +1124,7 @@ class MapaSeparacaoRepository extends EntityRepository
             $codMapa = $mapa['COD_MAPA_SEPARACAO'];
 
             $qtdConferir = $qtdRestante;
-            if ($qtdRestante > $qtdPendenteMapa) {
+            if (Math::compare($qtdRestante,$qtdPendenteMapa,">" )) {
                 $qtdConferir = $qtdPendenteMapa;
             }
 
@@ -1137,15 +1137,15 @@ class MapaSeparacaoRepository extends EntityRepository
                     'codProdutoEmbalagem' => $codProdutoEmbalagem,
                     'codPrdutoVolume' => $codProdutoVolume,
                     'qtdEmbalagem' => $fatorCodBarrasBipado,
-                    'quantidade' => $qtdConferir / $fatorCodBarrasBipado
+                    'quantidade' => Math::dividir($qtdConferir,$fatorCodBarrasBipado)
                 );
 
-                $qtdRestante = $qtdRestante - $qtdConferir;
+                $qtdRestante = Math::subtrair($qtdRestante,$qtdConferir);
             }
         }
 
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
-        if ($qtdInformada > ($qtdMapaTotal - $qtdConferidoTotal)) {
+        if ($qtdInformada > (Math::subtrair($qtdMapaTotal,$qtdConferidoTotal))) {
             $msgErro = "O produto " . $dscProduto . " já se encontra totalmente conferido na expedição";
             if ($utilizaQuebra == "S") {
                 $msgErro = "O produto " . $dscProduto . " já se encontra totalmente conferido no mapa " . $idMapa;
