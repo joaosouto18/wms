@@ -992,16 +992,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         // Identifico o resto possivel da embalagem atual em relação a qtdBase
                         $restoByFator = Math::resto($qtdBase, $qtdEmbalagemAtual);
                         // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
-                        $qtdSepararEmbalagemAtual = Math::dividir(($qtdBase - $restoByFator), $qtdEmbalagemAtual);
+                        $qtdSepararEmbalagemAtual = Math::dividir(Math::subtrair($qtdBase, $restoByFator), $qtdEmbalagemAtual);
 
-                        // A partir disso o restante a separar do pedido é igual ao resto da divisão do fator atual
-                        $quantidadeRestantePedido = $restoByFator;
+                        $qtdVinculada = Math::multiplicar($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
+
+                        // Decrementa a quantidade vinculada à qtdPendente do pedido
+                        $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido, $qtdVinculada);
 
                         if (!empty($enderecosPulmao)) {
                             if (isset($arrEnds[$idDepositoEndereco][$codProduto][$grade])) {
-                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] += Math::multiplicar($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
+                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] += $qtdVinculada;
                             } else {
-                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] = Math::multiplicar($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
+                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] = $qtdVinculada;
                                 $arrEnds[$idDepositoEndereco]['entity'] = $depositoEnderecoRepo->find($idDepositoEndereco);
                                 $arrEnds[$idDepositoEndereco][$codProduto][$grade]['totalVinculado'] = false;
                             }

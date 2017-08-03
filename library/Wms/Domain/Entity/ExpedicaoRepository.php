@@ -2935,8 +2935,8 @@ class ExpedicaoRepository extends EntityRepository {
         $qtdPedido = $entidadePedidoProduto->getQuantidade();
 
         //TRAVA PARA GARANTIR QUE NÃO CORTE QUANTIDADE MAIOR QUE TEM NO PEDIDO
-        if (($qtdCortar + $qtdCortada) > $qtdPedido) {
-            $qtdCortar = ($qtdPedido - $qtdCortada);
+        if (Math::compare(Math::adicionar($qtdCortar, $qtdCortada), $qtdPedido,'>')) {
+            $qtdCortar = Math::subtrair($qtdPedido, $qtdCortada);
         }
 
         $SQL = "SELECT REE.COD_RESERVA_ESTOQUE
@@ -2952,10 +2952,10 @@ class ExpedicaoRepository extends EntityRepository {
             $entityReservaEstoqueProduto = $reservaEstoqueProdutoRepo->findBy(array('reservaEstoque' => $idReservaEstoque));
             foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
                 $qtdReservada = $reservaEstoqueProduto->getQtd();
-                if ($qtdCortar + $qtdReservada == 0) {
+                if (Math::adicionar($qtdCortar , $qtdReservada) == 0) {
                     $this->getEntityManager()->remove($reservaEstoqueProduto);
                 } else {
-                    $reservaEstoqueProduto->setQtd($qtdReservada + $qtdCortar);
+                    $reservaEstoqueProduto->setQtd(Math::adicionar($qtdReservada ,$qtdCortar));
                     $this->getEntityManager()->persist($reservaEstoqueProduto);
                 }
             }
