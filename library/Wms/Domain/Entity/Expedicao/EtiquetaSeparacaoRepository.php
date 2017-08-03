@@ -994,16 +994,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
                         $qtdSepararEmbalagemAtual = Math::dividir(Math::subtrair($qtdBase, $restoByFator), $qtdEmbalagemAtual);
 
-                        $qtdVinculada = Math::multiplicar($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
+                        $qtdVincular = Math::multiplicar($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
 
-                        // Decrementa a quantidade vinculada à qtdPendente do pedido
-                        $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido, $qtdVinculada);
+                        // Decrementa a quantidade à vinculada sobre a qtdPendente do pedido
+                        $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido, $qtdVincular);
 
                         if (!empty($enderecosPulmao)) {
                             if (isset($arrEnds[$idDepositoEndereco][$codProduto][$grade])) {
-                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] += $qtdVinculada;
+                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] += $qtdVincular;
                             } else {
-                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] = $qtdVinculada;
+                                $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'] = $qtdVincular;
                                 $arrEnds[$idDepositoEndereco]['entity'] = $depositoEnderecoRepo->find($idDepositoEndereco);
                                 $arrEnds[$idDepositoEndereco][$codProduto][$grade]['totalVinculado'] = false;
                             }
