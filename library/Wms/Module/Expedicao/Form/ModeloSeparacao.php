@@ -52,11 +52,6 @@ class ModeloSeparacao extends Form
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_PRODUTO => 'Por Produto',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::DEFAULT_EMBALADO_FRACIONADOS => 'Todos os fracionados'),
-        ))->addElement('select', 'tipoSeparacaoEmbalado', array(
-            'label' => 'Tipo de Separação',
-            'multiOptions' => array(
-                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
-                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
         ))->addElement('select', 'tipoConferenciaEmbalado', array(
             'label' => 'Tipo de Conferência para Embalados',
             'multiOptions' => array(
@@ -68,12 +63,22 @@ class ModeloSeparacao extends Form
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM => 'Item a Item',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::CONFERENCIA_QUANTIDADE => 'Informando a quantidade'),
         ))->addElement('select', 'tipoSeparacaoFracionado', array(
-            'label' => 'Tipo de Separação',
+            'label' => 'Não Embalados',
+            'multiOptions' => array(
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
+        ))->addElement('select', 'tipoSeparacaoFracionadoEmbalado', array(
+            'label' => 'Embalados',
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
         ))->addElement('select', 'tipoSeparacaoNaoFracionado', array(
-            'label' => 'Tipo de Separação',
+            'label' => 'Não Embalados',
+            'multiOptions' => array(
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
+        ))->addElement('select', 'tipoSeparacaoNaoFracionadoEmbalado', array(
+            'label' => 'Embalados',
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
@@ -117,6 +122,8 @@ class ModeloSeparacao extends Form
             'tipoConferenciaNaoEmbalado',
             'tipoSeparacaoFracionado',
             'tipoSeparacaoNaoFracionado',
+            'tipoSeparacaoFracionadoEmbalado',
+            'tipoSeparacaoNaoFracionadoEmbalado',
             'ruaFracionados',
             'linhaDeSeparacaoFracionados',
             'pracaFracionados',

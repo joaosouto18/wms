@@ -954,6 +954,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
 
+
                         if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                             foreach ($embalagensEn as $embalagem) {
                                 if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
@@ -967,6 +968,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         } else {
                             $embalagemAtual = $menorEmbalagem;
+                        }
+
+                        if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == "P") {
+                            if ($embalagemAtual->getEmbalado() == "S") {
+                                $embalado = true;
+                            } else {
+                                $embalado = false;
+                            }
+                        } else {
+                            if ($embalagemAtual->getQuantidade() < $qtdEmbalagemPadraoRecebimento) {
+                                $embalado = true;
+                            } else {
+                                $embalado = false;
+                            }
                         }
 
                         // Define qual é a qtdBase do cálculo, se é a qtdDisponivel no pulmão ou a qtdRestante do pedido
@@ -1005,64 +1020,47 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         if ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
                             $quebras = $quebrasNaoFracionado;
-                            if ($modeloSeparacaoEn->getTipoSeparacaoNaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
-                                if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebras = array();
-                                $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebras);
-                                $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $embalagemAtual->getQuantidade(), null, $embalagemAtual, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
+                            if ($embalado == true) {
+                                $tipoSeparacao = $modeloSeparacaoEn->getTipoSeparacaoNaoFracionadoEmbalado();
                             } else {
-                                $cubagem = null;
-                                $consolidado = 'N';
-                                if (isset($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()])) {
-                                    $cubagem[$pedidoEntity->getId()][$embalagemAtual->getId()] = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
-                                    $quebras = array();
-                                    $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
-                                    $consolidado = 'S';
-                                }
-
-                                if (isset($arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco])) {
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco]['qtd'] +=  $qtdSepararEmbalagemAtual;
-                                } else {
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco] = array(
-                                        'qtd' => $qtdSepararEmbalagemAtual,
-                                        'consolidado' => $consolidado,
-                                        'mapa' => $this->getMapaSeparacao($pedidoProduto, $quebras, $statusEntity, $expedicaoEntity),
-                                        'cubagem' => $cubagem,
-                                        'pedidoProdutoEn' => $pedidoProduto,
-                                        'embalagensDisponiveis' => $embalagensEn,
-                                        'embalagemEn' => $embalagemAtual,
-                                        'enderecoEn' => $depositoEnderecoEn);
-                                }
+                                $tipoSeparacao = $modeloSeparacaoEn->getTipoSeparacaoNaoFracionado();
                             }
                         }
                         else {
                             $quebras = $quebrasFracionado;
-                            if ($modeloSeparacaoEn->getTipoSeparacaoFracionado() == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
-                                if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebras = array();
-                                $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebras);
-                                $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $embalagemAtual->getQuantidade(), null, $embalagemAtual, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
+                            if ($embalado == true) {
+                                $tipoSeparacao = $modeloSeparacaoEn->getTipoSeparacaoFracionadoEmbalado();
                             } else {
-                                $cubagem = null;
-                                $consolidado = 'N';
-                                if (isset($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()])) {
-                                    $cubagem[$pedidoEntity->getId()][$embalagemAtual->getId()] = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
-                                    $quebras = array();
-                                    $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
-                                    $consolidado = 'S';
-                                }
+                                $tipoSeparacao = $modeloSeparacaoEn->getTipoSeparacaoFracionado();
+                            }
+                        }
 
-                                if (isset($arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco])) {
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco]['qtd'] +=  $qtdSepararEmbalagemAtual;
-                                } else {
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco] = array(
-                                        'qtd' => $qtdSepararEmbalagemAtual,
-                                        'consolidado' => $consolidado,
-                                        'mapa' => $this->getMapaSeparacao($pedidoProduto, $quebras, $statusEntity, $expedicaoEntity),
-                                        'cubagem' => $cubagem,
-                                        'pedidoProdutoEn' => $pedidoProduto,
-                                        'embalagensDisponiveis' => $embalagensEn,
-                                        'embalagemEn' => $embalagemAtual,
-                                        'enderecoEn' => $depositoEnderecoEn);
-                                }
+                        if ($tipoSeparacao == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
+                            if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebras = array();
+                            $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebras);
+                            $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $embalagemAtual->getQuantidade(), null, $embalagemAtual, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
+                        } else {
+                            $cubagem = null;
+                            $consolidado = 'N';
+                            if (isset($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()])) {
+                                $cubagem[$pedidoEntity->getId()][$embalagemAtual->getId()] = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
+                                $quebras = array();
+                                $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
+                                $consolidado = 'S';
+                            }
+
+                            if (isset($arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco])) {
+                                $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco]['qtd'] +=  $qtdSepararEmbalagemAtual;
+                            } else {
+                                $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco] = array(
+                                    'qtd' => $qtdSepararEmbalagemAtual,
+                                    'consolidado' => $consolidado,
+                                    'mapa' => $this->getMapaSeparacao($pedidoProduto, $quebras, $statusEntity, $expedicaoEntity),
+                                    'cubagem' => $cubagem,
+                                    'pedidoProdutoEn' => $pedidoProduto,
+                                    'embalagensDisponiveis' => $embalagensEn,
+                                    'embalagemEn' => $embalagemAtual,
+                                    'enderecoEn' => $depositoEnderecoEn);
                             }
                         }
                     }

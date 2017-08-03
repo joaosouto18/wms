@@ -119,3 +119,4 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (119, 'Integração de Notas Fiscais de Saída para Reentrega', '28-integracao-nfsaida.sql',SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (120, 'Correção da Geração dos Mapas de Separação para produtos com precisão acima de 3 casas decimais', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (121, 'Correção da Conferencia de Produtos em dos Mapas de Separação com precisão acima de 3 casas decimais', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (XXX, 'Incluindo o tipo de separação para embalado/Não embalado para Fracionados/Não Fracionados', null,SYSDATE);

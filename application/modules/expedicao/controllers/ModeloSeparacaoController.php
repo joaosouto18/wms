@@ -116,12 +116,13 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
             $dados['quebraPulmaDoca'] = $entity->getQuebraPulmaDoca();
             $dados['tipoQuebraVolume'] = $entity->getTipoQuebraVolume();
             $dados['separacaoPc'] = $entity->getSeparacaoPC();
-            $dados['tipoSeparacaoEmbalado'] = $entity->getTipoSeparacaoEmbalado();
             $dados['tipoDefaultEmbalado'] = $entity->getTipoDefaultEmbalado();
             $dados['tipoConferenciaEmbalado'] = $entity->getTipoConferenciaEmbalado();
             $dados['tipoConferenciaNaoEmbalado'] = $entity->getTipoConferenciaNaoEmbalado();
             $dados['tipoSeparacaoFracionado'] = $entity->getTipoSeparacaoFracionado();
             $dados['tipoSeparacaoNaoFracionado'] = $entity->gettipoSeparacaoNaoFracionado();
+            $dados['tipoSeparacaoFracionadoEmbalado'] = $entity->getTipoSeparacaoFracionadoEmbalado();
+            $dados['tipoSeparacaoNaoFracionadoEmbalado'] = $entity->getTipoSeparacaoNaoFracionadoEmbalado();
 
             $entityModeloSeparacaoTipoQuebraFracionado = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacaoTipoQuebraFracionado")->findBy(array('modeloSeparacao' => $id));
 
@@ -156,7 +157,6 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
                 $params = $this->getRequest()->getParams();
 
                 $entity->setDescricao($params['descricao']);
-                $entity->setTipoSeparacaoFracionado($params['tipoSeparacaoFracionado']);
                 $entity->setUtilizaCaixaMaster($params['utilizaCaixaMaster']);
                 $entity->setUtilizaQuebraColetor($params['utilizaQuebraColetor']);
                 $entity->setUtilizaEtiquetaMae($params['utilizaEtiquetaMae']);
@@ -165,11 +165,13 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
                 $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
                 $entity->setTipoQuebraVolume($params['tipoQuebraVolume']);
                 $entity->setSeparacaoPC($params['separacaoPc']);
-                $entity->setTipoSeparacaoEmbalado($params['tipoSeparacaoEmbalado']);
                 $entity->setTipoDefaultEmbalado($params['tipoDefaultEmbalado']);
                 $entity->setTipoConferenciaEmbalado($params['tipoConferenciaEmbalado']);
                 $entity->setTipoConferenciaNaoEmbalado($params['tipoConferenciaNaoEmbalado']);
                 $entity->setTipoSeparacaoNaoFracionado($params['tipoSeparacaoNaoFracionado']);
+                $entity->setTipoSeparacaoFracionado($params['tipoSeparacaoFracionado']);
+                $entity->setTipoSeparacaoNaoFracionadoEmbalado($params['tipoSeparacaoNaoFracionadoEmbalado']);
+                $entity->setTipoSeparacaoFracionadoEmbalado($params['tipoSeparacaoFracionadoEmbalado']);
 
                 foreach ($entityModeloSeparacaoTipoQuebraFracionado as $tipoFracionado) {
                     $this->em->remove($tipoFracionado);
@@ -272,6 +274,8 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
         $entity->setTipoConferenciaNaoEmbalado($params['tipoConferenciaNaoEmbalado']);
         $entity->setTipoSeparacaoFracionado($params['tipoSeparacaoFracionado']);
         $entity->setTipoSeparacaoNaoFracionado($params['tipoSeparacaoNaoFracionado']);
+        $entity->setTipoSeparacaoFracionadoEmbalado($params['tipoSeparacaoFracionadoEmbalado']);
+        $entity->setTipoSeparacaoNaoFracionadoEmbalado($params['tipoSeparacaoNaoFracionadoEmbalado']);
 
         $this->em->persist($entity);
         $this->em->flush();

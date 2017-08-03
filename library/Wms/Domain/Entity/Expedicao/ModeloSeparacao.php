@@ -51,6 +51,16 @@ class ModeloSeparacao
     protected $tipoSeparacaoNaoFracionado;
 
     /**
+     * @Column(name="TIPO_SEPARACAO_FRAC_EMB", type="string", nullable=true)
+     */
+    protected $tipoSeparacaoFracionadoEmbalado;
+
+    /**
+     * @Column(name="TIPO_SEPARACAO_NAO_FRAC_EMB", type="string", nullable=true)
+     */
+    protected $tipoSeparacaoNaoFracionadoEmbalado;
+
+    /**
      * @Column(name="UTILIZA_QUEBRA_COLETOR", type="string", nullable=true)
      */
     protected $utilizaQuebraColetor;
@@ -79,11 +89,6 @@ class ModeloSeparacao
      * @Column(name="IND_SEPARACAO_PC", type="string", nullable=false)
      */
     protected $separacaoPC;
-
-    /**
-     * @Column(name="TIPO_SEPARACAO_EMBALADO", type="string", nullable=false)
-     */
-    protected $tipoSeparacaoEmbalado;
 
     /**
      * @Column(name="TIPO_DEFAUL_EMBALADO", type="string", nullable=true)
@@ -381,22 +386,6 @@ class ModeloSeparacao
     /**
      * @return mixed
      */
-    public function getTipoSeparacaoEmbalado()
-    {
-        return $this->tipoSeparacaoEmbalado;
-    }
-
-    /**
-     * @param mixed $tipoSeparacaoEmbalado
-     */
-    public function setTipoSeparacaoEmbalado($tipoSeparacaoEmbalado)
-    {
-        $this->tipoSeparacaoEmbalado = $tipoSeparacaoEmbalado;
-    }
-
-    /**
-     * @return mixed
-     */
     public function getUtilizaVolumePatrimonio()
     {
         return $this->utilizaVolumePatrimonio;
@@ -408,6 +397,38 @@ class ModeloSeparacao
     public function setUtilizaVolumePatrimonio($utilizaVolumePatrimonio)
     {
         $this->utilizaVolumePatrimonio = $utilizaVolumePatrimonio;
+    }
+
+    /**
+     * @param mixed $tipoSeparacaoFracionadoEmbalado
+     */
+    public function setTipoSeparacaoFracionadoEmbalado($tipoSeparacaoFracionadoEmbalado)
+    {
+        $this->tipoSeparacaoFracionadoEmbalado = $tipoSeparacaoFracionadoEmbalado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoSeparacaoFracionadoEmbalado()
+    {
+        return $this->tipoSeparacaoFracionadoEmbalado;
+    }
+
+    /**
+     * @param mixed $tipoSeparacaoNaoFracionadoEmbalado
+     */
+    public function setTipoSeparacaoNaoFracionadoEmbalado($tipoSeparacaoNaoFracionadoEmbalado)
+    {
+        $this->tipoSeparacaoNaoFracionadoEmbalado = $tipoSeparacaoNaoFracionadoEmbalado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoSeparacaoNaoFracionadoEmbalado()
+    {
+        return $this->tipoSeparacaoNaoFracionadoEmbalado;
     }
 
 }
