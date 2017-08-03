@@ -481,7 +481,7 @@ class MapaSeparacaoRepository extends EntityRepository
             $qtdConferida = number_format($ultConferencia['qtd'],3,'.','');
         } else {
             $mapaSeparacaoConferenciaEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia')
-                ->findBy(array('mapaSeparacao' => $mapaEn, 'codProduto' => $produtoEn->getId(), 'dscGrade' => $produtoEn->getGrade(), 'indConferenciaFechada' => 'S'), array('id' => 'DESC'));
+                ->findBy(array('codMapaSeparacao' => $mapaEn->getId(), 'codProduto' => $produtoEn->getId(), 'dscGrade' => $produtoEn->getGrade(), 'indConferenciaFechada' => 'S'), array('id' => 'DESC'));
             if (isset($mapaSeparacaoConferenciaEn) && !empty($mapaSeparacaoConferenciaEn))
                 $numConferencia = $mapaSeparacaoConferenciaEn[0]->getNumConferencia() + 1;
         }
