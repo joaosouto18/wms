@@ -18,7 +18,6 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
         $produtoEmbalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         $produtoEmbalagemEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
-
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
@@ -34,6 +33,7 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
                 $produtoId = $produtoEmbalagemEn->getProduto();
                 $grade = $produtoEmbalagemEn->getGrade();
                 $idEmbalagem = $produtoEmbalagemEn->getId();
+                $data['qtd'] = $data['qtd'] * $produtoEmbalagemEn->getQuantidade();
             } else {
                 throw new \Exception(utf8_encode('Código do Produto não cadastrado!'));
             }
@@ -77,7 +77,6 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
             if (count($getProdutosByRecebimento) == 0) {
                 throw new \Exception(utf8_encode('Produto não encontrado para esse recebimento!'));
             }
-
             $conferenciaRecebimentoReentregaEn = new ConferenciaRecebimentoReentrega();
             $conferenciaRecebimentoReentregaEn->setProdutoVolume($produtoVolumeEn);
             $conferenciaRecebimentoReentregaEn->setProdutoEmbalagem($produtoEmbalagemEn);
