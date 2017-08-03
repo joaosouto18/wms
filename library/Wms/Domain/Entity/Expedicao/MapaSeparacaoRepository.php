@@ -943,4 +943,228 @@ class MapaSeparacaoRepository extends EntityRepository
 
     }
 
+    public function confereMapaProduto($paramsModeloSeparaco, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa = null, $ordemServicoId = null) {
+
+        try {
+            $idVolumePatrimonio = null;
+            if ($volumePatrimonioEn != null) {
+                $idVolumePatrimonio = $volumePatrimonioEn->getId();
+            }
+
+            $parametrosConferencia = array(
+                'idVolumePatrimonio' => $idVolumePatrimonio,
+                'codPessoa' => $codPessoa,
+                'qtd' => $qtd,
+                'codBarras' => $codBarras,
+                'idMapa' => $idMapa,
+                'idExpedicao' => $idExpedicao
+            );
+
+            $conferencia = $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco);
+
+            if (is_null($ordemServicoId)) {
+                $sessao = new \Zend_Session_Namespace('coletor');
+                $ordemServicoId = $sessao->osID;
+            }
+
+            $mapaSeparacaoEmbaladoEn = null;
+            if ($codPessoa != null) {
+                /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
+                $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+                $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
+                if (isset($codPessoa) && !empty($codPessoa)) {
+                    if (count($mapaSeparacaoEmbaladoEn) <= 0) {
+                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa. null, false);
+                    } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
+                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $mapaSeparacaoEmbaladoEn[0], false);
+                    }
+                }
+
+                $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
+            }
+
+            foreach ($conferencia as $conf) {
+                $novaConferencia = new MapaSeparacaoConferencia();
+                $novaConferencia->setCodMapaSeparacao($conf['codMapaSeparacao']);
+                $novaConferencia->setCodOS($ordemServicoId);
+                $novaConferencia->setCodProduto($conf['codProduto']);
+                $novaConferencia->setDscGrade($conf['dscGrade']);
+                $novaConferencia->setIndConferenciaFechada("N");
+                $novaConferencia->setNumConferencia($conf['numConferencia']);
+                $novaConferencia->setCodProdutoEmbalagem($conf['codProdutoEmbalagem']);
+                $novaConferencia->setCodProdutoVolume($conf['codPrdutoVolume']);
+                $novaConferencia->setQtdEmbalagem($conf['qtdEmbalagem']);
+                $novaConferencia->setQtdConferida($conf['quantidade']);
+                $novaConferencia->setVolumePatrimonio($volumePatrimonioEn);
+                $novaConferencia->setMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn);
+                $novaConferencia->setDataConferencia(new \DateTime());
+                $novaConferencia->setCodPessoa($codPessoa);
+                $this->getEntityManager()->persist($novaConferencia);
+            }
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+        $this->getEntityManager()->flush();
+
+        return true;
+
+    }
+
+    public function validaConferenciaMapaProduto($dadosConferencia, $paramsModeloSeparacao) {
+
+        $idExpedicao = $dadosConferencia['idExpedicao'];
+        $idMapa = $dadosConferencia['idMapa'];
+        $codBarras = $dadosConferencia['codBarras'];
+        $qtd = $dadosConferencia['qtd'];
+        $codPessoa = $dadosConferencia['codPessoa'];
+        $idVolumePatrimonio = $dadosConferencia['idVolumePatrimonio'];
+
+        $utilizaQuebra = $paramsModeloSeparacao['utilizaQuebra'];
+        $tipoDefaultEmbalado = $paramsModeloSeparacao['tipoDefaultEmbalado'];
+        $utilizaVolumePatrimonio = $paramsModeloSeparacao['utilizaVolumePatrimonio'];
+
+        //SE O INDICADOR DE EMBALADO NAO FOR O PRODUTO E SIM A EMBALAGEM FRACIONADA, ENTÂO JA RETORNA ISSO NA QUERY
+        $SQLFields = "";
+        $SQLJoin = "";
+        if ($tipoDefaultEmbalado != "P") {
+            $SQLFields = " PEP.QTD_EMBALAGEM as QTD_EMBALAGEM_PADRAO, ";
+            $SQLJoin   = " LEFT JOIN PRODUTO_EMBALAGEM PEP ON PEP.COD_PRODUTO = MSP.COD_PRODUTO AND PEP.DSC_GRADE = MSP.DSC_GRADE AND PEP.IND_PADRAO = 'S'";
+        }
+
+        //QUERY PRINCIPAL PARA VALIDAÇÃO DE CONFERENCIA
+        $SQL = "SELECT $SQLFields
+                       MS.COD_MAPA_SEPARACAO,
+                       MSP.QTD_SEPARAR,
+                       P.DSC_PRODUTO,
+                       P.COD_PRODUTO,
+                       P.DSC_GRADE,
+                       PE.COD_PRODUTO_EMBALAGEM,
+                       PV.COD_PRODUTO_VOLUME,
+                       NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME) as DSC_EMBALAGEM,
+                       NVL(PE.QTD_EMBALAGEM,1) as QTD_EMBAlAGEM,
+                       NVL(CONF.QTD_CONFERIDA,0) as QTD_CONFERIDA,
+                       NVL(PE.IND_EMBALADO,'N') as IND_EMBALADO
+                  FROM MAPA_SEPARACAO MS
+                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, COD_PRODUTO_VOLUME,
+                                    SUM((QTD_EMBALAGEM * QTD_SEPARAR) - NVL(QTD_CORTADO,0)) as QTD_SEPARAR
+                               FROM MAPA_SEPARACAO_PRODUTO
+                              GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, COD_PRODUTO_VOLUME) MSP ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, COD_PRODUTO_VOLUME, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA
+                               FROM MAPA_SEPARACAO_CONFERENCIA
+                             GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, COD_PRODUTO_VOLUME) CONF
+                         ON CONF.COD_PRODUTO = MSP.COD_PRODUTO
+                        AND CONF.DSC_GRADE = MSP.DSC_GRADE
+                        AND CONF.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
+                        AND CONF.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = MSP.COD_PRODUTO AND PE.DSC_GRADE = MSP.DSC_GRADE
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = MSP.COD_PRODUTO AND P.DSC_GRADE = MSP.DSC_GRADE
+                  $SQLJoin
+                 WHERE 1 = 1
+                    AND (PE.COD_BARRAS = '$codBarras' OR PV.COD_BARRAS = '$codBarras')";
+
+        //SE UTIILIZAR QUEBRA NA CONFERENCIA ENTÃO COMPARO APENAS COM O MAPA INFORMADO, CASO CONTRARIO COMPARO COM TODOS OS MAPAS DA EXPEDIÇÃO
+        if ($utilizaQuebra == "S") {
+            $SQL = $SQL . " AND MSP.COD_MAPA_SEPARACAO = $idMapa";
+        } else {
+            $SQL = $SQL . " AND MS.COD_EXPEDICAO = $idExpedicao";
+        }
+
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        //VERIFICO SE O CÓDIGO DE BARRAS PERTENCE A ALGUM PRODUTO DO MAPA
+        if (count($result) == 0) {
+            throw new \Exception("Nenhum produto encontrado no mapa com o código de barras informado - " . $codBarras);
+        }
+
+        $fatorCodBarrasBipado = $result[0]['QTD_EMBALAGEM'];
+        $codBarrasEmbalado = $result[0]['IND_EMBALADO'];
+        $codProdutoEmbalagem = $result[0]['COD_PRODUTO_EMBALAGEM'];
+        $codProdutoVolume = $result[0]['COD_PRODUTO_VOLUME'];
+        $dscProduto = $result[0]['DSC_PRODUTO'];
+        $codProduto = $result[0]['COD_PRODUTO'];
+        $dscGrade = $result[0]['DSC_GRADE'];
+        $dscEmbalagem = $result[0]['DSC_EMBALAGEM'] . "(" . $fatorCodBarrasBipado . ")";
+
+        //SE FOR UMA CONFERENCIA DE CONSOLIDADO, VERIFICO SE O PRODUTO PERTENCE AO CLIENTE INFORMADO
+        if ($codPessoa != null) {
+            $cliente = $this->getClientesByMapa($idMapa, $codPessoa, $codProduto, $dscGrade);
+            if (count($cliente) <= 0) {
+                throw new \Exception("O produto " . $codProduto . " / " . $dscGrade. " - " . $dscProduto . " não pertence ao cliente selecionado");
+            }
+        }
+
+        //CALCULO A QUANTIDADE PENDENTE DE CONFERENCIA PARA CADA MAPA, SE UTILIZAR QUEBRA O FILTRO VAI TRAZER APENAS UM MAPA
+        $qtdConferidoTotal = 0;
+        $qtdMapaTotal = 0;
+        $qtdInformada = $qtd * $fatorCodBarrasBipado;
+
+        $qtdConferenciaGravar = array();
+        $qtdRestante = $qtdInformada;
+        foreach ($result as $mapa) {
+            $qtdMapaTotal = $qtdMapaTotal + $mapa['QTD_SEPARAR'];
+            $qtdConferidoTotal = $qtdConferidoTotal + $mapa['QTD_CONFERIDA'];
+
+            $qtdMapa = $mapa['QTD_SEPARAR'];
+            $qtdConferido = $mapa['QTD_CONFERIDA'];
+            $qtdPendenteMapa = $qtdMapa - $qtdConferido;
+            $codMapa = $mapa['COD_MAPA_SEPARACAO'];
+
+            $qtdConferir = $qtdRestante;
+            if ($qtdRestante > $qtdPendenteMapa) {
+                $qtdConferir = $qtdPendenteMapa;
+            }
+
+            if ($qtdConferir > 0) {
+                $qtdConferenciaGravar[] = array(
+                    'codMapaSeparacao' => $codMapa,
+                    'codProduto' => $codProduto,
+                    'dscGrade' => $dscGrade,
+                    'numConferencia' => 1,
+                    'codProdutoEmbalagem' => $codProdutoEmbalagem,
+                    'codPrdutoVolume' => $codProdutoVolume,
+                    'qtdEmbalagem' => $fatorCodBarrasBipado,
+                    'quantidade' => $qtdConferir / $fatorCodBarrasBipado
+                );
+
+                $qtdRestante = $qtdRestante - $qtdConferir;
+            }
+        }
+
+        //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
+        if ($qtdInformada > ($qtdMapaTotal - $qtdConferidoTotal)) {
+            $msgErro = "O produto " . $dscProduto . " já se encontra totalmente conferido na expedição";
+            if ($utilizaQuebra == "S") {
+                $msgErro = "O produto " . $dscProduto . " já se encontra totalmente conferido no mapa " . $idMapa;
+            }
+            throw new \Exception($msgErro);
+        }
+
+        //VERIFCO SE O PRODUTO É EMBALADO E ESTA UTILIZANDO VOLUME PATRIMONIO
+        $embalado = false;
+        if ($tipoDefaultEmbalado == "P") {
+            if ($codBarrasEmbalado == "S") {
+                $embalado = true;
+            }
+        } else {
+            $QtdPadraoRecebimento = $result[0]['QTD_EMBALAGEM_PADRAO'];
+            if ($fatorCodBarrasBipado < $QtdPadraoRecebimento) {
+                $embalado = true;
+            }
+        }
+
+
+        if ($utilizaVolumePatrimonio == 'S') {
+            if ((isset($idVolumePatrimonio)) && ($idVolumePatrimonio != null) && ($embalado == false)) {
+                throw new \Exception("O produto " . $codProduto . " / " . $dscGrade. " - " . $dscProduto . " - " . $dscEmbalagem . " não é embalado");
+            }
+
+            if ((!(isset($idVolumePatrimonio)) || ($idVolumePatrimonio == null)) && ($embalado == true)) {
+                throw new \Exception("O produto " . $codProduto . " / " . $dscGrade. " - " . $dscProduto . " - " . $dscEmbalagem . " é embalado");
+            }
+        }
+
+        return $qtdConferenciaGravar;
+    }
 }

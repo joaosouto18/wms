@@ -19,12 +19,6 @@ class MapaSeparacaoConferencia
     protected $id;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\MapaSeparacao")
-     * @JoinColumn(name="COD_MAPA_SEPARACAO", referencedColumnName="COD_MAPA_SEPARACAO")
-     */
-    protected $mapaSeparacao;
-
-    /**
      * @Column(name="COD_PRODUTO", type="string", nullable=false)
      */
     protected $codProduto;
@@ -35,25 +29,14 @@ class MapaSeparacaoConferencia
     protected $dscGrade;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
-     * @JoinColumns({
-     *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
-     *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
-     * })
+     * @Column(name="COD_PRODUTO_EMBALAGEM", type="integer", nullable=true)
      */
-    protected $produto;
+    protected $codProdutoEmbalagem;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Embalagem")
-     * @JoinColumn(name="COD_PRODUTO_EMBALAGEM", referencedColumnName="COD_PRODUTO_EMBALAGEM")
+     * @Column(name="COD_PRODUTO_VOLUME", type="integer", nullable=true)
      */
-    protected $produtoEmbalagem;
-
-    /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Volume")
-     * @JoinColumn(name="COD_PRODUTO_VOLUME", referencedColumnName="COD_PRODUTO_VOLUME")
-     */
-    protected $produtoVolume;
+    protected $codProdutoVolume;
 
     /**
      * @Column(name="QTD_EMBALAGEM", type="decimal", nullable=false)
@@ -101,6 +84,12 @@ class MapaSeparacaoConferencia
      * @Column(name="COD_PESSOA", type="integer", nullable=true)
      */
     protected $codPessoa;
+
+    /**
+     * @Column(name="COD_MAPA_SEPARACAO", type="integer", nullable=true)
+     */
+    protected $codMapaSeparacao;
+
 
     /**
      * @param mixed $codOS
@@ -183,22 +172,6 @@ class MapaSeparacaoConferencia
     }
 
     /**
-     * @param mixed $mapaSeparacao
-     */
-    public function setMapaSeparacao($mapaSeparacao)
-    {
-        $this->mapaSeparacao = $mapaSeparacao;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getMapaSeparacao()
-    {
-        return $this->mapaSeparacao;
-    }
-
-    /**
      * @param mixed $numConferencia
      */
     public function setNumConferencia($numConferencia)
@@ -212,54 +185,6 @@ class MapaSeparacaoConferencia
     public function getNumConferencia()
     {
         return $this->numConferencia;
-    }
-
-    /**
-     * @param mixed $produto
-     */
-    public function setProduto($produto)
-    {
-        $this->produto = $produto;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getProduto()
-    {
-        return $this->produto;
-    }
-
-    /**
-     * @param mixed $produtoEmbalagem
-     */
-    public function setProdutoEmbalagem($produtoEmbalagem)
-    {
-        $this->produtoEmbalagem = $produtoEmbalagem;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getProdutoEmbalagem()
-    {
-        return $this->produtoEmbalagem;
-    }
-
-    /**
-     * @param mixed $produtoVolume
-     */
-    public function setProdutoVolume($produtoVolume)
-    {
-        $this->produtoVolume = $produtoVolume;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getProdutoVolume()
-    {
-        return $this->produtoVolume;
     }
 
     /**
@@ -356,6 +281,54 @@ class MapaSeparacaoConferencia
     public function setCodPessoa($codPessoa)
     {
         $this->codPessoa = $codPessoa;
+    }
+
+    /**
+     * @param mixed $codProdutoEmbalagem
+     */
+    public function setCodProdutoEmbalagem($codProdutoEmbalagem)
+    {
+        $this->codProdutoEmbalagem = $codProdutoEmbalagem;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodProdutoEmbalagem()
+    {
+        return $this->codProdutoEmbalagem;
+    }
+
+    /**
+     * @param mixed $codProdutoVolume
+     */
+    public function setCodProdutoVolume($codProdutoVolume)
+    {
+        $this->codProdutoVolume = $codProdutoVolume;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodProdutoVolume()
+    {
+        return $this->codProdutoVolume;
+    }
+
+    /**
+     * @param mixed $codMapaSeparacao
+     */
+    public function setCodMapaSeparacao($codMapaSeparacao)
+    {
+        $this->codMapaSeparacao = $codMapaSeparacao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodMapaSeparacao()
+    {
+        return $this->codMapaSeparacao;
     }
 
 }

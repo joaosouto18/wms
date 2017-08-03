@@ -8,7 +8,7 @@ use Wms\Domain\Entity\Expedicao;
 class MapaSeparacaoEmbaladoRepository extends EntityRepository
 {
 
-    public function save($idMapa,$codPessoa,$mapaSeparacaoEmbalado=null)
+    public function save($idMapa,$codPessoa,$mapaSeparacaoEmbalado=null, $flush = true)
     {
         $pessoaEn = $this->getEntityManager()->getReference('wms:Pessoa',$codPessoa);
         $mapaSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao',$idMapa);
@@ -27,7 +27,10 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
         $mapaSeparacaoEmbalado->setId('14'.$mapaSeparacaoEmbalado->getId());
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
-        $this->getEntityManager()->flush();
+        if ($flush == true) {
+            $this->getEntityManager()->flush();
+        }
+
     }
 
     /** ocorre quando o conferente bipou os produtos do mapa e lacrou aquele determinado volume embalado */
