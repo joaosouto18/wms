@@ -299,7 +299,7 @@ class PedidoRepository extends EntityRepository
         }
 
         foreach ($mapasRemover as $mapaSeparacaoEntity) {
-            $mapaSeparacaoConferenciaEntities = $mapaSeparacaoConferenciaRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
+            $mapaSeparacaoConferenciaEntities = $mapaSeparacaoConferenciaRepository->findBy(array('codMpaSeparacao' => $mapaSeparacaoEntity->getId()));
             foreach ($mapaSeparacaoConferenciaEntities as $mapaSeparacaoConferenciaEntity) {
                 $this->_em->remove($mapaSeparacaoConferenciaEntity);
             }

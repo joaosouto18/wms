@@ -2997,7 +2997,7 @@ class ExpedicaoRepository extends EntityRepository {
                         }
                         $result = Math::subtrair($qtdSeparar, $mapa->getQtdCortado());
                         if (empty($result)) {
-                            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('mapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
+                            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('codMapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
                             foreach ($mapaConferenciaEn as $conferencia) {
                                 $this->getEntityManager()->remove($conferencia);
                             }
