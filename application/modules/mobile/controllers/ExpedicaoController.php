@@ -143,6 +143,7 @@ class Mobile_ExpedicaoController extends Action {
 
             $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
             $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+
             /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
             $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $idMapa));
             $confereQtd = false;
@@ -169,7 +170,10 @@ class Mobile_ExpedicaoController extends Action {
                     $statusMapaEmbalado = true;
                 }
             }
-
+            $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
+            $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
+            $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
+            $this->view->tipoQuebraVolume = $modeloSeparacaoEn->getTipoQuebraVolume();
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
             $this->view->idExpedicao = $idExpedicao;
@@ -195,25 +199,21 @@ class Mobile_ExpedicaoController extends Action {
         $codPessoa = $this->_getParam('cliente');
         $idExpedicao = $this->_getParam("idExpedicao");
         $idVolume = $this->_getParam("idVolume");
-        if ($codPessoa == "") {$codPessoa = null;}
+        if ($codPessoa == "") {
+            $codPessoa = null;
+        }
         $msg['msg'] = "";
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
-        $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
 
-        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-        $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
-
         $paramsModeloSeparacao = array(
-           'tipoDefaultEmbalado'     => $modeloSeparacaoEn->getTipoDefaultEmbalado(),
-           'utilizaQuebra'           => $modeloSeparacaoEn->getUtilizaQuebraColetor(),
-           'utilizaVolumePatrimonio' => $modeloSeparacaoEn->getUtilizaVolumePatrimonio()
-
-        ) ;
-
+            'tipoDefaultEmbalado' => $this->_getParam("tipoDefaultEmbalado"),
+            'utilizaQuebra' => $this->_getParam("utilizaQuebra"),
+            'utilizaVolumePatrimonio' => $this->_getParam("utilizaVolumePatrimonio")
+        );
         if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
             try {
                 $codBarrasProcessado = intval($codBarras);
@@ -242,7 +242,7 @@ class Mobile_ExpedicaoController extends Action {
                     $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
 
                     $codQuebra = 0;
-                    if ($modeloSeparacaoEn->getTipoQuebraVolume() == Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CLIENTE) {
+                    if ($this->_getParam("tipoQuebraVolume") == Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CLIENTE) {
                         $mapaSeparacaoEn = $mapaSeparacaoQuebraRepo->findBy(array('mapaSeparacao' => $idMapa, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CLIENTE));
                         if (isset($mapaSeparacaoEn) && !empty($mapaSeparacaoEn))
                             $codQuebra = $mapaSeparacaoEn[0]->getCodQuebra();
@@ -259,7 +259,7 @@ class Mobile_ExpedicaoController extends Action {
                     if ($result === true) {
                         $msg['msg'] = 'Quantidade conferida com sucesso';
                     }
-               }
+                }
             } catch (\Exception $e) {
                 $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()));
                 $this->_helper->json($vetRetorno);
