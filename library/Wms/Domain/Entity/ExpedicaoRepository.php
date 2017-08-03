@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Service\Coletor as LeituraColetor,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
+use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto;
 use Wms\Math;
 
 class ExpedicaoRepository extends EntityRepository {
@@ -2939,7 +2940,7 @@ class ExpedicaoRepository extends EntityRepository {
             $qtdCortar = Math::subtrair($qtdPedido, $qtdCortada);
         }
 
-        $SQL = "SELECT REE.COD_RESERVA_ESTOQUE
+        $SQL = "SELECT DISTINCT REE.COD_RESERVA_ESTOQUE ID, REP.QTD_RESERVADA QTD
                   FROM RESERVA_ESTOQUE_EXPEDICAO REE
                   LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
                  WHERE REE.COD_PEDIDO = '$codPedido'
@@ -2947,17 +2948,22 @@ class ExpedicaoRepository extends EntityRepository {
                    AND REP.DSC_GRADE = '$grade'";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-        if (count($result) > 0) {
-            $idReservaEstoque = $result[0]['COD_RESERVA_ESTOQUE'];
-            $entityReservaEstoqueProduto = $reservaEstoqueProdutoRepo->findBy(array('reservaEstoque' => $idReservaEstoque));
+        $valToNext = 0;
+        foreach ($result as $item) {
+            $check = Math::adicionar($qtdCortar, $item['QTD']);
+            $entityReservaEstoqueProduto = $reservaEstoqueProdutoRepo->findBy(array('reservaEstoque' => $item['ID']));
             foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
-                $qtdReservada = $reservaEstoqueProduto->getQtd();
-                if (Math::adicionar($qtdCortar , $qtdReservada) == 0) {
+                if (Math::compare($check, 0, '>=')) {
                     $this->getEntityManager()->remove($reservaEstoqueProduto);
+                    $valToNext = $check;
                 } else {
-                    $reservaEstoqueProduto->setQtd(Math::adicionar($qtdReservada ,$qtdCortar));
+                    $reservaEstoqueProduto->setQtd($check);
                     $this->getEntityManager()->persist($reservaEstoqueProduto);
                 }
+            }
+            $qtdCortar = Math::subtrair($qtdCortar, $valToNext);
+            if ($qtdCortar == 0) {
+                break;
             }
         }
 
