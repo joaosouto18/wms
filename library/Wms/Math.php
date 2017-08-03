@@ -23,13 +23,7 @@ Class Math
             $maiorPrecisao = $precisaoB;
         }
 
-        $quantidadeZero='';
-        for ($count = 1; $count <= $maiorPrecisao; $count++) {
-            $quantidadeZero .= '0';
-        }
-        $quantidade = 1 .$quantidadeZero;
-
-        return $quantidade;
+        return str_pad(1 ,$maiorPrecisao + 1,'0');
     }
 
     public static function compare($x,$y,$oper = ">") {

@@ -2976,15 +2976,14 @@ class ExpedicaoRepository extends EntityRepository {
                 'dscGrade' => $grade));
 
             if (!empty($entidadeMapaProduto)) {
-                for ($i = 0; $qtdCortar !== 0; $i++) {
-                    /** @var ExpedicaoEntity\MapaSeparacaoProduto $mapa */
-                    $mapa = $entidadeMapaProduto[$i];
+                /** @var ExpedicaoEntity\MapaSeparacaoProduto $mapa */
+                foreach($entidadeMapaProduto as $mapa) {
                     $qtdCortadaMapa = $mapa->getQtdCortado();
                     $qtdSeparar = Math::multiplicar($mapa->getQtdEmbalagem(), $mapa->getQtdSeparar());
-                    if (Math::compare($qtdCortadaMapa, $qtdSeparar,'<')) {
-                        $qtdDisponivelDeCorte = Math::subtrair($qtdSeparar,$qtdCortadaMapa);
+                    if (Math::compare($qtdCortadaMapa, $qtdSeparar, '<')) {
+                        $qtdDisponivelDeCorte = Math::subtrair($qtdSeparar, $qtdCortadaMapa);
                         if (Math::compare($qtdDisponivelDeCorte, $qtdCortar, '>=')) {
-                            $mapa->setQtdCortado(Math::adicionar($qtdCortar , $qtdCortadaMapa));
+                            $mapa->setQtdCortado(Math::adicionar($qtdCortar, $qtdCortadaMapa));
                             $qtdCortar = Math::decrementar($qtdCortar);
                         } else {
                             $mapa->setQtdCortado($mapa->getQtdSeparar());
@@ -2998,6 +2997,9 @@ class ExpedicaoRepository extends EntityRepository {
                             }
                         }
                         $this->getEntityManager()->persist($mapa);
+                    }
+                    if (empty($qtdCortar)) {
+                        break;
                     }
                 }
             }

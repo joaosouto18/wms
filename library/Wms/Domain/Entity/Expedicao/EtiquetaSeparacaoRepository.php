@@ -1006,7 +1006,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $arrEnds[$idDepositoEndereco][$codProduto][$grade]['totalVinculado'] = false;
                             }
                             $qtdVinculadaEndereco = $arrEnds[$idDepositoEndereco][$codProduto][$grade]['qtdVinculada'];
-                            if (Math::compare($qtdVinculadaEndereco, $qtdOriginal, "==")) {
+                            if ($qtdVinculadaEndereco == $qtdOriginal) {
                                 $arrEnds[$idDepositoEndereco][$codProduto][$grade]['totalVinculado'] = true;
                             }
                         }
