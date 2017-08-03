@@ -1,4 +1,5 @@
 <?php
+
 namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository;
@@ -7,32 +8,31 @@ use Wms\Service\Recebimento as LeituraColetor;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
 
-class NotaFiscalSaidaRepository extends EntityRepository
-{
+class NotaFiscalSaidaRepository extends EntityRepository {
 
-    public function save()
-    {
-
+    public function save() {
+        
     }
 
     public function atualizaStatusNota($codNota) {
-        
+
         $status = $this->getEntityManager()->getReference('wms:Util\Sigla', NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
         $notaFiscalSaida = $this->findOneBy(array('numeroNf' => $codNota));
-        $notaFiscalSaida->setStatus($status);
-        $this->_em->flush();
+        if (is_object($notaFiscalSaida)) {
+            $notaFiscalSaida->setStatus($status);
+            $this->_em->flush();
+        }
     }
-    
-    public function getNotaFiscalOuCarga($data, $recursive = false)
-    {
+
+    public function getNotaFiscalOuCarga($data, $recursive = false) {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('nfs.numeroNf', 'c.codCargaExterno carga', 'nfs.serieNf', 'nfs.id' , 'pj.cnpj','pes.nome')
-            ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
-            ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
-            ->innerJoin('nfsp.pedido', 'p')
-            ->innerJoin('p.carga', 'c')
-            ->innerJoin('nfs.pessoa','pes')
-            ->innerJoin('wms:Pessoa\Juridica','pj', 'WITH','pj.id = pes.id');
+                ->select('nfs.numeroNf', 'c.codCargaExterno carga', 'nfs.serieNf', 'nfs.id', 'pj.cnpj', 'pes.nome')
+                ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
+                ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
+                ->innerJoin('nfsp.pedido', 'p')
+                ->innerJoin('p.carga', 'c')
+                ->innerJoin('nfs.pessoa', 'pes')
+                ->innerJoin('wms:Pessoa\Juridica', 'pj', 'WITH', 'pj.id = pes.id');
 
         if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
             $sql->andWhere("nfs.numeroNf = $data[notaFiscal]");
@@ -43,10 +43,10 @@ class NotaFiscalSaidaRepository extends EntityRepository
         if (isset($data['codEtiqueta']) && !empty($data['codEtiqueta'])) {
             $LeituraColetor = new LeituraColetor();
             $codBarras = $LeituraColetor->retiraDigitoIdentificador($data['codEtiqueta']);
-            $sql->innerJoin('wms:Expedicao\EtiquetaSeparacao','etq','WITH','p.id = etq.pedido');
+            $sql->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'p.id = etq.pedido');
             $sql->andWhere("etq.id = $codBarras");
         }
-        $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id','pj.cnpj','pes.nome');
+        $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id', 'pj.cnpj', 'pes.nome');
 
         $result = $sql->getQuery()->getResult();
 
@@ -54,7 +54,7 @@ class NotaFiscalSaidaRepository extends EntityRepository
             if (count($result) == 0) {
                 if ($this->getSystemParameterValue('IND_UTILIZA_INTEGRACAO_NF_SAIDA') == 'S') {
                     if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
-                        $options = array() ;
+                        $options = array();
                         $options[] = $data['notaFiscal'];
 
                         $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_NOTA_FISCAL_SAIDA');
@@ -62,7 +62,7 @@ class NotaFiscalSaidaRepository extends EntityRepository
                         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
                         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
                         $acaoEn = $acaoIntRepo->find($idIntegracao);
-                        $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E',"P",null,611);
+                        $result = $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 611);
                         if ($result == true) {
                             return $this->getNotaFiscalOuCarga($data, true);
                         }
@@ -74,8 +74,7 @@ class NotaFiscalSaidaRepository extends EntityRepository
         return $result;
     }
 
-    public function getQtdProdutoDivergentesByNota($data)
-    {
+    public function getQtdProdutoDivergentesByNota($data) {
         $idRecebimentoReentrega = $data['id'];
 
         $SQL = "
@@ -165,4 +164,3 @@ class NotaFiscalSaidaRepository extends EntityRepository
     }
 
 }
-

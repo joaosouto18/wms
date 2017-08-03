@@ -1,12 +1,12 @@
 <?php
+
 namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository;
 
-class ReentregaRepository extends EntityRepository
-{
+class ReentregaRepository extends EntityRepository {
 
-    public function getReentregasByExpedicao ($idExpedicao, $pendentesImpressao = true) {
+    public function getReentregasByExpedicao($idExpedicao, $pendentesImpressao = true) {
         $SQL = "SELECT NFS.COD_NOTA_FISCAL_SAIDA,
                        R.COD_REENTREGA
                   FROM REENTREGA R
@@ -22,7 +22,7 @@ class ReentregaRepository extends EntityRepository
         return $result;
     }
 
-    public function getItemNotasByExpedicao ($idExpedicao) {
+    public function getItemNotasByExpedicao($idExpedicao) {
         $SQL = "SELECT NFP.COD_NOTA_FISCAL_SAIDA,
                        NFP.COD_PRODUTO,
                        NFP.DSC_GRADE,
@@ -38,12 +38,15 @@ class ReentregaRepository extends EntityRepository
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
-    
+
     public function removeReentrega($codCarga) {
         $NotaFiscalSaidaAndamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaidaAndamento');
         $reentrega = $this->findOneBy(array('codCarga' => $codCarga));
-        $NotaFiscalSaidaAndamentoRepository->removeNFSaidaAndamento($reentrega->getNotaFiscalSaida()->getId());
-        $this->getEntityManager()->remove($reentrega);
-        $this->getEntityManager()->flush();
+        if (is_object($reentrega)) {
+            $NotaFiscalSaidaAndamentoRepository->removeNFSaidaAndamento($reentrega->getNotaFiscalSaida()->getId());
+            $this->getEntityManager()->remove($reentrega);
+            $this->getEntityManager()->flush();
+        }
     }
+
 }
