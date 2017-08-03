@@ -6,6 +6,8 @@ use Doctrine\ORM\Query;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as Etiqueta;
+use Wms\Domain\Entity\Produto\Embalagem;
+use Wms\Domain\Entity\Produto\Volume;
 use Wms\Math;
 
 class MapaSeparacaoRepository extends EntityRepository
@@ -207,7 +209,7 @@ class MapaSeparacaoRepository extends EntityRepository
         }
 
         foreach ($mapaSeparacaoEn as $mapaSeparacao) {
-            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('mapaSeparacao'=>$mapaSeparacao->getId(),'indConferenciaFechada'=>'N'));
+            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('codMapaSeparacao'=>$mapaSeparacao->getId(),'indConferenciaFechada'=>'N'));
             foreach ($mapaConferenciaEn as $mapaConferencia) {
                 $mapaConferencia->setIndConferenciaFechada('S');
                 $this->getEntityManager()->persist($mapaConferencia);
@@ -450,6 +452,17 @@ class MapaSeparacaoRepository extends EntityRepository
 
     }
 
+    /**
+     * @param $embalagemEn Embalagem
+     * @param $volumeEn Volume
+     * @param $mapaEn MapaSeparacao
+     * @param $volumePatrimonioEn VolumePatrimonio
+     * @param $quantidade
+     * @param null $codPessoa
+     * @param null $ordemServicoId
+     * @param bool $forcaFinalizacao
+     * @throws \Exception
+     */
     public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade,$codPessoa=null,$ordemServicoId=null,$forcaFinalizacao=false){
 
         $numConferencia = 1;
