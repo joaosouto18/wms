@@ -174,7 +174,7 @@
                         </tr>
                     </table>
                 </div>
-                <input type="button" name="submit" id="submit" value="Buscar" class="btn">
+                <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
             </dl>
             <?php if ($this->idVolume != "") : ?>
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
@@ -241,79 +241,20 @@
                     $(".item-lista").remove();
                 }
             });
-        }
-    });
-
-
-
-
-
-
-
-
-
-
-
-    $('#formulario').on('submit', function (e) {
-        if ($('#qtd').val() == '') {
             return false;
         }
-        var ret = true;
-        if (<?php
-    if ($this->exibeQtd == true) {
-        echo "'S'";
-    } else {
-        echo "'N'";
-    }
-    ?> == 'S') {
-            $.ajax({
-                url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'conferte-produto-ajax')) ?>',
-                data: $('form').serialize(),
-                async: false,
-                type: 'post',
-                success: function (data) {
-                    if (data.retorno.resposta.length > 0) {
-                        ret = false;
-                        document.getElementById('qtd').value = "1";
-                        codigoBarras = document.getElementById('codigoBarras').value = "";
-
-                        var error = "";
-                        var success = "";
-                        var song = "";
-
-                        if (data.retorno.resposta == 'error') {
-                            error = data.retorno.message;
-                            success = "";
-                            song = "/alarme.mp3";
-                        } else {
-                            success = data.retorno.message;
-                            error = "";
-                            song = "/confirm2.mp3";
-                        }
-
-                        document.getElementById('codigoBarras').focus();
-
-                        $("#erro").html(error);
-                        $("#success").html(success);
-
-                        try {
-                            playSound(song);
-                        } catch (e) {
-                            alert(message);
-                        }
-
-                        if (data.retorno.resposta == 'error') {
-                            alert(data.retorno.message);
-                        }
-
-                    }
-                    $(".item-lista").remove();
-                }
-            });
-        }
-
-        return ret;
     });
+
+
+
+
+
+
+
+
+
+
+
 
     $('#next').click(function (e) {
         if ($(".item-lista").length === 0) {
