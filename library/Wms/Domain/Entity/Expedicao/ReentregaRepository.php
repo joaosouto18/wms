@@ -38,4 +38,12 @@ class ReentregaRepository extends EntityRepository
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
+    
+    public function removeReentrega($codCarga) {
+        $NotaFiscalSaidaAndamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaidaAndamento');
+        $reentrega = $this->findOneBy(array('codCarga' => $codCarga));
+        $NotaFiscalSaidaAndamentoRepository->removeNFSaidaAndamento($reentrega->getNotaFiscalSaida()->getId());
+        $this->getEntityManager()->remove($reentrega);
+        $this->getEntityManager()->flush();
+    }
 }
