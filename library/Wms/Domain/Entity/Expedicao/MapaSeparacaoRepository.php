@@ -509,14 +509,14 @@ class MapaSeparacaoRepository extends EntityRepository
         }
 
         $novaConferencia = new MapaSeparacaoConferencia();
-        $novaConferencia->setCodMapaSeparacao($mapaEn->getId);
+        $novaConferencia->setCodMapaSeparacao($mapaEn->getId());
         $novaConferencia->setCodOS($ordemServicoId);
         $novaConferencia->setCodProduto($produtoEn->getId());
         $novaConferencia->setDscGrade($produtoEn->getGrade());
         $novaConferencia->setIndConferenciaFechada("N");
         $novaConferencia->setNumConferencia($numConferencia);
-        $novaConferencia->setCodProdutoEmbalagem($embalagemEn->getId());
-        $novaConferencia->setCodProdutoVolume($volumeEn->getId());
+        $novaConferencia->setCodProdutoEmbalagem((!empty($embalagemEn))?$embalagemEn->getId(): null);
+        $novaConferencia->setCodProdutoVolume((!empty($volumeEn))?$volumeEn->getId(): null);
         $novaConferencia->setQtdEmbalagem($qtdEmbalagem);
         $novaConferencia->setQtdConferida($quantidade);
         $novaConferencia->setVolumePatrimonio($volumePatrimonioEn);
