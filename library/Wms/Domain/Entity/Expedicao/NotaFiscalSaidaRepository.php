@@ -15,6 +15,14 @@ class NotaFiscalSaidaRepository extends EntityRepository
 
     }
 
+    public function atualizaStatusNota($codNota) {
+        
+        $status = $this->getEntityManager()->getReference('wms:Util\Sigla', NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
+        $notaFiscalSaida = $this->findOneBy(array('numeroNf' => $codNota));
+        $notaFiscalSaida->setStatus($status);
+        $this->_em->flush();
+    }
+    
     public function getNotaFiscalOuCarga($data, $recursive = false)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
