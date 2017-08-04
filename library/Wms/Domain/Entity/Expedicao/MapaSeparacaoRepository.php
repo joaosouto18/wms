@@ -652,14 +652,18 @@ class MapaSeparacaoRepository extends EntityRepository
                 }
             }
 
-            $result = $this->getClientesByMapa($idMapa, $codPessoa, $produtoEn->getId(), $produtoEn->getGrade());
+            $quebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
+            $quebraReentrega = $quebraRepo->findOneBy(array('tipoQuebra'=>'RE','mapaSeparacao'=>$idMapa));
 
-            if (count($result) <= 0) {
-                $pessoaEn = $this->getEntityManager()->getRepository('wms:Pessoa')->find($codPessoa);
-                $mensagemColetor = true;
-                throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " não pertence ao cliente ". $pessoaEn->getNome());
+            if ($quebraReentrega == null) {
+                $result = $this->getClientesByMapa($idMapa, $codPessoa, $produtoEn->getId(), $produtoEn->getGrade());
+
+                if (count($result) <= 0) {
+                    $pessoaEn = $this->getEntityManager()->getRepository('wms:Pessoa')->find($codPessoa);
+                    $mensagemColetor = true;
+                    throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " não pertence ao cliente ". $pessoaEn->getNome());
+                }
             }
-
             if ($mapaSeparacaoProduto[0]->getIndConferido() == "S") {
                 $mensagemColetor = true;
                 throw new \Exception("O produto " . $produtoEn->getId() . " / " . $produtoEn->getGrade(). " - " . $produtoEn->getDescricao() . " já está conferido no mapa selecionado");
