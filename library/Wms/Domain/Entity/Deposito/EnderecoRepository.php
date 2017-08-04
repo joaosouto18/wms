@@ -802,10 +802,22 @@ class EnderecoRepository extends EntityRepository
         if ($params['ruaFinal'] != "") {
             $SQLWhere = $SQLWhere . " AND DE.NUM_RUA <= ". $params['ruaFinal'];
         }
+        if ($params['idAreaArmazenagem'] != "") {
+            $SQLWhere = $SQLWhere . " AND DE.COD_AREA_ARMAZENAGEM = ". $params['idAreaArmazenagem'];
+        }
+        if ($params['idEstruturaArmazenagem'] != "") {
+            $SQLWhere = $SQLWhere . " AND DE.COD_TIPO_EST_ARMAZ = ". $params['idEstruturaArmazenagem'];
+        }
+        if ($params['idTipoEndereco'] != "") {
+            $SQLWhere = $SQLWhere . " AND DE.COD_TIPO_ENDERECO = ". $params['idTipoEndereco'];
+        }
 
         $SQL = " SELECT DISTINCT
                         DE.DSC_DEPOSITO_ENDERECO,
-                        U.DSC_UNITIZADOR
+                        U.DSC_UNITIZADOR,
+                        AM.DSC_AREA_ARMAZENAGEM,
+                        TEA.DSC_TIPO_EST_ARMAZ,
+                        TE.DSC_TIPO_ENDERECO
                    FROM V_PALETE_DISPONIVEL_PICKING V
                   INNER JOIN (SELECT MAX(TAMANHO_UNITIZADOR) as TAMANHO_UNITIZADOR,
                                          COD_DEPOSITO_ENDERECO
@@ -815,6 +827,9 @@ class EnderecoRepository extends EntityRepository
                         AND MAXP.COD_DEPOSITO_ENDERECO = V.COD_DEPOSITO_ENDERECO
                    LEFT JOIN UNITIZADOR U ON U.COD_UNITIZADOR = V.COD_UNITIZADOR
                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = V.COD_DEPOSITO_ENDERECO
+                   INNER JOIN TIPO_ENDERECO TE ON (TE.COD_TIPO_ENDERECO = DE.COD_TIPO_ENDERECO)
+                   INNER JOIN TIPO_EST_ARMAZ TEA ON (TEA.COD_TIPO_EST_ARMAZ = DE.COD_TIPO_EST_ARMAZ)
+                   INNER JOIN AREA_ARMAZENAGEM AM ON (AM.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM)
                    WHERE 1 = 1";
 
         $SQLOrder = " ORDER BY DE.DSC_DEPOSITO_ENDERECO";
