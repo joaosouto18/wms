@@ -984,7 +984,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
 
-
                         if ($semEmbalagemValida) {
                             $msg = "O produto $codProduto grade $grade não tem embalgem ativa para atender a quantidade restante de $qtdBase item(ns)";
                             throw new WMS_Exception($msg);
@@ -1002,13 +1001,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             } else {
                                 $embalado = false;
                             }
-                        }
-
-                        // Define qual é a qtdBase do cálculo, se é a qtdDisponivel no pulmão ou a qtdRestante do pedido
-                        if ($quantidadeRestantePedido <= $quantidadeAtender) {
-                            $qtdBase = $quantidadeRestantePedido;
-                        } else {
-                            $qtdBase = $quantidadeAtender;
                         }
 
                         $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
@@ -1035,9 +1027,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $arrEnds[$idDepositoEndereco][$codProduto][$grade]['totalVinculado'] = true;
                             }
                         }
-
-
-
 
                         if (empty($depositoEnderecoEn) && empty($idDepositoEndereco)) {
                             $idEndereco = null;
