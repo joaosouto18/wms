@@ -961,53 +961,31 @@ class EnderecoRepository extends EntityRepository {
         if (!isset($enderecoEn) || empty($enderecoEn)) {
             throw new \Exception("Endereço não encontrado");
         } else {
-
-            $result = array();
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            $result = $vetEmbalagens = array();
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
             $itens = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoEn));
-            $piking = false;
-            if (empty($itens)) {
-                $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-                $itens = $produtoEmbalagemRepo->findBy(array('endereco' => $enderecoEn->getId()), array('codProduto' => 'ASC'));
-                $piking = true;
-                if (empty($itens)) {
-                    throw new \Exception("Não existe produto nesse endereço");
+            $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+            $itensPicking = $produtoEmbalagemRepo->findBy(array('endereco' => $enderecoEn->getId()), array('codProduto' => 'ASC'));
+            if (!empty($itensPicking)) {
+                foreach ($itensPicking as $key => $itemPincking) {
+                    $produtoEn = $itemPincking->getProduto();
+                    $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
+                        'desc' => $produtoEn->getDescricao(),'qtd' => 0);
+                    $result[$produtoEn->getId()] = $produto;
                 }
             }
-            $codProduto = 0;
-            foreach ($itens as $key => $item) {
-                $produtoEn = $item->getProduto();
-                if ($piking == true) {
-                    if ($codProduto === $produtoEn->getId()) {
-                        $result[$produtoEn->getId()]['embalagem'] = $result[$produtoEn->getId()]['embalagem'] . ' ' . $item->getDescricao() . " (" . $item->getQuantidade() . ")";
-                    } else {
-                        $produto = array(
-                            'produto' => $produtoEn->getId(),
-                            'grade' => $produtoEn->getGrade(),
-                            'desc' => $produtoEn->getDescricao(),
-                            'embalagem' => $item->getDescricao() . " (" . $item->getQuantidade() . ")",
-                            'qtd' => 0
-                        );
-                        $result[$produtoEn->getId()] = $produto;
-                    }
-                    $codProduto = $produtoEn->getId();
-                } else {
-                    foreach ($produtoEn->getEmbalagens() as $key => $embalagem) {
-                        if ($codProduto == $produtoEn->getId()) {
-                            $result[$produtoEn->getId()]['embalagem'] = $result[$produtoEn->getId()]['embalagem'] . ' ' . $embalagem->getDescricao() . " (" . $embalagem->getQuantidade() . ")";
-                        } else {
-                            $produto = array(
-                                'produto' => $produtoEn->getId(),
-                                'grade' => $produtoEn->getGrade(),
-                                'desc' => $produtoEn->getDescricao(),
-                                'embalagem' => $embalagem->getDescricao() . " (" . $embalagem->getQuantidade() . ")",
-                                'qtd' => $item->getQtd()
-                            );
-                            $result[$produtoEn->getId()] = $produto;
-                        }
-                        $codProduto = $produtoEn->getId();
-                    }
+            if (!empty($itens)) {
+                foreach ($itens as $key => $item) {
+                    $produtoEn = $item->getProduto();
+                    $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $item->getQtd());
+                    $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
+                        'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens));
+                    $result[$produtoEn->getId()] = $produto;
                 }
+            }
+            if (empty($result)) {
+                throw new \Exception("Não existe produto nesse endereço");
             }
         }
         return $result;
