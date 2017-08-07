@@ -184,12 +184,6 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function gerarOnda($strExpedicao) {
         try {
-            /*$strExpedicao = "";
-            foreach ($expedicoes as $expedicao) {
-                $strExpedicao = $strExpedicao . $expedicao;
-                if ($expedicao != end($expedicoes))
-                    $strExpedicao = $strExpedicao . ",";
-            }*/
 
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
