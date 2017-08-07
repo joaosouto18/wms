@@ -155,6 +155,7 @@ class ReservaEstoqueRepository extends EntityRepository
             $params['os'] = $osEn;
             $params['uma'] = $idUma;
             $params['usuario'] = $usuarioEn;
+            $dataValidade['dataValidade'] = $reservaProduto->getValidade();
             $estoqueRepo->movimentaEstoque($params, false, null, $dataValidade);
         }
 
@@ -169,7 +170,7 @@ class ReservaEstoqueRepository extends EntityRepository
 
     public function efetivaReservaEstoque ($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $idUsuario = NULL, $idOs = NULL, $unitizador = Null, $throwException = false,$dataValidade = null)
     {
-        $reservaEstoqueEn = $this->findReservaEstoque($idEndereco,$produtos,$tipoReserva,$origemReserva,$idOrigem, $idOs);
+        $reservaEstoqueEn = $this->findReservaEstoque($idEndereco,$produtos,$tipoReserva,$origemReserva,$idOrigem,$idOs);
         if ($reservaEstoqueEn == NULL)  {
             if ($throwException == true) {
                 throw new \Exception("Reserva de estoque não encontrada");
@@ -196,7 +197,7 @@ class ReservaEstoqueRepository extends EntityRepository
         }
 
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        return $this->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn,$origemReserva,$idOrigem,$usuarioEn ,$osEn,$unitizadorEn,$dataValidade);
+        return $this->efetivaReservaByReservaEntity($estoqueRepo,$reservaEstoqueEn,$origemReserva,$idOrigem,$usuarioEn,$osEn,$unitizadorEn,$dataValidade);
     }
 
     public function reabrirReservaEstoque($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $throwException = false )
