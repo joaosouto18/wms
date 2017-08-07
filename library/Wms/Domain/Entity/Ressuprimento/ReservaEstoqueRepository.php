@@ -45,11 +45,11 @@ class ReservaEstoqueRepository extends EntityRepository
         }
 
         if ($origemReserva == "O") {
-            return $this->addReservaEstoqueOnda($enderecoEn,$produtos,$tipoReserva,$idOrigem,$Os,$usuarioEn,$observacao, $repositorios);
+            return $this->addReservaEstoqueOnda($enderecoEn,$produtos,$tipoReserva,$idOrigem,$Os,$usuarioEn,$observacao,$repositorios);
         } else if ($origemReserva == "U") {
             return $this->addReservaEstoqueUma($enderecoEn,$produtos,$tipoReserva,$idOrigem,$usuarioEn,$observacao);
         } else if ($origemReserva == "E") {
-            return $this->addReservaEstoqueExpedicao($enderecoEn,$produtos,$idOrigem,$usuarioEn,$observacao,$idPedido, $repositorios);
+            return $this->addReservaEstoqueExpedicao($enderecoEn,$produtos,$idOrigem,$usuarioEn,$observacao,$idPedido,$repositorios);
         }
     }
 
@@ -293,7 +293,7 @@ class ReservaEstoqueRepository extends EntityRepository
         return true;
     }
 
-    private function addReservaEstoque($enderecoEn, $produtos,$tipoReserva, $usuario,$observacoes, $repositorios = null)
+    private function addReservaEstoque($enderecoEn, $produtos, $tipoReserva, $usuario, $observacoes, $repositorios = null)
     {
         if ($repositorios == null) {
             $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
@@ -320,12 +320,14 @@ class ReservaEstoqueRepository extends EntityRepository
                 $reservaEstoqueProduto->setCodProdutoEmbalagem($produto['codProdutoEmbalagem']);
                 $reservaEstoqueProduto->setProdutoEmbalagem($this->getEntityManager()->getReference("wms:Produto\Embalagem", $produto['codProdutoEmbalagem']));
             }
-            if ($produto['codProdutoVolume']!= null)  {
+            if ($produto['codProdutoVolume'] != null)  {
                 $reservaEstoqueProduto->setProdutoVolume($this->getEntityManager()->getReference("wms:Produto\Volume",$produto['codProdutoVolume']));
                 $reservaEstoqueProduto->setCodProdutoVolume($produto['codProdutoVolume']);
             }
+            $dataValidade = isset($produto['validade']) && !empty($produto['validade']) ? new \DateTime($produto['validade']) : null;
             $reservaEstoqueProduto->setQtd($produto['qtd']);
             $reservaEstoqueProduto->setReservaEstoque($reservaEstoque);
+            $reservaEstoqueProduto->setValidade($dataValidade);
             $this->getEntityManager()->persist($reservaEstoqueProduto);
         }
 
