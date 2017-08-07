@@ -38,11 +38,8 @@
                         if (data.status === 'ok') {
                             var txt = '___________________________________<br>';
                             $.each(data.result, function (key, value) {
-                                txt += ' ' + value.produto + ' - ';
-                                if (value.grade != '') {
-                                    txt += ' ( ' + value.grade + ' ) - ';
-                                }
-                                txt += value.embalagem + ' - ' + value.desc + ' - Qtd: ' + value.qtd + '<br> ___________________________________<br>';
+                                txt += value.produto + ' - ';
+                                txt += value.desc + ' ( ' + value.grade + ' ) - ' + value.qtd + '<br> ___________________________________<br>';
                                 $('#lista-endereco').html(txt);
                             });
                         } else {
