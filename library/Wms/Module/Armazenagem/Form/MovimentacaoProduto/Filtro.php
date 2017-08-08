@@ -39,6 +39,23 @@ class Filtro extends Form
             'size' => 10,
             'label' => 'Data Fim'
         ))
+        ->addElement('select', 'tipoMovimentacao', array(
+            'label' => 'Tipo Movimentação',
+            'mostrarSelecione' => true,
+            'style' => 'height: auto; width: 100%',
+            'multiOptions' => array('E' => 'Entrada', 'S' => 'Saída')
+        ))
+        ->addElement('select', 'tipoOperacao', array(
+            'label' => 'Tipo Operação',
+            'mostrarSelecione' => true,
+            'style' => 'height: auto; width: 100%',
+            'multiOptions' => array(
+                'M' => 'Movimentação Manual',
+                'I' => 'Inventário',
+                'R' => 'Ressuprimento',
+                'S' => 'Expedição',
+                'E' => 'Endereçamento')
+        ))
         ->addElement('text', 'rua', array(
             'size' => 3,
             'alt' => 'enderecoRua',
@@ -65,7 +82,7 @@ class Filtro extends Form
             'class' => 'btn',
             'decorators' => array('ViewHelper'),
         ))
-        ->addDisplayGroup(array('idProduto',  'grade', 'dataInicial', 'dataFim', 'rua', 'predio', 'nivel', 'apto', 'submit'), 'identificacao', array('legend' => 'Filtro'));
+        ->addDisplayGroup(array('idProduto',  'grade', 'dataInicial', 'dataFim', 'tipoMovimentacao', 'tipoOperacao', 'rua', 'predio', 'nivel', 'apto', 'submit'), 'identificacao', array('legend' => 'Filtro'));
     }
 /**
      *

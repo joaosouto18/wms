@@ -22,7 +22,7 @@ class HistoricoEstoqueRepository extends EntityRepository
                        NVL(vol.descricao, 'PRODUTO UNITÁRIO') as volume,
                        e.validade,
                        un.descricao as Norma")
-             ->from("wms:Enderecamento\HistoricoEstoque",'hist')
+             ->from('wms:Enderecamento\HistoricoEstoque','hist')
              ->innerJoin("hist.produto", "prod")
              ->innerJoin("hist.depositoEndereco", "dep")
              ->innerJoin("hist.usuario", "usu")
@@ -59,6 +59,14 @@ class HistoricoEstoqueRepository extends EntityRepository
          }
          if (isset($parametros['apto']) && !empty($parametros['apto'])) {
              $query->andWhere("dep.apartamento = " . $parametros['apto']);
+         }
+         if ($parametros['tipoMovimentacao'] == 'E') {
+             $query->andWhere('hist.qtd > 0');
+         } else if ($parametros['tipoMovimentacao'] == 'S') {
+             $query->andWhere('hist.qtd < 0');
+         }
+         if (isset($parametros['tipoOperacao']) && !empty($parametros['tipoOperacao'])) {
+             $query->andWhere("hist.tipo = '$parametros[tipoOperacao]'");
          }
          if (isset($parametros['dataInicial']) && (!empty($parametros['dataInicial'])) && (!empty($parametros['dataFim'])))
          {
