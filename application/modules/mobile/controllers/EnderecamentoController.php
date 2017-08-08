@@ -965,6 +965,7 @@ class Mobile_EnderecamentoController extends Action
                 foreach ($estoqueEn as $estoque) {
                     //INSERE NOVO ESTOQUE
                     $params['qtd'] = $qtd;
+                    $params['unitizador'] = $estoque->getUnitizador();
 
                     $enderecoNovoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, $nivelNovo);
 
@@ -1169,6 +1170,7 @@ class Mobile_EnderecamentoController extends Action
                     if (!$estoqueEn)
                         throw new \Exception("Estoque não Encontrado!");
 
+                    $params['unitizador'] = $estoqueEn->getUnitizador();
                     $estoqueDestino = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn, 'grade' => $produtoEn->getGrade(), 'depositoEndereco' => $endereco));
                     if ($produtoEn->getValidade() == 'S' ) {
                         $valEstOrigem = $estoqueEn->getValidade();
@@ -1292,6 +1294,7 @@ class Mobile_EnderecamentoController extends Action
                         if (!$estoqueEn)
                             throw new \Exception("Estoque não Encontrado!");
 
+                        $params['unitizador'] = $estoqueEn->getUnitizador();
                         $params['validade'] = null;
                         $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                         $estoqueRepo->movimentaEstoque($params);
