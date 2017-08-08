@@ -1177,7 +1177,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         }
 
         if ($embalagemEn[0] == null) {
-            return null;
+            return array();
         }
 
         $enderecoPicking = array();
@@ -1189,7 +1189,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                     $enderecoPicking[$key] = $embalagem->getEndereco()->getId();
                 }
             } else {
-                $enderecoPicking = null;
+                $enderecoPicking = array();
                 break;
             }
         }

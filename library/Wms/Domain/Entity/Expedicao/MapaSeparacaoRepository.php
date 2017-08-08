@@ -6,6 +6,8 @@ use Doctrine\ORM\Query;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as Etiqueta;
+use Wms\Domain\Entity\Produto\Embalagem;
+use Wms\Domain\Entity\Produto\Volume;
 use Wms\Math;
 
 class MapaSeparacaoRepository extends EntityRepository
@@ -207,7 +209,7 @@ class MapaSeparacaoRepository extends EntityRepository
         }
 
         foreach ($mapaSeparacaoEn as $mapaSeparacao) {
-            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('mapaSeparacao'=>$mapaSeparacao->getId(),'indConferenciaFechada'=>'N'));
+            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('codMapaSeparacao'=>$mapaSeparacao->getId(),'indConferenciaFechada'=>'N'));
             foreach ($mapaConferenciaEn as $mapaConferencia) {
                 $mapaConferencia->setIndConferenciaFechada('S');
                 $this->getEntityManager()->persist($mapaConferencia);
@@ -450,6 +452,17 @@ class MapaSeparacaoRepository extends EntityRepository
 
     }
 
+    /**
+     * @param $embalagemEn Embalagem
+     * @param $volumeEn Volume
+     * @param $mapaEn MapaSeparacao
+     * @param $volumePatrimonioEn VolumePatrimonio
+     * @param $quantidade
+     * @param null $codPessoa
+     * @param null $ordemServicoId
+     * @param bool $forcaFinalizacao
+     * @throws \Exception
+     */
     public function adicionaQtdConferidaMapa ($embalagemEn,$volumeEn,$mapaEn,$volumePatrimonioEn,$quantidade,$codPessoa=null,$ordemServicoId=null,$forcaFinalizacao=false){
 
         $numConferencia = 1;
@@ -481,7 +494,7 @@ class MapaSeparacaoRepository extends EntityRepository
             $qtdConferida = number_format($ultConferencia['qtd'],3,'.','');
         } else {
             $mapaSeparacaoConferenciaEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia')
-                ->findBy(array('mapaSeparacao' => $mapaEn, 'codProduto' => $produtoEn->getId(), 'dscGrade' => $produtoEn->getGrade(), 'indConferenciaFechada' => 'S'), array('id' => 'DESC'));
+                ->findBy(array('codMapaSeparacao' => $mapaEn->getId(), 'codProduto' => $produtoEn->getId(), 'dscGrade' => $produtoEn->getGrade(), 'indConferenciaFechada' => 'S'), array('id' => 'DESC'));
             if (isset($mapaSeparacaoConferenciaEn) && !empty($mapaSeparacaoConferenciaEn))
                 $numConferencia = $mapaSeparacaoConferenciaEn[0]->getNumConferencia() + 1;
         }
@@ -509,15 +522,14 @@ class MapaSeparacaoRepository extends EntityRepository
         }
 
         $novaConferencia = new MapaSeparacaoConferencia();
-        $novaConferencia->setMapaSeparacao($mapaEn);
+        $novaConferencia->setCodMapaSeparacao($mapaEn->getId());
         $novaConferencia->setCodOS($ordemServicoId);
         $novaConferencia->setCodProduto($produtoEn->getId());
         $novaConferencia->setDscGrade($produtoEn->getGrade());
-        $novaConferencia->setProduto($produtoEn);
         $novaConferencia->setIndConferenciaFechada("N");
         $novaConferencia->setNumConferencia($numConferencia);
-        $novaConferencia->setProdutoEmbalagem($embalagemEn);
-        $novaConferencia->setProdutoVolume($volumeEn);
+        $novaConferencia->setCodProdutoEmbalagem((!empty($embalagemEn))?$embalagemEn->getId(): null);
+        $novaConferencia->setCodProdutoVolume((!empty($volumeEn))?$volumeEn->getId(): null);
         $novaConferencia->setQtdEmbalagem($qtdEmbalagem);
         $novaConferencia->setQtdConferida($quantidade);
         $novaConferencia->setVolumePatrimonio($volumePatrimonioEn);
@@ -1112,7 +1124,7 @@ class MapaSeparacaoRepository extends EntityRepository
             $codMapa = $mapa['COD_MAPA_SEPARACAO'];
 
             $qtdConferir = $qtdRestante;
-            if ($qtdRestante > $qtdPendenteMapa) {
+            if (Math::compare($qtdRestante,$qtdPendenteMapa,">" )) {
                 $qtdConferir = $qtdPendenteMapa;
             }
 
@@ -1125,15 +1137,15 @@ class MapaSeparacaoRepository extends EntityRepository
                     'codProdutoEmbalagem' => $codProdutoEmbalagem,
                     'codPrdutoVolume' => $codProdutoVolume,
                     'qtdEmbalagem' => $fatorCodBarrasBipado,
-                    'quantidade' => $qtdConferir / $fatorCodBarrasBipado
+                    'quantidade' => Math::dividir($qtdConferir,$fatorCodBarrasBipado)
                 );
 
-                $qtdRestante = $qtdRestante - $qtdConferir;
+                $qtdRestante = Math::subtrair($qtdRestante,$qtdConferir);
             }
         }
 
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
-        if ($qtdInformada > ($qtdMapaTotal - $qtdConferidoTotal)) {
+        if ($qtdInformada > (Math::subtrair($qtdMapaTotal,$qtdConferidoTotal))) {
             $msgErro = "O produto " . $dscProduto . " já se encontra totalmente conferido na expedição";
             if ($utilizaQuebra == "S") {
                 $msgErro = "O produto " . $dscProduto . " já se encontra totalmente conferido no mapa " . $idMapa;

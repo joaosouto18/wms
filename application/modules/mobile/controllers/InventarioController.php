@@ -168,8 +168,8 @@ class Mobile_InventarioController extends Action
                 $result['populateForm']['contagemEndId'] = $this->checkErrors($inventarioService->verificaContagemEnd($result['populateForm']));
 
                 if ($result['populateForm']['pickinCorreto'] == false) {
-                    $endereço = $result['populateForm']['dscEndereco'];
-                    $this->addFlashMessage('warning','Este produto não possuí o endereço ' . $endereço . " como picking");
+                    $endereco = $result['populateForm']['dscEndereco'];
+                    $this->addFlashMessage('warning','Este produto não possuí o endereço ' . $endereco . " como picking");
                 }
 
                 $form->populate($result['populateForm']);

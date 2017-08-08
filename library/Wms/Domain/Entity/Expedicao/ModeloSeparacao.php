@@ -2,6 +2,8 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
+use Doctrine\Common\Collections\ArrayCollection;
+
 /**
  *
  * @Table(name="MODELO_SEPARACAO")
@@ -47,6 +49,16 @@ class ModeloSeparacao
      * @Column(name="TIPO_SEPARACAO_NAO_FRACIONADO", type="string", nullable=true)
      */
     protected $tipoSeparacaoNaoFracionado;
+
+    /**
+     * @Column(name="TIPO_SEPARACAO_FRAC_EMB", type="string", nullable=true)
+     */
+    protected $tipoSeparacaoFracionadoEmbalado;
+
+    /**
+     * @Column(name="TIPO_SEPARACAO_NAO_FRAC_EMB", type="string", nullable=true)
+     */
+    protected $tipoSeparacaoNaoFracionadoEmbalado;
 
     /**
      * @Column(name="UTILIZA_QUEBRA_COLETOR", type="string", nullable=true)
@@ -385,6 +397,38 @@ class ModeloSeparacao
     public function setUtilizaVolumePatrimonio($utilizaVolumePatrimonio)
     {
         $this->utilizaVolumePatrimonio = $utilizaVolumePatrimonio;
+    }
+
+    /**
+     * @param mixed $tipoSeparacaoFracionadoEmbalado
+     */
+    public function setTipoSeparacaoFracionadoEmbalado($tipoSeparacaoFracionadoEmbalado)
+    {
+        $this->tipoSeparacaoFracionadoEmbalado = $tipoSeparacaoFracionadoEmbalado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoSeparacaoFracionadoEmbalado()
+    {
+        return $this->tipoSeparacaoFracionadoEmbalado;
+    }
+
+    /**
+     * @param mixed $tipoSeparacaoNaoFracionadoEmbalado
+     */
+    public function setTipoSeparacaoNaoFracionadoEmbalado($tipoSeparacaoNaoFracionadoEmbalado)
+    {
+        $this->tipoSeparacaoNaoFracionadoEmbalado = $tipoSeparacaoNaoFracionadoEmbalado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoSeparacaoNaoFracionadoEmbalado()
+    {
+        return $this->tipoSeparacaoNaoFracionadoEmbalado;
     }
 
 }
