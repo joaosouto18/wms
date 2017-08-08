@@ -19,6 +19,39 @@ class embalagem {
     public $descricao;
 }
 
+class pedidoFaturado {
+    /** @var string */
+    public $codPedido;
+    /** @var string */
+    public $tipoPedido;
+}
+
+class notaFiscal {
+    /** @var pedidoFaturado[] */
+    public $pedidos;
+    /** @var integer */
+    public $numeroNf;
+    /** @var string */
+    public $serieNf;
+    /** @var string */
+    public $cnpjEmitente;
+    /** @var double */
+    public $valorVenda;
+    /** @var notaFiscalProduto[] */
+    public $itens;
+}
+
+class notaFiscalProduto {
+    /** @var string */
+    public $codProduto;
+    /** @var string */
+    public $grade;
+    /** @var integer */
+    public $qtd;
+    /** @var double */
+    public $valorVenda;
+}
+
 class Integracao
 {
     protected $_acao;
@@ -151,6 +184,9 @@ class Integracao
                     return true;
                 case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:
                     return $this->processaNotaFiscalSaida($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_VERIFICA_CARGA_FINALIZADA:
+                    return $this->verificaCargasFaturadas($this->_dados);
+
 
             }
         } catch (\Exception $e) {
@@ -238,12 +274,11 @@ class Integracao
 
         $nfs = array();
         foreach ($notasFiscais as $nf) {
-
-            $nfSaida = new \notaFiscal();
+            $nfSaida = new notaFiscal();
 
             $produtos = array();
             foreach($nf['itens'] as $nfProd) {
-                $produto = new \notaFiscalProduto();
+                $produto = new notaFiscalProduto();
                 $produto->codProduto = $nfProd['idProduto'];
                 $produto->grade= $nfProd['grade'];
                 $produto->qtd = $nfProd['quantidade'];
@@ -253,7 +288,7 @@ class Integracao
 
             $pedidos = array();
             foreach($nf['pedidos'] as $nfPed) {
-                $pedido = new \pedidoFaturado();
+                $pedido = new pedidoFaturado();
                 $pedido->codPedido = $nfPed;
                 $pedido->tipoPedido = 'C';
                 $pedidos[] = $pedido;
@@ -264,10 +299,9 @@ class Integracao
             $nfSaida->serieNf = $nf['serie'];
             $nfSaida->valorVenda = 0;
             $nfSaida->itens = $produtos;
-            $nfSaida->pedidos = $pedido;
+            $nfSaida->pedidos = $pedidos;
             $nfs[] = $nfSaida;
         }
-
         $wsExpedicao = new \Wms_WebService_Expedicao();
         $wsExpedicao->informarNotaFiscal($nfs);
 
@@ -302,9 +336,11 @@ class Integracao
             ->orderBy('p.id, pp.codProduto, pp.grade');
 
         $pedidosProdutosWMS = $sql->getQuery()->getResult();
-        $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
-        $pedidoProdutoRepository->aplicaCortesbyERP($pedidosProdutosWMS,$pedidosProdutosERP);
-        $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosWMS);
+        if (count($pedidosProdutosWMS) >0) {
+            $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
+            $pedidoProdutoRepository->aplicaCortesbyERP($pedidosProdutosWMS,$pedidosProdutosERP);
+            $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosWMS);
+        }
 
         return true;
     }
@@ -877,6 +913,7 @@ class Integracao
     public function comparaNotasFiscais($notasFiscaisWms,$notasFiscaisErp)
     {
         $erpRecebimento = array();
+        $qtdNotasComBonus = 0;
         foreach ($notasFiscaisWms as $idNotaFiscal) {
             $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
             $constaNoErp = false;
@@ -893,7 +930,11 @@ class Integracao
                 }
             }
             if ($constaNoErp == false) {
-                throw new \Exception('Nota Fiscal número '.$numeroNota.' série '.$numeroSerie .' não consta no recebimento do ERP!');
+                if ($qtdNotasComBonus >0) {
+                    throw new \Exception('Nota Fiscal número '.$numeroNota.' série '.$numeroSerie .' não consta no recebimento do ERP!');
+                }
+            } else{
+                $qtdNotasComBonus = $qtdNotasComBonus +1;
             }
         }
 

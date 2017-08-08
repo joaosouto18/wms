@@ -17,7 +17,7 @@ use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Fabricante;
 use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\Inventario;
-use Wms\Domain\Entity\NotaFiscal;
+use Wms\Domain\Entity\NotaFiscal as NFEntity;
 use Wms\Domain\Entity\NotaFiscalRepository;
 use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Pessoa\Fisica;
@@ -416,8 +416,8 @@ class Importacao
                 }
             }
 
-            if ($notaFiscalEn->getStatus()->getId() == NotaFiscal::STATUS_CANCELADA) {
-                $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscal::STATUS_INTEGRADA);
+            if ($notaFiscalEn->getStatus()->getId() == \Wms\Domain\Entity\NotaFiscal::STATUS_CANCELADA) {
+                $statusEntity = $em->getReference('wms:Util\Sigla', \Wms\Domain\Entity\NotaFiscal::STATUS_INTEGRADA);
                 $notaFiscalEn->setRecebimento(null);
                 $notaFiscalEn->setStatus($statusEntity);
                 $em->persist($notaFiscalEn);

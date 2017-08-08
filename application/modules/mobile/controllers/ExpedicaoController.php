@@ -120,7 +120,7 @@ class Mobile_ExpedicaoController extends Action {
             $idMapa = $this->_getParam("idMapa");
             $idVolume = $this->_getParam("idVolume");
             $idExpedicao = $this->_getParam("idExpedicao");
-            $codPessoa = $this->_getParam('cliente');
+            $codPessoa = $this->_getParam('cliente', null);
             $sessao = new \Zend_Session_Namespace('coletor');
             $central = $sessao->centralSelecionada;
 
@@ -135,9 +135,9 @@ class Mobile_ExpedicaoController extends Action {
 
             $dscVolume = "";
             $volumePatrimonioEn = null;
-            if ((!empty($idVolume)) && ($idVolume != null)) {
+            if (!empty($idVolume)) {
                 $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
-                if ($volumePatrimonioEn != null)
+                if (!empty($volumePatrimonioEn))
                     $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
             }
 

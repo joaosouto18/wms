@@ -879,8 +879,8 @@ class Mobile_EnderecamentoController extends Action
                 throw new Exception("Não foi encontrado o estoque com endereco " . $endereco->getDescricao() . " produto " . $embalagemEn->getCodProduto() . " grade " . $embalagemEn->getGrade());
 
             if (!empty($codBarras)) {
-                $qtd = round($estoqueEn->getQtd() / $embalagemEn->getQuantidade());
-                $qtdReal = round($estoqueEn->getQtd() / $embalagemEn->getQuantidade()) * $embalagemEn->getQuantidade();
+                $qtd = floor($estoqueEn->getQtd() / $embalagemEn->getQuantidade());
+                $qtdReal = floor($estoqueEn->getQtd() / $embalagemEn->getQuantidade()) * $embalagemEn->getQuantidade();
                 $qtdEmbalagem = $embalagemEn->getQuantidade();
             } else {
                 $qtd = $estoqueEn->getQtd();
@@ -965,6 +965,7 @@ class Mobile_EnderecamentoController extends Action
                 foreach ($estoqueEn as $estoque) {
                     //INSERE NOVO ESTOQUE
                     $params['qtd'] = $qtd;
+                    $params['unitizador'] = $estoque->getUnitizador();
 
                     $enderecoNovoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, $nivelNovo);
 
@@ -1169,6 +1170,7 @@ class Mobile_EnderecamentoController extends Action
                     if (!$estoqueEn)
                         throw new \Exception("Estoque não Encontrado!");
 
+                    $params['unitizador'] = $estoqueEn->getUnitizador();
                     $estoqueDestino = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn, 'grade' => $produtoEn->getGrade(), 'depositoEndereco' => $endereco));
                     if ($produtoEn->getValidade() == 'S' ) {
                         $valEstOrigem = $estoqueEn->getValidade();
@@ -1292,6 +1294,7 @@ class Mobile_EnderecamentoController extends Action
                         if (!$estoqueEn)
                             throw new \Exception("Estoque não Encontrado!");
 
+                        $params['unitizador'] = $estoqueEn->getUnitizador();
                         $params['validade'] = null;
                         $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                         $estoqueRepo->movimentaEstoque($params);

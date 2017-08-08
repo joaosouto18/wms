@@ -69,6 +69,12 @@ class ReservaEstoqueProduto
     protected $produtoVolume;
 
     /**
+     * @Column(name="DTH_VALIDADE", type="date", nullable=true)
+     * @var date
+     */
+    protected $validade;
+
+    /**
      * @param mixed $codProdutoEmbalagem
      */
     public function setCodProdutoEmbalagem($codProdutoEmbalagem)
@@ -194,6 +200,22 @@ class ReservaEstoqueProduto
     public function getProdutoVolume()
     {
         return $this->produtoVolume;
+    }
+
+    /**
+     * @return date
+     */
+    public function getValidade()
+    {
+        return $this->validade;
+    }
+
+    /**
+     * @param date $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->validade = $validade;
     }
 
 }

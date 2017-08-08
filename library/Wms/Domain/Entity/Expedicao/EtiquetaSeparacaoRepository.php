@@ -1852,19 +1852,24 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
-        $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array('mapaSeparacao'=>$mapaSeparacaoEntity,'codPedidoProduto'=>$pedidoProduto->getId()));
-        if ($mapaPedidoEn == null) {
-            $mapaPedidoEn = new MapaSeparacaoPedido();
-            $mapaPedidoEn->setCodPedidoProduto($pedidoProduto->getId());
-            $mapaPedidoEn->setMapaSeparacao($mapaSeparacaoEntity);
-            $mapaPedidoEn->setPedidoProduto($pedidoProduto);
-            $this->getEntityManager()->persist($mapaPedidoEn);
+        if ($pedidoProduto != null) {
+            $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array('mapaSeparacao'=>$mapaSeparacaoEntity,'codPedidoProduto'=>$pedidoProduto->getId()));
+            if ($mapaPedidoEn == null) {
+                $mapaPedidoEn = new MapaSeparacaoPedido();
+                $mapaPedidoEn->setCodPedidoProduto($pedidoProduto->getId());
+                $mapaPedidoEn->setMapaSeparacao($mapaSeparacaoEntity);
+                $mapaPedidoEn->setPedidoProduto($pedidoProduto);
+                $this->getEntityManager()->persist($mapaPedidoEn);
+            }
+
         }
 
 //        if (isset($cubagem[$pedidoProduto->getPedido()->getId()])) {
+        if ($pedidoProduto != null) {
             if (isset($cubagem[$pedidoProduto->getPedido()->getId()][$embalagemEntity->getId()])) {
                 $cubagem = $cubagem[$pedidoProduto->getPedido()->getId()][$embalagemEntity->getId()];
             }
+        }
 //        }
 
         if ($mapaProduto == null) {
@@ -1877,11 +1882,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setProdutoVolume($volumeEntity);
             $mapaProduto->setQtdSeparar($quantidadePedido);
             $mapaProduto->setQtdEmbalagem($quantidadeEmbalagem);
-            $mapaProduto->setCodPedidoProduto($pedidoProduto->getId());
+            if ($pedidoProduto != null) {
+                $mapaProduto->setCodPedidoProduto($pedidoProduto->getId());
+                $mapaProduto->setPedidoProduto($pedidoProduto);
+
+            }
+
             $mapaProduto->setQtdCortado(0);
             $mapaProduto->setIndConferido('N');
             $mapaProduto->setDepositoEndereco($depositoEndereco);
-            $mapaProduto->setPedidoProduto($pedidoProduto);
             $mapaProduto->setCubagem($cubagem);
         } else {
             $mapaProduto->setQtdSeparar($mapaProduto->getQtdSeparar() + $quantidadePedido);

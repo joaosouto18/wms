@@ -319,7 +319,7 @@ class PaleteRepository extends EntityRepository {
         return $qtd;
     }
 
-    public function getPaletesAndVolumes($idRecebimento = null, $idProduto = null, $grade = null, $statusPalete = null, $statusRecebimento = null, $dtInicioRecebimento1 = null, $dtInicioRecebimento2 = null, $dtFinalRecebimento1 = null, $dtFinalRecebimento2 = null, $uma = null) {
+    public function getPaletesAndVolumes($idRecebimento = null, $idProduto = null, $grade = null, $statusPalete = null, $statusRecebimento = null, $dtInicioRecebimento1 = null, $dtInicioRecebimento2 = null, $dtFinalRecebimento1 = null, $dtFinalRecebimento2 = null, $uma = null, $ordem = null) {
         $SQL = " SELECT DISTINCT
                         P.UMA,
                         U.DSC_UNITIZADOR as UNITIZADOR,
@@ -336,7 +336,8 @@ class PaleteRepository extends EntityRepository {
                         S.COD_SIGLA as COD_SIGLA,
                         PROD.VOLUMES,
                         NVL(QTD_VOL.QTD,1) as QTD_VOL_TOTAL,
-                        NVL(QTD_VOL_CONFERIDO.QTD,1) as QTD_VOL_CONFERIDO
+                        NVL(QTD_VOL_CONFERIDO.QTD,1) as QTD_VOL_CONFERIDO,
+                        P.DTH_VALIDADE
                    FROM PALETE P
                    LEFT JOIN UNITIZADOR U ON P.COD_UNITIZADOR = U.COD_UNITIZADOR
                    LEFT JOIN SIGLA S ON P.COD_STATUS = S.COD_SIGLA
@@ -388,8 +389,11 @@ class PaleteRepository extends EntityRepository {
         if (($dtFinalRecebimento2 != NULL) && ($dtFinalRecebimento2 != "")) {
             $SQL .= " AND R.DTH_FINAL_RECEB <= TO_DATE('$dtFinalRecebimento2 23:59','DD-MM-YYYY HH24:MI')";
         }
-        $SQL .= "   ORDER BY PROD.VOLUMES, P.UMA, S.DSC_SIGLA";
-
+        if ($ordem == 1) {
+            $SQL .= "   ORDER BY P.UMA, S.DSC_SIGLA";
+        } else {
+            $SQL .= "   ORDER BY PROD.VOLUMES, P.UMA, S.DSC_SIGLA";
+        }
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }

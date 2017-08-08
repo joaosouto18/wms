@@ -102,11 +102,12 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
                 break;
             case 2:
-                //LAYOUT WILSO - ABRAFER ...
+                //LAYOUT WILSO
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
             default:
-                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
+                //LAYOUT ABRAFER
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
 
         }
@@ -160,7 +161,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         }
         $sql = "SELECT E.COD_EXPEDICAO, MAX(C.COD_CARGA_EXTERNO) COD_CARGA_EXTERNO, I.DSC_ITINERARIO, MAX(C.DSC_PLACA_CARGA) DSC_PLACA_CARGA, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE,
                   NVL(PE.DSC_ENDERECO,PEND.DSC_ENDERECO) DSC_ENDERECO, NVL(PE.NUM_ENDERECO,PEND.NUM_ENDERECO) NUM_ENDERECO, NVL(PE.NOM_BAIRRO,PEND.NOM_BAIRRO) NOM_BAIRRO, 
-                  NVL(PE.NOM_LOCALIDADE,PEND.NOM_LOCALIDADE) NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA
+                  NVL(PE.NOM_LOCALIDADE,PEND.NOM_LOCALIDADE) NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, PED.COD_PEDIDO
                     FROM MAPA_SEPARACAO MS
                     LEFT JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                     INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
@@ -178,7 +179,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE IS NOT NULL
                 GROUP BY E.COD_EXPEDICAO, I.DSC_ITINERARIO, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE,
                 PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA,
-                PEND.DSC_ENDERECO, PEND.NUM_ENDERECO, PEND.NOM_BAIRRO, PEND.NOM_LOCALIDADE";
+                PEND.DSC_ENDERECO, PEND.NUM_ENDERECO, PEND.NOM_BAIRRO, PEND.NOM_LOCALIDADE, PED.COD_PEDIDO";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }

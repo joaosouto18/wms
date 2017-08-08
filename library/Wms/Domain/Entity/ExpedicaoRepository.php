@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityRepository,
     Wms\Service\Coletor as LeituraColetor,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
-use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto;
 use Wms\Math;
 
 class ExpedicaoRepository extends EntityRepository {
@@ -186,12 +185,6 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function gerarOnda($strExpedicao) {
         try {
-            /*$strExpedicao = "";
-            foreach ($expedicoes as $expedicao) {
-                $strExpedicao = $strExpedicao . $expedicao;
-                if ($expedicao != end($expedicoes))
-                    $strExpedicao = $strExpedicao . ",";
-            }*/
 
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
@@ -663,7 +656,6 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
         $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
         $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
@@ -2448,7 +2440,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         //ETIQUETA DE VOLUME
-        $volumeRepo  = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
+        $volumeRepo = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
         $volumeEn = $volumeRepo->find($codBarras);
         if ($volumeEn != null) {
             $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
@@ -2905,19 +2897,19 @@ class ExpedicaoRepository extends EntityRepository {
         return $arrResult;
     }
 
-    public function executaCortePedido($cortes, $motivo) {
+    public function executaCortePedido($cortes, $motivo, $corteAutomatico = null) {
         foreach ($cortes as $codPedido => $produtos) {
             foreach ($produtos as $codProduto => $grades) {
                 foreach ($grades as $grade => $quantidade) {
                     if (!($quantidade > 0))
                         continue;
-                    $this->cortaPedido($codPedido, $codProduto, $grade, $quantidade, $motivo);
+                    $this->cortaPedido($codPedido, $codProduto, $grade, $quantidade, $motivo, $corteAutomatico);
                 }
             }
         }
     }
 
-    public function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo) {
+    public function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null) {
 
         /** @var ExpedicaoEntity\AndamentoRepository $expedicaoAndamentoRepo */
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
@@ -2968,6 +2960,9 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         $entidadePedidoProduto->setQtdCortada($entidadePedidoProduto->getQtdCortada() + $qtdCortar);
+        if ($corteAutomatico == 'S') {
+            $entidadePedidoProduto->setQtdCortadoAutomatico($entidadePedidoProduto->getQtdCortadoAutomatico() + $qtdCortar);
+        }
         $this->getEntityManager()->persist($entidadePedidoProduto);
 
         $expedicaoEn = $entidadePedidoProduto->getPedido()->getCarga()->getExpedicao();
@@ -3076,7 +3071,6 @@ class ExpedicaoRepository extends EntityRepository {
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
-
     }
 
     public function getSaidaEstoqueByExpedicao($idExpedicoes) {
@@ -3094,7 +3088,7 @@ class ExpedicaoRepository extends EntityRepository {
             'apenasDivergencias' => 'S',
             'reservaAtendida' => 'N'
         );
-        if (count($this->getMovimentacaoEstoqueExpedicaoByParams($params)) >0) {
+        if (count($this->getMovimentacaoEstoqueExpedicaoByParams($params)) > 0) {
             return false;
         }
         return true;
@@ -3109,7 +3103,7 @@ class ExpedicaoRepository extends EntityRepository {
             $whereReserva .= " AND RE.IND_ATENDIDA = '" . $params['reservaAtendida'] . "'";
         }
 
-        if (isset($params['apenasDivergencias'])){
+        if (isset($params['apenasDivergencias'])) {
             $whereFinal .= " AND (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0))  <> NVL(R.RESERVA,0)";
         }
 
@@ -3171,16 +3165,15 @@ class ExpedicaoRepository extends EntityRepository {
                     PR.DSC_PRODUTO AS DESCRICAO, 
                     PR.DSC_GRADE AS GRADE, 
                     PP.QUANTIDADE AS QUANTIDADE, 
-                    PP.QTD_CORTADA AS QTD_CORTADA 
+                    PP.QTD_CORTADO_AUTOMATICO AS QTD_CORTADA 
                 FROM CARGA CG INNER JOIN
                 PEDIDO P ON (CG.COD_CARGA = P.COD_CARGA) INNER JOIN
                 PEDIDO_PRODUTO PP ON (P.COD_PEDIDO = PP.COD_PEDIDO) INNER JOIN
                 PRODUTO PR ON (PR.COD_PRODUTO = PP.COD_PRODUTO)
-                WHERE CG.COD_EXPEDICAO IN ($expedicao) AND PP.QTD_CORTADA > 0
+                WHERE CG.COD_EXPEDICAO IN ($expedicao) AND PP.QTD_CORTADO_AUTOMATICO > 0
                 ORDER BY PP.COD_PEDIDO, PR.COD_PRODUTO, PR.DSC_GRADE, PP.QUANTIDADE, PP.QTD_CORTADA";
 
-        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        return $result;
+        return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
 }

@@ -12,8 +12,7 @@ use Doctrine\ORM\EntityRepository,
  * Endereco
  *
  */
-class EnderecoRepository extends EntityRepository
-{
+class EnderecoRepository extends EntityRepository {
 
     /**
      * Checa se existem enderecos com os mesmos valores de enderecamento
@@ -22,8 +21,7 @@ class EnderecoRepository extends EntityRepository
      * @param array $values
      * @return boolean Caso faixa de endereco ok retorna verdadeiro
      */
-    public function checarEndereco(array $values)
-    {
+    public function checarEndereco(array $values) {
         extract($values['identificacao']);
         $em = $this->getEntityManager();
 
@@ -37,14 +35,14 @@ class EnderecoRepository extends EntityRepository
                 AND e.apartamento BETWEEN :inicialApartamento AND :finalApartamento');
 
         $query->setParameter('idDeposito', $idDeposito)
-            ->setParameter('inicialRua', $inicialRua)
-            ->setParameter('finalRua', $finalRua)
-            ->setParameter('inicialPredio', $inicialPredio)
-            ->setParameter('finalPredio', $finalPredio)
-            ->setParameter('inicialNivel', $inicialNivel)
-            ->setParameter('finalNivel', $finalNivel)
-            ->setParameter('inicialApartamento', $inicialApartamento)
-            ->setParameter('finalApartamento', $finalApartamento);
+                ->setParameter('inicialRua', $inicialRua)
+                ->setParameter('finalRua', $finalRua)
+                ->setParameter('inicialPredio', $inicialPredio)
+                ->setParameter('finalPredio', $finalPredio)
+                ->setParameter('inicialNivel', $inicialNivel)
+                ->setParameter('finalNivel', $finalNivel)
+                ->setParameter('inicialApartamento', $inicialApartamento)
+                ->setParameter('finalApartamento', $finalApartamento);
 
         if (!empty($lado)) {
             if ($lado == "P")
@@ -64,8 +62,7 @@ class EnderecoRepository extends EntityRepository
      * @param array $values
      * @throws \Exception
      */
-    public function save(EnderecoEntity $enderecoEntity = null, array $values)
-    {
+    public function save(EnderecoEntity $enderecoEntity = null, array $values) {
         extract($values['identificacao']);
         $em = $this->getEntityManager();
         $view = new \Zend_View;
@@ -81,7 +78,6 @@ class EnderecoRepository extends EntityRepository
         $areaArmazenagem = $em->getReference('wms:Deposito\AreaArmazenagem', $idAreaArmazenagem);
 
         //echo $ativo;exit;
-
         //caso edicao
         if (!empty($id)) {
             $enderecoEntity = $em->getReference('wms:Deposito\Endereco', $id);
@@ -137,18 +133,18 @@ class EnderecoRepository extends EntityRepository
                             $dscEndereco = EnderecoUtil::formatar($endereco);
 
                             $enderecoEntity->setRua($auxRua)
-                                ->setPredio($auxPredio)
-                                ->setNivel($auxNivel)
-                                ->setApartamento($auxApto)
-                                ->setSituacao($situacao)
-                                ->setDeposito($deposito)
-                                ->setCaracteristica($caracteristica)
-                                ->setEstruturaArmazenagem($estruturaArmazenagem)
-                                ->setTipoEndereco($tipoEndereco)
-                                ->setStatus($status)
-                                ->setAreaArmazenagem($areaArmazenagem)
-                                ->setDescricao($dscEndereco)
-                                ->setAtivo($ativo);
+                                    ->setPredio($auxPredio)
+                                    ->setNivel($auxNivel)
+                                    ->setApartamento($auxApto)
+                                    ->setSituacao($situacao)
+                                    ->setDeposito($deposito)
+                                    ->setCaracteristica($caracteristica)
+                                    ->setEstruturaArmazenagem($estruturaArmazenagem)
+                                    ->setTipoEndereco($tipoEndereco)
+                                    ->setStatus($status)
+                                    ->setAreaArmazenagem($areaArmazenagem)
+                                    ->setDescricao($dscEndereco)
+                                    ->setAtivo($ativo);
 
 
                             $em->persist($enderecoEntity);
@@ -163,8 +159,7 @@ class EnderecoRepository extends EntityRepository
      *
      * @param int $id
      */
-    public function remove($id)
-    {
+    public function remove($id) {
         $em = $this->getEntityManager();
         $auxPredioroxy = $em->getReference('wms:Deposito\Endereco', $id);
         $em->remove($auxPredioroxy);
@@ -174,19 +169,17 @@ class EnderecoRepository extends EntityRepository
      *
      * @return type
      */
-    public function getRuas()
-    {
+    public function getRuas() {
         $em = $this->getEntityManager();
         $qb = $em->createQueryBuilder();
         $auxRuauas = $qb->select('DISTINCT e.rua')
-            ->from('wms:Deposito\Endereco', 'e')
-            ->orderBy('e.rua');
+                ->from('wms:Deposito\Endereco', 'e')
+                ->orderBy('e.rua');
 
         return $auxRuauas->getQuery()->getResult();
     }
 
-    public function getEnderecoIdByDescricao ($descricao)
-    {
+    public function getEnderecoIdByDescricao($descricao) {
         list($tamanhoRua, $tamanhoPredio, $tamanhoNivel, $tamanhoApartamento) = array_values(EnderecoUtil::getQtdDigitos());
 
         $sql = " SELECT COD_DEPOSITO_ENDERECO, NUM_NIVEL, COD_CARACTERISTICA_ENDERECO, DSC_DEPOSITO_ENDERECO
@@ -199,19 +192,18 @@ class EnderecoRepository extends EntityRepository
 
         $array = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
-
     }
 
-    public function getPicking()  {
+    public function getPicking() {
         $em = $this->getEntityManager();
         $tipoPicking = Endereco::ENDERECO_PICKING;
 
         $dql = $em->createQueryBuilder()
-            ->select('e.descricao as DESCRICAO, MOD(e.predio,2) as lado')
-            ->from('wms:Deposito\Endereco', 'e')
-            ->orderBy("e.rua, lado , e.predio, e.apartamento")
-            ->where("e.idCaracteristica = '" . $tipoPicking . "'")
-            ->groupBy("e.descricao, e.predio");
+                ->select('e.descricao as DESCRICAO, MOD(e.predio,2) as lado')
+                ->from('wms:Deposito\Endereco', 'e')
+                ->orderBy("e.rua, lado , e.predio, e.apartamento")
+                ->where("e.idCaracteristica = '" . $tipoPicking . "'")
+                ->groupBy("e.descricao, e.predio");
         $enderecos = $dql->getQuery()->getResult();
 
         return $enderecos;
@@ -221,24 +213,24 @@ class EnderecoRepository extends EntityRepository
         $em = $this->getEntityManager();
         $produtoEn = $em->getRepository("wms:Produto")->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
-        if (count($produtoEn->getEmbalagens()) <=0) {
+        if (count($produtoEn->getEmbalagens()) <= 0) {
             $dql = $em->createQueryBuilder()
-                ->select('e.descricao as DESCRICAO, e.id')
-                ->from("wms:Produto\Volume", "pv")
-                ->innerJoin("pv.endereco", "e")
-                ->innerJoin("pv.produto", "p")
-                ->where("p.id = '$idProduto'")
-                ->andWhere("p.grade = '$grade'")
-                ->groupBy("e.descricao, e.id");
+                    ->select('e.descricao as DESCRICAO, e.id')
+                    ->from("wms:Produto\Volume", "pv")
+                    ->innerJoin("pv.endereco", "e")
+                    ->innerJoin("pv.produto", "p")
+                    ->where("p.id = '$idProduto'")
+                    ->andWhere("p.grade = '$grade'")
+                    ->groupBy("e.descricao, e.id");
         } else {
             $dql = $em->createQueryBuilder()
-                ->select('e.descricao as DESCRICAO, e.id')
-                ->from("wms:Produto\Embalagem", "pe")
-                ->innerJoin("pe.endereco", "e")
-                ->innerJoin("pe.produto", "p")
-                ->where("p.id = '$idProduto'")
-                ->andWhere("p.grade = '$grade'")
-                ->groupBy("e.descricao, e.id");
+                    ->select('e.descricao as DESCRICAO, e.id')
+                    ->from("wms:Produto\Embalagem", "pe")
+                    ->innerJoin("pe.endereco", "e")
+                    ->innerJoin("pe.produto", "p")
+                    ->where("p.id = '$idProduto'")
+                    ->andWhere("p.grade = '$grade'")
+                    ->groupBy("e.descricao, e.id");
         }
 
         $enderecos = $dql->getQuery()->getResult();
@@ -270,12 +262,12 @@ class EnderecoRepository extends EntityRepository
         $em = $this->getEntityManager();
 
         $dql = $em->createQueryBuilder()
-            ->select('p.id as codProduto, p.grade, p.descricao as produto, pv.id as codVolume, pv.descricao, e.descricao as endereco' )
-            ->distinct(true)
-            ->from("wms:Produto\Volume", "pv")
-            ->InnerJoin("pv.endereco", "e")
-            ->InnerJoin("pv.produto", "p")
-            ->where("e.id = $idEndereco");
+                ->select('p.id as codProduto, p.grade, p.descricao as produto, pv.id as codVolume, pv.descricao, e.descricao as endereco')
+                ->distinct(true)
+                ->from("wms:Produto\Volume", "pv")
+                ->InnerJoin("pv.endereco", "e")
+                ->InnerJoin("pv.produto", "p")
+                ->where("e.id = $idEndereco");
 
         if ($unico == true) {
             $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();
@@ -285,12 +277,12 @@ class EnderecoRepository extends EntityRepository
 
         if (count($produto) <= 0) {
             $dql = $em->createQueryBuilder()
-                ->select("p.id as codProduto, p.grade, p.descricao as produto, 0 as codVolume, 'PRODUTO UNITARIO' as descricao, e.descricao as endereco")
-                ->distinct(true)
-                ->from("wms:Produto\Embalagem", "pe")
-                ->leftJoin("pe.endereco", "e")
-                ->leftJoin("pe.produto", "p")
-                ->where("e.id = $idEndereco");
+                    ->select("p.id as codProduto, p.grade, p.descricao as produto, 0 as codVolume, 'PRODUTO UNITARIO' as descricao, e.descricao as endereco")
+                    ->distinct(true)
+                    ->from("wms:Produto\Embalagem", "pe")
+                    ->leftJoin("pe.endereco", "e")
+                    ->leftJoin("pe.produto", "p")
+                    ->where("e.id = $idEndereco");
 
             if ($unico == true) {
                 $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();
@@ -301,34 +293,33 @@ class EnderecoRepository extends EntityRepository
         return $produto;
     }
 
-    public function checkTipoEnderecoPicking($endereco, $produtoId, $embalagemId)
-    {
+    public function checkTipoEnderecoPicking($endereco, $produtoId, $embalagemId) {
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-        /*$enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-        $indPickMultiProduto = $this->getSystemParameterValue('IND_PICKING_MULTIPRODUTO');
-        if ($indPickMultiProduto == 'N')
-            $enderecoRepo->checkTipoEnderecoPicking($enderecoDestinoEn->getDescricao(),$idProduto, $data['embalagem']->getId());*/
+        /* $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+          $indPickMultiProduto = $this->getSystemParameterValue('IND_PICKING_MULTIPRODUTO');
+          if ($indPickMultiProduto == 'N')
+          $enderecoRepo->checkTipoEnderecoPicking($enderecoDestinoEn->getDescricao(),$idProduto, $data['embalagem']->getId()); */
 
 
         $result = $this->getProdutoByEndereco($endereco, false, true);
 
-        if (!empty($result)){
+        if (!empty($result)) {
             $tipoPicking = $this->getSystemParameterValue('IND_TIPO_PICKING');
 
-            if ($tipoPicking == 'P'){
-                foreach ($result as $item){
+            if ($tipoPicking == 'P') {
+                foreach ($result as $item) {
                     if ($item['codProduto'] != $produtoId)
                         throw new \Exception("Não é possível adicionar outro produto neste endereço de picking.");
                 }
             } else if ($tipoPicking == 'E') {
-                foreach ($result as $item){
+                foreach ($result as $item) {
                     if ($item['codEmbalagem'] != $embalagemId)
                         throw new \Exception("Não é possível adicionar outra embalagem neste endereço de picking.");
                 }
             }
         }
-        
+
         return true;
     }
 
@@ -338,8 +329,7 @@ class EnderecoRepository extends EntityRepository
      * @param bool $picking | true pega endereço do tipo picking
      * @return array
      */
-    public function getProdutoByEndereco($dscEndereco, $unico = true, $picking = false)
-    {
+    public function getProdutoByEndereco($dscEndereco, $unico = true, $picking = false) {
         $em = $this->getEntityManager();
 
         $idCaracteristicaEndereco = null;
@@ -350,16 +340,16 @@ class EnderecoRepository extends EntityRepository
         $endereco = EnderecoUtil::formatar($dscEndereco);
 
         $dql = $em->createQueryBuilder()
-            ->select('p.id as codProduto, p.grade, p.descricao, pv.capacidadePicking, pv.descricao descricaoEmbVol, pv.codigoBarras, f.nome fabricante, p.referencia' )
-            ->distinct(true)
-            ->from("wms:Produto\Volume", "pv")
-            ->innerJoin("pv.endereco", "e")
-            ->innerJoin("pv.produto", "p")
-            ->leftJoin('p.fabricante', 'f')
-            ->where("e.descricao = '$endereco'");
+                ->select('p.id as codProduto, p.grade, p.descricao, pv.capacidadePicking, pv.descricao descricaoEmbVol, pv.codigoBarras, f.nome fabricante, p.referencia')
+                ->distinct(true)
+                ->from("wms:Produto\Volume", "pv")
+                ->innerJoin("pv.endereco", "e")
+                ->innerJoin("pv.produto", "p")
+                ->leftJoin('p.fabricante', 'f')
+                ->where("e.descricao = '$endereco'");
 
         if ($picking) {
-            $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
+            $dql->andWhere('e.idCaracteristica =' . $idCaracteristicaEndereco);
         }
 
         if ($unico == true) {
@@ -370,16 +360,16 @@ class EnderecoRepository extends EntityRepository
 
         if (count($produto) <= 0) {
             $dql = $em->createQueryBuilder()
-                ->select('p.id as codProduto, p.grade, pe.id as codEmbalagem, p.descricao, pe.capacidadePicking, pe.descricao descricaoEmbVol, pe.codigoBarras, f.nome fabricante, p.referencia')
-                ->distinct(true)
-                ->from("wms:Produto\Embalagem", "pe")
-                ->innerJoin("pe.endereco", "e")
-                ->innerJoin("pe.produto", "p")
-                ->leftJoin('p.fabricante', 'f')
-                ->where("e.descricao = '$endereco'");
+                    ->select('p.id as codProduto, p.grade, pe.id as codEmbalagem, p.descricao, pe.capacidadePicking, pe.descricao descricaoEmbVol, pe.codigoBarras, f.nome fabricante, p.referencia')
+                    ->distinct(true)
+                    ->from("wms:Produto\Embalagem", "pe")
+                    ->innerJoin("pe.endereco", "e")
+                    ->innerJoin("pe.produto", "p")
+                    ->leftJoin('p.fabricante', 'f')
+                    ->where("e.descricao = '$endereco'");
 
             if ($picking) {
-                $dql->andWhere('e.idCaracteristica ='.$idCaracteristicaEndereco);
+                $dql->andWhere('e.idCaracteristica =' . $idCaracteristicaEndereco);
             }
 
             if ($unico == true) {
@@ -389,11 +379,9 @@ class EnderecoRepository extends EntityRepository
             }
         }
         return $produto;
-
     }
 
-    public function getEnderecoesDisponivesByParam($params)
-    {
+    public function getEnderecoesDisponivesByParam($params) {
         $idCaracteristicaEndereco = Endereco::ENDERECO_PICKING;
         $estruturaBlocado = \Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO;
 
@@ -435,28 +423,28 @@ class EnderecoRepository extends EntityRepository
             $query = $query . " AND DE.IND_DISPONIVEL = 'N'";
         }
 
-        if (!empty ($inicialRua)) {
+        if (!empty($inicialRua)) {
             $query = $query . " AND DE.NUM_RUA >= $inicialRua";
         }
-        if (!empty ($finalRua)) {
+        if (!empty($finalRua)) {
             $query = $query . " AND DE.NUM_RUA <= $finalRua";
         }
-        if (!empty ($inicialPredio)) {
+        if (!empty($inicialPredio)) {
             $query = $query . " AND DE.NUM_PREDIO >= $inicialPredio";
         }
-        if (!empty ($finalPredio)) {
+        if (!empty($finalPredio)) {
             $query = $query . " AND DE.NUM_PREDIO <= $finalPredio";
         }
-        if (!empty ($inicialNivel)) {
+        if (!empty($inicialNivel)) {
             $query = $query . " AND DE.NUM_NIVEL >= $inicialNivel";
         }
-        if (!empty ($finalNivel)) {
+        if (!empty($finalNivel)) {
             $query = $query . " AND DE.NUM_NIVEL <= $finalNivel";
         }
-        if (!empty ($inicialApartamento)) {
+        if (!empty($inicialApartamento)) {
             $query = $query . " AND DE.NUM_APARTAMENTO >= $inicialApartamento";
         }
-        if (!empty ($finalApartamento)) {
+        if (!empty($finalApartamento)) {
             $query = $query . " AND DE.NUM_APARAMENTO >= $finalApartamento";
         }
 
@@ -482,12 +470,11 @@ class EnderecoRepository extends EntityRepository
 
         $query = $query . "  ORDER BY (LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO), DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL";
 
-        $array = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
+        $array = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
-
     }
 
-    public function getEnderecosAdjacentes ($predio, $rua,$nivel, $apartamento, $qtdAdjacentes) {
+    public function getEnderecosAdjacentes($predio, $rua, $nivel, $apartamento, $qtdAdjacentes) {
         $sql = "
             SELECT * FROM (
             SELECT DISTINCT * FROM (
@@ -505,14 +492,13 @@ class EnderecoRepository extends EntityRepository
               ORDER BY CAST(NUM_APARTAMENTO AS INT) ASC) WHERE ROWNUM <= $qtdAdjacentes
               ";
 
-        $array = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+        $array = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
-
     }
 
     public function enderecoOcupado($enderecoId) {
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        $estoquesEn = $estoqueRepo->findBy(array('depositoEndereco'=> $enderecoId));
+        $estoquesEn = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoId));
 
         if (count($estoquesEn) > 0) {
             return true;
@@ -527,7 +513,6 @@ class EnderecoRepository extends EntityRepository
                 $enderecoEn->setDisponivel("N");
                 $this->getEntityManager()->persist($enderecoEn);
             }
-
         } else {
             if ($enderecoEn->getDisponivel() == "N") {
                 $enderecoEn->setDisponivel("S");
@@ -536,9 +521,9 @@ class EnderecoRepository extends EntityRepository
         }
     }
 
-    public function getTamanhoDisponivelByPredio ( $rua ,$predio, $nivel) {
+    public function getTamanhoDisponivelByPredio($rua, $predio, $nivel) {
         $tamanhoLongarinaRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco\TamanhoLongarina");
-        $longarinaEn = $tamanhoLongarinaRepo->findOneBy(array('predio'=> $predio, 'rua' =>$rua));
+        $longarinaEn = $tamanhoLongarinaRepo->findOneBy(array('predio' => $predio, 'rua' => $rua));
 
         if ($longarinaEn != NULL) {
             $tamanhoLongarina = $longarinaEn->getTamanho();
@@ -554,7 +539,7 @@ class EnderecoRepository extends EntityRepository
                  WHERE DE.NUM_PREDIO = $predio
                    AND DE.NUM_NIVEL = $nivel
                    AND DE.NUM_RUA = $rua";
-        $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         if ($result[0]['OCUPADO'] == NULL) {
             $ocupado = 0;
@@ -567,31 +552,29 @@ class EnderecoRepository extends EntityRepository
         return $disponivel;
     }
 
-    public function getEndereco($rua, $predio, $nivel, $apto)
-    {
-        $nivel = ((int)$nivel === 0)? '00': $nivel;
+    public function getEndereco($rua, $predio, $nivel, $apto) {
+        $nivel = ((int) $nivel === 0) ? '00' : $nivel;
         if (empty($rua) || empty($predio) || empty($nivel) || empty($apto)) {
             throw new \Exception("É necessário informar todo o endereço");
         }
         $source = $this->_em->createQueryBuilder()
-            ->select("e.id, e.descricao")
-            ->from('wms:Deposito\Endereco', 'e')
-            ->andWhere("e.rua = $rua")
-            ->andWhere("e.predio = $predio")
-            ->andWhere("e.nivel = $nivel")
-            ->andWhere("e.apartamento = $apto");
+                ->select("e.id, e.descricao")
+                ->from('wms:Deposito\Endereco', 'e')
+                ->andWhere("e.rua = $rua")
+                ->andWhere("e.predio = $predio")
+                ->andWhere("e.nivel = $nivel")
+                ->andWhere("e.apartamento = $apto");
 
-        $result =  $source->getQuery()->getSingleResult();
+        $result = $source->getQuery()->getSingleResult();
         if ($result == null) {
             throw new \Exception("Endereço não encontrado.");
         }
         return $result;
     }
 
-    public function getOcupacaoRuaReport($params)
-    {
+    public function getOcupacaoRuaReport($params) {
         $ruaInicial = $params['ruaInicial'];
-        $ruaFinal   = $params['ruaFinal'];
+        $ruaFinal = $params['ruaFinal'];
 
         $sqlWhere = "";
         if ($ruaFinal != "") {
@@ -637,27 +620,26 @@ class EnderecoRepository extends EntityRepository
                  GROUP BY NUM_RUA
                  ORDER BY NUM_RUA";
 
-        $result = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
-    public function getTipoArmazenamentoByEndereco($endereco)
-    {
+    public function getTipoArmazenamentoByEndereco($endereco) {
         $sql = "SELECT DE.COD_DEPOSITO_ENDERECO, EA.COD_TIPO_EST_ARMAZ FROM DEPOSITO_ENDERECO DE
                 INNER JOIN TIPO_EST_ARMAZ EA ON DE.COD_TIPO_EST_ARMAZ = EA.COD_TIPO_EST_ARMAZ
                 WHERE DE.COD_DEPOSITO_ENDERECO = $endereco";
 
-        $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
     public function getValidaTamanhoEndereco($idEndereco, $larguraPalete) {
-        $longarinaRepo   = $this->getEntityManager()->getRepository("wms:Armazenagem\VOcupacaoLongarina");
-        $estoqueRepo     = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        $longarinaRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\VOcupacaoLongarina");
+        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
         $tamanhoUnitizadorAlocado = 0;
-        $estoquesEn = $estoqueRepo->findBy(array('depositoEndereco'=>$idEndereco));
-        foreach($estoquesEn as $estoqueEn){
+        $estoquesEn = $estoqueRepo->findBy(array('depositoEndereco' => $idEndereco));
+        foreach ($estoquesEn as $estoqueEn) {
             $unitizadorEn = $estoqueEn->getUnitizador();
             if ($unitizadorEn != NULL) {
                 $tamanhoUnitizador = $unitizadorEn->getLargura(false) * 100;
@@ -668,16 +650,16 @@ class EnderecoRepository extends EntityRepository
         }
 
         /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
-        $enderecoEn = $this->findOneBy(array('id'=>$idEndereco));
+        $enderecoEn = $this->findOneBy(array('id' => $idEndereco));
 
         $rua = $enderecoEn->getRua();
         $predio = $enderecoEn->getPredio();
         $nivel = $enderecoEn->getNivel();
 
         /** @var \Wms\Domain\Entity\Armazenagem\VOcupacaoLongarina $longarinaEn */
-        $longarinaEn      = $longarinaRepo->findOneBy(array('rua'=>$rua,'predio'=>$predio,'nivel'=>$nivel));
+        $longarinaEn = $longarinaRepo->findOneBy(array('rua' => $rua, 'predio' => $predio, 'nivel' => $nivel));
         $larguraLongarina = $longarinaEn->getTamanho();
-        $tamanhoOcupado   = $longarinaEn->getQtdOcupada() - $tamanhoUnitizadorAlocado;
+        $tamanhoOcupado = $longarinaEn->getQtdOcupada() - $tamanhoUnitizadorAlocado;
 
         if ($tamanhoUnitizadorAlocado > $larguraPalete) {
             $larguraPalete = $tamanhoUnitizadorAlocado;
@@ -690,21 +672,21 @@ class EnderecoRepository extends EntityRepository
         return true;
     }
 
-    public function getOcupacaoPeriodoResumidoReport ($params) {
+    public function getOcupacaoPeriodoResumidoReport($params) {
         $dataInicial = $params['dataInicial1'];
         $dataFinal = $params['dataInicial2'];
         $ruaInicial = $params['ruaInicial'];
-        $ruaFinal   = $params['ruaFinal'];
+        $ruaFinal = $params['ruaFinal'];
 
         $sqlWhere = "";
         if ($ruaFinal != "") {
-            $sqlWhere = $sqlWhere . " AND P.NUM_RUA <= " . $ruaFinal." ";
+            $sqlWhere = $sqlWhere . " AND P.NUM_RUA <= " . $ruaFinal . " ";
         }
         if ($ruaInicial != "") {
-            $sqlWhere = $sqlWhere . " AND P.NUM_RUA >= " . $ruaInicial." ";
+            $sqlWhere = $sqlWhere . " AND P.NUM_RUA >= " . $ruaInicial . " ";
         }
 
-        $sql  = "SELECT NUM_RUA,
+        $sql = "SELECT NUM_RUA,
                         QTD_EXISTENTES,
                         QTD_OCUPADOS,
                         QTD_VAZIOS,
@@ -716,33 +698,32 @@ class EnderecoRepository extends EntityRepository
                         $sqlWhere
                   ORDER BY DTH_ESTOQUE, TO_NUMBER(P.NUM_RUA)";
 
-        $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
-    public function getOcupacaoPeriodoReport($params)
-    {
+    public function getOcupacaoPeriodoReport($params) {
         extract($params);
 
         $dataInicial = $params['dataInicial1'];
         $dataFinal = $params['dataInicial2'];
         $ruaInicial = $params['ruaInicial'];
-        $ruaFinal   = $params['ruaFinal'];
+        $ruaFinal = $params['ruaFinal'];
         $tipoPicking = Endereco::ENDERECO_PICKING;
 
         $sqlWhere = "";
         if (isset($ruaInicial) && !empty($ruaFinal)) {
-            $sqlWhere = $sqlWhere . " AND HIST.NUM_RUA <= " . $ruaFinal." ";
+            $sqlWhere = $sqlWhere . " AND HIST.NUM_RUA <= " . $ruaFinal . " ";
         }
         if (isset($ruaInicial) && !empty($ruaFinal)) {
-            $sqlWhere = $sqlWhere . " AND HIST.NUM_RUA >= " . $ruaInicial." ";
+            $sqlWhere = $sqlWhere . " AND HIST.NUM_RUA >= " . $ruaInicial . " ";
         }
         $sqlWhereDepEnd = "";
         if (isset($ruaInicial) && !empty($ruaFinal)) {
-            $sqlWhereDepEnd = $sqlWhereDepEnd . " AND DE.NUM_RUA <= " . $ruaFinal." ";
+            $sqlWhereDepEnd = $sqlWhereDepEnd . " AND DE.NUM_RUA <= " . $ruaFinal . " ";
         }
         if (isset($ruaInicial) && !empty($ruaFinal)) {
-            $sqlWhereDepEnd = $sqlWhereDepEnd . " AND DE.NUM_RUA >= " . $ruaInicial." ";
+            $sqlWhereDepEnd = $sqlWhereDepEnd . " AND DE.NUM_RUA >= " . $ruaInicial . " ";
         }
 
 //        $sql= " SELECT TO_CHAR(HIST.DTH_ESTOQUE,'DD/MM/YYYY') as DATA_ESTOQUE,
@@ -790,22 +771,34 @@ class EnderecoRepository extends EntityRepository
                         $sqlWhere
                         ORDER BY DATA_ESTOQUE, DE.NUM_RUA";
 
-        $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
-    public function getPickingSemProdutos($params){
+    public function getPickingSemProdutos($params) {
         $SQLWhere = "";
         if ($params['ruaInicial'] != "") {
-            $SQLWhere = $SQLWhere . " AND DE.NUM_RUA >= ". $params['ruaInicial'];
+            $SQLWhere = $SQLWhere . " AND DE.NUM_RUA >= " . $params['ruaInicial'];
         }
         if ($params['ruaFinal'] != "") {
-            $SQLWhere = $SQLWhere . " AND DE.NUM_RUA <= ". $params['ruaFinal'];
+            $SQLWhere = $SQLWhere . " AND DE.NUM_RUA <= " . $params['ruaFinal'];
+        }
+        if ($params['idAreaArmazenagem'] != "") {
+            $SQLWhere = $SQLWhere . " AND DE.COD_AREA_ARMAZENAGEM = " . $params['idAreaArmazenagem'];
+        }
+        if ($params['idEstruturaArmazenagem'] != "") {
+            $SQLWhere = $SQLWhere . " AND DE.COD_TIPO_EST_ARMAZ = " . $params['idEstruturaArmazenagem'];
+        }
+        if ($params['idTipoEndereco'] != "") {
+            $SQLWhere = $SQLWhere . " AND DE.COD_TIPO_ENDERECO = " . $params['idTipoEndereco'];
         }
 
         $SQL = " SELECT DISTINCT
                         DE.DSC_DEPOSITO_ENDERECO,
-                        U.DSC_UNITIZADOR
+                        U.DSC_UNITIZADOR,
+                        AM.DSC_AREA_ARMAZENAGEM,
+                        TEA.DSC_TIPO_EST_ARMAZ,
+                        TE.DSC_TIPO_ENDERECO
                    FROM V_PALETE_DISPONIVEL_PICKING V
                   INNER JOIN (SELECT MAX(TAMANHO_UNITIZADOR) as TAMANHO_UNITIZADOR,
                                          COD_DEPOSITO_ENDERECO
@@ -815,20 +808,24 @@ class EnderecoRepository extends EntityRepository
                         AND MAXP.COD_DEPOSITO_ENDERECO = V.COD_DEPOSITO_ENDERECO
                    LEFT JOIN UNITIZADOR U ON U.COD_UNITIZADOR = V.COD_UNITIZADOR
                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = V.COD_DEPOSITO_ENDERECO
+                   INNER JOIN TIPO_ENDERECO TE ON (TE.COD_TIPO_ENDERECO = DE.COD_TIPO_ENDERECO)
+                   INNER JOIN TIPO_EST_ARMAZ TEA ON (TEA.COD_TIPO_EST_ARMAZ = DE.COD_TIPO_EST_ARMAZ)
+                   INNER JOIN AREA_ARMAZENAGEM AM ON (AM.COD_AREA_ARMAZENAGEM = DE.COD_AREA_ARMAZENAGEM)
                    WHERE 1 = 1";
 
         $SQLOrder = " ORDER BY DE.DSC_DEPOSITO_ENDERECO";
-        $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrder)-> fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrder)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
-    public function getPickingMultiplosProdutos($params){
+
+    public function getPickingMultiplosProdutos($params) {
 
         $SQLWhere = "";
         if (isset($params['ruaInicial']) && !empty($params['ruaInicial'])) {
-            $SQLWhere = $SQLWhere . " AND DE.NUM_RUA >= ". $params['ruaInicial'];
+            $SQLWhere = $SQLWhere . " AND DE.NUM_RUA >= " . $params['ruaInicial'];
         }
         if (isset($params['ruaFinal']) && !empty($params['ruaFinal'])) {
-            $SQLWhere = $SQLWhere . " AND DE.NUM_RUA <= ". $params['ruaFinal'];
+            $SQLWhere = $SQLWhere . " AND DE.NUM_RUA <= " . $params['ruaFinal'];
         }
         $SQL = "
                 SELECT DISTINCT P.COD_PRODUTO COD_PRODUTO,
@@ -858,11 +855,11 @@ class EnderecoRepository extends EntityRepository
                 WHERE (PE.COD_DEPOSITO_ENDERECO IS NOT NULL OR PV.COD_DEPOSITO_ENDERECO IS NOT NULL) $SQLWhere
                 ORDER BY TDE.DESCRICAO, P.DSC_PRODUTO";
 
-        $result = $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
-    public function getEnderecosByParam($params)
-    {
+
+    public function getEnderecosByParam($params) {
         $query = "
            SELECT DISTINCT(DEP.COD_DEPOSITO_ENDERECO) CODIGO, DEP.NUM_RUA RUA, DEP.NUM_PREDIO PREDIO, DEP.NUM_APARTAMENTO APARTAMENTO,
                   DEP.NUM_NIVEL NIVEL, DEP.DSC_DEPOSITO_ENDERECO ENDERECO
@@ -873,40 +870,40 @@ class EnderecoRepository extends EntityRepository
            WHERE 1 = 1 AND DEP.COD_CARACTERISTICA_ENDERECO = $params[tipoEndereco]
         ";
 
-        if (!empty ($params['ruaInicial'])) {
+        if (!empty($params['ruaInicial'])) {
             $query = $query . " AND DEP.NUM_RUA >= " . $params['ruaInicial'];
         }
-        if (!empty ($params['predioInicial'])) {
+        if (!empty($params['predioInicial'])) {
             $query = $query . " AND DEP.NUM_PREDIO >= " . $params['predioInicial'];
         }
         if (isset($params['nivelInicial']) && $params['nivelInicial'] != '') {
             $query = $query . " AND DEP.NUM_NIVEL >= " . $params['nivelInicial'];
         }
-        if (!empty ($params['aptoInicial'])) {
+        if (!empty($params['aptoInicial'])) {
             $query = $query . " AND DEP.NUM_APARTAMENTO >= " . $params['aptoInicial'];
         }
 
-        if (!empty ($params['ruaFinal'])) {
+        if (!empty($params['ruaFinal'])) {
             $query = $query . " AND DEP.NUM_RUA <= " . $params['ruaFinal'];
         }
-        if (!empty ($params['predioFinal'])) {
+        if (!empty($params['predioFinal'])) {
             $query = $query . " AND DEP.NUM_PREDIO <= " . $params['predioFinal'];
         }
         if (isset($params['nivelFinal']) && $params['nivelFinal'] != '') {
             $query = $query . " AND DEP.NUM_NIVEL <= " . $params['nivelFinal'];
         }
-        if (!empty ($params['aptoFinal'])) {
+        if (!empty($params['aptoFinal'])) {
             $query = $query . " AND DEP.NUM_APARTAMENTO <= " . $params['aptoFinal'];
         }
 
-        if (!empty ($params['lado'])) {
+        if (!empty($params['lado'])) {
             if ($params['lado'] == "P")
                 $query = $query . " AND MOD(NUM_PREDIO,2) = 0";
             if ($params['lado'] == "I")
                 $query = $query . " AND MOD(NUM_PREDIO,2) = 1";
         }
 
-        if ($params['opcao'] == 'sem'){
+        if ($params['opcao'] == 'sem') {
             $query .= ' AND DEP.COD_DEPOSITO_ENDERECO NOT IN (SELECT COD_DEPOSITO_ENDERECO FROM PRODUTO_EMBALAGEM)';
             $query .= ' AND DEP.COD_DEPOSITO_ENDERECO NOT IN (SELECT COD_DEPOSITO_ENDERECO FROM PRODUTO_VOLUME)';
         } elseif ($params['opcao'] == 'com') {
@@ -916,24 +913,22 @@ class EnderecoRepository extends EntityRepository
 
         $query = $query . " ORDER BY RUA, PREDIO, NIVEL, APARTAMENTO";
 
-        $result = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
-    public function getImprimirEndereco($enderecos)
-    {
+    public function getImprimirEndereco($enderecos) {
         $query = "
           SELECT DEP.DSC_DEPOSITO_ENDERECO DESCRICAO
           FROM DEPOSITO_ENDERECO DEP
           WHERE DEP.COD_DEPOSITO_ENDERECO in ($enderecos)
           ORDER BY DEP.NUM_RUA ASC, DEP.NUM_PREDIO ASC, DEP.NUM_APARTAMENTO ASC, DEP.NUM_NIVEL DESC ";
 
-        $result = $this->getEntityManager()->getConnection()->query($query)-> fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
-    public function verificaBloqueioInventario($idDepositoEndereco)
-    {
+    public function verificaBloqueioInventario($idDepositoEndereco) {
         if (!isset($idDepositoEndereco) || empty($idDepositoEndereco)) {
             throw new \Exception('E necessario informar idDepositoEndereco');
         }
@@ -951,14 +946,49 @@ class EnderecoRepository extends EntityRepository
      * @param $codDepositoEndereco
      * @param string $opcao | S or N
      */
-    public function bloqueiaOuDesbloqueiaInventario($codDepositoEndereco, $opcao = 'S', $flush = true)
-    {
+    public function bloqueiaOuDesbloqueiaInventario($codDepositoEndereco, $opcao = 'S', $flush = true) {
         $enderecoEn = $this->find($codDepositoEndereco);
         $enderecoEn->setinventarioBloqueado($opcao);
         $this->_em->persist($enderecoEn);
         if ($flush == true) {
             $this->_em->flush();
         }
+    }
+
+    public function getProdutoPorEndereco($endereco) {
+
+        $enderecoEn = $this->findOneBy(array('descricao' => $endereco));
+        if (!isset($enderecoEn) || empty($enderecoEn)) {
+            throw new \Exception("Endereço não encontrado");
+        } else {
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            $result = $vetEmbalagens = array();
+            $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
+            $itens = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoEn));
+            $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+            $itensPicking = $produtoEmbalagemRepo->findBy(array('endereco' => $enderecoEn->getId()), array('codProduto' => 'ASC'));
+            if (!empty($itensPicking)) {
+                foreach ($itensPicking as $key => $itemPincking) {
+                    $produtoEn = $itemPincking->getProduto();
+                    $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
+                        'desc' => $produtoEn->getDescricao(),'qtd' => 0);
+                    $result[$produtoEn->getId()] = $produto;
+                }
+            }
+            if (!empty($itens)) {
+                foreach ($itens as $key => $item) {
+                    $produtoEn = $item->getProduto();
+                    $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $item->getQtd());
+                    $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
+                        'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens));
+                    $result[$produtoEn->getId()] = $produto;
+                }
+            }
+            if (empty($result)) {
+                throw new \Exception("Não existe produto nesse endereço");
+            }
+        }
+        return $result;
     }
 
 }
