@@ -99,11 +99,12 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
                 break;
             case 2:
-                //LAYOUT WILSO - ABRAFER ...
+                //LAYOUT WILSO
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
             default:
-                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
+                //LAYOUT ABRAFER
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
 
         }
