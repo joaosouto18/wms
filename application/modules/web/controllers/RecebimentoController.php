@@ -594,11 +594,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $this->em->beginTransaction();
 
                         try {
-                            /* $ordemServicoEntity->setDataFinal(new \DateTime());
-                              $this->em->persist($ordemServicoEntity);
-                              $this->em->commit();
-                              $this->em->flush();
-                              $this->em->beginTransaction(); */
                             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
                             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
                             $checkOs = $recebimentoRepo->checarConferenciaComDivergencia($idRecebimento, false);
@@ -668,8 +663,16 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $this->em->persist($ordemServicoEntity);
                         $this->em->flush();
 
-                        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMENTRO SEJA 'S'
-                        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
+                        $recebimentoErp = false;
+                        foreach ($notasFiscais as $notaFiscalEntity) {
+                            if (!is_null($notaFiscalEntity->codRecebimentoErp())) {
+                                $recebimentoErp = true;
+                                break;
+                            }
+                        }
+                        
+                        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMETRO SEJA 'S'
+                        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S' && $recebimentoErp == true) {
                             $serviceIntegracao = new \Wms\Service\Integracao($this->getEntityManager(), array('acao' => null,
                                 'options' => null,
                                 'tipoExecucao' => 'E'
