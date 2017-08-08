@@ -2,3 +2,14 @@
 echo $this->form;
 echo $this->grid;
 ?>
+
+
+<script>
+
+    $('.cancelar').click(function () {
+        if (!confirm('Deseja Realmente cancelar a expedicao?')) {
+            return false;
+        }
+    });
+
+</script>

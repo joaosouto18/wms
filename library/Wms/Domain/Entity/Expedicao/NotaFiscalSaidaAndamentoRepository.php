@@ -27,4 +27,11 @@ class NotaFiscalSaidaAndamentoRepository extends EntityRepository
         $this->getEntityManager()->persist($andamentoNotaFiscalSaidaEn);
     }
 
+    public function removeNFSaidaAndamento($codNFSaida) {
+        $vetNfsAndamento = $this->findBy(array('NotaFiscalSaida' => $codNFSaida));
+        foreach ($vetNfsAndamento as $NfsAndamento) {
+            $this->getEntityManager()->remove($NfsAndamento);
+        }
+        $this->getEntityManager()->flush();
+    }
 }

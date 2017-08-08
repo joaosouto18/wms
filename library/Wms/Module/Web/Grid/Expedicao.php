@@ -240,6 +240,7 @@ class Expedicao extends Grid
                 'moduleName' => 'expedicao',
                 'controllerName' => 'index',
                 'actionName' => 'cancelar-expedicao-ajax',
+                'cssClass' => 'cancelar',
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
