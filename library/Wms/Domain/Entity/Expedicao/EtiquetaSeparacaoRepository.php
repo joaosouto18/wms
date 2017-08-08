@@ -1121,6 +1121,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $this->_em->persist($pedido);
             }
 
+            $this->_em->flush();
+            $this->_em->clear();
+
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
             if ($parametroConsistencia == 'S') {
                 $resultadoConsistencia = $mapaSeparacaoRepo->verificaConsistenciaSeguranca($idExpedicao);
@@ -1132,9 +1135,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     throw new WMS_Exception($msg);
                 }
             }
-
-            $this->_em->flush();
-            $this->_em->clear();
         } catch (WMS_Exception $WMS_Exception){
             throw $WMS_Exception;
         }catch (\Exception $e) {
