@@ -70,6 +70,11 @@ class PedidoProduto
      * @Column(name="VALOR_VENDA", type="decimal", nullable=false)
      */
     protected $valorVenda;
+    
+    /**
+     * @Column(name="QTD_CORTADO_AUTOMATICO", type="decimal")
+     */
+    protected $qtdCortadoAutomatico;
 
     public function setProdutos($produtos)
     {
@@ -203,5 +208,20 @@ class PedidoProduto
         return $this->valorVenda;
     }
 
+     /**
+     * @param mixed $qtdCortadoAutomatico
+     */
+    public function setQtdCortadoAutomatico($qtdCortadoAutomatico)
+    {
+        $this->qtdCortadoAutomatico = $qtdCortadoAutomatico;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdCortadoAutomatico()
+    {
+        return $this->qtdCortadoAutomatico;
+    }
 
 }

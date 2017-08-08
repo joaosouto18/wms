@@ -63,7 +63,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
                 if ($cortarAutomatico == 'S') {
                     $motivo = "Saldo insuficiente";
                     $itensPCortar = $expedicaoRepo->diluirCorte($expedicoes, $result);
-                    $expedicaoRepo->executaCortePedido($itensPCortar, $motivo);
+                    $expedicaoRepo->executaCortePedido($itensPCortar, $motivo, $cortarAutomatico);
                     $link = '<a href="' . $this->view->url(array('controller' => 'corte', 'action' => 'relatorio-corte-ajax', 'id' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de cortes automaticos da onda de ressuprimento</a>';
                     $this->addFlashMessage("warning", "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque. Clique para exibir " . $link);
                 } else {
