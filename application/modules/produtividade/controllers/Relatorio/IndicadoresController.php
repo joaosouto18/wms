@@ -1,19 +1,19 @@
 <?php
+
 use Wms\Module\Web\Controller\Action;
 
-class Produtividade_Relatorio_IndicadoresController  extends Action
-{
-    public function indexAction()
-    {
+class Produtividade_Relatorio_IndicadoresController extends Action {
+
+    public function indexAction() {
         ini_set('memory_limit', '-1');
         $params = $this->_getAllParams();
         $form = new \Wms\Module\Produtividade\Form\FormProdutividade();
 
-        if ( !isset($params['dataInicio']) ||empty($params['dataInicio'])) {
+        if (!isset($params['dataInicio']) || empty($params['dataInicio'])) {
             $dataI1 = new DateTime();
-            $params['dataInicio'] = '01/'.$dataI1->format('m/Y');
+            $params['dataInicio'] = '01/' . $dataI1->format('m/Y');
         }
-        if ( !isset($params['dataFim']) ||empty($params['dataFim'])) {
+        if (!isset($params['dataFim']) || empty($params['dataFim'])) {
             $dataF2 = new DateTime();
             $params['dataFim'] = $dataF2->format('d/m/Y');
         }
@@ -39,7 +39,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         }
 
         $sqlOrderTipo = "";
-        if ($tipo == 'detalhado' ) {
+        if ($tipo == 'detalhado') {
             $sqlOrderTipo = " TO_CHAR(P.DTH_INICIO,'DD/MM/YYYY'), ";
         }
         if ($orientacao == 'atividade') {
@@ -50,14 +50,14 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
 
         $SQLWHere = "";
         if (isset($params['atividade']) && !empty($params['atividade'])) {
-            $SQLWHere = " AND DSC_ATIVIDADE = '".$params['atividade']."'";
+            $SQLWHere = " AND DSC_ATIVIDADE = '" . $params['atividade'] . "'";
         }
 
         $sql = "SELECT ";
         if ($tipo == 'detalhado') {
             $sql .= " TO_CHAR(P.DTH_INICIO,'DD/MM/YYYY') as DIA,";
         }
-        $sql .=      " P.DSC_ATIVIDADE,
+        $sql .= " P.DSC_ATIVIDADE,
                        PE.NOM_PESSOA,
                        COUNT(P.QTD_PRODUTOS)as QTD_PRODUTOS,
                        SUM(P.QTD_VOLUMES) as QTD_VOLUMES,
@@ -76,7 +76,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $sql .= "P.DSC_ATIVIDADE, PE.NOM_PESSOA" . $SQLOrder;
         $result = $this->em->getConnection()->executeQuery($sql)->fetchAll();
         $grid = new \Wms\Module\Produtividade\Grid\Produtividade();
-        $this->view->grid = $grid->init($result,$orientacao,$tipo);
+        $this->view->grid = $grid->init($result, $orientacao, $tipo);
 
         if (isset($params['gerarPdf']) && !empty($params['gerarPdf'])) {
             if (!empty($result)) {
@@ -85,14 +85,13 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
                 $result['dataFim'] = $params['dataFim'];
                 $pdfReport = new \Wms\Module\Produtividade\Report\Apontamento();
                 $pdfReport->generatePDF($result);
-            }else {
-                $this->addFlashMessage('error',"Nenhum resultado encontrado entre $params[dataInicio] e $params[dataFim]");
+            } else {
+                $this->addFlashMessage('error', "Nenhum resultado encontrado entre $params[dataInicio] e $params[dataFim]");
             }
         }
     }
 
-    private function groupByOrientacao ($result, $orientacao)
-    {
+    private function groupByOrientacao($result, $orientacao) {
         $groupBy = array();
         if ($orientacao == 'atividade') {
             $groupBy['orientacao'] = 'Atividade';
@@ -108,8 +107,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         return $groupBy;
     }
 
-    public function relatorioDetalhadoAction()
-    {
+    public function relatorioDetalhadoAction() {
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', 3000);
         $form = new \Wms\Module\Produtividade\Form\FormProdutividadeDetalhada();
@@ -121,7 +119,7 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         $procedure = $this->em->getConnection()->prepare($procedureSQL);
         $procedure->execute();
         $this->em->flush();
-        
+
         if (empty($params['dataInicio'])) {
             $hoje = new \DateTime();
             $hoje->sub(new \DateInterval('P01D'));
@@ -151,32 +149,29 @@ class Produtividade_Relatorio_IndicadoresController  extends Action
         if (empty($params['usuario'])) {
             $params['usuario'] = "";
         }
+        if (empty($params['ordem'])) {
+            $params['ordem'] = "";
+        }
         $grid = new \Wms\Module\Produtividade\Grid\ProdutividadeDetalhada();
-        //if(isset($params['submit'])) {
-            /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepository */
-            $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-//            $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
-            $result = $apontamentoMapaRepository->getProdutividadeDetalhe($params);
-            $this->view->grid = $grid->init($result)->render();
+        /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepository */
+        $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+        $result = $apontamentoMapaRepository->getProdutividadeDetalhe($params);
+        $this->view->grid = $grid->init($result)->render();
 
-        //}
         $form->populate($params);
     }
 
-    public function relatorioRelatorioDetalhadoAjaxAction()
-    {
+    public function relatorioRelatorioDetalhadoAjaxAction() {
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', 3000);
         $params = $this->_getAllParams();
 
         /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepository */
         $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-//        $result = $apontamentoMapaRepository->getApontamentoDetalhado($params);
         $result = $apontamentoMapaRepository->getProdutividadeDetalhe($params);
 
         $relatorio = new \Wms\Module\Produtividade\Printer\ProdutividadeDetalhada('L', 'mm', 'A4');
         $relatorio->imprimir($result);
-
-//        $this->exportPDF($result,'Relatório Detalhado',utf8_encode('Relatório Detalhado'),"L");
     }
+
 }

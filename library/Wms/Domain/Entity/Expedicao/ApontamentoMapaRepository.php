@@ -214,12 +214,12 @@ class ApontamentoMapaRepository extends EntityRepository {
         $idUsuario = $params['usuario'];
         $atividade = $params['atividade'];
         $idIdentidade = $params['identidade'];
-//        $idMapaSeparacao = $params['mapaSeparacao'];
         $tipoQuebra = $params['tipoQuebra'];
         $dataInicio = $params['dataInicio'];
         $horaInicio = $params['horaInicio'];
         $dataFim = $params['dataFim'];
         $horaFim = $params['horaFim'];
+        $ordem = $params['ordem'];
         $andWhere = ' ';
         $andWhereConf = ' ';
 
@@ -248,20 +248,30 @@ class ApontamentoMapaRepository extends EntityRepository {
 
         if (isset($dataInicio) && !empty($dataInicio)) {
             if (isset($horaInicio) && !empty($horaInicio)) {
-                $andWhere .= " AND DTH_INICIO >= TO_DATE('$dataInicio $horaInicio', 'DD-MM-YYYY HH24:MI') ";
+                $andWhere .= " AND DTH_INICIO >= TO_DATE('$dataInicio $horaInicio', 'DD/MM/YYYY HH24:MI') ";
             } else {
-                $andWhere .= " AND DTH_INICIO >= TO_DATE('$dataInicio 00:00', 'DD-MM-YYYY HH24:MI') ";
+                $andWhere .= " AND DTH_INICIO >= TO_DATE('$dataInicio 00:00', 'DD/MM/YYYY HH24:MI') ";
             }
         }
 
         if (isset($dataFim) && !empty($dataFim)) {
             if (isset($horaFim) && !empty($horaFim)) {
-                $andWhere .= " AND DTH_FIM <= TO_DATE('$dataFim $horaFim', 'DD-MM-YYYY HH24:MI') ";
+                $andWhere .= " AND DTH_FIM <= TO_DATE('$dataFim $horaFim', 'DD/MM/YYYY HH24:MI') ";
             } else {
-                $andWhere .= " AND DTH_FIM <= TO_DATE('$dataFim 23:59', 'DD-MM-YYYY HH24:MI') ";
+                $andWhere .= " AND DTH_FIM <= TO_DATE('$dataFim 23:59', 'DD/MM/YYYY HH24:MI') ";
             }
         }
-
+        switch ($ordem) {
+            case 1:
+                $order = "TO_DATE(DTH_INICIO, 'DD/MM/YYYY HH24:MI:SS')";
+                break;
+            case 2:
+                $order = 'DSC_ATIVIDADE, PD.COD_PESSOA ASC';
+                break;
+            default:
+                $order = 'PD.COD_PESSOA, DSC_ATIVIDADE ASC';
+                break;
+        }
         $sql = " SELECT 
                     PE.NOM_PESSOA, 
                     IDENTIDADE,
@@ -283,7 +293,7 @@ class ApontamentoMapaRepository extends EntityRepository {
                     IDENTIDADE,
                     DSC_ATIVIDADE,
                     PD.COD_PESSOA
-                    ORDER BY DSC_ATIVIDADE, PD.COD_PESSOA";
+                    ORDER BY $order";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         $qtdRows = count($result);
         $pesoTotal = 0;
@@ -321,16 +331,16 @@ class ApontamentoMapaRepository extends EntityRepository {
         $intervalo = date_diff(\DateTime::createFromFormat('Y-m-d H:i:s', $hoje), \DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s', strtotime($hoje . '+ ' . $seconds . ' seconds'))));
         $min = $intervalo->i;
         $sec = $intervalo->s;
-        if($intervalo->i <10){
-            $min = '0'.$intervalo->i;
+        if ($intervalo->i < 10) {
+            $min = '0' . $intervalo->i;
         }
-        if($intervalo->s <10){
-            $sec = '0'.$intervalo->s;
+        if ($intervalo->s < 10) {
+            $sec = '0' . $intervalo->s;
         }
-        if($intervalo->d > 0){
+        if ($intervalo->d > 0) {
             $hr = ($intervalo->d * 24) + $intervalo->h;
-            $tempoTotal = $hr.":".$min.':'.$sec;
-        }else{
+            $tempoTotal = $hr . ":" . $min . ':' . $sec;
+        } else {
             $tempoTotal = date('H:i:s', strtotime("$intervalo->h:$min:$sec"));
         }
         $result[$qtdRows]['NOM_PESSOA'] = 'TOTAIS';
@@ -348,4 +358,5 @@ class ApontamentoMapaRepository extends EntityRepository {
 
         return $result;
     }
+
 }
