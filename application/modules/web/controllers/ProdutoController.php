@@ -34,6 +34,29 @@ class Web_ProdutoController extends Crud {
         $this->view->form = $form;
     }
 
+/*    public function printCodBarProdutoAjaxAction() {
+        $modelo = 3;
+        $handle = fopen('C:\wamp64\www\wms\codigos.txt','r');
+        $codProduto = str_replace("\r\n",'',stream_get_contents($handle));
+        $grade = $this->getRequest()->getParam('grade');
+        $gerarEtiqueta = null;
+        switch ($modelo) {
+            case 1:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
+                break;
+            case 2:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
+                break;
+            case 3:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
+                break;
+        }
+
+        $gerarEtiqueta->init(null, array(
+            'codProduto' => $codProduto,
+            'grade' => $grade), $modelo);
+    }*/
+
     /**
      * Lista as normas de paletizacao com dados logisticos
      */
@@ -417,7 +440,7 @@ class Web_ProdutoController extends Crud {
         $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
         $codProduto = $this->getRequest()->getParam('id');
         $grade = $this->getRequest()->getParam('grade');
-
+        $gerarEtiqueta = null;
         switch ($modelo) {
             case 1:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
@@ -429,7 +452,8 @@ class Web_ProdutoController extends Crud {
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
                 break;
         }
-        $result = $gerarEtiqueta->init(null, array(
+
+        $gerarEtiqueta->init(null, array(
             'codProduto' => $codProduto,
             'grade' => $grade), $modelo);
     }

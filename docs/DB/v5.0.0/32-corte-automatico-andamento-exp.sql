@@ -7,6 +7,7 @@
  * Author:  Luis Fernando
  * Created: 08/08/2017
  */
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '5.0.0','32-corte-automatico-andamento-exp.sql');
 
 ALTER TABLE PEDIDO_PRODUTO
   ADD (QTD_CORTADO_AUTOMATICO NUMBER(13,3) NULL);
