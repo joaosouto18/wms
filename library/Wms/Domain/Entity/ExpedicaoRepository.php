@@ -2941,8 +2941,9 @@ class ExpedicaoRepository extends EntityRepository {
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $valToNext = 0;
+        $qtdRemoveReserva = $qtdCortar;
         foreach ($result as $item) {
-            $check = Math::adicionar($qtdCortar, $item['QTD']);
+            $check = Math::adicionar($qtdRemoveReserva, $item['QTD']);
             $entityReservaEstoqueProduto = $reservaEstoqueProdutoRepo->findBy(array('reservaEstoque' => $item['ID']));
             foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
                 if (Math::compare($check, 0, '>=')) {
@@ -2953,8 +2954,8 @@ class ExpedicaoRepository extends EntityRepository {
                     $this->getEntityManager()->persist($reservaEstoqueProduto);
                 }
             }
-            $qtdCortar = Math::subtrair($qtdCortar, $valToNext);
-            if ($qtdCortar == 0) {
+            $qtdRemoveReserva = $valToNext;
+            if ($qtdRemoveReserva <= 0) {
                 break;
             }
         }
