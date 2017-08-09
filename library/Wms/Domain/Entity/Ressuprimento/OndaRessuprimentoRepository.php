@@ -475,9 +475,11 @@ class OndaRessuprimentoRepository extends EntityRepository
 
         if ($saldo <= $pontoReposicao) {
             $qtdRessuprir = $saldo * -1;
-            $qtdRessuprirMax = $qtdRessuprir + $capacidadePicking;
+            // SE QUANTIDADE RESSUPRIR FOR MAIOR Q A CAPACIDADE DE PICKING, SOMA OS VALORES PARA RESSUPRIR E MANTER NO PICKING
+            //SE QUANTIDADE RESSUPRIR FOR MENOR Q A CAPACIDADE DE PICKING, RESSUPRI ATÉ O LIMITE DO PICKING APENAS
+            $qtdRessuprirMax = ($qtdRessuprir >= $capacidadePicking) ? $qtdRessuprir + $capacidadePicking : $capacidadePicking;
 
-            //GERO AS OS DE ACORDO COM OS ENDEREÇOS DE PULMAO
+            //GERA A O.S DE ACORDO COM OS ENDEREÇOS DE PULMAO
             $params = array(
                 'idProduto' => $codProduto,
                 'grade' => $grade,
@@ -492,20 +494,10 @@ class OndaRessuprimentoRepository extends EntityRepository
 
                 $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('id'=>$idPulmao));
 
-                //CALCULO A QUANTIDADE DO PALETE
-                if ($qtdRessuprirMax >= $qtdEstoque) {
-                    $qtdOnda = $qtdEstoque;
-                }else {
-                    if ($capacidadePicking >= $qtdRessuprir){
-                        $qtdOnda = $capacidadePicking;
-                    } else {
-                        //Todo Reavaliar o cálculo de ressuprimento
-                        $qtdOnda = ((int) ($qtdRessuprirMax / $capacidadePicking)) * $capacidadePicking;
-                    }
-                    if ($qtdOnda > $qtdEstoque)
-                        $qtdOnda = $qtdEstoque;
-                }
+                //CALCULO A QUANTIDADE DE PALETES
+                $qtdOnda = ($qtdRessuprirMax >= $qtdEstoque) ? $qtdEstoque : $qtdRessuprirMax;
 
+                //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
                     $this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking,$repositorios,$validadeEstoque);
                     $qtdOsGerada ++;
@@ -513,12 +505,10 @@ class OndaRessuprimentoRepository extends EntityRepository
 
                 $qtdRessuprir = $qtdRessuprir - $qtdOnda;
                 $qtdRessuprirMax = $qtdRessuprirMax - $qtdOnda;
-                if ($qtdRessuprir <= 0)  {
-                    $qtdRessuprir = 0;
+                if ($qtdRessuprirMax <= 0)  {
                     break;
                 }
             }
-
         }
         return $qtdOsGerada;
 
