@@ -4,8 +4,8 @@ namespace Wms\Domain\Entity\Ressuprimento;
 
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
-    Wms\Domain\Entity\Atividade as AtividadeEntity
-;
+    Wms\Domain\Entity\Atividade as AtividadeEntity;
+use Wms\Math;
 
 class OndaRessuprimentoRepository extends EntityRepository
 {
@@ -453,6 +453,7 @@ class OndaRessuprimentoRepository extends EntityRepository
         $grade = $picking['grade'];
         $volumes = $picking['volumes'];
         $embalagens = $picking['embalagens'];
+        $Math = new Math();
 
         $idVolume = null;
         if (count($volumes) >0){
@@ -475,9 +476,14 @@ class OndaRessuprimentoRepository extends EntityRepository
 
         if ($saldo <= $pontoReposicao) {
             $qtdRessuprir = $saldo * -1;
-            // SE QUANTIDADE RESSUPRIR FOR MAIOR Q A CAPACIDADE DE PICKING, SOMA OS VALORES PARA RESSUPRIR E MANTER NO PICKING
-            //SE QUANTIDADE RESSUPRIR FOR MENOR Q A CAPACIDADE DE PICKING, RESSUPRI ATÉ O LIMITE DO PICKING APENAS
-            $qtdRessuprirMax = ($qtdRessuprir >= $capacidadePicking) ? $qtdRessuprir + $capacidadePicking : $capacidadePicking;
+            if ($qtdRessuprir >= $capacidadePicking) {
+                //SE QUANTIDADE RESSUPRIR FOR MAIOR Q A CAPACIDADE DE PICKING, RESSUPRI O MULTIPLO DO PICKING COMPARADO A QUANTIDADE Q FOR RESSUPRIR
+                $vezesRessuprimento = $Math->quocienteDivisao($qtdRessuprir, $capacidadePicking);
+                $qtdRessuprirMax = $Math->produtoMultiplicacao($capacidadePicking,ceil($vezesRessuprimento));
+            } else {
+                //SE QUANTIDADE RESSUPRIR FOR MENOR Q A CAPACIDADE DE PICKING, RESSUPRI ATÉ O LIMITE DO PICKING APENAS
+                $qtdRessuprirMax = $capacidadePicking;
+            }
 
             //GERA A O.S DE ACORDO COM OS ENDEREÇOS DE PULMAO
             $params = array(
