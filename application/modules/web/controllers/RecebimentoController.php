@@ -646,12 +646,13 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         // checando observacoes
                         $motivosDivergencia = $this->getRequest()->getParam('motivosDivergencia');
                         $notasFiscais = $this->getRequest()->getParam('notasFiscais');
-
+                        $arrNotasEn = array()
+;
                         foreach ($motivosDivergencia as $key => $cod_motivo_divergencia) {
 
                             $recebimentoConferenciaEntity = $this->em->getReference('wms:Recebimento\Conferencia', $key);
                             $motivoDivergenciaEntity = $this->em->getReference('wms:Recebimento\Divergencia\Motivo', $cod_motivo_divergencia);
-                            $notaFiscalEntity = $this->em->getReference('wms:NotaFiscal', $notasFiscais[$key]);
+                            $arrNotasEn[] = $notaFiscalEntity = $this->em->find('wms:NotaFiscal', $notasFiscais[$key]);
 
                             $recebimentoConferenciaEntity->setMotivoDivergencia($motivoDivergenciaEntity)
                                     ->setNotaFiscal($notaFiscalEntity);
@@ -664,8 +665,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $this->em->flush();
 
                         $recebimentoErp = false;
-                        foreach ($notasFiscais as $notaFiscalEntity) {
-                            if (!is_null($notaFiscalEntity->codRecebimentoErp())) {
+                        foreach ($arrNotasEn as $notaFiscal) {
+                            if (!is_null($notaFiscal->codRecebimentoErp())) {
                                 $recebimentoErp = true;
                                 break;
                             }
