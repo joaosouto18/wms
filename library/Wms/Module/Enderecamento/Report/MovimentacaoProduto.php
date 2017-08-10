@@ -18,10 +18,10 @@ class MovimentacaoProduto extends Pdf
         $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
         $this->Cell(28, 5, utf8_decode("Pessoa") ,1, 0);
         $this->Cell(20, 5, utf8_decode("Data Validade") ,1, 0);
-        $this->Cell(55, 5, utf8_decode("Observação") ,1, 0);
-        $this->Cell(12, 5, "Qtd.", 1, 1, "C");
-        $this->Cell(10, 5, "Saldo Antes.", 1, 1, "C");
-        $this->Cell(10, 5, "Saldo Final.", 1, 1, "C");
+        $this->Cell(40, 5, utf8_decode("Observação") ,1, 0);
+        $this->Cell(12, 5, "Qtd.", 1, 0, "C");
+        $this->Cell(16, 5, "Saldo Ant.", 1, 0, "C");
+        $this->Cell(16, 5, "Saldo Fim", 1, 1, "C");
     }
 
     public function layout()
@@ -72,6 +72,7 @@ class MovimentacaoProduto extends Pdf
         $volumeAnterior = "";
         $qtde = 0;
         $primeiroProduto = true;
+//        var_dump($historicoReport);die;
         foreach($historicoReport as $produto)
         {
 
@@ -107,10 +108,10 @@ class MovimentacaoProduto extends Pdf
             else
                 $this->Cell(20, 5, '-', 1, 0);
 
-            $this->Cell(55, 5, self::SetStringByMaxWidth(utf8_decode($produto['observacao']),60), 1, 0);
-            $this->Cell(12, 5, $produto['qtd'], 1, 1,"C");
-            $this->Cell(10, 5, "Saldo Antes.", 1, 1, "C");
-            $this->Cell(10, 5, "Saldo Final.", 1, 1, "C");
+            $this->Cell(40, 5, self::SetStringByMaxWidth(utf8_decode($produto['observacao']),40), 1, 0);
+            $this->Cell(12, 5, $produto['qtd'], 1, 0,"C");
+            $this->Cell(16, 5, $produto['saldoAnterior'], 1, 0, "C");
+            $this->Cell(16, 5, $produto['saldoFinal'], 1, 1, "C");
 
             $qtde = $qtde + $produto['qtd'];
 
