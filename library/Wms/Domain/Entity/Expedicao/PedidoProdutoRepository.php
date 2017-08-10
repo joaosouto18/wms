@@ -15,7 +15,7 @@ class PedidoProdutoRepository extends EntityRepository
         foreach ($pedidosProdutosWMS as $produtoWms) {
             $encontrouProdutoERP = false;
             foreach ($pedidosProdutosERP as $key => $produtoERP) {
-                if (in_array($produtoWms['pedido'],$produtoERP)) {
+                if (in_array(strval($produtoWms['pedido']),$produtoERP)) {
                     if (in_array($produtoWms['produto'],$produtoERP)) {
                         if (in_array($produtoWms['grade'],$produtoERP)) {
                             $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
@@ -35,13 +35,14 @@ class PedidoProdutoRepository extends EntityRepository
                                     $pedidoProdutoEntity->setQtdCortada($cortesProduto['quantidadeCortar']);
                                     $this->getEntityManager()->persist($pedidoProdutoEntity);
                                 }
-                                unset($pedidosProdutosERP[$key]);
+//                                unset($pedidosProdutosERP[$key]);
                                 break;
                             }
                         }
                     }
                 }
             }
+
             if (!$encontrouProdutoERP) {
                 $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
                     'codPedido' => $produtoWms['pedido'],
