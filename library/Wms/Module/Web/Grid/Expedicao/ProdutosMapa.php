@@ -64,7 +64,15 @@ class ProdutosMapa extends Grid
                 'actionName' => 'conferencia',
                 'cssClass' => 'inside-modal',
                 'pkIndex' => array('COD_PRODUTO','DSC_GRADE','NUM_CONFERENCIA')
+            ))
+            ->addAction(array(
+                'label' => 'Reiniciar Contagem',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'mapa',
+                'actionName' => 'desfazer-conferencia-ajax',
+                'pkIndex' => array('COD_PRODUTO','DSC_GRADE')
             ));
+
 
         return $this;
     }
