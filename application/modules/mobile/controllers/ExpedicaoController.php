@@ -250,7 +250,7 @@ class Mobile_ExpedicaoController extends Action {
                     $expVolumePatrimonioRepo->vinculaExpedicaoVolume($idVolume, $idExpedicao, $codQuebra);
 
                     $this->view->idVolume = $codBarras;
-                    $this->addFlashMessage('info', 'Volume ' . $codBarrasProcessado . ' vinculada a expedição');
+                    $this->addFlashMessage('info', "Volume $codBarrasProcessado vinculada a expedição");
                 } else if ($tipoProvavelCodBarras === 'produto') {
                     $LeituraColetor = new LeituraColetor();
                     $codBarras = $LeituraColetor->adequaCodigoBarras($codBarras, true);

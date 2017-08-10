@@ -14,6 +14,8 @@ class HistoricoEstoqueRepository extends EntityRepository
                        hist.grade,
                        hist.observacao,
                        hist.qtd,
+                       hist.saldoAnterior,
+                       hist.saldoFinal,
                        hist.data data,
                        dep.descricao,
                        prod.descricao nomeProduto,

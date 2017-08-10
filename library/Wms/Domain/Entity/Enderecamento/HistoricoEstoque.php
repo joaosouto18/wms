@@ -1,6 +1,8 @@
 <?php
 
 namespace Wms\Domain\Entity\Enderecamento;
+use Wms\Domain\Entity\OrdemServico;
+use Wms\Domain\Entity\Usuario;
 
 
 /**
@@ -70,14 +72,14 @@ class HistoricoEstoque
     protected $codOS;
 
     /**
-     * @var Wms\Domain\Entity\OrdemServico $ordemServico
+     * @var \Wms\Domain\Entity\OrdemServico $ordemServico
      * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
      * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS")
      */
     protected $ordemServico;
 
     /**
-     * @var Wms\Domain\Entity\Usuario $usuario
+     * @var \Wms\Domain\Entity\Usuario $usuario
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario")
      * @JoinColumn(name="COD_PESSOA", referencedColumnName="COD_USUARIO")
      */
@@ -112,6 +114,18 @@ class HistoricoEstoque
      * @Column(name="UMA", type="integer", nullable=false)
      */
     protected $uma;
+
+    /**
+     * @var float
+     * @Column(name="SALDO_ANTERIOR", type"float", nullable=false)
+     */
+    protected $saldoAnterior;
+
+    /**
+     * @var float
+     * @Column(name="SALDO_FINAL", type"float", nullable=false)
+     */
+    protected $saldoFinal;
 
     /**
      * @param mixed $codProduto
@@ -258,7 +272,7 @@ class HistoricoEstoque
     }
 
     /**
-     * @param mixed $ordemServico
+     * @param OrdemServico $ordemServico
      */
     public function setOrdemServico($ordemServico)
     {
@@ -266,7 +280,7 @@ class HistoricoEstoque
     }
 
     /**
-     * @return mixed
+     * @return OrdemServico
      */
     public function getOrdemServico()
     {
@@ -354,7 +368,7 @@ class HistoricoEstoque
     }
 
     /**
-     * @param \Wms\Domain\Entity\Enderecamento\Wms\Domain\Entity\Usuario $usuario
+     * @param Usuario $usuario
      */
     public function setUsuario($usuario)
     {
@@ -362,12 +376,42 @@ class HistoricoEstoque
     }
 
     /**
-     * @return \Wms\Domain\Entity\Enderecamento\Wms\Domain\Entity\Usuario
+     * @return Usuario
      */
     public function getUsuario()
     {
         return $this->usuario;
     }
 
+    /**
+     * @return float
+     */
+    public function getSaldoAnterior()
+    {
+        return $this->saldoAnterior;
+    }
 
+    /**
+     * @param float $saldoAnterior
+     */
+    public function setSaldoAnterior($saldoAnterior)
+    {
+        $this->saldoAnterior = $saldoAnterior;
+    }
+
+    /**
+     * @return float
+     */
+    public function getSaldoFinal()
+    {
+        return $this->saldoFinal;
+    }
+
+    /**
+     * @param float $saldoFinal
+     */
+    public function setSaldoFinal($saldoFinal)
+    {
+        $this->saldoFinal = $saldoFinal;
+    }
 }

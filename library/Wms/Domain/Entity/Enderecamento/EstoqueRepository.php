@@ -46,7 +46,6 @@ class EstoqueRepository extends EntityRepository
         $grade = $produtoEn->getGrade();
         $endereco = $enderecoEn->getId();
 
-
         $qtdReserva = 0;
 
         if ($saidaProduto == true) {
@@ -138,6 +137,7 @@ class EstoqueRepository extends EntityRepository
         //ATUALIZA A TABELA ESTOQUE COM O SALDO DE ESTOQUE
         if ($estoqueEn == NULL) {
             $novaQtd = $qtd;
+            $saldoAnterior = 0;
             $estoqueEn = new Estoque();
             $estoqueEn->setDepositoEndereco($enderecoEn);
             $estoqueEn->setProduto($produtoEn);
@@ -152,6 +152,7 @@ class EstoqueRepository extends EntityRepository
             $dscEndereco = $enderecoEn->getDescricao();
             $dscProduto  = $produtoEn->getDescricao();
         } else {
+            $saldoAnterior = $estoqueEn->getQtd();
             $idUma = $estoqueEn->getUma();
             $novaQtd = $estoqueEn->getQtd() + $qtd;
             $dscEndereco = $estoqueEn->getDepositoEndereco()->getDescricao();
@@ -170,6 +171,7 @@ class EstoqueRepository extends EntityRepository
         } else {
             $em->remove($estoqueEn);
         }
+        $saldoFinal = $novaQtd;
 
         if ($runFlush == true)
             $em->flush();
@@ -177,6 +179,8 @@ class EstoqueRepository extends EntityRepository
         //CRIA UM HISTÓRICO DE MOVIMENTAÇÃO DE ESTOQUE
         $historico = new HistoricoEstoque();
         $historico->setQtd($qtd);
+        $historico->setSaldoAnterior($saldoAnterior);
+        $historico->setSaldoFinal($saldoFinal);
         $historico->setData(new \DateTime());
         $historico->setDepositoEndereco($enderecoEn);
         $historico->setObservacao($observacoes);

@@ -1101,13 +1101,13 @@ class MapaSeparacaoRepository extends EntityRepository {
         $dscProduto = $result[0]['DSC_PRODUTO'];
         $codProduto = $result[0]['COD_PRODUTO'];
         $dscGrade = $result[0]['DSC_GRADE'];
-        $dscEmbalagem = $result[0]['DSC_EMBALAGEM'] . "(" . $fatorCodBarrasBipado . ")";
+        $dscEmbalagem = $result[0]['DSC_EMBALAGEM'] . "($fatorCodBarrasBipado)";
 
         //SE FOR UMA CONFERENCIA DE CONSOLIDADO, VERIFICO SE O PRODUTO PERTENCE AO CLIENTE INFORMADO
         if ($codPessoa != null) {
             $cliente = $this->getClientesByMapa($idMapa, $codPessoa, $codProduto, $dscGrade);
             if (count($cliente) <= 0) {
-                throw new \Exception("O produto " . $codProduto . " / " . $dscGrade. " - " . $dscProduto . " não pertence ao cliente selecionado");
+                throw new \Exception("O produto $codProduto / $dscGrade - $dscProduto não pertence ao cliente selecionado");
             }
         }
 
@@ -1175,11 +1175,11 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         if ($utilizaVolumePatrimonio == 'S') {
             if ((isset($idVolumePatrimonio)) && ($idVolumePatrimonio != null) && ($embalado == false)) {
-                throw new \Exception("O produto " . $codProduto . " / " . $dscGrade. " - " . $dscProduto . " - " . $dscEmbalagem . " não é embalado");
+                throw new \Exception("O produto $codProduto / $dscGrade - $dscProduto - $dscEmbalagem não é embalado");
             }
 
             if ((!(isset($idVolumePatrimonio)) || ($idVolumePatrimonio == null)) && ($embalado == true)) {
-                throw new \Exception("O produto " . $codProduto . " / " . $dscGrade. " - " . $dscProduto . " - " . $dscEmbalagem . " é embalado");
+                throw new \Exception("O produto $codProduto / $dscGrade - $dscProduto - $dscEmbalagem é embalado");
             }
         }
 

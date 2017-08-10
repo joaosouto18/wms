@@ -16,11 +16,12 @@ class MovimentacaoProduto extends Pdf
         $this->Cell(29,  5, utf8_decode("Data")   ,1, 0);
         $this->Cell(17, 5, utf8_decode("Tipo Movim") ,1, 0);
         $this->Cell(20, 5, utf8_decode("Endereço") ,1, 0);
-        $this->Cell(33, 5, utf8_decode("Pessoa") ,1, 0);
+        $this->Cell(28, 5, utf8_decode("Pessoa") ,1, 0);
         $this->Cell(20, 5, utf8_decode("Data Validade") ,1, 0);
-        $this->Cell(70, 5, utf8_decode("Observação") ,1, 0);
+        $this->Cell(55, 5, utf8_decode("Observação") ,1, 0);
         $this->Cell(12, 5, "Qtd.", 1, 1, "C");
-
+        $this->Cell(10, 5, "Saldo Antes.", 1, 1, "C");
+        $this->Cell(10, 5, "Saldo Final.", 1, 1, "C");
     }
 
     public function layout()
@@ -100,14 +101,16 @@ class MovimentacaoProduto extends Pdf
             $this->Cell(29, 5, $produto['data']->format('d/m/Y H:i:s'), 1, 0);
             $this->Cell(17, 5, utf8_decode($tipomovim), 1, 0);
             $this->Cell(20, 5, utf8_decode($produto['descricao']), 1, 0);
-            $this->Cell(33, 5, substr(utf8_decode($produto['nomePessoa']),0,20), 1, 0);
+            $this->Cell(28, 5, self::SetStringByMaxWidth(utf8_decode($produto['nomePessoa']),28), 1, 0);
             if (!is_null($produto['validade']))
                 $this->Cell(20, 5, $produto['validade']->format('d/m/Y'), 1, 0);
             else
                 $this->Cell(20, 5, '-', 1, 0);
 
-            $this->Cell(70, 5, substr(utf8_decode($produto['observacao']),0,60), 1, 0);
+            $this->Cell(55, 5, self::SetStringByMaxWidth(utf8_decode($produto['observacao']),60), 1, 0);
             $this->Cell(12, 5, $produto['qtd'], 1, 1,"C");
+            $this->Cell(10, 5, "Saldo Antes.", 1, 1, "C");
+            $this->Cell(10, 5, "Saldo Final.", 1, 1, "C");
 
             $qtde = $qtde + $produto['qtd'];
 
