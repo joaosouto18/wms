@@ -75,16 +75,20 @@ class HistoricoEstoqueRepository extends EntityRepository {
         if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
             $query->andWhere("dep.idCaracteristica = $parametros[tipoEndereco]");
         }
-        if (isset($parametros['dataInicial']) && (!empty($parametros['dataInicial'])) && (!empty($parametros['dataFim']))) {
+        if (isset($parametros['dataInicial']) && (!empty($parametros['dataInicial']))) {
             $dataInicial = str_replace("/", "-", $parametros['dataInicial']);
             $dataI = new \DateTime($dataInicial);
+
+            $query->andWhere("(TRUNC(hist.data) >= ?1) OR hist.data IS NULL")
+                    ->setParameter(1, $dataI);
+        }
+        if (isset($parametros['dataFim']) && (!empty($parametros['dataFim']))) {
 
             $dataFim = str_replace("/", "-", $parametros['dataFim']);
             $dataF = new \DateTime($dataFim);
 
-            $query->andWhere("(((TRUNC(hist.data) >= ?1) AND (TRUNC(hist.data)) <= ?2)  OR hist.data IS NULL)")
-                    ->setParameter(1, $dataI)
-                    ->setParameter(2, $dataF);
+            $query->andWhere("(TRUNC(hist.data)) <= ?2) OR hist.data IS NULL")
+                ->setParameter(2, $dataF);
         }
         if (isset($parametros['ordem']) && !empty($parametros['ordem'] && $parametros['ordem'] == 1)) {
             $query->orderBy("dep.descricao, hist.codProduto, hist.grade, vol.descricao, hist.data");
