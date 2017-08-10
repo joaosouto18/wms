@@ -1114,7 +1114,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         //CALCULO A QUANTIDADE PENDENTE DE CONFERENCIA PARA CADA MAPA, SE UTILIZAR QUEBRA O FILTRO VAI TRAZER APENAS UM MAPA
         $qtdConferidoTotal = 0;
         $qtdMapaTotal = 0;
-        $qtdInformada = $qtd * $fatorCodBarrasBipado;
+        $qtdInformada = Math::multiplicar($qtd, $fatorCodBarrasBipado);
 
         $qtdConferenciaGravar = array();
         $qtdRestante = $qtdInformada;
@@ -1149,13 +1149,14 @@ class MapaSeparacaoRepository extends EntityRepository {
         }
 
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
-        if ($qtdMapaTotal == $qtdConferidoTotal)
-        if ($qtdInformada > (Math::subtrair($qtdMapaTotal,$qtdConferidoTotal))) {
-            $msgErro = "O produto " . $dscProduto . " já se encontra totalmente conferido na expedição";
+        if ($qtdMapaTotal == $qtdConferidoTotal) {
+            $msgErro = "O produto $dscProduto já se encontra totalmente conferido na expedição";
             if ($utilizaQuebra == "S") {
-                $msgErro = "O produto " . $dscProduto . " já se encontra totalmente conferido no mapa " . $idMapa;
+                $msgErro = "O produto $dscProduto já se encontra totalmente conferido no mapa $idMapa";
             }
             throw new \Exception($msgErro);
+        } elseif ($qtdInformada > (Math::subtrair($qtdMapaTotal,$qtdConferidoTotal))) {
+            throw new \Exception("A quantidade de $qtdInformada excede o solicitado!");
         }
 
         //VERIFCO SE O PRODUTO É EMBALADO E ESTA UTILIZANDO VOLUME PATRIMONIO
