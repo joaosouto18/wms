@@ -7,7 +7,7 @@ use Wms\Util\Endereco;
 class Filtro extends Form
 {
 
-    public function init($utilizaGrade = 'S')
+    public function init($utilizaGrade = 'S', $arrTiposEnderecos = array())
     {
 
         $this->setAttribs(array(
@@ -42,13 +42,11 @@ class Filtro extends Form
         ->addElement('select', 'tipoMovimentacao', array(
             'label' => 'Tipo Movimentação',
             'mostrarSelecione' => true,
-            'style' => 'height: auto; width: 100%',
             'multiOptions' => array('E' => 'Entrada', 'S' => 'Saída')
         ))
         ->addElement('select', 'tipoOperacao', array(
             'label' => 'Tipo Operação',
             'mostrarSelecione' => true,
-            'style' => 'height: auto; width: 100%',
             'multiOptions' => array(
                 'M' => 'Movimentação Manual',
                 'I' => 'Inventário',
@@ -58,13 +56,11 @@ class Filtro extends Form
         ))
         ->addElement('select', 'tipoEndereco', array(
             'label' => 'Tipo Endereço',
-            'multiOptions' => array('firstOpt' => 'Ambos', 'options' => array(
-                1 => 'Picking',
-                2 => 'Pulmão')),
+            'multiOptions' => array('firstOpt' => 'Ambos', 'options' => $arrTiposEnderecos)
         ))
         ->addElement('select', 'ordem', array(
             'label' => 'Ordenação',
-            'multiOptions' => array('firstOpt' => 'Produto', 'options' => array(1 => 'Endereço')),
+            'multiOptions' => array('firstOpt' => 'Produto', 'options' => array(1 => 'Endereço'))
         ))
         ->addElement('text', 'rua', array(
             'size' => 3,

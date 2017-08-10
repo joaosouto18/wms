@@ -117,13 +117,13 @@ class HistoricoEstoque
 
     /**
      * @var float
-     * @Column(name="SALDO_ANTERIOR", type"decimal")
+     * @Column(name="SALDO_ANTERIOR", type="decimal", nullable=false)
      */
     protected $saldoAnterior;
 
     /**
      * @var float
-     * @Column(name="SALDO_FINAL", type"decimal")
+     * @Column(name="SALDO_FINAL", type="decimal", nullable=false)
      */
     protected $saldoFinal;
 

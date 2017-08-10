@@ -35,6 +35,8 @@ class HistoricoEstoqueRepository extends EntityRepository {
                         hist.grade,
                         hist.observacao,
                         hist.qtd,
+                        hist.saldoAnterior,
+                        hist.saldoFinal,
                         hist.data,
                         dep.descricao,
                         prod.descricao,
@@ -71,14 +73,7 @@ class HistoricoEstoqueRepository extends EntityRepository {
             $query->andWhere("hist.tipo = '$parametros[tipoOperacao]'");
         }
         if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
-            switch ($parametros['tipoEndereco']) {
-                case 1:
-                    $query->andWhere("dep.descricao LIKE '%.00.%'");
-                    break;
-                case 2:
-                     $query->andWhere("dep.descricao NOT LIKE '%.00.%'");
-                    break;
-            }
+            $query->andWhere("dep.idCaracteristica = $parametros[tipoEndereco]");
         }
         if (isset($parametros['dataInicial']) && (!empty($parametros['dataInicial'])) && (!empty($parametros['dataFim']))) {
             $dataInicial = str_replace("/", "-", $parametros['dataInicial']);
