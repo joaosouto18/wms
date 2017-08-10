@@ -54,4 +54,26 @@ class Expedicao_MapaController  extends Action
 
     }
 
+    public function desfazerConferenciaAjaxAction()
+    {
+        $params = $this->_getAllParams();
+        $codMapaSeparacao = $params['COD_MAPA_SEPARACAO'];
+        $codProduto = $params['COD_PRODUTO'];
+        $grade = $params['DSC_GRADE'];
+        try {
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
+            $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+            $array = $mapaSeparacaoConferenciaRepo->removeMapaSeparacaConferencia($params);
+
+            $this->_helper->messenger('success', "Conferência do produto $codProduto grade $grade com quantidade de $array[quantidade] no mapa de separação $codMapaSeparacao foi reiniciada");
+            return $this->redirect('index','os','expedicao', array('id' => $array['expedicao']));
+
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+
+
+    }
+
 }
