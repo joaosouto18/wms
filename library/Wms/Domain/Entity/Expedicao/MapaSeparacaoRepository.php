@@ -1156,7 +1156,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             }
             throw new \Exception($msgErro);
         } elseif ($qtdInformada > (Math::subtrair($qtdMapaTotal,$qtdConferidoTotal))) {
-            throw new \Exception("A quantidade de $qtdInformada excede o solicitado!");
+            throw new \Exception("A quantidade de $qtd excede o solicitado!");
         }
 
         //VERIFCO SE O PRODUTO É EMBALADO E ESTA UTILIZANDO VOLUME PATRIMONIO
