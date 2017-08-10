@@ -453,7 +453,6 @@ class OndaRessuprimentoRepository extends EntityRepository
         $grade = $picking['grade'];
         $volumes = $picking['volumes'];
         $embalagens = $picking['embalagens'];
-        $Math = new Math();
 
         $idVolume = null;
         if (count($volumes) >0){
@@ -478,8 +477,8 @@ class OndaRessuprimentoRepository extends EntityRepository
             $qtdRessuprir = $saldo * -1;
             if ($qtdRessuprir >= $capacidadePicking) {
                 //SE QUANTIDADE RESSUPRIR FOR MAIOR Q A CAPACIDADE DE PICKING, RESSUPRI O MULTIPLO DO PICKING COMPARADO A QUANTIDADE Q FOR RESSUPRIR
-                $vezesRessuprimento = $Math->quocienteDivisao($qtdRessuprir, $capacidadePicking);
-                $qtdRessuprirMax = $Math->produtoMultiplicacao($capacidadePicking,ceil($vezesRessuprimento));
+                $vezesRessuprimento = Math::dividir($qtdRessuprir, $capacidadePicking);
+                $qtdRessuprirMax = Math::multiplicar($capacidadePicking,ceil($vezesRessuprimento));
             } else {
                 //SE QUANTIDADE RESSUPRIR FOR MENOR Q A CAPACIDADE DE PICKING, RESSUPRI ATÉ O LIMITE DO PICKING APENAS
                 $qtdRessuprirMax = $capacidadePicking;
