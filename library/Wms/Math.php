@@ -26,6 +26,27 @@ Class Math
         return str_pad(1 ,$maiorPrecisao + 1,'0');
     }
 
+    public function quocienteDivisao($x, $y)
+    {
+        $quantidade = $this->maiorPrecisao($x, $y);
+
+        $x = $x * $quantidade;
+        $y = $y * $quantidade;
+
+        return $x / $y;
+
+    }
+
+    public function restoDivisao($x, $y)
+    {
+        $quantidade = $this->maiorPrecisao($x, $y);
+
+        $x = $x * $quantidade;
+        $y = $y * $quantidade;
+
+        return $x % $y;
+    }
+
     public static function compare($x,$y,$oper = ">") {
         $quantidade = self::maiorPrecisao($x,$y);
         $x = $x * $quantidade;

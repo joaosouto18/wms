@@ -4,8 +4,8 @@ namespace Wms\Domain\Entity\Ressuprimento;
 
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
-    Wms\Domain\Entity\Atividade as AtividadeEntity
-;
+    Wms\Domain\Entity\Atividade as AtividadeEntity;
+use Wms\Math;
 
 class OndaRessuprimentoRepository extends EntityRepository
 {
@@ -453,6 +453,7 @@ class OndaRessuprimentoRepository extends EntityRepository
         $grade = $picking['grade'];
         $volumes = $picking['volumes'];
         $embalagens = $picking['embalagens'];
+        $Math = new Math();
 
         $idVolume = null;
         if (count($volumes) >0){
@@ -475,9 +476,16 @@ class OndaRessuprimentoRepository extends EntityRepository
 
         if ($saldo <= $pontoReposicao) {
             $qtdRessuprir = $saldo * -1;
-            $qtdRessuprirMax = $qtdRessuprir + $capacidadePicking;
+            if ($qtdRessuprir >= $capacidadePicking) {
+                //SE QUANTIDADE RESSUPRIR FOR MAIOR Q A CAPACIDADE DE PICKING, RESSUPRI O MULTIPLO DO PICKING COMPARADO A QUANTIDADE Q FOR RESSUPRIR
+                $vezesRessuprimento = $Math->quocienteDivisao($qtdRessuprir, $capacidadePicking);
+                $qtdRessuprirMax = $Math->produtoMultiplicacao($capacidadePicking,ceil($vezesRessuprimento));
+            } else {
+                //SE QUANTIDADE RESSUPRIR FOR MENOR Q A CAPACIDADE DE PICKING, RESSUPRI ATÉ O LIMITE DO PICKING APENAS
+                $qtdRessuprirMax = $capacidadePicking;
+            }
 
-            //GERO AS OS DE ACORDO COM OS ENDEREÇOS DE PULMAO
+            //GERA A O.S DE ACORDO COM OS ENDEREÇOS DE PULMAO
             $params = array(
                 'idProduto' => $codProduto,
                 'grade' => $grade,
@@ -492,20 +500,10 @@ class OndaRessuprimentoRepository extends EntityRepository
 
                 $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('id'=>$idPulmao));
 
-                //CALCULO A QUANTIDADE DO PALETE
-                if ($qtdRessuprirMax >= $qtdEstoque) {
-                    $qtdOnda = $qtdEstoque;
-                }else {
-                    if ($capacidadePicking >= $qtdRessuprir){
-                        $qtdOnda = $capacidadePicking;
-                    } else {
-                        //Todo Reavaliar o cálculo de ressuprimento
-                        $qtdOnda = ((int) ($qtdRessuprirMax / $capacidadePicking)) * $capacidadePicking;
-                    }
-                    if ($qtdOnda > $qtdEstoque)
-                        $qtdOnda = $qtdEstoque;
-                }
+                //CALCULO A QUANTIDADE DE PALETES
+                $qtdOnda = ($qtdRessuprirMax >= $qtdEstoque) ? $qtdEstoque : $qtdRessuprirMax;
 
+                //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
                     $this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking,$repositorios,$validadeEstoque);
                     $qtdOsGerada ++;
@@ -513,12 +511,10 @@ class OndaRessuprimentoRepository extends EntityRepository
 
                 $qtdRessuprir = $qtdRessuprir - $qtdOnda;
                 $qtdRessuprirMax = $qtdRessuprirMax - $qtdOnda;
-                if ($qtdRessuprir <= 0)  {
-                    $qtdRessuprir = 0;
+                if ($qtdRessuprirMax <= 0)  {
                     break;
                 }
             }
-
         }
         return $qtdOsGerada;
 
