@@ -71,9 +71,6 @@ class Expedicao_MapaController  extends Action
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
-
-
-
     }
 
 }
