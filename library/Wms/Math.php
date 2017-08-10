@@ -32,6 +32,17 @@ Class Math
         return $quantidade;
     }
 
+    public function quocienteDivisao($x, $y)
+    {
+        $quantidade = $this->maiorPrecisao($x, $y);
+
+        $x = $x * $quantidade;
+        $y = $y * $quantidade;
+
+        return $x / $y;
+
+    }
+
     public function restoDivisao($x, $y)
     {
         $quantidade = $this->maiorPrecisao($x, $y);
