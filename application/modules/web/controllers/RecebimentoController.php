@@ -646,8 +646,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         // checando observacoes
                         $motivosDivergencia = $this->getRequest()->getParam('motivosDivergencia');
                         $notasFiscais = $this->getRequest()->getParam('notasFiscais');
-                        $arrNotasEn = array()
-;
+                        $arrNotasEn = array();
+                        
                         foreach ($motivosDivergencia as $key => $cod_motivo_divergencia) {
 
                             $recebimentoConferenciaEntity = $this->em->getReference('wms:Recebimento\Conferencia', $key);
