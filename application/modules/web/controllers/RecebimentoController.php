@@ -664,9 +664,11 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $this->em->persist($ordemServicoEntity);
                         $this->em->flush();
 
+                        $notasFiscaisEntities = $this->getEntityManager()->getRepository('wms:Notafiscal')->findBy(array('recebimento' => $recebimentoEntity));
+
                         $recebimentoErp = false;
-                        foreach ($arrNotasEn as $notaFiscal) {
-                            if (!is_null($notaFiscal->codRecebimentoErp())) {
+                        foreach ($notasFiscaisEntities as $notaFiscalEntity) {
+                            if (!is_null($notaFiscalEntity->getCodRecebimentoErp())) {
                                 $recebimentoErp = true;
                                 break;
                             }
