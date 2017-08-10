@@ -87,7 +87,7 @@ class HistoricoEstoqueRepository extends EntityRepository {
             $dataFim = str_replace("/", "-", $parametros['dataFim']);
             $dataF = new \DateTime($dataFim);
 
-            $query->andWhere("(TRUNC(hist.data)) <= ?2) OR hist.data IS NULL")
+            $query->andWhere("(TRUNC(hist.data) <= ?2) OR hist.data IS NULL")
                 ->setParameter(2, $dataF);
         }
         if (isset($parametros['ordem']) && !empty($parametros['ordem'] && $parametros['ordem'] == 1)) {
