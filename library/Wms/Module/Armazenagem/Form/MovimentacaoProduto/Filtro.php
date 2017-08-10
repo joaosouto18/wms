@@ -1,13 +1,13 @@
 <?php
 namespace Wms\Module\Armazenagem\Form\MovimentacaoProduto;
 
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Module\Web\Form;
-use Wms\Util\Endereco;
 
 class Filtro extends Form
 {
 
-    public function init($utilizaGrade = 'S', $arrTiposEnderecos = array())
+    public function init($utilizaGrade = 'S')
     {
 
         $this->setAttribs(array(
@@ -56,7 +56,11 @@ class Filtro extends Form
         ))
         ->addElement('select', 'tipoEndereco', array(
             'label' => 'Tipo Endereço',
-            'multiOptions' => array('firstOpt' => 'Ambos', 'options' => $arrTiposEnderecos)
+            'multiOptions' => array('firstOpt' => 'Ambos', 'options' => array(
+                Endereco::ENDERECO_PICKING => Endereco::$tiposEndereco[Endereco::ENDERECO_PICKING],
+                Endereco::ENDERECO_PULMAO => Endereco::$tiposEndereco[Endereco::ENDERECO_PULMAO],
+                Endereco::ENDERECO_PICKING_DINAMICO => Endereco::$tiposEndereco[Endereco::ENDERECO_PICKING_DINAMICO],
+            ))
         ))
         ->addElement('select', 'ordem', array(
             'label' => 'Ordenação',

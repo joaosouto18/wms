@@ -7,15 +7,9 @@ class Enderecamento_Relatorio_MovimentacaoProdutoController extends Action
     public function indexAction()
     {
         $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
-        $caractEndEn = $this->_em->getRepository('wms:Deposito\Endereco\Caracteristica')->findAll();
 
-        $arrTiposEnderecos = array();
-        /** @var \Wms\Domain\Entity\Deposito\Endereco\Caracteristica $caract */
-        foreach ($caractEndEn as $caract) {
-            $arrTiposEnderecos[$caract->getId()] = ucwords(mb_strtolower($caract->getDescricao(), 'UTF-8'));
-        }
         $form = new \Wms\Module\Armazenagem\Form\MovimentacaoProduto\Filtro();
-        $form->init($utilizaGrade, $arrTiposEnderecos);
+        $form->init($utilizaGrade);
         $values = $form->getParams();
 
         if ($values)
