@@ -2,19 +2,20 @@
 namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Id\SequenceGenerator;
 use Doctrine\ORM\Query;
 use Wms\Domain\Entity\Expedicao;
 
 class MapaSeparacaoEmbaladoRepository extends EntityRepository
 {
 
-    public function save($idMapa,$codPessoa,$mapaSeparacaoEmbalado=null, $flush = true)
+    public function save($idMapa, $codPessoa, $mapaSeparacaoEmbalado = null, $flush = true)
     {
         $pessoaEn = $this->getEntityManager()->getReference('wms:Pessoa',$codPessoa);
         $mapaSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao',$idMapa);
         $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO);
         $sequencia = 1;
-        if (isset($mapaSeparacaoEmbalado) && !empty($mapaSeparacaoEmbalado)) {
+        if (!empty($mapaSeparacaoEmbalado)) {
             $sequencia = $mapaSeparacaoEmbalado->getSequencia() + 1;
         }
 

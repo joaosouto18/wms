@@ -69,14 +69,14 @@ class OrdemServico
     protected $idRecebimento;
 
     /**
-     * @var Wms\Domain\Entity\Recebimento $recebimento
+     * @var \Wms\Domain\Entity\Recebimento $recebimento
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Recebimento")
      * @JoinColumn(name="COD_RECEBIMENTO", referencedColumnName="COD_RECEBIMENTO") 
      */
     protected $recebimento;
 
     /**
-     * @var Wms\Domain\Entity\Atividade $atividade
+     * @var \Wms\Domain\Entity\Atividade $atividade
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Atividade")
      * @JoinColumn(name="COD_ATIVIDADE", referencedColumnName="COD_ATIVIDADE") 
      */
