@@ -419,7 +419,7 @@ class RecebimentoRepository extends EntityRepository {
         $notasFiscaisEntities = $ordemServicoEntity->getRecebimento()->getNotasFiscais();
         $recebimentoErp = false;
         foreach ($notasFiscaisEntities as $notaFiscalEntity) {
-            if (!is_null($notaFiscalEntity->codRecebimentoErp())) {
+            if (!is_null($notaFiscalEntity->getCodRecebimentoErp())) {
                 $recebimentoErp = true;
                 break;
             }
