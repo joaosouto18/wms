@@ -8,8 +8,8 @@ if ($this->fornecedor) {
     $fornecedor = $this->fornecedor;
 }
 ?>
-<div class="row" >
-    <table class="info table row">
+<!--<div class="row" >-->
+    <table class="info">
         <caption>Recebimento:  <?php echo $this->recebimento->getId() ?> - <?php echo $this->recebimento->getBox()->getDescricao() ?> - <?php echo $this->recebimento->getDataInicial() ?></caption>
         <caption>Veículo: <?php echo $placaVeiculo ?></caption>
         <caption>Fornecedor: <?php echo $this->fornecedor ?></caption>
@@ -33,4 +33,4 @@ if ($this->fornecedor) {
         endif;
         ?>
     </table>
-</div>
+<!--</div>-->
