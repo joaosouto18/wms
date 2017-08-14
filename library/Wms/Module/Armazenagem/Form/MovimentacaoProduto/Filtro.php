@@ -56,6 +56,16 @@ class Filtro extends Form
                 'S' => 'Expedição',
                 'E' => 'Endereçamento')
         ))
+        ->addElement('select', 'tipoEndereco', array(
+            'label' => 'Tipo Endereço',
+            'multiOptions' => array('firstOpt' => 'Ambos', 'options' => array(
+                1 => 'Picking',
+                2 => 'Pulmão')),
+        ))
+        ->addElement('select', 'ordem', array(
+            'label' => 'Ordenação',
+            'multiOptions' => array('firstOpt' => 'Produto', 'options' => array(1 => 'Endereço')),
+        ))
         ->addElement('text', 'rua', array(
             'size' => 3,
             'alt' => 'enderecoRua',
@@ -82,7 +92,7 @@ class Filtro extends Form
             'class' => 'btn',
             'decorators' => array('ViewHelper'),
         ))
-        ->addDisplayGroup(array('idProduto',  'grade', 'dataInicial', 'dataFim', 'tipoMovimentacao', 'tipoOperacao', 'rua', 'predio', 'nivel', 'apto', 'submit'), 'identificacao', array('legend' => 'Filtro'));
+        ->addDisplayGroup(array('idProduto',  'grade', 'dataInicial', 'dataFim', 'tipoMovimentacao', 'tipoOperacao', 'rua', 'predio', 'nivel', 'apto','ordem','tipoEndereco', 'submit'), 'identificacao', array('legend' => 'Filtro'));
     }
 /**
      *
