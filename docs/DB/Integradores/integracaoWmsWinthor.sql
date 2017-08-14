@@ -254,7 +254,7 @@ INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRA
  * VERIFICANDO SE A CARGA ESTA FATURADA
  */
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO,DSC_QUERY,COD_TIPO_ACAO_INTEGRACAO,IND_UTILIZA_LOG,DTH_ULTIMA_EXECUCAO)
-  VALUES (18,1,'SELECT DECODE(COUNT(numped),0,''' || 'N' || ''',''' || 'S' || ''') as IND_CARGA_FATURADA  FROM (SELECT 1 as numped FROM pccarreg c WHERE c.dtfat is not null AND c.numcar IN(:where) UNION SELECT nf.numnota from pcmov m inner join pcnfsaid nf on nf.numnota = m.numnota WHERE nf.numnota IN(:where) AND m.rotinacad = ''' || 'PCSIS1322.EXE' || ''')',
+  VALUES (18,1,'SELECT DECODE(COUNT(numped),0,''' || 'N' || ''',''' || 'S' || ''') as IND_CARGA_FATURADA  FROM (SELECT 1 as numped FROM pccarreg c WHERE c.dtfat is not null AND c.numcar IN (:where) UNION SELECT nf.numnota from pcmov m inner join pcnfsaid nf on nf.numnota = m.numnota WHERE nf.numnota IN (:where) AND m.rotinacad  IN ('||'''PCSIS1322.EXE'''||','||'''PCSIS1193.EXE'''||'))',
   614,'S',SYSDATE);
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
