@@ -7,14 +7,13 @@ class Expedicao_CorteFaixaController  extends Action
     public function indexAction()
     {
         ini_set('max_execution_time', 3000);
-        $LeituraColetor = new LeituraColetor();
 
         $codBarrasInicial = $this->getRequest()->getParam('codBarrasInicial');
         $codBarrasFinal = $this->getRequest()->getParam('codBarrasFinal');
         $senha = $this->view->codBarras = $this->getRequest()->getParam('senha');
 
-        $codBarrasInicial = $LeituraColetor->retiraDigitoIdentificador($codBarrasInicial);
-        $codBarrasFinal = $LeituraColetor->retiraDigitoIdentificador($codBarrasFinal);
+        $codBarrasInicial = \Wms\Util\Coletor::retiraDigitoIdentificador($codBarrasInicial);
+        $codBarrasFinal = \Wms\Util\Coletor::retiraDigitoIdentificador($codBarrasFinal);
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
