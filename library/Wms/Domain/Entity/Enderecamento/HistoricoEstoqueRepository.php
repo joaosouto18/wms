@@ -88,13 +88,25 @@ class HistoricoEstoqueRepository extends EntityRepository {
             $dataF = new \DateTime($dataFim);
 
             $query->andWhere("(TRUNC(hist.data) <= ?2) OR hist.data IS NULL")
-                ->setParameter(2, $dataF);
+                    ->setParameter(2, $dataF);
         }
-        if (isset($parametros['ordem']) && !empty($parametros['ordem'] && $parametros['ordem'] == 1)) {
-            $query->orderBy("dep.descricao, hist.codProduto, hist.grade, vol.descricao, hist.data");
+        if (isset($parametros['ordem']) && !empty($parametros['ordem'])) {
+            switch ($parametros['ordem']) {
+                case 1:
+                    $query->orderBy("dep.descricao, hist.data, hist.codProduto, hist.grade, vol.descricao");
+                    break;
+                case 2:
+                    $query->orderBy("hist.data, hist.codProduto, hist.grade, vol.descricao");
+                    break;
+
+                default:
+                    $query->orderBy("hist.codProduto, hist.data, hist.grade, vol.descricao");
+                    break;
+            }
         } else {
-            $query->orderBy("hist.codProduto, hist.grade, vol.descricao, hist.data");
+            $query->orderBy("hist.codProduto,hist.data, hist.grade, vol.descricao");
         }
+        
         $resultado = $query->getQuery()->getResult();
         return $resultado;
     }
