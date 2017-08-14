@@ -758,16 +758,23 @@ class Wms_WebService_Expedicao extends Wms_WebService
             if (isset($produto['quantidade'])) {
                 $produto['qtde'] = $produto['quantidade'];
             }
-
-            $prod = array(
-                'codPedido' => $enPedido->getId(),
-                'pedido' => $enPedido,
-                'produto' => $enProduto,
-                'valorVenda' =>$produto['valorVenda'],
-                'grade' => $produto['grade'],
-                'quantidade' => str_replace(',','.',$produto['qtde'])
-            );
-            $PedidoProdutoRepo->save($prod);
+            $qtdCorrigida = str_replace(',','.',$produto['qtde']);
+            if(isset($prod[$idProduto.$produto['grade']])){
+                $prod[$idProduto.'--'.$produto['grade']]['quantidade'] = \Wms\Math::adicionar($prod[$idProduto.$produto['grade']]['quantidade'], $qtdCorrigida);
+            }else{
+                $prod[$idProduto.'--'.$produto['grade']] = array(
+                    'codPedido' => $enPedido->getId(),
+                    'pedido' => $enPedido,
+                    'produto' => $enProduto,
+                    'valorVenda' =>$produto['valorVenda'],
+                    'grade' => $produto['grade'],
+                    'quantidade' => $qtdCorrigida
+                );
+            }
+//            $PedidoProdutoRepo->save($prod);
+        }
+        foreach ($prod as $value) {
+            $PedidoProdutoRepo->save($value);
         }
     }
 
