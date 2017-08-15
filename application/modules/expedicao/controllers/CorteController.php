@@ -1,7 +1,7 @@
 <?php
 
 use Wms\Module\Web\Controller\Action,
-    Wms\Service\Recebimento as LeituraColetor;
+    Wms\Util\Coletor as ColetorUtil;
 
 class Expedicao_CorteController extends Action {
 
@@ -35,7 +35,7 @@ class Expedicao_CorteController extends Action {
                     $this->addFlashMessage('error', 'É necessário preencher todos os campos');
                     $this->_redirect('/expedicao');
                 }
-                $codBarraFormatado = \Wms\Util\Coletor::retiraDigitoIdentificador($codBarra);
+                $codBarraFormatado = ColetorUtil::retiraDigitoIdentificador($codBarra);
                 $etiquetaEntity = $EtiquetaRepo->findOneBy(array('id' => $codBarraFormatado));
                 if ($etiquetaEntity == null) {
                     $this->addFlashMessage('error', 'Etiqueta não encontrada');

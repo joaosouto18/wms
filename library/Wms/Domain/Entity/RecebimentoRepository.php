@@ -631,7 +631,7 @@ class RecebimentoRepository extends EntityRepository {
         $query = '
             SELECT r
             FROM wms:Recebimento r
-            WHERE r.status = ' . RecebimentoEntity::STATUS_CONFERENCIA_COLETOR . '
+            WHERE r.status IN (' . RecebimentoEntity::STATUS_CONFERENCIA_COLETOR . ',' . RecebimentoEntity::STATUS_CONFERENCIA_CEGA . ')
                 AND EXISTS (
                     SELECT \'x\'
                     FROM wms:OrdemServico os

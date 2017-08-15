@@ -12,7 +12,40 @@
  */
 
 (function($) {
-
+    $.validateField = function () {
+        var ret = true;
+        $('input.required').each(function (e) {
+            if ($(this).val() === '') {
+                $(this).addClass('invalid');
+                $(this).removeClass('valid');
+                ret = false;
+            } else {
+                $(this).addClass('valid');
+                $(this).removeClass('invalid');
+            }
+        });
+        $('select.required').each(function (e) {
+            if ($(this).val() === '') {
+                $(this).addClass('invalid');
+                $(this).removeClass('valid');
+                ret = false;
+            } else {
+                $(this).addClass('valid');
+                $(this).removeClass('invalid');
+            }
+        });
+        $('textarea.required').each(function (e) {
+            if ($(this).val() === '') {
+                $(this).addClass('invalid');
+                $(this).removeClass('valid');
+                ret = false;
+            } else {
+                $(this).addClass('valid');
+                $(this).removeClass('invalid');
+            }
+        });
+        return ret;
+    };
 $.extend($.fn, {
 	// http://docs.jquery.com/Plugins/Validation/validate
 	validate: function( options ) {
@@ -926,15 +959,18 @@ $.extend($.validator, {
 			if ( !this.depend(param, element) )
 				return "dependency-mismatch";
 			switch( element.nodeName.toLowerCase() ) {
-			case 'select':
-				// could be an array for select-multiple or a string, both are fine this way
-				var val = $(element).val();
-				return val && val.length > 0;
-			case 'input':
-				if ( this.checkable(element) )
-					return this.getLength(value, element) > 0;
-			default:
-				return $.trim(value).length > 0;
+				case 'select':
+					// could be an array for select-multiple or a string, both are fine this way
+					var val = $(element).val();
+					return val && val.length > 0;
+				case 'input':
+					if ( this.checkable(element) )
+						return this.getLength(value, element) > 0;
+				default:
+					if ($.trim(value).length == 0 && $(element).hasClass('required')) {
+						$(element).addClass('invalid');
+					}
+					return $.trim(value).length > 0;
 			}
 		},
 
@@ -1377,7 +1413,7 @@ jQuery.validator.addMethod("menorQue", function(value, element, param) {
  * Locale: PT_BR
  */
 jQuery.extend(jQuery.validator.messages, {
-	required: "Este campo &eacute; requerido.",
+	required: "Este campo &eacute; obrigatorio.",
 	remote: "Por favor, corrija este campo.",
 	email: "Por favor, forne&ccedil;a um endere&ccedil;o eletr&ocirc;nico v&aacute;lido.",
 	url: "Por favor, forne&ccedil;a uma URL v&aacute;lida.",

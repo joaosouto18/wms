@@ -1,7 +1,6 @@
 <?php
 use Wms\Controller\Action,
-    Wms\Service\Recebimento as LeituraColetor,
-    Wms\Domain\Entity\Recebimento as RecebimentoEntity,
+    Wms\Util\Coletor as ColetorUtil,
     \Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity;
 
 class Mobile_Enderecamento_ManualController extends Action
@@ -94,16 +93,9 @@ class Mobile_Enderecamento_ManualController extends Action
 
     public function validarEndereco($codBarraEndereco, $params, $urlOrigem, $urlDestino) {
         try{
-            $LeituraColetor = new LeituraColetor();
-            $codigoBarras   = $LeituraColetor->retiraDigitoIdentificador($codBarraEndereco);
-
-            if (empty($codigoBarras)) {
-                throw new \Exception('Nenhum Endereço Informado');
-            }
-
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
-            $endereco = \Wms\Util\Endereco::formatar($codigoBarras);
+            $endereco = \Wms\Util\Endereco::formatar(ColetorUtil::retiraDigitoIdentificador($codBarraEndereco));
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
             $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $endereco));
             if (empty($enderecoEn)) {
@@ -393,7 +385,6 @@ class Mobile_Enderecamento_ManualController extends Action
         $codBarraEndereco = $this->_getParam('id');
         $codEndereco = $this->_getParam('endereco');
 
-        $LeituraColetor = new LeituraColetor();
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
         $data = false;
@@ -402,8 +393,7 @@ class Mobile_Enderecamento_ManualController extends Action
 
         //VALIDO PARA A PRIMEIRA TELA
         if (isset($codBarraEndereco) && !empty($codBarraEndereco)) {
-            $endereco   = $LeituraColetor->retiraDigitoIdentificador($codBarraEndereco);
-            $endereco = \Wms\Util\Endereco::formatar($endereco);
+            $endereco = \Wms\Util\Endereco::formatar(ColetorUtil::retiraDigitoIdentificador($codBarraEndereco));
             $primeiraTela = true;
             //VALIDO PARA CASO O USUARIO PASSE O NIVEL NA SEGUNDA TELA
         } elseif (isset($codEndereco) && !empty($codEndereco)) {

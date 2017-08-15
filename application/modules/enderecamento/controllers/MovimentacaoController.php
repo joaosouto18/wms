@@ -255,18 +255,8 @@ class Enderecamento_MovimentacaoController extends Action
                     $data['uma'] = $estoqueEn->getUma();
 
                 if ($produtoEn->getValidade() == 'S' ) {
-                    $valEstOrigem = $estoqueEn->getValidade();
-                    $valEstDestino = (!empty($estoqueDestino))? $estoqueDestino->getValidade() : null;
-
-                    if (!empty($valEstOrigem)) {
-                        if (!empty($valEstDestino)) {
-                            $validade = ($valEstOrigem < $valEstDestino)? $valEstOrigem : $valEstDestino;
-                        } else {
-                            $validade = $valEstOrigem;
-                        }
-                    } elseif(!empty($valEstDestino)) {
-                        $validade = $valEstDestino;
-                    } else {
+                    $validade = $estoqueEn->getValidade();
+                    if (empty($validade)){
                         $umaOrigem = null;
                         if (isset($estoqueEn) && !empty($estoqueEn)) {
                             $estoqueUma = $estoqueEn->getUma();
@@ -274,29 +264,9 @@ class Enderecamento_MovimentacaoController extends Action
                                 $umaOrigem = $this->em->find('wms:Enderecamento\Palete', $estoqueEn->getUma());
                             }
                         }
-
-                        $umaDestino = null;
-                        if (isset($estoqueDestino) && !empty($estoqueDestino)) {
-                            $estoqueDestinoUma = $estoqueDestino->getUma();
-                            if (isset($estoqueDestinoUma) && !empty($estoqueDestinoUma)) {
-                                $umaDestino = $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma());
-                            }
-                        }
-
-                        $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
-                        $valUmaDestino = (!empty($umaDestino))? $umaDestino->getValidade() : null;
-
-                        if (!empty($valUmaOrigem)) {
-                            if (!empty($valUmaDestino)) {
-                                $validade = ($valUmaOrigem < $valUmaDestino)? $valUmaOrigem : $valUmaDestino;
-                            } else {
-                                $validade = $valUmaOrigem;
-                            }
-                        } elseif(!empty($valUmaDestino)) {
-                            $validade = $valUmaDestino;
-                        }
+                        $validade = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
                     }
-                    if (isset($validade) && !empty($validade)) {
+                    if (!empty($validade)) {
                         $data['validade'] = $validade->format('d/m/Y');
                     }
                 }

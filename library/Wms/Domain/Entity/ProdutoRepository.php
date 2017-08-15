@@ -2,8 +2,6 @@
 
 namespace Wms\Domain\Entity;
 
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Driver\OCI8\OCI8Exception;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Produto as ProdutoEntity,
     Wms\Domain\Entity\Produto\Embalagem as EmbalagemEntity,
@@ -12,13 +10,12 @@ use Doctrine\ORM\EntityRepository,
     Doctrine\ORM\Id\SequenceGenerator,
     Wms\Util\CodigoBarras,
     Wms\Util\Endereco as EnderecoUtil,
-    Core\Util\Produto as ProdutoUtil;
-use Doctrine\ORM\ORMException;
-use DoctrineExtensions\Versionable\Exception;
-use Wms\Domain\Entity\CodigoFornecedor\Referencia;
-use Wms\Domain\Entity\Deposito\Endereco;
-use Wms\Domain\Entity\Deposito\Endereco\Caracteristica;
-use Wms\Domain\Entity\Produto\Embalagem;
+    Wms\Util\Coletor as ColetorUtil,
+    Core\Util\Produto as ProdutoUtil,
+    DoctrineExtensions\Versionable\Exception,
+    Wms\Domain\Entity\CodigoFornecedor\Referencia,
+    Wms\Domain\Entity\Deposito\Endereco,
+    Wms\Domain\Entity\Produto\Embalagem;
 
 /**
  *
@@ -1145,9 +1142,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
     }
 
     public function getProdutoByCodBarrasOrCodProduto($codigo) {
-        $LeituraColetor = new \Wms\Service\Coletor();
 
-        $codigoBarrasProduto = $LeituraColetor->adequaCodigoBarras($codigo);
+        $codigoBarrasProduto = ColetorUtil::adequaCodigoBarras($codigo);
 
         $info = $this->getProdutoByCodBarras($codigoBarrasProduto);
         $produtoEn = null;

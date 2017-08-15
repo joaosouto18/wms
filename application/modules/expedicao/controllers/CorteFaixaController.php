@@ -1,6 +1,6 @@
 <?php
 use Wms\Module\Web\Controller\Action,
-    Wms\Service\Recebimento as LeituraColetor;
+    Wms\Util\Coletor as ColetorUtil;
 
 class Expedicao_CorteFaixaController  extends Action
 {
@@ -12,8 +12,8 @@ class Expedicao_CorteFaixaController  extends Action
         $codBarrasFinal = $this->getRequest()->getParam('codBarrasFinal');
         $senha = $this->view->codBarras = $this->getRequest()->getParam('senha');
 
-        $codBarrasInicial = \Wms\Util\Coletor::retiraDigitoIdentificador($codBarrasInicial);
-        $codBarrasFinal = \Wms\Util\Coletor::retiraDigitoIdentificador($codBarrasFinal);
+        $codBarrasInicial = ColetorUtil::retiraDigitoIdentificador($codBarrasInicial);
+        $codBarrasFinal = ColetorUtil::retiraDigitoIdentificador($codBarrasFinal);
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
