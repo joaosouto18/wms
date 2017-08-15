@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity\Ressuprimento;
 
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Console\Output\NullOutput;
+use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
 
 class ReservaEstoqueRepository extends EntityRepository
 {
@@ -131,14 +132,16 @@ class ReservaEstoqueRepository extends EntityRepository
         $idUma = null;
         if ($origemReserva == "U") {
             $observacoes = "Mov. ref. endereçamento do Palete " . $idOrigem;
+            $params['tipo'] = HistoricoEstoque::TIPO_ENDERECAMENTO;
             $idUma = $idOrigem;
         }
-
-        if ($origemReserva == "O") {
+        elseif ($origemReserva == "O") {
             $observacoes = "Mov. ref. onda " . $idOrigem . ", OS: " . $osEn->getId();
+            $params['tipo'] = HistoricoEstoque::TIPO_RESSUPRIMENTO;
         }
-        if ($origemReserva == "E") {
+        elseif ($origemReserva == "E") {
             $observacoes = "Mov. ref. expedicao " . $idOrigem;
+            $params['tipo'] = HistoricoEstoque::TIPO_EXPEDICAO;
         }
 
         $reservaProdutos = $reservaEstoqueEn->getProdutos();
@@ -210,13 +213,6 @@ class ReservaEstoqueRepository extends EntityRepository
             }
         }
 
-        if ($origemReserva == "U")
-            $observacoes = "Mov. ref. estorno endereçamento - palete " . $idOrigem;
-        if ($origemReserva == "E")
-            $observacoes = "Mov. ref. estorno - expedição " . $idOrigem;
-        if ($origemReserva == "O")
-            $observacoes = "Mov. ref. estorno - onda OS " . $idOrigem;
-
         $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
 
         if (($reservaEstoqueEn != NULL) && ($reservaEstoqueEn->getDataAtendimento() != NULL)) {
@@ -224,6 +220,20 @@ class ReservaEstoqueRepository extends EntityRepository
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
             $params = array();
+
+            if ($origemReserva == "U") {
+                $observacoes = "Mov. ref. estorno endereçamento - palete " . $idOrigem;
+                $params['tipo'] = HistoricoEstoque::TIPO_ENDERECAMENTO;
+            }
+            elseif ($origemReserva == "E") {
+                $observacoes = "Mov. ref. estorno - expedição " . $idOrigem;
+                $params['tipo'] = HistoricoEstoque::TIPO_EXPEDICAO;
+            }
+            elseif ($origemReserva == "O") {
+                $observacoes = "Mov. ref. estorno - onda OS " . $idOrigem;
+                $params['tipo'] = HistoricoEstoque::TIPO_RESSUPRIMENTO;
+            }
+
             $params['endereco'] = $reservaEstoqueEn->getEndereco();
             $params['observacoes'] = $observacoes;
 
