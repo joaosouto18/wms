@@ -18,13 +18,12 @@ class Importacao_GerenciamentoController extends Action
             'buttons' => array(
                 array(
                     'label' => 'Importar Dados',
-                    'cssClass' => 'btnSave',
+                    'cssClass' => 'btnSave importar-dados',
                     'urlParams' => array(
                         'module' => 'importacao',
                         'controller' => 'gerenciamento',
                         'action' => 'index',
                         'id' => $acao,
-                        'efetivar' => 'efetivar'
                     ),
                     'tag' => 'a'
                 )
@@ -69,7 +68,7 @@ class Importacao_GerenciamentoController extends Action
             if (isset($params['submit']) || isset($params['submitCodigos'])) {
                 $result = $acaoIntRepo->listaTemporaria($integracoes, $options, $idFiltro);
             } else if (isset($params['efetivar'])) {
-                $result = $acaoIntRepo->efetivaTemporaria($integracoes, $idFiltro);
+                $result = $acaoIntRepo->efetivaTemporaria($integracoes, $idFiltro, $params['efetivar']);
             }
 
             if (isset($result)) {

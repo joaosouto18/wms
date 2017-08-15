@@ -74,3 +74,31 @@ if (count($arrayValues) == 0) {
 
 }
 ?>
+
+<script>
+    $('.importar-dados').on('click', function (e) {
+        var check = '';
+        $('.check').each(function () {
+            if($(this).prop('checked')){
+                if (check == '') {
+                    check += $(this).val();
+                } else {
+                    check += ',' + $(this).val();
+                }
+            }
+        });
+        $.ajax({
+            url: '<?php echo $this->url(array('controller' => 'gerenciamento', 'action' => 'index')) ?>',
+            data: {
+                efetivar: check
+            },
+            async: false,
+            type: 'post',
+            success: function (data) {
+                location.reload();
+
+            }
+        });
+
+    });
+</script>
