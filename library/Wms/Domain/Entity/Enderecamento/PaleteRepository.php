@@ -2,11 +2,12 @@
 
 namespace Wms\Domain\Entity\Enderecamento;
 
-use Doctrine\ORM\EntityRepository;
-use DoctrineExtensions\Versionable\Exception;
-use Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
+use Doctrine\ORM\EntityRepository,
+    DoctrineExtensions\Versionable\Exception,
+    Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
-    Wms\Domain\Entity\Atividade as AtividadeEntity;
+    Wms\Domain\Entity\Atividade as AtividadeEntity,
+    Wms\Domain\Entity\Recebimento;
 
 class PaleteRepository extends EntityRepository {
 
@@ -1032,14 +1033,12 @@ class PaleteRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
-        $idUsuarioLogado = \Zend_Auth::getInstance()->getIdentity()->getId();
-
         if ($paleteEn == NULL) {
             throw new \Exception("Palete não encontrado");
         }
 
         try {
-            if ($paleteEn->getCodStatus() == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_ENDERECADO) {
+            if ($paleteEn->getCodStatus() == Palete::STATUS_ENDERECADO) {
 
                 $enderecoEn = $paleteEn->getDepositoEndereco();
                 $idUma = $paleteEn->getId();
@@ -1047,6 +1046,7 @@ class PaleteRepository extends EntityRepository {
                 $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
 
                 $params = array();
+                $params['tipo'] = HistoricoEstoque::TIPO_ENDERECAMENTO;
                 foreach ($paleteEn->getProdutos() as $produto) {
                     $params['produto'] = $produto->getProduto();
                     $params['endereco'] = $enderecoEn;
@@ -1059,7 +1059,7 @@ class PaleteRepository extends EntityRepository {
                         $params['volume'] = $volumeRepo->findOneBy(array('id' => $produto->getCodProdutoVolume()));
                     }
 
-                    if ($paleteEn->getRecebimento()->getStatus()->getId() == \Wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
+                    if ($paleteEn->getRecebimento()->getStatus()->getId() == Recebimento::STATUS_FINALIZADO) {
                         $estoqueRepo->movimentaEstoque($params);
                     }
                 }
@@ -1092,7 +1092,7 @@ class PaleteRepository extends EntityRepository {
                     $idEndereco = $paleteEn->getDepositoEndereco()->getId();
 
                     $reservaEstoqueRepo->reabrirReservaEstoque($idEndereco, $paleteEn->getProdutosArray(), "E", "U", $idUma);
-                    $paleteEn->setCodStatus(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_ENDERECAMENTO);
+                    $paleteEn->setCodStatus(Palete::STATUS_EM_ENDERECAMENTO);
                     $this->getEntityManager()->persist($paleteEn);
 
                     $ordensServicoEn = $this->getEntityManager()->getRepository('wms:OrdemServico')->findBy(array('idEnderecamento' => $paleteEn->getId()));
@@ -1106,10 +1106,10 @@ class PaleteRepository extends EntityRepository {
                 case Palete::STATUS_EM_ENDERECAMENTO:
                     $idEndereco = $paleteEn->getDepositoEndereco()->getId();
 
-                    if ($paleteEn->getRecebimento()->getStatus()->getId() == \Wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
-                        $codStatus = \Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO;
+                    if ($paleteEn->getRecebimento()->getStatus()->getId() == Recebimento::STATUS_FINALIZADO) {
+                        $codStatus = Palete::STATUS_RECEBIDO;
                     } else {
-                        $codStatus = \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO;
+                        $codStatus = Palete::STATUS_EM_RECEBIMENTO;
                     }
 
                     $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();

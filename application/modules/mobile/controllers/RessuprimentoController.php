@@ -240,6 +240,7 @@ class Mobile_RessuprimentoController extends Action
                 $params['observacoes'] = "Mov. ref. ressuprimento preventivo coletor";
                 $params['estoqueRepo'] = $estoqueRepo;
                 $params['qtd'] = $qtd * -1;
+                $params['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_RESSUPRIMENTO;
                 $estoqueRepo->movimentaEstoque($params);
 
                 $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idPicking));

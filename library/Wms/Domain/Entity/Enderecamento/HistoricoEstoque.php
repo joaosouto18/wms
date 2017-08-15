@@ -17,6 +17,13 @@ class HistoricoEstoque
     const MANUAL = 'M';
     const SISTEMA = 'S';
 
+    const TIPO_ENDERECAMENTO = 'E';
+    const TIPO_TRANSFERENCIA = 'T';
+    const TIPO_RESSUPRIMENTO = 'R';
+    const TIPO_MOVIMENTACAO = 'M';
+    const TIPO_EXPEDICAO = 'S';
+    const TIPO_INVENTARIO = 'I';
+
     /**
      * U.M.A
      * @Column(name="COD_HISTORICO_ESTOQUE", type="integer", nullable=false)

@@ -958,6 +958,7 @@ class Mobile_EnderecamentoController extends Action
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
+            $params['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_TRANSFERENCIA;
 
             if (isset($params['uma']) && !empty($params['uma'])) {
                 $estoqueEn = $estoqueRepo->findBy(array('uma' => $params['uma'], 'depositoEndereco' => $enderecoAntigo));
@@ -1085,9 +1086,6 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
-                    if (empty($estoqueDestino))
-                        $data['uma'] = $estoque->getUma();
-
                     $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
@@ -1103,7 +1101,8 @@ class Mobile_EnderecamentoController extends Action
                     $params['observacoes'] = "Transferencia de Estoque - Destino: ".$enderecoNovoEn->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                 }
-            } else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
+            }
+            else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
                 $LeituraColetor = new LeituraColetor();
                 $params['etiquetaProduto'] = $LeituraColetor->analisarCodigoBarras($params['etiquetaProduto']);
 

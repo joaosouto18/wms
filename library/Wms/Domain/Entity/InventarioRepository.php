@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
+use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
 use Wms\Domain\Entity\Inventario\EnderecoProduto;
 use Wms\Service\Estoque;
 use Wms\Service\Mobile\Inventario as InventarioService;
@@ -466,7 +467,7 @@ class InventarioRepository extends EntityRepository
         $params['volume']        = $contagemEndEn->getProdutoVolume();
         $params['embalagem']     = $contagemEndEn->getCodProdutoEmbalagem();
         $params['validade']      = $contagemEndEn->getValidade();
-        $params['tipo']          = 'I';
+        $params['tipo']          = HistoricoEstoque::TIPO_INVENTARIO;;
         $params['observacoes']   = 'Mov. correção inventário';
         $params['os']            = $osEn;
         $params['usuario']       = $usuarioEn;
@@ -484,7 +485,7 @@ class InventarioRepository extends EntityRepository
         $params['volume']       = $estoqueEn->getProdutoVolume();
         $params['embalagem']    = 0;
         $params['validade']     = null;
-        $params['tipo']         = 'I';
+        $params['tipo']         = HistoricoEstoque::TIPO_INVENTARIO;
         $params['observacoes']  = 'Mov. correção inventário';
         $params['os']           = $osEn;
         $params['usuario']      = $usuarioEn;
