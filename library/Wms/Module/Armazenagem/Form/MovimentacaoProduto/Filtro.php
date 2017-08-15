@@ -64,7 +64,7 @@ class Filtro extends Form
         ))
         ->addElement('select', 'ordem', array(
             'label' => 'Ordenação',
-            'multiOptions' => array('firstOpt' => 'Produto', 'options' => array(1 => 'Endereço', 2 => 'Data'))
+            'multiOptions' => array('firstOpt' => 'Produto', 'options' => array(1 => 'Endereço'))
         ))
         ->addElement('text', 'rua', array(
             'size' => 3,
