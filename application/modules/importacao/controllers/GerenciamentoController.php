@@ -36,7 +36,6 @@ class Importacao_GerenciamentoController extends Action
             $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
             $acoesId = explode(",", $acao);
             $acaoIntEntity = $acaoIntRepo->findOneBy(array('id' => $acoesId[0]));
-            $this->view->tipoAcao = $acaoIntEntity->getTipoAcao()->getId();
             $dataUltimaExecucao = $acaoIntEntity->getDthUltimaExecucao();
             $this->view->dataInicio = $dataUltimaExecucao->format('d/m/Y H:i:s');
 

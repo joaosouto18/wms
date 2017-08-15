@@ -511,6 +511,7 @@ class Integracao
 
                 if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idCarga != $dados[$key+1]['CARGA']))) {
                     $carga = array(
+                        'id' => $row['COD_INTEGRACAO_PEDIDO'],
                         'idCarga' => $idCarga,
                         'placaExpedicao' => $row['PLACA'],
                         'placa' => $row['PLACA'],
@@ -527,12 +528,14 @@ class Integracao
             } else if ($this->getTipoExecucao() == "R") {
                 foreach($cargas as $carga) {
                     $resumo[] = array(
-                        'Num. Carga'=>$carga['idCarga'],
-                        'Qtd. Pedidos'=>count($carga['pedidos']),
-                        'Placa Carga'=>$carga['placaExpedicao']
+                        'check' => '<input name="check[]" value="'.$carga['id'].'" type="checkbox" />',
+                        'Num. Carga'=> $carga['idCarga'],
+                        'Qtd. Pedidos'=> count($carga['pedidos']),
+                        'Placa Carga'=> $carga['placaExpedicao']
                     );
                 }
                 $resumo[] = array(
+                    'check' => '',
                     'Num. Carrga'=>'',
                     'Qtd. Pedidos'=>'',
                     'Placa Carga'=>''
@@ -614,6 +617,7 @@ class Integracao
 
             if ($FimNotaAtual == true) {
                 $notasFiscais[] = array(
+                    'id' => $notaFiscal['COD_INTEGRACAO_NF_ENTRADA'],
                     'codFornecedor' => $notaFiscal['COD_FORNECEDOR'],
                     'numNota' => $notaFiscal['NUM_NOTA_FISCAL'],
                     'serie' => $notaFiscal['COD_SERIE_NOTA_FISCAL'],
@@ -643,6 +647,7 @@ class Integracao
         } else if ($this->getTipoExecucao() == "R") {
             foreach($notasFiscais as $nf) {
                 $resumo[] = array(
+                    'check' => '<input name="check[]" value="'.$nf['id'].'" type="checkbox" />',
                     'Numero NF'=>$nf['numNota'],
                     'Serie' => $nf['serie'],
                     'Dt. Emissão' => $nf['dtEmissao'],
@@ -652,6 +657,7 @@ class Integracao
                 );
             }
             $resumo[] = array(
+                'check' => '',
                 'Numero NF'=>'',
                 'Serie'=>'',
                 'Dt. Emissão'=>'',
