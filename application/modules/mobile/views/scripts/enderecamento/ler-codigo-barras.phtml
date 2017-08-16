@@ -26,25 +26,21 @@
         var apartamento = document.getElementById('apartamento-nivel').value;
         var nivel = document.getElementById('nivel').value;
         var capacidadePicking = '';
-        var countNivel = nivel.length;
-
-        if (countNivel < 2) {
-            nivel = '0' + nivel;
-        }
-
-        $.ajax({
-            url: 'get-capacidade-picking-ajax/endereco/' + rua + '.' + predio + '.' + nivel + '.' + apartamento,
-            success: function (data) {
-                if (data.status == 'Ok') {
-                    if (data.caracteristicaEndereco == 39) {
-                        capacidadePicking += '<div><label>CAPAC. PICKING:</label><input type="text" style="width: 40px" size="40" value="' + data.capacidadePicking + '" id="capacidadePicking" name="capacidadePicking"></div>';
+        if (nivel !== '' || nivel !== null) {
+            $.ajax({
+                url: 'get-capacidade-picking-ajax/endereco/' + rua + '.' + predio + '.' + nivel + '.' + apartamento,
+                success: function (data) {
+                    if (data.status == 'Ok') {
+                        if (data.caracteristicaEndereco == 39) {
+                            capacidadePicking += '<div><label>CAPAC. PICKING:</label><input type="text" style="width: 40px" size="40" value="' + data.capacidadePicking + '" id="capacidadePicking" name="capacidadePicking"></div>';
+                        }
+                        $('#capacidade').html(capacidadePicking);
+                    } else {
+                        $('#capacidade').html('');
                     }
-                    $('#capacidade').html(capacidadePicking);
-                } else {
-                    $('#capacidade').html('');
                 }
-            }
-        });
+            });
+        }
     }
 
     function formSubmit(event)
@@ -181,11 +177,11 @@
 
         <div>
             <label>U.M.A:</label>
-            <input class="form-control" type="text" name="uma" id="uma" value="" onkeydown="nextInput(event)" />
+            <input class="form-control" name="uma" id="uma" value="" onkeydown="nextInput(event)" />
         </div>
         <div>
             <label>ENDEREÇO:</label>
-            <input class="form-control" type="text" name="endereco" id="endereco" value="" />
+            <input class="form-control" name="endereco" id="endereco" value="" />
         </div>
         <div class="row" >
             <input class="btn gradientBtn" type="submit" name="submit" id="submit" value="Buscar" />
@@ -196,7 +192,7 @@
 
         <div class="text-center">
             <label>NÍVEL:</label>
-            <input type="text" class="form-control" size="40" value="" id="nivel" name="nivel" onkeyup="nextInputCapacidade()">
+            <input class="form-control" size="40" value="" id="nivel" name="nivel" onkeyup="nextInputCapacidade()" required>
             <input type="hidden" value="" id="uma-nivel" name="uma">
             <input type="hidden" value="" id="rua-nivel" name="rua">
             <input type="hidden" value="" id="predio-nivel" name="predio">
