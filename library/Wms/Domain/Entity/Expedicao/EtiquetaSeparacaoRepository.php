@@ -534,6 +534,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     public function geraMapaReentrega($produtoEntity, $quantidade, $expedicaoEntity, $arrayRepositorios){
 
+        $math = new Math();
         if ($quantidade <= 0) return;
 
         $modeloSeparacaoRepo = $arrayRepositorios['modeloSeparacao'];
@@ -570,10 +571,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
-                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+                        if ($math->compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                             $embalagemAtual = $embalagem;
                             break;
                         }
+//                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+//                            $embalagemAtual = $embalagem;
+//                            break;
+//                        }
                     }
                     if ($embalagemAtual == null) {
                         $mensagem = "Não existe embalagem para Atender o PRODUTO $codProduto GRADE $grade com a quantidade restante de $quantidadeAtender produtos";
@@ -641,6 +646,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Produto\DadoLogisticoRepository $dadoLogisticoRepo */
         $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
 
+        $math = new Math();
         $cubagemPedido = array();
         foreach ($pedidosProdutos as $pedidoProduto) {
             $depositoEnderecoEn = null;
@@ -673,10 +679,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
-                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+                        if ($math->compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                             $embalagemAtual = $embalagem;
                             break;
                         }
+//                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+//                            $embalagemAtual = $embalagem;
+//                            break;
+//                        }
                     }
                     if ($embalagemAtual == null) {
                         $msg = "Não existe embalagem para Atender o PRODUTO $codProduto GRADE $grade com a quantidade restante de $quantidadeAtender produtos";
@@ -748,7 +758,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     public function gerarMapaEtiqueta($idExpedicao, array $pedidosProdutos, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $idModeloSeparacao, $arrayRepositorios)
     {
-        $math = new Math();
         $depositoEnderecoRepo = $arrayRepositorios['depositoEndereco'];
         $filialRepository = $arrayRepositorios['filial'];
         /** @var ModeloSeparacaoRepository $modeloSeparacaoRepo */
