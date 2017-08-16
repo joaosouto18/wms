@@ -138,16 +138,12 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                 return false;
             });
 
-            $("#cadastro-movimentacao #submit").click(function(){
-                if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {
-                    alert("Preencha o endereço e a quantidade");
-                    return false;
-                }
-                if($('#validade').attr('validar') == 'S' && $('#validade').val() == '' && $("#quantidade").val() > 0){
-                    alert("Preencha o campo Data Validade");
-                    return false;
-                }
-            });
+//            $("#cadastro-movimentacao #submit").click(function(){
+//                if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {
+//                    alert("Preencha o endereço e a quantidade");
+//                    return false;
+//                }
+//            });
 
             //$('#idProduto').focus();
 
@@ -175,11 +171,12 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                             Wms.Models.Enderecamento.findMovimentacao($('#cadastro-movimentacao').serialize());
                         }
                     }
-                } else if ((id =='submit') && (value =='Movimentar')) {
-                    if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {
-                        alert("Preencha o endereço e a quantidade");
-                    }
                 }
+//                else if ((id =='submit') && (value =='Movimentar')) {
+//                    if ($("#rua").val() == '' || $("#predio").val() == '' || $("#nivel").val() == '' || $("#apto").val() == '' || $("#quantidade").val() == '') {
+//                        alert("Preencha o endereço e a quantidade");
+//                    }
+//                }
             });
 
             $('#idProduto').keypress(function(event) {

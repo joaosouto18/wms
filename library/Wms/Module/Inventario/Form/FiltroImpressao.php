@@ -6,7 +6,6 @@ use Wms\Module\Web\Form;
 
 use Core\Form\SubForm,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity;
-use Wms\Util\Endereco;
 
 class FiltroImpressao extends Form
 {

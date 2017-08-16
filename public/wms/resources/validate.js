@@ -11,38 +11,43 @@
  *   http://www.gnu.org/licenses/gpl.html
  */
 
-(function($) {
+(function ($) {
+
+    $(document).on('blur', '.required', function (e) {
+        $validateEmptyField($(this));
+    });
+    $(document).on('keyup', '.required', function (e) {
+        $validateEmptyField($(this));
+    });
+    $(document).on('change', '.required', function (e) {
+        $validateEmptyField($(this));
+    });
+    $validateEmptyField = function ($field) {
+        var ret = true;
+        if ($field.val() == '') {
+            $field.addClass('invalid');
+            $field.css('min-width', '75px');
+            $field.attr('placeholder', 'Obrigatório');
+            $field.removeClass('valid');
+            ret = false;
+        } else {
+            $field.css('min-width', '0px');
+            $field.removeAttr('placeholder');
+            $field.addClass('valid');
+            $field.removeClass('invalid');
+        }
+        return ret;
+    };
     $.validateField = function () {
         var ret = true;
         $('input.required').each(function (e) {
-            if ($(this).val() === '') {
-                $(this).addClass('invalid');
-                $(this).removeClass('valid');
-                ret = false;
-            } else {
-                $(this).addClass('valid');
-                $(this).removeClass('invalid');
-            }
+            ret = $validateEmptyField($(this));
         });
         $('select.required').each(function (e) {
-            if ($(this).val() === '') {
-                $(this).addClass('invalid');
-                $(this).removeClass('valid');
-                ret = false;
-            } else {
-                $(this).addClass('valid');
-                $(this).removeClass('invalid');
-            }
+            ret = $validateEmptyField($(this));
         });
         $('textarea.required').each(function (e) {
-            if ($(this).val() === '') {
-                $(this).addClass('invalid');
-                $(this).removeClass('valid');
-                ret = false;
-            } else {
-                $(this).addClass('valid');
-                $(this).removeClass('invalid');
-            }
+            ret = $validateEmptyField($(this));
         });
         return ret;
     };

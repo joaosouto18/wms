@@ -3,9 +3,8 @@
 namespace Wms\Module\Web\Form\Subform\Produto;
 
 use Wms\Domain\Entity\Produto,
-    Core\Form\SubForm;
-use Wms\Domain\Entity\Sistema\ParametroRepository;
-use Wms\Util\Endereco;
+    Core\Form\SubForm,
+    Wms\Util\Endereco;
 
 /**
  * Description of Embalagem
@@ -28,10 +27,12 @@ class Embalagem extends SubForm
                 ->addElement('text', 'descricao', array(
                     'label' => 'Descrição',
                     'size' => 45,
+                    'required' => true,
                     'maxlength' => 60,
                 ))
                 ->addElement('text', 'quantidade', array(
                     'label' => 'Quantidade de itens',
+                    'required' => true,
                     'size' => 10
                 ))
                 ->addElement('select', 'isPadrao', array(
@@ -54,6 +55,7 @@ class Embalagem extends SubForm
                 ))
                 ->addElement('text', 'codigoBarras', array(
                     'label' => 'Código de Barras',
+                    'required' => true,
                     'size' => 40,
                     'maxlength' => 60,
                 ))
@@ -74,7 +76,7 @@ class Embalagem extends SubForm
                     'size' => 10,
                     'value' => 0
                 ))
-                ->addElement('text', 'capacidadePicking', array(
+                ->addElement('numeric', 'capacidadePicking', array(
                     'label' => 'Capacidade do Picking',
                     'size' => 10,
                     'value' => 0

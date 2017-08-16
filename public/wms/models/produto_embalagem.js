@@ -85,7 +85,7 @@ $.Model.extend('Wms.Models.ProdutoEmbalagem',
         verificarCodigoBarras: function( params, success, error ){
             //alert('verificando');
             $.ajax({
-                url: URL_MODULO + '/produto-embalagem/verificar-codigo-barras-ajax',
+                url: URL_MODULO + '/produto/verificar-codigo-barras-ajax',
                 type: 'post',
                 dataType: 'json',
                 data: params,

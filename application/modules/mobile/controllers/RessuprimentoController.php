@@ -225,8 +225,16 @@ class Mobile_RessuprimentoController extends Action
                 }
 
                 $params['validade'] = null;
-                if ($produtoEn->getValidade() == 'S' ) {
+                if ($produtoEn->getValidade() == 'S') {
                     $validade = $volEstoque->getValidade();
+                    if (empty($validade)) {
+                        $umaOrigem = null;
+                        $estoqueUma = $volEstoque->getUma();
+                        if (!empty($estoqueUma)) {
+                            $umaOrigem = $this->em->find('wms:Enderecamento\Palete', $volEstoque->getUma());
+                        }
+                        $validade = (!empty($umaOrigem)) ? $umaOrigem->getValidade() : null;
+                    }
                     if (!empty($validade)) {
                         $params['validade'] = $validade->format('d/m/Y');
                     }

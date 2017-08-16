@@ -59,55 +59,6 @@ class Web_ProdutoEmbalagemController extends Crud
         $this->_helper->json($arrayEmbalagens, true);
     }
 
-    /*
-     * Verifica se ja existe o codigo de barras informado
-     */
-
-    public function verificarCodigoBarrasAjaxAction()
-    {
-
-        $params = $this->getRequest()->getParams();
-        extract($params);
-
-        $arrayMensagens = array(
-            'status' => 'success',
-            'msg' => 'Sucesso!',
-        );
-        try {
-            if (($idProduto == null) || ($grade == null)) {
-                throw new \Exception('Codigo e Grade do produto devem ser fornecidos');
-            }
-
-            $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('nfi.id, nfi.grade, nfi.quantidade, p.id idProduto, p.descricao,
-                       NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
-                       NVL(pe.descricao, \'\') descricaoEmbalagem,
-                       NVL(pv.descricao, \'\') descricaoVolume')
-                ->from('wms:NotaFiscal', 'nf')
-                ->innerJoin('nf.itens', 'nfi')
-                ->innerJoin('nfi.produto', 'p')
-                ->leftJoin('p.embalagens', 'pe')
-                ->leftJoin('p.volumes', 'pv')
-                ->andWhere('p.grade = nfi.grade')
-                ->andWhere('(pe.grade = p.grade OR pv.grade = p.grade)')
-                ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
-                ->setParameter('codigoBarras', $codigoBarras);
-
-            $produto = $dql->getQuery()->getResult();
-
-            if ($produto) {
-                throw new \Exception('Este código de barras ja foi cadastrado no produto ' . $produto[0]['idProduto'] . ' grade ' . $produto[0]['grade'] . '.');
-            }
-        } catch (\Exception $e) {
-            $arrayMensagens = array(
-                'status' => 'error',
-                'msg' => $e->getMessage(),
-            );
-        }
-
-        $this->_helper->json($arrayMensagens, true);
-    }
-
     public function verificarEstoqueReservaAjaxAction()
     {
         $id = $this->_getParam('id');

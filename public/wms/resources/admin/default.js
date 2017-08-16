@@ -1,7 +1,6 @@
 //JavaScript
 $(document).ready(function(){
     $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
-
     /***************************************
      Dialog Ajax windows
      ***************************************/

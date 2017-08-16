@@ -25,10 +25,10 @@ class Web_ProdutoController extends Crud {
         if ($values) {
             $grid = new DadoLogisticoGrid;
             $this->view->grid = $grid->init($values)
-                    ->render();
+                ->render();
 
             $form->setSession($values)
-                    ->populate($values);
+                ->populate($values);
         }
 
         $this->view->form = $form;
@@ -66,16 +66,16 @@ class Web_ProdutoController extends Crud {
         $params = $this->getRequest()->getParams();
 
         $dql = $em->createQueryBuilder()
-                ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
+            ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
                     u.id idUnitizador, u.descricao unitizador, e.id embalagem')
-                ->from('wms:Produto\Embalagem', 'e')
-                ->innerJoin('e.dadosLogisticos', 'dl')
-                ->innerJoin('dl.normaPaletizacao', 'np')
-                ->innerJoin('np.unitizador', 'u')
-                ->where('e.codProduto = ?1')
-                ->setParameter(1, $params['idProduto'])
-                ->andWhere('e.grade = :grade')
-                ->setParameter('grade', $params['grade']);
+            ->from('wms:Produto\Embalagem', 'e')
+            ->innerJoin('e.dadosLogisticos', 'dl')
+            ->innerJoin('dl.normaPaletizacao', 'np')
+            ->innerJoin('np.unitizador', 'u')
+            ->where('e.codProduto = ?1')
+            ->setParameter(1, $params['idProduto'])
+            ->andWhere('e.grade = :grade')
+            ->setParameter('grade', $params['grade']);
 
         $normasPaletizacao = array();
 
@@ -217,7 +217,7 @@ class Web_ProdutoController extends Crud {
                 $result = $this->repository->save($entity, $this->getRequest()->getParams(), true);
                 if (is_string($result)) {
                     $this->addFlashMessage('error', $result);
-                    $this->_redirect('/produto/edit/id/' . $params['id'] . '/grade/' . $params['grade']);
+                    $this->_redirect("/produto/edit/id/$params[id]/grade/$params[grade]");
                 } else {
                     $this->em->flush();
                 }
@@ -476,4 +476,39 @@ class Web_ProdutoController extends Crud {
         $this->view->vetLog = $andamentoRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade), $orderBy);
     }
 
+
+
+    /*
+     * Verifica se ja existe o codigo de barras informado
+     */
+
+    public function verificarCodigoBarrasAjaxAction()
+    {
+
+        $codigoBarras = $this->getRequest()->getParam("codigoBarras");
+
+        $arrayMensagens = array(
+            'status' => 'success',
+            'msg' => 'Sucesso!',
+        );
+
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id idProduto, p.grade')
+            ->from('wms:Produto', 'p')
+            ->leftJoin('p.embalagens', 'pe')
+            ->leftJoin('p.volumes', 'pv')
+            ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+            ->setParameter('codigoBarras', $codigoBarras);
+
+        $produto = $dql->getQuery()->getFirstResult();
+
+        if ($produto) {
+            $arrayMensagens = array(
+                'status' => 'error',
+                'msg' => "Este código de barras ja foi cadastrado no produto $produto[idProduto] grade $produto[grade]."
+            );
+        }
+
+        $this->_helper->json($arrayMensagens, true);
+    }
 }
