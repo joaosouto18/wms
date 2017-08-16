@@ -222,6 +222,7 @@ class Palete
             $arrayProduto['codProdutoEmbalagem'] = $produto->getCodProdutoEmbalagem() ;
             $arrayProduto['codProdutoVolume']  = $produto->getCodProdutoVolume();
             $arrayProduto['qtd'] = $produto->getQtd();
+            $arrayProduto['validade'] = $produto->getValidade()->format('d/m/Y');
             $arrayProdutos[] = $arrayProduto;
         }
         return $arrayProdutos;
