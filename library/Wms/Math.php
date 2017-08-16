@@ -26,8 +26,14 @@ Class Math
         return str_pad(1 ,$maiorPrecisao + 1,'0');
     }
 
+
     public static function compare($x,$y,$oper = ">") {
+
+        $x = strval($x);
+        $y = strval($y);
+
         $quantidade = self::maiorPrecisao($x,$y);
+        
         $x = $x * $quantidade;
         $y = $y * $quantidade;
 
@@ -54,36 +60,41 @@ Class Math
 
     public static function adicionar($x, $y)
     {
+        $x = strval($x);
+        $y = strval($y);
+        
         $quantidade = self::maiorPrecisao($x,$y);
 
         $x = $x * $quantidade;
         $y = $y * $quantidade;
 
         return ($x + $y) / $quantidade;
-
     }
 
     public static function subtrair($x, $y)
     {
-
+        $x = strval($x);
+        $y = strval($y);
+        
         $quantidade = self::maiorPrecisao($x,$y);
 
         $x = $x * $quantidade;
         $y = $y * $quantidade;
 
         return ($x - $y) / $quantidade;
-
     }
 
     public static function multiplicar($x, $y)
     {
+        $x = strval($x);
+        $y = strval($y);
+        
         $quantidade = self::maiorPrecisao($x,$y);
 
         $x = $x * $quantidade;
         $y = $y * $quantidade;
 
         return ($x * $y) / ($quantidade * $quantidade);
-
     }
 
     /**
@@ -93,6 +104,9 @@ Class Math
      */
     public static function dividir($divisor, $dividendo)
     {
+        $divisor = strval($divisor);
+        $dividendo = strval($dividendo);
+    
         $quantidade = self::maiorPrecisao($divisor, $dividendo);
 
         $x = $divisor * $quantidade;

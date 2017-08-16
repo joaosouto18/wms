@@ -694,7 +694,7 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= substr(utf8_decode("$etiqueta[tipoPedido]:$etiqueta[codEntrega] - $etiqueta[itinerario]"),0,40) . "\n";
                 $impressao .= substr(utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
                 $impressao .= "CODIGO:$etiqueta[codProduto] - GRADE:$etiqueta[grade]\n";
-                $impressao .= substr(trim($etiqueta['produto']),0,40)."\n";
+                $impressao .= utf8_decode(substr(trim($etiqueta['produto']),0,40))."\n";
                 $impressao .= substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";
                 $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - ". utf8_decode($etiqueta['tipoComercializacao'])."\n";
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
@@ -718,7 +718,7 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= "CODIGO:$etiqueta[codProduto] - GRADE:$etiqueta[grade]\n";
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
                 $this->SetFont('Arial', 'B', 10);
-                $impressao = substr(trim($etiqueta['produto']),0,70)."\n";
+                $impressao = utf8_decode(substr(trim($etiqueta['produto']),0,70))."\n";
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
                 $this->SetFont('Arial', 'B', 8);
                 $impressao = substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";

@@ -268,22 +268,25 @@ class Mobile_ExpedicaoController extends Action {
         $this->_helper->json($vetRetorno);
     }
 
-    public function getProdutosConferirAction() {
+    public function getProdutosConferirAction()
+    {
         $idMapa = $this->_getParam("idMapa");
         $idExpedicao = $this->_getParam("idExpedicao");
         $codPessoa = $this->_getParam("cliente");
         $produtosClientes = array();
+        $produtosMapa = array();
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
 
-        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
-        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, true, $idMapa, 'D');
-
-        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
-        if (isset($codPessoa) && !empty($codPessoa)) {
+        if (empty($codPessoa)) {
+            /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
+            $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, true, $idMapa, 'D');
+        } else {
+            /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
             $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa, $codPessoa);
         }
+
         $this->_helper->json(array('resposta' => 'success', 'dados' => $produtosMapa, 'dadosClientes' => $produtosClientes));
     }
 

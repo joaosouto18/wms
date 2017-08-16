@@ -18,6 +18,24 @@ class Web_ProdutoController extends Crud {
     public $entityName = 'Produto';
 
     public function indexAction() {
+
+        $parametroProduto = $this->getSystemParameterValue('ID_INTEGRACAO_PRODUTOS');
+        Page::configure(array(
+            'buttons' => array(
+                array(
+                    'label' => 'Importar Produtos ERP',
+                    'cssClass' => 'btnSave',
+                    'urlParams' => array(
+                        'module' => 'importacao',
+                        'controller' => 'gerenciamento',
+                        'action' => 'index',
+                        'id' => $parametroProduto,
+                    ),
+                    'tag' => 'a'
+                )
+            )
+        ));
+
         $form = new FiltroForm;
 
         $values = $form->getParams();

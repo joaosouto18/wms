@@ -567,10 +567,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
-                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+                        if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                             $embalagemAtual = $embalagem;
                             break;
                         }
+//                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+//                            $embalagemAtual = $embalagem;
+//                            break;
+//                        }
                     }
                     if ($embalagemAtual == null) {
                         $mensagem = "Não existe embalagem para Atender o PRODUTO $codProduto GRADE $grade com a quantidade restante de $quantidadeAtender produtos";
@@ -654,7 +658,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
             )->toArray();
 
-
             usort($embalagensEn,function ($itemA, $itemB) {
                 return $itemA->getQuantidade() < $itemB->getQuantidade();
             });
@@ -682,10 +685,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
-                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+                        if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                             $embalagemAtual = $embalagem;
                             break;
                         }
+//                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+//                            $embalagemAtual = $embalagem;
+//                            break;
+//                        }
                     }
                     if ($embalagemAtual == null) {
                         $msg = "Não existe embalagem para Atender o PRODUTO $codProduto GRADE $grade com a quantidade restante de $quantidadeAtender produtos";

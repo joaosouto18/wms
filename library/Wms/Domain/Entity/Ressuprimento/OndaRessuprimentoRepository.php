@@ -475,14 +475,7 @@ class OndaRessuprimentoRepository extends EntityRepository
 
         if ($saldo <= $pontoReposicao) {
             $qtdRessuprir = $saldo * -1;
-            if ($qtdRessuprir >= $capacidadePicking) {
-                //SE QUANTIDADE RESSUPRIR FOR MAIOR Q A CAPACIDADE DE PICKING, RESSUPRI O MULTIPLO DO PICKING COMPARADO A QUANTIDADE Q FOR RESSUPRIR
-                $vezesRessuprimento = Math::dividir($qtdRessuprir, $capacidadePicking);
-                $qtdRessuprirMax = Math::multiplicar($capacidadePicking,ceil($vezesRessuprimento));
-            } else {
-                //SE QUANTIDADE RESSUPRIR FOR MENOR Q A CAPACIDADE DE PICKING, RESSUPRI ATÉ O LIMITE DO PICKING APENAS
-                $qtdRessuprirMax = $capacidadePicking;
-            }
+            $qtdRessuprirMax = $qtdRessuprir + $capacidadePicking;
 
             //GERA A O.S DE ACORDO COM OS ENDEREÇOS DE PULMAO
             $params = array(
@@ -499,8 +492,19 @@ class OndaRessuprimentoRepository extends EntityRepository
 
                 $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('id'=>$idPulmao));
 
-                //CALCULO A QUANTIDADE DE PALETES
-                $qtdOnda = ($qtdRessuprirMax >= $qtdEstoque) ? $qtdEstoque : $qtdRessuprirMax;
+                //CALCULO A QUANTIDADE DO PALETE
+                if ($qtdRessuprirMax >= $qtdEstoque) {
+                    $qtdOnda = $qtdEstoque;
+                }else {
+                    if ($capacidadePicking >= $qtdRessuprir){
+                        $qtdOnda = $capacidadePicking;
+                    } else {
+                        //Todo Reavaliar o cálculo de ressuprimento
+                        $qtdOnda = ((int) ($qtdRessuprirMax / $capacidadePicking)) * $capacidadePicking;
+                    }
+                    if ($qtdOnda > $qtdEstoque)
+                        $qtdOnda = $qtdEstoque;
+                }
 
                 //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
@@ -510,7 +514,8 @@ class OndaRessuprimentoRepository extends EntityRepository
 
                 $qtdRessuprir = $qtdRessuprir - $qtdOnda;
                 $qtdRessuprirMax = $qtdRessuprirMax - $qtdOnda;
-                if ($qtdRessuprirMax <= 0)  {
+                if ($qtdRessuprir <= 0)  {
+                    $qtdRessuprir = 0;
                     break;
                 }
             }
