@@ -95,10 +95,13 @@ if (count($arrayValues) == 0) {
             async: false,
             type: 'post',
             success: function (data) {
-                location.reload();
+                console.log(data);
+                alert(data.error);
+//                location.reload();
 
             }
         });
+        return false;
 
     });
 </script>
