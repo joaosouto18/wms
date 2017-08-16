@@ -266,10 +266,10 @@ class ApontamentoMapaRepository extends EntityRepository {
                 $order = "TO_DATE(DTH_INICIO, 'DD/MM/YYYY HH24:MI:SS')";
                 break;
             case 2:
-                $order = 'DSC_ATIVIDADE, PD.COD_PESSOA ASC';
+                $order = "DSC_ATIVIDADE, PD.COD_PESSOA ASC, TO_DATE(DTH_INICIO, 'DD/MM/YYYY HH24:MI:SS')";
                 break;
             default:
-                $order = 'PD.COD_PESSOA, DSC_ATIVIDADE ASC';
+                $order = "PD.COD_PESSOA, DSC_ATIVIDADE ASC, TO_DATE(DTH_INICIO, 'DD/MM/YYYY HH24:MI:SS')";
                 break;
         }
         $sql = " SELECT 
