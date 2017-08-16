@@ -617,7 +617,7 @@ class Integracao
 
             if ($FimNotaAtual == true) {
                 $notasFiscais[] = array(
-                    'id' => $notaFiscal['COD_INTEGRACAO_NF_ENTRADA'],
+                    'id' => $notaFiscal['NUM_NOTA_FISCAL'],
                     'codFornecedor' => $notaFiscal['COD_FORNECEDOR'],
                     'numNota' => $notaFiscal['NUM_NOTA_FISCAL'],
                     'serie' => $notaFiscal['COD_SERIE_NOTA_FISCAL'],

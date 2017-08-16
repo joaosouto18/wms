@@ -96,9 +96,13 @@ if (count($arrayValues) == 0) {
             type: 'post',
             success: function (data) {
                 console.log(data);
-                alert(data.error);
-//                location.reload();
-
+                if (data.success) {
+                    alert(data.success);
+                    window.location = data.redirect;
+                } else {
+                    alert(data.error);
+                    window.location = data.redirect;
+                }
             }
         });
         return false;
