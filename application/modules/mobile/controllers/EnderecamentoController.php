@@ -860,25 +860,34 @@ class Mobile_EnderecamentoController extends Action
                 if (empty($paleteProduto))
                     throw new Exception("UMA $codBarrasUma não encontrada!");
 
+                $codProduto = $paleteProduto->getCodProduto();
+                $grade = $paleteProduto->getGrade();
+
                 $embalagemEn = $paleteProduto->getEmbalagemEn();
 
             } else if (!empty($codBarras)) {
+                $LeituraColetor = new \Wms\Service\Coletor();
+                $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
+                $produtoEn = $produtoRepo->getProdutoByCodBarrasOrCodProduto($codBarras);
+
+                $codProduto = $produtoEn->getId();
+                $grade = $produtoEn->getGrade();
+                $codBarras = $LeituraColetor->adequaCodigoBarras($codBarras);
+
                 $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
                 /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
                 $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
-                if (empty($embalagemEn))
-                    throw new Exception("Não foi encontrada a embalagem $codBarras");
             }
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->em->getRepository('wms:Enderecamento\Estoque');
 
             /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
-            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco, 'codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
+            $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $endereco, 'codProduto' => $codProduto, 'grade' => $grade));
             if (empty($estoqueEn))
-                throw new Exception("Não foi encontrado o estoque com endereco " . $endereco->getDescricao() . " produto " . $embalagemEn->getCodProduto() . " grade " . $embalagemEn->getGrade());
+                throw new Exception("Não foi encontrado o estoque com endereco " . $endereco->getDescricao() . " produto " . $codProduto . " grade " . $grade);
 
-            if (!empty($codBarras)) {
+            if ($embalagemEn != null) {
                 $qtd = floor($estoqueEn->getQtd() / $embalagemEn->getQuantidade());
                 $qtdReal = floor($estoqueEn->getQtd() / $embalagemEn->getQuantidade()) * $embalagemEn->getQuantidade();
                 $qtdEmbalagem = $embalagemEn->getQuantidade();
@@ -892,13 +901,11 @@ class Mobile_EnderecamentoController extends Action
             $this->view->qtdEmbalagem = $qtdEmbalagem;
 
             $idEndereco = $endereco->getId();
-            $codProduto = $embalagemEn->getCodProduto();
-            $grade = $embalagemEn->getGrade();
 
             $SQL = "SELECT RE.*
                   FROM RESERVA_ESTOQUE RE
                  INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
-                 WHERE RE.COD_DEPOSITO_ENDERECO = $idEndereco 
+                 WHERE RE.COD_DEPOSITO_ENDERECO = $idEndereco
                    AND REP.COD_PRODUTO = '$codProduto'
                    AND REP.DSC_GRADE = '$grade'
                    AND RE.TIPO_RESERVA = 'S'
