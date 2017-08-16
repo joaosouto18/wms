@@ -271,22 +271,25 @@ class Mobile_ExpedicaoController extends Action {
         $this->_helper->json($vetRetorno);
     }
 
-    public function getProdutosConferirAction() {
+    public function getProdutosConferirAction()
+    {
         $idMapa = $this->_getParam("idMapa");
         $idExpedicao = $this->_getParam("idExpedicao");
         $codPessoa = $this->_getParam("cliente");
         $produtosClientes = array();
+        $produtosMapa = array();
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
 
-        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
-        $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, true, $idMapa, 'D');
-
-        /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
-        if (isset($codPessoa) && !empty($codPessoa)) {
+        if (empty($codPessoa)) {
+            /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
+            $produtosMapa = $mapaSeparacaoRepo->validaConferencia($idExpedicao, true, $idMapa, 'D');
+        } else {
+            /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
             $produtosClientes = $mapaSeparacaoRepo->getProdutosConferidosByClientes($idMapa, $codPessoa);
         }
+
         $this->_helper->json(array('resposta' => 'success', 'dados' => $produtosMapa, 'dadosClientes' => $produtosClientes));
     }
 
@@ -350,10 +353,10 @@ class Mobile_ExpedicaoController extends Action {
         try {
             $this->getEntityManager()->beginTransaction();
             $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-            $mapaSeparacaoConferenciaEntity = $mapaSeparacaoConferenciaRepo->findOneBy(array('mapaSeparacaoEmbalado' => $mapaSeparacaoEmbaladoEn));
+            $mapaSeparacaoConferencias = $mapaSeparacaoConferenciaRepo->findBy(array('mapaSeparacaoEmbalado' => $mapaSeparacaoEmbaladoEn));
 
-            if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
-                if (count($mapaSeparacaoConferenciaEntity) <= 0) {
+            if (!empty($mapaSeparacaoEmbaladoEn)) {
+                if (empty($mapaSeparacaoConferencias)) {
                     $this->addFlashMessage('error', 'Não é possível imprimir etiqueta sem produtos conferidos!');
                     $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $idPessoa);
                 }

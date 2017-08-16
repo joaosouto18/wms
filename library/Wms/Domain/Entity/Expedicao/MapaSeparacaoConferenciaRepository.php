@@ -1,10 +1,8 @@
 <?php
 namespace Wms\Domain\Entity\Expedicao;
 
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query;
-use Wms\Domain\Entity\Expedicao;
-use Wms\Math;
+use Doctrine\ORM\EntityRepository,
+    Wms\Math;
 
 class MapaSeparacaoConferenciaRepository extends EntityRepository
 {
@@ -342,7 +340,6 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
 
     public function removeMapaSeparacaConferencia($dados)
     {
-        $Math = new Math();
         $codMapaSeparacao = $dados['COD_MAPA_SEPARACAO'];
         $codProduto = $dados['COD_PRODUTO'];
         $grade = $dados['DSC_GRADE'];
@@ -356,7 +353,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
 
         $quantidade = 0;
         foreach ($mapaSeparacaoConferenciaEntities as $mapaSeparacaoConferenciaEntity) {
-            $quantidade += $Math->produtoMultiplicacao($mapaSeparacaoConferenciaEntity->getQtdConferida(), $mapaSeparacaoConferenciaEntity->getQtdEmbalagem());
+            $quantidade = Math::adicionar($quantidade, Math::multiplicar($mapaSeparacaoConferenciaEntity->getQtdConferida(), $mapaSeparacaoConferenciaEntity->getQtdEmbalagem()));
             $this->getEntityManager()->remove($mapaSeparacaoConferenciaEntity);
         }
         $expedicaoAndamentoRepository->save("Conferência do produto $codProduto grade $grade com quantidade de $quantidade no mapa de separação $codMapaSeparacao foi reiniciada", $mapaSeparacaoEntity->getCodExpedicao());

@@ -116,7 +116,7 @@ class Enderecamento_MovimentacaoController extends Action
             $params['endereco'] = $enderecoEn;
             $params['qtd'] =  $data['quantidade'];
             $params['observacoes'] = 'Movimentação manual';
-            $params['tipo'] = 'M';
+            $params['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_MOVIMENTACAO;
             $params['unitizador'] = $unitizadorEn;
 
             $params['validade'] = null;
@@ -231,6 +231,7 @@ class Enderecamento_MovimentacaoController extends Action
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+            $data['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_TRANSFERENCIA;
 
             if (isset($data['embalagem']) && !empty($data['embalagem'])) {
                 /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
@@ -304,7 +305,8 @@ class Enderecamento_MovimentacaoController extends Action
                 $data['qtd'] = $data['quantidade'];
                 $data['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoEn->getDescricao();
                 $estoqueRepo->movimentaEstoque($data);
-            } else if (isset($data['volumes']) && ($data['volumes'] != "")) {
+            }
+            else if (isset($data['volumes']) && ($data['volumes'] != "")) {
                 $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($data['volumes'],$idProduto,$grade);
                 if (count($volumes) <= 0) {
                     $this->addFlashMessage('error',"Não foi encontrado nenhum volume para o produto $idProduto - $grade no grupo de volumes selecionado. Nenhuma movimentação foi efetuada");
