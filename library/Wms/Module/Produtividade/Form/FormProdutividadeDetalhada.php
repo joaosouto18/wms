@@ -36,7 +36,7 @@ class FormProdutividadeDetalhada extends Form {
         ));
         $this->addElement('select', 'ordem', array(
             'label' => 'Ordenação',
-            'multiOptions' => array('firstOpt' => 'Usuario', 'options' => array(1 => 'DATA', 2 => 'ATIVIDADE')),
+            'multiOptions' => array('firstOpt' => 'USUARIO', 'options' => array(1 => 'DATA', 2 => 'ATIVIDADE')),
             'decorators' => array('ViewHelper'),
         ));
         $this->addElement('text', 'expedicao', array(

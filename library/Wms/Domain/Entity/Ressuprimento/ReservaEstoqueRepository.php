@@ -171,7 +171,7 @@ class ReservaEstoqueRepository extends EntityRepository
         return true;
     }
 
-    public function efetivaReservaEstoque ($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $idUsuario = NULL, $idOs = NULL, $unitizador = Null, $throwException = false,$dataValidade = null)
+    public function efetivaReservaEstoque ($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $idUsuario = NULL, $idOs = NULL, $unitizador = Null, $throwException = false, $dataValidade = null)
     {
         $reservaEstoqueEn = $this->findReservaEstoque($idEndereco,$produtos,$tipoReserva,$origemReserva,$idOrigem,$idOs);
         if ($reservaEstoqueEn == NULL)  {
@@ -248,8 +248,9 @@ class ReservaEstoqueRepository extends EntityRepository
                         /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaEn */
                         $umaEn = $this->_em->find('wms:Enderecamento\Palete', $idOrigem);
                         if (!empty($umaEn)) {
-                            
-                            $params['validade'] = $umaEn->getValidade()->format('d/m/Y');
+                            if (!is_null($umaEn->getValidade())) {
+                                $params['validade'] = $umaEn->getValidade()->format('d/m/Y');
+                            }
                         }
                     }
                 }

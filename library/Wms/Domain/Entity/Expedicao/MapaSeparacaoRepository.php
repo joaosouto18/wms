@@ -1045,6 +1045,17 @@ class MapaSeparacaoRepository extends EntityRepository {
         $tipoDefaultEmbalado = $paramsModeloSeparacao['tipoDefaultEmbalado'];
         $utilizaVolumePatrimonio = $paramsModeloSeparacao['utilizaVolumePatrimonio'];
 
+        $whereMSPEmbalado = "";
+        $whereMSCEmbalado = "";
+        if ($codPessoa != null) {
+            $whereMSPEmbalado = "
+                INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                WHERE P.COD_PESSOA = " . $codPessoa;
+            $whereMSCEmbalado = "
+                WHERE COD_PESSOA = " . $codPessoa;
+        }
+
         //SE O INDICADOR DE EMBALADO NAO FOR O PRODUTO E SIM A EMBALAGEM FRACIONADA, ENTÂO JA RETORNA ISSO NA QUERY
         $SQLFields = "";
         $SQLJoin = "";
@@ -1067,12 +1078,14 @@ class MapaSeparacaoRepository extends EntityRepository {
                        NVL(CONF.QTD_CONFERIDA,0) as QTD_CONFERIDA,
                        NVL(PE.IND_EMBALADO,'N') as IND_EMBALADO
                   FROM MAPA_SEPARACAO MS
-                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME,
+                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME,
                                     SUM((QTD_EMBALAGEM * QTD_SEPARAR) - NVL(QTD_CORTADO,0)) as QTD_SEPARAR
-                               FROM MAPA_SEPARACAO_PRODUTO
-                              GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0)) MSP ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                               FROM MAPA_SEPARACAO_PRODUTO MSP
+                               $whereMSPEmbalado
+                              GROUP BY COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0)) MSP ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
                   LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA
                                FROM MAPA_SEPARACAO_CONFERENCIA
+                               $whereMSCEmbalado
                              GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0)) CONF
                          ON CONF.COD_PRODUTO = MSP.COD_PRODUTO
                         AND CONF.DSC_GRADE = MSP.DSC_GRADE
@@ -1096,7 +1109,19 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         //VERIFICO SE O CÓDIGO DE BARRAS PERTENCE A ALGUM PRODUTO DO MAPA
         if (count($result) == 0) {
-            throw new \Exception("Nenhum produto encontrado no mapa com o código de barras informado - " . $codBarras);
+            $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+            $produtoEn = $produtoRepo->getProdutoByCodBarrasOrCodProduto($codBarras);
+            $msgErro = "O Produto " . $produtoEn->getDescricao() . " não pertence ";
+            if ($codPessoa != null) {
+                $msgErro .= " ao cliente selecionado";
+            } else {
+                if ($utilizaQuebra == "S") {
+                    $msgErro .= " ao mapa " . $idMapa;
+                } else {
+                    $msgErro .= " a expedicao " . $idExpedicao;
+                }
+            }
+            throw new \Exception($msgErro);
         }
 
         $fatorCodBarrasBipado = $result[0]['QTD_EMBALAGEM'];
@@ -1109,12 +1134,13 @@ class MapaSeparacaoRepository extends EntityRepository {
         $dscEmbalagem = $result[0]['DSC_EMBALAGEM'] . "($fatorCodBarrasBipado)";
 
         //SE FOR UMA CONFERENCIA DE CONSOLIDADO, VERIFICO SE O PRODUTO PERTENCE AO CLIENTE INFORMADO
-        if ($codPessoa != null) {
-            $cliente = $this->getClientesByMapa($idMapa, $codPessoa, $codProduto, $dscGrade);
-            if (count($cliente) <= 0) {
-                throw new \Exception("O produto $codProduto / $dscGrade - $dscProduto não pertence ao cliente selecionado");
-            }
-        }
+        // NÃO É UMA VERIFICAÇÃO NECESSARIA POIS JA ESTA SENDO VERIFICADO NA QUERY ACIMA
+        //if ($codPessoa != null) {
+        //    $cliente = $this->getClientesByMapa($idMapa, $codPessoa, $codProduto, $dscGrade);
+        //    if (count($cliente) <= 0) {
+        //        throw new \Exception("O produto $codProduto / $dscGrade - $dscProduto não pertence ao cliente selecionado");
+        //    }
+        //}
 
         //CALCULO A QUANTIDADE PENDENTE DE CONFERENCIA PARA CADA MAPA, SE UTILIZAR QUEBRA O FILTRO VAI TRAZER APENAS UM MAPA
         $qtdConferidoTotal = 0;
@@ -1155,9 +1181,15 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
         if ($qtdMapaTotal == $qtdConferidoTotal) {
-            $msgErro = "O produto $dscProduto já se encontra totalmente conferido na expedição";
-            if ($utilizaQuebra == "S") {
-                $msgErro = "O produto $dscProduto já se encontra totalmente conferido no mapa $idMapa";
+            $msgErro = "O produto $dscProduto já se encontra totalmente conferido ";
+            if ($codPessoa != null) {
+                $msgErro .= " para o cliente selecionado";
+            } else {
+                if ($utilizaQuebra == "S") {
+                    $msgErro .= " no mapa " . $idMapa;
+                } else {
+                    $msgErro .= " na expedicao " . $idExpedicao;
+                }
             }
             throw new \Exception($msgErro);
         } elseif ($qtdInformada > (Math::subtrair($qtdMapaTotal,$qtdConferidoTotal))) {
