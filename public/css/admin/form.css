@@ -7,13 +7,15 @@
 
 form {
     display: block;
-    width: 990px;
+    min-width:1005px;
+    margin: 10px;
 }
 fieldset {
     border: 1px solid #D0DEF1;
     padding: 10px;
     background: #F3F3F3;
-    margin-bottom: 10px;
+    margin: 5px;
+    border-radius: 4px;
 }
 fieldset legend {
     color: #1c94c4;
@@ -48,7 +50,8 @@ form fieldset div label.field, label.error {
 
 form input.date {
     width: 80px;
-    background: no-repeat left center url(../../img/icons/calendar.png) #FFF;
+    /*background: no-repeat left center url(../../img/icons/calendar.png) #FFF;*/
+    background: no-repeat left center url(../../img/icons/calendar.png) #f5ede6;
     text-indent: 17px;
 }
 form fieldset input.required {
@@ -118,14 +121,14 @@ input, select, textarea {
     border: 1px solid #CCC;
 }
 
-input, select {
-    line-height:20px;
-    height:20px;
-    margin: 0;
+input[type="submit"]{
+    margin-top: 16px;
+    height: 28px;
+    line-height: 28.5px;
 }
-
-input[type="submit"] {
-    margin-top: 15px;
+button {
+    height: 28px;
+    line-height: 28.5px;
 }
 
 input[type="radio"] {
@@ -199,4 +202,57 @@ input[type="radio"] {
 .tabContainer {
     display: table;
     width: 100%;
+}
+/*
+Mudança nos inputs
+*/
+
+input[type=text], input[type=password], select{
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    box-shadow: 1px 1px 2px #333333;
+    -moz-box-shadow: 1px 1px 2px #333333;
+    -webkit-box-shadow: 1px 1px 2px #333333;
+    background: #f5ede6;
+    /*border:1px solid #000000;*/
+    height:25px !important;
+    margin-top: 2px;
+    margin-bottom:2px;
+    padding-left:5px;
+}
+
+textarea{
+    border: 1px solid #000000;
+    background:#f5ede6;
+    width:150px;
+    height:100px;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    box-shadow: 1px 1px 2px #333333;
+    -moz-box-shadow: 1px 1px 2px #333333;
+    -webkit-box-shadow: 1px 1px 2px #333333;
+}
+
+input[type=text]:hover, textarea:hover, input[type=password]:hover,select:hover {
+    background: #ffffff;
+    border:1px solid #1c94c4 !important;
+}
+input[type=text]:focus,input[type=password]:focus, textarea:focus,select:focus{
+    background: #ffffff;
+    border:0px !important;
+    box-shadow: 1px 1px 8px #06516f !important;
+    border-radius:6px;
+}
+
+input.date:focus, input.date:hover{
+    background: no-repeat left center url(../../img/icons/calendar.png) #ffffff;
+}
+
+select {
+    height: 27px !important;
+    min-width: 100px;
+    /*    line-height:20px;
+        height:20px;*/
 }

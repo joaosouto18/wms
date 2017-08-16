@@ -14,7 +14,7 @@
     margin-bottom: 5px;
 }
 .gControl div {
-    
+
 }
 .gPager {
     float:left;
@@ -29,7 +29,8 @@
 }
 .gExport {
     float: right;
-    width: 170px;
+    width: auto;
+    /*clear: both;*/
 }
 .gExport select {
     width: 90px;
@@ -42,7 +43,7 @@ div.gOrder {
 }
 
 .btnRemOrder {
-    margin-right: 5px;
+    /*margin-right: 5px;*/
 }
 
 div.gFilter {
@@ -53,7 +54,7 @@ div.gFilter {
 .gSelect label {
     display: inline;
 }
-                
+
 .gSelect a {
     color: #ED6502;
 }
@@ -67,7 +68,7 @@ div.gFilter {
     margin-bottom: 5px;
 }
 .gTable tr.gRowColor{
-    background: #EDEDED;
+    background: #cacaca;
 }
 .gTable tr:hover {
     background: #c7d5e2 !important;
@@ -76,13 +77,15 @@ div.gFilter {
     font-weight: bold;
 }
 .gTable tr.gRowFeatured {
-    background: #fcc29e;
+    background: #f77878;
 }
 .gTable td {
-    border-left: 1px solid #EDFFF9;
-    border-right: 1px solid #EDFFF9;
-    border-bottom: 1px solid #EDFFF9;
-    padding: 0 2px;
+    border: 2px solid #EDFFF9;
+    padding: 3px 2px 5px;
+}
+.gTable.list td {
+    border: 2px groove #82b7de;
+    padding: 3px 2px 5px;
 }
 .gTTitle {
     height: 25px;
@@ -102,6 +105,9 @@ div.gFilter {
 .gTTitle a.sort {
     display: block;
     background: repeat-x top left url(../../img/admin/sort_off_bg.png);
+    margin: 2px;
+    border-radius: 4px;
+    border: 1px solid #5e76ef;
 }
 .gTTitle a.sort span {
     background: no-repeat right center url(../../img/admin/grid_sort_both.png);
@@ -201,6 +207,7 @@ div.gFilter {
 .gSelect {
     float: left;
     margin-left: 10px;
+    margin: 4px;
 }
 .gSelect a {
     color: #ED6502;
@@ -217,7 +224,7 @@ label#checkAllGridLbl {
     line-height: 20px;
 }
 input#checkAllGrid {
-    margin:0;
+    margin:6px;
 }
 span.massDelimiter {
     margin:0 15px;

@@ -456,7 +456,9 @@ class Enderecamento_MovimentacaoController extends Action
         $enderecos = $EstoqueRepo->getEstoqueAndVolumeByParams($params);
         /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
         $ProdutoRepository   = $this->_em->getRepository('wms:Produto');
-        $produtoEn  = $ProdutoRepository->findOneBy(array('id' => ProdutoUtil::formatar($params['idProduto']), 'grade' => $params['grade']));
+        $codProduto = ProdutoUtil::formatar($params['idProduto']);
+        $grade = (isset($params['grade']) && !empty($params['grade'])) ? $params['grade'] : 'UNICA';
+        $produtoEn  = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
         $endPicking = $ProdutoRepository->getEnderecoPicking($produtoEn);
 
         $this->view->endPicking = $endPicking;
