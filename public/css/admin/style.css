@@ -192,7 +192,6 @@ h4 {
 *********************/
 button, .btn, button.back, .btnBack, .btnAjuda, .btnAlert {
     /*background: url(../../img/admin/btn_bg.gif) repeat-x scroll 0 0 #F56B06;*/
-    font-size: 13px;
     word-wrap: break-word;
     background: rgba(255,172,71,1);
     background: -moz-linear-gradient(top, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%);
