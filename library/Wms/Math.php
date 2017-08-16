@@ -34,6 +34,9 @@ Class Math
 
     public function quocienteDivisao($x, $y)
     {
+        $x = strval($x);
+        $y = strval($y);
+
         $quantidade = $this->maiorPrecisao($x, $y);
 
         $x = $x * $quantidade;
@@ -45,6 +48,9 @@ Class Math
 
     public function restoDivisao($x, $y)
     {
+        $x = strval($x);
+        $y = strval($y);
+
         $quantidade = $this->maiorPrecisao($x, $y);
 
         $x = $x * $quantidade;
@@ -53,7 +59,11 @@ Class Math
         return $x % $y;
     }
 
-    public function compare($x,$y,$oper = ">") {
+    public function compare($x,$y,$oper = ">")
+    {
+        $x = strval($x);
+        $y = strval($y);
+
         $quantidade = $this->maiorPrecisao($x,$y);
         $x = $x * $quantidade;
         $y = $y * $quantidade;
@@ -71,6 +81,9 @@ Class Math
 
     public function totalAdicao($x,$y)
     {
+        $x = strval($x);
+        $y = strval($y);
+
         $quantidade = $this->maiorPrecisao($x,$y);
 
         $x = $x * $quantidade;
@@ -81,6 +94,9 @@ Class Math
     }
 
     public function totalSubtracao($x,$y) {
+
+        $x = strval($x);
+        $y = strval($y);
 
         $quantidade = $this->maiorPrecisao($x,$y);
 
@@ -93,6 +109,9 @@ Class Math
 
     public function produtoMultiplicacao($x,$y)
     {
+        $x = strval($x);
+        $y = strval($y);
+        
         $quantidade = $this->maiorPrecisao($x,$y);
 
         $x = $x * $quantidade;
