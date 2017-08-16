@@ -8,10 +8,8 @@ class Enderecamento_Relatorio_DisponibilidadePickingController extends Action
         $form = new \Wms\Module\Armazenagem\Form\OcupacaocdPeriodo\Filtro();
         $form->init(false);
         $values = $form->getParams();
-
         if ($values)
         {
-            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
             $enderecos = $enderecoRepo->getPickingSemProdutos($values);
             $this->view->enderecos = $enderecos;

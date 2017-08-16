@@ -46,7 +46,6 @@ class EstoqueRepository extends EntityRepository
         $grade = $produtoEn->getGrade();
         $endereco = $enderecoEn->getId();
 
-
         $qtdReserva = 0;
 
         if ($saidaProduto == true) {
@@ -121,15 +120,13 @@ class EstoqueRepository extends EntityRepository
         if (isset($estoqueEn) && is_object($estoqueEn)) {
             $validadeEsttoque = $estoqueEn->getValidade();
         }
-//        if ($qtd != 0 ) {
-            if (isset($params['validade']) and !empty($params['validade'])) {
-                $validadeParam = new \Zend_Date($params['validade']);
-                $validadeParam = $validadeParam->toString('Y-MM-dd');
-                $validadeParam = new \DateTime($validadeParam);
-            } elseif (isset($dataValidade['dataValidade']) and !empty($dataValidade['dataValidade'])) {
-                $validadeParam = (is_string($dataValidade['dataValidade']))? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
-            }
-//        }
+        if (isset($params['validade']) and !empty($params['validade'])) {
+            $validadeParam = new \Zend_Date($params['validade']);
+            $validadeParam = $validadeParam->toString('Y-MM-dd');
+            $validadeParam = new \DateTime($validadeParam);
+        } elseif (isset($dataValidade['dataValidade']) and !empty($dataValidade['dataValidade'])) {
+            $validadeParam = (is_string($dataValidade['dataValidade'])) ? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
+        }
 
         if (isset($validadeParam) && !empty($validadeParam)) {
             $validade = $validadeParam;
@@ -140,6 +137,7 @@ class EstoqueRepository extends EntityRepository
         //ATUALIZA A TABELA ESTOQUE COM O SALDO DE ESTOQUE
         if ($estoqueEn == NULL) {
             $novaQtd = $qtd;
+            $saldoAnterior = 0;
             $estoqueEn = new Estoque();
             $estoqueEn->setDepositoEndereco($enderecoEn);
             $estoqueEn->setProduto($produtoEn);
@@ -154,6 +152,7 @@ class EstoqueRepository extends EntityRepository
             $dscEndereco = $enderecoEn->getDescricao();
             $dscProduto  = $produtoEn->getDescricao();
         } else {
+            $saldoAnterior = $estoqueEn->getQtd();
             $idUma = $estoqueEn->getUma();
             $novaQtd = $estoqueEn->getQtd() + $qtd;
             $dscEndereco = $estoqueEn->getDepositoEndereco()->getDescricao();
@@ -172,6 +171,7 @@ class EstoqueRepository extends EntityRepository
         } else {
             $em->remove($estoqueEn);
         }
+        $saldoFinal = $novaQtd;
 
         if ($runFlush == true)
             $em->flush();
@@ -179,6 +179,8 @@ class EstoqueRepository extends EntityRepository
         //CRIA UM HISTÓRICO DE MOVIMENTAÇÃO DE ESTOQUE
         $historico = new HistoricoEstoque();
         $historico->setQtd($qtd);
+        $historico->setSaldoAnterior($saldoAnterior);
+        $historico->setSaldoFinal($saldoFinal);
         $historico->setData(new \DateTime());
         $historico->setDepositoEndereco($enderecoEn);
         $historico->setObservacao($observacoes);
@@ -238,7 +240,8 @@ class EstoqueRepository extends EntityRepository
                     ESTQ.COD_PRODUTO, 
                     ESTQ.DSC_GRADE, 
                     ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
-                    NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO
+                    NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO,
+                    ESTQ.DTH_VALIDADE
                    FROM ESTOQUE ESTQ
                    LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, SUM(REP.QTD_RESERVADA) QTD_RESERVA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
                                 FROM RESERVA_ESTOQUE RE
@@ -435,6 +438,16 @@ class EstoqueRepository extends EntityRepository
                 }
                 $result = $arrayResult;
 
+            }
+        }
+        if (!empty($result) && is_array($result)) {
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            foreach ($result as $key => $value) {
+                $result[$key]['QTD_EMBALAGEM'] = $value['QTD'];
+                if ($value['QTD'] > 0) {
+                    $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
+                    $result[$key]['QTD_EMBALAGEM'] = implode('<br />', $vetEstoque);
+                }
             }
         }
         return $result;

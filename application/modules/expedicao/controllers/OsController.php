@@ -114,7 +114,8 @@ class Expedicao_OsController extends Action
             'cssClass' => 'btnBack',
             'urlParams'=> array(
                 'module' => 'expedicao'
-            )
+            ),
+            'tag' => 'a'
         );
 
         Page::configure(array('buttons' => $buttons));

@@ -2,11 +2,12 @@
 
 namespace Wms\Domain\Entity\Enderecamento;
 
-use Doctrine\ORM\EntityRepository;
-use DoctrineExtensions\Versionable\Exception;
-use Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
+use Doctrine\ORM\EntityRepository,
+    DoctrineExtensions\Versionable\Exception,
+    Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
-    Wms\Domain\Entity\Atividade as AtividadeEntity;
+    Wms\Domain\Entity\Atividade as AtividadeEntity,
+    Wms\Domain\Entity\Recebimento;
 
 class PaleteRepository extends EntityRepository {
 
@@ -319,7 +320,7 @@ class PaleteRepository extends EntityRepository {
         return $qtd;
     }
 
-    public function getPaletesAndVolumes($idRecebimento = null, $idProduto = null, $grade = null, $statusPalete = null, $statusRecebimento = null, $dtInicioRecebimento1 = null, $dtInicioRecebimento2 = null, $dtFinalRecebimento1 = null, $dtFinalRecebimento2 = null, $uma = null) {
+    public function getPaletesAndVolumes($idRecebimento = null, $idProduto = null, $grade = null, $statusPalete = null, $statusRecebimento = null, $dtInicioRecebimento1 = null, $dtInicioRecebimento2 = null, $dtFinalRecebimento1 = null, $dtFinalRecebimento2 = null, $uma = null, $ordem = null) {
         $SQL = " SELECT DISTINCT
                         P.UMA,
                         U.DSC_UNITIZADOR as UNITIZADOR,
@@ -336,7 +337,8 @@ class PaleteRepository extends EntityRepository {
                         S.COD_SIGLA as COD_SIGLA,
                         PROD.VOLUMES,
                         NVL(QTD_VOL.QTD,1) as QTD_VOL_TOTAL,
-                        NVL(QTD_VOL_CONFERIDO.QTD,1) as QTD_VOL_CONFERIDO
+                        NVL(QTD_VOL_CONFERIDO.QTD,1) as QTD_VOL_CONFERIDO,
+                        P.DTH_VALIDADE
                    FROM PALETE P
                    LEFT JOIN UNITIZADOR U ON P.COD_UNITIZADOR = U.COD_UNITIZADOR
                    LEFT JOIN SIGLA S ON P.COD_STATUS = S.COD_SIGLA
@@ -388,9 +390,21 @@ class PaleteRepository extends EntityRepository {
         if (($dtFinalRecebimento2 != NULL) && ($dtFinalRecebimento2 != "")) {
             $SQL .= " AND R.DTH_FINAL_RECEB <= TO_DATE('$dtFinalRecebimento2 23:59','DD-MM-YYYY HH24:MI')";
         }
-        $SQL .= "   ORDER BY PROD.VOLUMES, P.UMA, S.DSC_SIGLA";
-
+        if ($ordem == 1) {
+            $SQL .= "   ORDER BY P.UMA, S.DSC_SIGLA";
+        } else {
+            $SQL .= "   ORDER BY PROD.VOLUMES, P.UMA, S.DSC_SIGLA";
+        }
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (!empty($result) && is_array($result)) {
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            foreach ($result as $key => $value) {
+                if ($value['QTD'] > 0) {
+                    $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
+                    $result[$key]['QTD'] = implode('<br />', $vetSeparar);
+                }
+            }
+        }
         return $result;
     }
 
@@ -1019,14 +1033,12 @@ class PaleteRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
 
-        $idUsuarioLogado = \Zend_Auth::getInstance()->getIdentity()->getId();
-
         if ($paleteEn == NULL) {
             throw new \Exception("Palete não encontrado");
         }
 
         try {
-            if ($paleteEn->getCodStatus() == \Wms\Domain\Entity\Enderecamento\Palete::STATUS_ENDERECADO) {
+            if ($paleteEn->getCodStatus() == Palete::STATUS_ENDERECADO) {
 
                 $enderecoEn = $paleteEn->getDepositoEndereco();
                 $idUma = $paleteEn->getId();
@@ -1034,6 +1046,7 @@ class PaleteRepository extends EntityRepository {
                 $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
 
                 $params = array();
+                $params['tipo'] = HistoricoEstoque::TIPO_ENDERECAMENTO;
                 foreach ($paleteEn->getProdutos() as $produto) {
                     $params['produto'] = $produto->getProduto();
                     $params['endereco'] = $enderecoEn;
@@ -1046,7 +1059,7 @@ class PaleteRepository extends EntityRepository {
                         $params['volume'] = $volumeRepo->findOneBy(array('id' => $produto->getCodProdutoVolume()));
                     }
 
-                    if ($paleteEn->getRecebimento()->getStatus()->getId() == \Wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
+                    if ($paleteEn->getRecebimento()->getStatus()->getId() == Recebimento::STATUS_FINALIZADO) {
                         $estoqueRepo->movimentaEstoque($params);
                     }
                 }
@@ -1079,7 +1092,7 @@ class PaleteRepository extends EntityRepository {
                     $idEndereco = $paleteEn->getDepositoEndereco()->getId();
 
                     $reservaEstoqueRepo->reabrirReservaEstoque($idEndereco, $paleteEn->getProdutosArray(), "E", "U", $idUma);
-                    $paleteEn->setCodStatus(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_ENDERECAMENTO);
+                    $paleteEn->setCodStatus(Palete::STATUS_EM_ENDERECAMENTO);
                     $this->getEntityManager()->persist($paleteEn);
 
                     $ordensServicoEn = $this->getEntityManager()->getRepository('wms:OrdemServico')->findBy(array('idEnderecamento' => $paleteEn->getId()));
@@ -1093,10 +1106,10 @@ class PaleteRepository extends EntityRepository {
                 case Palete::STATUS_EM_ENDERECAMENTO:
                     $idEndereco = $paleteEn->getDepositoEndereco()->getId();
 
-                    if ($paleteEn->getRecebimento()->getStatus()->getId() == \Wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
-                        $codStatus = \Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO;
+                    if ($paleteEn->getRecebimento()->getStatus()->getId() == Recebimento::STATUS_FINALIZADO) {
+                        $codStatus = Palete::STATUS_RECEBIDO;
                     } else {
-                        $codStatus = \Wms\Domain\Entity\Enderecamento\Palete::STATUS_EM_RECEBIMENTO;
+                        $codStatus = Palete::STATUS_EM_RECEBIMENTO;
                     }
 
                     $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();

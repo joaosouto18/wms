@@ -4,8 +4,8 @@ namespace Wms\Domain\Entity\Ressuprimento;
 
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
-    Wms\Domain\Entity\Atividade as AtividadeEntity
-;
+    Wms\Domain\Entity\Atividade as AtividadeEntity;
+use Wms\Math;
 
 class OndaRessuprimentoRepository extends EntityRepository
 {
@@ -247,7 +247,7 @@ class OndaRessuprimentoRepository extends EntityRepository
             $codExpedicao = $produto['COD_EXPEDICAO'];
             $codProduto = $produto['COD_PRODUTO'];
             $grade = $produto['DSC_GRADE'];
-            $qtd = $produto['QTD']* -1;
+            $qtd = $produto['QTD'] * -1;
             $codPedido = $produto['COD_PEDIDO'];
 
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
@@ -355,7 +355,7 @@ class OndaRessuprimentoRepository extends EntityRepository
         }
     }
 
-    private function saveOs ($produtoEn,$embalagens, $volumes,$qtdOnda, $ondaEn,$enderecoPulmaoEn, $idPicking, $repositorios = null){
+    private function saveOs ($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios = null, $validade = null){
         /** @var \Wms\Domain\Entity\Util\SiglaRepository $siglaRepo */
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
@@ -408,6 +408,7 @@ class OndaRessuprimentoRepository extends EntityRepository
                     $produtoArray['codProdutoVolume'] = $volume;
                     $produtoArray['codProdutoEmbalagem'] = null;
                     $produtoArray['qtd'] = $qtdOnda;
+                    $produtoArray['validade'] = $validade;
                 $produtosEntrada[] = $produtoArray;
 
                 $produtoArray['qtd'] = $qtdOnda * -1;
@@ -431,20 +432,19 @@ class OndaRessuprimentoRepository extends EntityRepository
                     $produtoArray['codProdutoVolume'] = null;
                     $produtoArray['codProdutoEmbalagem'] = $embalagem;
                     $produtoArray['qtd'] = $qtdOnda;
+                    $produtoArray['validade'] = $validade;
                 $produtosEntrada[] = $produtoArray;
 
                 $produtoArray['qtd'] = $qtdOnda * -1;
                 $produtosSaida[] = $produtoArray;
             }
 
-        //$this->getEntityManager()->flush();
-
         //ADICIONA AS RESERVAS DE ESTOQUE
         $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$produtosEntrada,"E","O",$ondaRessuprimentoOs,$osEn, null,null,null,$repositorios);
         $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(),$produtosSaida,"S","O",$ondaRessuprimentoOs,$osEn, null,null,null, $repositorios);
     }
 
-    private function geraOsByPicking ($picking,$ondaEn, $dadosProdutos, $repositorios) {
+    private function geraOsByPicking ($picking, $ondaEn, $dadosProdutos, $repositorios) {
         $qtdOsGerada = 0;
         $capacidadePicking = $picking['capacidadePicking'];
         $pontoReposicao = $picking['pontoReposicao'];
@@ -477,8 +477,7 @@ class OndaRessuprimentoRepository extends EntityRepository
             $qtdRessuprir = $saldo * -1;
             $qtdRessuprirMax = $qtdRessuprir + $capacidadePicking;
 
-            $quantidadeBloqueadoInventario = 0;
-            //GERO AS OS DE ACORDO COM OS ENDEREÇOS DE PULMAO
+            //GERA A O.S DE ACORDO COM OS ENDEREÇOS DE PULMAO
             $params = array(
                 'idProduto' => $codProduto,
                 'grade' => $grade,
@@ -488,13 +487,8 @@ class OndaRessuprimentoRepository extends EntityRepository
             $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
             foreach ($estoquePulmao as $estoque) {
                 $qtdEstoque = $estoque['SALDO'];
+                $validadeEstoque = $estoque['DTH_VALIDADE'];
                 $idPulmao = $estoque['COD_DEPOSITO_ENDERECO'];
-
-                /*
-                if ($enderecoRepo->verificaBloqueioInventario($idPulmao) == true) {
-                    $quantidadeBloqueadoInventario = $qtdEstoque + $quantidadeBloqueadoInventario;
-                    continue;
-                }*/
 
                 $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('id'=>$idPulmao));
 
@@ -506,14 +500,15 @@ class OndaRessuprimentoRepository extends EntityRepository
                         $qtdOnda = $capacidadePicking;
                     } else {
                         //Todo Reavaliar o cálculo de ressuprimento
-                        $qtdOnda = ((int) ($qtdRessuprirMax / $capacidadePicking))* $capacidadePicking;
+                        $qtdOnda = ((int) ($qtdRessuprirMax / $capacidadePicking)) * $capacidadePicking;
                     }
                     if ($qtdOnda > $qtdEstoque)
                         $qtdOnda = $qtdEstoque;
                 }
 
+                //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
-                    $this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking, $repositorios);
+                    $this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking,$repositorios,$validadeEstoque);
                     $qtdOsGerada ++;
                 }
 
@@ -524,15 +519,6 @@ class OndaRessuprimentoRepository extends EntityRepository
                     break;
                 }
             }
-
-            /*
-            if ($saldo != $pontoReposicao) {
-                //Verificar se atendeu corretamente ao ressuprimento devido ao inventario
-                if (($quantidadeBloqueadoInventario >= $qtdRessuprir) && ($qtdRessuprir > 0)) {
-                    throw new \Exception('Existem endereços de pulmão sendo bloqueados por inventario.');
-                }
-            }*/
-
         }
         return $qtdOsGerada;
 

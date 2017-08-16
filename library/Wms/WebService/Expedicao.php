@@ -750,24 +750,28 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $ProdutoRepo        = $repositorios['produtoRepo'];
         $PedidoProdutoRepo  = $repositorios['pedidoProdutoRepo'];
 
+        $prod = array();
         foreach ($produtos as $produto) {
-            $idProduto = trim($produto['codProduto']);
-            $idProduto = ProdutoUtil::formatar($idProduto);
+            $idProduto = ProdutoUtil::formatar(trim($produto['codProduto']));
 
             $enProduto = $ProdutoRepo->find(array('id' => $idProduto, 'grade' => $produto['grade']));
-            if (isset($produto['quantidade'])) {
-                $produto['qtde'] = $produto['quantidade'];
-            }
+            $qtdCorrigida = str_replace(',','.',$produto['quantidade']);
 
-            $prod = array(
-                'codPedido' => $enPedido->getId(),
-                'pedido' => $enPedido,
-                'produto' => $enProduto,
-                'valorVenda' =>$produto['valorVenda'],
-                'grade' => $produto['grade'],
-                'quantidade' => str_replace(',','.',$produto['qtde'])
-            );
-            $PedidoProdutoRepo->save($prod);
+            if(isset($prod[$idProduto.'--'.$produto['grade']])){
+                $prod[$idProduto.'--'.$produto['grade']]['quantidade'] = \Wms\Math::adicionar($prod[$idProduto.'--'.$produto['grade']]['quantidade'], $qtdCorrigida);
+            }else{
+                $prod[$idProduto.'--'.$produto['grade']] = array(
+                    'codPedido' => $enPedido->getId(),
+                    'pedido' => $enPedido,
+                    'produto' => $enProduto,
+                    'valorVenda' =>$produto['valorVenda'],
+                    'grade' => $produto['grade'],
+                    'quantidade' => $qtdCorrigida
+                );
+            }
+        }
+        foreach ($prod as $value) {
+            $PedidoProdutoRepo->save($value);
         }
     }
 

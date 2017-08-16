@@ -106,7 +106,8 @@ class NormaPaletizacaoRepository extends EntityRepository
             $values['isPadrao'] = 'S';
             $values['idUnitizador'] = $this->getSystemParameterValue('COD_UNITIZADOR_PADRAO');
             $values['numPeso'] = 1;
-            $normaId = $this->save($normaEn, $values);
+            $normaEntity = $this->save($normaEn, $values);
+            $normaId = $normaEntity->getId();
         } else {
             $normaId = $normaRelativa->getId();
         }

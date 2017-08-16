@@ -484,34 +484,18 @@ class Web_EnderecoController extends Crud
      */
     public function verificarEnderecoAjaxAction()
     {
+        $endereco = $this->_getParam('endereco');
 
-        $em = $this->getEntityManager();
-        $params = $this->getRequest()->getParams();
-        extract($params);
+        $enderecoFormatado = \Wms\Util\Endereco::formatar($endereco);
+        $depositoEnderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
+        $depositoEnderecoEn = $depositoEnderecoRepo->findOneBy(array('descricao' => $enderecoFormatado));
 
-        $arrayMensagens = array(
-            'status' => 'success',
-            'msg' => 'Sucesso!',
-        );
+        if (!empty($depositoEnderecoEn))
+            $arrayMensagens = array( 'status' => 'success' );
+        else
+            $arrayMensagens = array( 'status' => 'error', "msg" => "Endereço $endereco não encontrado!" );
 
-        try {
-            $enderecoFormatado = \Wms\Util\Endereco::formatar($endereco);
-
-            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-            $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
-            $enderecoEn = $enderecoRepo->findBy(array('descricao' => $enderecoFormatado));
-
-            if (empty($enderecoEn)) {
-                throw new \Exception('Este Endereço não existe.');
-            }
-        } catch (\Exception $e) {
-            $arrayMensagens = array(
-                'status' => 'error',
-                'msg' => $e->getMessage(),
-            );
-        }
-
-        $this->_helper->json($arrayMensagens, true);
+        $this->_helper->json($arrayMensagens);
     }
 
     public function imprimirAction() {
@@ -557,7 +541,7 @@ class Web_EnderecoController extends Crud
         $grade = $this->_getParam('grade');
         $idProduto = $this->_getParam('produto');
 
-        if (isset($endereco) && !empty($endereco)) {
+        if (!empty($endereco)) {
             $depositoEnderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
             $depositoEnderecoEn = $depositoEnderecoRepo->findOneBy(array('descricao' => $endereco));
             $idDepositoEndereco = $depositoEnderecoEn->getId();
@@ -565,11 +549,12 @@ class Web_EnderecoController extends Crud
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
             $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco, 'codProduto' => $idProduto, 'grade' => "$grade"));
 
-            if (isset($estoqueEn)) {
+            //verificar se tem outra embalagem do mesmo produto cadastrado para esse piking e qual a ação tomada
+            if (!empty($estoqueEn)) {
                 if ($estoqueEn->getQtd() > 0) {
                     $arrayMensagens = array(
                         'status' => 'error',
-                        'msg' => 'Não é possível apagar/alterar um endereço com estoque no picking.',
+                        'msg' => 'Não é possível apagar um produto com estoque no picking.',
                     );
                 } else {
                     $arrayMensagens = array(
@@ -597,13 +582,13 @@ class Web_EnderecoController extends Crud
     {
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $endRepo */
         $endRepo = $this->_em->getRepository('wms:Deposito\Endereco');
-        $endereços = $endRepo->findAll();
+        $enderecos = $endRepo->findAll();
 
         /** @var \Wms\Domain\Entity\Deposito\Endereco $endereço */
-        foreach ($endereços as $endereço){
-            $formatado = \Wms\Util\Endereco::formatar($endereço->getDescricao());
-            $endereço->setDescricao($formatado);
-            $this->_em->persist($endereço);
+        foreach ($enderecos as $endereco){
+            $formatado = \Wms\Util\Endereco::formatar($endereco->getDescricao());
+            $endereco->setDescricao($formatado);
+            $this->_em->persist($endereco);
         }
         $this->_em->flush();
         $this->addFlashMessage('success', 'Endereços formatados');

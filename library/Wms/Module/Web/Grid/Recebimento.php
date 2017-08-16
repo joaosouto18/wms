@@ -75,7 +75,7 @@ class Recebimento extends Grid
                     'actionName' => 'conferencia',
                     'pkIndex' => 'idOrdemServico',
                     'condition' => function ($row) {
-                        return (($row['IDSTATUS'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA) && $row['IDORDEMSERVICOMANUAL']);
+                        return ($row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA || $row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_COLETOR);
                     }
                 ));
 

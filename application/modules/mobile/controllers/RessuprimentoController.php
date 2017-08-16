@@ -1,6 +1,6 @@
 <?php
 use Wms\Controller\Action,
-    Wms\Service\Recebimento as LeituraColetor;
+    Wms\Util\Coletor as ColetorUtil;
 
 
 class Mobile_RessuprimentoController extends Action
@@ -43,8 +43,7 @@ class Mobile_RessuprimentoController extends Action
             $this->view->codigoBarras = $codigoBarras;
 
             if ($codigoBarras) {
-                $LeituraColetor = new LeituraColetor();
-                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+                $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarras);
             }
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
@@ -129,8 +128,7 @@ class Mobile_RessuprimentoController extends Action
 
             if ($codigoBarrasUMA)
             {
-                $LeituraColetor = new LeituraColetor();
-                $codigoBarrasUMA = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasUMA);
+                $codigoBarrasUMA = ColetorUtil::retiraDigitoIdentificador($codigoBarrasUMA);
 
                 $result = $estoqueRepo->getProdutoByUMA($codigoBarrasUMA, $idEndereco);
                 if ($result == NULL) {
@@ -159,8 +157,7 @@ class Mobile_RessuprimentoController extends Action
 
             if ($etiquetaProduto)
             {
-                $LeituraColetor = new LeituraColetor();
-                $etiquetaProduto = $LeituraColetor->analisarCodigoBarras($etiquetaProduto);
+                $etiquetaProduto = ColetorUtil::adequaCodigoBarras($etiquetaProduto);
 
                 $result = $estoqueRepo->getProdutoByCodBarrasAndEstoque($etiquetaProduto, $idEndereco);
                 if ($result == NULL) {
@@ -228,8 +225,16 @@ class Mobile_RessuprimentoController extends Action
                 }
 
                 $params['validade'] = null;
-                if ($produtoEn->getValidade() == 'S' ) {
+                if ($produtoEn->getValidade() == 'S') {
                     $validade = $volEstoque->getValidade();
+                    if (empty($validade)) {
+                        $umaOrigem = null;
+                        $estoqueUma = $volEstoque->getUma();
+                        if (!empty($estoqueUma)) {
+                            $umaOrigem = $this->em->find('wms:Enderecamento\Palete', $volEstoque->getUma());
+                        }
+                        $validade = (!empty($umaOrigem)) ? $umaOrigem->getValidade() : null;
+                    }
                     if (!empty($validade)) {
                         $params['validade'] = $validade->format('d/m/Y');
                     }
@@ -240,6 +245,7 @@ class Mobile_RessuprimentoController extends Action
                 $params['observacoes'] = "Mov. ref. ressuprimento preventivo coletor";
                 $params['estoqueRepo'] = $estoqueRepo;
                 $params['qtd'] = $qtd * -1;
+                $params['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_RESSUPRIMENTO;
                 $estoqueRepo->movimentaEstoque($params);
 
                 $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idPicking));

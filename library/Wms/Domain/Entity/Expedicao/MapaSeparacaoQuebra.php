@@ -94,7 +94,7 @@ class MapaSeparacaoQuebra
      */
     public function setTipoQuebra($tipoQuebra)
     {
-        $this->tipoQuebra = $tipoQuebra;
+        $this->tipoQuebra = trim($tipoQuebra);
     }
 
     /**

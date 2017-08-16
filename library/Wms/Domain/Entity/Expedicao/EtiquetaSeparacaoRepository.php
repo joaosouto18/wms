@@ -567,10 +567,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
-                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+                        if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                             $embalagemAtual = $embalagem;
                             break;
                         }
+//                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+//                            $embalagemAtual = $embalagem;
+//                            break;
+//                        }
                     }
                     if ($embalagemAtual == null) {
                         $mensagem = "Não existe embalagem para Atender o PRODUTO $codProduto GRADE $grade com a quantidade restante de $quantidadeAtender produtos";
@@ -654,7 +658,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
             )->toArray();
 
-
             usort($embalagensEn,function ($itemA, $itemB) {
                 return $itemA->getQuantidade() < $itemB->getQuantidade();
             });
@@ -682,10 +685,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
-                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+                        if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                             $embalagemAtual = $embalagem;
                             break;
                         }
+//                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
+//                            $embalagemAtual = $embalagem;
+//                            break;
+//                        }
                     }
                     if ($embalagemAtual == null) {
                         $msg = "Não existe embalagem para Atender o PRODUTO $codProduto GRADE $grade com a quantidade restante de $quantidadeAtender produtos";
@@ -1121,6 +1128,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $this->_em->persist($pedido);
             }
 
+            $this->_em->flush();
+            $this->_em->clear();
+
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
             if ($parametroConsistencia == 'S') {
                 $resultadoConsistencia = $mapaSeparacaoRepo->verificaConsistenciaSeguranca($idExpedicao);
@@ -1132,9 +1142,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     throw new WMS_Exception($msg);
                 }
             }
-
-            $this->_em->flush();
-            $this->_em->clear();
         } catch (WMS_Exception $WMS_Exception){
             throw $WMS_Exception;
         }catch (\Exception $e) {
@@ -1316,84 +1323,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     if (!isset($mapasSeparacaoProdutoEn) || empty($mapasSeparacaoProdutoEn)) {
                         if (isset($mapaSeparacao) && !empty($mapaSeparacao)) {
 //                            $this->getEntityManager()->remove($mapaSeparacao);
-                        }
-                    }
-                }
-            }
-        }
-
-//        $this->getEntityManager()->flush();
-    }
-
-    private function atualizaMapaSeparacaoProduto($idExpedicao, $arrRepo = null)
-    {
-        $math = new Math();
-
-        if ($arrRepo == null) {
-            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
-            $mapaProdutoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
-            $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
-            /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
-            $pedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
-            /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-            $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
-            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-            $produtoRepo = $this->_em->getRepository('wms:Produto');
-        } else {
-            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
-            $mapaProdutoRepo = $arrRepo['mapaSeparacaoProduto'];
-            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
-            $mapaSeparacaoRepo = $arrRepo['mapaSeparacao'];
-            /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
-            $pedidoProdutoRepo = $arrRepo['pedidoProduto'];
-            /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-            $embalagemRepo = $arrRepo['produtoEmbalagem'];
-            /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-            $produtoRepo = $arrRepo['produto'];
-        }
-        $mapaSeparacaoQuebraRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-
-        $mapasSeparacao = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao, 'codStatus' => EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO));
-
-        foreach ($mapasSeparacao as $mapaSeparacao) {
-            $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $mapaSeparacao, 'tipoQuebra' => MapaSeparacaoQuebra::QUEBRA_CARRINHO));
-            if (!empty($mapaSeparacaoQuebraEn))
-                continue;
-
-            $mapaProdutosByMapa = $mapaProdutoRepo->getMapaProdutoByMapa($mapaSeparacao->getId());
-            foreach ($mapaProdutosByMapa as $mapaProduto) {
-                $idMapaSeparacao = $mapaSeparacao->getId();
-                $idProduto = $mapaProduto['codProduto'];
-                $grade = $mapaProduto['dscGrade'];
-                $produtoEntity = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
-
-                $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $idProduto, 'grade' => $grade, 'dataInativacao' => null),array('quantidade'=>'DESC'));
-
-                $produtosMapa = $mapaProdutoRepo->getMapaProdutoByProdutoAndMapa($idMapaSeparacao, $idProduto, $grade);
-                foreach ($produtosMapa as $produtoMapa) {
-                    $qtdTotalMapaProdutos = $produtoMapa['qtdSeparar'];
-
-                    $mapaProdutosEn = $mapaProdutoRepo->findBy(array('mapaSeparacao'=>$idMapaSeparacao,'codProduto'=>$idProduto,'dscGrade'=>$grade, 'codDepositoEndereco' => $produtoMapa['codDepositoEndereco']));
-                    $depositoEnderecoEn = null;
-                    $pedidoProduto = null;
-                    $first = true;
-
-                    /** @var MapaSeparacaoProduto $mapaProdutoRemover */
-                    foreach ($mapaProdutosEn as $mapaProdutoRemover) {
-                        if ($first) {
-                            $depositoEnderecoEn = $mapaProdutoRemover->getDepositoEndereco();
-                            $pedidoProduto = $mapaProdutoRemover->getPedidoProduto();
-                            $first = false;
-                        }
-                        $this->_em->remove($mapaProdutoRemover);
-                    }
-                    $this->_em->flush();
-
-                    foreach ($embalagensEn as $embalagem) {
-                        while ($math->compare($qtdTotalMapaProdutos, $embalagem->getQuantidade() , ">=" )) {
-                            $qtdTotalMapaProdutos = $math->totalSubtracao($qtdTotalMapaProdutos,$embalagem->getQuantidade());
-                            $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagem, $pedidoProduto,$depositoEnderecoEn);
                         }
                     }
                 }
@@ -1852,19 +1781,24 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
-        $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array('mapaSeparacao'=>$mapaSeparacaoEntity,'codPedidoProduto'=>$pedidoProduto->getId()));
-        if ($mapaPedidoEn == null) {
-            $mapaPedidoEn = new MapaSeparacaoPedido();
-            $mapaPedidoEn->setCodPedidoProduto($pedidoProduto->getId());
-            $mapaPedidoEn->setMapaSeparacao($mapaSeparacaoEntity);
-            $mapaPedidoEn->setPedidoProduto($pedidoProduto);
-            $this->getEntityManager()->persist($mapaPedidoEn);
+        if ($pedidoProduto != null) {
+            $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array('mapaSeparacao'=>$mapaSeparacaoEntity,'codPedidoProduto'=>$pedidoProduto->getId()));
+            if ($mapaPedidoEn == null) {
+                $mapaPedidoEn = new MapaSeparacaoPedido();
+                $mapaPedidoEn->setCodPedidoProduto($pedidoProduto->getId());
+                $mapaPedidoEn->setMapaSeparacao($mapaSeparacaoEntity);
+                $mapaPedidoEn->setPedidoProduto($pedidoProduto);
+                $this->getEntityManager()->persist($mapaPedidoEn);
+            }
+
         }
 
 //        if (isset($cubagem[$pedidoProduto->getPedido()->getId()])) {
+        if ($pedidoProduto != null) {
             if (isset($cubagem[$pedidoProduto->getPedido()->getId()][$embalagemEntity->getId()])) {
                 $cubagem = $cubagem[$pedidoProduto->getPedido()->getId()][$embalagemEntity->getId()];
             }
+        }
 //        }
 
         if ($mapaProduto == null) {
@@ -1877,11 +1811,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setProdutoVolume($volumeEntity);
             $mapaProduto->setQtdSeparar($quantidadePedido);
             $mapaProduto->setQtdEmbalagem($quantidadeEmbalagem);
-            $mapaProduto->setCodPedidoProduto($pedidoProduto->getId());
+            if ($pedidoProduto != null) {
+                $mapaProduto->setCodPedidoProduto($pedidoProduto->getId());
+                $mapaProduto->setPedidoProduto($pedidoProduto);
+
+            }
+
             $mapaProduto->setQtdCortado(0);
             $mapaProduto->setIndConferido('N');
             $mapaProduto->setDepositoEndereco($depositoEndereco);
-            $mapaProduto->setPedidoProduto($pedidoProduto);
             $mapaProduto->setCubagem($cubagem);
         } else {
             $mapaProduto->setQtdSeparar($mapaProduto->getQtdSeparar() + $quantidadePedido);

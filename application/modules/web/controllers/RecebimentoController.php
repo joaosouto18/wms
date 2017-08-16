@@ -594,11 +594,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $this->em->beginTransaction();
 
                         try {
-                            /* $ordemServicoEntity->setDataFinal(new \DateTime());
-                              $this->em->persist($ordemServicoEntity);
-                              $this->em->commit();
-                              $this->em->flush();
-                              $this->em->beginTransaction(); */
                             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
                             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
                             $checkOs = $recebimentoRepo->checarConferenciaComDivergencia($idRecebimento, false);
@@ -651,12 +646,13 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         // checando observacoes
                         $motivosDivergencia = $this->getRequest()->getParam('motivosDivergencia');
                         $notasFiscais = $this->getRequest()->getParam('notasFiscais');
-
+                        $arrNotasEn = array();
+                        
                         foreach ($motivosDivergencia as $key => $cod_motivo_divergencia) {
 
                             $recebimentoConferenciaEntity = $this->em->getReference('wms:Recebimento\Conferencia', $key);
                             $motivoDivergenciaEntity = $this->em->getReference('wms:Recebimento\Divergencia\Motivo', $cod_motivo_divergencia);
-                            $notaFiscalEntity = $this->em->getReference('wms:NotaFiscal', $notasFiscais[$key]);
+                            $arrNotasEn[] = $notaFiscalEntity = $this->em->find('wms:NotaFiscal', $notasFiscais[$key]);
 
                             $recebimentoConferenciaEntity->setMotivoDivergencia($motivoDivergenciaEntity)
                                     ->setNotaFiscal($notaFiscalEntity);
@@ -668,8 +664,17 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         $this->em->persist($ordemServicoEntity);
                         $this->em->flush();
 
-                        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMENTRO SEJA 'S'
-                        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
+                        $notasFiscaisEntities = $this->getEntityManager()->getRepository('wms:Notafiscal')->findBy(array('recebimento' => $recebimentoEntity));
+                        $recebimentoErp = false;
+                        foreach ($notasFiscaisEntities as $notaFiscalEntity) {
+                            if (!is_null($notaFiscalEntity->getCodRecebimentoErp())) {
+                                $recebimentoErp = true;
+                                break;
+                            }
+                        }
+                        
+                        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMETRO SEJA 'S'
+                        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S' && $recebimentoErp == true) {
                             $serviceIntegracao = new \Wms\Service\Integracao($this->getEntityManager(), array('acao' => null,
                                 'options' => null,
                                 'tipoExecucao' => 'E'

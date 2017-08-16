@@ -1,27 +1,21 @@
 <?php
-use Wms\Controller\Action;
-use Wms\Module\Mobile\Form\Reentrega as FormReentrega;
-use Wms\Module\Mobile\Form\ConferirProdutosReentrega as FormConferirProdutosReentrega;
-use Wms\Service\Coletor as LeituraColetor;
 
-class Mobile_ReentregaController extends Action
-{
+use Wms\Controller\Action,
+    Wms\Util\Coletor as ColetorUtil;
 
-    public function indexAction()
-    {
+class Mobile_ReentregaController extends Action {
 
+    public function indexAction() {
+        
     }
 
-    public function recebimentoAction()
-    {
+    public function recebimentoAction() {
         /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
         $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentregaNota');
         $this->view->notasFiscais = $recebimentoReentregaNotaRepo->getRecebimentoReentregaByNota();
-//        $this->view->form = new FormReentrega;
     }
 
-    public function buscarAction()
-    {
+    public function buscarAction() {
         $params = $this->_getAllParams();
 
         unset($params['module']);
@@ -34,21 +28,26 @@ class Mobile_ReentregaController extends Action
             $result = $notaFiscalSaidaRepo->getNotaFiscalOuCarga($params);
 
             if (count($result) > 0) {
-                $this->view->selecionado = "N";
+                $selecionado = "N";
                 if (!empty($params['codEtiqueta']) && isset($params['codEtiqueta'])) {
-                    $this->view->selecionado = "S";
+                    $selecionado = "S";
                 }
+                if (count($result) == 1) {
+                    $selecionado = "S";
+                }
+                $this->view->selecionado = $selecionado;
                 $this->view->notasFiscaisByCarga = $result;
             } else {
                 $this->addFlashMessage('error', 'Nenhuma nota fiscal encontrada!');
                 $this->_redirect('/mobile/reentrega/recebimento');
             }
+        } else {
+            $this->addFlashMessage('error', 'Nenhuma nota fiscal encontrada!');
+            $this->_redirect('/mobile/reentrega/recebimento');
         }
-
     }
 
-    public function gerarRecebimentoAction()
-    {
+    public function gerarRecebimentoAction() {
         $params = $this->_getAllParams();
 
         /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaRepository $recebimentoReentregaRepo */
@@ -81,17 +80,16 @@ class Mobile_ReentregaController extends Action
         $ordemServicoRepo->criarOsByReentrega($recebimentoReentregaEn);
 
         $this->addFlashMessage('success', 'Recebimento de Reentrega gerado com sucesso!');
-        $this->redirect('reconferir-produtos', 'reentrega', 'mobile', array('id'=>$recebimentoReentregaEn->getId()));
+        $this->redirect('reconferir-produtos', 'reentrega', 'mobile', array('id' => $recebimentoReentregaEn->getId()));
     }
 
-    public function reconferirProdutosAction()
-    {
+    public function reconferirProdutosAction() {
         $params = $this->_getAllParams();
         $this->view->id = $params['id'];
 
         $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
         $modeloSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao')->findOneBy(array('id' => $idModeloSeparacao));
-        $this->view->modeloSeparacaoFracionado    = $params['modeloSeparacaoFracionado']    = $modeloSeparacao->getTipoSeparacaoFracionado();
+        $this->view->modeloSeparacaoFracionado = $params['modeloSeparacaoFracionado'] = $modeloSeparacao->getTipoSeparacaoFracionado();
         $this->view->modeloSeparacaoNaoFracionado = $params['modeloSeparacaoNaoFracionado'] = $modeloSeparacao->getTipoSeparacaoNaoFracionado();
 
         if (isset($params['submit'])) {
@@ -100,8 +98,7 @@ class Mobile_ReentregaController extends Action
                     /** @var \Wms\Domain\Entity\Expedicao\ConferenciaRecebimentoReentregaRepository $conferenciaRecebimentoReentregaRepo */
                     $conferenciaRecebimentoReentregaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ConferenciaRecebimentoReentrega');
                     $produtoEn = $result = $conferenciaRecebimentoReentregaRepo->save($params);
-                    $this->_helper->messenger('success', "Produto " . $produtoEn->getId(). "/" . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " reconferido com sucesso");
-
+                    $this->_helper->messenger('success', "Produto " . $produtoEn->getId() . "/" . $produtoEn->getGrade() . " - " . $produtoEn->getDescricao() . " reconferido com sucesso");
                 } catch (\Exception $e) {
                     $this->_helper->messenger('error', utf8_decode($e->getMessage()));
                 }
@@ -110,13 +107,12 @@ class Mobile_ReentregaController extends Action
             }
         }
         /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $notaFiscalSaidaRepo */
-        $notaFiscalSaidaRepo         = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
-        $getQtdProdutosDivergentes   = $notaFiscalSaidaRepo->getQtdProdutoDivergentesByNota(array('id' => $params['id']));
+        $notaFiscalSaidaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
+        $getQtdProdutosDivergentes = $notaFiscalSaidaRepo->getQtdProdutoDivergentesByNota(array('id' => $params['id']));
         $this->view->listaProdutos = $getQtdProdutosDivergentes;
     }
 
-    public function finalizarConferenciaAction()
-    {
+    public function finalizarConferenciaAction() {
         $params = $this->_getAllParams();
 
         try {
@@ -126,20 +122,17 @@ class Mobile_ReentregaController extends Action
 
             $this->addFlashMessage('success', "Notas Fiscais Recebidas com sucesso");
             $this->_redirect('/mobile/reentrega/recebimento');
-
         } catch (\Exception $e) {
             $this->addFlashMessage('error', $e->getMessage());
-            $this->_redirect('/mobile/reentrega/reconferir-produtos/id/'.$params['id']);
+            $this->_redirect('/mobile/reentrega/reconferir-produtos/id/' . $params['id']);
         }
-
     }
 
-    public function visualizarDivergenciaAction()
-    {
-
+    public function visualizarDivergenciaAction() {
+        
     }
 
-    public function cancelarConferenciaAction(){
+    public function cancelarConferenciaAction() {
 
         try {
             $this->getEntityManager()->beginTransaction();
@@ -157,41 +150,37 @@ class Mobile_ReentregaController extends Action
             $idRecebimento = $params['id'];
             $siglaEn = $siglaRepo->findOneBy(array('id' => \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO));
 
-            $recebimentoEn = $recebimentoReentregaRepo->findOneBy(array('id'=>$idRecebimento));
-            $notas = $recebimentoReentregaNfRepo->findBy(array('recebimentoReentrega'=>$idRecebimento));
+            $recebimentoEn = $recebimentoReentregaRepo->findOneBy(array('id' => $idRecebimento));
+            $notas = $recebimentoReentregaNfRepo->findBy(array('recebimentoReentrega' => $idRecebimento));
 
             foreach ($notas as $nfReceb) {
-                $andamentoNFRepo->save($nfReceb->getNotaFiscalSaida(), \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO,false,null,null,$recebimentoEn);
+                $andamentoNFRepo->save($nfReceb->getNotaFiscalSaida(), \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CANCELADO, false, null, null, $recebimentoEn);
             }
             $recebimentoEn->setStatus($siglaEn);
 
             $this->getEntityManager()->persist($recebimentoEn);
             $this->getEntityManager()->flush();
             $this->getEntityManager()->commit();
-            $this->addFlashMessage('success', 'Recebimento '. $recebimentoEn->getId() . " cancelado com sucesso");
+            $this->addFlashMessage('success', 'Recebimento ' . $recebimentoEn->getId() . " cancelado com sucesso");
             $this->redirect('recebimento', 'reentrega', 'mobile');
-
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
             $this->addFlashMessage('error', $e->getMessage());
             $this->redirect('recebimento', 'reentrega', 'mobile');
-
         }
     }
 
-    public function getNotaOrCodBarrasByCampoBipadoAction()
-    {
+    public function getNotaOrCodBarrasByCampoBipadoAction() {
         $params = $this->_getAllParams();
-        $LeituraColetor = new LeituraColetor();
-        $etiquetaSeparacao = $LeituraColetor->retiraDigitoIdentificador($params['etiqueta']);
+        $etiquetaSeparacao = ColetorUtil::retiraDigitoIdentificador($params['etiqueta']);
 
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('nfs.numeroNf, es.id')
-            ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
-            ->innerJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
-            ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsped', 'WITH', 'nfsped.notaFiscalSaida = nfs.id')
-            ->innerJoin('nfsped.pedido', 'ped')
-            ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'nfsp.codProduto = es.codProduto AND nfsp.grade = es.dscGrade AND ped.id = es.pedido');
+                ->select('nfs.numeroNf, es.id')
+                ->from('wms:Expedicao\NotaFiscalSaida', 'nfs')
+                ->innerJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsp', 'WITH', 'nfsp.notaFiscalSaida = nfs.id')
+                ->innerJoin('wms:Expedicao\NotaFiscalSaidaPedido', 'nfsped', 'WITH', 'nfsped.notaFiscalSaida = nfs.id')
+                ->innerJoin('nfsped.pedido', 'ped')
+                ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'nfsp.codProduto = es.codProduto AND nfsp.grade = es.dscGrade AND ped.id = es.pedido');
 
         if (isset($params['etiqueta']) && !empty($params['etiqueta'])) {
             $sql->orWhere("es.id = '$etiquetaSeparacao'");
@@ -201,5 +190,5 @@ class Mobile_ReentregaController extends Action
 
         $this->_helper->json($resultado, true);
     }
-}
 
+}

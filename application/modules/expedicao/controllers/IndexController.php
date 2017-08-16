@@ -589,7 +589,10 @@ class Expedicao_IndexController extends Action
         $pedidoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
         /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
         $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
+        $NotaFiscalSaidaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
+        $ReentregaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Reentrega');
         $cargaEntities = $expedicaoRepository->getCargas($idExpedicao);
+        
         $idCargas = null;
         foreach ($cargaEntities as $key => $cargaEntity) {
             if (count($cargaEntities) > $key + 1) {
@@ -603,6 +606,8 @@ class Expedicao_IndexController extends Action
                 $pedidoRepository->removeReservaEstoque($rowPedido->getId());
                 $pedidoRepository->remove($pedidoEntity, true);
             }
+            $ReentregaRepository->removeReentrega($cargaEntity->getId());
+            $NotaFiscalSaidaRepository->atualizaStatusNota($cargaEntity->getCodCargaExterno());
             $cargaRepository->removeCarga($cargaEntity->getId());
         }
 

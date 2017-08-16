@@ -115,7 +115,7 @@ INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRA
  * INTEGRAÇÃO DE NOTAS FISCAIS DE SAIDA EMITIDAS NA ROTINA 1322
  */
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO)
-  VALUES (8,1, 'select pcnfsaid.numnota CARGA, ' || '''AAA0000''' || ' PLACA, pcnfsaid.numnota PEDIDO, pcclient.codpraca COD_PRACA, pcpraca.praca DSC_PRACA, pcrotaexp.codrota COD_ROTA, pcrotaexp.descricao DSC_ROTA, pcclient.codcli COD_CLIENTE, pcclient.cliente NOME, pcclient.cgcent CPF_CNPJ, pcclient.tipofj TIPO_PESSOA, pcclient.enderent LOGRADOURO, pcclient.numeroent NUMERO, pcclient.bairroent BAIRRO, pcclient.municent CIDADE, pcclient.estent UF, pcclient.complementoent COMPLEMENTO, pcclient.pontorefer REFERENCIA, pcclient.cepent CEP, pcmov.codprod PRODUTO, ' || '''UNICA''' || ' GRADE, pcmov.qt QTD, (pcmov.qt * pcmov.punit) VLR_VENDA, TO_CHAR(pcmov.dtmovlog,' || '''DD/MM/YYYY HH24:MI:SS''' || ') AS DTH from pcmov  inner join pcnfsaid on pcnfsaid.numnota = pcmov.numnota inner join pcclient on pcclient.codcli = pcnfsaid.codcli inner join pcpraca on pcpraca.codpraca = pcclient.codpraca inner join pcrotaexp on pcrotaexp.codrota = pcpraca.rota inner join pcprodut on pcprodut.codprod = pcmov.codprod where pcmov.rotinacad = ' || '''PCSIS1322.EXE''' || ' and pcprodut.revenda = ' || '''S''' || ' :where ',
+  VALUES (8,1, 'select pcnfsaid.numnota CARGA, ' || '''AAA0000''' || ' PLACA, pcnfsaid.numnota PEDIDO, pcclient.codpraca COD_PRACA, pcpraca.praca DSC_PRACA, pcrotaexp.codrota COD_ROTA, pcrotaexp.descricao DSC_ROTA, pcclient.codcli COD_CLIENTE, pcclient.cliente NOME, pcclient.cgcent CPF_CNPJ, pcclient.tipofj TIPO_PESSOA, pcclient.enderent LOGRADOURO, pcclient.numeroent NUMERO, pcclient.bairroent BAIRRO, pcclient.municent CIDADE, pcclient.estent UF, pcclient.complementoent COMPLEMENTO, pcclient.pontorefer REFERENCIA, pcclient.cepent CEP, pcmov.codprod PRODUTO, ' || '''UNICA''' || ' GRADE, decode(pcmov.qt, 0, pcmov.qtcont, pcmov.qt) QTD, (decode(pcmov.qt, 0, pcmov.qtcont, pcmov.qt) * decode(pcmov.punit, 0, pcmov.punitcont, pcmov.punit)) VLR_VENDA, TO_CHAR(pcmov.dtmovlog,' || '''DD/MM/YYYY HH24:MI:SS''' || ') AS DTH from pcmov  inner join pcnfsaid on pcnfsaid.numnota = pcmov.numnota inner join pcclient on pcclient.codcli = pcnfsaid.codcli inner join pcpraca on pcpraca.codpraca = pcclient.codpraca inner join pcrotaexp on pcrotaexp.codrota = pcpraca.rota inner join pcprodut on pcprodut.codprod = pcmov.codprod where ((pcmov.rotinacad = '||'''PCSIS1322.EXE'''||') or (pcmov.rotinacad = '||'''PCSIS1193.EXE'''||' and pcnfsaid.tipovenda = '||'''SR'''||'))  and pcprodut.revenda = ' || '''S''' || ' :where ',
   602,'S',NULL);
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
@@ -169,32 +169,32 @@ INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRA
   VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 6, 610, ' AND m.dtmovlog > TO_DATE('||''':?1'''||','||'''DD/MM/YYYY HH24:MI:SS'''||') ');
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
-  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 6, 611, ' AND n.numnota = :?1 AND n.serie = :?2 AND n.codfornec = :?3  ');
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 6, 611, ' AND n.numnota = :?1 ');
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
-  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 6, 612, ' AND n.numnota IN (:?1) AND n.serie IN (:?2) AND n.codfornec IN (:?3) ');
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 6, 612, ' AND n.numnota IN (:?1) ');
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
-  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 6, 613, ' AND n.numnota BETWEEN :?1 AND :?2 AND n.serie BETWEEN :?3 AND :?4 AND n.codfornec IN (:?5) ');
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 6, 613, ' AND n.numnota BETWEEN :?1 AND :?2 ');
 
 /*
  * 13 - INTEGRAÇÃO DE NOTAS FISCAIS DE ENTRADA
  */
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO,DSC_QUERY,COD_TIPO_ACAO_INTEGRACAO,IND_UTILIZA_LOG,DTH_ULTIMA_EXECUCAO)
-  VALUES (13,1,'select n.codfornec COD_FORNECEDOR, f.fornecedor NOM_FORNECEDOR, f.cgc CPF_CNPJ, '||'''UNICA'''||' DSC_GRADE, f.ie INSCRICAO_ESTADUAL, n.numnota NUM_NOTA_FISCAL, m.codprod COD_PRODUTO, n.serie COD_SERIE_NOTA_FISCAL, n.dtemissao DAT_EMISSAO, n.placaveiculo DSC_PLACA_VEICULO, sum(m.qt) QTD_ITEM, cast(sum(m.punit*m.qt) as numeric(15,2)) VALOR_TOTAL, TO_CHAR(m.dtmovlog, '||'''DD/MM/YYYY HH24:MI:SS'''||') as DTH from pcnfent n inner join pcfornec f on f.codfornec = n.codfornec inner join pcmov m on m.numtransent = n.numtransent where m.codoper in ('||'''E'''||','||'''EB'''||','||'''ET'''||') and f.revenda = '||'''S'''||' and codcont = '||'''100001'''||' AND m.codfilial IN (:codFilial) :where group by n.codfornec, f.fornecedor, f.cgc, f.ie, n.numnota, n.serie, n.dtemissao, n.placaveiculo, m.codprod, '||'''UNICA'''||', m.dtmovlog order by n.codfornec',
+  VALUES (13,1,'select n.codfornec COD_FORNECEDOR, f.fornecedor NOM_FORNECEDOR, f.cgc CPF_CNPJ, '||'''UNICA'''||' DSC_GRADE, f.ie INSCRICAO_ESTADUAL, n.numnota NUM_NOTA_FISCAL, m.codprod COD_PRODUTO, n.serie COD_SERIE_NOTA_FISCAL, to_char(n.dtemissao, '||'''DD/MM/YYYY'''||') DAT_EMISSAO, n.placaveiculo DSC_PLACA_VEICULO, sum(m.qt) QTD_ITEM, cast(sum(m.punit*m.qt) as numeric(15,2)) VALOR_TOTAL, TO_CHAR(m.dtmovlog, '||'''DD/MM/YYYY HH24:MI:SS'''||') as DTH from pcnfent n inner join pcfornec f on f.codfornec = n.codfornec inner join pcmov m on m.numtransent = n.numtransent where m.codoper in ('||'''E'''||','||'''EB'''||','||'''ET'''||','||'''ER'''||') and f.revenda = '||'''S'''||' and codcont = '||'''100001'''||' AND m.codfilial IN (:codFilial) :where group by n.codfornec, f.fornecedor, f.cgc, f.ie, n.numnota, n.serie, n.dtemissao, n.placaveiculo, m.codprod, '||'''UNICA'''||', m.dtmovlog order by n.codfornec',
   605,'S',SYSDATE);
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
   VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 610, ' AND m.dtmovlog > TO_DATE('||''':?1'''||','||'''DD/MM/YYYY HH24:MI:SS'''||') ');
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
-  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 611, ' AND n.numnota = :?1 AND n.serie = :?2 AND n.codfornec = :?3 ');
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 611, ' AND n.numnota = :?1 ');
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
-  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 612, ' AND n.numnota IN (:?1) AND n.serie IN (:?2) AND n.codfornec IN (:?3) ');
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 612, ' AND n.numnota IN (:?1) ');
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
-  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 613, ' AND n.numnota BETWEEN :?1 AND :?2 AND n.serie BETWEEN :?3 AND :?4 AND n.codfornec IN (:?5) ');
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 13, 613, ' AND n.numnota BETWEEN :?1 AND :?2 ');
 
 /*
  * INTEGRAÇÃO DE CORTES COM ERP
@@ -254,7 +254,7 @@ INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRA
  * VERIFICANDO SE A CARGA ESTA FATURADA
  */
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO,DSC_QUERY,COD_TIPO_ACAO_INTEGRACAO,IND_UTILIZA_LOG,DTH_ULTIMA_EXECUCAO)
-  VALUES (18,1,'SELECT DECODE(COUNT(numped),0,''' || 'N' || ''',''' || 'S' || ''') as IND_CARGA_FATURADA  FROM (SELECT 1 as numped FROM pccarreg c WHERE c.dtfat is not null AND c.numcar IN(:where) UNION SELECT nf.numnota from pcmov m inner join pcnfsaid nf on nf.numnota = m.numnota WHERE nf.numnota IN(:where) AND m.rotinacad = ''' || 'PCSIS1322.EXE' || ''')',
+  VALUES (18,1,'SELECT DECODE(COUNT(numped),0,''' || 'N' || ''',''' || 'S' || ''') as IND_CARGA_FATURADA  FROM (SELECT 1 as numped FROM pccarreg c WHERE c.dtfat is not null AND c.numcar IN (:where) UNION SELECT nf.numnota from pcmov m inner join pcnfsaid nf on nf.numnota = m.numnota WHERE nf.numnota IN (:where) AND m.rotinacad  IN ('||'''PCSIS1322.EXE'''||','||'''PCSIS1193.EXE'''||'))',
   614,'S',SYSDATE);
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
@@ -297,7 +297,7 @@ INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRA
  */
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO,DSC_QUERY,COD_TIPO_ACAO_INTEGRACAO,IND_UTILIZA_LOG,DTH_ULTIMA_EXECUCAO)
   VALUES (20,1,
-  'SELECT nf.numnota as NUMERO_NF, nf.serie as SERIE_NF, nf.cgcfilial as CNPJ_EMITENTE, c.numped as PEDIDO, i.codprod PRODUTO, ''' || 'UNICA' || ''' GRADE,  i.qt QTD, TO_CHAR(nf.dthoraautorizacaosefaz,''' || 'DD/MM/YYYY hh24:MI:SS' || ''') as DTH SUM(i.qt*i.pvenda) VLR_VENDA FROM pcpedc c INNER JOIN pcpedi i ON c.numped=i.numped INNER JOIN pcnfsaid nf ON nf.numnota = c.numnota WHERE 1 = 1  AND c.posicao IN (''' || 'F' || ''') :where GROUP BY nf.numnota, nf.serie, nf.cgcfilial, c.numped, i.codprod, i.qt, nf.dthoraautorizacaosefaz ',
+  'SELECT nf.numnota as NUMERO_NF, nf.serie as SERIE_NF, nf.cgcfilial as CNPJ_EMITENTE, c.numped as PEDIDO, i.codprod COD_PRODUTO, ''' || 'UNICA' || ''' DSC_GRADE,  i.qt QTD_ITEM, TO_CHAR(nf.dthoraautorizacaosefaz,''' || 'DD/MM/YYYY hh24:MI:SS' || ''') as DTH, SUM(i.qt*i.pvenda) VLR_VENDA FROM pcpedc c INNER JOIN pcpedi i ON c.numped=i.numped INNER JOIN pcnfsaid nf ON nf.numnota = c.numnota WHERE 1 = 1  AND c.posicao IN (''' || 'F' || ''') :where GROUP BY nf.numnota, nf.serie, nf.cgcfilial, c.numped, i.codprod, i.qt, nf.dthoraautorizacaosefaz ',
   615,'S',SYSDATE);
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)

@@ -70,7 +70,7 @@ class PaleteProduto
 
     /**
      * @Column(name="DTH_VALIDADE", type="date")
-     * @var date
+     * @var \DateTime
      */
     protected $validade;
 
@@ -235,7 +235,7 @@ class PaleteProduto
     }
 
     /**
-     * @return date
+     * @return \DateTime
      */
     public function getValidade()
     {
@@ -243,7 +243,7 @@ class PaleteProduto
     }
 
     /**
-     * @param date $validade
+     * @param \DateTime $validade
      */
     public function setValidade($validade)
     {

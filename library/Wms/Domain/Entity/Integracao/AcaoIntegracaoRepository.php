@@ -26,10 +26,14 @@ class AcaoIntegracaoRepository extends EntityRepository
         }
     }
 
-    private function getDadosTemporarios($tipoAcao) {
+    private function getDadosTemporarios($tipoAcao, $dados = null) {
         $SQL = null;
+        $where = 'WHERE 1 = 1';
         switch ($tipoAcao) {
             case AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS:
+                if (isset($dados) && !empty($dados)) {
+                    $where .= " AND NUM_NOTA_FISCAL IN ($dados)";
+                }
                 $SQL = "
                   SELECT COD_INTEGRACAO_NF_ENTRADA,
                          COD_FORNECEDOR,
@@ -46,9 +50,13 @@ class AcaoIntegracaoRepository extends EntityRepository
                          VALOR_TOTAL,
                          TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
                         FROM INTEGRACAO_NF_ENTRADA
+                        $where
                 ";
                 break;
             case AcaoIntegracao::INTEGRACAO_PEDIDOS:
+                if (isset($dados) && !empty($dados)) {
+                    $where .= " AND CARGA IN ($dados)";
+                }
                 $SQL = "SELECT  COD_INTEGRACAO_PEDIDO,
                                 CARGA,
                                 PLACA,
@@ -74,7 +82,9 @@ class AcaoIntegracaoRepository extends EntityRepository
                                 QTD,
                                 VLR_VENDA,
                                 TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
-                FROM INTEGRACAO_PEDIDO ORDER by CARGA, PEDIDO, PRODUTO";
+                FROM INTEGRACAO_PEDIDO 
+                $where
+                ORDER by CARGA, PEDIDO, PRODUTO";
                 break;
         }
 
@@ -108,7 +118,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function efetivaTemporaria($acoes, $IdFiltro) {
+    public function efetivaTemporaria($acoes, $IdFiltro, $dados = null) {
 
         /* Para efetivar no banco de dados, só vou efetivar uma unica vez mesmo que tenham sido disparados n consultas.
            Porem todas tem que compartilhar a mesma tabela temporaria, ou seja, ser da mesma ação */
@@ -116,7 +126,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $acaoEn = $acoes[0];
 
         /* Consulto os dados da tabela temporaria referente a ação */
-        $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId());
+        $dados = $this->getDadosTemporarios($acaoEn->getTipoAcao()->getId(), $dados);
 
         /* Executo uma unica ação com todos os dados retornados */
         $result = $this->processaAcao($acaoEn,null,"E","P", $dados,$IdFiltro);

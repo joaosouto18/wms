@@ -68,7 +68,7 @@ class Palete
 
     /**
      *@Column(name="DTH_VALIDADE", type="date")
-     * @var date
+     * @var \DateTime
      */
     protected $validade;
 
@@ -222,13 +222,17 @@ class Palete
             $arrayProduto['codProdutoEmbalagem'] = $produto->getCodProdutoEmbalagem() ;
             $arrayProduto['codProdutoVolume']  = $produto->getCodProdutoVolume();
             $arrayProduto['qtd'] = $produto->getQtd();
+            $validade = $produto->getValidade();
+            if (!empty($validade)) {
+                $arrayProduto['validade'] = $validade->format('d/m/Y');
+            }
             $arrayProdutos[] = $arrayProduto;
         }
         return $arrayProdutos;
     }
 
     /**
-     * @return date
+     * @return \DateTime
      */
     public function getValidade()
     {
@@ -236,7 +240,7 @@ class Palete
     }
 
     /**
-     * @param date $validade
+     * @param \DateTime $validade
      */
     public function setValidade($validade)
     {

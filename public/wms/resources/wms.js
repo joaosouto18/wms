@@ -13,11 +13,16 @@
         var config = {
             'title': settings.title,
             'msg': settings.msg,
-            'width': 350,
-            'height': 130,
-            'resizable':    true,
-            'position' :    'center',
-            'modal' :       true
+            'width': (!!settings.width)? settings.width : 350,
+            'height': (!!settings.height)? settings.height : 130,
+            'resizable': (!!settings.resizable)? settings.resizable : false,
+            'position' : (!!settings.position)? settings.position : 'center',
+            'modal' :  (!!settings.modal)? settings.modal :  true,
+            'buttons': (!!settings.buttons)? settings.buttons :  {
+                "Ok": function () {
+                    $(this).remove();
+                }
+            }
         };
 
         // show a spinner or something via css
@@ -31,6 +36,7 @@
             title : config.title,
             modal: config.modal,
             position: config.position,
+            buttons: config.buttons,
             // add a close listener to prevent adding multiple divs to the document
             close: function(event, ui) {
                 // remove div with all data and events
@@ -43,6 +49,49 @@
             }
         });
     };
+
+    $.wmsDialogConfirm = function(settings, callbackFnk, params){
+        var config = {
+            'title': settings.title,
+            'msg': settings.msg,
+            'width': (!!settings.width)? settings.width : 350,
+            'height': (!!settings.height)? settings.height : 130,
+            'resizable': (!!settings.resizable)? settings.resizable : false,
+            'position' : (!!settings.position)? settings.position : 'center',
+            'modal' :  (!!settings.modal)? settings.modal :  true,
+            'buttons': (!!settings.buttons)? settings.buttons :  {
+                "Confirmar": function (){
+                    if($.isFunction(callbackFnk)){
+                        callbackFnk.call(this, params);
+                    }
+                    $(this).remove();
+                },
+                "Cancelar": function () {
+                    $(this).remove()
+                }
+            }
+        };
+
+        // show a spinner or something via css
+        var dialog = $('<div id="wms-dialog-msg" style="display:none; font-size: 12px;">' + config.msg + '</div>').appendTo('body');
+
+        // open the dialog
+        dialog.dialog({
+            width : config.width,
+            height : config.height,
+            resizable: config.resizable,
+            title : config.title,
+            modal: config.modal,
+            position: config.position,
+            buttons: config.buttons,
+            // add a close listener to prevent adding multiple divs to the document
+            close: function(event, ui) {
+                // remove div with all data and events
+                dialog.remove();
+            }
+        });
+    };
+
     /**
      * Method to load a dialog with ajax
      */

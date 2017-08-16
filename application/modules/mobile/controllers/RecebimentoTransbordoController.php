@@ -1,9 +1,8 @@
 <?php
 use Wms\Controller\Action,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao,
-    Wms\Service\Recebimento as LeituraColetor,
-    Wms\Module\Mobile\Form\SenhaLiberacao,
-    Wms\Domain\Entity\Expedicao;
+    Wms\Util\Coletor as ColetorUtil,
+    Wms\Module\Mobile\Form\SenhaLiberacao;
 
 class Mobile_RecebimentoTransbordoController extends Action
 {
@@ -109,11 +108,8 @@ class Mobile_RecebimentoTransbordoController extends Action
 
     public function recebeTransbordoAction()
     {
-        $idExpedicao                 = $this->getRequest()->getParam('idExpedicao');
-        $codigoBarras                = $this->getRequest()->getParam('etiquetaSeparacao');
-
-        $LeituraColetor = new LeituraColetor();
-        $codigoBarras   = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+        $idExpedicao = $this->getRequest()->getParam('idExpedicao');
+        $codigoBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('etiquetaSeparacao'));
 
         /** @var \Wms\Domain\Entity\Expedicao\VEtiquetaSeparacaoRepository $vEtiquetaRepo */
         $vEtiquetaRepo  = $this->em->getRepository('wms:Expedicao\VEtiquetaSeparacao');

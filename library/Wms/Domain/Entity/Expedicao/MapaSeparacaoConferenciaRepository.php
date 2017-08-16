@@ -1,9 +1,8 @@
 <?php
 namespace Wms\Domain\Entity\Expedicao;
 
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query;
-use Wms\Domain\Entity\Expedicao;
+use Doctrine\ORM\EntityRepository,
+    Wms\Math;
 
 class MapaSeparacaoConferenciaRepository extends EntityRepository
 {
@@ -339,5 +338,30 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function removeMapaSeparacaConferencia($dados)
+    {
+        $codMapaSeparacao = $dados['COD_MAPA_SEPARACAO'];
+        $codProduto = $dados['COD_PRODUTO'];
+        $grade = $dados['DSC_GRADE'];
+        $mapaSeparacaoEntity = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao',$codMapaSeparacao);
+        $mapaSeparacaoConferenciaEntities = $this->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity, 'codProduto' => $codProduto, 'dscGrade' => $grade));
+
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepository */
+        $expedicaoAndamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+        if (!isset($mapaSeparacaoConferenciaEntities) || empty($mapaSeparacaoConferenciaEntities))
+            throw new \Exception("Não existe conferências para o mapa de separação $codMapaSeparacao e produto $codProduto / $grade");
+
+        $quantidade = 0;
+        foreach ($mapaSeparacaoConferenciaEntities as $mapaSeparacaoConferenciaEntity) {
+            $quantidade = Math::adicionar($quantidade, Math::multiplicar($mapaSeparacaoConferenciaEntity->getQtdConferida(), $mapaSeparacaoConferenciaEntity->getQtdEmbalagem()));
+            $this->getEntityManager()->remove($mapaSeparacaoConferenciaEntity);
+        }
+        $expedicaoAndamentoRepository->save("Conferência do produto $codProduto grade $grade com quantidade de $quantidade no mapa de separação $codMapaSeparacao foi reiniciada", $mapaSeparacaoEntity->getCodExpedicao());
+        $this->getEntityManager()->flush();
+        return array(
+            'quantidade' => $quantidade,
+            'expedicao' => $mapaSeparacaoEntity->getCodExpedicao()
+        );
+    }
 
 }

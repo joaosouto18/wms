@@ -18,7 +18,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 $("#fieldset-embalagens-cadastradas").append($('<div/>').attr('id','div-lista-embalagens'));
                 var idProduto = $('#embalagem-idProduto').val();
                 var grade = $('#embalagem-grade').val();
-                if ( idProduto != '' ) {
+                if ( idProduto !== '' && grade !== '') {
                     Wms.Models.ProdutoEmbalagem.findAll({
                         idProduto:idProduto,
                         grade:grade
@@ -36,20 +36,21 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             var check = $(el).parent('div').find('.ativarDesativar');
             var date = $(el).parent('div').find('.dataInativacao');
             var div = $(el).parent('div').parent('td');
+            var este = this;
 
             $.ajax({
                 url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
                 type: 'post',
                 dataType: 'json',
                 success: function (data) {
-                    if (data == 'N') {
+                    if (data === 'N') {
                         check.checked = !check.is(":checked");
                         check.prop("checked",!check.is(":checked"));
-                        alert("Não é permitido ativar/inativar embalagens no WMS");
-                        return;
+                        este.dialogAlert("Não é permitido ativar/inativar embalagens no WMS");
+                        return false;
                     } else {
-                        if (check.is(":checked") == true) {
-                            if (date.text() == "EMB. ATIVA") {
+                        if (check.is(":checked") === true) {
+                            if (date.text() === "EMB. ATIVA") {
                                 var today = new Date();
                                 var dd = today.getDate();
                                 var mm = today.getMonth()+1;
@@ -61,7 +62,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 if(mm<10){
                                     mm='0'+mm
                                 }
-                                var today = dd+'/'+mm+'/'+yyyy;
+                                today = dd+'/'+mm+'/'+yyyy;
 
                                 date.text(today);
                             }
@@ -83,54 +84,40 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
          */
         '#btn-salvar-embalagem click': function(el, ev) {
 
-            var inputAcao = $('#embalagem-acao').val();
             var valores = $('#fieldset-embalagem').formParams(false).embalagem;
             var id = $("#fieldset-embalagem #embalagem-id").val();
             var este = this;
 
-            if($('#embalagem-descricao').val() == "") {
-                alert('Preencha a Descrição.');
-                $('#embalagem-descricao').focus();
-                return false;
-            }
-            if(($('#embalagem-quantidade').val() == "") || ($('#embalagem-quantidade').val() == 0) ) {
-                alert('Preencha a Quantidade.');
-                $('#embalagem-quantidade').focus();
-                return false;
-            }
-            if($('#embalagem-isPadrao').val() == "") {
-                alert('Preencha o Padrão.');
-                $('#embalagem-isPadrao').focus();
-                return false;
-            }
-
-            if (($('#embalagem-CBInterno').val() == "N") && ($('#embalagem-codigoBarras').val() == "")) {
-                alert('Preencha o Código de Barras.');
-                $('#embalagem-codigoBarras').focus();
-                return false;
-            }
-
-            if(!this.verificarEmbalagemRecebimento(id, valores)){
-                return false;
-            }
-
+            var result = true;
             $.ajax({
                 url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
                 type: 'post',
+                async: false,
                 dataType: 'json',
                 success: function (data) {
-                    if (data == 'N') {
-                        if (inputAcao == "incluir") {
-                            alert("Não é possível incluir embalagens no WMS");
-                            return false;
-                        } else {
-                            este.verificarCodigoBarras();
-                        }
-                    } else {
-                        este.verificarCodigoBarras();
+                    if (data === 'N') {
+                        este.dialogAlert("Pelos parâmetros definidos, não é permitido incluir/editar embalagens no WMS apenas no ERP");
+                        result = false;
                     }
                 }
             });
+
+            if (!result)
+                return result;
+
+            if(!this.verificarEmbalagemRecebimento(id, valores)) {
+                return false;
+            }
+
+            if (este.verificarCodigoBarras()) {
+                if (este.verificarEndereco()) {
+                    este.salvarDadosEmbalagem();
+                } else {
+                    $('#embalagem-endereco').focus();
+                }
+            } else {
+                $('#embalagem-codigoBarras').focus();
+            }
 
             ev.preventDefault();
 
@@ -173,6 +160,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
         /**
          * Creates and places the edit interface.
          * @param {jQuery} el The produto_embalagem's edit link element.
+         * @param {Event} ev A jQuery event whose default action is prevented.
          */
         '.btn-editar-embalagem click': function( el, ev ){
             $.ajax({
@@ -250,8 +238,14 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
             var model = el.closest('.produto_embalagem').model();
             var id = model.id.toString();
+            var este = this;
 
-            var temEstoque = false;
+            if (id.indexOf('-new') !== -1) {
+                //limpa o ID
+                id = id.replace("-new", "");
+            }
+
+            var temReserva = false;
             $.ajax({
                 url: URL_MODULO + '/produto-embalagem/verificar-estoque-reserva-ajax',
                 type: 'POST',
@@ -259,105 +253,107 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 async: false,
                 success: function (data) {
                     if (data.status === 'error'){
-                        alert(data.msg);
+                        este.dialogAlert(data.msg);
+                        temReserva = true;
+                    }
+                }
+            });
+
+            if (temReserva)
+                return false;
+
+            var idProduto = $('#embalagem-idProduto').val();
+            var grade = $('#embalagem-grade').val();
+            var enderecoAntigo = model.endereco.toString();
+            var temEstoque = false;
+            $.ajax({
+                url: URL_MODULO + '/endereco/verificar-estoque-ajax',
+                type: 'POST',
+                async: false,
+                data: {
+                    enderecoAntigo: enderecoAntigo,
+                    grade: grade,
+                    produto: idProduto
+                },
+                success: function(data){
+                    if (data.status === 'error') {
+                        este.dialogAlert(data.msg);
                         temEstoque = true;
                     }
                 }
             });
+            if (temEstoque) return false;
 
-            if (temEstoque)
-                return false;
-
-            //evita a propagação do click para a div
-            ev.stopPropagation();
-
+            var count = 0;
             //Verifica se existe dados logisticos com esta embalagem
-            var inputsEmbalagem = $('.produto_dado_logistico input.idEmbalagem');
-            var qtdEmbalagens = 0;
-            inputsEmbalagem.each(function() {
-                if(this.value == id) {
-                    qtdEmbalagens = qtdEmbalagens + 1;
+            $('.produto_dado_logistico input.idEmbalagem').each(function() {
+                if(this.value === id) {
+                    count++
+                }
+            });
+            if (count > 0){
+                este.dialogAlert('Não é possível excluir esta embalagem. <br>Remova os dados logísticos cadastrados dela primeiro.');
+                return false;
+            }
+
+            var isPadrao = $(el).parent('div').find('.isPadrao').val();
+            // caso seja uma embalagem de recebimento
+            if ( isPadrao === 'S' ) {
+                // embalagens
+                var inputsIsPadrao = $('#div-lista-embalagens input.isPadrao');
+                // controle da quantidade de embalagens do tipo expedicao
+                var qtdEmbalagensExpedicao = 0;
+
+                // verifico se existe embalagem de recebimento
+                inputsIsPadrao.each(function(i, v) {
+                    if ( this.value === 'N' )
+                        qtdEmbalagensExpedicao = qtdEmbalagensExpedicao + 1;
+                });
+
+                if( qtdEmbalagensExpedicao > 0 )
+                    this.dialogAlert('Remova as embalagens de expedição antes de remover a de recebimento.');
+            }
+
+            var permisao = true;
+            $.ajax({
+                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                type: 'post',
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data === 'N') {
+                        este.dialogAlert("Pelos parâmetros definidos <br>Não é permitido excluir embalagens no WMS apenas no ERP");
+                        permisao = false;
+                    }
                 }
             });
 
-            if(qtdEmbalagens != 0){
-                alert('Não é possível excluir esta embalagem. \nRemova os dados logísticos cadastrados com ela.');
-                return false;
-            }
+            if (!permisao) return false;
 
-            if( confirm("Tem certeza que deseja excluir esta embalagem?") ) {
-                var produto_embalagem = el.closest('.produto_embalagem').model();
-                $('#fieldset-embalagem #embalagem-enderecoAntigo').val(produto_embalagem.endereco);
-                var enderecoAntigo = $('#embalagem-enderecoAntigo').val();
-                var idProduto = $('#embalagem-idProduto').val();
-                var grade = $('#embalagem-grade').val();
-                var este = this;
+            this.dialogConfirm("Tem certeza que deseja excluir esta embalagem?", this.callback("deleteConfirmed"),{id:id});
 
-                var isPadrao = $(el).parent('div').find('.isPadrao').val();
-                // caso seja uma embalagem de recebimento
-                if ( isPadrao == 'S' ) {
-                    // embalagens
-                    var inputsIsPadrao = $('#div-lista-embalagens input.isPadrao');
-                    // controle da quantidade de embalagens do tipo expedicao
-                    var qtdEmbalagensExpedicao = 0;
+        },
 
-                    // verifico se existe embalagem de recebimento
-                    inputsIsPadrao.each(function(i, v) {
-                        if ( this.value == 'N' )
-                            qtdEmbalagensExpedicao = qtdEmbalagensExpedicao + 1;
-                    });
+        deleteConfirmed: function(params) {
+            var id = params.id;
 
-                    if( qtdEmbalagensExpedicao > 0 )
-                        alert('Remova as embalagens de Expedição antes de remover a de Recebimento.');
-                }
+            $('#fieldset-embalagem #embalagem-enderecoAntigo').val(produto_embalagem.endereco);
+            var idProduto = $('#embalagem-idProduto').val();
+            var grade = $('#embalagem-grade').val();
+            var este = this;
 
-                // se é um endereço existente (não haja a palavra '-new' no id)
-                if (id.indexOf('-new') == -1) {
-                    //limpa o ID
-                    id.replace('-new', '');
-                    //adiciona à fila para excluir
-                    $('<input/>', {
-                        name: 'embalagens[' + id + '][acao]',
-                        value: 'excluir',
-                        type: 'hidden'
-                    }).appendTo('#fieldset-embalagens-cadastradas');
-                }
+            $('<input/>', {
+                name: 'embalagens[' + id + '][acao]',
+                value: 'excluir',
+                type: 'hidden'
+            }).appendTo('#fieldset-embalagens-cadastradas');
 
-                $.ajax({
-                    url: URL_MODULO + '/endereco/verificar-estoque-ajax',
-                    type: 'POST',
-                    data: {
-                        enderecoAntigo: enderecoAntigo,
-                        grade: grade,
-                        produto: idProduto
-                    },
-                    success: function(data){
-                        if (data.status == 'error') {
-                            alert(data.msg);
-                            return false;
-                        } else if (data.status == 'success') {
-                            $.ajax({
-                                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
-                                type: 'post',
-                                dataType: 'json',
-                                success: function (data) {
-                                    if (data == 'N') {
-                                        alert("Não é possível excluir embalagens no WMS");
-                                        return false;
-                                    } else {
-                                        //remove a div do endereco
-                                        model.elements().remove();
-                                        //reseta o form
-                                        este.resetarForm();
-                                        // carregar embalagens nos dados logisticos
-                                        este.carregarSelectEmbalagens();
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
-            }
+            //remove a div do endereco
+            model.elements().remove();
+            //reseta o form
+            this.resetarForm();
+            // carregar embalagens nos dados logisticos
+            this.carregarSelectEmbalagens();
         },
 
         /**
@@ -376,15 +372,17 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
         },
 
         /**
-         *
+         * @param {jQuery} el A jQuery wrapped element.
+         * @param {Event} ev A jQuery event whose default action is prevented.
          */
-        '#embalagem-CBInterno change': function () {
-            if($('#embalagem-CBInterno').val() == 'S'){
+        '##embalagem-CBInterno change': function(el, ev){
+            var inptCodBarras = $('#embalagem-codigoBarras');
+            if (el.val() === "S") {
                 $('#embalagem-imprimirCB').val('S');
-                $('#embalagem-codigoBarras').val('').attr('readonly', true);
-            }else{
+                inptCodBarras.removeClass("required invalid").val('').attr('readonly', true);
+            } else if (el.val() === "N") {
                 $('#embalagem-imprimirCB').val('N');
-                $('#embalagem-codigoBarras').attr('readonly', false);
+                inptCodBarras.addClass("required").val('').attr('readonly', false);
             }
         },
 
@@ -452,7 +450,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             if ( qtdEmbalagensCadastradas == 0 )  {
                 // caso primeira embalagem seja de expedicao, lanco erro
                 if($('#embalagem-isPadrao').val() == 'N') {
-                    alert('A primeira embalagem deve ser de recebimento. \n Altere o recebimento para SIM.');
+                    this.dialogAlert('A primeira embalagem deve ser de recebimento. <br>Altere o padrão recebimento para SIM.');
                     return false;
                 }
             }
@@ -468,7 +466,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                     // controle de cadastro de embalagens de recebimento
                     if ( (qtdEmbalagensRecebimento >= 1) && ($('#embalagem-isPadrao').val() == 'S')) {
-                        alert('O produto deve conter APENAS uma embalagem cadastrada do tipo recebimento. Altere "Embalagem de Recebimento" para "Não"');
+                        this.dialogAlert('O produto deve conter APENAS uma embalagem cadastrada do tipo recebimento. Altere "Embalagem de Recebimento" para "Não"');
                         return false;
                     }
                     break;
@@ -481,7 +479,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                     //}
                     if ( (qtdEmbalagensRecebimento >= 1) && ($('#embalagem-isPadrao').val() == 'S')) {
                         if ($('#embalagem-id').val() != $('.embalagem-id').val()) {
-                            alert('O produto deve conter APENAS uma embalagem cadastrada do tipo recebimento. Altere "Embalagem de Recebimento" para "Não"');
+                            this.dialogAlert('O produto deve conter APENAS uma embalagem cadastrada do tipo recebimento. Altere "Embalagem de Recebimento" para "Não"');
                             return false;
                         }
                     }
@@ -494,7 +492,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 var qtdItensEmbalagem = parseFloat($('#embalagem-quantidade').val().replace(',','.'));
 
                 if (qtdItemEmbalagemRecebimento < qtdItensEmbalagem) {
-                    alert('Quantidade de itens da embalagem de expedição, deve ser menor ou igual da quantidade de itens da embalagem de recebimento.');
+                    this.dialogAlert('Quantidade de itens da embalagem de expedição, deve ser menor ou igual da quantidade de itens da embalagem de recebimento.');
                     return false;
                 }
 
@@ -502,15 +500,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 qtdItemEmbalagemRecebimento = qtdItemEmbalagemRecebimento * 100;
                 qtdItensEmbalagem = qtdItensEmbalagem * 100;
                 if ( ((qtdItemEmbalagemRecebimento) % (qtdItensEmbalagem)) != 0 ) {
-                    alert('Quantidade de itens da embalagem de expedição deve ser multipla da quantidade de itens da embalagem de recebimento.');
+                    this.dialogAlert('Quantidade de itens da embalagem de expedição deve ser multipla da quantidade de itens da embalagem de recebimento.');
                     return false;
                 }
             }
 
             return true;
         },
-
-
 
         /**
          * Shows a produto_embalagem's information.
@@ -543,16 +539,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
          */
         buscarEmbalagemRecebimento:function() {
             var idEmbalagemRecebimento = 0;
-            // campos da embalagem
-            var inputsEmbalagem = $('#div-lista-embalagens input');
-            var idEmbalagemRecebimento = 0;
             var blocosEmbalagem = $('div.produto_embalagem');
 
             blocosEmbalagem.each( function() {
                 var id = $(this).find('.embalagem-id').val();
                 var isPadrao = $(this).find('.isPadrao').val();
 
-                if ( isPadrao == 'S' ) {
+                if ( isPadrao === 'S' ) {
                     idEmbalagemRecebimento = id;
                 }
             });
@@ -570,125 +563,93 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             }
         },
 
+        dialogAlert: function ( msg ) {
+            $.wmsDialogAlert({
+                title: 'Alerta',
+                msg: msg,
+                height: 150,
+                resizable: false
+            });
+        },
+
+        dialogConfirm: function ( msg, callback, params ) {
+            return $.wmsDialogConfirm({
+                title: 'Tem certeza?',
+                msg: msg
+            }, callback, params);
+        },
+
         /**
-         * Verifica se ja existe o codigo de barras informado
+         * Verifica se ja existe o codigo de barras informado.
          */
-        verificarCodigoBarras:function() {
+        verificarCodigoBarras: function(){
             var acao = $('#embalagem-acao').val();
-            var codigoBarras = $('#embalagem-codigoBarras').val();
+            var codigoBarras = $('#embalagem-codigoBarras');
             var codigoBarrasAntigo = $('#embalagem-codigoBarrasAntigo').val();
             var codigosBarras = $('.codigoBarras');
+            var cbInterno = $('#embalagem-CBInterno').val();
+            var este = this;
 
-            if (codigoBarras == ""){
-                this.verificarEndereco();
-                return false;
+            if ((codigoBarras.val() === "" && cbInterno === "S") || codigoBarras.val() === codigoBarrasAntigo){
+                return true;
             }
 
             // verifico se existe embalagens neste produto com o mesmo codigo de barras
-            var numVezes = 0;
             codigosBarras.each(function(){
-                if ( this.value == codigoBarras ){
-                    numVezes++;
+                if ( this.value === codigoBarras.val() ){
+                    este.dialogAlert("Este código de barras já foi cadastrado neste produto.");
+                    codigoBarras.focus();
+                    return false;
                 }
             });
 
-            if ( numVezes >= 1 && (codigoBarras != codigoBarrasAntigo)) {
-                alert('Este código de barras já foi cadastrado neste produto.');
-                return false;
-            }
-
-            //Verifica se a embalagem esta sendo editada e o codigo é igual
-            if((acao == 'alterar') && (codigoBarras == codigoBarrasAntigo)){
-                this.verificarEndereco();
-                return false;
-            }
-
-            var idProduto = $('#embalagem-idProduto').val();
-            var grade = $('#embalagem-grade').val();
-            new Wms.Models.ProdutoEmbalagem.verificarCodigoBarras({
-                idProduto:idProduto,
-                grade:grade,
-                codigoBarras:codigoBarras
-            }, this.callback('validarCodigoBarras'));
+            var result = null;
+            $.ajax({
+                url: URL_MODULO + '/produto/verificar-codigo-barras-ajax',
+                type: 'post',
+                async: false,
+                dataType: 'json',
+                data: { codigoBarras: codigoBarras.val() }
+            }).success(function (data) {
+                if (data.status === "success") {
+                    result = true;
+                } else if (data.status === "error") {
+                    este.dialogAlert(data.msg);
+                    result = false;
+                }
+            });
+            return result;
         },
 
         /**
-         * Valida o codigo de barras informado
-         *
-         * @param {Array} params Matriz de objetos Wms.Models.ProdutoEmbalagem.
+         * Verifica se existe o endereco informado.
          */
-        validarCodigoBarras: function( params ){
-            if(params.status == 'error'){
-                alert(params.msg);
-                return false;
-            }
-
-            this.verificarEndereco();
-
-        },
-
-        /**
-         * Verifica se existe o endereco informado
-         */
-        verificarEndereco:function() {
+        verificarEndereco: function(){
             var acao = $('#embalagem-acao').val();
             var endereco = $('#embalagem-endereco').val();
             var enderecoAntigo = $('#embalagem-enderecoAntigo').val();
-            var idProduto = $('#embalagem-idProduto').val();
-            var grade = $('#embalagem-grade').val();
+            var este = this;
 
-            if (endereco == "" || (endereco != enderecoAntigo)){
-                var este = this;
+            if (endereco !== enderecoAntigo && endereco !== "") {
+                var result = null;
                 $.ajax({
-                    url: URL_MODULO + '/endereco/verificar-estoque-ajax',
-                    type: 'POST',
-                    data: {
-                        enderecoAntigo: enderecoAntigo,
-                        grade: grade,
-                        produto: idProduto
-                    },
-                    success: function(data){
-                        if (data.status == 'error') {
-                            alert(data.msg);
-                        } else if (data.status == 'success') {
-                            este.salvarDadosEmbalagem();
-                        }
+                    url: URL_MODULO + '/endereco/verificar-endereco-ajax',
+                    type: 'post',
+                    async: false,
+                    dataType: 'json',
+                    data: {endereco: endereco}
+                }).success(function (data) {
+                    if (data.status === "success") {
+                        result = true;
+                    } else if (data.status === "error") {
+                        este.dialogAlert(data.msg);
+                        result = false;
                     }
                 });
-                return false;
-            }
-
-            //Verifica se a embalagem esta sendo editada e o codigo é igual
-            if((acao == 'alterar') && (endereco == enderecoAntigo)){
-                this.salvarDadosEmbalagem();
-                return false;
-            }
-
-            new Wms.Models.ProdutoEmbalagem.verificarEndereco({
-                idProduto:idProduto,
-                grade:grade,
-                endereco:endereco
-            }, this.callback('validarEndereco'));
-        },
-
-        /**
-         * Valida o endereco informado
-         * @param {Array} params Matriz de objetos Wms.Models.ProdutoEmbalagem.
-         */
-        validarEndereco: function( params ){
-            if(params.status == 'error'){
-                alert(params.msg);
-                return false;
-            }
-
-            this.salvarDadosEmbalagem();
-        },
-
-        validarEstoqueEndereco: function( params ){
-            if(params.status == 'error'){
-                alert(params.msg);
-                return false;
+                return result;
+            } else {
+                return true;
             }
         }
-
-    });
+    }
+);

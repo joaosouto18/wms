@@ -1,8 +1,8 @@
 <?php
 namespace Wms\Module\Armazenagem\Form\MovimentacaoProduto;
 
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Module\Web\Form;
-use Wms\Util\Endereco;
 
 class Filtro extends Form
 {
@@ -39,6 +39,33 @@ class Filtro extends Form
             'size' => 10,
             'label' => 'Data Fim'
         ))
+        ->addElement('select', 'tipoMovimentacao', array(
+            'label' => 'Tipo Movimentação',
+            'mostrarSelecione' => true,
+            'multiOptions' => array('E' => 'Entrada', 'S' => 'Saída')
+        ))
+        ->addElement('select', 'tipoOperacao', array(
+            'label' => 'Tipo Operação',
+            'mostrarSelecione' => true,
+            'multiOptions' => array(
+                'M' => 'Movimentação Manual',
+                'I' => 'Inventário',
+                'R' => 'Ressuprimento',
+                'S' => 'Expedição',
+                'E' => 'Endereçamento')
+        ))
+        ->addElement('select', 'tipoEndereco', array(
+            'label' => 'Tipo Endereço',
+            'multiOptions' => array('firstOpt' => 'Ambos', 'options' => array(
+                Endereco::ENDERECO_PICKING => Endereco::$tiposEndereco[Endereco::ENDERECO_PICKING],
+                Endereco::ENDERECO_PULMAO => Endereco::$tiposEndereco[Endereco::ENDERECO_PULMAO],
+                Endereco::ENDERECO_PICKING_DINAMICO => Endereco::$tiposEndereco[Endereco::ENDERECO_PICKING_DINAMICO],
+            ))
+        ))
+        ->addElement('select', 'ordem', array(
+            'label' => 'Ordenação',
+            'multiOptions' => array('firstOpt' => 'Produto', 'options' => array(1 => 'Endereço'))
+        ))
         ->addElement('text', 'rua', array(
             'size' => 3,
             'alt' => 'enderecoRua',
@@ -65,7 +92,7 @@ class Filtro extends Form
             'class' => 'btn',
             'decorators' => array('ViewHelper'),
         ))
-        ->addDisplayGroup(array('idProduto',  'grade', 'dataInicial', 'dataFim', 'rua', 'predio', 'nivel', 'apto', 'submit'), 'identificacao', array('legend' => 'Filtro'));
+        ->addDisplayGroup(array('idProduto',  'grade', 'dataInicial', 'dataFim', 'tipoMovimentacao', 'rua', 'predio', 'nivel', 'apto', 'tipoOperacao','ordem','tipoEndereco', 'submit'), 'identificacao', array('legend' => 'Filtro'));
     }
 /**
      *

@@ -116,7 +116,7 @@ class Enderecamento_MovimentacaoController extends Action
             $params['endereco'] = $enderecoEn;
             $params['qtd'] =  $data['quantidade'];
             $params['observacoes'] = 'Movimentação manual';
-            $params['tipo'] = 'M';
+            $params['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_MOVIMENTACAO;
             $params['unitizador'] = $unitizadorEn;
 
             $params['validade'] = null;
@@ -231,6 +231,7 @@ class Enderecamento_MovimentacaoController extends Action
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+            $data['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_TRANSFERENCIA;
 
             if (isset($data['embalagem']) && !empty($data['embalagem'])) {
                 /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
@@ -255,18 +256,8 @@ class Enderecamento_MovimentacaoController extends Action
                     $data['uma'] = $estoqueEn->getUma();
 
                 if ($produtoEn->getValidade() == 'S' ) {
-                    $valEstOrigem = $estoqueEn->getValidade();
-                    $valEstDestino = (!empty($estoqueDestino))? $estoqueDestino->getValidade() : null;
-
-                    if (!empty($valEstOrigem)) {
-                        if (!empty($valEstDestino)) {
-                            $validade = ($valEstOrigem < $valEstDestino)? $valEstOrigem : $valEstDestino;
-                        } else {
-                            $validade = $valEstOrigem;
-                        }
-                    } elseif(!empty($valEstDestino)) {
-                        $validade = $valEstDestino;
-                    } else {
+                    $validade = $estoqueEn->getValidade();
+                    if (empty($validade)){
                         $umaOrigem = null;
                         if (isset($estoqueEn) && !empty($estoqueEn)) {
                             $estoqueUma = $estoqueEn->getUma();
@@ -274,29 +265,9 @@ class Enderecamento_MovimentacaoController extends Action
                                 $umaOrigem = $this->em->find('wms:Enderecamento\Palete', $estoqueEn->getUma());
                             }
                         }
-
-                        $umaDestino = null;
-                        if (isset($estoqueDestino) && !empty($estoqueDestino)) {
-                            $estoqueDestinoUma = $estoqueDestino->getUma();
-                            if (isset($estoqueDestinoUma) && !empty($estoqueDestinoUma)) {
-                                $umaDestino = $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma());
-                            }
-                        }
-
-                        $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
-                        $valUmaDestino = (!empty($umaDestino))? $umaDestino->getValidade() : null;
-
-                        if (!empty($valUmaOrigem)) {
-                            if (!empty($valUmaDestino)) {
-                                $validade = ($valUmaOrigem < $valUmaDestino)? $valUmaOrigem : $valUmaDestino;
-                            } else {
-                                $validade = $valUmaOrigem;
-                            }
-                        } elseif(!empty($valUmaDestino)) {
-                            $validade = $valUmaDestino;
-                        }
+                        $validade = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
                     }
-                    if (isset($validade) && !empty($validade)) {
+                    if (!empty($validade)) {
                         $data['validade'] = $validade->format('d/m/Y');
                     }
                 }
@@ -304,7 +275,8 @@ class Enderecamento_MovimentacaoController extends Action
                 $data['qtd'] = $data['quantidade'];
                 $data['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoEn->getDescricao();
                 $estoqueRepo->movimentaEstoque($data);
-            } else if (isset($data['volumes']) && ($data['volumes'] != "")) {
+            }
+            else if (isset($data['volumes']) && ($data['volumes'] != "")) {
                 $volumes = $this->getEntityManager()->getRepository("wms:Produto\Volume")->getVolumesByNorma($data['volumes'],$idProduto,$grade);
                 if (count($volumes) <= 0) {
                     $this->addFlashMessage('error',"Não foi encontrado nenhum volume para o produto $idProduto - $grade no grupo de volumes selecionado. Nenhuma movimentação foi efetuada");
@@ -484,7 +456,9 @@ class Enderecamento_MovimentacaoController extends Action
         $enderecos = $EstoqueRepo->getEstoqueAndVolumeByParams($params);
         /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
         $ProdutoRepository   = $this->_em->getRepository('wms:Produto');
-        $produtoEn  = $ProdutoRepository->findOneBy(array('id' => ProdutoUtil::formatar($params['idProduto']), 'grade' => $params['grade']));
+        $codProduto = ProdutoUtil::formatar($params['idProduto']);
+        $grade = (isset($params['grade']) && !empty($params['grade'])) ? $params['grade'] : 'UNICA';
+        $produtoEn  = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
         $endPicking = $ProdutoRepository->getEnderecoPicking($produtoEn);
 
         $this->view->endPicking = $endPicking;

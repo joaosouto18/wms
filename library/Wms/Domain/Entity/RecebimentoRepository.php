@@ -301,11 +301,6 @@ class RecebimentoRepository extends EntityRepository {
         $ordemServicoRepo = $em->getRepository('wms:OrdemServico');
         $vQtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
         $notafiscalRepo = $em->getRepository('wms:NotaFiscal');
-        /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
-        $conferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
-        /** @var \Wms\Domain\Entity\Produto\PesoRepository $pesoRepo */
-        $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
-
 
         $repositorios = array(
             'notaFiscalRepo' => $notafiscalRepo,
@@ -421,8 +416,17 @@ class RecebimentoRepository extends EntityRepository {
         //altera recebimento para o status finalizado
         $result = $this->finalizar($idRecebimento);
 
-        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMENTRO SEJA 'S'
-        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S') {
+        $notasFiscaisEntities = $ordemServicoEntity->getRecebimento()->getNotasFiscais();
+        $recebimentoErp = false;
+        foreach ($notasFiscaisEntities as $notaFiscalEntity) {
+            if (!is_null($notaFiscalEntity->getCodRecebimentoErp())) {
+                $recebimentoErp = true;
+                break;
+            }
+        }
+
+        //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMETRO SEJA 'S'
+        if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S' && $recebimentoErp == true) {
             $serviceIntegracao = new Integracao($em, array('acao' => null,
                 'options' => null,
                 'tipoExecucao' => 'E'
@@ -627,7 +631,7 @@ class RecebimentoRepository extends EntityRepository {
         $query = '
             SELECT r
             FROM wms:Recebimento r
-            WHERE r.status = ' . RecebimentoEntity::STATUS_CONFERENCIA_COLETOR . '
+            WHERE r.status IN (' . RecebimentoEntity::STATUS_CONFERENCIA_COLETOR . ',' . RecebimentoEntity::STATUS_CONFERENCIA_CEGA . ')
                 AND EXISTS (
                     SELECT \'x\'
                     FROM wms:OrdemServico os

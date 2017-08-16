@@ -63,3 +63,30 @@ input#password{
     margin-left: 6px;
     margin-bottom: 20px;
 }
+
+input[type=text], input[type=password], select{
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
+    box-shadow: 1px 1px 2px #333333;
+    -moz-box-shadow: 1px 1px 2px #333333;
+    -webkit-box-shadow: 1px 1px 2px #333333;
+    background: #f5ede6;
+    /*border:1px solid #000000;*/
+    height:25px !important;
+    margin-top: 2px;
+    margin-bottom:2px;
+    border: 1px solid #CCC;
+    padding-left: 2px;
+}
+
+input[type=text]:hover, textarea:hover, input[type=password]:hover,select:hover {
+    background: #ffffff;
+    border:1px solid #1c94c4 !important;
+}
+input[type=text]:focus,input[type=password]:focus, textarea:focus,select:focus{
+    background: #ffffff;
+    border:0px !important;
+    box-shadow: 1px 1px 8px #06516f !important;
+    border-radius:6px;
+}

@@ -3,7 +3,7 @@ use Wms\Module\Web\Controller\Action,
     Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta,
     Wms\Module\Web\Page,
     Wms\Module\Expedicao\Report\Produtos,
-    Wms\Service\Coletor as LeituraColetor,
+    Wms\Util\Coletor as ColetorUtil,
     Wms\Module\Expedicao\Printer\MapaSeparacao as MapaSeparacao;
 
 class Expedicao_EtiquetaController  extends Action
@@ -272,7 +272,6 @@ class Expedicao_EtiquetaController  extends Action
         ));
         $request = $this->getRequest();
         $idExpedicao = $request->getParam('id');
-        $LeituraColetor = new LeituraColetor();
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -286,7 +285,7 @@ class Expedicao_EtiquetaController  extends Action
             $senhaAutorizacao = $senhaAutorizacao->getValor();
             if ($senhaDigitada == $senhaAutorizacao) {
                 $codBarra    = $request->getParam('codBarra');
-                $codBarra    = $LeituraColetor->retiraDigitoIdentificador($codBarra);
+                $codBarra    = ColetorUtil::retiraDigitoIdentificador($codBarra);
                 $motivo      = $request->getParam('motivo');
                 if (!$codBarra || !$motivo) {
                     $this->addFlashMessage('error', 'É necessário preencher todos os campos');
@@ -483,7 +482,11 @@ class Expedicao_EtiquetaController  extends Action
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
                     break;
                 case 2:
-                    //LAYOUT WILSO - ABRAFER ...
+                    //LAYOUT WILSO
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
+                    break;
+                case 3:
+                    //LAYOUT ABRAFER ...
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                     break;
                 default:

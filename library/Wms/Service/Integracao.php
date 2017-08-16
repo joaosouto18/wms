@@ -19,6 +19,39 @@ class embalagem {
     public $descricao;
 }
 
+class pedidoFaturado {
+    /** @var string */
+    public $codPedido;
+    /** @var string */
+    public $tipoPedido;
+}
+
+class notaFiscal {
+    /** @var pedidoFaturado[] */
+    public $pedidos;
+    /** @var integer */
+    public $numeroNf;
+    /** @var string */
+    public $serieNf;
+    /** @var string */
+    public $cnpjEmitente;
+    /** @var double */
+    public $valorVenda;
+    /** @var notaFiscalProduto[] */
+    public $itens;
+}
+
+class notaFiscalProduto {
+    /** @var string */
+    public $codProduto;
+    /** @var string */
+    public $grade;
+    /** @var integer */
+    public $qtd;
+    /** @var double */
+    public $valorVenda;
+}
+
 class Integracao
 {
     protected $_acao;
@@ -151,6 +184,9 @@ class Integracao
                     return true;
                 case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:
                     return $this->processaNotaFiscalSaida($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_VERIFICA_CARGA_FINALIZADA:
+                    return $this->verificaCargasFaturadas($this->_dados);
+
 
             }
         } catch (\Exception $e) {
@@ -238,12 +274,11 @@ class Integracao
 
         $nfs = array();
         foreach ($notasFiscais as $nf) {
-
-            $nfSaida = new \notaFiscal();
+            $nfSaida = new notaFiscal();
 
             $produtos = array();
             foreach($nf['itens'] as $nfProd) {
-                $produto = new \notaFiscalProduto();
+                $produto = new notaFiscalProduto();
                 $produto->codProduto = $nfProd['idProduto'];
                 $produto->grade= $nfProd['grade'];
                 $produto->qtd = $nfProd['quantidade'];
@@ -253,7 +288,7 @@ class Integracao
 
             $pedidos = array();
             foreach($nf['pedidos'] as $nfPed) {
-                $pedido = new \pedidoFaturado();
+                $pedido = new pedidoFaturado();
                 $pedido->codPedido = $nfPed;
                 $pedido->tipoPedido = 'C';
                 $pedidos[] = $pedido;
@@ -264,10 +299,9 @@ class Integracao
             $nfSaida->serieNf = $nf['serie'];
             $nfSaida->valorVenda = 0;
             $nfSaida->itens = $produtos;
-            $nfSaida->pedidos = $pedido;
+            $nfSaida->pedidos = $pedidos;
             $nfs[] = $nfSaida;
         }
-
         $wsExpedicao = new \Wms_WebService_Expedicao();
         $wsExpedicao->informarNotaFiscal($nfs);
 
@@ -302,9 +336,11 @@ class Integracao
             ->orderBy('p.id, pp.codProduto, pp.grade');
 
         $pedidosProdutosWMS = $sql->getQuery()->getResult();
-        $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
-        $pedidoProdutoRepository->aplicaCortesbyERP($pedidosProdutosWMS,$pedidosProdutosERP);
-        $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosWMS);
+        if (count($pedidosProdutosWMS) >0) {
+            $pedidoProdutoRepository = $em->getRepository('wms:Expedicao\PedidoProduto');
+            $pedidoProdutoRepository->aplicaCortesbyERP($pedidosProdutosWMS,$pedidosProdutosERP);
+            $mapaSeparacaoProdutoRepository->validaCorteMapasERP($pedidosProdutosWMS);
+        }
 
         return true;
     }
@@ -475,6 +511,7 @@ class Integracao
 
                 if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idCarga != $dados[$key+1]['CARGA']))) {
                     $carga = array(
+                        'id' => $row['COD_INTEGRACAO_PEDIDO'],
                         'idCarga' => $idCarga,
                         'placaExpedicao' => $row['PLACA'],
                         'placa' => $row['PLACA'],
@@ -491,12 +528,14 @@ class Integracao
             } else if ($this->getTipoExecucao() == "R") {
                 foreach($cargas as $carga) {
                     $resumo[] = array(
-                        'Num. Carga'=>$carga['idCarga'],
-                        'Qtd. Pedidos'=>count($carga['pedidos']),
-                        'Placa Carga'=>$carga['placaExpedicao']
+                        'check' => '<input class="check" name="check[]" value="'.$carga['idCarga'].'" type="checkbox" />',
+                        'Num. Carga'=> $carga['idCarga'],
+                        'Qtd. Pedidos'=> count($carga['pedidos']),
+                        'Placa Carga'=> $carga['placaExpedicao']
                     );
                 }
                 $resumo[] = array(
+                    'check' => '',
                     'Num. Carrga'=>'',
                     'Qtd. Pedidos'=>'',
                     'Placa Carga'=>''
@@ -578,6 +617,7 @@ class Integracao
 
             if ($FimNotaAtual == true) {
                 $notasFiscais[] = array(
+                    'id' => $notaFiscal['COD_INTEGRACAO_NF_ENTRADA'],
                     'codFornecedor' => $notaFiscal['COD_FORNECEDOR'],
                     'numNota' => $notaFiscal['NUM_NOTA_FISCAL'],
                     'serie' => $notaFiscal['COD_SERIE_NOTA_FISCAL'],
@@ -607,6 +647,7 @@ class Integracao
         } else if ($this->getTipoExecucao() == "R") {
             foreach($notasFiscais as $nf) {
                 $resumo[] = array(
+                    'check' => '<input class="check" name="check[]" value="'.$nf['id'].'" type="checkbox" />',
                     'Numero NF'=>$nf['numNota'],
                     'Serie' => $nf['serie'],
                     'Dt. Emissão' => $nf['dtEmissao'],
@@ -616,6 +657,7 @@ class Integracao
                 );
             }
             $resumo[] = array(
+                'check' => '',
                 'Numero NF'=>'',
                 'Serie'=>'',
                 'Dt. Emissão'=>'',
@@ -877,6 +919,7 @@ class Integracao
     public function comparaNotasFiscais($notasFiscaisWms,$notasFiscaisErp)
     {
         $erpRecebimento = array();
+        $qtdNotasComBonus = 0;
         foreach ($notasFiscaisWms as $idNotaFiscal) {
             $notaFiscal = $this->_em->getReference('wms:NotaFiscal', $idNotaFiscal);
             $constaNoErp = false;
@@ -893,7 +936,11 @@ class Integracao
                 }
             }
             if ($constaNoErp == false) {
-                throw new \Exception('Nota Fiscal número '.$numeroNota.' série '.$numeroSerie .' não consta no recebimento do ERP!');
+                if ($qtdNotasComBonus >0) {
+                    throw new \Exception('Nota Fiscal número '.$numeroNota.' série '.$numeroSerie .' não consta no recebimento do ERP!');
+                }
+            } else{
+                $qtdNotasComBonus = $qtdNotasComBonus +1;
             }
         }
 
