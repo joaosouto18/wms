@@ -531,7 +531,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     public function geraMapaReentrega($produtoEntity, $quantidade, $expedicaoEntity, $arrayRepositorios){
 
-        $math = new Math();
         if ($quantidade <= 0) return;
 
         $modeloSeparacaoRepo = $arrayRepositorios['modeloSeparacao'];
@@ -568,7 +567,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
-                        if ($math->compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
+                        if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                             $embalagemAtual = $embalagem;
                             break;
                         }
@@ -643,7 +642,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Produto\DadoLogisticoRepository $dadoLogisticoRepo */
         $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
 
-        $math = new Math();
         $cubagemPedido = array();
         /** @var PedidoProduto $pedidoProduto */
         foreach ($pedidosProdutos as $pedidoProduto) {
@@ -659,7 +657,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     return is_null($item->getDataInativacao());
                 }
             )->toArray();
-
 
             usort($embalagensEn,function ($itemA, $itemB) {
                 return $itemA->getQuantidade() < $itemB->getQuantidade();
@@ -688,7 +685,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
-                        if ($math->compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
+                        if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                             $embalagemAtual = $embalagem;
                             break;
                         }
