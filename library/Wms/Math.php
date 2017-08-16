@@ -82,6 +82,9 @@ Class Math
 
     public function totalSubtracao($x,$y) {
 
+        $x = strval($x);
+        $y = strval($y);
+
         $quantidade = $this->maiorPrecisao($x,$y);
 
         $x = $x * $quantidade;
