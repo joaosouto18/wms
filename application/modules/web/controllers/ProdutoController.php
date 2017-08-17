@@ -191,8 +191,7 @@ class Web_ProdutoController extends Crud {
                 throw new \Exception('Codigo e Grade do produto devem ser fornecidos');
 
             $entity = $this->repository->findOneBy(array('id' => $params['id'], 'grade' => $params['grade']));
-
-            if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
+            if ($this->getRequest()->isPost()) {
 
                 $linhaEn = $entity->getLinhaSeparacao();
 
