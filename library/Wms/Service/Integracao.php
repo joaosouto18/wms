@@ -527,7 +527,6 @@ class Integracao
             } else if ($this->getTipoExecucao() == "R") {
                 foreach($cargas as $carga) {
                     $resumo[] = array(
-                        'check' => '<input class="check" name="check[]" value="'.$carga['idCarga'].'" type="checkbox" />',
                         'Num. Carga'=> $carga['idCarga'],
                         'Qtd. Pedidos'=> count($carga['pedidos']),
                         'Placa Carga'=> $carga['placaExpedicao']
@@ -646,7 +645,7 @@ class Integracao
         } else if ($this->getTipoExecucao() == "R") {
             foreach($notasFiscais as $nf) {
                 $resumo[] = array(
-                    'check' => '<input class="check" name="check[]" value="'.$nf['id'].'" type="checkbox" />',
+                    'check' => '<input class="check" name="check[]" value="'.$nf['id'].'" type="checkbox" checked />',
                     'Numero NF'=>$nf['numNota'],
                     'Serie' => $nf['serie'],
                     'Dt. Emissão' => $nf['dtEmissao'],
