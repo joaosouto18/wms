@@ -51,6 +51,9 @@ $.Controller.extend('Wms.Controllers.Produto',
 
             //checa quantidade de volumes
             $(".btnSave").off('click').click(function(e) {
+                $('form input').each(function(e){
+                    $(this).removeClass('required');
+                });
                 ///checa embalagem e volume
                 if(!Wms.Controllers.Produto.prototype.verificarEmbalagemVolume())
                     return false;
