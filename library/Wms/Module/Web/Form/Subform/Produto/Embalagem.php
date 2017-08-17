@@ -27,12 +27,10 @@ class Embalagem extends SubForm
                 ->addElement('text', 'descricao', array(
                     'label' => 'Descrição',
                     'size' => 45,
-                    'required' => true,
                     'maxlength' => 60,
                 ))
                 ->addElement('text', 'quantidade', array(
                     'label' => 'Quantidade de itens',
-                    'required' => true,
                     'size' => 10
                 ))
                 ->addElement('select', 'isPadrao', array(
@@ -55,7 +53,6 @@ class Embalagem extends SubForm
                 ))
                 ->addElement('text', 'codigoBarras', array(
                     'label' => 'Código de Barras',
-                    'required' => true,
                     'size' => 40,
                     'maxlength' => 60,
                 ))

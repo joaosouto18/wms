@@ -709,10 +709,8 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
          * Verifica se ja existe o codigo de barras informado
          */
         verificarCodigoBarras:function() {
-            var acao = $('#volume-acao').val();
             var codigoBarras = $('#volume-codigoBarras');
             var codBarrasBase = $('#produto-codigoBarrasBase');
-            var codigoBarrasAntigo = $('#volume-codigoBarrasAntigo');
             var codigosBarras = $('.codigoBarras');
             var cbInterno = $('#volume-CBInterno');
             var este = this;

@@ -113,10 +113,10 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 if (este.verificarEndereco()) {
                     este.salvarDadosEmbalagem();
                 } else {
-                    $('#embalagem-endereco').focus();
+                    $('#embalagem-endereco').focus().addClass('required invalid');;
                 }
             } else {
-                $('#embalagem-codigoBarras').focus();
+                $('#embalagem-codigoBarras').focus().addClass('required invalid');;
             }
 
             ev.preventDefault();
