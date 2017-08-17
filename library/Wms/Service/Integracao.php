@@ -511,7 +511,6 @@ class Integracao
 
                 if (($key == count($dados)-1) || (isset($dados[$key+1]) && ($idCarga != $dados[$key+1]['CARGA']))) {
                     $carga = array(
-                        'id' => $row['COD_INTEGRACAO_PEDIDO'],
                         'idCarga' => $idCarga,
                         'placaExpedicao' => $row['PLACA'],
                         'placa' => $row['PLACA'],
