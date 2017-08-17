@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Web\Grid;
 
+use Wms\Domain\Entity\RecebimentoRepository;
 use Wms\Module\Web\Grid,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
@@ -20,6 +21,7 @@ class Recebimento extends Grid
      */
     public function init(array $params = array())
     {
+        /** @var RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
         $resultSet = $recebimentoRepo->searchNew($params);
         $this->setAttrib('title','Recebimento');
@@ -75,7 +77,7 @@ class Recebimento extends Grid
                     'actionName' => 'conferencia',
                     'pkIndex' => 'idOrdemServico',
                     'condition' => function ($row) {
-                        return ($row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA || $row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_COLETOR);
+                        return ($row['IDSTATUS'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA || $row['IDSTATUS'] == RecebimentoEntity::STATUS_CONFERENCIA_COLETOR);
                     }
                 ));
 
