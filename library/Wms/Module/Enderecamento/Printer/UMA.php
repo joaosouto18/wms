@@ -171,19 +171,15 @@ class UMA extends Pdf {
         $this->AddPage();
         $descricaoProduto = $produtoEn->getDescricao();
         $codigoProduto = $produtoEn->getId();
-        if (strlen($descricaoProduto) >= 42) {
-            $font_size = 36;
-        } else if (strlen($descricaoProduto) >= 20) {
-            $font_size = 40;
-        }
-        
+        $font_size = 30;
+
         $this->Image(@CodigoBarras::gerarNovo($palete['idUma']), 50, 73, 170, 40);
 
         $this->SetFont('Arial', 'B', 75);
         $this->Cell($line_width, 15, '             ' . $codigoProduto, 0, 5);
 
         $this->SetFont('Arial', 'B', $font_size);
-        $this->Cell($line_width, 40, $descricaoProduto, 0, 5);
+        $this->Cell($line_width, 40, $descricaoProduto, 0, 5, 'C');
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35, 40, "", 0, 0);
@@ -207,13 +203,11 @@ class UMA extends Pdf {
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(25, -60, "Qtd", 0, 0);
         $embalagemRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository("wms:Produto\Embalagem");
-        $qtd = $palete['qtd'] / $palete['qtdEmbalagem'];
-        if ($qtd > 0) {
-            $vetQtd = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $qtd);
-            $qtd = implode('<br />', $vetQtd);
-        }
-        $this->SetFont('Arial', 'B', 50);
-        $this->Cell(75, -60, $qtd . ' - ' . $palete['conferente']['NOM_PESSOA'], 0, 40);
+
+        $vetQtd = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $palete['qtd']);
+        $qtd = implode(' - ', $vetQtd);
+        $this->SetFont('Arial', 'B', 35);
+        $this->Cell(75,-60, $qtd .' - '.$palete['conferente']['NOM_PESSOA'], 0, 40);
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(55, -115, utf8_decode("End.: "), 0, 0);
