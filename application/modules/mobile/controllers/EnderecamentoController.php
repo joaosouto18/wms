@@ -1291,12 +1291,13 @@ class Mobile_EnderecamentoController extends Action
     public function getCapacidadePickingAjaxAction()
     {
         $dscEndereco = $this->_getParam('endereco');
+
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $$embalagemRepo */
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
 
-        $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => $dscEndereco));
+        $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => EnderecoUtil::formatar($dscEndereco)));
         if (!empty($enderecoEn)) {
             $embalagemEn = $embalagemRepo->findOneBy(array('endereco' => $enderecoEn));
             if (!empty($embalagemEn)) {

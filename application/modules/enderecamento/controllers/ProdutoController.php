@@ -131,7 +131,7 @@ class Enderecamento_ProdutoController extends Action
         $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
         $conferenciaRepo = $this->getEntityManager()->getRepository("wms:Recebimento\Conferencia");
 
-        $result = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade,$idNorma);
+        //$result = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade,$idNorma);
 
         if ($idNorma == NULL) {
             $this->addFlashMessage('error',"O Produto $codProduto, grade $grade não possuí norma de paletização");
@@ -152,17 +152,17 @@ class Enderecamento_ProdutoController extends Action
 
             if ($recebimentoEn == null) {
                 $idOs = $conferenciaRepo->getLastOsConferencia($idRecebimento,$codProduto,$grade);
-                $idNormaAntiga = 'Nenhuma Norma';
-                $qtdNormaAntiga = 0;
+/*                $idNormaAntiga = 'Nenhuma Norma';
+                $qtdNormaAntiga = 0;*/
             } else {
-                $normaAntigaEn = $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao")->findOneBy(array('id'=>$recebimentoEn->getCodNormaPaletizacao()));
+/*                $normaAntigaEn = $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao")->findOneBy(array('id'=>$recebimentoEn->getCodNormaPaletizacao()));
                 if ($normaAntigaEn == null) {
                     $idNormaAntiga = "";
                     $qtdNormaAntiga = "SEM NORMA ANTIGA";
                 } else {
                     $idNormaAntiga = $normaAntigaEn->getId();
                     $qtdNormaAntiga = $normaAntigaEn->getNumNorma();
-                }
+                }*/
 
                 $idOs = $recebimentoEn->getCodOs();
             }
@@ -171,7 +171,7 @@ class Enderecamento_ProdutoController extends Action
 
             /** @var \Wms\Domain\Entity\Enderecamento\AndamentoRepository $andamentoRepo */
             $andamentoRepo  = $this->_em->getRepository('wms:Enderecamento\Andamento');
-            $msg = "Norma de paletização trocada com sucesso para a da unidade " . $result['unidade'] ." (" . $result['unitizador'] . ")  | Norma: ". $idNormaAntiga . "(" .  $qtdNormaAntiga . ") -> " . $result['idNorma'] . "(" . $result['qtdNorma'] . ") ";
+            $msg = "Norma de paletização trocada com sucesso!";
             $andamentoRepo->save($msg, $idRecebimento, $codProduto, $grade);
 
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
