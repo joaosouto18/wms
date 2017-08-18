@@ -1,9 +1,60 @@
 <?php
-
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 
-echo  'aki';
+echo $this->form;
+?>
+<div id="estoque"></div>
+<script>
+    $(window).load(function () {
+        $('#ruaFinal').parent().css('clear', 'both');
+
+        $("#buscar").click(function () {
+            $.ajax({
+                url: URL_MODULO + '/ressuprimento-preventivo/list-ajax/',
+                type: 'post',
+                dataType: 'html',
+                data: $('form').serialize(),
+                success: function (data) {
+                    $('#estoque').html(data);
+                }
+            });
+            return false;
+        });
+        $(".limpar-pulmao").click(function () {
+            $.wmsDialogAlert({
+                title: 'Limpar Pulmão',
+                msg: 'Ação de limpar pulmão'
+            });
+            /*$.ajax({
+             url: URL_MODULO + '/ressuprimento-preventivo/list-ajax/',
+             type: 'post',
+             dataType: 'html',
+             data: $('form').serialize(),
+             success: function (data) {
+             $('#estoque').html(data);
+             }
+             });*/
+            return false;
+        });
+        $(".completar-picking").click(function () {
+            $.wmsDialogAlert({
+                title: 'Completar Picking',
+                msg: 'Ação de completar de picking'
+            });
+            /*$.ajax({
+             url: URL_MODULO + '/ressuprimento-preventivo/list-ajax/',
+             type: 'post',
+             dataType: 'html',
+             data: $('form').serialize(),
+             success: function (data) {
+             $('#estoque').html(data);
+             }
+             });*/
+            return false;
+        });
+    });
+</script>
