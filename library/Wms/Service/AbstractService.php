@@ -16,7 +16,7 @@ abstract class AbstractService
 {
 
     /**
-     * @var EntityManager
+     * @var EntityManager $em
      */
     protected $em;
     protected $entity;
