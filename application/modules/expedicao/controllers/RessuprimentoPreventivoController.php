@@ -7,8 +7,7 @@
  */
 
 use Wms\Module\Web\Controller\Action,
-    Wms\Module\Web\Page,
-    Core\Util\Produto as ProdutoUtil;
+    Wms\Module\Web\Page;
 
 class Expedicao_RessuprimentoPreventivoController extends Action {
 
@@ -23,17 +22,8 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
 
     public function listAjaxAction() {
         $EstoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        $ProdutoRepository   = $this->_em->getRepository('wms:Produto');
-        
-        $params     = $this->_getAllParams();
+        $params = $this->_getAllParams();
         $enderecos = $EstoqueRepo->getEstoqueAndVolumeByParams($params);
-        $codProduto = ProdutoUtil::formatar($params['idProduto']);
-        $grade = (isset($params['grade']) && !empty($params['grade'])) ? $params['grade'] : 'UNICA';
-        
-        $produtoEn  = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
-        $endPicking = $ProdutoRepository->getEnderecoPicking($produtoEn);
-
-        $this->view->endPicking = $endPicking;
         $this->view->enderecos = $enderecos;
     }
 
