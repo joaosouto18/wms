@@ -24,18 +24,21 @@ class Volume extends SubForm
                 ->addElement('hidden', 'enderecoAntigo')
                 ->addElement('text', 'altura', array(
                     'label' => 'Altura(m)',
+                    'required' => true,
                     'class' => 'parametro-cubagem',
                     'alt' => 'centesimal',
                     'size' => 12,
                 ))
                 ->addElement('text', 'largura', array(
                     'label' => 'Largura(m)',
+                    'required' => true,
                     'class' => 'parametro-cubagem',
                     'alt' => 'centesimal',
                     'size' => 12,
                 ))
                 ->addElement('text', 'profundidade', array(
                     'label' => 'Profundidade(m)',
+                    'required' => true,
                     'class' => 'parametro-cubagem',
                     'alt' => 'centesimal',
                     'size' => 12,
@@ -49,15 +52,18 @@ class Volume extends SubForm
                 ))
                 ->addElement('text', 'peso', array(
                     'label' => 'Peso(kg)',
+                    'required' => true,
                     'alt' => 'centesimal',
                     'size' => 12,
                 ))
                 ->addElement('numeric', 'codigoSequencial', array(
                     'label' => 'Nº do Volume',
+                    'required' => true,
                     'size' => 12,
                 ))
                 ->addElement('text', 'descricao', array(
                     'label' => 'Descrição',
+                    'required' => true,
                     'size' => 45,
                     'maxlength' => 250,
                 ))

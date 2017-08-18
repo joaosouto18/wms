@@ -77,13 +77,10 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
          * @param {Event} ev A jQuery event whose default action is prevented.
          */
         '#btn-salvar-volume click': function(el, ev) {
-            // constantes tipo comercializacao
-            var UNITARIO = 1;
-            var COMPOSTO = 2;
-            var KIT = 3;
 
-            // variaveis
-            var idTipoComercializacao = parseInt($('#produto-idTipoComercializacao').val());
+            var fieldVolume = $('#fieldset-volume');
+            var valores = fieldVolume.formParams(false).volume;
+
             var grupoDadosLogisticos = $('#fieldset-grupo-volumes').find('div.grupoDadosLogisticos');
             var este = this;
 
@@ -100,8 +97,14 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                     }
                 }
             });
+
             if (!result)
                 return result;
+
+            if (fieldVolume.find(".invalid").length > 0) {
+                este.dialogAlert("Os campos em vermelho são obrigatórios");
+                return false
+            }
 
             //caso a quantidade de grupos de normatizacao seja igual a zero
             if( grupoDadosLogisticos.size() === 0 ) {
@@ -109,55 +112,9 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                 return false;
             }
 
-            var acao = $('#volume-acao').val();
-            var codigoBarras = $('#volume-codigoBarras');
-            var codBarrasBase = $('#produto-codigoBarrasBase');
-            var codigoBarrasAntigo = $('#volume-codigoBarrasAntigo');
-            var cbInterno = $('#volume-CBInterno');
-
-            var erros = 0;
-            if (codBarrasBase.val() === "") {
-                if (cbInterno.val() === "N") {
-                    if ((codigoBarras.val() !== '') && (acao === 'alterar')) {
-                        if (codigoBarras.val() === codigoBarrasAntigo.val())
-                            return true;
-                    } else if (codigoBarras.val() === '') {
-                        erros++
-                    }
-                }
-            }
-
-            if ($('#volume-descricao').val() === '') erros++;
-
-            if (parseFloat($('#volume-altura').val()) === 0) {
-                erros++;
-                $('#volume-altura').addClass('required invalid');
-            }
-
-            if (parseFloat($('#volume-largura').val()) === 0) {
-                erros++;
-                $('#volume-largura').addClass('required invalid');
-            }
-
-            if (parseFloat($('#volume-profundidade').val()) === 0) {
-                erros++;
-                $('#volume-profundidade').addClass('required invalid');
-            }
-
-            if (parseFloat($('#volume-peso').val()) === 0) {
-                erros++;
-                $('#volume-peso').addClass('required invalid');
-            }
-
-            if (erros > 0) {
-                this.dialogAlert("Os itens destacados são obrigatórios");
-                return false;
-            }
-
-
-            if (este.verificarCodigoBarras()) {
-                if (este.verificarEndereco()) {
-                    este.salvarDadosVolume();
+            if (este.verificarCodigoBarras(valores)) {
+                if (este.verificarEndereco(valores)) {
+                    este.salvarDadosVolume(valores);
                 } else {
                     $('#volume-endereco').focus();
                 }
@@ -169,9 +126,9 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             ev.preventDefault();
         },
 
-        salvarDadosVolume:function() {
-            var valores = $('#fieldset-volume').formParams(false).volume;
-            var id = $("#volume-id").val();
+        salvarDadosVolume:function( valores ) {
+
+            var id = valores.id;
             var grupoDadosLogisticos = $('#fieldset-grupo-volumes').find('div.grupoDadosLogisticos');
             valores.lblIsPadrao = $('#fieldset-volume #volume-isPadrao option:selected').text();
             valores.lblCBInterno = $('#fieldset-volume #volume-CBInterno option:selected').text();
@@ -225,7 +182,6 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             $('#fieldset-grupo-volumes').append( $.View('//wms/views/norma_paletizacao/init', {
                 normas_paletizacao:normas_paletizacao
             }));
-
 
             var grupoDadosLogisticos = $('div.grupoDadosLogisticos');
 
@@ -374,19 +330,19 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             // carrega dados
             $('#volume-acao').val('alterar');
             $('#volume-id').val(produto_volume.id);
-            $('#volume-codigoSequencial').val(produto_volume.codigoSequencial);
-            $('#volume-largura').val(produto_volume.largura);
-            $('#volume-altura').val(produto_volume.altura);
-            $('#volume-profundidade').val(produto_volume.profundidade);
+            $('#volume-codigoSequencial').val(produto_volume.codigoSequencial).removeClass("invalid");
+            $('#volume-largura').val(produto_volume.largura).removeClass("invalid");
+            $('#volume-altura').val(produto_volume.altura).removeClass("invalid");
+            $('#volume-profundidade').val(produto_volume.profundidade).removeClass("invalid");
             $('#volume-cubagem').val(produto_volume.cubagem);
-            $('#volume-peso').val(produto_volume.peso);
-            $('#volume-descricao').val(produto_volume.descricao);
+            $('#volume-peso').val(produto_volume.peso).removeClass("invalid");
+            $('#volume-descricao').val(produto_volume.descricao).removeClass("invalid");
             $('#volume-CBInterno').val(produto_volume.CBInterno);
             $('#volume-imprimirCB').val(produto_volume.imprimirCB);
-            $('#volume-codigoBarras').val(produto_volume.codigoBarras);
+            $('#volume-codigoBarras').val(produto_volume.codigoBarras).removeClass("invalid");
             $('#volume-codigoBarrasAntigo').val(produto_volume.codigoBarras);
             $('#volume-idNormaPaletizacao').val(produto_volume.idNormaPaletizacao);
-            $('#volume-endereco').val(produto_volume.endereco);
+            $('#volume-endereco').val(produto_volume.endereco).removeClass("invalid");
             $('#volume-enderecoAntigo').val(produto_volume.endereco);
             $('#volume-capacidadePicking').val(produto_volume.capacidadePicking);
             $('#volume-pontoReposicao').val(produto_volume.pontoReposicao);
@@ -708,23 +664,21 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         /**
          * Verifica se ja existe o codigo de barras informado
          */
-        verificarCodigoBarras:function() {
-            var codigoBarras = $('#volume-codigoBarras');
+        verificarCodigoBarras:function(valores) {
             var codBarrasBase = $('#produto-codigoBarrasBase');
+            var codigoBarras = valores.codigoBarras;
             var codigosBarras = $('.codigoBarras');
-            var cbInterno = $('#volume-CBInterno');
+            var cbInterno = valores.imprimirCB;
             var este = this;
 
-            if((codBarrasBase.val() !== '') && (cbInterno.val() === 'S')) {
+            if((codBarrasBase.val() !== '') && (cbInterno === 'S')) {
                 this.dialogAlert('Este Produto contém Código de Barras Base. Não é permitido ter volumes com Código de Barras Automático.');
-                codigoBarras.focus();
                 return false;
             }
 
             codigosBarras.each(function(){
                 if ( this.value === codigoBarras ){
                     este.dialogAlert("Este código de barras já foi cadastrado neste produto.");
-                    codigoBarras.focus();
                     return false;
                 }
             });
@@ -750,12 +704,10 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         /**
          * Verifica se existe o endereco informado
          */
-        verificarEndereco:function() {
-            var acao = $('#volume-acao').val();
-            var endereco = $('#volume-endereco').val();
-            var enderecoAntigo = $('#volume-enderecoAntigo').val();
-            var idProduto = $('#volume-idProduto').val();
-            var grade = $('#volume-grade').val();
+        verificarEndereco:function(valores) {
+
+            var endereco = valores.endereco;
+            var enderecoAntigo = valores.enderecoAntigo;
             var este = this;
 
             if (endereco !== enderecoAntigo && endereco !== "") {
