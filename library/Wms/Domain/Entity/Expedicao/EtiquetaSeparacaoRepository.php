@@ -1222,7 +1222,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
                         // Identifico o resto possivel da embalagem atual em relação a qtdBase
-                        $restoByFator = Math::resto($qtdTemp, $qtdEmbalagemAtual);
+                        $restoByFator = Math::resto(strval($qtdTemp), strval($qtdEmbalagemAtual));
                         // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
                         $qtdEmbs = Math::dividir(($qtdTemp - $restoByFator), $qtdEmbalagemAtual);
 
