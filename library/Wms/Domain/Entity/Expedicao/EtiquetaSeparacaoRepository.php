@@ -1210,7 +1210,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $embalagemAtual = null;
                         /** @var Produto\Embalagem $embalagemEn */
                         foreach ($produto['embalagensDisponiveis'] as $embalagemEn) {
-                            if (number_format($embalagemEn->getQuantidade(), 3, '.', '') <= number_format($qtdTemp, 3, '.', '')) {
+                            if (Math::compare($embalagemEn->getQuantidade(), $qtdTemp, '<=')) {
                                 $embalagemAtual = $embalagemEn;
                                 break;
                             }
