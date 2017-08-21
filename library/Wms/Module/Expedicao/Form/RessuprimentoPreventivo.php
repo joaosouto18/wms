@@ -14,15 +14,7 @@ class RessuprimentoPreventivo extends Form {
             'class' => 'filtro',
             'id' => 'cadastro-movimentacao',
         ));
-        $this->addElement('select', 'volumes', array(
-                    'label' => 'Volumes',
-                ))
-                ->addElement('text', 'embalagens', array(
-                    'size' => 3,
-                    'label' => 'Embalagens',
-                    'class' => 'ctrSize',
-                ))
-                ->addElement('text', 'rua', array(
+        $this->addElement('text', 'rua', array(
                     'size' => 3,
                     'label' => 'Rua Inicio',
                     'alt' => 'enderecoRua',
