@@ -1216,6 +1216,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
 
+                        if (count($produto['embalagensDisponiveis']) == 0) {
+                            throw new \Exception("Nenhuma embalagem para o produto ".$pedidoProdutoEn->getCodProduto());
+                        }
+
                         $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
                         // Identifico o resto possivel da embalagem atual em relação a qtdBase
                         $restoByFator = Math::resto($qtdTemp, $qtdEmbalagemAtual);
