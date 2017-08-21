@@ -1216,7 +1216,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
 
-                        if (count($produto['embalagensDisponiveis']) == 0) {
+                        if (is_null($embalagemAtual)) {
                             throw new \Exception("Nenhuma embalagem para o produto ".$pedidoProdutoEn->getCodProduto());
                         }
 
