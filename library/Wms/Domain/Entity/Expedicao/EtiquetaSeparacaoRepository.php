@@ -1217,7 +1217,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
 
                         if (is_null($embalagemAtual)) {
-                            throw new \Exception("Nenhuma embalagem para o produto ".$pedidoProdutoEn->getCodProduto());
+                            throw new \Exception($embalagemEn->getQuantidade()," - $qtdTemp - ".$pedidoProdutoEn->getCodProduto());
                         }
 
                         $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
