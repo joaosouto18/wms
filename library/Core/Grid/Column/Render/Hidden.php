@@ -19,6 +19,7 @@ class Hidden extends Render\ARender implements Render\IRender
     {
 	$row = $this->getRow();
 	$index = $this->getColumn()->getIndex();
+	$this->getColumn()->setVisible(false);
 	return "<input style='width:40px;' type='hidden' name=".$index."[".$row[$index]."] value='$row[$index]' />";
     }
 

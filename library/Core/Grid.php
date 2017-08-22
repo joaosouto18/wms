@@ -803,7 +803,6 @@ class Grid
         $view->setBasePath(APPLICATION_PATH . '/' . $this->getTemplatePath());
         $view->setScriptPath(APPLICATION_PATH . '/' . $this->getTemplatePath());
         $view->grid = $this;
-      
         return $view->render('grid.phtml');
     }
 
