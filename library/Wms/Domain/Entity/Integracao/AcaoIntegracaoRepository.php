@@ -54,9 +54,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                 ";
                 break;
             case AcaoIntegracao::INTEGRACAO_PEDIDOS:
-                if (isset($dados) && !empty($dados)) {
-                    $where .= " AND CARGA IN ($dados)";
-                }
                 $SQL = "SELECT  COD_INTEGRACAO_PEDIDO,
                                 CARGA,
                                 PLACA,
@@ -83,7 +80,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                                 VLR_VENDA,
                                 TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
                 FROM INTEGRACAO_PEDIDO 
-                $where
                 ORDER by CARGA, PEDIDO, PRODUTO";
                 break;
         }

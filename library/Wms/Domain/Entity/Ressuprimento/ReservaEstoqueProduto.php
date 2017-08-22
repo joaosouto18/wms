@@ -70,7 +70,7 @@ class ReservaEstoqueProduto
 
     /**
      * @Column(name="DTH_VALIDADE", type="date", nullable=true)
-     * @var date
+     * @var \DateTime
      */
     protected $validade;
 
@@ -203,7 +203,7 @@ class ReservaEstoqueProduto
     }
 
     /**
-     * @return date
+     * @return \DateTime
      */
     public function getValidade()
     {
@@ -211,7 +211,7 @@ class ReservaEstoqueProduto
     }
 
     /**
-     * @param date $validade
+     * @param \DateTime $validade
      */
     public function setValidade($validade)
     {

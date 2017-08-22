@@ -344,7 +344,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
         $codProduto = $dados['COD_PRODUTO'];
         $grade = $dados['DSC_GRADE'];
         $mapaSeparacaoEntity = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao',$codMapaSeparacao);
-        $mapaSeparacaoConferenciaEntities = $this->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity, 'codProduto' => $codProduto, 'dscGrade' => $grade));
+        $mapaSeparacaoConferenciaEntities = $this->findBy(array('codMapaSeparacao' => $mapaSeparacaoEntity->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
 
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepository */
         $expedicaoAndamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');

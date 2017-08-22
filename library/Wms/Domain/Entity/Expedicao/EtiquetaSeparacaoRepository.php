@@ -1210,15 +1210,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $embalagemAtual = null;
                         /** @var Produto\Embalagem $embalagemEn */
                         foreach ($produto['embalagensDisponiveis'] as $embalagemEn) {
-                            if (number_format($embalagemEn->getQuantidade(), 3, '.', '') <= number_format($qtdTemp, 3, '.', '')) {
+                            if (Math::compare($embalagemEn->getQuantidade(), $qtdTemp, '<=')) {
                                 $embalagemAtual = $embalagemEn;
                                 break;
                             }
                         }
 
+                        if (is_null($embalagemAtual)) {
+                            throw new \Exception($embalagemEn->getQuantidade()." - $qtdTemp - ".$pedidoProdutoEn->getCodProduto());
+                        }
+
                         $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
                         // Identifico o resto possivel da embalagem atual em relação a qtdBase
-                        $restoByFator = Math::resto($qtdTemp, $qtdEmbalagemAtual);
+                        $restoByFator = Math::resto(strval($qtdTemp), strval($qtdEmbalagemAtual));
                         // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
                         $qtdEmbs = Math::dividir(($qtdTemp - $restoByFator), $qtdEmbalagemAtual);
 

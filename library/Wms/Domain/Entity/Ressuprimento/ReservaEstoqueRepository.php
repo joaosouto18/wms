@@ -336,10 +336,12 @@ class ReservaEstoqueRepository extends EntityRepository
                 $reservaEstoqueProduto->setProdutoVolume($this->getEntityManager()->getReference("wms:Produto\Volume",$produto['codProdutoVolume']));
                 $reservaEstoqueProduto->setCodProdutoVolume($produto['codProdutoVolume']);
             }
-            $dataValidade = isset($produto['validade']) && !empty($produto['validade']) ? new \DateTime($produto['validade']) : null;
+            if (isset($produto['validade']) && !empty($produto['validade'])){
+                $dataValidade = date_create_from_format('d/m/Y',$produto['validade']);
+                if ($dataValidade) $reservaEstoqueProduto->setValidade($dataValidade);
+            }
             $reservaEstoqueProduto->setQtd($produto['qtd']);
             $reservaEstoqueProduto->setReservaEstoque($reservaEstoque);
-            $reservaEstoqueProduto->setValidade($dataValidade);
             $this->getEntityManager()->persist($reservaEstoqueProduto);
         }
 

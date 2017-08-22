@@ -73,15 +73,12 @@ class Importacao_GerenciamentoController extends Action
 
             if (isset($result)) {
                 if (is_string($result)) {
-                    $this->addFlashMessage('error',$result);
-                    $this->redirect('index','gerenciamento','importacao', array('id' => $acao));
+                    $this->_helper->json(array('error' => $result, 'redirect' => '/importacao/gerenciamento/index/id/'.$acao));
                 } else if ($result === true) {
                     if ($acaoIntEntity->getTipoAcao()->getId() ==  AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS) {
-                        $this->addFlashMessage('success','Notas Fiscais enviadas com sucesso!');
-                        $this->redirect('index','recebimento','web');
+                        $this->_helper->json(array('success' => 'Notas Fiscais enviadas com sucesso!', 'redirect' => '/web/recebimento/index'));
                     } else if ($acaoIntEntity->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PEDIDOS) {
-                        $this->addFlashMessage('success','Cargas enviadas com sucesso!');
-                        $this->redirect('index','index','expedicao');
+                        $this->_helper->json(array('success' => 'Cargas enviadas com sucesso!', 'redirect' => '/expedicao/index/index'));
                     }
                 } else {
                     $arrayFinal = $result;
@@ -94,7 +91,7 @@ class Importacao_GerenciamentoController extends Action
 
             $this->view->valores = $arrayFinal;
         } catch (\Exception $e) {
-            $this->_helper->messenger('error', $e->getMessage());
+            $this->_helper->json(array('error' => 'abc'));
         }
     }
 }
