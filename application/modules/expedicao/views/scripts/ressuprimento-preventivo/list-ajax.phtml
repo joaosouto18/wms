@@ -7,46 +7,34 @@
 ?>
 <table class="gTable list">
     <tbody>
-<?php
-$codProdutoAnterior = null;
-$gradeAnterior = null;
-$codVolumeAnterior = null;
+        <?php
+        $codProdutoAnterior = null;
+        $gradeAnterior = null;
+        $codVolumeAnterior = null;
 
-$qtdEstoque = 0;
-$qtdReservaEntrada = 0;
-$qtdReservaSaida = 0;
-$count = 0;
+        $qtdEstoque = 0;
+        $qtdReservaEntrada = 0;
+        $qtdReservaSaida = 0;
+        $count = 0;
 
-foreach ($this->enderecos as $key => $endereco) {
-    if (($codProdutoAnterior != $endereco['COD_PRODUTO']) || ($gradeAnterior != $endereco['DSC_GRADE']) || ($codVolumeAnterior != $endereco['COD_VOLUME'])) {
+        foreach ($this->enderecos as $key => $endereco) {
+            if (($codProdutoAnterior != $endereco['COD_PRODUTO']) || ($gradeAnterior != $endereco['DSC_GRADE']) || ($codVolumeAnterior != $endereco['COD_VOLUME'])) {
 
-        if ($codProdutoAnterior != NULL) {
-            ?><tr >
-                        <td colspan="5"><b>Total</b></td>
+                if ($codProdutoAnterior != NULL) {
+                    ?><tr >
+                        <td colspan="5" style="text-align: center"><b>Total</b></td>
                         <td><b><?php echo $qtdReservaEntrada ?></b></td>
                         <td><b><?php echo $qtdReservaSaida ?></b></td>
                         <td><b><?php echo $qtdEstoque ?></b></td>
                         <td colspan="2"></td>
                     </tr>
-            <?php
-        }
+                    <?php
+                }
 
-        $qtdEstoque = 0;
-        $qtdReservaEntrada = 0;
-        $qtdReservaSaida = 0;
-        ?>
-
-                <tr class ="gTTitle">
-                    <td><b><?php echo "CÓDIGO: " . $endereco['COD_PRODUTO'] ?></b></td>
-                    <td><b><?php echo "GRADE: " . $endereco['DSC_GRADE'] ?></b></td>
-                    <td colspan="3"><b><?php echo "PRODUTO: " . $endereco['DSC_PRODUTO'] ?></b></td>
-                    <td colspan="2"><b><?php echo "VOLUME: " . $endereco['VOLUME'] ?></b></td>
-                    <td colspan="2">
-        <?php if (isset($this->endPicking[$count])) : ?>
-                            <b><?php echo "PICKING: " . $this->endPicking[$count]; ?></b>
-                        <?php endif; ?>
-                    </td>
-                </tr>
+                $qtdEstoque = 0;
+                $qtdReservaEntrada = 0;
+                $qtdReservaSaida = 0;
+                ?>
 
                 <tr class ="gTTitle">
                     <td><b>Endereço</b></td>
@@ -59,10 +47,10 @@ foreach ($this->enderecos as $key => $endereco) {
                     <td><b>Qtd.Estoque</b></td>
                     <td><b>Validade</b></td>
                 </tr>
-        <?php
-        $count++;
-    }
-    ?><tr>
+                <?php
+                $count++;
+            }
+            ?><tr>
                 <td><?php echo $endereco['ENDERECO'] ?></td>
                 <td><?php echo $endereco['TIPO'] ?></td>
                 <td><?php echo $endereco['DTH_PRIMEIRA_MOVIMENTACAO'] ?></td>
@@ -72,31 +60,32 @@ foreach ($this->enderecos as $key => $endereco) {
                 <td><?php echo $endereco['RESERVA_SAIDA'] ?></td>
                 <td><?php echo $endereco['QTD_EMBALAGEM'] ?></td>
                 <td><?php
-        if (isset($endereco['DTH_VALIDADE']) && !empty($endereco['DTH_VALIDADE'])) {
-            $dataValidade = new DateTime($endereco['DTH_VALIDADE']);
-            $dataValidade = $dataValidade->format('d/m/Y');
-            echo $dataValidade;
-        } else {
-            echo "<p style='text-align: center;'> - </p>";
-        }
-    ?></td>
+                    if (isset($endereco['DTH_VALIDADE']) && !empty($endereco['DTH_VALIDADE'])) {
+                        $dataValidade = new DateTime($endereco['DTH_VALIDADE']);
+                        $dataValidade = $dataValidade->format('d/m/Y');
+                        echo $dataValidade;
+                    } else {
+                        echo "<p style='text-align: center;'> - </p>";
+                    }
+                    ?></td>
             </tr>
-                    <?php
-                    $qtdEstoque = $qtdEstoque + $endereco['QTD'];
-                    $qtdReservaEntrada = $qtdReservaEntrada + $endereco['RESERVA_ENTRADA'];
-                    $qtdReservaSaida = $qtdReservaSaida + $endereco['RESERVA_SAIDA'];
-                    $codProdutoAnterior = $endereco['COD_PRODUTO'];
-                    $gradeAnterior = $endereco['DSC_GRADE'];
-                    $codVolumeAnterior = $endereco['COD_VOLUME'];
+            <?php
+            $qtdEstoque = $qtdEstoque + $endereco['QTD'];
+            $qtdReservaEntrada = $qtdReservaEntrada + $endereco['RESERVA_ENTRADA'];
+            $qtdReservaSaida = $qtdReservaSaida + $endereco['RESERVA_SAIDA'];
+            $codProdutoAnterior = $endereco['COD_PRODUTO'];
+            $gradeAnterior = $endereco['DSC_GRADE'];
+            $codVolumeAnterior = $endereco['COD_VOLUME'];
 
-                    if ($endereco == $this->enderecos[count($this->enderecos) - 1]) {
-                        ?><tr>
+            if ($endereco == $this->enderecos[count($this->enderecos) - 1]) {
+                ?><tr>
                     <td colspan="5" style="text-align: center"><b>Total</b></td>
                     <td><b><?php echo $qtdReservaEntrada ?></b></td>
                     <td><b><?php echo $qtdReservaSaida ?></b></td>
                     <td><b><?php echo $qtdEstoque ?></b></td>
                     <td colspan="2"></td>
                 </tr><?php
-    }
-}?>
+            }
+        }
+        ?>
 </table>
