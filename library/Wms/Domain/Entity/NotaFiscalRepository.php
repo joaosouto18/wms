@@ -830,7 +830,7 @@ class NotaFiscalRepository extends EntityRepository {
                 ->select('nf.numero as numNota, nf.serie,
                           nfi.id as idNotaFiscalItem, nfi.quantidade as qtdItem,
                           pj.nomeFantasia as fornecedor,
-                          p.id as idProduto, p.grade, p.descricao as dscProduto,
+                          p.id as idProduto, p.grade, p.descricao as dscProduto, p.validade,
                           ls.descricao as dscLinhaSeparacao,
                           fb.nome as fabricante,
                           tc.descricao as dscTipoComercializacao,

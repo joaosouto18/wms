@@ -25,6 +25,9 @@ class Recebimento
     const STATUS_DESFEITO = 460;
     const STATUS_CONFERENCIA_COLETOR = 461;
 
+    const TARGET_IMPRESSAO_ITEM = "I";
+    const TARGET_IMPRESSAO_PRODUTO = "P";
+
     /**
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")

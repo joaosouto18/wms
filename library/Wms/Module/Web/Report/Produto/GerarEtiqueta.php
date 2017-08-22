@@ -2,11 +2,11 @@
 
 namespace Wms\Module\Web\Report\Produto;
 
-use Wms\Controller\Action,
-    Wms\Util\Barcode\eFPDF,
-    Core\Pdf,
+use Wms\Domain\Entity\ProdutoRepository;
+use Wms\Util\Barcode\eFPDF,
     Wms\Util\Barcode\Barcode,
-    Wms\Util\CodigoBarras;
+    Wms\Domain\Entity\NotaFiscalRepository,
+    Wms\Domain\Entity\Recebimento;
 
 /**
  * Description of GerarEtiqueta
@@ -17,7 +17,7 @@ use Wms\Controller\Action,
 class GerarEtiqueta extends eFPDF
 {
 
-    public function init(array $nfParams = null,array $prodParams = null, $modelo)
+    public function init(array $nfParams = null,array $prodParams = null, $modelo, $target = "I")
     {
         $tipo = "";
         /*  PARA IMPRIMIR ETIQUETAS DE UM PRODUTO
@@ -37,16 +37,17 @@ class GerarEtiqueta extends eFPDF
             $tipo = "NF";
         }
 
-
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
-        $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
 
+        /** @var NotaFiscalRepository $notaFiscalRepo */
+        $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
         if ($tipo == "NF") {
-            $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
             $produtosEn = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento);
         } else if ($tipo == "Produto") {
+            /** @var ProdutoRepository $produtoRepo */
             $produtoRepo = $em->getRepository('wms:Produto');
             $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade);
+            $target = Recebimento::TARGET_IMPRESSAO_PRODUTO;
         }
 
         //geracao da etiqueta
@@ -55,30 +56,16 @@ class GerarEtiqueta extends eFPDF
         header('Content-type: application/pdf');
 
         foreach ($produtosEn as $produto) {
-            for ($i = 0; $i < $produto['qtdItem']; $i++) {
-
+            $produto['dataValidade'] = "";
+            if ($produto['validade'] == "S") {
                 $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto(null, $produto['codigoBarras'], $produto['idProduto'], $produto['grade']);
                 $produto['dataValidade'] = $getDataValidadeUltimoProduto['dataValidade'];
-
-                switch($modelo) {
-                    case 2:
-                        $this->SetMargins(6, 4, 0);
-                        $this->SetFont('Arial', 'B', 10);
-
-                        $this->layout2($produto, $tipo);
-                        break;
-                    case 3:
-                        $this->SetMargins(2, 2);
-                        $this->SetFont('Arial', 'B', 8);
-
-                        $this->layout3($produto, $tipo);
-                        break;
-                    default:
-                        $this->SetMargins(7, 5, 0);
-                        $this->SetFont('Arial', 'B', 8);
-
-                        $this->layout1($produto, $tipo);
-                        break;
+            }
+            if ($target == Recebimento::TARGET_IMPRESSAO_PRODUTO) {
+                self::createEtiqueta($produto, $tipo, $modelo);
+            } else {
+                for ($i = 0; $i < $produto['qtdItem']; $i++) {
+                    self::createEtiqueta($produto, $tipo, $modelo);
                 }
             }
         }
@@ -86,15 +73,33 @@ class GerarEtiqueta extends eFPDF
         exit;
     }
 
+    private function createEtiqueta($produto, $tipo, $modelo)
+    {
+        switch($modelo) {
+            case 2:
+                $this->SetMargins(6, 4, 0);
+                $this->SetFont('Arial', 'B', 10);
+
+                $this->layout2($produto, $tipo);
+                break;
+            case 3:
+                $this->SetMargins(2, 2);
+                $this->SetFont('Arial', 'B', 8);
+
+                $this->layout3($produto, $tipo);
+                break;
+            default:
+                $this->SetMargins(7, 5, 0);
+                $this->SetFont('Arial', 'B', 8);
+
+                $this->layout1($produto, $tipo);
+                break;
+        }
+    }
+
     public function layout1($produto, $tipo)
     {
         $codigo = $produto['codigoBarras'];
-
-        if ($tipo == "NF") {
-            $fornecedor = ' - Fornecedor: ' . utf8_decode(substr($produto['fornecedor'], 0, 25) . '...');
-        } else if ($tipo == "Produto") {
-            $fornecedor = "";
-        }
 
         $this->AddPage();
         $this->MultiCell(100,2.7,utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']),0,"L");
@@ -102,7 +107,11 @@ class GerarEtiqueta extends eFPDF
         $this->Ln(1.5);
         $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
         $this->Ln(3);
-        $this->Cell(100, 0, 'Fabricante: ' . utf8_decode($produto['fabricante']) . $fornecedor, 0, 0);
+        $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fabricante: $produto[fabricante]"), 100), 0, 0);
+        if ($tipo == "NF") {
+            $this->Ln(3);
+            $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[fornecedor]"), 100), 0, 0);
+        }
 
         if ($produto['idEmbalagem'] != null) {
             $this->Ln(3);
@@ -138,12 +147,6 @@ class GerarEtiqueta extends eFPDF
     {
 	   $codigo = $produto['codigoBarras'];
 
-        if ($tipo == "NF") {
-            $fornecedor = ' - Fornecedor: ' . utf8_decode(substr($produto['fornecedor'], 0, 25) . '...');
-        } else if ($tipo == "Produto") {
-            $fornecedor = "";
-        }
-
         $this->AddPage();
 		$this->SetFont('Arial', 'B', 12);
         $this->MultiCell(90, 4, utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 0);
@@ -151,7 +154,11 @@ class GerarEtiqueta extends eFPDF
         $this->Ln(2);
         $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
         $this->Ln(4);
-        $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode('Fabricante: ' .$produto['fabricante'] . $fornecedor), 100), 0, 0);
+        $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fabricante: $produto[fabricante]"), 100), 0, 0);
+        if ($tipo == "NF") {
+            $this->Ln(3);
+            $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[fornecedor]"), 100), 0, 0);
+        }
 
         if ($produto['idEmbalagem'] != null) {
             $this->Ln(4);
@@ -189,19 +196,17 @@ class GerarEtiqueta extends eFPDF
     {
         $codigo = $produto['codigoBarras'];
 
-        if ($tipo == "NF") {
-            $fornecedor = ' - Fornecedor: ' . utf8_decode(substr($produto['fornecedor'], 0, 25) . '...');
-        } else if ($tipo == "Produto") {
-            $fornecedor = "";
-        }
-
         $this->AddPage();
         $this->MultiCell(100,2.7,utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']),0,"L");
         //$this->Cell(100, 0, utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 0, 0);
         $this->Ln(1.5);
         $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
         $this->Ln(3);
-        $this->Cell(100, 0, 'Fabricante: ' . utf8_decode($produto['fabricante']) . $fornecedor, 0, 0);
+        $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fabricante: $produto[fabricante]"), 100), 0, 0);
+        if ($tipo == "NF") {
+            $this->Ln(3);
+            $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[fornecedor]"), 100), 0, 0);
+        }
 
         if ($produto['idEmbalagem'] != null) {
             $this->Ln(3);

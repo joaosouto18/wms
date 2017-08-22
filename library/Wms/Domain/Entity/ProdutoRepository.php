@@ -1094,7 +1094,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
     public function buscarProdutosImprimirCodigoBarras($codProduto, $grade) {
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('
-                      1 as qtdItem,
                       p.id as idProduto,
                       p.grade,
                       p.descricao as dscProduto,
