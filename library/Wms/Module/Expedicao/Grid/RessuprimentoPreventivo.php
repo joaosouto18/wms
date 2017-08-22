@@ -17,7 +17,7 @@ class RessuprimentoPreventivo extends Grid {
      *
      * @param array $params
      */
-    public function init(array $gridValues = array(), array $formParamas = array()) {
+    public function init(array $gridValues = array()) {
         $this->setAttrib('title', 'Ressuprimento Preventivo');
         $this->setSource(new \Core\Grid\Source\ArraySource($gridValues))
                 ->setId('ressuprimento-preventivo-grid')
@@ -29,7 +29,17 @@ class RessuprimentoPreventivo extends Grid {
                 ))
                 ->addColumn(array(
                     'label' => 'Produto',
-                    'index' => 'COD_PRODUTO',
+                    'index' => 'COD_PRODUTO'
+                ))
+                ->addColumn(array(
+                    'label' => 'Embalagens',
+                    'index' => 'EMBALAGENS',
+                    'render' => 'Hidden'
+                ))
+                ->addColumn(array(
+                    'label' => 'Volumes',
+                    'index' => 'VOLUMES',
+                    'render' => 'Hidden'
                 ))
                 ->addColumn(array(
                     'label' => 'Grade',

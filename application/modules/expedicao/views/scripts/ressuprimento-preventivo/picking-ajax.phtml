@@ -10,12 +10,29 @@ echo $this->grid;
     $('#check-all').click(function () {
         if ($(this).prop("checked")) {
             $('.checkBoxClass').each(function () {
-                $(this).attr( 'checked',true );
+                $(this).attr('checked', true);
             });
-        }else{
+        } else {
             $('.checkBoxClass').each(function () {
-                $(this).removeAttr( 'checked');
+                $(this).removeAttr('checked');
             });
         }
+    });
+
+    $("#confirmar").click(function () {
+        return false;
+        $("input:checked").each(function () {
+            console.log($(this));
+        });
+//            $.ajax({
+//                url: URL_MODULO + '/ressuprimento-preventivo/list-ajax/',
+//                type: 'post',
+//                dataType: 'html',
+//                data: $('form').serialize(),
+//                success: function (data) {
+//                    $('#estoque').html(data);
+//                }
+//            });
+        return false;
     });
 </script>

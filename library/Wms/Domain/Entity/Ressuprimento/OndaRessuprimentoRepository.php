@@ -505,8 +505,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 if ($qtdOnda > 0) {
                     $osGeradas[] = array(
                         'produtoEn' => $produtoEn,
-                        'embalagens' => $embalagens,
-                        'volumes' => $volumes,
+                        'embalagens' => json_encode($embalagens),
+                        'volumes' => json_encode($volumes),
                         'qtdOnda' => $qtdOnda,
                         'enderecoPulmaoEn' => $enderecoPulmaoEn,
                         'idPicking' => $idPicking,
@@ -590,8 +590,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
             }
 
-            foreach ($pickings as $picking) { 
-                $os = $this->geraOsByPicking($picking, $dadosProdutos, $repositorios);
+            foreach ($pickings as $picking) {
+                $os = $this->calculaRessuprimentoByPicking($picking, $dadosProdutos, $repositorios);
                 $osGeradas = array_merge($osGeradas, $os);
             }
         }
@@ -600,6 +600,47 @@ class OndaRessuprimentoRepository extends EntityRepository {
     }
 
     public function calculaRessuprimentoPreventivoByParams($parametros) {
+
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
+        $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
+        /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
+        $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+        $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
+        /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
+        $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
+        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
+        $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
+        $reservaEstoqueOndaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueOnda");
+        $repositorios = array(
+            'produtoRepo' => $produtoRepo,
+            'embalagemRepo' => $embalagemRepo,
+            'reservaEstoqueExpRepo' => $reservaEstoqueExpedicaoRepo,
+            'reservaEstoqueOndaRepo' => $reservaEstoqueOndaRepo,
+            'reservaEstoqueRepo' => $reservaEstoqueRepo,
+            'ondaRepo' => $ondaRepo,
+            'pedidoRepo' => $pedidoRepo,
+            'volumeRepo' => $volumeRepo,
+            'enderecoRepo' => $enderecoRepo,
+            'usuarioRepo' => $usuarioRepo,
+            'expedicaoRepo' => $expedicaoRepo,
+            'estoqueRepo' => $estoqueRepo,
+            'osRepo' => $ordemServicoRepo,
+            'siglaRepo' => $siglaRepo
+        );
+
 
         $SQL = "SELECT DISTINCT P.COD_PRODUTO,
                     P.DSC_GRADE,
@@ -623,8 +664,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
               WHERE (PE.COD_DEPOSITO_ENDERECO IS NOT NULL OR PV.COD_DEPOSITO_ENDERECO IS NOT NULL)
                 AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)";
 
-//        $SQLWhere = " and  P.COD_PRODUTO = 16589";
-        $SQLWhere = " ";
+        $SQLWhere = " and  P.COD_PRODUTO = 14059";
+//        $SQLWhere = " ";
         if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
             $SQLWhere .= "AND (DECODE(E.QTD,null,0,(E.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
         }
@@ -662,7 +703,10 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
         $SQLOrderBy = " ORDER BY DE.DSC_DEPOSITO_ENDERECO";
         $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
+
         $pickings = array();
+        $dadosProdutos = array();
+        $osGeradas = array();
         if (!empty($result) && is_array($result)) {
             $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
@@ -677,7 +721,21 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
                 $result[$key]['OCUPACAO'] = number_format($result[$key]['OCUPACAO'], 2, '.', '');
                 $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $value['COD_PRODUTO'], 'grade' => $value['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'ASC'));
+
+                $codProduto = $value['COD_PRODUTO'];
+                $grade = $value['DSC_GRADE'];
+                $pickings[$key]['pontoReposicao'] = $result[$key]['CAPACIDADE_PICKING'];
+                $pickings[$key]['idPicking'] = null;
+                $pickings[$key]['volumes'] = null;
                 if (count($embalagensEn) > 0) {
+                    if (!isset($dadosProdutos[$codProduto][$grade])) {
+                        $dadosProdutos[$codProduto][$grade] = array(
+                            'codProduto' => $codProduto,
+                            'grade' => $grade,
+                            'entidade' => $embalagensEn[0]->getProduto(),
+                            'embalagensASC' => $embalagensEn,
+                        );
+                    }
                     $embalagem = $embalagensEn[0];
                     $embalagens = array();
                     $embalagens[] = $embalagem->getId();
@@ -696,20 +754,26 @@ class OndaRessuprimentoRepository extends EntityRepository {
                             $result[$key]['VOLUMES'][] = $volume->getId();
                             $result[$key]['ID_PICKING'] = $idPicking;
                             $result[$key]['CAPACIDADE_PICKING'] = $volume->getCapacidadePicking();
-                            $result[$key]['PONTO_REPOSICAO'] = $volume->getPontoReposicao();
+                            $pickings[$key]['idPicking'] = $idPicking;
                         }
                     }
                 }
+
                 foreach ($result[$key] as $key2 => $value2) {
                     $pickings[$key][strtolower($key2)] = $result[$key][$key2];
                 }
+                $pickings[$key]['capacidadePicking'] = $result[$key]['CAPACIDADE_PICKING'];
+                $pickings[$key]['codProduto'] = $result[$key]['COD_PRODUTO'];
+                $pickings[$key]['grade'] = $result[$key]['DSC_GRADE'];
+                $os = $this->calculaRessuprimentoByPicking($pickings[$key], $dadosProdutos, $repositorios);
+                foreach ($os as $value) {
+                    $vetEmb[] = $value['embalagens'];
+                    $vetVol[] = $value['volumes'];
+                }
+                $result[$key]['EMBALAGENS'] = json_encode($vetEmb);
+                $result[$key]['VOLUMES'] = json_encode($vetVol);
             }
         }
-        foreach ($pickings as $picking) {
-            $os = $this->geraOsByPicking($picking, $dadosProdutos, $repositorios);
-            $osGeradas = array_merge($osGeradas, $os);
-        }
-        var_dump($pickings);
         return $result;
     }
 
