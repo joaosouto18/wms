@@ -8,7 +8,7 @@ if ($this->fornecedor) {
     $fornecedor = $this->fornecedor;
 }
 ?>
-<!--<div class="row" >-->
+<div class="row" >
     <table class="info table">
         <caption>Recebimento:  <?php echo $this->recebimento->getId() ?> - <?php echo $this->recebimento->getBox()->getDescricao() ?> - <?php echo $this->recebimento->getDataInicial() ?></caption>
         <caption>Veículo: <?php echo $placaVeiculo ?></caption>
@@ -20,17 +20,19 @@ if ($this->fornecedor) {
                 <td colspan="2"><b>Produtos a serem conferidos</b></td>
             </tr>
             <tr>
-                <td>
-                    <div id="carousel">
+                <td style="padding: 35px;">
+                    <div id="carousel" class="row">
                         <?php foreach ($this->listaProdutos as $produto): ?>
                             <div class="row" id="lista-produto<?php echo $produto['codigo'] ?>"><?php echo $produto['descricao'] ?> - <?php echo $produto['grade'] ?></div>
                         <?php endforeach; ?>
                     </div>
                 </td>
-                <td style="width: 20%"> <button id="next"> >| </button></td>
+            </tr>
+            <tr>
+                <td style="width: 20%"> <button style="margin-top: 25px;" class="btn gradientBtn" id="next"> >| </button></td>
             </tr>
             <?php
         endif;
         ?>
     </table>
-<!--</div>-->
+</div>
