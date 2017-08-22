@@ -590,7 +590,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
             }
 
-            foreach ($pickings as $picking) {
+            foreach ($pickings as $picking) { 
                 $os = $this->geraOsByPicking($picking, $dadosProdutos, $repositorios);
                 $osGeradas = array_merge($osGeradas, $os);
             }
@@ -623,7 +623,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
               WHERE (PE.COD_DEPOSITO_ENDERECO IS NOT NULL OR PV.COD_DEPOSITO_ENDERECO IS NOT NULL)
                 AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)";
 
-//        $SQLWhere = " and  P.COD_PRODUTO = 13518";
+//        $SQLWhere = " and  P.COD_PRODUTO = 16589";
         $SQLWhere = " ";
         if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
             $SQLWhere .= "AND (DECODE(E.QTD,null,0,(E.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
@@ -662,7 +662,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
         $SQLOrderBy = " ORDER BY DE.DSC_DEPOSITO_ENDERECO";
         $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
-
+        $pickings = array();
         if (!empty($result) && is_array($result)) {
             $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
@@ -700,10 +700,16 @@ class OndaRessuprimentoRepository extends EntityRepository {
                         }
                     }
                 }
+                foreach ($result[$key] as $key2 => $value2) {
+                    $pickings[$key][strtolower($key2)] = $result[$key][$key2];
+                }
             }
         }
-//        var_dump($result);
-//        DIE;
+        foreach ($pickings as $picking) {
+            $os = $this->geraOsByPicking($picking, $dadosProdutos, $repositorios);
+            $osGeradas = array_merge($osGeradas, $os);
+        }
+        var_dump($pickings);
         return $result;
     }
 
