@@ -7,13 +7,11 @@
  */
 
 use Wms\Module\Web\Controller\Action,
-    Wms\Module\Expedicao\Grid\RessuprimentoPreventivo as OsGrid,
-    Wms\Module\Web\Page;
+    Wms\Module\Expedicao\Grid\RessuprimentoPreventivo as OsGrid;
 
 class Expedicao_RessuprimentoPreventivoController extends Action {
 
     public function indexAction() {
-        $this->configurePage();
         $form = new \Wms\Module\Expedicao\Form\RessuprimentoPreventivo();
         $form->init();
         $data = $this->_getAllParams();
@@ -25,10 +23,6 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
         $params = $this->_getAllParams();
         $OndaRessupRep = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
         $dados = $OndaRessupRep->calculaRessuprimentoPreventivoByParams($params);
-        
-//        var_dump($dados);
-//        die;
-        
         
         $Grid = new OsGrid();
         $Grid->init($dados)->render();
@@ -46,29 +40,4 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
         $enderecos = $EstoqueRepo->getEstoquePreventivoByParams($params);
         $this->view->enderecos = $enderecos;
     }
-
-    public function configurePage() {
-        $buttons[] = array(
-            'label' => 'Limpar Pulmão',
-            'cssClass' => 'button limpar-pulmao',
-            'urlParams' => array(
-                'module' => 'expedicao',
-                'controller' => 'ressuprimento-preventivo',
-                'action' => 'index',
-            ),
-            'tag' => 'a'
-        );
-        $buttons[] = array(
-            'label' => 'Completar Picking',
-            'cssClass' => 'button completar-picking',
-            'urlParams' => array(
-                'module' => 'expedicao',
-                'controller' => 'ressuprimento-preventivo',
-                'action' => 'index',
-            ),
-            'tag' => 'a'
-        );
-        Page::configure(array('buttons' => $buttons));
-    }
-
 }
