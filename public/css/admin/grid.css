@@ -73,6 +73,9 @@ div.gFilter {
 .gTable tr:hover {
     background: #c7d5e2 !important;
 }
+.tr-select{
+    background: #c7d5e2 !important;
+}
 .gTable tr.gRowFeatured{
     font-weight: bold;
 }
