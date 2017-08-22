@@ -23,7 +23,7 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
     public function listAjaxAction() {
         $EstoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
         $params = $this->_getAllParams();
-        $enderecos = $EstoqueRepo->getEstoqueAndVolumeByParams($params);
+        $enderecos = $EstoqueRepo->getEstoquePreventivoByParams($params);
         $this->view->enderecos = $enderecos;
     }
 
