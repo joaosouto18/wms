@@ -7,38 +7,38 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
 use Wms\Math;
 
-class OndaRessuprimentoRepository extends EntityRepository
-{
-    public function getOndasEmAberto($codProduto, $grade, $codEndereco = null){
-            $query = $this->getEntityManager()->createQueryBuilder()
+class OndaRessuprimentoRepository extends EntityRepository {
+
+    public function getOndasEmAberto($codProduto, $grade, $codEndereco = null) {
+        $query = $this->getEntityManager()->createQueryBuilder()
                 ->select("os.id as OS,
                           w.id as Onda,
                           e.descricao as Endereco,
                           wos.id as OndaOsId,
                           wos.sequencia")
-                ->from("wms:Ressuprimento\OndaRessuprimentoOs",'wos')
-                ->leftJoin("wos.produtos",'osp')
-                ->leftJoin('osp.produto','prod')
-                ->leftJoin("wos.os","os")
+                ->from("wms:Ressuprimento\OndaRessuprimentoOs", 'wos')
+                ->leftJoin("wos.produtos", 'osp')
+                ->leftJoin('osp.produto', 'prod')
+                ->leftJoin("wos.os", "os")
                 ->leftJoin("wos.endereco", 'e')
-                ->leftJoin("wos.ondaRessuprimento","w")
-                ->where("wos.status = ". \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_ONDA_GERADA)
+                ->leftJoin("wos.ondaRessuprimento", "w")
+                ->where("wos.status = " . \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_ONDA_GERADA)
                 ->orderBy("wos.sequencia")
                 ->distinct(true);
 
-            if ($codProduto != null) {
-                $query->andWhere("prod.id = '$codProduto' AND prod.grade ='$grade'");
-            }
-            if ($codEndereco != null) {
-                $query->andWhere("e.id = ".$codEndereco);
-            }
+        if ($codProduto != null) {
+            $query->andWhere("prod.id = '$codProduto' AND prod.grade ='$grade'");
+        }
+        if ($codEndereco != null) {
+            $query->andWhere("e.id = " . $codEndereco);
+        }
         $result = $query->getQuery()->getArrayResult();
         return $result;
     }
 
-    public function getDadosOnda($OS){
+    public function getDadosOnda($OS) {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select("
+                ->select("
                     os2.id as Ordem_Servico,
                     ores.dataCriacao as Data_Criacao,
                     p.id as Codigo,
@@ -51,27 +51,25 @@ class OndaRessuprimentoRepository extends EntityRepository
                     pe.quantidade as fator,
                     pk.descricao as Picking
                 ")
-            ->from("wms:Ressuprimento\OndaRessuprimentoOs","o")
-            ->leftJoin("o.produtos", "ps")
-            ->leftJoin("o.ondaRessuprimento", "ores")
-            ->leftJoin("ps.produto", "p")
-            ->leftJoin("o.os", "os")
-            ->leftJoin("o.endereco", "e")
-            ->leftJoin("o.os","os2")
-            ->leftJoin("wms:Ressuprimento\ReservaEstoqueOnda",'reo','WITH','reo.ondaRessuprimentoOs = o.id')
-            ->leftJoin("reo.reservaEstoque",'res')
-            ->leftJoin("res.endereco",'pk')
-            ->leftJoin("wms:Produto\Embalagem","pe","WITH","pe.id = ps.codProdutoEmbalagem")
-            ->where("o.id = $OS")
-            ->andWhere("res.tipoReserva = 'E'");
+                ->from("wms:Ressuprimento\OndaRessuprimentoOs", "o")
+                ->leftJoin("o.produtos", "ps")
+                ->leftJoin("o.ondaRessuprimento", "ores")
+                ->leftJoin("ps.produto", "p")
+                ->leftJoin("o.os", "os")
+                ->leftJoin("o.endereco", "e")
+                ->leftJoin("o.os", "os2")
+                ->leftJoin("wms:Ressuprimento\ReservaEstoqueOnda", 'reo', 'WITH', 'reo.ondaRessuprimentoOs = o.id')
+                ->leftJoin("reo.reservaEstoque", 'res')
+                ->leftJoin("res.endereco", 'pk')
+                ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "pe.id = ps.codProdutoEmbalagem")
+                ->where("o.id = $OS")
+                ->andWhere("res.tipoReserva = 'E'");
 
-        $result =$dql->getQuery()->getArrayResult();
+        $result = $dql->getQuery()->getArrayResult();
         return $result[0];
     }
 
-
-    public function getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, $showOsId = false, $idProduto = null, $idExpedicao = null, $operador = null, $exibrCodBarrasProduto = false)
-    {
+    public function getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, $showOsId = false, $idProduto = null, $idExpedicao = null, $operador = null, $exibrCodBarrasProduto = false) {
         $SqlWhere = "  WHERE RES.TIPO_RESERVA = 'E'";
         $osId = "";
         $siglaId = "";
@@ -161,8 +159,7 @@ class OndaRessuprimentoRepository extends EntityRepository
     }
 
     /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs $ondaOs */
-    public function finalizaOnda($ondaOs)
-    {
+    public function finalizaOnda($ondaOs) {
         try {
             $this->getEntityManager()->beginTransaction();
             $idOnda = $ondaOs->getId();
@@ -174,7 +171,7 @@ class OndaRessuprimentoRepository extends EntityRepository
             /** @var \Wms\Domain\Entity\OrdemServico $osEn */
             $osEn = $ondaOs->getOs();
             $idOs = $osEn->getId();
-            $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
+            $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
             $usuarioEn = $pessoaRepo->find($idUsuario);
 
             $produtos = array();
@@ -182,18 +179,18 @@ class OndaRessuprimentoRepository extends EntityRepository
                 $produtoArray = array();
                 $produtoArray['codProdutoEmbalagem'] = $produto->getCodProdutoEmbalagem();
                 $produtoArray['codProdutoVolume'] = $produto->getCodProdutoVolume();
-                $produtoArray['codProduto'] = $produto->getProduto()->getId() ;
+                $produtoArray['codProduto'] = $produto->getProduto()->getId();
                 $produtoArray['grade'] = $produto->getProduto()->getGrade();
                 $produtoArray['qtd'] = $produto->getQtd();
                 $produtos[] = $produtoArray;
             }
 
-            $reservaEstoqueRepo->efetivaReservaEstoque(NULL,$produtos,"E","O",$ondaOs->getId(),$idUsuario,$idOs);
-            $reservaEstoqueRepo->efetivaReservaEstoque(NULL,$produtos,"S","O",$ondaOs->getId(),$idUsuario,$idOs);
+            $reservaEstoqueRepo->efetivaReservaEstoque(NULL, $produtos, "E", "O", $ondaOs->getId(), $idUsuario, $idOs);
+            $reservaEstoqueRepo->efetivaReservaEstoque(NULL, $produtos, "S", "O", $ondaOs->getId(), $idUsuario, $idOs);
 
-            $ondaOs = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs")->findOneBy(array('id'=>$idOnda));
+            $ondaOs = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs")->findOneBy(array('id' => $idOnda));
 
-            $statusEn = $this->getEntityManager()->getRepository("wms:Util\Sigla")->findOneBy(array('id'=>\Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_FINALIZADO));
+            $statusEn = $this->getEntityManager()->getRepository("wms:Util\Sigla")->findOneBy(array('id' => \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_FINALIZADO));
             $ondaOs->setStatus($statusEn);
             $this->getEntityManager()->persist($ondaOs);
 
@@ -202,30 +199,30 @@ class OndaRessuprimentoRepository extends EntityRepository
 
             $this->getEntityManager()->flush();
             $this->getEntityManager()->commit();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
         }
     }
 
-    public function geraNovaOnda (){
+    public function geraNovaOnda() {
 
-        /*$idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
+        /* $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
 
-        $sql = "INSERT INTO ONDA_RESSUPRIMENTO (COD_ONDA_RESSUPRIMENTO, DTH_CRIACAO, DSC_OBSERVACAO, COD_USUARIO) 
-                VALUES (SQ_ONDA_RESSUPRIMENTO.NEXTVAL, :dthCriacao, :dscObs, :usuario)";
-        $dth = new \DateTime();
+          $sql = "INSERT INTO ONDA_RESSUPRIMENTO (COD_ONDA_RESSUPRIMENTO, DTH_CRIACAO, DSC_OBSERVACAO, COD_USUARIO)
+          VALUES (SQ_ONDA_RESSUPRIMENTO.NEXTVAL, :dthCriacao, :dscObs, :usuario)";
+          $dth = new \DateTime();
 
-        $conn = $this->_em->getConnection();
-        $stmt = $conn->prepare($sql);
-        $stmt->bindValue('dthCriacao', "'".$dth->format('d/m/Y')."'");
-        $stmt->bindValue('dscObs', '');
-        $stmt->bindValue('usuario', $idUsuario);
-        $stmt->execute();
+          $conn = $this->_em->getConnection();
+          $stmt = $conn->prepare($sql);
+          $stmt->bindValue('dthCriacao', "'".$dth->format('d/m/Y')."'");
+          $stmt->bindValue('dscObs', '');
+          $stmt->bindValue('usuario', $idUsuario);
+          $stmt->execute();
 
-        $ondaEn = $this->find($conn->lastInsertId());*/
+          $ondaEn = $this->find($conn->lastInsertId()); */
 
-        $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
+        $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
         $usuarioEn = $usuarioRepo->find($idUsuario);
 
@@ -238,7 +235,7 @@ class OndaRessuprimentoRepository extends EntityRepository
         return $ondaEn;
     }
 
-    public function getArrayProdutosPorTipoSaida ($produtos, $dadosProdutos, $repositorios) {
+    public function getArrayProdutosPorTipoSaida($produtos, $dadosProdutos, $repositorios) {
         $arraySaidaPicking = array();
         $arraySaidaPulmao = array();
         $volumeRepo = $repositorios['volumeRepo'];
@@ -255,7 +252,7 @@ class OndaRessuprimentoRepository extends EntityRepository
                 $embalagensEn = $dadosProdutos[$codProduto][$grade]['embalagensASC'];
 
                 if (!isset($embalagensEn[0])) {
-                    throw new \Exception("Produto ".$codProduto." Grade ".$grade." não possui embalagem cadastrada!");
+                    throw new \Exception("Produto " . $codProduto . " Grade " . $grade . " não possui embalagem cadastrada!");
                 }
 
                 $embalagem = $embalagensEn[0];
@@ -268,11 +265,11 @@ class OndaRessuprimentoRepository extends EntityRepository
                     'idPicking' => $idPicking,
                     'idExpedicao' => $codExpedicao,
                     'idPedido' => $codPedido,
-                    'produtos' => array(array('codProdutoEmbalagem'=>$embalagem->getId(),
-                        'codProdutoVolume'=>null,
-                        'codProduto'=>$codProduto,
-                        'grade'=>$grade,
-                        'qtd'=>$qtd)));
+                    'produtos' => array(array('codProdutoEmbalagem' => $embalagem->getId(),
+                            'codProdutoVolume' => null,
+                            'codProduto' => $codProduto,
+                            'grade' => $grade,
+                            'qtd' => $qtd)));
 
                 if ($idPicking == null) {
                     $arraySaidaPulmao[] = $saidaProduto;
@@ -280,16 +277,16 @@ class OndaRessuprimentoRepository extends EntityRepository
                     $arraySaidaPicking[] = $saidaProduto;
                 }
             } else {
-                $normas = $volumeRepo->getNormasByProduto($codProduto,$grade);
+                $normas = $volumeRepo->getNormasByProduto($codProduto, $grade);
                 foreach ($normas as $norma) {
-                    $volumes = $volumeRepo->getVolumesByNorma($norma->getId(),$codProduto,$grade);
+                    $volumes = $volumeRepo->getVolumesByNorma($norma->getId(), $codProduto, $grade);
                     $produtosArray = array();
                     $idPicking = null;
                     foreach ($volumes as $volume) {
                         $produtoArray = array(
                             'codProdutoEmbalagem' => null,
                             'codProdutoVolume' => $volume->getId(),
-                            'codProduto' =>$codProduto,
+                            'codProduto' => $codProduto,
                             'grade' => $grade,
                             'qtd' => $qtd
                         );
@@ -318,14 +315,13 @@ class OndaRessuprimentoRepository extends EntityRepository
             'picking' => $arraySaidaPicking,
             'pulmao' => $arraySaidaPulmao
         );
-
     }
 
-    public function relacionaOndaPedidosExpedicao ($pedidosProdutosRessuprir, $ondaEn, $dadosProdutos, $repositorios){
+    public function relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
 
         $pedidoRepo = $repositorios['pedidoRepo'];
 
-        foreach ($pedidosProdutosRessuprir as $pedidoProduto){
+        foreach ($pedidosProdutosRessuprir as $pedidoProduto) {
 
             $codPedido = $pedidoProduto['COD_PEDIDO'];
             $codProduto = $pedidoProduto['COD_PRODUTO'];
@@ -333,18 +329,18 @@ class OndaRessuprimentoRepository extends EntityRepository
             $qtd = $pedidoProduto['QTD'];
 
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-            $pedidoEn = $pedidoRepo->findOneBy(array('id'=>$codPedido));
+            $pedidoEn = $pedidoRepo->findOneBy(array('id' => $codPedido));
 
-            /*$sql = "INSERT INTO ONDA_RESSUPRIMENTO_PEDIDO (COD_ONDA_RESSUPRIMENTO_PEDIDO, COD_ONDA_RESSUPRIMENTO, COD_PEDIDO, COD_PRODUTO, QTD)
-                    VALUES (SQ_ONDA_RESSUPRIMENTO_PEDIDO.NEXTVAL, :idOnda, :idPedido, :idProduto, :qtd )";
+            /* $sql = "INSERT INTO ONDA_RESSUPRIMENTO_PEDIDO (COD_ONDA_RESSUPRIMENTO_PEDIDO, COD_ONDA_RESSUPRIMENTO, COD_PEDIDO, COD_PRODUTO, QTD)
+              VALUES (SQ_ONDA_RESSUPRIMENTO_PEDIDO.NEXTVAL, :idOnda, :idPedido, :idProduto, :qtd )";
 
-            $conn = $this->_em->getConnection();
-            $stmt = $conn->prepare($sql);
-            $stmt->bindValue('idOnda', $ondaEn->getId());
-            $stmt->bindValue('idPedido', $pedidoEn->getId());
-            $stmt->bindValue('idProduto', $produtoEn->getId());
-            $stmt->bindValue('qtd', $qtd);
-            $stmt->execute();*/
+              $conn = $this->_em->getConnection();
+              $stmt = $conn->prepare($sql);
+              $stmt->bindValue('idOnda', $ondaEn->getId());
+              $stmt->bindValue('idPedido', $pedidoEn->getId());
+              $stmt->bindValue('idProduto', $produtoEn->getId());
+              $stmt->bindValue('qtd', $qtd);
+              $stmt->execute(); */
 
             $ondaPedido = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedido();
             $ondaPedido->setOndaRessuprimento($ondaEn);
@@ -355,11 +351,10 @@ class OndaRessuprimentoRepository extends EntityRepository
         }
     }
 
-    private function saveOs ($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios = null, $validade = null){
+    private function saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios = null, $validade = null) {
         /** @var \Wms\Domain\Entity\Util\SiglaRepository $siglaRepo */
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
-
         if ($repositorios == null) {
             $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
             $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
@@ -370,7 +365,7 @@ class OndaRessuprimentoRepository extends EntityRepository
             $siglaRepo = $repositorios['siglaRepo'];
         }
 
-        $statusEn = $siglaRepo->findOneBy(array('id'=>\Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_ONDA_GERADA));
+        $statusEn = $siglaRepo->findOneBy(array('id' => \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_ONDA_GERADA));
 
         //CRIA A ORDEM DE SERVICO
         $osEn = $ordemServicoRepo->save(new OrdemServicoEntity, array(
@@ -379,7 +374,7 @@ class OndaRessuprimentoRepository extends EntityRepository
                 'idAtividade' => AtividadeEntity::RESSUPRIMENTO,
                 'formaConferencia' => OrdemServicoEntity::COLETOR,
             ),
-        ), false, "Object");
+                ), false, "Object");
 
         //RELACIONO A ORDEM DE SERVICO A ONDA DE RESSUPRIMENTO NA TABELA ONDA_RESSUPRIMENTO_OS
         $ondaRessuprimentoOs = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs();
@@ -390,7 +385,7 @@ class OndaRessuprimentoRepository extends EntityRepository
         $this->getEntityManager()->persist($ondaRessuprimentoOs);
 
         $produtosEntrada = array();
-        $produtosSaida   = array();
+        $produtosSaida = array();
 
         if (!empty($volumes))
             foreach ($volumes as $volume) {
@@ -403,17 +398,16 @@ class OndaRessuprimentoRepository extends EntityRepository
                 $this->getEntityManager()->persist($ondaRessuprimentoOsProduto);
 
                 $produtoArray = array();
-                    $produtoArray['codProduto'] = $produtoEn->getId();
-                    $produtoArray['grade'] = $produtoEn->getGrade();
-                    $produtoArray['codProdutoVolume'] = $volume;
-                    $produtoArray['codProdutoEmbalagem'] = null;
-                    $produtoArray['qtd'] = $qtdOnda;
-                    $produtoArray['validade'] = $validade;
+                $produtoArray['codProduto'] = $produtoEn->getId();
+                $produtoArray['grade'] = $produtoEn->getGrade();
+                $produtoArray['codProdutoVolume'] = $volume;
+                $produtoArray['codProdutoEmbalagem'] = null;
+                $produtoArray['qtd'] = $qtdOnda;
+                $produtoArray['validade'] = $validade;
                 $produtosEntrada[] = $produtoArray;
 
                 $produtoArray['qtd'] = $qtdOnda * -1;
                 $produtosSaida[] = $produtoArray;
-
             }
 
         if (!empty($embalagens))
@@ -427,12 +421,12 @@ class OndaRessuprimentoRepository extends EntityRepository
                 $this->getEntityManager()->persist($ondaRessuprimentoOsProduto);
 
                 $produtoArray = array();
-                    $produtoArray['codProduto'] = $produtoEn->getId();
-                    $produtoArray['grade'] = $produtoEn->getGrade();
-                    $produtoArray['codProdutoVolume'] = null;
-                    $produtoArray['codProdutoEmbalagem'] = $embalagem;
-                    $produtoArray['qtd'] = $qtdOnda;
-                    $produtoArray['validade'] = $validade;
+                $produtoArray['codProduto'] = $produtoEn->getId();
+                $produtoArray['grade'] = $produtoEn->getGrade();
+                $produtoArray['codProdutoVolume'] = null;
+                $produtoArray['codProdutoEmbalagem'] = $embalagem;
+                $produtoArray['qtd'] = $qtdOnda;
+                $produtoArray['validade'] = $validade;
                 $produtosEntrada[] = $produtoArray;
 
                 $produtoArray['qtd'] = $qtdOnda * -1;
@@ -440,11 +434,11 @@ class OndaRessuprimentoRepository extends EntityRepository
             }
 
         //ADICIONA AS RESERVAS DE ESTOQUE
-        $reservaEstoqueRepo->adicionaReservaEstoque($idPicking,$produtosEntrada,"E","O",$ondaRessuprimentoOs,$osEn, null,null,null,$repositorios);
-        $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(),$produtosSaida,"S","O",$ondaRessuprimentoOs,$osEn, null,null,null, $repositorios);
+        $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
+        $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(), $produtosSaida, "S", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
     }
 
-    private function calculaRessuprimentoByPicking ($picking, $dadosProdutos, $repositorios) {
+    private function calculaRessuprimentoByPicking($picking, $dadosProdutos, $repositorios) {
         $osGeradas = array();
         $capacidadePicking = $picking['capacidadePicking'];
         $pontoReposicao = $picking['pontoReposicao'];
@@ -455,7 +449,7 @@ class OndaRessuprimentoRepository extends EntityRepository
         $embalagens = $picking['embalagens'];
 
         $idVolume = null;
-        if (count($volumes) >0){
+        if (count($volumes) > 0) {
             $idVolume = $volumes[0];
         }
 
@@ -468,9 +462,9 @@ class OndaRessuprimentoRepository extends EntityRepository
 
         //CALCULO A QUANTIDADE PARA RESSUPRIR
 
-        $qtdPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto,$grade,$idPicking, $volumes);
-        $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume,$idPicking,"E");
-        $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume, $idPicking,"S");
+        $qtdPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto, $grade, $idPicking, $volumes);
+        $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $idPicking, "E");
+        $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $idPicking, "S");
         $saldo = $qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking;
         $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
 
@@ -491,13 +485,13 @@ class OndaRessuprimentoRepository extends EntityRepository
                 $validadeEstoque = $estoque['DTH_VALIDADE'];
                 $idPulmao = $estoque['COD_DEPOSITO_ENDERECO'];
 
-                $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('id'=>$idPulmao));
+                $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('id' => $idPulmao));
 
                 //CALCULO A QUANTIDADE DO PALETE
                 if ($qtdRessuprirMax >= $qtdEstoque) {
                     $qtdOnda = $qtdEstoque;
-                }else {
-                    if ($capacidadePicking >= $qtdRessuprir){
+                } else {
+                    if ($capacidadePicking >= $qtdRessuprir) {
                         $qtdOnda = $capacidadePicking;
                     } else {
                         //Todo Reavaliar o cálculo de ressuprimento
@@ -516,7 +510,7 @@ class OndaRessuprimentoRepository extends EntityRepository
                         'qtdOnda' => $qtdOnda,
                         'enderecoPulmaoEn' => $enderecoPulmaoEn,
                         'idPicking' => $idPicking,
-                        'validadeEstoque'=>$validadeEstoque
+                        'validadeEstoque' => $validadeEstoque
                     );
                     //$this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking,$repositorios,$validadeEstoque);
                     //$qtdOsGerada ++;
@@ -524,7 +518,7 @@ class OndaRessuprimentoRepository extends EntityRepository
 
                 $qtdRessuprir = $qtdRessuprir - $qtdOnda;
                 $qtdRessuprirMax = $qtdRessuprirMax - $qtdOnda;
-                if ($qtdRessuprir <= 0)  {
+                if ($qtdRessuprir <= 0) {
                     break;
                 }
             }
@@ -532,8 +526,8 @@ class OndaRessuprimentoRepository extends EntityRepository
         return $osGeradas;
     }
 
-    public function sequenciaOndasOs(){
-        $OndasOs =$this->getOndasNaoSequenciadas();
+    public function sequenciaOndasOs() {
+        $OndasOs = $this->getOndasNaoSequenciadas();
 
         foreach ($OndasOs as $os) {
             $os->setSequencia($os->getNextSequenciaSQ());
@@ -542,10 +536,10 @@ class OndaRessuprimentoRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function calculaRessuprimentoByProduto($produtosRessuprir, $dadosProdutos, $repositorios){
+    public function calculaRessuprimentoByProduto($produtosRessuprir, $dadosProdutos, $repositorios) {
         $volumeRepo = $repositorios['volumeRepo'];
         $osGeradas = array();
-        foreach ($produtosRessuprir as $produto){
+        foreach ($produtosRessuprir as $produto) {
             $codProduto = $produto['COD_PRODUTO'];
             $grade = $produto['DSC_GRADE'];
 
@@ -572,9 +566,9 @@ class OndaRessuprimentoRepository extends EntityRepository
                     $pickings[] = $picking;
                 }
             } else {
-                $normas = $volumeRepo->getNormasByProduto($codProduto,$grade);
+                $normas = $volumeRepo->getNormasByProduto($codProduto, $grade);
                 foreach ($normas as $norma) {
-                    $volumesEn = $volumeRepo->getVolumesByNorma($norma->getId(),$codProduto,$grade);
+                    $volumesEn = $volumeRepo->getVolumesByNorma($norma->getId(), $codProduto, $grade);
                     $picking = array();
                     $picking['volumes'] = array();
                     $picking['codProduto'] = $codProduto;
@@ -598,23 +592,128 @@ class OndaRessuprimentoRepository extends EntityRepository
 
             foreach ($pickings as $picking) {
                 $os = $this->geraOsByPicking($picking, $dadosProdutos, $repositorios);
-                $osGeradas = array_merge($osGeradas,$os);
+                $osGeradas = array_merge($osGeradas, $os);
             }
         }
 
         return $osGeradas;
     }
 
-    public function calculaRessuprimentoPreventivoByParams () {
+    public function calculaRessuprimentoPreventivoByParams($parametros) {
+
+        $SQL = "SELECT DISTINCT P.COD_PRODUTO,
+                    P.DSC_GRADE,
+                    DE.DSC_DEPOSITO_ENDERECO,
+                    NVL(PV.COD_PRODUTO_VOLUME,0) as PRODUTO_VOLUME,
+                    NVL(PE.COD_DEPOSITO_ENDERECO,PV.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
+                    NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING) as CAPACIDADE_PICKING,
+                    NVL(E.QTD,0) as SALDO_PICKING,
+                    DECODE(E.QTD,null,0,(E.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100 as OCUPACAO
+               FROM PRODUTO P
+               LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
+               LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
+               LEFT JOIN (SELECT E.COD_PRODUTO, E.COD_DEPOSITO_ENDERECO,
+                                 SUM(E.QTD) as QTD, NVL(E.COD_PRODUTO_VOLUME,0) as COD_PRODUTO_VOLUME
+                            FROM ESTOQUE E
+                           GROUP BY E.COD_PRODUTO, E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO_VOLUME) E
+                     ON E.COD_DEPOSITO_ENDERECO = NVL(PE.COD_DEPOSITO_ENDERECO, PV.COD_DEPOSITO_ENDERECO)
+                    AND E.COD_PRODUTO = P.COD_PRODUTO
+                    AND NVL(PV.COD_PRODUTO_VOLUME,0) = E.COD_PRODUTO_VOLUME
+               LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = NVL(PE.COD_DEPOSITO_ENDERECO, PV.COD_DEPOSITO_ENDERECO)
+              WHERE (PE.COD_DEPOSITO_ENDERECO IS NOT NULL OR PV.COD_DEPOSITO_ENDERECO IS NOT NULL)
+                AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)";
+
+//        $SQLWhere = " and  P.COD_PRODUTO = 13518";
+        $SQLWhere = " ";
+        if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
+            $SQLWhere .= "AND (DECODE(E.QTD,null,0,(E.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
+        }
+        if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
+            $SQLWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO = " . $parametros['tipoEndereco'];
+        }
+        if (isset($parametros['linhaSeparacao']) && !empty($parametros['linhaSeparacao'])) {
+            $SQLWhere .= " AND P.COD_LINHA_SEPARACAO = " . $parametros['linhaSeparacao'];
+        }
+        if (isset($parametros['rua']) && !empty($parametros['rua'])) {
+            $SQLWhere .= " AND DE.NUM_RUA >= " . $parametros['rua'];
+        }
+        if (isset($parametros['predio']) && !empty($parametros['predio'])) {
+            $SQLWhere .= " AND DE.NUM_PREDIO >= " . $parametros['predio'];
+        }
+        if (isset($parametros['nivel']) && !empty($parametros['nivel'])) {
+            $SQLWhere .= " AND DE.NUM_NIVEL >= " . $parametros['nivel'];
+        }
+        if (isset($parametros['apto']) && !empty($parametros['apto'])) {
+            $SQLWhere .= " AND DE.NUM_APARTAMENTO >= " . $parametros['apto'];
+        }
+
+        if (isset($parametros['ruaFinal']) && !empty($parametros['ruaFinal'])) {
+            $SQLWhere .= " AND DE.NUM_RUA <= " . $parametros['ruaFinal'];
+        }
+        if (isset($parametros['predioFinal']) && !empty($parametros['predioFinal'])) {
+            $SQLWhere .= " AND DE.NUM_PREDIO <= " . $parametros['predioFinal'];
+        }
+        if (isset($parametros['nivelFinal']) && !empty($parametros['nivelFinal'])) {
+            $SQLWhere .= " AND DE.NUM_NIVEL <= " . $parametros['nivelFinal'];
+        }
+        if (isset($parametros['aptoFinal']) && !empty($parametros['aptoFinal'])) {
+            $SQLWhere .= " AND DE.NUM_APARTAMENTO <= " . $parametros['aptoFinal'];
+        }
+
+        $SQLOrderBy = " ORDER BY DE.DSC_DEPOSITO_ENDERECO";
+        $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (!empty($result) && is_array($result)) {
+            $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            foreach ($result as $key => $value) {
+                if ($value['SALDO_PICKING'] > 0) {
+                    $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['SALDO_PICKING']);
+                    $result[$key]['SALDO_PICKING'] = implode('<br />', $vetEstoque);
+                }
+                if ($value['CAPACIDADE_PICKING'] > 0) {
+                    $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['CAPACIDADE_PICKING']);
+                    $result[$key]['CAPACIDADE_PICKING'] = implode('<br />', $vetEstoque);
+                }
+                $result[$key]['OCUPACAO'] = number_format($result[$key]['OCUPACAO'], 2, '.', '');
+                $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $value['COD_PRODUTO'], 'grade' => $value['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'ASC'));
+                if (count($embalagensEn) > 0) {
+                    $embalagem = $embalagensEn[0];
+                    $embalagens = array();
+                    $embalagens[] = $embalagem->getId();
+                    $result[$key]['EMBALAGENS'] = $embalagens;
+                } else if (!empty($value['PRODUTO_VOLUME']) && $value['PRODUTO_VOLUME'] > 0) {
+                    $normas = $volumeRepo->getNormasByProduto($value['COD_PRODUTO'], $value['DSC_GRADE']);
+                    foreach ($normas as $norma) {
+                        $volumesEn = $volumeRepo->getVolumesByNorma($norma->getId(), $value['COD_PRODUTO'], value['DSC_GRADE']);
+                        $result[$key]['VOLUMES'] = array();
+                        $result[$key]['EMBALAGENS'] = null;
+                        $idPicking = null;
+                        foreach ($volumesEn as $volume) {
+                            if ($volume->getEndereco() != null) {
+                                $idPicking = $volume->getEndereco()->getId();
+                            }
+                            $result[$key]['VOLUMES'][] = $volume->getId();
+                            $result[$key]['ID_PICKING'] = $idPicking;
+                            $result[$key]['CAPACIDADE_PICKING'] = $volume->getCapacidadePicking();
+                            $result[$key]['PONTO_REPOSICAO'] = $volume->getPontoReposicao();
+                        }
+                    }
+                }
+            }
+        }
+//        var_dump($result);
+//        DIE;
+        return $result;
     }
 
-    private function getOndasNaoSequenciadas (){
+    private function getOndasNaoSequenciadas() {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select("o")
-            ->from("wms:Ressuprimento\OndaRessuprimentoOs",'o')
-            ->innerJoin('o.endereco','e')
-            ->where("o.sequencia IS NULL")
-            ->orderBy("e.descricao");
+                ->select("o")
+                ->from("wms:Ressuprimento\OndaRessuprimentoOs", 'o')
+                ->innerJoin('o.endereco', 'e')
+                ->where("o.sequencia IS NULL")
+                ->orderBy("e.descricao");
         $result = $sql->getQuery()->getResult();
         return $result;
     }

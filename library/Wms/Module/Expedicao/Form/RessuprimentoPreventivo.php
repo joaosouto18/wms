@@ -91,13 +91,13 @@ class RessuprimentoPreventivo extends Form {
                     'label' => 'Apto Final',
                     'class' => 'ctrSize',
                 ))
-                ->addElement('submit', 'buscar', array(
-                    'label' => 'Buscar',
-                    'class' => 'btn',
-                    'decorators' => array('ViewHelper')
-                ))
+//                ->addElement('submit', 'confirmar', array(
+//                    'label' => 'Confirmar Ação',
+//                    'class' => 'btn hide',
+//                    'decorators' => array('ViewHelper')
+//                ))
                 ->addDisplayGroup(array('rua', 'predio', 'nivel', 'apto', 'ladoRua', 'tipoEndereco', 'linhaSeparacao', 'ruaFinal', 'predioFinal', 'nivelFinal', 'aptoFinal'), 'identificacao', array('legend' => 'Filtros'))
-                ->addDisplayGroup(array('ocupacao', 'tiporessuprimento', 'buscar'), 'tranferencia', array('legend' => 'Parâmetros'));
+                ->addDisplayGroup(array('ocupacao', 'tiporessuprimento'), 'tranferencia', array('legend' => 'Parâmetros'));
     }
 
 }

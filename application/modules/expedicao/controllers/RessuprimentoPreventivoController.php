@@ -7,6 +7,7 @@
  */
 
 use Wms\Module\Web\Controller\Action,
+    Wms\Module\Expedicao\Grid\RessuprimentoPreventivo as OsGrid,
     Wms\Module\Web\Page;
 
 class Expedicao_RessuprimentoPreventivoController extends Action {
@@ -22,10 +23,21 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
 
     public function pickingAjaxAction() {
         $params = $this->_getAllParams();
-        var_dump($params);
-        $produtosRessuprir
+        $OndaRessupRep = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        $dados = $OndaRessupRep->calculaRessuprimentoPreventivoByParams($params);
+        
+//        var_dump($dados);
+//        die;
+        
+        
+        $Grid = new OsGrid();
+        $Grid->init($dados)->render();
 
-        exit;
+        $pager = $Grid->getPager();
+        $pager->setMaxPerPage(30000);
+        $Grid->setPager($pager);
+
+        $this->view->grid = $Grid->render();
     }
 
     public function listAjaxAction() {
