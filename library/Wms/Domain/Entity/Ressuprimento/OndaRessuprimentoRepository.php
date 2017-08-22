@@ -444,8 +444,8 @@ class OndaRessuprimentoRepository extends EntityRepository
         $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(),$produtosSaida,"S","O",$ondaRessuprimentoOs,$osEn, null,null,null, $repositorios);
     }
 
-    private function geraOsByPicking ($picking, $ondaEn, $dadosProdutos, $repositorios) {
-        $qtdOsGerada = 0;
+    private function calculaRessuprimentoByPicking ($picking, $dadosProdutos, $repositorios) {
+        $osGeradas = array();
         $capacidadePicking = $picking['capacidadePicking'];
         $pontoReposicao = $picking['pontoReposicao'];
         $idPicking = $picking['idPicking'];
@@ -467,6 +467,7 @@ class OndaRessuprimentoRepository extends EntityRepository
         $enderecoRepo = $repositorios['enderecoRepo'];
 
         //CALCULO A QUANTIDADE PARA RESSUPRIR
+
         $qtdPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto,$grade,$idPicking, $volumes);
         $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume,$idPicking,"E");
         $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto,$grade,$idVolume, $idPicking,"S");
@@ -508,20 +509,27 @@ class OndaRessuprimentoRepository extends EntityRepository
 
                 //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
-                    $this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking,$repositorios,$validadeEstoque);
-                    $qtdOsGerada ++;
+                    $osGeradas[] = array(
+                        'produtoEn' => $produtoEn,
+                        'embalagens' => $embalagens,
+                        'volumes' => $volumes,
+                        'qtdOnda' => $qtdOnda,
+                        'enderecoPulmaoEn' => $enderecoPulmaoEn,
+                        'idPicking' => $idPicking,
+                        'validadeEstoque'=>$validadeEstoque
+                    );
+                    //$this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking,$repositorios,$validadeEstoque);
+                    //$qtdOsGerada ++;
                 }
 
                 $qtdRessuprir = $qtdRessuprir - $qtdOnda;
                 $qtdRessuprirMax = $qtdRessuprirMax - $qtdOnda;
                 if ($qtdRessuprir <= 0)  {
-                    $qtdRessuprir = 0;
                     break;
                 }
             }
         }
-        return $qtdOsGerada;
-
+        return $osGeradas;
     }
 
     public function sequenciaOndasOs(){
@@ -534,9 +542,9 @@ class OndaRessuprimentoRepository extends EntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function geraOsRessuprimento($produtosRessuprir, $ondaEn, $dadosProdutos, $repositorios){
-        $totalOsGerada = 0;
+    public function calculaRessuprimentoByProduto($produtosRessuprir, $dadosProdutos, $repositorios){
         $volumeRepo = $repositorios['volumeRepo'];
+        $osGeradas = array();
         foreach ($produtosRessuprir as $produto){
             $codProduto = $produto['COD_PRODUTO'];
             $grade = $produto['DSC_GRADE'];
@@ -589,13 +597,15 @@ class OndaRessuprimentoRepository extends EntityRepository
             }
 
             foreach ($pickings as $picking) {
-                $qtdOsGerada = $this->geraOsByPicking($picking, $ondaEn, $dadosProdutos, $repositorios);
-                $totalOsGerada = $totalOsGerada + $qtdOsGerada;
-
+                $os = $this->geraOsByPicking($picking, $dadosProdutos, $repositorios);
+                $osGeradas = array_merge($osGeradas,$os);
             }
-
         }
-        return $totalOsGerada;
+
+        return $osGeradas;
+    }
+
+    public function calculaRessuprimentoPreventivoByParams () {
     }
 
     private function getOndasNaoSequenciadas (){

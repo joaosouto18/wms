@@ -20,6 +20,14 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
         $this->view->form = $form;
     }
 
+    public function pickingAjaxAction() {
+        $params = $this->_getAllParams();
+        var_dump($params);
+        $produtosRessuprir
+
+        exit;
+    }
+
     public function listAjaxAction() {
         $EstoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
         $params = $this->_getAllParams();

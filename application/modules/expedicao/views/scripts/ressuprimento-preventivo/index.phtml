@@ -41,19 +41,15 @@ echo $this->form;
             return false;
         });
         $(".completar-picking").click(function () {
-            $.wmsDialogAlert({
-                title: 'Completar Picking',
-                msg: 'Ação de completar de picking'
-            });
-            /*$.ajax({
-             url: URL_MODULO + '/ressuprimento-preventivo/list-ajax/',
+            $.ajax({
+             url: URL_MODULO + '/ressuprimento-preventivo/picking-ajax/',
              type: 'post',
              dataType: 'html',
              data: $('form').serialize(),
              success: function (data) {
              $('#estoque').html(data);
              }
-             });*/
+             });
             return false;
         });
     });
