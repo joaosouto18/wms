@@ -413,9 +413,7 @@ class NotaFiscalRepository extends EntityRepository {
                                 AND RC2.COD_PRODUTO = RC.COD_PRODUTO 
                                 AND RC2.DSC_GRADE = RC.DSC_GRADE
                                 AND RC2.COD_RECEBIMENTO_CONFERENCIA > RC.COD_RECEBIMENTO_CONFERENCIA
-                                )
-            GROUP BY NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, NF.DAT_EMISSAO, NFI.QTD_ITEM, RC2.QTD_DIVERGENCIA, RC.QTD_AVARIA, MDR.DSC_MOTIVO_DIVER_RECEB
-";
+                                )";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
