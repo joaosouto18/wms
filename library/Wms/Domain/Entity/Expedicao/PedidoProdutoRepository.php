@@ -10,7 +10,7 @@ class PedidoProdutoRepository extends EntityRepository
         public function aplicaCortesbyERP($pedidosProdutosWMS, $pedidosProdutosERP) {
             /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
             $pedidoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
-            $cortes = arry();
+            $cortes = array();
             foreach ($pedidosProdutosWMS as $produtoWms) {
                 $encontrouProdutoERP = false;
                 $codProdutoWMS = $produtoWms['pedido'];
