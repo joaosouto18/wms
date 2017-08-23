@@ -664,7 +664,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
               WHERE (PE.COD_DEPOSITO_ENDERECO IS NOT NULL OR PV.COD_DEPOSITO_ENDERECO IS NOT NULL)
                 AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)";
 
-        $SQLWhere = " and  P.COD_PRODUTO = 14059";
+        $SQLWhere = " and  P.COD_PRODUTO IN (14059, 16289, 16419, 13398)";
 //        $SQLWhere = " ";
         if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
             $SQLWhere .= "AND (DECODE(E.QTD,null,0,(E.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
@@ -706,7 +706,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
         $pickings = array();
         $dadosProdutos = array();
-        $osGeradas = array();
         if (!empty($result) && is_array($result)) {
             $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
@@ -759,19 +758,23 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     }
                 }
 
-                foreach ($result[$key] as $key2 => $value2) {
-                    $pickings[$key][strtolower($key2)] = $result[$key][$key2];
-                }
+                $pickings[$key]['embalagens'] = $result[$key]['EMBALAGENS'];
                 $pickings[$key]['capacidadePicking'] = $result[$key]['CAPACIDADE_PICKING'];
                 $pickings[$key]['codProduto'] = $result[$key]['COD_PRODUTO'];
                 $pickings[$key]['grade'] = $result[$key]['DSC_GRADE'];
                 $os = $this->calculaRessuprimentoByPicking($pickings[$key], $dadosProdutos, $repositorios);
+                $vetEmb = array();
+                $vetVol = array();
                 foreach ($os as $value) {
                     $vetEmb[] = $value['embalagens'];
                     $vetVol[] = $value['volumes'];
                 }
                 $result[$key]['EMBALAGENS'] = json_encode($vetEmb);
                 $result[$key]['VOLUMES'] = json_encode($vetVol);
+                $result[$key]['PULMAO'] = '';
+                if (\count($os) > 0) {
+                    $result[$key]['PULMAO'] = $os[0]['enderecoPulmaoEn']->getDescricao();
+                }
             }
         }
         return $result;

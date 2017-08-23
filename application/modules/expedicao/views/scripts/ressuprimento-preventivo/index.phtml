@@ -25,6 +25,22 @@ echo $this->form;
             });
             return false;
         });
+        $("#confirmar").click(function () {
+            return false;
+            $("input:checked").each(function () {
+                console.log($(this));
+            });
+//            $.ajax({
+//                url: URL_MODULO + '/ressuprimento-preventivo/list-ajax/',
+//                type: 'post',
+//                dataType: 'html',
+//                data: $('form').serialize(),
+//                success: function (data) {
+//                    $('#estoque').html(data);
+//                }
+//            });
+            return false;
+        });
         $(".limpar-pulmao").click(function () {
             $.wmsDialogAlert({
                 title: 'Limpar Pulmão',
@@ -49,7 +65,31 @@ echo $this->form;
                 data: $('form').serialize(),
                 success: function (data) {
                     $('#estoque').html(data);
-                    $('.gControl').prepend('<button id="confirmar" style="width: 220px; margin: 10px;" class="btn">Confirmar Ação</button>');
+                    $('#estoque').prepend('<button id="confirmar" style="width: 220px; margin: 10px;" class="btn">Confirmar Ação</button>');
+                    $("#confirmar").click(function () {
+                        var dados = new Array();
+                        var count = 0;
+                        $('#estoque').find("input:checked").each(function (e) {
+                            if ($(this).val() != 'on') {
+                                var produto = $(this).parent().parent().find('#produto').val();
+                                var grade = $(this).parent().parent().find('#grade').val();
+                                var embalagens = $(this).parent().parent().find('#embalagens').val();
+                                var volumes = $(this).parent().parent().find('#volumes').val();
+                                dados[count] = {produto: produto, grade: grade, embalagens:embalagens, volumes:volumes};
+                                count++;
+                            }
+                        });
+                        $.ajax({
+                            url: URL_MODULO + '/ressuprimento-preventivo/confirmar-acao-ajax/',
+                            type: 'post',
+                            dataType: 'html',
+                            data: {dados:  JSON.stringify(dados)},
+                            success: function (data) {
+                                $('#estoque').html(data);
+                            }
+                        });
+                        return false;
+                    });
                 }
             });
             return false;

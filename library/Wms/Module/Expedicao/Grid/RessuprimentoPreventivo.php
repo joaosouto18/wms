@@ -66,6 +66,10 @@ class RessuprimentoPreventivo extends Grid {
                     'label' => 'Picking',
                     'index' => 'DSC_DEPOSITO_ENDERECO',
                 ))
+                ->addColumn(array(
+                    'label' => 'Pulmão',
+                    'index' => 'PULMAO',
+                ))
                 ->setShowExport(true);
 
         return $this;

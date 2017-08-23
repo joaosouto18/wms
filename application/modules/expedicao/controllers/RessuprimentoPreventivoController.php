@@ -23,15 +23,16 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
         $params = $this->_getAllParams();
         $OndaRessupRep = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
         $dados = $OndaRessupRep->calculaRessuprimentoPreventivoByParams($params);
-        
-        $Grid = new OsGrid();
-        $Grid->init($dados)->render();
+        $this->view->dados = $dados;
 
-        $pager = $Grid->getPager();
-        $pager->setMaxPerPage(30000);
-        $Grid->setPager($pager);
-
-        $this->view->grid = $Grid->render();
+//        $Grid = new OsGrid();
+//        $Grid->init($dados)->render();
+//
+//        $pager = $Grid->getPager();
+//        $pager->setMaxPerPage(30000);
+//        $Grid->setPager($pager);
+//
+//        $this->view->grid = $Grid->render();
     }
 
     public function listAjaxAction() {
@@ -40,4 +41,15 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
         $enderecos = $EstoqueRepo->getEstoquePreventivoByParams($params);
         $this->view->enderecos = $enderecos;
     }
+
+    public function confirmarAcaoAjaxAction() {
+        $params = $this->_getAllParams();
+        $dados = json_decode($this->_getParam('dados'));
+        var_dump($dados);
+        foreach ($dados as $value) {
+            var_dump(json_decode($value->embalagens));
+        }
+        die;
+    }
+
 }

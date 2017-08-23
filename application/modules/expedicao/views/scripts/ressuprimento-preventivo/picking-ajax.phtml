@@ -4,8 +4,49 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-echo $this->grid;
+//echo $this->grid;die;
 ?>
+<table class="gTable list">
+    <tbody>
+        <tr class ="gTTitle">
+            <td><b><input class="checkBoxClass" type="checkbox" name="check-all" id="check-all"></b></td>
+            <td><b>Produto</b></td>
+            <td><b>Grade</b></td>
+            <td><b>Capacidade</b></td>
+            <td><b>Saldo</b></td>
+            <td><b>Ocupação</b></td>
+            <td><b>Piciking</b></td>
+            <td><b>Pulmão</b></td>
+        </tr>
+        <?php
+        foreach ($this->dados as $key => $endereco) {
+            ?><tr>
+                <td><input class="checkBoxClass" type="checkbox" value="<?php echo $endereco['COD_PRODUTO'] ?>"></td>
+                <td><?php echo $endereco['COD_PRODUTO'] ?></td>
+                <td><?php echo $endereco['DSC_GRADE'] ?></td>
+                <td><?php echo $endereco['CAPACIDADE_PICKING'] ?></td>
+                <td><?php echo $endereco['SALDO_PICKING'] ?></td>
+                <td><?php echo $endereco['OCUPACAO'] ?></td>
+                <td><?php echo $endereco['DSC_DEPOSITO_ENDERECO'] ?></td>
+                <td><?php echo $endereco['PULMAO'] ?></td>
+        <input class="input-hidden" type="hidden" id="produto" value="<?php echo $endereco['COD_PRODUTO'] ?>" />
+        <input class="input-hidden" type="hidden" id="grade" value="<?php echo $endereco['DSC_GRADE'] ?>" />
+        <input class="input-hidden" type="hidden" id="embalagens" value='<?php echo $endereco['EMBALAGENS'] ?>' />
+        <input class="input-hidden" type="hidden" id="volumes" value='<?php echo $endereco['VOLUMES'] ?>' />
+        <input class="input-hidden" type="hidden" id="capacidade" value="<?php echo $endereco['CAPACIDADE_PICKING'] ?>" />
+        <input class="input-hidden" type="hidden" id="saldo" value="<?php echo $endereco['SALDO_PICKING'] ?>" />
+        <input class="input-hidden" type="hidden" id="ocupacao" value="<?php echo $endereco['OCUPACAO'] ?>" />
+        <input class="input-hidden" type="hidden" id="picking" value="<?php echo $endereco['DSC_DEPOSITO_ENDERECO'] ?>" />
+        <input class="input-hidden" type="hidden" id="pulmao" value="<?php echo $endereco['PULMAO'] ?>" />
+
+
+    </tr>
+    <?php
+}
+?>
+</table>
+
+
 <script>
     $('#check-all').click(function () {
         if ($(this).prop("checked")) {
@@ -17,22 +58,5 @@ echo $this->grid;
                 $(this).removeAttr('checked');
             });
         }
-    });
-
-    $("#confirmar").click(function () {
-        return false;
-        $("input:checked").each(function () {
-            console.log($(this));
-        });
-//            $.ajax({
-//                url: URL_MODULO + '/ressuprimento-preventivo/list-ajax/',
-//                type: 'post',
-//                dataType: 'html',
-//                data: $('form').serialize(),
-//                success: function (data) {
-//                    $('#estoque').html(data);
-//                }
-//            });
-        return false;
     });
 </script>
