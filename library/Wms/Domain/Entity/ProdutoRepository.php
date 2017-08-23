@@ -1097,6 +1097,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       p.id as idProduto,
                       p.grade,
                       p.descricao as dscProduto,
+                      p.validade,
                       ls.descricao as dscLinhaSeparacao,
                       fb.nome as fabricante,
                       tc.descricao as dscTipoComercializacao,
