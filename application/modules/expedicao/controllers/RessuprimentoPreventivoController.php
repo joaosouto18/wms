@@ -34,38 +34,38 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
     }
 
     public function confirmarAcaoAjaxAction() {
-            $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
-            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
-            $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
-            $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
-            $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
-            $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
-            $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
-            $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
-            $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-            $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
-            $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-            $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
-            $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
-            $reservaEstoqueOndaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueOnda");
-            $repositorios = array(
-                'produtoRepo' => $produtoRepo,
-                'embalagemRepo' => $embalagemRepo,
-                'reservaEstoqueExpRepo' => $reservaEstoqueExpedicaoRepo,
-                'reservaEstoqueOndaRepo' => $reservaEstoqueOndaRepo,
-                'reservaEstoqueRepo' => $reservaEstoqueRepo,
-                'ondaRepo' => $ondaRepo,
-                'pedidoRepo' => $pedidoRepo,
-                'volumeRepo' => $volumeRepo,
-                'enderecoRepo' => $enderecoRepo,
-                'usuarioRepo' => $usuarioRepo,
-                'expedicaoRepo' => $expedicaoRepo,
-                'estoqueRepo' => $estoqueRepo,
-                'osRepo' => $ordemServicoRepo,
-                'siglaRepo' => $siglaRepo
-            );
-        
-        
+        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
+        $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
+        $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
+        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
+        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
+        $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
+        $reservaEstoqueOndaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueOnda");
+        $repositorios = array(
+            'produtoRepo' => $produtoRepo,
+            'embalagemRepo' => $embalagemRepo,
+            'reservaEstoqueExpRepo' => $reservaEstoqueExpedicaoRepo,
+            'reservaEstoqueOndaRepo' => $reservaEstoqueOndaRepo,
+            'reservaEstoqueRepo' => $reservaEstoqueRepo,
+            'ondaRepo' => $ondaRepo,
+            'pedidoRepo' => $pedidoRepo,
+            'volumeRepo' => $volumeRepo,
+            'enderecoRepo' => $enderecoRepo,
+            'usuarioRepo' => $usuarioRepo,
+            'expedicaoRepo' => $expedicaoRepo,
+            'estoqueRepo' => $estoqueRepo,
+            'osRepo' => $ordemServicoRepo,
+            'siglaRepo' => $siglaRepo
+        );
+
+
         $dados = json_decode($this->_getParam('dados'));
         $OndaRessupRep = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
         foreach ($dados as $value) {
@@ -99,6 +99,7 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
             }
             $OndaRessupRep->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, 1000, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque);
         }
+//        $this->em->flush();
         die;
     }
 

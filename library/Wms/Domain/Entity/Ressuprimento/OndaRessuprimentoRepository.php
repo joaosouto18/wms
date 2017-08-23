@@ -698,6 +698,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $pickings[$key]['pontoReposicao'] = $result[$key]['CAPACIDADE_PICKING'];
                 $pickings[$key]['idPicking'] = null;
                 $pickings[$key]['volumes'] = null;
+                $result[$key]['ID_PICKING'] = $result[$key]['COD_DEPOSITO_ENDERECO'];
                 /*
                  * CONTROI ARRAY DE DADOS PRODUTO PARA CALCULO DO RESSUPRIMENTO
                  */
