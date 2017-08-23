@@ -351,7 +351,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         }
     }
 
-    private function saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios = null, $validade = null) {
+    public function saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios = null, $validade = null) {
         /** @var \Wms\Domain\Entity\Util\SiglaRepository $siglaRepo */
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
