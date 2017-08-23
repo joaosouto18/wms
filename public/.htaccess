@@ -9,4 +9,3 @@ RewriteRule ^.*$ /index.php [NC,L]
 	Header set Pragma "no-cache"
 	Header set Expires 0
 </IfModule>
-php_flag opcache.enable Off
