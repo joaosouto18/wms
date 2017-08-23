@@ -75,7 +75,19 @@ echo $this->form;
                                 var grade = $(this).parent().parent().find('#grade').val();
                                 var embalagens = $(this).parent().parent().find('#embalagens').val();
                                 var volumes = $(this).parent().parent().find('#volumes').val();
-                                dados[count] = {produto: produto, grade: grade, embalagens:embalagens, volumes:volumes};
+                                var saldo = $(this).parent().parent().find('#saldo').val();
+                                var capacidade = $(this).parent().parent().find('#capacidade').val();
+                                var pontoReposicao = $(this).parent().parent().find('#capacidade').val();
+                                var ocupacao = $(this).parent().parent().find('#ocupacao').val();
+                                var validadeEstoque = $(this).parent().parent().find('#validadeEstoque').val();
+                                var qtdOnda = $(this).parent().parent().find('#qtdOnda').val();
+                                var picking = $(this).parent().parent().find('#picking').val();
+                                var pulmao = $(this).parent().parent().find('#pulmao').val();
+                                var tipo = $(this).parent().parent().find('#tipo').val();
+                                
+                                dados[count] = {produto: produto, grade: grade, embalagens:embalagens, volumes:volumes,
+                                saldo:saldo, capacidade:capacidade,pontoReposicao:pontoReposicao, ocupacao:ocupacao,
+                                idPicking:picking, qtdOnda:qtdOnda, validadeEstoque:validadeEstoque,pulmao:pulmao,tipo:tipo};
                                 count++;
                             }
                         });

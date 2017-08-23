@@ -24,15 +24,6 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
         $OndaRessupRep = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
         $dados = $OndaRessupRep->calculaRessuprimentoPreventivoByParams($params);
         $this->view->dados = $dados;
-
-//        $Grid = new OsGrid();
-//        $Grid->init($dados)->render();
-//
-//        $pager = $Grid->getPager();
-//        $pager->setMaxPerPage(30000);
-//        $Grid->setPager($pager);
-//
-//        $this->view->grid = $Grid->render();
     }
 
     public function listAjaxAction() {
@@ -43,11 +34,40 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
     }
 
     public function confirmarAcaoAjaxAction() {
-        $params = $this->_getAllParams();
         $dados = json_decode($this->_getParam('dados'));
-        var_dump($dados);
+        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+        $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
         foreach ($dados as $value) {
-            var_dump(json_decode($value->embalagens));
+            
+            $produtoEn = $produtoRepo->findOneBy(array('id'=>$value->produto, 'grade'=>$value->grade));
+            $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('descricao' => $value->pulmao));
+            $qtdOnda = $value->qtdOnda;
+            $validadeEstoque = $value->validadeEstoque;
+            $idPicking = $value->idPicking;
+            
+            if ($value->tipo == 1) {
+                $embalagem = json_decode($value->embalagens);
+                if (is_array($embalagem)) {
+                    foreach ($embalagem as $value) {
+                        $embalagens[] = str_replace(array("'", '[', ']'), '', $value);
+                    }
+                } else {
+                    $embalagens[] = str_replace(array("'", '[', ']'), '', $embalagem);
+                }
+                $volumes = null;
+            } else {
+                $volume = json_decode($value->volumes);
+                if (is_array($volume)) {
+                    foreach ($volume as $valueVol) {
+                        $volumes[] = str_replace(array("'", '[', ']'), '', $valueVol);
+                    }
+                } else {
+                    $volumes[] = str_replace(array("'", '[', ']'), '', $volume);
+                }
+                $embalagens = null;
+            }
+            var_dump($qtdOnda);
+//        $this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking,$repositorios,$validadeEstoque);
         }
         die;
     }

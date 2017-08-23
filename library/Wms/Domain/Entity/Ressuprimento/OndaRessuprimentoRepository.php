@@ -601,46 +601,14 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
     public function calculaRessuprimentoPreventivoByParams($parametros) {
 
-        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
-        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository $reservaEstoqueExpedicaoRepo */
-        $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
-        /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
-        $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-        $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
-        /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
-        $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
-        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
-        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
-        $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
-        $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
-        $reservaEstoqueOndaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueOnda");
         $repositorios = array(
-            'produtoRepo' => $produtoRepo,
-            'embalagemRepo' => $embalagemRepo,
-            'reservaEstoqueExpRepo' => $reservaEstoqueExpedicaoRepo,
-            'reservaEstoqueOndaRepo' => $reservaEstoqueOndaRepo,
             'reservaEstoqueRepo' => $reservaEstoqueRepo,
-            'ondaRepo' => $ondaRepo,
-            'pedidoRepo' => $pedidoRepo,
-            'volumeRepo' => $volumeRepo,
             'enderecoRepo' => $enderecoRepo,
-            'usuarioRepo' => $usuarioRepo,
-            'expedicaoRepo' => $expedicaoRepo,
-            'estoqueRepo' => $estoqueRepo,
-            'osRepo' => $ordemServicoRepo,
-            'siglaRepo' => $siglaRepo
+            'estoqueRepo' => $estoqueRepo
         );
-
 
         $SQL = "SELECT DISTINCT P.COD_PRODUTO,
                     P.DSC_GRADE,
@@ -665,7 +633,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)";
 
         $SQLWhere = " and  P.COD_PRODUTO IN (14059, 16289, 16419, 13398)";
-//        $SQLWhere = " ";
         if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
             $SQLWhere .= "AND (DECODE(E.QTD,null,0,(E.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
         }
@@ -687,7 +654,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
         if (isset($parametros['apto']) && !empty($parametros['apto'])) {
             $SQLWhere .= " AND DE.NUM_APARTAMENTO >= " . $parametros['apto'];
         }
-
         if (isset($parametros['ruaFinal']) && !empty($parametros['ruaFinal'])) {
             $SQLWhere .= " AND DE.NUM_RUA <= " . $parametros['ruaFinal'];
         }
@@ -706,10 +672,18 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
         $pickings = array();
         $dadosProdutos = array();
+        /*
+         * TRATA RESULTADO DA QUERY
+         */
         if (!empty($result) && is_array($result)) {
             $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
             foreach ($result as $key => $value) {
+                $result[$key]['PONTO_REPOSICAO'] = $result[$key]['CAPACIDADE_PICKING'];
+                $result[$key]['SALDO_PICKING_INPUT'] = $result[$key]['SALDO_PICKING'];
+                /*
+                 * CONVERTRE PARA CAIXA MASTER SOMENTE PARA EXIBIR
+                 */
                 if ($value['SALDO_PICKING'] > 0) {
                     $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['SALDO_PICKING']);
                     $result[$key]['SALDO_PICKING'] = implode('<br />', $vetEstoque);
@@ -721,16 +695,17 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $result[$key]['OCUPACAO'] = number_format($result[$key]['OCUPACAO'], 2, '.', '');
                 $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $value['COD_PRODUTO'], 'grade' => $value['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'ASC'));
 
-                $codProduto = $value['COD_PRODUTO'];
-                $grade = $value['DSC_GRADE'];
                 $pickings[$key]['pontoReposicao'] = $result[$key]['CAPACIDADE_PICKING'];
                 $pickings[$key]['idPicking'] = null;
                 $pickings[$key]['volumes'] = null;
+                /*
+                 * CONTROI ARRAY DE DADOS PRODUTO PARA CALCULO DO RESSUPRIMENTO
+                 */
                 if (count($embalagensEn) > 0) {
-                    if (!isset($dadosProdutos[$codProduto][$grade])) {
-                        $dadosProdutos[$codProduto][$grade] = array(
-                            'codProduto' => $codProduto,
-                            'grade' => $grade,
+                    if (!isset($dadosProdutos[$value['COD_PRODUTO']][$value['DSC_GRADE']])) {
+                        $dadosProdutos[$value['COD_PRODUTO']][$value['DSC_GRADE']] = array(
+                            'codProduto' => $value['COD_PRODUTO'],
+                            'grade' => $value['DSC_GRADE'],
                             'entidade' => $embalagensEn[0]->getProduto(),
                             'embalagensASC' => $embalagensEn,
                         );
@@ -762,16 +737,26 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $pickings[$key]['capacidadePicking'] = $result[$key]['CAPACIDADE_PICKING'];
                 $pickings[$key]['codProduto'] = $result[$key]['COD_PRODUTO'];
                 $pickings[$key]['grade'] = $result[$key]['DSC_GRADE'];
+                /*
+                 * FUNÇÃO QUE CALCULA RESSUPRIMENTO
+                 */
                 $os = $this->calculaRessuprimentoByPicking($pickings[$key], $dadosProdutos, $repositorios);
                 $vetEmb = array();
                 $vetVol = array();
                 foreach ($os as $value) {
-                    $vetEmb[] = $value['embalagens'];
-                    $vetVol[] = $value['volumes'];
+                    if ($value['volumes'] != "null") {
+                        $vetVol[] = $value['volumes'];
+                    }
+                    if ($value['embalagens'] != "null") {
+                        $vetEmb[] = $value['embalagens'];
+                    }
                 }
                 $result[$key]['EMBALAGENS'] = json_encode($vetEmb);
                 $result[$key]['VOLUMES'] = json_encode($vetVol);
                 $result[$key]['PULMAO'] = '';
+                $result[$key]['VALIDADE_ESTOQUE'] = $os[0]['validadeEstoque'];
+                $result[$key]['ID_PIKING'] = $os[0]['idPicking'];
+                $result[$key]['QTD_ONDA'] = $os[0]['qtdOnda'];
                 if (\count($os) > 0) {
                     $result[$key]['PULMAO'] = $os[0]['enderecoPulmaoEn']->getDescricao();
                 }
