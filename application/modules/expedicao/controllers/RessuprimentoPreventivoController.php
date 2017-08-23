@@ -65,9 +65,18 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
             'siglaRepo' => $siglaRepo
         );
 
-
         $dados = json_decode($this->_getParam('dados'));
         $OndaRessupRep = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        $ondaEn = 1000;
+        
+        /* $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
+          $usuarioEn = $this->getEntityManager()->getRepository("wms:Usuario")->find($idUsuario);
+          $ondaEn = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimento();
+          $ondaEn->setDataCriacao(new \DateTime());
+          $ondaEn->setDscObservacao("");
+          $ondaEn->setUsuario($usuarioEn);
+          $this->getEntityManager()->persist($ondaEn); */
+
         foreach ($dados as $value) {
 
             $produtoEn = $produtoRepo->findOneBy(array('id' => $value->produto, 'grade' => $value->grade));
@@ -97,9 +106,9 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
                 }
                 $embalagens = null;
             }
-            $OndaRessupRep->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, 1000, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque);
+            $OndaRessupRep->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque);
         }
-//        $this->em->flush();
+        //$this->em->flush();
         die;
     }
 

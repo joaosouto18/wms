@@ -21,8 +21,8 @@
         <?php
         foreach ($this->dados as $key => $endereco) {
             $tipo = 1;
-            if(count(json_decode($endereco['VOLUMES'])) != 0){
-               $tipo = 2;
+            if (count(json_decode($endereco['VOLUMES'])) != 0) {
+                $tipo = 2;
             }
             ?><tr>
                 <td><input class="checkBoxClass" type="checkbox" value="<?php echo $endereco['COD_PRODUTO'] ?>"></td>

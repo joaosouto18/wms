@@ -25,22 +25,6 @@ echo $this->form;
             });
             return false;
         });
-        $("#confirmar").click(function () {
-            return false;
-            $("input:checked").each(function () {
-                console.log($(this));
-            });
-//            $.ajax({
-//                url: URL_MODULO + '/ressuprimento-preventivo/list-ajax/',
-//                type: 'post',
-//                dataType: 'html',
-//                data: $('form').serialize(),
-//                success: function (data) {
-//                    $('#estoque').html(data);
-//                }
-//            });
-            return false;
-        });
         $(".limpar-pulmao").click(function () {
             $.wmsDialogAlert({
                 title: 'Limpar Pulmão',
