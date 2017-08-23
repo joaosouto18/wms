@@ -282,7 +282,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     } else {
                         $itemWs['peso'] = trim($itemNf->quantidade);
                     }
-                    
+
                     $itensNf[] = $itemWs;
                 }
                 $itens = $itensNf;
