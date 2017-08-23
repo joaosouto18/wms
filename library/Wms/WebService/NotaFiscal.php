@@ -30,6 +30,8 @@ class itensNf {
     /** @var string */
     public $quantidadeConferida;
     /** @var string */
+    public $peso;
+    /** @var string */
     public $quantidadeAvaria;
     /** @var string */
     public $motivoDivergencia;
@@ -189,6 +191,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $clsItensNf->grade = $item['DSC_GRADE'];
             $clsItensNf->peso = $item['PESO_ITEM'];
             $clsItensNf->quantidadeConferida = $item['QTD_CONFERIDA'];
+            $clsItensNf->quantidadeAvaria = $item['QTD_AVARIA'];
             $clsItensNf->motivoDivergencia = $item['DSC_MOTIVO_DIVER_RECEB'];
             $clsNf->itens[] = $clsItensNf;
         }
