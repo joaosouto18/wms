@@ -53,7 +53,7 @@ class Recebimento
     protected $dataFinal;
 
     /**
-     * @var Wms\Domain\Entity\Util\Sigla $status
+     * @var \Wms\Domain\Entity\Util\Sigla $status
      * Código da sigla do status do recebimento
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
      * @JoinColumn(name="COD_STATUS", referencedColumnName="COD_SIGLA")
@@ -73,7 +73,7 @@ class Recebimento
     protected $ordensServicos;
 
     /**
-     * @var Wms\Domain\Entity\Deposito $deposito
+     * @var \Wms\Domain\Entity\Deposito $deposito
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito")
      * @JoinColumn(name="COD_DEPOSITO", referencedColumnName="COD_DEPOSITO") 
      */
@@ -87,14 +87,14 @@ class Recebimento
     protected $idBox;
 
     /**
-     * @var Wms\Domain\Entity\Deposito\Box $box
+     * @var \Wms\Domain\Entity\Deposito\Box $box
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Box")
      * @JoinColumn(name="COD_BOX", referencedColumnName="COD_BOX") 
      */
     protected $box;
 
     /**
-     * @var Wms\Domain\Entity\Filial
+     * @var \Wms\Domain\Entity\Filial
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Filial")
      * @JoinColumn(name="COD_FILIAL", referencedColumnName="COD_FILIAL") 
      */
@@ -183,6 +183,10 @@ class Recebimento
     {
         return $this->ordensServicos;
     }
+
+    /**
+     * @return Util\Sigla
+     */
     public function getStatus()
     {
         return $this->status;
