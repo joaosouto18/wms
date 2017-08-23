@@ -473,7 +473,7 @@ class Web_ProdutoController extends Crud {
 
         $gerarEtiqueta->init(null, array(
             'codProduto' => $codProduto,
-            'grade' => $grade), $modelo);
+            'grade' => $grade), $modelo, \Wms\Domain\Entity\Recebimento::TARGET_IMPRESSAO_PRODUTO);
     }
 
     public function verificarParametroCodigoBarrasAjaxAction() {
