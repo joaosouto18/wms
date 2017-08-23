@@ -389,10 +389,10 @@ class NotaFiscalRepository extends EntityRepository {
      */
     public function getConferencia($idFornecedor, $numero, $serie, $dataEmissao, $idStatus) {
 
-        $dataEmissao = \DateTime::createFromFormat('d/m/Y', $dataEmissao)->format('Y-m-d');
+        $dataEmissao = \DateTime::createFromFormat('d/m/Y', $dataEmissao)->format('d/m/Y');
 
         $sql = "
-            SELECT DISTINCT NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, NF.DAT_EMISSAO, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, NVL(RC.QTD_AVARIA,0), NVL(MDR.DSC_MOTIVO_DIVER_RECEB,0), NFI.NUM_PESO AS PESO_ITEM
+            SELECT DISTINCT NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, NF.DAT_EMISSAO, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, NVL(RC.QTD_AVARIA,0) AS QTD_AVARIA, NVL(MDR.DSC_MOTIVO_DIVER_RECEB,0) AS DSC_MOTIVO_DIVER_RECEB, NFI.NUM_PESO AS PESO_ITEM
             FROM NOTA_FISCAL NF
             INNER JOIN RECEBIMENTO R ON (R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO)
             INNER JOIN ORDEM_SERVICO OS ON (OS.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
@@ -403,7 +403,7 @@ class NotaFiscalRepository extends EntityRepository {
             WHERE NF.COD_FORNECEDOR = '$idFornecedor' 
                 AND NF.NUM_NOTA_FISCAL = '$numero' 
                 AND NF.COD_SERIE_NOTA_FISCAL = '$serie' 
-                AND TRUNC(NF.DAT_EMISSAO) = '$dataEmissao'
+                AND TRUNC(NF.DAT_EMISSAO, 'DD/MM/YYYY') = '$dataEmissao'
                 AND NF.COD_STATUS = '$idStatus'
                 AND NOT EXISTS (SELECT 'X' 
                                 FROM RECEBIMENTO_CONFERENCIA RC2

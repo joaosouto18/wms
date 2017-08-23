@@ -170,7 +170,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             }
             $idFornecedor = $novoIdFornecedor;
         }
-
+        /** @var \Wms\Domain\Entity\NotaFiscal $notaFiscalEntity */
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')->findOneBy(array(
             'fornecedor' => $fornecedorEntity->getId(),
             'numero' => $numero,
@@ -202,7 +202,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $dataEntrada = ($notaFiscalEntity->getDataEntrada()) ? $notaFiscalEntity->getDataEntrada()->format('d/m/Y') : '';
 
         $clsNf->idRecebimeto = $idRecebimento;
-        $clsNf->idFornecedor = $notaFiscalEntity->getFornecedor()->getId();
+        $clsNf->idFornecedor = $notaFiscalEntity->getFornecedor()->getIdExterno();
         $clsNf->numero = $notaFiscalEntity->getNumero();
         $clsNf->serie = $notaFiscalEntity->getSerie();
         $clsNf->pesoTotal = $notaFiscalEntity->getPesoTotal();
