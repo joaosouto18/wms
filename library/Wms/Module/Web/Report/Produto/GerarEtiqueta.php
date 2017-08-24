@@ -90,7 +90,7 @@ class GerarEtiqueta extends eFPDF
                 break;
             case 4:
                 $this->SetMargins(2, 2);
-                $this->SetFont('Arial', 'B', 12);
+                $this->SetFont('Arial', 'B', 14);
 
                 $this->layout4($produto, $tipo);
                 break;
@@ -250,26 +250,26 @@ class GerarEtiqueta extends eFPDF
         $this->Ln(3);
         $this->Cell(100,0, self::SetStringByMaxWidth(utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 100) ,0,0);
         //$this->Cell(100, 0, utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 0, 0);
-        $this->Ln(10);
+        $this->Ln(6);
         $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
-        $this->Ln(10);
+        $this->Ln(6);
         $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fabricante: $produto[fabricante]"), 100), 0, 0);
         if ($tipo == "NF") {
-            $this->Ln(10);
+            $this->Ln(6);
             $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[fornecedor]"), 100), 0, 0);
         }
 
         if ($produto['idEmbalagem'] != null) {
-            $this->Ln(10);
+            $this->Ln(6);
             $this->Cell(100, 0, 'Embalagem: ' . utf8_decode($produto['dscEmbalagem']) . " - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
         }
 
         if ($produto['idVolume'] != null) {
-            $this->Ln(10);
+            $this->Ln(6);
             $this->Cell(100, 0, 'Volume: ' . utf8_decode($produto['dscVolume']) . " - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
         }
         if ($produto['dataValidade'] != null) {
-            $this->Ln(10);
+            $this->Ln(6);
             $dataValidade = new \DateTime($produto['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->Cell(100, 0, 'Data Validade: ' . utf8_decode($dataValidade), 0, 0);
