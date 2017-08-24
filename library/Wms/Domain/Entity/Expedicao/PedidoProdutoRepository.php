@@ -56,6 +56,7 @@ class PedidoProdutoRepository extends EntityRepository
                 }
             }
 
+            var_dump($cortes);exit;
 
             foreach ($cortes as $corte) {
                 $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
