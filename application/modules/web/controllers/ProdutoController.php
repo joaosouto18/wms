@@ -469,6 +469,9 @@ class Web_ProdutoController extends Crud {
             case 3:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
                 break;
+            case 4:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
+                break;
         }
 
         $gerarEtiqueta->init(null, array(
