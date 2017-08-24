@@ -36,7 +36,8 @@ class PedidoProdutoRepository extends EntityRepository
                                 'codPedido' => $codPedidoWMS,
                                 'codProduto' => $codProdutoWMS,
                                 'grade'=>$gradeWMS,
-                                'qtdCortar' => $qtdCortar
+                                'qtdCortar' => $qtdCortar,
+                                'tipo' => 'parcial'
                             );
                         }
 
@@ -51,7 +52,8 @@ class PedidoProdutoRepository extends EntityRepository
                         'codPedido' => $codPedidoWMS,
                         'codProduto' => $codProdutoWMS,
                         'grade'=>$gradeWMS,
-                        'qtdCortar' => $qtdWms
+                        'qtdCortar' => $qtdWms,
+                        'tipo' => 'total'
                     );
                 }
             }
