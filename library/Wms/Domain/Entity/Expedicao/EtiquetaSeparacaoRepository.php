@@ -1063,9 +1063,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
 
                         if ($tipoSeparacao == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
-                            if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N") $quebras = array();
+                            if (empty($modeloSeparacaoEn->getUtilizaEtiquetaMae())) $quebras = array();
                             $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebras);
-                            $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $embalagemAtual->getQuantidade(), null, $embalagemAtual, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
+                            for($i = 0; $i < $qtdSepararEmbalagemAtual; $i++) {
+                                $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $embalagemAtual->getQuantidade(), null, $embalagemAtual, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
+                            }
                         } else {
                             $cubagem = null;
                             $consolidado = 'N';
