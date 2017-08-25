@@ -1110,8 +1110,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $arrReagrupado = $this->regroupMapaProduto($arrMapasEmbPP);
 
-            foreach ($arrReagrupado as $arrMapa) {
-                foreach ($arrMapa as $endereco) {
+            foreach ($arrReagrupado as $pedidoProduto) {
+                foreach ($pedidoProduto as $endereco) {
                     foreach ($endereco as $element) {
                         $mapaSeparacaoEn = $element['mapa'];
                         $qtdMapa = $element['qtd'];
@@ -1177,7 +1177,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $enderecoEn = $element['enderecoEn'];
 
                     if ($element['consolidado'] == 'S') {
-                        $newArray[$mapaSeparacaoEn->getId()][$enderecoEn->getId()][$embalagemEn->getId()] = array(
+                        $newArray[$pedidoProdutoEn->getId()][$enderecoEn->getId()][$embalagemEn->getId()] = array(
                             'qtd' => $qtdMapa,
                             'consolidado' => $element['consolidado'],
                             'mapa' => $mapaSeparacaoEn,
@@ -1243,8 +1243,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $qtdTemp = $restoByFator;
 
                         $enderecoId = (!empty($enderecoEn)) ? $enderecoEn->getId() : null;
-
-                        $newArray[$mapaEn->getId()][$enderecoId][$embalagemAtual->getId()] = array(
+                        $pedidoProduto = reset($produto['arrPedProd']);
+                        $newArray[$pedidoProduto->getId()][$enderecoId][$embalagemAtual->getId()] = array(
                             'qtd' => $qtdEmbs,
                             'consolidado' => "N",
                             'mapa' => $mapaEn,
