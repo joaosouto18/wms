@@ -63,9 +63,9 @@ class RessuprimentoPreventivo extends Form {
                 ))
                 ->addElement('text', 'ocupacao', array(
                     'size' => 3,
-                    'label' => 'Ocupação %',
+                    'label' => 'Ocupação Máxima de Picking %',
                     'alt' => 'enderecoPredio',
-                    'class' => 'ctrSize',
+                    'class' => 'ctrSize required',
                 ))
                 ->addElement('text', 'ruaFinal', array(
                     'size' => 3,
