@@ -1063,7 +1063,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
 
                         if ($tipoSeparacao == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
-                            if (empty($modeloSeparacaoEn->getUtilizaEtiquetaMae())) $quebras = array();
+                            $utilizaEtiquetaMae = $modeloSeparacaoEn->getUtilizaEtiquetaMae();
+                            if (empty($utilizaEtiquetaMae)) $quebras = array();
                             $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebras);
                             for($i = 0; $i < $qtdSepararEmbalagemAtual; $i++) {
                                 $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $embalagemAtual->getQuantidade(), null, $embalagemAtual, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
