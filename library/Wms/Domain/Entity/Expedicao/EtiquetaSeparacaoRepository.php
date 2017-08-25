@@ -1190,7 +1190,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
 
                     $mapaId = $mapaSeparacaoEn->getId();
-                    $enderecoId = $enderecoEn->getId();
+                    $enderecoId = (!empty($enderecoEn)) ? $enderecoEn->getId() : null;
                     $produtoGrade = $produtoEn->getId().'-'.$produtoEn->getGrade();
                     $qtd = Math::multiplicar($qtdMapa, $embalagemEn->getQuantidade());
 
@@ -1241,7 +1241,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         // A partir disso o restante do pedido é igual ao resto da divisão do fator atual
                         $qtdTemp = $restoByFator;
 
-                        $newArray[$mapaEn->getId()][$enderecoEn->getId()][$embalagemAtual->getId()] = array(
+                        $enderecoId = (!empty($enderecoEn)) ? $enderecoEn->getId() : null;
+
+                        $newArray[$mapaEn->getId()][$enderecoId][$embalagemAtual->getId()] = array(
                             'qtd' => $qtdEmbs,
                             'consolidado' => "N",
                             'mapa' => $mapaEn,
