@@ -67,15 +67,14 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
 
         $dados = json_decode($this->_getParam('dados'));
         $OndaRessupRep = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
-        $ondaEn = 1000;
-        
-        /* $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
-          $usuarioEn = $this->getEntityManager()->getRepository("wms:Usuario")->find($idUsuario);
-          $ondaEn = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimento();
-          $ondaEn->setDataCriacao(new \DateTime());
-          $ondaEn->setDscObservacao("");
-          $ondaEn->setUsuario($usuarioEn);
-          $this->getEntityManager()->persist($ondaEn); */
+
+        $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
+        $usuarioEn = $this->getEntityManager()->getRepository("wms:Usuario")->find($idUsuario);
+        $ondaEn = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimento();
+        $ondaEn->setDataCriacao(new \DateTime());
+        $ondaEn->setDscObservacao("");
+        $ondaEn->setUsuario($usuarioEn);
+        $this->getEntityManager()->persist($ondaEn);
 
         foreach ($dados as $value) {
 
@@ -84,7 +83,8 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
             $qtdOnda = $value->qtdOnda;
             $validadeEstoque = $value->validadeEstoque;
             $idPicking = $value->idPicking;
-
+            $embalagens = array();
+            $volumes = array();
             if ($value->tipo == 1) {
                 $embalagem = json_decode($value->embalagens);
                 if (is_array($embalagem)) {
@@ -108,7 +108,7 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
             }
             $OndaRessupRep->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque);
         }
-        //$this->em->flush();
+        $this->em->flush();
         die;
     }
 

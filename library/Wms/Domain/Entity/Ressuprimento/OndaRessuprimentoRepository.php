@@ -500,7 +500,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     if ($qtdOnda > $qtdEstoque)
                         $qtdOnda = $qtdEstoque;
                 }
-
                 //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
                     $osGeradas[] = array(
@@ -616,28 +615,53 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     NVL(PV.COD_PRODUTO_VOLUME,0) as PRODUTO_VOLUME,
                     NVL(PE.COD_DEPOSITO_ENDERECO,PV.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
                     NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING) as CAPACIDADE_PICKING,
-                    NVL(E.QTD,0) as SALDO_PICKING,
-                    DECODE(E.QTD,null,0,(E.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100 as OCUPACAO
+                    NVL(ESTOQUE_PICKING.QTD,0) as SALDO_PICKING,
+                    DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100 as OCUPACAO
                FROM PRODUTO P
                LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
                LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
-               LEFT JOIN (SELECT E.COD_PRODUTO, E.COD_DEPOSITO_ENDERECO,
-                                 SUM(E.QTD) as QTD, NVL(E.COD_PRODUTO_VOLUME,0) as COD_PRODUTO_VOLUME
+               LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON (PE.COD_PRODUTO_EMBALAGEM = PDL.COD_PRODUTO_EMBALAGEM)
+               LEFT JOIN NORMA_PALETIZACAO NP ON (NP.COD_NORMA_PALETIZACAO = PDL.COD_NORMA_PALETIZACAO)
+               INNER JOIN (SELECT E.COD_PRODUTO, E.COD_DEPOSITO_ENDERECO,
+                                 SUM(E.QTD) as QTD, NVL(E.COD_PRODUTO_VOLUME,0) as COD_PRODUTO_VOLUME,
+                                 E.DSC_GRADE
                             FROM ESTOQUE E
-                           GROUP BY E.COD_PRODUTO, E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO_VOLUME) E
-                     ON E.COD_DEPOSITO_ENDERECO = NVL(PE.COD_DEPOSITO_ENDERECO, PV.COD_DEPOSITO_ENDERECO)
-                    AND E.COD_PRODUTO = P.COD_PRODUTO
-                    AND NVL(PV.COD_PRODUTO_VOLUME,0) = E.COD_PRODUTO_VOLUME
-               LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = NVL(PE.COD_DEPOSITO_ENDERECO, PV.COD_DEPOSITO_ENDERECO)
+                            INNER JOIN DEPOSITO_ENDERECO DE2 ON (E.COD_DEPOSITO_ENDERECO = DE2.COD_DEPOSITO_ENDERECO)
+                            WHERE DE2.COD_CARACTERISTICA_ENDERECO != 38
+                           GROUP BY E.COD_PRODUTO, E.DSC_GRADE, E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO_VOLUME) ESTOQUE_PICKING
+                     ON ESTOQUE_PICKING.COD_DEPOSITO_ENDERECO = NVL(PE.COD_DEPOSITO_ENDERECO, PV.COD_DEPOSITO_ENDERECO)
+                    AND ESTOQUE_PICKING.COD_PRODUTO = P.COD_PRODUTO
+                    AND NVL(PV.COD_PRODUTO_VOLUME,0) = ESTOQUE_PICKING.COD_PRODUTO_VOLUME
+               INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = NVL(PE.COD_DEPOSITO_ENDERECO, PV.COD_DEPOSITO_ENDERECO)
+               INNER JOIN (SELECT E.COD_PRODUTO, E.COD_DEPOSITO_ENDERECO,
+                                 SUM(E.QTD) as QTD, NVL(E.COD_PRODUTO_VOLUME,0) as COD_PRODUTO_VOLUME,
+                                 E.DSC_GRADE
+                            FROM ESTOQUE E
+                            INNER JOIN DEPOSITO_ENDERECO DE2 ON (E.COD_DEPOSITO_ENDERECO = DE2.COD_DEPOSITO_ENDERECO)
+                            WHERE DE2.COD_CARACTERISTICA_ENDERECO = 38
+                           GROUP BY E.COD_PRODUTO, E.DSC_GRADE, E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO_VOLUME) ESTOQUE_PULMAO
+                    ON ESTOQUE_PULMAO.COD_PRODUTO = ESTOQUE_PICKING.COD_PRODUTO
+                    AND ESTOQUE_PULMAO.DSC_GRADE = ESTOQUE_PICKING.DSC_GRADE
+                    AND ESTOQUE_PICKING.COD_PRODUTO_VOLUME = ESTOQUE_PULMAO.COD_PRODUTO_VOLUME
               WHERE (PE.COD_DEPOSITO_ENDERECO IS NOT NULL OR PV.COD_DEPOSITO_ENDERECO IS NOT NULL)
-                AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)";
+                AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)
+                 ";
 
-        $SQLWhere = " and  P.COD_PRODUTO IN (14059, 16289, 16419, 13398)";
+//        $SQLWhere = " and  P.COD_PRODUTO IN (14059, 16289, 16419, 13398, 14849, 16251)";
+        $SQLWhere = "";
         if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
-            $SQLWhere .= "AND (DECODE(E.QTD,null,0,(E.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
+            $SQLWhere .= "AND (DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
+        }else{
+            $SQLWhere .= "AND (DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) = 0";
         }
+        if (isset($parametros['tiporessuprimento']) && !empty($parametros['tiporessuprimento']) && $parametros['tiporessuprimento'] == 1) {
+            $SQLWhere .= "AND PE.CAPACIDADE_PICKING < NP.NUM_NORMA";
+        }else{
+            $SQLWhere .= "AND PE.CAPACIDADE_PICKING >= NP.NUM_NORMA AND ESTOQUE_PULMAO.QTD <= (NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING) - ESTOQUE_PICKING.QTD)";
+        }
+        
         if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
-            $SQLWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO = " . $parametros['tipoEndereco'];
+            $SQLWhere .= " AND DE.COD_TIPO_ENDERECO = " . $parametros['tipoEndereco'];
         }
         if (isset($parametros['linhaSeparacao']) && !empty($parametros['linhaSeparacao'])) {
             $SQLWhere .= " AND P.COD_LINHA_SEPARACAO = " . $parametros['linhaSeparacao'];
@@ -735,7 +759,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
 
                 $pickings[$key]['embalagens'] = $result[$key]['EMBALAGENS'];
-                $pickings[$key]['capacidadePicking'] = $result[$key]['CAPACIDADE_PICKING'];
+                $pickings[$key]['capacidadePicking'] = $result[$key]['PONTO_REPOSICAO'];
                 $pickings[$key]['codProduto'] = $result[$key]['COD_PRODUTO'];
                 $pickings[$key]['grade'] = $result[$key]['DSC_GRADE'];
                 /*
@@ -755,11 +779,14 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $result[$key]['EMBALAGENS'] = json_encode($vetEmb);
                 $result[$key]['VOLUMES'] = json_encode($vetVol);
                 $result[$key]['PULMAO'] = '';
-                $result[$key]['VALIDADE_ESTOQUE'] = $os[0]['validadeEstoque'];
-                $result[$key]['ID_PIKING'] = $os[0]['idPicking'];
-                $result[$key]['QTD_ONDA'] = $os[0]['qtdOnda'];
+                $result[$key]['VALIDADE_ESTOQUE'] = '';
+                $result[$key]['ID_PIKING'] = null;
+                $result[$key]['QTD_ONDA'] = 0;
                 if (\count($os) > 0) {
+                    $result[$key]['VALIDADE_ESTOQUE'] = $os[0]['validadeEstoque'];
                     $result[$key]['PULMAO'] = $os[0]['enderecoPulmaoEn']->getDescricao();
+                    $result[$key]['ID_PIKING'] = $os[0]['idPicking'];
+                    $result[$key]['QTD_ONDA'] = $os[0]['qtdOnda'];
                 }
             }
         }

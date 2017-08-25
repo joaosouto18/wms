@@ -8,7 +8,7 @@ class RessuprimentoPreventivo extends Form {
 
     public function init() {
         $repoLinhaSeparacao = $this->getEm()->getRepository('wms:Armazenagem\LinhaSeparacao');
-        $repoLinhaSeparacao = $this->getEm()->getRepository('wms:Armazenagem\LinhaSeparacao');
+        $repoTipoEndereco = $this->getEm()->getRepository('wms:Deposito\Endereco\Tipo');
         $this->setAttribs(array(
             'method' => 'post',
             'class' => 'filtro',
@@ -45,11 +45,7 @@ class RessuprimentoPreventivo extends Form {
                 ))
                 ->addElement('select', 'tipoEndereco', array(
                     'label' => 'Tipo de End. Picking',
-                    'multiOptions' => array('firstOpt' => 'Ambos', 'options' => array(
-                            Endereco::ENDERECO_PICKING => Endereco::$tiposEndereco[Endereco::ENDERECO_PICKING],
-                            Endereco::ENDERECO_PULMAO => Endereco::$tiposEndereco[Endereco::ENDERECO_PULMAO],
-                            Endereco::ENDERECO_PICKING_DINAMICO => Endereco::$tiposEndereco[Endereco::ENDERECO_PICKING_DINAMICO],
-                        ))
+                    'multiOptions' => array('firstOpt' => 'Ambos', 'options' => $repoTipoEndereco->getIdValue()),
                 ))
                 ->addElement('select', 'linhaSeparacao', array(
                     'label' => 'Linha de Separação',
