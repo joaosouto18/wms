@@ -653,12 +653,14 @@ class OndaRessuprimentoRepository extends EntityRepository {
         }else{
             $SQLWhere .= "AND (DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) = 0";
         }
-        if (isset($parametros['tiporessuprimento']) && !empty($parametros['tiporessuprimento']) && $parametros['tiporessuprimento'] == 1) {
+
+/*        if (isset($parametros['tiporessuprimento']) && !empty($parametros['tiporessuprimento']) && $parametros['tiporessuprimento'] == 1) {
             $SQLWhere .= "AND PE.CAPACIDADE_PICKING < NP.NUM_NORMA";
         }else{
-            $SQLWhere .= "AND PE.CAPACIDADE_PICKING >= NP.NUM_NORMA AND ESTOQUE_PULMAO.QTD <= (NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING) - ESTOQUE_PICKING.QTD)";
+            $SQLWhere .= "AND (PE.CAPACIDADE_PICKING >= NP.NUM_NORMA AND ESTOQUE_PULMAO.QTD <= (NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING) - ESTOQUE_PICKING.QTD))
+                           OR (PE.CAPACIDADE_PICKING < NP.NUM_NORMA)";
         }
-        
+  */
         if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
             $SQLWhere .= " AND DE.COD_TIPO_ENDERECO = " . $parametros['tipoEndereco'];
         }

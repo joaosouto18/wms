@@ -228,8 +228,24 @@ class EstoqueRepository extends EntityRepository
      *                 'idEnderecoIgnorar' => 321 (Optionoal)
      *                 'idCaracteristigaIgnorar' => 37 (Optional)
      */
-    public function getEstoqueByParams ( $params)
+    public function getEstoqueByParams ( $params, $preventivo = false)
     {
+
+        $capacidadePicking = 20;
+        $norma = 20;
+
+        $wherePreventivo = "";
+        if ($preventivo = true) {
+            $wherePreventivo = 1;
+            $wherePreventivo = " AND ROWNUM <=1 ";
+            if ($capacidadePicking >= $norma) {
+                $wherePreventivo = " ";
+                if ($tipoRessuprimento = "Apenas Pulmão Completo") {
+                    $wherePreventivo = " AND ESTQ.QTD <= " . $qtdRessuprir;
+                }
+            }
+        }
+
         $Sql = " SELECT
                     ESTQ.COD_DEPOSITO_ENDERECO,
                     DE.DSC_DEPOSITO_ENDERECO, 
