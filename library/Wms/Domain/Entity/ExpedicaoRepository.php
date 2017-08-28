@@ -2905,29 +2905,33 @@ class ExpedicaoRepository extends EntityRepository {
                 foreach ($grades as $grade => $quantidade) {
                     if (!($quantidade > 0))
                         continue;
-                    $this->cortaPedido($codPedido, $codProduto, $grade, $quantidade, $motivo, $corteAutomatico);
+                    $this->cortaPedido($codPedido,null, $codProduto, $grade, $quantidade, $motivo, $corteAutomatico);
                 }
             }
         }
     }
 
-    public function cortaPedido($codPedido, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null) {
+    public function cortaPedido($codPedido,$pedidoProdutoEn , $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null) {
 
         /** @var ExpedicaoEntity\AndamentoRepository $expedicaoAndamentoRepo */
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
         $reservaEstoqueProdutoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
-        $pedidoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
         $mapaSeparacaoPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+        $mapaPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
 
-        /** @var ExpedicaoEntity\PedidoProduto $entidadePedidoProduto */
-        $entidadePedidoProduto = $pedidoProdutoRepo->findOneBy(array('codPedido' => $codPedido,
-            'codProduto' => $codProduto,
-            'grade' => $grade));
+        if (empty($pedidoProdutoEn)) {
+            /** @var ExpedicaoEntity\PedidoProdutoRepository $pedidoProdutoRepo */
+            $pedidoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
+            /** @var ExpedicaoEntity\PedidoProduto $entidadePedidoProduto */
+            $pedidoProdutoEn = $pedidoProdutoRepo->findOneBy(array('codPedido' => $codPedido,
+                'codProduto' => $codProduto,
+                'grade' => $grade));
+        }
 
-        $qtdCortada = $entidadePedidoProduto->getQtdCortada();
-        $qtdPedido = $entidadePedidoProduto->getQuantidade();
+        $qtdCortada = $pedidoProdutoEn->getQtdCortada();
+        $qtdPedido = $pedidoProdutoEn->getQuantidade();
 
         //TRAVA PARA GARANTIR QUE NÃO CORTE QUANTIDADE MAIOR QUE TEM NO PEDIDO
         if (Math::compare(Math::adicionar($qtdCortar, $qtdCortada), $qtdPedido,'>')) {
@@ -2962,17 +2966,24 @@ class ExpedicaoRepository extends EntityRepository {
             }
         }
 
-        $entidadePedidoProduto->setQtdCortada($entidadePedidoProduto->getQtdCortada() + $qtdCortar);
+        //Seta na pedido_produto a quantidade cortada baseada na quantia já cortada mais a nova qtd
+        $pedidoProdutoEn->setQtdCortada(Math::adicionar($qtdCortada, $qtdCortar));
         if ($corteAutomatico == 'S') {
-            $entidadePedidoProduto->setQtdCortadoAutomatico($entidadePedidoProduto->getQtdCortadoAutomatico() + $qtdCortar);
+            $pedidoProdutoEn->setQtdCortadoAutomatico($pedidoProdutoEn->getQtdCortadoAutomatico() + $qtdCortar);
         }
-        $this->getEntityManager()->persist($entidadePedidoProduto);
+        $this->getEntityManager()->persist($pedidoProdutoEn);
 
-        $expedicaoEn = $entidadePedidoProduto->getPedido()->getCarga()->getExpedicao();
+        //Seta na mapa_separacao_pedido a quantidade cortada baseada na quantia já cortada mais a nova qtd
+        /** @var ExpedicaoEntity\MapaSeparacaoPedido $mapaPedidoEn */
+        $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array("pedidoProduto" => $pedidoProdutoEn));
+        $mapaPedidoEn->addCorte($qtdCortar);
+        $this->getEntityManager()->persist($mapaPedidoEn);
+
+        $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
         $observacao = "Item $codProduto - $grade do pedido $codPedido teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
         $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
 
-        $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array('codPedidoProduto' => $entidadePedidoProduto->getId()));
+        $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array('codPedidoProduto' => $pedidoProdutoEn->getId()));
 
         if (!empty($mapaSeparacaoPedido)) {
             $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapaSeparacaoPedido->getMapaSeparacao(),
