@@ -220,6 +220,11 @@ class Mobile_ExpedicaoController extends Action {
 
                 if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
                     $tipoProvavelCodBarras = 'volume';
+                    $idVolume = $codBarrasProcessado;
+                    $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+                    if (empty($volumePatrimonioEn)) {
+                        $tipoProvavelCodBarras = 'produto';
+                    }
                 } else {
                     $tipoProvavelCodBarras = 'produto';
                 }
