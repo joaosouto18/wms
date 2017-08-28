@@ -10,9 +10,10 @@ class EmbalagemRepository extends EntityRepository {
      * @param $novaEmbalagem \Wms\Domain\Entity\Produto\Embalagem
      * @return bool|\Exception
      */
-    public function checkEmbalagemDefault($novaEmbalagem) {
-        try {
-            if (!empty($novaEmbalagem) && is_a($novaEmbalagem, '\Wms\Domain\Entity\Produto\Embalagem')) {
+    public function checkEmbalagemDefault($novaEmbalagem)
+    {
+        try{
+            if (!empty($novaEmbalagem) && is_a($novaEmbalagem,'\Wms\Domain\Entity\Produto\Embalagem')){
                 $criterio = array(
                     'codProduto' => $novaEmbalagem->getProduto()->getId(),
                     'grade' => $novaEmbalagem->getProduto()->getGrade(),
@@ -44,12 +45,13 @@ class EmbalagemRepository extends EntityRepository {
         }
     }
 
-    public function setPickingEmbalagem($codBarras, $enderecoEn, $capacidadePicking, $embalado) {
+    public function setPickingEmbalagem($codBarras, $enderecoEn, $capacidadePicking, $embalado)
+    {
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
 
         if (empty($embalagemEn)) {
-            throw new \Exception('Produto não encontrado');
+            throw new \Exception('Embalagem não encontrada');
         }
 
         $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
@@ -65,7 +67,8 @@ class EmbalagemRepository extends EntityRepository {
         $this->getEntityManager()->flush();
     }
 
-    public function checkEstoqueReservaById($id) {
+    public function checkEstoqueReservaById($id)
+    {
         $dql = $this->_em->createQueryBuilder()
                 ->select('NVL(e.id, rep.id)')
                 ->from('wms:Produto\Embalagem', 'pe')
@@ -84,11 +87,9 @@ class EmbalagemRepository extends EntityRepository {
                     $status = 'error';
                     $msg = 'Não é permitido excluir embalagens com estoque ou reserva de estoque!';
                 }
-                if ($status === 'error')
-                    break;
+                if ($status === 'error') break;
             }
-            if ($status === 'error')
-                break;
+            if ($status === 'error') break;
         }
         return array($status, $msg);
     }

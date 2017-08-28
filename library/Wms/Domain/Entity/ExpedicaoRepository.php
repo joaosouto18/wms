@@ -5,7 +5,7 @@ namespace Wms\Domain\Entity;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao as ExpedicaoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
-    Wms\Service\Coletor as LeituraColetor,
+    Wms\Util\Coletor as ColetorUtil,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
 use Wms\Math;
@@ -2409,34 +2409,25 @@ class ExpedicaoRepository extends EntityRepository {
     }
 
     public function getUrlMobileByCodBarras($codBarras) {
-        $LeituraColetor = new LeituraColetor();
         $codBarras = (float) $codBarras;
         $tipoEtiqueta = null;
 
         if (strlen($codBarras) > 2) {
-            if ((substr($codBarras, 0, 2)) == "39") {
+            $arrPrefxEtiquetaSeparacao = array("10","39","68","69");
+            $codBarraPrefix = substr($codBarras, 0, 2);
+            if (in_array($codBarraPrefix, $arrPrefxEtiquetaSeparacao)) {
                 $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO;
             }
-            if ((substr($codBarras, 0, 2)) == "69") {
-                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO;
-            }
-            if ((substr($codBarras, 0, 2)) == "68") {
-                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO;
-            }
-
-            if ((substr($codBarras, 0, 2)) == "10") {
-                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO;
-            }
-            if ((substr($codBarras, 0, 2)) == "11") {
+            if ($codBarraPrefix == "11") {
                 $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_MAE;
             }
-            if ((substr($codBarras, 0, 2)) == "12") {
+            if ($codBarraPrefix == "12") {
                 $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_MAPA_SEPARACAO;
             }
-            if ((substr($codBarras, 0, 2)) == "13") {
+            if ($codBarraPrefix == "13") {
                 $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
             }
-            if (substr($codBarras, 0, 2) == '14') {
+            if ($codBarraPrefix == '14') {
                 $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO;
             }
         }
@@ -2448,9 +2439,9 @@ class ExpedicaoRepository extends EntityRepository {
             $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
         }
 
+        $codBarras = ColetorUtil::retiraDigitoIdentificador($codBarras);
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO) {
             //ETIQUETA DE SEPARAÇÃO
-            $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
             $etiquetaSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao')->find($codBarras);
             if ($etiquetaSeparacao == null) {
                 throw new \Exception("Nenhuma Etiqueta de Separação encontrada com o codigo de barras " . $codBarras);
@@ -2579,7 +2570,6 @@ class ExpedicaoRepository extends EntityRepository {
         }
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_MAE) {
             //ETIQUETA MÃE
-            $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
             $etiquetaMae = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaMae")->find($codBarras);
             if ($etiquetaMae == null)
                 throw new \Exception("Nenhuma etiqueta mãe encontrada com este código de barras $codBarras");
@@ -2639,7 +2629,6 @@ class ExpedicaoRepository extends EntityRepository {
         }
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_MAPA_SEPARACAO) {
             //MAPA DE SEPARAÇÃO
-            $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
             $mapaSeparacao = $this->getEntityManager()->find('wms:Expedicao\MapaSeparacao', $codBarras);
             if (empty($mapaSeparacao))
                 throw new \Exception("Nenhum mapa de separação encontrado com o códgo " . $codBarras);
@@ -2649,7 +2638,6 @@ class ExpedicaoRepository extends EntityRepository {
             return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao);
         }
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO) {
-            $codBarras = $LeituraColetor->retiraDigitoIdentificador($codBarras);
             $mapaSeparacaoEmbalado = $this->getEntityManager()->find('wms:Expedicao\MapaSeparacaoEmbalado', $codBarras);
             if (empty($mapaSeparacaoEmbalado))
                 throw new \Exception("Nenhum volume embalado encontrado com o códgo " . $codBarras);

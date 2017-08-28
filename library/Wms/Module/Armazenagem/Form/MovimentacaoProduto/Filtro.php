@@ -92,7 +92,7 @@ class Filtro extends Form
             'class' => 'btn',
             'decorators' => array('ViewHelper'),
         ))
-        ->addDisplayGroup(array('idProduto',  'grade', 'dataInicial', 'dataFim', 'tipoMovimentacao', 'tipoOperacao', 'rua', 'predio', 'nivel', 'apto','ordem','tipoEndereco', 'submit'), 'identificacao', array('legend' => 'Filtro'));
+        ->addDisplayGroup(array('idProduto',  'grade', 'dataInicial', 'dataFim', 'tipoMovimentacao', 'rua', 'predio', 'nivel', 'apto', 'tipoOperacao','ordem','tipoEndereco', 'submit'), 'identificacao', array('legend' => 'Filtro'));
     }
 /**
      *

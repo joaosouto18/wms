@@ -1,7 +1,6 @@
 //JavaScript
 $(document).ready(function(){
     $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
-
     /***************************************
      Dialog Ajax windows
      ***************************************/
@@ -113,7 +112,9 @@ $(document).ready(function(){
 
     // button save
     $('.btnSave').click(function() {
-        $('.saveForm').submit();
+        if ($.validateField()) {
+            $('.saveForm').submit();
+        }
     });
 
     // Save Form
@@ -248,6 +249,12 @@ $(document).ready(function(){
 
     $('#produtosdivergentes').click(function () {
         location.href='/enderecamento/relatorio_estoque/consultar-produto';
+    });
+
+    $('input[type="submit"]').click(function () {
+        if (!$.validateField()) {
+            return false;
+        }
     });
 
     //auto completar a grade da tela de inventario no papel

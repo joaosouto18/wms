@@ -3,8 +3,7 @@
 use Wms\Controller\Action,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao,
     Wms\Module\Mobile\Form\SenhaLiberacao,
-    Wms\Service\Coletor as LeituraColetor,
-    Wms\Module\Expedicao\Printer\EtiquetaSeparacao as Etiqueta,
+    Wms\Util\Coletor as ColetorUtil,
     Wms\Domain\Entity\Expedicao;
 
 class Mobile_ExpedicaoController extends Action {
@@ -22,8 +21,7 @@ class Mobile_ExpedicaoController extends Action {
     }
 
     public function definirOperacaoAction() {
-        $LeituraColetor = new LeituraColetor();
-        $codBarras = $LeituraColetor->retiraDigitoIdentificador($this->_getParam('codigoBarras'));
+        $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarras'));
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebraRepository $mapaSeparacaoQuebraRepo */
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
         $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras));
@@ -143,6 +141,7 @@ class Mobile_ExpedicaoController extends Action {
 
             $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
             $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+
             /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
             $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $idMapa));
             $confereQtd = false;
@@ -169,7 +168,10 @@ class Mobile_ExpedicaoController extends Action {
                     $statusMapaEmbalado = true;
                 }
             }
-
+            $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
+            $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
+            $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
+            $this->view->tipoQuebraVolume = $modeloSeparacaoEn->getTipoQuebraVolume();
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
             $this->view->idExpedicao = $idExpedicao;
@@ -195,25 +197,21 @@ class Mobile_ExpedicaoController extends Action {
         $codPessoa = $this->_getParam('cliente');
         $idExpedicao = $this->_getParam("idExpedicao");
         $idVolume = $this->_getParam("idVolume");
-        if ($codPessoa == "") {$codPessoa = null;}
+        if ($codPessoa == "") {
+            $codPessoa = null;
+        }
         $msg['msg'] = "";
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
-        $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
 
-        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-        $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
-
         $paramsModeloSeparacao = array(
-           'tipoDefaultEmbalado'     => $modeloSeparacaoEn->getTipoDefaultEmbalado(),
-           'utilizaQuebra'           => $modeloSeparacaoEn->getUtilizaQuebraColetor(),
-           'utilizaVolumePatrimonio' => $modeloSeparacaoEn->getUtilizaVolumePatrimonio()
-
-        ) ;
-
+            'tipoDefaultEmbalado' => $this->_getParam("tipoDefaultEmbalado"),
+            'utilizaQuebra' => $this->_getParam("utilizaQuebra"),
+            'utilizaVolumePatrimonio' => $this->_getParam("utilizaVolumePatrimonio")
+        );
         if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
             try {
                 $codBarrasProcessado = intval($codBarras);
@@ -247,7 +245,7 @@ class Mobile_ExpedicaoController extends Action {
                     $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
 
                     $codQuebra = 0;
-                    if ($modeloSeparacaoEn->getTipoQuebraVolume() == Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CLIENTE) {
+                    if ($this->_getParam("tipoQuebraVolume") == Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CLIENTE) {
                         $mapaSeparacaoEn = $mapaSeparacaoQuebraRepo->findBy(array('mapaSeparacao' => $idMapa, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CLIENTE));
                         if (isset($mapaSeparacaoEn) && !empty($mapaSeparacaoEn))
                             $codQuebra = $mapaSeparacaoEn[0]->getCodQuebra();
@@ -257,14 +255,13 @@ class Mobile_ExpedicaoController extends Action {
                     $this->view->idVolume = $codBarras;
                     $this->addFlashMessage('info', "Volume $codBarrasProcessado vinculada a expedição");
                 } else if ($tipoProvavelCodBarras === 'produto') {
-                    $LeituraColetor = new LeituraColetor();
-                    $codBarras = $LeituraColetor->adequaCodigoBarras($codBarras, true);
+                    $codBarras = ColetorUtil::adequaCodigoBarras($codBarras, true);
 
                     $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa);
                     if ($result === true) {
                         $msg['msg'] = 'Quantidade conferida com sucesso';
                     }
-               }
+                }
             } catch (\Exception $e) {
                 $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()));
                 $this->_helper->json($vetRetorno);
@@ -299,9 +296,7 @@ class Mobile_ExpedicaoController extends Action {
     }
 
     public function consultaProdutoAction() {
-        $codigoBarras = $this->_getParam('codigoBarras');
-        $recebimentoService = new \Wms\Service\Recebimento;
-        $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
+        $codigoBarras = ColetorUtil::adequaCodigoBarras($this->_getParam('codigoBarras'));
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
@@ -1088,15 +1083,14 @@ class Mobile_ExpedicaoController extends Action {
     public function verificaEtiquetaValidaAjaxAction() {
         $this->bloquearOs();
 
-        $LeituraColetor = new LeituraColetor();
-        $etiquetaSeparacao = $LeituraColetor->retiraDigitoIdentificador($this->getRequest()->getParam('etiquetaSeparacao'));
+        $etiquetaSeparacao = ColetorUtil::retiraDigitoIdentificador($this->getRequest()->getParam('etiquetaSeparacao'));
         $etiqueta = $this->validacaoEtiqueta($etiquetaSeparacao);
 
         //VERIFICA SE O PRODUTO PERTENCE A ETIQUETA CORRETA
         $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
         if (isset($etiquetaProduto)) {
             $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
-            $etiquetaProduto = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
+            $etiquetaProduto = ColetorUtil::adequaCodigoBarras($etiquetaProduto, true);
 
             if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
                 $msg = 'Produto ' . $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] . ' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
@@ -1118,8 +1112,7 @@ class Mobile_ExpedicaoController extends Action {
         $sessaoColetor = new \Zend_Session_Namespace('coletor');
         $idExpedicao = $this->getRequest()->getParam('idExpedicao');
         $etiquetaSeparacao = $this->getRequest()->getParam('etiquetaSeparacao');
-        $LeituraColetor = new LeituraColetor();
-        $etiquetaSeparacao = $LeituraColetor->retiraDigitoIdentificador($etiquetaSeparacao);
+        $etiquetaSeparacao = ColetorUtil::retiraDigitoIdentificador($etiquetaSeparacao);
         $placa = $this->getRequest()->getParam('placa', null);
         $tipoConferencia = $this->getRequest()->getParam('tipo-conferencia', null);
         $volume = $this->getRequest()->getParam('volume', null);
@@ -1138,7 +1131,7 @@ class Mobile_ExpedicaoController extends Action {
         $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
         if (isset($etiquetaProduto)) {
             $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
-            $etiquetaProduto = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
+            $etiquetaProduto = ColetorUtil::adequaCodigoBarras($etiquetaProduto, true);
 
             if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
                 $msg = 'Produto ' . $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] . ' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
@@ -1232,7 +1225,7 @@ class Mobile_ExpedicaoController extends Action {
         $etiquetaProduto = $this->getRequest()->getParam('etiquetaProduto');
         if (isset($etiquetaProduto)) {
             $arraycodBarrasProduto = $this->geraArrayCodigoBarras($this->extraiCodigoBarras($etiqueta));
-            $etiquetaProduto = $LeituraColetor->adequaCodigoBarras($etiquetaProduto, true);
+            $etiquetaProduto = ColetorUtil::adequaCodigoBarras($etiquetaProduto, true);
 
             if (!in_array($etiquetaProduto, $arraycodBarrasProduto)) {
                 $msg = 'Produto ' . $etiqueta[0]['codProduto'] . ' - ' . $etiqueta[0]['produto'] . ' - ' . $etiqueta[0]['grade'] . ' ref. Etq. Sep. ' . $etiquetaSeparacao . ' não confere com a etiqueta do fabricante ' . $etiquetaProduto;
@@ -1394,7 +1387,6 @@ class Mobile_ExpedicaoController extends Action {
 
     public function carregamentoAction() {
         //OBTER OS PARAMETROS
-        $leituraColetor = new LeituraColetor();
         $operadores = $this->_getParam('mass-id');
         $this->view->idExpedicao = $idExpedicao = $this->_getParam('idExpedicao');
         $this->view->operacao = $this->_getParam('operacao');
@@ -1407,7 +1399,7 @@ class Mobile_ExpedicaoController extends Action {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo = $this->em->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
-        $codBarras = $leituraColetor->retiraDigitoIdentificador($this->_getParam('codBarras'));
+        $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codBarras'));
         $etiquetaEn = $etiquetaRepo->findOneBy(array('id' => $codBarras));
         $entityExpedicao = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
 

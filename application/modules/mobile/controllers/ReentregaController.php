@@ -1,9 +1,7 @@
 <?php
 
-use Wms\Controller\Action;
-use Wms\Module\Mobile\Form\Reentrega as FormReentrega;
-use Wms\Module\Mobile\Form\ConferirProdutosReentrega as FormConferirProdutosReentrega;
-use Wms\Service\Coletor as LeituraColetor;
+use Wms\Controller\Action,
+    Wms\Util\Coletor as ColetorUtil;
 
 class Mobile_ReentregaController extends Action {
 
@@ -15,7 +13,6 @@ class Mobile_ReentregaController extends Action {
         /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
         $recebimentoReentregaNotaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\RecebimentoReentregaNota');
         $this->view->notasFiscais = $recebimentoReentregaNotaRepo->getRecebimentoReentregaByNota();
-//        $this->view->form = new FormReentrega;
     }
 
     public function buscarAction() {
@@ -175,8 +172,7 @@ class Mobile_ReentregaController extends Action {
 
     public function getNotaOrCodBarrasByCampoBipadoAction() {
         $params = $this->_getAllParams();
-        $LeituraColetor = new LeituraColetor();
-        $etiquetaSeparacao = $LeituraColetor->retiraDigitoIdentificador($params['etiqueta']);
+        $etiquetaSeparacao = ColetorUtil::retiraDigitoIdentificador($params['etiqueta']);
 
         $sql = $this->getEntityManager()->createQueryBuilder()
                 ->select('nfs.numeroNf, es.id')

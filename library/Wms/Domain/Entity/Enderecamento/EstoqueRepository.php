@@ -3,8 +3,9 @@
 namespace Wms\Domain\Entity\Enderecamento;
 
 use Doctrine\ORM\EntityRepository,
-    Core\Util\Produto as ProdutoUtil;
-use Wms\Util\Endereco;
+    Core\Util\Produto as ProdutoUtil,
+    Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity,
+    Wms\Util\Endereco as EnderecoUtil;
 
 class EstoqueRepository extends EntityRepository
 {
@@ -230,6 +231,7 @@ class EstoqueRepository extends EntityRepository
      */
     public function getEstoqueByParams ( $params)
     {
+        $endPicking = EnderecoEntity::ENDERECO_PICKING;
         $Sql = " SELECT
                     ESTQ.COD_DEPOSITO_ENDERECO,
                     DE.DSC_DEPOSITO_ENDERECO, 
@@ -239,9 +241,12 @@ class EstoqueRepository extends EntityRepository
                     ESTQ.COD_PRODUTO_VOLUME, 
                     ESTQ.COD_PRODUTO, 
                     ESTQ.DSC_GRADE, 
+                    ESTQ.DTH_VALIDADE,
                     ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
                     NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO,
                     TO_CHAR(ESTQ.DTH_VALIDADE,'DD/MM/YYYY') as DTH_VALIDADE
+                    CASE WHEN (DE.COD_CARACTERISTICA_ENDERECO = 37) THEN 1
+                         ELSE 2 END AS PRIORIDADE_PICKING
                    FROM ESTOQUE ESTQ
                    LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, SUM(REP.QTD_RESERVADA) QTD_RESERVA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
                                 FROM RESERVA_ESTOQUE RE
@@ -256,7 +261,7 @@ class EstoqueRepository extends EntityRepository
                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
                   WHERE ((ESTQ.QTD + NVL(RS.QTD_RESERVA,0)) >0)";
 
-        $SqlOrder = " ORDER BY DT_MOVIMENTACAO , ESTQ.QTD";
+        $SqlOrder = " ORDER BY TO_DATE(ESTQ.DTH_VALIDADE), PRIORIDADE_PICKING, TO_DATE(DTH_PRIMEIRA_MOVIMENTACAO), ESTQ.QTD";
         $SqlWhere = "";
 
         if ((isset($params['idProduto'])) && ($params['idProduto'] != null)) {
@@ -398,7 +403,7 @@ class EstoqueRepository extends EntityRepository
         }
 
         if ($showPicking == false) {
-            $caracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+            $caracteristicaPicking = EnderecoEntity::ENDERECO_PICKING;
             $SQLWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO <> " . $caracteristicaPicking;
         }
         if (isset($parametros['rua']) && !empty($parametros['rua'])) {
@@ -455,7 +460,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoquePulmao($parametros)
     {
-        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
 
         $and="";
         $cond="";
@@ -592,7 +597,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoqueByRua($inicioRua, $fimRua, $grandeza = null,$exibePicking = 1, $exibePulmao = 1)
     {
-        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
 
         $query = $this->getEntityManager()->createQueryBuilder()
             ->select("e.descricao, estq.codProduto, estq.grade, p.descricao nomeProduto")
@@ -629,7 +634,7 @@ class EstoqueRepository extends EntityRepository
 
     public function saldo($params)
     {
-        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
             ->select('estq.codProduto, estq.grade, ls.descricao, sum(estq.qtd) qtdestoque, NVL(depv.descricao, depe.descricao) enderecoPicking')
             ->from("wms:Enderecamento\Estoque",'estq')
@@ -672,7 +677,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getExisteEnderecoPulmao ($codProduto, $grade)
     {
-        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
             ->select('estq.codProduto, estq.grade')
             ->from("wms:Enderecamento\Estoque",'estq')
@@ -759,7 +764,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getSituacaoEstoque($params) {
 
-        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
 
         $query = $this->getEntityManager()->createQueryBuilder()
         ->select("de.descricao,
@@ -846,7 +851,7 @@ class EstoqueRepository extends EntityRepository
 
         $em = $this->getEntityManager();
 
-        $endereco = Endereco::formatar($dscEndereco, null, null, $nivel);
+        $endereco = EnderecoUtil::formatar($dscEndereco, null, null, $nivel);
 
         $dql = $em->createQueryBuilder()
             ->select('dep.rua, dep.nivel, dep.predio, dep.apartamento, e.uma, e.id, dep.id as idEndereco' )

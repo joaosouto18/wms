@@ -179,21 +179,6 @@ class EnderecoRepository extends EntityRepository {
         return $auxRuauas->getQuery()->getResult();
     }
 
-    public function getEnderecoIdByDescricao($descricao) {
-        list($tamanhoRua, $tamanhoPredio, $tamanhoNivel, $tamanhoApartamento) = array_values(EnderecoUtil::getQtdDigitos());
-
-        $sql = " SELECT COD_DEPOSITO_ENDERECO, NUM_NIVEL, COD_CARACTERISTICA_ENDERECO, DSC_DEPOSITO_ENDERECO
-                 FROM DEPOSITO_ENDERECO
-                 WHERE
-                 (CAST(SUBSTR('00' || NUM_RUA,-$tamanhoRua,$tamanhoRua)
-                    || SUBSTR('00' || NUM_PREDIO, -$tamanhoPredio,$tamanhoPredio)
-                    || SUBSTR('00' || NUM_NIVEL,-$tamanhoNivel,$tamanhoNivel)
-                    || SUBSTR('00' || NUM_APARTAMENTO,-$tamanhoApartamento, $tamanhoApartamento) as INT)) = " . $descricao;
-
-        $array = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-        return $array;
-    }
-
     public function getPicking() {
         $em = $this->getEntityManager();
         $tipoPicking = Endereco::ENDERECO_PICKING;
@@ -329,27 +314,30 @@ class EnderecoRepository extends EntityRepository {
      * @param bool $picking | true pega endereço do tipo picking
      * @return array
      */
-    public function getProdutoByEndereco($dscEndereco, $unico = true, $picking = false) {
-        $em = $this->getEntityManager();
-
-        $idCaracteristicaEndereco = null;
-        if ($picking) {
-            $idCaracteristicaEndereco = Endereco::ENDERECO_PICKING;
-        }
+    public function getProdutoByEndereco($dscEndereco, $unico = true, $picking = false)
+    {
 
         $endereco = EnderecoUtil::formatar($dscEndereco);
 
-        $dql = $em->createQueryBuilder()
-                ->select('p.id as codProduto, p.grade, p.descricao, pv.capacidadePicking, pv.descricao descricaoEmbVol, pv.codigoBarras, f.nome fabricante, p.referencia')
-                ->distinct(true)
-                ->from("wms:Produto\Volume", "pv")
-                ->innerJoin("pv.endereco", "e")
-                ->innerJoin("pv.produto", "p")
-                ->leftJoin('p.fabricante', 'f')
-                ->where("e.descricao = '$endereco'");
+        $dql = $this->_em->createQueryBuilder()
+            ->select('p.id as codProduto, 
+                            p.grade,
+                            p.descricao, 
+                            NVL(pe.capacidadePicking, pv.capacidadePicking) capacidadePicking, 
+                            NVL(pe.descricao, pv.descricao) descricaoEmbVol, 
+                            NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, 
+                            f.nome fabricante, 
+                            p.referencia')
+            ->distinct(true)
+            ->from("wms:Deposito\Endereco", "de")
+            ->leftJoin("wms:Produto\Volume", "pv", "WITH", "pv.endereco = de")
+            ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "pe.endereco = de")
+            ->innerJoin("wms:Produto", "p", "WITH", "(p.id = pv.codProduto and p.grade = pv.grade) or (p.id = pe.codProduto and p.grade = pe.grade)")
+            ->leftJoin('p.fabricante', 'f')
+            ->where("de.descricao = '$endereco'");
 
         if ($picking) {
-            $dql->andWhere('e.idCaracteristica =' . $idCaracteristicaEndereco);
+            $dql->andWhere('de.idCaracteristica =' . Endereco::ENDERECO_PICKING);
         }
 
         if ($unico == true) {
@@ -358,27 +346,8 @@ class EnderecoRepository extends EntityRepository {
             $produto = $dql->getQuery()->getArrayResult();
         }
 
-        if (count($produto) <= 0) {
-            $dql = $em->createQueryBuilder()
-                    ->select('p.id as codProduto, p.grade, pe.id as codEmbalagem, p.descricao, pe.capacidadePicking, pe.descricao descricaoEmbVol, pe.codigoBarras, f.nome fabricante, p.referencia')
-                    ->distinct(true)
-                    ->from("wms:Produto\Embalagem", "pe")
-                    ->innerJoin("pe.endereco", "e")
-                    ->innerJoin("pe.produto", "p")
-                    ->leftJoin('p.fabricante', 'f')
-                    ->where("e.descricao = '$endereco'");
-
-            if ($picking) {
-                $dql->andWhere('e.idCaracteristica =' . $idCaracteristicaEndereco);
-            }
-
-            if ($unico == true) {
-                $produto = $dql->getQuery()->setMaxResults(1)->getArrayResult();
-            } else {
-                $produto = $dql->getQuery()->getArrayResult();
-            }
-        }
         return $produto;
+
     }
 
     public function getEnderecoesDisponivesByParam($params) {

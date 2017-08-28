@@ -143,7 +143,7 @@ class VolumeRepository extends EntityRepository
         $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $codBarras));
 
         if (empty($volumeEn)) {
-            throw new \Exception('Produto não encontrado');
+            throw new \Exception('Volume não encontrado');
         }
 
         $volumesEntities = $volumeRepo->findBy(array('codProduto' => $volumeEn->getCodProduto(), 'grade' => $volumeEn->getGrade()));

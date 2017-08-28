@@ -1,7 +1,8 @@
 <?php
 
 use Wms\Controller\Action,
-    \Wms\Util\Endereco as EnderecoUtil;
+    \Wms\Util\Endereco as EnderecoUtil,
+    \Wms\Util\Coletor as ColetorUtil;
 
 class Mobile_ConsultaEnderecoController extends Action {
 
@@ -9,8 +10,7 @@ class Mobile_ConsultaEnderecoController extends Action {
         $codigoBarras = $this->_getParam('codigoBarras');
         if (!empty($codigoBarras)) {
             try {
-                $LeituraColetor = new \Wms\Service\Coletor();
-                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+                $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarras);
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
                 $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
                 $endereco = EnderecoUtil::formatar($codigoBarras);

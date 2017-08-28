@@ -2,8 +2,6 @@
 
 namespace Wms\Domain\Entity;
 
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Driver\OCI8\OCI8Exception;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Produto as ProdutoEntity,
     Wms\Domain\Entity\Produto\Embalagem as EmbalagemEntity,
@@ -12,13 +10,12 @@ use Doctrine\ORM\EntityRepository,
     Doctrine\ORM\Id\SequenceGenerator,
     Wms\Util\CodigoBarras,
     Wms\Util\Endereco as EnderecoUtil,
-    Core\Util\Produto as ProdutoUtil;
-use Doctrine\ORM\ORMException;
-use DoctrineExtensions\Versionable\Exception;
-use Wms\Domain\Entity\CodigoFornecedor\Referencia;
-use Wms\Domain\Entity\Deposito\Endereco;
-use Wms\Domain\Entity\Deposito\Endereco\Caracteristica;
-use Wms\Domain\Entity\Produto\Embalagem;
+    Wms\Util\Coletor as ColetorUtil,
+    Core\Util\Produto as ProdutoUtil,
+    DoctrineExtensions\Versionable\Exception,
+    Wms\Domain\Entity\CodigoFornecedor\Referencia,
+    Wms\Domain\Entity\Deposito\Endereco,
+    Wms\Domain\Entity\Produto\Embalagem;
 
 /**
  *
@@ -112,9 +109,10 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         }
     }
 
-    protected function saveFornecedorReferencia($em, $dados, $produtoEntity) {
-        $idProduto = $produtoEntity->getIdProduto();
-        $fornecedorRefRepo = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+	protected  function saveFornecedorReferencia($em, $dados, $produtoEntity)
+	{
+		$idProduto = $produtoEntity->getIdProduto();
+		$fornecedorRefRepo  = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
 
         foreach ($dados['fornecedor'] as $key => $fornecedorRef) {
 
@@ -175,8 +173,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
             $produtoEntity->setPossuiPesoVariavel((isset($possuiPesoVariavel) && !empty($possuiPesoVariavel)) ? $possuiPesoVariavel : "N");
 
-            $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01", 1);
             if ($produtoEntity->getId() == null) {
+                $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01", 1);
                 $produtoEntity->setIdProduto($sqcGenerator->generate($em, $produtoEntity));
             }
 
@@ -1145,9 +1143,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
     }
 
     public function getProdutoByCodBarrasOrCodProduto($codigo) {
-        $LeituraColetor = new \Wms\Service\Coletor();
 
-        $codigoBarrasProduto = $LeituraColetor->adequaCodigoBarras($codigo);
+        $codigoBarrasProduto = ColetorUtil::adequaCodigoBarras($codigo);
 
         $info = $this->getProdutoByCodBarras($codigoBarrasProduto);
         $produtoEn = null;
@@ -1521,8 +1518,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_DEPOSITO_ENDERECO=DE.COD_DEPOSITO_ENDERECO
                 LEFT JOIN PRODUTO_VOLUME    PV ON PV.COD_DEPOSITO_ENDERECO=DE.COD_DEPOSITO_ENDERECO
                 WHERE (PV.COD_DEPOSITO_ENDERECO IS NULL AND PE.COD_DEPOSITO_ENDERECO IS NULL)
-                    AND DE.COD_CARACTERISTICA_ENDERECO <> 37 AND DE.IND_SITUACAO='D'
-                      " . $cond . "
+                    AND DE.COD_CARACTERISTICA_ENDERECO <> 37 AND DE.IND_SITUACAO='D' $cond
                 ORDER BY \"descricao\"";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -1673,9 +1669,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         $pulmao = Endereco::ENDERECO_PULMAO;
         if (isset($params['endereco']) && !empty($params['endereco'])) {
             if ($params['endereco'] == $picking) {
-                $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = " . $picking;
+                $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = $picking";
             } elseif ($params['endereco'] == $pulmao) {
-                $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = " . $pulmao;
+                $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = $pulmao";
             }
         }
 
@@ -1713,7 +1709,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $this->_em->getConnection()->query($query)->fetchAll();
     }
 
-    public function getProdutos($codProduto) {
+    public function getProdutos($codProduto)
+    {
         $sql = "SELECT COD_PRODUTO, DSC_GRADE, DSC_PRODUTO
 					FROM PRODUTO P
 					WHERE P.COD_PRODUTO IN ($codProduto)";
@@ -1725,8 +1722,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
      * @param string $validade
      * @return boolean
      */
-    public function checkShelfLifeProduto($produto, $validade) {
-        if (is_a($produto, 'Produto')) {
+	public function checkShelfLifeProduto($produto, $validade)
+    {
+        if (is_a($produto,'Produto')) {
             $produtoEn = $this->findOneBy(array('id' => $produto->getId(), 'grade' => $produto->getGrade()));
         } else {
             $produtoEn = $this->findOneBy(array('id' => $produto->id, 'grade' => $produto->grade));
@@ -1741,7 +1739,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return false;
     }
 
-    public function getProdutosEstoqueSemCapacidade() {
+    public function getProdutosEstoqueSemCapacidade()
+    {
         $sql = "SELECT DISTINCT
                        E.COD_PRODUTO as CODIGO,
                        E.DSC_GRADE as GRADE,

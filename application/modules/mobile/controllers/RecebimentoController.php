@@ -1,8 +1,9 @@
 <?php
 
-use Wms\Controller\Action;
-use Wms\Module\Mobile\Form\ProdutoBuscar as ProdutoBuscarForm;
-use Wms\Module\Mobile\Form\ProdutoQuantidade as ProdutoQuantidadeForm;
+use Wms\Controller\Action,
+    Wms\Util\Coletor as ColetorUtil,
+    Wms\Module\Mobile\Form\ProdutoBuscar as ProdutoBuscarForm,
+    Wms\Module\Mobile\Form\ProdutoQuantidade as ProdutoQuantidadeForm;
 
 class Mobile_RecebimentoController extends Action
 {
@@ -133,10 +134,8 @@ class Mobile_RecebimentoController extends Action
 
             $codigoBarras = $this->getRequest()->getParam('codigoBarras');
 
-            $recebimentoService = new \Wms\Service\Recebimento;
-
             // testa codigo de barras
-            $codigoBarras = $recebimentoService->analisarCodigoBarras($codigoBarras);
+            $codigoBarras = ColetorUtil::adequaCodigoBarras($codigoBarras);
 
             $form = new ProdutoQuantidadeForm;
 

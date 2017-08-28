@@ -2,7 +2,7 @@
 use Wms\Controller\Action,
     \Wms\Util\Endereco as EnderecoUtil,
     Wms\Domain\Entity\Enderecamento\Palete as Palete,
-    Wms\Service\Recebimento as LeituraColetor,
+    Wms\Util\Coletor as ColetorUtil,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Module\Mobile\Form\PickingLeitura as PickingLeitura,
     Wms\Domain\Entity\Enderecamento\Estoque;
@@ -22,7 +22,7 @@ class Mobile_EnderecamentoController extends Action
 
         if ($codigoBarrasEndereco) {
             try {
-                $codigoBarras = \Wms\Util\Coletor::retiraDigitoIdentificador($codigoBarrasEndereco);
+                $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarrasEndereco);
 
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
                 $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
@@ -138,7 +138,7 @@ class Mobile_EnderecamentoController extends Action
             $this->createXml('error','Nenhum Palete Informado');
         }
 
-        $idPalete = \Wms\Util\Coletor::retiraDigitoIdentificador($idPalete);
+        $idPalete = ColetorUtil::retiraDigitoIdentificador($idPalete);
 
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
@@ -156,7 +156,7 @@ class Mobile_EnderecamentoController extends Action
 
     public function validarEndereco($paleteEn, $paleteRepo)
     {
-        $endereco   = \Wms\Util\Coletor::retiraDigitoIdentificador($this->_getParam("endereco"));
+        $endereco   = ColetorUtil::retiraDigitoIdentificador($this->_getParam("endereco"));
         $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
         $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING_DINAMICO;
 
@@ -210,7 +210,7 @@ class Mobile_EnderecamentoController extends Action
             'apartamento' => $this->_getParam("apartamento"),
         );
 
-        $endereco = \Wms\Util\Endereco::formatar($arrEndereco);
+        $endereco = EnderecoUtil::formatar($arrEndereco);
 
         $idPalete           = $this->_getParam("uma");
         $capacidadePicking  = $this->_getParam('capacidadePicking');
@@ -752,8 +752,7 @@ class Mobile_EnderecamentoController extends Action
             if (is_null($nivel) || $nivel == '')
                 throw new \Exception ("Necessário informar o Nivel");
 
-            $LeituraColetor = new LeituraColetor();
-            $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarras);
+            $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarras);
 
             $endereco = EnderecoUtil::formatar($codigoBarras);
 
@@ -833,8 +832,7 @@ class Mobile_EnderecamentoController extends Action
 
     public function enderecoDestinoAction()
     {
-        $LeituraColetor = new LeituraColetor();
-        $this->view->codigoBarrasUMA = $codBarrasUma = $LeituraColetor->retiraDigitoIdentificador($this->_getParam('codigoBarrasUMA'));
+        $this->view->codigoBarrasUMA = $codBarrasUma = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasUMA'));
         $this->view->etiquetaProduto = $codBarras = $this->_getParam('etiquetaProduto');
         $this->view->idEstoque = $idEstoque = $this->_getParam('cb');
         $enderecoParam = $this->_getParam('end');
@@ -948,8 +946,7 @@ class Mobile_EnderecamentoController extends Action
             $this->getEntityManager()->beginTransaction();
 
             if ($enderecoNovo) {
-                $LeituraColetor = new LeituraColetor();
-                $enderecoNovo = $LeituraColetor->retiraDigitoIdentificador($enderecoNovo);
+                $enderecoNovo = ColetorUtil::retiraDigitoIdentificador($enderecoNovo);
             }
 
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
@@ -1045,20 +1042,9 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
-                    $estoqueDestino = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn, 'grade' => $produtoEn->getGrade(), 'depositoEndereco' => $enderecoNovoEn));
                     if ($produtoEn->getValidade() == 'S' ) {
-                        $valEstOrigem = $estoque->getValidade();
-                        $valEstDestino = (!empty($estoqueDestino))? $estoqueDestino->getValidade() : null;
-
-                        if (!empty($valEstOrigem)) {
-                            if (!empty($valEstDestino)) {
-                                $validade = ($valEstOrigem < $valEstDestino)? $valEstOrigem : $valEstDestino;
-                            } else {
-                                $validade = $valEstOrigem;
-                            }
-                        } elseif(!empty($valEstDestino)) {
-                            $validade = $valEstDestino;
-                        } else {
+                        $validade = $estoque->getValidade();
+                        if (empty($validade)) {
                             /** @var \Wms\Domain\Entity\Enderecamento\Palete $umaOrigem */
                             $umaOrigem = null;
                             if (isset($estoque) && !empty($estoque)) {
@@ -1067,28 +1053,9 @@ class Mobile_EnderecamentoController extends Action
                                     $umaOrigem = $this->em->find('wms:Enderecamento\Palete', $estoque->getUma());
                                 }
                             }
-                            $umaDestino = null;
-                            if (isset($estoqueDestino) && !empty($estoqueDestino)) {
-                                $estoqueDestinoUma = $estoqueDestino->getUma();
-                                if (isset($estoqueDestinoUma) && !empty($estoqueDestinoUma)) {
-                                    $umaDestino = $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma());
-                                }
-                            }
-
-                            $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
-                            $valUmaDestino = (!empty($umaDestino))? $umaDestino->getValidade() : null;
-
-                            if (!empty($valUmaOrigem)) {
-                                if (!empty($valUmaDestino)) {
-                                    $validade = ($valUmaOrigem < $valUmaDestino)? $valUmaOrigem : $valUmaDestino;
-                                } else {
-                                    $validade = $valUmaOrigem;
-                                }
-                            } elseif(!empty($valUmaDestino)) {
-                                $validade = $valUmaDestino;
-                            }
+                            $validade = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
                         }
-                        if (isset($validade) && !empty($validade)) {
+                        if (!empty($validade)) {
                             $params['validade'] = $validade->format('d/m/Y');
                         }
                     }
@@ -1110,8 +1077,7 @@ class Mobile_EnderecamentoController extends Action
                 }
             }
             else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
-                $LeituraColetor = new LeituraColetor();
-                $params['etiquetaProduto'] = $LeituraColetor->analisarCodigoBarras($params['etiquetaProduto']);
+                $params['etiquetaProduto'] = ColetorUtil::adequaCodigoBarras($params['etiquetaProduto']);
 
                 $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
@@ -1177,20 +1143,10 @@ class Mobile_EnderecamentoController extends Action
                         throw new \Exception("Estoque não Encontrado!");
 
                     $params['unitizador'] = $estoqueEn->getUnitizador();
-                    $estoqueDestino = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn, 'grade' => $produtoEn->getGrade(), 'depositoEndereco' => $endereco));
-                    if ($produtoEn->getValidade() == 'S' ) {
-                        $valEstOrigem = $estoqueEn->getValidade();
-                        $valEstDestino = (!empty($estoqueDestino))? $estoqueDestino->getValidade() : null;
 
-                        if (!empty($valEstOrigem)) {
-                            if (!empty($valEstDestino)) {
-                                $validade = ($valEstOrigem < $valEstDestino)? $valEstOrigem : $valEstDestino;
-                            } else {
-                                $validade = $valEstOrigem;
-                            }
-                        } elseif(!empty($valEstDestino)) {
-                            $validade = $valEstDestino;
-                        } else {
+                    if ($produtoEn->getValidade() == 'S' ) {
+                        $validade = $estoqueEn->getValidade();
+                        if (empty($validade)){
                             $umaOrigem = null;
                             if (isset($estoqueEn) && !empty($estoqueEn)) {
                                 $estoqueUma = $estoqueEn->getUma();
@@ -1198,29 +1154,9 @@ class Mobile_EnderecamentoController extends Action
                                     $umaOrigem = $this->em->find('wms:Enderecamento\Palete', $estoqueUma);
                                 }
                             }
-
-                            $umaDestino = null;
-                            if (isset($estoqueDestino) && !empty($estoqueDestino)) {
-                                $estoqueDestinoUma = $estoqueDestino->getUma();
-                                if (isset($estoqueDestinoUma) && !empty($estoqueDestinoUma)) {
-                                    $umaDestino = $this->em->find('wms:Enderecamento\Palete', $estoqueDestino->getUma());
-                                }
-                            }
-
-                            $valUmaOrigem = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
-                            $valUmaDestino = (!empty($umaDestino))? $umaDestino->getValidade() : null;
-
-                            if (!empty($valUmaOrigem)) {
-                                if (!empty($valUmaDestino)) {
-                                    $validade = ($valUmaOrigem < $valUmaDestino)? $valUmaOrigem : $valUmaDestino;
-                                } else {
-                                    $validade = $valUmaOrigem;
-                                }
-                            } elseif(!empty($valUmaDestino)) {
-                                $validade = $valUmaDestino;
-                            }
+                            $validade = (!empty($umaOrigem))? $umaOrigem->getValidade() : null;
                         }
-                        if (isset($validade) && !empty($validade)) {
+                        if (!empty($validade)) {
                             $params['validade'] = $validade->format('d/m/Y');
                         }
                     }
@@ -1338,7 +1274,7 @@ class Mobile_EnderecamentoController extends Action
 
     public function getEnderecoByParametro($dscEndereco)
     {
-        list($tamanhoRua, $tamanhoPredio, $tamanhoNivel, $tamanhoApartamento) = \Wms\Util\Endereco::getQtdDigitos();
+        list($tamanhoRua, $tamanhoPredio, $tamanhoNivel, $tamanhoApartamento) = EnderecoUtil::getQtdDigitos();
 
         $sql = " SELECT DSC_DEPOSITO_ENDERECO, NUM_NIVEL, COD_DEPOSITO_ENDERECO, COD_CARACTERISTICA_ENDERECO
                  FROM DEPOSITO_ENDERECO
@@ -1381,8 +1317,7 @@ class Mobile_EnderecamentoController extends Action
 
         try {
             if (!empty($codBarras) && !empty($codigoBarrasEndereco) && !empty($capacidadePicking)) {
-                $LeituraColetor = new \Wms\Service\Coletor();
-                $codigoBarras = $LeituraColetor->retiraDigitoIdentificador($codigoBarrasEndereco);
+                $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarrasEndereco);
 
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
                 $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
@@ -1415,17 +1350,15 @@ class Mobile_EnderecamentoController extends Action
 
     public function dadosEmbalagemAction()
     {
-
-        $codBarras = $this->_getParam('codigoBarras');
         $status = null;
         $mensagem = null;
         $result = array();
 
-        $recebimentoService = new \Wms\Service\Recebimento;
-        $codigoBarras = $recebimentoService->analisarCodigoBarras($codBarras);
+        $codBarras = ColetorUtil::adequaCodigoBarras($this->_getParam('codigoBarras'));
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepository */
-        $embalagemRepository = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-        $embalagemEn = $embalagemRepository->getEmbalagemByCodigo($codigoBarras);
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
+        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
 
         if (empty($embalagemEn) ) {
             /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
@@ -1438,13 +1371,14 @@ class Mobile_EnderecamentoController extends Action
             $status = 'error';
             $mensagem = 'Codigo de Barras nao encontrado!';
         } elseif (!empty($embalagemEn)) {
+            $enderecoEmbalagem = $embalagemEn->getEndereco();
             $status = 'ok';
-            $result['endereco'] = $embalagemEn[0]['descricao'].'0';
+            $result['endereco'] = (!empty($enderecoEmbalagem)) ? $enderecoEmbalagem->getDescricao() : null;
             $result['isEmbalagem'] = true;
-            $result['capacidade'] = $embalagemEn[0]['capacidadePicking'];
-            $result['embalado']   = $embalagemEn[0]['embalado'];
-            $result['referencia'] = $embalagemEn[0]['referencia'];
-            $result['descricao']  = $embalagemEn[0]['descricaoProduto'];
+            $result['capacidade'] = $embalagemEn->getCapacidadePicking();
+            $result['embalado']   = $embalagemEn->getEmbalado();
+            $result['referencia'] = $embalagemEn->getProduto()->getReferencia();
+            $result['descricao']  = $embalagemEn->getProduto()->getDescricao();
         } else {
             $enderecoVolume = $volumeEn->getEndereco();
             $status = 'ok';

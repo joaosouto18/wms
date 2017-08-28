@@ -10,7 +10,7 @@ namespace Wms\Util;
 class CodigoBarras
 {
 
-    public function verificarDiretorioExistente($dir){
+    public static function verificarDiretorioExistente($dir){
         if ( !is_dir($dir) ){
             mkdir($dir,777);
         }
@@ -471,7 +471,7 @@ class CodigoBarras
      * @param integer $font
      * @return string 
      */
-    public function gerarImagemEAN128($code, $width = 3, $height = 40, $font = 4)
+    public static function gerarImagemEAN128($code, $width = 3, $height = 40, $font = 4)
     {
 
         $bars = self::gerarCodigoEAN128($code);

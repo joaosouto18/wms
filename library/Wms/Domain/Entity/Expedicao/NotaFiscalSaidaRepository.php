@@ -2,11 +2,8 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query;
-use Wms\Service\Recebimento as LeituraColetor;
-use Symfony\Component\Console\Output\NullOutput;
-use Wms\Domain\Entity\Expedicao;
+use Doctrine\ORM\EntityRepository,
+    Wms\Util\Coletor as ColetorUtil;
 
 class NotaFiscalSaidaRepository extends EntityRepository {
 
@@ -41,8 +38,7 @@ class NotaFiscalSaidaRepository extends EntityRepository {
         }
 
         if (isset($data['codEtiqueta']) && !empty($data['codEtiqueta'])) {
-            $LeituraColetor = new LeituraColetor();
-            $codBarras = $LeituraColetor->retiraDigitoIdentificador($data['codEtiqueta']);
+            $codBarras = ColetorUtil::retiraDigitoIdentificador($data['codEtiqueta']);
             $sql->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'p.id = etq.pedido');
             $sql->andWhere("etq.id = $codBarras");
         }
