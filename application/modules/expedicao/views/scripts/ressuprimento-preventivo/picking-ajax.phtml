@@ -55,13 +55,11 @@ if (count($this->dados) > 0) {
 }
 ?>
 </table>
-
-
 <script>
     $('.gTable.list tr').click(function () {
         $(this).toggleClass('tr-select');
     });
-    
+
     $('#check-all').click(function () {
         if ($(this).prop("checked")) {
             $('.checkBoxClass').each(function () {

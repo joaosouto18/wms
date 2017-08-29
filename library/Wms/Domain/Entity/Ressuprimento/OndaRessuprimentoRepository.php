@@ -701,13 +701,9 @@ class OndaRessuprimentoRepository extends EntityRepository {
             case 2:
                 $SQLWhere .= " AND MOD(DE.NUM_RUA, 2) != 0 ";
                 break;
-
-            default:
-                break;
         }
         $SQLOrderBy = " ORDER BY DE.DSC_DEPOSITO_ENDERECO";
         $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
-
         $pickings = array();
         /*
          * TRATA RESULTADO DA QUERY
@@ -842,8 +838,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
         );
 
         //CALCULO A QUANTIDADE PARA RESSUPRIR
-
-
         $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
         $restante = 0;
         foreach ($estoquePulmao as $estoque) {
