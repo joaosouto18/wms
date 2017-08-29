@@ -584,7 +584,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $embalagemAtual = $menorEmbalagem;
                 }
 
-                $quantidadeRestantePedido = $quantidadeRestantePedido - $embalagemAtual->getQuantidade();
+                $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido,$embalagemAtual->getQuantidade());
 
                 $mapaSeparacao = $this->getMapaSeparacao(null,$quebras,$statusEntity, $expedicaoEntity);
                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, array(), null);
