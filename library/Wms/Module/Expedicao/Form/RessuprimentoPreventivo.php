@@ -92,11 +92,11 @@ class RessuprimentoPreventivo extends Form {
                     'class' => 'btn completar-picking',
                     'decorators' => array('ViewHelper')
                 ))
-                ->addElement('submit', 'limpar', array(
-                    'label' => 'Limpar Pulmão',
-                    'class' => 'btn limpar-pulmao',
-                    'decorators' => array('ViewHelper')
-                ))
+//                ->addElement('submit', 'limpar', array(
+//                    'label' => 'Limpar Pulmão',
+//                    'class' => 'btn limpar-pulmao',
+//                    'decorators' => array('ViewHelper')
+//                ))
                 ->addDisplayGroup(array('rua', 'predio', 'nivel', 'apto', 'ladoRua', 'tipoEndereco', 'linhaSeparacao', 'ruaFinal', 'predioFinal', 'nivelFinal', 'aptoFinal'), 'identificacao', array('legend' => 'Filtros'))
                 ->addDisplayGroup(array('ocupacao', 'tiporessuprimento', 'completar', 'limpar'), 'tranferencia', array('legend' => 'Parâmetros'));
     }

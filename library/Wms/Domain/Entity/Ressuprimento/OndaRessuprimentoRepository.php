@@ -657,10 +657,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)
                 AND NP.IND_PADRAO = 'S'
                 AND ((ESTOQUE_PULMAO.QTD + NVL(RS.QTD_RESERVA,0)) > 0)";
-
-//        $SQLWhere = " and  P.COD_PRODUTO IN (46451)";
-        $SQLWhere = " and  P.COD_PRODUTO IN (15504)";
-//        $SQLWhere = "";
+        $SQLWhere = "";
         if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
             $SQLWhere .= "AND (DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
         } else {
@@ -865,14 +862,16 @@ class OndaRessuprimentoRepository extends EntityRepository {
                             $qtdOnda = $restante;
                         }
                         $qtdOnda = (floor($qtdOnda / $qtdEmbalagens)) * $qtdEmbalagens;
-                        $osGeradas[] = array(
-                            'embalagens' => json_encode($embalagens),
-                            'volumes' => json_encode($volumes),
-                            'qtdOnda' => $qtdOnda,
-                            'enderecoPulmao' => $estoque['DSC_DEPOSITO_ENDERECO'],
-                            'idPicking' => $idPicking,
-                            'validadeEstoque' => $validadeEstoque
-                        );
+                        if ($qtdOnda > 0) {
+                            $osGeradas[] = array(
+                                'embalagens' => json_encode($embalagens),
+                                'volumes' => json_encode($volumes),
+                                'qtdOnda' => $qtdOnda,
+                                'enderecoPulmao' => $estoque['DSC_DEPOSITO_ENDERECO'],
+                                'idPicking' => $idPicking,
+                                'validadeEstoque' => $validadeEstoque
+                            );
+                        }
                         if ($capacidadePicking < $picking['norma']) {
                             break;
                         }
