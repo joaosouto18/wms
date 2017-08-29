@@ -468,11 +468,14 @@ class Web_ProdutoController extends Crud {
             case 3:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
                 break;
+            case 4:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
+                break;
         }
 
         $gerarEtiqueta->init(null, array(
             'codProduto' => $codProduto,
-            'grade' => $grade), $modelo);
+            'grade' => $grade), $modelo, \Wms\Domain\Entity\Recebimento::TARGET_IMPRESSAO_PRODUTO);
     }
 
     public function verificarParametroCodigoBarrasAjaxAction() {

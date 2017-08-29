@@ -30,6 +30,8 @@ class itensNf {
     /** @var string */
     public $quantidadeConferida;
     /** @var string */
+    //public $peso;
+    /** @var string */
     public $quantidadeAvaria;
     /** @var string */
     public $motivoDivergencia;
@@ -168,7 +170,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             }
             $idFornecedor = $novoIdFornecedor;
         }
-
+        /** @var \Wms\Domain\Entity\NotaFiscal $notaFiscalEntity */
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')->findOneBy(array(
             'fornecedor' => $fornecedorEntity->getId(),
             'numero' => $numero,
@@ -187,8 +189,9 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $clsItensNf->idProduto = $item['COD_PRODUTO'];
             $clsItensNf->quantidade = $item['QTD_ITEM'];
             $clsItensNf->grade = $item['DSC_GRADE'];
-            $clsItensNf->peso = $item['PESO_ITEM'];
+//            $clsItensNf->peso = $item['PESO_ITEM'];
             $clsItensNf->quantidadeConferida = $item['QTD_CONFERIDA'];
+            $clsItensNf->quantidadeAvaria = $item['QTD_AVARIA'];
             $clsItensNf->motivoDivergencia = $item['DSC_MOTIVO_DIVER_RECEB'];
             $clsNf->itens[] = $clsItensNf;
         }
@@ -199,7 +202,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $dataEntrada = ($notaFiscalEntity->getDataEntrada()) ? $notaFiscalEntity->getDataEntrada()->format('d/m/Y') : '';
 
         $clsNf->idRecebimeto = $idRecebimento;
-        $clsNf->idFornecedor = $notaFiscalEntity->getFornecedor()->getId();
+        $clsNf->idFornecedor = $notaFiscalEntity->getFornecedor()->getIdExterno();
         $clsNf->numero = $notaFiscalEntity->getNumero();
         $clsNf->serie = $notaFiscalEntity->getSerie();
         $clsNf->pesoTotal = $notaFiscalEntity->getPesoTotal();
@@ -272,9 +275,16 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
                     $itemWs['grade'] = (empty($itemNf->grade) || $itemNf->grade === "?") ? "UNICA" : trim($itemNf->grade);
                     $itemWs['quantidade'] = str_replace(',','.',trim($itemNf->quantidade));
-                    $itemWs['peso'] = trim(str_replace(',','.',$itemNf->peso));
-                    if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0))
+
+                    if (isset($itemNf->peso)) {
+                        if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0)) {
+                            $itemWs['peso'] = trim($itemNf->quantidade);
+                        } else {
+                            $itemWs['peso'] = trim(str_replace(',','.',$itemNf->peso));
+                        }
+                    } else {
                         $itemWs['peso'] = trim($itemNf->quantidade);
+                    }
 
                     $itensNf[] = $itemWs;
                 }

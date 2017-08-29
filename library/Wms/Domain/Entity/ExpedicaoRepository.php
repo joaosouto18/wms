@@ -65,9 +65,9 @@ class ExpedicaoRepository extends EntityRepository {
                          PP.DSC_GRADE,
                          SUM (NVL(PP.QUANTIDADE,0)) - SUM(NVL(PP.QTD_CORTADA,0)) as QTD
                     FROM PEDIDO P
-                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                    LEFT JOIN CARGA          C ON C.COD_CARGA = P.COD_CARGA
-                    LEFT JOIN EXPEDICAO      E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                    INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                    INNER JOIN CARGA          C ON C.COD_CARGA = P.COD_CARGA
+                    INNER JOIN EXPEDICAO      E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                     WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (" . $expedicoes . ")
                           AND P.CENTRAL_ENTREGA = $filialExterno
@@ -104,9 +104,9 @@ class ExpedicaoRepository extends EntityRepository {
                          (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) as QTD,
                          P.COD_PEDIDO
                     FROM PEDIDO P
-                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                    LEFT JOIN CARGA          C ON C.COD_CARGA = P.COD_CARGA
-                    LEFT JOIN EXPEDICAO      E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                    INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                    INNER JOIN CARGA          C ON C.COD_CARGA = P.COD_CARGA
+                    INNER JOIN EXPEDICAO      E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                     WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                           AND E.COD_EXPEDICAO IN (" . $expedicoes . ")
                           AND P.CENTRAL_ENTREGA = $filialExterno
@@ -234,6 +234,11 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             $produtosRessuprir = $this->getProdutosSemOnda($strExpedicao, $central);
+
+            if (empty($produtosRessuprir)) {
+                throw new \Exception("Não foi encontrado produto pendente de onda de ressuprimento ou a quantidade cortada é equivalente a do pedido");
+            }
+
             $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
             $produtosReservaSaida = $this->getProdutosSemOndaByExpedicao($strExpedicao, $central);
 
@@ -257,9 +262,6 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
 
-            if (empty($produtosRessuprir)) {
-                throw new \Exception("Não foi encontrado produto pendente de onda de ressuprimento ou a quantidade cortada é equivalente a do pedido");
-            }
 
             $ondaEn = $ondaRepo->geraNovaOnda();
             $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn, $dadosProdutos, $repositorios);

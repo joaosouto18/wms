@@ -157,8 +157,6 @@ class Expedicao_CorteController extends Action {
                     throw new \Exception("Produto $produto grade $grade não encontrado para o pedido $pedido");
 
                 $expedicaoRepo->cortaPedido($pedido, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $this->_getParam('motivoCorte', null));
-                $observacao = 'Produto ' . $pedidoProduto->getCodProduto() . ' Grade ' . $pedidoProduto->getGrade() . ' referente ao pedido ' . $pedido . ' cortado - motivo: ' . $motivo;
-                $expedicaoAndamentoRepo->save($observacao, $expedicao);
 
                 $this->getEntityManager()->flush();
                 $this->getEntityManager()->commit();

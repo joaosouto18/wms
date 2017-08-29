@@ -1,9 +1,36 @@
 <?php
 
-use Wms\Domain\Entity\Recebimento,
-    Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
+use Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
     Wms\Domain\Entity\NotaFiscal\Item as ItemNF;
 
+class Recebimento
+{
+    /**
+     * @var string
+     */
+    public $id;
+
+    /**
+     * @var DateTime
+     */
+    public $dataInicial;
+
+    /**
+     * @var DateTime
+     */
+    public $dataFinal;
+
+    /**
+     * @var string
+     */
+    public $status;
+
+    /**
+     * @var Nota[]
+     */
+    public $notasFiscais;
+
+}
 class Item
 {
 
@@ -71,23 +98,47 @@ class Wms_WebService_Recebimento extends Wms_WebService
      * Retorna um Recebimento específico no WMS pelo seu ID
      *
      * @param string $idRecebimento ID do Recebimento
-     * @return array|Exception
+     * @throws Exception
+     * @return Recebimento
      */
     public function buscar($idRecebimento)
     {
         $idRecebimento = trim ($idRecebimento);
 
+        /** @var \Wms\Domain\Entity\Recebimento $recebimento */
         $recebimento = $this->__getServiceLocator()->getService('Recebimento')->get($idRecebimento);
 
         if ($recebimento == null)
             throw new \Exception('Recebimento não encontrado');
 
-        return array(
-            'idRecebimento' => $idRecebimento,
-            'dataInicial' => $recebimento->getDataInicial(),
-            'dataFinal' => $recebimento->getDataFinal(),
-            'status' => $recebimento->getStatus(),
-        );
+        $dataInicial = $recebimento->getDataInicial();
+        $dataFinal = $recebimento->getDataFinal();
+
+        $recebimentoObj = new Recebimento();
+        $recebimentoObj->id = $idRecebimento;
+        $recebimentoObj->dataInicial = !empty($dataInicial)? $dataInicial : "-";
+        $recebimentoObj->dataFinal = !empty($dataFinal)? $dataFinal : "-";
+        $recebimentoObj->status = $recebimento->getStatus()->getSigla();
+        /** @var \Wms\Domain\Entity\NotaFiscal $notaEn */
+        foreach ($recebimento->getNotasFiscais() as $notaEn) {
+            $nota = new Nota();
+            $nota->idFornecedor = $notaEn->getIdFornecedor();
+            $nota->dataEmissao = $notaEn->getDataEmissao()->format("d/m/Y");
+            $nota->numero = $notaEn->getNumero();
+            $nota->serie = $notaEn->getSerie();
+            foreach ($notaEn->getItens() as $itemEn) {
+                $item = new Item();
+                $item->idProduto = $itemEn->getId();
+                $item->grade = $itemEn->getGrade();
+                $item->quantidade = $itemEn->getQuantidade();
+                $item->peso = $itemEn->getNumPeso();
+                $nota->itens[] = $item;
+            }
+            $recebimentoObj->notasFiscais[] = $nota;
+        }
+
+
+        return $recebimentoObj;
     }
     
     /**
