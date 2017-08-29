@@ -53,7 +53,7 @@ class RessuprimentoPreventivo extends Form {
                     'multiOptions' => array('firstOpt' => 'Todas', 'options' => $repoLinhaSeparacao->getIdValue()),
                 ))
                 ->addElement('select', 'tiporessuprimento', array(
-                    'label' => 'Tipo Ressuprimento',
+                    'label' => 'Tipo de Ressuprimento',
                     'mostrarSelecione' => true,
                     'multiOptions' => array('firstOpt' => 'Apenas Pulmão Completo', 'options' => array(1 => 'Completar Picking')),
                 ))
@@ -88,7 +88,7 @@ class RessuprimentoPreventivo extends Form {
                     'class' => 'ctrSize',
                 ))
                 ->addElement('submit', 'completar', array(
-                    'label' => 'Completar Picking',
+                    'label' => 'Gerar Ressuprimento',
                     'class' => 'btn completar-picking',
                     'decorators' => array('ViewHelper')
                 ))

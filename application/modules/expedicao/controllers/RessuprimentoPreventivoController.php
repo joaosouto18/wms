@@ -77,38 +77,29 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
         $this->getEntityManager()->persist($ondaEn);
 
         foreach ($dados as $value) {
-
             $produtoEn = $produtoRepo->findOneBy(array('id' => $value->produto, 'grade' => $value->grade));
-            $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('descricao' => $value->pulmao));
-            $qtdOnda = $value->qtdOnda;
-            $validadeEstoque = $value->validadeEstoque;
-            $idPicking = $value->idPicking;
-            $embalagens = array();
-            $volumes = array();
-            if ($value->tipo == 1) {
-                $embalagem = json_decode($value->embalagens);
-                if (is_array($embalagem)) {
-                    foreach ($embalagem as $value) {
-                        $embalagens[] = str_replace(array("'", '[', ']'), '', $value);
-                    }
+            foreach (json_decode($value->pulmao) as $pulmao) {
+                $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('descricao' => $pulmao));
+                $qtdOnda = json_decode($value->qtdOnda);
+                $validadeEstoque = $value->validadeEstoque;
+                $idPicking = $value->idPicking;
+                $embalagens = array();
+                $volumes = array();
+                if ($value->tipo == 1) {
+                    $embalagens = json_decode($value->embalagens);
+                    $embalagens = $embalagens->$pulmao;
+                    $volumes = null;
                 } else {
-                    $embalagens[] = str_replace(array("'", '[', ']'), '', $embalagem);
+                    $volumes = json_decode($value->volumes);
+                    $volumes = $volumes->$pulmao;
+                    $embalagens = null;
                 }
-                $volumes = null;
-            } else {
-                $volume = json_decode($value->volumes);
-                if (is_array($volume)) {
-                    foreach ($volume as $valueVol) {
-                        $volumes[] = str_replace(array("'", '[', ']'), '', $valueVol);
-                    }
-                } else {
-                    $volumes[] = str_replace(array("'", '[', ']'), '', $volume);
-                }
-                $embalagens = null;
+                $OndaRessupRep->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda->$pulmao, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque);
             }
-            $OndaRessupRep->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque);
         }
         $this->em->flush();
+        $OndaRessupRep->sequenciaOndasOs();
+        $this->_helper->json(array('success' => 'Onda Gerada'));
         die;
     }
 

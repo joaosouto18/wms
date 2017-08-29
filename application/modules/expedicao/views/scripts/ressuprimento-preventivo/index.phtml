@@ -50,7 +50,6 @@ echo $this->form;
                 data: $('form').serialize(),
                 success: function (data) {
                     $('#estoque').html(data);
-                    $('#estoque').prepend('<button id="confirmar" style="width: 220px; margin: 10px;" class="btn">Confirmar Ressuprimento Preventivo</button>');
                     $("#confirmar").click(function () {
                         var dados = new Array();
                         var count = 0;
@@ -69,20 +68,22 @@ echo $this->form;
                                 var picking = $(this).parent().parent().find('#picking').val();
                                 var pulmao = $(this).parent().parent().find('#pulmao').val();
                                 var tipo = $(this).parent().parent().find('#tipo').val();
-                                
-                                dados[count] = {produto: produto, grade: grade, embalagens:embalagens, volumes:volumes,
-                                saldo:saldo, capacidade:capacidade,pontoReposicao:pontoReposicao, ocupacao:ocupacao,
-                                idPicking:picking, qtdOnda:qtdOnda, validadeEstoque:validadeEstoque,pulmao:pulmao,tipo:tipo};
+
+                                dados[count] = {produto: produto, grade: grade, embalagens: embalagens, volumes: volumes,
+                                    saldo: saldo, capacidade: capacidade, pontoReposicao: pontoReposicao, ocupacao: ocupacao,
+                                    idPicking: picking, qtdOnda: qtdOnda, validadeEstoque: validadeEstoque, pulmao: pulmao, tipo: tipo};
                                 count++;
                             }
                         });
                         $.ajax({
                             url: URL_MODULO + '/ressuprimento-preventivo/confirmar-acao-ajax/',
                             type: 'post',
-                            dataType: 'html',
-                            data: {dados:  JSON.stringify(dados)},
+                            dataType: 'json',
+                            data: {dados: JSON.stringify(dados)},
                             success: function (data) {
-                                $('#estoque').html(data);
+                                if (data.success) {
+                                    $('#estoque').html('<div style="font-size: 13px;font-weight: bold;color: #31b531;">Ressuprimento Preventivo gerado com sucesso.</div>');
+                                }
                             }
                         });
                         return false;
