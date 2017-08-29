@@ -31,7 +31,7 @@ class PedidoProdutoRepository extends EntityRepository
                         if ($qtdERP > $qtdWms) $qtdERP = $qtdWms;
                         $qtdCortar = $qtdWms - $qtdERP;
 
-                        if ($qtdCortar != $qtdCortadaWms) {
+                        if ($qtdCortar >0) {
                             $cortes[] = array(
                                 'codPedido' => $codPedidoWMS,
                                 'codProduto' => $codProdutoWMS,
@@ -48,7 +48,7 @@ class PedidoProdutoRepository extends EntityRepository
                 }
 
                 if ($encontrouProdutoERP == false) {
-                    if ($qtdCortar != $qtdCortadaWms) {
+                    if ($qtdCortar >0) {
                         $cortes[] = array(
                             'codPedido' => $codPedidoWMS,
                             'codProduto' => $codProdutoWMS,
