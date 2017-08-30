@@ -150,7 +150,8 @@
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
                 <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a></td>
             <?php endif; ?>
-            <?php if ($this->mapaSeparacaoEmbalado == true) :         ?>
+            <?php echo "É mapa: " . $this->mapaSeparacaoEmbalado ?>
+            <?php if ($this->mapaSeparacaoEmbalado) :         ?>
             <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>" >Fechar Caixa</a></td>
             <?php endif; ?>
 
