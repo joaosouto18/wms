@@ -170,14 +170,6 @@
         var qtd = $("#qtd");
 
         if (qtd !== '') {
-            var confereQtd = $("#confereQtd").val();
-            if (confereQtd === null || confereQtd === '' || confereQtd === false) {
-                qtd.addClass("hidden").val("");
-                $("#label-qtd").addClass("hidden");
-            } else {
-                qtd.val(1);
-            }
-
             $.ajax({
                 url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'conferte-produto-ajax')) ?>',
                 data: $('form').serialize(),
@@ -189,6 +181,8 @@
                         var error = "";
                         var success = "";
                         var song = "";
+
+
 
                         if (data.retorno.resposta == 'error') {
                             error = data.retorno.message;
@@ -218,6 +212,13 @@
                 }
             });
             $('#dados-produtos').html("");
+            var confereQtd = $("#confereQtd").val();
+            if (confereQtd === null || confereQtd === '' || confereQtd === false) {
+                qtd.addClass("hidden").val("");
+                $("#label-qtd").addClass("hidden");
+            } else {
+                qtd.val(1);
+            }
             return false;
         }
     });
