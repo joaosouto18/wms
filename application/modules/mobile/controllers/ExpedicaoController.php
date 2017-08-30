@@ -177,7 +177,7 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->idPessoa = $codPessoa;
             $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
             $this->view->dscVolume = $dscVolume;
-            $this->view->exibeQtd = $confereQtd;
+            $this->view->confereQtd = $confereQtd;
         } catch (\Exception $e) {
             if ($confereQtd == true) {
                 $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()), 'dados' => $produtosMapa);
@@ -271,7 +271,7 @@ class Mobile_ExpedicaoController extends Action {
             }
         }
 
-        $this->getHelper('viewRenderer')->setNoRender(true);
+        //$this->getHelper('viewRenderer')->setNoRender(true);
         $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg']));
         $this->_helper->json($vetRetorno);
     }
