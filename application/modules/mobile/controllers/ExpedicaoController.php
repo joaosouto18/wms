@@ -159,23 +159,12 @@ class Mobile_ExpedicaoController extends Action {
                 }
             }
 
-            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
-            $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-            /** SE ESTIVER NA TELA DE MAPA DE EMBALADOS DEVE EXIBIR O BOTAO PARA FINALIZAR A ETIQUETA */
-            $statusMapaEmbalado = false;
-            if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
-                $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-                if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
-                    $statusMapaEmbalado = true;
-                }
-            }
-
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
             $this->view->idExpedicao = $idExpedicao;
             $this->view->central = $central;
             $this->view->idPessoa = $codPessoa;
-            $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
+            $this->view->separacaoEmbalado = (empty($codPessoa)) ? false : true;
             $this->view->dscVolume = $dscVolume;
             $this->view->confereQtd = $confereQtd;
         } catch (\Exception $e) {
