@@ -501,7 +501,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
                 //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
-                    $this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking,$repositorios,$validadeEstoque);
+                    $this->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque);
                     $qtdOsGerada ++;
                 }
 
@@ -609,10 +609,10 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     NVL(ESTOQUE_PICKING.QTD,0) as SALDO_PICKING,
                     DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100 as OCUPACAO
                FROM PRODUTO P
-               LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
-               LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
+               LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE AND PE.CAPACIDADE_PICKING > 0
+               LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE AND PV.CAPACIDADE_PICKING > 0
                LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON (PE.COD_PRODUTO_EMBALAGEM = PDL.COD_PRODUTO_EMBALAGEM)
-               LEFT JOIN NORMA_PALETIZACAO NP ON (NP.COD_NORMA_PALETIZACAO = PDL.COD_NORMA_PALETIZACAO)
+               LEFT JOIN NORMA_PALETIZACAO NP ON (NP.COD_NORMA_PALETIZACAO = NVL(PDL.COD_NORMA_PALETIZACAO, PV.COD_NORMA_PALETIZACAO))
                INNER JOIN (SELECT E.COD_PRODUTO, E.COD_DEPOSITO_ENDERECO,
                                  SUM(E.QTD) as QTD, NVL(E.COD_PRODUTO_VOLUME,0) as COD_PRODUTO_VOLUME,
                                  E.DSC_GRADE
@@ -648,7 +648,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)
                 AND NP.IND_PADRAO = 'S'
                 AND ((ESTOQUE_PULMAO.QTD + NVL(RS.QTD_RESERVA,0)) > 0)";
-        $SQLWhere = "";
+        $SQLWhere = " and P.COD_PRODUTO IN (16929)";
+//        $SQLWhere = " ";
         if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
             $SQLWhere .= "AND (DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
         } else {
@@ -700,24 +701,13 @@ class OndaRessuprimentoRepository extends EntityRepository {
          * TRATA RESULTADO DA QUERY
          */
         if (!empty($result) && is_array($result)) {
-            $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
             foreach ($result as $key => $value) {
                 $result[$key]['PONTO_REPOSICAO'] = $result[$key]['CAPACIDADE_PICKING'];
                 $pickings[$key]['pontoReposicao'] = $result[$key]['CAPACIDADE_PICKING'];
                 $pickings[$key]['saldoPicking'] = $result[$key]['SALDO_PICKING'];
                 $result[$key]['SALDO_PICKING_INPUT'] = $result[$key]['SALDO_PICKING'];
-                /*
-                 * CONVERTRE PARA CAIXA MASTER SOMENTE PARA EXIBIR
-                 */
-                if ($value['SALDO_PICKING'] > 0) {
-                    $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['SALDO_PICKING']);
-                    $result[$key]['SALDO_PICKING'] = implode('<br />', $vetEstoque);
-                }
-                if ($value['CAPACIDADE_PICKING'] > 0) {
-                    $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['CAPACIDADE_PICKING']);
-                    $result[$key]['CAPACIDADE_PICKING'] = implode('<br />', $vetEstoque);
-                }
+
                 $result[$key]['OCUPACAO'] = number_format($result[$key]['OCUPACAO'], 2, '.', '');
                 $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $value['COD_PRODUTO'], 'grade' => $value['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
 
@@ -730,28 +720,26 @@ class OndaRessuprimentoRepository extends EntityRepository {
                  * CONTROI ARRAY DE DADOS PRODUTO PARA CALCULO DO RESSUPRIMENTO
                  */
                 if (count($embalagensEn) > 0) {
+                    /*
+                     * CONVERTRE PARA CAIXA MASTER SOMENTE PARA EXIBIR
+                     */
+                    if ($value['SALDO_PICKING'] > 0) {
+                        $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['SALDO_PICKING']);
+                        $result[$key]['SALDO_PICKING'] = implode('<br />', $vetEstoque);
+                    }
+                    if ($value['CAPACIDADE_PICKING'] > 0) {
+                        $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['CAPACIDADE_PICKING']);
+                        $result[$key]['CAPACIDADE_PICKING'] = implode('<br />', $vetEstoque);
+                    }
                     $embalagem = $embalagensEn[0];
                     $embalagens = array();
                     $embalagens[] = $embalagem->getId();
                     $result[$key]['EMBALAGENS'] = $embalagens;
                     $pickings[$key]['qtdEmbalagens'] = $embalagem->getQuantidade();
                 } else if (!empty($value['PRODUTO_VOLUME']) && $value['PRODUTO_VOLUME'] > 0) {
-                    $normas = $volumeRepo->getNormasByProduto($value['COD_PRODUTO'], $value['DSC_GRADE']);
-                    foreach ($normas as $norma) {
-                        $volumesEn = $volumeRepo->getVolumesByNorma($norma->getId(), $value['COD_PRODUTO'], value['DSC_GRADE']);
-                        $result[$key]['VOLUMES'] = array();
-                        $result[$key]['EMBALAGENS'] = null;
-                        $idPicking = null;
-                        foreach ($volumesEn as $volume) {
-                            if ($volume->getEndereco() != null) {
-                                $idPicking = $volume->getEndereco()->getId();
-                            }
-                            $result[$key]['VOLUMES'][] = $volume->getId();
-                            $result[$key]['ID_PICKING'] = $idPicking;
-                            $result[$key]['CAPACIDADE_PICKING'] = $volume->getCapacidadePicking();
-                            $pickings[$key]['idPicking'] = $idPicking;
-                        }
-                    }
+                    $pickings[$key]['qtdEmbalagens'] = null;
+                    $pickings[$key]['volumes'][] = $value['PRODUTO_VOLUME'];
+                    $result[$key]['EMBALAGENS'] = null;
                 }
                 $pickings[$key]['embalagens'] = $result[$key]['EMBALAGENS'];
                 $pickings[$key]['capacidadePicking'] = $result[$key]['PONTO_REPOSICAO'];
@@ -810,7 +798,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
         if (count($volumes) > 0) {
             $idVolume = $volumes[0];
         }
-
         $qtdPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto, $grade, $idPicking, $volumes);
         $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $idPicking, "E");
         $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $idPicking, "S");
@@ -827,7 +814,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
             'norma' => $picking['norma'],
             'tiporessuprimento' => $picking['tiporessuprimento']
         );
-
         //CALCULO A QUANTIDADE PARA RESSUPRIR
         $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
         $restante = 0;
@@ -846,7 +832,9 @@ class OndaRessuprimentoRepository extends EntityRepository {
                             }
                             $qtdOnda = $restante;
                         }
-                        $qtdOnda = (floor($qtdOnda / $qtdEmbalagens)) * $qtdEmbalagens;
+                        if ($qtdEmbalagens != null) {
+                            $qtdOnda = (floor($qtdOnda / $qtdEmbalagens)) * $qtdEmbalagens;
+                        }
                         if ($qtdOnda > 0) {
                             $osGeradas[] = array(
                                 'embalagens' => json_encode($embalagens),
