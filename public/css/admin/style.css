@@ -271,9 +271,27 @@ button.btnBack:hover, .btnBack:hover, a.btnBack:hover{
 }
 
 button.alert, .btnAlert {
-    background: url(../../img/admin/btn_alert_bg.png) repeat-x scroll 0 0 #e0ce06;
+    background: rgba(223,206,22,1);
+    background: -moz-linear-gradient(top, rgba(223,206,22,1) 0%, rgba(232,64,2,1) 100%);
+    background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(223,206,22,1)), color-stop(100%, rgba(232,64,2,1)));
+    background: -webkit-linear-gradient(top, rgba(223,206,22,1) 0%, rgba(232,64,2,1) 100%);
+    background: -o-linear-gradient(top, rgba(223,206,22,1) 0%, rgba(232,64,2,1) 100%);
+    background: -ms-linear-gradient(top, rgba(223,206,22,1) 0%, rgba(232,64,2,1) 100%);
+    background: linear-gradient(to bottom, rgba(223,206,22,1) 0%, rgba(232,64,2,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dfce16', endColorstr='#e84002', GradientType=0 );
     border-color: #CCCCCC #AAAAAA #AAAAAA #CCCCCC;
-    color: #333;
+    color: #ffffff;
+}
+
+.btnAlert:hover{
+    background: rgba(235,219,51,1);
+    background: -moz-linear-gradient(top, rgba(235,219,51,1) 0%, rgba(253,80,18,1) 100%);
+    background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(235,219,51,1)), color-stop(100%, rgba(253,80,18,1)));
+    background: -webkit-linear-gradient(top, rgba(235,219,51,1) 0%, rgba(253,80,18,1) 100%);
+    background: -o-linear-gradient(top, rgba(235,219,51,1) 0%, rgba(253,80,18,1) 100%);
+    background: -ms-linear-gradient(top, rgba(235,219,51,1) 0%, rgba(253,80,18,1) 100%);
+    background: linear-gradient(to bottom, rgba(235,219,51,1) 0%, rgba(253,80,18,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ebdb33', endColorstr='#fd5012', GradientType=0 );
 }
 
 .ui-dialog-content form {
