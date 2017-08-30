@@ -438,8 +438,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(), $produtosSaida, "S", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
     }
 
-    private function calculaRessuprimentoByPicking($picking, $dadosProdutos, $repositorios) {
-        $osGeradas = array();
+    private function calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios) {
+        $qtdOsGerada = 0;
         $capacidadePicking = $picking['capacidadePicking'];
         $pontoReposicao = $picking['pontoReposicao'];
         $idPicking = $picking['idPicking'];
@@ -501,17 +501,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
                 //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
-                    $osGeradas[] = array(
-                        'produtoEn' => $produtoEn,
-                        'embalagens' => json_encode($embalagens),
-                        'volumes' => json_encode($volumes),
-                        'qtdOnda' => $qtdOnda,
-                        'enderecoPulmaoEn' => $enderecoPulmaoEn,
-                        'idPicking' => $idPicking,
-                        'validadeEstoque' => $validadeEstoque
-                    );
-                    //$this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking,$repositorios,$validadeEstoque);
-                    //$qtdOsGerada ++;
+                    $this->saveOs($produtoEn,$embalagens,$volumes,$qtdOnda,$ondaEn,$enderecoPulmaoEn,$idPicking,$repositorios,$validadeEstoque);
+                    $qtdOsGerada ++;
                 }
 
                 $qtdRessuprir = $qtdRessuprir - $qtdOnda;
@@ -521,7 +512,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
             }
         }
-        return $osGeradas;
+        return $qtdOsGerada;
     }
 
     public function sequenciaOndasOs() {
@@ -534,7 +525,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $this->getEntityManager()->flush();
     }
 
-    public function calculaRessuprimentoByProduto($produtosRessuprir, $dadosProdutos, $repositorios) {
+    public function calculaRessuprimentoByProduto($produtosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
         $volumeRepo = $repositorios['volumeRepo'];
         $osGeradas = array();
         foreach ($produtosRessuprir as $produto) {
@@ -589,7 +580,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
             }
 
             foreach ($pickings as $picking) {
-                $os = $this->calculaRessuprimentoByPicking($picking, $dadosProdutos, $repositorios);
+                $os = $this->calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios);
                 $osGeradas = array_merge($osGeradas, $os);
             }
         }

@@ -271,7 +271,7 @@ class ExpedicaoRepository extends EntityRepository {
             $reservaEstoqueExpedicaoRepo->gerarReservaSaidaPulmao($produtosPorTipoSaida['pulmao'], $repositorios);
             $this->getEntityManager()->flush();
 
-            $qtdOsGerada = $ondaRepo->geraOsRessuprimento($produtosRessuprir, $ondaEn, $dadosProdutos, $repositorios);
+            $qtdOsGerada = $ondaRepo->calculaRessuprimentoByProduto($produtosRessuprir, $ondaEn, $dadosProdutos, $repositorios);
 
             $this->getEntityManager()->flush();
             $ondaRepo->sequenciaOndasOs();
