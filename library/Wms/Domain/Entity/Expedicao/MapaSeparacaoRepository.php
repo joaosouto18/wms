@@ -1096,7 +1096,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = MSP.COD_PRODUTO AND P.DSC_GRADE = MSP.DSC_GRADE
                   $SQLJoin
                  WHERE 1 = 1
-                    AND (PE.COD_BARRAS = '$codBarras' OR PV.COD_BARRAS = '$codBarras')";
+                    AND ((PE.COD_BARRAS = '$codBarras' AND PE.DTH_INATIVACAO IS NULL) OR (PV.COD_BARRAS = '$codBarras' AND PV.DTH_INATIVACAO IS NULL))";
 
         //SE UTIILIZAR QUEBRA NA CONFERENCIA ENTÃO COMPARO APENAS COM O MAPA INFORMADO, CASO CONTRARIO COMPARO COM TODOS OS MAPAS DA EXPEDIÇÃO
         if ($utilizaQuebra == "S") {
