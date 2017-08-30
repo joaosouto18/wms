@@ -603,7 +603,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     P.DSC_GRADE,
                     DE.DSC_DEPOSITO_ENDERECO,
                     NP.NUM_NORMA,
-                    NVL(PV.COD_PRODUTO_VOLUME,0) as PRODUTO_VOLUME,
+                    P.DSC_PRODUTO,
                     NVL(PE.COD_DEPOSITO_ENDERECO,PV.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
                     NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING) as CAPACIDADE_PICKING,
                     NVL(ESTOQUE_PICKING.QTD,0) as SALDO_PICKING,
@@ -648,7 +648,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)
                 AND NP.IND_PADRAO = 'S'
                 AND ((ESTOQUE_PULMAO.QTD + NVL(RS.QTD_RESERVA,0)) > 0)";
-        $SQLWhere = " and P.COD_PRODUTO IN (16929)";
+        $SQLWhere = " and P.COD_PRODUTO IN (18838)";
 //        $SQLWhere = " ";
         if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
             $SQLWhere .= "AND (DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
@@ -694,13 +694,24 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $SQLWhere .= " AND MOD(DE.NUM_RUA, 2) != 0 ";
                 break;
         }
-        $SQLOrderBy = " ORDER BY DE.DSC_DEPOSITO_ENDERECO";
+        $SQLOrderBy = " GROUP BY P.COD_PRODUTO, 
+                 P.DSC_GRADE,
+                  DE.DSC_DEPOSITO_ENDERECO,
+                  NP.NUM_NORMA,
+                  NVL(PV.COD_PRODUTO_VOLUME,0),
+                  NVL(PE.COD_DEPOSITO_ENDERECO,PV.COD_DEPOSITO_ENDERECO),
+                  NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING),
+                  NVL(ESTOQUE_PICKING.QTD,0),
+                  P.DSC_PRODUTO,
+                  DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100  
+                  ORDER BY DE.DSC_DEPOSITO_ENDERECO";
         $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
         $pickings = array();
         /*
          * TRATA RESULTADO DA QUERY
          */
         if (!empty($result) && is_array($result)) {
+            $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
             foreach ($result as $key => $value) {
                 $result[$key]['PONTO_REPOSICAO'] = $result[$key]['CAPACIDADE_PICKING'];
@@ -736,10 +747,25 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     $embalagens[] = $embalagem->getId();
                     $result[$key]['EMBALAGENS'] = $embalagens;
                     $pickings[$key]['qtdEmbalagens'] = $embalagem->getQuantidade();
-                } else if (!empty($value['PRODUTO_VOLUME']) && $value['PRODUTO_VOLUME'] > 0) {
+                } else {
                     $pickings[$key]['qtdEmbalagens'] = null;
-                    $pickings[$key]['volumes'][] = $value['PRODUTO_VOLUME'];
-                    $result[$key]['EMBALAGENS'] = null;
+                    $normas = $volumeRepo->getNormasByProduto($value['COD_PRODUTO'], $value['DSC_GRADE']);
+                    foreach ($normas as $norma) {
+                        $volumesEn = $volumeRepo->getVolumesByNorma($norma->getId(), $value['COD_PRODUTO'], $value['DSC_GRADE']);
+                        $result[$key]['VOLUMES'] = array();
+                        $result[$key]['EMBALAGENS'] = null;
+                        $idPicking = null;
+                        foreach ($volumesEn as $volume) {
+                            if ($volume->getEndereco() != null) {
+                                $idPicking = $volume->getEndereco()->getId();
+                            }
+                            $result[$key]['VOLUMES'][] = $volume->getId();
+                            $pickings[$key]['volumes'][] = $volume->getId();
+                            $result[$key]['ID_PICKING'] = $idPicking;
+                            $result[$key]['CAPACIDADE_PICKING'] = $volume->getCapacidadePicking();
+                            $pickings[$key]['idPicking'] = $idPicking;
+                        }
+                    }
                 }
                 $pickings[$key]['embalagens'] = $result[$key]['EMBALAGENS'];
                 $pickings[$key]['capacidadePicking'] = $result[$key]['PONTO_REPOSICAO'];
@@ -752,16 +778,18 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $vetEmb = $vetVol = $vetPulmoes = $vetOnda = $vetExibePulmao = array();
                 if (count($os) > 0) {
                     foreach ($os as $value) {
+                        $vetExibePulmao[$value['enderecoPulmao']] = $value['enderecoPulmao'];
                         if ($value['enderecoPulmao'] != "null") {
                             $vetOnda[$value['enderecoPulmao']] = $value['qtdOnda'];
-                            $vetPulmoes[] = $value['enderecoPulmao'];
                         }
                         if ($value['volumes'] != "null") {
                             $vetVol[$value['enderecoPulmao']][] = json_decode($value['volumes']);
                         } elseif ($value['embalagens'] != "null") {
                             $vetEmb[$value['enderecoPulmao']][] = json_decode($value['embalagens']);
                         }
-                        $vetExibePulmao[] = $value['enderecoPulmao'];
+                    }
+                    foreach ($vetExibePulmao as $value) {
+                        $vetPulmoes[] = $value;
                     }
                     $result[$key]['EMBALAGENS'] = json_encode($vetEmb);
                     $result[$key]['VOLUMES'] = json_encode($vetVol);

@@ -97,8 +97,8 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
                 $OndaRessupRep->saveOs($produtoEn, $embalagens, $volumes[0], $qtdOnda->$pulmao, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque);
             }
         }
-//        $this->em->flush();
-//        $OndaRessupRep->sequenciaOndasOs();
+        $this->em->flush();
+        $OndaRessupRep->sequenciaOndasOs();
         $this->_helper->json(array('success' => 'Onda Gerada'));
         die;
     }

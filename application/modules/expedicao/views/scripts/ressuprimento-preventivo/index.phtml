@@ -14,8 +14,8 @@ echo $this->form;
         $('#ocupacao').parent().css('text-align', 'center');
         $('#tiporessuprimento').parent().find('label').append('<a href="#" class="info">\n\
             <img style="width: 20px; margin-top: -7px;" src="/img/question.png" alt="Home">\n\
-            <span> - <b>Completar Picking:</b> Retorna itens com estoque de pulmão com capacidade para completar o picking.\n\
-            <br /> - <b>Apenas Pulmão Completo:</b> Retorna apenas os itens com estoque de pulmão menor ou igual ao que caberá no picking.</span></a>');
+            <span> - <b>Completar Picking:</b> Abastece a quantidade suficiente para completar o picking.\n\
+            <br /> - <b>Apenas Pulmão Completo:</b> Efetiva o abastecimento apenas se a quantidade no endereço de pulmão couber totalmente no picking.</span></a>');
 
         $("#buscar").click(function () {
             $.ajax({

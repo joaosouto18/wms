@@ -442,7 +442,7 @@ class EstoqueRepository extends EntityRepository {
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
             foreach ($result as $key => $value) {
                 $result[$key]['QTD_EMBALAGEM'] = $value['QTD'];
-                if ($value['QTD'] > 0) {
+                if ($value['QTD'] > 0 && ($value['COD_VOLUME'] == 0 || $value['COD_VOLUME'] == null)) {
                     $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
                     $result[$key]['QTD_EMBALAGEM'] = implode('<br />', $vetEstoque);
                 }
