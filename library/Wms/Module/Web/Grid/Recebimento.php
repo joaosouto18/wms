@@ -28,7 +28,7 @@ class Recebimento extends Grid
                 ->setAttrib('class', 'grid-recebimento')
                 ->addColumn(array(
                     'label' => 'Código do Recebimento',
-                    'index' => 'id',
+                    'index' => 'ID',
                 ))
                 ->addColumn(array(
                     'label' => 'Data Inicial',
