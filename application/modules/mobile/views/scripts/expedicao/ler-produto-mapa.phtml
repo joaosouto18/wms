@@ -144,7 +144,7 @@
                         </tr>
                     </table>
                 </div>
-                <button name="submit" id="submit" class="btn">Buscar</button>
+                <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
             </dl>
             <?php if ($this->idVolume != "") : ?>
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
@@ -257,7 +257,7 @@
         });
 
     });
-    $("input").keydown(function (e) {
+/*    $("input").keydown(function (e) {
         if (e.which == 113) {
             var qtd = $('#qtd');
             qtd.focus();
@@ -265,5 +265,6 @@
             return false;
         }
     });
+    */
 </script>
 
