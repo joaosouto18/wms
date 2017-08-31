@@ -50,6 +50,7 @@ class Expedicao extends Grid
             ->addColumn(array(
                 'label' => 'Placa',
                 'index' => 'placaExpedicao',
+                'options' => array('visible'=>false)
             ))
             ->addColumn(array(
                 'label' => 'Cargas',

@@ -150,13 +150,14 @@
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
                 <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a></td>
             <?php endif; ?>
-            <?php if ($this->mapaSeparacaoEmbalado == true) :         ?>
+
+            <?php if ($this->separacaoEmbalado) :         ?>
             <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>" >Fechar Caixa</a></td>
             <?php endif; ?>
 
         </fieldset>
     </dd>
-    <?php if ($this->mapaSeparacaoEmbalado == false) : ?>
+    <?php if (!$this->separacaoEmbalado) : ?>
         <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/' . $this->idExpedicao . '/idMapa/' . $this->idMapa . '/mapa/S' ?>" >Finalizar</a></td>
         <td><a class="finalizarAmarelo" href="<?php echo '/mobile/expedicao/index/idCentral/' . $this->central ?>" >Alt. Mapa</a></td>
     <?php endif; ?>
@@ -169,14 +170,6 @@
         var qtd = $("#qtd");
 
         if (qtd !== '') {
-            var confereQtd = $("#confereQtd").val();
-            if (confereQtd === null || confereQtd === '' || confereQtd === false) {
-                qtd.addClass("hidden");
-                $("#label-qtd").addClass("hidden");
-            } else {
-                qtd.val(1);
-            }
-
             $.ajax({
                 url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'conferte-produto-ajax')) ?>',
                 data: $('form').serialize(),
@@ -216,6 +209,14 @@
                     $(".item-lista").remove();
                 }
             });
+            $('#dados-produtos').html("");
+            var confereQtd = $("#confereQtd").val();
+            if (confereQtd === null || confereQtd === '' || confereQtd === false) {
+                qtd.addClass("hidden").val("");
+                $("#label-qtd").addClass("hidden");
+            } else {
+                qtd.val(1);
+            }
             return false;
         }
     });

@@ -401,7 +401,7 @@ class NotaFiscalRepository extends EntityRepository {
             WHERE NF.COD_FORNECEDOR = '$idFornecedor' 
                 AND NF.NUM_NOTA_FISCAL = '$numero' 
                 AND NF.COD_SERIE_NOTA_FISCAL = '$serie' 
-                AND TO_CHAR(NF.DAT_EMISSAO, 'DD/MM/YY') = '$dataEmissao'
+                AND TO_CHAR(NF.DAT_EMISSAO, 'DD/MM/YYYY') = '$dataEmissao'
                 AND NF.COD_STATUS = '$idStatus'
                 AND NOT EXISTS (SELECT 'X' 
                                 FROM RECEBIMENTO_CONFERENCIA RC2

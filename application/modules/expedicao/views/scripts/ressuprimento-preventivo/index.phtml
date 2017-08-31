@@ -1,0 +1,84 @@
+<?php
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+echo $this->form;
+?>
+<div id="estoque" style="text-align: center;"></div>
+<script>
+    $(window).load(function () {
+        $('#ruaFinal').parent().css('clear', 'both');
+        $('#ocupacao').parent().css('text-align', 'center');
+        $('#tiporessuprimento').parent().find('label').append('<a href="#" class="info">\n\
+            <img style="width: 20px; margin-top: -7px;" src="/img/question.png" alt="Home">\n\
+            <span> - <b>Completar Picking:</b> Abastece a quantidade suficiente para completar o picking.\n\
+            <br /> - <b>Apenas Pulmão Completo:</b> Efetiva o abastecimento apenas se a quantidade no endereço de pulmão couber totalmente no picking.</span></a>');
+
+        $("#buscar").click(function () {
+            $.ajax({
+                url: URL_MODULO + '/ressuprimento-preventivo/list-ajax/',
+                type: 'post',
+                dataType: 'html',
+                data: $('form').serialize(),
+                success: function (data) {
+                    $('#estoque').html(data);
+
+                }
+            });
+            return false;
+        });
+        $(".completar-picking").click(function () {
+            $.ajax({
+                url: URL_MODULO + '/ressuprimento-preventivo/picking-ajax/',
+                type: 'post',
+                dataType: 'html',
+                data: $('form').serialize(),
+                success: function (data) {
+                    $('#estoque').html(data);
+                    $("#confirmar").click(function () {
+                        var dados = new Array();
+                        var count = 0;
+                        $('#estoque').find("input:checked").each(function (e) {
+                            if ($(this).val() != 'on') {
+                                var produto = $(this).parent().parent().find('#produto').val();
+                                var grade = $(this).parent().parent().find('#grade').val();
+                                var embalagens = $(this).parent().parent().find('#embalagens').val();
+                                var volumes = $(this).parent().parent().find('#volumes').val();
+                                var saldo = $(this).parent().parent().find('#saldo').val();
+                                var capacidade = $(this).parent().parent().find('#capacidade').val();
+                                var pontoReposicao = $(this).parent().parent().find('#capacidade').val();
+                                var ocupacao = $(this).parent().parent().find('#ocupacao').val();
+                                var validadeEstoque = $(this).parent().parent().find('#validadeEstoque').val();
+                                var qtdOnda = $(this).parent().parent().find('#qtdOnda').val();
+                                var picking = $(this).parent().parent().find('#picking').val();
+                                var pulmao = $(this).parent().parent().find('#pulmao').val();
+                                var tipo = $(this).parent().parent().find('#tipo').val();
+
+                                dados[count] = {produto: produto, grade: grade, embalagens: embalagens, volumes: volumes,
+                                    saldo: saldo, capacidade: capacidade, pontoReposicao: pontoReposicao, ocupacao: ocupacao,
+                                    idPicking: picking, qtdOnda: qtdOnda, validadeEstoque: validadeEstoque, pulmao: pulmao, tipo: tipo};
+                                count++;
+                            }
+                        });
+                        $.ajax({
+                            url: URL_MODULO + '/ressuprimento-preventivo/confirmar-acao-ajax/',
+                            type: 'post',
+                            dataType: 'json',
+                            data: {dados: JSON.stringify(dados)},
+                            success: function (data) {
+                                if (data.success) {
+                                    $('#estoque').html('<div style="font-size: 13px;font-weight: bold;color: #31b531;">Ressuprimento Preventivo gerado com sucesso.</div>');
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
+            return false;
+        });
+    });
+</script>

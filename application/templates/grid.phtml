@@ -163,10 +163,15 @@ $attribs = $grid->getAttribs();
             <td colspan="<?php echo ($grid->getShowMassActions() && $grid->getShowActions()) ? '2' : '1';?>"></td>
             <?php } ?>
             <?php foreach ($grid->getColumns() as $column) { ?>
-                <?php if ($column->getHasOrdering()) { ?>
-                <td width="<?php echo $column->getWidth();?>"><a href="<?php echo $column->getOrdering()->getHref();?>" title="" class="<?php echo $column->getOrdering()->getClass();?>"><span><?php echo $column->getLabel();?></span></a></td>
+                <?php
+                $style = "";
+                if ($column->getVisible() == false) {
+                    $style = 'style="display:none;"';
+                }
+                if ($column->getHasOrdering()) { ?>
+                <td <?php echo $style ?> width="<?php echo $column->getWidth();?>"><a href="<?php echo $column->getOrdering()->getHref();?>" title="" class="<?php echo $column->getOrdering()->getClass();?>"><span><?php echo $column->getLabel();?></span></a></td>
                 <?php } else { ?>
-                <td width="<?php echo $column->getWidth();?>"><span><?php echo $column->getLabel();?></span></td>
+                <td <?php echo $style ?> width="<?php echo $column->getWidth();?>"><span><?php echo $column->getLabel();?></span></td>
                 <?php } ?>
             <?php } ?>
         </tr>
@@ -211,7 +216,14 @@ $attribs = $grid->getAttribs();
                 </td>
                 <?php } ?>
                 <?php foreach ($grid->getColumns() as $column) { ?>
-                    <td style="text-align:<?php echo $column->getAlign(false); ?>"><?php echo $column->getRender($row)->render(); ?></td>
+                <?php
+                    $style = 'style="text-align:<?php echo $column->getAlign(false); ?>"';
+                    if ($column->getVisible() == false) {
+                        $style = 'style="display:none;"';
+                    }
+
+                    ?>
+                    <td <?php echo $style ?> ><?php echo $column->getRender($row)->render(); ?></td>
                 <?php } ?>
             </tr>
             <?php 
