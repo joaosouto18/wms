@@ -1,34 +1,34 @@
 <div id="identificacao-form">
     <fieldset id="identificacao">
         <legend>Filtro</legend>
-        <?php echo $this->form;?>
+        <?php echo $this->form; ?>
     </fieldset>
 </div>
-<?php if(is_array($this->endereco)) { ?>
-    <form id="imprimiretiqueta-form" method="post" action="<?php echo $this->url(array('module' => 'web', 'controller' =>'imprimir', 'action' =>'imprimir' ))?>">
-        <input type="submit" style="margin-bottom: 15px" name="busca" value="Imprimir" id="submit" class="btn">
-        <input type="hidden" value="<?php echo $this->tipo?>" name="tipo">
-        <table class="gTable ">
+<?php if (is_array($this->endereco) && count($this->endereco) > 0) { ?>
+    <form id="imprimiretiqueta-form" method="post" action="<?php echo $this->url(array('module' => 'web', 'controller' => 'imprimir', 'action' => 'imprimir')) ?>">
+        <input type="submit" style="margin-bottom: 15px" target="_blank" name="busca" value="Imprimir" id="submit" class="btn">
+        <input type="hidden" value="<?php echo $this->tipo ?>" name="tipo">
+        <table class="gTable list">
             <caption>Endereços de <?php echo \Wms\Domain\Entity\Deposito\Endereco::$tiposEndereco[$this->tipo] ?></caption>
             <tbody>
-            <tr class ="gTTitle">
-                <td>Selecione</td>
-                <td>Rua</td>
-                <td>Prédio</td>
-                <td>Nível</td>
-                <td>Apartamento</td>
-                <td>Descrição</td>
-            </tr>
-            <?php foreach($this->endereco as $enderecos) : ?>
-                <tr>
-                    <td><input name="enderecos[]" value="<?php echo $enderecos['CODIGO'] ?>" type="checkbox" checked></td>
-                    <td><?php echo $enderecos['RUA'] ?></td>
-                    <td><?php echo $enderecos['PREDIO'] ?></td>
-                    <td><?php echo $enderecos['NIVEL'] ?></td>
-                    <td><?php echo $enderecos['APARTAMENTO'] ?></td>
-                    <td><?php echo $enderecos['ENDERECO'] ?></td>
+                <tr class ="gTTitle">
+                    <td><input checked="true" class="checkBoxClass" type="checkbox" name="check-all" id="check-all"><b>Selecione</b></td>
+                    <td><b>Rua</b></td>
+                    <td><b>Prédio</b></td>
+                    <td><b>Nível</b></td>
+                    <td><b>Apartamento</b></td>
+                    <td><b>Descrição</b></td>
                 </tr>
-            <?php endforeach ?>
+                <?php foreach ($this->endereco as $enderecos) : ?>
+                    <tr>
+                        <td><input class="checkBoxClass" name="enderecos[]" value="<?php echo $enderecos['CODIGO'] ?>" type="checkbox" checked></td>
+                        <td><?php echo $enderecos['RUA'] ?></td>
+                        <td><?php echo $enderecos['PREDIO'] ?></td>
+                        <td><?php echo $enderecos['NIVEL'] ?></td>
+                        <td><?php echo $enderecos['APARTAMENTO'] ?></td>
+                        <td><?php echo $enderecos['ENDERECO'] ?></td>
+                    </tr>
+                <?php endforeach ?>
             </tbody>
         </table>
     </form>
@@ -36,11 +36,29 @@
         $(function () {
             $('#imprimiretiqueta-form').submit(function () {
                 var check = $('#imprimiretiqueta-form').find("input[name='enderecos[]']:checked").length > 0;
-                if (!check){
+                if (!check) {
                     alert("Nenhum endereço foi selecionado");
                     return false;
                 }
-            })
-        })
+            });
+        });
+        $('.gTable.list tr').click(function () {
+            $(this).toggleClass('tr-select');
+        });
+
+        $('#check-all').click(function () {
+            if ($(this).prop("checked")) {
+                $('.checkBoxClass').each(function () {
+                    $(this).attr('checked', true);
+                });
+            } else {
+                $('.checkBoxClass').each(function () {
+                    $(this).removeAttr('checked');
+                });
+            }
+        });
     </script>
-<?php } ?>
+<?php } else { ?>
+    <div style="text-align: center; margin: 20px; font-size: 22px; color: red; "><b>Nenhum resultado encontrado.</b></div>
+<?php
+}

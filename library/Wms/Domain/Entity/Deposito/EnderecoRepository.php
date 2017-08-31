@@ -896,6 +896,17 @@ class EnderecoRepository extends EntityRepository {
             $query = $query . " AND DEP.NUM_APARTAMENTO <= " . $params['aptoFinal'];
         }
 
+
+        if (!empty($params['situacao']) && $params['situacao'] != '') {
+            $query = $query . " AND DEP.IND_SITUACAO = '" . $params['situacao'] . "'";
+        }
+        if (!empty($params['status']) && $params['status'] != '') {
+            $query = $query . " AND DEP.IND_STATUS = '" . $params['status'] . "'";
+        }
+        if (isset($params['ativo']) && $params['ativo'] != '') {
+            $query = $query . " AND DEP.IND_ATIVO = '" . $params['ativo'] . "'";
+        }
+
         if (!empty($params['lado'])) {
             if ($params['lado'] == "P")
                 $query = $query . " AND MOD(NUM_PREDIO,2) = 0";
@@ -971,7 +982,7 @@ class EnderecoRepository extends EntityRepository {
                 foreach ($itensPicking as $key => $itemPincking) {
                     $produtoEn = $itemPincking->getProduto();
                     $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                        'desc' => $produtoEn->getDescricao(),'qtd' => 0);
+                        'desc' => $produtoEn->getDescricao(), 'qtd' => 0);
                     $result[$produtoEn->getId()] = $produto;
                 }
             }
