@@ -34,7 +34,8 @@ echo $this->doctype();
 	    <div id="footer">
 		<p>Wms Imperium <?php $abc = new Zend_Date(); echo $abc->toString('Y') ?></p>
 		<p>&copy; Todos os Direitos Reservados.</p>
-	    </div>
+        <p><?php echo "Versão: " . \Wms\Git::getCurrent();?></p>
+        </div>
 	</div>
     </body>
 </html>
