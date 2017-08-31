@@ -230,6 +230,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $ondaEn->setDataCriacao(new \DateTime());
         $ondaEn->setDscObservacao("");
         $ondaEn->setUsuario($usuarioEn);
+        $ondaEn->setTipoOnda("C");
         $this->getEntityManager()->persist($ondaEn);
 
         return $ondaEn;

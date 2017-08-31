@@ -74,6 +74,7 @@ class Expedicao_RessuprimentoPreventivoController extends Action {
         $ondaEn->setDataCriacao(new \DateTime());
         $ondaEn->setDscObservacao("");
         $ondaEn->setUsuario($usuarioEn);
+        $ondaEn->setTipoOnda("P");
         $this->getEntityManager()->persist($ondaEn);
 
         foreach ($dados as $value) {
