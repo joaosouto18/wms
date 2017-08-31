@@ -527,7 +527,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
     public function calculaRessuprimentoByProduto($produtosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
         $volumeRepo = $repositorios['volumeRepo'];
-        $osGeradas = array();
+        $qtdRessuprimentos = 0;
         foreach ($produtosRessuprir as $produto) {
             $codProduto = $produto['COD_PRODUTO'];
             $grade = $produto['DSC_GRADE'];
@@ -580,12 +580,11 @@ class OndaRessuprimentoRepository extends EntityRepository {
             }
 
             foreach ($pickings as $picking) {
-                $os = $this->calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios);
-                $osGeradas = array_merge($osGeradas, $os);
+                $qtdRessuprimentos = $qtdRessuprimentos + $this->calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios);
             }
         }
 
-        return $osGeradas;
+        return $qtdRessuprimentos;
     }
 
     public function calculaRessuprimentoPreventivoByParams($parametros) {
