@@ -158,28 +158,14 @@ class Mobile_ExpedicaoController extends Action {
                 }
             }
 
-            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
-            $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-            /** SE ESTIVER NA TELA DE MAPA DE EMBALADOS DEVE EXIBIR O BOTAO PARA FINALIZAR A ETIQUETA */
-            $statusMapaEmbalado = false;
-            if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
-                $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-                if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
-                    $statusMapaEmbalado = true;
-                }
-            }
-            $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
-            $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
-            $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
-            $this->view->tipoQuebraVolume = $modeloSeparacaoEn->getTipoQuebraVolume();
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
             $this->view->idExpedicao = $idExpedicao;
             $this->view->central = $central;
             $this->view->idPessoa = $codPessoa;
-            $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
+            $this->view->separacaoEmbalado = (empty($codPessoa)) ? false : true;
             $this->view->dscVolume = $dscVolume;
-            $this->view->exibeQtd = $confereQtd;
+            $this->view->confereQtd = $confereQtd;
         } catch (\Exception $e) {
             if ($confereQtd == true) {
                 $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()), 'dados' => $produtosMapa);
@@ -268,7 +254,7 @@ class Mobile_ExpedicaoController extends Action {
             }
         }
 
-        $this->getHelper('viewRenderer')->setNoRender(true);
+        //$this->getHelper('viewRenderer')->setNoRender(true);
         $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg']));
         $this->_helper->json($vetRetorno);
     }
