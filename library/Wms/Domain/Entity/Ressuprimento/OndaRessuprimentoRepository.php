@@ -798,10 +798,10 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     $result[$key]['VALIDADE_ESTOQUE'] = '';
                     $result[$key]['ID_PIKING'] = null;
                     $result[$key]['QTD_ONDA'] = 0;
-
-                    $result[$key]['VALIDADE_ESTOQUE'] = $os[0]['validadeEstoque'];
+                    $osFirst = reset($os);
+                    $result[$key]['VALIDADE_ESTOQUE'] = $osFirst['validadeEstoque'];
                     $result[$key]['PULMAO'] = implode(' <br /> ', $vetExibePulmao);
-                    $result[$key]['ID_PIKING'] = $os[0]['idPicking'];
+                    $result[$key]['ID_PIKING'] = $osFirst['idPicking'];
                     $result[$key]['QTD_ONDA'] = json_encode($vetOnda);
                 } else {
                     unset($result[$key]);
@@ -864,7 +864,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                             $qtdOnda = (floor($qtdOnda / $qtdEmbalagens)) * $qtdEmbalagens;
                         }
                         if ($qtdOnda > 0) {
-                            $osGeradas[] = array(
+                            $osGeradas[$estoque['DSC_DEPOSITO_ENDERECO']] = array(
                                 'embalagens' => json_encode($embalagens),
                                 'volumes' => json_encode($volumes),
                                 'qtdOnda' => $qtdOnda,
@@ -881,7 +881,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 } else {
                     $saldoPicking = ($saldoPicking + $qtdEstoque);
                     if ($saldoPicking <= $capacidadePicking) {
-                        $osGeradas[] = array(
+                        $osGeradas[$estoque['DSC_DEPOSITO_ENDERECO']] = array(
                             'embalagens' => json_encode($embalagens),
                             'volumes' => json_encode($volumes),
                             'qtdOnda' => $qtdEstoque,
