@@ -28,7 +28,7 @@ class Recebimento extends Grid
                 ->setAttrib('class', 'grid-recebimento')
                 ->addColumn(array(
                     'label' => 'Código do Recebimento',
-                    'index' => 'id',
+                    'index' => 'ID',
                 ))
                 ->addColumn(array(
                     'label' => 'Data Inicial',
@@ -75,7 +75,7 @@ class Recebimento extends Grid
                     'actionName' => 'conferencia',
                     'pkIndex' => 'idOrdemServico',
                     'condition' => function ($row) {
-                        return ($row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA || $row['idStatus'] == RecebimentoEntity::STATUS_CONFERENCIA_COLETOR);
+                        return ($row['IDSTATUS'] == RecebimentoEntity::STATUS_CONFERENCIA_CEGA || $row['IDSTATUS'] == RecebimentoEntity::STATUS_CONFERENCIA_COLETOR);
                     }
                 ));
 
@@ -194,7 +194,7 @@ class Recebimento extends Grid
                     'title' => 'Funcionários que descarregaram o Recebimento',
                     'actionName' => 'usuario-recebimento-pdf',
                     'cssClass' => 'pdf',
-                    'pkIndex' => 'id',
+                    'pkIndex' => 'ID',
                     'target' => '_blank',
                 ))
 
