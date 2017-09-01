@@ -32,6 +32,10 @@
     width: auto;
     /*clear: both;*/
 }
+.gExport button {
+    position: relative;
+    top:5px;
+}
 .gExport select {
     width: 90px;
     vertical-align: top;
@@ -40,6 +44,8 @@
 div.gOrder {
     float: right;
     text-align: right;
+    position: relative;
+    top: 3px;
 }
 
 .btnRemOrder {
@@ -68,7 +74,7 @@ div.gFilter {
     margin-bottom: 5px;
 }
 .gTable tr.gRowColor{
-    background: #cacaca;
+    background: #ededed;
 }
 .gTable tr:hover {
     background: #c7d5e2 !important;
@@ -83,7 +89,7 @@ div.gFilter {
     background: #f77878;
 }
 .gTable td {
-    border: 2px solid #EDFFF9;
+    border: 1px solid #EDFFF9;
     padding: 3px 2px 5px;
 }
 .gTable.list td {

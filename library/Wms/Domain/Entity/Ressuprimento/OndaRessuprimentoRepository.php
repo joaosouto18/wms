@@ -776,11 +776,13 @@ class OndaRessuprimentoRepository extends EntityRepository {
                  */
                 $os = $this->calculaRessuprimentoPreventivoByPicking($pickings[$key], $repositorios);
                 $vetEmb = $vetVol = $vetPulmoes = $vetOnda = $vetExibePulmao = array();
+                $result[$key]['TOTAL_ONDA'] = $totalOnda = 0;
                 if (count($os) > 0) {
                     foreach ($os as $value) {
                         $vetExibePulmao[$value['enderecoPulmao']] = $value['enderecoPulmao'];
                         if ($value['enderecoPulmao'] != "null") {
                             $vetOnda[$value['enderecoPulmao']] = $value['qtdOnda'];
+                            $totalOnda += $value['qtdOnda'];
                         }
                         if ($value['volumes'] != "null") {
                             $vetVol[$value['enderecoPulmao']][] = json_decode($value['volumes']);
@@ -790,6 +792,13 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     }
                     foreach ($vetExibePulmao as $value) {
                         $vetPulmoes[] = $value;
+                    }
+                    $result[$key]['TOTAL_ONDA'] = implode('<br />', $vetEstoque);
+                    if (empty($vetVol)) {
+                        if ($totalOnda > 0) {
+                            $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($result[$key]['COD_PRODUTO'], $result[$key]['DSC_GRADE'], $totalOnda);
+                            $result[$key]['TOTAL_ONDA'] = implode('<br />', $vetEstoque);
+                        }
                     }
                     $result[$key]['EMBALAGENS'] = json_encode($vetEmb);
                     $result[$key]['VOLUMES'] = json_encode($vetVol);
