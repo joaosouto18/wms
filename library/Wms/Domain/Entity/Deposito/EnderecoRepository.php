@@ -79,6 +79,7 @@ class EnderecoRepository extends EntityRepository {
 
         //echo $ativo;exit;
         //caso edicao
+        
         if (!empty($id)) {
             $enderecoEntity = $em->getReference('wms:Deposito\Endereco', $id);
 

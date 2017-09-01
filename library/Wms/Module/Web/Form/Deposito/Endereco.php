@@ -102,9 +102,7 @@ class Endereco extends Form {
             'required' => true,
                 ))
             ->addElement('hidden', 'status', array(
-                'mostrarSelecione' => false,
-                'multiOptions' => array('D' => 'Disponível', 'O' => 'Ocupado'),
-                'decorators' => array('ViewHelper'),
+                'value' => 'D',
             ))
             ->addElement('select', 'ativo', array(
                 'multiOptions' => array('S' => 'Ativo', 'N' => 'Inativo'),
