@@ -144,7 +144,7 @@
                         </tr>
                     </table>
                 </div>
-                <button name="submit" id="submit" class="btn">Buscar</button>
+                <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
             </dl>
             <?php if ($this->idVolume != "") : ?>
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
@@ -263,5 +263,6 @@
             return false;
         }
     });
+
 </script>
 

@@ -30,7 +30,7 @@ class Recebimento extends Grid
                 ->setAttrib('class', 'grid-recebimento')
                 ->addColumn(array(
                     'label' => 'Código do Recebimento',
-                    'index' => 'id',
+                    'index' => 'ID',
                 ))
                 ->addColumn(array(
                     'label' => 'Data Inicial',
@@ -196,7 +196,7 @@ class Recebimento extends Grid
                     'title' => 'Funcionários que descarregaram o Recebimento',
                     'actionName' => 'usuario-recebimento-pdf',
                     'cssClass' => 'pdf',
-                    'pkIndex' => 'id',
+                    'pkIndex' => 'ID',
                     'target' => '_blank',
                 ))
 
