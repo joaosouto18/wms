@@ -25,6 +25,9 @@
                 $(this).find('.gOpcRow ul li ul').css('top', '0px');
             }
         });
+        $('fieldset .btn').each(function (){
+            $(this).parent().attr('rowspan', '2');
+        });
 //        document.onkeydown = function (e) {
 //            if (e.which == 17)
 //                pressedCtrl = true;
