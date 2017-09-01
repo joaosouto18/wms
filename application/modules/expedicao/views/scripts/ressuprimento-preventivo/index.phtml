@@ -63,17 +63,24 @@ echo $this->form;
                                 count++;
                             }
                         });
-                        $.ajax({
-                            url: URL_MODULO + '/ressuprimento-preventivo/confirmar-acao-ajax/',
-                            type: 'post',
-                            dataType: 'json',
-                            data: {dados: JSON.stringify(dados)},
-                            success: function (data) {
-                                if (data.success) {
-                                    $('#estoque').html('<div style="font-size: 13px;font-weight: bold;color: #31b531;">Ressuprimento Preventivo gerado com sucesso.</div>');
+                        if (count > 0) {
+                            $.ajax({
+                                url: URL_MODULO + '/ressuprimento-preventivo/confirmar-acao-ajax/',
+                                type: 'post',
+                                dataType: 'json',
+                                data: {dados: JSON.stringify(dados)},
+                                success: function (data) {
+                                    if (data.success) {
+                                        $('#estoque').html('<div style="font-size: 13px;font-weight: bold;color: #31b531;">Ressuprimento Preventivo gerado com sucesso.</div>');
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        } else {
+                            $.wmsDialogAlert({
+                                title: 'ERRO',
+                                msg: 'Selecione pelo menos um endereço.'
+                            });
+                        }
                         return false;
                     });
                 }
