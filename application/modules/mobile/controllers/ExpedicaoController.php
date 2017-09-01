@@ -158,6 +158,10 @@ class Mobile_ExpedicaoController extends Action {
                 }
             }
 
+            $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
+            $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
+            $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
+            $this->view->tipoQuebraVolume = $modeloSeparacaoEn->getTipoQuebraVolume();
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
             $this->view->idExpedicao = $idExpedicao;
@@ -198,6 +202,7 @@ class Mobile_ExpedicaoController extends Action {
             'utilizaQuebra' => $this->_getParam("utilizaQuebra"),
             'utilizaVolumePatrimonio' => $this->_getParam("utilizaVolumePatrimonio")
         );
+
         if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
             try {
                 $codBarrasProcessado = intval($codBarras);
