@@ -28,7 +28,11 @@ if (count($this->dados) > 0) {
                 if (count(json_decode($endereco['VOLUMES'])) != 0) {
                     $tipo = 2;
                 }
-                ?><tr>
+                $class="";
+                if(($key % 2) == 0){
+                    $class="gRowColor";
+                }
+                ?><tr class="gTResultSet <?php echo $class?>">
                     <td><input class="checkBoxClass" type="checkbox" value="<?php echo $endereco['COD_PRODUTO'] ?>"></td>
                     <td><?php echo $endereco['COD_PRODUTO'] ?></td>
                     <td><?php echo $endereco['DSC_PRODUTO'] ?></td>
