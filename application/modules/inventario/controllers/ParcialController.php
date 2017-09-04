@@ -46,9 +46,7 @@ class Inventario_ParcialController extends Action
         $form = new FiltroProdutoForm();
         $idInventario = $this->_getParam('hiddenId', $this->_getParam('id'));
         $form->removeElement('fabricante');
-
         $values = $form->getParams();
-
         if ($values) {
 
             if (isset($values['mass-id']) && count($values['mass-id']) > 0 ) {

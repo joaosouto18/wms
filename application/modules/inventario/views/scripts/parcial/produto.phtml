@@ -1,9 +1,23 @@
-<?php
-    echo $this->form; ?>
+<?php echo $this->form; ?>
 
-<?php if(!empty($this->IdInventario)) : ?>
+<?php if (!empty($this->IdInventario)) : ?>
     <h3 class="padding-top" style="font-size:30px">Inventário: <?php echo $this->IdInventario ?> </h3>
 <?php endif; ?>
 
-<?php  echo $this->grid;
+<?php echo $this->grid;
 ?>
+<script>
+    var id = $("#id").val();
+    $(".incluir").click(function () {
+        if(id == ''){
+            id = $("#incluirinput").val();
+        }
+        $("#incluirinput").val($("#id").val() + ',' + id);
+        return true;
+    });
+    $("#submit").click(function () {
+        $("#incluirinput").val('');
+        return true;
+    });
+    
+</script>
