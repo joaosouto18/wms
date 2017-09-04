@@ -76,11 +76,16 @@ class PedidoRepository extends EntityRepository
         $this->_em->flush();
     }
 
-    public function findPedidosNaoConferidos ($idExpedicao) {
+    public function findPedidosNaoConferidos ($idExpedicao, $idCarga = null) {
+        $sqlCarga = "";
+        if ($idCarga != null) {
+            $sqlCarga = " AND c.id =" . $idCarga;
+        }
+
         $query = "SELECT p
                     FROM wms:Expedicao\Pedido p
               INNER JOIN p.carga c
-                   WHERE c.codExpedicao = " . $idExpedicao . "
+                   WHERE c.codExpedicao = " . $idExpedicao . $sqlCarga . "
                      AND (p.conferido = 0  OR p.conferido IS NULL)";
 
         return  $this->getEntityManager()->createQuery($query)->getResult();
