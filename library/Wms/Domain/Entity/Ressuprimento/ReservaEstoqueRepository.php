@@ -265,7 +265,7 @@ class ReservaEstoqueRepository extends EntityRepository
         }
 
         if ($reservaEstoqueEn != NULL) {
-            $reservaEstoqueEn->setAtendida("C");
+            $reservaEstoqueEn->setAtendida("N");
             $reservaEstoqueEn->setDataAtendimento(null);
             $reservaEstoqueEn->setDscObservacao("RESERVA DE ESTOQUE REABERTA POR ". $idUsuario);
             $reservaEstoqueEn->setUsuarioAtendimento(null);

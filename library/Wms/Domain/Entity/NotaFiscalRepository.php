@@ -18,11 +18,12 @@ class NotaFiscalRepository extends EntityRepository {
 
     public function getItensNotaByRecebimento($idRecebimento) {
         $dql = $this->_em->createQueryBuilder()
-                ->select('nfi.codProduto, nfi.grade')
-                ->from('wms:NotaFiscal\Item', 'nfi')
-                ->innerJoin('nfi.notaFiscal', 'nf')
-                ->where('nf.recebimento = :recebimento')
-                ->setParameter(':recebimento', $idRecebimento);
+            ->select('nfi.codProduto, nfi.grade')
+            ->distinct(true)
+            ->from('wms:NotaFiscal\Item', 'nfi')
+            ->innerJoin('nfi.notaFiscal', 'nf')
+            ->where('nf.recebimento = :recebimento')
+            ->setParameter(':recebimento', $idRecebimento);
 
         return $dql->getQuery()->getResult();
     }
