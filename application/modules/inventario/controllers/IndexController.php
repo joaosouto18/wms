@@ -19,9 +19,16 @@ class Inventario_IndexController  extends Action
     {
         ini_set('max_execution_time', -1);
         $grid =  new \Wms\Module\Inventario\Grid\Inventario();
-        $this->view->grid = $grid->init();
+        $data = $this->_getAllParams();
+        $this->view->grid = $grid->init($data);
         $id = $this->_getParam('id');
 
+        $form = new \Wms\Module\Inventario\Form\Monitoramento();
+        $form->init();
+        $form->populate($data);
+        $this->view->form = $form;
+        
+        
         /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
         $inventarioRepo = $this->em->getRepository("wms:Inventario");
 

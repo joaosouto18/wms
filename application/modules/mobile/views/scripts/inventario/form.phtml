@@ -1,5 +1,5 @@
 ﻿<script type="text/javascript">
-    $(document).ready(function(){
+    $(document).ready(function () {
         var validade = $('#validade');
         validade.hide();
         if ($('#parametroValidade').val() == 'S' && $('#validadeProduto').val() == 'S') {
@@ -12,8 +12,7 @@
             if (key != 8) {
                 if (v.match(/^\d{2}$/) !== null) {
                     $('#validade').val(v + '/');
-                }
-                else if (v.match(/^\d{2}\/\d{2}$/) !== null) {
+                } else if (v.match(/^\d{2}\/\d{2}$/) !== null) {
                     $('#validade').val(v + '/');
                 }
             }
@@ -22,7 +21,7 @@
                 avaria = document.getElementById('qtdAvaria');
                 if (avaria) {
                     avaria.focus();
-                    if(e.preventDefault) {
+                    if (e.preventDefault) {
                         e.preventDefault();
                     } else {
                         e.returnValue = false;
@@ -34,10 +33,10 @@
         $('#qtdConferida').keydown(function (e) {
             if (e.which == 13) {
                 if (document.getElementById('qtdConferida').value != "") {
-                    validade   = document.getElementById('validade');
+                    validade = document.getElementById('validade');
                     if (validade) {
                         validade.focus();
-                        if(e.preventDefault) {
+                        if (e.preventDefault) {
                             e.preventDefault();
                         } else {
                             e.returnValue = false;
@@ -48,17 +47,17 @@
         });
 
         $('#qtdAvaria').keydown(function (e) {
-            if(e.which===13 && $('#parametroValidade').val() === 'S' && $('#validadeProduto').val() === 'S' ) {
+            if (e.which === 13 && $('#parametroValidade').val() === 'S' && $('#validadeProduto').val() === 'S') {
                 var dataSplit = validade.val().split('/');
-                var dataAtual = new Date().toISOString().slice(0,10);
-                var dataValidade = new Date('20'+dataSplit[2], dataSplit[1]-1, dataSplit[0]).toISOString().slice(0,10);
+                var dataAtual = new Date().toISOString().slice(0, 10);
+                var dataValidade = new Date('20' + dataSplit[2], dataSplit[1] - 1, dataSplit[0]).toISOString().slice(0, 10);
 
                 var confirma = true;
 
-                if(dataAtual === dataValidade) {
-                    confirma = confirm("A Data de validade informada "+ validade.val() +" está vencendo hoje. Deseja continuar?");
-                } else if (dataAtual > dataValidade){
-                    confirma = confirm("A Data de validade informada "+ validade.val() +" está vencida. Deseja continuar?");
+                if (dataAtual === dataValidade) {
+                    confirma = confirm("A Data de validade informada " + validade.val() + " está vencendo hoje. Deseja continuar?");
+                } else if (dataAtual > dataValidade) {
+                    confirma = confirm("A Data de validade informada " + validade.val() + " está vencida. Deseja continuar?");
                 }
 
                 return confirma === true;
@@ -68,9 +67,9 @@
     });
 </script>
 
-<input type="hidden" id="codigoBarras" value="<?php echo $this->codigoBarras?>">
-<input type="hidden" id="parametroValidade" value="<?php echo $this->parametroValidade?>">
-<input type="hidden" id="validadeProduto" value="<?php echo $this->validadeProduto?>">
+<input type="hidden" id="codigoBarras" value="<?php echo $this->codigoBarras ?>">
+<input type="hidden" id="parametroValidade" value="<?php echo $this->parametroValidade ?>">
+<input type="hidden" id="validadeProduto" value="<?php echo $this->validadeProduto ?>">
 <?php if ($this->produtosEndPicking) : ?>
 
     <table class="info">
@@ -88,17 +87,17 @@
                 </td>
                 <td style="width: 20%"> <button id="next"> >| </button></td>
             </tr>
-        <?php
+            <?php
         endif;
         ?>
     </table>
 
     <script type="text/javascript">
-        $(document).ready(function(){
+        $(document).ready(function () {
             $('#carousel').cycle({
-                fx:   'turnDown',
+                fx: 'turnDown',
                 next: '#next',
-                timeout:  0
+                timeout: 0
             });
 
         });
@@ -111,19 +110,36 @@
 <?php if ($this->botoes) : ?>
 
     <div id="footer">
-    <a href=<?php echo "/mobile/inventario/mudar-endereco/idInventarioEnd/" . $this->idInventarioEnd . "/idInventario/" . $this->idInventario . "/numContagem/" . $this->numContagem . "/divergencia/" . $this->divergencia ?> class="btn button finalizar mudar">Próximo Endereço</a>
+        <a href=<?php echo "/mobile/inventario/mudar-endereco/idInventarioEnd/" . $this->idInventarioEnd . "/idInventario/" . $this->idInventario . "/numContagem/" . $this->numContagem . "/divergencia/" . $this->divergencia ?> class="btn button finalizar mudar">Próximo Endereço</a>
     </div>
 
 <?php endif; ?>
 
-    <div>
-        <?php if ($this->enderecos) : ?>
-            <ul>
-                <?php foreach($this->enderecos as $endereco) : ?>
-                     <li><?php echo $endereco ?></li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
-    </div>
-
+<div>
+    <?php if ($this->enderecos) : ?>
+        <ul>
+            <?php foreach ($this->enderecos as $endereco) : ?>
+                <li>
+                    <p><?php
+                        if (isset($endereco['endereco'])) {
+                            echo $endereco['endereco'];
+                            if (isset($endereco['zerar']) && $endereco['zerar'] > 0 && $this->codigoBarras != null) {
+                                ?>
+                        <a class="gradientBtn btnZerar" style="cursor: pointer; border-radius: 4px;border-color: black; width: 50px;height: 40px;margin: 2px;font-weight: bold;color: #fff; font-size: 12px;" name="btnFinalizar" type="submit" codigo-barras="<?php echo $endereco['zerar'] ?>">&nbsp;Zerar Item&nbsp; </a>
+                                <?php
+                            }
+                        }
+                        ?></p>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+</div>
+<script type="text/javascript">
+    $(".btnZerar").click(function () {
+        $('form').find('#codigoBarras').val($(this).attr('codigo-barras'));
+        $('form').append('<input type="hidden" id="desabilitar" name="desabilitar" value="1" />');
+        $('#submit').click();
+    });
+</script>
 
