@@ -1551,39 +1551,61 @@ class RecebimentoRepository extends EntityRepository {
             $whereStatus = " AND R.COD_STATUS = " . $status;
         }
 
-        $SQL = "SELECT DISTINCT R.COD_RECEBIMENTO,
-                                R.DTH_INICIO_RECEB,
-                                B.DSC_BOX AS BOX,
-                                MAX(PJ.NOM_FANTASIA) AS NOM_FANTASIA
-                  FROM (SELECT SUM(QTD) QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO
-                          FROM V_QTD_RECEBIMENTO V
-                         GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, COD_NORMA_PALETIZACAO) V
-                  LEFT JOIN (SELECT SUM(QTD) QTD, COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO 
-                               FROM (SELECT DISTINCT P.UMA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, P.COD_RECEBIMENTO
-                                       FROM PALETE P
-                                       LEFT JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
-                                      WHERE (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_RECEBIMENTO.",".Palete::STATUS_CANCELADO."))) P
-                              GROUP BY COD_PRODUTO, DSC_GRADE, COD_RECEBIMENTO) P
-                         ON P.COD_PRODUTO = V.COD_PRODUTO
-                        AND P.DSC_GRADE = V.DSC_GRADE
-                        AND P.COD_RECEBIMENTO = V.COD_RECEBIMENTO
-                  LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = V.COD_RECEBIMENTO
-                  LEFT JOIN BOX B ON B.COD_BOX = R.COD_BOX
-                  LEFT JOIN NOTA_FISCAL NF ON R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
-                  INNER JOIN FORNECEDOR F ON NF.COD_FORNECEDOR = F.COD_FORNECEDOR
-                  INNER JOIN PESSOA ON PESSOA.COD_PESSOA = F.COD_FORNECEDOR
-                  LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = PESSOA.COD_PESSOA
-                 WHERE V.QTD - NVL(P.QTD,0) > 0
-                  AND R.COD_STATUS <> 458
-                 $whereStatus
-                 GROUP BY R.COD_RECEBIMENTO,
-                                R.DTH_INICIO_RECEB,
-                                B.DSC_BOX
-                 ORDER BY R.DTH_INICIO_RECEB DESC
-";
+        $SQL = " SELECT COD_RECEBIMENTO
+                   FROM RECEBIMENTO
+                  WHERE COD_STATUS IN (459,461)";
+        $dados = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-        return $this->getEntityManager()->getConnection()->query($SQL)
-                        ->fetchAll(\PDO::FETCH_ASSOC);
+        $sqlRecebimentosConferencia = '';
+        if (count($dados) > 0) {
+            $sqlRecebimentosConferencia = "
+                SELECT V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE, SUM(V.QTD) as QTD
+                  FROM V_QTD_RECEBIMENTO V
+                 WHERE V.COD_RECEBIMENTO IN (" . implode(",",$dados) . ")
+                 GROUP BY V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE
+                 UNION
+            ";
+        }
+
+        $SQL = "
+         SELECT DISTINCT
+                R.COD_RECEBIMENTO,
+                R.DTH_INICIO_RECEB,
+                B.DSC_BOX AS BOX,
+                F.FORNECEDOR as NOM_FANTASIA
+           FROM RECEBIMENTO R
+           LEFT JOIN ($sqlRecebimentosConferencia
+                      SELECT RC.COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_CONFERIDA as QTD
+                        FROM RECEBIMENTO_CONFERENCIA RC
+                        LEFT JOIN RECEBIMENTO R ON RC.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+                       WHERE R.COD_STATUS = 457
+                         AND (QTD_DIVERGENCIA = 0 OR COD_NOTA_FISCAL IS NOT NULL)) V
+                  ON V.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+           LEFT JOIN (SELECT COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, SUM(QTD) as QTD
+                        FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD
+                                FROM PALETE P
+                                LEFT JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
+                               WHERE P.COD_STATUS IN (536,535,534) OR P.IND_IMPRESSO = 'S')
+                       GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE) P
+                  ON P.COD_RECEBIMENTO = V.COD_RECEBIMENTO
+                 AND P.COD_PRODUTO = V.COD_PRODUTO
+                    AND P.DSC_GRADE = V.DSC_GRADE
+           LEFT JOIN BOX B ON R.COD_BOX = B.COD_BOX
+           LEFT JOIN (SELECT COD_RECEBIMENTO, LISTAGG(FORNECEDOR,',') WITHIN GROUP (ORDER BY COD_RECEBIMENTO) as FORNECEDOR
+                        FROM (SELECT DISTINCT
+                                     NF.COD_RECEBIMENTO,
+                                     NVL(PJ.NOM_FANTASIA, PES.NOM_PESSOA) as FORNECEDOR
+                                FROM NOTA_FISCAL NF
+                                LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = NF.COD_FORNECEDOR
+                                LEFT JOIN PESSOA PES ON PES.COD_PESSOA = NF.COD_FORNECEDOR)
+                       GROUP BY COD_RECEBIMENTO) F ON F.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+          WHERE (NVL(V.QTD,0) - NVL(P.QTD,0) >0)
+            AND R.COD_STATUS NOT IN (458,460)
+            $whereStatus
+          ORDER BY R.DTH_INICIO_RECEB DESC
+ ";
+
+        return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
