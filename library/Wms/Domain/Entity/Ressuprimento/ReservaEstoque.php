@@ -1,6 +1,9 @@
 <?php
 
 namespace Wms\Domain\Entity\Ressuprimento;
+use Doctrine\Common\Collections\ArrayCollection;
+use Wms\Domain\Entity\Deposito\Endereco;
+
 /**
  * @Table(name="RESERVA_ESTOQUE")
  * @Entity(repositoryClass="Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository")
@@ -112,6 +115,9 @@ class ReservaEstoque
         $this->endereco = $endereco;
     }
 
+    /**
+     * @return Endereco
+     */
     public function getEndereco()
     {
         return $this->endereco;
@@ -166,7 +172,7 @@ class ReservaEstoque
     }
 
     /**
-     * @return \Wms\Domain\Entity\Ressuprimento\ArrayCollection
+     * @return ArrayCollection
      */
     public function getProdutos()
     {

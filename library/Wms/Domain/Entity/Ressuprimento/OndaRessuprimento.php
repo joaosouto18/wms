@@ -30,6 +30,11 @@ class OndaRessuprimento
      * @Column(name="DSC_OBSERVACAO", type="string", nullable=false)
      */
     protected $dscObservacao;
+    
+    /**
+     * @Column(name="TIPO_ONDA", type="string", nullable=false)
+     */
+    protected $tipoOnda;
 
     public function setDataCriacao($dataCriacao)
     {
@@ -69,6 +74,16 @@ class OndaRessuprimento
     public function getUsuario()
     {
         return $this->usuario;
+    }
+    
+    public function setTipoOnda($tipoOnda)
+    {
+        $this->tipoOnda = $tipoOnda;
+    }
+
+    public function getTipoOnda()
+    {
+        return $this->tipoOnda;
     }
 
 

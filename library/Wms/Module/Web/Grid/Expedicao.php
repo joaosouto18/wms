@@ -49,7 +49,7 @@ class Expedicao extends Grid
             ))
             ->addColumn(array(
                 'label' => 'Placa',
-                'index' => 'placaExpedicao',
+                'index' => 'placaExpedicao'
             ))
             ->addColumn(array(
                 'label' => 'Cargas',

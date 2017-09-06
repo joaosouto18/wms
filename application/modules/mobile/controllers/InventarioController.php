@@ -38,7 +38,7 @@ class Mobile_InventarioController extends Action
             $inventarioService = $this->_service;
 
             $idContagemOs = $inventarioService->criarOS($idInventario);
-
+            
             $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
             $this->view->enderecos = $enderecos;
             $this->view->botoes = false;
@@ -48,6 +48,7 @@ class Mobile_InventarioController extends Action
             $this->view->form = $form;
             $codigoBarras = $this->_getParam('codigoBarras');
             $nivelParam = $this->_getParam('nivel', null);
+            $this->view->codigoBarras = $codigoBarras;
             if (isset($codigoBarras) && !empty($codigoBarras)) {
 
                 $codigoBarrasSemDigito = \Wms\Util\Coletor::retiraDigitoIdentificador($codigoBarras);
@@ -124,14 +125,16 @@ class Mobile_InventarioController extends Action
         $codigoBarras = $this->_getParam('codigoBarras');
         $params = $this->_getAllParams();
         $divergencia  = $this->_getParam('divergencia', null);
-
         /** @var \Wms\Service\Mobile\Inventario $inventarioService */
         $inventarioService = $this->_service;
 
         if (isset($codigoBarras) & $codigoBarras != "") {
-
+            $desabilita = 0;
+            if(isset($params['desabilitar'])){
+                $desabilita = $params['desabilitar'];
+            }
             $form =  new \Wms\Module\Mobile\Form\InventarioQuantidade();
-
+            $form->init($desabilita);
             $codigoBarras = \Wms\Util\Coletor::adequaCodigoBarras($codigoBarras);
             $params['codigoBarras'] = $codigoBarras;
             $this->view->parametroValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
@@ -206,6 +209,11 @@ class Mobile_InventarioController extends Action
         $divergencia = $this->_getParam('divergencia', null);
         /** @var \Wms\Service\Mobile\Inventario $inventarioService */
         $inventarioService = $this->_service;
+        $numContagem = $this->_getParam('numContagem', null);
+        $idInventario = $this->_getParam('idInventario', null);
+            
+        $this->view->codigoBarras =  $this->_getParam('codigoBarras', null);
+        
         $result = $inventarioService->contagemEndereco($params);
         $this->checkErrors($result);
 
@@ -218,6 +226,8 @@ class Mobile_InventarioController extends Action
         $this->view->divergencia = $divergencia;
         $this->view->botoes = true;
         $this->view->urlVoltar = '/mobile/inventario/consulta-endereco/idInventario/' . $params['idInventario'] . '/numContagem/' . $params['numContagem'] . '/divergencia/' . $divergencia;
+        $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
+        $this->view->enderecos = $enderecos;
         $this->render('form');
 
     }

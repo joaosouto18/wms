@@ -5,6 +5,7 @@ namespace Wms\Module\Enderecamento\Printer;
 use Core\Pdf,
     Wms\Util\CodigoBarras,
     Wms\Domain\Entity\Enderecamento\Palete;
+use Wms\Domain\Entity\Deposito;
 use Wms\Domain\Entity\NotaFiscal\Item;
 
 class UMA extends Pdf {
@@ -103,6 +104,10 @@ class UMA extends Pdf {
         $PaleteRepository = $em->getRepository('wms:Enderecamento\Palete');
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $PaleteProdutoRepository */
         $PaleteProdutoRepository = $em->getRepository('wms:Enderecamento\PaleteProduto');
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepository */
+        $estoqueRepository = $em->getRepository('wms:Enderecamento\Estoque');
+        /** @var Deposito\EnderecoRepository $depositoEnderecoRepository */
+        $depositoEnderecoRepository = $em->getRepository('wms:Deposito\Endereco');
 
         $font_size = 55;
         $line_width = 300;
@@ -113,6 +118,13 @@ class UMA extends Pdf {
             if (isset($PaleteProdutoEntity)) {
                 $produtoEn = $PaleteProdutoEntity->getProduto();
                 $dataValidade = $PaleteProdutoEntity->getValidade();
+                if (!is_null($dataValidade)) {
+                    $params['dataValidade']['dataValidade'] = $dataValidade->format('Y-m-d H:i:s');
+                }
+            } else {
+                $enderecoEntity = $depositoEnderecoRepository->findOneBy(array('descricao' => $palete['endereco']));
+                $estoqueEntity = $estoqueRepository->findOneBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(), 'depositoEndereco' => $enderecoEntity));
+                $dataValidade = $estoqueEntity->getValidade();
                 if (!is_null($dataValidade)) {
                     $params['dataValidade']['dataValidade'] = $dataValidade->format('Y-m-d H:i:s');
                 }

@@ -2,20 +2,17 @@
 
 namespace Wms\Service\Mobile;
 
-
 use Core\Grid\Column\Filter\Render\Date;
 use Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Module\Web\Form\Deposito\Endereco\Caracteristica;
 use Wms\Util\Coletor;
 
-class Inventario
-{
+class Inventario {
 
     protected $_em;
 
-    public function getSystemParameterValue ($parametro)
-    {
+    public function getSystemParameterValue($parametro) {
         $parametroRepo = $this->getEm()->getRepository('wms:Sistema\Parametro');
         $parametro = $parametroRepo->findOneBy(array('constante' => $parametro));
 
@@ -24,58 +21,58 @@ class Inventario
         } else {
             return $parametro->getValor();
         }
-
     }
 
     /**
      * @param mixed $em
      */
-    public function setEm($em)
-    {
+    public function setEm($em) {
         $this->_em = $em;
     }
 
     /**
      * @return mixed
      */
-    public function getEm()
-    {
+    public function getEm() {
         return $this->_em;
     }
 
-
-    public function formProduto($populate = array())
-    {
+    public function formProduto($populate = array()) {
         $formProduto = new \Wms\Module\Mobile\Form\Produto();
         $formProduto->setUrlParams(array('controller' => 'inventario', 'action' => 'consulta-produto'));
         $formProduto->populate($populate);
         return $formProduto;
     }
 
-    public function criarOs($idInventario)
-    {
+    public function criarOs($idInventario) {
         /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
         $inventarioRepo = $this->getEm()->getRepository('wms:Inventario');
         $idContagemOs = $inventarioRepo->criarOS($idInventario);
         return $idContagemOs;
     }
 
-    public function getEnderecos($idInventario, $numContagem, $divergencia)
-    {
+    public function getEnderecos($idInventario, $numContagem, $divergencia) {
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $invEndRepo */
         $invEndRepo = $this->getEm()->getRepository('wms:Inventario\Endereco');
         $params['idInventario'] = $idInventario;
-        $params['divergencia']  = $divergencia;
-        $params['numContagem']  = $numContagem;
+        $params['divergencia'] = $divergencia;
+        $params['numContagem'] = $numContagem;
         if ($params['numContagem'] == 1 && $params['divergencia'] != 1) {
             $params['numContagem'] = 0;
         }
 
         $return['enderecos'] = $invEndRepo->getByInventario($params);
         $enderecos = array();
-        foreach($return['enderecos'] as $endereco) {
+        $produtoEmbalagemRepo = $this->getEm()->getRepository('wms:Produto\Embalagem');
+        foreach ($return['enderecos'] as $key => $endereco) {
             if ($params['divergencia'] == 1) {
-                $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'].' - '.$endereco['DSC_PRODUTO'].' - '.$endereco['DSC_GRADE'].' - '.$endereco['COMERCIALIZACAO'];
+                $enderecos[$key]['endereco'] = $endereco['DSC_DEPOSITO_ENDERECO'] . ' - ' . $endereco['DSC_PRODUTO'] . ' - ' . $endereco['DSC_GRADE'] . ' - ' . $endereco['COMERCIALIZACAO'];
+                if ($endereco['QTD_CONTADA'] == 0) {
+                    $embalagem = $produtoEmbalagemRepo->findOneBy(array('codProduto' => $endereco['COD_PRODUTO'], 'grade' => $endereco['DSC_GRADE']), array('quantidade', 'ASC'));
+                    $enderecos[$key]['zerar'] = $embalagem->getCodigoBarras();
+                } else {
+                    $enderecos[$key]['zerar'] = 0;
+                }
             } else {
                 $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'];
             }
@@ -83,8 +80,7 @@ class Inventario
         return $enderecos;
     }
 
-    public function consultaVinculoEndereco($idInventario, $idEndereco, $numContagem, $divergencia)
-    {
+    public function consultaVinculoEndereco($idInventario, $idEndereco, $numContagem, $divergencia) {
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
         $inventarioEndRepo = $this->getEm()->getRepository("wms:Inventario\Endereco");
         $inventarioEndEntity = $inventarioEndRepo->findOneBy(array('depositoEndereco' => $idEndereco, 'inventario' => $idInventario));
@@ -92,8 +88,8 @@ class Inventario
         if ($inventarioEndEntity == null) {
             $result = array(
                 'status' => 'error',
-                'msg' => 'Endereço não selecionado para o inventário:'.$idInventario,
-                'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario.'/numContagem/'.$numContagem.'/divergencia/'.$divergencia
+                'msg' => 'Endereço não selecionado para o inventário:' . $idInventario,
+                'url' => '/mobile/inventario/consulta-endereco/idInventario/' . $idInventario . '/numContagem/' . $numContagem . '/divergencia/' . $divergencia
             );
             return $result;
         }
@@ -103,10 +99,9 @@ class Inventario
         return $result;
     }
 
-    public function consultaOseEnd($idContagemOs, $idInventarioEnd, $idInventario, $recontagemMesmoUsuario)
-    {
+    public function consultaOseEnd($idContagemOs, $idInventarioEnd, $idInventario, $recontagemMesmoUsuario) {
         //Permite a recontagem pelo mesmo usuário?
-        if ($recontagemMesmoUsuario == 'N')  {
+        if ($recontagemMesmoUsuario == 'N') {
             /** @var \Wms\Domain\Entity\Inventario\ContagemEndereco $invContagemEndRepo */
             $invContagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
             $invContagemEndEn = $invContagemEndRepo->findOneBy(array('contagemOs' => $idContagemOs, 'inventarioEndereco' => $idInventarioEnd));
@@ -115,21 +110,20 @@ class Inventario
                 $result = array(
                     'status' => 'error',
                     'msg' => 'Endereço já contado pelo usuário logado',
-                    'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario
+                    'url' => '/mobile/inventario/consulta-endereco/idInventario/' . $idInventario
                 );
             }
             return $result;
         }
     }
 
-    public function consultarProduto($params)
-    {
-        $codigoBarras   = $params['codigoBarras'];
-        $idInventario   = $params['idInventario'];
-        $numContagem    = $params['numContagem'];
+    public function consultarProduto($params) {
+        $codigoBarras = $params['codigoBarras'];
+        $idInventario = $params['idInventario'];
+        $numContagem = $params['numContagem'];
         $divergencia = null;
         if (isset($params['divergencia'])) {
-            $divergencia    = $params['divergencia'];
+            $divergencia = $params['divergencia'];
         }
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
@@ -143,7 +137,7 @@ class Inventario
                 $result = array(
                     'status' => 'error',
                     'msg' => 'Nenhum Produto ou U.M.A encontrado para o código de barras ' . $codigoBarras,
-                    'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$idInventario.'/numContagem/'.$numContagem.'/divergencia/'.$divergencia
+                    'url' => '/mobile/inventario/consulta-endereco/idInventario/' . $idInventario . '/numContagem/' . $numContagem . '/divergencia/' . $divergencia
                 );
                 return $result;
             } else {
@@ -152,7 +146,7 @@ class Inventario
                 $grade = $produtos[0]['grade'];
                 $idVolume = $produtos[0]['codProdutoVolume'];
                 $dscVolume = null;
-                if ($idVolume != null){
+                if ($idVolume != null) {
                     $dscVolume = "VOLUME";
                 }
             }
@@ -163,7 +157,7 @@ class Inventario
             $dscVolume = $info[0]['descricaoVolume'];
         }
 
-        $produtoEn = $produtoRepo->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
+        $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
         $idEndereco = $params['idEndereco'];
         $enderecoRepo = $this->getEm()->getRepository('wms:Deposito\Endereco');
         $embalagemRepo = $this->getEm()->getRepository('wms:Produto\Embalagem');
@@ -177,9 +171,9 @@ class Inventario
         $idPickingDinamico = Endereco::ENDERECO_PICKING_DINAMICO;
 
         $pickingCorreto = true;
-        if($enderecoEn->getIdCaracteristica() == $idPickingDinamico ||
-           $enderecoEn->getIdCaracteristica() == $idPicking) {
-            $pickings = $produtoRepo->getEnderecoPicking($produtoEn,'ID');
+        if ($enderecoEn->getIdCaracteristica() == $idPickingDinamico ||
+                $enderecoEn->getIdCaracteristica() == $idPicking) {
+            $pickings = $produtoRepo->getEnderecoPicking($produtoEn, 'ID');
             $pickingCorreto = false;
             foreach ($pickings as $pickingId) {
                 if ($pickingId == $idEndereco) {
@@ -188,23 +182,22 @@ class Inventario
                 }
             }
         }
-        
-        $populateForm['pickinCorreto']      = $pickingCorreto;
-        $populateForm['idProduto']          = $idProduto;
-        $populateForm['grade']              = $grade;
-        $populateForm['divergencia']        = $divergencia;
-        $populateForm['numContagem']        =  $params['numContagem'];
-        $populateForm['idInventario']       = $params['idInventario'];
-        $populateForm['codigoBarras']       = $params['codigoBarras'];
-        $populateForm['idInventarioEnd']    = $params['idInventarioEnd'];
-        $populateForm['idEndereco']         = $params['idEndereco'];
-        $populateForm['dscEndereco']        = $enderecoEn->getDescricao();
-        $populateForm['descricaoProduto']   = '<b>' . $idProduto . " - " . $produtoEn->getDescricao() . '</b>';
-        if ($embalagemEn == null) {
-            $populateForm['dscEmbalagem']       = '<b>Volume ' . $volumeEn->getDescricao().' - Sequencia '.number_format($volumeEn->getCodigoSequencial(),0,',','') . '</b>';
 
+        $populateForm['pickinCorreto'] = $pickingCorreto;
+        $populateForm['idProduto'] = $idProduto;
+        $populateForm['grade'] = $grade;
+        $populateForm['divergencia'] = $divergencia;
+        $populateForm['numContagem'] = $params['numContagem'];
+        $populateForm['idInventario'] = $params['idInventario'];
+        $populateForm['codigoBarras'] = $params['codigoBarras'];
+        $populateForm['idInventarioEnd'] = $params['idInventarioEnd'];
+        $populateForm['idEndereco'] = $params['idEndereco'];
+        $populateForm['dscEndereco'] = $enderecoEn->getDescricao();
+        $populateForm['descricaoProduto'] = '<b>' . $idProduto . " - " . $produtoEn->getDescricao() . '</b>';
+        if ($embalagemEn == null) {
+            $populateForm['dscEmbalagem'] = '<b>Volume ' . $volumeEn->getDescricao() . ' - Sequencia ' . number_format($volumeEn->getCodigoSequencial(), 0, ',', '') . '</b>';
         } else {
-            $populateForm['dscEmbalagem']       = '<b>Embalagem ' . $embalagemEn->getDescricao().' - Fator '.number_format($embalagemEn->getQuantidade(),2,',','') . '</b>';
+            $populateForm['dscEmbalagem'] = '<b>Embalagem ' . $embalagemEn->getDescricao() . ' - Fator ' . number_format($embalagemEn->getQuantidade(), 2, ',', '') . '</b>';
         }
         if ($dscVolume != null) {
             $populateForm['codProdutoVolume'] = $idVolume;
@@ -217,53 +210,52 @@ class Inventario
         return $result;
     }
 
-    public function contagemEndereco($params)
-    {
+    public function contagemEndereco($params) {
         $qtdConferida = null;
         if (isset($params['qtdConferida']))
-            $qtdConferida           = $params['qtdConferida'];
+            $qtdConferida = $params['qtdConferida'];
         $idContagemOs = null;
         if (isset($params['idContagemOs']))
-            $idContagemOs           = $params['idContagemOs'];
+            $idContagemOs = $params['idContagemOs'];
         $qtdAvaria = null;
         if (isset($params['qtdAvaria']))
-            $qtdAvaria              = $params['qtdAvaria'];
+            $qtdAvaria = $params['qtdAvaria'];
         $idInventarioEnd = null;
         if (isset($params['idInventarioEnd']))
-            $idInventarioEnd        = $params['idInventarioEnd'];
+            $idInventarioEnd = $params['idInventarioEnd'];
         $idProduto = null;
         if (isset($params['idProduto']))
-            $idProduto              = $params['idProduto'];
+            $idProduto = $params['idProduto'];
         $grade = null;
         if (isset($params['grade']))
-            $grade                  = $params['grade'];
+            $grade = $params['grade'];
         $codProdutoEmbalagem = null;
         if (isset($params['codProdutoEmbalagem']))
-            $codProdutoEmbalagem    = $params['codProdutoEmbalagem'];
+            $codProdutoEmbalagem = $params['codProdutoEmbalagem'];
         $codProdutoVolume = null;
         if (isset($params['codProdutoVolume']))
-            $codProdutoVolume       = $params['codProdutoVolume'];
+            $codProdutoVolume = $params['codProdutoVolume'];
         $contagemEndId = null;
         if (isset($params['contagemEndId']))
-            $contagemEndId          = $params['contagemEndId'];
+            $contagemEndId = $params['contagemEndId'];
         $numContagem = null;
         if (isset($params['numContagem']))
-            $numContagem            = $params['numContagem'];
+            $numContagem = $params['numContagem'];
         $codigoBarras = null;
         if (isset($params['codigoBarras']))
-            $codigoBarras   = $params['codigoBarras'];
+            $codigoBarras = $params['codigoBarras'];
         $idInventario = null;
         if (isset($params['idInventario']))
-            $idInventario   = $params['idInventario'];
+            $idInventario = $params['idInventario'];
         $divergencia = null;
         if (isset($params['divergencia']))
-            $divergencia   = $params['divergencia'];
+            $divergencia = $params['divergencia'];
         $idEndereco = null;
         if (isset($params['idEndereco']))
-            $idEndereco   = $params['idEndereco'];
+            $idEndereco = $params['idEndereco'];
 
         $produtoEn = $this->getEm()->getRepository('wms:Produto')
-            ->findOneBy(array('id'=> $idProduto, 'grade' => $grade));
+                ->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
         $possuiValidade = null;
         if (isset($produtoEn) && !empty($produtoEn))
@@ -277,16 +269,20 @@ class Inventario
             if (strlen($params['validade']) < 8) {
                 $dataValida = false;
             } else {
-                $dia = substr($params['validade'],0,2);
-                if ($dia == false) $dataValida = false;
-                $mes = substr($params['validade'],3,2);
-                if ($mes == false) $dataValida = false;
-                $ano = substr($params['validade'],6,2);
-                if ($ano == false) $dataValida = false;
+                $dia = substr($params['validade'], 0, 2);
+                if ($dia == false)
+                    $dataValida = false;
+                $mes = substr($params['validade'], 3, 2);
+                if ($mes == false)
+                    $dataValida = false;
+                $ano = substr($params['validade'], 6, 2);
+                if ($ano == false)
+                    $dataValida = false;
 
                 if ($dataValida == true) {
                     $data = $dia . "/" . $mes . "/20" . $ano;
-                    if (checkdate($mes,$dia,"20".$ano) == false) $dataValida = false;
+                    if (checkdate($mes, $dia, "20" . $ano) == false)
+                        $dataValida = false;
                 }
             }
             if ($dataValida == false) {
@@ -331,12 +327,12 @@ class Inventario
                 //FOI BIPADO UMA EMBALAGEM OU DEVE SER BIPADO CADA VOLUME DO PRODUTO
                 $embalagem = array(
                     'idVolume' => $codProdutoVolume,
-                    'idEmbalagem' =>$codProdutoEmbalagem);
+                    'idEmbalagem' => $codProdutoEmbalagem);
                 $embConferidos[] = $embalagem;
             } else {
                 //BIPOU UM VOLUME E O SISTEMA ESTA PARAMETRIZADO PARA OA BIPAR O VOLUME, BIPAR AUTOMATICAMENTE TODOS OS VOLUMES DO ENDEREÇO
                 $volumeEn = $produtoVolumeRepo->find($codProdutoVolume);
-                $volumes = $produtoVolumeRepo->findBy(array('normaPaletizacao'=>$volumeEn->getNormaPaletizacao()));
+                $volumes = $produtoVolumeRepo->findBy(array('normaPaletizacao' => $volumeEn->getNormaPaletizacao()));
                 foreach ($volumes as $volumeEn) {
                     $embalagem = array(
                         'idVolume' => $volumeEn->getId(),
@@ -347,24 +343,26 @@ class Inventario
         }
 
 
-        foreach ($embConferidos as $embalagem){
+        foreach ($embConferidos as $embalagem) {
             $idEmbalagem = null;
             $idVolume = null;
-            if (isset($embalagem['idEmbalagem'])) $idEmbalagem = $embalagem['idEmbalagem'];
-            if (isset($embalagem['idVolume'])) $idVolume = $embalagem['idVolume'];
+            if (isset($embalagem['idEmbalagem']))
+                $idEmbalagem = $embalagem['idEmbalagem'];
+            if (isset($embalagem['idVolume']))
+                $idVolume = $embalagem['idVolume'];
 
             if (isset($embalagemEntity) && !empty($embalagemEntity)) {
                 $qtdConferida = $qtdConferida * $embalagemEntity->getQuantidade();
             }
 
             $contagemEndEn = $contagemEndRepo->findOneBy(array(
-                'contagemOs' =>$idContagemOs,
+                'contagemOs' => $idContagemOs,
                 'inventarioEndereco' => $idInventarioEnd,
-                'codProduto'=>$idProduto,
-                'grade' =>$grade,
-                'codProdutoEmbalagem'=>$idEmbalagem,
-                'codProdutoVolume'=>$idVolume,
-                'numContagem'=>$numContagem));
+                'codProduto' => $idProduto,
+                'grade' => $grade,
+                'codProdutoEmbalagem' => $idEmbalagem,
+                'codProdutoVolume' => $idVolume,
+                'numContagem' => $numContagem));
             if ($contagemEndEn != null) {
                 $contagemEndEn->setQtdContada($contagemEndEn->getQtdContada() + $qtdConferida);
                 $contagemEndEn->setQtdAvaria($contagemEndEn->getQtdAvaria() + $qtdAvaria);
@@ -391,9 +389,7 @@ class Inventario
         return array('contagemEndId' => $contagemEndId);
     }
 
-
-    public function validaEstoqueAtual($params, $parametroSistema)
-    {
+    public function validaEstoqueAtual($params, $parametroSistema) {
         if ($parametroSistema == 'S') {
 
             if (empty($params['contagemEndId'])) {
@@ -401,38 +397,38 @@ class Inventario
             }
 
             /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
-            $contagemEndRepo    = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
-            $contagemEndEn      = $contagemEndRepo->find($params['contagemEndId']);
-            $quantidadeContada  = $contagemEndEn->getQtdContada();
-            $quantidadeAvaria   = $contagemEndEn->getQtdAvaria();
-            $inventarioEndEn    = $contagemEndEn->getInventarioEndereco();
+            $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
+            $contagemEndEn = $contagemEndRepo->find($params['contagemEndId']);
+            $quantidadeContada = $contagemEndEn->getQtdContada();
+            $quantidadeAvaria = $contagemEndEn->getQtdAvaria();
+            $inventarioEndEn = $contagemEndEn->getInventarioEndereco();
             $idDepositoEndereco = $inventarioEndEn->getDepositoEndereco()->getId();
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-            $estoqueRepo    = $this->getEm()->getRepository("wms:Enderecamento\Estoque");
+            $estoqueRepo = $this->getEm()->getRepository("wms:Enderecamento\Estoque");
 
             if ($contagemEndEn->getCodProdutoVolume() != null) {
                 $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco, 'produtoVolume' => $contagemEndEn->getCodProdutoVolume()));
-            } elseif($contagemEndEn->getCodProduto() != null) {
+            } elseif ($contagemEndEn->getCodProduto() != null) {
                 $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco, 'codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()));
             } else {
                 $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco));
             }
 
-            $quantidadeTotal = ($quantidadeContada+$quantidadeAvaria);
+            $quantidadeTotal = ($quantidadeContada + $quantidadeAvaria);
             if ($estoqueEn) {
                 //Houve divergência?
                 $quantidadeEstoque = $estoqueEn->getQtd();
-                if ($quantidadeEstoque != $quantidadeTotal || ($this->compareProduto($estoqueEn, $contagemEndEn) == false) ) {
+                if ($quantidadeEstoque != $quantidadeTotal || ($this->compareProduto($estoqueEn, $contagemEndEn) == false)) {
                     $inventarioEndEn->setInventariado(null);
                     $inventarioEndEn->setDivergencia(1);
-                    $contagemEndEn->setQtdDivergencia($quantidadeContada-$quantidadeEstoque);
+                    $contagemEndEn->setQtdDivergencia($quantidadeContada - $quantidadeEstoque);
                     $contagemEndEn->setDivergencia(1);
                     $this->getEm()->persist($inventarioEndEn);
                     $this->getEm()->persist($contagemEndEn);
                     $this->getEm()->flush();
                     return false;
                 }
-            } elseif($quantidadeTotal > 0) {
+            } elseif ($quantidadeTotal > 0) {
                 $inventarioEndEn->setInventariado(null);
                 $inventarioEndEn->setDivergencia(1);
                 $contagemEndEn->setQtdDivergencia($quantidadeContada);
@@ -442,7 +438,6 @@ class Inventario
                 $this->getEm()->flush();
                 return false;
             }
-
         }
         $this->retiraDivergenciaContagemProduto($params);
         return true;
@@ -453,29 +448,27 @@ class Inventario
      * @param $contagemEndEn
      * @return bool | true se igual | false se diferente
      */
-    public function compareProduto($estoqueEn, $contagemEndEn)
-    {
-        if (($estoqueEn->getCodProduto() == $contagemEndEn->getCodProduto()) &&  ($estoqueEn->getGrade() == $contagemEndEn->getGrade())) {
+    public function compareProduto($estoqueEn, $contagemEndEn) {
+        if (($estoqueEn->getCodProduto() == $contagemEndEn->getCodProduto()) && ($estoqueEn->getGrade() == $contagemEndEn->getGrade())) {
 
-            if (($estoqueEn->getProdutoEmbalagem() == null)  && ($estoqueEn->getProdutoVolume() != null)) {
+            if (($estoqueEn->getProdutoEmbalagem() == null) && ($estoqueEn->getProdutoVolume() != null)) {
                 if ($estoqueEn->getProdutoVolume()->getId() == $contagemEndEn->getCodProdutoVolume()) {
                     return true;
                 }
             } else {
                 return true;
             }
-
         }
         return false;
     }
 
-    public function novaRegraContagem($params, $parametroSistema){
+    public function novaRegraContagem($params, $parametroSistema) {
 
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
         }
 
-        $idInventarioEndereco =  $params['idInventarioEnd'];
+        $idInventarioEndereco = $params['idInventarioEnd'];
         $qtdContagensIguais = $parametroSistema;
         $SQL = " SELECT MAX(QTD_IGUAL), 
                         COD_PRODUTO,
@@ -501,23 +494,22 @@ class Inventario
                            COD_PRODUTO_VOLUME,
                            COD_PRODUTO_EMBALAGEM
           ";
-        $records =  $this->getEm()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        if (count($records) <=0) {
+        $records = $this->getEm()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($records) <= 0) {
             $this->retiraDivergenciaContagemProduto($params);
             return true;
         }
         return false;
     }
 
-    public function regraContagem($params, $parametroSistema, $estoqueValidado)
-    {
-        $qtdConferida           = $params['qtdConferida'];
-        $contagemEndId          = $params['contagemEndId'];
-        $codProduto             = $params['idProduto'];
-        $grade                  = $params['grade'];
-        $codProdutoEmbalagem    = $params['codProdutoEmbalagem'];
-        $codProdutoVolume       = $params['codProdutoVolume'];
-        $idInventarioEnd        = $params['idInventarioEnd'];
+    public function regraContagem($params, $parametroSistema, $estoqueValidado) {
+        $qtdConferida = $params['qtdConferida'];
+        $contagemEndId = $params['contagemEndId'];
+        $codProduto = $params['idProduto'];
+        $grade = $params['grade'];
+        $codProdutoEmbalagem = $params['codProdutoEmbalagem'];
+        $codProdutoVolume = $params['codProdutoVolume'];
+        $idInventarioEnd = $params['idInventarioEnd'];
 
         if ($codProdutoEmbalagem == null) {
             $codProdutoEmbalagem = '0';
@@ -531,19 +523,19 @@ class Inventario
         }
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
-        $contagemEndRepo        = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
-        $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $idInventarioEnd));
+        $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
+        $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $idInventarioEnd));
 
         if ($parametroSistema == '1') {
 
             if (count($contagemEndEntities) > 0) {
-                foreach($contagemEndEntities as $contagemEndEn) {
+                foreach ($contagemEndEntities as $contagemEndEn) {
                     if ($contagemEndEn->getId() == $contagemEndId) {
                         continue;
                     }
-                    $qtdTotal = ($contagemEndEn->getQtdContada()+$contagemEndEn->getQtdAvaria());
+                    $qtdTotal = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
                     if (($qtdConferida == $qtdTotal) && ($contagemEndEn->getCodProduto() == $codProduto) && ($contagemEndEn->getGrade() == $grade) &&
-                        ( ($contagemEndEn->getCodProdutoEmbalagem() == $codProdutoEmbalagem) || ($contagemEndEn->getCodProdutoVolume()) == $codProdutoVolume )
+                            ( ($contagemEndEn->getCodProdutoEmbalagem() == $codProdutoEmbalagem) || ($contagemEndEn->getCodProdutoVolume()) == $codProdutoVolume )
                     ) {
                         $this->retiraDivergenciaContagemProduto($params);
                         return true;
@@ -555,53 +547,51 @@ class Inventario
         } else if ($parametroSistema == '2') {
 
             // caso a primeira contagem seja igual à segunda mas diferente do estoque atual então será necessário uma terceira contagem igual as duas anteriores
-            if ($estoqueValidado == false)  {
+            if ($estoqueValidado == false) {
                 $numContagensMinimo = 3;
             } else {
                 $numContagensMinimo = 2;
             }
             $numContagemIguais = 0;
-            if (count($contagemEndEntities) >= $numContagensMinimo ) {
-                foreach($contagemEndEntities as $contagemEndEn) {
+            if (count($contagemEndEntities) >= $numContagensMinimo) {
+                foreach ($contagemEndEntities as $contagemEndEn) {
                     if ($contagemEndEn->getId() == $contagemEndId) {
                         continue;
                     }
-                    $qtdTotal = ($contagemEndEn->getQtdContada()+$contagemEndEn->getQtdAvaria());
+                    $qtdTotal = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
                     if (($qtdConferida == $qtdTotal) &&
-                        ($contagemEndEn->getCodProduto() == $codProduto) &&
-                        ($contagemEndEn->getGrade() == $grade) &&
-                        ( ($contagemEndEn->getCodProdutoEmbalagem() == $codProdutoEmbalagem) || ($contagemEndEn->getCodProdutoVolume()) == $codProdutoVolume )
+                            ($contagemEndEn->getCodProduto() == $codProduto) &&
+                            ($contagemEndEn->getGrade() == $grade) &&
+                            ( ($contagemEndEn->getCodProdutoEmbalagem() == $codProdutoEmbalagem) || ($contagemEndEn->getCodProdutoVolume()) == $codProdutoVolume )
                     ) {
                         $numContagemIguais++;
                     }
                 }
 
-                if ($numContagemIguais == $numContagensMinimo-1) {
+                if ($numContagemIguais == $numContagensMinimo - 1) {
                     $this->retiraDivergenciaContagemProduto($params);
                     return true;
                 }
-
             }
             return false;
         }
         return true;
     }
 
-    public function inventariarEndereco($params, $contagemEndEntities)
-    {
+    public function inventariarEndereco($params, $contagemEndEntities) {
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
         }
 
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $invEndRepo */
-        $invEndRepo         = $this->getEm()->getRepository("wms:Inventario\Endereco");
-        $inventarioEndEn    = $invEndRepo->find($params['idInventarioEnd']);
+        $invEndRepo = $this->getEm()->getRepository("wms:Inventario\Endereco");
+        $inventarioEndEn = $invEndRepo->find($params['idInventarioEnd']);
 
         $inventarioEndEn->setInventariado(1);
         $inventarioEndEn->setDivergencia(null);
         $this->getEm()->persist($inventarioEndEn);
 
-        foreach($contagemEndEntities as $contagemEndEn) {
+        foreach ($contagemEndEntities as $contagemEndEn) {
             $contagemEndEn->setContagemInventariada(1);
             $this->getEm()->persist($contagemEndEn);
         }
@@ -609,62 +599,59 @@ class Inventario
         return $this->getEm()->flush();
     }
 
-    public function deveAtualizarEstoque($params, $atualiza)
-    {
+    public function deveAtualizarEstoque($params, $atualiza) {
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
         }
 
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $invEndRepo */
-        $invEndRepo         = $this->getEm()->getRepository("wms:Inventario\Endereco");
-        $inventarioEndEn    = $invEndRepo->find($params['idInventarioEnd']);
+        $invEndRepo = $this->getEm()->getRepository("wms:Inventario\Endereco");
+        $inventarioEndEn = $invEndRepo->find($params['idInventarioEnd']);
         $inventarioEndEn->setAtualizaEstoque($atualiza);
         $this->getEm()->persist($inventarioEndEn);
         $this->getEm()->flush();
     }
 
-    public function contagemEndComDivergencia($params)
-    {
+    public function contagemEndComDivergencia($params) {
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
         }
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
-        $contagemEndRepo        = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
-        $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'divergencia' => 1));
+        $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
+        $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'divergencia' => 1));
         if (count($contagemEndEntities) > 0) {
             return true;
         }
         return false;
     }
 
-    public function retiraDivergenciaContagemProduto($params)
-    {
+    public function retiraDivergenciaContagemProduto($params) {
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
         }
 
-        $codProdutoEmbalagem    = $params['codProdutoEmbalagem'];
-        $codProdutoVolume       = $params['codProdutoVolume'];
+        $codProdutoEmbalagem = $params['codProdutoEmbalagem'];
+        $codProdutoVolume = $params['codProdutoVolume'];
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
-        $contagemEndRepo        = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
+        $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
 
         if ($codProdutoVolume != null) {
-            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoVolume' => $codProdutoVolume));
-        } elseif($codProdutoEmbalagem != null) {
-            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => $codProdutoEmbalagem, 'codProduto' => $params['idProduto'], 'grade' => $params['grade']));
-        }else {
-            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => null, 'codProdutoVolume' => null));
+            $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoVolume' => $codProdutoVolume));
+        } elseif ($codProdutoEmbalagem != null) {
+            $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => $codProdutoEmbalagem, 'codProduto' => $params['idProduto'], 'grade' => $params['grade']));
+        } else {
+            $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => null, 'codProdutoVolume' => null));
         }
 
-        foreach($contagemEndEntities as $contagemEndEn) {
+        foreach ($contagemEndEntities as $contagemEndEn) {
             $contagemEndEn->setDivergencia(null);
             $this->getEm()->persist($contagemEndEn);
         }
 
-        $contagemEndEntitiesZero    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => null, 'codProdutoVolume' => null));
+        $contagemEndEntitiesZero = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'codProdutoEmbalagem' => null, 'codProdutoVolume' => null));
         if (count($contagemEndEntitiesZero) > 0) {
-            foreach($contagemEndEntitiesZero as $contagemEndEn) {
+            foreach ($contagemEndEntitiesZero as $contagemEndEn) {
                 $contagemEndEn->setDivergencia(null);
                 $this->getEm()->persist($contagemEndEn);
             }
@@ -673,8 +660,8 @@ class Inventario
          * Caso tenha duas contagens vazio o endereço esta vazio e se ja tiver alguma contagem de outro produto retirar divergência do mesmo
          */
         if (count($contagemEndEntitiesZero) >= 2) {
-            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']));
-            foreach($contagemEndEntities as $contagemEndEn) {
+            $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']));
+            foreach ($contagemEndEntities as $contagemEndEn) {
                 $contagemEndEn->setDivergencia(null);
                 $this->getEm()->persist($contagemEndEn);
             }
@@ -690,44 +677,43 @@ class Inventario
      * @return mixed
      * @throws Exception
      */
-    public function verificaContagemEnd($params)
-    {
+    public function verificaContagemEnd($params) {
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
         }
 
-        $numContagem            = $params['numContagem'];
-        $codProdutoVolume       = !empty($params['codProdutoVolume']) ? $params['codProdutoVolume'] : null;
+        $numContagem = $params['numContagem'];
+        $codProdutoVolume = !empty($params['codProdutoVolume']) ? $params['codProdutoVolume'] : null;
         if (isset($params['codProdutoEmbalagem'])) {
-            $codProdutoEmbalagem  = $params['codProdutoEmbalagem'];
+            $codProdutoEmbalagem = $params['codProdutoEmbalagem'];
         }
 
-        $divergencia            = $params['divergencia'];
+        $divergencia = $params['divergencia'];
         if ($divergencia == 1) {
             $numContagem++;
         }
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
-        $contagemEndRepo        = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
+        $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
 
         if ($codProdutoVolume != null) {
-            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'],
+            $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'],
                 'codProdutoVolume' => $codProdutoVolume, 'numContagem' => $numContagem)
             );
         } elseif ($codProdutoEmbalagem == 0) {
-            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'],
+            $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'],
                 'codProdutoEmbalagem' => $codProdutoEmbalagem,
                 'numContagem' => $numContagem,
                 'codProduto' => $params['idProduto'],
                 'grade' => $params['grade']
-                )
+                    )
             );
         } else {
-            $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'],
-                    'numContagem' => $numContagem,
-                    'codProduto' => $params['idProduto'],
-                    'grade' => $params['grade']
-                )
+            $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'],
+                'numContagem' => $numContagem,
+                'codProduto' => $params['idProduto'],
+                'grade' => $params['grade']
+                    )
             );
         }
 
@@ -741,18 +727,17 @@ class Inventario
         return false;
     }
 
-    public function removeEnderecoInventario($params)
-    {
+    public function removeEnderecoInventario($params) {
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
         }
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
-        $contagemEndRepo         = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
-        $contagemEndEntities     = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'numContagem' => null));
+        $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
+        $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd'], 'numContagem' => null));
 
         if (count($contagemEndEntities) > 0) {
-            foreach($contagemEndEntities as $contagemEndEn) {
+            foreach ($contagemEndEntities as $contagemEndEn) {
                 $this->_em->remove($contagemEndEn);
             }
             $this->_em->flush();
@@ -761,7 +746,7 @@ class Inventario
         return false;
     }
 
-    private function acertaContagensProdutosNaoConferidos( $contagemEndEntities, $validaEstoqueAtual) {
+    private function acertaContagensProdutosNaoConferidos($contagemEndEntities, $validaEstoqueAtual) {
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
         $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
@@ -769,9 +754,9 @@ class Inventario
         $produtoVolumeRepo = $this->getEm()->getRepository("wms:Produto\Volume");
         $produtoEmbaRepo = $this->getEm()->getRepository("wms:Produto\Embalagem");
 
-        $maiorContagem = $contagemEndEntities[count($contagemEndEntities)-1]->getNumContagem();
-        $inventarioEnderecoEn = $contagemEndEntities[count($contagemEndEntities)-1]->getInventarioEndereco();
-        $idOs = $contagemEndEntities[count($contagemEndEntities)-1]->getContagemOs()->getId();
+        $maiorContagem = $contagemEndEntities[count($contagemEndEntities) - 1]->getNumContagem();
+        $inventarioEnderecoEn = $contagemEndEntities[count($contagemEndEntities) - 1]->getInventarioEndereco();
+        $idOs = $contagemEndEntities[count($contagemEndEntities) - 1]->getContagemOs()->getId();
         $produtosObrigatorios = array();
 
         /*
@@ -783,15 +768,15 @@ class Inventario
 
         $alterou = false;
         if ($maiorContagem == 1) {
-            $produtosInventariar = $invEndProdRepo->findBy(array('inventarioEndereco'=> $inventarioEnderecoEn));
+            $produtosInventariar = $invEndProdRepo->findBy(array('inventarioEndereco' => $inventarioEnderecoEn));
             if (count($produtosInventariar) == 0) {
-                if ($validaEstoqueAtual == "S" ) {
+                if ($validaEstoqueAtual == "S") {
                     /*
                      * verifica se todos os produtos do estoque foram conferidos
                      * Pego o código de barras, embalagens e volumes a partir do que esta no estoque
                      */
                     $estoqueEntities = $this->getEm()->getRepository('wms:Enderecamento\Estoque')
-                        ->findBy(array('depositoEndereco' => $contagemEndEntities[0]->getInventarioEndereco()->getDepositoEndereco()));
+                            ->findBy(array('depositoEndereco' => $contagemEndEntities[0]->getInventarioEndereco()->getDepositoEndereco()));
                     foreach ($estoqueEntities as $estoqueEn) {
                         $idEmbalagem = null;
                         $idVolume = null;
@@ -810,7 +795,7 @@ class Inventario
                         $produtosObrigatorios[$estoqueEn->getCodProduto()][$estoqueEn->getGrade()] = array(
                             'codBarras' => $codBarras,
                             'codProdutoEmbalagem' => $idEmbalagem,
-                            'codProdutoVolume'=> $idVolume
+                            'codProdutoVolume' => $idVolume
                         );
                     }
                 }
@@ -823,16 +808,16 @@ class Inventario
                     $produtoEn = $produto->getProduto();
                     $volumes = $produtoEn->getVolumes();
                     $embalagens = $produtoEn->getEmbalagens();
-                    if (count($volumes) >0) {
+                    if (count($volumes) > 0) {
                         foreach ($volumes as $volumeEn) {
                             $produtosObrigatorios[$produto->getCodProduto()][$produto->getProduto()->getGrade()] = array(
                                 'codBarras' => $volumeEn->getCodigoBarras(),
                                 'codProdutoEmbalagem' => null,
-                                'codProdutoVolume'=> $volumeEn->getId()
+                                'codProdutoVolume' => $volumeEn->getId()
                             );
                         }
                     } else {
-                        if (count($embalagens) >0) {
+                        if (count($embalagens) > 0) {
                             $menorEmbalagem = $embalagens[0];
                             foreach ($embalagens as $embalagemEn) {
                                 if ($embalagemEn->getQuantidade() < $menorEmbalagem->getQuantidade()) {
@@ -842,7 +827,7 @@ class Inventario
                             $produtosObrigatorios[$produto->getCodProduto()][$produto->getProduto()->getGrade()] = array(
                                 'codBarras' => $menorEmbalagem->getCodigoBarras(),
                                 'codProdutoEmbalagem' => $menorEmbalagem->getId(),
-                                'codProdutoVolume'=> null
+                                'codProdutoVolume' => null
                             );
                         }
                     }
@@ -868,23 +853,23 @@ class Inventario
                         $codBarras = $menorEmbalagem->getCodigoBarras();
                     }
                     if ($idVolume != null) {
-                        $codBarras = $produtoVolumeRepo->findOneBy(array('id'=>$idVolume))->getCodigoBarras();
+                        $codBarras = $produtoVolumeRepo->findOneBy(array('id' => $idVolume))->getCodigoBarras();
                     }
 
                     if (!isset($produtosObrigatorios[$contagemEn->getCodProduto()][$contagemEn->getGrade()])) {
                         $produtosObrigatorios[$contagemEn->getCodProduto()][$contagemEn->getGrade()] = array(
                             'codBarras' => $codBarras,
                             'codProdutoEmbalagem' => $idEmbalagem,
-                            'codProdutoVolume'=> $idVolume
+                            'codProdutoVolume' => $idVolume
                         );
                     }
                 }
             }
         }
 
-        /*Verifica se todos os produtos obrigados a bipar foram realmente bipados na maior contagem*/
-        foreach( $produtosObrigatorios as $codProduto => $produto){
-            foreach($produto as $grade => $values){
+        /* Verifica se todos os produtos obrigados a bipar foram realmente bipados na maior contagem */
+        foreach ($produtosObrigatorios as $codProduto => $produto) {
+            foreach ($produto as $grade => $values) {
                 $encontrouProduto = false;
                 $idVolume = $values['codProdutoVolume'];
                 if ($idVolume == null) {
@@ -894,7 +879,7 @@ class Inventario
                 }
 
                 foreach ($contagemEndEntities as $contagemEn) {
-                 if (($contagemEn->getNumContagem() == $maiorContagem) && ($contagemEn->getCodProduto() == $codProduto) && ($contagemEn->getGrade() == $grade)) {
+                    if (($contagemEn->getNumContagem() == $maiorContagem) && ($contagemEn->getCodProduto() == $codProduto) && ($contagemEn->getGrade() == $grade)) {
                         if ((($contagemEn->getCodProdutoVolume() == null) && ($idVolume == null)) || ($contagemEn->getCodProdutoVolume() == $idVolume)) {
                             $encontrouProduto = true;
                             break;
@@ -940,16 +925,15 @@ class Inventario
         return $alterou;
     }
 
-    public function finalizaContagemEndereco($params, $paramsSystem)
-    {
+    public function finalizaContagemEndereco($params, $paramsSystem) {
 
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
         }
 
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
-        $contagemEndRepo        = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
-        $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
+        $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
+        $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
 
         if (count($contagemEndEntities) == 0) {
             return false;
@@ -961,29 +945,28 @@ class Inventario
         if ($this->getSystemParameterValue('CONTAR_TODOS_PRODUTOS') == 'S') {
             $teveAlteracao = $this->acertaContagensProdutosNaoConferidos($contagemEndEntities, $validaEstoqueAtual);
             if ($teveAlteracao == true) {
-                $contagemEndEntities    = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
+                $contagemEndEntities = $contagemEndRepo->findBy(array('inventarioEndereco' => $params['idInventarioEnd']), array('numContagem' => 'ASC'));
             }
         }
 
-        foreach($contagemEndEntities as $contagemEndEn) {
+        foreach ($contagemEndEntities as $contagemEndEn) {
 
-            $params['contagemEndId']        = $contagemEndEn->getId();
-            $params['qtdConferida']         = $contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria();
-            $params['idProduto']            = $contagemEndEn->getCodProduto();
-            $params['grade']                = $contagemEndEn->getGrade();
-            $params['codProdutoEmbalagem']  = $contagemEndEn->getCodProdutoEmbalagem();
-            $params['codProdutoVolume']     = $contagemEndEn->getCodProdutoVolume();
+            $params['contagemEndId'] = $contagemEndEn->getId();
+            $params['qtdConferida'] = $contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria();
+            $params['idProduto'] = $contagemEndEn->getCodProduto();
+            $params['grade'] = $contagemEndEn->getGrade();
+            $params['codProdutoEmbalagem'] = $contagemEndEn->getCodProdutoEmbalagem();
+            $params['codProdutoVolume'] = $contagemEndEn->getCodProdutoVolume();
 
-            $estoqueValidado    = $this->validaEstoqueAtual($params, $validaEstoqueAtual);
+            $estoqueValidado = $this->validaEstoqueAtual($params, $validaEstoqueAtual);
 
-            $regraContagem      = $this->regraContagem($params, $regraContagemParam, $estoqueValidado);
+            $regraContagem = $this->regraContagem($params, $regraContagemParam, $estoqueValidado);
 
             $contagemEndComDivergencia = $this->contagemEndComDivergencia($params);
 
             if (false == $regraContagem && $regraContagemParam == '2') {
                 //não passou na regra de contagem
-            }
-            else {
+            } else {
 
                 if ((true == $estoqueValidado || true == $regraContagem) && (false == $contagemEndComDivergencia)) {
                     //Estoque validado, endereço considerado inventariado
@@ -998,15 +981,12 @@ class Inventario
         }
         $this->_em->flush();
         return $result;
-
     }
 
-    public function getContagens($params)
-    {
+    public function getContagens($params) {
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $contagemEndRepo */
-        $contagemEndRepo   = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
-        $result            = $contagemEndRepo->getContagens($params);
-
+        $contagemEndRepo = $this->getEm()->getRepository("wms:Inventario\ContagemEndereco");
+        $result = $contagemEndRepo->getContagens($params);
         if ($params['regraContagem'] == 2) {
             $posicaoArray = count($result);
             $result[$posicaoArray]['CONTAGEM'] = 2;
@@ -1015,9 +995,8 @@ class Inventario
 
         return $result;
     }
-
-    public function checaSeInventariado($params, $contagemEndEntities = null)
-    {
+    
+    public function checaSeInventariado($params, $contagemEndEntities = null) {
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
         $inventarioEndRepo = $this->getEm()->getRepository("wms:Inventario\Endereco");
         $inventarioEndEntity = $inventarioEndRepo->find($params['idInventarioEnd']);
@@ -1030,7 +1009,7 @@ class Inventario
                     $result = array(
                         'status' => 'error',
                         'msg' => 'Endereço já invetariado, não é permitido zera-lo',
-                        'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$params['idInventario'].'/numContagem/'.$params['numContagem'].'/divergencia/'.$params['divergencia']
+                        'url' => '/mobile/inventario/consulta-endereco/idInventario/' . $params['idInventario'] . '/numContagem/' . $params['numContagem'] . '/divergencia/' . $params['divergencia']
                     );
                     return $result;
                 }
@@ -1039,12 +1018,11 @@ class Inventario
                     $result = array(
                         'status' => 'error',
                         'msg' => 'Endereço já invetariado com o produto informado',
-                        'url' => '/mobile/inventario/consulta-endereco/idInventario/'.$params['idInventario'].'/numContagem/'.$params['numContagem'].'/divergencia/'.$params['divergencia']
+                        'url' => '/mobile/inventario/consulta-endereco/idInventario/' . $params['idInventario'] . '/numContagem/' . $params['numContagem'] . '/divergencia/' . $params['divergencia']
                     );
                     return $result;
                 }
             }
-
         }
 
         return $result;

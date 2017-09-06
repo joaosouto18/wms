@@ -9,17 +9,15 @@ use Wms\Module\Web\Grid;
 class Inventario extends Grid
 {
 
-    public function init()
+    public function init($data = array())
     {
         /** @var EntityManager $em */
         $em = $this->getEntityManager();
         $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
         /** @var Parametro $impInventERP */
         $impInventERP = $parametroRepo->findOneBy(array('constante' => 'IMPORTA_INVENTARIO'));
-
         $this->setAttrib('title','Inventario');
-        $source = $em->getRepository('wms:Inventario')->getInventarios();
-
+        $source = $em->getRepository('wms:Inventario')->getInventarios(null, $data);
         $this->setSource(new \Core\Grid\Source\ArraySource($source))
             ->setId('monitoramento-inventario');
         $this->setShowExport(false);
@@ -27,106 +25,44 @@ class Inventario extends Grid
         $this->addColumn(array(
                 'label' => 'Inventário',
                 'index' => 'id',
-                'filter' => array(
-                    'render' => array(
-                        'type' => 'centesimal',
-                        'range' => true,
-                    ),
-                ),
              ));
         if ($impInventERP->getValor() === 'S'){
             $this->addColumn(array(
                     'label' => 'Código no ERP',
                     'index' => 'codInvERP',
-                    'filter' => array(
-                        'render' => array(
-                            'type' => 'centesimal',
-                            'range' => true,
-                        ),
-                    ),
                 ));
         }
 
         $this->addColumn(array(
                 'label' => 'Qtd Endereços',
                 'index' => 'qtdEndereco',
-                'filter' => array(
-                    'render' => array(
-                        'type' => 'centesimal',
-                        'range' => true,
-                    ),
-                ),
             ))
             ->addColumn(array(
                 'label' => 'Qtd Divergência',
                 'index' => 'qtdDivergencia',
-                'filter' => array(
-                    'render' => array(
-                        'type' => 'centesimal',
-                        'range' => true,
-                    ),
-                ),
             ))
             ->addColumn(array(
                 'label' => 'Qtd Inventariado',
                 'index' => 'qtdInvetariado',
-                'filter' => array(
-                    'render' => array(
-                        'type' => 'centesimal',
-                        'range' => true,
-                    ),
-                ),
             ))
             ->addColumn(array(
                 'label' => 'Dt. Início',
                 'index' => 'dataInicio',
                 'render' => 'DataTime',
-                'filter' => array(
-                    'render' => array(
-                        'type' => 'date',
-                        'range' => false,
-                    ),
-                ),
             ))
             ->addColumn(array(
                 'label' => 'Dt. Finalização',
                 'index' => 'dataFinalizacao',
                 'render' => 'DataTime',
-                'filter' => array(
-                    'render' => array(
-                        'type' => 'date',
-                        'range' => false,
-                    ),
-                ),
             ))
             ->addColumn(array(
                 'label' => 'Andamento (%)',
                 'index' => 'andamento',
                 'render' => 'N2',
-                'filter' => array(
-                    'render' => array(
-                        'type' => 'centesimal',
-                        'range' => true,
-                    ),
-                ),
             ))
             ->addColumn(array(
                 'label' => 'Status',
                 'index' => 'status',
-                'filter' => array(
-                    'render' => array(
-                        'type' => 'select',
-                        'attributes' => array(
-                            'multiOptions' => array('GERADO'=>'GERADO',
-                                                    'LIBERADO' => 'LIBERADO',
-                                                    'CONCLUIDO' => 'CONCLUIDO',
-                                                    'FINALIZADO' => 'FINALIZADO',
-                                                    'CANCELADO'=>'CANCELADO')
-                        )
-                    ),
-                ),
-
-
             ))
             ->addAction(array(
                 'label' => 'Liberar',

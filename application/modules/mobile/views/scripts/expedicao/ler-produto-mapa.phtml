@@ -12,21 +12,14 @@
         $('#qtd').select();
     }
 
-    function load(e) {
-        qtd = document.getElementById('qtd');
-        qtd.style.display = 'none';
-        qtdLabel = document.getElementById('label-qtd');
-        qtdLabel.style.display = 'none';
-    }
-
     function exibirQtd(event) {
-        if (event.which == 13 || event.keyCode == 13) {
+        if (event.which === 13 || event.keyCode === 13) {
 
-            qtd = document.getElementById('qtd');
-            qtdLabel = document.getElementById('label-qtd');
+            var qtd = $("#qtd");
+            var qtdLabel = $("#label-qtd");
             if (qtd) {
-                qtd.style.display = 'block';
-                qtdLabel.style.display = 'block';
+                qtd.removeClass("hidden");
+                qtdLabel.removeClass("hidden");
                 qtd.focus();
                 if (event.preventDefault) {
                     event.preventDefault();
@@ -53,7 +46,7 @@
                             '<tr><td colspan="2"><b>Cod Produto: </b>' + codProduto + ' - <b>Grade: </b>' + grade + '</td></tr>' +
                             '<tr><td colspan="2"><b>Descrição: </b>' + descricao + '</td></tr>' +
                             '<tr><td colspan="2"><b>Embalagem: </b>' + descricaoEmbalagem + ' (' + quantidade + ')</td></tr>' +
-                            '</table>';
+                            '</table>'
                     ;
                     $('#dados-produtos').html(dadosProdutos);
                 }
@@ -65,8 +58,8 @@
     function nextInput(event) {
 
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('qtd').value != "") {
-                codigoBarras = document.getElementById('codigoBarras');
+            if ($('#qtd').val() !== "") {
+                var codigoBarras = $('#codigoBarras');
                 if (codigoBarras) {
                     codigoBarras.focus();
                     if (event.preventDefault) {
@@ -80,27 +73,7 @@
         return true;
     }
 
-
-
-//    document.onkeyup = function (e) {
-//        var string = $('#codigoBarras').val();
-//        if(string.substring(0,1) === 'b' || string.substring(0,1) === 'B') {
-//            qtd = document.getElementById('qtd');
-//            qtd.focus();
-//            if (event.preventDefault) {
-//                event.preventDefault();
-//            } else {
-//                event.returnValue = false;
-//            }
-//        }
-//    }
-
 </script>
-
-<?php if ($this->exibeQtd == false) : ?>
-    <body onLoad="load()"></body>
-<?php endif; ?>
-
 <table class="info row">
     <caption>Mapa:  <?php echo $this->idMapa ?> </caption>
     <tr>
@@ -149,31 +122,28 @@
                     <input type="hidden" name="idMapa" id="idMapa" value="<?php echo $this->idMapa ?>" size="40" maxlength="100" style="width: 99%">
                     <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>" size="40" maxlength="100" style="width: 99%">
                     <input type="hidden" name="cliente" id="cliente" value="<?php echo $this->idPessoa ?>" >
-                    <input type="hidden" name="exibeQtd" id="exibeQtd" value="<?php echo $this->exibeQtd ?>" >
+                    <input type="hidden" name="exibeQtd" id="confereQtd" value="<?php echo $this->confereQtd ?>" >
                     <input type="hidden" name="tipoDefaultEmbalado" id="tipoDefaultEmbalado" value="<?php echo $this->tipoDefaultEmbalado ?>" >
                     <input type="hidden" name="utilizaQuebra" id="utilizaQuebra" value="<?php echo $this->utilizaQuebra ?>" >
                     <input type="hidden" name="utilizaVolumePatrimonio" id="utilizaVolumePatrimonio" value="<?php echo $this->utilizaVolumePatrimonio ?>" >
                     <input type="hidden" name="tipoQuebraVolume" id="tipoQuebraVolume" value="<?php echo $this->tipoQuebraVolume ?>" >
-
                     <table>
                         <tr>
-                            <?php if ($this->exibeQtd == true) : ?>
+                            <?php if ($this->confereQtd) : ?>
                                 <td><label for="qtd" id="label-qtd" class="field required">*Qtd</label></td>
                             <?php endif; ?>
                             <td><label for="codigoBarras" class="field required">*Código de Barras</label></td>
-                            <?php if ($this->exibeQtd == false) : ?>
-                                <td><label for="qtd" id="label-qtd" class="field required">*Qtd</label></td>
+                            <?php if (!$this->confereQtd) : ?>
+                                <td><label for="qtd" id="label-qtd" class="field required hidden">*Qtd</label></td>
                             <?php endif; ?>
                         </tr>
-
-
                         <tr>
-                            <?php if ($this->exibeQtd == true) : ?>
-                                <td><input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" onclick="selecionar()" onkeydown="nextInput(event)" style="width: 80%"></td>
-                                <td><input type="text" name="codigoBarras" id="codigoBarras" class="required focus" size="40" maxlength="100" style="width: 99%"></td>
+                            <?php if ($this->confereQtd) : ?>
+                                <td><input name="qtd" id="qtd" size="7" maxlength="100" value="1" onclick="selecionar()" onkeydown="nextInput(event)" style="width: 80%"></td>
+                                <td><input name="codigoBarras" id="codigoBarras" class="required focus" size="40" maxlength="100" style="width: 99%"></td>
                             <?php else : ?>
-                                <td><input type="text" name="codigoBarras" id="codigoBarras" onkeydown="exibirQtd(event)" class="required focus" size="40" maxlength="100" style="width: 99%"></td>
-                                <td><input type="text" name="qtd" id="qtd" size="7" maxlength="100" style="width: 80%"></td>
+                                <td><input name="codigoBarras" id="codigoBarras" onkeydown="exibirQtd(event)" class="required focus" size="40" maxlength="100" style="width: 99%"></td>
+                                <td><input name="qtd" id="qtd" size="7" maxlength="100" style="width: 80%" class="hidden"></td>
                             <?php endif; ?>
                         </tr>
                     </table>
@@ -184,13 +154,14 @@
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
                 <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a></td>
             <?php endif; ?>
-            <!--            --><?php //if ($this->mapaSeparacaoEmbalado == true) :         ?>
+
+            <?php if ($this->separacaoEmbalado) :         ?>
             <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>" >Fechar Caixa</a></td>
-            <!--            --><?php //endif;         ?>
+            <?php endif; ?>
 
         </fieldset>
     </dd>
-    <?php if ($this->mapaSeparacaoEmbalado == false) : ?>
+    <?php if (!$this->separacaoEmbalado) : ?>
         <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/' . $this->idExpedicao . '/idMapa/' . $this->idMapa . '/mapa/S' ?>" >Finalizar</a></td>
         <td><a class="finalizarAmarelo" href="<?php echo '/mobile/expedicao/index/idCentral/' . $this->central ?>" >Alt. Mapa</a></td>
     <?php endif; ?>
@@ -200,7 +171,9 @@
 <script type="text/javascript">
 
     $('#submit').on('click', function (e) {
-        if ($('#qtd').val() != '') {
+        var qtd = $("#qtd");
+
+        if (qtd !== '') {
             $.ajax({
                 url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'conferte-produto-ajax')) ?>',
                 data: $('form').serialize(),
@@ -208,13 +181,12 @@
                 type: 'post',
                 success: function (data) {
                     if (data.retorno.resposta.length > 0) {
-                        ret = false;
-                        document.getElementById('qtd').value = "1";
-                        codigoBarras = document.getElementById('codigoBarras').value = "";
-
+                        $("#codigoBarras").val("").focus();
                         var error = "";
                         var success = "";
                         var song = "";
+
+
 
                         if (data.retorno.resposta == 'error') {
                             error = data.retorno.message;
@@ -226,8 +198,6 @@
                             song = "/confirm2.mp3";
                         }
 
-                        document.getElementById('codigoBarras').focus();
-
                         $("#erro").html(error);
                         $("#success").html(success);
 
@@ -238,27 +208,24 @@
                         }
 
                         if (data.retorno.resposta == 'error') {
-                            alert(data.retorno.message);
+                            alert(error);
                         }
 
                     }
                     $(".item-lista").remove();
                 }
             });
+            $('#dados-produtos').html("");
+            var confereQtd = $("#confereQtd").val();
+            if (confereQtd === null || confereQtd === '' || confereQtd === false) {
+                qtd.addClass("hidden").val("");
+                $("#label-qtd").addClass("hidden");
+            } else {
+                qtd.val(1);
+            }
             return false;
         }
     });
-
-
-
-
-
-
-
-
-
-
-
 
     $('#next').click(function (e) {
         if ($(".item-lista").length === 0) {
@@ -302,5 +269,6 @@
             return false;
         }
     });
+
 </script>
 

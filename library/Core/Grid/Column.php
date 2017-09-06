@@ -9,6 +9,7 @@ namespace Core\Grid;
 class Column
 {
 
+    protected $visible = true;
     /**
      * label of column
      * @var string
@@ -87,6 +88,14 @@ class Column
     {
         $this->setOptions($options);
         return $this;
+    }
+
+    public function setVisible($value) {
+        $this->visible = $value;
+    }
+
+    public function getVisible() {
+        return $this->visible;
     }
 
     /**

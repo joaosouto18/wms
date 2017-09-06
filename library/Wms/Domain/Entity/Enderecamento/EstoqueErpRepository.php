@@ -88,7 +88,9 @@ class EstoqueErpRepository extends EntityRepository
                  ORDER BY P.COD_PRODUTO, P.DSC_GRADE";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
-
+        foreach ($result as $key => $value) {
+            $result[$key]['id'] = $value['COD_PRODUTO'];
+        }
         return $result;
     }
 

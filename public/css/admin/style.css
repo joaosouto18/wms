@@ -368,3 +368,45 @@ input.date.invalid{
     box-shadow: 1px 1px 5px #d45252 !important;
     background: no-repeat left center url(../../img/icons/calendar.png) #ffffff !important;
 }
+a.info{
+    position:relative; /*this is the key*/
+    color:#000;
+    float: right;
+    text-decoration:none;
+    text-align:center;
+    margin-left: 10px;
+}
+
+
+
+a.info span{display: none}
+
+a.info:hover span{ /*the span will display just on :hover state*/
+    display:block;
+    position:absolute;
+    top:-145px;
+    width:15em;
+    text-align: center;
+    padding:10px;
+    background: none repeat scroll 0 0 #F8F8F8;
+    border: 5px solid #DFDFDF;
+    color: #717171;
+    margin-left: -60px;
+    border-radius: 13px;
+}
+
+a.info:hover span:after{ /*the span will display just on :hover state*/
+    content:'';
+    position:absolute;
+    bottom:-11px;
+    width:10px;
+    height:10px;
+    border-bottom:5px solid #dfdfdf;
+    border-right:5px solid #dfdfdf;
+    background:#f8f8f8;
+    left:34%;
+    margin-left:-5px;
+    -moz-transform:rotate(45deg);
+    -webkit-transform:rotate(45deg);
+    transform:rotate(45deg);
+}

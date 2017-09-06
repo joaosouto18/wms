@@ -328,7 +328,7 @@ class Integracao
 
         $codCargaExterno = implode(',',$cargas);
         $sql = $em->createQueryBuilder()
-            ->select('c.codCargaExterno carga, p.id pedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade')
+            ->select('c.codCargaExterno carga, p.id pedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade, pp.qtdCortada')
             ->from('wms:Expedicao\PedidoProduto','pp')
             ->innerJoin('pp.pedido','p')
             ->innerJoin('p.carga','c')

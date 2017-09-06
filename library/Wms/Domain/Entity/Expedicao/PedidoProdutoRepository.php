@@ -7,7 +7,77 @@ use Doctrine\ORM\EntityRepository,
 class PedidoProdutoRepository extends EntityRepository
 {
 
-    public function aplicaCortesbyERP($pedidosProdutosWMS, $pedidosProdutosERP) {
+        public function aplicaCortesbyERP($pedidosProdutosWMS, $pedidosProdutosERP) {
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
+            $pedidoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
+            $cortes = array();
+            foreach ($pedidosProdutosWMS as $produtoWms) {
+                $encontrouProdutoERP = false;
+                $codProdutoWMS = $produtoWms['produto'];
+                $codPedidoWMS = $produtoWms['pedido'];
+                $gradeWMS = $produtoWms['grade'];
+                $qtdWms = str_replace(',','.',$produtoWms['quantidade']);
+                $qtdCortadaWms= 0;
+                if ($produtoWms['qtdCortada'] != null) {
+                    $qtdCortadaWms= str_replace(',','.',$produtoWms['qtdCortada']);;
+                }
+                foreach ($pedidosProdutosERP as $key => $produtoERP) {
+                    $codProdutoERP = $produtoERP['PRODUTO'];
+                    $codPedidoERP = $produtoERP['PEDIDO'];
+                    $gradeERP = $produtoERP['GRADE'];
+                    $qtdERP = str_replace(',','.',$produtoERP['QTD']);
+
+                    if (($codProdutoWMS == $codProdutoERP) && ($codPedidoWMS == $codPedidoERP) && ($gradeWMS == $gradeERP)) {
+                        if ($qtdERP > $qtdWms) $qtdERP = $qtdWms;
+                        $qtdCortar = $qtdWms - $qtdERP;
+
+                        //if ($qtdCortar >0) {
+                            $cortes[] = array(
+                                'codPedido' => $codPedidoWMS,
+                                'codProduto' => $codProdutoWMS,
+                                'grade'=>$gradeWMS,
+                                'qtdCortar' => $qtdCortar,
+                                'tipo' => 'parcial'
+                            );
+                        //}
+
+                        $encontrouProdutoERP = true;
+                        unset($pedidosProdutosERP[$key]);
+                        break;
+                    }
+                }
+
+                if ($encontrouProdutoERP == false) {
+                    //if ($qtdCortar >0) {
+                        $cortes[] = array(
+                            'codPedido' => $codPedidoWMS,
+                            'codProduto' => $codProdutoWMS,
+                            'grade'=>$gradeWMS,
+                            'qtdCortar' => $qtdWms,
+                            'tipo' => 'total'
+                        );
+                    //}
+                }
+            }
+
+            foreach ($cortes as $corte) {
+                $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array(
+                    'codPedido' => $corte['codPedido'],
+                    'codProduto' => $corte['codProduto'],
+                    'grade' => $corte['grade']));
+                $qtdCortar = $corte['qtdCortar'];
+                if (isset($pedidoProdutoEntity) && !empty($pedidoProdutoEntity)) {
+                    $pedidoProdutoEntity->setQtdCortada($qtdCortar);
+                    $this->getEntityManager()->persist($pedidoProdutoEntity);
+                }
+            }
+
+            $this->getEntityManager()->flush();
+            return true;
+        }
+
+
+        public function aplicaCortesbyERPOld($pedidosProdutosWMS, $pedidosProdutosERP) {
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
         $pedidoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');

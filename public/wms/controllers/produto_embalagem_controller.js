@@ -335,14 +335,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
             if (!permisao) return false;
 
-            this.dialogConfirm("Tem certeza que deseja excluir esta embalagem?", this.callback("deleteConfirmed"),{id:id,el:el});
+            this.dialogConfirm("Tem certeza que deseja excluir esta embalagem?", this.callback("deleteConfirmed"),{model:model});
 
         },
 
         deleteConfirmed: function(params) {
-            var id = params.id;
-            var el = params.el;
-            var model = el.closest('.produto_embalagem').model();
+            var model = params.model;
+            var id = model.id;
 
             $('#fieldset-embalagem #embalagem-enderecoAntigo').val(model.endereco);
 
@@ -503,7 +502,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 //multiplicacao para transformar itens em inteiro para nao ter erro de divisao causado pela linguagem
                 qtdItemEmbalagemRecebimento = qtdItemEmbalagemRecebimento * 100;
                 qtdItensEmbalagem = qtdItensEmbalagem * 100;
-                if ( ((qtdItemEmbalagemRecebimento) % (qtdItensEmbalagem)) != 0 ) {
+                if ( ((qtdItemEmbalagemRecebimento) % (qtdItensEmbalagem)) !== 0 ) {
                     this.dialogAlert('Quantidade de itens da embalagem de expedição deve ser multipla da quantidade de itens da embalagem de recebimento.');
                     return false;
                 }
@@ -593,13 +592,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             var cbInterno = valores.imprimirCB;
             var este = this;
 
-            if ((codigoBarras === "" && cbInterno === "S") || codigoBarras === codigoBarrasAntigo){
+            if ((codigoBarras.val() === "" && cbInterno === "S") || codigoBarras.val() === codigoBarrasAntigo){
                 return true;
             }
 
             // verifico se existe embalagens neste produto com o mesmo codigo de barras
             codigosBarras.each(function(){
-                if ( this.value === codigoBarras ){
+                if ( this.value === codigoBarras.val() ){
                     este.dialogAlert("Este código de barras já foi cadastrado neste produto.");
                     return false;
                 }
@@ -611,7 +610,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 type: 'post',
                 async: false,
                 dataType: 'json',
-                data: { codigoBarras: codigoBarras }
+                data: { codigoBarras: codigoBarras.val() }
             }).success(function (data) {
                 if (data.status === "success") {
                     result = true;

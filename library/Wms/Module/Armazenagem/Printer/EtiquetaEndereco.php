@@ -43,7 +43,6 @@ class EtiquetaEndereco extends Pdf
 //            var_dump($codBarras);
 //            var_dump(substr($codBarras,10,12)); exit;
 //            if ((substr($codBarras,7,-3) != '01' and substr($codBarras,10,12) != '01') or (substr($codBarras,7,-3) != '00' and substr($codBarras,10,12) != 11)) continue;
-
             switch ((int)$modelo) {
                 case 1:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,true);
@@ -463,11 +462,17 @@ class EtiquetaEndereco extends Pdf
         $this->Cell(0,0," ",0,1);
         $posYIni = $this->GetY();
         $posXIni = $this->getX();
-
+        
+        $linhaX = 14;
+        
+        if(count($produtos) > 4){
+            $linhaX = count($produtos) * 4.5;
+        }
+        
         //Imprime a descrição do Endereço XX.XXX.XX.XX
         $this->SetFont('Arial', 'B', 32);
         $this->SetX(138);
-        $this->Cell(148.5,14,$codBarras,0,1);
+        $this->Cell(148.5,$linhaX, $codBarras,0,1);
 
         //Imprime o Código de barras
         $posY = $this->GetY() -1;
@@ -487,7 +492,7 @@ class EtiquetaEndereco extends Pdf
         $qtd = 0;
         foreach ($produtos as $keyId => $produto) {
             foreach ($produto as $keyGrade => $prod) {
-                $this->Cell(1,6.5,substr($keyId . " - ".$prod['descricao'],0,47),0,1);
+                $this->Cell(1,6.5,self::SetStringByMaxWidth($keyId . " - ".$prod['descricao'], 131),0,1);
                 $qtd = $qtd +1;
             }
         }
@@ -497,8 +502,8 @@ class EtiquetaEndereco extends Pdf
             $qtd = $qtd +1;
         }
         /*
-        $this->Cell(1,6.5,"Exemplo de produto 01",0,1);
         $this->Cell(1,6.5,"Exemplo de produto 02",0,1);
+        this->Cell(1,6.5,"Exemplo de produto 01",0,1);$
         $this->Cell(1,6.5,"Exemplo de produto 03",0,1);
         $this->Cell(1,6.5,"Exemplo de produto 04",0,1);
         */

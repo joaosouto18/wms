@@ -158,16 +158,6 @@ class Mobile_ExpedicaoController extends Action {
                 }
             }
 
-            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
-            $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-            /** SE ESTIVER NA TELA DE MAPA DE EMBALADOS DEVE EXIBIR O BOTAO PARA FINALIZAR A ETIQUETA */
-            $statusMapaEmbalado = false;
-            if (isset($codPessoa) && !empty($codPessoa) && isset($idMapa) && !empty($idMapa)) {
-                $mapaSeparacaoEmbEntity = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-                if (isset($mapaSeparacaoEmbEntity) && !empty($mapaSeparacaoEmbEntity)) {
-                    $statusMapaEmbalado = true;
-                }
-            }
             $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
             $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
             $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
@@ -177,9 +167,9 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->idExpedicao = $idExpedicao;
             $this->view->central = $central;
             $this->view->idPessoa = $codPessoa;
-            $this->view->mapaSeparacaoEmbalado = $statusMapaEmbalado;
+            $this->view->separacaoEmbalado = (empty($codPessoa)) ? false : true;
             $this->view->dscVolume = $dscVolume;
-            $this->view->exibeQtd = $confereQtd;
+            $this->view->confereQtd = $confereQtd;
         } catch (\Exception $e) {
             if ($confereQtd == true) {
                 $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()), 'dados' => $produtosMapa);
@@ -212,12 +202,18 @@ class Mobile_ExpedicaoController extends Action {
             'utilizaQuebra' => $this->_getParam("utilizaQuebra"),
             'utilizaVolumePatrimonio' => $this->_getParam("utilizaVolumePatrimonio")
         );
+
         if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
             try {
                 $codBarrasProcessado = intval($codBarras);
 
                 if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
                     $tipoProvavelCodBarras = 'volume';
+                    $idVolume = $codBarrasProcessado;
+                    $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+                    if (empty($volumePatrimonioEn)) {
+                        $tipoProvavelCodBarras = 'produto';
+                    }
                 } else {
                     $tipoProvavelCodBarras = 'produto';
                 }
@@ -263,7 +259,7 @@ class Mobile_ExpedicaoController extends Action {
             }
         }
 
-        $this->getHelper('viewRenderer')->setNoRender(true);
+        //$this->getHelper('viewRenderer')->setNoRender(true);
         $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg']));
         $this->_helper->json($vetRetorno);
     }

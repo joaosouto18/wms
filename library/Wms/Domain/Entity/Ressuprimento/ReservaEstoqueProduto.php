@@ -218,4 +218,36 @@ class ReservaEstoqueProduto
         $this->validade = $validade;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getCodProduto()
+    {
+        return $this->codProduto;
+    }
+
+    /**
+     * @param mixed $codProduto
+     */
+    public function setCodProduto($codProduto)
+    {
+        $this->codProduto = $codProduto;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getGrade()
+    {
+        return $this->grade;
+    }
+
+    /**
+     * @param mixed $grade
+     */
+    public function setGrade($grade)
+    {
+        $this->grade = $grade;
+    }
+
 }

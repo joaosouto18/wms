@@ -35,13 +35,7 @@ class Wms_WebService_Fornecedor extends Wms_WebService
         if ($fornecedorEntity == null)
             throw new \Exception('Fornecedor não encontrado');
 
-        $pessoa = $fornecedorEntity->getPessoa();
-        $for = new fornecedor();
-        $for->idFornecedor = $idFornecedor;
-        $for->nome =  ($pessoa->getNomeFantasia() != null) ? $pessoa->getNomeFantasia() : $pessoa->getNome();
-        $for->cnpj =  $pessoa->getCnpj();
-        $for->insc = $pessoa->getInscricaoEstadual();
-        return $for;
+        return $this->parseObjWS($fornecedorEntity);
     }
 
     /**
@@ -187,9 +181,8 @@ class Wms_WebService_Fornecedor extends Wms_WebService
     }
 
     /**
-     * Lista todos os fornecedores cadastrados no sistema
-     * 
-     * @return fornecedores
+     * @return array
+     * @throws Exception
      */
     public function listar()
     {
@@ -201,7 +194,12 @@ class Wms_WebService_Fornecedor extends Wms_WebService
         $fornecedores = $fornecedorSvc->findAll();
 
         if ($fornecedores == null)
-            throw new \Exception('Não foi possível recuperar os fornecedores:');
+            throw new \Exception('Não foi encontrado nenhum fornecedor');
+
+        $return = array();
+        foreach ($fornecedores as $fornecedor) {
+            $return[] = $this->parseObjWS($fornecedor);
+        }
 
 /*        $result = $em->createQueryBuilder()
                 ->select('f.idExterno as idFornecedor, p.cnpj, p.nome, p.inscricaoEstadual as insc')
@@ -226,8 +224,19 @@ class Wms_WebService_Fornecedor extends Wms_WebService
         $clsFornecedres = new fornecedores();
         $clsFornecedres->fornecedores = $fornecedores;*/
 
-        return array('fornecedores' => $fornecedores);
+        return array('fornecedores' => $return);
     }
 
+    private function parseObjWS(\Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity) {
+
+        $for = new fornecedor();
+        $pessoa = $fornecedorEntity->getPessoa();
+        $for->idFornecedor = $fornecedorEntity->getIdExterno();
+        $for->nome =  ($pessoa->getNomeFantasia() != null) ? $pessoa->getNomeFantasia() : $pessoa->getNome();
+        $for->cnpj =  $pessoa->getCnpj();
+        $for->insc = $pessoa->getInscricaoEstadual();
+
+        return $for;
+    }
 }
 

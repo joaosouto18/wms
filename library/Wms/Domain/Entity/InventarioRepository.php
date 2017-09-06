@@ -10,23 +10,20 @@ use Wms\Domain\Entity\Inventario\EnderecoProduto;
 use Wms\Service\Estoque;
 use Wms\Service\Mobile\Inventario as InventarioService;
 
+class InventarioRepository extends EntityRepository {
 
-class InventarioRepository extends EntityRepository
-{
-
-    public function adicionaEstoqueContagemInicial($inventarioEn)
-    {
+    public function adicionaEstoqueContagemInicial($inventarioEn) {
 
         /* @ToDo Parametro
          * Pode virar parametro de acordo com o Ricardo
          * Gera Posição do Estoque como primeira contagem?
          */
         return;
-        
+
         if ($this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL') != "S") {
             return;
         }
-        
+
         try {
 
             $SQL = "SELECT IE.COD_INVENTARIO_ENDERECO,
@@ -39,7 +36,7 @@ class InventarioRepository extends EntityRepository
                       FROM INVENTARIO_ENDERECO IE
                       LEFT JOIN ESTOQUE E ON E.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
                      WHERE COD_INVENTARIO = " . $inventarioEn->getId();
-            $records =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+            $records = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
             $contagemEndRepo = $this->getEntityManager()->getRepository("wms:Inventario\ContagemEndereco");
             $inventarioEndRepo = $this->getEntityManager()->getRepository("wms:Inventario\Endereco");
@@ -47,12 +44,12 @@ class InventarioRepository extends EntityRepository
             $idContagemOs = $this->criarOS($inventarioEn->getId());
 
             $this->getEntityManager()->beginTransaction();
-            foreach ($records as $row){
+            foreach ($records as $row) {
 
                 $idVolume = $row['COD_PRODUTO_VOLUME'];
 
                 $idEmbalagem = null;
-                if ( $row['COD_PRODUTO_EMBALAGEM'] != null) {
+                if ($row['COD_PRODUTO_EMBALAGEM'] != null) {
                     $idEmbalagem = 0;
                 }
 
@@ -66,26 +63,86 @@ class InventarioRepository extends EntityRepository
                     'codProdutoEmbalagem' => $idEmbalagem,
                     'codProdutoVolume' => $idVolume,
                     'numContagem' => 1
-                ),
-                false);
+                        ), false);
                 $inventarioEndEn = $inventarioEndRepo->find($row['COD_INVENTARIO_ENDERECO']);
                 $inventarioEndEn->setDivergencia(1);
                 $contagemEndEn->setQtdDivergencia($row['QTD']);
                 $contagemEndEn->setDivergencia(1);
                 $this->getEntityManager()->persist($inventarioEndEn);
                 $this->getEntityManager()->persist($contagemEndEn);
-
             }
             $this->getEntityManager()->flush();
             $this->getEntityManager()->commit();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
             throw new \Exception($e->getMessage());
         }
-
     }
 
-    public function getInventarios($criterio = null){
+    public function getInventarios($criterio = null, $dados = array()) {
+        $where = "WHERE 1=1 ";
+        if (!empty($dados['inventario'])) {
+            $where .= " AND I.COD_INVENTARIO = " . $dados['inventario'];
+        }
+        if (!empty($dados['status'])) {
+            $where .= " AND I.COD_STATUS = " . $dados['status'];
+        }
+        if (isset($dados['dataInicial1']) && (!empty($dados['dataInicial1']))) {
+            $where .= " AND I.DTH_INICIO >= TO_DATE('" . $dados['dataInicial1'] . " 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+        if (isset($dados['dataInicial2']) && (!empty($dados['dataInicial2']))) {
+            $where .= " AND I.DTH_INICIO <= TO_DATE('" . $dados['dataInicial2'] . " 23:59', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($dados['dataFinal1']) && (!empty($dados['dataFinal1']))) {
+            $where .= " AND I.DTH_FINALIZACAO >= TO_DATE('" . $dados['dataFinal1'] . " 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($dados['dataFinal2']) && (!empty($dados['dataFinal2']))) {
+            $where .= " AND I.DTH_FINALIZACAO <= TO_DATE('" . $dados['dataFinal2'] . " 23:59', 'DD-MM-YYYY HH24:MI')";
+        }
+        $subQuery = " ";
+        $SQLWhere = "";
+
+        if (!empty($dados['produto'])) {
+            $SQLWhere .= " AND ICE.COD_PRODUTO = " . $dados['produto'];
+        }
+        if (isset($dados['rua']) && !empty($dados['rua'])) {
+            $SQLWhere .= " AND DE.NUM_RUA >= " . $dados['rua'];
+        }
+        if (isset($dados['predio']) && !empty($dados['predio'])) {
+            $SQLWhere .= " AND DE.NUM_PREDIO >= " . $dados['predio'];
+        }
+        if (isset($dados['nivel']) && !empty($dados['nivel'])) {
+            $SQLWhere .= " AND DE.NUM_NIVEL >= " . $dados['nivel'];
+        }
+        if (isset($dados['apto']) && !empty($dados['apto'])) {
+            $SQLWhere .= " AND DE.NUM_APARTAMENTO >= " . $dados['apto'];
+        }
+        if (isset($dados['ruaFinal']) && !empty($dados['ruaFinal'])) {
+            $SQLWhere .= " AND DE.NUM_RUA <= " . $dados['ruaFinal'];
+        }
+        if (isset($dados['predioFinal']) && !empty($dados['predioFinal'])) {
+            $SQLWhere .= " AND DE.NUM_PREDIO <= " . $dados['predioFinal'];
+        }
+        if (isset($dados['nivelFinal']) && !empty($dados['nivelFinal'])) {
+            $SQLWhere .= " AND DE.NUM_NIVEL <= " . $dados['nivelFinal'];
+        }
+        if (isset($dados['aptoFinal']) && !empty($dados['aptoFinal'])) {
+            $SQLWhere .= " AND DE.NUM_APARTAMENTO <= " . $dados['aptoFinal'];
+        }
+        if (!empty($SQLWhere)) {
+            $subQuery .= "INNER JOIN (SELECT COD_INVENTARIO
+                               FROM INVENTARIO_ENDERECO IE 
+                               INNER JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON (IE.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO)
+                               INNER JOIN DEPOSITO_ENDERECO DE ON (IE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO)
+                              WHERE 1 = 1 $SQLWhere                             
+                              GROUP BY COD_INVENTARIO
+                  ) PRODUTO ON PRODUTO.COD_INVENTARIO = I.COD_INVENTARIO";
+        }
+        if($criterio != null ){
+            $where = $criterio;
+        }
         $SQL = "SELECT COD_INVENTARIO,
                        STATUS,
                        QTD_END_TOTAL,
@@ -102,73 +159,96 @@ class InventarioRepository extends EntityRepository
                             ELSE 6
                        END AS SEQUENCIA
                   FROM (
-               SELECT I.COD_INVENTARIO,
-                       CASE WHEN (S.DSC_SIGLA = 'LIBERADO') AND (NVL(QTD_IE.QTD,0) = NVL(QTD_INV.QTD,0)) THEN 'CONCLUIDO'
-                            ELSE S.DSC_SIGLA 
-                       END as STATUS,
-                       NVL(QTD_IE.QTD,0) as QTD_END_TOTAL,
-                       NVL(QTD_DIV.QTD,0) as QTD_DIV_TOTAL,
-                       NVL(QTD_INV.QTD,0) as QTD_INV_TOTAL,
-                       TO_CHAR(I.DTH_INICIO,'DD-MM-YYYY-HH24-MI') as DTH_INICIO ,
-                       TO_CHAR(I.DTH_FINALIZACAO,'DD-MM-YYYY-HH24-MI') as DTH_FINALIZACAO,
-                       I.COD_INVENTARIO_ERP
-                  FROM INVENTARIO I
-                  LEFT JOIN SIGLA S ON S.COD_SIGLA = I.COD_STATUS
-                  LEFT JOIN (SELECT COUNT(*) as QTD,
-                                    COD_INVENTARIO
-                               FROM INVENTARIO_ENDERECO
-                              GROUP BY COD_INVENTARIO) QTD_IE ON QTD_IE.COD_INVENTARIO = I.COD_INVENTARIO
-                  LEFT JOIN (SELECT COUNT(*) as QTD,
-                                    COD_INVENTARIO
-                               FROM INVENTARIO_ENDERECO
-                              WHERE DIVERGENCIA = 1
-                              GROUP BY COD_INVENTARIO) QTD_DIV ON QTD_DIV.COD_INVENTARIO = I.COD_INVENTARIO
-                  LEFT JOIN (SELECT COUNT(*) as QTD,
-                                    COD_INVENTARIO
-                               FROM INVENTARIO_ENDERECO
-                              WHERE INVENTARIADO = 1
-                              GROUP BY COD_INVENTARIO) QTD_INV ON QTD_INV.COD_INVENTARIO = I.COD_INVENTARIO
-          $criterio) I
-          ORDER BY SEQUENCIA, COD_INVENTARIO DESC
-                              ";
-
-        $records =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+                            SELECT I.COD_INVENTARIO,
+                                CASE WHEN (S.DSC_SIGLA = 'LIBERADO') AND (NVL(QTD_IE.QTD,0) = NVL(QTD_INV.QTD,0)) THEN 'CONCLUIDO'
+                                     ELSE S.DSC_SIGLA 
+                                END as STATUS,
+                                NVL(QTD_IE.QTD,0) as QTD_END_TOTAL,
+                                NVL(QTD_DIV.QTD,0) as QTD_DIV_TOTAL,
+                                NVL(QTD_INV.QTD,0) as QTD_INV_TOTAL,
+                                TO_CHAR(I.DTH_INICIO,'DD-MM-YYYY-HH24-MI') as DTH_INICIO ,
+                                TO_CHAR(I.DTH_FINALIZACAO,'DD-MM-YYYY-HH24-MI') as DTH_FINALIZACAO,
+                                I.COD_INVENTARIO_ERP
+                            FROM 
+                                INVENTARIO I
+                                LEFT JOIN SIGLA S ON S.COD_SIGLA = I.COD_STATUS
+                                LEFT JOIN 
+                                        (
+                                            SELECT COUNT(*) as QTD,
+                                                COD_INVENTARIO
+                                            FROM 
+                                                INVENTARIO_ENDERECO
+                                            GROUP BY 
+                                                COD_INVENTARIO
+                                        ) QTD_IE ON QTD_IE.COD_INVENTARIO = I.COD_INVENTARIO
+                                LEFT JOIN 
+                                        (
+                                            SELECT 
+                                                COUNT(*) as QTD,
+                                                COD_INVENTARIO
+                                            FROM 
+                                                INVENTARIO_ENDERECO
+                                            WHERE 
+                                                DIVERGENCIA = 1
+                                            GROUP BY 
+                                                COD_INVENTARIO
+                                        ) QTD_DIV ON QTD_DIV.COD_INVENTARIO = I.COD_INVENTARIO
+                                LEFT JOIN 
+                                        (
+                                            SELECT 
+                                                COUNT(*) as QTD,
+                                                COD_INVENTARIO
+                                            FROM 
+                                                INVENTARIO_ENDERECO
+                                            WHERE 
+                                                INVENTARIADO = 1
+                                            GROUP BY 
+                                                COD_INVENTARIO
+                                        ) QTD_INV ON QTD_INV.COD_INVENTARIO = I.COD_INVENTARIO
+                                $subQuery
+                             
+                                $where
+                        ) I
+          ORDER BY 
+            COD_INVENTARIO DESC, 
+            SEQUENCIA DESC";
+        $records = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $result = array();
-        foreach ($records as $row){
+        foreach ($records as $row) {
 
             $andamento = 0;
             if ($row['QTD_END_TOTAL'] > 0) {
-                $andamento = ($row['QTD_INV_TOTAL']/$row['QTD_END_TOTAL']);
+                $andamento = ($row['QTD_INV_TOTAL'] / $row['QTD_END_TOTAL']);
             }
-            if  ($row['STATUS'] == 'FINALIZADO') $andamento = 1;
-            $dataInicioBanco = explode('-',$row['DTH_INICIO']);
+            if ($row['STATUS'] == 'FINALIZADO')
+                $andamento = 1;
+            $dataInicioBanco = explode('-', $row['DTH_INICIO']);
             $dataInicio = new \DateTime();
-            $dataInicio->setDate($dataInicioBanco[2],$dataInicioBanco[1],$dataInicioBanco[0]);
-            $dataInicio->setTime($dataInicioBanco[3],$dataInicioBanco[4]);
+            $dataInicio->setDate($dataInicioBanco[2], $dataInicioBanco[1], $dataInicioBanco[0]);
+            $dataInicio->setTime($dataInicioBanco[3], $dataInicioBanco[4]);
 
             $dataFinal = null;
             if ($row['DTH_FINALIZACAO'] != "") {
-                $dataFinalBanco = explode('-',$row['DTH_FINALIZACAO']);
+                $dataFinalBanco = explode('-', $row['DTH_FINALIZACAO']);
                 $dataFinal = new \DateTime();
-                $dataFinal->setDate($dataFinalBanco[2],$dataFinalBanco[1],$dataFinalBanco[0]);
-                $dataFinal->setTime($dataFinalBanco[3],$dataFinalBanco[4]);
+                $dataFinal->setDate($dataFinalBanco[2], $dataFinalBanco[1], $dataFinalBanco[0]);
+                $dataFinal->setTime($dataFinalBanco[3], $dataFinalBanco[4]);
             }
 
-            $andamento = number_format($andamento,2)*100;
+            $andamento = number_format($andamento, 2) * 100;
             $values = array(
                 'id' => $row['COD_INVENTARIO'],
                 'qtdEndereco' => $row['QTD_END_TOTAL'],
                 'qtdDivergencia' => $row['QTD_DIV_TOTAL'],
                 'qtdInvetariado' => $row['QTD_INV_TOTAL'],
-                'andamento' =>  $andamento,
+                'andamento' => $andamento,
                 'dataInicio' => $dataInicio,
                 'dataFinalizacao' => $dataFinal,
                 'status' => $row['STATUS'],
                 'codInvERP' => $row['COD_INVENTARIO_ERP']);
             $result[] = $values;
         }
-
         return $result;
     }
 
@@ -176,8 +256,7 @@ class InventarioRepository extends EntityRepository
      * @return Inventario
      * @throws \Exception
      */
-    public function save()
-    {
+    public function save() {
         $em = $this->getEntityManager();
 
         $em->beginTransaction();
@@ -185,15 +264,14 @@ class InventarioRepository extends EntityRepository
 
             $enInventario = new Inventario();
 
-            $statusEntity = $em->getReference('wms:Util\Sigla',Inventario::STATUS_GERADO);
+            $statusEntity = $em->getReference('wms:Util\Sigla', Inventario::STATUS_GERADO);
             $enInventario->setStatus($statusEntity);
             $enInventario->setDataInicio(new \DateTime);
 
             $em->persist($enInventario);
             $em->flush();
             $em->commit();
-
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $em->rollback();
             throw new \Exception($e->getMessage());
         }
@@ -201,9 +279,7 @@ class InventarioRepository extends EntityRepository
         return $enInventario;
     }
 
-
-    public function vinculaEnderecos($codEnderecos, $codInventario)
-    {
+    public function vinculaEnderecos($codEnderecos, $codInventario) {
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
 
@@ -211,11 +287,11 @@ class InventarioRepository extends EntityRepository
         $enderecoProdutoRepo = $this->_em->getRepository('wms:Inventario\EnderecoProduto');
 
         $enderecosSalvos = array();
-        foreach($codEnderecos as $chave) {
+        foreach ($codEnderecos as $chave) {
 
             //list ($codEndereco, $codProduto, $grade) = explode("%#%",$chave);
 
-            $dados = explode("%#%",$chave);
+            $dados = explode("%#%", $chave);
             $codEndereco = null;
             $codProduto = null;
             $grade = null;
@@ -240,37 +316,33 @@ class InventarioRepository extends EntityRepository
             if (isset($codProduto) && ($codProduto != null)) {
                 $enderecoProdutoRepo->save($codProduto, $grade, $enderecoEn);
             }
-
         }
 
         $this->_em->flush();
-
     }
 
     /**
      * @param null $status
      * @return array
      */
-    public function getByStatus($status = null)
-    {
+    public function getByStatus($status = null) {
         $source = $this->getEntityManager()->createQueryBuilder()
-            ->select('i.id, i.dataInicio, i.codStatus')
-            ->from('wms:Inventario', 'i')
-            ->orderBy("i.id" , "DESC");
+                ->select('i.id, i.dataInicio, i.codStatus')
+                ->from('wms:Inventario', 'i')
+                ->orderBy("i.id", "DESC");
 
         if (is_array($status)) {
-            $status = implode(',',$status);
+            $status = implode(',', $status);
             $source->andWhere("i.status in ($status)");
-        }else if ($status) {
+        } else if ($status) {
             $source->andWhere("i.status = :status")
-                ->setParameter('status', $status);
+                    ->setParameter('status', $status);
         }
 
         return $source->getQuery()->getArrayResult();
     }
 
-    public function criarOS($idInventario)
-    {
+    public function criarOS($idInventario) {
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
         $ordemServicoRepo = $this->getEntityManager()->getRepository('wms:OrdemServico');
 
@@ -291,7 +363,6 @@ class InventarioRepository extends EntityRepository
             $contagemOsRepo = $this->getEntityManager()->getRepository('wms:Inventario\ContagemOs');
             $contagemOsEn = $contagemOsRepo->save(array('codInventario' => $idInventario, 'codOs' => $idOrdemServico));
             $idContagemOs = $contagemOsEn->getId();
-
         } else {
             $idContagemOs = $contagemOsEn[0]['id'];
         }
@@ -302,35 +373,34 @@ class InventarioRepository extends EntityRepository
      * @param $idInventario
      * @return array
      */
-    public function verificaOSUsuario($idInventario)
-    {
+    public function verificaOSUsuario($idInventario) {
         $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
         $source = $this->_em->createQueryBuilder()
-            ->select('ios.id')
-            ->from('wms:Inventario\ContagemOs', 'ios')
-            ->innerJoin('ios.os','os')
-            ->where('ios.inventario = :idInventario')
-            ->andWhere('os.pessoa = :pessoa')
-            ->setParameter('idInventario', $idInventario)
-            ->setParameter('pessoa', $idPessoa);
+                ->select('ios.id')
+                ->from('wms:Inventario\ContagemOs', 'ios')
+                ->innerJoin('ios.os', 'os')
+                ->where('ios.inventario = :idInventario')
+                ->andWhere('os.pessoa = :pessoa')
+                ->setParameter('idInventario', $idInventario)
+                ->setParameter('pessoa', $idPessoa);
 
         return $source->getQuery()->getResult();
     }
+
     /**
      * @param $idInventario
      * @return array
      */
-    public function getAvariados($idInventario)
-    {
+    public function getAvariados($idInventario) {
         $source = $this->_em->createQueryBuilder()
-            ->select('de.descricao Endereco, ce.codProduto Produto, ce.grade Grade, ce.qtdAvaria Qtde_Avaria')
-            ->from('wms:Inventario', 'i')
-            ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'i.id = ie.inventario')
-            ->innerJoin('wms:Inventario\ContagemEndereco', 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
-            ->innerJoin('ie.depositoEndereco','de')
-            ->where('i.id = :idInventario')
-            ->andWhere('ce.qtdAvaria is not null')
-            ->setParameter('idInventario', $idInventario);
+                ->select('de.descricao Endereco, ce.codProduto Produto, ce.grade Grade, ce.qtdAvaria Qtde_Avaria')
+                ->from('wms:Inventario', 'i')
+                ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'i.id = ie.inventario')
+                ->innerJoin('wms:Inventario\ContagemEndereco', 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
+                ->innerJoin('ie.depositoEndereco', 'de')
+                ->where('i.id = :idInventario')
+                ->andWhere('ce.qtdAvaria is not null')
+                ->setParameter('idInventario', $idInventario);
 
         return $source->getQuery()->getArrayResult();
     }
@@ -339,21 +409,20 @@ class InventarioRepository extends EntityRepository
      * @param $idInventario
      * @return array
      */
-    public function getDivergencias($idInventario)
-    {
+    public function getDivergencias($idInventario) {
         $source = $this->_em->createQueryBuilder()
-            ->select('de.descricao Endereco, ce.codProduto Produto, ce.grade Grade, NVL(pe.codigoBarras, pv.codigoBarras) Codigo_Barras, ce.qtdContada Qtde_Contada, ce.qtdDivergencia Qtde_Divergencia, ce.numContagem, p.descricao')
-            ->from('wms:Inventario', 'i')
-            ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'i.id = ie.inventario')
-            ->innerJoin('wms:Inventario\ContagemEndereco', 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
-            ->innerJoin('ce.produto', 'p')
-            ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', "pe.codProduto = p.id AND pe.grade = p.grade AND pe.isPadrao = 'S' and pe.dataInativacao IS NULL")
-            ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'pv.codProduto = p.id AND pv.grade = p.grade and pv.dataInativacao IS NULL')
-            ->innerJoin('ie.depositoEndereco','de')
-            ->where('i.id = :idInventario')
-            ->andWhere('ce.divergencia is not null')
-            ->orderBy('de.descricao')
-            ->setParameter('idInventario', $idInventario);
+                ->select('de.descricao Endereco, ce.codProduto Produto, ce.grade Grade, NVL(pe.codigoBarras, pv.codigoBarras) Codigo_Barras, ce.qtdContada Qtde_Contada, ce.qtdDivergencia Qtde_Divergencia, ce.numContagem, p.descricao')
+                ->from('wms:Inventario', 'i')
+                ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'i.id = ie.inventario')
+                ->innerJoin('wms:Inventario\ContagemEndereco', 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
+                ->innerJoin('ce.produto', 'p')
+                ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', "pe.codProduto = p.id AND pe.grade = p.grade AND pe.isPadrao = 'S' and pe.dataInativacao IS NULL")
+                ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'pv.codProduto = p.id AND pv.grade = p.grade and pv.dataInativacao IS NULL')
+                ->innerJoin('ie.depositoEndereco', 'de')
+                ->where('i.id = :idInventario')
+                ->andWhere('ce.divergencia is not null')
+                ->orderBy('de.descricao')
+                ->setParameter('idInventario', $idInventario);
 
         return $source->getQuery()->getArrayResult();
     }
@@ -363,8 +432,7 @@ class InventarioRepository extends EntityRepository
      * @param $status
      * @return bool
      */
-    public function alteraStatus($inventarioEntity, $status)
-    {
+    public function alteraStatus($inventarioEntity, $status) {
         $statusEntity = $this->_em->getReference('wms:Util\Sigla', $status);
         $inventarioEntity->setStatus($statusEntity);
         $this->_em->persist($inventarioEntity);
@@ -372,13 +440,11 @@ class InventarioRepository extends EntityRepository
         return true;
     }
 
-    public function cancelar($inventarioEntity)
-    {
+    public function cancelar($inventarioEntity) {
         $this->alteraStatus($inventarioEntity, Inventario::STATUS_CANCELADO);
     }
 
-    public function atualizarEstoque($inventarioEntity)
-    {
+    public function atualizarEstoque($inventarioEntity) {
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', '-1');
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
@@ -386,41 +452,41 @@ class InventarioRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
 
-        $idUsuarioLogado  = \Zend_Auth::getInstance()->getIdentity()->getId();
+        $idUsuarioLogado = \Zend_Auth::getInstance()->getIdentity()->getId();
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
         $usuarioRepo = $this->_em->getRepository('wms:Usuario');
-        $usuarioEn   = $usuarioRepo->find($idUsuarioLogado);
+        $usuarioEn = $usuarioRepo->find($idUsuarioLogado);
 
         $serviceInventario = new InventarioService();
 
         $invEnderecosEn = $enderecoRepo->getComContagem($inventarioEntity->getId());
-        foreach($invEnderecosEn as $invEnderecoEn) {
+        foreach ($invEnderecosEn as $invEnderecoEn) {
 
             //ultima contagem
             $contagemEndEnds = $enderecoRepo->getUltimaContagem($invEnderecoEn);
 
-            $enderecoEn         = $invEnderecoEn->getDepositoEndereco();
+            $enderecoEn = $invEnderecoEn->getDepositoEndereco();
             $idDepositoEndereco = $enderecoEn->getId();
 
-            foreach($contagemEndEnds as $contagemEndEn) {
+            foreach ($contagemEndEnds as $contagemEndEn) {
                 //Endereco tem estoque?
 
-                $osEn           = $contagemEndEn->getContagemOs()->getOs();
-                $enderecoVazio  = false;
+                $osEn = $contagemEndEn->getContagemOs()->getOs();
+                $enderecoVazio = false;
 
                 if ($contagemEndEn->getCodProdutoVolume() != null) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco, 'produtoVolume' => $contagemEndEn->getCodProdutoVolume()));
-                } elseif($contagemEndEn->getCodProdutoEmbalagem() != null) {
+                } elseif ($contagemEndEn->getCodProdutoEmbalagem() != null) {
                     $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco, 'codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()));
                 } else {
                     $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco));
                     $enderecoVazio = true;
                 }
 
-                $qtdContagem = ($contagemEndEn->getQtdContada()+$contagemEndEn->getQtdAvaria());
+                $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
                 if ($estoqueEn) {
                     //mesmo produto?
-                    $result = $serviceInventario->compareProduto($estoqueEn,$contagemEndEn);
+                    $result = $serviceInventario->compareProduto($estoqueEn, $contagemEndEn);
                     if ($result == true) {
                         $qtd = $qtdContagem - $estoqueEn->getQtd();
                         $validadeContagem = $contagemEndEn->getValidade();
@@ -432,7 +498,7 @@ class InventarioRepository extends EntityRepository
                             $validadeEstoque = strtotime($estoqueEn->getValidade()->format('Y-m-d 00:00:00'));
                         }
                         if ($qtd != 0 || $validadeContagem != $validadeEstoque) {
-                            $this->entradaEstoque($contagemEndEn,$invEnderecoEn,$qtd, $osEn, $usuarioEn, $estoqueRepo);
+                            $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtd, $osEn, $usuarioEn, $estoqueRepo);
                         }
                     } else {
                         if ($enderecoVazio) {
@@ -440,64 +506,60 @@ class InventarioRepository extends EntityRepository
                             $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdRetirar, $osEn, $usuarioEn, $estoqueRepo);
                         } else {
                             $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
-                            $this->entradaEstoque($contagemEndEn,$invEnderecoEn, $qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
+                            $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
                         }
                     }
-                } elseif($estoqueEn == null) {
+                } elseif ($estoqueEn == null) {
                     if ($qtdContagem != 0) {
-                        $this->entradaEstoque($contagemEndEn,$invEnderecoEn,$qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
+                        $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
                     }
                 }
-
             }
-
         }
         $inventarioEntity->setDataFinalizacao(new \DateTime());
-        $this->alteraStatus($inventarioEntity,Inventario::STATUS_FINALIZADO);
+        $this->alteraStatus($inventarioEntity, Inventario::STATUS_FINALIZADO);
         $this->_em->persist($inventarioEntity);
         $this->_em->flush();
     }
 
-    public function entradaEstoque($contagemEndEn, $invEnderecoEn, $qtd, $osEn, $usuarioEn, $estoqueRepo)
-    {
+    public function entradaEstoque($contagemEndEn, $invEnderecoEn, $qtd, $osEn, $usuarioEn, $estoqueRepo) {
         $params['contagemEndEn'] = $contagemEndEn;
-        $params['produto']       = $contagemEndEn->getProduto();
-        $params['endereco']      = $invEnderecoEn->getDepositoEndereco();
-        $params['qtd']           = $qtd;
-        $params['volume']        = $contagemEndEn->getProdutoVolume();
-        $params['embalagem']     = $contagemEndEn->getCodProdutoEmbalagem();
-        $params['validade']      = $contagemEndEn->getValidade();
-        $params['tipo']          = HistoricoEstoque::TIPO_INVENTARIO;;
-        $params['observacoes']   = 'Mov. correção inventário';
-        $params['os']            = $osEn;
-        $params['usuario']       = $usuarioEn;
-        $params['estoqueRepo']   = $estoqueRepo;
+        $params['produto'] = $contagemEndEn->getProduto();
+        $params['endereco'] = $invEnderecoEn->getDepositoEndereco();
+        $params['qtd'] = $qtd;
+        $params['volume'] = $contagemEndEn->getProdutoVolume();
+        $params['embalagem'] = $contagemEndEn->getCodProdutoEmbalagem();
+        $params['validade'] = $contagemEndEn->getValidade();
+        $params['tipo'] = HistoricoEstoque::TIPO_INVENTARIO;
+        ;
+        $params['observacoes'] = 'Mov. correção inventário';
+        $params['os'] = $osEn;
+        $params['usuario'] = $usuarioEn;
+        $params['estoqueRepo'] = $estoqueRepo;
 
         $serviceEstoque = new Estoque($this->getEntityManager(), $params);
         return $serviceEstoque->movimentaEstoque();
     }
 
-    public function retiraEstoque($estoqueEn, $invEnderecoEn, $qtd, $osEn, $usuarioEn, $estoqueRepo)
-    {
-        $params['produto']      = $estoqueEn->getProduto();
-        $params['endereco']     = $invEnderecoEn->getDepositoEndereco();
-        $params['qtd']          = $qtd;
-        $params['volume']       = $estoqueEn->getProdutoVolume();
-        $params['embalagem']    = 0;
-        $params['validade']     = null;
-        $params['tipo']         = HistoricoEstoque::TIPO_INVENTARIO;
-        $params['observacoes']  = 'Mov. correção inventário';
-        $params['os']           = $osEn;
-        $params['usuario']      = $usuarioEn;
-        $params['estoqueRepo']  = $estoqueRepo;
+    public function retiraEstoque($estoqueEn, $invEnderecoEn, $qtd, $osEn, $usuarioEn, $estoqueRepo) {
+        $params['produto'] = $estoqueEn->getProduto();
+        $params['endereco'] = $invEnderecoEn->getDepositoEndereco();
+        $params['qtd'] = $qtd;
+        $params['volume'] = $estoqueEn->getProdutoVolume();
+        $params['embalagem'] = 0;
+        $params['validade'] = null;
+        $params['tipo'] = HistoricoEstoque::TIPO_INVENTARIO;
+        $params['observacoes'] = 'Mov. correção inventário';
+        $params['os'] = $osEn;
+        $params['usuario'] = $usuarioEn;
+        $params['estoqueRepo'] = $estoqueRepo;
 
         $serviceEstoque = new Estoque($this->getEntityManager(), $params);
         return $serviceEstoque->movimentaEstoque();
     }
 
-    public function getSumarioByRua($params)
-    {
-        $idInventario   = $params['id'];
+    public function getSumarioByRua($params) {
+        $idInventario = $params['id'];
 
         $sql = "
         SELECT
@@ -515,7 +577,7 @@ class InventarioRepository extends EntityRepository
                   GROUP BY IE.COD_INVENTARIO_ENDERECO) PENDENTES
               ON PENDENTES.COD_INVENTARIO_ENDERECO = G.COD_INVENTARIO_ENDERECO
             WHERE
-             G.COD_INVENTARIO = ".$idInventario."
+             G.COD_INVENTARIO = " . $idInventario . "
             GROUP BY F.NUM_RUA
             ORDER BY F.NUM_RUA
         ";
@@ -523,10 +585,9 @@ class InventarioRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function verificaReservas($idInventario)
-    {
+    public function verificaReservas($idInventario) {
         $source = $this->_em->createQueryBuilder()
-            ->select("d.id, prod.id as produto, prod.grade as grade, re.dataReserva, d.descricao,
+                ->select("d.id, prod.id as produto, prod.grade as grade, re.dataReserva, d.descricao,
             CONCAT(
                 CASE WHEN exp.id IS NOT NULL THEN 'Expedição Código:'
                      WHEN ressup.id IS NOT NULL THEN 'Ressuprimento OS:'
@@ -539,32 +600,31 @@ class InventarioRepository extends EntityRepository
             CASE WHEN re.tipoReserva = 'S' then 'Saída' ELSE 'Entrada' END as tipoReserva,
             NVL(ped.id,'') as pedido
             ")
-            ->from("wms:Ressuprimento\ReservaEstoque","re")
-            ->innerJoin('re.endereco', 'd')
-            ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'ie.depositoEndereco = d.id')
-            ->leftJoin('wms:Ressuprimento\ReservaEstoqueExpedicao','reexp','WITH','reexp.reservaEstoque = re.id')
-            ->leftJoin('wms:Ressuprimento\ReservaEstoqueEnderecamento','reend','WITH','reend.reservaEstoque = re.id')
-            ->leftJoin('wms:Ressuprimento\ReservaEstoqueOnda','reond','WITH','reond.reservaEstoque = re.id')
-            ->leftJoin('reexp.pedido','ped')
-            ->leftJoin('reexp.expedicao', 'exp')
-            ->leftJoin('reond.ondaRessuprimentoOs','ressup')
-            ->leftJoin('reend.palete','palete')
-            ->leftJoin('re.produtos','rep')
-            ->leftJoin('rep.produto','prod')
-            ->andWhere("re.atendida = 'N'")
-            ->andWhere("ie.inventario = $idInventario")
-            ->distinct(true);
+                ->from("wms:Ressuprimento\ReservaEstoque", "re")
+                ->innerJoin('re.endereco', 'd')
+                ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'ie.depositoEndereco = d.id')
+                ->leftJoin('wms:Ressuprimento\ReservaEstoqueExpedicao', 'reexp', 'WITH', 'reexp.reservaEstoque = re.id')
+                ->leftJoin('wms:Ressuprimento\ReservaEstoqueEnderecamento', 'reend', 'WITH', 'reend.reservaEstoque = re.id')
+                ->leftJoin('wms:Ressuprimento\ReservaEstoqueOnda', 'reond', 'WITH', 'reond.reservaEstoque = re.id')
+                ->leftJoin('reexp.pedido', 'ped')
+                ->leftJoin('reexp.expedicao', 'exp')
+                ->leftJoin('reond.ondaRessuprimentoOs', 'ressup')
+                ->leftJoin('reend.palete', 'palete')
+                ->leftJoin('re.produtos', 'rep')
+                ->leftJoin('rep.produto', 'prod')
+                ->andWhere("re.atendida = 'N'")
+                ->andWhere("ie.inventario = $idInventario")
+                ->distinct(true);
 
         return $source->getQuery()->getResult();
     }
 
-    public function removeEnderecos(array $enderecos, $id)
-    {
+    public function removeEnderecos(array $enderecos, $id) {
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
         $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
         /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $inventarioContagemEnderecoRepo */
         $inventarioContagemEnderecoRepo = $this->_em->getRepository('wms:Inventario\ContagemEndereco');
-        foreach($enderecos as $endereco) {
+        foreach ($enderecos as $endereco) {
             $inventarioEndEn = $inventarioEndRepo->findOneBy(array('depositoEndereco' => $endereco, 'inventario' => $id));
             if ($inventarioEndEn) {
                 $inventarioContagemEnderecoEn = $inventarioContagemEnderecoRepo->findBy(array('inventarioEndereco' => $inventarioEndEn));
@@ -577,36 +637,33 @@ class InventarioRepository extends EntityRepository
         $this->_em->flush();
     }
 
-    public function bloqueiaEnderecos($id)
-    {
+    public function bloqueiaEnderecos($id) {
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
         $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
 
-        $inventarioEndsEn  = $inventarioEndRepo->findBy(array('inventario' => $id));
-        foreach($inventarioEndsEn as $invEndEn) {
-            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getID(),'S');
+        $inventarioEndsEn = $inventarioEndRepo->findBy(array('inventario' => $id));
+        foreach ($inventarioEndsEn as $invEndEn) {
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getID(), 'S');
         }
         $this->_em->flush();
     }
 
-    public function desbloqueiaEnderecos($id)
-    {
+    public function desbloqueiaEnderecos($id) {
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
         $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
 
-        $inventarioEndsEn  = $inventarioEndRepo->findBy(array('inventario' => $id));
-        foreach($inventarioEndsEn as $invEndEn) {
-            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getId(),'N');
+        $inventarioEndsEn = $inventarioEndRepo->findBy(array('inventario' => $id));
+        foreach ($inventarioEndsEn as $invEndEn) {
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getId(), 'N');
         }
 //        $this->_em->flush();
     }
 
-    public function impressaoInventarioByEndereco($params, $idInventario)
-    {
+    public function impressaoInventarioByEndereco($params, $idInventario) {
         $sql = "SELECT DSC_DEPOSITO_ENDERECO AS ENDERECO, NVL(ICE.COD_PRODUTO,'') AS PRODUTO, NVL(ICE.DSC_GRADE,'') AS GRADE, NVL(ICE.QTD_CONTADA,'') AS QUANTIDADE
                 FROM INVENTARIO I
                 INNER JOIN INVENTARIO_ENDERECO IE ON IE.COD_INVENTARIO = I.COD_INVENTARIO
@@ -654,7 +711,7 @@ class InventarioRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getMovimentacaoEstoqueByInventario ($idInventario) {
+    public function getMovimentacaoEstoqueByInventario($idInventario) {
         $SQL = "SELECT ESTQ.COD_INVENTARIO as \"Inventário\",
                        DE.DSC_DEPOSITO_ENDERECO as \"Endereço\",
                        ESTQ.COD_PRODUTO as \"Cod.Produto\",
@@ -697,12 +754,11 @@ class InventarioRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function setCodInventarioERP($idInventario, $codInventarioERP)
-    {
-        if (!empty($idInventario) and !empty($codInventarioERP)) {
+    public function setCodInventarioERP($idInventario, $codInventarioERP) {
+        if (!empty($idInventario) and ! empty($codInventarioERP)) {
             /** @var Inventario $inventarioEn */
             $inventarioEn = $this->find($idInventario);
-            if (!empty($inventarioEn)){
+            if (!empty($inventarioEn)) {
                 $inventarioEn->setCodInventarioERP($codInventarioERP);
                 $this->_em->flush($inventarioEn);
             } else {
@@ -712,4 +768,5 @@ class InventarioRepository extends EntityRepository
             throw new \Exception("O número de inventário ou do código no ERP não foi informado!");
         }
     }
+
 }
