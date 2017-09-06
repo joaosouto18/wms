@@ -334,7 +334,8 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
         },
 
-        deleteConfirmed: function(model) {
+        deleteConfirmed: function(params) {
+            var model = params.model;
             var id = model.id;
 
             $('#fieldset-embalagem #embalagem-enderecoAntigo').val(model.endereco);
@@ -346,7 +347,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             }).appendTo('#fieldset-embalagens-cadastradas');
 
             //remove a div do endereco
-            model.destroy();
+            model.elements().remove();
             //reseta o form
             this.resetarForm();
             // carregar embalagens nos dados logisticos
