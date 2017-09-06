@@ -250,13 +250,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {
-                $embalagensEn = $dadosProdutos[$codProduto][$grade]['embalagensASC'];
-
-                if (!isset($embalagensEn[0])) {
-                    throw new \Exception("Produto " . $codProduto . " Grade " . $grade . " não possui embalagem cadastrada!");
-                }
-
-                $embalagem = $embalagensEn[0];
+                $embalagem = reset($dadosProdutos[$codProduto][$grade]['embalagensASC']);
 
                 $idPicking = null;
                 if ($embalagem->getEndereco() != null) {
@@ -312,10 +306,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
             }
         }
 
-        return array(
-            'picking' => $arraySaidaPicking,
-            'pulmao' => $arraySaidaPulmao
-        );
+        return array($arraySaidaPicking,$arraySaidaPulmao);
     }
 
     public function relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
@@ -331,17 +322,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
             $pedidoEn = $pedidoRepo->findOneBy(array('id' => $codPedido));
-
-            /* $sql = "INSERT INTO ONDA_RESSUPRIMENTO_PEDIDO (COD_ONDA_RESSUPRIMENTO_PEDIDO, COD_ONDA_RESSUPRIMENTO, COD_PEDIDO, COD_PRODUTO, QTD)
-              VALUES (SQ_ONDA_RESSUPRIMENTO_PEDIDO.NEXTVAL, :idOnda, :idPedido, :idProduto, :qtd )";
-
-              $conn = $this->_em->getConnection();
-              $stmt = $conn->prepare($sql);
-              $stmt->bindValue('idOnda', $ondaEn->getId());
-              $stmt->bindValue('idPedido', $pedidoEn->getId());
-              $stmt->bindValue('idProduto', $produtoEn->getId());
-              $stmt->bindValue('qtd', $qtd);
-              $stmt->execute(); */
 
             $ondaPedido = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedido();
             $ondaPedido->setOndaRessuprimento($ondaEn);

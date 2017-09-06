@@ -37,13 +37,17 @@ class ModeloSeparacao extends Form
             'label' => 'Quebra no processo Pulmão-Doca',
             'multiOptions' => array(
                 'N' => 'Não utiliza',
-                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE => 'Por Cliente',
-                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA => 'Por Praça'),
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO => 'Por Expedição',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CARGA => 'Por Carga',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA => 'Por Praça',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE => 'Por Cliente'
+            )
         ))->addElement('select', 'tipoQuebraVolume', array(
             'label' => 'Tipo de Quebra no Volume',
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CLIENTE => 'Por Cliente',
-                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CARGA => 'Por Carga'),
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_VOLUME_CARGA => 'Por Carga'
+            )
         ))->addElement('select', 'separacaoPc', array(
             'label' => 'Separação com carrinho',
             'multiOptions' => array('S' => 'Sim', 'N' => 'Não'),
