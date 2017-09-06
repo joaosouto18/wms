@@ -1,0 +1,83 @@
+<?php
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+if (count($this->dados) > 0) {
+    ?>
+    <button id="confirmar" style="width: 230px; margin: 16px;height: 33px; font-size: 12px;" class="btn">Executar Ressuprimento Preventivo</button>
+    <table class="gTable list">
+        <tbody>
+            <tr class ="gTTitle">
+                <td><b><input class="checkBoxClass" type="checkbox" name="check-all" id="check-all"></b></td>
+                <td><b>COD. PRODUTO</b></td>
+                <td><b>PRODUTO</b></td>
+                <td><b>GRADE</b></td>
+                <td><b>CAPACIDADE</b></td>
+                <td><b>SALDO</b></td>
+                <td><b>QTD. A RESSUPRIR</b></td>
+                <td><b>OCUPAÇÃO</b></td>
+                <td><b>PICKING</b></td>
+                <td><b>PULMÃO</b></td>
+            </tr>
+            <?php
+            $linha = 0;
+            foreach ($this->dados as $key => $endereco) {
+                $tipo = 1;
+                if (count(json_decode($endereco['VOLUMES'])) != 0) {
+                    $tipo = 2;
+                }
+                $class = "";
+                if (($linha % 2) == 0) {
+                    $class = "gRowColor";
+                }
+                ?><tr class="gTResultSet <?php echo $class ?>">
+                    <td><input class="checkBoxClass" type="checkbox" value="<?php echo $endereco['COD_PRODUTO'] ?>"></td>
+                    <td><?php echo $endereco['COD_PRODUTO'] ?></td>
+                    <td><?php echo $endereco['DSC_PRODUTO'] ?></td>
+                    <td><?php echo $endereco['DSC_GRADE'] ?></td>
+                    <td><?php echo $endereco['CAPACIDADE_PICKING'] ?></td>
+                    <td><?php echo $endereco['SALDO_PICKING'] ?></td>
+                    <td><?php echo $endereco['TOTAL_ONDA'] ?></td>
+                    <td><?php echo $endereco['OCUPACAO'] ?></td>
+                    <td><?php echo $endereco['DSC_DEPOSITO_ENDERECO'] ?></td>
+                    <td><?php echo $endereco['PULMAO'] ?></td>
+            <input class="input-hidden" type="hidden" id="produto" value="<?php echo $endereco['COD_PRODUTO'] ?>" />
+            <input class="input-hidden" type="hidden" id="grade" value="<?php echo $endereco['DSC_GRADE'] ?>" />
+            <input class="input-hidden" type="hidden" id="embalagens" value='<?php echo $endereco['EMBALAGENS'] ?>' />
+            <input class="input-hidden" type="hidden" id="volumes" value='<?php echo $endereco['VOLUMES'] ?>' />
+            <input class="input-hidden" type="hidden" id="capacidade" value="<?php echo $endereco['PONTO_REPOSICAO'] ?>" />
+            <input class="input-hidden" type="hidden" id="saldo" value="<?php echo $endereco['SALDO_PICKING_INPUT'] ?>" />
+            <input class="input-hidden" type="hidden" id="ocupacao" value="<?php echo $endereco['OCUPACAO'] ?>" />
+            <input class="input-hidden" type="hidden" id="picking" value="<?php echo $endereco['COD_DEPOSITO_ENDERECO'] ?>" />
+            <input class="input-hidden" type="hidden" id="pulmao" value='<?php echo $endereco['PULMOES'] ?>' />
+            <input class="input-hidden" type="hidden" id="validadeEstoque" value="<?php echo $endereco['VALIDADE_ESTOQUE'] ?>" />
+            <input class="input-hidden" type="hidden" id="qtdOnda" value='<?php echo $endereco['QTD_ONDA'] ?>' />
+            <input class="input-hidden" type="hidden" id="tipo" value="<?php echo $tipo ?>" />
+        </tr>
+        <?php
+        $linha++;
+    }
+} else {
+    echo '<div>Nenhum resultado encontrado.</div>';
+}
+?>
+</table>
+<script>
+    $('.gTable.list tr').click(function () {
+        $(this).toggleClass('tr-select');
+    });
+
+    $('#check-all').click(function () {
+        if ($(this).prop("checked")) {
+            $('.checkBoxClass').each(function () {
+                $(this).attr('checked', true);
+            });
+        } else {
+            $('.checkBoxClass').each(function () {
+                $(this).removeAttr('checked');
+            });
+        }
+    });
+</script>
