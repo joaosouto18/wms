@@ -15,7 +15,7 @@ $.Model.extend('Wms.Models.ProdutoVolume',
             type: 'post',
             dataType: 'json',
             data: params,
-            success: this.callback(['wrapMany',success]),
+            success: success,
             error: error
         });
     },
@@ -31,7 +31,7 @@ $.Model.extend('Wms.Models.ProdutoVolume',
             type: 'post',
             dataType: 'json',
             data: params,
-            success: this.callback(['wrapMany',success]),
+            success: success,
             error: error
         });
     },

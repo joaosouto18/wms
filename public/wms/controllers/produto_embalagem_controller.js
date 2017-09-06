@@ -330,17 +330,15 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
             if (!permisao) return false;
 
-            this.dialogConfirm("Tem certeza que deseja excluir esta embalagem?", this.callback("deleteConfirmed"),{id:id});
+            this.dialogConfirm("Tem certeza que deseja excluir esta embalagem?", this.callback("deleteConfirmed"),{model:model});
 
         },
 
         deleteConfirmed: function(params) {
-            var id = params.id;
+            var model = params.model;
+            var id = model.id;
 
-            $('#fieldset-embalagem #embalagem-enderecoAntigo').val(produto_embalagem.endereco);
-            var idProduto = $('#embalagem-idProduto').val();
-            var grade = $('#embalagem-grade').val();
-            var este = this;
+            $('#fieldset-embalagem #embalagem-enderecoAntigo').val(model.endereco);
 
             $('<input/>', {
                 name: 'embalagens[' + id + '][acao]',
