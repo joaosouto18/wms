@@ -37,7 +37,7 @@ class AndamentoRepository extends EntityRepository {
         }
     }
 
-    public function checksChange($oject, $field, $value, $newValue) {
+    public function checksChange($object, $field, $value, $newValue) {
         $alterou = false;
 
         if ($value != null) {
@@ -49,9 +49,27 @@ class AndamentoRepository extends EntityRepository {
         }
 
         if ($alterou === true) {
+            if (is_object($value)) {
+                $objClass = get_class($value);
+                $subValue = "indefinido";
+                if (method_exists($value, "getId")){
+                    $subValue = $value->getId();
+                }
+                $value = "class $objClass id $subValue";
+            }
+
+            if (is_object($newValue)) {
+                $objClassNewValue = get_class($newValue);
+                $subNewValue = "indefinido";
+                if (method_exists($newValue, "getId")){
+                    $subNewValue = $newValue->getId();
+                }
+                $newValue = "class $objClassNewValue id $subNewValue";
+            }
+
             $url = $_SERVER['REQUEST_URI'];
             $obs = "$field alterado(a) de " . $value . ' para ' . $newValue . ' - URL: ' . $url;
-            $this->save($oject->getId(), $oject->getGrade(), false, $obs, false);
+            $this->save($object->getId(), $object->getGrade(), false, $obs, false);
         }
     }
 

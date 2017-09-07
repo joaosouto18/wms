@@ -166,7 +166,7 @@ class Mobile_EnderecamentoController extends Action
         try {
             $enderecoSD = ColetorUtil::retiraDigitoIdentificador($this->_getParam("endereco"));
 
-            if (empty($endereco)) {
+            if (empty($enderecoSD)) {
                 $this->createXml('error', 'Nenhum Endereço Informado');
             }
 
