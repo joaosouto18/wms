@@ -9,6 +9,15 @@ $.Controller.extend('Wms.Controllers.Produto',
     },
     /* @Prototype */
     {
+        dialogAlert: function ( msg ) {
+            $.wmsDialogAlert({
+                title: 'Alerta',
+                msg: msg,
+                height: 150,
+                resizable: false
+            });
+        },
+
         /**
          * When the page loads, gets all produto_volumes to be displayed.
          */
@@ -107,46 +116,46 @@ $.Controller.extend('Wms.Controllers.Produto',
             // checando embalagens
             switch( idTipoComercializacao ) {
                 case UNITARIO :
-                    if ( qtdEmbalagensCadastradas == 0 ) {
-                        alert('O produto deve conter pelo menos uma embalagem cadastrada.');
+                    if ( qtdEmbalagensCadastradas === 0 ) {
+                        this.dialogAlert('O produto deve conter pelo menos uma embalagem cadastrada.');
                         return false;
                     }
 
                     // verifico se existe embalagem de recebimento
                     var qtdEmbalagensRecebimento = 0;
                     listaEmbalagens.each(function(i, v) {
-                        if( ( this.name.indexOf('isPadrao') != -1 ) && ( this.value == 'S' ) )
+                        if( ( this.name.indexOf('isPadrao') !== -1 ) && ( this.value === 'S' ) )
                             qtdEmbalagensRecebimento = qtdEmbalagensRecebimento + 1;
                     });
 
                     // caso sem embalagens
-                    if ( qtdEmbalagensRecebimento == 0 ) {
-                        alert('O produto deve conter AO MENOS uma embalagem cadastrada do tipo recebimento.');
+                    if ( qtdEmbalagensRecebimento === 0 ) {
+                        this.dialogAlert('O produto deve conter AO MENOS uma embalagem cadastrada do tipo recebimento.');
                         return false;
                     }
                     // caso a quantidade de volumes cadastradados diferentes da
                     // quantidade de volumes requeridos pelo produto, solicito cadastro
-                    if( qtdDadosLogisticosCadastrados == 0 ) {
-                        alert('Deve haver pelo menos um dado logistico cadastrado para o produto na Aba "Dados Logisticos"');
+                    if( qtdDadosLogisticosCadastrados === 0 ) {
+                        this.dialogAlert('Deve haver pelo menos um dado logistico cadastrado para o produto na Aba "Dados Logisticos"');
                         return false;
                     }
 
                     break;
                 case COMPOSTO :
                     if ( ( numVolumesProduto <= 1 ) ) {
-                        alert('A quantidade de volumes para esse tipo de comercialização deve ser maior do que 1 (um).');
+                        this.dialogAlert('A quantidade de volumes para esse tipo de comercialização deve ser maior do que 1 (um).');
                         $('#produto-numVolumes').focus();
                         return false;
                     }
                     // caso a quantidade de volumes cadastradados diferentes da
                     // quantidade de volumes requeridos pelo produto, solicito cadastro
-                    if( qtdVolumesCadastrados != numVolumesProduto ) {
-                        alert('O numero de volumes cadastrados (Aba Volumes) divergem do Nº Volumes informado para o produto (Aba Produto)');
+                    if( qtdVolumesCadastrados !== numVolumesProduto ) {
+                        this.dialogAlert('O numero de volumes cadastrados (Aba Volumes) divergem do Nº Volumes informado para o produto (Aba Produto)');
                         return false;
                     }
 
                     if(($('#produto-codigoBarrasBase').val().length > 1) && ($('#produto-codigoBarrasBase').val().length <= 3) ) {
-                        alert('O Código de Barra Base deve conter no minimo 3 caracteres.');
+                        this.dialogAlert('O Código de Barra Base deve conter no minimo 3 caracteres.');
                         $('#produto-codigoBarrasBase').focus();
                         return false;
                     }
@@ -162,7 +171,7 @@ $.Controller.extend('Wms.Controllers.Produto',
                         });
 
                         if ( numVezesCBInterno > 0){
-                            alert('Este Produto contém Código de Barra Base. Não é permitido ter volumes com Código de Barras Automático.');
+                            this.dialogAlert('Este Produto contém Código de Barra Base. Não é permitido ter volumes com Código de Barras Automático.');
                             return false;
                         }
                     }
@@ -178,12 +187,12 @@ $.Controller.extend('Wms.Controllers.Produto',
                                 numVezesSequencia++;
                         });
 
-                        if ( numVezesSequencia == 0 ) {
-                            alert('O produto tem que ter a sequência ' + i + '/' + numVolumesProduto + '.');
+                        if ( numVezesSequencia === 0 ) {
+                            this.dialogAlert('O produto tem que ter a sequência ' + i + '/' + numVolumesProduto + '.');
                             return false;
                         }
                         if ( numVezesSequencia > 1 ) {
-                            alert('A sequência ' + i + ' está cadastrada mais de uma vez.');
+                            this.dialogAlert('A sequência ' + i + ' está cadastrada mais de uma vez.');
                             return false;
                         }
                     }
@@ -396,7 +405,7 @@ $.Controller.extend('Wms.Controllers.Produto',
                     //caso composto, soma todas as cubagens dos volumes
                     var inputsCubagem = $('.produto_volume input.cubagem');
                     var cubagemTotal = 0;
-                    var cubagemVolume = 0
+                    var cubagemVolume = 0;
                     inputsCubagem.each(function(i, v) {
                         cubagemVolume = parseFloat(this.value.replace('.','').replace(',','.'))
                         cubagemTotal = cubagemTotal + cubagemVolume;
