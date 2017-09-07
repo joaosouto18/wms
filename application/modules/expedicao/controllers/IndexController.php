@@ -35,6 +35,18 @@ class Expedicao_IndexController extends Action
         $this->view->form = $form;
         $params = $this->_getAllParams();
 
+        //INTEGRAR CARGAS NO MOMENTO Q ENTRAR NA TELA DE EXPEDICAO
+        if (isset($parametroPedidos) && !empty($parametroPedidos)) {
+            $explodeIntegracoes = explode(',',$parametroPedidos);
+
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
+            $acaoIntegracaoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            foreach ($explodeIntegracoes as $codIntegracao) {
+                $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
+                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity);
+            }
+        }
+
         $s1 = new Zend_Session_Namespace('sessionAction');
         $s1->setExpirationSeconds(900, 'action');
         $s1->action = $params;

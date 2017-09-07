@@ -70,9 +70,7 @@ Exemplo exportação/importação banco
 exp wms_adm/wms_adm@orams-cluster.simonet.com.br/Pwms file=wms_simonetti.dmp owner=wms_adm compress=Y grants=Y indexes=Y triggers=Y constraints=Y
 
 exp wms_develop_linhares/wms_adm@xe file=develop_linhares.dmp owner=wms_develop_linhares compress=Y grants=Y indexes=Y triggers=Y constraints=Y
-imp wms_develop/wms_adm@xe file=develop_linhares.dmp full =Y grants=Y indexes=
-]{? .;ç//
-nts=Y
+imp wms_develop/wms_adm@xe file=develop_linhares.dmp full =Y grants=Y indexes=Y
 
 exp wms_adm/wms_adm@localhost/xe file=dmp.dmp owner=wms_adm compress=Y grants=Y indexes=Y triggers=Y constraints=Y
 imp system/qwer0987@localhost/xe file=D:/dmp.dmp fromuser=wms_adm touser=wms_cdc ignore=y

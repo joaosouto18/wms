@@ -675,11 +675,24 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         
                         //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMETRO SEJA 'S'
                         if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S' && $recebimentoErp == true) {
-                            $serviceIntegracao = new \Wms\Service\Integracao($this->getEntityManager(), array('acao' => null,
+                            $serviceIntegracao = new \Wms\Service\Integracao($this->getEntityManager(), array
+                            (
+                                'acao' => null,
                                 'options' => null,
                                 'tipoExecucao' => 'E'
                             ));
                             $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
+                        }
+
+                        //ATUALIZA O ESTOQUE DO ERP CASO O PARAMETRO SEJA 'S'
+                        if ($this->getSystemParameterValue('LIBERA_ESTOQUE_ERP') == 'S') {
+                            $serviceIntegracao = new \Wms\Service\Integracao($this->getEntityManager(), array
+                            (
+                                'acao' => null,
+                                'options' => null,
+                                'tipoExecucao' => 'E'
+                            ));
+                            $serviceIntegracao->atualizaEstoqueErp($idRecebimento, $this->getSystemParameterValue('WINTHOR_CODFILIAL_INTEGRACAO'));
                         }
 
                         //recebimento para o status finalizado
@@ -1162,6 +1175,20 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
     public function buscarNotaAction() {
         $filtroNotaFiscalForm = new FiltroNotaFiscalForm;
         $this->view->form = $filtroNotaFiscalForm;
+
+        //INTEGRAR NOTAS FISCAIS NO MOMENTO Q ENTRAR NA TELA DE GERAR RECEBIMENTO
+        $codAcaoIntegracao = $this->getSystemParameterValue('COD_INTEGRACAO_NOTAS_FISCAIS');
+
+        if (isset($codAcaoIntegracao) && !empty($codAcaoIntegracao)) {
+            $explodeIntegracoes = explode(',',$codAcaoIntegracao);
+
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
+            $acaoIntegracaoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            foreach ($explodeIntegracoes as $codIntegracao) {
+                $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
+                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity);
+            }
+        }
 
         $params = $filtroNotaFiscalForm->getParams();
         if (!$params) {

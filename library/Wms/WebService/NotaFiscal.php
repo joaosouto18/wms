@@ -189,7 +189,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $clsItensNf->idProduto = $item['COD_PRODUTO'];
             $clsItensNf->quantidade = $item['QTD_ITEM'];
             $clsItensNf->grade = $item['DSC_GRADE'];
-//            $clsItensNf->peso = $item['PESO_ITEM'];
             $clsItensNf->quantidadeConferida = $item['QTD_CONFERIDA'];
             $clsItensNf->quantidadeAvaria = $item['QTD_AVARIA'];
             $clsItensNf->motivoDivergencia = $item['DSC_MOTIVO_DIVER_RECEB'];
