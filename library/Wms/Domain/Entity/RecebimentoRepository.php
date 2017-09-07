@@ -434,6 +434,17 @@ class RecebimentoRepository extends EntityRepository {
             $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
         }
 
+        //ATUALIZA O ESTOQUE DO ERP CASO O PARAMETRO SEJA 'S'
+        if ($this->getSystemParameterValue('LIBERA_ESTOQUE_ERP') == 'S') {
+            $serviceIntegracao = new Integracao($em, array
+            (
+                'acao' => null,
+                'options' => null,
+                'tipoExecucao' => 'E'
+            ));
+            $serviceIntegracao->atualizaEstoqueErp($idRecebimento, $this->getSystemParameterValue('WINTHOR_CODFILIAL_INTEGRACAO'));
+        }
+
         if ($result['exception'] == null) {
             return array('message' => 'Recebimento Nº. ' . $idRecebimento . ' finalizado com sucesso.',
                 'exception' => null,
