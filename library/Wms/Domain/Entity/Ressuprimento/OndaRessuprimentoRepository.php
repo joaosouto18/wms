@@ -871,9 +871,12 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     PA.QTD_VENDIDA,
                     ESTOQUE_PULMAO.QTD AS QTD_ESTOQUE,
                     ESTOQUE_PULMAO.DSC_DEPOSITO_ENDERECO,
+                    ESTOQUE_PULMAO.DTH_VALIDADE AS VALIDADE_ESTOQUE,
+                    ESTOQUE_PULMAO.COD_DEPOSITO_ENDERECO AS END_PULMAO,
                     PRODUTO_EMBALAGEM.CAPACIDADE_PICKING,
+                    PRODUTO_EMBALAGEM.DSC_DEPOSITO_ENDERECO AS DSC_PICKING,
                     PRODUTO_EMBALAGEM.COD_DEPOSITO_ENDERECO AS END_PICKING,
-                    PRODUTO_EMBALAGEM.COD_PRODUTO_EMBALAGEM,
+                    PRODUTO_EMBALAGEM.DSC_PRODUTO,
                     (PA.QTD_VENDIDA * 100) / PRODUTO_EMBALAGEM.CAPACIDADE_PICKING AS PERCENTUAL
                 FROM 
                     PEDIDO_ACUMULADO PA 
@@ -882,7 +885,9 @@ class OndaRessuprimentoRepository extends EntityRepository {
                                         E.COD_PRODUTO, 
                                         SUM(E.QTD) as QTD,
                                         E.DSC_GRADE,
-                                        DE2.DSC_DEPOSITO_ENDERECO
+                                        DE2.DSC_DEPOSITO_ENDERECO,
+                                        DE2.COD_DEPOSITO_ENDERECO,
+                                        E.DTH_VALIDADE
                                     FROM 
                                         ESTOQUE E
                                         INNER JOIN DEPOSITO_ENDERECO DE2 ON (E.COD_DEPOSITO_ENDERECO = DE2.COD_DEPOSITO_ENDERECO)
@@ -891,7 +896,9 @@ class OndaRessuprimentoRepository extends EntityRepository {
                                     GROUP BY 
                                         E.COD_PRODUTO, 
                                         E.DSC_GRADE,
-                                        DE2.DSC_DEPOSITO_ENDERECO
+                                        DE2.DSC_DEPOSITO_ENDERECO,
+                                        DE2.COD_DEPOSITO_ENDERECO,
+                                        E.DTH_VALIDADE
                                     ORDER BY 
                                         NVL(E.DTH_VALIDADE, E.DTH_PRIMEIRA_MOVIMENTACAO), E.COD_PRODUTO
                                 ) ESTOQUE_PULMAO
@@ -903,11 +910,13 @@ class OndaRessuprimentoRepository extends EntityRepository {
                                     PE.DSC_GRADE,
                                     PE.CAPACIDADE_PICKING,
                                     PE.COD_DEPOSITO_ENDERECO,
+                                    DE.DSC_DEPOSITO_ENDERECO,
                                     MIN(PE.QTD_EMBALAGEM),
-                                    PE.COD_PRODUTO_EMBALAGEM
+                                    P.DSC_PRODUTO
                                 FROM 
                                     PRODUTO_EMBALAGEM PE
                                     INNER JOIN DEPOSITO_ENDERECO DE ON (PE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO)
+                                    INNER JOIN PRODUTO P ON (P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE)
                                 WHERE
                                     1 = 1
                                     $SQLWhere
@@ -916,20 +925,73 @@ class OndaRessuprimentoRepository extends EntityRepository {
                                     PE.DSC_GRADE,
                                     PE.CAPACIDADE_PICKING,
                                     PE.COD_DEPOSITO_ENDERECO,
-                                    PE.COD_PRODUTO_EMBALAGEM
+                                    DE.DSC_DEPOSITO_ENDERECO,
+                                    P.DSC_PRODUTO
                             ) PRODUTO_EMBALAGEM
                 ON PRODUTO_EMBALAGEM.COD_PRODUTO = PA.COD_PRODUTO
                 AND PRODUTO_EMBALAGEM.DSC_GRADE = PA.DSC_GRADE
                 INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PRODUTO_EMBALAGEM.COD_DEPOSITO_ENDERECO
-            WHERE 1 = 1 $where
+            WHERE 1 = 1 $where --AND PA.COD_PRODUTO = 47899
             ORDER 
                 BY PA.COD_PRODUTO";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $eliminaLinha = $qtdOnda = $restante = $qtdRessuprir = 0;
+        $arrayQtd = $arrayPulmao = array();
+        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         foreach ($result as $key => $value) {
-            $result[$key]['EMBALAGENS'] = json_encode(array($value['DSC_DEPOSITO_ENDERECO'] => $value['COD_PRODUTO_EMBALAGEM']));
+            $embalagensEn = $embalagemRepo->findOneBy(array('codProduto' => $value['COD_PRODUTO'], 'grade' => $value['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'ASC'));
+            $result[$key]['EMBALAGENS'] = json_encode(array($value['DSC_DEPOSITO_ENDERECO'] => array($embalagensEn->getId())));
+            $result[$key]['PERCENTUAL'] = number_format($result[$key]['PERCENTUAL'], 2, '.', '');
+            if (isset($value['VALIDADE_ESTOQUE'])) {
+                $result[$key]['VALIDADE_ESTOQUE'] = date("d/m/Y", strtotime($value['VALIDADE_ESTOQUE']));
+            }
+            $result[$key]['PERCENTUAL'] = number_format($result[$key]['PERCENTUAL'], 2, '.', '');
+            $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], null, $value['END_PULMAO'], "S");
+            $qtdEstoque = $value['QTD_ESTOQUE'] + $reservaSaidaPicking;
+            $qtdVendida = $value['QTD_VENDIDA'];
+            if ($value['QTD_VENDIDA'] > $value['CAPACIDADE_PICKING']) {
+                $qtdVendida = $value['CAPACIDADE_PICKING'];
+            }
+
+            if ($eliminaLinha !== $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE']) {
+                $eliminaLinha = 0;
+                if ($qtdVendida > $value['CAPACIDADE_PICKING']) {
+                    $qtdVendida = $value['CAPACIDADE_PICKING'];
+                }
+                $saldoEstoque = $qtdEstoque;
+                if ($restante != 0) {
+                    $qtdVendida = $restante;
+                }
+                if ($qtdVendida <= $saldoEstoque) {
+                    $qtdOnda = $qtdVendida;
+                    $eliminaLinha = $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'];
+                } else {
+                    $restante = $qtdVendida - $saldoEstoque;
+                    $qtdOnda = $saldoEstoque;
+                    unset($result[$key]);
+                }
+                $qtdRessuprir += $qtdOnda;
+                $arrayPulmao[] = $value['DSC_DEPOSITO_ENDERECO'];
+                $arrayQtd[$value['DSC_DEPOSITO_ENDERECO']] = $qtdOnda;
+                if ($eliminaLinha !== 0) {
+                    $result[$key]['TOTAL_ONDA'] = $qtdRessuprir;
+                    $result[$key]['SALDO_PICKING'] = $value['CAPACIDADE_PICKING'] - $value['QTD_VENDIDA'];
+                    $result[$key]['QTD_ONDA'] = json_encode($arrayQtd);
+                    $result[$key]['PULMAO'] = implode(' <br /> ', $arrayPulmao);
+                    $result[$key]['PULMOES'] = json_encode($arrayPulmao);
+                    $arrayQtd = $arrayPulmao = array();
+                    $restante = $qtdRessuprir = 0;
+                }
+            } else {
+                $restante = 0;
+                $qtdOnda = $arrayQtd = $arrayPulmao = array();
+                unset($result[$key]);
+            }
         }
-            var_dump($result);
+        return $result;
     }
 
     private function calculaRessuprimentoPreventivoByPicking($picking, $repositorios) {
@@ -1021,7 +1083,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 break;
             }
         }
-        var_dump($osGeradas);
         return $osGeradas;
     }
 

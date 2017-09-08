@@ -17,19 +17,6 @@ echo $this->form;
             <span> - <b>Completar Picking:</b> Abastece a quantidade suficiente para completar o picking.\n\
             <br /> - <b>Apenas Pulmão Completo:</b> Efetiva o abastecimento apenas se a quantidade no endereço de pulmão couber totalmente no picking.</span></a>');
 
-        $("#buscar").click(function () {
-            $.ajax({
-                url: URL_MODULO + '/ressuprimento-preventivo/list-ajax/',
-                type: 'post',
-                dataType: 'html',
-                data: $('form').serialize(),
-                success: function (data) {
-                    $('#estoque').html(data);
-
-                }
-            });
-            return false;
-        });
         $(".completar-picking").click(function () {
             $.ajax({
                 url: URL_MODULO + '/pedido-acumulado/picking-ajax/',
@@ -46,26 +33,20 @@ echo $this->form;
                                 var produto = $(this).parent().parent().find('#produto').val();
                                 var grade = $(this).parent().parent().find('#grade').val();
                                 var embalagens = $(this).parent().parent().find('#embalagens').val();
-                                var volumes = $(this).parent().parent().find('#volumes').val();
-                                var saldo = $(this).parent().parent().find('#saldo').val();
-                                var capacidade = $(this).parent().parent().find('#capacidade').val();
-                                var pontoReposicao = $(this).parent().parent().find('#capacidade').val();
-                                var ocupacao = $(this).parent().parent().find('#ocupacao').val();
                                 var validadeEstoque = $(this).parent().parent().find('#validadeEstoque').val();
                                 var qtdOnda = $(this).parent().parent().find('#qtdOnda').val();
                                 var picking = $(this).parent().parent().find('#picking').val();
                                 var pulmao = $(this).parent().parent().find('#pulmao').val();
                                 var tipo = $(this).parent().parent().find('#tipo').val();
 
-                                dados[count] = {produto: produto, grade: grade, embalagens: embalagens, volumes: volumes,
-                                    saldo: saldo, capacidade: capacidade, pontoReposicao: pontoReposicao, ocupacao: ocupacao,
+                                dados[count] = {produto: produto, grade: grade, embalagens: embalagens,
                                     idPicking: picking, qtdOnda: qtdOnda, validadeEstoque: validadeEstoque, pulmao: pulmao, tipo: tipo};
                                 count++;
                             }
                         });
                         if (count > 0) {
                             $.ajax({
-                                url: URL_MODULO + '/ressuprimento-preventivo/confirmar-acao-ajax/',
+                                url: URL_MODULO + '/pedido-acumulado/confirmar-acao-ajax/',
                                 type: 'post',
                                 dataType: 'json',
                                 data: {dados: JSON.stringify(dados)},

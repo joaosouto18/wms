@@ -54,7 +54,7 @@ class PedidoAcumulado extends Form {
                 ))
                 ->addElement('text', 'ocupacao', array(
                     'size' => 3,
-                    'label' => 'Ocupação Máxima de Picking %',
+                    'label' => 'Percentual de Vendas',
                     'alt' => 'enderecoPredio',
                     'class' => 'ctrSize required',
                 ))
