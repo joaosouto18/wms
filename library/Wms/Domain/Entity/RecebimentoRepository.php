@@ -296,7 +296,7 @@ class RecebimentoRepository extends EntityRepository {
      *  )
      * @param int $idConferente
      */
-    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null, $numPeso = null) {
+    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $embalagem, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null, $numPeso = null) {
         $em = $this->_em;
         $ordemServicoRepo = $em->getRepository('wms:OrdemServico');
         $vQtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
@@ -327,16 +327,24 @@ class RecebimentoRepository extends EntityRepository {
             foreach ($grades as $grade => $qtdConferida) {
                 $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
-                $params['COD_PRODUTO'] = $idProduto;
-                $params['DSC_GRADE'] = $grade;
-
-
                 if (isset($numPeso[$idProduto][$grade]) && !empty($numPeso[$idProduto][$grade]))
                     $numPeso = (float) str_replace(',', '.', $numPeso[$idProduto][$grade]);
 
+                $qtdNF = (float) $qtdNFs[$idProduto][$grade];
+                $qtdConferida = (float) $qtdConferida;
+                $qtdAvaria = (float) $qtdAvarias[$idProduto][$grade];
+
+                if (isset($dataValidade[$idProduto][$grade]) && !empty($dataValidade[$idProduto][$grade])) {
+                    $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
+                    $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
+                    $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
+                } else {
+                    $dataValidade['dataValidade'] = null;
+                }
+
+                $idEmbalagem = null;
                 if (isset($unMedida) && !empty($unMedida)) {
                     $quantidade = 1;
-                    $idEmbalagem = null;
                     if (isset($unMedida[$idProduto][$grade])) {
                         $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
                         $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($unMedida[$idProduto][$grade]);
@@ -344,53 +352,20 @@ class RecebimentoRepository extends EntityRepository {
                         $idEmbalagem = $unMedida[$idProduto][$grade];
                     }
 
-                    if (isset($dataValidade[$idProduto][$grade]) && !empty($dataValidade[$idProduto][$grade])) {
-                        $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
-                        $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
-                        $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
-                    } else {
-                        $dataValidade['dataValidade'] = null;
-                    }
+                    $qtdConferida = $qtdConferida * $quantidade;
 
-                    $qtdNF = (float) $qtdNFs[$idProduto][$grade];
-                    $qtdConferida = (float) $qtdConferida;
-                    $qtdAvaria = (float) $qtdAvarias[$idProduto][$grade];
+                } elseif (isset($embalagem) && !empty($embalagem)) {
+                    $idEmbalagem = $embalagem[$idProduto][$grade];
+                }
 
-                    $qtdConferidaCalculada = $qtdConferida * $quantidade;
+                $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
+                $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
+                if ($qtdDivergencia != 0) {
+                    $divergencia = true;
+                }
 
-                    $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
-                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferidaCalculada, $qtdAvaria, $divergenciaPesoVariavel);
-                    if ($qtdDivergencia != 0) {
-                        $divergencia = true;
-                    }
-
-                    if ($gravaRecebimentoVolumeEmbalagem == true) {
-                        $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, $idEmbalagem, $dataValidade, $numPeso);
-                    }
-                } else {
-
-                    $qtdNF = (float) $qtdNFs[$idProduto][$grade];
-                    $qtdConferida = (float) $qtdConferida;
-                    $qtdAvaria = (float) $qtdAvarias[$idProduto][$grade];
-
-                    if (isset($dataValidade[$idProduto][$grade]) && !empty($dataValidade[$idProduto][$grade])) {
-                        $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
-                        $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
-                        $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
-                    } else {
-                        $dataValidade['dataValidade'] = null;
-                    }
-
-
-                    $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
-                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
-                    if ($qtdDivergencia != 0) {
-                        $divergencia = true;
-                    }
-
-                    if ($gravaRecebimentoVolumeEmbalagem == true) {
-                        $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, null, $dataValidade, $numPeso);
-                    }
+                if ($gravaRecebimentoVolumeEmbalagem == true) {
+                    $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, $idEmbalagem, $dataValidade, $numPeso);
                 }
             }
         }
