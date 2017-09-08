@@ -322,6 +322,7 @@ class RecebimentoRepository extends EntityRepository {
                 'concluido' => false);
 
         $divergencia = false;
+        $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $qtdConferida) {
@@ -346,16 +347,16 @@ class RecebimentoRepository extends EntityRepository {
                 if (isset($unMedida) && !empty($unMedida)) {
                     $quantidade = 1;
                     if (isset($unMedida[$idProduto][$grade])) {
-                        $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
-                        $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($unMedida[$idProduto][$grade]);
-                        $quantidade = $produtoEmbalagemEntity->getQuantidade();
                         $idEmbalagem = $unMedida[$idProduto][$grade];
+                        $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
+                        $quantidade = $produtoEmbalagemEntity->getQuantidade();
                     }
-
                     $qtdConferida = $qtdConferida * $quantidade;
-
                 } elseif (isset($embalagem) && !empty($embalagem)) {
                     $idEmbalagem = $embalagem[$idProduto][$grade];
+                    $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
+                    $quantidade = $produtoEmbalagemEntity->getQuantidade();
+                    $qtdConferida = $qtdConferida * $quantidade;
                 }
 
                 $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
