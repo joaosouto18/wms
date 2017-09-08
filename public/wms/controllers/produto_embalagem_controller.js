@@ -84,7 +84,8 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
          */
         '#btn-salvar-embalagem click': function(el, ev) {
 
-            var valores = $('#fieldset-embalagem').formParams(false).embalagem;
+            var fieldEmbalagem = $('#fieldset-embalagem');
+            var valores = fieldEmbalagem.formParams(false).embalagem;
             var id = $("#fieldset-embalagem #embalagem-id").val();
             var este = this;
 
@@ -105,13 +106,18 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             if (!result)
                 return result;
 
+            if (fieldEmbalagem.find(".invalid").length > 0) {
+                este.dialogAlert("Os campos em vermelho são obrigatórios");
+                return false
+            }
+
             if(!this.verificarEmbalagemRecebimento(id, valores)) {
                 return false;
             }
 
-            if (este.verificarCodigoBarras()) {
-                if (este.verificarEndereco()) {
-                    este.salvarDadosEmbalagem();
+            if (este.verificarCodigoBarras(valores)) {
+                if (este.verificarEndereco(valores)) {
+                    este.salvarDadosEmbalagem(valores);
                 } else {
                     $('#embalagem-endereco').focus();
                 }
@@ -123,25 +129,24 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
         },
 
-        salvarDadosEmbalagem:function() {
-            var id = $("#fieldset-embalagem #embalagem-id").val();
-            var valores = $('#fieldset-embalagem').formParams(false).embalagem;
+        salvarDadosEmbalagem:function(valores) {
+            var id = valores.id;
             valores.lblIsPadrao = $('#fieldset-embalagem #embalagem-isPadrao option:selected').text();
             valores.lblCBInterno = $('#fieldset-embalagem #embalagem-CBInterno option:selected').text();
             valores.lblImprimirCB = $('#fieldset-embalagem #embalagem-imprimirCB option:selected').text();
             valores.lblEmbalado = $('#fieldset-embalagem #embalagem-embalado option:selected').text();
 
-            if(valores.acao == 'incluir') {
+            if(valores.acao === 'incluir') {
                 valores.dataInativacao = 'EMB. ATIVA';
             } else {
                 valores.dataInativacao = $('#fieldset-embalagem #embalagem-dataInativacao').val();
-                if (valores.dataInativacao != 'EMB. ATIVA') {
+                if (valores.dataInativacao !== 'EMB. ATIVA') {
                     valores.ativarDesativar = ' checked ';
                 }
             }
 
-           if (id != '') {
-                valores.acao = id.indexOf('-new') == -1 ? 'alterar' : 'incluir';
+           if (id !== '') {
+                valores.acao = id.indexOf('-new') === -1 ? 'alterar' : 'incluir';
 
                 this.show(new Wms.Models.ProdutoEmbalagem(valores));
             } else {
@@ -212,14 +217,14 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             $('#embalagem-acao').val('alterar');
             // carrega dados
             $('#fieldset-embalagem #embalagem-id').val(produto_embalagem.id);
-            $('#fieldset-embalagem #embalagem-descricao').val(produto_embalagem.descricao);
-            $('#fieldset-embalagem #embalagem-quantidade').val(produto_embalagem.quantidade);
+            $('#fieldset-embalagem #embalagem-descricao').val(produto_embalagem.descricao).removeClass("invalid");
+            $('#fieldset-embalagem #embalagem-quantidade').val(produto_embalagem.quantidade).removeClass("invalid");
             $('#fieldset-embalagem #embalagem-isPadrao').val(produto_embalagem.isPadrao);
             $('#fieldset-embalagem #embalagem-CBInterno').val(produto_embalagem.CBInterno);
             $('#fieldset-embalagem #embalagem-imprimirCB').val(produto_embalagem.imprimirCB);
-            $('#fieldset-embalagem #embalagem-codigoBarras').val(produto_embalagem.codigoBarras);
+            $('#fieldset-embalagem #embalagem-codigoBarras').val(produto_embalagem.codigoBarras).removeClass("invalid");
             $('#fieldset-embalagem #embalagem-codigoBarrasAntigo').val(produto_embalagem.codigoBarras);
-            $('#fieldset-embalagem #embalagem-endereco').val(produto_embalagem.endereco);
+            $('#fieldset-embalagem #embalagem-endereco').val(produto_embalagem.endereco).removeClass("invalid");
             $('#fieldset-embalagem #embalagem-enderecoAntigo').val(produto_embalagem.endereco);
             $('#fieldset-embalagem #embalagem-embalado').val(produto_embalagem.embalado);
             $('#fieldset-embalagem #embalagem-capacidadePicking').val(produto_embalagem.capacidadePicking);
@@ -497,7 +502,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 //multiplicacao para transformar itens em inteiro para nao ter erro de divisao causado pela linguagem
                 qtdItemEmbalagemRecebimento = qtdItemEmbalagemRecebimento * 100;
                 qtdItensEmbalagem = qtdItensEmbalagem * 100;
-                if ( ((qtdItemEmbalagemRecebimento) % (qtdItensEmbalagem)) != 0 ) {
+                if ( ((qtdItemEmbalagemRecebimento) % (qtdItensEmbalagem)) !== 0 ) {
                     this.dialogAlert('Quantidade de itens da embalagem de expedição deve ser multipla da quantidade de itens da embalagem de recebimento.');
                     return false;
                 }
@@ -580,12 +585,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
         /**
          * Verifica se ja existe o codigo de barras informado.
          */
-        verificarCodigoBarras: function(){
-            var acao = $('#embalagem-acao').val();
-            var codigoBarras = $('#embalagem-codigoBarras');
-            var codigoBarrasAntigo = $('#embalagem-codigoBarrasAntigo').val();
+        verificarCodigoBarras: function(valores) {
+            var codigoBarras = valores.codigoBarras;
+            var codigoBarrasAntigo = valores.codigoBarrasAntigo;
             var codigosBarras = $('.codigoBarras');
-            var cbInterno = $('#embalagem-CBInterno').val();
+            var cbInterno = valores.imprimirCB;
             var este = this;
 
             if ((codigoBarras.val() === "" && cbInterno === "S") || codigoBarras.val() === codigoBarrasAntigo){
@@ -596,7 +600,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             codigosBarras.each(function(){
                 if ( this.value === codigoBarras.val() ){
                     este.dialogAlert("Este código de barras já foi cadastrado neste produto.");
-                    codigoBarras.focus();
                     return false;
                 }
             });
@@ -622,10 +625,10 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
         /**
          * Verifica se existe o endereco informado.
          */
-        verificarEndereco: function(){
-            var acao = $('#embalagem-acao').val();
-            var endereco = $('#embalagem-endereco').val();
-            var enderecoAntigo = $('#embalagem-enderecoAntigo').val();
+        verificarEndereco: function(valores){
+
+            var endereco = valores.endereco;
+            var enderecoAntigo = valores.enderecoAntigo;
             var este = this;
 
             if (endereco !== enderecoAntigo && endereco !== "") {

@@ -3,27 +3,29 @@
 namespace Wms\Domain\Entity\Enderecamento;
 
 use Doctrine\ORM\EntityRepository,
-    Core\Util\Produto as ProdutoUtil;
-use Wms\Util\Endereco;
+    Core\Util\Produto as ProdutoUtil,
+    Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity,
+    Wms\Util\Endereco as EnderecoUtil;
 
-class EstoqueRepository extends EntityRepository {
+class EstoqueRepository extends EntityRepository
+{
     /*
-      $params = array();
-      $params['produto'];      - obrigatorio, entidade de produto - wms:Produto
-      $params['endereco'];     - obrigatorio, entidade de produto - wms:Deposito\Endereco
-      $params['qtd'];          - obrigatorio, quantidade a movimentar
-      $params['volume'];       - entidade do volume a movimentar - wms:Produto\Volume
-      $params['embalagem'];    - entidade da embalagem a movimentar - wms:Produto\Embalagem
-      $params['tipo']           - tipo de movimentação ('S'=> Sistema, 'M'=> Manual, 'I' => Inventario, 'RC' => Ressuprimento Corretivo
-      'RP' => 'Ressuprimento Preventivo, 'E' => Expedicao )
-      $params['observacoes'];  - observações
-      $params['unitizador'];   - entidade do unitizador a movimentar - wms:Armazenagem\Unitizador
-      $params['os'];           - entidade de OS relacionada a movimentação - wms:OrdemServico
-      $params['uma'];          - id da U.M.A
-      $params['usuario'];      - entidade de usuario - wms:Usuario
+     $params = array();
+     $params['produto'];      - obrigatorio, entidade de produto - wms:Produto
+     $params['endereco'];     - obrigatorio, entidade de produto - wms:Deposito\Endereco
+     $params['qtd'];          - obrigatorio, quantidade a movimentar
+     $params['volume'];       - entidade do volume a movimentar - wms:Produto\Volume
+     $params['embalagem'];    - entidade da embalagem a movimentar - wms:Produto\Embalagem
+     $params['tipo']           - tipo de movimentação ('S'=> Sistema, 'M'=> Manual, 'I' => Inventario, 'RC' => Ressuprimento Corretivo
+                               'RP' => 'Ressuprimento Preventivo, 'E' => Expedicao )
+     $params['observacoes'];  - observações
+     $params['unitizador'];   - entidade do unitizador a movimentar - wms:Armazenagem\Unitizador
+     $params['os'];           - entidade de OS relacionada a movimentação - wms:OrdemServico
+     $params['uma'];          - id da U.M.A
+     $params['usuario'];      - entidade de usuario - wms:Usuario
      */
-
-    public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false, $dataValidade = null) {
+    public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false, $dataValidade = null)
+    {
         $em = $this->getEntityManager();
 
         if (!isset($params['produto']) or is_null($params['produto']))
@@ -53,10 +55,10 @@ class EstoqueRepository extends EntityRepository {
                         INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                         WHERE RE.IND_ATENDIDA = 'N' AND RE.TIPO_RESERVA = 'S'
                         AND REP.COD_PRODUTO = '$codProduto' AND REP.DSC_GRADE = '$grade' AND RE.COD_DEPOSITO_ENDERECO = $endereco";
-            if (isset($volumeEn) && !empty($volumeEn)) {
-                $idVolume = $volumeEn->getId();
-                $dql .= " AND REP.COD_PRODUTO_VOLUME = $idVolume";
-            }
+                        if (isset($volumeEn) && !empty($volumeEn)) {
+                            $idVolume = $volumeEn->getId();
+                            $dql .= " AND REP.COD_PRODUTO_VOLUME = $idVolume";
+                        }
             $dql .= " GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO, NVL(COD_PRODUTO_VOLUME,0)";
 
             $resultado = $this->getEntityManager()->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -67,7 +69,7 @@ class EstoqueRepository extends EntityRepository {
         }
 
         $usuarioEn = null;
-        if (isset($params['usuario']) and ! is_null($params['usuario'])) {
+        if (isset($params['usuario']) and !is_null($params['usuario'])) {
             $usuarioEn = $params['usuario'];
         } else {
             $auth = \Zend_Auth::getInstance();
@@ -77,39 +79,39 @@ class EstoqueRepository extends EntityRepository {
         }
 
         $volumeEn = null;
-        if (isset($params['volume']) and ! is_null($params['volume']) && !empty($params['volume'])) {
+        if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])){
             $volumeEn = $params['volume'];
-            $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn));
+            $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume'=>$volumeEn));
         } else {
             $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
         }
 
         $embalagemEn = null;
-        if (isset($params['embalagem']) and ! is_null($params['embalagem']) && !empty($params['embalagem'])) {
+        if (isset($params['embalagem']) and !is_null($params['embalagem']) && !empty($params['embalagem'])) {
             $embalagemEn = $params['embalagem'];
         }
 
         $tipo = "S";
-        if (isset($params['tipo']) and ! is_null($params['tipo'])) {
+        if (isset($params['tipo']) and !is_null($params['tipo'])){
             $tipo = $params['tipo'];
         }
         $observacoes = "";
-        if (isset($params['observacoes']) and ! is_null($params['observacoes'])) {
+        if (isset($params['observacoes']) and !is_null($params['observacoes'])) {
             $observacoes = $params['observacoes'];
         }
 
         $unitizadorEn = null;
-        if (isset($params['unitizador']) and ( !is_null($params['unitizador']))) {
+        if (isset($params['unitizador']) and (!is_null($params['unitizador']))) {
             $unitizadorEn = $params['unitizador'];
         }
 
         $osEn = null;
-        if (isset($params['os']) and ! is_null($params['os'])) {
+        if (isset($params['os']) and !is_null($params['os'])) {
             $osEn = $params['os'];
         }
 
         $idUma = null;
-        if (isset($params['uma']) and ! is_null($params['uma'])) {
+        if (isset($params['uma']) and !is_null($params['uma'])) {
             $idUma = $params['uma'];
         }
 
@@ -212,9 +214,11 @@ class EstoqueRepository extends EntityRepository {
         return true;
     }
 
-    public function movimentaEstoqueInventario($params) {
+    public function movimentaEstoqueInventario($params)
+    {
         return $this->movimentaEstoque(
-                        $params['codProduto'], $params['grade'], $params['codProdutoVolume'], $params['codProdutoEmbalagem'], $params['idEndereco'], $params['qtd'], $params['idPessoa'], $params['observacoes'], $params['tipo'], $params['idOs']);
+            $params['codProduto'], $params['grade'], $params['codProdutoVolume'], $params['codProdutoEmbalagem'], $params['idEndereco'], $params['qtd'], $params['idPessoa'] , $params['observacoes'],
+            $params['tipo'], $params['idOs']);
     }
 
     /*
@@ -225,9 +229,9 @@ class EstoqueRepository extends EntityRepository {
      *                 'idEnderecoIgnorar' => 321 (Optionoal)
      *                 'idCaracteristigaIgnorar' => 37 (Optional)
      */
-
-    public function getEstoqueByParams($params) {
-
+    public function getEstoqueByParams ( $params)
+    {
+        $endPicking = EnderecoEntity::ENDERECO_PICKING;
         $Sql = " SELECT
                     ESTQ.COD_DEPOSITO_ENDERECO,
                     DE.DSC_DEPOSITO_ENDERECO, 
@@ -239,7 +243,9 @@ class EstoqueRepository extends EntityRepository {
                     ESTQ.DSC_GRADE, 
                     ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
                     NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO,
-                    TO_CHAR(ESTQ.DTH_VALIDADE,'DD/MM/YYYY') as DTH_VALIDADE
+                    TO_CHAR(ESTQ.DTH_VALIDADE,'DD/MM/YYYY') as DTH_VALIDADE,
+                    CASE WHEN (DE.COD_CARACTERISTICA_ENDERECO = 37) THEN 1
+                         ELSE 2 END AS PRIORIDADE_PICKING
                    FROM ESTOQUE ESTQ
                    LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, SUM(REP.QTD_RESERVADA) QTD_RESERVA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
                                 FROM RESERVA_ESTOQUE RE
@@ -254,7 +260,7 @@ class EstoqueRepository extends EntityRepository {
                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
                   WHERE ((ESTQ.QTD + NVL(RS.QTD_RESERVA,0)) >0)";
 
-        $SqlOrder = " ORDER BY ESTQ.DTH_VALIDADE, DT_MOVIMENTACAO , ESTQ.QTD";
+        $SqlOrder = " ORDER BY TO_DATE(DT_MOVIMENTACAO), PRIORIDADE_PICKING, ESTQ.QTD";
         $SqlWhere = "";
 
         if ((isset($params['idProduto'])) && ($params['idProduto'] != null)) {
@@ -322,7 +328,8 @@ class EstoqueRepository extends EntityRepository {
         return $result;
     }
 
-    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null, $showPicking = true, $orderBy = null, $returnQuery = false) {
+    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null, $showPicking = true, $orderBy = null, $returnQuery = false)
+    {
         $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
                        DE.COD_DEPOSITO_ENDERECO as COD_ENDERECO,
                        C.DSC_CARACTERISTICA_ENDERECO as TIPO,
@@ -396,7 +403,7 @@ class EstoqueRepository extends EntityRepository {
         }
 
         if ($showPicking == false) {
-            $caracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+            $caracteristicaPicking = EnderecoEntity::ENDERECO_PICKING;
             $SQLWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO <> " . $caracteristicaPicking;
         }
         if (isset($parametros['rua']) && !empty($parametros['rua'])) {
@@ -451,8 +458,9 @@ class EstoqueRepository extends EntityRepository {
         return $result;
     }
 
-    public function getEstoquePulmao($parametros) {
-        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+    public function getEstoquePulmao($parametros)
+    {
+        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
 
         $and = "";
         $cond = "";
@@ -585,8 +593,9 @@ class EstoqueRepository extends EntityRepository {
         return $groupByProduto;
     }
 
-    public function getEstoqueByRua($inicioRua, $fimRua, $grandeza = null, $exibePicking = 1, $exibePulmao = 1) {
-        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+    public function getEstoqueByRua($inicioRua, $fimRua, $grandeza = null,$exibePicking = 1, $exibePulmao = 1)
+    {
+        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
 
         $query = $this->getEntityManager()->createQueryBuilder()
                 ->select("e.descricao, estq.codProduto, estq.grade, p.descricao nomeProduto")
@@ -621,8 +630,9 @@ class EstoqueRepository extends EntityRepository {
         return $query->getQuery()->getResult();
     }
 
-    public function saldo($params) {
-        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+    public function saldo($params)
+    {
+        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
                 ->select('estq.codProduto, estq.grade, ls.descricao, sum(estq.qtd) qtdestoque, NVL(depv.descricao, depe.descricao) enderecoPicking')
                 ->from("wms:Enderecamento\Estoque", 'estq')
@@ -662,8 +672,9 @@ class EstoqueRepository extends EntityRepository {
         return $query->getQuery()->getResult();
     }
 
-    public function getExisteEnderecoPulmao($codProduto, $grade) {
-        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+    public function getExisteEnderecoPulmao ($codProduto, $grade)
+    {
+        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
                 ->select('estq.codProduto, estq.grade')
                 ->from("wms:Enderecamento\Estoque", 'estq')
@@ -681,7 +692,8 @@ class EstoqueRepository extends EntityRepository {
         }
     }
 
-    public function imprimeMovimentacaoAvulsa($codProduto, $grade, $quantidade, $endereco) {
+    public function imprimeMovimentacaoAvulsa($codProduto, $grade, $quantidade, $endereco)
+    {
         $dadosPalete = array();
         $dadosRelatorio = array();
         $paletes = array();
@@ -701,7 +713,8 @@ class EstoqueRepository extends EntityRepository {
         $Uma->imprimir($dadosRelatorio, $this->getSystemParameterValue("MODELO_RELATORIOS"));
     }
 
-    public function getEstoqueConsolidado($params) {
+    public function getEstoqueConsolidado($params)
+    {
         $SQL = 'SELECT LS.DSC_LINHA_SEPARACAO as "Linha Separacao",
                        E.COD_PRODUTO as "Codigo",
                        E.DSC_GRADE as "Grade",
@@ -746,7 +759,7 @@ class EstoqueRepository extends EntityRepository {
 
     public function getSituacaoEstoque($params) {
 
-        $tipoPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
 
         $query = $this->getEntityManager()->createQueryBuilder()
                 ->select("de.descricao,
@@ -832,7 +845,7 @@ class EstoqueRepository extends EntityRepository {
 
         $em = $this->getEntityManager();
 
-        $endereco = Endereco::formatar($dscEndereco, null, null, $nivel);
+        $endereco = EnderecoUtil::formatar($dscEndereco, null, null, $nivel);
 
         $dql = $em->createQueryBuilder()
                 ->select('dep.rua, dep.nivel, dep.predio, dep.apartamento, e.uma, e.id, dep.id as idEndereco')
@@ -843,7 +856,8 @@ class EstoqueRepository extends EntityRepository {
         return $dql->getQuery()->getArrayResult();
     }
 
-    public function getProdutoByUMA($codigoBarrasUMA, $idEndereco) {
+    public function getProdutoByUMA($codigoBarrasUMA, $idEndereco)
+    {
         $em = $this->getEntityManager();
         $sql = "SELECT p0_.DSC_PRODUTO AS descricao, p0_.COD_PRODUTO AS id, p0_.DSC_GRADE AS grade, NVL(e1_.QTD / NVL(p2_.QTD_EMBALAGEM, 1),'1') AS qtd, d3_.DSC_DEPOSITO_ENDERECO AS endereco, NVL(p2_.DSC_EMBALAGEM,'VOLUMES') as DSC_EMBALAGEM, NVL(p2_.COD_PRODUTO_EMBALAGEM,0) as COD_PRODUTO_EMBALAGEM, p2_.QTD_EMBALAGEM
                 FROM ESTOQUE e1_
@@ -856,7 +870,8 @@ class EstoqueRepository extends EntityRepository {
         return $em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getProdutoByCodBarrasAndEstoque($etiquetaProduto, $idEndereco) {
+    public function getProdutoByCodBarrasAndEstoque($etiquetaProduto, $idEndereco)
+    {
         $em = $this->getEntityManager();
         $dql = "SELECT p0_.DSC_PRODUTO AS descricao, p0_.COD_PRODUTO AS id, p0_.DSC_GRADE AS grade, e1_.QTD / NVL(p3_.QTD_EMBALAGEM,1) AS qtd, NVL(p3_.DSC_EMBALAGEM,'') DSC_EMBALAGEM, p3_.COD_PRODUTO_EMBALAGEM, d2_.DSC_DEPOSITO_ENDERECO AS ENDERECO
                     FROM ESTOQUE e1_ INNER JOIN PRODUTO p0_ ON e1_.COD_PRODUTO = p0_.COD_PRODUTO AND e1_.DSC_GRADE = p0_.DSC_GRADE
@@ -888,9 +903,7 @@ class EstoqueRepository extends EntityRepository {
                            AND COD_PRODUTO_VOLUME = '$volume'";
                 $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
                 $qtd = $result[0]['QTD'];
-                if (is_null($menorQtd))
-                    $menorQtd = $qtd;
-                if ($qtd < $menorQtd) {
+                if (is_null($menorQtd) || $qtd < $menorQtd) {
                     $menorQtd = $qtd;
                 }
             }
@@ -993,7 +1006,8 @@ class EstoqueRepository extends EntityRepository {
         return $array;
     }
 
-    public function getProdutosVolumesDivergentes() {
+    public function getProdutosVolumesDivergentes()
+    {
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('e.codProduto as Codigo, e.grade as Grade, p.descricao as Produto', 'v.descricao as Volume, SUM(e.qtd) as Qtd')
                 ->from("wms:Enderecamento\Estoque", "e")
@@ -1041,7 +1055,8 @@ class EstoqueRepository extends EntityRepository {
         return $produtosDivergentes;
     }
 
-    public function getEstoqueByProduto($produtos = null) {
+    public function getEstoqueByProduto($produtos = null)
+    {
         $SQL = "SELECT P.COD_PRODUTO,
                        P.DSC_GRADE,
                        NVL(E.QTD_ESTOQUE,0) as QTD_ESTOQUE_TOTAL,

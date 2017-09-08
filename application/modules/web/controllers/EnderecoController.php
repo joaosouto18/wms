@@ -487,13 +487,19 @@ class Web_EnderecoController extends Crud
         $endereco = $this->_getParam('endereco');
 
         $enderecoFormatado = \Wms\Util\Endereco::formatar($endereco);
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $depositoEnderecoRepo */
         $depositoEnderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
         $depositoEnderecoEn = $depositoEnderecoRepo->findOneBy(array('descricao' => $enderecoFormatado));
+        /** @var \Wms\Domain\Entity\Produto $produto */
+        $produto = $depositoEnderecoRepo->getProdutoByEndereco($enderecoFormatado,true,true);
 
-        if (!empty($depositoEnderecoEn))
-            $arrayMensagens = array( 'status' => 'success' );
-        else
-            $arrayMensagens = array( 'status' => 'error', "msg" => "Endereço $endereco não encontrado!" );
+        $arrayMensagens = array( 'status' => 'success' );
+        if (empty($depositoEnderecoEn)) {
+            $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco não encontrado!");
+        }
+        elseif (!empty($produto)) {
+            $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco já está vinculado ao produto: ". $produto[0]['codProduto'] ."<br />". $produto[0]['descricao'] ."<br />Grade: ". $produto[0]['grade']);
+        }
 
         $this->_helper->json($arrayMensagens);
     }
