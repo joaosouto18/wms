@@ -592,13 +592,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             var cbInterno = valores.imprimirCB;
             var este = this;
 
-            if ((codigoBarras.val() === "" && cbInterno === "S") || codigoBarras.val() === codigoBarrasAntigo){
+            if ((codigoBarras === "" && cbInterno === "S") || codigoBarras === codigoBarrasAntigo){
                 return true;
             }
 
             // verifico se existe embalagens neste produto com o mesmo codigo de barras
             codigosBarras.each(function(){
-                if ( this.value === codigoBarras.val() ){
+                if ( this.value === codigoBarras ){
                     este.dialogAlert("Este código de barras já foi cadastrado neste produto.");
                     return false;
                 }
@@ -610,7 +610,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 type: 'post',
                 async: false,
                 dataType: 'json',
-                data: { codigoBarras: codigoBarras.val() }
+                data: { codigoBarras: codigoBarras }
             }).success(function (data) {
                 if (data.status === "success") {
                     result = true;
