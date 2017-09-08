@@ -390,11 +390,18 @@ class PaleteRepository extends EntityRepository {
         if (($dtFinalRecebimento2 != NULL) && ($dtFinalRecebimento2 != "")) {
             $SQL .= " AND R.DTH_FINAL_RECEB <= TO_DATE('$dtFinalRecebimento2 23:59','DD-MM-YYYY HH24:MI')";
         }
-        if ($ordem == 1) {
-            $SQL .= "   ORDER BY P.UMA, S.DSC_SIGLA";
-        } else {
-            $SQL .= "   ORDER BY PROD.VOLUMES, P.UMA, S.DSC_SIGLA";
+        switch ($ordem) {
+            case 1:
+                $SQL .= "   ORDER BY P.UMA, S.DSC_SIGLA";
+                break;
+            case 2:
+                $SQL .= "   ORDER BY DE.DSC_DEPOSITO_ENDERECO, P.UMA, S.DSC_SIGLA";
+                break;
+            default:
+                $SQL .= "   ORDER BY PROD.VOLUMES, P.UMA, S.DSC_SIGLA";
+                break;
         }
+        
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (!empty($result) && is_array($result)) {
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");

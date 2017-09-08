@@ -34,6 +34,10 @@ class ProdutividadeDetalhada extends Grid
                     'index' => 'IDENTIDADE',
                 ));
                 $this->addColumn(array(
+                    'label' => 'Cod. Expedição',
+                    'index' => 'COD_EXPEDICAO',
+                ));
+                $this->addColumn(array(
                     'label' => 'Peso',
                     'index' => 'QTD_PESO',
                     'render' => 'N2'

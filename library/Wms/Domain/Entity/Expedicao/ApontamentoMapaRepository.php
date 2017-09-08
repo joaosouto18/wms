@@ -275,6 +275,7 @@ class ApontamentoMapaRepository extends EntityRepository {
         $sql = " SELECT 
                     PE.NOM_PESSOA, 
                     IDENTIDADE,
+                    MP.COD_EXPEDICAO,
                     DSC_ATIVIDADE,
                     TO_CHAR(MIN(DTH_INICIO), 'DD/MM/YYYY HH24:MI:SS') DTH_INICIO,
                     TO_CHAR(MAX(DTH_FIM), 'DD/MM/YYYY HH24:MI:SS') DTH_FIM,
@@ -286,12 +287,14 @@ class ApontamentoMapaRepository extends EntityRepository {
                     1 AS QTD_CARGA
                     FROM PRODUTIVIDADE_DETALHE PD
                   INNER JOIN PESSOA PE ON PE.COD_PESSOA = PD.COD_PESSOA
+                  LEFT JOIN MAPA_SEPARACAO MP ON (PD.IDENTIDADE = MP.COD_MAPA_SEPARACAO AND (PD.DSC_ATIVIDADE = 'CONF. SEPARACAO' OR PD.DSC_ATIVIDADE = 'SEPARACAO'))
                   WHERE 1 = 1
                   $andWhere 
                   GROUP BY 
                   PE.NOM_PESSOA, 
                     IDENTIDADE,
                     DSC_ATIVIDADE,
+                    MP.COD_EXPEDICAO,
                     PD.COD_PESSOA
                     ORDER BY $order";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -310,6 +313,14 @@ class ApontamentoMapaRepository extends EntityRepository {
                 $result[$key]['TEMPO_GASTO'] = 'Conferência em Andamento!';
                 continue;
             }
+            if($value['DSC_ATIVIDADE'] == 'CARREGAMENTO'){
+                $result[$key]['COD_EXPEDICAO'] = $value['IDENTIDADE'];
+            }
+            
+            if($value['COD_EXPEDICAO'] == null){
+                $result[$key]['COD_EXPEDICAO'] = ' - ';
+            }
+            
             $result[$key]['QTD_VOLUMES'] = number_format($value['QTD_VOLUMES'], 2, ',', '.');
             $result[$key]['QTD_PESO'] = number_format($value['QTD_PESO'], 2, ',', '');
             $result[$key]['QTD_CUBAGEM'] = number_format($value['QTD_CUBAGEM'], 2, ',', '.');
@@ -355,6 +366,7 @@ class ApontamentoMapaRepository extends EntityRepository {
         $result[$qtdRows]['DTH_FIM'] = '-';
         $result[$qtdRows]['TEMPO_GASTO'] = $tempoTotal;
         $result[$qtdRows]['DSC_ATIVIDADE'] = '-';
+        $result[$qtdRows]['COD_EXPEDICAO'] = '-';
 
         return $result;
     }

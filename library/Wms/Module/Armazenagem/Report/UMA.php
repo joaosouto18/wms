@@ -17,8 +17,8 @@ class UMA extends Pdf
         $this->Cell(15,  5, utf8_decode("U.M.A.")   ,1, 0);
         $this->Cell(16, 5, utf8_decode("Prod.") ,1, 0);
         $this->Cell(66, 5, utf8_decode("Descrição Produto") ,1, 0);
-        $this->Cell(80, 5, utf8_decode("Embalagem/Volume") ,1, 0);
-        $this->Cell(12, 5, utf8_decode("Qtde.") ,1, 0);
+        $this->Cell(72, 5, utf8_decode("Embalagem/Volume") ,1, 0);
+        $this->Cell(20, 5, utf8_decode("Qtde.") ,1, 0);
         $this->Cell(30, 5, "Status" ,1, 0);
         $this->Cell(21, 5, "Data Validade" ,1, 0);
         $this->Cell(18,  5, utf8_decode("End. Uma") ,1, 1);
@@ -76,11 +76,11 @@ class UMA extends Pdf
             $this->Cell(16, 5, $uma['COD_PRODUTO'], 1, 0);
             $this->Cell(66, 5, substr($uma['DSC_PRODUTO'],0,30), 1, 0);
             if (strlen($uma['VOLUMES']) >= 70) {
-                $this->Cell(80, 5, substr($uma['VOLUMES'],0,63) . "...", 1, 0);
+                $this->Cell(72, 5, substr($uma['VOLUMES'],0,55) . "...", 1, 0);
             } else {
-                $this->Cell(80, 5, $uma['VOLUMES'], 1, 0);
+                $this->Cell(72, 5, $uma['VOLUMES'], 1, 0);
             }
-            $this->Cell(12, 5, $uma['QTD'], 1, 0);
+            $this->Cell(20, 5, $uma['QTD'], 1, 0);
             $this->Cell(30, 5, $uma['STATUS'], 1, 0);
             $this->Cell(21, 5, date('d/m/Y', strtotime($uma['DTH_VALIDADE'])), 1, 0);
             $this->Cell(18, 5, $uma['ENDERECO'], 1, 1);
