@@ -1586,7 +1586,7 @@ class RecebimentoRepository extends EntityRepository {
                  AND P.COD_PRODUTO = V.COD_PRODUTO
                     AND P.DSC_GRADE = V.DSC_GRADE
            LEFT JOIN BOX B ON R.COD_BOX = B.COD_BOX
-           LEFT JOIN (SELECT COD_RECEBIMENTO, LISTAGG(FORNECEDOR,',') WITHIN GROUP (ORDER BY COD_RECEBIMENTO) as FORNECEDOR
+           LEFT JOIN (SELECT COD_RECEBIMENTO, MAX(FORNECEDOR) as FORNECEDOR
                         FROM (SELECT DISTINCT
                                      NF.COD_RECEBIMENTO,
                                      NVL(PJ.NOM_FANTASIA, PES.NOM_PESSOA) as FORNECEDOR
