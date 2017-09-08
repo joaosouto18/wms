@@ -1545,10 +1545,18 @@ class RecebimentoRepository extends EntityRepository {
 
         $sqlRecebimentosConferencia = '';
         if (count($dados) > 0) {
+            $ids = "";
+            foreach ($dados as $idRecebimento) {
+                if (end($dados) == $idRecebimento) {
+                    $ids .= $idRecebimento['COD_RECEBIMENTO'];
+                } else {
+                    $ids .= "$idRecebimento[COD_RECEBIMENTO],";
+                }
+            }
             $sqlRecebimentosConferencia = "
                 SELECT V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE, SUM(V.QTD) as QTD
                   FROM V_QTD_RECEBIMENTO V
-                 WHERE V.COD_RECEBIMENTO IN (" . implode(",",$dados) . ")
+                 WHERE V.COD_RECEBIMENTO IN ($ids)
                  GROUP BY V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE
                  UNION
             ";
