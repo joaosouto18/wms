@@ -200,6 +200,7 @@
                                <td width=""><span><?php echo $resumo['qtdConferidas']; ?></span></td>
                                <td width=""><span><?php echo $resumo['qtdRecebidoTransbordo']; ?></span></td>
                                <td width=""><span><?php echo $resumo['qtdExpedidoTransbordo']; ?></span></td>
+                               <td width=""><span><b><?php echo $resumo['situacao']; ?></b></span></td>
                                <td width=""><span>
                                        <a class="btn reader dialogAjax"
                                                      href="<?php echo "/expedicao/pendencia/index/id/". $this->idExpedicao . "/placa/" . $resumo['placaCarga'] . "/transbordo/" . $resumo['pontoTransbordo'] . "/carga/" . $resumo['codCargaExterno'] ?>/tipo/conferida">Conferidas</a></span>
