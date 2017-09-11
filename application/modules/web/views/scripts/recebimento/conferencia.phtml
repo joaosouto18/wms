@@ -35,8 +35,12 @@
                         <td><?php echo $produto['codigo'] . ' - ' . $produto['descricao'] ?></td>
                         <td ><?php echo $produto['grade'] ?></td>
                         <td>
-
-                            <?php
+                        <?php if (isset($produto['embalagens'])) {
+                            echo $this->formSelect("embalagem[{$produto['codigo']}][{$produto['grade']}]", null, array(
+                                'class' => "Embalagem",
+                                'title' => "[{$produto['codigo']}][{$produto['grade']}]",
+                            ), $produto['embalagens']);
+                        } else {
                             $medida = null;
                             foreach ($this->unMedida as $key => $medidas) {
                                 if ($medidas['produto'] == $produto['codigo'] && $medidas['grade'] == $produto['grade']) {
@@ -54,6 +58,7 @@
                             } else {
                                 echo '-';
                             }
+                        }
                             ?>
                         </td>
                         <td>

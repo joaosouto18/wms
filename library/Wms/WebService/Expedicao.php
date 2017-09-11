@@ -409,16 +409,16 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 if ($qtdCorte == $qtdEtiquetas) {
                     $ExpedicaoEn = $ExpedicaoRepository->find($idExpedicao);
                     $ExpedicaoRepository->alteraStatus($ExpedicaoEn, Expedicao::STATUS_CANCELADO);
-                    $this->_em->flush();
                 }
             }
 
+            $this->_em->flush();
             $this->_em->commit();
 
         } catch (\Exception $e) {
             $this->_em->rollback();
             $logger->warn($e->getMessage());
-            throw new \Exception($e->getMessage(), null, $e);
+            throw $e;
         }
 
         return true;
