@@ -213,7 +213,7 @@ class PedidoRepository extends EntityRepository
             $this->cancelaPedido($idPedido);
 
         } catch (\Exception $e) {
-            echo $e->getMessage();
+            throw $e;
         }
 
     }
@@ -240,6 +240,12 @@ class PedidoRepository extends EntityRepository
         $this->_em->persist($EntPedido);
 
         if (count($countMapas) == 0) {
+            /** @var PedidoProdutoRepository $pedidoProdRepo */
+            $pedidoProdRepo = $this->_em->getRepository("wms:Expedicao\PedidoProduto");
+            $itens = $pedidoProdRepo->findBy(array("pedido" => $EntPedido));
+            foreach ($itens as $item) {
+                $this->_em->remove($item);
+            }
             $this->_em->remove($EntPedido);
         }
 
