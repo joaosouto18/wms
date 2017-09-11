@@ -223,14 +223,15 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
-     * @param itens $itens
+     * @param string $cnpjDestinatario CNPJ da filial dona da nota
+     * @param array  $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $tipoNota Identifica se é uma nota de Bonificação(B), Compra(C), etc.
      * @param string $observacao Observações da Nota Fiscal
      * @return boolean
      * @throws Exception
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $tipoNota, $observacao)
+    public function salvar($idFornecedor, $numero, $serie, $cnpjDestinatario, $dataEmissao, $placa, $itens, $bonificacao, $tipoNota, $observacao)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -286,6 +287,28 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     }
 
                     $itensNf[] = $itemWs;
+                }
+                $itens = $itensNf;
+            } else {
+                $itensNf = array();
+                foreach ($itens as $itemNf) {
+                    if (is_object($itemNf)) {
+                        $itemWs['idProduto'] = trim($itemNf->idProduto);
+                        $itemWs['grade'] = (empty($itemNf->grade) || $itemNf->grade === "?") ? "UNICA" : trim($itemNf->grade);
+                        $itemWs['quantidade'] = str_replace(',', '.', trim($itemNf->quantidade));
+
+                        if (isset($itemNf->peso)) {
+                            if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0)) {
+                                $itemWs['peso'] = trim($itemNf->quantidade);
+                            } else {
+                                $itemWs['peso'] = trim(str_replace(',', '.', $itemNf->peso));
+                            }
+                        } else {
+                            $itemWs['peso'] = trim($itemNf->quantidade);
+                        }
+
+                        $itensNf[] = $itemWs;
+                    }
                 }
                 $itens = $itensNf;
             }
