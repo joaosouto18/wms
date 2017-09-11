@@ -352,7 +352,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         }
     }
 
-    public function saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios = null, $validade = null) {
+    public function saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios = null, $validade = null, $reservaEntrada = true) {
         /** @var \Wms\Domain\Entity\Util\SiglaRepository $siglaRepo */
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
@@ -435,7 +435,9 @@ class OndaRessuprimentoRepository extends EntityRepository {
             }
 
         //ADICIONA AS RESERVAS DE ESTOQUE
-        $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
+        if ($reservaEntrada == true) {
+            $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
+        }
         $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(), $produtosSaida, "S", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
     }
 
@@ -931,7 +933,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 ON PRODUTO_EMBALAGEM.COD_PRODUTO = PA.COD_PRODUTO
                 AND PRODUTO_EMBALAGEM.DSC_GRADE = PA.DSC_GRADE
                 INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PRODUTO_EMBALAGEM.COD_DEPOSITO_ENDERECO
-            WHERE 1 = 1 $where --AND PA.COD_PRODUTO = 47899
+            WHERE 1 = 1 $where --AND PA.COD_PRODUTO = 15504
             ORDER 
                 BY PA.COD_PRODUTO";
 
@@ -952,38 +954,49 @@ class OndaRessuprimentoRepository extends EntityRepository {
             $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], null, $value['END_PULMAO'], "S");
             $qtdEstoque = $value['QTD_ESTOQUE'] + $reservaSaidaPicking;
             $qtdVendida = $value['QTD_VENDIDA'];
+
             if ($value['QTD_VENDIDA'] > $value['CAPACIDADE_PICKING']) {
                 $qtdVendida = $value['CAPACIDADE_PICKING'];
             }
 
             if ($eliminaLinha !== $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE']) {
+
                 $eliminaLinha = 0;
+
+
                 if ($qtdVendida > $value['CAPACIDADE_PICKING']) {
                     $qtdVendida = $value['CAPACIDADE_PICKING'];
                 }
                 $saldoEstoque = $qtdEstoque;
-                if ($restante != 0) {
-                    $qtdVendida = $restante;
-                }
-                if ($qtdVendida <= $saldoEstoque) {
-                    $qtdOnda = $qtdVendida;
-                    $eliminaLinha = $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'];
+                if ($saldoEstoque > 0) {
+                    if ($restante != 0) {
+                        $qtdVendida = $restante;
+                    }
+                    if ($qtdVendida <= $saldoEstoque) {
+                        $qtdOnda = $qtdVendida;
+                        $qtdRessuprir += $qtdOnda;
+                        $eliminaLinha = $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'];
+                        $arrayQtd[$value['DSC_DEPOSITO_ENDERECO']] = $qtdOnda;
+                        $arrayPulmao[] = $value['DSC_DEPOSITO_ENDERECO'];
+                        $result[$key]['TOTAL_ONDA'] = $qtdRessuprir;
+                        $result[$key]['SALDO_PICKING'] = $value['CAPACIDADE_PICKING'] - $value['QTD_VENDIDA'];
+                        $result[$key]['QTD_ONDA'] = json_encode($arrayQtd);
+                        $result[$key]['PULMAO'] = implode(' <br /> ', $arrayPulmao);
+                        $result[$key]['PULMOES'] = json_encode($arrayPulmao);
+                        $arrayQtd = $arrayPulmao = array();
+                        $restante = $qtdRessuprir = 0;
+                    } else {
+                        $qtdOnda = $saldoEstoque;
+                        $arrayPulmao[] = $value['DSC_DEPOSITO_ENDERECO'];
+                        $arrayQtd[$value['DSC_DEPOSITO_ENDERECO']] = $qtdOnda;
+                        $restante = $qtdVendida - $saldoEstoque;
+                        unset($result[$key]);
+                        $qtdRessuprir += $qtdOnda;
+                    }
                 } else {
-                    $restante = $qtdVendida - $saldoEstoque;
-                    $qtdOnda = $saldoEstoque;
+                    $restante = 0;
+                    $qtdOnda = $arrayQtd = $arrayPulmao = array();
                     unset($result[$key]);
-                }
-                $qtdRessuprir += $qtdOnda;
-                $arrayPulmao[] = $value['DSC_DEPOSITO_ENDERECO'];
-                $arrayQtd[$value['DSC_DEPOSITO_ENDERECO']] = $qtdOnda;
-                if ($eliminaLinha !== 0) {
-                    $result[$key]['TOTAL_ONDA'] = $qtdRessuprir;
-                    $result[$key]['SALDO_PICKING'] = $value['CAPACIDADE_PICKING'] - $value['QTD_VENDIDA'];
-                    $result[$key]['QTD_ONDA'] = json_encode($arrayQtd);
-                    $result[$key]['PULMAO'] = implode(' <br /> ', $arrayPulmao);
-                    $result[$key]['PULMOES'] = json_encode($arrayPulmao);
-                    $arrayQtd = $arrayPulmao = array();
-                    $restante = $qtdRessuprir = 0;
                 }
             } else {
                 $restante = 0;

@@ -41,6 +41,7 @@ class Expedicao_PedidoAcumuladoController extends Action {
         $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
         $siglaRepo = $this->getEntityManager()->getRepository("wms:Util\Sigla");
         $reservaEstoqueOndaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueOnda");
+        $PedidoAcumulado = $this->em->getRepository('wms:Ressuprimento\PedidoAcumulado');
         $repositorios = array(
             'produtoRepo' => $produtoRepo,
             'embalagemRepo' => $embalagemRepo,
@@ -57,7 +58,6 @@ class Expedicao_PedidoAcumuladoController extends Action {
             'osRepo' => $ordemServicoRepo,
             'siglaRepo' => $siglaRepo
         );
-
         $dados = json_decode($this->_getParam('dados'));
         $OndaRessupRep = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
 
@@ -88,9 +88,16 @@ class Expedicao_PedidoAcumuladoController extends Action {
                     $volumes = $volumes->$pulmao;
                     $embalagens = null;
                 }
-                $OndaRessupRep->saveOs($produtoEn, $embalagens, $volumes[0], $qtdOnda->$pulmao, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque);
+                $OndaRessupRep->saveOs($produtoEn, $embalagens, $volumes[0], $qtdOnda->$pulmao, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque, false);
             }
         }
+        /* 
+         * $pedidoEn = $PedidoAcumulado->findBy(array());
+          foreach ($pedidoEn as $entity) {
+          $this->em->remove($entity);
+          } 
+         */
+
         $this->em->flush();
         $OndaRessupRep->sequenciaOndasOs();
         $this->_helper->json(array('success' => 'Onda Gerada'));
