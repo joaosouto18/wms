@@ -167,7 +167,7 @@ class Notafiscal_ImportarxmlController extends Crud
         if ( !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) || !empty($dados["NFe"]["infNFe"]['ide']['dhEmi']) ){
             $dEmi = !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) ? $dados["NFe"]["infNFe"]['ide']['dEmi'] : $dados["NFe"]["infNFe"]['ide']['dhEmi'];
             $dataEmissao=new Zend_Date($dEmi, 'dd-mm-yyyy', 'en');
-            $arrayRetorno['NotaFiscal']['DAT_EMISSAO']=$dataEmissao->get('dd/mm/YY');
+            $arrayRetorno['NotaFiscal']['DAT_EMISSAO']=$dataEmissao->get('dd/mm/YYYY');
         }
         else {
             $this->isValid=false;
@@ -218,7 +218,7 @@ class Notafiscal_ImportarxmlController extends Crud
         $arrayRetorno['NotaFiscal']['COD_NOTA_FISCAL']="SQ_NOTA_FISCAL_01.NEXTVAL";
 
 
-        $arrayRetorno['NotaFiscal']['DTH_ENTRADA']=date("d/m/y");
+        $arrayRetorno['NotaFiscal']['DTH_ENTRADA']=date("d/m/Y");
         $arrayRetorno['NotaFiscal']['IND_BONIFICACAO']="NULL";
         $arrayRetorno['NotaFiscal']['COD_FILIAL']="NULL";
 
