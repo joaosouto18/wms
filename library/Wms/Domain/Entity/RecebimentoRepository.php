@@ -296,7 +296,7 @@ class RecebimentoRepository extends EntityRepository {
      *  )
      * @param int $idConferente
      */
-    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null, $numPeso = null) {
+    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $embalagem, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null, $numPeso = null) {
         $em = $this->_em;
         $ordemServicoRepo = $em->getRepository('wms:OrdemServico');
         $vQtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
@@ -322,75 +322,51 @@ class RecebimentoRepository extends EntityRepository {
                 'concluido' => false);
 
         $divergencia = false;
+        $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $qtdConferida) {
                 $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
-                $params['COD_PRODUTO'] = $idProduto;
-                $params['DSC_GRADE'] = $grade;
-
-
                 if (isset($numPeso[$idProduto][$grade]) && !empty($numPeso[$idProduto][$grade]))
                     $numPeso = (float) str_replace(',', '.', $numPeso[$idProduto][$grade]);
 
+                $qtdNF = (float) $qtdNFs[$idProduto][$grade];
+                $qtdConferida = (float) $qtdConferida;
+                $qtdAvaria = (float) $qtdAvarias[$idProduto][$grade];
+
+                if (isset($dataValidade[$idProduto][$grade]) && !empty($dataValidade[$idProduto][$grade])) {
+                    $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
+                    $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
+                    $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
+                } else {
+                    $dataValidade['dataValidade'] = null;
+                }
+
+                $idEmbalagem = null;
                 if (isset($unMedida) && !empty($unMedida)) {
                     $quantidade = 1;
-                    $idEmbalagem = null;
                     if (isset($unMedida[$idProduto][$grade])) {
-                        $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
-                        $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($unMedida[$idProduto][$grade]);
-                        $quantidade = $produtoEmbalagemEntity->getQuantidade();
                         $idEmbalagem = $unMedida[$idProduto][$grade];
+                        $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
+                        $quantidade = $produtoEmbalagemEntity->getQuantidade();
                     }
+                    $qtdConferida = $qtdConferida * $quantidade;
+                } elseif (isset($embalagem) && !empty($embalagem)) {
+                    $idEmbalagem = $embalagem[$idProduto][$grade];
+                    $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
+                    $quantidade = $produtoEmbalagemEntity->getQuantidade();
+                    $qtdConferida = $qtdConferida * $quantidade;
+                }
 
-                    if (isset($dataValidade[$idProduto][$grade]) && !empty($dataValidade[$idProduto][$grade])) {
-                        $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
-                        $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
-                        $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
-                    } else {
-                        $dataValidade['dataValidade'] = null;
-                    }
+                $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
+                $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
+                if ($qtdDivergencia != 0) {
+                    $divergencia = true;
+                }
 
-                    $qtdNF = (float) $qtdNFs[$idProduto][$grade];
-                    $qtdConferida = (float) $qtdConferida;
-                    $qtdAvaria = (float) $qtdAvarias[$idProduto][$grade];
-
-                    $qtdConferidaCalculada = $qtdConferida * $quantidade;
-
-                    $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
-                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferidaCalculada, $qtdAvaria, $divergenciaPesoVariavel);
-                    if ($qtdDivergencia != 0) {
-                        $divergencia = true;
-                    }
-
-                    if ($gravaRecebimentoVolumeEmbalagem == true) {
-                        $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, $idEmbalagem, $dataValidade, $numPeso);
-                    }
-                } else {
-
-                    $qtdNF = (float) $qtdNFs[$idProduto][$grade];
-                    $qtdConferida = (float) $qtdConferida;
-                    $qtdAvaria = (float) $qtdAvarias[$idProduto][$grade];
-
-                    if (isset($dataValidade[$idProduto][$grade]) && !empty($dataValidade[$idProduto][$grade])) {
-                        $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade];
-                        $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
-                        $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
-                    } else {
-                        $dataValidade['dataValidade'] = null;
-                    }
-
-
-                    $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
-                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $qtdAvaria, $divergenciaPesoVariavel);
-                    if ($qtdDivergencia != 0) {
-                        $divergencia = true;
-                    }
-
-                    if ($gravaRecebimentoVolumeEmbalagem == true) {
-                        $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, null, $dataValidade, $numPeso);
-                    }
+                if ($gravaRecebimentoVolumeEmbalagem == true) {
+                    $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $idRecebimento, $idOrdemServico, $idEmbalagem, $dataValidade, $numPeso);
                 }
             }
         }
@@ -432,6 +408,17 @@ class RecebimentoRepository extends EntityRepository {
                 'tipoExecucao' => 'E'
             ));
             $serviceIntegracao->atualizaRecebimentoERP($idRecebimento);
+        }
+
+        //ATUALIZA O ESTOQUE DO ERP CASO O PARAMETRO SEJA 'S'
+        if ($this->getSystemParameterValue('LIBERA_ESTOQUE_ERP') == 'S') {
+            $serviceIntegracao = new Integracao($em, array
+            (
+                'acao' => null,
+                'options' => null,
+                'tipoExecucao' => 'E'
+            ));
+            $serviceIntegracao->atualizaEstoqueErp($idRecebimento, $this->getSystemParameterValue('WINTHOR_CODFILIAL_INTEGRACAO'));
         }
 
         if ($result['exception'] == null) {
@@ -1558,10 +1545,18 @@ class RecebimentoRepository extends EntityRepository {
 
         $sqlRecebimentosConferencia = '';
         if (count($dados) > 0) {
+            $ids = "";
+            foreach ($dados as $idRecebimento) {
+                if (end($dados) == $idRecebimento) {
+                    $ids .= $idRecebimento['COD_RECEBIMENTO'];
+                } else {
+                    $ids .= "$idRecebimento[COD_RECEBIMENTO],";
+                }
+            }
             $sqlRecebimentosConferencia = "
                 SELECT V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE, SUM(V.QTD) as QTD
                   FROM V_QTD_RECEBIMENTO V
-                 WHERE V.COD_RECEBIMENTO IN (" . implode(",",$dados) . ")
+                 WHERE V.COD_RECEBIMENTO IN ($ids)
                  GROUP BY V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE
                  UNION
             ";
@@ -1591,7 +1586,7 @@ class RecebimentoRepository extends EntityRepository {
                  AND P.COD_PRODUTO = V.COD_PRODUTO
                     AND P.DSC_GRADE = V.DSC_GRADE
            LEFT JOIN BOX B ON R.COD_BOX = B.COD_BOX
-           LEFT JOIN (SELECT COD_RECEBIMENTO, LISTAGG(FORNECEDOR,',') WITHIN GROUP (ORDER BY COD_RECEBIMENTO) as FORNECEDOR
+           LEFT JOIN (SELECT COD_RECEBIMENTO, MAX(FORNECEDOR) as FORNECEDOR
                         FROM (SELECT DISTINCT
                                      NF.COD_RECEBIMENTO,
                                      NVL(PJ.NOM_FANTASIA, PES.NOM_PESSOA) as FORNECEDOR
