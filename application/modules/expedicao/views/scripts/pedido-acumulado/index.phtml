@@ -12,10 +12,9 @@ echo $this->form;
     $(window).load(function () {
         $('#ruaFinal').parent().css('clear', 'both');
         $('#ocupacao').parent().css('text-align', 'center');
-        $('#tiporessuprimento').parent().find('label').append('<a href="#" class="info">\n\
+        $('#ocupacao').parent().find('label').append('<a href="#" class="info">\n\
             <img style="width: 20px; margin-top: -7px;" src="/img/question.png" alt="Home">\n\
-            <span> - <b>Completar Picking:</b> Abastece a quantidade suficiente para completar o picking.\n\
-            <br /> - <b>Apenas Pulmão Completo:</b> Efetiva o abastecimento apenas se a quantidade no endereço de pulmão couber totalmente no picking.</span></a>');
+            <span style="top: -95px !important;"> - Percuntal máximo de venda em relação a capacidade da gondola para o ítem</span></a>');
 
         $(".completar-picking").click(function () {
             $.ajax({
