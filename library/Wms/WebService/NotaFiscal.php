@@ -207,9 +207,17 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $clsNf->pesoTotal = $notaFiscalEntity->getPesoTotal();
         $clsNf->dataEmissao = $notaFiscalEntity->getDataEmissao()->format('d/m/Y');
         $clsNf->placa = $notaFiscalEntity->getPlaca();
-        $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
         $clsNf->dataEntrada = $dataEntrada;
         $clsNf->bonificacao = $notaFiscalEntity->getBonificacao();
+        /** @var \Wms\Domain\Entity\Sistema\Parametro $checkaEndereco */
+        $checkaEndereco = $em->getRepository("wms:Parametro")->findBy(array("constante" => "CONFIRMA_RECEBIMENTO_ENDERECADO"));
+        if (!empty($checkaEndereco) && $checkaEndereco->getValor() == "S"){
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+            $paleteRepo = $em->getRepository("wms:Enderecamento\Palete");
+            $result = $paleteRepo->getQtdProdutosByRecebimento(array("status" => \Wms\Domain\Entity\Enderecamento\Palete::STATUS_ENDERECADO))
+        } else {
+            $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
+        }
 
         return $clsNf;
     }
