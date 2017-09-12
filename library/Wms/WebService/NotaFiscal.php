@@ -224,7 +224,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
      * @param string $cnpjDestinatario CNPJ da filial dona da nota
-     * @param array  $itens
+     * @param itens $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $tipoNota Identifica se é uma nota de Bonificação(B), Compra(C), etc.
      * @param string $observacao Observações da Nota Fiscal
