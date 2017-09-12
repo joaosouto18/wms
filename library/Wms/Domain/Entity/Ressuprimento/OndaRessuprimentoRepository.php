@@ -429,15 +429,15 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $produtoArray['qtd'] = $qtdOnda;
                 $produtoArray['validade'] = $validade;
                 $produtosEntrada[] = $produtoArray;
-
                 $produtoArray['qtd'] = $qtdOnda * -1;
                 $produtosSaida[] = $produtoArray;
             }
 
         //ADICIONA AS RESERVAS DE ESTOQUE
-        if ($reservaEntrada == true) {
-            $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
+        if ($reservaEntrada == false) {
+            $produtosEntrada[0]['qtd'] = 0;
         }
+        $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
         $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(), $produtosSaida, "S", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
     }
 
@@ -902,7 +902,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                                         DE2.COD_DEPOSITO_ENDERECO,
                                         E.DTH_VALIDADE
                                     ORDER BY 
-                                        NVL(E.DTH_VALIDADE, E.DTH_PRIMEIRA_MOVIMENTACAO), E.COD_PRODUTO
+                                        NVL(E.DTH_VALIDADE, E.DTH_PRIMEIRA_MOVIMENTACAO), E.DTH_PRIMEIRA_MOVIMENTACAO
                                 ) ESTOQUE_PULMAO
                 ON ESTOQUE_PULMAO.COD_PRODUTO = PA.COD_PRODUTO
                     AND ESTOQUE_PULMAO.DSC_GRADE = PA.DSC_GRADE
@@ -933,24 +933,22 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 ON PRODUTO_EMBALAGEM.COD_PRODUTO = PA.COD_PRODUTO
                 AND PRODUTO_EMBALAGEM.DSC_GRADE = PA.DSC_GRADE
                 INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PRODUTO_EMBALAGEM.COD_DEPOSITO_ENDERECO
-            WHERE 1 = 1 $where --AND PA.COD_PRODUTO = 15504
+            WHERE 1 = 1 $where --AND PA.COD_PRODUTO = 30916
             ORDER 
                 BY PA.COD_PRODUTO";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
         $eliminaLinha = $qtdOnda = $restante = $qtdRessuprir = 0;
         $arrayQtd = $arrayPulmao = array();
         $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         foreach ($result as $key => $value) {
             $embalagensEn = $embalagemRepo->findOneBy(array('codProduto' => $value['COD_PRODUTO'], 'grade' => $value['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'ASC'));
-            $result[$key]['EMBALAGENS'] = json_encode(array($value['DSC_DEPOSITO_ENDERECO'] => array($embalagensEn->getId())));
-            $result[$key]['PERCENTUAL'] = number_format($result[$key]['PERCENTUAL'], 2, '.', '');
+            $result[$key]['EMBALAGENS'] = json_encode(array(0 => $embalagensEn->getId()));
             if (isset($value['VALIDADE_ESTOQUE'])) {
                 $result[$key]['VALIDADE_ESTOQUE'] = date("d/m/Y", strtotime($value['VALIDADE_ESTOQUE']));
             }
-            $result[$key]['PERCENTUAL'] = number_format($result[$key]['PERCENTUAL'], 2, '.', '');
+            $result[$key]['PERCENTUAL'] = number_format($result[$key]['PERCENTUAL'], 2, ',', '');
             $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], null, $value['END_PULMAO'], "S");
             $qtdEstoque = $value['QTD_ESTOQUE'] + $reservaSaidaPicking;
             $qtdVendida = $value['QTD_VENDIDA'];
@@ -960,10 +958,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
             }
 
             if ($eliminaLinha !== $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE']) {
-
+                $arrayQtd = $arrayPulmao = array();
                 $eliminaLinha = 0;
-
-
                 if ($qtdVendida > $value['CAPACIDADE_PICKING']) {
                     $qtdVendida = $value['CAPACIDADE_PICKING'];
                 }

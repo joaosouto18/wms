@@ -69,35 +69,23 @@ class Expedicao_PedidoAcumuladoController extends Action {
         $ondaEn->setUsuario($usuarioEn);
         $ondaEn->setTipoOnda("P");
         $this->getEntityManager()->persist($ondaEn);
-
+        $vetProduto = array();
         foreach ($dados as $value) {
             $produtoEn = $produtoRepo->findOneBy(array('id' => $value->produto, 'grade' => $value->grade));
+            $vetProduto[] = $value->produto;
+            $embalagens = json_decode($value->embalagens);
             foreach (json_decode($value->pulmao) as $pulmao) {
                 $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('descricao' => $pulmao));
                 $qtdOnda = json_decode($value->qtdOnda);
                 $validadeEstoque = $value->validadeEstoque;
                 $idPicking = $value->idPicking;
-                $embalagens = array();
-                $volumes = array();
-                if ($value->tipo == 1) {
-                    $embalagens = json_decode($value->embalagens);
-                    $embalagens = $embalagens->$pulmao;
-                    $volumes = null;
-                } else {
-                    $volumes = json_decode($value->volumes);
-                    $volumes = $volumes->$pulmao;
-                    $embalagens = null;
-                }
-                $OndaRessupRep->saveOs($produtoEn, $embalagens, $volumes[0], $qtdOnda->$pulmao, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque, false);
+                $OndaRessupRep->saveOs($produtoEn, $embalagens, null, $qtdOnda->$pulmao, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque, false);
             }
         }
-        /* 
-         * $pedidoEn = $PedidoAcumulado->findBy(array());
-          foreach ($pedidoEn as $entity) {
-          $this->em->remove($entity);
-          } 
-         */
-
+        $pedidoEn = $PedidoAcumulado->findBy(array('codProduto' => $vetProduto));
+        foreach ($pedidoEn as $entity) {
+            $this->em->remove($entity);
+        }
         $this->em->flush();
         $OndaRessupRep->sequenciaOndasOs();
         $this->_helper->json(array('success' => 'Onda Gerada'));
