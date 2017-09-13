@@ -21,7 +21,7 @@ class Expedicao_OsController extends Action
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $MapaSeparacaoRepo */
         $MapaSeparacaoRepo   = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-        $pedidoRepo = $this->getEntityManager('wms:Expedicao\Pedido');
+        $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
