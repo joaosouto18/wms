@@ -366,7 +366,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $itens Itens da Nota {Json}
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
-     * * @param string $pesoTotal Peso Total da Nota Fiscal
      * @return boolean
      */
     public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao){
