@@ -174,8 +174,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')->findOneBy(array(
             'fornecedor' => $fornecedorEntity->getId(),
             'numero' => $numero,
-            'serie' => $serie,
-            //'dataEmissao' => \DateTime::createFromFormat('d/m/Y', $dataEmissao)
+            'serie' => $serie
         ));
 
         if ($notaFiscalEntity == null)
