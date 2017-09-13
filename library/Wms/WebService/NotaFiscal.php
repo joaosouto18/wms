@@ -307,6 +307,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                         }
 
                         $itensNf[] = $itemWs;
+                    } else {
+                        $itemWs['idProduto'] = $itemNf['idProduto'];
+                        $itemWs['peso'] =  $itemNf['quantidade'];
+                        $itemWs['grade'] = $itemNf['grade'];
+                        $itemWs['quantidade']= $itemNf['quantidade'];
+                        $itensNf[] = $itemWs;
                     }
                 }
                 $itens = $itensNf;
