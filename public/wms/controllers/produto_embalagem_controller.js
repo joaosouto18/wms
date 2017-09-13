@@ -89,8 +89,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             var id = $("#fieldset-embalagem #embalagem-id").val();
             var este = this;
 
-
-
             if (fieldEmbalagem.find(".invalid").length > 0) {
                 este.dialogAlert("Os campos em vermelho são obrigatórios");
                 return false
@@ -228,14 +226,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             $('#fieldset-embalagem #embalagem-codigoBarrasAntigo').val(produto_embalagem.codigoBarras);
             $('#fieldset-embalagem #embalagem-descricao').val(produto_embalagem.descricao).removeClass("invalid");
             $('#fieldset-embalagem #embalagem-quantidade').val(produto_embalagem.quantidade).removeClass("invalid");
-console.log(permiteAlterarcao);
+
             if (!permiteAlterarcao) {
                 $('#fieldset-embalagem #embalagem-CBInterno').prop("disabled", true);
                 $('#fieldset-embalagem #embalagem-codigoBarras').prop("disabled", true);
                 $('#fieldset-embalagem #embalagem-codigoBarrasAntigo').prop("disabled", true);
                 $('#fieldset-embalagem #embalagem-descricao').prop("disabled", true);
                 $('#fieldset-embalagem #embalagem-quantidade').prop("disabled", true);
-            } else {
             }
 
             // checa opcoes de Codigo de Barras Interno
