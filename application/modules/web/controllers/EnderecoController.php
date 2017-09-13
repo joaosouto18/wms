@@ -484,7 +484,10 @@ class Web_EnderecoController extends Crud
      */
     public function verificarEnderecoAjaxAction()
     {
-        $endereco = $this->_getParam('endereco');
+        $valores = $this->_getParam('valores');
+        $endereco = $valores['endereco'];
+        $codProduto = $valores['idProduto'];
+        $grade = $valores['grade'];
 
         $enderecoFormatado = \Wms\Util\Endereco::formatar($endereco);
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $depositoEnderecoRepo */
@@ -497,10 +500,13 @@ class Web_EnderecoController extends Crud
         if (empty($depositoEnderecoEn)) {
             $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco não encontrado!");
         }
-        elseif ($depositoEnderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING) {
-            $produto = $depositoEnderecoRepo->getProdutoByEndereco($enderecoFormatado, true, true);
-            if (!empty($produto)) {
-                $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco já está vinculado ao produto: " . $produto[0]['codProduto'] . "<br />" . $produto[0]['descricao'] . "<br />Grade: " . $produto[0]['grade']);
+        elseif ($this->getSystemParameterValue('PERMITE_NPRODUTO_PICKING') == 'N') {
+            if ($depositoEnderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING) {
+                $produto = $depositoEnderecoRepo->getProdutoByEndereco($enderecoFormatado, true, true);
+
+                if (!empty($produto) && ($codProduto != $produto[0]['codProduto'] || $grade != $produto[0]['grade'])) {
+                    $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco já está vinculado ao produto: " . $produto[0]['codProduto'] . "<br />" . $produto[0]['descricao'] . "<br />Grade: " . $produto[0]['grade']);
+                }
             }
         }
 
