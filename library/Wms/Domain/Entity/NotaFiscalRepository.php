@@ -401,8 +401,7 @@ class NotaFiscalRepository extends EntityRepository {
             LEFT JOIN RECEBIMENTO_CONFERENCIA RC2 ON (RC2.COD_OS = OS.COD_OS AND RC2.COD_PRODUTO = NFI.COD_PRODUTO AND RC2.DSC_GRADE = NFI.DSC_GRADE AND RC2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) 
             WHERE NF.COD_FORNECEDOR = '$idFornecedor' 
                 AND NF.NUM_NOTA_FISCAL = '$numero' 
-                AND NF.COD_SERIE_NOTA_FISCAL = '$serie' 
-                AND TO_CHAR(NF.DAT_EMISSAO, 'DD/MM/YYYY') = '$dataEmissao'
+                AND NF.COD_SERIE_NOTA_FISCAL = '$serie'
                 AND NF.COD_STATUS = '$idStatus'
                 AND NOT EXISTS (SELECT 'X' 
                                 FROM RECEBIMENTO_CONFERENCIA RC2
