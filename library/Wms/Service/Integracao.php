@@ -646,7 +646,6 @@ class Integracao
                 }
             }
         }
-        var_dump($notasFiscais[0]['codFornecedor']);
 
         /** CADASTRA OS PRODUTOS DAS NOTAS FISCAIS */
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepo */
