@@ -640,8 +640,8 @@ class Integracao
         $produtos = implode(',',$idProdutos);
         if ($produtos == "") $produtos = "0";
         $options[] = $produtos;
-        $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
-        $em->flush();
+//        $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+//        $em->flush();
 
         if ($this->getTipoExecucao() == "L") {
             return $notasFiscais;
