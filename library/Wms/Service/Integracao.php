@@ -560,9 +560,19 @@ class Integracao
         $em = $this->_em;
         $importacaoService = new Importacao(true);
         $fornecedores = array();
+        $fornecedores['9999'] = array(
+            'idExterno' => '9999',
+            'cpf_cnpj' => '9999999999',
+            'nome' => 'DEVOLUCAO',
+            'inscricaoEstadual' => 'ISENTO',
+            'tipoPessoa' => 'F'
+        );
+
         $itens = array();
         $notasFiscais = array();
         $idProdutos = array();
+
+        $fornecedoresCPF = array();
 
         foreach ($dados as $key => $notaFiscal) {
 
@@ -572,21 +582,19 @@ class Integracao
             } else {
                 $tipoPessoa = 'J';
             }
+
             if ($tipoPessoa == 'F') {
-                $notaFiscal['COD_FORNECEDOR'] = '9999';
-                $cpf_cnpj = '9999999999';
-                $notaFiscal['NOM_FORNECEDOR'] = 'DEVOLUCAO';
-                $notaFiscal['INSCRICAO_ESTADUAL'] = 'ISENTO';
-                $tipoPessoa = 'J';
-            }
-            if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedores)) {
-                $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
-                    'idExterno' => $notaFiscal['COD_FORNECEDOR'],
-                    'cpf_cnpj' => $cpf_cnpj,
-                    'nome' => $notaFiscal['NOM_FORNECEDOR'],
-                    'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
-                    'tipoPessoa' => $tipoPessoa
-                );
+                $fornecedoresCPF[] = $notaFiscal['COD_FORNECEDOR'];
+            } else {
+                if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedores)) {
+                    $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
+                        'idExterno' => $notaFiscal['COD_FORNECEDOR'],
+                        'cpf_cnpj' => $cpf_cnpj,
+                        'nome' => $notaFiscal['NOM_FORNECEDOR'],
+                        'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
+                        'tipoPessoa' => $tipoPessoa
+                    );
+                }
             }
 
             /** OBTEM O CODIGO DO PRODUTO PARA CADASTRO */
@@ -628,6 +636,12 @@ class Integracao
                 unset($itens);
                 $itens = array();
 
+            }
+        }
+
+        foreach($notasFiscais as $key => $nf) {
+            if (array_key_exists($nf['codFornecedor'],$fornecedoresCPF)) {
+                $notasFiscais[$key]['codFornecedor'] = '9999';
             }
         }
 
