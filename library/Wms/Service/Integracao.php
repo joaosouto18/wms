@@ -560,6 +560,8 @@ class Integracao
         $em = $this->_em;
         $importacaoService = new Importacao(true);
         $fornecedores = array();
+        $fornecedoresCPF = array();
+
         $fornecedores['9999'] = array(
             'idExterno' => '9999',
             'cpf_cnpj' => '9999999999',
@@ -572,7 +574,6 @@ class Integracao
         $notasFiscais = array();
         $idProdutos = array();
 
-        $fornecedoresCPF = array();
 
         foreach ($dados as $key => $notaFiscal) {
 
@@ -638,15 +639,17 @@ class Integracao
 
             }
         }
-
         foreach($notasFiscais as $key => $nf) {
             var_dump($nf['codFornecedor']);
-            var_dump($fornecedoresCPF);
+
             if (array_key_exists($nf['codFornecedor'],$fornecedoresCPF)) {
 
                 $notasFiscais[$key]['codFornecedor'] = '9999';
+                var_dump("chegou aqui");
+
             }
         }
+        var_dump($notasFiscais[0]);
 
         /** CADASTRA OS PRODUTOS DAS NOTAS FISCAIS */
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepo */
