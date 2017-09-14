@@ -377,7 +377,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                              */
                             list: function (produto_embalagens) {
                                 produto_embalagens.forEach(function (valor, chave) {
-                                    delete produto_embalagens[chave].endereco;
+//                                    delete produto_embalagens[chave].endereco;
                                 });
                                 console.log(produto_embalagens);
                                 $('#div-lista-embalagens').html(this.view('init', {
