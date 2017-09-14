@@ -1130,7 +1130,7 @@ class Integracao
                     1 => $quantidade,
                     2 => 'null',
                     3 => $motivoBloqueio,
-                    4 => $quantidade
+                    4 => $item->quantidadeConferida
                 );
 
                 if (!is_null($options)) {
