@@ -340,7 +340,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         } catch (\Exception $e) {
             if ($iniciouBeginTransaction == true) {
-//                $this->_em->rollback();
+                $this->_em->rollback();
             }
             throw new \Exception($e->getMessage());
 
