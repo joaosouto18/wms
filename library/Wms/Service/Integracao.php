@@ -640,16 +640,13 @@ class Integracao
             }
         }
         foreach($notasFiscais as $key => $nf) {
-            var_dump($nf['codFornecedor']);
-
-            if (array_key_exists($nf['codFornecedor'],$fornecedoresCPF)) {
-
-                $notasFiscais[$key]['codFornecedor'] = '9999';
-                var_dump("chegou aqui");
-
+            foreach($fornecedoresCPF as $cpf) {
+                if ($cpf == $nf['codFornecedor']) {
+                    $notasFiscais[$key]['codFornecedor'] = '9999';
+                }
             }
         }
-        var_dump($notasFiscais[0]);
+        var_dump($notasFiscais[0]['codFornecedor']);
 
         /** CADASTRA OS PRODUTOS DAS NOTAS FISCAIS */
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepo */
