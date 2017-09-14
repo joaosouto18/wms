@@ -641,7 +641,7 @@ class Integracao
         if ($produtos == "") $produtos = "0";
         $options[] = $produtos;
         $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
-//        $em->flush();
+        $em->flush();
 
         if ($this->getTipoExecucao() == "L") {
             return $notasFiscais;
@@ -673,7 +673,7 @@ class Integracao
         foreach ($fornecedores as $fornecedor){
             $importacaoService->saveFornecedor($em,$fornecedor);
         }
-//        $em->flush();
+        $em->flush();
 
         $count = 0;
         foreach ($notasFiscais as $nf) {
@@ -688,7 +688,7 @@ class Integracao
             }
         }
 
-//        $em->flush();
+        $em->flush();
         return true;
     }
 
