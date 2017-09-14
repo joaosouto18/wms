@@ -1534,7 +1534,7 @@ class RecebimentoRepository extends EntityRepository {
     public function checkRecebimentoEnderecado($idRecebimento)
     {
         $sql = "SELECT DISTINCT
-                  R.COD_RECEBIMENTO
+                    R.COD_RECEBIMENTO
                 FROM RECEBIMENTO R
                 LEFT JOIN (SELECT V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE, SUM(V.QTD) as QTD
                           FROM V_QTD_RECEBIMENTO V
@@ -1551,7 +1551,7 @@ class RecebimentoRepository extends EntityRepository {
                             FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD
                                   FROM PALETE P
                                   LEFT JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
-                                  WHERE P.COD_RECEBIMENTO = $idRecebimento AND (P.COD_STATUS IN (536,535,534) OR P.IND_IMPRESSO = 'S'))
+                                  WHERE P.COD_RECEBIMENTO = $idRecebimento AND P.COD_STATUS = 536)
                             GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE
                           ) P ON P.COD_RECEBIMENTO = V.COD_RECEBIMENTO AND P.COD_PRODUTO = V.COD_PRODUTO AND P.DSC_GRADE = V.DSC_GRADE
                 WHERE (NVL(V.QTD,0) - NVL(P.QTD,0) >0) AND R.COD_STATUS NOT IN (458,460)";

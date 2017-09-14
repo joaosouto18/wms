@@ -210,19 +210,15 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $clsNf->placa = $notaFiscalEntity->getPlaca();
         $clsNf->dataEntrada = $dataEntrada;
         $clsNf->bonificacao = $notaFiscalEntity->getBonificacao();
-        /** @var \Wms\Domain\Entity\Sistema\Parametro $checkaEndereco */
-        $checkaEndereco = $em->getRepository("wms:Parametro")->findBy(array("constante" => "CONFIRMA_RECEBIMENTO_ENDERECADO"));
-        if (!empty($checkaEndereco) && $checkaEndereco->getValor() == "S"){
-            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
-            $recebimentoRepo = $em->getRepository("wms:Enderecamento\Palete");
-            $result = $recebimentoRepo->checkRecebimentoEnderecado($idRecebimento);
-            if (!empty($result)) {
-                $clsNf->enderecado = false;
-            } else {
-                $clsNf->enderecado = true;
-            }
+        $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
+
+        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+        $recebimentoRepo = $em->getRepository("wms:Recebimento");
+        $result = $recebimentoRepo->checkRecebimentoEnderecado($idRecebimento);
+        if (!empty($result)) {
+            $clsNf->enderecado = false;
         } else {
-            $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
+            $clsNf->enderecado = true;
         }
 
         return $clsNf;
