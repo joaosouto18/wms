@@ -706,7 +706,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                   DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100  
                   ORDER BY DE.DSC_DEPOSITO_ENDERECO";
         $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
-        $pickings = array();
+        $pickings = $vetEstoque = array();
         /*
          * TRATA RESULTADO DA QUERY
          */
@@ -793,7 +793,11 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     foreach ($vetExibePulmao as $value) {
                         $vetPulmoes[] = $value;
                     }
-                    $result[$key]['TOTAL_ONDA'] = implode('<br />', $vetEstoque);
+                    if(is_array($vetEstoque)){
+                        $result[$key]['TOTAL_ONDA'] = implode('<br />', $vetEstoque);
+                    }else{
+                        $result[$key]['TOTAL_ONDA'] = $vetEstoque;
+                    }
                     if (empty($vetVol)) {
                         if ($totalOnda > 0) {
                             $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($result[$key]['COD_PRODUTO'], $result[$key]['DSC_GRADE'], $totalOnda);

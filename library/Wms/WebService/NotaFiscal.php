@@ -174,8 +174,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')->findOneBy(array(
             'fornecedor' => $fornecedorEntity->getId(),
             'numero' => $numero,
-            'serie' => $serie,
-            //'dataEmissao' => \DateTime::createFromFormat('d/m/Y', $dataEmissao)
+            'serie' => $serie
         ));
 
         if ($notaFiscalEntity == null)
@@ -232,7 +231,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
      * @param string $cnpjDestinatario CNPJ da filial dona da nota
-     * @param array  $itens
+     * @param itens $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $tipoNota Identifica se é uma nota de Bonificação(B), Compra(C), etc.
      * @param string $observacao Observações da Nota Fiscal
@@ -316,6 +315,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                         }
 
                         $itensNf[] = $itemWs;
+                    } else {
+                        $itemWs['idProduto'] = $itemNf['idProduto'];
+                        $itemWs['peso'] =  $itemNf['quantidade'];
+                        $itemWs['grade'] = $itemNf['grade'];
+                        $itemWs['quantidade']= $itemNf['quantidade'];
+                        $itensNf[] = $itemWs;
                     }
                 }
                 $itens = $itensNf;
@@ -375,10 +380,9 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $itens Itens da Nota {Json}
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
-     * * @param string $pesoTotal Peso Total da Nota Fiscal
      * @return boolean
      */
-    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null){
+    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao){
         /*
         $jsonMockSample ='{"produtos": [';
         $jsonMockSample .='     {"idProduto": "999", ';
@@ -391,7 +395,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         try {
             $array = json_decode($itens, true);
             $arrayItens = $array['produtos'];
-            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$arrayItens,$bonificacao, $observacao, $pesoTotal);
+            return $this->salvar($idFornecedor,$numero,$serie,"",$dataEmissao,$placa,$arrayItens,$bonificacao, "", $observacao);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

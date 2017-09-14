@@ -89,23 +89,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             var id = $("#fieldset-embalagem #embalagem-id").val();
             var este = this;
 
-            var result = true;
-            $.ajax({
-                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
-                type: 'post',
-                async: false,
-                dataType: 'json',
-                success: function (data) {
-                    if (data === 'N') {
-                        este.dialogAlert("Pelos parâmetros definidos, não é permitido incluir/editar embalagens no WMS apenas no ERP");
-                        result = false;
-                    }
-                }
-            });
-
-            if (!result)
-                return result;
-
             if (fieldEmbalagem.find(".invalid").length > 0) {
                 este.dialogAlert("Os campos em vermelho são obrigatórios");
                 return false
@@ -180,6 +163,19 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                 }
             });
 
+            var permiteAlterarcao = true;
+            $.ajax({
+                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                type: 'post',
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data === 'N') {
+                        permiteAlterarcao = false;
+                    }
+                }
+            });
+
             ev.stopPropagation();
             var produto_embalagem = el.closest('.produto_embalagem').model();
 
@@ -217,19 +213,27 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
             $('#embalagem-acao').val('alterar');
             // carrega dados
             $('#fieldset-embalagem #embalagem-id').val(produto_embalagem.id);
-            $('#fieldset-embalagem #embalagem-descricao').val(produto_embalagem.descricao).removeClass("invalid");
-            $('#fieldset-embalagem #embalagem-quantidade').val(produto_embalagem.quantidade).removeClass("invalid");
             $('#fieldset-embalagem #embalagem-isPadrao').val(produto_embalagem.isPadrao);
-            $('#fieldset-embalagem #embalagem-CBInterno').val(produto_embalagem.CBInterno);
             $('#fieldset-embalagem #embalagem-imprimirCB').val(produto_embalagem.imprimirCB);
-            $('#fieldset-embalagem #embalagem-codigoBarras').val(produto_embalagem.codigoBarras).removeClass("invalid");
-            $('#fieldset-embalagem #embalagem-codigoBarrasAntigo').val(produto_embalagem.codigoBarras);
             $('#fieldset-embalagem #embalagem-endereco').val(produto_embalagem.endereco).removeClass("invalid");
             $('#fieldset-embalagem #embalagem-enderecoAntigo').val(produto_embalagem.endereco);
             $('#fieldset-embalagem #embalagem-embalado').val(produto_embalagem.embalado);
             $('#fieldset-embalagem #embalagem-capacidadePicking').val(produto_embalagem.capacidadePicking);
             $('#fieldset-embalagem #embalagem-pontoReposicao').val(produto_embalagem.pontoReposicao);
             $('#fieldset-embalagem #embalagem-dataInativacao').val(produto_embalagem.dataInativacao);
+            $('#fieldset-embalagem #embalagem-CBInterno').val(produto_embalagem.CBInterno);
+            $('#fieldset-embalagem #embalagem-codigoBarras').val(produto_embalagem.codigoBarras).removeClass("invalid");
+            $('#fieldset-embalagem #embalagem-codigoBarrasAntigo').val(produto_embalagem.codigoBarras);
+            $('#fieldset-embalagem #embalagem-descricao').val(produto_embalagem.descricao).removeClass("invalid");
+            $('#fieldset-embalagem #embalagem-quantidade').val(produto_embalagem.quantidade).removeClass("invalid");
+
+            if (!permiteAlterarcao) {
+                $('#fieldset-embalagem #embalagem-CBInterno').prop("disabled", true);
+                $('#fieldset-embalagem #embalagem-codigoBarras').prop("disabled", true);
+                $('#fieldset-embalagem #embalagem-codigoBarrasAntigo').prop("disabled", true);
+                $('#fieldset-embalagem #embalagem-descricao').prop("disabled", true);
+                $('#fieldset-embalagem #embalagem-quantidade').prop("disabled", true);
+            }
 
             // checa opcoes de Codigo de Barras Interno
             this.checarCBInterno();
@@ -638,7 +642,9 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                     type: 'post',
                     async: false,
                     dataType: 'json',
-                    data: {endereco: endereco}
+                    data: {
+                        valores: valores
+                    }
                 }).success(function (data) {
                     if (data.status === "success") {
                         result = true;
