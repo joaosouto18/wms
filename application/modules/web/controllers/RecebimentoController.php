@@ -677,7 +677,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                                 break;
                             }
                         }
-                        
+
                         //ATUALIZA O RECEBIMENTO NO ERP CASO O PARAMETRO SEJA 'S'
                         if ($this->getSystemParameterValue('UTILIZA_RECEBIMENTO_ERP') == 'S' && $recebimentoErp == true) {
                             $serviceIntegracao = new \Wms\Service\Integracao($this->getEntityManager(), array
