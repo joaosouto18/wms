@@ -391,7 +391,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         if (!empty($volumes))
             foreach ($volumes as $volume) {
                 $ondaRessuprimentoOsProduto = new OndaRessuprimentoOsProduto();
-                $ondaRessuprimentoOsProduto->setQtd($qtdOnda);
+                $ondaRessuprimentoOsProduto->setQtd(str_replace(",",".",$qtdOnda));
                 $ondaRessuprimentoOsProduto->setOndaRessuprimentoOs($ondaRessuprimentoOs);
                 $ondaRessuprimentoOsProduto->setCodProdutoVolume($volume);
                 $ondaRessuprimentoOsProduto->setCodProdutoEmbalagem(null);

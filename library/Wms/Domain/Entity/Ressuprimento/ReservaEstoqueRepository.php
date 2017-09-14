@@ -334,7 +334,7 @@ class ReservaEstoqueRepository extends EntityRepository
                 $dataValidade = date_create_from_format('d/m/Y',$produto['validade']);
                 if ($dataValidade) $reservaEstoqueProduto->setValidade($dataValidade);
             }
-            $reservaEstoqueProduto->setQtd($produto['qtd']);
+            $reservaEstoqueProduto->setQtd(str_replace(",",".",$produto['qtd']));
             $reservaEstoqueProduto->setReservaEstoque($reservaEstoque);
             $this->getEntityManager()->persist($reservaEstoqueProduto);
         }
