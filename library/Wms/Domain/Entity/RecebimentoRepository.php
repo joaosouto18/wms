@@ -1531,6 +1531,34 @@ class RecebimentoRepository extends EntityRepository {
         return $entity;
     }
 
+    public function checkRecebimentoEnderecado($idRecebimento)
+    {
+        $sql = "SELECT DISTINCT
+                  R.COD_RECEBIMENTO
+                FROM RECEBIMENTO R
+                LEFT JOIN (SELECT V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE, SUM(V.QTD) as QTD
+                          FROM V_QTD_RECEBIMENTO V
+                          WHERE V.COD_RECEBIMENTO = $idRecebimento
+                          GROUP BY V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE
+                          UNION
+                          SELECT RC.COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_CONFERIDA as QTD
+                          FROM RECEBIMENTO_CONFERENCIA RC
+                          LEFT JOIN RECEBIMENTO R ON RC.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+                          WHERE R.COD_STATUS = 457 AND R.COD_RECEBIMENTO = $idRecebimento 
+                                  AND (QTD_DIVERGENCIA = 0 OR COD_NOTA_FISCAL IS NOT NULL)
+                             ) V ON V.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+                LEFT JOIN (SELECT COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, SUM(QTD) as QTD
+                            FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD
+                                  FROM PALETE P
+                                  LEFT JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
+                                  WHERE P.COD_RECEBIMENTO = $idRecebimento AND (P.COD_STATUS IN (536,535,534) OR P.IND_IMPRESSO = 'S'))
+                            GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE
+                          ) P ON P.COD_RECEBIMENTO = V.COD_RECEBIMENTO AND P.COD_PRODUTO = V.COD_PRODUTO AND P.DSC_GRADE = V.DSC_GRADE
+                WHERE (NVL(V.QTD,0) - NVL(P.QTD,0) >0) AND R.COD_STATUS NOT IN (458,460)";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function naoEnderecadosByStatus($status = null) {
 
         $whereStatus = "";

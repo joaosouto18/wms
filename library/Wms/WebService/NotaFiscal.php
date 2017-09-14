@@ -58,6 +58,8 @@ class notaFiscal {
     public $bonificacao;
     /** @var string */
     public $peso;
+    /** @var bool */
+    public $enderecado;
     /** @var itensNf[] */
     public $itens = array();
 }
@@ -213,7 +215,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         if (!empty($checkaEndereco) && $checkaEndereco->getValor() == "S"){
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
             $paleteRepo = $em->getRepository("wms:Enderecamento\Palete");
-            $result = $paleteRepo->getQtdProdutosByRecebimento(array("status" => \Wms\Domain\Entity\Enderecamento\Palete::STATUS_ENDERECADO))
+            $result = $paleteRepo->getQtdProdutosByRecebimento(array("status" => \Wms\Domain\Entity\Enderecamento\Palete::STATUS_ENDERECADO));
         } else {
             $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
         }

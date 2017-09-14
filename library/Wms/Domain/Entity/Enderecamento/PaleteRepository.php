@@ -1650,6 +1650,4 @@ class PaleteRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function checkNotaEnderecada
-
 }
