@@ -568,10 +568,12 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 });
 
 //                                var produto_embalagem = el.closest('.produto_embalagem').model();
-                                $('#fieldset-campos-comuns #embalagem-capacidadePicking').val(produto_embalagem[0].capacidadePicking);
-                                $('#fieldset-campos-comuns #embalagem-endereco').val(produto_embalagem[0].endereco);
-                                $('#fieldset-campos-comuns #embalagem-enderecoAntigo').val(produto_embalagem[0].endereco);
-                                $('#fieldset-campos-comuns #embalagem-pontoReposicao').val(produto_embalagem[0].pontoReposicao);
+                                if (produto_embalagem.length > 0) {
+                                    $('#fieldset-campos-comuns #embalagem-capacidadePicking').val(produto_embalagem[0].capacidadePicking);
+                                    $('#fieldset-campos-comuns #embalagem-endereco').val(produto_embalagem[0].endereco);
+                                    $('#fieldset-campos-comuns #embalagem-enderecoAntigo').val(produto_embalagem[0].endereco);
+                                    $('#fieldset-campos-comuns #embalagem-pontoReposicao').val(produto_embalagem[0].pontoReposicao);
+                                }
 
                                 blocosEmbalagem.each(function () {
                                     var id = $(this).find('.embalagem-id').val();
