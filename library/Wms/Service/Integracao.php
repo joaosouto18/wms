@@ -640,7 +640,9 @@ class Integracao
         }
 
         foreach($notasFiscais as $key => $nf) {
+            var_dump('teste');
             if (array_key_exists($nf['codFornecedor'],$fornecedoresCPF)) {
+
                 $notasFiscais[$key]['codFornecedor'] = '9999';
             }
         }
