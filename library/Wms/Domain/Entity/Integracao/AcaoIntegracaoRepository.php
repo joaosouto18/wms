@@ -272,15 +272,14 @@ class AcaoIntegracaoRepository extends EntityRepository
             $errNumber = $e->getCode();
             $result = $e->getMessage();
 
-            $this->_em->rollback();
+//            $this->_em->rollback();
             $this->_em->clear();
         }
 
 
         try {
 
-            $this->_em->beginTransaction();
-//            $iniciouBeginTransaction = false;
+            $iniciouBeginTransaction = false;
             if ($this->_em->isOpen() == false) {
                 $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
             }
@@ -293,8 +292,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $this->_em->flush();
             }
 
-//            $this->_em->beginTransaction();
-//            $iniciouBeginTransaction = true;
+            $this->_em->beginTransaction();
+            $iniciouBeginTransaction = true;
 
             if (($tipoExecucao == "E") || ($dados == null)) {
                 /*
@@ -340,10 +339,9 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->clear();
 
         } catch (\Exception $e) {
-//            if ($iniciouBeginTransaction == true) {
-                $this->_em->rollback();
-                $this->_em->clear();
-//            }
+            if ($iniciouBeginTransaction == true) {
+//                $this->_em->rollback();
+            }
             throw new \Exception($e->getMessage());
 
         }
