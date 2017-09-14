@@ -99,18 +99,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 }
 
                                 if (este.verificarCodigoBarras(valores)) {
-                                    if (este.verificarEndereco(valores)) {
-                                        este.salvarDadosEmbalagem(valores);
-                                    } else {
-                                        $('#embalagem-endereco').focus();
-                                    }
+                                    este.salvarDadosEmbalagem(valores);
                                 } else {
                                     $('#embalagem-codigoBarras').focus();
                                 }
-
                                 ev.preventDefault();
-//                                este.updateValores(valores);
-
                             },
 
                             salvarDadosEmbalagem: function (valores) {
@@ -139,7 +132,9 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     valores.acao = 'incluir';
                                     $('#div-lista-embalagens').append(this.view("show", new Wms.Models.ProdutoEmbalagem(valores)));
                                 }
-
+                                var value = valores.quantidade;
+                                var dsc = valores.descricao + ' (' + valores.quantidade + ')';
+                                $('#fieldset-campos-comuns #embalagem-fator').append('<option value="' + value + '" label="' + dsc + '">' + dsc + '</option>');
                                 // limpo form
                                 this.resetarForm();
                                 // carregar embalagens nos dados logisticos
@@ -376,10 +371,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                              * @param {Array} produto_embalagens Matriz de objetos Wms.Models.ProdutoEmbalagem.
                              */
                             list: function (produto_embalagens) {
-                                produto_embalagens.forEach(function (valor, chave) {
-//                                    delete produto_embalagens[chave].endereco;
-                                });
-                                console.log(produto_embalagens);
                                 $('#div-lista-embalagens').html(this.view('init', {
                                     produto_embalagens: produto_embalagens
                                 }));
@@ -402,25 +393,59 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     inptCodBarras.addClass("required").val('').attr('readonly', false);
                                 }
                             },
-                            '#embalagem-capacidadePicking keyup': function (el, ev) {
-                                $('#span-capacidade').remove();
-                                var qtd = $('#embalagem-quantidade').val() * el.val();
-                                $('#embalagem-capacidadePicking').parent().append('<span id="span-capacidade">( ' + qtd + ' UN )</span>');
-                            },
-                            '#embalagem-pontoReposicao keyup': function (el, ev) {
-                                $('#span-reposicao').remove();
-                                var qtd = $('#embalagem-quantidade').val() * el.val();
-                                $('#embalagem-pontoReposicao').parent().append('<span id="span-reposicao">( ' + qtd + ' UN )</span>');
-                            },
 
                             '#embalagem-endereco change': function (el, ev) {
                                 var fieldEmbalagem = $('#fieldset-campos-comuns');
                                 var valores = fieldEmbalagem.formParams(false).embalagem;
+                                $('.ui-icon.ui-icon-closethick').click();
                                 if (!this.verificarEndereco(valores)) {
                                     $('#fieldset-campos-comuns #embalagem-endereco').val('');
                                 }
                                 ev.stopImmediatePropagation();
+                                ev.stopPropagation();
 
+                            },
+                            '#embalagem-fator change': function (el, ev) {
+                                var capacidade = $('#fieldset-campos-comuns #capacidadePicking-real').val();
+                                var pontoRep = $('#fieldset-campos-comuns #pontoReposicao-real').val();
+                                $('#fieldset-campos-comuns #embalagem-capacidadePicking').val(capacidade / el.val());
+                                $('#fieldset-campos-comuns #embalagem-pontoReposicao').val(pontoRep / el.val());
+                                ev.stopImmediatePropagation();
+                            },
+
+                            '#embalagem-pontoReposicao change': function (el, ev) {
+                                var fator = $("#embalagem-fator option:selected").val();
+                                var qtdMaior = 0;
+                                $('.qtdItens').each(function () {
+                                    if (parseInt($(this).val()) > parseInt(qtdMaior)) {
+                                        qtdMaior = parseInt($(this).val());
+                                    }
+                                });
+                                if (((el.val() * fator) % qtdMaior) !== 0) {
+                                    this.dialogAlert('<b>Ponto de Reposição</b> deve ser múltiplo da <b>Quantidade de itens</b>');
+                                    el.val($('#fieldset-campos-comuns #pontoReposicao-real').val() / fator);
+                                    return false;
+                                }
+
+                                $('#fieldset-campos-comuns #pontoReposicao-real').val(fator * el.val());
+                                ev.stopImmediatePropagation();
+                            },
+                            '#embalagem-capacidadePicking change': function (el, ev) {
+                                var fator = $("#embalagem-fator option:selected").val();
+                                var qtdMaior = 0;
+                                $('.qtdItens').each(function () {
+                                    if (parseInt($(this).val()) > parseInt(qtdMaior)) {
+                                        qtdMaior = parseInt($(this).val());
+                                    }
+                                });
+                                if (((el.val() * fator) % qtdMaior) !== 0) {
+                                    this.dialogAlert('<b>Capacidade de Picking</b> deve ser múltiplo da <b>Quantidade de itens</b>');
+                                    el.val($('#fieldset-campos-comuns #capacidadePicking-real').val() / fator);
+                                    return false;
+                                }
+
+                                $('#fieldset-campos-comuns #capacidadePicking-real').val(fator * el.val());
+                                ev.stopImmediatePropagation();
                             },
 
                             /**
@@ -431,8 +456,8 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     $('#embalagem-isPadrao').val('N');
 
                                 $('#embalagem-quantidade').attr('disabled', false);
-                                $('#embalagem-descricao,#embalagem-pontoReposicao, #embalagem-capacidadePicking, #embalagem-quantidade, #embalagem-id, #embalagem-codigoBarras, #embalagem-codigoBarrasAntigo, #embalagem-endereco').val('');
-                                $('#embalagem-pontoReposicao, #embalagem-capacidadePicking').val('0');
+                                $('#embalagem-descricao, #embalagem-quantidade, #embalagem-id, #embalagem-codigoBarras, #embalagem-codigoBarrasAntigo').val('');
+//                                $('#embalagem-pontoReposicao, #embalagem-capacidadePicking').val('0');
                                 $('#embalagem-isPadrao').val('N').attr('disabled', false);
                                 $('#embalagem-codigoBarras').attr('disabled', false);
                                 $('#embalagem-capacidadePicking').attr('disabled', false);
@@ -561,12 +586,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                                 // remove all
                                 select.find('option').remove();
-                                produto_embalagem.forEach(function (valor, chave) {
-                                    var value = valor.quantidade;
-                                    var dsc = valor.descricao + ' (' + valor.quantidade + ')';
-                                    $('#fieldset-campos-comuns #embalagem-fator').append('<option value="' + value + '" label="' + dsc + '">' + dsc + '</option>');
-                                });
-
+                                if (produto_embalagem.length > 0) {
+                                    produto_embalagem.forEach(function (valor, chave) {
+                                        var value = valor.quantidade;
+                                        var dsc = valor.descricao + ' (' + valor.quantidade + ')';
+                                        $('#fieldset-campos-comuns #embalagem-fator').append('<option value="' + value + '" label="' + dsc + '">' + dsc + '</option>');
+                                    });
+                                }
 //                                var produto_embalagem = el.closest('.produto_embalagem').model();
                                 if (produto_embalagem.length > 0) {
                                     $('#fieldset-campos-comuns #embalagem-capacidadePicking').val(produto_embalagem[0].capacidadePicking);
@@ -581,10 +607,19 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                                     select.append('<option value="' + id + '">' + descricao + '</option>');
                                 });
-//                                $('.produto_embalagem').each(function () {
-//                                    $(this).find('span.capacidadePicking').text($(this).find('input.capacidadePicking').val() / $(this).find('input.qtdItens').val());
-//                                    $(this).find('span.pontoReposicao').text($(this).find('input.pontoReposicao').val() / $(this).find('input.qtdItens').val());
-//                                });
+                                var qtdPadrao = 1;
+                                if (produto_embalagem.length > 0) {
+                                    produto_embalagem.forEach(function (valor, chave) {
+                                        if (valor.isPadrao == 'S') {
+                                            qtdPadrao = valor.quantidade;
+                                        }
+                                    });
+                                    $('#embalagem-fator option[value=' + qtdPadrao + ']').attr('selected', 'selected');
+                                    $('#fieldset-campos-comuns #embalagem-capacidadePicking').val(produto_embalagem[0].capacidadePicking / qtdPadrao);
+                                    $('#fieldset-campos-comuns #embalagem-pontoReposicao').val(produto_embalagem[0].pontoReposicao / qtdPadrao);
+                                    $('#fieldset-campos-comuns #capacidadePicking-real').val(produto_embalagem[0].capacidadePicking);
+                                    $('#fieldset-campos-comuns #pontoReposicao-real').val(produto_embalagem[0].pontoReposicao);
+                                }
                             },
 
                             /**

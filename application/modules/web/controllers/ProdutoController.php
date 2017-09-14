@@ -186,13 +186,14 @@ class Web_ProdutoController extends Crud {
 
         try {
             $params = $this->getRequest()->getParams();
-//            var_dump($params);die;
-//            if (isset($params['embalagens'])) {
-//                foreach ($params['embalagens'] as $key => $value) {
-//                    $params['embalagens'][$key]['capacidadePicking'] = $value['quantidade'] * $value['capacidadePicking'];
-//                    $params['embalagens'][$key]['pontoReposicao'] = $value['quantidade'] * $value['pontoReposicao'];
-//                }
-//            }
+            if (isset($params['embalagens'])) {
+                $fator = $params['embalagem-fator'];
+                foreach ($params['embalagens'] as $key => $value) {
+                    $params['embalagens'][$key]['capacidadePicking'] = $fator * $params['embalagem']['capacidadePicking'];
+                    $params['embalagens'][$key]['pontoReposicao'] = $fator * $params['embalagem']['pontoReposicao'];
+                    $params['embalagens'][$key]['endereco'] = $params['embalagem']['endereco'];
+                }
+            }
             if (!isset($params['id']) || $params['id'] == null || !isset($params['grade']) || $params['grade'] == null)
                 throw new \Exception('Codigo e Grade do produto devem ser fornecidos');
 
@@ -238,13 +239,17 @@ class Web_ProdutoController extends Crud {
                 $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
 
                 $paramsSave = $this->getRequest()->getParams();
-//                if (isset($paramsSave['embalagens'])) {
-//                    foreach ($paramsSave['embalagens'] as $key => $value) {
-//                        $paramsSave['embalagens'][$key]['capacidadePicking'] = $value['quantidade'] * $value['capacidadePicking'];
-//                        $paramsSave['embalagens'][$key]['pontoReposicao'] = $value['quantidade'] * $value['pontoReposicao'];
-//                    }
-//                }
-//                var_dump($paramsSave);die;
+                if (isset($paramsSave['embalagens'])) {
+                    $fator = $paramsSave['embalagem-fator'];
+                    foreach ($paramsSave['embalagens'] as $key => $value) {
+                        $paramsSave['embalagens'][$key]['capacidadePicking'] = $fator * $paramsSave['embalagem']['capacidadePicking'];
+                        $paramsSave['embalagens'][$key]['pontoReposicao'] = $fator * $paramsSave['embalagem']['pontoReposicao'];
+                        $paramsSave['embalagens'][$key]['endereco'] = $paramsSave['embalagem']['endereco'];
+                        if (empty($paramsSave['embalagens'][$key]['acao'])) {
+                            $paramsSave['embalagens'][$key]['acao'] = 'alterar';
+                        }
+                    }
+                }
 
                 $result = $this->repository->save($entity, $paramsSave, true);
                 if (is_string($result)) {
