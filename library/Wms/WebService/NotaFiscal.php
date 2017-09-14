@@ -213,9 +213,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         /** @var \Wms\Domain\Entity\Sistema\Parametro $checkaEndereco */
         $checkaEndereco = $em->getRepository("wms:Parametro")->findBy(array("constante" => "CONFIRMA_RECEBIMENTO_ENDERECADO"));
         if (!empty($checkaEndereco) && $checkaEndereco->getValor() == "S"){
-            /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
-            $paleteRepo = $em->getRepository("wms:Enderecamento\Palete");
-            $result = $paleteRepo->getQtdProdutosByRecebimento(array("status" => \Wms\Domain\Entity\Enderecamento\Palete::STATUS_ENDERECADO));
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+            $recebimentoRepo = $em->getRepository("wms:Enderecamento\Palete");
+            $result = $recebimentoRepo->checkRecebimentoEnderecado($idRecebimento);
+            if (!empty($result)) {
+                $clsNf->enderecado = false;
+            } else {
+                $clsNf->enderecado = true;
+            }
         } else {
             $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
         }
