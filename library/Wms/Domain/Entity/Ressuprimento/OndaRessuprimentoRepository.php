@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\Ressuprimento;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
+use Wms\Domain\Entity\Produto;
 use Wms\Math;
 
 class OndaRessuprimentoRepository extends EntityRepository {
@@ -247,9 +248,10 @@ class OndaRessuprimentoRepository extends EntityRepository {
             $grade = $produto['DSC_GRADE'];
             $qtd = $produto['QTD'] * -1;
             $codPedido = $produto['COD_PEDIDO'];
-
+            /** @var Produto $produtoEn */
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-            if ($produtoEn->getTipoComercializacao()->getId() == 1) {
+            $tipoComercializacao = $produtoEn->getTipoComercializacao()->getId();
+            if ($tipoComercializacao == Produto::TIPO_UNITARIO) {
                 $embalagensEn = $dadosProdutos[$codProduto][$grade]['embalagensASC'];
 
                 if (!isset($embalagensEn[0])) {
@@ -279,8 +281,18 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
             } else {
                 $normas = $volumeRepo->getNormasByProduto($codProduto, $grade);
+                if (empty($normas)) {
+                    $checkEmb = $produtoEn->getEmbalagens()->toArray();
+                    if (!empty($checkEmb)) {
+                        throw new \Exception("O produto $codProduto grade $grade está configurado como COMPOSTO tento embalagem cadastrada, verifique a possibilidade de alterar o tipo de comercialização para UNITARIO");
+                    }
+                    throw new \Exception("O produto $codProduto grade $grade não tem norma e volume cadastrados");
+                }
                 foreach ($normas as $norma) {
                     $volumes = $volumeRepo->getVolumesByNorma($norma->getId(), $codProduto, $grade);
+                    if (empty($volumes)) {
+                        throw new \Exception("O produto $codProduto grade $grade não tem volume cadastrado");
+                    }
                     $produtosArray = array();
                     $idPicking = null;
                     foreach ($volumes as $volume) {
