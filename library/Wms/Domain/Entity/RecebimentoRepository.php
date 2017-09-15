@@ -1045,7 +1045,7 @@ class RecebimentoRepository extends EntityRepository {
             $produtoEn = $produtoRepo->findOneBy(array('id' => $row['COD_PRODUTO'], 'grade' => $row['DSC_GRADE']));
             $picking = $produtoRepo->getEnderecoPicking($produtoEn);
             if (!empty($picking)) {
-                $picking = $picking[0];
+                $picking = reset($picking);
             } else {
                 $picking = null;
             }
@@ -1624,16 +1624,13 @@ class RecebimentoRepository extends EntityRepository {
         if (isset($status) && (!empty($status))) {
             $where .= " AND R.COD_STATUS = " . $status;
         }
-        if (isset($idRecebimento) && (!empty($idRecebimento))) {
-            $where .= " AND NF.COD_RECEBIMENTO = " . $idRecebimento;
-        }
-        if (isset($uma) && (!empty($uma))) {
+        if ((isset($idRecebimento) && (!empty($idRecebimento))) || (isset($uma) && (!empty($uma)))) {
             $where .= " AND R.COD_RECEBIMENTO = " . $idRecebimento;
         }
 
         $sql = "  
                 SELECT DISTINCT
-                   NF.COD_RECEBIMENTO AS id,
+                   R.COD_RECEBIMENTO AS id,
                    TO_CHAR(R.DTH_INICIO_RECEB,'DD/MM/YYYY HH24:MI:SS') AS dataInicial,
                    TO_CHAR(R.DTH_FINAL_RECEB,'DD/MM/YYYY HH24:MI:SS') AS dataFinal,
                    B.DSC_BOX AS dscBox,
@@ -1648,13 +1645,13 @@ class RecebimentoRepository extends EntityRepository {
                         LISTAGG(P.NOM_PESSOA, ', ') WITHIN GROUP (ORDER BY NF4.COD_FORNECEDOR) AS fornecedor
                         FROM (SELECT DISTINCT COD_FORNECEDOR, COD_RECEBIMENTO FROM NOTA_FISCAL)  NF4
                         INNER JOIN PESSOA P ON (NF4.COD_FORNECEDOR = P.COD_PESSOA)
-                        WHERE NF4.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
+                        WHERE NF4.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                     ) AS fornecedor,
                     (
                         SELECT 
                         COUNT(NF2.COD_NOTA_FISCAL)
                         FROM NOTA_FISCAL NF2
-                        WHERE NF2.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
+                        WHERE NF2.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                     ) AS qtdNotaFiscal,
                    (
                      SELECT 
@@ -1664,7 +1661,7 @@ class RecebimentoRepository extends EntityRepository {
                        NOTA_FISCAL_ITEM NFI on (NF2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) LEFT JOIN
                        PRODUTO_EMBALAGEM PE ON (NFI.COD_PRODUTO = PE.COD_PRODUTO)
                      WHERE 
-                       NF2.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
+                       NF2.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                      GROUP BY
                        NFI.COD_NOTA_FISCAL,
                        NFI.QTD_ITEM,  
@@ -1678,7 +1675,7 @@ class RecebimentoRepository extends EntityRepository {
                        NOTA_FISCAL_ITEM NFI on (NF2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) LEFT JOIN
                        PRODUTO_EMBALAGEM PE ON (NFI.COD_PRODUTO = PE.COD_PRODUTO)
                      WHERE 
-                       NF2.COD_RECEBIMENTO = NF.COD_RECEBIMENTO
+                       NF2.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                      GROUP BY 
                        NFI.COD_NOTA_FISCAL,
                        NFI.QTD_ITEM, 
@@ -1686,13 +1683,13 @@ class RecebimentoRepository extends EntityRepository {
                      ) AS qtdMenor
                  FROM 
                    NOTA_FISCAL NF
-                   INNER JOIN RECEBIMENTO R ON (NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
+                   RIGHT JOIN RECEBIMENTO R ON (NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
                    LEFT JOIN BOX B ON (R.COD_BOX = B.COD_BOX)
                    INNER JOIN SIGLA S ON (R.COD_STATUS = S.COD_SIGLA)
                    LEFT JOIN ORDEM_SERVICO OS ON (NF.COD_RECEBIMENTO = OS.COD_RECEBIMENTO AND OS.COD_FORMA_CONFERENCIA = 'M' AND OS.DTH_FINAL_ATIVIDADE IS NULL)
                    LEFT JOIN ORDEM_SERVICO OS2 ON (NF.COD_RECEBIMENTO = OS2.COD_RECEBIMENTO AND OS2.COD_FORMA_CONFERENCIA = 'C' AND OS2.DTH_FINAL_ATIVIDADE IS NULL)
                  WHERE 
-                1 = 1 ".$where." ORDER BY NF.COD_RECEBIMENTO ASC" ;
+                1 = 1 ".$where." ORDER BY R.COD_RECEBIMENTO DESC" ;
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $key1 => $vet) {
             foreach ($vet as $key => $value) {

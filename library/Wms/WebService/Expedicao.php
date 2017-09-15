@@ -812,6 +812,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $countProdutosPendentesCorte = count($this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC));
 
                 if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
+                    ($statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
                     ($countProdutosPendentesCorte == 0)) {
 
                     $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
