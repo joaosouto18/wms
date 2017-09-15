@@ -998,6 +998,7 @@ class Integracao
         $options1 = array(
             0 => $notaFiscalEntity->getCodRecebimentoErp(),
         );
+        $codRecebimentoErp = $notaFiscalEntity->getCodRecebimentoErp();
 
         //FAZ O UPDATE NO ERP ATUALIZANDO A DATA DE RECEBIMENTO
         $acaoEn = $acaoIntRepository->find(10);
@@ -1029,7 +1030,7 @@ class Integracao
                 $dataConferencia = $produtoConferido['dataConferencia']->format('d/m/Y');
             }
             $options2 = array(
-                0 => $produtoConferido['codRecebimentoErp'],
+                0 => $codRecebimentoErp,
                 1 => $produtoConferido['codProduto'],
                 2 => $produtoConferido['quantidade'],
                 3 => $produtoConferido['qtdDivergencia'],
