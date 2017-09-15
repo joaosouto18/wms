@@ -410,3 +410,14 @@ a.info:hover span:after{ /*the span will display just on :hover state*/
     -webkit-transform:rotate(45deg);
     transform:rotate(45deg);
 }
+
+.boxConfer {
+    min-height: 100px; 
+    width: 48%; 
+    margin-bottom: 20px;
+    border-radius: 30px;
+    background: rgb(243, 243, 243);
+    border-width: 2px;
+    border: hidden;
+    height: 330px;
+}

@@ -1,0 +1,27 @@
+<?php
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+echo $this->form;
+?>
+<div id="produtos-mapa"></div>
+<script>
+    console.log(URL_MODULO);
+    $(".buscar-mapa").click(function () {
+        $.ajax({
+            url: URL_MODULO + '/index/carrega-mapa-ajax',
+            type: 'post',
+            dataType: 'html',
+            data: $('form').serialize(),
+            success: function (data) {
+                $('#produtos-mapa').html(data);
+
+            }
+        });
+        return false;
+    });
+
+</script>
