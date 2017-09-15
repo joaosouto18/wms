@@ -76,6 +76,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param integer $idStatus Codigo do status da nota fiscal no wms
      * @return array
+     * @throws Exception
      */
     public function buscar($idFornecedor, $numero, $serie, $dataEmissao, $idStatus)
     {
@@ -152,6 +153,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @return notaFiscal
+     * @throws Exception
      */
     public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao)
     {
@@ -384,6 +386,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
      * @return boolean
+     * @throws Exception
      */
     public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao){
         /*
@@ -412,6 +415,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @return array
+     * @throws Exception
      */
     public function status($idFornecedor, $numero, $serie, $dataEmissao)
     {
@@ -445,14 +449,21 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
     /**
      * Descarta uma nota desvinculando ela do recebimento.
-     * Ação pode ser executada em qualquer status em que a nota esteja.
-     *
+     * <br />Ação pode ser executada em qualquer status em que a nota esteja.
+     * <br />
+     * <br /><b>(Obrigatório)</b> idFornecedor -> Código externo do fornecedor
+     * <br />(Obrigatório) numero -> Número da Nota fiscal
+     * <br />(Obrigatório) serie -> Série da nota fiscal
+     * <br />(Opcional) dataEmissao -> Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'DD/MM/YYYY' -- Será descontinuado em futuras versões
+     * <br />(Obrigatório) observacao -> Descrição do porquê da nota fiscal foi descartada
+     * <br />
      * @param string $idFornecedor Codigo externo do fornecedor
      * @param string $numero Numero da Nota fiscal
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'DD/MM/YYYY'
      * @param string $observacao Descrição do porquê da nota fiscal descartada
      * @return boolean
+     * @throws Exception
      */
     public function descartar($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
@@ -497,6 +508,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'DD/MM/YYYY'
      * @param string $observacao Descrição do porquê da nota fiscal foi desfeita
      * @return boolean
+     * @throws Exception
      */
     public function desfazer($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
@@ -530,7 +542,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
     /**
      * @param $itens
-     * @param $notaItensBDEn
      * @param $recebimentoConferenciaRepo
      * @param $notaFiscalEn
      * @param $em
@@ -585,17 +596,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     }
 
     /**
-     * @param $idFornecedor
-     * @param $numero
-     * @param $serie
-     * @param $dataEmissao
-     * @param $placa
      * @param $itens
-     * @param $bonificacao
-     * @param $observacao
-     * @param $notaItensBDEn
-     * @param $itemWs
      * @param $notaFiscalRepo
+     * @param $notaFiscalEn
+     * @param $em
      * @return bool
      * @throws Exception
      */
