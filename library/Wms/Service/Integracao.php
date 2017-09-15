@@ -560,9 +560,20 @@ class Integracao
         $em = $this->_em;
         $importacaoService = new Importacao(true);
         $fornecedores = array();
+        $fornecedoresCPF = array();
+
+        $fornecedores['9999'] = array(
+            'idExterno' => '9999',
+            'cpf_cnpj' => '9999999999',
+            'nome' => 'DEVOLUCAO',
+            'inscricaoEstadual' => 'ISENTO',
+            'tipoPessoa' => 'F'
+        );
+
         $itens = array();
         $notasFiscais = array();
         $idProdutos = array();
+
 
         foreach ($dados as $key => $notaFiscal) {
 
@@ -572,21 +583,19 @@ class Integracao
             } else {
                 $tipoPessoa = 'J';
             }
+
             if ($tipoPessoa == 'F') {
-                $notaFiscal['COD_FORNECEDOR'] = '9999';
-                $cpf_cnpj = '9999999999';
-                $notaFiscal['NOM_FORNECEDOR'] = 'DEVOLUCAO';
-                $notaFiscal['INSCRICAO_ESTADUAL'] = 'ISENTO';
-                $tipoPessoa = 'J';
-            }
-            if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedores)) {
-                $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
-                    'idExterno' => $notaFiscal['COD_FORNECEDOR'],
-                    'cpf_cnpj' => $cpf_cnpj,
-                    'nome' => $notaFiscal['NOM_FORNECEDOR'],
-                    'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
-                    'tipoPessoa' => $tipoPessoa
-                );
+                $fornecedoresCPF[] = $notaFiscal['COD_FORNECEDOR'];
+            } else {
+                if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedores)) {
+                    $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
+                        'idExterno' => $notaFiscal['COD_FORNECEDOR'],
+                        'cpf_cnpj' => $cpf_cnpj,
+                        'nome' => $notaFiscal['NOM_FORNECEDOR'],
+                        'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
+                        'tipoPessoa' => $tipoPessoa
+                    );
+                }
             }
 
             /** OBTEM O CODIGO DO PRODUTO PARA CADASTRO */
@@ -630,6 +639,13 @@ class Integracao
 
             }
         }
+        foreach($notasFiscais as $key => $nf) {
+            foreach($fornecedoresCPF as $cpf) {
+                if ($cpf == $nf['codFornecedor']) {
+                    $notasFiscais[$key]['codFornecedor'] = '9999';
+                }
+            }
+        }
 
         /** CADASTRA OS PRODUTOS DAS NOTAS FISCAIS */
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepo */
@@ -640,8 +656,8 @@ class Integracao
         $produtos = implode(',',$idProdutos);
         if ($produtos == "") $produtos = "0";
         $options[] = $produtos;
-        $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
-        $em->flush();
+//        $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+//        $em->flush();
 
         if ($this->getTipoExecucao() == "L") {
             return $notasFiscais;
@@ -982,6 +998,7 @@ class Integracao
         $options1 = array(
             0 => $notaFiscalEntity->getCodRecebimentoErp(),
         );
+        $codRecebimentoErp = $notaFiscalEntity->getCodRecebimentoErp();
 
         //FAZ O UPDATE NO ERP ATUALIZANDO A DATA DE RECEBIMENTO
         $acaoEn = $acaoIntRepository->find(10);
@@ -1013,7 +1030,7 @@ class Integracao
                 $dataConferencia = $produtoConferido['dataConferencia']->format('d/m/Y');
             }
             $options2 = array(
-                0 => $produtoConferido['codRecebimentoErp'],
+                0 => $codRecebimentoErp,
                 1 => $produtoConferido['codProduto'],
                 2 => $produtoConferido['quantidade'],
                 3 => $produtoConferido['qtdDivergencia'],
@@ -1116,7 +1133,7 @@ class Integracao
                     1 => $quantidade,
                     2 => 'null',
                     3 => $motivoBloqueio,
-                    4 => $quantidade
+                    4 => $item->quantidadeConferida
                 );
 
                 if (!is_null($options)) {

@@ -1045,7 +1045,7 @@ class RecebimentoRepository extends EntityRepository {
             $produtoEn = $produtoRepo->findOneBy(array('id' => $row['COD_PRODUTO'], 'grade' => $row['DSC_GRADE']));
             $picking = $produtoRepo->getEnderecoPicking($produtoEn);
             if (!empty($picking)) {
-                $picking = $picking[0];
+                $picking = reset($picking);
             } else {
                 $picking = null;
             }

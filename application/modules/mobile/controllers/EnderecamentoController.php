@@ -1245,7 +1245,7 @@ class Mobile_EnderecamentoController extends Action
                             if (($endereco->getIdCaracteristica() == $idCaracteristicaPicking || $endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
                                 if (isset($volume)) {
                                     if ($endereco->getId() !== $volume->getEndereco()) {
-                                        throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
+                                        throw new \Exception("Produto ja cadastrado no Picking " . $volume->getEndereco()->getDescricao() . "!");
                                     }
                                 }
                             }

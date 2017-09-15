@@ -401,14 +401,18 @@ class PaleteRepository extends EntityRepository {
                 $SQL .= "   ORDER BY PROD.VOLUMES, P.UMA, S.DSC_SIGLA";
                 break;
         }
-        
+
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (!empty($result) && is_array($result)) {
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
             foreach ($result as $key => $value) {
                 if ($value['QTD'] > 0) {
                     $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
-                    $result[$key]['QTD'] = implode('<br />', $vetSeparar);
+                    if (is_array($vetSeparar)) {
+                        $result[$key]['QTD'] = implode('<br />', $vetSeparar);
+                    }else{
+                        $result[$key]['QTD'] = $value['QTD'];
+                    }
                 }
             }
         }
