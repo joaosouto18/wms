@@ -50,12 +50,18 @@ class Expedicao_IndexController extends Action
         $expedicaoAndamentoRepository = $em->getRepository('wms:Expedicao\Andamento');
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
         $expedicaoRepository = $em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
 
         //CANCELAR CARGAS NO WMS JA CANCELADAS NO ERP
-        $cargasCanceladasEntities = $triggerCancelamentoCargaRepository->findAll();
+        $acaoEn = $acaoIntRepo->find(24);
+        $cargasCanceladasEntities = $acaoIntRepo->processaAcao($acaoEn, null, 'L');
+
         foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
-            $cargaEntity = $cargaRepository->findOneBy(array('codCargaExterno' => $cargaCanceladaEntity->getCodCargaExterno()));
-            if (!$cargaEntity) {
+            $cargaEntity = $cargaRepository->findOneBy(array('codCargaExterno' => $cargaCanceladaEntity['COD_CARGA_EXTERNO']));
+            $cargaCanceladaEntity = $triggerCancelamentoCargaRepository->find($cargaCanceladaEntity['COD_CARGA_EXTERNO']);
+            if (!$cargaEntity && $cargaCanceladaEntity) {
                 $em->remove($cargaCanceladaEntity);
                 $em->flush();
                 continue;
@@ -77,7 +83,9 @@ class Expedicao_IndexController extends Action
 
             $expedicaoAndamentoRepository->save('carga ' . $cargaEntity->getCodCargaExterno() . ' removida', $cargaEntity->getCodExpedicao(), false, false);
 
-            $em->remove($cargaCanceladaEntity);
+            if ($cargaCanceladaEntity) {
+                $em->remove($cargaCanceladaEntity);
+            }
             $em->flush();
         }
 
