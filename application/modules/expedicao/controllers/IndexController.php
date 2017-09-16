@@ -55,11 +55,16 @@ class Expedicao_IndexController extends Action
         $cargasCanceladasEntities = $triggerCancelamentoCargaRepository->findAll();
         foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
             $cargaEntity = $cargaRepository->findOneBy(array('codCargaExterno' => $cargaCanceladaEntity->getCodCargaExterno()));
+            if (!$cargaEntity) {
+                $em->remove($cargaCanceladaEntity);
+                $em->flush();
+                continue;
+            }
             $pedidoEntities = $cargaRepository->getPedidos($cargaEntity->getId());
             foreach ($pedidoEntities as $pedidoEntity) {
                 $pedidoEntity = $pedidoRepository->find($pedidoEntity->getId());
-                $pedidoRepository->removeReservaEstoque($pedidoEntity->getId());
-                $pedidoRepository->remove($pedidoEntity);
+                $pedidoRepository->removeReservaEstoque($pedidoEntity->getId(), false);
+                $pedidoRepository->remove($pedidoEntity, false);
             }
 
             $ReentregaRepository->removeReentrega($cargaEntity->getId());
@@ -70,9 +75,9 @@ class Expedicao_IndexController extends Action
             if (!$cargasByExpedicao)
                 $expedicaoRepository->alteraStatus($cargaEntity->getExpedicao(), Expedicao::STATUS_CANCELADO);
 
-            $expedicaoAndamentoRepository->save('carga ' . $cargaEntity->getCodCargaExterno() . ' removida', $cargaEntity->getCodExpedicao());
+            $expedicaoAndamentoRepository->save('carga ' . $cargaEntity->getCodCargaExterno() . ' removida', $cargaEntity->getCodExpedicao(), false, false);
 
-            $em->remove($cargaCanceladaEntity);
+
             $em->flush();
         }
 
