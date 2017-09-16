@@ -77,7 +77,7 @@ class Expedicao_IndexController extends Action
 
             $expedicaoAndamentoRepository->save('carga ' . $cargaEntity->getCodCargaExterno() . ' removida', $cargaEntity->getCodExpedicao(), false, false);
 
-
+            $em->remove($cargaCanceladaEntity);
             $em->flush();
         }
 
