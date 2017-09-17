@@ -6,19 +6,91 @@
  */
 
 echo $this->form;
+$recarregar = $this->recarregar;
+$idPessoa = $this->pessoa;
 ?>
 <div id="produtos-mapa"></div>
 <script>
-    console.log(URL_MODULO);
+<?php
+if ($recarregar == 1) {
+    ?>
+        $(window).load(function () {
+            $(".buscar-mapa").click();
+            <?php
+            if ($idPessoa > 0) {
+                ?>
+                        setTimeout(function () {
+                            $('input[cod_pessoa=<?php echo $idPessoa ?>]').click();
+                        }, 2000);
+                <?php
+            }
+            ?>
+        });
+
+    <?php
+}
+?>
+
     $(".buscar-mapa").click(function () {
         $.ajax({
-            url: URL_MODULO + '/index/carrega-mapa-ajax',
+            url: URL_MODULO + '/index/confirmar-cliente-ajax',
             type: 'post',
             dataType: 'html',
             data: $('form').serialize(),
             success: function (data) {
+                $('#info').remove();
                 $('#produtos-mapa').html(data);
+                $(".cliente-btn").click(function () {
+                    $('#checkout-expedicao').append($('#form-clientes').find('#idExpedicao'));
+                    $('#checkout-expedicao').append('<input type="hidden" id="cod_pessoa" name="cod_pessoa" value="' + $(this).attr('cod_pessoa') + '" />');
+                    $('#fieldset-identificacao').prepend('<div id="info" class="field" style=" color: rgba(132, 71, 28, 0.63); float: right; margin-left: 30px; font-size: 12px; font-weight: bold; text-align: center;">\n\
+                    <p style="font-size: 12px;">' + $(this).val() + '</p></div>');
+                    $('#form-clientes').remove();
+                    $.ajax({
+                        url: URL_MODULO + '/index/carrega-mapa-ajax',
+                        type: 'post',
+                        dataType: 'html',
+                        data: $('#checkout-expedicao').serialize(),
+                        success: function (data) {
+                            $('#produtos-mapa').html(data);
+                            $('#buscar-sumbit').on('click', function (e) {
+                                var qtd = $("#qtd");
+                                if (qtd !== '') {
+                                    $.ajax({
+                                        url: '<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'conferte-produto-ajax')) ?>',
+                                        data: $('form').serialize(),
+                                        async: false,
+                                        type: 'post',
+                                        success: function (data) {
+                                            console.log(data);
+                                            if (data.retorno.resposta.length > 0) {
+                                                $("#codigoBarras").val("").focus();
+                                                var error = "";
+                                                var success = "Quantidade conferida com sucesso";
 
+                                                if (data.retorno.resposta == 'error') {
+                                                    error = data.retorno.message;
+                                                    success = "";
+                                                } else {
+                                                    if (data.retorno.message == 'checkout') {
+                                                        $('#conferir').find('p[produto="' + data.retorno.produto + '"]').hide();
+                                                        $('#conferidos').find('p[produto="' + data.retorno.produto + '"]').show();
+                                                    }
+                                                    error = "";
+                                                }
+                                                $("#error").html(error);
+                                                $("#success").html(success);
+                                            }
+                                            $(".item-lista").remove();
+                                        }
+                                    });
+                                    return false;
+                                }
+                            });
+                        }
+                    });
+                    return false;
+                });
             }
         });
         return false;

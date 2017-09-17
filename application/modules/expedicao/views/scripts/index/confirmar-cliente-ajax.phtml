@@ -1,0 +1,44 @@
+<?php
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+if (!empty($this->clientes)) {
+    if ($this->clientes == 'finalizar') {
+        ?>
+        <div style="text-align: center;">
+            <input style="width: 300px;" type="button" class="btn gradientBtn" onclick="window.location = '<?php echo '/mobile/expedicao/finalizar/idExpedicao/' . $this->idExpedicao . '/idMapa/' . $this->idMapa . '/mapa/S/checkout/1' ?>'" value="Finalizar">
+        </div>
+        <?php
+    } else {
+        ?>
+        <form id="form-clientes">
+            <input type="hidden" id="idExpedicao" name="idExpedicao" value="<?php echo $this->idExpedicao ?>" />
+            <fieldset style="text-align: center;">
+                <legend>Clientes Mapa</legend>
+                <?php
+                if (is_array($this->clientes)) {
+                    foreach ($this->clientes as $key => $value) {
+                        ?>
+                        <input style="margin-left: 15px;" type="submit" cod_pessoa="<?php echo $value['COD_PESSOA'] ?>" value="<?php echo $value['NOM_PESSOA'] ?>" class="btn gradientBtn cliente-btn">
+                        <?php
+                    }
+                }
+                ?>
+            </fieldset>
+        </form>
+        <script>
+            $('#info').remove();
+            $('#fieldset-identificacao').prepend('<div id="info" class="field" style=" color: rgba(132, 71, 28, 0.63); float: right; margin-left: 30px; font-size: 12px; font-weight: bold; text-align: center;">\n\
+        <p style="font-size: 12px;">Conferência do Mapa cod. <?php echo $this->codMapa ?></p>\n\
+        <p style="font-size: 12px; margin-top: 10px;">Expedição Nº <?php echo $this->idExpedicao ?></p></div>');
+        </script>
+        <?php
+    }
+} else {
+    ?>
+    <div style="text-align: center;font-size: 12px; color: #f14c4c; font-weight: bold;" id="error">Clientes não encontrados</div>
+    <?php
+}
+?>

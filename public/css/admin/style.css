@@ -420,4 +420,5 @@ a.info:hover span:after{ /*the span will display just on :hover state*/
     border-width: 2px;
     border: hidden;
     height: 330px;
+    overflow: auto;
 }

@@ -958,8 +958,37 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
+    public function getProdutosConferidosTotalByClientes($idMapa, $codPessoa) {
 
-    public function confereMapaProduto($paramsModeloSeparaco, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa = null, $ordemServicoId = null) {
+        $sql = "SELECT P.NOM_PESSOA, P.COD_PESSOA, LISTAGG(MSP.NUM_CAIXA_PC_INI, ',') WITHIN GROUP (ORDER BY MSP.NUM_CAIXA_PC_INI) AS NUM_CAIXA_PC_INI, MSP.COD_PRODUTO, MSP.DSC_GRADE, PROD.DSC_PRODUTO
+                  FROM (SELECT SUM(DISTINCT MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR - NVL(MSP.QTD_CORTADO,0)) QTD_SEPARAR,
+                               MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM,
+                               MSP.COD_MAPA_SEPARACAO,
+                               MSP.COD_PEDIDO_PRODUTO, MSP.COD_PRODUTO, MSP.DSC_GRADE
+                          FROM MAPA_SEPARACAO_PRODUTO MSP
+                         WHERE MSP.COD_MAPA_SEPARACAO = $idMapa
+                         GROUP BY MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM, MSP.COD_MAPA_SEPARACAO,
+                                  MSP.COD_PEDIDO_PRODUTO, MSP.COD_PRODUTO, MSP.DSC_GRADE, MSP.COD_MAPA_SEPARACAO) MSP
+                 INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                 INNER JOIN PEDIDO PED ON PED.COD_PEDIDO = PP.COD_PEDIDO
+                 INNER JOIN PESSOA P ON P.COD_PESSOA = PED.COD_PESSOA AND P.COD_PESSOA = $codPessoa
+                 INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN (SELECT SUM(MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA) QTD_CONFERIDA, MSC.COD_PRODUTO, MSC.DSC_GRADE, MSC.COD_MAPA_SEPARACAO, MSC.COD_PESSOA
+                               FROM MAPA_SEPARACAO_CONFERENCIA MSC
+                              WHERE MSC.COD_MAPA_SEPARACAO = $idMapa
+                              GROUP BY MSC.COD_PRODUTO, MSC.DSC_GRADE, MSC.COD_MAPA_SEPARACAO, MSC.COD_PESSOA) MSC
+                         ON MSC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                        AND MSC.COD_PRODUTO = MSP.COD_PRODUTO
+                        AND MSC.DSC_GRADE = MSP.DSC_GRADE
+                        AND MSC.COD_PESSOA = P.COD_PESSOA
+                WHERE MSP.QTD_SEPARAR = NVL(MSC.QTD_CONFERIDA,0)
+                 GROUP BY P.NOM_PESSOA, P.COD_PESSOA, MSP.COD_PRODUTO, MSP.DSC_GRADE, PROD.DSC_PRODUTO
+                  ORDER BY NUM_CAIXA_PC_INI";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function confereMapaProduto($paramsModeloSeparaco, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa = null, $ordemServicoId = null, $checkout = false) {
 
         try {
             $idVolumePatrimonio = null;
@@ -1028,11 +1057,19 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         $this->getEntityManager()->flush();
 
+        if($checkout == true){
+            $retorno =  $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco, $checkout);
+            if(!isset($retorno['checkout'])){
+                $retorno = true;
+            }
+            return $retorno;
+        }
+        
         return true;
 
     }
 
-    public function validaConferenciaMapaProduto($dadosConferencia, $paramsModeloSeparacao) {
+    public function validaConferenciaMapaProduto($dadosConferencia, $paramsModeloSeparacao, $checkout = false) {
 
         $idExpedicao = $dadosConferencia['idExpedicao'];
         $idMapa = $dadosConferencia['idMapa'];
@@ -1181,6 +1218,9 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
         if ($qtdMapaTotal == $qtdConferidoTotal) {
+            if($checkout == true){
+                return array('produto' => $codProduto.'-'.$dscGrade, 'checkout' => 'checkout');
+            }
             $msgErro = "O produto $dscProduto já se encontra totalmente conferido ";
             if ($codPessoa != null) {
                 $msgErro .= " para o cliente selecionado";

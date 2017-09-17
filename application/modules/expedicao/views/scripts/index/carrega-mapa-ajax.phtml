@@ -13,10 +13,6 @@ if ($this->erro) {
         <input type="hidden" name="uma" value="" id="uma">
         <fieldset id="fieldset-identification">
             <legend>Ler Código de Barras</legend>
-            <div class="field" style=" color: rgba(132, 71, 28, 0.63); float: right; margin-left: 30px; font-size: 12px; font-weight: bold; text-align: center;">
-                <p style="font-size: 12px;">Conferência do Mapa cod. <?php echo $this->codMapa ?></p>
-                <p style="font-size: 12px; margin-top: 10px;">Expedição Nº <?php echo $this->expedicao ?></p>
-            </div>
             <div class="field">
                 <input type="hidden" name="idVolume" id="idVolume" value="<?php echo $this->idVolume ?>" size="40" maxlength="100" style="width: 99%">
                 <input type="hidden" name="idMapa" id="idMapa" value="<?php echo $this->idMapa ?>" size="40" maxlength="100" style="width: 99%">
@@ -35,68 +31,70 @@ if ($this->erro) {
                 </div>
                 <div class="field">
                     <label for="rua" class="field optional">*Código de Barras</label>
-                    <input type="text" name="codigoBarras" id="codigoBarras" class="required focus" size="40" maxlength="100" style="width: 99%">
+                    <input type="text" name="codigoBarras" id="codigoBarras" class="focus" size="40" maxlength="100" style="width: 99%">
                 </div>
             <?php else : ?>
                 <div class="field">
                     <label for="rua" class="field optional">*Código de Barras</label>
-                    <input type="text" name="codigoBarras" id="codigoBarras" class="required focus" size="40" maxlength="100" style="width: 99%">
+                    <input type="text" name="codigoBarras" id="codigoBarras" class="focus" size="40" maxlength="100" style="width: 99%">
                 </div>
                 <div class="field">
                     <label for="rua" class="field optional">*Qtd</label>
-                    <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" onclick="selecionar()" onkeydown="nextInput(event)" style="width: 80%">
+                    <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" onkeydown="nextInput(event)" style="width: 80%">
                 </div>
             <?php endif; ?>
-            <input type="submit" name="submit" id="submit" value="Buscar" class="btn gradientBtn">
+            <input type="button" name="buscar-sumbit" id="buscar-sumbit" value="Conferir" class="btn gradientBtn">
             <?php if (!$this->separacaoEmbalado) : ?>
-            <input type="submit" class="btn gradientBtn" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/' . $this->idExpedicao . '/idMapa/' . $this->idMapa . '/mapa/S' ?>" value="Finalizar">
-            <input type="submit" class="btn gradientBtn" href="<?php echo '/mobile/expedicao/index/idCentral/' . $this->central ?>" value="Alt. Mapa">
+                <input style="width: 300px;" type="button" class="btn gradientBtn" onclick="window.location = '<?php echo '/mobile/expedicao/finalizar/idExpedicao/' . $this->idExpedicao . '/idMapa/' . $this->idMapa . '/mapa/S/checkout/1' ?>'" value="Finalizar">
+                <input type="submit" class="btn gradientBtn" href="<?php echo '/mobile/expedicao/index/idCentral/' . $this->central ?>" value="Alt. Mapa">
             <?php endif; ?>
             <?php if ($this->idVolume != "") : ?>
                 <legend>Volume: <?php echo $this->dscVolume ?></legend>
                 <a class="btn gradientBtn" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a>
             <?php endif; ?>
             <?php if ($this->separacaoEmbalado) : ?>
-                <a class="btn gradientBtn" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>" >Fechar Caixa</a>
+                <input type="button" style="margin-top:20px" class="btn gradientBtn" onclick="window.location='<?php echo '/mobile/expedicao/fecha-mapa-embalado/checkout/1/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>'" value="Fechar Caixa" />
             <?php endif; ?>
 
         </fieldset>
     </form>
-
-    <div style="margin: 45px 17px 100px 17px;">
+<div style="text-align: center;font-size: 12px; color: #f14c4c; font-weight: bold;" id="error"></div>
+<div style="text-align: center;font-size: 12px; color: #19bd06; font-weight: bold;" id="success"></div>
+    <div style="margin: 25px 17px 100px 17px;">
+        <div style="margin-bottom: 10px;">
+            <span style="font-size: 14px;color: #1c94c4;font-weight: bold; margin-left: 17%; margin-right: 35%;">PRODUTOS A CONFERIR</span>
+            <span style="font-size: 14px;color: #1c94c4;font-weight: bold;">PRODUTOS CONFERIDOS</span>
+        </div>
         <div id="conferir" class="boxConfer" style="float: left;">
-            <p style="text-align: center;font-size: 14px;color: #1c94c4;font-weight: bold;margin-top: -20px;">Produtos a Conferir</p>
             <?php
             if (is_array($this->produtos)) {
                 foreach ($this->produtos as $key => $value) {
                     ?>
-                    <p cod_barras="<?php echo $value['COD_BARRAS'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; margin-top: 10px; text-align: center;"><?php echo $value['DSC_PRODUTO'] ?> </p>
+                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" 
+                       style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; margin-top: 10px; text-align: center;">
+                        <?php echo $value['DSC_PRODUTO'] ?> </p>
                     <?php
                 }
             }
             ?>
         </div>
         <div id="conferidos" class="boxConfer" style="float: right;">
-            <p style="text-align: center; font-size: 14px;color: #1c94c4;font-weight: bold;margin-top: -20px;">Produtos Conferidos</p>
             <?php
             if (is_array($this->produtos)) {
                 foreach ($this->produtos as $key => $value) {
                     ?>
-                    <p style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none"><?= $value['DSC_PRODUTO'] ?> </p>
+                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo $value['DSC_PRODUTO'] ?> </p>
+                    <?php
+                }
+                foreach ($this->produtosConferidos as $key => $value) {
+                    ?>
+                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center;margin-top: 10px; "><?php echo $value['DSC_PRODUTO'] ?> </p>
                     <?php
                 }
             }
             ?>
         </div>
     </div>
-
-
     <?php
 }
 ?>
-<script>
-
-//    $('p[cod_barras=7898574406006]').hide();
-//    $('#conferidos').css('height', $('#conferir').height());
-//    $('#conferir').css('height', $('#conferir').height());
-</script>
