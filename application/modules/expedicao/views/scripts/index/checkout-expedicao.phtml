@@ -43,7 +43,7 @@ if ($recarregar == 1) {
                 $(".cliente-btn").click(function () {
                     $('#checkout-expedicao').append($('#form-clientes').find('#idExpedicao'));
                     $('#checkout-expedicao').append('<input type="hidden" id="cod_pessoa" name="cod_pessoa" value="' + $(this).attr('cod_pessoa') + '" />');
-                    $('#fieldset-identificacao').prepend('<div id="info" class="field" style=" color: rgba(132, 71, 28, 0.63); float: right; margin-left: 30px; font-size: 12px; font-weight: bold; text-align: center;">\n\
+                    $('#fieldset-identificacao').prepend('<div id="info" class="field" style=" color: rgba(208, 105, 33, 0.88); margin-top: 15px; float: right; margin-left: 30px; font-size: 12px; font-weight: bold; text-align: center;">\n\
                     <p style="font-size: 12px;">' + $(this).val() + '</p></div>');
                     $('#form-clientes').remove();
                     $.ajax({
