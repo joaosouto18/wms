@@ -298,7 +298,9 @@ class Expedicao_IndexController extends Action
                 }
 
                 foreach ($pedidos as $pedido) {
-                    $pedidoRepo->removeReservaEstoque($pedido->getId());
+                    $pedidoRepo->removeReservaEstoque($pedido->getId(), false);
+                    $pedido->setIndEtiquetaMapaGerado('N');
+                    $this->_em->persist($pedido);
                 }
 
                 $AndamentoRepo->save("Carga " . $cargaEn->getCodCargaExterno() . " retirada da expedição atraves do desagrupamento de cargas", $cargaEn->getCodExpedicao());
