@@ -45,17 +45,17 @@
 
         <tr style="font-weight: bold">
             <td>Cód. Barras</td>
-            <td>Endereço</td>
+            <td style="display:none">Endereço</td>
             <td>Embalado</td>
-            <td>P.Reposição</td>
-            <td>C.Picking</td>
+            <td style="display:none">P.Reposição</td>
+            <td style="display:none">C.Picking</td>
         </tr>
         <tr>
             <td><span class="codigoBarras"><%=this.codigoBarras%><span></td>
-            <td><span class="endereco"><%=this.endereco%><span></td>
-            <td><span class="endereco"><%=this.lblEmbalado%><span></td>
-            <td><span class="endereco"><%=this.pontoReposicao%><span></td>
-            <td><span class="endereco"><%=this.capacidadePicking%><span></td>
+            <td style="display:none"><span class="endereco dscEndereco"><%=this.endereco%><span></td>
+            <td><span class="endereco embalado"><%=this.lblEmbalado%><span></td>
+            <td style="display:none"><span class="endereco pontoReposicao"><%=this.pontoReposicao%><span></td>
+            <td style="display:none"><span class="endereco capacidadePicking"><%=this.capacidadePicking%><span></td>
         </tr>
     </table>
 
