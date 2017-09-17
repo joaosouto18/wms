@@ -1541,9 +1541,8 @@ class ExpedicaoRepository extends EntityRepository {
                  WHERE 1 = 1' . $FullWhereFinal . '
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
-//        echo $sql; exit;
+
         return \Wms\Domain\EntityRepository::nativeQuery($sql);
-//        return $result=$this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -3162,6 +3161,26 @@ class ExpedicaoRepository extends EntityRepository {
                 ORDER BY PP.COD_PEDIDO, PR.COD_PRODUTO, PR.DSC_GRADE, PP.QUANTIDADE, PP.QTD_CORTADA";
 
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getMapaSeparacaoCargasByExpedicao($codExpedicao, $codCarga = null)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('ms.id codMapaSeparacao, c.id codCarga')
+            ->from('wms:Expedicao\MapaSeparacao', 'ms')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoPedido', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
+            ->innerJoin('msp.pedidoProduto', 'pp')
+            ->innerJoin('pp.pedido', 'p')
+            ->innerJoin('p.carga', 'c')
+            ->innerJoin('c.expedicao', 'e')
+            ->where("e.id = $codExpedicao")
+            ->groupBy('ms.id,c.id')
+            ->orderBy('ms.id', 'ASC');
+        if (isset($codCarga) && !empty($codCarga)) {
+            $sql->andWhere("c.id = $codCarga");
+        }
+
+        return $sql->getQuery()->getResult();
     }
 
 }

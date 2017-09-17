@@ -245,6 +245,7 @@ class Expedicao_IndexController extends Action
         if (isset($params['placa']) && !empty($params['placa'])) {
             $idCarga = $this->_getParam('COD_CARGA');
             $placa = $params['placa'];
+            $idExpedicao = $params['id'];
 
             /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $AndamentoRepo */
             $AndamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
@@ -254,6 +255,8 @@ class Expedicao_IndexController extends Action
             $ExpedicaoRepo = $this->_em->getRepository('wms:Expedicao');
             /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $CargaRepo */
             $CargaRepo = $this->_em->getRepository('wms:Expedicao\Carga');
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepository */
+            $mapaSeparacaoRepository = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
 
             try {
                 /** @var \Wms\Domain\Entity\Expedicao\Carga $cargaEn */
@@ -263,16 +266,23 @@ class Expedicao_IndexController extends Action
                 $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
                 $pedidos = $pedidoRepo->findBy(array('codCarga' => $cargaEn->getId()));
 
-                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedidoRepository $ondaPedidoRepo */
-                $ondaPedidoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido');
-                foreach ($pedidos as $pedidoEn) {
-                    //$ondaPedidoEn = $ondaPedidoRepo->findBy(array('pedido' => $pedidoEn->getId()));
-
-                    if ($pedidoEn->getIndEtiquetaMapaGerado() == 'S') {
-                        throw new \Exception('Carga não pode ser desagrupada, existem etiquetas/Mapas gerados!');
-                    //} else if (count($ondaPedidoEn) > 0) {
-                    //    throw new \Exception('Carga não pode ser desagrupada, existe ressuprimento gerado!');
+                $mapaSeparacaoCargas = $ExpedicaoRepo->getMapaSeparacaoCargasByExpedicao($idExpedicao);
+                $codMapaSeparacaoAnterior = null;
+                $codCargaAnterior = null;
+                foreach ($mapaSeparacaoCargas as $mapaSeparacaoCarga) {
+                    $codMapaSeparacao = $mapaSeparacaoCarga['codMapaSeparacao'];
+                    $codCarga = $mapaSeparacaoCarga['codCarga'];
+                    if ($codMapaSeparacao == $codMapaSeparacaoAnterior && $codCarga != $codCargaAnterior) {
+                        throw new \Exception('Carga não pode ser desagrupada, existem etiquetas/Mapas gerados para duas cargas distintas!');
                     }
+                    $codMapaSeparacaoAnterior = $mapaSeparacaoCarga['codMapaSeparacao'];
+                    $codCargaAnterior = $mapaSeparacaoCarga['codCarga'];
+                }
+
+                $mapasSeparacaoExcluir = $ExpedicaoRepo->getMapaSeparacaoCargasByExpedicao($idExpedicao, $idCarga);
+                foreach ($mapasSeparacaoExcluir as $mapaSeparacao) {
+                    $mapaSeparacaoEn = $mapaSeparacaoRepository->find($mapaSeparacao['codMapaSeparacao']);
+                    $this->_em->remove($mapaSeparacaoEn);
                 }
 
                 $countCortadas = $EtiquetaRepo->countByStatus(Expedicao\EtiquetaSeparacao::STATUS_CORTADO, $cargaEn->getExpedicao(), null, null, $idCarga);
