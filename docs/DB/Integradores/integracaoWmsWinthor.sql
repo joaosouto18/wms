@@ -283,8 +283,14 @@ INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO,COD_CONEXAO_INTEGRACAO,DSC_QUER
   'SELECT c.numcar CARGA, v.placa PLACA, c.numped PEDIDO, c.codpraca COD_PRACA, pr.praca DSC_PRACA, pr.rota COD_ROTA, rota.descricao DSC_ROTA, c.codcli COD_CLIENTE, cli.cliente NOME, cli.cgcent CPF_CNPJ, cli.tipofj TIPO_PESSOA, cli.enderent LOGRADOURO, cli.numeroent NUMERO, cli.bairroent BAIRRO, cli.municent CIDADE, cli.estent UF, cli.complementoent COMPLEMENTO, cli.pontorefer REFERENCIA, cli.cepent CEP, i.codprod PRODUTO, '||'''UNICA'''||' GRADE, i.qt QTD, SUM(i.qt*i.pvenda) VLR_VENDA, TO_CHAR(TO_DATE(g.datamon || '||''' '''||'||g.horamon||'||''':'''||'||g.minutomon,'||'''DD/MM/YY HH24:MI:SS'''||'),'||'''DD/MM/YYYY HH24:MI:SS'''||') AS DTH FROM pcpedc c LEFT JOIN pcpedi i ON c.numped=i.numped LEFT JOIN pcpraca pr ON pr.codpraca=c.codpraca LEFT JOIN pcrotaexp rota ON pr.rota=rota.codrota LEFT JOIN pcclient cli ON c.codcli=cli.codcli LEFT JOIN pccarreg g ON c.numcar=g.numcar LEFT JOIN pcveicul v ON g.codveiculo=v.codveiculo WHERE 1 = 1 AND g.horamon > 0 AND g.minutomon > 0 AND c.posicao NOT IN ('''||'C' ||''')  AND c.origemped = ' || '''B''' || ' :where GROUP BY c.numcar, v.placa, c.numped, c.codpraca, pr.praca, pr.rota, rota.descricao, c.codcli, cli.cliente, cli.cgcent, cli.tipofj, cli.enderent, cli.numeroent, cli.bairroent, cli.municent, cli.estent, cli.complementoent, cli.pontorefer, cli.cepent, i.codprod, i.qt, i.numseq, g.datamon, g.horamon, g.minutomon ORDER BY c.numped',
   602,'S',SYSDATE);
 
+/*
+ Filtro por data desativado temporariamente
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
   VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 19, 610, 'AND (TO_DATE(g.datamon ||'||''' '''||'||g.horamon||'||''':'''||'||g.minutomon,'||'''DD/MM/YY HH24:MI:SS'''||') > TO_DATE('||''':?1'''||','||'''DD/MM/YYYY HH24:MI:SS'''||')) AND C.CODFILIAL IN (:codFilial)');
+
+ */
+INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
+  VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 19, 610, ' AND 1 = 2');
 
 INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO)
   VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 19, 611, ' AND c.numcar = :?1 AND C.CODFILIAL IN (:codFilial)');
