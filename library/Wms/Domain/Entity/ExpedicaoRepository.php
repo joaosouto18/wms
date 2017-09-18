@@ -199,9 +199,14 @@ class ExpedicaoRepository extends EntityRepository {
                 throw new \Exception("A Filial " . $deposito->getFilial()->getPessoa()->getNomeFantasia() . " não utiliza ressuprimento");
             }
 
-            $produtosRessuprir = $this->getProdutosSemOnda($strExpedicao, $central);
+            $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
+            /** @var ExpedicaoEntity\ModeloSeparacao $modeloSeparacaoEn */
+            $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
+            $quebraPulmaoDoca = $modeloSeparacaoEn->getQuebraPulmaDoca();
 
-            if (empty($produtosRessuprir)) {
+            $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
+
+            if (empty($pedidosProdutosRessuprir)) {
                 throw new \Exception("Não foi encontrado produto pendente de onda de ressuprimento ou a quantidade cortada é equivalente a do pedido");
             }
 
@@ -245,13 +250,6 @@ class ExpedicaoRepository extends EntityRepository {
                 'osRepo' => $ordemServicoRepo,
                 'siglaRepo' => $siglaRepo
             );
-
-            $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
-            /** @var ExpedicaoEntity\ModeloSeparacao $modeloSeparacaoEn */
-            $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
-            $quebraPulmaoDoca = $modeloSeparacaoEn->getQuebraPulmaDoca();
-
-            $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
 
             $dadosProdutos = array();
             foreach ($pedidosProdutosRessuprir as $produto) {
@@ -308,7 +306,7 @@ class ExpedicaoRepository extends EntityRepository {
             $reservaEstoqueExpedicaoRepo->gerarReservaSaidaPulmao($sairDoPulmao, $repositorios);
             $this->getEntityManager()->flush();
 
-            $qtdOsGerada = $ondaRepo->calculaRessuprimentoByProduto($produtosRessuprir, $ondaEn, $dadosProdutos, $repositorios);
+            $qtdOsGerada = $ondaRepo->calculaRessuprimentoByProduto($sairDoPicking, $ondaEn, $dadosProdutos, $repositorios);
 
             $this->getEntityManager()->flush();
             $ondaRepo->sequenciaOndasOs();
