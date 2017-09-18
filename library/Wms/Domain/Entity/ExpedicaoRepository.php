@@ -750,7 +750,7 @@ class ExpedicaoRepository extends EntityRepository {
 
             if ($this->getSystemParameterValue('VALIDA_RESERVA_SAIDA_FINALIZACA_EXPEDICAO') == 'S') {
                 if ($this->validaReservaSaidaCorretaByExpedicao($idExpedicao) === false) {
-                    throw new \Exception("Existiram falhas gerando ao finalizar esta expedição. Consulte a equipe de desenvolvimento");
+                    throw new \Exception("Existiram falhas ao finalizar esta expedição. Consulte a equipe de desenvolvimento");
                 }
             }
 
