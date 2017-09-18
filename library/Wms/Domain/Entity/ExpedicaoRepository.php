@@ -2904,7 +2904,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
     }
 
-    public function cortaPedido($codPedido,$pedidoProdutoEn , $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null) {
+    public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null) {
 
         /** @var ExpedicaoEntity\AndamentoRepository $expedicaoAndamentoRepo */
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');

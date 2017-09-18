@@ -10,19 +10,19 @@ use Doctrine\ORM\EntityRepository,
 class EstoqueRepository extends EntityRepository
 {
     /*
-      $params = array();
-      $params['produto'];      - obrigatorio, entidade de produto - wms:Produto
-      $params['endereco'];     - obrigatorio, entidade de produto - wms:Deposito\Endereco
-      $params['qtd'];          - obrigatorio, quantidade a movimentar
-      $params['volume'];       - entidade do volume a movimentar - wms:Produto\Volume
-      $params['embalagem'];    - entidade da embalagem a movimentar - wms:Produto\Embalagem
-      $params['tipo']           - tipo de movimentação ('S'=> Sistema, 'M'=> Manual, 'I' => Inventario, 'RC' => Ressuprimento Corretivo
-      'RP' => 'Ressuprimento Preventivo, 'E' => Expedicao )
-      $params['observacoes'];  - observações
-      $params['unitizador'];   - entidade do unitizador a movimentar - wms:Armazenagem\Unitizador
-      $params['os'];           - entidade de OS relacionada a movimentação - wms:OrdemServico
-      $params['uma'];          - id da U.M.A
-      $params['usuario'];      - entidade de usuario - wms:Usuario
+     $params = array();
+     $params['produto'];      - obrigatorio, entidade de produto - wms:Produto
+     $params['endereco'];     - obrigatorio, entidade de produto - wms:Deposito\Endereco
+     $params['qtd'];          - obrigatorio, quantidade a movimentar
+     $params['volume'];       - entidade do volume a movimentar - wms:Produto\Volume
+     $params['embalagem'];    - entidade da embalagem a movimentar - wms:Produto\Embalagem
+     $params['tipo']           - tipo de movimentação ('S'=> Sistema, 'M'=> Manual, 'I' => Inventario, 'RC' => Ressuprimento Corretivo
+                               'RP' => 'Ressuprimento Preventivo, 'E' => Expedicao )
+     $params['observacoes'];  - observações
+     $params['unitizador'];   - entidade do unitizador a movimentar - wms:Armazenagem\Unitizador
+     $params['os'];           - entidade de OS relacionada a movimentação - wms:OrdemServico
+     $params['uma'];          - id da U.M.A
+     $params['usuario'];      - entidade de usuario - wms:Usuario
      */
     public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false, $dataValidade = null)
     {
@@ -55,10 +55,10 @@ class EstoqueRepository extends EntityRepository
                         INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                         WHERE RE.IND_ATENDIDA = 'N' AND RE.TIPO_RESERVA = 'S'
                         AND REP.COD_PRODUTO = '$codProduto' AND REP.DSC_GRADE = '$grade' AND RE.COD_DEPOSITO_ENDERECO = $endereco";
-            if (isset($volumeEn) && !empty($volumeEn)) {
-                $idVolume = $volumeEn->getId();
-                $dql .= " AND REP.COD_PRODUTO_VOLUME = $idVolume";
-            }
+                        if (isset($volumeEn) && !empty($volumeEn)) {
+                            $idVolume = $volumeEn->getId();
+                            $dql .= " AND REP.COD_PRODUTO_VOLUME = $idVolume";
+                        }
             $dql .= " GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO, NVL(COD_PRODUTO_VOLUME,0)";
 
             $resultado = $this->getEntityManager()->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -69,7 +69,7 @@ class EstoqueRepository extends EntityRepository
         }
 
         $usuarioEn = null;
-        if (isset($params['usuario']) and ! is_null($params['usuario'])) {
+        if (isset($params['usuario']) and !is_null($params['usuario'])) {
             $usuarioEn = $params['usuario'];
         } else {
             $auth = \Zend_Auth::getInstance();
@@ -79,7 +79,7 @@ class EstoqueRepository extends EntityRepository
         }
 
         $volumeEn = null;
-        if (isset($params['volume']) and ! is_null($params['volume']) && !empty($params['volume'])) {
+        if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])){
             $volumeEn = $params['volume'];
             $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn));
         } else {
@@ -87,7 +87,7 @@ class EstoqueRepository extends EntityRepository
         }
 
         $embalagemEn = null;
-        if (isset($params['embalagem']) and ! is_null($params['embalagem']) && !empty($params['embalagem'])) {
+        if (isset($params['embalagem']) and !is_null($params['embalagem']) && !empty($params['embalagem'])) {
             $embalagemEn = $params['embalagem'];
         }
 
