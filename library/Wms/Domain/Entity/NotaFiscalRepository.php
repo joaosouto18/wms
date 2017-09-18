@@ -18,11 +18,12 @@ class NotaFiscalRepository extends EntityRepository {
 
     public function getItensNotaByRecebimento($idRecebimento) {
         $dql = $this->_em->createQueryBuilder()
-                ->select('nfi.codProduto, nfi.grade')
-                ->from('wms:NotaFiscal\Item', 'nfi')
-                ->innerJoin('nfi.notaFiscal', 'nf')
-                ->where('nf.recebimento = :recebimento')
-                ->setParameter(':recebimento', $idRecebimento);
+            ->select('nfi.codProduto, nfi.grade')
+            ->distinct(true)
+            ->from('wms:NotaFiscal\Item', 'nfi')
+            ->innerJoin('nfi.notaFiscal', 'nf')
+            ->where('nf.recebimento = :recebimento')
+            ->setParameter(':recebimento', $idRecebimento);
 
         return $dql->getQuery()->getResult();
     }
@@ -201,7 +202,7 @@ class NotaFiscalRepository extends EntityRepository {
      */
     public function getItemConferencia($idRecebimento) {
         $sql = "
-            SELECT nfi.cod_produto codigo, nfi.dsc_grade grade, p.dsc_produto descricao, SUM(nfi.qtd_item) quantidade, p.possui_validade, p.dias_vida_util
+            SELECT nfi.cod_produto codigo, nfi.dsc_grade grade, p.dsc_produto descricao, SUM(nfi.qtd_item) quantidade, p.possui_validade, p.dias_vida_util, p.cod_tipo_Comercializacao
             FROM nota_fiscal nf
             INNER JOIN nota_fiscal_item nfi ON (nf.cod_nota_fiscal = nfi.cod_nota_fiscal)
             INNER JOIN produto p ON (p.cod_produto = nfi.cod_produto AND p.dsc_grade = nfi.dsc_grade)
@@ -216,7 +217,7 @@ class NotaFiscalRepository extends EntityRepository {
                     AND rc.dsc_grade = nfi.dsc_grade
                     AND rc.qtd_divergencia = 0
                 )
-           GROUP BY nfi.cod_produto, nfi.dsc_grade, p.dsc_produto, p.possui_validade, p.dias_vida_util
+           GROUP BY nfi.cod_produto, nfi.dsc_grade, p.dsc_produto, p.possui_validade, p.dias_vida_util, p.cod_tipo_Comercializacao
            ORDER BY nfi.cod_produto, nfi.dsc_grade";
 
         $array = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -400,8 +401,7 @@ class NotaFiscalRepository extends EntityRepository {
             LEFT JOIN RECEBIMENTO_CONFERENCIA RC2 ON (RC2.COD_OS = OS.COD_OS AND RC2.COD_PRODUTO = NFI.COD_PRODUTO AND RC2.DSC_GRADE = NFI.DSC_GRADE AND RC2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) 
             WHERE NF.COD_FORNECEDOR = '$idFornecedor' 
                 AND NF.NUM_NOTA_FISCAL = '$numero' 
-                AND NF.COD_SERIE_NOTA_FISCAL = '$serie' 
-                AND TO_CHAR(NF.DAT_EMISSAO, 'DD/MM/YYYY') = '$dataEmissao'
+                AND NF.COD_SERIE_NOTA_FISCAL = '$serie'
                 AND NF.COD_STATUS = '$idStatus'
                 AND NOT EXISTS (SELECT 'X' 
                                 FROM RECEBIMENTO_CONFERENCIA RC2

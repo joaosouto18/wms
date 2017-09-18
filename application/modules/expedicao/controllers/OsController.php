@@ -20,6 +20,8 @@ class Expedicao_OsController extends Action
         $EtiquetaSeparacaoRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $MapaSeparacaoRepo */
         $MapaSeparacaoRepo   = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+        $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo   = $this->_em->getRepository('wms:Expedicao');
@@ -184,6 +186,11 @@ class Expedicao_OsController extends Action
             $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_EXPEDIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga'], $resumo['codCargaExterno']);
             $resumoByPlacaCarga[$key]['qtdRecebidoTransbordo'] = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO,$idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga'], $resumo['codCargaExterno']) + $resumoByPlacaCarga[$key]['qtdExpedidoTransbordo'];
             $resumoByPlacaCarga[$key]['qtdConferidas']         = $EtiquetaSeparacaoRepo->countByPontoTransbordo(EtiquetaSeparacao::STATUS_CONFERIDO,          $idExpedicao , $resumo['pontoTransbordo'], $resumo['placaCarga'], $resumo['codCargaExterno']) + $resumoByPlacaCarga[$key]['qtdRecebidoTransbordo'];
+            $resumoByPlacaCarga[$key]['situacao'] = "";
+            $pedidosPendentes = $pedidoRepo->findPedidosNaoConferidos($idExpedicao, $resumo['carga']);
+            if ($pedidosPendentes == null) {
+                $resumoByPlacaCarga[$key]['situacao'] = "FINALIZADO";
+            }
         }
         $this->view->resumoPlacaCarga    = $resumoByPlacaCarga;
 

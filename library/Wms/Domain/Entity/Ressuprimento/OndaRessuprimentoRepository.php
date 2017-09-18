@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\Ressuprimento;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
+use Wms\Domain\Entity\Produto;
 use Wms\Math;
 
 class OndaRessuprimentoRepository extends EntityRepository {
@@ -247,9 +248,10 @@ class OndaRessuprimentoRepository extends EntityRepository {
             $grade = $produto['DSC_GRADE'];
             $qtd = $produto['QTD'] * -1;
             $codPedido = $produto['COD_PEDIDO'];
-
+            /** @var Produto $produtoEn */
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-            if ($produtoEn->getTipoComercializacao()->getId() == 1) {
+            $tipoComercializacao = $produtoEn->getTipoComercializacao()->getId();
+            if ($tipoComercializacao == Produto::TIPO_UNITARIO) {
                 $embalagensEn = $dadosProdutos[$codProduto][$grade]['embalagensASC'];
 
                 if (!isset($embalagensEn[0])) {
@@ -279,8 +281,18 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
             } else {
                 $normas = $volumeRepo->getNormasByProduto($codProduto, $grade);
+                if (empty($normas)) {
+                    $checkEmb = $produtoEn->getEmbalagens()->toArray();
+                    if (!empty($checkEmb)) {
+                        throw new \Exception("O produto $codProduto grade $grade está configurado como COMPOSTO tento embalagem cadastrada, verifique a possibilidade de alterar o tipo de comercialização para UNITARIO");
+                    }
+                    throw new \Exception("O produto $codProduto grade $grade não tem norma e volume cadastrados");
+                }
                 foreach ($normas as $norma) {
                     $volumes = $volumeRepo->getVolumesByNorma($norma->getId(), $codProduto, $grade);
+                    if (empty($volumes)) {
+                        throw new \Exception("O produto $codProduto grade $grade não tem volume cadastrado");
+                    }
                     $produtosArray = array();
                     $idPicking = null;
                     foreach ($volumes as $volume) {
@@ -352,7 +364,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         }
     }
 
-    public function saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios = null, $validade = null) {
+    public function saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios = null, $validade = null, $reservaEntrada = true) {
         /** @var \Wms\Domain\Entity\Util\SiglaRepository $siglaRepo */
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
@@ -391,7 +403,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         if (!empty($volumes))
             foreach ($volumes as $volume) {
                 $ondaRessuprimentoOsProduto = new OndaRessuprimentoOsProduto();
-                $ondaRessuprimentoOsProduto->setQtd($qtdOnda);
+                $ondaRessuprimentoOsProduto->setQtd(str_replace(",",".",$qtdOnda));
                 $ondaRessuprimentoOsProduto->setOndaRessuprimentoOs($ondaRessuprimentoOs);
                 $ondaRessuprimentoOsProduto->setCodProdutoVolume($volume);
                 $ondaRessuprimentoOsProduto->setCodProdutoEmbalagem(null);
@@ -429,12 +441,14 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $produtoArray['qtd'] = $qtdOnda;
                 $produtoArray['validade'] = $validade;
                 $produtosEntrada[] = $produtoArray;
-
                 $produtoArray['qtd'] = $qtdOnda * -1;
                 $produtosSaida[] = $produtoArray;
             }
 
         //ADICIONA AS RESERVAS DE ESTOQUE
+        if ($reservaEntrada == false) {
+            $produtosEntrada[0]['qtd'] = 0;
+        }
         $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
         $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(), $produtosSaida, "S", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
     }
@@ -598,7 +612,126 @@ class OndaRessuprimentoRepository extends EntityRepository {
             'enderecoRepo' => $enderecoRepo,
             'estoqueRepo' => $estoqueRepo
         );
+        $result = $this->getQueryRessuprimentoPreventivo($parametros);
 
+        $pickings = array();
+        /*
+         * TRATA RESULTADO DA QUERY
+         */
+        if (!empty($result) && is_array($result)) {
+            $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            foreach ($result as $key => $value) {
+                $result[$key]['PONTO_REPOSICAO'] = $result[$key]['CAPACIDADE_PICKING'];
+                $pickings[$key]['pontoReposicao'] = $result[$key]['CAPACIDADE_PICKING'];
+                $pickings[$key]['saldoPicking'] = $result[$key]['SALDO_PICKING'];
+                $result[$key]['SALDO_PICKING_INPUT'] = $result[$key]['SALDO_PICKING'];
+
+                $result[$key]['OCUPACAO'] = number_format($result[$key]['OCUPACAO'], 2, '.', '');
+                $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $value['COD_PRODUTO'], 'grade' => $value['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
+
+                $pickings[$key]['idPicking'] = $result[$key]['COD_DEPOSITO_ENDERECO'];
+                $pickings[$key]['norma'] = $result[$key]['NUM_NORMA'];
+                $pickings[$key]['tiporessuprimento'] = '';
+                if (isset($parametros['tiporessuprimento'])) {
+                    $pickings[$key]['tiporessuprimento'] = $parametros['tiporessuprimento'];
+                }
+                $pickings[$key]['volumes'] = null;
+                $result[$key]['ID_PICKING'] = $result[$key]['COD_DEPOSITO_ENDERECO'];
+                /*
+                 * CONTROI ARRAY DE DADOS PRODUTO PARA CALCULO DO RESSUPRIMENTO
+                 */
+                if (count($embalagensEn) > 0) {
+                    /*
+                     * CONVERTRE PARA CAIXA MASTER SOMENTE PARA EXIBIR
+                     */
+                    if ($value['SALDO_PICKING'] > 0) {
+                        $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['SALDO_PICKING']);
+                        $result[$key]['SALDO_PICKING'] = implode('<br />', $vetEstoque);
+                    }
+                    if ($value['CAPACIDADE_PICKING'] > 0) {
+                        $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['CAPACIDADE_PICKING']);
+                        $result[$key]['CAPACIDADE_PICKING'] = implode('<br />', $vetEstoque);
+                    }
+                    $embalagem = $embalagensEn[0];
+                    $embalagens = array();
+                    $embalagens[] = $embalagem->getId();
+                    $result[$key]['EMBALAGENS'] = $embalagens;
+                    $pickings[$key]['qtdEmbalagens'] = $embalagem->getQuantidade();
+                } else {
+                    $pickings[$key]['qtdEmbalagens'] = null;
+                    $normas = $volumeRepo->getNormasByProduto($value['COD_PRODUTO'], $value['DSC_GRADE']);
+                    foreach ($normas as $norma) {
+                        $volumesEn = $volumeRepo->getVolumesByNorma($norma->getId(), $value['COD_PRODUTO'], $value['DSC_GRADE']);
+                        $result[$key]['VOLUMES'] = array();
+                        $result[$key]['EMBALAGENS'] = null;
+                        $idPicking = null;
+                        foreach ($volumesEn as $volume) {
+                            if ($volume->getEndereco() != null) {
+                                $idPicking = $volume->getEndereco()->getId();
+                            }
+                            $result[$key]['VOLUMES'][] = $volume->getId();
+                            $pickings[$key]['volumes'][] = $volume->getId();
+                            $result[$key]['ID_PICKING'] = $idPicking;
+                            $result[$key]['CAPACIDADE_PICKING'] = $volume->getCapacidadePicking();
+                            $pickings[$key]['idPicking'] = $idPicking;
+                        }
+                    }
+                }
+                $pickings[$key]['embalagens'] = $result[$key]['EMBALAGENS'];
+                $pickings[$key]['capacidadePicking'] = $result[$key]['PONTO_REPOSICAO'];
+                $pickings[$key]['codProduto'] = $result[$key]['COD_PRODUTO'];
+                $pickings[$key]['grade'] = $result[$key]['DSC_GRADE'];
+                /*
+                 * FUNÇÃO QUE CALCULA RESSUPRIMENTO
+                 */
+                $os = $this->calculaRessuprimentoPreventivoByPicking($pickings[$key], $repositorios);
+                $vetEmb = $vetVol = $vetPulmoes = $vetOnda = $vetExibePulmao = array();
+                $result[$key]['TOTAL_ONDA'] = $totalOnda = 0;
+                if (count($os) > 0) {
+                    foreach ($os as $value) {
+                        $vetExibePulmao[$value['enderecoPulmao']] = $value['enderecoPulmao'];
+                        if ($value['enderecoPulmao'] != "null") {
+                            $vetOnda[$value['enderecoPulmao']] = $value['qtdOnda'];
+                            $totalOnda += $value['qtdOnda'];
+                        }
+                        if ($value['volumes'] != "null") {
+                            $vetVol[$value['enderecoPulmao']][] = json_decode($value['volumes']);
+                        } elseif ($value['embalagens'] != "null") {
+                            $vetEmb[$value['enderecoPulmao']][] = json_decode($value['embalagens']);
+                        }
+                    }
+                    foreach ($vetExibePulmao as $value) {
+                        $vetPulmoes[] = $value;
+                    }
+                    $result[$key]['TOTAL_ONDA'] = implode('<br />', $vetEstoque);
+                    if (empty($vetVol)) {
+                        if ($totalOnda > 0) {
+                            $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($result[$key]['COD_PRODUTO'], $result[$key]['DSC_GRADE'], $totalOnda);
+                            $result[$key]['TOTAL_ONDA'] = implode('<br />', $vetEstoque);
+                        }
+                    }
+                    $result[$key]['EMBALAGENS'] = json_encode($vetEmb);
+                    $result[$key]['VOLUMES'] = json_encode($vetVol);
+                    $result[$key]['PULMOES'] = json_encode($vetPulmoes);
+                    $result[$key]['PULMAO'] = '';
+                    $result[$key]['VALIDADE_ESTOQUE'] = '';
+                    $result[$key]['ID_PIKING'] = null;
+                    $result[$key]['QTD_ONDA'] = 0;
+                    $osFirst = reset($os);
+                    $result[$key]['VALIDADE_ESTOQUE'] = $osFirst['validadeEstoque'];
+                    $result[$key]['PULMAO'] = implode(' <br /> ', $vetExibePulmao);
+                    $result[$key]['ID_PIKING'] = $osFirst['idPicking'];
+                    $result[$key]['QTD_ONDA'] = json_encode($vetOnda);
+                } else {
+                    unset($result[$key]);
+                }
+            }
+        }
+        return $result;
+    }
+
+    public function getQueryRessuprimentoPreventivo($parametros) {
         $SQL = "SELECT DISTINCT P.COD_PRODUTO,
                     P.DSC_GRADE,
                     DE.DSC_DEPOSITO_ENDERECO,
@@ -648,7 +781,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)
                 AND NP.IND_PADRAO = 'S'
                 AND ((ESTOQUE_PULMAO.QTD + NVL(RS.QTD_RESERVA,0)) > 0)";
-//        $SQLWhere = " and P.COD_PRODUTO IN (18838)";
         $SQLWhere = " ";
         if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
             $SQLWhere .= "AND (DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
@@ -705,107 +837,179 @@ class OndaRessuprimentoRepository extends EntityRepository {
                   P.DSC_PRODUTO,
                   DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100  
                   ORDER BY DE.DSC_DEPOSITO_ENDERECO";
-        $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
-        $pickings = array();
-        /*
-         * TRATA RESULTADO DA QUERY
-         */
-        if (!empty($result) && is_array($result)) {
-            $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
-            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
-            foreach ($result as $key => $value) {
-                $result[$key]['PONTO_REPOSICAO'] = $result[$key]['CAPACIDADE_PICKING'];
-                $pickings[$key]['pontoReposicao'] = $result[$key]['CAPACIDADE_PICKING'];
-                $pickings[$key]['saldoPicking'] = $result[$key]['SALDO_PICKING'];
-                $result[$key]['SALDO_PICKING_INPUT'] = $result[$key]['SALDO_PICKING'];
+        return $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 
-                $result[$key]['OCUPACAO'] = number_format($result[$key]['OCUPACAO'], 2, '.', '');
-                $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $value['COD_PRODUTO'], 'grade' => $value['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
+    public function calculaProdutoAcumuladoByParams($parametros) {
+        $SQLWhere = $where = "";
+        if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
+            $where .= " AND (PA.QTD_VENDIDA * 100) / PRODUTO_EMBALAGEM.CAPACIDADE_PICKING >= " . $parametros['ocupacao'];
+        } else {
+            $where .= " AND (PA.QTD_VENDIDA * 100) / PRODUTO_EMBALAGEM.CAPACIDADE_PICKING = 0";
+        }
 
-                $pickings[$key]['idPicking'] = $result[$key]['COD_DEPOSITO_ENDERECO'];
-                $pickings[$key]['norma'] = $result[$key]['NUM_NORMA'];
-                $pickings[$key]['tiporessuprimento'] = $parametros['tiporessuprimento'];
-                $pickings[$key]['volumes'] = null;
-                $result[$key]['ID_PICKING'] = $result[$key]['COD_DEPOSITO_ENDERECO'];
-                /*
-                 * CONTROI ARRAY DE DADOS PRODUTO PARA CALCULO DO RESSUPRIMENTO
-                 */
-                if (count($embalagensEn) > 0) {
-                    /*
-                     * CONVERTRE PARA CAIXA MASTER SOMENTE PARA EXIBIR
-                     */
-                    if ($value['SALDO_PICKING'] > 0) {
-                        $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['SALDO_PICKING']);
-                        $result[$key]['SALDO_PICKING'] = implode('<br />', $vetEstoque);
-                    }
-                    if ($value['CAPACIDADE_PICKING'] > 0) {
-                        $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['CAPACIDADE_PICKING']);
-                        $result[$key]['CAPACIDADE_PICKING'] = implode('<br />', $vetEstoque);
-                    }
-                    $embalagem = $embalagensEn[0];
-                    $embalagens = array();
-                    $embalagens[] = $embalagem->getId();
-                    $result[$key]['EMBALAGENS'] = $embalagens;
-                    $pickings[$key]['qtdEmbalagens'] = $embalagem->getQuantidade();
-                } else {
-                    $pickings[$key]['qtdEmbalagens'] = null;
-                    $normas = $volumeRepo->getNormasByProduto($value['COD_PRODUTO'], $value['DSC_GRADE']);
-                    foreach ($normas as $norma) {
-                        $volumesEn = $volumeRepo->getVolumesByNorma($norma->getId(), $value['COD_PRODUTO'], $value['DSC_GRADE']);
-                        $result[$key]['VOLUMES'] = array();
-                        $result[$key]['EMBALAGENS'] = null;
-                        $idPicking = null;
-                        foreach ($volumesEn as $volume) {
-                            if ($volume->getEndereco() != null) {
-                                $idPicking = $volume->getEndereco()->getId();
-                            }
-                            $result[$key]['VOLUMES'][] = $volume->getId();
-                            $pickings[$key]['volumes'][] = $volume->getId();
-                            $result[$key]['ID_PICKING'] = $idPicking;
-                            $result[$key]['CAPACIDADE_PICKING'] = $volume->getCapacidadePicking();
-                            $pickings[$key]['idPicking'] = $idPicking;
-                        }
-                    }
+        if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
+            $SQLWhere .= " AND DE.COD_TIPO_ENDERECO = " . $parametros['tipoEndereco'];
+        }
+        if (isset($parametros['linhaSeparacao']) && !empty($parametros['linhaSeparacao'])) {
+            $SQLWhere .= " AND P.COD_LINHA_SEPARACAO = " . $parametros['linhaSeparacao'];
+        }
+        if (isset($parametros['rua']) && !empty($parametros['rua'])) {
+            $SQLWhere .= " AND DE.NUM_RUA >= " . $parametros['rua'];
+        }
+        if (isset($parametros['predio']) && !empty($parametros['predio'])) {
+            $SQLWhere .= " AND DE.NUM_PREDIO >= " . $parametros['predio'];
+        }
+        if (isset($parametros['nivel']) && !empty($parametros['nivel'])) {
+            $SQLWhere .= " AND DE.NUM_NIVEL >= " . $parametros['nivel'];
+        }
+        if (isset($parametros['apto']) && !empty($parametros['apto'])) {
+            $SQLWhere .= " AND DE.NUM_APARTAMENTO >= " . $parametros['apto'];
+        }
+        if (isset($parametros['ruaFinal']) && !empty($parametros['ruaFinal'])) {
+            $SQLWhere .= " AND DE.NUM_RUA <= " . $parametros['ruaFinal'];
+        }
+        if (isset($parametros['predioFinal']) && !empty($parametros['predioFinal'])) {
+            $SQLWhere .= " AND DE.NUM_PREDIO <= " . $parametros['predioFinal'];
+        }
+        if (isset($parametros['nivelFinal']) && !empty($parametros['nivelFinal'])) {
+            $SQLWhere .= " AND DE.NUM_NIVEL <= " . $parametros['nivelFinal'];
+        }
+        if (isset($parametros['aptoFinal']) && !empty($parametros['aptoFinal'])) {
+            $SQLWhere .= " AND DE.NUM_APARTAMENTO <= " . $parametros['aptoFinal'];
+        }
+
+        $sql = "SELECT
+                    PA.COD_PRODUTO,
+                    PA.DSC_GRADE,
+                    PA.QTD_VENDIDA,
+                    ESTOQUE_PULMAO.QTD AS QTD_ESTOQUE,
+                    ESTOQUE_PULMAO.DSC_DEPOSITO_ENDERECO,
+                    ESTOQUE_PULMAO.DTH_VALIDADE AS VALIDADE_ESTOQUE,
+                    ESTOQUE_PULMAO.COD_DEPOSITO_ENDERECO AS END_PULMAO,
+                    PRODUTO_EMBALAGEM.CAPACIDADE_PICKING,
+                    PRODUTO_EMBALAGEM.DSC_DEPOSITO_ENDERECO AS DSC_PICKING,
+                    PRODUTO_EMBALAGEM.COD_DEPOSITO_ENDERECO AS END_PICKING,
+                    PRODUTO_EMBALAGEM.DSC_PRODUTO,
+                    (PA.QTD_VENDIDA * 100) / PRODUTO_EMBALAGEM.CAPACIDADE_PICKING AS PERCENTUAL
+                FROM 
+                    PEDIDO_ACUMULADO PA 
+                    INNER JOIN (
+                                    SELECT 
+                                        E.COD_PRODUTO, 
+                                        SUM(E.QTD) as QTD,
+                                        E.DSC_GRADE,
+                                        DE2.DSC_DEPOSITO_ENDERECO,
+                                        DE2.COD_DEPOSITO_ENDERECO,
+                                        E.DTH_VALIDADE
+                                    FROM 
+                                        ESTOQUE E
+                                        INNER JOIN DEPOSITO_ENDERECO DE2 ON (E.COD_DEPOSITO_ENDERECO = DE2.COD_DEPOSITO_ENDERECO)
+                                    WHERE 
+                                        DE2.COD_CARACTERISTICA_ENDERECO = 38
+                                    GROUP BY 
+                                        E.COD_PRODUTO, 
+                                        E.DSC_GRADE,
+                                        DE2.DSC_DEPOSITO_ENDERECO,
+                                        DE2.COD_DEPOSITO_ENDERECO,
+                                        E.DTH_VALIDADE
+                                    ORDER BY 
+                                        NVL(E.DTH_VALIDADE, E.DTH_PRIMEIRA_MOVIMENTACAO), E.DTH_PRIMEIRA_MOVIMENTACAO
+                                ) ESTOQUE_PULMAO
+                ON ESTOQUE_PULMAO.COD_PRODUTO = PA.COD_PRODUTO
+                    AND ESTOQUE_PULMAO.DSC_GRADE = PA.DSC_GRADE
+                INNER JOIN (
+                                SELECT
+                                    PE.COD_PRODUTO,
+                                    PE.DSC_GRADE,
+                                    PE.CAPACIDADE_PICKING,
+                                    PE.COD_DEPOSITO_ENDERECO,
+                                    DE.DSC_DEPOSITO_ENDERECO,
+                                    MIN(PE.QTD_EMBALAGEM),
+                                    P.DSC_PRODUTO
+                                FROM 
+                                    PRODUTO_EMBALAGEM PE
+                                    INNER JOIN DEPOSITO_ENDERECO DE ON (PE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO)
+                                    INNER JOIN PRODUTO P ON (P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE)
+                                WHERE
+                                    1 = 1
+                                    $SQLWhere
+                                GROUP BY 
+                                    PE.COD_PRODUTO,
+                                    PE.DSC_GRADE,
+                                    PE.CAPACIDADE_PICKING,
+                                    PE.COD_DEPOSITO_ENDERECO,
+                                    DE.DSC_DEPOSITO_ENDERECO,
+                                    P.DSC_PRODUTO
+                            ) PRODUTO_EMBALAGEM
+                ON PRODUTO_EMBALAGEM.COD_PRODUTO = PA.COD_PRODUTO
+                AND PRODUTO_EMBALAGEM.DSC_GRADE = PA.DSC_GRADE
+                INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PRODUTO_EMBALAGEM.COD_DEPOSITO_ENDERECO
+            WHERE 1 = 1 $where --AND PA.COD_PRODUTO = 30916
+            ORDER 
+                BY PA.COD_PRODUTO";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $eliminaLinha = $qtdOnda = $restante = $qtdRessuprir = 0;
+        $arrayQtd = $arrayPulmao = array();
+        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        foreach ($result as $key => $value) {
+            $embalagensEn = $embalagemRepo->findOneBy(array('codProduto' => $value['COD_PRODUTO'], 'grade' => $value['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'ASC'));
+            $result[$key]['EMBALAGENS'] = json_encode(array(0 => $embalagensEn->getId()));
+            if (isset($value['VALIDADE_ESTOQUE'])) {
+                $result[$key]['VALIDADE_ESTOQUE'] = date("d/m/Y", strtotime($value['VALIDADE_ESTOQUE']));
+            }
+            $result[$key]['PERCENTUAL'] = number_format($result[$key]['PERCENTUAL'], 2, ',', '');
+            $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], null, $value['END_PULMAO'], "S");
+            $qtdEstoque = $value['QTD_ESTOQUE'] + $reservaSaidaPicking;
+            $qtdVendida = $value['QTD_VENDIDA'];
+
+            if ($value['QTD_VENDIDA'] > $value['CAPACIDADE_PICKING']) {
+                $qtdVendida = $value['CAPACIDADE_PICKING'];
+            }
+
+            if ($eliminaLinha !== $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE']) {
+                $arrayQtd = $arrayPulmao = array();
+                $eliminaLinha = 0;
+                if ($qtdVendida > $value['CAPACIDADE_PICKING']) {
+                    $qtdVendida = $value['CAPACIDADE_PICKING'];
                 }
-                $pickings[$key]['embalagens'] = $result[$key]['EMBALAGENS'];
-                $pickings[$key]['capacidadePicking'] = $result[$key]['PONTO_REPOSICAO'];
-                $pickings[$key]['codProduto'] = $result[$key]['COD_PRODUTO'];
-                $pickings[$key]['grade'] = $result[$key]['DSC_GRADE'];
-                /*
-                 * FUNÇÃO QUE CALCULA RESSUPRIMENTO
-                 */
-                $os = $this->calculaRessuprimentoPreventivoByPicking($pickings[$key], $repositorios);
-                $vetEmb = $vetVol = $vetPulmoes = $vetOnda = $vetExibePulmao = array();
-                if (count($os) > 0) {
-                    foreach ($os as $value) {
-                        $vetExibePulmao[$value['enderecoPulmao']] = $value['enderecoPulmao'];
-                        if ($value['enderecoPulmao'] != "null") {
-                            $vetOnda[$value['enderecoPulmao']] = $value['qtdOnda'];
-                        }
-                        if ($value['volumes'] != "null") {
-                            $vetVol[$value['enderecoPulmao']][] = json_decode($value['volumes']);
-                        } elseif ($value['embalagens'] != "null") {
-                            $vetEmb[$value['enderecoPulmao']][] = json_decode($value['embalagens']);
-                        }
+                $saldoEstoque = $qtdEstoque;
+                if ($saldoEstoque > 0) {
+                    if ($restante != 0) {
+                        $qtdVendida = $restante;
                     }
-                    foreach ($vetExibePulmao as $value) {
-                        $vetPulmoes[] = $value;
+                    if ($qtdVendida <= $saldoEstoque) {
+                        $qtdOnda = $qtdVendida;
+                        $qtdRessuprir += $qtdOnda;
+                        $eliminaLinha = $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'];
+                        $arrayQtd[$value['DSC_DEPOSITO_ENDERECO']] = $qtdOnda;
+                        $arrayPulmao[] = $value['DSC_DEPOSITO_ENDERECO'];
+                        $result[$key]['TOTAL_ONDA'] = $qtdRessuprir;
+                        $result[$key]['SALDO_PICKING'] = $value['CAPACIDADE_PICKING'] - $value['QTD_VENDIDA'];
+                        $result[$key]['QTD_ONDA'] = json_encode($arrayQtd);
+                        $result[$key]['PULMAO'] = implode(' <br /> ', $arrayPulmao);
+                        $result[$key]['PULMOES'] = json_encode($arrayPulmao);
+                        $arrayQtd = $arrayPulmao = array();
+                        $restante = $qtdRessuprir = 0;
+                    } else {
+                        $qtdOnda = $saldoEstoque;
+                        $arrayPulmao[] = $value['DSC_DEPOSITO_ENDERECO'];
+                        $arrayQtd[$value['DSC_DEPOSITO_ENDERECO']] = $qtdOnda;
+                        $restante = $qtdVendida - $saldoEstoque;
+                        unset($result[$key]);
+                        $qtdRessuprir += $qtdOnda;
                     }
-                    $result[$key]['EMBALAGENS'] = json_encode($vetEmb);
-                    $result[$key]['VOLUMES'] = json_encode($vetVol);
-                    $result[$key]['PULMOES'] = json_encode($vetPulmoes);
-                    $result[$key]['PULMAO'] = '';
-                    $result[$key]['VALIDADE_ESTOQUE'] = '';
-                    $result[$key]['ID_PIKING'] = null;
-                    $result[$key]['QTD_ONDA'] = 0;
-                    $osFirst = reset($os);
-                    $result[$key]['VALIDADE_ESTOQUE'] = $osFirst['validadeEstoque'];
-                    $result[$key]['PULMAO'] = implode(' <br /> ', $vetExibePulmao);
-                    $result[$key]['ID_PIKING'] = $osFirst['idPicking'];
-                    $result[$key]['QTD_ONDA'] = json_encode($vetOnda);
                 } else {
+                    $restante = 0;
+                    $qtdOnda = $arrayQtd = $arrayPulmao = array();
                     unset($result[$key]);
                 }
+            } else {
+                $restante = 0;
+                $qtdOnda = $arrayQtd = $arrayPulmao = array();
+                unset($result[$key]);
             }
         }
         return $result;

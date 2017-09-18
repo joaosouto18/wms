@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\Ressuprimento;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
+use Wms\Domain\Entity\Produto;
 
 class ReservaEstoqueRepository extends EntityRepository
 {
@@ -264,7 +265,7 @@ class ReservaEstoqueRepository extends EntityRepository
         }
 
         if ($reservaEstoqueEn != NULL) {
-            $reservaEstoqueEn->setAtendida("C");
+            $reservaEstoqueEn->setAtendida("N");
             $reservaEstoqueEn->setDataAtendimento(null);
             $reservaEstoqueEn->setDscObservacao("RESERVA DE ESTOQUE REABERTA POR ". $idUsuario);
             $reservaEstoqueEn->setUsuarioAtendimento(null);
@@ -283,26 +284,19 @@ class ReservaEstoqueRepository extends EntityRepository
             }
         }
 
-        if ($origemReserva == "O") {
-            throw new \Exception("Não é possível cancelar uma reserva de estoque de Onda de Ressuprimento");
-        } else if ($origemReserva == "U") {
-            $reservaEstoqueUmaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
-            $reservaEstoqueUmaEn = $reservaEstoqueUmaRepo->findOneBy(array('palete'=> $idOrigem, 'reservaEstoque'=> $reservaEstoqueEn));
-            $this->getEntityManager()->remove($reservaEstoqueUmaEn);
-        } else if ($origemReserva == "E") {
-            $reservaEstoqueExpedicaoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao");
-            $reservaEstoqueExpedicaoEn = $reservaEstoqueExpedicaoRepo->findOneBy(array('expedicao'=> $idOrigem, 'reservaEstoque'=> $reservaEstoqueEn));
-            $this->getEntityManager()->remove($reservaEstoqueExpedicaoEn);
+        if ($reservaEstoqueEn->getAtendida() == "N") {
+            $reservaEstoqueEn->setAtendida('C');
+            $this->getEntityManager()->flush();
+            return true;
+        } else {
+            /** @var ReservaEstoqueProduto $produto */
+            $produto = $reservaEstoqueEn->getProdutos()->toArray()[0];
+            $codProduto = $produto->getCodProduto();
+            $grade = $produto->getGrade();
+            $enderecoEn = $reservaEstoqueEn->getEndereco()->getDescricao();
+            $tipoReserva = ($reservaEstoqueEn->getTipoReserva() == "S") ? "saida": "entrada";
+            throw new \Exception("Não é permitido cancelar a reserva de $tipoReserva já atendida do produto $codProduto grade $grade, no endereco $enderecoEn");
         }
-
-        $reservaProdutos = $reservaEstoqueEn->getProdutos();
-        foreach($reservaProdutos as $reservaProduto){
-            $this->getEntityManager()->remove($reservaProduto);
-        }
-        $this->getEntityManager()->remove($reservaEstoqueEn);
-        $this->getEntityManager()->flush();
-
-        return true;
     }
 
     private function addReservaEstoque($enderecoEn, $produtos, $tipoReserva, $usuario, $observacoes, $repositorios = null)
@@ -340,7 +334,7 @@ class ReservaEstoqueRepository extends EntityRepository
                 $dataValidade = date_create_from_format('d/m/Y',$produto['validade']);
                 if ($dataValidade) $reservaEstoqueProduto->setValidade($dataValidade);
             }
-            $reservaEstoqueProduto->setQtd($produto['qtd']);
+            $reservaEstoqueProduto->setQtd(str_replace(",",".",$produto['qtd']));
             $reservaEstoqueProduto->setReservaEstoque($reservaEstoque);
             $this->getEntityManager()->persist($reservaEstoqueProduto);
         }

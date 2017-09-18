@@ -7,7 +7,8 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity,
     Wms\Util\Endereco as EnderecoUtil;
 
-class EstoqueRepository extends EntityRepository {
+class EstoqueRepository extends EntityRepository
+{
     /*
       $params = array();
       $params['produto'];      - obrigatorio, entidade de produto - wms:Produto
@@ -86,12 +87,12 @@ class EstoqueRepository extends EntityRepository {
         }
 
         $embalagemEn = null;
-        if (isset($params['embalagem']) and !is_null($params['embalagem']) && !empty($params['embalagem'])) {
+        if (isset($params['embalagem']) and ! is_null($params['embalagem']) && !empty($params['embalagem'])) {
             $embalagemEn = $params['embalagem'];
         }
 
         $tipo = "S";
-        if (isset($params['tipo']) and !is_null($params['tipo'])) {
+        if (isset($params['tipo']) and !is_null($params['tipo'])){
             $tipo = $params['tipo'];
         }
         $observacoes = "";
@@ -213,9 +214,11 @@ class EstoqueRepository extends EntityRepository {
         return true;
     }
 
-    public function movimentaEstoqueInventario($params) {
+    public function movimentaEstoqueInventario($params)
+    {
         return $this->movimentaEstoque(
-                        $params['codProduto'], $params['grade'], $params['codProdutoVolume'], $params['codProdutoEmbalagem'], $params['idEndereco'], $params['qtd'], $params['idPessoa'], $params['observacoes'], $params['tipo'], $params['idOs']);
+            $params['codProduto'], $params['grade'], $params['codProdutoVolume'], $params['codProdutoEmbalagem'], $params['idEndereco'], $params['qtd'], $params['idPessoa'] , $params['observacoes'],
+            $params['tipo'], $params['idOs']);
     }
 
     /*
@@ -238,10 +241,9 @@ class EstoqueRepository extends EntityRepository {
                     ESTQ.COD_PRODUTO_VOLUME, 
                     ESTQ.COD_PRODUTO, 
                     ESTQ.DSC_GRADE, 
-                    ESTQ.DTH_VALIDADE,
                     ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
                     NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO,
-                    TO_CHAR(ESTQ.DTH_VALIDADE,'DD/MM/YYYY') as DTH_VALIDADE
+                    TO_CHAR(ESTQ.DTH_VALIDADE,'DD/MM/YYYY') as DTH_VALIDADE,
                     CASE WHEN (DE.COD_CARACTERISTICA_ENDERECO = 37) THEN 1
                          ELSE 2 END AS PRIORIDADE_PICKING
                    FROM ESTOQUE ESTQ
@@ -258,7 +260,7 @@ class EstoqueRepository extends EntityRepository {
                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
                   WHERE ((ESTQ.QTD + NVL(RS.QTD_RESERVA,0)) >0)";
 
-        $SqlOrder = " ORDER BY ESTQ.DTH_VALIDADE, DT_MOVIMENTACAO , ESTQ.QTD";
+        $SqlOrder = " ORDER BY TO_DATE(DT_MOVIMENTACAO), PRIORIDADE_PICKING, ESTQ.QTD";
         $SqlWhere = "";
 
         if ((isset($params['idProduto'])) && ($params['idProduto'] != null)) {
@@ -272,7 +274,7 @@ class EstoqueRepository extends EntityRepository {
         if ((isset($params['idVolume'])) && ($params['idVolume'] != null)) {
             $idVolume = $params['idVolume'];
             if (is_array($params['idVolume']) == true) {
-                $idVolume = implode(",",$params['idVolume']);
+                $idVolume = implode(",", $params['idVolume']);
             }
 
             $SqlWhere .= " AND ESTQ.COD_PRODUTO_VOLUME IN (" . $idVolume . ")";
@@ -293,7 +295,8 @@ class EstoqueRepository extends EntityRepository {
             $arrayResult = array();
             foreach ($resultado as $key => $line) {
                 $arrayResult[] = $line;
-                if (($key+1) >= $maxResult) break;
+                if (($key + 1) >= $maxResult)
+                    break;
             }
             $result = $arrayResult;
         } else {
@@ -325,7 +328,8 @@ class EstoqueRepository extends EntityRepository {
         return $result;
     }
 
-    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null, $showPicking = true, $orderBy = null, $returnQuery = false) {
+    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null, $showPicking = true, $orderBy = null, $returnQuery = false)
+    {
         $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
                        DE.COD_DEPOSITO_ENDERECO as COD_ENDERECO,
                        C.DSC_CARACTERISTICA_ENDERECO as TIPO,
@@ -390,9 +394,9 @@ class EstoqueRepository extends EntityRepository {
         $SQLWhere = " WHERE 1 = 1 ";
         if (isset($parametros['idProduto']) && !empty($parametros['idProduto'])) {
             $parametros['idProduto'] = ProdutoUtil::formatar($parametros['idProduto']);
-            $SQLWhere .= " AND E.COD_PRODUTO = '".$parametros['idProduto'] . "' ";
+            $SQLWhere .= " AND E.COD_PRODUTO = '" . $parametros['idProduto'] . "' ";
             if (isset($parametros['grade']) && !empty($parametros['grade'])) {
-                $SQLWhere .= " AND E.DSC_GRADE = '".$parametros['grade']."'";
+                $SQLWhere .= " AND E.DSC_GRADE = '" . $parametros['grade'] . "'";
             } else {
                 $SQLWhere .= " AND E.DSC_GRADE = 'UNICA'";
             }
@@ -435,7 +439,8 @@ class EstoqueRepository extends EntityRepository {
                 $arrayResult = array();
                 foreach ($result as $key => $line) {
                     $arrayResult[] = $line;
-                    if (($key+1) >= $maxResult) break;
+                    if (($key + 1) >= $maxResult)
+                        break;
                 }
                 $result = $arrayResult;
             }
@@ -444,7 +449,7 @@ class EstoqueRepository extends EntityRepository {
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
             foreach ($result as $key => $value) {
                 $result[$key]['QTD_EMBALAGEM'] = $value['QTD'];
-                if ($value['QTD'] > 0) {
+                if ($value['QTD'] > 0 && ($value['COD_VOLUME'] == 0 || $value['COD_VOLUME'] == null)) {
                     $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
                     $result[$key]['QTD_EMBALAGEM'] = implode('<br />', $vetEstoque);
                 }
@@ -457,48 +462,48 @@ class EstoqueRepository extends EntityRepository {
     {
         $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
 
-        $and="";
-        $cond="";
+        $and = "";
+        $cond = "";
         if (isset($parametros['uma']) && !empty($parametros['uma'])) {
-            $cond.=$and.'E.UMA = \''.$parametros['uma'].'\'';
-            $and=" and ";
+            $cond .= $and . 'E.UMA = \'' . $parametros['uma'] . '\'';
+            $and = " and ";
         } else {
             if (isset($parametros['idProduto']) && !empty($parametros['idProduto'])) {
-                $cond.=$and.'P.COD_PRODUTO = '.$parametros['idProduto'];
-                $and=" and ";
+                $cond .= $and . 'P.COD_PRODUTO = ' . $parametros['idProduto'];
+                $and = " and ";
                 if (isset($parametros['grade']) && !empty($parametros['grade'])) {
-                    $cond.=$and.'P.DSC_GRADE = \''.$parametros['grade'].'\'';
-                    $and=" and ";
+                    $cond .= $and . 'P.DSC_GRADE = \'' . $parametros['grade'] . '\'';
+                    $and = " and ";
                 } else {
-                    $cond.=$and.'P.DSC_GRADE = \'UNICA\'';
-                    $and=" and ";
+                    $cond .= $and . 'P.DSC_GRADE = \'UNICA\'';
+                    $and = " and ";
                 }
             }
 
             if (isset($parametros['idNormaPaletizacao']) && !empty($parametros['idNormaPaletizacao'])) {
-                $cond.=$and.'U.COD_UNITIZADOR = '.$parametros['idNormaPaletizacao'];
-                $and=" and ";
+                $cond .= $and . 'U.COD_UNITIZADOR = ' . $parametros['idNormaPaletizacao'];
+                $and = " and ";
             }
 
             if (isset($parametros['rua']) && !empty($parametros['rua'])) {
-                $cond.=$and.'DE.NUM_RUA = '.$parametros['rua'];
-                $and=" and ";
+                $cond .= $and . 'DE.NUM_RUA = ' . $parametros['rua'];
+                $and = " and ";
             }
             if (isset($parametros['predio']) && !empty($parametros['predio'])) {
-                $cond.=$and.'DE.NUM_PREDIO = '.$parametros['predio'];
-                $and=" and ";
+                $cond .= $and . 'DE.NUM_PREDIO = ' . $parametros['predio'];
+                $and = " and ";
             }
             if (isset($parametros['nivel']) && !empty($parametros['nivel'])) {
-                $cond.=$and.'DE.NUM_NIVEL = '.$parametros['nivel'];
-                $and=" and ";
+                $cond .= $and . 'DE.NUM_NIVEL = ' . $parametros['nivel'];
+                $and = " and ";
             }
             if (isset($parametros['apto']) && !empty($parametros['apto'])) {
-                $cond.=$and.'DE.NUM_APARTAMENTO = '.$parametros['apto'];
-                $and=" and ";
+                $cond .= $and . 'DE.NUM_APARTAMENTO = ' . $parametros['apto'];
+                $and = " and ";
             }
         }
 
-        $condPicking=str_replace("E.","P.",$cond);
+        $condPicking = str_replace("E.", "P.", $cond);
 
         $SQL = "
             SELECT * FROM
@@ -527,7 +532,7 @@ class EstoqueRepository extends EntityRepository {
                     LEFT JOIN UNITIZADOR  U
                       ON E.COD_UNITIZADOR=U.COD_UNITIZADOR
                     WHERE
-                      DE.COD_CARACTERISTICA_ENDERECO=".$tipoPicking." and ".$cond."
+                      DE.COD_CARACTERISTICA_ENDERECO=" . $tipoPicking . " and " . $cond . "
                     GROUP BY DE.DSC_DEPOSITO_ENDERECO,
                              U.DSC_UNITIZADOR,
                              DE.COD_DEPOSITO_ENDERECO,
@@ -564,7 +569,7 @@ class EstoqueRepository extends EntityRepository {
                 LEFT JOIN DEPOSITO_ENDERECO  PEE
                   ON PE.COD_DEPOSITO_ENDERECO=PEE.COD_DEPOSITO_ENDERECO
                 WHERE
-                  DE.COD_CARACTERISTICA_ENDERECO<>".$tipoPicking." and ".$cond."
+                  DE.COD_CARACTERISTICA_ENDERECO<>" . $tipoPicking . " and " . $cond . "
                 GROUP BY
                   DE.DSC_DEPOSITO_ENDERECO,U.DSC_UNITIZADOR, E.COD_DEPOSITO_ENDERECO, E.QTD, E.DTH_PRIMEIRA_MOVIMENTACAO, E.COD_PRODUTO, E.DSC_GRADE, P.DSC_PRODUTO
                 ORDER BY
@@ -577,16 +582,15 @@ class EstoqueRepository extends EntityRepository {
         $groupByProduto = array();
         foreach ($resultado as $chv => $data) {
 
-            $id = $data['codProduto'].$data['grade'];
-            $data['dtPrimeiraEntrada']=new \DateTime($data['dtPrimeiraEntrada']);
+            $id = $data['codProduto'] . $data['grade'];
+            $data['dtPrimeiraEntrada'] = new \DateTime($data['dtPrimeiraEntrada']);
             if (isset($groupByProduto[$id])) {
                 $groupByProduto[$id][] = $data;
             } else {
                 $groupByProduto[$id] = array($data);
             }
         }
-		return $groupByProduto;
-
+        return $groupByProduto;
     }
 
     public function getEstoqueByRua($inicioRua, $fimRua, $grandeza = null,$exibePicking = 1, $exibePulmao = 1)
@@ -594,24 +598,24 @@ class EstoqueRepository extends EntityRepository {
         $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
 
         $query = $this->getEntityManager()->createQueryBuilder()
-            ->select("e.descricao, estq.codProduto, estq.grade, p.descricao nomeProduto")
-            ->from("wms:Enderecamento\Estoque",'estq')
-            ->innerJoin("estq.depositoEndereco", "e")
-            ->innerJoin("estq.produto", "p")
-            ->orderBy("e.descricao, p.id, p.grade, estq.dtPrimeiraEntrada");
+                ->select("e.descricao, estq.codProduto, estq.grade, p.descricao nomeProduto")
+                ->from("wms:Enderecamento\Estoque", 'estq')
+                ->innerJoin("estq.depositoEndereco", "e")
+                ->innerJoin("estq.produto", "p")
+                ->orderBy("e.descricao, p.id, p.grade, estq.dtPrimeiraEntrada");
 
         if ($inicioRua) {
             $query->andWhere('e.rua >= :inicioRua');
-            $query->setParameter('inicioRua',$inicioRua);
+            $query->setParameter('inicioRua', $inicioRua);
         }
 
         if ($fimRua) {
             $query->andWhere('e.rua <= :fimRua');
-            $query->setParameter('fimRua',$fimRua);
+            $query->setParameter('fimRua', $fimRua);
         }
 
         if (!empty($grandeza)) {
-            $grandeza = implode(',',$grandeza);
+            $grandeza = implode(',', $grandeza);
             $query->andWhere("p.linhaSeparacao in ($grandeza)");
         }
 
@@ -630,40 +634,39 @@ class EstoqueRepository extends EntityRepository {
     {
         $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
-            ->select('estq.codProduto, estq.grade, ls.descricao, sum(estq.qtd) qtdestoque, NVL(depv.descricao, depe.descricao) enderecoPicking')
-            ->from("wms:Enderecamento\Estoque",'estq')
-            ->innerJoin("estq.produto", "p")
-            ->leftJoin("p.volumes", 'pv')
-            ->leftJoin("pv.endereco", 'depv')
-            ->leftJoin("p.embalagens", 'pe')
-            ->leftJoin("pe.endereco", 'depe')
-            ->innerJoin("p.linhaSeparacao", "ls")
-            ->innerJoin("estq.depositoEndereco", "e")
-            ->groupBy('estq.codProduto, estq.grade, ls.descricao, depv.descricao, depe.descricao');
+                ->select('estq.codProduto, estq.grade, ls.descricao, sum(estq.qtd) qtdestoque, NVL(depv.descricao, depe.descricao) enderecoPicking')
+                ->from("wms:Enderecamento\Estoque", 'estq')
+                ->innerJoin("estq.produto", "p")
+                ->leftJoin("p.volumes", 'pv')
+                ->leftJoin("pv.endereco", 'depv')
+                ->leftJoin("p.embalagens", 'pe')
+                ->leftJoin("pe.endereco", 'depe')
+                ->innerJoin("p.linhaSeparacao", "ls")
+                ->innerJoin("estq.depositoEndereco", "e")
+                ->groupBy('estq.codProduto, estq.grade, ls.descricao, depv.descricao, depe.descricao');
 
-        if(!empty($params['grandeza']))
-        {
-           $grandeza = $params['grandeza'];
-           $grandeza = implode(',',$grandeza);
-           $query->andWhere("p.linhaSeparacao in ($grandeza)");
+        if (!empty($params['grandeza'])) {
+            $grandeza = $params['grandeza'];
+            $grandeza = implode(',', $grandeza);
+            $query->andWhere("p.linhaSeparacao in ($grandeza)");
         }
 
         if (!empty($params['inicioRua'])) {
             $query->andWhere('e.rua >= :inicioRua');
-            $query->setParameter('inicioRua',$params['inicioRua']);
+            $query->setParameter('inicioRua', $params['inicioRua']);
         }
 
         if (!empty($params['fimRua'])) {
             $query->andWhere('e.rua <= :fimRua');
-            $query->setParameter('fimRua',$params['fimRua']);
+            $query->setParameter('fimRua', $params['fimRua']);
         }
 
         if (($params['pulmao'] == 1) && ($params['picking'] == 0)) {
-            $query->andWhere("e.nivel !=  '". $tipoPicking . "'");
+            $query->andWhere("e.nivel !=  '" . $tipoPicking . "'");
         }
 
         if (($params['pulmao'] == 0) && ($params['picking'] == 1)) {
-            $query->andWhere("e.idCaracteristica = '" . $tipoPicking ."'");
+            $query->andWhere("e.idCaracteristica = '" . $tipoPicking . "'");
         }
 
         return $query->getQuery()->getResult();
@@ -673,12 +676,12 @@ class EstoqueRepository extends EntityRepository {
     {
         $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
-            ->select('estq.codProduto, estq.grade')
-            ->from("wms:Enderecamento\Estoque",'estq')
-            ->innerJoin("estq.depositoEndereco", "dep")
-            ->where("dep.idCaracteristica != '$tipoPicking'")
-            ->andWhere("estq.codProduto = '$codProduto'")
-            ->andWhere("estq.grade = '$grade'");
+                ->select('estq.codProduto, estq.grade')
+                ->from("wms:Enderecamento\Estoque", 'estq')
+                ->innerJoin("estq.depositoEndereco", "dep")
+                ->where("dep.idCaracteristica != '$tipoPicking'")
+                ->andWhere("estq.codProduto = '$codProduto'")
+                ->andWhere("estq.grade = '$grade'");
 
         $estoque = $query->getQuery()->getResult();
 
@@ -707,8 +710,7 @@ class EstoqueRepository extends EntityRepository {
         $dadosRelatorio['paletes'] = $paletes;
 
         $Uma = new \Wms\Module\Enderecamento\Printer\UMA('L');
-        $Uma->imprimir($dadosRelatorio,$this->getSystemParameterValue("MODELO_RELATORIOS"));
-
+        $Uma->imprimir($dadosRelatorio, $this->getSystemParameterValue("MODELO_RELATORIOS"));
     }
 
     public function getEstoqueConsolidado($params)
@@ -745,7 +747,7 @@ class EstoqueRepository extends EntityRepository {
         if (isset($params['grandeza'])) {
             $grandeza = $params['grandeza'];
             if (!empty($grandeza)) {
-                $grandeza = implode(',',$grandeza);
+                $grandeza = implode(',', $grandeza);
                 $SQLWhere = " WHERE P.COD_LINHA_SEPARACAO IN ($grandeza) ";
             }
         }
@@ -760,7 +762,7 @@ class EstoqueRepository extends EntityRepository {
         $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
 
         $query = $this->getEntityManager()->createQueryBuilder()
-        ->select("de.descricao,
+                ->select("de.descricao,
                  NVL(NVL(NVL(e.codProduto, pp.codProduto),pv.codProduto),pe.codProduto) as codProduto,
                  NVL(NVL(NVL(e.grade, pp.grade),pv.grade),pe.grade) as grade,
                  NVL(e.qtd,pp.qtd) as qtd,
@@ -783,34 +785,34 @@ class EstoqueRepository extends EntityRepository {
 
         if (!empty($params['mostrarPicking']) && $params['mostrarPicking'] == 1) {
             $query->andWhere('de.idCaracteristica = :idCaracteristica');
-            $query->setParameter('idCaracteristica',$tipoPicking);
+            $query->setParameter('idCaracteristica', $tipoPicking);
         } else {
             $query->andWhere('de.idCaracteristica <> :idCaracteristica');
-            $query->setParameter('idCaracteristica',$tipoPicking);
+            $query->setParameter('idCaracteristica', $tipoPicking);
         }
 
         if (!empty($params['rua'])) {
             $query->andWhere('de.rua = :rua');
-            $query->setParameter('rua',$params['rua']);
+            $query->setParameter('rua', $params['rua']);
         }
 
         if (!empty($params['predio'])) {
             $query->andWhere('de.predio = :predio');
-            $query->setParameter('predio',$params['predio']);
+            $query->setParameter('predio', $params['predio']);
         }
 
         if (!empty($params['nivel'])) {
             $query->andWhere('de.nivel = :nivel');
-            $query->setParameter('nivel',$params['nivel']);
+            $query->setParameter('nivel', $params['nivel']);
         }
 
         if (!empty($params['apartamento'])) {
             $query->andWhere('de.apartamento = :apartamento');
-            $query->setParameter('apartamento',$params['apartamento']);
+            $query->setParameter('apartamento', $params['apartamento']);
         }
 
-        if (($params['mostraOcupado'])== 0 ){
-            $query-> andWhere('((e.codProduto IS NULL) AND (pp.codProduto IS NULL))');
+        if (($params['mostraOcupado']) == 0) {
+            $query->andWhere('((e.codProduto IS NULL) AND (pp.codProduto IS NULL))');
         }
 
         $result = $query->getQuery()->getResult();
@@ -846,10 +848,10 @@ class EstoqueRepository extends EntityRepository {
         $endereco = EnderecoUtil::formatar($dscEndereco, null, null, $nivel);
 
         $dql = $em->createQueryBuilder()
-            ->select('dep.rua, dep.nivel, dep.predio, dep.apartamento, e.uma, e.id, dep.id as idEndereco' )
-            ->from("wms:Enderecamento\Estoque", "e")
-            ->InnerJoin("e.depositoEndereco", "dep")
-            ->where("dep.descricao = '$endereco'");
+                ->select('dep.rua, dep.nivel, dep.predio, dep.apartamento, e.uma, e.id, dep.id as idEndereco')
+                ->from("wms:Enderecamento\Estoque", "e")
+                ->InnerJoin("e.depositoEndereco", "dep")
+                ->where("dep.descricao = '$endereco'");
 
         return $dql->getQuery()->getArrayResult();
     }
@@ -901,8 +903,7 @@ class EstoqueRepository extends EntityRepository {
                            AND COD_PRODUTO_VOLUME = '$volume'";
                 $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
                 $qtd = $result[0]['QTD'];
-                if (is_null($menorQtd)) $menorQtd = $qtd;
-                if ($qtd < $menorQtd) {
+                if (is_null($menorQtd) || $qtd < $menorQtd) {
                     $menorQtd = $qtd;
                 }
             }
@@ -914,9 +915,7 @@ class EstoqueRepository extends EntityRepository {
         }
     }
 
-    
-    
-    public function getEstoqueProdutosSemPicking($params){
+    public function getEstoqueProdutosSemPicking($params) {
 
         $SQL = "
                 SELECT P.COD_PRODUTO, P.DSC_GRADE, P.DSC_PRODUTO,  SUM(E.QTD) as QTD FROM
@@ -931,7 +930,7 @@ class EstoqueRepository extends EntityRepository {
         LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PR.COD_PRODUTO AND P.DSC_GRADE = PR.DSC_GRADE";
 
         if (isset($params['grandeza'])) {
-            $grandeza = implode(',',$params['grandeza']);
+            $grandeza = implode(',', $params['grandeza']);
             $SQL = $SQL . " WHERE P.COD_LINHA_SEPARACAO IN ($grandeza)";
         }
         $SQL = $SQL . " GROUP BY P.COD_PRODUTO, P.DSC_GRADE, P.DSC_PRODUTO";
@@ -985,36 +984,38 @@ class EstoqueRepository extends EntityRepository {
                    ";
 
         if (isset($params['inicioRua']) && ($params['inicioRua'] != "")) {
-            if ($SQLWhere != " WHERE ") $SQLWhere .= " AND ";
+            if ($SQLWhere != " WHERE ")
+                $SQLWhere .= " AND ";
             $SQLWhere .= " DE.NUM_RUA >= " . $params['inicioRua'];
         }
 
         if (isset($params['fimRua']) && ($params['fimRua'] != "")) {
-            if ($SQLWhere != " WHERE ") $SQLWhere .= " AND ";
+            if ($SQLWhere != " WHERE ")
+                $SQLWhere .= " AND ";
             $SQLWhere .= " DE.NUM_RUA <= " . $params['fimRua'];
         }
 
-        if (isset($params['grandeza']) && (count($params['grandeza']) >0)) {
-            if ($SQLWhere != " WHERE ") $SQLWhere .= " AND ";
-            $grandezas = implode(",",$params['grandeza']);
+        if (isset($params['grandeza']) && (count($params['grandeza']) > 0)) {
+            if ($SQLWhere != " WHERE ")
+                $SQLWhere .= " AND ";
+            $grandezas = implode(",", $params['grandeza']);
             $SQLWhere .= " PROD.COD_LINHA_SEPARACAO IN ($grandezas)";
         }
 
         $array = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrder)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
-
     }
 
     public function getProdutosVolumesDivergentes()
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('e.codProduto as Codigo, e.grade as Grade, p.descricao as Produto', 'v.descricao as Volume, SUM(e.qtd) as Qtd')
-            ->from("wms:Enderecamento\Estoque", "e")
-            ->innerJoin("e.produto", 'p')
-            ->innerJoin("e.produtoVolume", 'v')
-            ->where('e.produtoVolume IS NOT NULL')
-            ->groupBy('e.codProduto ','e.grade', 'p.descricao', 'v.id', 'v.descricao')
-            ->orderBy('e.codProduto, e.grade', 'ASC');
+                ->select('e.codProduto as Codigo, e.grade as Grade, p.descricao as Produto', 'v.descricao as Volume, SUM(e.qtd) as Qtd')
+                ->from("wms:Enderecamento\Estoque", "e")
+                ->innerJoin("e.produto", 'p')
+                ->innerJoin("e.produtoVolume", 'v')
+                ->where('e.produtoVolume IS NOT NULL')
+                ->groupBy('e.codProduto ', 'e.grade', 'p.descricao', 'v.id', 'v.descricao')
+                ->orderBy('e.codProduto, e.grade', 'ASC');
 
         $result = $dql->getQuery()->getArrayResult();
 
@@ -1054,7 +1055,8 @@ class EstoqueRepository extends EntityRepository {
         return $produtosDivergentes;
     }
 
-    public function getEstoqueByProduto ($produtos = null) {
+    public function getEstoqueByProduto($produtos = null)
+    {
         $SQL = "SELECT P.COD_PRODUTO,
                        P.DSC_GRADE,
                        NVL(E.QTD_ESTOQUE,0) as QTD_ESTOQUE_TOTAL,
@@ -1074,10 +1076,10 @@ class EstoqueRepository extends EntityRepository {
                    ON R.COD_PRODUTO = P.COD_PRODUTO AND R.DSC_GRADE = P.DSC_GRADE";
 
         if ($produtos != null) {
-            $SQL = $SQL . " WHERE P.COD_PRODUTO IN (". $produtos . ")";            
+            $SQL = $SQL . " WHERE P.COD_PRODUTO IN (" . $produtos . ")";
         }
 
-        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);        
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 

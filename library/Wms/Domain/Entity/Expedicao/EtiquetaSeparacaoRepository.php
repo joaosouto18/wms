@@ -153,7 +153,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('count(distinct es.id) as qtdEtiqueta,
-                      c.placaCarga, ped.pontoTransbordo, c.codCargaExterno, c.sequencia,
+                      c.placaCarga, ped.pontoTransbordo, c.codCargaExterno, c.sequencia,c.id as carga,
                       sum(pv.cubagem) as cubagem,
                       sum(pv.peso) as peso,
                       count(distinct nfs.id) as qtdNotas,
@@ -170,7 +170,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->where('exp.id = :idExpedicao')
             ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_PENDENTE_CORTE)
             ->andWhere('es.codStatus != ' . EtiquetaSeparacao::STATUS_CORTADO)
-            ->groupBy('c.placaCarga, c.codCargaExterno, c.sequencia')
+            ->groupBy('c.placaCarga, c.codCargaExterno, c.sequencia, c.id')
             ->addGroupBy('ped.pontoTransbordo')
             ->setParameter('idExpedicao', $idExpedicao)
             ->orderBy('c.placaCarga, c.sequencia');

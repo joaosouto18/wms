@@ -64,7 +64,7 @@ class FiltroRecebimentoMercadoria extends \Wms\Module\Web\Form
                 ))
                 ->addElement('select', 'ordem', array(
                     'label' => 'Ordenação',
-                    'multiOptions' => array('firstOpt' => 'PADRAO', 'options' => array(1 => 'NUM. UMA')),
+                    'multiOptions' => array('firstOpt' => 'PADRAO', 'options' => array(1 => 'NUM. UMA', 2 => 'ENDEREÇO')),
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addElement('submit', 'submit', array(

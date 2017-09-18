@@ -86,20 +86,48 @@ class ContagemEnderecoRepository extends EntityRepository
     public function getContagens($params)
     {
         $idInventario   = $params['idInventario'];
-
-        $sql = "SELECT DISTINCT IE.DIVERGENCIA, NVL(MAXCONT.ULTCONT,1) as CONTAGEM
-                  FROM INVENTARIO_ENDERECO IE
-                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
-                  LEFT JOIN (SELECT MAX(ICE.NUM_CONTAGEM) as ULTCONT, ICE.COD_INVENTARIO_ENDERECO FROM INVENTARIO_CONTAGEM_ENDERECO ICE
-                        INNER JOIN INVENTARIO_ENDERECO IE2 ON ICE.COD_INVENTARIO_ENDERECO = IE2.COD_INVENTARIO_ENDERECO
-                        WHERE NOT(IE2.INVENTARIADO = 1 AND IE2.DIVERGENCIA IS NULL)
-                        GROUP BY ICE.COD_INVENTARIO_ENDERECO) MAXCONT
-                    ON MAXCONT.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
-                WHERE IE.COD_INVENTARIO = ".$idInventario."
-                  AND IE.INVENTARIADO IS NULL
-                ORDER BY CONTAGEM
-         ";
-
+        $sql = "SELECT 
+                    DISTINCT IE.DIVERGENCIA, 
+                    MIN(NVL(MAXCONT.ULTCONT,1)) as CONTAGEM
+                FROM 
+                    INVENTARIO_ENDERECO IE
+                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
+                    LEFT JOIN (
+                                SELECT 
+                                    MIN (ULTCONT) AS ULTCONT, 
+                                    COD_INVENTARIO_ENDERECO 
+                                FROM 
+                                (
+                                    SELECT 
+                                        MAX(ICE.NUM_CONTAGEM) as ULTCONT, 
+                                        ICE.COD_PRODUTO,
+                                        ICE.DSC_GRADE,
+                                        ICE.COD_PRODUTO_VOLUME,
+                                        ICE.COD_INVENTARIO_ENDERECO 
+                                    FROM 
+                                        INVENTARIO_CONTAGEM_ENDERECO ICE
+                                        INNER JOIN INVENTARIO_ENDERECO IE2 ON ICE.COD_INVENTARIO_ENDERECO = IE2.COD_INVENTARIO_ENDERECO
+                                    WHERE 
+                                        NOT(IE2.INVENTARIADO = 1 AND IE2.DIVERGENCIA IS NULL)
+                                    GROUP BY 
+                                        ICE.COD_INVENTARIO_ENDERECO,
+                                        ICE.COD_PRODUTO,ICE.DSC_GRADE,
+                                        ICE.COD_PRODUTO_VOLUME
+                                ) 
+                                GROUP BY 
+                                    COD_INVENTARIO_ENDERECO
+                            )
+            MAXCONT
+                ON MAXCONT.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+            WHERE 
+                IE.COD_INVENTARIO = $idInventario
+                AND IE.INVENTARIADO IS NULL
+            GROUP BY 
+                NVL(MAXCONT.ULTCONT,1),
+                IE.DIVERGENCIA
+            ORDER 
+                BY CONTAGEM";
+        
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 

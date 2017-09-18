@@ -1,0 +1,100 @@
+<?php
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+if ($this->erro) {
+    echo $this->erro;
+} else {
+    ?>
+    <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
+        <input type="hidden" name="uma" value="" id="uma">
+        <fieldset id="fieldset-identification">
+            <legend>Ler Código de Barras</legend>
+            <div class="field">
+                <input type="hidden" name="idVolume" id="idVolume" value="<?php echo $this->idVolume ?>" size="40" maxlength="100" style="width: 99%">
+                <input type="hidden" name="idMapa" id="idMapa" value="<?php echo $this->idMapa ?>" size="40" maxlength="100" style="width: 99%">
+                <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>" size="40" maxlength="100" style="width: 99%">
+                <input type="hidden" name="cliente" id="cliente" value="<?php echo $this->idPessoa ?>" >
+                <input type="hidden" name="exibeQtd" id="confereQtd" value="<?php echo $this->confereQtd ?>" >
+                <input type="hidden" name="tipoDefaultEmbalado" id="tipoDefaultEmbalado" value="<?php echo $this->tipoDefaultEmbalado ?>" >
+                <input type="hidden" name="utilizaQuebra" id="utilizaQuebra" value="<?php echo $this->utilizaQuebra ?>" >
+                <input type="hidden" name="utilizaVolumePatrimonio" id="utilizaVolumePatrimonio" value="<?php echo $this->utilizaVolumePatrimonio ?>" >
+                <input type="hidden" name="tipoQuebraVolume" id="tipoQuebraVolume" value="<?php echo $this->tipoQuebraVolume ?>" >
+                <?php if ($this->confereQtd) : ?>
+                </div>
+                <div class="field">
+                    <label for="rua" class="field optional">*Qtd</label>
+                    <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" onclick="selecionar()" onkeydown="nextInput(event)" style="width: 80%">
+                </div>
+                <div class="field">
+                    <label for="rua" class="field optional">*Código de Barras</label>
+                    <input type="text" name="codigoBarras" id="codigoBarras" class="focus" size="40" maxlength="100" style="width: 99%">
+                </div>
+            <?php else : ?>
+                <div class="field">
+                    <label for="rua" class="field optional">*Código de Barras</label>
+                    <input type="text" name="codigoBarras" id="codigoBarras" class="focus" size="40" maxlength="100" style="width: 99%">
+                </div>
+                <div class="field">
+                    <label for="rua" class="field optional">*Qtd</label>
+                    <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" onkeydown="nextInput(event)" style="width: 80%">
+                </div>
+            <?php endif; ?>
+            <input type="button" name="buscar-sumbit" id="buscar-sumbit" value="Conferir" class="btn gradientBtn">
+            <?php if (!$this->separacaoEmbalado) : ?>
+                <input style="width: 300px;" type="button" class="btn gradientBtn" onclick="window.location = '<?php echo '/mobile/expedicao/finalizar/idExpedicao/' . $this->idExpedicao . '/idMapa/' . $this->idMapa . '/mapa/S/checkout/1' ?>'" value="Finalizar">
+                <input type="submit" class="btn gradientBtn" href="<?php echo '/mobile/expedicao/index/idCentral/' . $this->central ?>" value="Alt. Mapa">
+            <?php endif; ?>
+            <?php if ($this->idVolume != "") : ?>
+                <legend>Volume: <?php echo $this->dscVolume ?></legend>
+                <a class="btn gradientBtn" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a>
+            <?php endif; ?>
+            <?php if ($this->separacaoEmbalado) : ?>
+                <input type="button" style="margin-top:20px" class="btn gradientBtn" onclick="window.location='<?php echo '/mobile/expedicao/fecha-mapa-embalado/checkout/1/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>'" value="Fechar Caixa" />
+            <?php endif; ?>
+
+        </fieldset>
+    </form>
+<div style="text-align: center;font-size: 12px; color: #f14c4c; font-weight: bold;" id="error"></div>
+<div style="text-align: center;font-size: 12px; color: #19bd06; font-weight: bold;" id="success"></div>
+    <div style="margin: 25px 17px 100px 17px;">
+        <div style="margin-bottom: 10px;">
+            <span style="font-size: 14px;color: #1c94c4;font-weight: bold; margin-left: 16%; margin-right: 32%;">PRODUTOS A CONFERIR</span>
+            <span style="font-size: 14px;color: #1c94c4;font-weight: bold;">PRODUTOS CONFERIDOS</span>
+        </div>
+        <div id="conferir" class="boxConfer" style="float: left;">
+            <?php
+            if (is_array($this->produtos)) {
+                foreach ($this->produtos as $key => $value) {
+                    ?>
+                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" 
+                       style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; margin-top: 10px; text-align: center;">
+                        <?php echo $value['DSC_PRODUTO'] ?> </p>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+        <div id="conferidos" class="boxConfer" style="float: right;">
+            <?php
+            if (is_array($this->produtos)) {
+                foreach ($this->produtos as $key => $value) {
+                    ?>
+                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo $value['DSC_PRODUTO'] ?> </p>
+                    <?php
+                }
+                foreach ($this->produtosConferidos as $key => $value) {
+                    ?>
+                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center;margin-top: 10px; "><?php echo $value['DSC_PRODUTO'] ?> </p>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+    </div>
+    <?php
+}
+?>

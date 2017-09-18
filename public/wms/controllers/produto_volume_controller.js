@@ -84,23 +84,6 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             var grupoDadosLogisticos = $('#fieldset-grupo-volumes').find('div.grupoDadosLogisticos');
             var este = this;
 
-            var result = true;
-            $.ajax({
-                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
-                type: 'post',
-                async: false,
-                dataType: 'json',
-                success: function (data) {
-                    if (data === 'N') {
-                        este.dialogAlert("Pelos parâmetros definidos, não é permitido incluir/editar volumes no WMS apenas no ERP");
-                        result = false;
-                    }
-                }
-            });
-
-            if (!result)
-                return result;
-
             if (fieldVolume.find(".invalid").length > 0) {
                 este.dialogAlert("Os campos em vermelho são obrigatórios");
                 return false
@@ -186,7 +169,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             var grupoDadosLogisticos = $('div.grupoDadosLogisticos');
 
             grupoDadosLogisticos.each(function() {
-                var normaId = $(this).find($('input.normasPaletizacao-id')).val();
+                var normaId = parseInt($(this).find($('input.normasPaletizacao-id')).val());
 
                 for(var k=0; k<normas_paletizacao.length; k++) {
                     var volumes = normas_paletizacao[k].volumes;
@@ -321,6 +304,20 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                 }
             });
 
+            // Validação se permite alterar dados do ERP (Inativo até criar integração de volumes)
+            /*var permiteAlterarcao = true;
+            $.ajax({
+                url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                type: 'post',
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data === 'N') {
+                        permiteAlterarcao = false;
+                    }
+                }
+            });*/
+
             ev.stopPropagation();
             var produto_volume = el.closest('.produto_volume').model();
 
@@ -426,11 +423,12 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
 
             ev.stopPropagation();
 
-            this.dialogConfirm("Tem certeza que deseja excluir este volume?", this.callback("deleteConfirmed"),{id:id});
+            this.dialogConfirm("Tem certeza que deseja excluir este volume?", this.callback("deleteConfirmed"),{model:model});
         },
 
         deleteConfirmed: function(params) {
-            var id = params.id;
+            var model = params.model;
+            var id = model.id;
 
             //adiciona à fila para excluir
             $('<input/>', {
@@ -717,7 +715,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                     type: 'post',
                     async: false,
                     dataType: 'json',
-                    data: {endereco: endereco}
+                    data: {valores: valores}
                 }).success(function (data) {
                     if (data.status === "success") {
                         result = true;

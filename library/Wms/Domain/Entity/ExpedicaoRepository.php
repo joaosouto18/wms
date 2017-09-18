@@ -750,7 +750,7 @@ class ExpedicaoRepository extends EntityRepository {
 
             if ($this->getSystemParameterValue('VALIDA_RESERVA_SAIDA_FINALIZACA_EXPEDICAO') == 'S') {
                 if ($this->validaReservaSaidaCorretaByExpedicao($idExpedicao) === false) {
-                    throw new \Exception("Existiram falhas gerando ao finalizar esta expedição. Consulte a equipe de desenvolvimento");
+                    throw new \Exception("Existiram falhas ao finalizar esta expedição. Consulte a equipe de desenvolvimento");
                 }
             }
 
@@ -3111,7 +3111,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($params['apenasDivergencias'])) {
-            $whereFinal .= " AND (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0))  <> NVL(R.RESERVA,0)";
+            $whereFinal .= " AND ((PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) != NVL(R.RESERVA,0))";
         }
 
         if (isset($params['idExpedicoes'])) {
@@ -3132,35 +3132,27 @@ class ExpedicaoRepository extends EntityRepository {
                        PP.COD_PRODUTO,
                        NVL(PP.QUANTIDADE,0) as QTD_PEDIDO,
                        NVL(PP.QTD_CORTADA,0) as QTD_CORTE,
-                       NVL(R.RESERVA,0) as QTD_SAIDA,
-                       DTH_RESERVA,
-                       DTH_ATENDIMENTO,
-                       USUARIO_RESERVA,
-                       USUARIO_ATENDIMENTO
+                       NVL(R.RESERVA,0) as QTD_SAIDA
                   FROM PEDIDO P
                   LEFT JOIN CLIENTE CL ON CL.COD_PESSOA = P.COD_PESSOA
                   LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                   LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                   LEFT JOIN PESSOA CLI ON CLI.COD_PESSOA = P.COD_PESSOA
                   LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                  LEFT JOIN (SELECT REE.COD_EXPEDICAO, REE.COD_PEDIDO, REP.COD_PRODUTO, REP.QTD_RESERVADA *-1 as RESERVA,
-                                    TO_CHAR(RE.DTH_RESERVA,'DD/MM/YYYY HH24:MI:SS') as DTH_RESERVA,
-                                    TO_CHAR(RE.DTH_ATENDIMENTO,'DD/MM/YYYY HH24:MI:SS') as DTH_ATENDIMENTO,
-                                    USU_RES.NOM_PESSOA as USUARIO_RESERVA,
-                                    USU_AT.NOM_PESSOA as USUARIO_ATENDIMENTO
+                  LEFT JOIN (SELECT COD_EXPEDICAO, COD_PEDIDO, COD_PRODUTO, DSC_GRADE, SUM(RESERVA) RESERVA
+                          FROM ( SELECT DISTINCT REE.COD_EXPEDICAO, REE.COD_PEDIDO, REP.COD_PRODUTO, REP.DSC_GRADE, REP.QTD_RESERVADA *-1 as RESERVA
                                 FROM RESERVA_ESTOQUE_EXPEDICAO REE
                                INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                                INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
-                               LEFT JOIN PESSOA USU_AT  ON USU_AT.COD_PESSOA = RE.COD_USUARIO_ATENDIMENTO
-                               LEFT JOIN PESSOA USU_RES ON USU_RES.COD_PESSOA = RE.COD_USUARIO
                                WHERE 1 = 1
-                               $whereReserva) R
+                               $whereReserva)
+                               GROUP BY COD_EXPEDICAO, COD_PEDIDO, COD_PRODUTO, DSC_GRADE) R
                         ON R.COD_EXPEDICAO = E.COD_EXPEDICAO
                        AND R.COD_PEDIDO = PP.COD_PEDIDO
                        AND R.COD_PRODUTO = PP.COD_PRODUTO
                   WHERE 1 = 1
                         $whereFinal
-                  ORDER BY COD_EXPEDICAO, COD_CLIENTE_EXTERNO, COD_PEDIDO, COD_PRODUTO";
+                  ORDER BY COD_EXPEDICAO, INICIO_EXPEDICAO, FIM_EXPEDICAO, C.COD_CARGA_EXTERNO, COD_CLIENTE_EXTERNO, COD_PEDIDO, COD_PRODUTO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }

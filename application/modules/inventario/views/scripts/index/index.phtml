@@ -1,2 +1,11 @@
 <?php
+echo $this->form;
 echo $this->grid;
+?>
+<script>
+    $(window).load(function () {
+        $('#ruaFinal').parent().css('clear', 'both');
+        $("#dataInicial1").parent().append('<span> a </span>').append($('#dataInicial2'));
+        $("#dataFinal1").parent().append('<span> a </span>').append($('#dataFinal2'));
+    });
+</script>

@@ -9,6 +9,7 @@ use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
 use Wms\Domain\Entity\Integracao\TabelaTemporaria;
 use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
+use Wms\Math;
 
 class embalagem {
     /** @var string */
@@ -522,6 +523,7 @@ class Integracao
                     $pedidos = array();
                 }
             }
+
             if ($this->getTipoExecucao() == "L") {
                 return $cargas;
             } else if ($this->getTipoExecucao() == "R") {
@@ -558,9 +560,20 @@ class Integracao
         $em = $this->_em;
         $importacaoService = new Importacao(true);
         $fornecedores = array();
+        $fornecedoresCPF = array();
+
+        $fornecedores['9999'] = array(
+            'idExterno' => '9999',
+            'cpf_cnpj' => '9999999999',
+            'nome' => 'DEVOLUCAO',
+            'inscricaoEstadual' => 'ISENTO',
+            'tipoPessoa' => 'F'
+        );
+
         $itens = array();
         $notasFiscais = array();
         $idProdutos = array();
+
 
         foreach ($dados as $key => $notaFiscal) {
 
@@ -570,21 +583,19 @@ class Integracao
             } else {
                 $tipoPessoa = 'J';
             }
+
             if ($tipoPessoa == 'F') {
-                $notaFiscal['COD_FORNECEDOR'] = '9999';
-                $cpf_cnpj = '9999999999';
-                $notaFiscal['NOM_FORNECEDOR'] = 'DEVOLUCAO';
-                $notaFiscal['INSCRICAO_ESTADUAL'] = 'ISENTO';
-                $tipoPessoa = 'J';
-            }
-            if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedores)) {
-                $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
-                    'idExterno' => $notaFiscal['COD_FORNECEDOR'],
-                    'cpf_cnpj' => $cpf_cnpj,
-                    'nome' => $notaFiscal['NOM_FORNECEDOR'],
-                    'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
-                    'tipoPessoa' => $tipoPessoa
-                );
+                $fornecedoresCPF[] = $notaFiscal['COD_FORNECEDOR'];
+            } else {
+                if (!array_key_exists($notaFiscal['COD_FORNECEDOR'],$fornecedores)) {
+                    $fornecedores[$notaFiscal['COD_FORNECEDOR']] = array(
+                        'idExterno' => $notaFiscal['COD_FORNECEDOR'],
+                        'cpf_cnpj' => $cpf_cnpj,
+                        'nome' => $notaFiscal['NOM_FORNECEDOR'],
+                        'inscricaoEstadual' => $notaFiscal['INSCRICAO_ESTADUAL'],
+                        'tipoPessoa' => $tipoPessoa
+                    );
+                }
             }
 
             /** OBTEM O CODIGO DO PRODUTO PARA CADASTRO */
@@ -628,6 +639,13 @@ class Integracao
 
             }
         }
+        foreach($notasFiscais as $key => $nf) {
+            foreach($fornecedoresCPF as $cpf) {
+                if ($cpf == $nf['codFornecedor']) {
+                    $notasFiscais[$key]['codFornecedor'] = '9999';
+                }
+            }
+        }
 
         /** CADASTRA OS PRODUTOS DAS NOTAS FISCAIS */
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepo */
@@ -639,6 +657,7 @@ class Integracao
         if ($produtos == "") $produtos = "0";
         $options[] = $produtos;
 //        $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+//        $em->flush();
 
         if ($this->getTipoExecucao() == "L") {
             return $notasFiscais;
@@ -979,6 +998,7 @@ class Integracao
         $options1 = array(
             0 => $notaFiscalEntity->getCodRecebimentoErp(),
         );
+        $codRecebimentoErp = $notaFiscalEntity->getCodRecebimentoErp();
 
         //FAZ O UPDATE NO ERP ATUALIZANDO A DATA DE RECEBIMENTO
         $acaoEn = $acaoIntRepository->find(10);
@@ -1010,7 +1030,7 @@ class Integracao
                 $dataConferencia = $produtoConferido['dataConferencia']->format('d/m/Y');
             }
             $options2 = array(
-                0 => $produtoConferido['codRecebimentoErp'],
+                0 => $codRecebimentoErp,
                 1 => $produtoConferido['codProduto'],
                 2 => $produtoConferido['quantidade'],
                 3 => $produtoConferido['qtdDivergencia'],
@@ -1040,7 +1060,96 @@ class Integracao
         }
         return true;
 
+    }
 
+    public function atualizaEstoqueErp($idRecebimento, $erpFilial)
+    {
+        $em = $this->_em;
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
+        $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepository */
+        $acaoIntRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
+        $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+
+        //BUSCA NOTAS FISCAIS DE ACORDO COM O RECEBIMENTO
+        $notasFiscaisEntities = $notaFiscalRepository->findBy(array('recebimento' => $idRecebimento));
+
+        //BUSCA A CLASSE DE NOTA FISCAL NO WEBSERVICE
+        $wsNotaFiscal = new \Wms_WebService_NotaFiscal();
+
+        //BUSCA QUERY PARA FAZER UPDATE NA LIBERACAO DE ESTOQUE
+        $acaoEn = $acaoIntRepository->find(21);
+        $acaoInsert = $acaoIntRepository->find(22);
+        $acaoUpdate = $acaoIntRepository->find(23);
+
+
+        //CONEXAO DE BANCO PARA ATUALIZAR O ESTOQUE
+        $conexaoEn = $acaoEn->getConexao();
+
+        foreach ($notasFiscaisEntities as $notaFiscalEntity) {
+            //OBTEM DADOS NECESSARIOS DA NOTA FISCAL
+            $idFornecedor = $notaFiscalEntity->getFornecedor()->getIdExterno();
+            $numero = $notaFiscalEntity->getNumero();
+            $serie = $notaFiscalEntity->getSerie();
+            $dataEmissao = $notaFiscalEntity->getDataEmissao()->format('d/m/Y');
+
+            //BUSCA CONFERENCIA DOS ITENS DA NOTA FISCAL
+            $result = $wsNotaFiscal->buscarNf($idFornecedor,$numero,$serie,$dataEmissao);
+            $possuiDivergencia = true;
+            foreach ($result->itens as $chave => $item) {
+                //QUERY DO BANCO DE DADOS
+                $queryIntegracao = $acaoEn->getQuery();
+                $queryIntegracaoUpdate = $acaoUpdate->getQuery();
+                $queryInsert = $acaoInsert->getQuery();
+                if (Math::subtrair($item->quantidade, $item->quantidadeConferida) > 0) {
+                    //INCREMENTO DE VALOR NA COLUNA PROXNUMTRANSENT DA TABELA PCCONSUM
+                    if ($possuiDivergencia == true)
+                        $conexaoRepo->runQuery($queryIntegracaoUpdate,$conexaoEn,$update = true);
+
+                    $possuiDivergencia = false;
+
+                    $optionsInsert = array(
+                        0 => $item->idProduto,
+                        1 => $item->quantidade - $item->quantidadeConferida,
+                        2 => 'null',
+                        3 => 0,
+                        4 => $erpFilial,
+                    );
+
+                    if (!is_null($optionsInsert)) {
+                        foreach ($optionsInsert as $key => $insert) {
+                            $queryInsert = str_replace(":?" . ($key+1),$insert,$queryInsert);
+                        }
+                        //FAZ O INSERT NO ERP INSERINDO AVARIAS
+                        $conexaoRepo->runQuery($queryInsert,$conexaoEn,$update = true);
+                    }
+                }
+
+                $quantidade = Math::subtrair($item->quantidade, $item->quantidadeConferida);
+                $motivoBloqueio = ($quantidade == 0) ? "WMS DESBLOQUEOU O ESTOQUE DO PRODUTO $item->idProduto COM QUANTIDADE DE ".$item->quantidadeConferida : "WMS BLOQUEOU O ESTOQUE DO PRODUTO $item->idProduto COM QUANTIDADE DE $quantidade";
+                $options = array(
+                    0 => $item->idProduto,
+                    1 => $quantidade,
+                    2 => 'null',
+                    3 => $motivoBloqueio,
+                    4 => $item->quantidadeConferida
+                );
+
+                if (!is_null($options)) {
+                    foreach ($options as $key => $value) {
+                        $queryIntegracao = str_replace(":?" . ($key+1),$value,$queryIntegracao);
+                    }
+
+                    //FAZ O UPDATE NO ERP ATUALIZANDO O ESTOQUE
+                    $conexaoRepo->runQuery($queryIntegracao,$conexaoEn,$update = true);
+                }
+            }
+
+
+        }
+
+        return true;
     }
 
 }

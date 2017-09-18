@@ -16,7 +16,7 @@ class PaleteProdutoRepository extends EntityRepository
             ->where("p.recebimento = $idRecebimento 
                  AND pp.codProduto = '$codProduto' 
                  AND pp.grade = '$grade'
-                 AND (p.codStatus in (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_RECEBIMENTO.",".Palete::STATUS_CANCELADO.") OR p.impresso = 'S')");
+                 AND (p.codStatus in (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_ENDERECAMENTO.",".Palete::STATUS_RECEBIDO.") OR p.impresso = 'S')");
 
         return $sql->getQuery()->getResult();
     }

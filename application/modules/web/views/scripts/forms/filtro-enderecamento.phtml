@@ -36,9 +36,9 @@
         <tr height="25">
 		    <td colspan="2" width="80">Picking:</td>
             <td colspan="3" width="100">
-                <?php if(is_array($this->element->picking->getValue())) {
+                <?php if(is_array($this->element->picking->getValue()) && count($this->element->picking->getValue()) > 0) {
                     $picking = $this->element->picking->getValue();
-                    echo $picking[0];
+                    echo reset($picking);
                 } ?>
             </td>
 

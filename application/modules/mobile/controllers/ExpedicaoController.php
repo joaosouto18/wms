@@ -125,7 +125,6 @@ class Mobile_ExpedicaoController extends Action {
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
             $Expedicao->validacaoExpedicao();
             $Expedicao->osLiberada();
-
             $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
             /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
             $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
@@ -158,6 +157,10 @@ class Mobile_ExpedicaoController extends Action {
                 }
             }
 
+            $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
+            $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
+            $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
+            $this->view->tipoQuebraVolume = $modeloSeparacaoEn->getTipoQuebraVolume();
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
             $this->view->idExpedicao = $idExpedicao;
@@ -187,7 +190,6 @@ class Mobile_ExpedicaoController extends Action {
             $codPessoa = null;
         }
         $msg['msg'] = "";
-
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
@@ -198,6 +200,7 @@ class Mobile_ExpedicaoController extends Action {
             'utilizaQuebra' => $this->_getParam("utilizaQuebra"),
             'utilizaVolumePatrimonio' => $this->_getParam("utilizaVolumePatrimonio")
         );
+
         if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
             try {
                 $codBarrasProcessado = intval($codBarras);
@@ -243,24 +246,28 @@ class Mobile_ExpedicaoController extends Action {
                 } else if ($tipoProvavelCodBarras === 'produto') {
                     $codBarras = ColetorUtil::adequaCodigoBarras($codBarras, true);
 
-                    $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa);
+                    $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa, null, true);
                     if ($result === true) {
                         $msg['msg'] = 'Quantidade conferida com sucesso';
+                        $msg['produto'] = false;
+                    }
+                    if (isset($result['checkout'])) {
+                        $msg['msg'] = 'checkout';
+                        $msg['produto'] = $result['produto'];
                     }
                 }
             } catch (\Exception $e) {
-                $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage()));
+                $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => ''));
                 $this->_helper->json($vetRetorno);
             }
         }
 
         //$this->getHelper('viewRenderer')->setNoRender(true);
-        $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg']));
+        $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg'], 'produto' => $msg['produto']));
         $this->_helper->json($vetRetorno);
     }
 
-    public function getProdutosConferirAction()
-    {
+    public function getProdutosConferirAction() {
         $idMapa = $this->_getParam("idMapa");
         $idExpedicao = $this->_getParam("idExpedicao");
         $codPessoa = $this->_getParam("cliente");
@@ -331,11 +338,11 @@ class Mobile_ExpedicaoController extends Action {
         $idMapa = $this->_getParam('idMapa');
         $idPessoa = $this->_getParam('cliente');
         $idExpedicao = $this->_getParam('idExpedicao');
+        $checkout = $this->_getParam('checkout');
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-
         try {
             $this->getEntityManager()->beginTransaction();
             $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
@@ -344,7 +351,11 @@ class Mobile_ExpedicaoController extends Action {
             if (!empty($mapaSeparacaoEmbaladoEn)) {
                 if (empty($mapaSeparacaoConferencias)) {
                     $this->addFlashMessage('error', 'Não é possível imprimir etiqueta sem produtos conferidos!');
-                    $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $idPessoa);
+                    if ($checkout == 1) {
+                        $this->_redirect('expedicao/index/checkout-expedicao/codigoBarrasMapa' . $idMapa . '0/erro/1');
+                    } else {
+                        $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $idPessoa);
+                    }
                 }
                 $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn);
                 $this->getEntityManager()->commit();
@@ -352,9 +363,17 @@ class Mobile_ExpedicaoController extends Action {
             } else {
                 $qtdPendenteConferencia = $mapaSeparacaoEmbaladoRepo->getProdutosConferidosByCliente($idMapa, $idPessoa);
                 if (count($qtdPendenteConferencia) <= 0) {
-                    $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/' . $idMapa);
+                    if ($checkout == 1) {
+                        $this->_redirect('expedicao/index/checkout-expedicao/codigoBarrasMapa/' . $idMapa . '0/recarregar/1');
+                    } else {
+                        $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/' . $idMapa);
+                    }
                 } else {
-                    $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $idPessoa);
+                    if ($checkout == 1) {
+                        $this->_redirect('expedicao/index/checkout-expedicao/codigoBarrasMapa/' . $idMapa . '0/recarregar/1/pessoa/' . $idPessoa);
+                    } else {
+                        $this->_redirect('mobile/expedicao/ler-produto-mapa/idMapa/' . $idMapa . '/idExpedicao/' . $idExpedicao . '/cliente/' . $idPessoa);
+                    }
                 }
             }
         } catch (Exception $e) {
@@ -602,6 +621,7 @@ class Mobile_ExpedicaoController extends Action {
         $idMapa = $request->getParam('idMapa');
         $central = $sessao->centralSelecionada;
         $mapa = $request->getParam('mapa', "N");
+        $checkout = $this->_getParam('checkout');
 
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
 
@@ -635,7 +655,12 @@ class Mobile_ExpedicaoController extends Action {
 
             $this->addFlashMessage('error', $result);
             if ($mapa == 'S') {
-                $this->_redirect("mobile/expedicao/index/idCentral/$central");
+
+                if ($checkout == 1) {
+                    $this->_redirect('expedicao/index/checkout-expedicao');
+                } else {
+                    $this->_redirect("mobile/expedicao/index/idCentral/$central");
+                }
             }
             $this->redirect('conferencia-expedicao', 'ordem-servico', 'mobile', array('idCentral' => $central));
         } else if ($result === 0) {
@@ -647,8 +672,11 @@ class Mobile_ExpedicaoController extends Action {
         if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
             $this->redirect('carregamento', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao));
         }
-
-        $this->_redirect('mobile/expedicao/index/idCentral/' . $central);
+        if ($checkout == 1) {
+            $this->_redirect('expedicao/index/checkout-expedicao');
+        } else {
+            $this->_redirect('mobile/expedicao/index/idCentral/' . $central);
+        }
     }
 
     public function selecionaPlacaAction() {

@@ -58,6 +58,8 @@ class notaFiscal {
     public $bonificacao;
     /** @var string */
     public $peso;
+    /** @var bool */
+    public $enderecado;
     /** @var itensNf[] */
     public $itens = array();
 }
@@ -74,6 +76,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param integer $idStatus Codigo do status da nota fiscal no wms
      * @return array
+     * @throws Exception
      */
     public function buscar($idFornecedor, $numero, $serie, $dataEmissao, $idStatus)
     {
@@ -150,6 +153,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @return notaFiscal
+     * @throws Exception
      */
     public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao)
     {
@@ -174,8 +178,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')->findOneBy(array(
             'fornecedor' => $fornecedorEntity->getId(),
             'numero' => $numero,
-            'serie' => $serie,
-            //'dataEmissao' => \DateTime::createFromFormat('d/m/Y', $dataEmissao)
+            'serie' => $serie
         ));
 
         if ($notaFiscalEntity == null)
@@ -189,7 +192,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $clsItensNf->idProduto = $item['COD_PRODUTO'];
             $clsItensNf->quantidade = $item['QTD_ITEM'];
             $clsItensNf->grade = $item['DSC_GRADE'];
-//            $clsItensNf->peso = $item['PESO_ITEM'];
             $clsItensNf->quantidadeConferida = $item['QTD_CONFERIDA'];
             $clsItensNf->quantidadeAvaria = $item['QTD_AVARIA'];
             $clsItensNf->motivoDivergencia = $item['DSC_MOTIVO_DIVER_RECEB'];
@@ -208,9 +210,18 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $clsNf->pesoTotal = $notaFiscalEntity->getPesoTotal();
         $clsNf->dataEmissao = $notaFiscalEntity->getDataEmissao()->format('d/m/Y');
         $clsNf->placa = $notaFiscalEntity->getPlaca();
-        $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
         $clsNf->dataEntrada = $dataEntrada;
         $clsNf->bonificacao = $notaFiscalEntity->getBonificacao();
+        $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
+
+        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+        $recebimentoRepo = $em->getRepository("wms:Recebimento");
+        $result = $recebimentoRepo->checkRecebimentoEnderecado($idRecebimento);
+        if (!empty($result)) {
+            $clsNf->enderecado = false;
+        } else {
+            $clsNf->enderecado = true;
+        }
 
         return $clsNf;
     }
@@ -224,13 +235,15 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
+     * @param string $cnpjDestinatario CNPJ da filial dona da nota
      * @param itens $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
+     * @param string $tipoNota Identifica se é uma nota de Bonificação(B), Compra(C), etc.
      * @param string $observacao Observações da Nota Fiscal
-     * @param double $pesoTotal Peso Total dos Itens na Nota
      * @return boolean
+     * @throws Exception
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null)
+    public function salvar($idFornecedor, $numero, $serie, $cnpjDestinatario, $dataEmissao, $placa, $itens, $bonificacao, $tipoNota, $observacao)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -253,7 +266,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 //NOTA DE DEVOLUÇÃO
             }
             $bonificacao = "N";
-            $pesoTotal = trim ($pesoTotal);
 
             $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
             $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
@@ -289,6 +301,34 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $itensNf[] = $itemWs;
                 }
                 $itens = $itensNf;
+            } else {
+                $itensNf = array();
+                foreach ($itens as $itemNf) {
+                    if (is_object($itemNf)) {
+                        $itemWs['idProduto'] = trim($itemNf->idProduto);
+                        $itemWs['grade'] = (empty($itemNf->grade) || $itemNf->grade === "?") ? "UNICA" : trim($itemNf->grade);
+                        $itemWs['quantidade'] = str_replace(',', '.', trim($itemNf->quantidade));
+
+                        if (isset($itemNf->peso)) {
+                            if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0)) {
+                                $itemWs['peso'] = trim($itemNf->quantidade);
+                            } else {
+                                $itemWs['peso'] = trim(str_replace(',', '.', $itemNf->peso));
+                            }
+                        } else {
+                            $itemWs['peso'] = trim($itemNf->quantidade);
+                        }
+
+                        $itensNf[] = $itemWs;
+                    } else {
+                        $itemWs['idProduto'] = $itemNf['idProduto'];
+                        $itemWs['peso'] =  $itemNf['quantidade'];
+                        $itemWs['grade'] = $itemNf['grade'];
+                        $itemWs['quantidade']= $itemNf['quantidade'];
+                        $itensNf[] = $itemWs;
+                    }
+                }
+                $itens = $itensNf;
             }
 
             if (count($itens) == 0) {
@@ -322,7 +362,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
 
             } else {
-                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$pesoTotal);
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao);
             }
 
             $em->flush();
@@ -345,10 +385,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $itens Itens da Nota {Json}
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
-     * * @param string $pesoTotal Peso Total da Nota Fiscal
      * @return boolean
+     * @throws Exception
      */
-    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $pesoTotal = null){
+    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao){
         /*
         $jsonMockSample ='{"produtos": [';
         $jsonMockSample .='     {"idProduto": "999", ';
@@ -361,7 +401,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         try {
             $array = json_decode($itens, true);
             $arrayItens = $array['produtos'];
-            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$arrayItens,$bonificacao, $observacao, $pesoTotal);
+            return $this->salvar($idFornecedor,$numero,$serie,"",$dataEmissao,$placa,$arrayItens,$bonificacao, "", $observacao);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -375,6 +415,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @return array
+     * @throws Exception
      */
     public function status($idFornecedor, $numero, $serie, $dataEmissao)
     {
@@ -408,14 +449,21 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
     /**
      * Descarta uma nota desvinculando ela do recebimento.
-     * Ação pode ser executada em qualquer status em que a nota esteja.
-     *
+     * <br />Ação pode ser executada em qualquer status em que a nota esteja.
+     * <br />
+     * <br /><b>(Obrigatório)</b> idFornecedor -> Código externo do fornecedor
+     * <br />(Obrigatório) numero -> Número da Nota fiscal
+     * <br />(Obrigatório) serie -> Série da nota fiscal
+     * <br />(Opcional) dataEmissao -> Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'DD/MM/YYYY' -- Será descontinuado em futuras versões
+     * <br />(Obrigatório) observacao -> Descrição do porquê da nota fiscal foi descartada
+     * <br />
      * @param string $idFornecedor Codigo externo do fornecedor
      * @param string $numero Numero da Nota fiscal
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'DD/MM/YYYY'
      * @param string $observacao Descrição do porquê da nota fiscal descartada
      * @return boolean
+     * @throws Exception
      */
     public function descartar($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
@@ -460,6 +508,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'DD/MM/YYYY'
      * @param string $observacao Descrição do porquê da nota fiscal foi desfeita
      * @return boolean
+     * @throws Exception
      */
     public function desfazer($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
@@ -493,7 +542,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
     /**
      * @param $itens
-     * @param $notaItensBDEn
      * @param $recebimentoConferenciaRepo
      * @param $notaFiscalEn
      * @param $em
@@ -548,17 +596,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     }
 
     /**
-     * @param $idFornecedor
-     * @param $numero
-     * @param $serie
-     * @param $dataEmissao
-     * @param $placa
      * @param $itens
-     * @param $bonificacao
-     * @param $observacao
-     * @param $notaItensBDEn
-     * @param $itemWs
      * @param $notaFiscalRepo
+     * @param $notaFiscalEn
+     * @param $em
      * @return bool
      * @throws Exception
      */
