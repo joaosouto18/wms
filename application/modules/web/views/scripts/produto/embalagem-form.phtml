@@ -11,7 +11,7 @@
         float: right;
         width: 570px;
     }
-    
+
     div.checkbox label.optional {
         margin: 0;
     }
@@ -45,16 +45,35 @@
                     <td colspan="3"><?php echo $this->element->codigoBarras; ?></td>
                 </tr>
                 <tr>
-                    <td colspan="2"><?php echo $this->element->endereco; ?></td>
-                    <td colspan="1"><?php echo $this->element->embalado; ?></td>
+                    <td colspan="2"><?php echo $this->element->embalado; ?></td>
                 </tr>
-                <tr>
-                    <td colspan="2"><?php echo $this->element->pontoReposicao; ?></td>
-                    <td colspan="1"><?php echo $this->element->capacidadePicking; ?></td>
-                </tr>
-
             </table>
             <?php echo $this->element->btnEmbalagem; ?>
+        </fieldset>
+        <fieldset id="fieldset-campos-comuns" style="float: right; width: 570px;">
+            <legend>Campos Gerais</legend>
+            <?php
+            echo $this->element->enderecoAntigo;
+            echo $this->element->idProduto;
+            echo $this->element->grade;
+            ?>
+            <table>
+                <tr>
+                    <td><?php echo $this->element->endereco; ?></td>
+                    <td>
+                        <div class="field">
+                            <label for="embalagem-fator" class="field optional">Embalagem</label>
+                            <select name="embalagem-fator" id="embalagem-fator" mostrarselecione="" class="valid">
+                                <option value="1" label="Selecione ...">Selecione ...</option>
+                            </select>
+                        </div>
+                        <input type="hidden" id="capacidadePicking-real" value="0" />
+                        <input type="hidden" id="pontoReposicao-real" value="0" />
+                    </td>
+                    <td><?php echo $this->element->pontoReposicao; ?></td>
+                    <td><?php echo $this->element->capacidadePicking; ?></td>
+                </tr>
+            </table>
         </fieldset>
         <fieldset id="fieldset-embalagens-cadastradas">
             <legend>Embalagens Cadastradas (Clique para Editar)</legend>
