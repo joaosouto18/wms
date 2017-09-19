@@ -55,37 +55,37 @@ class Web_ProdutoController extends Crud {
         if ($values) {
             $grid = new DadoLogisticoGrid;
             $this->view->grid = $grid->init($values)
-                ->render();
+                    ->render();
 
             $form->setSession($values)
-                ->populate($values);
+                    ->populate($values);
         }
 
         $this->view->form = $form;
     }
 
-/*    public function printCodBarProdutoAjaxAction() {
-        $modelo = 3;
-        $handle = fopen('C:\wamp64\www\wms\codigos.txt','r');
-        $codProduto = str_replace("\r\n",'',stream_get_contents($handle));
-        $grade = $this->getRequest()->getParam('grade');
-        $gerarEtiqueta = null;
-        switch ($modelo) {
-            case 1:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
-                break;
-            case 2:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
-                break;
-            case 3:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
-                break;
-        }
+    /*    public function printCodBarProdutoAjaxAction() {
+      $modelo = 3;
+      $handle = fopen('C:\wamp64\www\wms\codigos.txt','r');
+      $codProduto = str_replace("\r\n",'',stream_get_contents($handle));
+      $grade = $this->getRequest()->getParam('grade');
+      $gerarEtiqueta = null;
+      switch ($modelo) {
+      case 1:
+      $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
+      break;
+      case 2:
+      $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
+      break;
+      case 3:
+      $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
+      break;
+      }
 
-        $gerarEtiqueta->init(null, array(
-            'codProduto' => $codProduto,
-            'grade' => $grade), $modelo);
-    }*/
+      $gerarEtiqueta->init(null, array(
+      'codProduto' => $codProduto,
+      'grade' => $grade), $modelo);
+      } */
 
     /**
      * Lista as normas de paletizacao com dados logisticos
@@ -96,16 +96,16 @@ class Web_ProdutoController extends Crud {
         $params = $this->getRequest()->getParams();
 
         $dql = $em->createQueryBuilder()
-            ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
+                ->select('np.id, np.numLastro, np.numCamadas, np.numPeso, np.numNorma, np.isPadrao, 
                     u.id idUnitizador, u.descricao unitizador, e.id embalagem')
-            ->from('wms:Produto\Embalagem', 'e')
-            ->innerJoin('e.dadosLogisticos', 'dl')
-            ->innerJoin('dl.normaPaletizacao', 'np')
-            ->innerJoin('np.unitizador', 'u')
-            ->where('e.codProduto = ?1')
-            ->setParameter(1, $params['idProduto'])
-            ->andWhere('e.grade = :grade')
-            ->setParameter('grade', $params['grade']);
+                ->from('wms:Produto\Embalagem', 'e')
+                ->innerJoin('e.dadosLogisticos', 'dl')
+                ->innerJoin('dl.normaPaletizacao', 'np')
+                ->innerJoin('np.unitizador', 'u')
+                ->where('e.codProduto = ?1')
+                ->setParameter(1, $params['idProduto'])
+                ->andWhere('e.grade = :grade')
+                ->setParameter('grade', $params['grade']);
 
         $normasPaletizacao = array();
 
@@ -198,7 +198,14 @@ class Web_ProdutoController extends Crud {
 
         try {
             $params = $this->getRequest()->getParams();
-
+            if (isset($params['embalagens'])) {
+                $fator = $params['embalagem-fator'];
+                foreach ($params['embalagens'] as $key => $value) {
+                    $params['embalagens'][$key]['capacidadePicking'] = $fator * $params['embalagem']['capacidadePicking'];
+                    $params['embalagens'][$key]['pontoReposicao'] = $fator * $params['embalagem']['pontoReposicao'];
+                    $params['embalagens'][$key]['endereco'] = $params['embalagem']['endereco'];
+                }
+            }
             if (!isset($params['id']) || $params['id'] == null || !isset($params['grade']) || $params['grade'] == null)
                 throw new \Exception('Codigo e Grade do produto devem ser fornecidos');
 
@@ -243,7 +250,20 @@ class Web_ProdutoController extends Crud {
                 $entity->setPercTolerancia($params['produto']['percTolerancia']);
                 $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
 
-                $result = $this->repository->save($entity, $this->getRequest()->getParams(), true);
+                $paramsSave = $this->getRequest()->getParams();
+                if (isset($paramsSave['embalagens'])) {
+                    $fator = $paramsSave['embalagem-fator'];
+                    foreach ($paramsSave['embalagens'] as $key => $value) {
+                        $paramsSave['embalagens'][$key]['capacidadePicking'] = $fator * $paramsSave['embalagem']['capacidadePicking'];
+                        $paramsSave['embalagens'][$key]['pontoReposicao'] = $fator * $paramsSave['embalagem']['pontoReposicao'];
+                        $paramsSave['embalagens'][$key]['endereco'] = $paramsSave['embalagem']['endereco'];
+                        if (empty($paramsSave['embalagens'][$key]['acao'])) {
+                            $paramsSave['embalagens'][$key]['acao'] = 'alterar';
+                        }
+                    }
+                }
+
+                $result = $this->repository->save($entity, $paramsSave, true);
                 if (is_string($result)) {
                     $this->addFlashMessage('error', $result);
                     $this->_redirect("/produto/edit/id/$params[id]/grade/$params[grade]");
@@ -496,23 +516,21 @@ class Web_ProdutoController extends Crud {
         $codProduto = $this->getRequest()->getParam('id');
         $grade = $this->getRequest()->getParam('grade');
         $orderBy = array('dataAndamento' => 'DESC');
-        
+
         $andamentoRepo = $this->_em->getRepository('wms:Produto\Andamento');
         $produtoEn = $this->_em->getRepository('wms:Produto')->findOneBy(array('id' => $codProduto, 'grade' => $grade));
         $this->view->id = $codProduto;
         $this->view->grade = $grade;
-        $this->view->produto = $produtoEn->getDescricao();;
+        $this->view->produto = $produtoEn->getDescricao();
+        ;
         $this->view->vetLog = $andamentoRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade), $orderBy);
     }
-
-
 
     /*
      * Verifica se ja existe o codigo de barras informado
      */
 
-    public function verificarCodigoBarrasAjaxAction()
-    {
+    public function verificarCodigoBarrasAjaxAction() {
 
         $codigoBarras = $this->getRequest()->getParam("codigoBarras");
 
@@ -522,12 +540,12 @@ class Web_ProdutoController extends Crud {
         );
 
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id idProduto, p.grade')
-            ->from('wms:Produto', 'p')
-            ->leftJoin('p.embalagens', 'pe')
-            ->leftJoin('p.volumes', 'pv')
-            ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
-            ->setParameter('codigoBarras', $codigoBarras);
+                ->select('p.id idProduto, p.grade')
+                ->from('wms:Produto', 'p')
+                ->leftJoin('p.embalagens', 'pe')
+                ->leftJoin('p.volumes', 'pv')
+                ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+                ->setParameter('codigoBarras', $codigoBarras);
 
         $produto = $dql->getQuery()->getFirstResult();
 
@@ -540,4 +558,5 @@ class Web_ProdutoController extends Crud {
 
         $this->_helper->json($arrayMensagens, true);
     }
+
 }
