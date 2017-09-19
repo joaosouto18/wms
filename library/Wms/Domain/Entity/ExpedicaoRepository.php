@@ -1921,7 +1921,7 @@ class ExpedicaoRepository extends EntityRepository {
         return $arrayResult;
     }
 
-    public function getRelatorioSaidaProdutos($codProduto, $grade, $dataInicial = null, $dataFinal = null) {
+    public function getRelatorioSaidaProdutos($codProduto, $grade, $dataInicial = null, $dataFinal = null, $filial = null) {
         $source = $this->_em->createQueryBuilder()
                 ->select("es.dataConferencia, i.descricao as itinerario, i.id as idItinerario, c.codCargaExterno, e.id as idExpedicao, cliente.codClienteExterno, es.codProduto, es.dscGrade,
              e.dataInicio, e.dataFinalizacao, p.id as idPedido")
@@ -1955,6 +1955,9 @@ class ExpedicaoRepository extends EntityRepository {
         if (isset($grade)) {
             $source->andWhere('es.dscGrade = :grade')
                     ->setParameter('grade', $grade);
+        }
+        if (isset($filial)) {
+            $source->andWhere('p.centralEntrega = '.$filial);
         }
 
         return $source->getQuery()->getResult();
