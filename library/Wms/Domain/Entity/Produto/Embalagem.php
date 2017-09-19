@@ -251,6 +251,9 @@ class Embalagem {
         return $this;
     }
 
+    /**
+     * @return ArrayCollection
+     */
     public function getDadosLogisticos() {
         return $this->dadosLogisticos;
     }

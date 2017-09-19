@@ -9,9 +9,14 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
 use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Domain\Entity\Produto\DadoLogistico;
 use Wms\Domain\Entity\Produto\Embalagem;
+use Wms\Domain\Entity\Produto\EmbalagemRepository;
 use Wms\Domain\Entity\Produto\NormaPaletizacao;
+use Wms\Domain\Entity\Produto\Volume;
+use Wms\Domain\Entity\Produto\VolumeRepository;
 use Wms\Math;
+use Wms\Module\Web\Form\Subform\Produto\DadosLogisticos;
 
 class ExpedicaoRepository extends EntityRepository {
 
@@ -251,55 +256,13 @@ class ExpedicaoRepository extends EntityRepository {
                 'siglaRepo' => $siglaRepo
             );
 
-            $dadosProdutos = array();
-            foreach ($pedidosProdutosRessuprir as $produto) {
-                $codProduto = $produto['COD_PRODUTO'];
-                $grade = $produto['DSC_GRADE'];
-                if (!isset($dadosProdutos[$codProduto][$grade])) {
-                    $produtoEn = $produtoRepo->findOneBy(array('id' => $codProduto, 'grade' => $grade));
-                    $embalagensASC = null;
-                    if ($produtoEn->getTipoComercializacao()->getId() == 1) {
-                        $embalagens = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'ASC'));
-                        if (empty($embalagens)) {
-                            throw new \Exception("Produto " . $codProduto . " Grade " . $grade . " não possui embalagem cadastrada ou ativa!");
-                        } else {
-                            /** @var Embalagem $embalagem */
-                            foreach ($embalagens as $embalagem) {
-                                $normas = $embalagem->getDadosLogisticos();
-                                $normaDefault = null;
-                                /** @var NormaPaletizacao $norma */
-                                foreach ($normas as $norma) {
-                                    if ($norma->getIsPadrao() == "S") {
-                                        $normaDefault = $norma;
-                                        break;
-                                    }
-                                }
-                                if (empty($normaDefault)){
-                                    $dscEmbalagem = $embalagem->getDescricao();
-                                    throw new \Exception("A embalagem $dscEmbalagem do produto $codProduto - $grade não tem uma norma de paletização padrão!");
-                                }
-                                $embalagensASC[] = array (
-                                    "embalagemEn" => $embalagem,
-                                    "norma" => $normaDefault
-                                );
-                            }
-                        }
-                    }
-
-                    $dadosProdutos[$codProduto][$grade] = array(
-                        'codProduto' => $codProduto,
-                        'grade' => $grade,
-                        'entidade' => $produtoEn,
-                        'embalagensASC' => $embalagensASC,
-                    );
-                }
-            }
+            $dadosProdutos = self::getProdutoElements($pedidosProdutosRessuprir, $repositorios);
 
             $ondaEn = $ondaRepo->geraNovaOnda();
             $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn, $dadosProdutos, $repositorios);
 
             /* Prepara destia os itens para picking ou pulmão de acordo com a quebra do pulmão-doca, caso utilize */
-            list($sairDoPicking, $sairDoPulmao) = self::prepareArrayRessup($pedidosProdutosRessuprir, $quebraPulmaoDoca, $dadosProdutos, $volumeRepo);
+            list($sairDoPicking, $sairDoPulmao) = self::prepareArrayRessup($pedidosProdutosRessuprir, $quebraPulmaoDoca, $dadosProdutos, $repositorios);
 
             //list($sairDoPicking, $sairDoPulmao) = $ondaRepo->getArrayProdutosPorTipoSaida($arrRessup, $dadosProdutos, $repositorios);
             $reservaEstoqueExpedicaoRepo->gerarReservaSaidaPicking($sairDoPicking, $repositorios);
@@ -342,119 +305,247 @@ class ExpedicaoRepository extends EntityRepository {
         }
     }
 
-    private function prepareArrayRessup($arrItens, $quebraPulmaoDoca, $dadosProdutos, $volumeRepo)
+    private function getProdutoElements($itensExpedicoes, $repositorios)
+    {
+        /** @var ProdutoRepository $produtoRepo */
+        $produtoRepo = $repositorios['produtoRepo'];
+        /** @var EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $repositorios['embalagemRepo'];
+        /** @var VolumeRepository $volumeRepo */
+        $volumeRepo = $repositorios['volumeRepo'];
+
+        $dadosProdutos = array();
+        foreach ($itensExpedicoes as $produto) {
+            $codProduto = $produto['COD_PRODUTO'];
+            $grade = $produto['DSC_GRADE'];
+            if (!isset($dadosProdutos[$codProduto][$grade])) {
+                /** @var Produto $produtoEn */
+                $produtoEn = $produtoRepo->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+                $embalagem = array();
+                $volumes = array();
+
+                if ($produtoEn->getTipoComercializacao()->getId() == 1) {
+                    $embalagens = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'ASC'));
+                    if (empty($embalagens)) {
+                        throw new \Exception("Produto " . $codProduto . " Grade " . $grade . " não possui embalagem cadastrada ou ativa!");
+                    } else {
+                        /** @var Embalagem $embalagemEn */
+                        $embalagemEn = reset($embalagens);
+
+                        $pickingEn = null;
+                        if (!empty($embalagemEn->getEndereco())) {
+                            $pickingEn = $embalagemEn->getEndereco();
+                        }
+
+//                        $dadosLogisticos = $embalagemEn->getDadosLogisticos();
+//                        $normaDefault = null;
+//                        /** @var DadoLogistico $dadoLogistico */
+//                        foreach ($dadosLogisticos as $dadoLogistico) {
+//                            $norma = $dadoLogistico->getNormaPaletizacao();
+//                            if ($norma->getIsPadrao() == "S") {
+//                                $normaDefault = $norma;
+//                                break;
+//                            }
+//                        }
+//
+//                        if (empty($normaDefault)){
+//                            $dscEmbalagem = $embalagemEn->getDescricao();
+//                            throw new \Exception("A embalagem $dscEmbalagem do produto $codProduto - $grade não tem norma de paletização padrão ou dado logistico cadastrado!");
+//                        }
+
+                        $embalagem = array (
+                            "embalagemEn" => $embalagemEn,
+                            "pickingEn" => $pickingEn,
+                            //"normaEn" => $normaDefault
+                        );
+                    }
+                } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
+                    $normas = $volumeRepo->getNormasByProduto($codProduto, $grade);
+                    if (empty($normas)) {
+                        $checkEmb = $produtoEn->getEmbalagens()->toArray();
+                        if (!empty($checkEmb)) {
+                            throw new \Exception("O produto $codProduto grade $grade está configurado como COMPOSTO tento embalagem cadastrada, verifique a possibilidade de alterar o tipo de comercialização para UNITARIO");
+                        }
+                        throw new \Exception("O produto $codProduto grade $grade não tem norma e volume cadastrados");
+                    }
+                    /** @var NormaPaletizacao $norma */
+                    foreach ($normas as $norma) {
+                        $volumesArr = $volumeRepo->getVolumesByNorma($norma->getId(), $codProduto, $grade);
+                        if (empty($volumesArr)) {
+                            throw new \Exception("O produto $codProduto grade $grade não tem volume cadastrado");
+                        }
+                        $pickingEn = null;
+                        /** @var Volume $volume */
+                        foreach ($volumesArr as $volume) {
+                            if ($volume->getEndereco() != null) {
+                                $pickingEn = $volume->getEndereco();
+                            }
+                            $volumes[] = array(
+                                'volumeEn' => $volume,
+                                //'normaEn' => $norma,
+                                'pickingEn' => $pickingEn
+                            );
+                        }
+                    }
+                }
+
+                $dadosProdutos[$codProduto][$grade] = array(
+                    'codProduto' => $codProduto,
+                    'grade' => $grade,
+                    'entidade' => $produtoEn,
+                    'embalagem' => $embalagem,
+                    'volumes' => $volumes
+                );
+            }
+        }
+
+        return $dadosProdutos;
+    }
+
+    private function prepareArrayRessup($arrItens, $quebraPulmaoDoca = ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA, $dadosProdutos, $repositorios)
     {
         switch ($quebraPulmaoDoca) {
             case ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO:
-                return self::getArraysByQuebraPulmaoDocaExpedicao($arrItens, $dadosProdutos, $volumeRepo);
+                return self::getArraysByQuebraPulmaoDocaExpedicao($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
             case ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CARGA:
-                return self::getArraysByQuebraPulmaoDocaCarga($arrItens, $dadosProdutos, $volumeRepo);
+                return self::getArraysByQuebraPulmaoDocaCarga($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
             case ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA:
-                return self::getArraysByQuebraPulmaoDocaPraca($arrItens, $dadosProdutos, $volumeRepo);
+                return self::getArraysByQuebraPulmaoDocaPraca($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
             case ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE:
-                return self::getArraysByQuebraPulmaoDocaCliente($arrItens, $dadosProdutos, $volumeRepo);
+                return self::getArraysByQuebraPulmaoDocaCliente($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
             default:
-                return $arrItens;
+                return self::getArraysSaidaPadrao($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
         }
     }
 
-    private function getArraysByQuebraPulmaoDocaExpedicao($arrItens, $dadosProdutos, $volumeRepo)
+    private function getArraysByQuebraPulmaoDocaExpedicao($quebra, $arrItens, $dadosProdutos, $repositorios)
     {
         $sumQtdItemExpedicao = array();
-        foreach($arrItens as $item) {
-            $codProduto = $item['COD_PRODUTO'];
-            $grade = $item['DSC_GRADE'];
-            if (isset($sumQtdItemExpedicao[$codProduto][$grade])) {
-                $qtdAtual = $sumQtdItemExpedicao[$codProduto][$grade]["qtd"];
-                $sumQtdItemExpedicao[$codProduto][$grade]["qtd"] = Math::adicionar($qtdAtual, $item['QTD']);
+        foreach($arrItens as $itemPedido) {
+            $codProduto = $itemPedido['COD_PRODUTO'];
+            $grade = $itemPedido['DSC_GRADE'];
+            $idExpedicao = $itemPedido['COD_EXPEDICAO'];
+
+            if (isset($sumQtdItemExpedicao[$idExpedicao][$codProduto][$grade])) {
+                $qtdAtual = $sumQtdItemExpedicao[$idExpedicao][$codProduto][$grade]["qtd"];
+                $sumQtdItemExpedicao[$idExpedicao][$codProduto][$grade]["qtd"] = Math::adicionar($qtdAtual, $itemPedido['QTD']);
             } else {
-                $sumQtdItemExpedicao[$codProduto][$grade]["qtd"] = $item['QTD'];
+                $sumQtdItemExpedicao[$idExpedicao][$codProduto][$grade]["qtd"] = $itemPedido['QTD'];
+            }
+
+            $sumQtdItemExpedicao[$idExpedicao][$codProduto][$grade]["pedidos"][] = $itemPedido['COD_PEDIDO'];
+            $sumQtdItemExpedicao[$idExpedicao][$codProduto][$grade]["pedprod"][$itemPedido['COD_PEDIDO_PRODUTO']] = $itemPedido['QTD'];
+        }
+
+        $itensReservar = array();
+
+        foreach ($sumQtdItemExpedicao as $expedicao => $produtoArr) {
+            foreach ($produtoArr as  $codProduto => $gradeArr) {
+                foreach ($gradeArr as $dscGrade => $pedidosRegroup) {
+                    $itensReservar = self::setDestinoSeparacao($quebra, $codProduto , $dscGrade, $expedicao, $pedidosRegroup, $dadosProdutos, $itensReservar, $repositorios);
+                }
             }
         }
 
-        $arraySaidaPicking = array();
-        $arraySaidaPulmao = array();
-        foreach ($arrItens as $produto) {
-            $codProduto = $produto['COD_PRODUTO'];
-            $grade = $produto['DSC_GRADE'];
-            $qtdBase = $sumQtdItemExpedicao[$codProduto][$grade]["qtd"];
-            list($saidaPicking, $saidaPulmao) = self::setDestinoSeparacao($produto, $dadosProdutos, $qtdBase, $volumeRepo);
-            $arraySaidaPicking = array_merge($arraySaidaPicking, $saidaPicking);
-            $arraySaidaPulmao = array_merge($arraySaidaPulmao, $saidaPulmao);
-        }
-
-        return array($arraySaidaPicking,$arraySaidaPulmao);
+        return $itensReservar;
     }
 
-    private function getArraysByQuebraPulmaoDocaCarga($arrItens, $dadosProdutos, $repositorios)
+    private function getArraysByQuebraPulmaoDocaCarga($quebra, $arrItens, $dadosProdutos, $repositorios)
     {
 
     }
 
-    private function getArraysByQuebraPulmaoDocaPraca($arrItens, $dadosProdutos, $repositorios)
+    private function getArraysByQuebraPulmaoDocaPraca($quebra, $arrItens, $dadosProdutos, $repositorios)
     {
 
     }
 
-    private function getArraysByQuebraPulmaoDocaCliente($arrItens, $dadosProdutos, $repositorios)
+    private function getArraysByQuebraPulmaoDocaCliente($quebra, $arrItens, $dadosProdutos, $repositorios)
     {
 
     }
 
-    private function setDestinoSeparacao($produto, $dadosProdutos, $qtdBase, $volumeRepo)
+    private function getArraysSaidaPadrao($quebra, $arrItens, $dadosProdutos, $repositorios)
     {
-        $codProduto = $produto['COD_PRODUTO'];
-        $grade = $produto['DSC_GRADE'];
-        $codPedido = $produto['COD_PEDIDO'];
-        $codExpedicao = $produto['COD_EXPEDICAO'];
 
-        $arraySaidaPicking = array();
-        $arraySaidaPulmao = array();
+    }
+
+    private function setDestinoSeparacao($quebra, $codProduto, $dscGrade, $criterio, $pedidosRegroup, $dadosProdutos, $itensReservados, $repositorios)
+    {
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $repositorios['estoqueRepo'];
+        $qtdBase = $pedidosRegroup['qtd'];
+
         /** @var Produto $produtoEn */
-        $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-        if ($produtoEn->getTipoComercializacao()->getId() == 1) {
-            $embalagemArr = end($dadosProdutos[$codProduto][$grade]['embalagensASC']);
+        $produtoEn = $dadosProdutos[$codProduto][$dscGrade]['entidade'];
+        if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
+
+            $embalagemElem = $dadosProdutos[$codProduto][$dscGrade]['embalagem'];
             /** @var Embalagem $embalagemEn */
-            $embalagemEn = $embalagemArr['embalagemEn'];
-            /** @var NormaPaletizacao $norma */
-            $norma = $embalagemArr["norma"];
+            $embalagemEn = $embalagemElem['embalagemEn'];
+            $enderecoPicking = $embalagemElem['pickingEn'];
 
-            $idPicking = null;
-            if ($embalagemEn->getEndereco() != null) {
-                $idPicking = $embalagemEn->getEndereco()->getId();
-            }
+            if ($quebra != ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA
+                || ($quebra == ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA && empty($enderecoPicking))) {
+                // Separa no pulmão
+                $params = array(
+                    'idProduto' => $codProduto,
+                    'grade' => $dscGrade,
+                    'idVolume' => null,
+                    'idCaracteristigaIgnorar' => Endereco::ENDERECO_PICKING
+                );
 
-            $saidaProduto = array(
-                'idPicking' => $idPicking,
-                'idExpedicao' => $codExpedicao,
-                'idPedido' => $codPedido,
-                'produtos' => array(array(
-                    'codProdutoEmbalagem' => $embalagemEn->getId(),
-                    'codProdutoVolume' => null,
-                    'codProduto' => $codProduto,
-                    'grade' => $grade,
-                    'qtd' => $qtdBase
-                ))
-            );
+                $qtdRestante = $qtdBase;
 
-            $qtdNorma = Math::multiplicar($norma->getNumNorma(), $embalagemEn->getQuantidade());
-            if (Math::compare($qtdBase, $qtdNorma, ">=")) {
-                $resto = Math::resto($qtdBase, $qtdNorma);
-                $qtdSepararPulmaoDoca = Math::subtrair($qtdBase, $resto);
-                $saidaProduto['produtos'][0]['qtd'] = $resto;
-                $saidaProduto['produtos'][0]['pulmaoDoca'] = $qtdSepararPulmaoDoca;
-                if (!empty($resto)){
-                    $arraySaidaPicking[] = $saidaProduto;
+                $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
+                $arrEstoqueReservado = array();
+
+                foreach ($estoquePulmao as $estoque) {
+                    if ($qtdRestante > 0) {
+                        $qtdEstoque = $estoque['SALDO'];
+                        $idPulmao = $estoque['COD_DEPOSITO_ENDERECO'];
+                        $zerouEstoque = false;
+                        $nextEndereco = false;
+
+                        if(isset($arrEstoqueReservado[$idPulmao][$codProduto][$dscGrade])) {
+                            $reserva = $arrEstoqueReservado[$idPulmao][$codProduto][$dscGrade];
+                            if ($reserva['estoqueReservado']){
+                                $nextEndereco = true;
+                            } else {
+                                $qtdEstoque -= $reserva['qtdReservada'];
+                            }
+                        }
+
+                        if ($nextEndereco)
+                            continue;
+
+                        if ($qtdRestante >= $qtdEstoque) {
+                            $qtdSeparar = $qtdEstoque;
+                            $zerouEstoque = true;
+                        } else {
+                            $qtdSeparar = $qtdRestante;
+                        }
+
+                        $qtdRestante = $qtdRestante - $qtdSeparar;
+                        $produtosSeparar = $produto['produtos'];
+                        foreach ($produtosSeparar as $key=> $produtoSeparar){
+                            $produtosSeparar[$key]['qtd'] = ($qtdSeparar * -1);
+                        }
+
+                        $arrItensReserva[$idExpedicao][$idPedido][$codProduto][$grade][$idPulmao]['itens'] = $produtosSeparar;
+                        if(isset($arrEstoqueReservado[$idPulmao][$codProduto][$grade]['qtdReservada'])) {
+                            $arrEstoqueReservado[$idPulmao][$codProduto][$grade]['qtdReservada'] += $qtdSeparar;
+                        } else {
+                            $arrEstoqueReservado[$idPulmao][$codProduto][$grade]['qtdReservada'] = $qtdSeparar;
+                        }
+                        $arrEstoqueReservado[$idPulmao][$codProduto][$grade]['estoqueReservado'] = $zerouEstoque;
+                    }
                 }
-                $arraySaidaPulmao[] = $saidaProduto;
             } else {
-                if ($idPicking == null) {
-                    $arraySaidaPulmao[] = $saidaProduto;
-                } else {
-                    $arraySaidaPicking[] = $saidaProduto;
-                }
+                //separação no picking
             }
-        } else {
+
+        } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
             $normas = $volumeRepo->getNormasByProduto($codProduto, $grade);
             foreach ($normas as $norma) {
                 $volumes = $volumeRepo->getVolumesByNorma($norma->getId(), $codProduto, $grade);
