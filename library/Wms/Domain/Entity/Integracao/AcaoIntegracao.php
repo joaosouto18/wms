@@ -25,6 +25,7 @@ class AcaoIntegracao
     const INTEGRACAO_VERIFICA_CARGA_FINALIZADA = 614;
     const INTEGRACAO_NOTA_FISCAL_SAIDA = 615;
     const INTEGRACAO_LIBERAR_ESTOQUE_ERP = 616;
+    const INTEGRACAO_PEDIDO_VENDA = 617;
 
     /**
      * @Id

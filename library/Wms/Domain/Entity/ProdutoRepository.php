@@ -329,7 +329,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
-                        $embalagemEntity->setEndereco(null);
+                        $embalagemEntity->setAltura($altura);
+                        $embalagemEntity->setLargura($largura);
+                        $embalagemEntity->setPeso($peso);
+                        $embalagemEntity->setProfundidade($profundidae);
+                        $embalagemEntity->setCubagem($cubagem);
 
                         //valida o endereco informado
                         if (!empty($endereco)) {
@@ -410,6 +414,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
+                        $embalagemEntity->setLargura($largura);
+                        $embalagemEntity->setAltura($altura);
+                        $embalagemEntity->setPeso($peso);
+                        $embalagemEntity->setProfundidade($profundidade);
+                        $embalagemEntity->setCubagem($cubagem);
 
                         if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])) {
                             if ($webservice == true) {

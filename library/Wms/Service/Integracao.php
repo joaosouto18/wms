@@ -187,6 +187,8 @@ class Integracao
                     return $this->processaNotaFiscalSaida($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_VERIFICA_CARGA_FINALIZADA:
                     return $this->verificaCargasFaturadas($this->_dados);
+                case AcaoIntegracao::INTEGRACAO_PEDIDO_VENDA:
+                    return $this->processaPedidoAcumulado($this->_dados);
 
 
             }
@@ -1152,4 +1154,12 @@ class Integracao
         return true;
     }
 
+    public function processaPedidoAcumulado($dados){
+        $pedidoAcumuladoRepo = $this->_em->getRepository('wms:ressuprimento\PedidoAcumulado');
+        foreach ($dados as $value) {
+            $pedidoAcumuladoRepo->setCodProduto($value['']);
+            $pedidoAcumuladoRepo->setGrade($value['']);
+            $pedidoAcumuladoRepo->setQtdVendida($value['']);
+        }
+    }
 }

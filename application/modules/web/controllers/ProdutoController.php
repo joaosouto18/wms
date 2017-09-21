@@ -139,11 +139,11 @@ class Web_ProdutoController extends Crud {
                     'id' => $dadoLogistico->getId(),
                     'idNormaPaletizacao' => $idNormaPaletizacao,
                     'idEmbalagem' => $dadoLogistico->getEmbalagem()->getId(),
-                    'largura' => $dadoLogistico->getLargura(),
-                    'altura' => $dadoLogistico->getAltura(),
-                    'profundidade' => $dadoLogistico->getProfundidade(),
-                    'cubagem' => $dadoLogistico->getCubagem(),
-                    'peso' => $dadoLogistico->getPeso(),
+                    'largura' => $dadoLogistico->getEmbalagem()->getLargura(),
+                    'altura' => $dadoLogistico->getEmbalagem()->getAltura(),
+                    'profundidade' => $dadoLogistico->getEmbalagem()->getProfundidade(),
+                    'cubagem' => $dadoLogistico->getEmbalagem()->getCubagem(),
+                    'peso' => $dadoLogistico->getEmbalagem()->getPeso(),
                     'normaPaletizacao' => $dadoLogistico->getNormaPaletizacao()->getId(),
                     'lblEmbalagem' => $lblEmbalagem,
                     'acao' => 'alterar',
@@ -237,20 +237,32 @@ class Web_ProdutoController extends Crud {
                 $entity->setPossuiPesoVariavel($params['produto']['pVariavel']);
                 $entity->setPercTolerancia($params['produto']['percTolerancia']);
                 $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
-
                 $paramsSave = $this->getRequest()->getParams();
                 if (isset($paramsSave['embalagens'])) {
                     $fator = $paramsSave['embalagem-fator'];
+                    $alturaReal = floatval(str_replace(',', '.', $paramsSave['embalagem']['altura'])) / floatval($fator);
+                    $pesoReal = floatval(str_replace(',', '.', $paramsSave['embalagem']['peso'])) / floatval($fator);
+                    $largura = floatval(str_replace(',', '.', $paramsSave['embalagem']['largura']));
+                    $profundidade = floatval(str_replace(',', '.', $paramsSave['embalagem']['profundidade']));
+
                     foreach ($paramsSave['embalagens'] as $key => $value) {
+                        $altura = $alturaReal * $value['quantidade'];
+                        $peso = $pesoReal * $value['quantidade'];
+                        $cubagem = $altura * $largura * $profundidade;
                         $paramsSave['embalagens'][$key]['capacidadePicking'] = $fator * $paramsSave['embalagem']['capacidadePicking'];
                         $paramsSave['embalagens'][$key]['pontoReposicao'] = $fator * $paramsSave['embalagem']['pontoReposicao'];
                         $paramsSave['embalagens'][$key]['endereco'] = $paramsSave['embalagem']['endereco'];
+                        $paramsSave['embalagens'][$key]['altura'] = number_format($altura, 3, ',', '');
+                        $paramsSave['embalagens'][$key]['profundidade'] = $paramsSave['embalagem']['profundidade'];
+                        $paramsSave['embalagens'][$key]['cubagem'] = number_format($cubagem, 4, ',', '');
+                        $paramsSave['embalagens'][$key]['peso'] = number_format($peso, 3, ',', '');
+                        $paramsSave['embalagens'][$key]['largura'] = $paramsSave['embalagem']['largura'];
                         if (empty($paramsSave['embalagens'][$key]['acao'])) {
                             $paramsSave['embalagens'][$key]['acao'] = 'alterar';
                         }
                     }
                 }
-
+                
                 $result = $this->repository->save($entity, $paramsSave, true);
                 if (is_string($result)) {
                     $this->addFlashMessage('error', $result);

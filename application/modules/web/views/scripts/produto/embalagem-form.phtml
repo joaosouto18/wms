@@ -50,7 +50,7 @@
             </table>
             <?php echo $this->element->btnEmbalagem; ?>
         </fieldset>
-        <fieldset id="fieldset-campos-comuns" style="float: right; width: 570px;">
+        <fieldset id="fieldset-campos-comuns" style="float: right; width: 580px;">
             <legend>Campos Gerais</legend>
             <?php
             echo $this->element->enderecoAntigo;
@@ -69,13 +69,21 @@
                         </div>
                         <input type="hidden" id="capacidadePicking-real" value="0" />
                         <input type="hidden" id="pontoReposicao-real" value="0" />
+                        <input type="hidden" id="peso-real" value="0" />
+                        <input type="hidden" id="altura-real" value="0" />
                     </td>
                     <td><?php echo $this->element->pontoReposicao; ?></td>
                     <td><?php echo $this->element->capacidadePicking; ?></td>
+                </tr><tr>
+                    <td><?php echo $this->element->altura; ?></td>
+                    <td><?php echo $this->element->largura; ?></td>
+                    <td><?php echo $this->element->profundidade; ?></td>
+                    <td><?php echo $this->element->cubagem; ?></td>
+                    <td><?php echo $this->element->peso; ?></td>
                 </tr>
             </table>
         </fieldset>
-        <fieldset id="fieldset-embalagens-cadastradas">
+        <fieldset id="fieldset-embalagens-cadastradas" style="width: 580px!important">
             <legend>Embalagens Cadastradas (Clique para Editar)</legend>
         </fieldset>
     </dd>

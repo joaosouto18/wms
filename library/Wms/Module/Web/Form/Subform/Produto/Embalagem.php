@@ -62,7 +62,7 @@ class Embalagem extends SubForm
                 ->addElement('text', 'endereco', array(
                     'label' => 'Endereço',
                     'alt' => 'endereco',
-                    'size' => 20,
+                    'size' => 10,
                     'placeholder' => $placeholder,
                 ))
                 ->addElement('select', 'embalado', array(
@@ -71,15 +71,47 @@ class Embalagem extends SubForm
                     'multiOptions' => array('S' => 'SIM', 'N' => 'NÃO'),
                     'value' => 'N',
                 ))
-               ->addElement('numeric', 'pontoReposicao', array(
+               ->addElement('text', 'pontoReposicao', array(
                     'label' => 'Ponto de Reposição',
                     'size' => 10,
-                    'value' => 0
+                    'value' => 0,
+                   'alt' => 'centesimal',
                 ))
-                ->addElement('numeric', 'capacidadePicking', array(
+                ->addElement('text', 'capacidadePicking', array(
                     'label' => 'Capacidade do Picking',
                     'size' => 10,
-                    'value' => 0
+                    'value' => 0,
+                    'alt' => 'centesimal',
+                ))
+                ->addElement('text', 'altura', array(
+                    'label' => 'Altura(m)',
+                    'class' => 'parametro-cubagem',
+                    'alt' => 'centesimal',
+                    'size' => 12,
+                ))
+                ->addElement('text', 'largura', array(
+                    'label' => 'Largura(m)',
+                    'class' => 'parametro-cubagem',
+                    'alt' => 'centesimal',
+                    'size' => 12,
+                ))
+                ->addElement('text', 'profundidade', array(
+                    'label' => 'Profundidade(m)',
+                    'class' => 'parametro-cubagem',
+                    'alt' => 'centesimal',
+                    'size' => 12,
+                ))
+                ->addElement('text', 'cubagem', array(
+                    'label' => 'Cubagem(m³)',
+                    'class' => 'parametro-cubagem',
+                    'alt' => 'milesimal',
+                    'readonly' => true,
+                    'size' => 12,
+                ))
+                ->addElement('text', 'peso', array(
+                    'label' => 'Peso(kg)',
+                    'alt' => 'centesimal',
+                    'size' => 12,
                 ))
                 ->addElement('hidden', 'acao', array(
                     'value' => 'incluir',
