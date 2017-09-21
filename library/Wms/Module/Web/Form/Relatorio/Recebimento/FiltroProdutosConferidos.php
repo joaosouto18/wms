@@ -2,21 +2,13 @@
 
 namespace Wms\Module\Web\Form\Relatorio\Recebimento;
 
-use Wms\Domain\Entity\Recebimento,
-    Wms\Module\Web\Form;
+use Wms\Module\Web\Form;
 
-/**
- * Description of FiltroProdutosConferidos
- *
- * @author Adriano Uliana <adriano.uliana@rovereti.com.br>
- */
 class FiltroProdutosConferidos extends Form
 {
 
     public function init()
     {
-        $em = $this->getEm();
-
         $this->setAttribs(array(
             'method' => 'get',
             'class' => 'filtro',
