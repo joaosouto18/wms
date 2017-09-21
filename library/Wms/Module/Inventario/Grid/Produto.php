@@ -51,13 +51,10 @@ class Produto extends DadoLogistico {
             $id = UtilProduto::preencheZerosEsquerda($params['incluirinput'], 2);
             $source->andWhere("p.id IN (" . trim($id) . ")");
         }
-        
         if (!empty($params['id']) && empty($params['incluirinput'])) {
             $id = UtilProduto::preencheZerosEsquerda($params['id'], 2);
             $source->andWhere("p.id IN (" . trim($id) . ")");
         }
-
-        
         
         if (($params['pulmao'] == 1) && ($params['picking'] == 0)) {
             $source->andWhere("e.idCaracteristica != $tipoPicking");

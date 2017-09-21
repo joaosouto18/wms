@@ -7,20 +7,16 @@
 <?php echo $this->grid;
 ?>
 <script>
-    var id = $("#id").val();
     $(".incluir").click(function () {
-        if(id == ''){
-            id = $("#incluirinput").val();
+        var id = $("#id").val();
+        if (id != '') {
+            $("#incluirinput").val($("#incluirinput").val() + ',' + id);
         }
-        if($("#incluirinput").val() != ''){
-            id += ','+ $("#incluirinput").val();
-        }
-        $("#incluirinput").val($("#id").val() + ',' + id);
         return true;
     });
     $("#submit").click(function () {
         $("#incluirinput").val('');
         return true;
     });
-    
+
 </script>
