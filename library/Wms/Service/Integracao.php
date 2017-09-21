@@ -1157,9 +1157,9 @@ class Integracao
     public function processaPedidoAcumulado($dados){
         $pedidoAcumuladoRepo = $this->_em->getRepository('wms:ressuprimento\PedidoAcumulado');
         foreach ($dados as $value) {
-            $pedidoAcumuladoRepo->setCodProduto($value['']);
-            $pedidoAcumuladoRepo->setGrade($value['']);
-            $pedidoAcumuladoRepo->setQtdVendida($value['']);
+            $pedidoAcumuladoRepo->setCodProduto($value['CODPRO']);
+            $pedidoAcumuladoRepo->setGrade($value['GRADE']);
+            $pedidoAcumuladoRepo->setQtdVendida($value['QTDFAT']);
         }
     }
 }
