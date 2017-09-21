@@ -7,10 +7,17 @@
 <?php echo $this->grid;
 ?>
 <script>
+    var idAtual = $("#id").val();
     $(".incluir").click(function () {
         var id = $("#id").val();
-        if (id != '') {
+        if($("#incluirinput").val() == '' && idAtual != id){
+            $("#incluirinput").val(idAtual);
+        }
+        
+        if (id != '' && $("#incluirinput").val() != '') {
             $("#incluirinput").val($("#incluirinput").val() + ',' + id);
+        }else{
+            $("#incluirinput").val(id);
         }
         return true;
     });
