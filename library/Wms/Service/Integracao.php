@@ -1161,5 +1161,6 @@ class Integracao
             $pedidoAcumuladoRepo->setGrade($value['GRADE']);
             $pedidoAcumuladoRepo->setQtdVendida($value['QTDFAT']);
         }
+        $this->_em->flush();
     }
 }
