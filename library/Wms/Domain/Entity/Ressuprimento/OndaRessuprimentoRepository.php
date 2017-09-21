@@ -793,38 +793,38 @@ class OndaRessuprimentoRepository extends EntityRepository {
         if (isset($parametros['linhaSeparacao']) && !empty($parametros['linhaSeparacao'])) {
             $SQLWhere .= " AND P.COD_LINHA_SEPARACAO = " . $parametros['linhaSeparacao'];
         }
-        $ruaInicio = $predioInicio = $nivelIncio = $aptoIncio = '00';
-        $ruaFim = $predioFim = $nivelFim = $aptoFim = '1000';
+        
+        if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
+            $SQLWhere .= " AND DE.COD_TIPO_ENDERECO = " . $parametros['tipoEndereco'];
+        }
+        if (isset($parametros['linhaSeparacao']) && !empty($parametros['linhaSeparacao'])) {
+            $SQLWhere .= " AND P.COD_LINHA_SEPARACAO = " . $parametros['linhaSeparacao'];
+        }
         if (isset($parametros['rua']) && !empty($parametros['rua'])) {
-            $ruaInicio = $parametros['rua'];
+            $SQLWhere .= " AND DE.NUM_RUA >= " . $parametros['rua'];
         }
         if (isset($parametros['predio']) && !empty($parametros['predio'])) {
-            $predioInicio = $parametros['predio'];
+            $SQLWhere .= " AND DE.NUM_PREDIO >= " . $parametros['predio'];
         }
         if (isset($parametros['nivel']) && !empty($parametros['nivel'])) {
-            $nivelIncio = $parametros['nivel'];
+            $SQLWhere .= " AND DE.NUM_NIVEL >= " . $parametros['nivel'];
         }
         if (isset($parametros['apto']) && !empty($parametros['apto'])) {
-            $aptoIncio = $parametros['apto'];
+            $SQLWhere .= " AND DE.NUM_APARTAMENTO >= " . $parametros['apto'];
         }
         if (isset($parametros['ruaFinal']) && !empty($parametros['ruaFinal'])) {
-            $ruaFim = $parametros['ruaFinal'];
+            $SQLWhere .= " AND DE.NUM_RUA <= " . $parametros['ruaFinal'];
         }
         if (isset($parametros['predioFinal']) && !empty($parametros['predioFinal'])) {
-            $predioFim = $parametros['predioFinal'];
+            $SQLWhere .= " AND DE.NUM_PREDIO <= " . $parametros['predioFinal'];
         }
         if (isset($parametros['nivelFinal']) && !empty($parametros['nivelFinal'])) {
-            $nivelFim = $parametros['nivelFinal'];
+            $SQLWhere .= " AND DE.NUM_NIVEL <= " . $parametros['nivelFinal'];
         }
         if (isset($parametros['aptoFinal']) && !empty($parametros['aptoFinal'])) {
-            $aptoFim = $parametros['aptoFinal'];
             $SQLWhere .= " AND DE.NUM_APARTAMENTO <= " . $parametros['aptoFinal'];
         }
-        if ($ruaFim == '1000' && $ruaInicio != '00') {
-            $ruaFim = $ruaInicio;
-        }
-        $SQLWhere .= " AND DE.DSC_DEPOSITO_ENDERECO >= '" . $ruaInicio . "." . $predioInicio . "." . $nivelIncio . "." . $aptoIncio . "'"
-                . "AND DE.DSC_DEPOSITO_ENDERECO <= '" . $ruaFim . "." . $predioFim . "." . $nivelFim . "." . $aptoFim . "'";
+
         switch ($parametros['ladoRua']) {
             case 1:
                 $SQLWhere .= " AND MOD(DE.NUM_RUA, 2) = 0 ";
@@ -861,38 +861,36 @@ class OndaRessuprimentoRepository extends EntityRepository {
         if (isset($parametros['linhaSeparacao']) && !empty($parametros['linhaSeparacao'])) {
             $SQLWhere .= " AND P.COD_LINHA_SEPARACAO = " . $parametros['linhaSeparacao'];
         }
-        $ruaInicio = $predioInicio = $nivelIncio = $aptoIncio = '00';
-        $ruaFim = $predioFim = $nivelFim = $aptoFim = '1000';
+        if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
+            $SQLWhere .= " AND DE.COD_TIPO_ENDERECO = " . $parametros['tipoEndereco'];
+        }
+        if (isset($parametros['linhaSeparacao']) && !empty($parametros['linhaSeparacao'])) {
+            $SQLWhere .= " AND P.COD_LINHA_SEPARACAO = " . $parametros['linhaSeparacao'];
+        }
         if (isset($parametros['rua']) && !empty($parametros['rua'])) {
-            $ruaInicio = $parametros['rua'];
+            $SQLWhere .= " AND DE.NUM_RUA >= " . $parametros['rua'];
         }
         if (isset($parametros['predio']) && !empty($parametros['predio'])) {
-            $predioInicio = $parametros['predio'];
+            $SQLWhere .= " AND DE.NUM_PREDIO >= " . $parametros['predio'];
         }
         if (isset($parametros['nivel']) && !empty($parametros['nivel'])) {
-            $nivelIncio = $parametros['nivel'];
+            $SQLWhere .= " AND DE.NUM_NIVEL >= " . $parametros['nivel'];
         }
         if (isset($parametros['apto']) && !empty($parametros['apto'])) {
-            $aptoIncio = $parametros['apto'];
+            $SQLWhere .= " AND DE.NUM_APARTAMENTO >= " . $parametros['apto'];
         }
         if (isset($parametros['ruaFinal']) && !empty($parametros['ruaFinal'])) {
-            $ruaFim = $parametros['ruaFinal'];
+            $SQLWhere .= " AND DE.NUM_RUA <= " . $parametros['ruaFinal'];
         }
         if (isset($parametros['predioFinal']) && !empty($parametros['predioFinal'])) {
-            $predioFim = $parametros['predioFinal'];
+            $SQLWhere .= " AND DE.NUM_PREDIO <= " . $parametros['predioFinal'];
         }
         if (isset($parametros['nivelFinal']) && !empty($parametros['nivelFinal'])) {
-            $nivelFim = $parametros['nivelFinal'];
+            $SQLWhere .= " AND DE.NUM_NIVEL <= " . $parametros['nivelFinal'];
         }
         if (isset($parametros['aptoFinal']) && !empty($parametros['aptoFinal'])) {
-            $aptoFim = $parametros['aptoFinal'];
             $SQLWhere .= " AND DE.NUM_APARTAMENTO <= " . $parametros['aptoFinal'];
         }
-        if ($ruaFim == '1000' && $ruaInicio != '00') {
-            $ruaFim = $ruaInicio;
-        }
-        $SQLWhere .= " AND DE.DSC_DEPOSITO_ENDERECO >= '" . $ruaInicio . "." . $predioInicio . "." . $nivelIncio . "." . $aptoIncio . "'"
-                . "AND DE.DSC_DEPOSITO_ENDERECO <= '" . $ruaFim . "." . $predioFim . "." . $nivelFim . "." . $aptoFim . "'";
 
         $sql = "SELECT
                     PA.COD_PRODUTO,
