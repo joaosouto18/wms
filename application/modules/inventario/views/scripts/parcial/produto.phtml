@@ -12,6 +12,9 @@
         if(id == ''){
             id = $("#incluirinput").val();
         }
+        if($("#incluirinput").val() != ''){
+            id += ','+ $("#incluirinput").val();
+        }
         $("#incluirinput").val($("#id").val() + ',' + id);
         return true;
     });
