@@ -7,6 +7,9 @@
 <?php echo $this->grid;
 ?>
 <script>
+    $('#id').parent().find('label').append('<a href="#" class="info">\n\
+            <img style="width: 20px; margin-top: -7px;" src="/img/question.png" alt="Home">\n\
+            <span style="margin-top:60px"> <b>Buscar vários produtos. <br /><br />Ex: 99999,99999,99999,...<b></span></a>');
     var idAtual = $("#id").val();
     $(".incluir").click(function () {
         var id = $("#id").val();

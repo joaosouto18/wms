@@ -135,11 +135,12 @@
                     var inptCodBarraFinal   = $('#etiquetas-etiquetaFinal');
                     if (inptCodBarraFinal) {
                         inptCodBarraFinal.focus();
-                        if(event.preventDefault) {
-                            event.preventDefault();
-                        } else {
-                            event.returnValue = false;
-                        }
+                        event.stopPropagation();
+//                        if(event.preventDefault) {
+//                            event.preventDefault();
+//                        } else {
+//                            event.returnValue = false;
+//                        }
                     }
                 }
             }
@@ -152,11 +153,12 @@
                     var inptConferente   = $('#etiquetas-pessoa');
                     if (inptConferente) {
                         inptConferente.focus();
-                        if(event.preventDefault) {
-                            event.preventDefault();
-                        } else {
-                            event.returnValue = false;
-                        }
+                         event.stopPropagation();
+//                        if(event.preventDefault) {
+//                            event.preventDefault();
+//                        } else {
+//                            event.returnValue = false;
+//                        }
                     }
                 }
             }
@@ -169,13 +171,12 @@
                     var inptConferente   = $("#etiquetas-buscar");
                     if (inptConferente) {
                         inptConferente.focus();
-                        if(event.preventDefault) {
-                            event.preventDefault();
-                        } else {
-                            event.returnValue = false;
-                        }
-                    }
-                }
+                        event.stopPropagation();
+//                        if(event.preventDefault) {
+//                            event.preventDefault();
+//                        } else {
+//                            event.returnValue = false;
+//                        }
             }
             return true;
         });
