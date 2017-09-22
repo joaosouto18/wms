@@ -179,6 +179,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         $this->_em->clear();
         $acaoEn = $this->findOneBy(array('id'=>$idAcao));
+
         $sucess = "S";
         $observacao = "";
         $trace = "";
@@ -220,7 +221,6 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             //STRING DA QUERY DE INTEGRAÇÃO
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro, $data);
-        echo $query;die;
 
             if ($dados == null) {
                 $words = explode(" ",trim($query));
