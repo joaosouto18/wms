@@ -788,8 +788,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 AND NP.IND_PADRAO = 'S'
                 AND ((ESTOQUE_PULMAO.QTD + NVL(RS.QTD_RESERVA,0)) > 0) 
                 ";
-//        $SQLWhere = " AND P.COD_PRODUTO = 18825";
-//        $SQLWhere = " ";
+        $SQLWhere = " ";
         if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
             $SQLWhere .= "AND (DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
         } else {
