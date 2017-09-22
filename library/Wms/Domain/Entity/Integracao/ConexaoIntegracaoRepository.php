@@ -70,7 +70,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $porta = $conexao->getPorta();
             $dbName = $conexao->getDbName();
 
-            $conexao = new \mssql_connect($servidor, $usuario, $senha) or die(mssql_get_last_message());
+            $conexao = mssql_connect($servidor, $usuario, $senha) or die(mssql_get_last_message());
             mssql_select_db($dbName, $conexao) or die(mssql_get_last_message());
 
             if ($conexao->connect_errno > 0) {
