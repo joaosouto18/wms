@@ -70,7 +70,10 @@ class MapaSeparacaoRepository extends EntityRepository {
                         MSP.COD_MAPA_SEPARACAO,
                        CONF.NUM_CONFERENCIA,
                        CONF.QTD_CONFERIDA,
-                        MSP.IND_CONFERIDO";
+                        MSP.IND_CONFERIDO
+                 ORDER BY P.DSC_PRODUTO,
+                        P.DSC_GRADE
+                          ";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (!empty($result) && is_array($result)) {
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
