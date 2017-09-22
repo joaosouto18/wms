@@ -244,7 +244,7 @@ class EstoqueRepository extends EntityRepository
                     ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
                     NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO,
                     TO_CHAR(ESTQ.DTH_VALIDADE,'DD/MM/YYYY') as DTH_VALIDADE,
-                    CASE WHEN (DE.COD_CARACTERISTICA_ENDERECO = 37) THEN 1
+                    CASE WHEN (DE.COD_CARACTERISTICA_ENDERECO = $endPicking) THEN 1
                          ELSE 2 END AS PRIORIDADE_PICKING
                    FROM ESTOQUE ESTQ
                    LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, SUM(REP.QTD_RESERVADA) QTD_RESERVA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
@@ -288,9 +288,10 @@ class EstoqueRepository extends EntityRepository
             $SqlWhere .= " AND DE.COD_DEPOSITO_ENDERECO <> '" . $params['idEnderecoIgnorar'] . "'";
         }
 
+        $query = $Sql . $SqlWhere . $SqlOrder;
         if ((isset($params['maxResult'])) && ($params['maxResult'] != null)) {
             $maxResult = $params['maxResult'];
-            $resultado = $this->getEntityManager()->getConnection()->query($Sql . $SqlWhere . $SqlOrder)->fetchAll(\PDO::FETCH_ASSOC);
+            $resultado = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
             $arrayResult = array();
             foreach ($resultado as $key => $line) {
@@ -300,7 +301,7 @@ class EstoqueRepository extends EntityRepository
             }
             $result = $arrayResult;
         } else {
-            $result = $this->getEntityManager()->getConnection()->query($Sql . $SqlWhere . $SqlOrder)->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
         }
 
         return $result;

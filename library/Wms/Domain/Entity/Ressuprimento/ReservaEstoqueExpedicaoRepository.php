@@ -9,11 +9,41 @@ use Wms\Module\Web\Form\Deposito\Endereco\Caracteristica;
 class ReservaEstoqueExpedicaoRepository extends EntityRepository
 {
 
+    public function gerarReservaSaida ($expedicoes, $repositorios)
+    {
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+        $reservaEstoqueRepo = $repositorios['reservaEstoqueRepo'];
+        foreach ($expedicoes as $idExpedicao => $produtos) {
+            foreach ($produtos as $codProduto => $produto) {
+                foreach ($produto as $dscGrade => $grade) {
+                    foreach ($grade as $quebraPD => $criterios) {
+                        foreach ($criterios as $codCriterio => $separacoes) {
+                            foreach ($separacoes['tiposSaida'] as $tipoSaida => $enderecos) {
+                                foreach ($enderecos['enderecos'] as $idEndereco => $pedidos) {
+                                    foreach ($pedidos as $codPedido =>$itens){
+                                        $criterioReserva = array(
+                                            'expedicao' => $idExpedicao,
+                                            'pedido' => $codPedido,
+                                            'tipoSaida' => $tipoSaida,
+                                            'quebraPulmaoDoca' => $quebraPD,
+                                            'codCriterioPD' => $codCriterio
+                                        );
+                                        $reservaEstoqueRepo->adicionaReservaEstoque($idEndereco, $itens, "S", "E", $criterioReserva, null, null, null, $repositorios);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public function gerarReservaSaidaPicking ($produtos, $repositorios){
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $repositorios['reservaEstoqueRepo'];
         foreach ($produtos as $produto){
-            $reservaEstoqueRepo->adicionaReservaEstoque($produto['idPicking'],$produto['produtos'],"S","E",$produto['idExpedicao'],null,null,null,$produto['idPedido'], $repositorios);
+            $reservaEstoqueRepo->adicionaReservaEstoque($produto['idPicking'],$produto['produtos'],"S","E",$produto['idExpedicao'],null,null,null, $repositorios);
         }
     }
 
@@ -93,7 +123,7 @@ class ReservaEstoqueExpedicaoRepository extends EntityRepository
                     foreach ($produto as $grade) {
                         foreach ($grade as $idPulmao => $endPulmao){
                             $itens = $endPulmao['itens'];
-                            $reservaEstoqueRepo->adicionaReservaEstoque($idPulmao,$itens,"S","E",$idExpedicao,null,null,null,$idPedido, $repositorios);
+                            $reservaEstoqueRepo->adicionaReservaEstoque($idPulmao,$itens,"S","E",$idExpedicao,null,null,null, $repositorios);
                         }
                     }
                 }
