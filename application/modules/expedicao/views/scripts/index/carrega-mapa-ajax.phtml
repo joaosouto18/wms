@@ -72,7 +72,7 @@ if ($this->erro) {
                     ?>
                     <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" 
                        style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; margin-top: 10px; text-align: center;">
-                        <?php echo $value['DSC_PRODUTO'] ?> </p>
+                        <?php echo$value['COD_PRODUTO'].' - '. $value['DSC_PRODUTO'] ?> </p>
                     <?php
                 }
             }
@@ -83,12 +83,12 @@ if ($this->erro) {
             if (is_array($this->produtos)) {
                 foreach ($this->produtos as $key => $value) {
                     ?>
-                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo $value['DSC_PRODUTO'] ?> </p>
+                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo  $value['COD_PRODUTO'].' - '.$value['DSC_PRODUTO'].' - '.$value['QUANTIDADE'] ?> </p>
                     <?php
                 }
                 foreach ($this->produtosConferidos as $key => $value) {
                     ?>
-                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center;margin-top: 10px; "><?php echo $value['DSC_PRODUTO'] ?> </p>
+                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center;margin-top: 10px; "><?php echo  $value['COD_PRODUTO'].' - '.$value['DSC_PRODUTO'].' - '.$value['QUANTIDADE'] ?> </p>
                     <?php
                 }
             }

@@ -21,7 +21,7 @@ if (!empty($this->clientes)) {
                 if (is_array($this->clientes)) {
                     foreach ($this->clientes as $key => $value) {
                         ?>
-                        <input style="margin-left: 15px;" type="submit" cod_pessoa="<?php echo $value['COD_PESSOA'] ?>" value="<?php echo $value['NOM_PESSOA'] ?>" class="btn gradientBtn cliente-btn">
+                        <input style="margin-left: 15px;" type="submit" cod_pessoa="<?php echo $value['COD_PESSOA'] ?>" value="<?php echo $value['NOM_PESSOA'].' CAIXA(S) '.$value['NUM_CAIXA_PC_INI'] ?>" class="btn gradientBtn cliente-btn">
                         <?php
                     }
                 }
