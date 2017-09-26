@@ -42,10 +42,10 @@
     function gotoFinal(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiquetas-etiquetaInicial').value != "") {
-                codBarrasFinal   = document.getElementById('etiquetas-etiquetaFinal');
+                codBarrasFinal = document.getElementById('etiquetas-etiquetaFinal');
                 if (codBarrasFinal) {
                     codBarrasFinal.focus();
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -59,11 +59,11 @@
     function gotoPessoa(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiquetas-etiquetaFinal').value != "") {
-                pessoa   = document.getElementById('etiquetas-pessoa');
+                pessoa = document.getElementById('etiquetas-pessoa');
                 if (pessoa) {
                     pessoa.focus();
 
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -77,11 +77,11 @@
     function gotoBuscar(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiquetas-pessoa').value != "") {
-                buscar   = document.getElementById('etiquetas-buscar');
+                buscar = document.getElementById('etiquetas-buscar');
                 if (buscar) {
                     buscar.focus();
 
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -95,11 +95,11 @@
     function gotoPessoaMapa(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('mapas-codMapaSeparacao').value != "") {
-                pessoa   = document.getElementById('mapas-pessoa');
+                pessoa = document.getElementById('mapas-pessoa');
                 if (pessoa) {
                     pessoa.focus();
 
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -113,11 +113,11 @@
     function gotoSalvarMapa(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('mapas-pessoa').value != "") {
-                buscar   = document.getElementById('mapas-salvarMapa');
+                buscar = document.getElementById('mapas-salvarMapa');
                 if (buscar) {
                     buscar.focus();
 
-                    if(event.preventDefault) {
+                    if (event.preventDefault) {
                         event.preventDefault();
                     } else {
                         event.returnValue = false;
@@ -129,64 +129,67 @@
     }
 
     $(function () {
-        $('#etiquetas-etiquetaInicial').keyup(function(event) {
+        $('#etiquetas-etiquetaInicial').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
                 if ($(this).val() != "") {
-                    var inptCodBarraFinal   = $('#etiquetas-etiquetaFinal');
+                    var inptCodBarraFinal = $('#etiquetas-etiquetaFinal');
                     if (inptCodBarraFinal) {
                         inptCodBarraFinal.focus();
-                        if(event.preventDefault) {
-                            event.preventDefault();
-                        } else {
-                            event.returnValue = false;
-                        }
+                        event.stopPropagation();
+//                        if (event.preventDefault) {
+//                            event.preventDefault();
+//                        } else {
+//                            event.returnValue = false;
+//                        }
                     }
                 }
             }
             return true;
         });
 
-        $('#etiquetas-etiquetaFinal').keyup(function(event) {
+        $('#etiquetas-etiquetaFinal').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
                 if ($(this).val() != "") {
-                    var inptConferente   = $('#etiquetas-pessoa');
+                    var inptConferente = $('#etiquetas-pessoa');
                     if (inptConferente) {
                         inptConferente.focus();
-                        if(event.preventDefault) {
-                            event.preventDefault();
-                        } else {
-                            event.returnValue = false;
-                        }
+                        event.stopPropagation();
+//                        if (event.preventDefault) {
+//                            event.preventDefault();
+//                        } else {
+//                            event.returnValue = false;
+//                        }
                     }
                 }
             }
             return true;
         });
 
-        $('#etiquetas-pessoa').keyup(function(event) {
+        $('#etiquetas-pessoa').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
                 if ($(this).val() != "") {
-                    var inptConferente   = $("#etiquetas-buscar");
+                    var inptConferente = $("#etiquetas-buscar");
                     if (inptConferente) {
                         inptConferente.focus();
-                        if(event.preventDefault) {
-                            event.preventDefault();
-                        } else {
-                            event.returnValue = false;
-                        }
+                        event.stopPropagation();
+//                        if (event.preventDefault) {
+//                            event.preventDefault();
+//                        } else {
+//                            event.returnValue = false;
+//                        }
                     }
+                    return true;
                 }
             }
-            return true;
         });
 
-        $('#mapas-codMapaSeparacao').keyup(function(event) {
+        $('#mapas-codMapaSeparacao').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
                 if ($(this).val() != "") {
-                    var inptConferente   = $('#mapas-pessoa');
+                    var inptConferente = $('#mapas-pessoa');
                     if (inptConferente) {
                         inptConferente.focus();
-                        if(event.preventDefault) {
+                        if (event.preventDefault) {
                             event.preventDefault();
                         } else {
                             event.returnValue = false;
@@ -197,13 +200,13 @@
             return true;
         });
 
-        $('#mapas-pessoa').keyup(function(event) {
+        $('#mapas-pessoa').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
                 if ($(this).val() != "") {
-                    var inptConferente   = $('#mapas-salvarMapa');
+                    var inptConferente = $('#mapas-salvarMapa');
                     if (inptConferente) {
                         inptConferente.focus();
-                        if(event.preventDefault) {
+                        if (event.preventDefault) {
                             event.preventDefault();
                         } else {
                             event.returnValue = false;
@@ -215,18 +218,18 @@
         });
 
 
-        $('.btnSearch').prepend($('<img>').prop('src',basePath + "/img/icons/magnifier.png"));
+        $('.btnSearch').prepend($('<img>').prop('src', basePath + "/img/icons/magnifier.png"));
 
         $('#mapas-salvarMapa').click(function () {
             var mapa = $('#mapas-codMapaSeparacao').val();
             var cpf = $('#mapas-pessoa').val();
 
-            if (mapa == null || mapa == ""){
+            if (mapa == null || mapa == "") {
                 alert("Informe o mapa a ser vinculado");
                 return false;
             }
 
-            if (cpf == null || cpf == ""){
+            if (cpf == null || cpf == "") {
                 alert("Informe um CPF");
                 return false;
             } else if (cpf.length != 14) {
@@ -234,15 +237,15 @@
                 return false;
             }
 
-            var result = {mapa:mapa.substring(0,(mapa.length - 1)), cpf:cpf, pessoa:null};
+            var result = {mapa: mapa.substring(0, (mapa.length - 1)), cpf: cpf, pessoa: null};
 
             $.ajax({
-                url: 'conferente-apontamento-separacao-ajax/cpf/'+cpf,
+                url: 'conferente-apontamento-separacao-ajax/cpf/' + cpf,
                 success: function (data) {
                     if (data.result === "Ok") {
                         result.pessoa = data.pessoa;
                         addRow(result);
-                    } else if (data.result = 'Error'){
+                    } else if (data.result = 'Error') {
                         alert(data.msg);
                     }
                     $('#mapas-codMapaSeparacao').val('');
@@ -293,7 +296,7 @@
 
             var cpf = $('#etiquetas-pessoa').val();
 
-            if (cpf == null || cpf == ""){
+            if (cpf == null || cpf == "") {
                 $.wmsDialogAlert({
                     title: 'Alerta',
                     msg: 'Informe um CPF'
@@ -306,50 +309,80 @@
                 });
                 return false;
             }
-
-            var result = {intervalo:intervalo, total:total, cpf:cpf, pessoa:null};
-
-            $.ajax({
-                url: 'conferente-apontamento-separacao-ajax/cpf/'+cpf,
-                success: function (data) {
-                    if (data.result === "Ok") {
-                        result.pessoa = data.pessoa;
-                        var addLinha = true;
-                        $('.gTResultSet').each(function(e){
-                            if($(this).find('.identifica').text() == result.cpf && $(this).find('.intervalo').text() == result.intervalo) {
-                                addLinha = false;
-                                return false;
+            var erro = false;
+            $('.gTResultSet td.intervalo').each(function () {
+                var vet = $(this).text().split(' - ');
+                var vetIntervalo = new Array();
+                var first = parseInt(vet[0]);
+                var end = parseInt(vet[1]);
+                var etiquetaInical = parseInt(eI);
+                var etiquetaFinal = parseInt(eF + 1);
+                var pessoa = $(this).parent().find('.identifica').text();
+                if (pessoa == cpf && erro == false) {
+                    while (first <= end) {
+                        vetIntervalo[parseInt(first)] = parseInt(first);
+                        first = parseInt(first + 1);
+                    }
+                    for (i = parseInt(vet[0]); i <= parseInt(vet[1]); i++) {
+                        var etiquetaInical = parseInt(eI);
+                        while (etiquetaInical <= (etiquetaFinal)) {
+                            if (vetIntervalo[i] == etiquetaInical || vetIntervalo[i] == etiquetaFinal) {
+                                erro = vetIntervalo[i];
                             }
-                        });
-                        if(addLinha) {
-                            addRow(result);
+                            etiquetaInical = parseInt(etiquetaInical + 1);
                         }
-                        //limpando os campos:
-                        $('#etiquetas-etiquetaInicial').val('');
-                        $('#etiquetas-etiquetaFinal').val('');
-                        $('#txtIntervalo').val('');
-                        $('#etiquetas-pessoa').val('');
-
-                        $('#etiquetas-etiquetaInicial').focus();
-                    } else if (data.result = 'Error'){
-                        $.wmsDialogAlert({
-                            title: 'Alerta',
-                            msg: data.msg
-                        });
-                        $('#etiquetas-pessoa').val('');
                     }
                 }
             });
+            var result = {intervalo: intervalo, total: total, cpf: cpf, pessoa: null};
+            if (erro == false) {
+                $.ajax({
+                    url: 'conferente-apontamento-separacao-ajax/cpf/' + cpf,
+                    success: function (data) {
+                        if (data.result === "Ok") {
+                            result.pessoa = data.pessoa;
+                            var addLinha = true;
+                            $('.gTResultSet').each(function (e) {
+                                if ($(this).find('.identifica').text() == result.cpf && $(this).find('.intervalo').text() == result.intervalo) {
+                                    addLinha = false;
+                                    return false;
+                                }
+                            });
+                            if (addLinha) {
+                                addRow(result);
+                            }
+                            //limpando os campos:
+                            $('#etiquetas-etiquetaInicial').val('');
+                            $('#etiquetas-etiquetaFinal').val('');
+                            $('#txtIntervalo').val('');
+                            $('#etiquetas-pessoa').val('');
+
+                            $('#etiquetas-etiquetaInicial').focus();
+                        } else if (data.result = 'Error') {
+                            $.wmsDialogAlert({
+                                title: 'Alerta',
+                                msg: data.msg
+                            });
+                            $('#etiquetas-pessoa').val('');
+                        }
+                    }
+                });
+            } else {
+                $.wmsDialogAlert({
+                    title: 'Erro',
+                    msg: 'Etiqueta ' + erro + ' já foi bipada para esse conferente',
+                });
+            }
         });
 
-        function addRow (data){
+        function addRow(data) {
 
             var intervalo = null;
             var total = null;
             var mapa = null;
             var tipo = null;
 
-            if (data.hasOwnProperty('mapa')){
+            if (data.hasOwnProperty('mapa')) {
                 mapa = data.mapa;
                 intervalo = "N/D";
                 total = "N/D";
@@ -375,12 +408,12 @@
             tr.append($('<td>').text(total));
             tr.append($('<td class="tipo">').text(tipo));
             tr.append(
-                $('<td>').css('text-align','center').append(
+                    $('<td>').css('text-align', 'center').append(
                     $('<a>').addClass('removeRow').prop('href', 'javascript://').append(
-                        $('<img>').prop('src', basePath + "/img/icons/delete.png")
+                    $('<img>').prop('src', basePath + "/img/icons/delete.png")
                     )
-                )
-            );
+                    )
+                    );
             tbody.append(tr).trigger('tbChange');
         }
 
@@ -406,18 +439,18 @@
                     eF = eI;
                     eI = aux;
                 }
-                $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira:eI,ultima:eF}, function (data) {
+                $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira: eI, ultima: eF}, function (data) {
                     $("#txtIntervalo").val(data.result);
                 });
             }
         });
 
-        $('#tbResult').bind('tbChange', function(){
+        $('#tbResult').bind('tbChange', function () {
             var anterior = null;
             $(this).children().each(function () {
-                if (anterior !== null && !anterior.hasClass('alterRow')){
+                if (anterior !== null && !anterior.hasClass('alterRow')) {
                     $(this).addClass('alterRow');
-                } else if (anterior !== null && anterior.hasClass('alterRow')){
+                } else if (anterior !== null && anterior.hasClass('alterRow')) {
                     $(this).removeClass('alterRow');
                 }
                 anterior = $(this);
@@ -431,7 +464,7 @@
                 var etiquetas = $(this).children(".intervalo").text();
                 var cpf = $(this).children(".identifica").text();
                 var tipo = $(this).children(".tipo").text();
-                data.push({etiquetas:etiquetas, mapa:mapa, cpf:cpf, tipo:tipo});
+                data.push({etiquetas: etiquetas, mapa: mapa, cpf: cpf, tipo: tipo});
             });
             if (data.length > 0) {
                 $.post("apontamento-separacao", {data: data}).success(function (data) {
@@ -442,7 +475,7 @@
                             msg: 'Todas os apontamentos foram salvos com sucesso!'
                         });
                         window.location.href = 'apontamento-separacao';
-                    } else if (data.result === 'Error'){
+                    } else if (data.result === 'Error') {
                         $.wmsDialogAlert({
                             title: 'Alerta',
                             msg: data.msg
@@ -459,7 +492,7 @@
         });
 
         $('#etiquetas-pessoa').keydown(function (e) {
-            if(e.which == 13) {
+            if (e.which == 13) {
                 $('#etiquetas-buscar').click();
             }
         });
@@ -470,12 +503,12 @@
                 var cpf = $(this).children(".identifica").text();
 
                 $.ajax({
-                    url: 'fecha-conferencia-ajax/cpf/'+cpf+'/mapa/'+mapa,
+                    url: 'fecha-conferencia-ajax/cpf/' + cpf + '/mapa/' + mapa,
                     success: function (data) {
                         if (data.result === "Ok") {
                             result.pessoa = data.pessoa;
                             addRow(result);
-                        } else if (data.result = 'Error'){
+                        } else if (data.result = 'Error') {
                             alert(data.msg);
                         }
                         window.location.href = 'apontamento-separacao';

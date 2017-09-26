@@ -41,7 +41,7 @@ class Produto extends Form {
                 ))
                 ->addElement('hidden', 'incluirinput', array(
                     'label' => 'incluir',
-                    'value' => 'incluirInput',
+                    'value' => '0',
                 ))
                 ->addElement('submit', 'submit', array(
                     'label' => 'Atualizar Lista',

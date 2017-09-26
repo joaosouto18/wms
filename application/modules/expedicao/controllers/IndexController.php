@@ -669,7 +669,6 @@ class Expedicao_IndexController extends Action {
                 }
                 $clientes[$key]['NUM_CAIXA_PC_INI'] = implode('; ', $arrCaixas);
             }
-
             if (empty($clientes)) {
                 $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
                 $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'))));
@@ -711,8 +710,29 @@ class Expedicao_IndexController extends Action {
                 $this->view->produtos = $mapaSeparacaoRepo->validaConferencia($operacao['expedicao'], true, $codBarras, 'D');
             } else {
                 /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA DE EMBALADOS */
-                $this->view->produtos = $mapaSeparacaoRepo->getProdutosConferidosByClientes($codBarras, $codPessoa);
-                $this->view->produtosConferidos = $mapaSeparacaoRepo->getProdutosConferidosTotalByClientes($codBarras, $codPessoa);
+                $produtos = $mapaSeparacaoRepo->getProdutosConferidosByClientes($codBarras, $codPessoa);
+                $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+                foreach ($produtos as $key => $value) {
+                    if ($value['QUANTIDADE'] > 0) {
+                        $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QUANTIDADE']);
+                        $produtos[$key]['QUANTIDADE'] = implode(' - ', $vetSeparar);
+                    } else {
+                        $value['QUANTIDADE'] = 0;
+                    }
+                }
+                $produtosConferidos = $mapaSeparacaoRepo->getProdutosConferidosTotalByClientes($codBarras, $codPessoa);
+                if (!empty($produtosConferidos)) {
+                    foreach ($produtosConferidos as $key => $value) {
+                        if ($value['QUANTIDADE'] > 0) {
+                            $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QUANTIDADE']);
+                            $produtosConferidos[$key]['QUANTIDADE'] = implode(' - ', $vetSeparar);
+                        } else {
+                            $value['QUANTIDADE'] = 0;
+                        }
+                    }
+                }
+                $this->view->produtos = $produtos;
+                $this->view->produtosConferidos = $produtosConferidos;
             }
             $idMapa = $codBarras;
             $idVolume = $this->_getParam("idVolume");

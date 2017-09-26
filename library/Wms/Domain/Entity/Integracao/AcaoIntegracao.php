@@ -26,6 +26,7 @@ class AcaoIntegracao
     const INTEGRACAO_NOTA_FISCAL_SAIDA = 615;
     const INTEGRACAO_LIBERAR_ESTOQUE_ERP = 616;
     const INTEGRACAO_PEDIDO_VENDA = 618;
+    const INTEGRACAO_CANCELAMENTO_CARGA = 617;
 
     /**
      * @Id

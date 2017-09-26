@@ -36,6 +36,18 @@ class Web_ProdutoController extends Crud {
             )
         ));
 
+        //CADASTRAR NOVOS PRODUTOS TODA VEZ Q ENTRAR NA TELA DE DADOS LOGISTICOS
+        if (isset($parametroProduto) && !empty($parametroProduto)) {
+            $explodeIntegracoes = explode(',',$parametroProduto);
+
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
+            $acaoIntegracaoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            foreach ($explodeIntegracoes as $codIntegracao) {
+                $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
+                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity);
+            }
+        }
+
         $form = new FiltroForm;
 
         $values = $form->getParams();

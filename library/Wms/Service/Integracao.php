@@ -177,11 +177,9 @@ class Integracao
                     return $this->processaNotasFiscais($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_CORTES:
                     return $this->processaCorteERP($this->_dados, $this->_options);
-                case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
+                case AcaoIntegracao::INTEGRACAO_RECEBIMENTO || AcaoIntegracao::INTEGRACAO_CANCELAMENTO_CARGA:
                     return $this->_dados;
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA:
-                    return true;
-                case AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
+                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA || AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
                     return true;
                 case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:
                     return $this->processaNotaFiscalSaida($this->_dados);
@@ -189,7 +187,6 @@ class Integracao
                     return $this->verificaCargasFaturadas($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_PEDIDO_VENDA:
                     return $this->processaPedidoAcumulado($this->_dados);
-
 
             }
         } catch (\Exception $e) {
