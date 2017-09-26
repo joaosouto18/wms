@@ -81,34 +81,29 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                                 var id = $("#dadoLogistico-id").val();
 
                                 // variables
-                                valores.lblEmbalagem = $('#fieldset-dado-logistico #dadoLogistico-idEmbalagem option:selected').text();
+                                var embalagem = $('#fieldset-campos-comuns').formParams();
+                                var emSelec = parseFloat($('#dadoLogistico-idEmbalagem option[value=' + $('#dadoLogistico-idEmbalagem').val() + ']').attr('qtdemb').replace(',', '.')).toFixed(3);
+                                var alturaEmb = parseFloat(parseFloat($('#fieldset-campos-comuns').formParams().embalagem.altura.replace(',', '.')) / parseFloat(embalagem['embalagem-fator'])).toFixed(3);
+                                var alturaReal = parseFloat(emSelec * alturaEmb).toFixed(3);
+                                var profundidade = parseFloat($('#fieldset-campos-comuns').formParams().embalagem.profundidade.replace(',', '.')).toFixed(3);
+                                var largura = parseFloat($('#fieldset-campos-comuns').formParams().embalagem.largura.replace(',', '.')).toFixed(3);
 
+                                valores.lblEmbalagem = $('#fieldset-dado-logistico #dadoLogistico-idEmbalagem option:selected').text();
+                                valores.idNormaPaletizacao = $(grupoDadosLogisticos[0]).find('.normasPaletizacao-id').val();
+                                valores.acao = 'incluir';
+                                valores.altura = alturaReal.replace('.', ',');
+                                valores.largura = $('#fieldset-campos-comuns').formParams().embalagem.largura;
+                                valores.profundidade = $('#fieldset-campos-comuns').formParams().embalagem.profundidade;
+                                valores.cubagem = parseFloat(alturaReal * largura * profundidade).toFixed(4).replace('.', ',');
+                                valores.peso = parseFloat($('#peso-real').val() * emSelec).toFixed(3).replace('.', ',');
                                 if (id != '') {
                                     valores.acao = id.indexOf('-new') == -1 ? 'alterar' : 'incluir';
                                     produto_dado_logistico = new Wms.Models.ProdutoDadoLogistico(valores);
                                     this.show(produto_dado_logistico);
                                 } else {
                                     var d = new Date();
-                                    var embalagem = $('#fieldset-campos-comuns').formParams();
-                                    var emSelec = parseFloat($('#dadoLogistico-idEmbalagem option[value='+$('#dadoLogistico-idEmbalagem').val()+']').attr('qtdemb').replace(',','.')).toFixed(3);
-                                    var alturaEmb = parseFloat(parseFloat($('#fieldset-campos-comuns').formParams().embalagem.altura.replace(',', '.')) / parseFloat(embalagem['embalagem-fator'])).toFixed(3);
-                                    var alturaReal = parseFloat(emSelec * alturaEmb).toFixed(3);
-                                    console.log(emSelec);
-                                    console.log($('#fieldset-campos-comuns').formParams().embalagem.altura);
-                                    
-                                    var profundidade = parseFloat($('#fieldset-campos-comuns').formParams().embalagem.profundidade.replace(',','.')).toFixed(3);
-                                    var largura = parseFloat($('#fieldset-campos-comuns').formParams().embalagem.largura.replace(',','.')).toFixed(3);
-                                    
                                     valores.id = d.getTime() + '-new';
-                                    valores.idNormaPaletizacao = $(grupoDadosLogisticos[0]).find('.normasPaletizacao-id').val();
-                                    valores.acao = 'incluir';
-                                    valores.altura = alturaReal.replace('.',',');
-                                    valores.largura = $('#fieldset-campos-comuns').formParams().embalagem.largura;
-                                    valores.profundidade = $('#fieldset-campos-comuns').formParams().embalagem.profundidade;
-                                    valores.cubagem = parseFloat(alturaReal * largura * profundidade).toFixed(4).replace('.',',');
-                                    valores.peso = parseFloat($('#peso-real').val() * emSelec).toFixed(3).replace('.',',');
                                     produto_dado_logistico = new Wms.Models.ProdutoDadoLogistico(valores);
-                                    console.log(produto_dado_logistico);
                                     $(grupoDadosLogisticos[0]).append(this.view("show", produto_dado_logistico));
                                 }
 
@@ -289,6 +284,7 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                                         for (var j = 0; j < dadosLogisticos.length; j++) {
                                             // transformo em um model do tipo produto_dado_logistico
                                             var produto_dado_logistico = new Wms.Models.ProdutoDadoLogistico(dadosLogisticos[j]);
+                                            console.log(produto_dado_logistico);
                                             // mando exibir
                                             $(this).append($.View('//wms/views/produto_dado_logistico/show', produto_dado_logistico));
                                         }

@@ -38,7 +38,7 @@ class Web_ProdutoController extends Crud {
 
         //CADASTRAR NOVOS PRODUTOS TODA VEZ Q ENTRAR NA TELA DE DADOS LOGISTICOS
         if (isset($parametroProduto) && !empty($parametroProduto)) {
-            $explodeIntegracoes = explode(',',$parametroProduto);
+            $explodeIntegracoes = explode(',', $parametroProduto);
 
             /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
             $acaoIntegracaoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
@@ -144,7 +144,7 @@ class Web_ProdutoController extends Crud {
 
             foreach ($dadosLogisticos as $dadoLogistico) {
 
-                $lblEmbalagem = $dadoLogistico->getEmbalagem()->getDescricao();
+                $lblEmbalagem = $dadoLogistico->getEmbalagem()->getDescricao() . ' ( ' . $dadoLogistico->getEmbalagem()->getQuantidade() . ' )';
                 $idNormaPaletizacao = ($dadoLogistico->getNormaPaletizacao()) ? $dadoLogistico->getNormaPaletizacao()->getId() : 0;
 
                 $normasPaletizacao[$key]['dadosLogisticos'][] = array(
@@ -274,7 +274,7 @@ class Web_ProdutoController extends Crud {
                         }
                     }
                 }
-                
+//                var_dump($paramsSave);die;
                 $result = $this->repository->save($entity, $paramsSave, true);
                 if (is_string($result)) {
                     $this->addFlashMessage('error', $result);
