@@ -9,6 +9,7 @@ class FiltroGiroProdutos extends Form
 
     public function init()
     {
+        $repoLinhaSeparacao = $this->getEm()->getRepository('wms:Armazenagem\LinhaSeparacao');
         $this->setAttribs(array(
             'method' => 'get',
             'class' => 'filtro',
@@ -33,9 +34,9 @@ class FiltroGiroProdutos extends Form
                 'label' => 'Tipo Quebra Mapa',
                 'size' => 10,
             ))
-            ->addElement('text', 'linhaSeparacao', array(
+            ->addElement('select','linhaSeparacao', array(
                 'label' => 'Linha Separação',
-                'size' => 10,
+                'multiOptions' => array('firstOpt' => ' Todos', 'options' => $repoLinhaSeparacao->getIdValue()),
             ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Buscar',
@@ -45,30 +46,6 @@ class FiltroGiroProdutos extends Form
             ->addDisplayGroup(array('codProduto', 'dataInicio', 'dataFinal', 'quebra', 'linhaSeparacao', 'submit'), 'identificacao', array('legend' => 'Busca')
         );
 
-//        $this->setDecorators(array(array('ViewScript', array('viewScript' => 'relatorio/produtos-conferidos/filtro.phtml'))));
-    }
-
-    /**
-     *
-     * @param array $params
-     * @return boolean 
-     */
-    public function isValid($params)
-    {
-        extract($params);
-
-        if (!parent::isValid($params))
-            return false;
-
-        if ($this->checkAllEmpty())
-            return false;
-
-        if (($dataInicial1 && !$dataInicial2) || ($dataFinal1 && !$dataFinal2) || (!$dataInicial1 && $dataInicial2) || (!$dataFinal1 && $dataFinal2)) {
-            $this->addError('Favor preencher corretamente o intervalo de datas');
-            return false;
-        }
-
-        return true;
     }
 
 }
