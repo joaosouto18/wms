@@ -2,6 +2,8 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
+use Wms\Math;
+
 /**
  *
  * @Table(name="MAPA_SEPARACAO_PEDIDO")
@@ -34,6 +36,18 @@ class MapaSeparacaoPedido
      * @JoinColumn(name="COD_PEDIDO_PRODUTO", referencedColumnName="COD_PEDIDO_PRODUTO")
      */
     protected $pedidoProduto;
+
+    /**
+     * @var float
+     * @Column(name="QTD", type="decimal")
+     */
+    protected $qtd;
+
+    /**
+     * @var float
+     * @Column(name="QTD_CORTADA", type="decimal")
+     */
+    protected $qtdCortada;
 
     /**
      * @return mixed
@@ -98,5 +112,41 @@ class MapaSeparacaoPedido
     {
         $this->pedidoProduto = $pedidoProduto;
     }
-    
+
+    /**
+     * @return float
+     */
+    public function getQtd()
+    {
+        return $this->qtd;
+    }
+
+    /**
+     * @param float $qtd
+     */
+    public function setQtd($qtd)
+    {
+        $this->qtd = $qtd;
+    }
+
+    /**
+     * @return float
+     */
+    public function getQtdCortada()
+    {
+        return $this->qtdCortada;
+    }
+
+    /**
+     * @param float $qtdCortada
+     */
+    public function setQtdCortada($qtdCortada)
+    {
+        $this->qtdCortada = $qtdCortada;
+    }
+
+    public function addCorte($qtd)
+    {
+        self::setQtdCortada(Math::adicionar(self::getQtdCortada(),$qtd));
+    }
 }

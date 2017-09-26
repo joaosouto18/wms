@@ -81,7 +81,7 @@ class EstoqueRepository extends EntityRepository
         $volumeEn = null;
         if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])){
             $volumeEn = $params['volume'];
-            $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume'=>$volumeEn));
+            $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn));
         } else {
             $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
         }
@@ -121,11 +121,11 @@ class EstoqueRepository extends EntityRepository
         if (isset($estoqueEn) && is_object($estoqueEn)) {
             $validadeEsttoque = $estoqueEn->getValidade();
         }
-        if (isset($params['validade']) and ! empty($params['validade'])) {
+        if (isset($params['validade']) and !empty($params['validade'])) {
             $validadeParam = new \Zend_Date($params['validade']);
             $validadeParam = $validadeParam->toString('Y-MM-dd');
             $validadeParam = new \DateTime($validadeParam);
-        } elseif (isset($dataValidade['dataValidade']) and ! empty($dataValidade['dataValidade'])) {
+        } elseif (isset($dataValidade['dataValidade']) and !empty($dataValidade['dataValidade'])) {
             $validadeParam = (is_string($dataValidade['dataValidade'])) ? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
         }
 

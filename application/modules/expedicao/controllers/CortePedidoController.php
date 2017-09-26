@@ -88,8 +88,8 @@ class Expedicao_CortePedidoController  extends Action
                 if (!isset($pedidoProdutos) || empty($pedidoProdutos))
                     throw new \Exception("Produtos nao encontrados para o Pedido $pedido");
 
-                foreach ($pedidoProdutos as $produto) {
-                    $expedicaoRepo->cortaPedido($pedido, $produto->getCodProduto(), $produto->getGrade(), $produto->getQuantidade(), $this->_getParam('motivoCorte',null));
+                foreach ($pedidoProdutos as $pedidoProduto) {
+                    $expedicaoRepo->cortaPedido($pedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $pedidoProduto->getQuantidade(), $this->_getParam('motivoCorte',null));
                 }
 
                 $andamentoRepo->save("Pedido $pedido cortado - motivo: ".$this->_getParam('motivoCorte',null), $idExpedicao, false, true, null, null, false);
