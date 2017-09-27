@@ -84,13 +84,17 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
             printf($query);
             $result = \sqlsrv_query($conexao, $query, array(1 => date('Y-m-d H:i:s')));
+
+            while( $row = sqlsrv_fetch_array( $result, SQLSRV_FETCH_ASSOC) ) {
+                echo $row."<br />";
+            }
             var_dump($result);
             if (!$result || $result == false) {
                 $error = \sqlsrv_errors();
                 throw new \Exception($error);
             }
 
-            return $result->fetch_all(MYSQLI_ASSOC);
+//            return $result->fetch_all(MYSQLI_ASSOC);
         } catch (\PDOException $e) {
             throw new \Exception($e->getMessage());
         } catch (\Exception $e2) {
