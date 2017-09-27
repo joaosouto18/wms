@@ -89,11 +89,14 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 $error = \sqlsrv_errors();
                 throw new \Exception($error);
             }
+            $vetResult = array();
             while( $row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC) ) {
-                echo $row['CODPRO'].", ".$row['GRADE'].", ".$row['QTDFAT']."<br />";
+                $vetResult['CODPRO'] = $row['CODPRO'];
+                $vetResult['GRADE'] = $row['GRADE'];
+                $vetResult['QTDFAT'] = $row['QTDFAT'];
             }
 
-            return sqlsrv_fetch_array( $result, SQLSRV_FETCH_ASSOC);
+            return $vetResult;
         } catch (\PDOException $e) {
             throw new \Exception($e->getMessage());
         } catch (\Exception $e2) {
