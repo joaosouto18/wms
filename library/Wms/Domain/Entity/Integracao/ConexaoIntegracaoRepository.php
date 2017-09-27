@@ -82,7 +82,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 $error = $conexao->connect_error;
                 throw new \Exception("Não foi possível conectar: $error");
             }
-            $result = mssql_query($query, $conexao);
+            $result = \mssql_query($query, $conexao);
             var_dump($result);
             if (!$result) {
                 $error = $conexao->error;
