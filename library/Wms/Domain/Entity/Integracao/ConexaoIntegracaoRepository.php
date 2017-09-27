@@ -85,6 +85,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             printf($query);
             $result = \sqlsrv_query($conexao, $query);
 
+            
             var_dump(sqlsrv_fetch_array( $result, SQLSRV_FETCH_ASSOC));
             if (!$result || $result == false) {
                 $error = \sqlsrv_errors();
