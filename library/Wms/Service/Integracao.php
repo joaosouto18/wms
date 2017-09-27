@@ -167,6 +167,7 @@ class Integracao {
     }
 
     public function processaAcao() {
+        
         Try {
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_PRODUTO:
