@@ -83,12 +83,9 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 throw new \Exception("Não foi possível conectar: $error");
             }
             printf($query);
-            $result = \sqlsrv_query($conexao, $query, array(1 => date('Y-m-d H:i:s')));
+            $result = \sqlsrv_query($conexao, $query);
 
-            while( $row = sqlsrv_fetch_array( $result, SQLSRV_FETCH_ASSOC) ) {
-                echo $row."<br />";
-            }
-            var_dump($result);
+            var_dump(sqlsrv_fetch_array( $result, SQLSRV_FETCH_ASSOC));
             if (!$result || $result == false) {
                 $error = \sqlsrv_errors();
                 throw new \Exception($error);
