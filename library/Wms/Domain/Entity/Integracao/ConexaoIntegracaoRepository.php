@@ -90,10 +90,12 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 throw new \Exception($error);
             }
             $vetResult = array();
+            $i = 0;
             while( $row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC) ) {
-                $vetResult['CODPRO'] = $row['CODPRO'];
-                $vetResult['GRADE'] = $row['GRADE'];
-                $vetResult['QTDFAT'] = $row['QTDFAT'];
+                $vetResult[$i]['CODPRO'] = $row['CODPRO'];
+                $vetResult[$i]['GRADE'] = $row['GRADE'];
+                $vetResult[$i]['QTDFAT'] = $row['QTDFAT'];
+                $i++;
             }
 
             return $vetResult;
