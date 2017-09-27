@@ -183,9 +183,11 @@ class Integracao {
                     return $this->processaNotasFiscais($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_CORTES:
                     return $this->processaCorteERP($this->_dados, $this->_options);
-                case AcaoIntegracao::INTEGRACAO_RECEBIMENTO || AcaoIntegracao::INTEGRACAO_CANCELAMENTO_CARGA:
+                case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
+                case AcaoIntegracao::INTEGRACAO_CANCELAMENTO_CARGA:
                     return $this->_dados;
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA || AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
+                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA:
+                case AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
                     return true;
                 case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:
                     return $this->processaNotaFiscalSaida($this->_dados);
@@ -1124,6 +1126,7 @@ class Integracao {
 
     public function processaPedidoAcumulado($dados){
         $pedidoAcumuladoRepo = $this->_em->getRepository('wms:ressuprimento\PedidoAcumulado');
+        var_dump($dados);
         foreach ($dados as $value) {
             $pedidoAcumuladoRepo->setCodProduto($value['CODPRO']);
             $pedidoAcumuladoRepo->setGrade($value['GRADE']);
