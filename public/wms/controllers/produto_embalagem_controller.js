@@ -419,11 +419,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                             },
 
                             '#embalagem-pontoReposicao change': function (el, ev) {
-                                var fator = parseInt($("#embalagem-fator option:selected").val());
+                                var fator = parseFloat($("#embalagem-fator option:selected").val().replace(',', '.'));
                                 var qtdMaior = 0;
                                 $('.qtdItens').each(function () {
                                     if (parseInt($(this).val()) > parseInt(qtdMaior)) {
-                                        qtdMaior = parseInt($(this).val());
+                                        qtdMaior =  parseFloat($(this).val().replace(',', '.'));
                                     }
                                 });
                                 if (((parseFloat(el.val().replace(',', '.')) * fator) % qtdMaior) !== 0) {
@@ -436,11 +436,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 ev.stopImmediatePropagation();
                             },
                             '#embalagem-capacidadePicking change': function (el, ev) {
-                                var fator = parseInt($("#embalagem-fator option:selected").val());
+                                var fator = parseFloat($("#embalagem-fator option:selected").val().replace(',', '.'));
                                 var qtdMaior = 0;
                                 $('.qtdItens').each(function () {
                                     if (parseInt($(this).val()) > parseInt(qtdMaior)) {
-                                        qtdMaior = parseInt($(this).val());
+                                        qtdMaior =  parseFloat($(this).val().replace(',', '.'));
                                     }
                                 });
                                 if (((parseFloat(el.val().replace(',', '.')) * fator) % qtdMaior) !== 0) {
