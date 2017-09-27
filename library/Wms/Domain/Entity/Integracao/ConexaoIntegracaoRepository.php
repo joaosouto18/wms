@@ -75,12 +75,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 "PWD" => $senha
             );
             $conexao = \sqlsrv_connect($servidor, $connInfo);
-            if ($conexao){
-                echo  "OK" ;
-            }
-            var_dump($conexao);
-            echo "fim";
-            exit;
+
             //mssql_select_db($dbName, $conexao) or die(mssql_get_last_message());
 
             if ($conexao->connect_errno > 0) {
@@ -88,7 +83,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 throw new \Exception("Não foi possível conectar: $error");
             }
             $result = mssql_query($query, $conexao);
-
+            var_dump($result);
             if (!$result) {
                 $error = $conexao->error;
                 throw new \Exception($error);
