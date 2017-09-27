@@ -8,6 +8,7 @@ use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
 use Wms\Domain\Entity\Integracao\TabelaTemporaria;
 use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
+use Wms\Domain\Entity\Ressuprimento\PedidoAcumulado;
 use Wms\Math;
 
 class embalagem {
@@ -167,7 +168,7 @@ class Integracao {
     }
 
     public function processaAcao() {
-        
+
         Try {
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_PRODUTO:
@@ -1126,12 +1127,12 @@ class Integracao {
     }
 
     public function processaPedidoAcumulado($dados){
-        $pedidoAcumuladoRepo = $this->_em->getRepository('wms:ressuprimento\PedidoAcumulado');
-        var_dump($dados);
         foreach ($dados as $value) {
-            $pedidoAcumuladoRepo->setCodProduto($value['CODPRO']);
-            $pedidoAcumuladoRepo->setGrade($value['GRADE']);
-            $pedidoAcumuladoRepo->setQtdVendida($value['QTDFAT']);
+            $pedidoAcumulado = new PedidoAcumulado();
+            $pedidoAcumulado->setCodProduto($value['CODPRO']);
+            $pedidoAcumulado->setGrade($value['GRADE']);
+            $pedidoAcumulado->setQtdVendida($value['QTDFAT']);
+            $this->_em->persist($pedidoAcumulado);
         }
         $this->_em->flush();
     }
