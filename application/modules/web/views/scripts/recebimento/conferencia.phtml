@@ -101,7 +101,7 @@
                         </td>
                         <td>
                             <?php
-                            echo $this->formHidden("qtdAvaria[{$produto['codigo']}][{$produto['grade']}]", 0, array(
+                            echo $this->formText("qtdAvaria[{$produto['codigo']}][{$produto['grade']}]", 0, array(
                                 'size' => 8,
                                 'validators' => array('numeric'),
                                 'alt' => 'number',

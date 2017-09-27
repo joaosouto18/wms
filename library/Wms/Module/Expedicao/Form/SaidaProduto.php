@@ -8,6 +8,10 @@ class SaidaProduto extends Form
 
     public function init($utilizaGrade = 'S')
     {
+        $em = $this->getEm();
+        /** @var \Wms\Domain\Entity\FilialRepository $filialRepository */
+        $filialRepository = $em->getRepository('wms:Filial');
+
         $this->setAction($this->getView()->url(array('module' =>'expedicao', 'controller' => 'relatorio_saida', 'action' => 'index')))
                 ->setAttribs(array(
                     'method' => 'get',
@@ -37,6 +41,10 @@ class SaidaProduto extends Form
                 ->addElement('date', 'dataFinal', array(
                     'size' => 20,
                     'label' => 'Data Final',
+                ))
+                ->addElement('select', 'filial', array(
+                    'label' => 'Filial',
+                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => $filialRepository->getIdAndDescriptionExternoValue()),
                 ));
 
                 $this->addElement('submit', 'submit', array(
@@ -44,7 +52,7 @@ class SaidaProduto extends Form
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-                ->addDisplayGroup(array('idProduto', 'grade','dataInicial','dataFinal', 'submit'), 'identificacao', array('legend' => 'Busca')
+                ->addDisplayGroup(array('idProduto', 'grade','dataInicial','dataFinal', 'filial', 'submit'), 'identificacao', array('legend' => 'Busca')
         );
     }
 

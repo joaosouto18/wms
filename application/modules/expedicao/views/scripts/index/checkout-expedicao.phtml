@@ -62,7 +62,6 @@ if ($recarregar == 1) {
                                         async: false,
                                         type: 'post',
                                         success: function (data) {
-                                            console.log(data);
                                             if (data.retorno.resposta.length > 0) {
                                                 $("#codigoBarras").val("").focus();
                                                 var error = "";

@@ -335,7 +335,8 @@ class EnderecoRepository extends EntityRepository {
             ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "pe.endereco = de")
             ->innerJoin("wms:Produto", "p", "WITH", "(p.id = pv.codProduto and p.grade = pv.grade) or (p.id = pe.codProduto and p.grade = pe.grade)")
             ->leftJoin('p.fabricante', 'f')
-            ->where("de.descricao = '$endereco'");
+            ->where("de.descricao = '$endereco'")
+            ->andWhere("p.id not in ()");
 
         if ($picking) {
             $dql->andWhere('de.idCaracteristica =' . Endereco::ENDERECO_PICKING);

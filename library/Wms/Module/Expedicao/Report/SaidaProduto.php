@@ -11,7 +11,7 @@ class SaidaProduto extends Report
             return false;
         }
         $em = $this->getEm();
-        $produtos = $em->getRepository('wms:Expedicao')->getRelatorioSaidaProdutos($params['idProduto'], $params['grade'],$params['dataInicial'],$params['dataFinal']);
+        $produtos = $em->getRepository('wms:Expedicao')->getRelatorioSaidaProdutos($params['idProduto'],$params['grade'],$params['dataInicial'],$params['dataFinal'],$params['filial']);
         if ($produtos == null) {
             return false;
         }

@@ -70,7 +70,10 @@ class MapaSeparacaoRepository extends EntityRepository {
                         MSP.COD_MAPA_SEPARACAO,
                        CONF.NUM_CONFERENCIA,
                        CONF.QTD_CONFERIDA,
-                        MSP.IND_CONFERIDO";
+                        MSP.IND_CONFERIDO
+                 ORDER BY P.DSC_PRODUTO,
+                        P.DSC_GRADE
+                          ";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (!empty($result) && is_array($result)) {
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
@@ -931,7 +934,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                 GROUP BY P.NOM_PESSOA, P.COD_PESSOA, MSPROD.COD_PRODUTO, MSPROD.DSC_GRADE, PROD.DSC_PRODUTO
                 ORDER BY NUM_CAIXA_PC_INI";
 
-        $sql = "SELECT P.NOM_PESSOA, P.COD_PESSOA, LISTAGG(MSP.NUM_CAIXA_PC_INI, ',') WITHIN GROUP (ORDER BY MSP.NUM_CAIXA_PC_INI) AS NUM_CAIXA_PC_INI, MSP.COD_PRODUTO, MSP.DSC_GRADE, PROD.DSC_PRODUTO
+        $sql = "SELECT P.NOM_PESSOA, P.COD_PESSOA, LISTAGG(MSP.NUM_CAIXA_PC_INI, ',') WITHIN GROUP (ORDER BY MSP.NUM_CAIXA_PC_INI) AS NUM_CAIXA_PC_INI, MSP.COD_PRODUTO, MSP.DSC_GRADE, PROD.DSC_PRODUTO, PP.QUANTIDADE
                   FROM (SELECT SUM(DISTINCT MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR - NVL(MSP.QTD_CORTADO,0)) QTD_SEPARAR,
                                MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM,
                                MSP.COD_MAPA_SEPARACAO,
@@ -953,14 +956,14 @@ class MapaSeparacaoRepository extends EntityRepository {
                         AND MSC.DSC_GRADE = MSP.DSC_GRADE
                         AND MSC.COD_PESSOA = P.COD_PESSOA
                 WHERE MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0)
-                 GROUP BY P.NOM_PESSOA, P.COD_PESSOA, MSP.COD_PRODUTO, MSP.DSC_GRADE, PROD.DSC_PRODUTO
-                  ORDER BY NUM_CAIXA_PC_INI";
+                 GROUP BY P.NOM_PESSOA, P.COD_PESSOA, MSP.COD_PRODUTO, MSP.DSC_GRADE, PROD.DSC_PRODUTO, PP.QUANTIDADE
+                  ORDER BY PROD.DSC_PRODUTO, NUM_CAIXA_PC_INI";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
     public function getProdutosConferidosTotalByClientes($idMapa, $codPessoa) {
 
-        $sql = "SELECT P.NOM_PESSOA, P.COD_PESSOA, LISTAGG(MSP.NUM_CAIXA_PC_INI, ',') WITHIN GROUP (ORDER BY MSP.NUM_CAIXA_PC_INI) AS NUM_CAIXA_PC_INI, MSP.COD_PRODUTO, MSP.DSC_GRADE, PROD.DSC_PRODUTO
+        $sql = "SELECT P.NOM_PESSOA, P.COD_PESSOA, LISTAGG(MSP.NUM_CAIXA_PC_INI, ',') WITHIN GROUP (ORDER BY MSP.NUM_CAIXA_PC_INI) AS NUM_CAIXA_PC_INI, MSP.COD_PRODUTO, MSP.DSC_GRADE, PROD.DSC_PRODUTO, PP.QUANTIDADE
                   FROM (SELECT SUM(DISTINCT MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR - NVL(MSP.QTD_CORTADO,0)) QTD_SEPARAR,
                                MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM,
                                MSP.COD_MAPA_SEPARACAO,
@@ -982,8 +985,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                         AND MSC.DSC_GRADE = MSP.DSC_GRADE
                         AND MSC.COD_PESSOA = P.COD_PESSOA
                 WHERE MSP.QTD_SEPARAR = NVL(MSC.QTD_CONFERIDA,0)
-                 GROUP BY P.NOM_PESSOA, P.COD_PESSOA, MSP.COD_PRODUTO, MSP.DSC_GRADE, PROD.DSC_PRODUTO
-                  ORDER BY NUM_CAIXA_PC_INI";
+                 GROUP BY P.NOM_PESSOA, P.COD_PESSOA, MSP.COD_PRODUTO, MSP.DSC_GRADE, PROD.DSC_PRODUTO, PP.QUANTIDADE
+                  ORDER BY PROD.DSC_PRODUTO, NUM_CAIXA_PC_INI";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }

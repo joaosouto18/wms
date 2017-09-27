@@ -7,17 +7,26 @@
 <?php echo $this->grid;
 ?>
 <script>
-    var id = $("#id").val();
+    $('#id').parent().find('label').append('<a href="#" class="info">\n\
+            <img style="width: 20px; margin-top: -7px;" src="/img/question.png" alt="Home">\n\
+            <span style="margin-top:60px"> <b>Buscar vários produtos. <br /><br />Ex: 99999,99999,99999,...<b></span></a>');
+    var idAtual = $("#id").val();
     $(".incluir").click(function () {
-        if(id == ''){
-            id = $("#incluirinput").val();
+        var id = $("#id").val();
+        if($("#incluirinput").val() == '' && idAtual != id){
+            $("#incluirinput").val(idAtual);
         }
-        $("#incluirinput").val($("#id").val() + ',' + id);
+        
+        if (id != '' && $("#incluirinput").val() != '') {
+            $("#incluirinput").val($("#incluirinput").val() + ',' + id);
+        }else{
+            $("#incluirinput").val(id);
+        }
         return true;
     });
     $("#submit").click(function () {
         $("#incluirinput").val('');
         return true;
     });
-    
+
 </script>

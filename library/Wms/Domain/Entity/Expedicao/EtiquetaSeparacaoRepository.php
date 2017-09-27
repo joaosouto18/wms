@@ -1802,6 +1802,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
+        /** @var PedidoProduto $pedidoProduto */
         foreach ($arrPedidoProduto as $pedidoProduto) {
             $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array('mapaSeparacao'=>$mapaSeparacaoEntity,'codPedidoProduto'=>$pedidoProduto->getId()));
             if ($mapaPedidoEn == null) {
@@ -1809,6 +1810,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $mapaPedidoEn->setCodPedidoProduto($pedidoProduto->getId());
                 $mapaPedidoEn->setMapaSeparacao($mapaSeparacaoEntity);
                 $mapaPedidoEn->setPedidoProduto($pedidoProduto);
+                $mapaPedidoEn->setQtd($pedidoProduto->getQuantidade());
                 $this->getEntityManager()->persist($mapaPedidoEn);
             }
             if ($consolidado == 'S') {

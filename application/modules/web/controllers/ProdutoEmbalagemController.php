@@ -53,6 +53,11 @@ class Web_ProdutoEmbalagemController extends Crud
                 'lblEmbalado' => ($embalagem->getEmbalado() == 'S') ? 'SIM' : 'NÃO',
                 'ativarDesativar' => $checked,
                 'dataInativacao' => $dataInativacao,
+                'largura' => $embalagem->getLargura(),
+                'altura' => $embalagem->getAltura(),
+                'peso' => $embalagem->getPeso(),
+                'profundidade' => $embalagem->getProfundidade(),
+                'cubagem' => $embalagem->getCubagem(),
             );
         }
 

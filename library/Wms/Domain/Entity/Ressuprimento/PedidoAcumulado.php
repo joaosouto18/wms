@@ -17,15 +17,6 @@ class PedidoAcumulado {
     protected $id;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
-     * @JoinColumns({
-     *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
-     *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
-     * })
-     */
-    protected $produto;
-
-    /**
      * @Column(name="COD_PRODUTO", type="decimal", nullable=false)
      */
     protected $codProduto;
@@ -52,20 +43,6 @@ class PedidoAcumulado {
      */
     public function getId() {
         return $this->id;
-    }
-
-    /**
-     * @param mixed $produto
-     */
-    public function setProduto($produto) {
-        $this->produto = $produto;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getProduto() {
-        return $this->produto;
     }
 
     /**

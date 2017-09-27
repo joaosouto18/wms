@@ -14,6 +14,7 @@ class ConexaoIntegracao
 
     const PROVEDOR_ORACLE = "ORACLE";
     const PROVEDOR_MYSQL = "MYSQL";
+    const PROVEDOR_MSSQL = "MSSQL";
 
     /**
      * @Id

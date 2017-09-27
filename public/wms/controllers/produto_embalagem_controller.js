@@ -132,9 +132,10 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     valores.acao = 'incluir';
                                     $('#div-lista-embalagens').append(this.view("show", new Wms.Models.ProdutoEmbalagem(valores)));
                                 }
-                                var value = valores.quantidade;
+                                var value = parseFloat(valores.quantidade.replace(',', '.')).toFixed(3);
                                 var dsc = valores.descricao + ' (' + valores.quantidade + ')';
                                 $('#fieldset-campos-comuns #embalagem-fator').append('<option value="' + value + '" label="' + dsc + '">' + dsc + '</option>');
+                                $('#fieldset-grupo-normas #embalagens-norma').append('<option value="' + value + '" label="' + dsc + '">' + dsc + '</option>');
                                 // limpo form
                                 this.resetarForm();
                                 // carregar embalagens nos dados logisticos
@@ -224,8 +225,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                                 $('#span-capacidade').remove();
                                 $('#span-reposicao').remove();
-                                $('#embalagem-capacidadePicking').parent().append('<span id="span-capacidade">( ' + produto_embalagem.capacidadePicking + ' UN )</span>');
-                                $('#embalagem-pontoReposicao').parent().append('<span id="span-reposicao">( ' + produto_embalagem.pontoReposicao + ' UN )</span>');
 
                                 if (!permiteAlterarcao) {
                                     $('#fieldset-embalagem #embalagem-CBInterno').prop("disabled", true);
@@ -406,48 +405,88 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                             },
                             '#embalagem-fator change': function (el, ev) {
-                                var capacidade = $('#fieldset-campos-comuns #capacidadePicking-real').val();
+                                var capacidade = parseFloat($('#fieldset-campos-comuns #capacidadePicking-real').val()).toFixed(3);
                                 var pontoRep = $('#fieldset-campos-comuns #pontoReposicao-real').val();
-                                $('#fieldset-campos-comuns #embalagem-capacidadePicking').val(capacidade / el.val());
-                                $('#fieldset-campos-comuns #embalagem-pontoReposicao').val(pontoRep / el.val());
+                                var altura = $('#fieldset-campos-comuns #altura-real').val();
+                                var peso = parseFloat($('#fieldset-campos-comuns #peso-real').val().replace(',', '.')) * el.val();
+                                var cubagemReal = (parseFloat(altura.replace(',', '.')) * el.val());
+                                $('#fieldset-campos-comuns #embalagem-capacidadePicking').val(parseFloat(capacidade / el.val()).toFixed(3).replace('.', ','));
+                                $('#fieldset-campos-comuns #embalagem-pontoReposicao').val(parseFloat(pontoRep / el.val()).toFixed(3).replace('.', ','));
+                                $('#fieldset-campos-comuns #embalagem-altura').val(cubagemReal.toFixed(3).replace('.', ','));
+                                $('#fieldset-campos-comuns #embalagem-peso').val(peso.toFixed(3).replace('.', ','));
+                                $('#embalagem-largura').change();
                                 ev.stopImmediatePropagation();
                             },
 
                             '#embalagem-pontoReposicao change': function (el, ev) {
-                                var fator = $("#embalagem-fator option:selected").val();
+                                var fator = parseInt($("#embalagem-fator option:selected").val());
                                 var qtdMaior = 0;
                                 $('.qtdItens').each(function () {
                                     if (parseInt($(this).val()) > parseInt(qtdMaior)) {
                                         qtdMaior = parseInt($(this).val());
                                     }
                                 });
-                                if (((el.val() * fator) % qtdMaior) !== 0) {
+                                if (((parseFloat(el.val().replace(',', '.')) * fator) % qtdMaior) !== 0) {
                                     this.dialogAlert('<b>Ponto de Reposição</b> deve ser múltiplo da <b>Quantidade de itens</b>');
-                                    el.val($('#fieldset-campos-comuns #pontoReposicao-real').val() / fator);
+                                    el.val(parseFloat(parseFloat($('#fieldset-campos-comuns #pontoReposicao-real').val().replace(',', '.')).toFixed(3) / fator).toFixed(3).replace('.', ','));
                                     return false;
                                 }
 
-                                $('#fieldset-campos-comuns #pontoReposicao-real').val(fator * el.val());
+                                $('#fieldset-campos-comuns #pontoReposicao-real').val(parseFloat(fator * parseFloat(el.val())).toFixed(3));
                                 ev.stopImmediatePropagation();
                             },
                             '#embalagem-capacidadePicking change': function (el, ev) {
-                                var fator = $("#embalagem-fator option:selected").val();
+                                var fator = parseInt($("#embalagem-fator option:selected").val());
                                 var qtdMaior = 0;
                                 $('.qtdItens').each(function () {
                                     if (parseInt($(this).val()) > parseInt(qtdMaior)) {
                                         qtdMaior = parseInt($(this).val());
                                     }
                                 });
-                                if (((el.val() * fator) % qtdMaior) !== 0) {
+                                if (((parseFloat(el.val().replace(',', '.')) * fator) % qtdMaior) !== 0) {
                                     this.dialogAlert('<b>Capacidade de Picking</b> deve ser múltiplo da <b>Quantidade de itens</b>');
-                                    el.val($('#fieldset-campos-comuns #capacidadePicking-real').val() / fator);
+                                    el.val(parseFloat(parseFloat($('#fieldset-campos-comuns #capacidadePicking-real').val().replace(',', '.')).toFixed(3) / fator).toFixed(3).replace('.', ','));
                                     return false;
                                 }
 
-                                $('#fieldset-campos-comuns #capacidadePicking-real').val(fator * el.val());
+                                $('#fieldset-campos-comuns #capacidadePicking-real').val(parseFloat(fator * parseFloat(el.val())).toFixed(3));
+                                ev.stopImmediatePropagation();
+                            },
+                            '#embalagem-altura change': function (el, ev) {
+                                var qtdSel = parseInt($('#embalagem-fator').val());
+                                var altura = $('#embalagem-altura').val();
+                                var altruaReal = altura.replace(',', '.') / qtdSel;
+                                $('#altura-real').val(altruaReal);
+
+                                var largura = $('#embalagem-largura').val().replace('.', '').replace(',', '.');
+                                altura = $('#embalagem-altura').val().replace('.', '').replace(',', '.');
+                                var profundidade = $('#embalagem-profundidade').val().replace('.', '').replace(',', '.');
+                                var cubagem = Wms.Controllers.CalculoMedida.prototype.calculaCubagem(largura, altura, profundidade, 4);
+                                cubagem = Wms.Controllers.CalculoMedida.prototype.formatMoney(parseFloat(cubagem.toString().replace(',', '.')).toFixed(4), 4, ',', '.');
+                                $('#embalagem-cubagem').val(cubagem);
                                 ev.stopImmediatePropagation();
                             },
 
+                            '#embalagem-peso change': function (el, ev) {
+                                var qtdSel = parseInt($('#embalagem-fator').val());
+                                var peso = $('#embalagem-peso').val();
+                                var pesoReal = peso.replace(',', '.') / qtdSel;
+                                $('#peso-real').val(pesoReal);
+                                ev.stopImmediatePropagation();
+                            },
+                            /**
+                             * Calculo de cubagem
+                             */
+                            '.parametro-cubagem change': function () {
+                                var largura = $('#embalagem-largura').val().replace('.', '').replace(',', '.');
+                                var altura = $('#embalagem-altura').val().replace('.', '').replace(',', '.');
+                                var profundidade = $('#embalagem-profundidade').val().replace('.', '').replace(',', '.');
+                                var cubagem = Wms.Controllers.CalculoMedida.prototype.calculaCubagem(largura, altura, profundidade, 4);
+
+                                cubagem = Wms.Controllers.CalculoMedida.prototype.formatMoney(parseFloat(cubagem.toString().replace(',', '.')).toFixed(4), 4, ',', '.');
+                                $('#embalagem-cubagem').val(cubagem);
+
+                            },
                             /**
                              * Reseta o form base para novo cadastro
                              */
@@ -591,7 +630,14 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                         var value = valor.quantidade;
                                         var dsc = valor.descricao + ' (' + valor.quantidade + ')';
                                         $('#fieldset-campos-comuns #embalagem-fator').append('<option value="' + value + '" label="' + dsc + '">' + dsc + '</option>');
+
                                     });
+//                                    setTimeout(function () {
+//                                        produto_embalagem.forEach(function (valor, chave) {
+//                                            var dsc = valor.descricao + ' (' + valor.quantidade + ')';
+//                                            $('#fieldset-grupo-normas #embalagens-norma').append('<option embalagem="' + valor.id + '" value="' + valor.quantidade + '" label="' + dsc + '">' + dsc + '</option>');
+//                                        });
+//                                    }, 2000);
                                 }
 //                                var produto_embalagem = el.closest('.produto_embalagem').model();
                                 if (produto_embalagem.length > 0) {
@@ -599,27 +645,40 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     $('#fieldset-campos-comuns #embalagem-endereco').val(produto_embalagem[0].endereco);
                                     $('#fieldset-campos-comuns #embalagem-enderecoAntigo').val(produto_embalagem[0].endereco);
                                     $('#fieldset-campos-comuns #embalagem-pontoReposicao').val(produto_embalagem[0].pontoReposicao);
+                                    $('#fieldset-campos-comuns #embalagem-largura').val(produto_embalagem[0].largura);
+                                    $('#fieldset-campos-comuns #embalagem-peso').val(produto_embalagem[0].peso);
+                                    $('#fieldset-campos-comuns #embalagem-cubagem').val(produto_embalagem[0].cubagem);
+                                    $('#fieldset-campos-comuns #embalagem-profundidade').val(produto_embalagem[0].profundidade);
                                 }
 
                                 blocosEmbalagem.each(function () {
                                     var id = $(this).find('.embalagem-id').val();
-                                    var descricao = $(this).find('.embalagem-descricao').val();
-
-                                    select.append('<option value="' + id + '">' + descricao + '</option>');
+                                    var descricao = $(this).find('.embalagem-descricao').val() + ' ( ' + $(this).find('.qtdItens').val() + ' )';
+                                    select.append('<option qtdEmb="' + parseFloat($(this).find('.qtdItens').val()).toFixed(3) + '" value="' + id + '">' + descricao + '</option>');
                                 });
                                 var qtdPadrao = 1;
                                 if (produto_embalagem.length > 0) {
                                     produto_embalagem.forEach(function (valor, chave) {
                                         if (valor.isPadrao == 'S') {
-                                            qtdPadrao = valor.quantidade;
+                                            qtdPadrao = parseInt(valor.quantidade);
+                                            $('#fieldset-campos-comuns #embalagem-altura').val(valor.altura);
+                                            $('#fieldset-campos-comuns #embalagem-largura').val(valor.largura);
+                                            $('#fieldset-campos-comuns #embalagem-peso').val(valor.peso);
+                                            $('#fieldset-campos-comuns #embalagem-cubagem').val(valor.cubagem);
+                                            $('#fieldset-campos-comuns #embalagem-profundidade').val(valor.profundidade);
                                         }
                                     });
+                                    $('#fieldset-campos-comuns #altura-real').val((parseFloat(produto_embalagem[0].altura.replace(',', '.')) / parseInt(qtdPadrao)).toFixed(5));
+                                    $('#fieldset-campos-comuns #peso-real').val((parseFloat(produto_embalagem[0].peso.replace(',', '.')) / parseInt(qtdPadrao)).toFixed(5));
                                     $('#embalagem-fator option[value=' + qtdPadrao + ']').attr('selected', 'selected');
-                                    $('#fieldset-campos-comuns #embalagem-capacidadePicking').val(produto_embalagem[0].capacidadePicking / qtdPadrao);
-                                    $('#fieldset-campos-comuns #embalagem-pontoReposicao').val(produto_embalagem[0].pontoReposicao / qtdPadrao);
-                                    $('#fieldset-campos-comuns #capacidadePicking-real').val(produto_embalagem[0].capacidadePicking);
-                                    $('#fieldset-campos-comuns #pontoReposicao-real').val(produto_embalagem[0].pontoReposicao);
+                                    $('#fieldset-campos-comuns #embalagem-capacidadePicking').val(parseFloat(parseFloat(produto_embalagem[0].capacidadePicking) / qtdPadrao).toFixed(3).replace('.', ','));
+                                    $('#fieldset-campos-comuns #embalagem-pontoReposicao').val(parseFloat(parseFloat(produto_embalagem[0].pontoReposicao / qtdPadrao)).toFixed(3).replace('.', ','));
+                                    $('#fieldset-campos-comuns #capacidadePicking-real').val(parseFloat(produto_embalagem[0].capacidadePicking).toFixed(3));
+                                    $('#fieldset-campos-comuns #pontoReposicao-real').val(parseFloat(produto_embalagem[0].pontoReposicao).toFixed(3));
+
                                 }
+                                Wms.Controllers.Produto.prototype.pesoTotal();
+                                Wms.Controllers.Produto.prototype.cubagemTotal();
                             },
 
                             /**

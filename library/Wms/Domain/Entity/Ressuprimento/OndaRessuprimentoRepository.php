@@ -383,7 +383,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         if (!empty($volumes))
             foreach ($volumes as $volume) {
                 $ondaRessuprimentoOsProduto = new OndaRessuprimentoOsProduto();
-                $ondaRessuprimentoOsProduto->setQtd(str_replace(",",".",$qtdOnda));
+                $ondaRessuprimentoOsProduto->setQtd(str_replace(",", ".", $qtdOnda));
                 $ondaRessuprimentoOsProduto->setOndaRessuprimentoOs($ondaRessuprimentoOs);
                 $ondaRessuprimentoOsProduto->setCodProdutoVolume($volume);
                 $ondaRessuprimentoOsProduto->setCodProdutoEmbalagem(null);
@@ -587,7 +587,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
             'estoqueRepo' => $estoqueRepo
         );
         $result = $this->getQueryRessuprimentoPreventivo($parametros);
-
         $pickings = array();
         /*
          * TRATA RESULTADO DA QUERY
@@ -636,14 +635,11 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     $pickings[$key]['qtdEmbalagens'] = null;
                     $normas = $volumeRepo->getNormasByProduto($value['COD_PRODUTO'], $value['DSC_GRADE']);
                     foreach ($normas as $norma) {
-                        $volumesEn = $volumeRepo->getVolumesByNorma($norma->getId(), $value['COD_PRODUTO'], $value['DSC_GRADE']);
+                        $volumesEn = $volumeRepo->getVolumesByNorma($norma->getId(), $value['COD_PRODUTO'], $value['DSC_GRADE'], $value['COD_DEPOSITO_ENDERECO']);
                         $result[$key]['VOLUMES'] = array();
                         $result[$key]['EMBALAGENS'] = null;
-                        $idPicking = null;
+                        $idPicking = $value['COD_DEPOSITO_ENDERECO'];
                         foreach ($volumesEn as $volume) {
-                            if ($volume->getEndereco() != null) {
-                                $idPicking = $volume->getEndereco()->getId();
-                            }
                             $result[$key]['VOLUMES'][] = $volume->getId();
                             $pickings[$key]['volumes'][] = $volume->getId();
                             $result[$key]['ID_PICKING'] = $idPicking;
@@ -678,7 +674,15 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     foreach ($vetExibePulmao as $value) {
                         $vetPulmoes[] = $value;
                     }
-                    $result[$key]['TOTAL_ONDA'] = implode('<br />', $vetEstoque);
+                    if (empty($result[$key]['VOLUMES']) && !empty($vetEstoque)) {
+                        $result[$key]['TOTAL_ONDA'] = implode('<br />', $vetEstoque);
+                    }else{
+                        $qtdTotalOnda = 0;
+                        foreach ($vetOnda as $value) {
+                            $qtdTotalOnda += $value;
+                        }
+                        $result[$key]['TOTAL_ONDA'] = $qtdTotalOnda;
+                    }
                     if (empty($vetVol)) {
                         if ($totalOnda > 0) {
                             $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($result[$key]['COD_PRODUTO'], $result[$key]['DSC_GRADE'], $totalOnda);
@@ -697,7 +701,9 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     $result[$key]['PULMAO'] = implode(' <br /> ', $vetExibePulmao);
                     $result[$key]['ID_PIKING'] = $osFirst['idPicking'];
                     $result[$key]['QTD_ONDA'] = json_encode($vetOnda);
+                    $vetEstoque = array();
                 } else {
+                    $vetEstoque = array();
                     unset($result[$key]);
                 }
             }
@@ -754,13 +760,21 @@ class OndaRessuprimentoRepository extends EntityRepository {
               WHERE (PE.COD_DEPOSITO_ENDERECO IS NOT NULL OR PV.COD_DEPOSITO_ENDERECO IS NOT NULL)
                 AND (PE.CAPACIDADE_PICKING IS NOT NULL OR PV.CAPACIDADE_PICKING IS NOT NULL)
                 AND NP.IND_PADRAO = 'S'
-                AND ((ESTOQUE_PULMAO.QTD + NVL(RS.QTD_RESERVA,0)) > 0)";
+                AND ((ESTOQUE_PULMAO.QTD + NVL(RS.QTD_RESERVA,0)) > 0) 
+                ";
         $SQLWhere = " ";
         if (isset($parametros['ocupacao']) && !empty($parametros['ocupacao'])) {
             $SQLWhere .= "AND (DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) <= " . $parametros['ocupacao'];
         } else {
             $SQLWhere .= "AND (DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100) = 0";
         }
+        if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
+            $SQLWhere .= " AND DE.COD_TIPO_ENDERECO = " . $parametros['tipoEndereco'];
+        }
+        if (isset($parametros['linhaSeparacao']) && !empty($parametros['linhaSeparacao'])) {
+            $SQLWhere .= " AND P.COD_LINHA_SEPARACAO = " . $parametros['linhaSeparacao'];
+        }
+        
         if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
             $SQLWhere .= " AND DE.COD_TIPO_ENDERECO = " . $parametros['tipoEndereco'];
         }
@@ -810,7 +824,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                   NVL(ESTOQUE_PICKING.QTD,0),
                   P.DSC_PRODUTO,
                   DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100  
-                  ORDER BY DE.DSC_DEPOSITO_ENDERECO";
+                  ORDER BY P.COD_PRODUTO, DE.DSC_DEPOSITO_ENDERECO";
         return $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -822,6 +836,12 @@ class OndaRessuprimentoRepository extends EntityRepository {
             $where .= " AND (PA.QTD_VENDIDA * 100) / PRODUTO_EMBALAGEM.CAPACIDADE_PICKING = 0";
         }
 
+        if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
+            $SQLWhere .= " AND DE.COD_TIPO_ENDERECO = " . $parametros['tipoEndereco'];
+        }
+        if (isset($parametros['linhaSeparacao']) && !empty($parametros['linhaSeparacao'])) {
+            $SQLWhere .= " AND P.COD_LINHA_SEPARACAO = " . $parametros['linhaSeparacao'];
+        }
         if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
             $SQLWhere .= " AND DE.COD_TIPO_ENDERECO = " . $parametros['tipoEndereco'];
         }

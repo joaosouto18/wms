@@ -8,7 +8,7 @@
  * Created: 15/09/2017
  */
 
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.0.0','xx-checkout-expedicao.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.0.0','7-checkout-expedicao.sql');
 
 INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) 
     VALUES (SQ_ACAO_01.NEXTVAL, 'Checkout Expedição', 'checkout-expedicao'); 

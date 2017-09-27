@@ -134,7 +134,7 @@ class Expedicao_CorteController extends Action {
         $this->view->grade = $grade = $this->_getParam('DSC_GRADE', 0);
         $this->view->expedicao = $expedicao = $this->_getParam('expedicao');
         $quantidade = $this->_getParam('quantidade');
-        $motivo = $this->_getParam('motivoCorte');
+        $motivo = $this->_getParam('motivoCorte', null);
 
         $senha = $this->_getParam('senha');
 
@@ -148,15 +148,13 @@ class Expedicao_CorteController extends Action {
 
                 /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
                 $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
-                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepo */
-                $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
                 $pedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
                         ->findOneBy(array('codPedido' => $pedido, 'codProduto' => $produto, 'grade' => $grade));
 
                 if (!isset($pedidoProduto) || empty($pedidoProduto))
                     throw new \Exception("Produto $produto grade $grade não encontrado para o pedido $pedido");
 
-                $expedicaoRepo->cortaPedido($pedido, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $this->_getParam('motivoCorte', null));
+                $expedicaoRepo->cortaPedido($pedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $motivo);
 
                 $this->getEntityManager()->flush();
                 $this->getEntityManager()->commit();
