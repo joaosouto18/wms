@@ -345,7 +345,7 @@ class UMA extends Pdf {
 
         $this->SetFont('Arial', 'B', 32);
         $this->SetXY(210, 110);
-        $this->Cell(25, 30, "Qtd", 0, 0);
+        $this->Cell(-15, 30, "", 0, 0);
 
         $embalagemRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository("wms:Produto\Embalagem");
         $vetQtd = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $palete['qtd']);
@@ -355,7 +355,7 @@ class UMA extends Pdf {
             $qtd = $vetQtd;
         }
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(25, 30, $qtd, 0, 1);
+        $this->Cell(-15, 30, $qtd, 0, 1);
 
         $this->SetFont('Arial', 'B', 32);
         $this->SetXY(15, 110);
