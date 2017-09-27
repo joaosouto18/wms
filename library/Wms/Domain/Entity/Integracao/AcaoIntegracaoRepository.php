@@ -216,7 +216,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE) {
                         $options[] = $data->format("d/m/Y H:i:s");
                     }else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MSSQL) {
-                        $options[] = $data->format("Y-m-d 00:00:00");
+                        $options[] = $data->format("Y-m-d H:i:s");
                     }
                 }
             }
