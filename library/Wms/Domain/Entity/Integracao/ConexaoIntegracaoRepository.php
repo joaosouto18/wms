@@ -89,6 +89,9 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 $error = \sqlsrv_errors();
                 throw new \Exception($error);
             }
+            while( $row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC) ) {
+                echo $row['CODPRO'].", ".$row['GRADE'].", ".$row['QTDFAT']."<br />";
+            }
 
             return sqlsrv_fetch_array( $result, SQLSRV_FETCH_ASSOC);
         } catch (\PDOException $e) {
