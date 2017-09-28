@@ -8,6 +8,7 @@ use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
 use Wms\Domain\Entity\Integracao\TabelaTemporaria;
 use Wms\Domain\Entity\Enderecamento\EstoqueErp;
 use Wms\Domain\Entity\Integracao\AcaoIntegracao;
+use Wms\Domain\Entity\Ressuprimento\PedidoAcumulado;
 use Wms\Math;
 
 class embalagem {
@@ -167,6 +168,7 @@ class Integracao {
     }
 
     public function processaAcao() {
+
         Try {
             switch ($this->getAcao()->getTipoAcao()->getId()) {
                 case AcaoIntegracao::INTEGRACAO_PRODUTO:
@@ -183,9 +185,11 @@ class Integracao {
                     return $this->processaNotasFiscais($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_CORTES:
                     return $this->processaCorteERP($this->_dados, $this->_options);
-                case AcaoIntegracao::INTEGRACAO_RECEBIMENTO || AcaoIntegracao::INTEGRACAO_CANCELAMENTO_CARGA:
+                case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
+                case AcaoIntegracao::INTEGRACAO_CANCELAMENTO_CARGA:
                     return $this->_dados;
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA || AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
+                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA:
+                case AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
                     return true;
                 case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:
                     return $this->processaNotaFiscalSaida($this->_dados);
@@ -1123,11 +1127,12 @@ class Integracao {
     }
 
     public function processaPedidoAcumulado($dados){
-        $pedidoAcumuladoRepo = $this->_em->getRepository('wms:ressuprimento\PedidoAcumulado');
         foreach ($dados as $value) {
-            $pedidoAcumuladoRepo->setCodProduto($value['CODPRO']);
-            $pedidoAcumuladoRepo->setGrade($value['GRADE']);
-            $pedidoAcumuladoRepo->setQtdVendida($value['QTDFAT']);
+            $pedidoAcumulado = new PedidoAcumulado();
+            $pedidoAcumulado->setCodProduto($value['CODPRO']);
+            $pedidoAcumulado->setGrade($value['GRADE']);
+            $pedidoAcumulado->setQtdVendida($value['QTDFAT']);
+            $this->_em->persist($pedidoAcumulado);
         }
         $this->_em->flush();
     }

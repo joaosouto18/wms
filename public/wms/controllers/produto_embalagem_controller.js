@@ -89,11 +89,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var id = $("#fieldset-embalagem #embalagem-id").val();
                                 var este = this;
 
-                                if (fieldEmbalagem.find(".invalid").length > 0) {
-                                    este.dialogAlert("Os campos em vermelho são obrigatórios");
-                                    return false
-                                }
-
                                 if (!this.verificarEmbalagemRecebimento(id, valores)) {
                                     return false;
                                 }
@@ -102,6 +97,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     este.salvarDadosEmbalagem(valores);
                                 } else {
                                     $('#embalagem-codigoBarras').focus();
+                                }
+
+                                if (fieldEmbalagem.find(".invalid").length > 0) {
+                                    este.dialogAlert("Os campos em vermelho são obrigatórios");
+                                    return false
                                 }
                                 ev.preventDefault();
                             },
@@ -419,11 +419,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                             },
 
                             '#embalagem-pontoReposicao change': function (el, ev) {
-                                var fator = parseInt($("#embalagem-fator option:selected").val());
+                                var fator = parseFloat($("#embalagem-fator option:selected").val().replace(',', '.'));
                                 var qtdMaior = 0;
                                 $('.qtdItens').each(function () {
                                     if (parseInt($(this).val()) > parseInt(qtdMaior)) {
-                                        qtdMaior = parseInt($(this).val());
+                                        qtdMaior =  parseFloat($(this).val().replace(',', '.'));
                                     }
                                 });
                                 if (((parseFloat(el.val().replace(',', '.')) * fator) % qtdMaior) !== 0) {
@@ -436,11 +436,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 ev.stopImmediatePropagation();
                             },
                             '#embalagem-capacidadePicking change': function (el, ev) {
-                                var fator = parseInt($("#embalagem-fator option:selected").val());
+                                var fator = parseFloat($("#embalagem-fator option:selected").val().replace(',', '.'));
                                 var qtdMaior = 0;
                                 $('.qtdItens').each(function () {
                                     if (parseInt($(this).val()) > parseInt(qtdMaior)) {
-                                        qtdMaior = parseInt($(this).val());
+                                        qtdMaior =  parseFloat($(this).val().replace(',', '.'));
                                     }
                                 });
                                 if (((parseFloat(el.val().replace(',', '.')) * fator) % qtdMaior) !== 0) {
@@ -704,9 +704,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                              *
                              */
                             checarCBInterno: function () {
-                                $('#embalagem-codigoBarras').attr('readonly', false);
-                                if ($('#embalagem-CBInterno').val() == 'S') {
-                                    $('#embalagem-codigoBarras').attr('readonly', true);
+                                var inputCB = $('#embalagem-codigoBarras');
+                                if ($('#embalagem-CBInterno').val() === 'S'){
+                                    inputCB.attr('readonly', true).removeClass('.invalid').removeClass('.required');
+                                } else {
+                                    inputCB.attr('readonly', false).addClass('.invalid').addClass('.required')
                                 }
                             },
 
@@ -735,6 +737,8 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var codigosBarras = $('.codigoBarras');
                                 var cbInterno = valores.imprimirCB;
                                 var este = this;
+
+                                este.checarCBInterno();
 
                                 if ((codigoBarras === "" && cbInterno === "S") || codigoBarras === codigoBarrasAntigo) {
                                     return true;

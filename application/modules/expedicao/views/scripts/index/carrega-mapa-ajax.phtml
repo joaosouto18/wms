@@ -107,4 +107,9 @@ if ($this->erro) {
             return false;
         }
     });
+    $("#codigoBarras").keydown(function (e) {
+        if (e.which == 13) {
+            $('#buscar-sumbit').click();
+        }
+    });
 </script>
