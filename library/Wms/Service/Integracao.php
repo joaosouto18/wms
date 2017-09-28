@@ -1127,12 +1127,20 @@ class Integracao {
     }
 
     public function processaPedidoAcumulado($dados){
+        $pedidoAcumuladoRepo =  $this->_em->getRepository('wms:Ressuprimento\PedidoAcumulado');
+
         foreach ($dados as $value) {
-            $pedidoAcumulado = new PedidoAcumulado();
-            $pedidoAcumulado->setCodProduto($value['CODPRO']);
-            $pedidoAcumulado->setGrade($value['GRADE']);
-            $pedidoAcumulado->setQtdVendida($value['QTDFAT']);
-            $this->_em->persist($pedidoAcumulado);
+            $pedido = $pedidoAcumuladoRepo->findOneBy(array('codProduto' => $value['CODPRO']));
+            if(!empty($pedido)){
+                $pedido->setQtdVendida($pedido->getQtdVendida() + $value['QTDFAT']);
+                $this->_em->persist($pedido);
+            }else {
+                $pedidoAcumulado = new PedidoAcumulado();
+                $pedidoAcumulado->setCodProduto($value['CODPRO']);
+                $pedidoAcumulado->setGrade($value['GRADE']);
+                $pedidoAcumulado->setQtdVendida($value['QTDFAT']);
+                $this->_em->persist($pedidoAcumulado);
+            }
         }
         $this->_em->flush();
     }
