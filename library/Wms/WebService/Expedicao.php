@@ -763,10 +763,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $idProduto = ProdutoUtil::formatar(trim($produto['codProduto']));
 
             $enProduto = $ProdutoRepo->find(array('id' => $idProduto, 'grade' => $produto['grade']));
-            $qtdCorrigida = str_replace(',','.',$produto['quantidade']);
+            if (isset($produto['quantidade'])) {
+                $produto['qtde'] = $produto['quantidade'];
+            }
+            $qtdCorrigida = str_replace(',','.',$produto['qtde']);
 
             if(isset($prod[$idProduto.'--'.$produto['grade']])){
-                $prod[$idProduto.'--'.$produto['grade']]['quantidade'] = \Wms\Math::adicionar($prod[$idProduto.'--'.$produto['grade']]['quantidade'], $qtdCorrigida);
+                $prod[$idProduto.'--'.$produto['grade']]['qtde'] = \Wms\Math::adicionar($prod[$idProduto.'--'.$produto['grade']]['qtde'], $qtdCorrigida);
             }else{
                 $prod[$idProduto.'--'.$produto['grade']] = array(
                     'codPedido' => $enPedido->getId(),

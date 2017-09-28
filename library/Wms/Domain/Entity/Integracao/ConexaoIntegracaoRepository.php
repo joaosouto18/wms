@@ -69,22 +69,36 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $servidor = $conexao->getServidor();
             $porta = $conexao->getPorta();
             $dbName = $conexao->getDbName();
+            $connInfo = array(
+                "Database" => $dbName,
+                "UID" => $usuario,
+                "PWD" => $senha
+            );
+            $conexao = \sqlsrv_connect($servidor, $connInfo);
 
-            $conexao = \mssql_connect($servidor, $usuario, $senha) or die(mssql_get_last_message());
-            mssql_select_db($dbName, $conexao) or die(mssql_get_last_message());
+            //mssql_select_db($dbName, $conexao) or die(mssql_get_last_message());
 
-            if ($conexao->connect_errno > 0) {
+            if ($conexao == false) {
                 $error = $conexao->connect_error;
                 throw new \Exception("Não foi possível conectar: $error");
             }
-            $result = mssql_query($query, $conexao);
+            printf($query);
+            $result = \sqlsrv_query($conexao, $query);
 
-            if (!$result) {
-                $error = $conexao->error;
+            if (!$result || $result == false) {
+                $error = \sqlsrv_errors();
                 throw new \Exception($error);
             }
+            $vetResult = array();
+            $i = 0;
+            while( $row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC) ) {
+                $vetResult[$i]['CODPRO'] = $row['CODPRO'];
+                $vetResult[$i]['GRADE'] = $row['GRADE'];
+                $vetResult[$i]['QTDFAT'] = $row['QTDFAT'];
+                $i++;
+            }
 
-            return $result->fetch_all(MYSQLI_ASSOC);
+            return $vetResult;
         } catch (\PDOException $e) {
             throw new \Exception($e->getMessage());
         } catch (\Exception $e2) {
