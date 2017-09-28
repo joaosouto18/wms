@@ -445,7 +445,7 @@ class ExpedicaoRepository extends EntityRepository {
             $codCriterio = $itemPedido['COD_EXPEDICAO'];
             $idPedido = $itemPedido['COD_PEDIDO'];
 
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido] = array('qtd' => $itemPedido['QTD'], 'atendida' => false);
+            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
         }
 
         $itensReservar = array();
@@ -476,7 +476,7 @@ class ExpedicaoRepository extends EntityRepository {
             $codCriterio = $itemPedido['COD_CARGA'];
             $idPedido = $itemPedido['COD_PEDIDO'];
 
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido] = array('qtd' => $itemPedido['QTD'], 'atendida' => false);
+            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
         }
 
         $itensReservar = array();
@@ -511,7 +511,7 @@ class ExpedicaoRepository extends EntityRepository {
             }
             $idPedido = $itemPedido['COD_PEDIDO'];
 
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido] = array('qtd' => $itemPedido['QTD'], 'atendida' => false);
+            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
         }
 
         $itensReservar = array();
@@ -542,7 +542,7 @@ class ExpedicaoRepository extends EntityRepository {
             $codCriterio = $itemPedido['COD_CLIENTE'];
             $idPedido = $itemPedido['COD_PEDIDO'];
 
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido] = array('qtd' => $itemPedido['QTD'], 'atendida' => false);
+            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
         }
 
         $itensReservar = array();
@@ -572,10 +572,10 @@ class ExpedicaoRepository extends EntityRepository {
             $grade = $itemPedido['DSC_GRADE'];
             $expedicao = $itemPedido['COD_EXPEDICAO'];
             $criterio = $itemPedido['COD_PEDIDO'];
-            $item = array($itemPedido['COD_PEDIDO'] => array('qtd' => $itemPedido['QTD'], 'atendida' => false));
+            $pedido = array($itemPedido['COD_PEDIDO'] => array('qtd' => $itemPedido['QTD']));
 
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-            list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $criterio, $item, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
+            list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $criterio, $pedido, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
         }
         return $itensReservar;
     }
@@ -621,7 +621,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $repositorios
      * @return array
      */
-    private function triagemPorDestino ($idExpedicao, $produtoEn, $caracteristica, $elementos, $pedidos, $quebra, $criterio = 0, $itensReservados, $arrEstoqueReservado, $repositorios)
+    private function triagemPorDestino ($idExpedicao, $produtoEn, $caracteristica, $elementosArr, $pedidos, $quebra, $criterio = 0, $itensReservados, $arrEstoqueReservado, $repositorios)
     {
 
         $codProduto = $produtoEn->getId();
@@ -634,7 +634,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         $qtdBase = 0;
         foreach ($pedidos as $codPedido => $qtdItem) {
-            $qtdBase = Math::adicionar($qtdRestante, $qtdItem['qtd']);
+            $qtdBase = Math::adicionar($qtdBase, $qtdItem['qtd']);
         }
 
         // Só vai forçar a sair do picking quando a saida direta no pulmão não for possível por:
@@ -646,7 +646,7 @@ class ExpedicaoRepository extends EntityRepository {
         $enderecos = array();
         $idEndereco = null;
 
-        foreach($elementos as $elemento) {
+        foreach($elementosArr as $key => $elemento) {
             $qtdRestante = $qtdBase;
             $enderecoPicking = $elemento['pickingEn'];
 
@@ -718,18 +718,17 @@ class ExpedicaoRepository extends EntityRepository {
 
                     foreach ($pedidos as $codPedido => $qtdItenPedido) {
                         if ($qtdReservar > 0) {
-                            if ($qtdItenPedido['atendida'] == $qtdItenPedido['qtd']) {
+                            $qtdAtendida = (isset($elemento[$codPedido])) ? $elemento[$codPedido]['atendida'] : 0;
+                            if ($qtdAtendida == $qtdItenPedido['qtd']) {
                                 continue;
                             } else {
-                                $qtdAtual = Math::subtrair($qtdItenPedido['qtd'], $qtdItenPedido['atendida']);
+                                $qtdPendente = Math::subtrair($qtdItenPedido['qtd'], $qtdAtendida);
                             }
 
-                            if (Math::compare($qtdReservar, $qtdAtual, ">=")) {
-                                $qtdReservada = $qtdAtual;
-                                $qtdAtendida = $qtdItenPedido['qtd'];
+                            if (Math::compare($qtdReservar, $qtdPendente, ">=")) {
+                                $qtdReservada = $qtdPendente;
                             } else {
                                 $qtdReservada = $qtdReservar;
-                                $qtdAtendida = $qtdReservada;
                             }
 
                             $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$idElemento] = array(
@@ -740,12 +739,8 @@ class ExpedicaoRepository extends EntityRepository {
                                 'qtd' => $qtdReservada
                             );
 
-                            if (end($elementos) == $elemento) {
-                                $pedidos[$codPedido]['atendida'] = $qtdAtendida;
-                            } else {
-                                break;
-                            }
-
+                            $elemento[$codPedido]['atendida'] = Math::adicionar($qtdAtendida, $qtdReservada);
+                            $qtdReservar = Math::subtrair($qtdReservar, $qtdReservada);
                         } else {
                             break;
                         }
@@ -759,19 +754,18 @@ class ExpedicaoRepository extends EntityRepository {
 
             if ($forcarSairDoPicking) {
                 foreach ($pedidos as $codPedido => $qtdItenPedido) {
-                    if ($qtdRestante > 0) {
-                        if ($qtdItenPedido['atendida'] == $qtdItenPedido['qtd']) {
+                    if ($qtdBase > 0) {
+                        $qtdAtendida = (isset($elemento[$codPedido])) ? $elemento[$codPedido]['atendida'] : 0;
+                        if ($qtdAtendida == $qtdItenPedido['qtd']) {
                             continue;
                         } else {
-                            $qtdAtual = Math::subtrair($qtdItenPedido['qtd'], $qtdItenPedido['atendida']);
+                            $qtdPendente = Math::subtrair($qtdItenPedido['qtd'], $qtdAtendida);
                         }
 
-                        if (Math::compare($qtdRestante, $qtdAtual, ">=")) {
-                            $qtdReservada = $qtdAtual;
-                            $qtdAtendida = $qtdItenPedido['qtd'];
+                        if (Math::compare($qtdBase, $qtdPendente, ">=")) {
+                            $qtdReservada = $qtdPendente;
                         } else {
-                            $qtdReservada = $qtdRestante;
-                            $qtdAtendida = $qtdReservada;
+                            $qtdReservada = $qtdBase;
                         }
 
                         $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PICKING;
@@ -785,39 +779,35 @@ class ExpedicaoRepository extends EntityRepository {
                             'qtd' => $qtdReservada
                         );
 
-                        if (end($elementos) == $elemento) {
-                            $pedidos[$codPedido]['atendida'] = $qtdAtendida;
-                            $qtdRestante = Math::subtrair($qtdRestante, $qtdReservada);
-                        } else {
-                            break;
-                        }
+                        $elemento[$codPedido]['atendida'] = Math::adicionar($qtdAtendida, $qtdReservada);
+                        $qtdBase = Math::subtrair($qtdBase, $qtdReservada);
                     } else {
                         break;
                     }
                 }
             }
-            if (end($elementos) == $elemento) {
-                foreach ($enderecos as $codTipoSaida => $tipoSaida) {
-                    foreach ($tipoSaida['enderecos'] as $codEndereco => $pedidos) {
-                        foreach ($pedidos as $codPedido => $elementos) {
-                            foreach ($elementos as $itens) {
-                                $itensReservados
-                                    [$idExpedicao]
-                                        [$codProduto]
-                                            [$dscGrade]
-                                                [$quebra]
-                                                    [$criterio]
-                                                        ['tiposSaida']
-                                                            [$codTipoSaida]
-                                                                ['enderecos']
-                                                                    [$codEndereco]
-                                                                        [$codPedido] = $itens;
-                            }
-                        }
+        }
+
+        foreach ($enderecos as $codTipoSaida => $tipoSaida) {
+            foreach ($tipoSaida['enderecos'] as $codEndereco => $pedidos) {
+                foreach ($pedidos as $codPedido => $elementos) {
+                    foreach ($elementos as $itens) {
+                        $itensReservados
+                            [$idExpedicao]
+                                [$codProduto]
+                                    [$dscGrade]
+                                        [$quebra]
+                                            [$criterio]
+                                                ['tiposSaida']
+                                                    [$codTipoSaida]
+                                                        ['enderecos']
+                                                            [$codEndereco]
+                                                                [$codPedido] = $itens;
                     }
                 }
             }
         }
+
         return array($itensReservados, $arrEstoqueReservado);
     }
 

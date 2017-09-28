@@ -785,6 +785,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 throw new \Exception("O modelo de separação $idModeloSeparacao não foi encontrado");
             $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
             $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
+            $quebraPulmaoDoca = $modeloSeparacaoEn->getQuebraPulmaDoca();
+
 
             $cubagemPedidos = 0;
             if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
