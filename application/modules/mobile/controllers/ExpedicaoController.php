@@ -24,7 +24,13 @@ class Mobile_ExpedicaoController extends Action {
         $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarras'));
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebraRepository $mapaSeparacaoQuebraRepo */
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
+        $expdicaoVolumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
         $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras));
+
+        $expVolume = $expdicaoVolumePatrimonioRepo->findBy(array('expedicao' => $mapaSeparacaoQuebraEn->getMapaSeparacao()->getExpedicao()->getId() ));
+        if(!empty($expVolume)){
+            $codBarras = $this->_getParam('codigoBarras');
+        }
         if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
             $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/' . $codBarras);
         }
