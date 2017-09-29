@@ -10,13 +10,14 @@ use Wms\Domain\Entity\Expedicao;
 class EquipeSeparacaoRepository extends EntityRepository
 {
 
-    public function save($etiquetaInicial,$etiquetaFinal,$usuarioEn, $save = true)
+    public function save($etiquetaInicial,$etiquetaFinal,$usuarioEn,$numFunc, $save = true)
     {
         $equipeSeparacao = new Expedicao\EquipeSeparacao();
         $equipeSeparacao->setCodUsuario($usuarioEn->getId());
         $equipeSeparacao->setDataVinculo(new \DateTime());
         $equipeSeparacao->setEtiquetaInicial($etiquetaInicial);
         $equipeSeparacao->setEtiquetaFinal($etiquetaFinal);
+        $equipeSeparacao->setNumFuncionario($numFunc);
         $this->getEntityManager()->persist($equipeSeparacao);
 
         if($save===true)

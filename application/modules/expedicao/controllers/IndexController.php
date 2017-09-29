@@ -355,6 +355,7 @@ class Expedicao_IndexController extends Action {
                         $etiquetas = explode('-', $params['etiquetas']);
                         $etiquetaInicial = trim($etiquetas[0]);
                         $etiquetaFinal = trim($etiquetas[1]);
+                        $numFunc = $params['etiquetas'];
 
                         //ENCONTRA O USUARIO DIGITADO
                         /** @var Expedicao\EquipeSeparacao $usuarioEn */
@@ -381,7 +382,7 @@ class Expedicao_IndexController extends Action {
                                 if ($inicial != 0) {
                                     $iteracao = $intervalo['etiquetaInicial'] - $final;
                                     if ($iteracao > 1) {
-                                        $equipeSeparacaoRepo->save($final + 1, $intervalo['etiquetaInicial'] - 1, $usuarioEn, false);
+                                        $equipeSeparacaoRepo->save($final + 1, $intervalo['etiquetaInicial'] - 1, $usuarioEn, $numFunc,false);
                                     }
                                 } else {
                                     $menorIntervalo = $intervalo['etiquetaInicial'];
@@ -393,10 +394,10 @@ class Expedicao_IndexController extends Action {
                                 }
                             }
                             if ($etiquetaInicial < $menorIntervalo) {
-                                $equipeSeparacaoRepo->save($etiquetaInicial, $menorIntervalo - 1, $usuarioEn, false);
+                                $equipeSeparacaoRepo->save($etiquetaInicial, $menorIntervalo - 1, $usuarioEn,$numFunc, false);
                             }
                             if ($etiquetaFinal > $final) {
-                                $equipeSeparacaoRepo->save($final + 1, $etiquetaFinal, $usuarioEn, false);
+                                $equipeSeparacaoRepo->save($final + 1, $etiquetaFinal, $usuarioEn,$numFunc, false);
                             }
                             $this->getEntityManager()->flush();
                         } else {
