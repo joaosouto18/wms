@@ -28,8 +28,12 @@ class Mobile_ExpedicaoController extends Action {
         $expdicaoVolumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
         $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras));
 
-        $expVolume = $expdicaoVolumePatrimonioRepo->findBy(array('expedicao' => $mapaSeparacaoQuebraEn->getMapaSeparacao()->getExpedicao()->getId() ));
-        if(!empty($expVolume)){
+        $expVolume = null;
+        if (isset($mapaSeparacaoQuebraEn) && !empty($mapaSeparacaoQuebraEn)) {
+            $expVolume = $expdicaoVolumePatrimonioRepo->findBy(array('expedicao' => $mapaSeparacaoQuebraEn->getMapaSeparacao()->getExpedicao()->getId() ));
+        }
+
+        if(!is_null($expVolume)){
             $codBarras = $this->_getParam('codigoBarras');
         }
         if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
