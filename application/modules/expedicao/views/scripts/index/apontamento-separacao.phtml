@@ -3,10 +3,13 @@
     label[for='etiquetas-pessoa'],
     label[for='etiquetas-etiquetaFinal'],
     label[for='txtIntervalo'],
+    label[for='qtdConferentes'],
+    label[for='dataInicial'],
+    label[for='dataFinal'],
     label[for='mapas-codMapaSeparacao'],
     label[for='mapas-pessoa'],
     label[for='etiquetas-etiquetaInicial']{
-        font-size: 16px;
+        font-size: 15px;
         font-weight: bold;
         text-align: center;
     }
@@ -17,19 +20,29 @@
 
     .inptText{
         display: block;
-        padding: 10px;
+        padding: 4px;
         border-radius: 10px;
-        font-size: 25px !important;
+        font-size: 18px !important;
+        /*padding-left: 40px;*/
         font-weight: bold;
+        text-align: center;
+        text-shadow: #9d9d9d;
+    }
+    .inptData{
+        display: block;
+        padding: 4px;
+        font-size: 18px !important;
+        font-weight: bold;
+        width: 122px  !important;
         text-align: center;
         text-shadow: #9d9d9d;
     }
 
     .btnSearch{
-        height: 40px;
-        width: 110px;
-        font-size: 20px !important;
-        margin-top: 19px;
+        height: 35px;
+        width: 105px;
+        font-size: 18px !important;
+        margin-top: 22px;
         margin-right: 10px;
     }
 
@@ -39,6 +52,10 @@
 
 </style>
 <script>
+    $( window ).load(function() {
+        // Run code
+        $('#qtdConferentes').val(<?php echo $this->qtdFunc?>);
+    });
     function gotoFinal(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiquetas-etiquetaInicial').value != "") {
@@ -127,7 +144,7 @@
         }
         return true;
     }
-
+    var qtdBipados = 0;
     $(function () {
         $('#etiquetas-etiquetaInicial').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
@@ -310,6 +327,7 @@
                 return false;
             }
             var erro = false;
+
             $('.gTResultSet td.intervalo').each(function () {
                 var vet = $(this).text().split(' - ');
                 var vetIntervalo = new Array();
@@ -334,6 +352,7 @@
                     }
                 }
             });
+
             var result = {intervalo: intervalo, total: total, cpf: cpf, pessoa: null};
             if (erro == false) {
                 $.ajax({
@@ -351,13 +370,22 @@
                             if (addLinha) {
                                 addRow(result);
                             }
-                            //limpando os campos:
-                            $('#etiquetas-etiquetaInicial').val('');
-                            $('#etiquetas-etiquetaFinal').val('');
-                            $('#txtIntervalo').val('');
                             $('#etiquetas-pessoa').val('');
+                            qtdBipados++;
+                            console.log(qtdBipados)
+                            var qtdFunc = $('#qtdConferentes').val();
+                            console.log(qtdFunc);
+                            if(qtdBipados == qtdFunc){
+                                $('.save').click();
+                                //limpando os campos:
+                                $('#etiquetas-etiquetaInicial').val('');
+                                $('#etiquetas-etiquetaFinal').val('');
+                                $('#txtIntervalo').val('');
+                                $('#etiquetas-etiquetaInicial').focus();
+                            }else{
+                                $('#etiquetas-pessoa').focus();
+                            }
 
-                            $('#etiquetas-etiquetaInicial').focus();
                         } else if (data.result = 'Error') {
                             $.wmsDialogAlert({
                                 title: 'Alerta',

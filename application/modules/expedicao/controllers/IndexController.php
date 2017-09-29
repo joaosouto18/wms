@@ -326,8 +326,21 @@ class Expedicao_IndexController extends Action {
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
         /** @var \Wms\Domain\Entity\Expedicao\EquipeSeparacaoRepository $equipeSeparacaoRepo */
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        $numFunc = $equipeSeparacaoRepo->findBy(array(),array('numFuncionario'=>'DESC'));
+        if(empty($numFunc)){
+            $func = 1;
+        }else{
+            if($numFunc[0]->getNumFuncionario() == 0 || $numFunc[0]->getNumFuncionario() == null){
+                $func = 1;
+            }else{
+                $func = $numFunc[0]->getNumFuncionario();
+            }
+
+        }
+
         $form = new \Wms\Module\Produtividade\Form\EquipeSeparacao();
         $params = $this->_getAllParams();
+        $this->view->qtdFunc = $func;
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);
