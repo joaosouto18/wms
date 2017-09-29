@@ -193,6 +193,13 @@ class Mobile_ExpedicaoController extends Action {
         $codPessoa = $this->_getParam('cliente');
         $idExpedicao = $this->_getParam("idExpedicao");
         $idVolume = $this->_getParam("idVolume");
+        $checkout = $this->_getParam("chekcout");
+        if($checkout == 'chekcout'){
+            $chekcout = true;
+        }else{
+            $chekcout = false;
+        }
+
         if ($codPessoa == "") {
             $codPessoa = null;
         }
@@ -253,7 +260,7 @@ class Mobile_ExpedicaoController extends Action {
                 } else if ($tipoProvavelCodBarras === 'produto') {
                     $codBarras = ColetorUtil::adequaCodigoBarras($codBarras, true);
 
-                    $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa, null, true);
+                    $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa, null, $chekcout);
                     if ($result === true) {
                         $msg['msg'] = 'Quantidade conferida com sucesso';
                         $msg['produto'] = false;
