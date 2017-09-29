@@ -25,13 +25,11 @@ class Mobile_ExpedicaoController extends Action {
         $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarras'));
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebraRepository $mapaSeparacaoQuebraRepo */
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-        $expdicaoVolumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
+        $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
         $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras));
 
         $expVolume = null;
-        if (isset($mapaSeparacaoQuebraEn) && !empty($mapaSeparacaoQuebraEn)) {
-            $expVolume = $expdicaoVolumePatrimonioRepo->findBy(array('expedicao' => $mapaSeparacaoQuebraEn->getMapaSeparacao()->getExpedicao()->getId() ));
-        }
+        $expVolume = $volumePatrimonioRepo->findBy(array('id' => $this->_getParam('codigoBarras') ));
 
         if(!is_null($expVolume)){
             $codBarras = $this->_getParam('codigoBarras');
