@@ -344,7 +344,6 @@ class Expedicao_IndexController extends Action {
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);
-
         try {
             if (isset($params['data']) && !empty($params['data'])) {
                 $data = $params['data'];
@@ -355,7 +354,7 @@ class Expedicao_IndexController extends Action {
                         $etiquetas = explode('-', $params['etiquetas']);
                         $etiquetaInicial = trim($etiquetas[0]);
                         $etiquetaFinal = trim($etiquetas[1]);
-                        $numFunc = $params['etiquetas'];
+                        $numFunc = $params['func'];
 
                         //ENCONTRA O USUARIO DIGITADO
                         /** @var Expedicao\EquipeSeparacao $usuarioEn */
@@ -401,7 +400,7 @@ class Expedicao_IndexController extends Action {
                             }
                             $this->getEntityManager()->flush();
                         } else {
-                            $equipeSeparacaoRepo->save($etiquetaInicial, $etiquetaFinal, $usuarioEn);
+                            $equipeSeparacaoRepo->save($etiquetaInicial, $etiquetaFinal, $usuarioEn,$numFunc);
                         }
                     } elseif ($params['tipo'] == 'Mapa') {
                         $cpf = str_replace(array('.', '-'), '', $params['cpf']);

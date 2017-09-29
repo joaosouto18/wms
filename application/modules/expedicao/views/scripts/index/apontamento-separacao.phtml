@@ -492,7 +492,8 @@
                 var etiquetas = $(this).children(".intervalo").text();
                 var cpf = $(this).children(".identifica").text();
                 var tipo = $(this).children(".tipo").text();
-                data.push({etiquetas: etiquetas, mapa: mapa, cpf: cpf, tipo: tipo});
+                var func = $('#qtdConferentes').val();
+                data.push({etiquetas: etiquetas, mapa: mapa, cpf: cpf, tipo: tipo, func: func});
             });
             if (data.length > 0) {
                 $.post("apontamento-separacao", {data: data}).success(function (data) {
