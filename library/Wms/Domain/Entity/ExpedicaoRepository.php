@@ -598,11 +598,11 @@ class ExpedicaoRepository extends EntityRepository {
         $dscGrade = $produtoEn->getGrade();
         if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
             $embalagemElem = $dadosProdutos[$codProduto][$dscGrade]['embalagem'];
-            list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn,'EMBALAGEM', array($embalagemElem), $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
+            list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn,'EMBALAGEM', array($embalagemElem), 0, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
         } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
             $volumes = $dadosProdutos[$codProduto][$dscGrade]['volumes'];
             foreach ($volumes['normas'] as $codNorma => $itens ) {
-                list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn, "VOLUMES", $itens, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
+                list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn, "VOLUMES", $itens, $codNorma, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
             }
         }
         return array($itensReservados, $arrEstoqueReservado);
@@ -621,7 +621,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $repositorios
      * @return array
      */
-    private function triagemPorDestino ($idExpedicao, $produtoEn, $caracteristica, $elementosArr, $pedidos, $quebra, $criterio = 0, $itensReservados, $arrEstoqueReservado, $repositorios)
+    private function triagemPorDestino ($idExpedicao, $produtoEn, $caracteristica, $elementosArr, $codNorma, $pedidos, $quebra, $criterio = 0, $itensReservados, $arrEstoqueReservado, $repositorios)
     {
 
         $codProduto = $produtoEn->getId();
@@ -754,7 +754,7 @@ class ExpedicaoRepository extends EntityRepository {
 
             if ($forcarSairDoPicking) {
                 foreach ($pedidos as $codPedido => $qtdItenPedido) {
-                    if ($qtdBase > 0) {
+                    if ($qtdRestante > 0) {
                         $qtdAtendida = (isset($elemento[$codPedido])) ? $elemento[$codPedido]['atendida'] : 0;
                         if ($qtdAtendida == $qtdItenPedido['qtd']) {
                             continue;
@@ -762,10 +762,10 @@ class ExpedicaoRepository extends EntityRepository {
                             $qtdPendente = Math::subtrair($qtdItenPedido['qtd'], $qtdAtendida);
                         }
 
-                        if (Math::compare($qtdBase, $qtdPendente, ">=")) {
+                        if (Math::compare($qtdRestante, $qtdPendente, ">=")) {
                             $qtdReservada = $qtdPendente;
                         } else {
-                            $qtdReservada = $qtdBase;
+                            $qtdReservada = $qtdRestante;
                         }
 
                         $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PICKING;
@@ -780,7 +780,7 @@ class ExpedicaoRepository extends EntityRepository {
                         );
 
                         $elemento[$codPedido]['atendida'] = Math::adicionar($qtdAtendida, $qtdReservada);
-                        $qtdBase = Math::subtrair($qtdBase, $qtdReservada);
+                        $qtdRestante = Math::subtrair($qtdRestante, $qtdReservada);
                     } else {
                         break;
                     }
@@ -802,7 +802,8 @@ class ExpedicaoRepository extends EntityRepository {
                                                     [$codTipoSaida]
                                                         ['enderecos']
                                                             [$codEndereco]
-                                                                [$codPedido] = $itens;
+                                                                [$codPedido]
+                                                                    [$codNorma] = $itens;
                     }
                 }
             }

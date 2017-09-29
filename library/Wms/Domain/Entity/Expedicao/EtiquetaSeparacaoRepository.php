@@ -813,7 +813,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     continue;
                 }
 
-                if ($produtoEntity->getVolumes()->count() > 0) {
+                if ($produtoEntity->getTipoComercializacao() == Produto::TIPO_COMPOSTO) {
                     $arrayVolumes = $produtoEntity->getVolumes()->toArray();
 
                     usort($arrayVolumes, function ($a, $b) {

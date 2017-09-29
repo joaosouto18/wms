@@ -41,31 +41,34 @@ class GerarEtiqueta extends eFPDF
 
         /** @var NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
-        if ($tipo == "NF") {
-            $produtosEn = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento);
-        } else if ($tipo == "Produto") {
-            /** @var ProdutoRepository $produtoRepo */
-            $produtoRepo = $em->getRepository('wms:Produto');
-            $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade);
-            $target = Recebimento::TARGET_IMPRESSAO_PRODUTO;
-        }
+        foreach($produtos as $codProduto) {
+            if ($tipo == "NF") {
+                $produtosEn = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento);
+            } else if ($tipo == "Produto") {
+                /** @var ProdutoRepository $produtoRepo */
+                $produtoRepo = $em->getRepository('wms:Produto');
+                $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade);
+                $target = Recebimento::TARGET_IMPRESSAO_PRODUTO;
 
-        //geracao da etiqueta
-        \Zend_Layout::getMvcInstance()->disableLayout(true);
-        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
-        header('Content-type: application/pdf');
-
-        foreach ($produtosEn as $produto) {
-            $produto['dataValidade'] = "";
-            if ($produto['validade'] == "S") {
-                $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto(null, $produto['codigoBarras'], $produto['idProduto'], $produto['grade']);
-                $produto['dataValidade'] = $getDataValidadeUltimoProduto['dataValidade'];
             }
-            if ($target == Recebimento::TARGET_IMPRESSAO_PRODUTO) {
-                self::createEtiqueta($produto, $tipo, $modelo);
-            } else {
-                for ($i = 0; $i < $produto['qtdItem']; $i++) {
+
+            //geracao da etiqueta
+            \Zend_Layout::getMvcInstance()->disableLayout(true);
+            \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+            header('Content-type: application/pdf');
+
+            foreach ($produtosEn as $produto) {
+                $produto['dataValidade'] = "";
+                if ($produto['validade'] == "S") {
+                    $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto(null, $produto['codigoBarras'], $produto['idProduto'], $produto['grade']);
+                    $produto['dataValidade'] = $getDataValidadeUltimoProduto['dataValidade'];
+                }
+                if ($target == Recebimento::TARGET_IMPRESSAO_PRODUTO) {
                     self::createEtiqueta($produto, $tipo, $modelo);
+                } else {
+                    for ($i = 0; $i < $produto['qtdItem']; $i++) {
+                        self::createEtiqueta($produto, $tipo, $modelo);
+                    }
                 }
             }
         }
@@ -248,7 +251,22 @@ class GerarEtiqueta extends eFPDF
         $codigo = $produto['codigoBarras'];
         $this->AddPage();
         $this->Ln(3);
-        $this->Cell(100,0, self::SetStringByMaxWidth(utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 100) ,0,0);
+        if (strlen($produto['dscProduto']) <= 25) {
+            $this->Cell(100,0,utf8_decode($produto['idProduto']) . " - " . utf8_decode($produto['dscProduto']) ,0,0);
+        } else {
+            $this->Cell(22,0,utf8_decode($produto['idProduto']) . " - ",0,0);
+            $part1 = substr($produto['dscProduto'],0,25);
+            $part2 = substr($produto['dscProduto'], 25, strlen($produto['dscProduto']));
+            $this->Cell(80,0, utf8_decode($part1) ,0,0);
+            if (!empty($part2)) {
+                $this->Ln(6);
+                $this->Cell(100, 0, utf8_decode($part2), 0, 0);
+            }
+        }
+
+
+
+
         //$this->Cell(100, 0, utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 0, 0);
         $this->Ln(6);
         $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);

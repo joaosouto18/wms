@@ -470,7 +470,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
             $params = array(
                 'idProduto' => $codProduto,
                 'grade' => $grade,
-                'idVolume' => $volumes,
+                'idVolume' => $idVolume,
                 'idEnderecoIgnorar' => $idPicking
             );
             $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
@@ -546,14 +546,12 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
             } else {
                 $normas = $dadosProdutos[$codProduto][$grade]['volumes']['normas'];
-                foreach ($normas as $norma) {
-                    $volumesEn = $norma['volumeEn'];
+                foreach ($normas as $norma => $volumesArr) {
                     $picking = array();
                     $picking['codProduto'] = $codProduto;
                     $picking['grade'] = $grade;
                     $picking['embalagens'] = null;
-                    $idPicking = null;
-                    foreach ($volumesEn as $item) {
+                    foreach ($volumesArr as $item) {
                         /** @var Produto\Volume $volumeEn */
                         $volumeEn = $item['volumeEn'];
                         /** @var Endereco $pickingEn */

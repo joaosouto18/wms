@@ -260,7 +260,7 @@ class EstoqueRepository extends EntityRepository
                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
                   WHERE ((ESTQ.QTD + NVL(RS.QTD_RESERVA,0)) >0)";
 
-        $SqlOrder = " ORDER BY TO_DATE(DT_MOVIMENTACAO), PRIORIDADE_PICKING, ESTQ.QTD";
+        $SqlOrder = "ORDER BY TO_DATE(DTH_VALIDADE), PRIORIDADE_PICKING, TO_DATE(DT_MOVIMENTACAO), ESTQ.QTD";
         $SqlWhere = "";
 
         if ((isset($params['idProduto'])) && ($params['idProduto'] != null)) {
