@@ -246,10 +246,10 @@ class Web_ProdutoController extends Crud {
                     $params['produto']['toleranciaNominal'] = null;
                 }
 
-                $entity->setPossuiPesoVariavel($params['produto']['pVariavel']);
                 $entity->setPercTolerancia($params['produto']['percTolerancia']);
                 $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
                 $paramsSave = $this->getRequest()->getParams();
+                $paramsSave['produto']['possuiPesoVariavel'] = $paramsSave['produto']['pVariavel'];
                 if (isset($paramsSave['embalagens'])) {
                     $fator = $paramsSave['embalagem-fator'];
                     $alturaReal = floatval(str_replace(',', '.', $paramsSave['embalagem']['altura'])) / floatval($fator);

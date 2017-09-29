@@ -690,9 +690,19 @@ class Expedicao_IndexController extends Action {
                     $clientes = 'finalizar';
                 }
             }
+            $cargaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
             $this->view->clientes = $clientes;
             $mapaSeparacaoEn = $mapaSeparacaoRepo->find($idMapaSeparacao);
             $idExpedicao = $mapaSeparacaoEn->getExpedicao()->getId();
+            $cargas = $cargaRepo->findBy(array('expedicao' => $idExpedicao));
+            $strCargas = ' ';
+            foreach ($cargas as $cargasEnt){
+                if($strCargas != ' '){
+                    $strCargas .= ' - ';
+                }
+                $strCargas .= $cargasEnt->getCodCargaExterno();
+            }
+            $this->view->cargas = $strCargas;
             $this->view->idExpedicao = $idExpedicao;
             $this->view->codMapa = $idMapaSeparacao;
         }

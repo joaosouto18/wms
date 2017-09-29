@@ -58,8 +58,6 @@ class notaFiscal {
     public $bonificacao;
     /** @var string */
     public $peso;
-    /** @var bool */
-    public $enderecado;
     /** @var itensNf[] */
     public $itens = array();
 }
@@ -214,13 +212,17 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $clsNf->bonificacao = $notaFiscalEntity->getBonificacao();
         $clsNf->status = $notaFiscalEntity->getStatus()->getSigla();
 
-        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
-        $recebimentoRepo = $em->getRepository("wms:Recebimento");
-        $result = $recebimentoRepo->checkRecebimentoEnderecado($idRecebimento);
-        if (!empty($result)) {
-            $clsNf->enderecado = false;
-        } else {
-            $clsNf->enderecado = true;
+        if ($notaFiscalEntity->getStatus()->getId() == \Wms\Domain\Entity\NotaFiscal::STATUS_RECEBIDA) {
+            /** @var \Wms\Domain\Entity\Sistema\Parametro $retornaEnderecado */
+            $retornaEnderecado = $em->getRepository("wms:Sistema\Parametro")->findOneBy(array('constante' => "STATUS_RECEBIMENTO_ENDERECADO"));
+            if (!empty($retornaEnderecado) && $retornaEnderecado->getValor() == "S") {
+                /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+                $recebimentoRepo = $em->getRepository("wms:Recebimento");
+                $result = $recebimentoRepo->checkRecebimentoEnderecado($idRecebimento);
+                if (empty($result)) {
+                    $clsNf->status = "ENDERECADO";
+                }
+            }
         }
 
         return $clsNf;

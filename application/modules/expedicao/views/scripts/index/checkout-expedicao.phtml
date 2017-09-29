@@ -10,6 +10,8 @@ $recarregar = $this->recarregar;
 $idPessoa = $this->pessoa;
 ?>
 <div id="produtos-mapa"></div>
+<span id="dummy"></span>
+<bgsound id="bgSoundId" loop="0" volume="100" />
 <script>
 <?php
 if ($recarregar == 1) {
@@ -30,7 +32,10 @@ if ($recarregar == 1) {
     <?php
 }
 ?>
-
+function playSound(soundfile) {
+    document.getElementById("dummy").innerHTML=
+        "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+}
     $(".buscar-mapa").click(function () {
         $.ajax({
             url: URL_MODULO + '/index/confirmar-cliente-ajax',
@@ -69,6 +74,11 @@ if ($recarregar == 1) {
 
                                                 if (data.retorno.resposta == 'error') {
                                                     error = data.retorno.message;
+                                                    try {
+                                                        playSound("/alarme.mp3");
+                                                    } catch (e) {
+                                                        alert(e);
+                                                    }
                                                     success = "";
                                                 } else {
                                                     if (data.retorno.message == 'checkout') {

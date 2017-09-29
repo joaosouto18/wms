@@ -84,11 +84,6 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             var grupoDadosLogisticos = $('#fieldset-grupo-volumes').find('div.grupoDadosLogisticos');
             var este = this;
 
-            if (fieldVolume.find(".invalid").length > 0) {
-                este.dialogAlert("Os campos em vermelho são obrigatórios");
-                return false
-            }
-
             //caso a quantidade de grupos de normatizacao seja igual a zero
             if( grupoDadosLogisticos.size() === 0 ) {
                 this.dialogAlert('Crie ao menos uma norma de paletização para cadastrar o dado logistico');
@@ -103,6 +98,11 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                 }
             } else {
                 $('#volume-codigoBarras').focus();
+            }
+
+            if (fieldVolume.find(".invalid").length > 0) {
+                este.dialogAlert("Os campos em vermelho são obrigatórios");
+                return false
             }
 
             //cancela evento
@@ -641,11 +641,12 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
          *
          */
         checarCBInterno: function() {
-            var readOnly = false;
+            var inputCB = $('#volume-codigoBarras');
             if ($('#volume-CBInterno').val() === 'S'){
-                readOnly = true;
+                inputCB.attr('readonly', true).removeClass('.invalid').removeClass('.required');
+            } else {
+                inputCB.attr('readonly', false).addClass('.invalid').addClass('.required')
             }
-            $('#volume-codigoBarras').attr('readonly', readOnly);
         },
 
         /**
@@ -665,13 +666,20 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         verificarCodigoBarras:function(valores) {
             var codBarrasBase = $('#produto-codigoBarrasBase');
             var codigoBarras = valores.codigoBarras;
+            var codigoBarrasAntigo = valores.codigoBarrasAntigo;
             var codigosBarras = $('.codigoBarras');
             var cbInterno = valores.imprimirCB;
             var este = this;
 
+            este.checarCBInterno();
+
             if((codBarrasBase.val() !== '') && (cbInterno === 'S')) {
                 this.dialogAlert('Este Produto contém Código de Barras Base. Não é permitido ter volumes com Código de Barras Automático.');
                 return false;
+            }
+
+            if ((codigoBarras === "" && cbInterno === "S") || codigoBarras === codigoBarrasAntigo) {
+                return true;
             }
 
             codigosBarras.each(function(){
