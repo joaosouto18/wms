@@ -52,6 +52,8 @@ class VolumePatrimonioRepository extends EntityRepository
         }
         $stringResult = "Exp: " . $result[0]['expedicao'] . " - " . $result[0]['dataInicio']->format('d/m/y') . " - " . $cargas;
 
+        var_dump($source->getQuery()->getSQL());
+
         if ($returnType == "str") {
             return $stringResult;
         } else {
