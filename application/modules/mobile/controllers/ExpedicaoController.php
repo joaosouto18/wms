@@ -21,6 +21,7 @@ class Mobile_ExpedicaoController extends Action {
     }
 
     public function definirOperacaoAction() {
+        
         $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarras'));
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebraRepository $mapaSeparacaoQuebraRepo */
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
