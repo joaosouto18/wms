@@ -353,9 +353,9 @@ class Mobile_ExpedicaoController extends Action {
         try {
             $this->getEntityManager()->beginTransaction();
             $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
-            $mapaSeparacaoConferencias = $mapaSeparacaoConferenciaRepo->findBy(array('mapaSeparacaoEmbalado' => $mapaSeparacaoEmbaladoEn));
 
             if (!empty($mapaSeparacaoEmbaladoEn)) {
+                $mapaSeparacaoConferencias = $mapaSeparacaoConferenciaRepo->findBy(array('mapaSeparacaoEmbalado' => $mapaSeparacaoEmbaladoEn));
                 if (empty($mapaSeparacaoConferencias)) {
                     $this->addFlashMessage('error', 'Não é possível imprimir etiqueta sem produtos conferidos!');
                     if ($checkout == 1) {

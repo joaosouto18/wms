@@ -144,7 +144,7 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
      */
     public function setIsAtivo($isAtivo)
     {
-        $this->isAtivo = ($isAtivo) ? 'S' : 'N';
+        $this->isAtivo = $isAtivo;
         return $this;
     }
     
