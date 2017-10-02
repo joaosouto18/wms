@@ -63,11 +63,42 @@ class EtiquetaSeparacao extends SubForm
                 'class' => 'btn btnSearch',
                 'decorators' => array('ViewHelper'),
             ))
+            ->addElement('cpf', 'cpfBusca', array(
+                'size' => 15,
+                'label' => 'CPF Funcionário',
+                'style' => 'width:190px;',
+                'id' => 'cpfBusca',
+                'class' => 'inptText',
+            ))
             ->addDisplayGroup(array('qtdConferentes','etiquetaInicial','etiquetaFinal','showIntervalo','pessoa'), 'identificacao', array('legend' => 'Vincular Etiqueta Separação'))
-            ->addDisplayGroup(array('dataInicial','dataFinal','buscar'), 'consulta', array('legend' => 'Consulta'));
+            ->addDisplayGroup(array('dataInicial','dataFinal','cpfBusca','buscar'), 'consulta', array('legend' => 'Consulta'));
 
         $this->getElement('etiquetaInicial')->setAttrib('onkeydown','gotoFinal(event)');
         $this->getElement('etiquetaFinal')->setAttrib('onkeydown','gotoPessoa(event)');
         $this->getElement('pessoa')->setAttrib('onkeydown','gotoBuscar(event)');
+    }
+
+    public function getApontamentos($cpf, $dataInicio, $dataFim){
+        $where = '';
+        $sql = "SELECT
+                    P.NOM_PESSOA,
+                    PF.NUM_CPF,
+                    (EP.ETIQUETA_INICIAL || ' - ' || EP.ETIQUETA_FINAL) AS INTERVALO,
+                    ((EP.ETIQUETA_FINAL - EP.ETIQUETA_INICIAL) + 1) AS TOTAL
+                FROM
+                  EQUIPE_SEPARACAO EP 
+                  INNER JOIN PESSOA P ON (EP.COD_USUARIO = P.COD_PESSOA)
+                  INNER JOIN PESSOA_FISICA PF ON (EP.COD_USUARIO = PF.COD_PESSOA);
+                WHERE 1 = 1
+                $where
+                    ";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($result as $key => $line){
+
+        }
+
+
+        return $result;
     }
 }

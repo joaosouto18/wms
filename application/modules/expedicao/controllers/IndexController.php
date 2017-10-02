@@ -482,6 +482,17 @@ class Expedicao_IndexController extends Action {
         $this->_helper->json($response);
     }
 
+    public function buscaApontamentoSeparacaoAjaxAction(){
+        $params = $this->_getAllParams();
+        $cpf = str_replace(array('.', '-'), '', $params['etiquetas']['cpfBusca']);
+        $dataInicio = $params['etiquetas']['dataInicial'];
+        $dataFim = $params['etiquetas']['dataFinal'];
+        $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        $data = $equipeSeparacaoRepo->getApontamentos($cpf, $dataInicio, $dataFim);
+        $this->_helper->json(array('result' => 'Error', 'msg' => "Nenhum conferente encontrado com este CPF"));
+
+    }
+
     public function equipeCarregamentoAction() {
         $form = new \Wms\Module\Expedicao\Form\EquipeCarregamento();
         $this->view->form = $form;

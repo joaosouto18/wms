@@ -5,6 +5,7 @@
     label[for='txtIntervalo'],
     label[for='qtdConferentes'],
     label[for='dataInicial'],
+    label[for='cpfBusca'],
     label[for='dataFinal'],
     label[for='mapas-codMapaSeparacao'],
     label[for='mapas-pessoa'],
@@ -94,16 +95,17 @@
     function gotoBuscar(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiquetas-pessoa').value != "") {
-                buscar = document.getElementById('etiquetas-buscar');
-                if (buscar) {
-                    buscar.focus();
-
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
-                    }
-                }
+//                addLista();
+//                buscar = document.getElementById('etiquetas-buscar');
+//                if (buscar) {
+//                    buscar.focus();
+//
+//                    if (event.preventDefault) {
+//                        event.preventDefault();
+//                    } else {
+//                        event.returnValue = false;
+//                    }
+//                }
             }
         }
         return true;
@@ -185,16 +187,17 @@
         $('#etiquetas-pessoa').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
                 if ($(this).val() != "") {
-                    var inptConferente = $("#etiquetas-buscar");
-                    if (inptConferente) {
-                        inptConferente.focus();
-                        event.stopPropagation();
-//                        if (event.preventDefault) {
-//                            event.preventDefault();
-//                        } else {
-//                            event.returnValue = false;
-//                        }
-                    }
+//                    addLista();
+//                    var inptConferente = $("#etiquetas-buscar");
+//                    if (inptConferente) {
+//                        inptConferente.focus();
+//                        event.stopPropagation();
+////                        if (event.preventDefault) {
+////                            event.preventDefault();
+////                        } else {
+////                            event.returnValue = false;
+////                        }
+//                    }
                     return true;
                 }
             }
@@ -272,8 +275,7 @@
             });
         });
 
-        $("#etiquetas-buscar").click(function () {
-
+        addLista = function () {
             var total = parseInt($('#txtIntervalo').val());
             var eI = $('#etiquetas-etiquetaInicial').val();
             var eF = $('#etiquetas-etiquetaFinal').val();
@@ -372,9 +374,8 @@
                             }
                             $('#etiquetas-pessoa').val('');
                             qtdBipados++;
-                            console.log(qtdBipados)
+                            console.log(qtdBipados);
                             var qtdFunc = $('#qtdConferentes').val();
-                            console.log(qtdFunc);
                             if(qtdBipados == qtdFunc){
                                 $('.save').click();
                                 //limpando os campos:
@@ -401,10 +402,22 @@
                     msg: 'Etiqueta ' + erro + ' já foi bipada para esse conferente',
                 });
             }
+        },
+
+        $("#etiquetas-buscar").click(function () {
+            $.ajax({
+                url: 'busca-apontamento-separacao-ajax/',
+                type: 'post',
+                dataType: 'html',
+                data: $('#fieldset-consulta').serialize(),
+                success: function (data) {
+                    console.log(data);
+                }
+            });
         });
 
         function addRow(data) {
-
+            console.log(data);
             var intervalo = null;
             var total = null;
             var mapa = null;
@@ -428,7 +441,6 @@
             var tbody = $('#tbResult');
             var tr = $('<tr>').addClass('gTResultSet');
 
-            tr.append($('<td>'));
             tr.append($('<td>').text(pessoa));
             tr.append($('<td class="identifica">').text(cpf));
             tr.append($('<td class="mapa">').text(mapa));
@@ -522,7 +534,8 @@
 
         $('#etiquetas-pessoa').keydown(function (e) {
             if (e.which == 13) {
-                $('#etiquetas-buscar').click();
+                addLista();
+//                $('#etiquetas-buscar').click();
             }
         });
 
@@ -562,7 +575,6 @@ echo $this->form;
     <table class="gTable ">
         <caption>Conferentes</caption>
         <tr class ="gTTitle">
-            <td></td>
             <td width="30%">Nome</td>
             <td width="13%">CPF</td>
             <td width="14%">Mapa</td>
