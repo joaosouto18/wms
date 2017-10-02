@@ -42,7 +42,7 @@ class AndamentoRepository extends EntityRepository {
 
         if ($value != null) {
             if (is_numeric($value)) {
-                if (str_replace(",",".",$newValue) != $value) $alterou = true;
+                if (str_replace(",", ".", $newValue) != $value) $alterou = true;
             } else {
                 if ($value != $newValue) $alterou = true;
             }
@@ -52,7 +52,7 @@ class AndamentoRepository extends EntityRepository {
             if (is_object($value)) {
                 $objClass = get_class($value);
                 $subValue = "indefinido";
-                if (method_exists($value, "getId")){
+                if (method_exists($value, "getId")) {
                     $subValue = $value->getId();
                 }
                 $value = "class $objClass id $subValue";
@@ -61,7 +61,7 @@ class AndamentoRepository extends EntityRepository {
             if (is_object($newValue)) {
                 $objClassNewValue = get_class($newValue);
                 $subNewValue = "indefinido";
-                if (method_exists($newValue, "getId")){
+                if (method_exists($newValue, "getId")) {
                     $subNewValue = $newValue->getId();
                 }
                 $newValue = "class $objClassNewValue id $subNewValue";

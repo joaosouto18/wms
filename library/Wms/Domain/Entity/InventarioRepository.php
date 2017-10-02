@@ -441,6 +441,7 @@ class InventarioRepository extends EntityRepository {
     }
 
     public function cancelar($inventarioEntity) {
+        $inventarioEntity->setCodInventarioERP(null);
         $this->alteraStatus($inventarioEntity, Inventario::STATUS_CANCELADO);
     }
 

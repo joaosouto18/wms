@@ -595,6 +595,10 @@ class Web_EnderecoController extends Crud
 
     public function corrigirEnderecoAjaxAction()
     {
+
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 3000);
+
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $endRepo */
         $endRepo = $this->_em->getRepository('wms:Deposito\Endereco');
         $enderecos = $endRepo->findAll();
