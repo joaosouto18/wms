@@ -182,7 +182,7 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (181, '6.0.0', 'Mudança na tela de cadastro logistico, campos comuns para embalgens', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (182, '6.0.0', 'Mudança de dados logisticos para junto da embalagem', '5-cadastro-peso-embalagem.sql',SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (183, '6.0.0', 'Retornar status do recebimento quando endereçado', '8-parametro-status-recebimento-enderecado.sql',SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (XXX, '6.2.4', 'Correção: Lentidão ao voltar de impressão de etiqueta para tela de checkout', null,SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (XXX, '6.2.4', 'Correção: Mensagem de item conferido a mais na conferência de mapas de separação', null,SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (XXX, '6.2.4', 'Correção: Inativação de usuários', '8-parametro-status-recebimento-enderecado.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (XXX, '6.2.5', 'Correção: Lentidão ao voltar de impressão de etiqueta para tela de checkout', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (XXX, '6.2.5', 'Correção: Mensagem de item conferido a mais na conferência de mapas de separação', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (XXX, '6.2.5', 'Correção: Inativação de usuários', '8-parametro-status-recebimento-enderecado.sql',SYSDATE);
 
