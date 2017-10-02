@@ -44,7 +44,7 @@ class UsuarioRepository extends AtorRepository {
         extract($values['acesso']);
 
         $em = $this->getEntityManager();
-        
+
         $this->persistirAtor($usuario, $values);
 
         if ($usuario->getId() == null || $usuario->getLogin() != $login)
