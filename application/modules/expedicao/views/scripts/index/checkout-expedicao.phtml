@@ -71,7 +71,7 @@ function playSound(soundfile) {
                                                 $("#codigoBarras").val("").focus();
                                                 var error = "";
                                                 var success = "Quantidade conferida com sucesso";
-
+                                                console.log(data.retorno.resposta);
                                                 if (data.retorno.resposta == 'error') {
                                                     error = data.retorno.message;
                                                     try {
@@ -81,6 +81,7 @@ function playSound(soundfile) {
                                                     }
                                                     success = "";
                                                 } else {
+                                                    playSound("/confirm2.mp3");
                                                     if (data.retorno.message == 'checkout') {
                                                         $('#conferir').find('p[produto="' + data.retorno.produto + '"]').hide();
                                                         $('#conferidos').find('p[produto="' + data.retorno.produto + '"]').show();
