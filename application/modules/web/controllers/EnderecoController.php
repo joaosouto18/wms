@@ -499,8 +499,7 @@ class Web_EnderecoController extends Crud
 
         if (empty($depositoEnderecoEn)) {
             $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco não encontrado!");
-        }
-        elseif ($this->getSystemParameterValue('PERMITE_NPRODUTO_PICKING') == 'N') {
+        } elseif ($this->getSystemParameterValue('PERMITE_NPRODUTO_PICKING') == 'N') {
             if ($depositoEnderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING) {
                 $produto = $depositoEnderecoRepo->getProdutoByEndereco($enderecoFormatado, true, true);
 
