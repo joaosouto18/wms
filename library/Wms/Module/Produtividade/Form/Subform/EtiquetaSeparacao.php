@@ -77,38 +77,4 @@ class EtiquetaSeparacao extends SubForm
         $this->getElement('etiquetaFinal')->setAttrib('onkeydown','gotoPessoa(event)');
         $this->getElement('pessoa')->setAttrib('onkeydown','gotoBuscar(event)');
     }
-
-    public function getApontamentos($cpf, $dataInicio, $dataFim){
-        $where = '';
-        if (isset($dataInicio) && (!empty($dataInicio))) {
-            $where .= " AND OND.DTH_VINCULO >= TO_DATE('$dataInicio 00:00','DD-MM-YYYY HH24:MI')";
-        }
-        if (isset($dataFim) && (!empty($dataFim))) {
-            $where .= " AND OND.DTH_VINCULO <= TO_DATE('$dataFim 23:59','DD-MM-YYYY HH24:MI')";
-        }
-        if (isset($cpf) && (!empty($cpf))) {
-            $where .= " AND PF.NUM_CPF < $cpf";
-        }
-        $sql = "SELECT
-                    P.NOM_PESSOA,
-                    (EP.ETIQUETA_INICIAL || ' - ' || EP.ETIQUETA_FINAL) AS INTERVALO,
-                    ((EP.ETIQUETA_FINAL - EP.ETIQUETA_INICIAL) + 1) AS TOTAL,
-                    DECODE(PF.NUM_CPF, NULL,NULL,
-                    TRANSLATE(TO_CHAR(PF.NUM_CPF/100,'000,000,000.00'),',.','.-')) CPF
-                FROM
-                  EQUIPE_SEPARACAO EP 
-                  INNER JOIN PESSOA P ON (EP.COD_USUARIO = P.COD_PESSOA)
-                  INNER JOIN PESSOA_FISICA PF ON (EP.COD_USUARIO = PF.COD_PESSOA)
-                WHERE 1 = 1
-                $where
-                    ";
-
-        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-        foreach ($result as $key => $line){
-
-        }
-
-
-        return $result;
-    }
 }

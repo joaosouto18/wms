@@ -405,19 +405,27 @@
         },
 
         $("#etiquetas-buscar").click(function () {
+           $('#tbResult tr').remove();
             $.ajax({
                 url: 'busca-apontamento-separacao-ajax/',
                 type: 'post',
-                dataType: 'html',
+                dataType: 'json',
                 data: $('#fieldset-consulta').serialize(),
                 success: function (data) {
-                    console.log(data);
+                    data.dados.forEach(function (dados, chave) {
+                        var object = new Object();
+                        object.intervalo = dados['INTERVALO'];
+                        object.pessoa = dados['NOM_PESSOA'];
+                        object.total = dados['TOTAL'];
+                        object.cpf = dados['CPF'];
+                        object.codEquipe = dados['COD_EQUIPE_SEPARACAO'];
+                        addRow(object);
+                    });
                 }
             });
         });
 
         function addRow(data) {
-            console.log(data);
             var intervalo = null;
             var total = null;
             var mapa = null;
@@ -449,7 +457,7 @@
             tr.append($('<td class="tipo">').text(tipo));
             tr.append(
                     $('<td>').css('text-align', 'center').append(
-                    $('<a>').addClass('removeRow').prop('href', 'javascript://').append(
+                    $('<a>').attr('id', data.codEquipe).addClass('removeRow').prop('href', 'javascript://').append(
                     $('<img>').prop('src', basePath + "/img/icons/delete.png")
                     )
                     )
@@ -561,8 +569,25 @@
 
         $(".removeRow").live('click', function () {
             if (confirm('Deseja realmente remover esse apontamento?')) {
-                $(this).parent().parent().remove();
-                $("#tbResult").trigger('tbChange');
+                var id = 0;
+                console.log($(this).attr('id'));
+                if($(this).attr('id') > 0){
+                    id = $(this).attr('id');
+                }
+                var btn = $(this);
+                    $.ajax({
+                        url: 'apaga-apontamento-separacao/',
+                        type: 'post',
+                        dataType: 'json',
+                        data: {id:id},
+                        success: function (data) {
+                            btn.parent().parent().remove();
+                            $("#tbResult").trigger('tbChange');
+                        },
+                        error: function(erro){
+                            alert('Você não está autorizado a executar essa ação.');
+                        }
+                    });
             }
         });
     });

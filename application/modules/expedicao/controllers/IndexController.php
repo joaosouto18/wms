@@ -488,9 +488,19 @@ class Expedicao_IndexController extends Action {
         $dataInicio = $params['etiquetas']['dataInicial'];
         $dataFim = $params['etiquetas']['dataFinal'];
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
-        $data = $equipeSeparacaoRepo->getApontamentos($cpf, $dataInicio, $dataFim);
-        $this->_helper->json(array('result' => 'Error', 'msg' => "Nenhum conferente encontrado com este CPF"));
+        $result = $equipeSeparacaoRepo->getApontamentosProdutividade($cpf, $dataInicio, $dataFim);
+        $this->_helper->json(array('dados' => $result));
+    }
 
+    public function apagaApontamentoSeparacaoAction()
+    {
+        $params = $this->_getAllParams();
+        $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        if ($params['id'] > 0) {
+            $this->_em->remove($equipeSeparacaoRepo->find($params['id']));
+            $this->_em->flush();
+        }
+            $this->_helper->json(array());
     }
 
     public function equipeCarregamentoAction() {
