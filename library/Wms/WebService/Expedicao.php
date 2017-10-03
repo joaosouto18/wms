@@ -766,7 +766,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             if (isset($produto['qtde'])) {
                 $produto['quantidade'] = $produto['qtde'];
             }
-            $qtdCorrigida = str_replace(',','.',$produto['qtde']);
+            $qtdCorrigida = str_replace(',','.',$produto['quantidade']);
 
             if(isset($prod[$idProduto.'--'.$produto['grade']])){
                 $prod[$idProduto.'--'.$produto['grade']]['quantidade'] = \Wms\Math::adicionar($prod[$idProduto.'--'.$produto['grade']]['quantidade'], $qtdCorrigida);
