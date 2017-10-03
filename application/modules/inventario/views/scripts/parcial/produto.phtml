@@ -13,6 +13,7 @@
     var idAtual = $("#id").val();
     $(".incluir").click(function () {
         var id = $("#id").val();
+        $('#limpar-lista').val(0);
         if($("#incluirinput").val() == '' && idAtual != id){
             $("#incluirinput").val(idAtual);
         }
@@ -24,7 +25,13 @@
         }
         return true;
     });
+    $("#limpar").click(function () {
+        $('#produto-regra-form').append('<input type="hidden" name="limpar-lista" id="limpar-lista" value="1" />');
+        $("#incluirinput").val(0);
+        return true;
+    });
     $("#submit").click(function () {
+        $('#limpar-lista').val(0);
         $("#incluirinput").val('');
         return true;
     });
