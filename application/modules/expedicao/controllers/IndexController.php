@@ -500,7 +500,7 @@ class Expedicao_IndexController extends Action {
             $this->_em->remove($equipeSeparacaoRepo->find($params['id']));
             $this->_em->flush();
         }
-            $this->_helper->json(array());
+        $this->_helper->json(array());
     }
 
     public function equipeCarregamentoAction() {
