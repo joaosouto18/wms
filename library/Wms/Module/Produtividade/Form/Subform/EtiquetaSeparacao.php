@@ -17,7 +17,7 @@ class EtiquetaSeparacao extends SubForm
         $this->setAttribs(array(
             'method' => 'get',
         ))
-            ->addElement('cpf', 'pessoa', array(
+            ->addElement('text', 'pessoa', array(
                 'size' => 15,
                 'label' => 'CPF Funcionário',
                 'style' => 'width:190px;',
@@ -76,5 +76,6 @@ class EtiquetaSeparacao extends SubForm
         $this->getElement('etiquetaInicial')->setAttrib('onkeydown','gotoFinal(event)');
         $this->getElement('etiquetaFinal')->setAttrib('onkeydown','gotoPessoa(event)');
         $this->getElement('pessoa')->setAttrib('onkeydown','gotoBuscar(event)');
+        $this->getElement('pessoa')->setAttrib('onkeypress','mascaraMutuario(this,cpfCnpj)');
     }
 }

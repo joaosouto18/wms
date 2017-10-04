@@ -468,15 +468,75 @@ class Expedicao_IndexController extends Action {
     public function conferenteApontamentoSeparacaoAjaxAction() {
         $params = $this->_getAllParams();
         $cpf = str_replace(array('.', '-'), '', $params['cpf']);
-
+        $erro = '';
         /** @var \Wms\Domain\Entity\UsuarioRepository $usuarioRepo */
         $usuarioRepo = $this->getEntityManager()->getRepository('wms:Usuario');
+        $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
+        $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
         $result = $usuarioRepo->getPessoaByCpf($cpf);
 
-        if (!empty($result)) {
-            $response = array('result' => 'Ok', 'pessoa' => $result[0]['NOM_PESSOA']);
-        } else {
-            $response = array('result' => 'Error', 'msg' => "Nenhum conferente encontrado com este CPF");
+        //FORMATA OS DADOS RECEBIDOS
+        $etiquetaInicial = trim($params['etiquetaInicial']);
+        $etiquetaFinal = trim($params['etiquetaFinal']);
+        //ENCONTRA O USUARIO DIGITADO
+        /** @var Expedicao\EquipeSeparacao $usuarioEn */
+        $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+        //VERIFICA O USUARIO
+        if (is_null($usuarioEn)) {
+            $erro = 'Nenhum conferente encontrado com este CPF';
+        }else{
+           $usuario = $usuarioRepo->getPessoaByCpf($cpf);
+        }
+        //VERIFICA AS ETIQUETAS
+        if (is_null($etiquetaFinal))
+            $etiquetaFinal = $etiquetaInicial;
+
+        if (is_null($etiquetaInicial))
+            $etiquetaInicial = $etiquetaFinal;
+
+
+        //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
+        $inicial = 0;
+        $final = 0;
+        $menorIntervalo = 0;
+        $salvar = false;
+        if(empty($erro)) {
+            $equipeSeparacaoEn = $equipeSeparacaoRepo->getIntervaloEtiquetaUsuario($usuarioEn);
+            if (is_array($equipeSeparacaoEn) && count($equipeSeparacaoEn) > 0) {
+                foreach ($equipeSeparacaoEn as $intervalo) {
+
+                    if ($inicial != 0) {
+                        $iteracao = $intervalo['etiquetaInicial'] - $final;
+                        if ($iteracao > 1) {
+                            $salvar = true;
+                        }
+                    } else {
+                        $menorIntervalo = $intervalo['etiquetaInicial'];
+                    }
+                    $inicial = $intervalo['etiquetaInicial'];
+                    $final = $intervalo['etiquetaFinal'];
+                    if ($intervalo['etiquetaFinal'] < $etiquetaInicial) {
+                        $final = $etiquetaInicial - 1;
+                    }
+                }
+                if ($etiquetaInicial < $menorIntervalo) {
+                    $salvar = true;
+                }
+                if ($etiquetaFinal > $final) {
+                    $salvar = true;
+                }
+            } else {
+                $salvar = true;
+            }
+        }
+
+
+        if (empty($erro) && $salvar == true) {
+            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA']);
+        } elseif($salvar == false && empty($erro)) {
+            $response = array('result' => 'Error', 'msg' => "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA']);
+        }else{
+            $response = array('result' => 'Error', 'msg' => $erro);
         }
 
         $this->_helper->json($response);

@@ -44,13 +44,16 @@ class EquipeSeparacaoRepository extends EntityRepository
     public function getApontamentosProdutividade($cpf, $dataInicio, $dataFim){
         $where = '';
         if (isset($dataInicio) && (!empty($dataInicio))) {
-            $where .= " AND EP.DTH_VINCULO >= TO_DATE('$dataInicio','DD-MM-YYYY')";
+            $where .= " AND EP.DTH_VINCULO >= TO_DATE('$dataInicio 00:00','DD-MM-YYYY HH24:MI')";
         }
         if (isset($dataFim) && (!empty($dataFim))) {
-            $where .= " AND EP.DTH_VINCULO <= TO_DATE('$dataFim','DD-MM-YYYY')";
+            $where .= " AND EP.DTH_VINCULO <= TO_DATE('$dataFim 23:59','DD-MM-YYYY HH24:MI')";
         }
         if (isset($cpf) && (!empty($cpf))) {
             $where .= " AND PF.NUM_CPF = $cpf";
+        }
+        if($where == ''){
+            $where = ' AND 1 = 2';
         }
         $sql = "SELECT
                     P.NOM_PESSOA,

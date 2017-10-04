@@ -96,19 +96,10 @@
     function gotoBuscar(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiquetas-pessoa').value != "") {
-//                addLista();
-//                buscar = document.getElementById('etiquetas-buscar');
-//                if (buscar) {
-//                    buscar.focus();
-//
-//                    if (event.preventDefault) {
-//                        event.preventDefault();
-//                    } else {
-//                        event.returnValue = false;
-//                    }
-//                }
+                addLista();
             }
         }
+
         return true;
     }
 
@@ -359,7 +350,7 @@
             var result = {intervalo: intervalo, total: total, cpf: cpf, pessoa: null};
             if (erro == false) {
                 $.ajax({
-                    url: 'conferente-apontamento-separacao-ajax/cpf/' + cpf,
+                    url: 'conferente-apontamento-separacao-ajax/cpf/' + cpf + '/etiquetaInicial/' + eI + '/etiquetaFinal/' + eF,
                     success: function (data) {
                         if (data.result === "Ok") {
                             result.pessoa = data.pessoa;
@@ -367,6 +358,11 @@
                             $('.gTResultSet').each(function (e) {
                                 if ($(this).find('.identifica').text() == result.cpf && $(this).find('.intervalo').text() == result.intervalo) {
                                     addLinha = false;
+                                    $.wmsDialogAlert({
+                                        title: 'Erro',
+                                        msg: 'Intervalo já foi bipado para esse funcionário',
+                                    });
+                                    $('#etiquetas-pessoa').val('');
                                     return false;
                                 }
                             });
@@ -375,7 +371,6 @@
                             }
                             $('#etiquetas-pessoa').val('');
                             qtdBipados++;
-                            console.log(qtdBipados);
                             var qtdFunc = $('#qtdConferentes').val();
                             if(qtdBipados == qtdFunc){
                                 $('.save').click();
@@ -398,10 +393,14 @@
                     }
                 });
             } else {
+                alert('Etiqueta ' + (erro-1) + ' já foi bipada para esse funcionário');
+                $('#etiquetas-pessoa').val('');
+                $('#etiquetas-pessoa').focus();
                 $.wmsDialogAlert({
-                    title: 'Erro',
-                    msg: 'Etiqueta ' + erro + ' já foi bipada para esse conferente',
+                    title: 'Alerta',
+                    msg: 'Etiqueta ' + (erro-1) + ' já foi bipada para esse funcionário'
                 });
+
             }
         },
 
@@ -418,7 +417,7 @@
                         object.intervalo = dados['INTERVALO'];
                         object.pessoa = dados['NOM_PESSOA'];
                         object.total = dados['TOTAL'];
-                        object.cpf = dados['CPF'];
+                        object.cpf = dados['CPF'].trim();
                         object.codEquipe = dados['COD_EQUIPE_SEPARACAO'];
                         addRow(object);
                     });
@@ -518,11 +517,10 @@
             });
             if (data.length > 0) {
                 $.post("apontamento-separacao", {data: data}).success(function (data) {
-                    console.log(data);
                     if (data.result === 'Ok') {
                         $.wmsDialogAlert({
                             title: 'Alerta',
-                            msg: 'Todas os apontamentos foram salvos com sucesso!'
+                            msg: 'Todos os apontamentos foram salvos com sucesso!'
                         });
                         window.location.href = 'apontamento-separacao';
                     } else if (data.result === 'Error') {
@@ -541,12 +539,6 @@
             }
         });
 
-        $('#etiquetas-pessoa').keydown(function (e) {
-            if (e.which == 13) {
-                addLista();
-//                $('#etiquetas-buscar').click();
-            }
-        });
 
         $('.updateSeparacao').click(function () {
             $.each($('#tbResult').children(), function () {
@@ -571,7 +563,6 @@
         $(".removeRow").live('click', function () {
             if (confirm('Deseja realmente remover esse apontamento?')) {
                 var id = 0;
-                console.log($(this).attr('id'));
                 if($(this).attr('id') > 0){
                     id = $(this).attr('id');
                 }
@@ -592,6 +583,36 @@
             }
         });
     });
+    function mascaraMutuario(o,f){
+        v_obj=o
+        v_fun=f
+        setTimeout('execmascara()',1)
+    }
+
+    function execmascara(){
+        v_obj.value=v_fun(v_obj.value)
+    }
+    function cpfCnpj(v){
+
+        //Remove tudo o que não é dígito
+        v=v.replace(/\D/g,"")
+
+        if (v.length <= 14) { //CPF
+
+            //Coloca um ponto entre o terceiro e o quarto dígitos
+            v=v.replace(/(\d{3})(\d)/,"$1.$2")
+
+            //Coloca um ponto entre o terceiro e o quarto dígitos
+            //de novo (para o segundo bloco de números)
+            v=v.replace(/(\d{3})(\d)/,"$1.$2")
+
+            //Coloca um hífen entre o terceiro e o quarto dígitos
+            v=v.replace(/(\d{3})(\d{1,2})$/,"$1-$2")
+
+        }
+        return v
+
+    }
 </script>
 
 <?php
