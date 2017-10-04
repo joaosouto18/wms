@@ -956,8 +956,7 @@ class ExpedicaoRepository extends EntityRepository {
                         INNER JOIN pp.produto p
                          LEFT JOIN p.linhaSeparacao ls
                         INNER JOIN pp.pedido ped
-                        INNER JOIN wms:Expedicao\VProdutoEndereco e
-                         WITH p.id = e.codProduto AND p.grade = e.grade
+                        INNER JOIN wms:Expedicao\VProdutoEndereco e WITH p.id = e.codProduto AND p.grade = e.grade
                         INNER JOIN ped.carga c
                         WHERE ped.indEtiquetaMapaGerado != 'S'
                           $whereCargas
@@ -3618,7 +3617,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($params['apenasDivergencias'])) {
-            $whereFinal .= " AND ((PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) != NVL(R.RESERVA,0))";
+            $whereFinal .= " AND ((PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) != NVL(R.RESERVA / NVL(PV.N_VOL, 1),0))";
         }
 
         if (isset($params['idExpedicoes'])) {
@@ -3639,15 +3638,18 @@ class ExpedicaoRepository extends EntityRepository {
                        PP.COD_PRODUTO,
                        NVL(PP.QUANTIDADE,0) as QTD_PEDIDO,
                        NVL(PP.QTD_CORTADA,0) as QTD_CORTE,
-                       NVL(R.RESERVA,0) as QTD_SAIDA
+                       NVL(R.RESERVA / NVL(PV.N_VOL, 1),0) as QTD_SAIDA
                   FROM PEDIDO P
                   LEFT JOIN CLIENTE CL ON CL.COD_PESSOA = P.COD_PESSOA
                   LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                   LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                   LEFT JOIN PESSOA CLI ON CLI.COD_PESSOA = P.COD_PESSOA
                   LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                  LEFT JOIN (SELECT COUNT(COD_PRODUTO) AS N_VOL,COD_PRODUTO, DSC_GRADE 
+                            FROM PRODUTO_VOLUME GROUP BY COD_PRODUTO, DSC_GRADE) PV 
+                            ON PV.COD_PRODUTO = PP.COD_PRODUTO AND PV.DSC_GRADE = PV.DSC_GRADE
                   LEFT JOIN (SELECT COD_EXPEDICAO, COD_PEDIDO, COD_PRODUTO, DSC_GRADE, SUM(RESERVA) RESERVA
-                          FROM ( SELECT DISTINCT REE.COD_EXPEDICAO, REE.COD_PEDIDO, REP.COD_PRODUTO, REP.DSC_GRADE, REP.QTD_RESERVADA *-1 as RESERVA
+                          FROM ( SELECT REE.COD_EXPEDICAO, REE.COD_PEDIDO, REP.COD_PRODUTO, REP.DSC_GRADE, REP.QTD_RESERVADA *-1 as RESERVA
                                 FROM RESERVA_ESTOQUE_EXPEDICAO REE
                                INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                                INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE

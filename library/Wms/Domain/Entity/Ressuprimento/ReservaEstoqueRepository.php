@@ -2,6 +2,7 @@
 
 namespace Wms\Domain\Entity\Ressuprimento;
 
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
@@ -483,4 +484,35 @@ class ReservaEstoqueRepository extends EntityRepository
 
     }
 
+    /**
+     * @param $produtoPedido Expedicao\PedidoProduto
+     * @return array
+     */
+    public function getReservasExpedicao($produtoPedido)
+    {
+        $produto = $produtoPedido->getProduto();
+        $dql = $this->_em->createQueryBuilder()
+            ->select("
+                        de.id as idEndereco,
+                        ree.quebraPulmaoDoca,
+                        ree.codCriterioPD,
+                        ree.tipoSaida,
+                        rep.codProdutoVolume,
+                        (rep.qtd * -1) as qtd
+                        ")
+            ->from("wms:Ressuprimento\ReservaEstoque", "re")
+            ->innerJoin("wms:Ressuprimento\ReservaEstoqueProduto", "rep", "WITH" , "rep.reservaEstoque = re")
+            ->innerJoin("wms:Ressuprimento\ReservaEstoqueExpedicao", "ree", "WITH", "ree.reservaEstoque = re")
+            ->innerJoin("re.endereco", "de")
+            ->leftJoin("wms:Produto\Volume", "pv", "WITH", "pv = rep.produtoVolume and pv.dataInativacao is null")
+            ->where("re.atendida = 'N' and ree.pedido = :pedido and rep.codProduto = :codProduto and rep.grade = :grade")
+            ->setParameter(":pedido", $produtoPedido->getPedido())
+            ->setParameter(":codProduto", $produto->getId())
+            ->setParameter(":grade", $produto->getGrade())
+            ->orderBy("pv.codigoSequencial, de.rua, de.predio, de.nivel, de.apartamento")
+        ;
+
+        return $dql->getQuery()->getResult();
+
+    }
 }

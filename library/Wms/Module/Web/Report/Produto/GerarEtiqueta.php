@@ -41,37 +41,36 @@ class GerarEtiqueta extends eFPDF
 
         /** @var NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
-        foreach($produtos as $codProduto) {
-            if ($tipo == "NF") {
-                $produtosEn = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento);
-            } else if ($tipo == "Produto") {
-                /** @var ProdutoRepository $produtoRepo */
-                $produtoRepo = $em->getRepository('wms:Produto');
-                $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade);
-                $target = Recebimento::TARGET_IMPRESSAO_PRODUTO;
+        if ($tipo == "NF") {
+            $produtosEn = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento);
+        } else if ($tipo == "Produto") {
+            /** @var ProdutoRepository $produtoRepo */
+            $produtoRepo = $em->getRepository('wms:Produto');
+            $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade);
+            $target = Recebimento::TARGET_IMPRESSAO_PRODUTO;
 
+        }
+
+        //geracao da etiqueta
+        \Zend_Layout::getMvcInstance()->disableLayout(true);
+        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+        header('Content-type: application/pdf');
+
+        foreach ($produtosEn as $produto) {
+            $produto['dataValidade'] = "";
+            if ($produto['validade'] == "S") {
+                $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto(null, $produto['codigoBarras'], $produto['idProduto'], $produto['grade']);
+                $produto['dataValidade'] = $getDataValidadeUltimoProduto['dataValidade'];
             }
-
-            //geracao da etiqueta
-            \Zend_Layout::getMvcInstance()->disableLayout(true);
-            \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
-            header('Content-type: application/pdf');
-
-            foreach ($produtosEn as $produto) {
-                $produto['dataValidade'] = "";
-                if ($produto['validade'] == "S") {
-                    $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto(null, $produto['codigoBarras'], $produto['idProduto'], $produto['grade']);
-                    $produto['dataValidade'] = $getDataValidadeUltimoProduto['dataValidade'];
-                }
-                if ($target == Recebimento::TARGET_IMPRESSAO_PRODUTO) {
+            if ($target == Recebimento::TARGET_IMPRESSAO_PRODUTO) {
+                self::createEtiqueta($produto, $tipo, $modelo);
+            } else {
+                for ($i = 0; $i < $produto['qtdItem']; $i++) {
                     self::createEtiqueta($produto, $tipo, $modelo);
-                } else {
-                    for ($i = 0; $i < $produto['qtdItem']; $i++) {
-                        self::createEtiqueta($produto, $tipo, $modelo);
-                    }
                 }
             }
         }
+
         $this->Output("Etiqueta.pdf","D");
         exit;
     }
