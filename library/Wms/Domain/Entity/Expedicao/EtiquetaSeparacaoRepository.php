@@ -806,6 +806,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $this->qtdIteracoesMapaProduto = 0;
             $arrPedidos = array();
             $arrMapasEmbPP = array();
+            $arrayEtiquetas = array();
+            $codGrupo = 0;
 
             foreach ($pedidosProdutos as $key => $pedidoProduto) {
                 $expedicaoEntity = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
@@ -843,8 +845,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     if ($tipoSeparacao == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
 
                         $enderecoAtual = null;
-                        $codReferencia = null;
-
+                        //$codReferencia = null;
                         $tudoImpresso = false;
 
                         $primeiroVolume = $arrayVolumes[0]->getId();
@@ -855,7 +856,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $volumeEntity = $item['volumeEn'];
 
                             if ($idVolume == $primeiroVolume) {
-                                $codReferencia = null;
+                                $codGrupo = $codGrupo + 1;
                             }
 
                             if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N")
@@ -867,10 +868,21 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $qtd = $endereco['qtd'];
                                 if ($qtd > 0) {
                                     $depositoEnderecoEn = $endereco['enderecoEn'];
-                                    $idEtiqueta = $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, 1, $volumeEntity, null, $codReferencia, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
-                                    if ($codReferencia == null) {
-                                        $codReferencia = $idEtiqueta;
-                                    }
+
+                                    $arrayEtiquetas[] = array(
+                                            'statusEntity' => $statusEntity,
+                                            'produtoEntity' => $produtoEntity,
+                                            'pedidoEntity' => $pedidoEntity,
+                                            'quantidade' => 1,
+                                            'volumeEntity' => $volumeEntity,
+                                            'embalagemEntity' => null,
+                                            'etiquetaMae' => $etiquetaMae,
+                                            'depositoEnderecoEn' => $depositoEnderecoEn,
+                                            'verificaReentrega' => $verificaReentrega,
+                                            'tipoSeparacao' => 1,
+                                            'grupo' => $codGrupo
+                                        );
+
                                     $qtd--;
                                     $arrVolumesReservas[$idVolume]['enderecos'][$idEndereco]['qtd'] = $qtd;
                                     next($arrVolumesReservas);
@@ -1025,7 +1037,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if (empty($utilizaEtiquetaMae)) $quebras = array();
                                 $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebras);
                                 for ($i = 0; $i < $qtdSepararEmbalagemAtual; $i++) {
-                                    $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $embalagemAtual->getQuantidade(), null, $embalagemAtual, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
+                                    $arrayEtiquetas[] = array(
+                                        'statusEntity' => $statusEntity,
+                                        'produtoEntity' => $produtoEntity,
+                                        'pedidoEntity' => $pedidoEntity,
+                                        'quantidade' => $embalagemAtual->getQuantidade(),
+                                        'volumeEntity' => null,
+                                        'embalagemEntity' => $embalagemAtual,
+                                        'etiquetaMae' => $etiquetaMae,
+                                        'depositoEnderecoEn' => $depositoEnderecoEn,
+                                        'verificaReentrega' => $verificaReentrega,
+                                        'tipoSeparacao' => 1,
+                                        'grupo' => null
+                                    );
                                 }
                             } else {
                                 $cubagem = null;
@@ -1064,6 +1088,45 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if (!isset($arrPedidos[$pedidoEntity->getId()])) {
                     $pedidoEntity->setIndEtiquetaMapaGerado("S");
                     $arrPedidos[$pedidoEntity->getId()] = $pedidoEntity;
+                }
+            }
+
+            usort($arrayEtiquetas, function ($a, $b) {
+                return $a['tipoSeparacao'] < $b['tipoSeparacao'];
+            });
+
+            $arrayGrupos = array();
+            foreach ($arrayEtiquetas as $key => $etiqueta) {
+                $statusEntity = $etiqueta['statusEntity'];
+                $produtoEntity = $etiqueta['produtoEntity'];
+                $pedidoEntity = $etiqueta['pedidoEntity'];
+                $quantidade = $etiqueta['quantidade'];
+                $grupo = $etiqueta['grupo'];
+                $volumeEntity = $etiqueta['volumeEntity'];
+                $embalagemEntity = $etiqueta['embalageEntity'];
+                $etiquetaMae = $etiqueta['etiquetaMae'];
+                $depositoEnderecoEn = $etiqueta['depositoEnderecoEn'];
+                $verificaReentrega = $etiqueta['verificaReentrega'];
+                $idEtiqueta = $this->salvaNovaEtiqueta($statusEntity, $produtoEntity, $pedidoEntity, $quantidade, $volumeEntity, $embalagemEntity, null, $etiquetaMae, $depositoEnderecoEn, $verificaReentrega, $etiquetaConferenciaRepo);
+
+                if ($grupo != null) {
+                    if (!isset($arrayGrupos[$grupo])) {
+                        $arrayGrupos[$grupo] = array(
+                            'grupo' => $grupo,
+                            'primeiraEtiqueta' => $idEtiqueta,
+                            'etiquetas' => array()
+                        );
+                    } else {
+                        $arrayGrupos[$grupo]['etiquetas'][] = $idEtiqueta;
+                    }
+                }
+            }
+
+            foreach ($arrayGrupos as $grupo) {
+                foreach ($grupo['etiquetas'] as $idEtiqueta) {
+                    $etiquetaEn = $this->find($idEtiqueta);
+                    $etiquetaEn->setCodReferencia($grupo['primeiraEtiqueta']);
+                    $this->getEntityManager()->persist($etiquetaEn);
                 }
             }
 
