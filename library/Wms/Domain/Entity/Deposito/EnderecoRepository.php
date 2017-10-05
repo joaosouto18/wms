@@ -656,6 +656,11 @@ class EnderecoRepository extends EntityRepository {
         if ($ruaInicial != "") {
             $sqlWhere = $sqlWhere . " AND P.NUM_RUA >= " . $ruaInicial . " ";
         }
+        if(!empty($dataInicial)){
+            $sqlWhere .= " AND P.DTH_ESTOQUE >= TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI')";
+        }if(!empty($dataFinal)){
+            $sqlWhere .= " AND P.DTH_ESTOQUE <= TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))";
+        }
 
         $sql = "SELECT NUM_RUA,
                         QTD_EXISTENTES,
@@ -664,8 +669,7 @@ class EnderecoRepository extends EntityRepository {
                         OCUPACAO,
                         TO_CHAR(DTH_ESTOQUE,'DD/MM/YYYY') as DTH_ESTOQUE
                    FROM POSICAO_ESTOQUE_RESUMIDO P
-                  WHERE (P.DTH_ESTOQUE BETWEEN TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI')
-                    AND TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))
+                  WHERE 1 = 1
                         $sqlWhere
                   ORDER BY DTH_ESTOQUE, TO_NUMBER(P.NUM_RUA)";
 

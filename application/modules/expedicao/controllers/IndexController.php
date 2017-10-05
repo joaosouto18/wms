@@ -310,6 +310,10 @@ class Expedicao_IndexController extends Action {
                     ),
                 ),
                 array(
+                    'label' => 'Limpar',
+                    'cssClass' => 'btn limpar',
+                    'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
+                ),array(
                     'label' => 'Última Separação',
                     'cssClass' => 'btn updateSeparacao',
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
