@@ -13,6 +13,7 @@ use \Wms\Module\Web\Page;
 class Expedicao_IndexController extends Action {
 
     public function indexAction() {
+        $em = $this->getEntityManager();
         $parametroPedidos = $this->getSystemParameterValue('COD_INTEGRACAO_PEDIDOS');
         Page::configure(array(
             'buttons' => array(
@@ -34,12 +35,65 @@ class Expedicao_IndexController extends Action {
         $this->view->form = $form;
         $params = $this->_getAllParams();
 
+        /** @var \Wms\Domain\Entity\Expedicao\TriggerCancelamentoCargaRepository $triggerCancelamentoCargaRepository */
+        $triggerCancelamentoCargaRepository = $em->getRepository('wms:Expedicao\TriggerCancelamentoCarga');
+        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
+        $cargaRepository = $em->getRepository('wms:Expedicao\Carga');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
+        $pedidoRepository = $em->getRepository('wms:Expedicao\Pedido');
+        /** @var \Wms\Domain\Entity\Expedicao\ReentregaRepository $ReentregaRepository */
+        $ReentregaRepository = $em->getRepository('wms:Expedicao\Reentrega');
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $NotaFiscalSaidaRepository */
+        $NotaFiscalSaidaRepository = $em->getRepository('wms:Expedicao\NotaFiscalSaida');
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepository */
+        $expedicaoAndamentoRepository = $em->getRepository('wms:Expedicao\Andamento');
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
+        $expedicaoRepository = $em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+        //CANCELAR CARGAS NO WMS JA CANCELADAS NO ERP
+        if ($this->getSystemParameterValue('REPLICAR_CANCELAMENTO_CARGA') == 'S') {
+            $acaoEn = $acaoIntRepo->find(24);
+            $cargasCanceladasEntities = $acaoIntRepo->processaAcao($acaoEn, null, 'L');
+            foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
+                $cargaEntity = $cargaRepository->findOneBy(array('codCargaExterno' => $cargaCanceladaEntity['COD_CARGA_EXTERNO']));
+                $cargaCanceladaEntity = $triggerCancelamentoCargaRepository->find($cargaCanceladaEntity['COD_CARGA_EXTERNO']);
+                if (!$cargaEntity && $cargaCanceladaEntity) {
+                    $em->remove($cargaCanceladaEntity);
+                    $em->flush();
+                    continue;
+                }
+                $pedidoEntities = $cargaRepository->getPedidos($cargaEntity->getId());
+                foreach ($pedidoEntities as $pedidoEntity) {
+                    $pedidoEntity = $pedidoRepository->find($pedidoEntity->getId());
+                    $pedidoRepository->removeReservaEstoque($pedidoEntity->getId(), false);
+                    $pedidoRepository->remove($pedidoEntity, false);
+                }
+
+                $ReentregaRepository->removeReentrega($cargaEntity->getId());
+                $NotaFiscalSaidaRepository->atualizaStatusNota($cargaEntity->getCodCargaExterno());
+                $cargaRepository->removeCarga($cargaEntity->getId());
+
+                $cargasByExpedicao = $cargaRepository->findOneBy(array('codExpedicao' => $cargaEntity->getCodExpedicao()));
+                if (!$cargasByExpedicao)
+                    $expedicaoRepository->alteraStatus($cargaEntity->getExpedicao(), Expedicao::STATUS_CANCELADO);
+
+                $expedicaoAndamentoRepository->save('carga ' . $cargaEntity->getCodCargaExterno() . ' removida', $cargaEntity->getCodExpedicao(), false, false);
+
+                if ($cargaCanceladaEntity) {
+                    $em->remove($cargaCanceladaEntity);
+                }
+                $em->flush();
+            }
+        }
+
         //INTEGRAR CARGAS NO MOMENTO Q ENTRAR NA TELA DE EXPEDICAO
         if (isset($parametroPedidos) && !empty($parametroPedidos)) {
             $explodeIntegracoes = explode(',', $parametroPedidos);
 
             /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
-            $acaoIntegracaoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            $acaoIntegracaoRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
             foreach ($explodeIntegracoes as $codIntegracao) {
                 $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
                 $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity);
