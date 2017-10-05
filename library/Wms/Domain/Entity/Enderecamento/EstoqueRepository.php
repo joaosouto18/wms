@@ -289,13 +289,7 @@ class EstoqueRepository extends EntityRepository
         }
 
         $query = $Sql . $SqlWhere . $SqlOrder;
-
-        /*$txtConect = "(DESCRIPTION=(ADDRESS_LIST=(LOAD_BALANCE=ON)(FAILOVER=ON)(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521)) (ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521)))(CONNECT_DATA =(SID  = xe)(FAILOVER_MODE = (TYPE=SELECT)(METHOD=PRECONNECT))))";
-        $conecao = oci_connect("wms_wilso","wms_adm",$txtConect);
-        $conn = oci_connect('hr', 'welcome', 'localhost/XE');
-
-        $stid = oci_parse($conn, 'SELECT * FROM employees');
-        oci_execute($stid);*/
+        
         if ((isset($params['maxResult'])) && ($params['maxResult'] != null)) {
             $maxResult = $params['maxResult'];
             $resultado = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
