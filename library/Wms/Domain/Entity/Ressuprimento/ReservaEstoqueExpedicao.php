@@ -15,6 +15,12 @@ class ReservaEstoqueExpedicao
     const SAIDA_SEPARACAO_AEREA = 2;
     const SAIDA_PULMAO_DOCA = 3;
 
+    public static $tipoSaidaTxt = array(
+        self::SAIDA_PICKING => "PICKING",
+        self::SAIDA_SEPARACAO_AEREA => "SEPARAÇÃO AÉREA",
+        self::SAIDA_PULMAO_DOCA => "PULMÃO-DOCA"
+    );
+
     /**
      * @var ReservaEstoque
      * @Id

@@ -16,6 +16,7 @@ class MapaSeparacaoQuebra
     const QUEBRA_CLIENTE = "C";
     const QUEBRA_CARRINHO = "T";
     const QUEBRA_REENTREGA = "RE";
+    const QUEBRA_PULMAO_DOCA = "PD";
 
     /**
      * @Id
