@@ -454,12 +454,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         } else {
             if ($expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) {
                 /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-                $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
-                $pedidosPendentes = $pedidoRepo->findPedidosNaoConferidos($expedicao->getId(), $carga->getId());
-
-                if ($pedidosPendentes == null) {
-                    return array('liberado' => true);
-                }
+                return array('liberado' => true);
             }
             return array('liberado' => false);
         }

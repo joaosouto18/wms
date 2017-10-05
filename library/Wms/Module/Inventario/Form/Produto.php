@@ -52,6 +52,10 @@ class Produto extends Form {
                     'label' => 'Incluir na Lista',
                     'class' => 'btn incluir',
                     'decorators' => array('ViewHelper'),
+                ))->addElement('submit', 'limpar', array(
+                    'label' => 'Limpar Lista',
+                    'class' => 'btn incluir',
+                    'decorators' => array('ViewHelper'),
                 ))
                 ->addElement('multiselect', 'idLinhaSeparacao', array(
                     'label' => 'Linha de Separação',
@@ -67,7 +71,7 @@ class Produto extends Form {
                     'checked' => true
                 ))
                 ->addDisplayGroup(array('picking', 'pulmao'), 'tipoEndereco', array('legend' => 'Tipo de Endereço'))
-                ->addDisplayGroup(array('id', 'grade', 'descricao', 'fabricante', 'classe', 'idLinhaSeparacao', 'incluirinput', 'submit', 'incluir'), 'identificacao', array('legend' => 'Filtros de Busca'));
+                ->addDisplayGroup(array('id', 'grade', 'descricao', 'fabricante', 'classe', 'idLinhaSeparacao', 'incluirinput', 'submit', 'incluir','limpar'), 'identificacao', array('legend' => 'Filtros de Busca'));
     }
 
 }

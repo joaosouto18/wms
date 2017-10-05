@@ -329,12 +329,24 @@ class Expedicao_IndexController extends Action {
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
         /** @var \Wms\Domain\Entity\Expedicao\EquipeSeparacaoRepository $equipeSeparacaoRepo */
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        $numFunc = $equipeSeparacaoRepo->findBy(array(),array('numFuncionario'=>'DESC'));
+        if(empty($numFunc)){
+            $func = 1;
+        }else{
+            if($numFunc[0]->getNumFuncionario() == 0 || $numFunc[0]->getNumFuncionario() == null){
+                $func = 1;
+            }else{
+                $func = $numFunc[0]->getNumFuncionario();
+            }
+
+        }
+
         $form = new \Wms\Module\Produtividade\Form\EquipeSeparacao();
         $params = $this->_getAllParams();
+        $this->view->qtdFunc = $func;
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);
-
         try {
             if (isset($params['data']) && !empty($params['data'])) {
                 $data = $params['data'];
@@ -345,6 +357,7 @@ class Expedicao_IndexController extends Action {
                         $etiquetas = explode('-', $params['etiquetas']);
                         $etiquetaInicial = trim($etiquetas[0]);
                         $etiquetaFinal = trim($etiquetas[1]);
+                        $numFunc = $params['func'];
 
                         //ENCONTRA O USUARIO DIGITADO
                         /** @var Expedicao\EquipeSeparacao $usuarioEn */
@@ -371,7 +384,7 @@ class Expedicao_IndexController extends Action {
                                 if ($inicial != 0) {
                                     $iteracao = $intervalo['etiquetaInicial'] - $final;
                                     if ($iteracao > 1) {
-                                        $equipeSeparacaoRepo->save($final + 1, $intervalo['etiquetaInicial'] - 1, $usuarioEn, false);
+                                        $equipeSeparacaoRepo->save($final + 1, $intervalo['etiquetaInicial'] - 1, $usuarioEn, $numFunc,false);
                                     }
                                 } else {
                                     $menorIntervalo = $intervalo['etiquetaInicial'];
@@ -383,14 +396,14 @@ class Expedicao_IndexController extends Action {
                                 }
                             }
                             if ($etiquetaInicial < $menorIntervalo) {
-                                $equipeSeparacaoRepo->save($etiquetaInicial, $menorIntervalo - 1, $usuarioEn, false);
+                                $equipeSeparacaoRepo->save($etiquetaInicial, $menorIntervalo - 1, $usuarioEn,$numFunc, false);
                             }
                             if ($etiquetaFinal > $final) {
-                                $equipeSeparacaoRepo->save($final + 1, $etiquetaFinal, $usuarioEn, false);
+                                $equipeSeparacaoRepo->save($final + 1, $etiquetaFinal, $usuarioEn,$numFunc, false);
                             }
                             $this->getEntityManager()->flush();
                         } else {
-                            $equipeSeparacaoRepo->save($etiquetaInicial, $etiquetaFinal, $usuarioEn);
+                            $equipeSeparacaoRepo->save($etiquetaInicial, $etiquetaFinal, $usuarioEn,$numFunc);
                         }
                     } elseif ($params['tipo'] == 'Mapa') {
                         $cpf = str_replace(array('.', '-'), '', $params['cpf']);
@@ -458,18 +471,99 @@ class Expedicao_IndexController extends Action {
     public function conferenteApontamentoSeparacaoAjaxAction() {
         $params = $this->_getAllParams();
         $cpf = str_replace(array('.', '-'), '', $params['cpf']);
-
+        $erro = '';
         /** @var \Wms\Domain\Entity\UsuarioRepository $usuarioRepo */
         $usuarioRepo = $this->getEntityManager()->getRepository('wms:Usuario');
+        $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
+        $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
         $result = $usuarioRepo->getPessoaByCpf($cpf);
 
-        if (!empty($result)) {
-            $response = array('result' => 'Ok', 'pessoa' => $result[0]['NOM_PESSOA']);
-        } else {
-            $response = array('result' => 'Error', 'msg' => "Nenhum conferente encontrado com este CPF");
+        //FORMATA OS DADOS RECEBIDOS
+        $etiquetaInicial = trim($params['etiquetaInicial']);
+        $etiquetaFinal = trim($params['etiquetaFinal']);
+        //ENCONTRA O USUARIO DIGITADO
+        /** @var Expedicao\EquipeSeparacao $usuarioEn */
+        $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+        //VERIFICA O USUARIO
+        if (is_null($usuarioEn)) {
+            $erro = 'Nenhum conferente encontrado com este CPF';
+        }else{
+           $usuario = $usuarioRepo->getPessoaByCpf($cpf);
+        }
+        //VERIFICA AS ETIQUETAS
+        if (is_null($etiquetaFinal))
+            $etiquetaFinal = $etiquetaInicial;
+
+        if (is_null($etiquetaInicial))
+            $etiquetaInicial = $etiquetaFinal;
+
+
+        //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
+        $inicial = 0;
+        $final = 0;
+        $menorIntervalo = 0;
+        $salvar = false;
+        if(empty($erro)) {
+            $equipeSeparacaoEn = $equipeSeparacaoRepo->getIntervaloEtiquetaUsuario($usuarioEn);
+            if (is_array($equipeSeparacaoEn) && count($equipeSeparacaoEn) > 0) {
+                foreach ($equipeSeparacaoEn as $intervalo) {
+
+                    if ($inicial != 0) {
+                        $iteracao = $intervalo['etiquetaInicial'] - $final;
+                        if ($iteracao > 1) {
+                            $salvar = true;
+                        }
+                    } else {
+                        $menorIntervalo = $intervalo['etiquetaInicial'];
+                    }
+                    $inicial = $intervalo['etiquetaInicial'];
+                    $final = $intervalo['etiquetaFinal'];
+                    if ($intervalo['etiquetaFinal'] < $etiquetaInicial) {
+                        $final = $etiquetaInicial - 1;
+                    }
+                }
+                if ($etiquetaInicial < $menorIntervalo) {
+                    $salvar = true;
+                }
+                if ($etiquetaFinal > $final) {
+                    $salvar = true;
+                }
+            } else {
+                $salvar = true;
+            }
+        }
+
+
+        if (empty($erro) && $salvar == true) {
+            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA']);
+        } elseif($salvar == false && empty($erro)) {
+            $response = array('result' => 'Error', 'msg' => "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA']);
+        }else{
+            $response = array('result' => 'Error', 'msg' => $erro);
         }
 
         $this->_helper->json($response);
+    }
+
+    public function buscaApontamentoSeparacaoAjaxAction(){
+        $params = $this->_getAllParams();
+        $cpf = str_replace(array('.', '-'), '', $params['etiquetas']['cpfBusca']);
+        $dataInicio = $params['etiquetas']['dataInicial'];
+        $dataFim = $params['etiquetas']['dataFinal'];
+        $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        $result = $equipeSeparacaoRepo->getApontamentosProdutividade($cpf, $dataInicio, $dataFim);
+        $this->_helper->json(array('dados' => $result));
+    }
+
+    public function apagaApontamentoSeparacaoAction()
+    {
+        $params = $this->_getAllParams();
+        $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        if ($params['id'] > 0) {
+            $this->_em->remove($equipeSeparacaoRepo->find($params['id']));
+            $this->_em->flush();
+        }
+        $this->_helper->json(array());
     }
 
     public function equipeCarregamentoAction() {

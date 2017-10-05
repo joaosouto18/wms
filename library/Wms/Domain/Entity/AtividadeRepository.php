@@ -14,28 +14,35 @@ class AtividadeRepository extends EntityRepository
      */
     public function save(AtividadeEntity $atividade, array $values)
     {
-	extract($values['identificacao']); 
-	$em = $this->getEntityManager();
-	
-	$setor = $em->getReference('wms:Atividade\SetorOperacional', $setorOperacional);
-	
-	$atividade->setSetorOperacional($setor);
-	$atividade->setDescricao($descricao);
-	
-	$em->persist($atividade);
-	
+        extract($values['identificacao']);
+        $em = $this->getEntityManager();
+
+        $setor = $em->getReference('wms:Atividade\SetorOperacional', $setorOperacional);
+
+        $atividade->setSetorOperacional($setor);
+        $atividade->setDescricao($descricao);
+
+        $em->persist($atividade);
+
     }
-    
+
     /**
      * Remove o registro no banco atravÃƒÂ©s do seu id
-     * @param integer $id 
+     * @param integer $id
      */
     public function remove($id)
     {
-	$em = $this->getEntityManager();
-	$proxy = $em->getReference('wms:Atividade', $id);
+        $em = $this->getEntityManager();
+        $proxy = $em->getReference('wms:Atividade', $id);
 
-	// remove
-	$em->remove($proxy);
+        // remove
+        $em->remove($proxy);
+    }
+    public function getIdValue()
+    {
+        $tipos = array();
+        foreach ($this->findAll() as $tipo)
+            $tipos[$tipo->getId()] = $tipo->getDescricao();
+        return $tipos;
     }
 }

@@ -84,16 +84,19 @@
                 <td style="padding-bottom: 2pt; padding-top: 3pt">*Etq. Separação</td>
             <?php endif; ?>
             <td style="padding-bottom: 2pt; padding-top: 3pt">*Etq. Produto</td>
-            <td style="padding-bottom: 2pt; padding-top: 3pt">*Qtde.</td>
+            <?php if ($this->modeloSeparacaoFracionado != 'E' && $this->modeloSeparacaoNaoFracionado != 'E') : ?>
+                <td style="padding-bottom: 2pt; padding-top: 3pt">*Qtde.</td>
+            <?php endif; ?>
         </tr>
         <tr style="padding-bottom: 5pt">
             <?php if ($this->modeloSeparacaoFracionado == 'E' || $this->modeloSeparacaoNaoFracionado == 'E') : ?>
                 <td style="width: 35%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="etiqueta" id="etiqueta" value="" class="required etiqueta focus" onkeydown="nextInputEtiqueta(event)"></td>
                 <td style="width: 35%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="codBarras" id="codBarras" value="" class=" required codBarras" onkeydown="nextInputCodBarras(event)"></td>
+                <td style="width: 20%; padding-bottom: 5pt; display: none"><input type="text" style="width: 100%" name="qtd" id="qtd" value="1" class=" required qtd"></td>
             <?php else : ?>
                 <td style="width: 70%; padding-bottom: 5pt; padding-right: 5pt; "><input type="text" style="width: 99%" name="codBarras" id="codBarras" value="" class=" required codBarras focus" onkeydown="nextInput(event)"></td>
+                <td style="width: 20%; padding-bottom: 5pt; "><input type="text" style="width: 100%" name="qtd" id="qtd" value="" class=" required qtd"></td>
             <?php endif; ?>
-            <td style="width: 20%; padding-bottom: 5pt; "><input type="text" style="width: 100%" name="qtd" id="qtd" value="" class=" required qtd"></td>
         </tr>
         </table>
         <input type="submit" name="submit" id="submit" value="Reconferir" class="btn">

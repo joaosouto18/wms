@@ -20,7 +20,8 @@ class Importacao_IndexController extends Action
         'tLinha' => 0,
         'iLinha' => 0,
         "error" => null,
-        "exception" => null
+        "exception" => null,
+        "object" => "",
     );
 
     public function custom_warning_handler($errno, $errstr) {
@@ -124,48 +125,10 @@ class Importacao_IndexController extends Action
                     break;
                 case 'embalagem':
 
-                    if (!empty($arrRegistro['endereco'])) {
-                        $arrRegistro['endereco'] = str_replace(",", ".", $arrRegistro['endereco']);
-                        $endereco = explode(".", $arrRegistro['endereco']);
-
-                        foreach ($endereco as $element) {
-                            if (strlen($element) < 1) {
-                                $arrErroRows[$linha] = "Endereço fora do padrão - CodProduto: " . $arrRegistro['codProduto'];
-                            }
-                        }
-                    }
-
-                    $arrRegistro['enderecoEn'] = null;
-                    if (!empty($arrRegistro['endereco'])) {
-
-                        $endereco = explode(".", $arrRegistro['endereco']);
-
-                        $arrDados['rua'] = $endereco[0];
-                        $arrDados['predio'] = $endereco[1];
-                        $arrDados['nivel'] = $endereco[2];
-                        $arrDados['apartamento'] = $endereco[3];
-
-                        $endereco = $em->getRepository('wms:Deposito\Endereco')
-                            ->findOneBy(array(
-                                    'rua' => $endereco[0],
-                                    'predio' => $endereco[1],
-                                    'nivel' => $endereco[2],
-                                    'apartamento' => $endereco[3])
-                            );
-
-                        if (empty($endereco)) {
-                            $arrErroRows[$linha] = "Endereço $arrRegistro[endereco] do produto $arrRegistro[codProduto] não foi encontrado";
-                        }
-
-                        $arrRegistro['enderecoEn'] = $endereco;
-                    }
-
                     $embalagemEntity = null;
                     if ($arrRegistro['codigoBarras'] != "") {
                         $codigoBarras = \Wms\Util\CodigoBarras::formatarCodigoEAN128Embalagem($arrRegistro['codigoBarras']);
-                        $embalagemEntity = $embalagemRepo->findOneBy(array(
-                            'codigoBarras' => $codigoBarras
-                        ));
+                        $embalagemEntity = $embalagemRepo->findOneBy(array('codigoBarras' => $codigoBarras));
                     } else {
                         $arrRegistro['CBInterno'] = 'S';
                         $embalagemEntity = $embalagemRepo->findOneBy(array(
@@ -174,10 +137,37 @@ class Importacao_IndexController extends Action
                             'quantidade' => $arrRegistro['quantidade']
                         ));
                     }
+
                     if (!empty($embalagemEntity)){
                         $arrErroRows[$linha] = "Código de barras já cadastrado " . $arrRegistro['codigoBarras'];
                         break;
                     };
+
+                    if (!empty($arrRegistro['endereco'])) {
+                        $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
+                        if (isset($arrRegistro['parseTo']) && !empty($arrRegistro['parseTo'])) {
+                            $parser = explode(";",$arrRegistro['parseTo']);
+
+                            $enderecoUnknow = explode(".",str_replace(",", ".", $arrRegistro['endereco']));
+                            $enderecoParsed = array();
+                            foreach ($parser as $index) {
+                                $enderecoParsed[] = $enderecoUnknow[$index - 1];
+                            }
+                            $arrRegistro['endereco'] = implode(".", $enderecoParsed);
+                        }
+                        $endereco = \Wms\Util\Endereco::formatar($arrRegistro['endereco'], null, $arrQtdDigitos);
+                        $arrRegistro['endereco'] = $endereco;
+                        $arrDados = \Wms\Util\Endereco::separar($endereco, $arrQtdDigitos);
+
+                        $enderecoEn = $em->getRepository('wms:Deposito\Endereco')->findOneBy($arrDados);
+
+                        if (empty($enderecoEn)) {
+                            $arrErroRows[$linha] = "Endereço $arrRegistro[endereco] do produto $arrRegistro[codProduto] não foi encontrado";
+                        }
+
+                        $arrRegistro['enderecoEn'] = $enderecoEn;
+                    }
+
                     $result = $importacaoService->saveEmbalagens($em, $arrRegistro, $repositorios);
                     if (is_string($result)) {
                         $arrErroRows['exception'] = $result;
@@ -500,6 +490,15 @@ class Importacao_IndexController extends Action
                     break;
                 case 'endereco':
                     $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
+                    if (isset($arrRegistro['parseTo']) && !empty($arrRegistro['parseTo'])) {
+                        $parser = explode(";",$arrRegistro['parseTo']);
+                        $enderecoUnknow = explode(".",str_replace(",", ".", $arrRegistro['endereco']));
+                        $enderecoParsed = array();
+                        foreach ($parser as $index) {
+                            $enderecoParsed[] = $enderecoUnknow[$index - 1];
+                        }
+                        $arrRegistro['endereco'] = implode(".", $enderecoParsed);
+                    }
                     $endereco = \Wms\Util\Endereco::formatar($arrRegistro['endereco'], null, $arrQtdDigitos);
                     $arrEndereco = \Wms\Util\Endereco::separar($endereco, $arrQtdDigitos);
                     $arrRegistro = array_merge($arrRegistro, $arrEndereco);
@@ -681,6 +680,7 @@ class Importacao_IndexController extends Action
                 $camposArquivo = $camposRepo->findBy(array('arquivo' => $arquivo->getId()));
                 $cabecalho = $arquivo->getCabecalho();
                 $tabelaDestino = $arquivo->getTabelaDestino();
+                $this->statusProgress['object'] = $arquivo->getNomeInput();
 
                 $inventarioEn = null;
                 if ($tabelaDestino === "inventarioProduto") {
@@ -793,7 +793,7 @@ class Importacao_IndexController extends Action
 
                         $this->progressBar->update(null, $this->statusProgress);
 
-                        if ($countFlush >= 100) {
+                        if ($countFlush >= 1) {
                             $countFlush = 0;
                             $em->flush();
                             $em->clear();

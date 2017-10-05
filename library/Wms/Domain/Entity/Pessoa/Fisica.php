@@ -41,6 +41,13 @@ class Fisica extends Pessoa
      * @Column(name="COD_SITUACAO_CONJUGAL", type="integer", nullable=true)
      */
     protected $idSituacaoConjugal;
+
+    /**
+     * @var integer $codAtividade
+     * @Column(name="COD_ATIVIDADE", type="integer", nullable=true)
+     */
+    protected $codAtividade;
+
     /**
      * @var integer $idTipoAtividade
      *
@@ -162,12 +169,12 @@ class Fisica extends Pessoa
 
     public function getIdGrauEscolaridade()
     {
-	return $this->idGrauEscolaridade;
+        return $this->idGrauEscolaridade;
     }
 
     public function setIdGrauEscolaridade($idGrauEscolaridade)
     {
-	$this->idGrauEscolaridade = $idGrauEscolaridade;
+        $this->idGrauEscolaridade = $idGrauEscolaridade;
     }
 
     /**
@@ -176,260 +183,270 @@ class Fisica extends Pessoa
      */
     public function getSexo()
     {
-	return $this->sexo;
+        return $this->sexo;
     }
 
     /**
      * Atribui o sexo da pessoa (M => MASCULINO, F => FEMININO)
-     * @param string $sexo 
+     * @param string $sexo
      */
     public function setSexo($sexo)
     {
-	if (!in_array($sexo, array('M', 'F'))) {
-	    throw new \InvalidArgumentException($sexo);
-	}
-	$this->sexo = $sexo;
+        if (!in_array($sexo, array('M', 'F'))) {
+            throw new \InvalidArgumentException($sexo);
+        }
+        $this->sexo = $sexo;
         return $this;
     }
 
     public function getIdSituacaoConjugal()
     {
-	return $this->idSituacaoConjugal;
+        return $this->idSituacaoConjugal;
     }
 
     public function setIdSituacaoConjugal($idSituacaoConjugal)
     {
-	$this->idSituacaoConjugal = $idSituacaoConjugal;
+        $this->idSituacaoConjugal = $idSituacaoConjugal;
         return $this;
     }
 
     public function getIdTipoAtividade()
     {
-	return $this->idTipoAtividade;
+        return $this->idTipoAtividade;
     }
 
     public function setIdTipoAtividade($idTipoAtividade)
     {
-	$this->idTipoAtividade = $idTipoAtividade;
+        $this->idTipoAtividade = $idTipoAtividade;
         return $this;
     }
 
     public function getIdTipoOrganizacao()
     {
-	return $this->idTipoOrganizacao;
+        return $this->idTipoOrganizacao;
     }
 
     public function setIdTipoOrganizacao($idTipoOrganizacao)
     {
-	$this->idTipoOrganizacao = $idTipoOrganizacao;
+        $this->idTipoOrganizacao = $idTipoOrganizacao;
         return $this;
     }
 
     public function getDataAdmissaoEmprego()
     {
-	if($this->dataAdmissaoEmprego == null)
-	    return $this->dataAdmissaoEmprego;
-	else
-	    return $this->dataAdmissaoEmprego->format('d/m/Y');
+        if($this->dataAdmissaoEmprego == null)
+            return $this->dataAdmissaoEmprego;
+        else
+            return $this->dataAdmissaoEmprego->format('d/m/Y');
     }
 
     public function setDataAdmissaoEmprego(\DateTime $dataAdmissaoEmprego)
     {
-	$this->dataAdmissaoEmprego = $dataAdmissaoEmprego;
+        $this->dataAdmissaoEmprego = $dataAdmissaoEmprego;
         return $this;
     }
 
     public function getDataExpedicaoRg()
     {
-	if($this->dataExpedicaoRg == null)
-	    return $this->dataExpedicaoRg;
-	else
-	    return $this->dataExpedicaoRg->format('d/m/Y');
+        if($this->dataExpedicaoRg == null)
+            return $this->dataExpedicaoRg;
+        else
+            return $this->dataExpedicaoRg->format('d/m/Y');
     }
 
     public function setDataExpedicaoRg(\DateTime $dataExpedicaoRg)
     {
-	$this->dataExpedicaoRg = $dataExpedicaoRg;
+        $this->dataExpedicaoRg = $dataExpedicaoRg;
         return $this;
     }
 
     public function getDataNascimento()
     {
-	if($this->dataNascimento == null)
-	    return $this->dataNascimento;
-	else
-	    return $this->dataNascimento->format('d/m/Y');
+        if($this->dataNascimento == null)
+            return $this->dataNascimento;
+        else
+            return $this->dataNascimento->format('d/m/Y');
     }
 
     public function setDataNascimento(\DateTime $dataNascimento)
     {
-	$this->dataNascimento = $dataNascimento;
+        $this->dataNascimento = $dataNascimento;
         return $this;
     }
 
     public function getApelido()
     {
-	return $this->apelido;
+        return $this->apelido;
     }
 
     public function setApelido($apelido)
     {
-	$this->apelido = $apelido;
+        $this->apelido = $apelido;
         return $this;
     }
 
     public function getCargo()
     {
-	return $this->cargo;
+        return $this->cargo;
     }
 
     public function setCargo($cargo)
     {
-	$this->cargo = $cargo;
+        $this->cargo = $cargo;
         return $this;
     }
 
     public function getNacionalidade()
     {
-	return $this->nacionalidade;
+        return $this->nacionalidade;
     }
 
     public function setNacionalidade($nacionalidade)
     {
-	$this->nacionalidade = $nacionalidade;
+        $this->nacionalidade = $nacionalidade;
         return $this;
     }
 
     public function getNaturalidade()
     {
-	return $this->naturalidade;
+        return $this->naturalidade;
     }
 
     public function setNaturalidade($naturalidade)
     {
-	$this->naturalidade = $naturalidade;
+        $this->naturalidade = $naturalidade;
         return $this;
     }
 
     public function getIsFalecido()
     {
-	return $this->isFalecido;
+        return $this->isFalecido;
     }
 
     public function setIsFalecido($isFalecido)
     {
-	$this->isFalecido = $isFalecido;
+        $this->isFalecido = $isFalecido;
         return $this;
     }
 
     public function getNomeEmpregador()
     {
-	return $this->nomeEmpregador;
+        return $this->nomeEmpregador;
         return $this;
     }
 
     public function setNomeEmpregador($nomeEmpregador)
     {
-	$this->nomeEmpregador = $nomeEmpregador;
+        $this->nomeEmpregador = $nomeEmpregador;
         return $this;
     }
 
     public function getOrgaoExpedidorRg()
     {
-	return $this->orgaoExpedidorRg;
+        return $this->orgaoExpedidorRg;
     }
 
     public function setOrgaoExpedidorRg($orgaoExpedidorRg)
     {
-	$this->orgaoExpedidorRg = $orgaoExpedidorRg;
+        $this->orgaoExpedidorRg = $orgaoExpedidorRg;
         return $this;
     }
 
     public function getNomeMae()
     {
-	return $this->nomeMae;
+        return $this->nomeMae;
     }
 
     public function setNomeMae($nomeMae)
     {
-	$this->nomeMae = $nomeMae;
+        $this->nomeMae = $nomeMae;
         return $this;
     }
 
     public function getNomePai()
     {
-	return $this->nomePai;
+        return $this->nomePai;
     }
 
     public function setNomePai($nomePai)
     {
-	$this->nomePai = $nomePai;
+        $this->nomePai = $nomePai;
         return $this;
     }
 
     public function getCpf()
     {
-	return \Core\Util\String::mask($this->cpf, '###.###.###-##');
+        return \Core\Util\String::mask($this->cpf, '###.###.###-##');
     }
 
     public function setCpf($cpf)
     {
-	$cpf = str_replace(array('.', '-'), '', $cpf);
-	$this->cpf = $cpf;
+        $cpf = str_replace(array('.', '-'), '', $cpf);
+        $this->cpf = $cpf;
         return $this;
     }
 
     public function getMatriculaEmprego()
     {
-	return $this->matriculaEmprego;
+        return $this->matriculaEmprego;
     }
 
     public function setMatriculaEmprego($matriculaEmprego)
     {
-	$this->matriculaEmprego = $matriculaEmprego;
+        $this->matriculaEmprego = $matriculaEmprego;
         return $this;
     }
 
     public function getRg()
     {
-	return $this->rg;
+        return $this->rg;
     }
 
     public function setRg($rg)
     {
-	$this->rg = $rg;
+        $this->rg = $rg;
         return $this;
     }
 
     public function getUfOrgaoExpedidorRg()
     {
-	return $this->ufOrgaoExpedidorRg;
+        return $this->ufOrgaoExpedidorRg;
     }
 
     public function setUfOrgaoExpedidorRg($ufOrgaoExpedidorRg)
     {
-	$this->ufOrgaoExpedidorRg = $ufOrgaoExpedidorRg;
+        $this->ufOrgaoExpedidorRg = $ufOrgaoExpedidorRg;
     }
 
     public function getSalario()
     {
-	return $this->salario;
+        return $this->salario;
         return $this;
     }
 
     public function setSalario($salario)
-    {	
-	$this->salario = str_replace(array(',', '.'), '', $salario);
+    {
+        $this->salario = str_replace(array(',', '.'), '', $salario);
         return $this;
     }
-    
-    public function getGrauEscolaridade()     
+    public function getCodAtividade()
     {
-	return $this->grauEscolaridade;
+        return $this->codAtividade;
     }
-    
-    public function getSituacaoConjugal()     
+
+    public function setCodAtividade($codAtiviade)
     {
-	return $this->situacaoConjugal;
+        $this->codAtividade = $codAtiviade;
+        return $this;
+    }
+
+    public function getGrauEscolaridade()
+    {
+        return $this->grauEscolaridade;
+    }
+
+    public function getSituacaoConjugal()
+    {
+        return $this->situacaoConjugal;
     }
 }

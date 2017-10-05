@@ -193,9 +193,14 @@ class Inventario_IndexController  extends Action
             if (!empty($codInventarioErp)) {
                 /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
                 $inventarioRepo = $this->em->getRepository('wms:Inventario');
-                $inventarioRepo->setCodInventarioERP($id,$codInventarioErp);
-
-                $this->addFlashMessage('success', 'Código vinculado com sucesso!');
+                $check = $inventarioRepo->findOneBy(array('codInventarioERP' => $codInventarioErp));
+                if (empty($check)) {
+                    $inventarioRepo->setCodInventarioERP($id,$codInventarioErp);
+                    $this->addFlashMessage('success', 'Código vinculado com sucesso!');
+                } else {
+                    $idInventario = $check->getId();
+                    $this->addFlashMessage('error', "O inventário $idInventario já está vinculado com esse código $codInventarioErp");
+                }
                 $this->redirect('index');
             }
 
