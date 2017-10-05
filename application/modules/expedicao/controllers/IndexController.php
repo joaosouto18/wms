@@ -251,10 +251,11 @@ class Expedicao_IndexController extends Action {
                     $AndamentoRepo->save("Etiquetas da carga " . $cargaEn->getCodCargaExterno() . " canceladas na expedição " . $expedicaoAntiga, $expedicaoEn->getId());
                 }
                 $this->_em->flush();
-                $this->_helper->messenger('Foi criado uma nova expedição código ' . $expedicaoEn->getId() . " com a carga selecionada");
+//                $this->_helper->messenger('Foi criado uma nova expedição código ' . $expedicaoEn->getId() . " com a carga selecionada");
             } catch (\Exception $e) {
                 $this->_helper->messenger('error', $e->getMessage());
             }
+            $this->addFlashMessage('success','Foi criado uma nova expedição código ' . $expedicaoEn->getId() . " com a carga desagrupada");
             $this->redirect("index", 'index', 'expedicao');
         } elseif (isset($params['salvar']) && empty($params['placa'])) {
             $this->_helper->messenger('error', 'É necessário digitar uma placa');
