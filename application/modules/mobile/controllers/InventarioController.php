@@ -140,7 +140,7 @@ class Mobile_InventarioController extends Action
             $this->view->parametroValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
             $embalagemEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $codigoBarras));
             $validadeProduto = null;
-            if (isset($embalagemEn) && !empty($embalagemEn)) {
+            if (!empty($embalagemEn)) {
                 $validadeProduto = $embalagemEn->getProduto()->getValidade();
             }
             $this->view->validadeProduto = $validadeProduto;
