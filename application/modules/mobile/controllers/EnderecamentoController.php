@@ -1244,7 +1244,7 @@ class Mobile_EnderecamentoController extends Action
                             //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
                             if (($endereco->getIdCaracteristica() == $idCaracteristicaPicking || $endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
                                 if (isset($volume)) {
-                                    if ($endereco->getId() !== $volume->getEndereco()) {
+                                    if ($endereco->getId() !== $volume->getEndereco()->getId()) {
                                         throw new \Exception("Produto ja cadastrado no Picking " . $volume->getEndereco()->getDescricao() . "!");
                                     }
                                 }
