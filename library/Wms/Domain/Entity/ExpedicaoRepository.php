@@ -3193,7 +3193,6 @@ class ExpedicaoRepository extends EntityRepository {
         if (isset($codCarga) && !empty($codCarga)) {
             $sql->andWhere("c.id = $codCarga");
         }
-
         return $sql->getQuery()->getResult();
     }
 
