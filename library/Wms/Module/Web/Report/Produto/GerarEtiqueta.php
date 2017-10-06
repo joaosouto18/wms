@@ -17,7 +17,7 @@ use Wms\Util\Barcode\eFPDF,
 class GerarEtiqueta extends eFPDF
 {
 
-    public function init(array $nfParams = null,array $prodParams = null, $modelo, $target = "I")
+    public function init(array $nfParams = null,array $prodParams = null, $modelo, $target = "I", $importedFile = false)
     {
         $tipo = "";
         /*  PARA IMPRIMIR ETIQUETAS DE UM PRODUTO
@@ -37,6 +37,8 @@ class GerarEtiqueta extends eFPDF
             $tipo = "NF";
         }
 
+        $produtosEn = null;
+
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
 
         /** @var NotaFiscalRepository $notaFiscalRepo */
@@ -46,8 +48,17 @@ class GerarEtiqueta extends eFPDF
         } else if ($tipo == "Produto") {
             /** @var ProdutoRepository $produtoRepo */
             $produtoRepo = $em->getRepository('wms:Produto');
-            $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade);
             $target = Recebimento::TARGET_IMPRESSAO_PRODUTO;
+            if (!$importedFile) {
+                $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade);
+            } else {
+                foreach ($produtos as $produto) {
+                    $dados = $produtoRepo->buscarProdutosImprimirCodigoBarras($produto, $grade);
+                    foreach($dados as $dado) {
+                        $produtosEn[] = $dado;
+                    }
+                }
+            }
         }
 
         //geracao da etiqueta
@@ -69,6 +80,7 @@ class GerarEtiqueta extends eFPDF
                 }
             }
         }
+
         $this->Output("Etiqueta.pdf","D");
         exit;
     }
