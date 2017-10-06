@@ -8,6 +8,9 @@ use Doctrine\Common\Collections\ArrayCollection,
     Core\Util\Converter;
 use Wms\Domain\Entity\Produto;
 
+use Wms\Domain\Entity\Deposito\Endereco;
+$andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+
 /**
  * Description of Volume
  * @Table(name="PRODUTO_VOLUME")
@@ -181,6 +184,8 @@ class Volume
      */
     public function setProduto(ProdutoEntity $produto)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Produto', $this->produto, $produto);
         $this->produto = $produto;
         return $this;
     }
@@ -192,6 +197,8 @@ class Volume
 
     public function setGrade($grade)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Grade', $this->grade, $grade);
         $this->grade = $grade;
         return $this;
     }
@@ -251,6 +258,8 @@ class Volume
      */
     public function setAltura($altura)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Altura', number_format($this->altura, 3, ',', ''), $altura);
         $this->altura = Converter::brToEn($altura, 3);
         return $this;
     }
@@ -271,6 +280,8 @@ class Volume
      */
     public function setLargura($largura)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Largura', number_format($this->largura, 3, ',', ''), $largura);
         $this->largura = Converter::brToEn($largura, 3);
         return $this;
     }
@@ -291,6 +302,8 @@ class Volume
      */
     public function setProfundidade($profundidade)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Profundidade',  number_format($this->profundidade, 3, ',', ''), $profundidade);
         $this->profundidade = Converter::brToEn($profundidade, 3);
         return $this;
     }
@@ -311,6 +324,8 @@ class Volume
      */
     public function setCubagem($cubagem)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Cubagem', number_format($this->cubagem, 4, ',', ''), $cubagem);
         $this->cubagem = Converter::brToEn($cubagem, 4);
         return $this;
     }
@@ -329,9 +344,15 @@ class Volume
      * @param float $peso
      * @return Volume
      */
-    public function setPeso($peso)
+    public function setPeso($peso, $importacao = null)
     {
-        $this->peso = Converter::brToEn($peso, 3);
+        if (empty($importacao)) {
+            $this->peso = Converter::brToEn($peso, 3);
+        } else {
+            $this->peso = $peso;
+        }
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Peso', $this->peso, $peso);
         return $this;
     }
 
@@ -342,6 +363,8 @@ class Volume
 
     public function setDescricao($descricao)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Descrição Embalagem', $this->descricao, $descricao);
         $this->descricao = $descricao;
         return $this;
     }
@@ -362,6 +385,8 @@ class Volume
      */
     public function setCodigoBarras($codigoBarras)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Código de Barras', $this->codigoBarras, $codigoBarras);
         $this->codigoBarras = $codigoBarras;
         return $this;
     }
@@ -387,7 +412,30 @@ class Volume
 
     public function setEndereco($endereco)
     {
+
+        $dscOrigem = "Nenhum";
+        if ($this->endereco != null) {
+            if (gettype($this->endereco) == "string") {
+                $dscOrigem = $this->endereco;
+            } else {
+                $dscOrigem = $this->endereco->getDescricao();
+            }
+        }
+
+        $dscDestino = "Nenhum";
+        if ($endereco != null) {
+            if (gettype($endereco) == "string") {
+                $dscDestino = $endereco;
+            } else {
+                $dscDestino = $endereco->getDescricao();
+            }
+        }
+
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Endereço de Picking', $dscOrigem, $dscDestino);
+
         $this->endereco = $endereco;
+
         return $this;
     }
 
@@ -398,6 +446,8 @@ class Volume
 
     public function setCBInterno($CBInterno)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Código de barras interno', $this->CBInterno, $CBInterno);
         $this->CBInterno = $CBInterno;
         return $this;
     }
@@ -409,6 +459,8 @@ class Volume
 
     public function setImprimirCB($imprimirCB)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Imprimir código de barras interno', $this->imprimirCB, $imprimirCB);
         $this->imprimirCB = $imprimirCB;
         return $this;
     }
@@ -418,6 +470,9 @@ class Volume
      */
     public function setCapacidadePicking($capacidadePicking)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Capacidade de Picking', $this->capacidadePicking, $capacidadePicking);
+
         $this->capacidadePicking = $capacidadePicking;
     }
 
@@ -434,6 +489,8 @@ class Volume
      */
     public function setPontoReposicao($pontoReposicao)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Ponto de Reposição', $this->pontoReposicao, $pontoReposicao);
         $this->pontoReposicao = $pontoReposicao;
     }
 
@@ -458,6 +515,8 @@ class Volume
      */
     public function setCodProduto($codProduto)
     {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getProduto(), 'Código do Produto', $this->codProduto, $codProduto);
         $this->codProduto = $codProduto;
     }
 
