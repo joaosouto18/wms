@@ -3,10 +3,14 @@
     label[for='etiquetas-pessoa'],
     label[for='etiquetas-etiquetaFinal'],
     label[for='txtIntervalo'],
+    label[for='qtdConferentes'],
+    label[for='dataInicial'],
+    label[for='cpfBusca'],
+    label[for='dataFinal'],
     label[for='mapas-codMapaSeparacao'],
     label[for='mapas-pessoa'],
     label[for='etiquetas-etiquetaInicial']{
-        font-size: 16px;
+        font-size: 15px;
         font-weight: bold;
         text-align: center;
     }
@@ -17,19 +21,29 @@
 
     .inptText{
         display: block;
-        padding: 10px;
+        padding: 4px;
         border-radius: 10px;
-        font-size: 25px !important;
+        font-size: 18px !important;
+        /*padding-left: 40px;*/
         font-weight: bold;
+        text-align: center;
+        text-shadow: #9d9d9d;
+    }
+    .inptData{
+        display: block;
+        padding: 4px;
+        font-size: 18px !important;
+        font-weight: bold;
+        width: 122px  !important;
         text-align: center;
         text-shadow: #9d9d9d;
     }
 
     .btnSearch{
-        height: 40px;
-        width: 110px;
-        font-size: 20px !important;
-        margin-top: 19px;
+        height: 35px;
+        width: 105px;
+        font-size: 18px !important;
+        margin-top: 22px;
         margin-right: 10px;
     }
 
@@ -39,6 +53,11 @@
 
 </style>
 <script>
+    $( window ).load(function() {
+        // Run code
+        $('#qtdConferentes').val(<?php echo $this->qtdFunc?>);
+        $('#etiquetas-etiquetaInicial').focus();
+    });
     function gotoFinal(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiquetas-etiquetaInicial').value != "") {
@@ -77,18 +96,10 @@
     function gotoBuscar(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiquetas-pessoa').value != "") {
-                buscar = document.getElementById('etiquetas-buscar');
-                if (buscar) {
-                    buscar.focus();
-
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
-                    }
-                }
+                addLista();
             }
         }
+
         return true;
     }
 
@@ -127,7 +138,7 @@
         }
         return true;
     }
-
+    var qtdBipados = 0;
     $(function () {
         $('#etiquetas-etiquetaInicial').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
@@ -168,16 +179,17 @@
         $('#etiquetas-pessoa').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
                 if ($(this).val() != "") {
-                    var inptConferente = $("#etiquetas-buscar");
-                    if (inptConferente) {
-                        inptConferente.focus();
-                        event.stopPropagation();
-//                        if (event.preventDefault) {
-//                            event.preventDefault();
-//                        } else {
-//                            event.returnValue = false;
-//                        }
-                    }
+//                    addLista();
+//                    var inptConferente = $("#etiquetas-buscar");
+//                    if (inptConferente) {
+//                        inptConferente.focus();
+//                        event.stopPropagation();
+////                        if (event.preventDefault) {
+////                            event.preventDefault();
+////                        } else {
+////                            event.returnValue = false;
+////                        }
+//                    }
                     return true;
                 }
             }
@@ -255,8 +267,7 @@
             });
         });
 
-        $("#etiquetas-buscar").click(function () {
-
+        addLista = function () {
             var total = parseInt($('#txtIntervalo').val());
             var eI = $('#etiquetas-etiquetaInicial').val();
             var eF = $('#etiquetas-etiquetaFinal').val();
@@ -310,6 +321,7 @@
                 return false;
             }
             var erro = false;
+
             $('.gTResultSet td.intervalo').each(function () {
                 var vet = $(this).text().split(' - ');
                 var vetIntervalo = new Array();
@@ -334,10 +346,11 @@
                     }
                 }
             });
+
             var result = {intervalo: intervalo, total: total, cpf: cpf, pessoa: null};
             if (erro == false) {
                 $.ajax({
-                    url: 'conferente-apontamento-separacao-ajax/cpf/' + cpf,
+                    url: 'conferente-apontamento-separacao-ajax/cpf/' + cpf + '/etiquetaInicial/' + eI + '/etiquetaFinal/' + eF,
                     success: function (data) {
                         if (data.result === "Ok") {
                             result.pessoa = data.pessoa;
@@ -345,19 +358,31 @@
                             $('.gTResultSet').each(function (e) {
                                 if ($(this).find('.identifica').text() == result.cpf && $(this).find('.intervalo').text() == result.intervalo) {
                                     addLinha = false;
+                                    $.wmsDialogAlert({
+                                        title: 'Erro',
+                                        msg: 'Intervalo já foi bipado para esse funcionário',
+                                    });
+                                    $('#etiquetas-pessoa').val('');
                                     return false;
                                 }
                             });
                             if (addLinha) {
                                 addRow(result);
                             }
-                            //limpando os campos:
-                            $('#etiquetas-etiquetaInicial').val('');
-                            $('#etiquetas-etiquetaFinal').val('');
-                            $('#txtIntervalo').val('');
                             $('#etiquetas-pessoa').val('');
+                            qtdBipados++;
+                            var qtdFunc = $('#qtdConferentes').val();
+                            if(qtdBipados == qtdFunc){
+                                $('.save').click();
+                                //limpando os campos:
+                                $('#etiquetas-etiquetaInicial').val('');
+                                $('#etiquetas-etiquetaFinal').val('');
+                                $('#txtIntervalo').val('');
+                                $('#etiquetas-etiquetaInicial').focus();
+                            }else{
+                                $('#etiquetas-pessoa').focus();
+                            }
 
-                            $('#etiquetas-etiquetaInicial').focus();
                         } else if (data.result = 'Error') {
                             $.wmsDialogAlert({
                                 title: 'Alerta',
@@ -368,15 +393,39 @@
                     }
                 });
             } else {
+                alert('Etiqueta ' + (erro-1) + ' já foi bipada para esse funcionário');
+                $('#etiquetas-pessoa').val('');
+                $('#etiquetas-pessoa').focus();
                 $.wmsDialogAlert({
-                    title: 'Erro',
-                    msg: 'Etiqueta ' + erro + ' já foi bipada para esse conferente',
+                    title: 'Alerta',
+                    msg: 'Etiqueta ' + (erro-1) + ' já foi bipada para esse funcionário'
                 });
+
             }
+        },
+
+        $("#etiquetas-buscar").click(function () {
+           $('#tbResult tr').remove();
+            $.ajax({
+                url: 'busca-apontamento-separacao-ajax/',
+                type: 'post',
+                dataType: 'json',
+                data: $('#fieldset-consulta').serialize(),
+                success: function (data) {
+                    data.dados.forEach(function (dados, chave) {
+                        var object = new Object();
+                        object.intervalo = dados['INTERVALO'];
+                        object.pessoa = dados['NOM_PESSOA'];
+                        object.total = dados['TOTAL'];
+                        object.cpf = dados['CPF'].trim();
+                        object.codEquipe = dados['COD_EQUIPE_SEPARACAO'];
+                        addRow(object);
+                    });
+                }
+            });
         });
 
         function addRow(data) {
-
             var intervalo = null;
             var total = null;
             var mapa = null;
@@ -400,7 +449,6 @@
             var tbody = $('#tbResult');
             var tr = $('<tr>').addClass('gTResultSet');
 
-            tr.append($('<td>'));
             tr.append($('<td>').text(pessoa));
             tr.append($('<td class="identifica">').text(cpf));
             tr.append($('<td class="mapa">').text(mapa));
@@ -409,7 +457,7 @@
             tr.append($('<td class="tipo">').text(tipo));
             tr.append(
                     $('<td>').css('text-align', 'center').append(
-                    $('<a>').addClass('removeRow').prop('href', 'javascript://').append(
+                    $('<a>').attr('id', data.codEquipe).addClass('removeRow').prop('href', 'javascript://').append(
                     $('<img>').prop('src', basePath + "/img/icons/delete.png")
                     )
                     )
@@ -464,15 +512,15 @@
                 var etiquetas = $(this).children(".intervalo").text();
                 var cpf = $(this).children(".identifica").text();
                 var tipo = $(this).children(".tipo").text();
-                data.push({etiquetas: etiquetas, mapa: mapa, cpf: cpf, tipo: tipo});
+                var func = $('#qtdConferentes').val();
+                data.push({etiquetas: etiquetas, mapa: mapa, cpf: cpf, tipo: tipo, func: func});
             });
             if (data.length > 0) {
                 $.post("apontamento-separacao", {data: data}).success(function (data) {
-                    console.log(data);
                     if (data.result === 'Ok') {
                         $.wmsDialogAlert({
                             title: 'Alerta',
-                            msg: 'Todas os apontamentos foram salvos com sucesso!'
+                            msg: 'Todos os apontamentos foram salvos com sucesso!'
                         });
                         window.location.href = 'apontamento-separacao';
                     } else if (data.result === 'Error') {
@@ -491,11 +539,6 @@
             }
         });
 
-        $('#etiquetas-pessoa').keydown(function (e) {
-            if (e.which == 13) {
-                $('#etiquetas-buscar').click();
-            }
-        });
 
         $('.updateSeparacao').click(function () {
             $.each($('#tbResult').children(), function () {
@@ -519,11 +562,57 @@
 
         $(".removeRow").live('click', function () {
             if (confirm('Deseja realmente remover esse apontamento?')) {
-                $(this).parent().parent().remove();
-                $("#tbResult").trigger('tbChange');
+                var id = 0;
+                if($(this).attr('id') > 0){
+                    id = $(this).attr('id');
+                }
+                var btn = $(this);
+                    $.ajax({
+                        url: 'apaga-apontamento-separacao/',
+                        type: 'post',
+                        dataType: 'json',
+                        data: {id:id},
+                        success: function (data) {
+                            btn.parent().parent().remove();
+                            $("#tbResult").trigger('tbChange');
+                        },
+                        error: function(erro){
+                            alert('Você não está autorizado a executar essa ação.');
+                        }
+                    });
             }
         });
     });
+    function mascaraMutuario(o,f){
+        v_obj=o
+        v_fun=f
+        setTimeout('execmascara()',1)
+    }
+
+    function execmascara(){
+        v_obj.value=v_fun(v_obj.value)
+    }
+    function cpfCnpj(v){
+
+        //Remove tudo o que não é dígito
+        v=v.replace(/\D/g,"")
+
+        if (v.length <= 14) { //CPF
+
+            //Coloca um ponto entre o terceiro e o quarto dígitos
+            v=v.replace(/(\d{3})(\d)/,"$1.$2")
+
+            //Coloca um ponto entre o terceiro e o quarto dígitos
+            //de novo (para o segundo bloco de números)
+            v=v.replace(/(\d{3})(\d)/,"$1.$2")
+
+            //Coloca um hífen entre o terceiro e o quarto dígitos
+            v=v.replace(/(\d{3})(\d{1,2})$/,"$1-$2")
+
+        }
+        return v
+
+    }
 </script>
 
 <?php
@@ -533,7 +622,6 @@ echo $this->form;
     <table class="gTable ">
         <caption>Conferentes</caption>
         <tr class ="gTTitle">
-            <td></td>
             <td width="30%">Nome</td>
             <td width="13%">CPF</td>
             <td width="14%">Mapa</td>

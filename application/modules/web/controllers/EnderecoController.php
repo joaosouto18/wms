@@ -499,8 +499,7 @@ class Web_EnderecoController extends Crud
 
         if (empty($depositoEnderecoEn)) {
             $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco não encontrado!");
-        }
-        elseif ($this->getSystemParameterValue('PERMITE_NPRODUTO_PICKING') == 'N') {
+        } elseif ($this->getSystemParameterValue('PERMITE_NPRODUTO_PICKING') == 'N') {
             if ($depositoEnderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING) {
                 $produto = $depositoEnderecoRepo->getProdutoByEndereco($enderecoFormatado, true, true);
 
@@ -595,6 +594,10 @@ class Web_EnderecoController extends Crud
 
     public function corrigirEnderecoAjaxAction()
     {
+
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 3000);
+
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $endRepo */
         $endRepo = $this->_em->getRepository('wms:Deposito\Endereco');
         $enderecos = $endRepo->findAll();

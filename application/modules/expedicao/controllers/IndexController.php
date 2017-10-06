@@ -13,6 +13,7 @@ use \Wms\Module\Web\Page;
 class Expedicao_IndexController extends Action {
 
     public function indexAction() {
+        $em = $this->getEntityManager();
         $parametroPedidos = $this->getSystemParameterValue('COD_INTEGRACAO_PEDIDOS');
         Page::configure(array(
             'buttons' => array(
@@ -34,12 +35,65 @@ class Expedicao_IndexController extends Action {
         $this->view->form = $form;
         $params = $this->_getAllParams();
 
+        /** @var \Wms\Domain\Entity\Expedicao\TriggerCancelamentoCargaRepository $triggerCancelamentoCargaRepository */
+        $triggerCancelamentoCargaRepository = $em->getRepository('wms:Expedicao\TriggerCancelamentoCarga');
+        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
+        $cargaRepository = $em->getRepository('wms:Expedicao\Carga');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
+        $pedidoRepository = $em->getRepository('wms:Expedicao\Pedido');
+        /** @var \Wms\Domain\Entity\Expedicao\ReentregaRepository $ReentregaRepository */
+        $ReentregaRepository = $em->getRepository('wms:Expedicao\Reentrega');
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $NotaFiscalSaidaRepository */
+        $NotaFiscalSaidaRepository = $em->getRepository('wms:Expedicao\NotaFiscalSaida');
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepository */
+        $expedicaoAndamentoRepository = $em->getRepository('wms:Expedicao\Andamento');
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
+        $expedicaoRepository = $em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+        //CANCELAR CARGAS NO WMS JA CANCELADAS NO ERP
+        if ($this->getSystemParameterValue('REPLICAR_CANCELAMENTO_CARGA') == 'S') {
+            $acaoEn = $acaoIntRepo->find(24);
+            $cargasCanceladasEntities = $acaoIntRepo->processaAcao($acaoEn, null, 'L');
+            foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
+                $cargaEntity = $cargaRepository->findOneBy(array('codCargaExterno' => $cargaCanceladaEntity['COD_CARGA_EXTERNO']));
+                $cargaCanceladaEntity = $triggerCancelamentoCargaRepository->find($cargaCanceladaEntity['COD_CARGA_EXTERNO']);
+                if (!$cargaEntity && $cargaCanceladaEntity) {
+                    $em->remove($cargaCanceladaEntity);
+                    $em->flush();
+                    continue;
+                }
+                $pedidoEntities = $cargaRepository->getPedidos($cargaEntity->getId());
+                foreach ($pedidoEntities as $pedidoEntity) {
+                    $pedidoEntity = $pedidoRepository->find($pedidoEntity->getId());
+                    $pedidoRepository->removeReservaEstoque($pedidoEntity->getId(), false);
+                    $pedidoRepository->remove($pedidoEntity, false);
+                }
+
+                $ReentregaRepository->removeReentrega($cargaEntity->getId());
+                $NotaFiscalSaidaRepository->atualizaStatusNota($cargaEntity->getCodCargaExterno());
+                $cargaRepository->removeCarga($cargaEntity->getId());
+
+                $cargasByExpedicao = $cargaRepository->findOneBy(array('codExpedicao' => $cargaEntity->getCodExpedicao()));
+                if (!$cargasByExpedicao)
+                    $expedicaoRepository->alteraStatus($cargaEntity->getExpedicao(), Expedicao::STATUS_CANCELADO);
+
+                $expedicaoAndamentoRepository->save('carga ' . $cargaEntity->getCodCargaExterno() . ' removida', $cargaEntity->getCodExpedicao(), false, false);
+
+                if ($cargaCanceladaEntity) {
+                    $em->remove($cargaCanceladaEntity);
+                }
+                $em->flush();
+            }
+        }
+
         //INTEGRAR CARGAS NO MOMENTO Q ENTRAR NA TELA DE EXPEDICAO
         if (isset($parametroPedidos) && !empty($parametroPedidos)) {
             $explodeIntegracoes = explode(',', $parametroPedidos);
 
             /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
-            $acaoIntegracaoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+            $acaoIntegracaoRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
             foreach ($explodeIntegracoes as $codIntegracao) {
                 $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
                 $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity);
@@ -180,13 +234,13 @@ class Expedicao_IndexController extends Action {
         $this->view->totalExpedicao = $pesos;
     }
 
-    public function desagruparcargaAction() {
+    public function desagruparcargaAction()
+    {
         $params = $this->_getAllParams();
-
         if (isset($params['placa']) && !empty($params['placa'])) {
             $idCarga = $this->_getParam('COD_CARGA');
             $placa = $params['placa'];
-
+            $idExpedicao = $params['id'];
             /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $AndamentoRepo */
             $AndamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
@@ -195,43 +249,49 @@ class Expedicao_IndexController extends Action {
             $ExpedicaoRepo = $this->_em->getRepository('wms:Expedicao');
             /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $CargaRepo */
             $CargaRepo = $this->_em->getRepository('wms:Expedicao\Carga');
-
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepository */
+            $mapaSeparacaoRepository = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
             try {
                 /** @var \Wms\Domain\Entity\Expedicao\Carga $cargaEn */
                 $cargaEn = $CargaRepo->findOneBy(array('id' => $idCarga));
-
                 /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
                 $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
                 $pedidos = $pedidoRepo->findBy(array('codCarga' => $cargaEn->getId()));
+                $mapaSeparacaoCargas = $ExpedicaoRepo->getMapaSeparacaoCargasByExpedicao($idExpedicao);
+                $codMapaSeparacaoAnterior = null;
+                $codCargaAnterior = null;
 
-                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedidoRepository $ondaPedidoRepo */
-                $ondaPedidoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\OndaRessuprimentoPedido');
-                foreach ($pedidos as $pedidoEn) {
-                    //$ondaPedidoEn = $ondaPedidoRepo->findBy(array('pedido' => $pedidoEn->getId()));
+                $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
+                $pedidos = $pedidoRepo->findBy(array('codCarga' => $cargaEn->getId()));
 
-                    if ($pedidoEn->getIndEtiquetaMapaGerado() == 'S') {
-                        throw new \Exception('Carga não pode ser desagrupada, existem etiquetas/Mapas gerados!');
-                        //} else if (count($ondaPedidoEn) > 0) {
-                        //    throw new \Exception('Carga não pode ser desagrupada, existe ressuprimento gerado!');
+                foreach ($mapaSeparacaoCargas as $mapaSeparacaoCarga) {
+                    $codMapaSeparacao = $mapaSeparacaoCarga['codMapaSeparacao'];
+                    $codCarga = $mapaSeparacaoCarga['codCarga'];
+                    if ($codMapaSeparacao == $codMapaSeparacaoAnterior && $codCarga != $codCargaAnterior) {
+                        throw new \Exception('Carga não pode ser desagrupada, existem etiquetas/Mapas gerados para duas cargas distintas!');
                     }
+                    $codMapaSeparacaoAnterior = $mapaSeparacaoCarga['codMapaSeparacao'];
+                    $codCargaAnterior = $mapaSeparacaoCarga['codCarga'];
                 }
-
+                $mapasSeparacaoExcluir = $ExpedicaoRepo->getMapaSeparacaoCargasByExpedicao($idExpedicao, $idCarga);
+                foreach ($mapasSeparacaoExcluir as $mapaSeparacao) {
+                    $mapaSeparacaoEn = $mapaSeparacaoRepository->find($mapaSeparacao['codMapaSeparacao']);
+                    $this->_em->remove($mapaSeparacaoEn);
+                }
                 $countCortadas = $EtiquetaRepo->countByStatus(Expedicao\EtiquetaSeparacao::STATUS_CORTADO, $cargaEn->getExpedicao(), null, null, $idCarga);
                 $countTotal = $EtiquetaRepo->countByStatus(null, $cargaEn->getExpedicao(), null, null, $idCarga);
-
                 if ($countTotal != $countCortadas) {
                     throw new \Exception('A Carga ' . $cargaEn->getCodCargaExterno() . ' possui etiquetas que não foram cortadas e não pode ser removida da expedição');
                 }
-
                 $cargas = $ExpedicaoRepo->getCargas($cargaEn->getCodExpedicao());
                 if (count($cargas) <= 1) {
                     throw new \Exception('A Expedição não pode ficar sem cargas');
                 }
-
                 foreach ($pedidos as $pedido) {
-                    $pedidoRepo->removeReservaEstoque($pedido->getId());
+                    $pedidoRepo->removeReservaEstoque($pedido->getId(), false);
+                    $pedido->setIndEtiquetaMapaGerado('N');
+                    $this->_em->persist($pedido);
                 }
-
                 $AndamentoRepo->save("Carga " . $cargaEn->getCodCargaExterno() . " retirada da expedição atraves do desagrupamento de cargas", $cargaEn->getCodExpedicao());
                 $expedicaoAntiga = $cargaEn->getCodExpedicao();
                 $expedicaoEn = $ExpedicaoRepo->save($placa);
@@ -239,19 +299,17 @@ class Expedicao_IndexController extends Action {
                 $cargaEn->setSequencia(1);
                 $cargaEn->setPlacaCarga($placa);
                 $this->_em->persist($cargaEn);
-
-
                 if ($countCortadas > 0) {
                     $expedicaoEn->setStatus(EXPEDICAO::STATUS_CANCELADO);
                     $this->_em->persist($expedicaoEn);
                     $AndamentoRepo->save("Etiquetas da carga " . $cargaEn->getCodCargaExterno() . " canceladas na expedição " . $expedicaoAntiga, $expedicaoEn->getId());
                 }
-
                 $this->_em->flush();
-                $this->_helper->messenger('Foi criado uma nova expedição código ' . $expedicaoEn->getId() . " com a carga selecionada");
+//                $this->_helper->messenger('Foi criado uma nova expedição código ' . $expedicaoEn->getId() . " com a carga selecionada");
             } catch (\Exception $e) {
                 $this->_helper->messenger('error', $e->getMessage());
             }
+            $this->addFlashMessage('success','Foi criado uma nova expedição código ' . $expedicaoEn->getId() . " com a carga desagrupada");
             $this->redirect("index", 'index', 'expedicao');
         } elseif (isset($params['salvar']) && empty($params['placa'])) {
             $this->_helper->messenger('error', 'É necessário digitar uma placa');
@@ -326,12 +384,24 @@ class Expedicao_IndexController extends Action {
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
         /** @var \Wms\Domain\Entity\Expedicao\EquipeSeparacaoRepository $equipeSeparacaoRepo */
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        $numFunc = $equipeSeparacaoRepo->findBy(array(),array('numFuncionario'=>'DESC'));
+        if(empty($numFunc)){
+            $func = 1;
+        }else{
+            if($numFunc[0]->getNumFuncionario() == 0 || $numFunc[0]->getNumFuncionario() == null){
+                $func = 1;
+            }else{
+                $func = $numFunc[0]->getNumFuncionario();
+            }
+
+        }
+
         $form = new \Wms\Module\Produtividade\Form\EquipeSeparacao();
         $params = $this->_getAllParams();
+        $this->view->qtdFunc = $func;
         unset($params['module']);
         unset($params['controller']);
         unset($params['action']);
-
         try {
             if (isset($params['data']) && !empty($params['data'])) {
                 $data = $params['data'];
@@ -342,6 +412,7 @@ class Expedicao_IndexController extends Action {
                         $etiquetas = explode('-', $params['etiquetas']);
                         $etiquetaInicial = trim($etiquetas[0]);
                         $etiquetaFinal = trim($etiquetas[1]);
+                        $numFunc = $params['func'];
 
                         //ENCONTRA O USUARIO DIGITADO
                         /** @var Expedicao\EquipeSeparacao $usuarioEn */
@@ -368,7 +439,7 @@ class Expedicao_IndexController extends Action {
                                 if ($inicial != 0) {
                                     $iteracao = $intervalo['etiquetaInicial'] - $final;
                                     if ($iteracao > 1) {
-                                        $equipeSeparacaoRepo->save($final + 1, $intervalo['etiquetaInicial'] - 1, $usuarioEn, false);
+                                        $equipeSeparacaoRepo->save($final + 1, $intervalo['etiquetaInicial'] - 1, $usuarioEn, $numFunc,false);
                                     }
                                 } else {
                                     $menorIntervalo = $intervalo['etiquetaInicial'];
@@ -380,14 +451,14 @@ class Expedicao_IndexController extends Action {
                                 }
                             }
                             if ($etiquetaInicial < $menorIntervalo) {
-                                $equipeSeparacaoRepo->save($etiquetaInicial, $menorIntervalo - 1, $usuarioEn, false);
+                                $equipeSeparacaoRepo->save($etiquetaInicial, $menorIntervalo - 1, $usuarioEn,$numFunc, false);
                             }
                             if ($etiquetaFinal > $final) {
-                                $equipeSeparacaoRepo->save($final + 1, $etiquetaFinal, $usuarioEn, false);
+                                $equipeSeparacaoRepo->save($final + 1, $etiquetaFinal, $usuarioEn,$numFunc, false);
                             }
                             $this->getEntityManager()->flush();
                         } else {
-                            $equipeSeparacaoRepo->save($etiquetaInicial, $etiquetaFinal, $usuarioEn);
+                            $equipeSeparacaoRepo->save($etiquetaInicial, $etiquetaFinal, $usuarioEn,$numFunc);
                         }
                     } elseif ($params['tipo'] == 'Mapa') {
                         $cpf = str_replace(array('.', '-'), '', $params['cpf']);
@@ -455,18 +526,99 @@ class Expedicao_IndexController extends Action {
     public function conferenteApontamentoSeparacaoAjaxAction() {
         $params = $this->_getAllParams();
         $cpf = str_replace(array('.', '-'), '', $params['cpf']);
-
+        $erro = '';
         /** @var \Wms\Domain\Entity\UsuarioRepository $usuarioRepo */
         $usuarioRepo = $this->getEntityManager()->getRepository('wms:Usuario');
+        $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
+        $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
         $result = $usuarioRepo->getPessoaByCpf($cpf);
 
-        if (!empty($result)) {
-            $response = array('result' => 'Ok', 'pessoa' => $result[0]['NOM_PESSOA']);
-        } else {
-            $response = array('result' => 'Error', 'msg' => "Nenhum conferente encontrado com este CPF");
+        //FORMATA OS DADOS RECEBIDOS
+        $etiquetaInicial = trim($params['etiquetaInicial']);
+        $etiquetaFinal = trim($params['etiquetaFinal']);
+        //ENCONTRA O USUARIO DIGITADO
+        /** @var Expedicao\EquipeSeparacao $usuarioEn */
+        $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+        //VERIFICA O USUARIO
+        if (is_null($usuarioEn)) {
+            $erro = 'Nenhum conferente encontrado com este CPF';
+        }else{
+           $usuario = $usuarioRepo->getPessoaByCpf($cpf);
+        }
+        //VERIFICA AS ETIQUETAS
+        if (is_null($etiquetaFinal))
+            $etiquetaFinal = $etiquetaInicial;
+
+        if (is_null($etiquetaInicial))
+            $etiquetaInicial = $etiquetaFinal;
+
+
+        //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
+        $inicial = 0;
+        $final = 0;
+        $menorIntervalo = 0;
+        $salvar = false;
+        if(empty($erro)) {
+            $equipeSeparacaoEn = $equipeSeparacaoRepo->getIntervaloEtiquetaUsuario($usuarioEn);
+            if (is_array($equipeSeparacaoEn) && count($equipeSeparacaoEn) > 0) {
+                foreach ($equipeSeparacaoEn as $intervalo) {
+
+                    if ($inicial != 0) {
+                        $iteracao = $intervalo['etiquetaInicial'] - $final;
+                        if ($iteracao > 1) {
+                            $salvar = true;
+                        }
+                    } else {
+                        $menorIntervalo = $intervalo['etiquetaInicial'];
+                    }
+                    $inicial = $intervalo['etiquetaInicial'];
+                    $final = $intervalo['etiquetaFinal'];
+                    if ($intervalo['etiquetaFinal'] < $etiquetaInicial) {
+                        $final = $etiquetaInicial - 1;
+                    }
+                }
+                if ($etiquetaInicial < $menorIntervalo) {
+                    $salvar = true;
+                }
+                if ($etiquetaFinal > $final) {
+                    $salvar = true;
+                }
+            } else {
+                $salvar = true;
+            }
+        }
+
+
+        if (empty($erro) && $salvar == true) {
+            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA']);
+        } elseif($salvar == false && empty($erro)) {
+            $response = array('result' => 'Error', 'msg' => "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA']);
+        }else{
+            $response = array('result' => 'Error', 'msg' => $erro);
         }
 
         $this->_helper->json($response);
+    }
+
+    public function buscaApontamentoSeparacaoAjaxAction(){
+        $params = $this->_getAllParams();
+        $cpf = str_replace(array('.', '-'), '', $params['etiquetas']['cpfBusca']);
+        $dataInicio = $params['etiquetas']['dataInicial'];
+        $dataFim = $params['etiquetas']['dataFinal'];
+        $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        $result = $equipeSeparacaoRepo->getApontamentosProdutividade($cpf, $dataInicio, $dataFim);
+        $this->_helper->json(array('dados' => $result));
+    }
+
+    public function apagaApontamentoSeparacaoAction()
+    {
+        $params = $this->_getAllParams();
+        $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        if ($params['id'] > 0) {
+            $this->_em->remove($equipeSeparacaoRepo->find($params['id']));
+            $this->_em->flush();
+        }
+        $this->_helper->json(array());
     }
 
     public function equipeCarregamentoAction() {

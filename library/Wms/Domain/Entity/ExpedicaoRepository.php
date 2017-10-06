@@ -2446,7 +2446,10 @@ class ExpedicaoRepository extends EntityRepository {
             $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
         }
 
-        $codBarras = ColetorUtil::retiraDigitoIdentificador($codBarras);
+        if ($tipoEtiqueta != EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME) {
+            $codBarras = ColetorUtil::retiraDigitoIdentificador($codBarras);
+        }
+
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO) {
             //ETIQUETA DE SEPARAÇÃO
             $etiquetaSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao')->find($codBarras);
@@ -3193,7 +3196,6 @@ class ExpedicaoRepository extends EntityRepository {
         if (isset($codCarga) && !empty($codCarga)) {
             $sql->andWhere("c.id = $codCarga");
         }
-
         return $sql->getQuery()->getResult();
     }
 

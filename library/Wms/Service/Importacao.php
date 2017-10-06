@@ -884,11 +884,12 @@ class Importacao
                     ->orWhere("e.codigoBarras = '$produto[codBarras]'");
 
                 $saldos = $stmt->getQuery()->getResult();
-            } elseif (isset($produto['codProduto']) and !empty($produto['codProduto'])) {
+            }
+            if (empty($saldos) && (isset($produto['codProduto']) && !empty($produto['codProduto']))) {
                 $saldos = $vSaldoCompletoRepo->findBy(array('codProduto' => $produto['codProduto'], 'grade' => $produto['grade']));
             }
 
-            if (empty($saldos)) throw new \Exception("Nenhum produto foi encontrado!");
+            if (empty($saldos)) throw new \Exception("Nenhum produto foi encontrado com o código de barras $produto[codBarras] ou codigo de produto $produto[codProduto]");
 
             $enderecosSalvos[] = array();
 
@@ -1009,15 +1010,16 @@ class Importacao
 
             /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEntity */
             $embalagemEntity = new Produto\Embalagem();
-            $embalagemEntity = \Wms\Domain\Configurator::configure($embalagemEntity, $registro);
             $embalagemEntity->setProduto($produto);
+            $embalagemEntity->setEndereco($registro['enderecoEn']);
+            unset($registro['endereco']);
+            $embalagemEntity = \Wms\Domain\Configurator::configure($embalagemEntity, $registro);
             if ($registro['codigoBarras'] == "") {
                 $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20" . $embalagemEntity->getId());
                 $embalagemEntity->setCodigoBarras($codigoBarras);
             } else {
                 $embalagemEntity->setCodigoBarras($codigoBarras);
             }
-            $embalagemEntity->setEndereco($registro['enderecoEn']);
             $em->persist($embalagemEntity);
 
             return true;
@@ -1120,56 +1122,57 @@ class Importacao
     public function saveEndereco($em, $arrDados)
     {
         try {
+            $entity = new Endereco();
+            Configurator::configure($entity, $arrDados);
 
-            $arrQtdDigitos = EnderecoUtil::getQtdDigitos();
-            $endereco = EnderecoUtil::formatar($arrDados['endereco'], EnderecoUtil::FORMATO_MATRIZ_ASSOC, $arrQtdDigitos);
-            $arrDados = array_merge($arrDados, $endereco);
-
-            $entity = $em->getRepository('wms:Deposito\Endereco')->findOneBy($endereco);
-
-            if (!$entity) {
-            
-                if (isset($arrDados['caracteristica']) && !empty($arrDados['caracteristica'])){
-                    $temp = $arrDados['caracteristica'];
-                    $arrDados['caracteristica'] = $em->getRepository('wms:Deposito\Endereco\Caracteristica')->findOneBy(array("id" => $arrDados['caracteristica']));
-                    if (empty($arrDados['caracteristica']))
-                        throw new \Exception("A característica de endereço com o código $temp não foi encontrada.");
-                }
-    
-                if (isset($arrDados['estruturaArmazenagem']) && !empty($arrDados['estruturaArmazenagem'])) {
-                    $temp = $arrDados['estruturaArmazenagem'];
-                    $arrDados['estruturaArmazenagem'] = $em->getRepository('wms:Armazenagem\Estrutura\Tipo')->findOneBy(array("id" => $arrDados['estruturaArmazenagem']));
-                    if (empty($arrDados['estruturaArmazenagem']))
-                        throw new \Exception("A estrutura de armazenagem com o código $temp não foi encontrada.");
-                }
-
-                if (isset($arrDados['tipoEndereco']) && !empty($arrDados['tipoEndereco'])) {
-                    $temp = $arrDados['tipoEndereco'];
-                    $arrDados['tipoEndereco'] = $em->getRepository('wms:Deposito\Endereco\Tipo')->findOneBy(array("id" => $arrDados['tipoEndereco']));
-                    if (empty($arrDados['tipoEndereco']))
-                        throw new \Exception("O tipo de endereço com o código $temp não foi encontrado.");
-                }
-
-                if (isset($arrDados['areaArmazenagem']) && !empty($arrDados['areaArmazenagem'])) {
-                    $temp = $arrDados['areaArmazenagem'];
-                    $arrDados['areaArmazenagem'] = $em->getRepository('wms:Deposito\AreaArmazenagem')->findOneBy(array("id" => $arrDados['areaArmazenagem']));
-                    if (empty($arrDados['areaArmazenagem']))
-                        throw new \Exception("A área de armazenagem com o código $temp não foi encontrada");
-                }
-
-                if (isset($arrDados['deposito']) && !empty($arrDados['deposito'])) {
-                    $temp = $arrDados['deposito'];
-                    $arrDados['deposito'] = $em->getRepository('wms:Deposito')->findOneBy(array("id" => $arrDados['deposito']));
-                    if (empty($arrDados['deposito']))
-                        throw new \Exception("O depósito de código $temp não foi encontrado");
-                }
-                
-                $entity = new Endereco();
-                Configurator::configure($entity, $arrDados);
-                
-                $entity->setDescricao($endereco);
-                $em->persist($entity);
+            if (isset($arrDados['caracteristica']) && !empty($arrDados['caracteristica'])){
+                $temp = $arrDados['caracteristica'];
+                $caracTeristica = $em->getRepository('wms:Deposito\Endereco\Caracteristica')->findOneBy(array("id" => $arrDados['caracteristica']));
+                if (empty($caracTeristica))
+                    throw new \Exception("A característica de endereço com o código $temp não foi encontrada.");
+                $entity->setCaracteristica($caracTeristica);
+                $entity->setIdCaracteristica($caracTeristica->getId());
             }
+
+            if (isset($arrDados['estruturaArmazenagem']) && !empty($arrDados['estruturaArmazenagem'])) {
+                $temp = $arrDados['estruturaArmazenagem'];
+                $estruturaArmazenagem = $em->getRepository('wms:Armazenagem\Estrutura\Tipo')->findOneBy(array("id" => $arrDados['estruturaArmazenagem']));
+                if (empty($estruturaArmazenagem))
+                    throw new \Exception("A estrutura de armazenagem com o código $temp não foi encontrada.");
+                $entity->setEstruturaArmazenagem($estruturaArmazenagem);
+                $entity->setIdEstruturaArmazenagem($estruturaArmazenagem->getId());
+            }
+
+            if (isset($arrDados['tipoEndereco']) && !empty($arrDados['tipoEndereco'])) {
+                $temp = $arrDados['tipoEndereco'];
+                $tipoEndereco= $em->getRepository('wms:Deposito\Endereco\Tipo')->findOneBy(array("id" => $arrDados['tipoEndereco']));
+                if (empty($tipoEndereco))
+                    throw new \Exception("O tipo de endereço com o código $temp não foi encontrado.");
+                $entity->setTipoEndereco($tipoEndereco);
+                $entity->setIdTipoEndereco($tipoEndereco->getId());
+            }
+
+            if (isset($arrDados['areaArmazenagem']) && !empty($arrDados['areaArmazenagem'])) {
+                $temp = $arrDados['areaArmazenagem'];
+                $areaArmazenagem = $em->getRepository('wms:Deposito\AreaArmazenagem')->findOneBy(array("id" => $arrDados['areaArmazenagem']));
+                if (empty($areaArmazenagem))
+                    throw new \Exception("A área de armazenagem com o código $temp não foi encontrada");
+                $entity->setAreaArmazenagem($areaArmazenagem);
+                $entity->setIdAreaArmazenagem($areaArmazenagem->getId());
+            }
+
+            if (isset($arrDados['deposito']) && !empty($arrDados['deposito'])) {
+                $temp = $arrDados['deposito'];
+                $deposito = $em->getRepository('wms:Deposito')->findOneBy(array("id" => $arrDados['deposito']));
+                if (empty($deposito))
+                    throw new \Exception("O depósito de código $temp não foi encontrado");
+                $entity->setDeposito($deposito);
+                $entity->setIdDeposito($deposito->getId());
+            }
+
+            $entity->setDescricao($arrDados['endereco']);
+            $em->persist($entity);
+
             return true;
         }catch (\Exception $e){
             return $e->getMessage();

@@ -451,7 +451,7 @@ class Embalagem {
      */
     public function setAltura($altura) {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this->getProduto(), 'Altura', $this->altura, $altura);
+        $andamentoRepo->checksChange($this->getProduto(), 'Altura', number_format($this->altura, 3, ',', ''), $altura);
         $this->altura = Converter::brToEn($altura, 3);
         return $this;
     }
@@ -470,7 +470,7 @@ class Embalagem {
      */
     public function setLargura($largura) {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this->getProduto(), 'Largura', $this->largura, $largura);
+        $andamentoRepo->checksChange($this->getProduto(), 'Largura', number_format($this->largura, 3, ',', ''), $largura);
         $this->largura = Converter::brToEn($largura, 3);
         return $this;
     }
@@ -489,7 +489,7 @@ class Embalagem {
      */
     public function setProfundidade($profundidade) {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this->getProduto(), 'Profundidade', $this->profundidade, $profundidade);
+        $andamentoRepo->checksChange($this->getProduto(), 'Profundidade',  number_format($this->profundidade, 3, ',', ''), $profundidade);
         $this->profundidade = Converter::brToEn($profundidade, 3);
         return $this;
     }
@@ -508,7 +508,7 @@ class Embalagem {
      */
     public function setCubagem($cubagem) {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this->getProduto(), 'Cubagem', $this->cubagem, $cubagem);
+        $andamentoRepo->checksChange($this->getProduto(), 'Cubagem', number_format($this->cubagem, 4, ',', ''), $cubagem);
         $this->cubagem = Converter::brToEn($cubagem, 4);
         return $this;
     }

@@ -1191,8 +1191,10 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
          * @var  $key
          * @var  Embalagem $embalagem */
         foreach ($embalagemEn as $key => $embalagem) {
-            if (!empty($embalagem->getDataInativacao())) continue;
-            elseif ($embalagem->getEndereco() != null) {
+            $dataInativacao = $embalagem->getDataInativacao();
+            if (!is_null($dataInativacao)) {
+                continue;
+            } elseif ($embalagem->getEndereco() != null) {
                 if ($tipoRetorno == "DSC") {
                     $enderecoPicking[$key] = $embalagem->getEndereco()->getDescricao();
                 } else {

@@ -116,9 +116,8 @@ class DadoLogistico {
      * @param decimal $altura 
      */
     public function setAltura($altura) {
-        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Altura', $this->altura, $altura);
-        $this->altura = Converter::brToEn($altura, 3);
+       /* $andamenRepo->checksChange($this->getEmbalagem()->getProduto(), 'Altura', $this->altura, $altura);
+        $this->altura = Converter::brToEn($altura, 3);*/
         return $this;
     }
 
@@ -135,8 +134,8 @@ class DadoLogistico {
      * @param decimal $largura 
      */
     public function setLargura($largura) {
-        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Largura', $this->largura, $largura);
+        /*$andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Largura', $this->largura, $largura);*/
         $this->largura = Converter::brToEn($largura, 3);
         return $this;
     }
@@ -154,8 +153,8 @@ class DadoLogistico {
      * @param decimal $profundidade 
      */
     public function setProfundidade($profundidade) {
-        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Profundidade', $this->profundidade, $profundidade);
+        /*$andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Profundidade', $this->profundidade, $profundidade);*/
         $this->profundidade = Converter::brToEn($profundidade, 3);
         return $this;
     }
@@ -173,8 +172,8 @@ class DadoLogistico {
      * @param decimal $cubagem 
      */
     public function setCubagem($cubagem) {
-        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Cubagem', $this->cubagem, $cubagem);
+        /*$andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Cubagem', $this->cubagem, $cubagem);*/
         $this->cubagem = Converter::brToEn($cubagem, 4);
         return $this;
     }
@@ -198,8 +197,8 @@ class DadoLogistico {
         } else {
             $this->peso = $peso;
         }
-        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Peso', $this->peso, $peso);
+        /*$andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this->getEmbalagem()->getProduto(), 'Peso', $this->peso, $peso);*/
         return $this;
     }
 

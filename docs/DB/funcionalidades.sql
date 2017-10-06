@@ -186,4 +186,7 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (186, '6.2.5', 'Correção: Lentidão ao voltar de impressão de etiqueta para tela de checkout', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (187, '6.2.5', 'Correção: Mensagem de item conferido a mais na conferência de mapas de separação', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (188, '6.2.5', 'Correção: Inativação de usuários', '8-parametro-status-recebimento-enderecado.sql',SYSDATE);
-
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, '6.2.5', 'Permissão de excluir tela apontamento produtividade', 'xx-qtd-funcionario-apontamento-produtividade.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, '6.2.0', 'Cod atividade cadastro usuario', '2-cod-atividade-pessoa-fisica.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, '6.3.0', 'Melhoria: Cancelar carga no WMS ao cancelar no ERP', '2-cancelamento-carga-erp.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xx, '6.3.0', 'Melhoria: Desagrupar carga no wms mesmo após impressao de mapas/etiquetas', null, SYSDATE);

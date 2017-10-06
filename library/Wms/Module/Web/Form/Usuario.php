@@ -36,12 +36,12 @@ class Usuario extends Form
 
     public function setDefaultsFromEntity(UsuarioEntity $usuario)
     {
-	$pessoa = $usuario->getPessoa();
-	
-	$this->getSubForm('acesso')->setDefaultsFromEntity($usuario);
-	$this->getSubForm('pessoa')->setDefaultsFromEntity($pessoa);
-	$this->getSubForm('telefones')->setDefaultsFromEntity($pessoa);
-	$this->getSubForm('enderecos')->setDefaultsFromEntity($pessoa);
+        $pessoa = $usuario->getPessoa();
+
+        $this->getSubForm('acesso')->setDefaultsFromEntity($usuario);
+        $this->getSubForm('pessoa')->setDefaultsFromEntity($pessoa);
+        $this->getSubForm('telefones')->setDefaultsFromEntity($pessoa);
+        $this->getSubForm('enderecos')->setDefaultsFromEntity($pessoa);
     }
 
 }

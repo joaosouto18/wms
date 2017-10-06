@@ -61,12 +61,24 @@ class Inventario_ParcialController extends Action
             $grid = new ProdutosGrid();
 
             $grid->setHiddenId($idInventario);
+            if(isset($values['limpar-lista'])){
+                $values['incluirinput'] = 0;
+                $values['id'] = 1;
+            }
             $grid->init($values)->render();
             $pager = $grid->getPager();
             $pager->setMaxPerPage(30000);
             $grid->setPager($pager);
             $this->view->grid = $grid->render();
-
+            if(isset($values['limpar-lista'])){
+                $values['incluirinput'] = '';
+//                $values['id'] = '';
+                unset($values['limpar-lista']);
+                unset($values['idLinhaSeparacao']);
+                unset($values['grade']);
+                unset($values['descricao']);
+                unset($values['id']);
+            }
             $form->setSession($values)
                 ->populate($values);
         }

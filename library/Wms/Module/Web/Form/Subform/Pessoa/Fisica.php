@@ -23,6 +23,8 @@ class Fisica extends \Core\Form\SubForm {
         $tipoOrganizacao = $sigla->getIdValue(13);
         // uf
         $uf = $sigla->getIdValue(32);
+        $repoAtividade = $this->getEm()->getRepository('wms:Atividade');
+        $atividadePrincipal = $repoAtividade->getIdValue();
 
         $this->addElement('hidden', 'id', array(
             'value' => ''
@@ -111,6 +113,10 @@ class Fisica extends \Core\Form\SubForm {
             'label' => 'Tipo Organização',
             'multiOptions' => $tipoOrganizacao
         ));
+        $this->addElement('select', 'codAtividade', array(
+            'label' => 'Atividade Principal',
+            'multiOptions' => $atividadePrincipal
+        ));
         $this->addElement('text', 'matriculaEmprego', array(
             'label' => 'Matrícula',
             'maxlength' => 20
@@ -180,6 +186,7 @@ class Fisica extends \Core\Form\SubForm {
             'dataAdmissaoEmprego',
             'cargo',
             'salario',
+            'codAtividade',
                 ), 'documentos', array('legend' => 'Documentos e Contratação'
         ));
 
@@ -206,6 +213,7 @@ class Fisica extends \Core\Form\SubForm {
         'nomePai' => $pessoaFisica->getNomePai(),
         'nomeEmpregador' => $pessoaFisica->getNomeEmpregador(),
         'idTipoOrganizacao' => $pessoaFisica->getIdTipoOrganizacao(),
+        'codAtividade' => $pessoaFisica->getCodAtividade(),
         'matriculaEmprego' => $pessoaFisica->getMatriculaEmprego(),
         'dataAdmissaoEmprego' => $pessoaFisica->getDataAdmissaoEmprego(),
         'cargo' => $pessoaFisica->getCargo(),

@@ -39,6 +39,11 @@ class EquipeSeparacao
     protected $etiquetaFinal;
 
     /**
+     * @Column(name="NUM_FUNCIONARIO", type="integer", nullable=false)
+     */
+    protected $numFuncionario;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -116,6 +121,21 @@ class EquipeSeparacao
     public function setEtiquetaFinal($etiquetaFinal)
     {
         $this->etiquetaFinal = $etiquetaFinal;
+    }
+    /**
+     * @return mixed
+     */
+    public function getNumFuncionario()
+    {
+        return $this->numFuncionario;
+    }
+
+    /**
+     * @param mixed $numFuncionario
+     */
+    public function setNumFuncionario($numFuncionario)
+    {
+        $this->numFuncionario = $numFuncionario;
     }
     
 }
