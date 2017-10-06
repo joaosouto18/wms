@@ -453,8 +453,21 @@ class Wms_WebService_Expedicao extends Wms_WebService
             return array('liberado' => true);
         } else {
             if ($expedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) {
-                /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-                return array('liberado' => true);
+
+                $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
+                $parametro = $parametroRepo->findOneBy(array('constante' => 'LIBERA_FATUAMENTO_PARCIALMENTE_FINALIZADO'));
+
+                if ($parametro == "S") {
+                    return array('liberado' => true);
+                } else {
+                    /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+                    $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
+                    $pedidosPendentes = $pedidoRepo->findPedidosNaoConferidos($expedicao->getId(), $carga->getId());
+
+                    if ($pedidosPendentes == null) {
+                        return array('liberado' => true);
+                    }
+                }
             }
             return array('liberado' => false);
         }
