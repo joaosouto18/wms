@@ -1135,6 +1135,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $this->_em->flush();
             $this->_em->clear();
 
+            $this->removeMapaSeparacaoVazio($idExpedicao);
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
             if ($parametroConsistencia == 'S') {
                 $resultadoConsistencia = $mapaSeparacaoRepo->verificaConsistenciaSeguranca($idExpedicao);
@@ -1264,15 +1265,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     private function removeMapaSeparacaoVazio($idExpedicao)
     {
-        $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
-        $mapaSeparacaoEntities = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao));
-        foreach ($mapaSeparacaoEntities as $mapaSeparacaoEntity) {
-            $mapaSeparacaoProdutoEntity = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
-            if (!isset($mapaSeparacaoProdutoEntity) || empty($mapaSeparacaoProdutoEntity)) {
-                $this->getEntityManager()->remove($mapaSeparacaoEntity);
-            }
+        $sql = "SELECT DISTINCT MS.COD_MAPA_SEPARACAO 
+                    FROM MAPA_SEPARACAO MS
+                    LEFT JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                WHERE MS.COD_EXPEDICAO = $idExpedicao AND MSP.COD_MAPA_SEPARACAO IS NULL";
+        $mapaSeparacaoEntities = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        foreach ($mapaSeparacaoEntities as $mapaSeparacao) {
+            $mapaSeparacaoEntity = $mapaSeparacaoRepo->find($mapaSeparacao['COD_MAPA_SEPARACAO']);
+            $this->getEntityManager()->remove($mapaSeparacaoEntity);
         }
+        $this->getEntityManager()->flush();
     }
 
     private function atualizaMapaSeparacaoQuebra($expedicaoEntity, $statusEntity)
