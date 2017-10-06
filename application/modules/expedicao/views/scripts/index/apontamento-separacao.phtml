@@ -58,6 +58,7 @@
         $('#qtdConferentes').val(<?php echo $this->qtdFunc?>);
         $('#etiquetas-etiquetaInicial').focus();
     });
+
     function gotoFinal(event) {
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('etiquetas-etiquetaInicial').value != "") {
@@ -139,6 +140,14 @@
         return true;
     }
     var qtdBipados = 0;
+    $(".limpar").click(function () {
+        $('#etiquetas-etiquetaInicial').val('');
+        $('#etiquetas-etiquetaFinal').val('');
+        $('#txtIntervalo').val('');
+        $('#etiquetas-etiquetaInicial').focus();
+        qtdBipados = 0;
+        return false;
+    });
     $(function () {
         $('#etiquetas-etiquetaInicial').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
