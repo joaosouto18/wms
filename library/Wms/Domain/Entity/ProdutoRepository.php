@@ -414,6 +414,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
+//                      ifs inseridos, pq estava aparecendo mensagem de erro na wilso no momento de entrar na tela de produto
                         if ($largura)
                             $embalagemEntity->setLargura($largura);
                         if ($altura)
