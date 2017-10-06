@@ -329,11 +329,21 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
-                        $embalagemEntity->setAltura($altura);
-                        $embalagemEntity->setLargura($largura);
-                        $embalagemEntity->setPeso($peso);
-                        $embalagemEntity->setProfundidade($profundidae);
-                        $embalagemEntity->setCubagem($cubagem);
+                        if (isset($largura) && !empty($largura)) {
+                            $embalagemEntity->setLargura($largura);
+                        }
+                        if (isset($altura) && !empty($altura)) {
+                            $embalagemEntity->setAltura($altura);
+                        }
+                        if (isset($peso) && !empty($peso)) {
+                            $embalagemEntity->setPeso($peso);
+                        }
+                        if (isset($profundidade) && !empty($profundidade)) {
+                            $embalagemEntity->setProfundidade($profundidade);
+                        }
+                        if (isset($cubagem) && !empty($cubagem)) {
+                            $embalagemEntity->setCubagem($cubagem);
+                        }
 
                         //valida o endereco informado
                         if (!empty($endereco)) {
@@ -414,16 +424,21 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
-                        if ($largura)
+                        if (isset($largura) && !empty($largura)) {
                             $embalagemEntity->setLargura($largura);
-                        if ($altura)
+                        }
+                        if (isset($altura) && !empty($altura)) {
                             $embalagemEntity->setAltura($altura);
-                        if ($peso)
+                        }
+                        if (isset($peso) && !empty($peso)) {
                             $embalagemEntity->setPeso($peso);
-                        if ($profundidade)
+                        }
+                        if (isset($profundidade) && !empty($profundidade)) {
                             $embalagemEntity->setProfundidade($profundidade);
-                        if ($cubagem)
+                        }
+                        if (isset($cubagem) && !empty($cubagem)) {
                             $embalagemEntity->setCubagem($cubagem);
+                        }
 
                         if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])) {
                             if ($webservice == true) {
