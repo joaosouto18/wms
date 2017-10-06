@@ -1477,6 +1477,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         NVL(np_embalagem.id, np_volume.id) idNorma,
                         NVL(pe.descricao, \'\') descricaoEmbalagem,
                         NVL(pe.quantidade, \'0\') quantidadeEmbalagem,
+                        NVL(pe.capacidadePicking, \'0\') capacidadePicking,
                         NVL(pv.descricao, \'\') descricaoVolume,
                         NVL(de1.descricao, de2.descricao) picking,
                         NVL(pv.codigoSequencial, \'\') sequenciaVolume,
