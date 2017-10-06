@@ -13,6 +13,7 @@ $idPessoa = $this->pessoa;
 <span id="dummy"></span>
 <bgsound id="bgSoundId" loop="0" volume="100" />
 <script>
+    $('#codigoBarrasMapa').focus();
 <?php
 if ($recarregar == 1) {
     ?>
@@ -50,6 +51,7 @@ function playSound(soundfile) {
                     $('#checkout-expedicao').append('<input type="hidden" id="cod_pessoa" name="cod_pessoa" value="' + $(this).attr('cod_pessoa') + '" />');
                     $('#fieldset-identificacao').prepend('<div id="info" class="field" style=" color: rgba(208, 105, 33, 0.88); margin-top: 15px; float: right; margin-left: 30px; font-size: 12px; font-weight: bold; text-align: center;">\n\
                     <p style="font-size: 12px;">' + $(this).val() + '</p></div>');
+
                     $('#form-clientes').remove();
                     $.ajax({
                         url: URL_MODULO + '/index/carrega-mapa-ajax',
@@ -67,11 +69,11 @@ function playSound(soundfile) {
                                         async: false,
                                         type: 'post',
                                         success: function (data) {
+                                            $('#codigoBarras').focus();
                                             if (data.retorno.resposta.length > 0) {
                                                 $("#codigoBarras").val("").focus();
                                                 var error = "";
                                                 var success = "Quantidade conferida com sucesso";
-                                                console.log(data.retorno.resposta);
                                                 if (data.retorno.resposta == 'error') {
                                                     error = data.retorno.message;
                                                     try {
@@ -82,9 +84,13 @@ function playSound(soundfile) {
                                                     success = "";
                                                 } else {
                                                     playSound("/confirm2.mp3");
+                                                    $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').show();
+                                                    $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"] #qtd').text(data.retorno.produto[0]['qtdConferidaTotalEmb']);
                                                     if (data.retorno.message == 'checkout') {
-                                                        $('#conferir').find('p[produto="' + data.retorno.produto + '"]').hide();
-                                                        $('#conferidos').find('p[produto="' + data.retorno.produto + '"]').show();
+                                                        $('#conferir').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').hide();
+                                                        $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').css('background','#f3f3f3');;
+                                                    }else{
+                                                        $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').css('background','#fad0d0');;
                                                     }
                                                     error = "";
                                                 }
@@ -94,6 +100,8 @@ function playSound(soundfile) {
                                             $(".item-lista").remove();
                                         }
                                     });
+                                    $('#codigoBarras').focus();
+                                    qtd.val(1);
                                     return false;
                                 }
                             });

@@ -263,14 +263,14 @@ class Mobile_ExpedicaoController extends Action {
                     $codBarras = ColetorUtil::adequaCodigoBarras($codBarras, true);
 
                     $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa, null, $chekcout);
-                    if ($result === true) {
-                        $msg['msg'] = 'Quantidade conferida com sucesso';
-                        $msg['produto'] = false;
-                    }
-                    if (isset($result['checkout'])) {
+                    if(isset($result['checkout'])){
                         $msg['msg'] = 'checkout';
                         $msg['produto'] = $result['produto'];
+                    }else{
+                        $msg['msg'] = 'Quantidade conferida com sucesso';
+                        $msg['produto'] = $result;
                     }
+
                 }
             } catch (\Exception $e) {
                 $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => ''));

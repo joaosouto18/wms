@@ -1061,7 +1061,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         $this->getEntityManager()->flush();
 
         if($checkout == true){
-//            $retorno =  $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco, $checkout);
+            return  $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco, $checkout);
             if(!isset($retorno['checkout'])){
                 $retorno = true;
             }
@@ -1187,7 +1187,12 @@ class MapaSeparacaoRepository extends EntityRepository {
             $codMapa = $mapa['COD_MAPA_SEPARACAO'];
 
             $qtdConferir = $qtdRestante;
-
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            $qtdConferidoTotalEmb = $qtdConferidoTotal;
+            if ($qtdConferidoTotal > 0) {
+                $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $dscGrade, $qtdConferidoTotal);
+                $qtdConferidoTotalEmb = implode(' + ', $vetSeparar);
+            }
             if ($qtdConferir > 0) {
                 $qtdConferenciaGravar[] = array(
                     'codMapaSeparacao' => $codMapa,
@@ -1197,6 +1202,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                     'codProdutoEmbalagem' => $codProdutoEmbalagem,
                     'codPrdutoVolume' => $codProdutoVolume,
                     'qtdEmbalagem' => $fatorCodBarrasBipado,
+                    'qtdConferidaTotalEmb' => $qtdConferidoTotalEmb,
                     'quantidade' => Math::dividir($qtdConferir,$fatorCodBarrasBipado)
                 );
 
@@ -1207,7 +1213,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
         if ($qtdMapaTotal == $qtdConferidoTotal) {
             if($checkout == true) {
-                return array('produto' => $codProduto.'-'.$dscGrade, 'checkout' => 'checkout');
+                return array('produto' => $qtdConferenciaGravar, 'checkout' => 'checkout');
             }
             $msgErro = "O produto $dscProduto já se encontra totalmente conferido ";
             if ($codPessoa != null) {
