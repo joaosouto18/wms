@@ -425,16 +425,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
-                        if (isset($largura))
-                            $embalagemEntity->setLargura($largura);
-                        if (isset($altura))
-                            $embalagemEntity->setAltura($altura);
-                        if (isset($peso))
-                            $embalagemEntity->setPeso($peso);
-                        if (isset($profundidade))
-                            $embalagemEntity->setProfundidade($profundidade);
-                        if (isset($cubagem))
-                            $embalagemEntity->setCubagem($cubagem);
+                        $embalagemEntity->setLargura($largura);
+                        $embalagemEntity->setAltura($altura);
+                        $embalagemEntity->setPeso($peso);
+                        $embalagemEntity->setProfundidade($profundidade);
+                        $embalagemEntity->setCubagem($cubagem);
 
                         if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])) {
                             if ($webservice == true) {
