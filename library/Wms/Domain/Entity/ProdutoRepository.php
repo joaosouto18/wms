@@ -1829,4 +1829,49 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $result;
     }
 
+    public function getProdDadoLog(){
+        ini_set('memory_limit', '1024M');
+        $sql = "SELECT PE.COD_PRODUTO_EMBALAGEM, PE.COD_DEPOSITO_ENDERECO, PE.QTD_EMBALAGEM, PE.COD_PRODUTO, PE.DSC_GRADE, PD.NUM_ALTURA, PD.NUM_CUBAGEM, PD.NUM_LARGURA, PD.NUM_PESO, PD.NUM_PROFUNDIDADE
+                FROM PRODUTO_EMBALAGEM PE LEFT JOIN PRODUTO_DADO_LOGISTICO PD ON PE.COD_PRODUTO_EMBALAGEM = PD.COD_PRODUTO_EMBALAGEM 
+                WHERE PE.COD_PRODUTO in ('6229' ,  '101' )
+                ORDER BY PE.COD_PRODUTO, PE.DSC_GRADE DESC";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $preenchidos = array();
+        $vazios = array();
+        foreach($result as $key => $value){
+            if($value['NUM_ALTURA'] != 0 && $value['NUM_ALTURA'] != null){
+                $preenchidos[$value['COD_PRODUTO']] = $result[$key];
+            }
+            if($value['COD_DEPOSITO_ENDERECO'] != null){
+                $preenchidos[$value['COD_PRODUTO']]['COD_DEPOSITO_ENDERECO'] = $value['COD_DEPOSITO_ENDERECO'];
+            }
+            $vazios[$value['COD_PRODUTO']][$value['DSC_GRADE']][] = $result[$key];
+        }
+        $em = $this->getEntityManager();
+        $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+        foreach ($preenchidos as $key => $value){
+            foreach ($vazios[$key][$value['DSC_GRADE']] as $key2 => $value2){
+                $altura = ($value['NUM_ALTURA'] / $value['QTD_EMBALAGEM']) * $vazios[$key][$value['DSC_GRADE']][$key2]['QTD_EMBALAGEM'];
+                $largura = ($value['NUM_LARGURA'] / $value['QTD_EMBALAGEM']) * $vazios[$key][$value['DSC_GRADE']][$key2]['QTD_EMBALAGEM'];
+                $profundidade = ($value['NUM_PROFUNDIDADE'] / $value['QTD_EMBALAGEM']) * $vazios[$key][$value['DSC_GRADE']][$key2]['QTD_EMBALAGEM'];
+                $peso = ($value['NUM_PESO'] / $value['QTD_EMBALAGEM']) * $vazios[$key][$value['DSC_GRADE']][$key2]['QTD_EMBALAGEM'];
+                $cubagem = ( $altura *  $largura *  $profundidade);
+                $codProdutoEmbalagem = $value2['COD_PRODUTO_EMBALAGEM'];
+                if($largura > 0 && $peso > 0) {
+                    $produtoEmbEntity = $embalagemRepo->find($codProdutoEmbalagem);
+                    $produtoEmbEntity->setAltura(number_format($altura, 3, ',', ''));
+                    $produtoEmbEntity->setLargura(number_format($largura, 3, ',', ''));
+                    $produtoEmbEntity->setProfundidade(number_format($profundidade, 3, ',', ''));
+                    $produtoEmbEntity->setCubagem(number_format($cubagem, 4, ',', ''));
+                    $produtoEmbEntity->setPeso(number_format($peso, 3, ',', ''));
+                    if($value['COD_DEPOSITO_ENDERECO'] != null){
+                        $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
+                        $produtoEmbEntity->setEndereco($enderecoRepo->find($value['COD_DEPOSITO_ENDERECO']));
+                    }
+                    $em->persist($produtoEmbEntity);
+                }
+            }
+        }
+        $em->flush();
+    }
 }
