@@ -99,7 +99,7 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
         if (isset($idLinhaSeparacao) && !empty($idLinhaSeparacao) && $idLinhaSeparacao != 'null') {
             $andWhere = " AND LS.COD_LINHA_SEPARACAO = $idLinhaSeparacao ";
         }
-        $sql = "SELECT P.QTD_SEPARAR - NVL(EMB.QTD_EMBALADO,0) as QUANTIDADE_CONFERIDA,
+        $sql = "SELECT SUM(P.QTD_SEPARAR - NVL(EMB.QTD_EMBALADO,0)) as QUANTIDADE_CONFERIDA,
                    P.SEQUENCIA,
                    P.COD_CARGA_EXTERNO,
                    E.DTH_INICIO,
@@ -137,9 +137,15 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
              
               WHERE P.QTD_SEPARAR - NVL(EMB.QTD_EMBALADO,0) > 0 
               $andWhere
-             ORDER BY P.SEQUENCIA,
-                      LS.COD_LINHA_SEPARACAO,
-                      PROD.COD_PRODUTO";
+              GROUP BY P.SEQUENCIA,
+                   P.COD_CARGA_EXTERNO,
+                   E.DTH_INICIO,
+                   PROD.COD_PRODUTO,
+                   PROD.DSC_GRADE,
+                   PROD.DSC_PRODUTO,
+                   LS.DSC_LINHA_SEPARACAO,
+                   C.DSC_PLACA_CARGA
+             ORDER BY PROD.COD_PRODUTO";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
