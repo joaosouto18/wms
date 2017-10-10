@@ -1828,7 +1828,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         ini_set('memory_limit', '1024M');
         $sql = "SELECT PE.COD_PRODUTO_EMBALAGEM, PE.COD_DEPOSITO_ENDERECO, PE.QTD_EMBALAGEM, PE.COD_PRODUTO, PE.DSC_GRADE, PD.NUM_ALTURA, PD.NUM_CUBAGEM, PD.NUM_LARGURA, PD.NUM_PESO, PD.NUM_PROFUNDIDADE
                 FROM PRODUTO_EMBALAGEM PE LEFT JOIN PRODUTO_DADO_LOGISTICO PD ON PE.COD_PRODUTO_EMBALAGEM = PD.COD_PRODUTO_EMBALAGEM 
-                WHERE PE.COD_PRODUTO in ('6229' ,  '101' )
                 ORDER BY PE.COD_PRODUTO, PE.DSC_GRADE DESC";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         $preenchidos = array();
