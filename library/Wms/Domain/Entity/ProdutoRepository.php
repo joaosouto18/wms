@@ -16,6 +16,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\CodigoFornecedor\Referencia,
     Wms\Domain\Entity\Deposito\Endereco,
     Wms\Domain\Entity\Produto\Embalagem;
+use Wms\Math;
 
 /**
  *
@@ -304,20 +305,30 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 $embalagemRepo = $repositorios['embalagemRepo'];
             }
 
-
             //embalagens do produto
             if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
                 return false;
 
-
             foreach ($values['embalagens'] as $id => $itemEmbalagem) {
                 $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
                 extract($itemEmbalagem);
+                $Math = new Math();
+
+                $dadosEmbalagem = $embalagemRepo->findOneBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
+                $pontoReposicao = !empty($pontoReposicao) ? $pontoReposicao : $dadosEmbalagem->getPontoReposicao();
+                $capacidadePicking = !empty($capacidadePicking) ? $capacidadePicking : $dadosEmbalagem->getCapacidadePicking();
+                if (!is_null($dadosEmbalagem->getEndereco()))
+                    $endereco = !empty($endereco) ? $endereco : $dadosEmbalagem->getEndereco()->getDescricao();
+                $altura = !empty($altura) ? $altura : str_replace('.',',',$Math::multiplicar($Math::dividir(str_replace(',','.',$dadosEmbalagem->getAltura()), str_replace(',','.',$dadosEmbalagem->getQuantidade())), str_replace(',','.',$quantidade)));
+                $largura = !empty($largura) ? $largura : str_replace('.',',',$Math::multiplicar($Math::dividir(str_replace(',','.',$dadosEmbalagem->getLargura()), str_replace(',','.',$dadosEmbalagem->getQuantidade())), str_replace(',','.',$quantidade)));
+                $profundidade = !empty($profundidade) ? $profundidade : str_replace('.',',',$Math::multiplicar($Math::dividir(str_replace(',','.',$dadosEmbalagem->getProfundidade()), str_replace(',','.',$dadosEmbalagem->getQuantidade())), str_replace(',','.',$quantidade)));
+                $cubagem = str_replace('.',',',$Math::multiplicar($Math::multiplicar(str_replace(',','.',$altura), str_replace(',','.',$largura)), str_replace(',','.',$profundidade)));
+                $peso = !empty($peso) ? $peso : str_replace('.',',',$Math::multiplicar($Math::dividir(str_replace(',','.',$dadosEmbalagem->getPeso()), str_replace(',','.',$dadosEmbalagem->getQuantidade())), str_replace(',','.',$quantidade)));
+
                 switch ($itemEmbalagem['acao']) {
                     case 'incluir':
 
                         $embalagemEntity = new EmbalagemEntity;
-
                         $embalagemEntity->setProduto($produtoEntity);
                         $embalagemEntity->setGrade($produtoEntity->getGrade());
                         $embalagemEntity->setDescricao($descricao);
@@ -332,7 +343,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setAltura($altura);
                         $embalagemEntity->setLargura($largura);
                         $embalagemEntity->setPeso($peso);
-                        $embalagemEntity->setProfundidade($profundidae);
+                        $embalagemEntity->setProfundidade($profundidade);
                         $embalagemEntity->setCubagem($cubagem);
 
                         //valida o endereco informado
@@ -427,7 +438,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                                 $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto ativado com sucesso', false, $webservice);
                             } elseif (is_null($embalagemEntity->getDataInativacao())) {
                                 $embalagemEntity->setDataInativacao(new \DateTime());
-//								$embalagemEntity->setDataInativacao(null);
                                 $embalagemEntity->setUsuarioInativacao($idUsuario);
                                 $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso', false, $webservice);
                             }
@@ -435,7 +445,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                             if ($webservice == true) {
                                 if (is_null($embalagemEntity->getDataInativacao())) {
                                     $embalagemEntity->setDataInativacao(new \DateTime());
-//									$embalagemEntity->setDataInativacao(null);
                                     $embalagemEntity->setUsuarioInativacao(null);
                                     $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto desativado com sucesso', false, $webservice);
                                 }
@@ -501,6 +510,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $em->persist($embalagemEntity);
                         break;
                 }
+                $altura = null;
+                $largura = null;
+                $profundidade = null;
+                $cubagem = null;
+                $peso = null;
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());

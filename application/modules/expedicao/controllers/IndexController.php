@@ -535,61 +535,66 @@ class Expedicao_IndexController extends Action {
         $usuarioRepo = $this->getEntityManager()->getRepository('wms:Usuario');
         $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
-        $result = $usuarioRepo->getPessoaByCpf($cpf);
+        if (isset($params['etiquetaInicial'])) {
+            //FORMATA OS DADOS RECEBIDOS
 
-        //FORMATA OS DADOS RECEBIDOS
-        $etiquetaInicial = trim($params['etiquetaInicial']);
-        $etiquetaFinal = trim($params['etiquetaFinal']);
-        //ENCONTRA O USUARIO DIGITADO
-        /** @var Expedicao\EquipeSeparacao $usuarioEn */
-        $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
-        //VERIFICA O USUARIO
-        if (is_null($usuarioEn)) {
-            $erro = 'Nenhum conferente encontrado com este CPF';
-        }else{
-           $usuario = $usuarioRepo->getPessoaByCpf($cpf);
-        }
-        //VERIFICA AS ETIQUETAS
-        if (is_null($etiquetaFinal))
-            $etiquetaFinal = $etiquetaInicial;
-
-        if (is_null($etiquetaInicial))
-            $etiquetaInicial = $etiquetaFinal;
-
-
-        //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
-        $inicial = 0;
-        $final = 0;
-        $menorIntervalo = 0;
-        $salvar = false;
-        if(empty($erro)) {
-            $equipeSeparacaoEn = $equipeSeparacaoRepo->getIntervaloEtiquetaUsuario($usuarioEn);
-            if (is_array($equipeSeparacaoEn) && count($equipeSeparacaoEn) > 0) {
-                foreach ($equipeSeparacaoEn as $intervalo) {
-
-                    if ($inicial != 0) {
-                        $iteracao = $intervalo['etiquetaInicial'] - $final;
-                        if ($iteracao > 1) {
-                            $salvar = true;
-                        }
-                    } else {
-                        $menorIntervalo = $intervalo['etiquetaInicial'];
-                    }
-                    $inicial = $intervalo['etiquetaInicial'];
-                    $final = $intervalo['etiquetaFinal'];
-                    if ($intervalo['etiquetaFinal'] < $etiquetaInicial) {
-                        $final = $etiquetaInicial - 1;
-                    }
-                }
-                if ($etiquetaInicial < $menorIntervalo) {
-                    $salvar = true;
-                }
-                if ($etiquetaFinal > $final) {
-                    $salvar = true;
-                }
+            $etiquetaInicial = trim($params['etiquetaInicial']);
+            $etiquetaFinal = trim($params['etiquetaFinal']);
+            //ENCONTRA O USUARIO DIGITADO
+            /** @var Expedicao\EquipeSeparacao $usuarioEn */
+            $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
+            //VERIFICA O USUARIO
+            if (is_null($usuarioEn)) {
+                $erro = 'Nenhum conferente encontrado com este CPF';
             } else {
-                $salvar = true;
+                $usuario = $usuarioRepo->getPessoaByCpf($cpf);
             }
+            //VERIFICA AS ETIQUETAS
+            if (is_null($etiquetaFinal))
+                $etiquetaFinal = $etiquetaInicial;
+
+            if (is_null($etiquetaInicial))
+                $etiquetaInicial = $etiquetaFinal;
+
+
+            //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
+            $inicial = 0;
+            $final = 0;
+            $menorIntervalo = 0;
+            $salvar = false;
+            if (empty($erro)) {
+                $equipeSeparacaoEn = $equipeSeparacaoRepo->getIntervaloEtiquetaUsuario($usuarioEn);
+                if (is_array($equipeSeparacaoEn) && count($equipeSeparacaoEn) > 0) {
+                    foreach ($equipeSeparacaoEn as $intervalo) {
+
+                        if ($inicial != 0) {
+                            $iteracao = $intervalo['etiquetaInicial'] - $final;
+                            if ($iteracao > 1) {
+                                $salvar = true;
+                            }
+                        } else {
+                            $menorIntervalo = $intervalo['etiquetaInicial'];
+                        }
+                        $inicial = $intervalo['etiquetaInicial'];
+                        $final = $intervalo['etiquetaFinal'];
+                        if ($intervalo['etiquetaFinal'] < $etiquetaInicial) {
+                            $final = $etiquetaInicial - 1;
+                        }
+                    }
+                    if ($etiquetaInicial < $menorIntervalo) {
+                        $salvar = true;
+                    }
+                    if ($etiquetaFinal > $final) {
+                        $salvar = true;
+                    }
+                } else {
+                    $salvar = true;
+                }
+            }
+        }else{
+            $usuario = $usuarioRepo->getPessoaByCpf($cpf);
+            $erro = '';
+            $salvar = true;
         }
 
 
