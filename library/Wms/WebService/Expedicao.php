@@ -42,7 +42,7 @@ class produtoCortado {
     /** @var string */
     public $grade;
     /** @var double */
-    public $quantidade;
+    public $quantidadeCortada;
     /** @var string */
     public $motivoCorte;
 }
@@ -446,11 +446,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * Para o corte total do item, basta informar que a quantidade a atender será 0
      *
      * @param string $idPedido Código do Pedido que vai ser cortado
-     * @param produtoCortado[] $produtos Array contendo apenas os produtos cortados
+     * @param produtoCortado[] $produtosCortados Array contendo apenas os produtos cortados
      * @return boolean Flag indicando se foi realizado o corte ou não
      */
 
-    public function cortarPedido($idPedido, $produtos) {
+    public function cortarPedido($idPedido, $produtosCortados) {
         return true;
     }
 
