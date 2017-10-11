@@ -196,4 +196,6 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.3.2', 'Correção: Exibição de quantidade de itens de notas fiscais para ERP Winthor', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.3.2', 'Melhoria: Cadastro de dados logisticos via integração baseando em outra embalagem do mesmo produto', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.3.2', 'Correção: Inventariar endereço vazio que anteriormente estava com mais de 1 produto', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.3.4', 'Correção: Dados logisticos antigos para nova tela', '3-correcao-dados-logisticos', SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.3.4', 'Validacao: Dados logisticos antigos para nova tela', '4-validacao-correcao-dados-logisticos', SYSDATE);
 

@@ -1062,10 +1062,6 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         if($checkout == true){
             return  $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco, $checkout);
-            if(!isset($retorno['checkout'])){
-                $retorno = true;
-            }
-            return $retorno;
         }
         
         return true;
@@ -1211,10 +1207,14 @@ class MapaSeparacaoRepository extends EntityRepository {
         }
 
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
-        if ($qtdMapaTotal == $qtdConferidoTotal) {
-            if($checkout == true) {
+        if($checkout == true) {
+            if ($qtdMapaTotal == $qtdConferidoTotal) {
                 return array('produto' => $qtdConferenciaGravar, 'checkout' => 'checkout');
+            }else{
+                return array('produto' => $qtdConferenciaGravar);
             }
+        }
+        if ($qtdMapaTotal == $qtdConferidoTotal) {
             $msgErro = "O produto $dscProduto já se encontra totalmente conferido ";
             if ($codPessoa != null) {
                 $msgErro .= "para o cliente selecionado";
@@ -1226,7 +1226,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                 }
             }
             throw new \Exception($msgErro);
-        } elseif ($qtdInformada > (Math::subtrair($qtdMapaTotal,$qtdConferidoTotal))) {
+        } elseif (Math::compare(intval($qtdInformada), Math::subtrair($qtdMapaTotal,$qtdConferidoTotal), '>')) {
             throw new \Exception("A quantidade de $qtdInformada excede o solicitado!");
         }
 

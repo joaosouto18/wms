@@ -168,13 +168,17 @@ class MapaSeparacao extends eFPDF {
                 $codProduto = $produto->getCodProduto();
                 $grade = $produto->getDscGrade();
                 $descricao = utf8_decode($produto->getProduto()->getDescricao());
-                $embalagem = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
+                if ($produto->getProdutoVolume() == null) {
+                    $embalagem = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
+                    $endereco = $produto->getDepositoEndereco();
+                }else{
+                    $embalagem = $produto->getProdutoVolume()->getDescricao();
+                    $endereco = $produto->getProdutoVolume()->getEndereco();
+                }
                 $quantidade = $produto->getQtdSeparar();
                 $caixas = $produto->getNumCaixaInicio() . ' - ' . $produto->getNumCaixaFim();
-                $endereco = $produto->getDepositoEndereco();
                 if ($endereco != null)
                     $dscEndereco = $endereco->getDescricao();
-
 
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
                 if (!empty($pesoProduto)) {
