@@ -2943,17 +2943,6 @@ class ExpedicaoRepository extends EntityRepository {
             }
         }
 
-        //ETIQUETA DE VOLUME
-        $volumeRepo = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
-        $volumeEn = $volumeRepo->find($codBarras);
-        if ($volumeEn != null) {
-            $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
-        }
-
-        if ($tipoEtiqueta != EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME) {
-            $codBarras = ColetorUtil::retiraDigitoIdentificador($codBarras);
-        }
-
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO) {
             //ETIQUETA DE SEPARAÇÃO
             $etiquetaSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao')->find($codBarras);
@@ -3082,7 +3071,7 @@ class ExpedicaoRepository extends EntityRepository {
 
             return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao, 'parcialmenteFinalizado' => false);
         }
-        if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_MAE) {
+        elseif ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_MAE) {
             //ETIQUETA MÃE
             $etiquetaMae = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaMae")->find($codBarras);
             if ($etiquetaMae == null)
@@ -3141,7 +3130,7 @@ class ExpedicaoRepository extends EntityRepository {
             }
             return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao);
         }
-        if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_MAPA_SEPARACAO) {
+        elseif ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_MAPA_SEPARACAO) {
             //MAPA DE SEPARAÇÃO
             $mapaSeparacao = $this->getEntityManager()->find('wms:Expedicao\MapaSeparacao', $codBarras);
             if (empty($mapaSeparacao))
@@ -3151,7 +3140,7 @@ class ExpedicaoRepository extends EntityRepository {
             $url = "/mobile/expedicao/ler-produto-mapa/idMapa/$codBarras/idExpedicao/$idExpedicao";
             return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao);
         }
-        if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO) {
+        elseif ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO) {
             $mapaSeparacaoEmbalado = $this->getEntityManager()->find('wms:Expedicao\MapaSeparacaoEmbalado', $codBarras);
             if (empty($mapaSeparacaoEmbalado))
                 throw new \Exception("Nenhum volume embalado encontrado com o códgo " . $codBarras);
@@ -3161,7 +3150,7 @@ class ExpedicaoRepository extends EntityRepository {
             $url = "/mobile/expedicao/ler-embalados-mapa/idEmbalado/$codBarras/expedicao/$idExpedicao/idMapa/$idMapa";
             return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao);
         }
-        if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME) {
+        elseif ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME) {
             //ETIQUETA DE VOLUME
             $volumeRepo = $this->getEntityManager()->getRepository("wms:Expedicao\VolumePatrimonio");
             $volumeEn = $volumeRepo->find($codBarras);

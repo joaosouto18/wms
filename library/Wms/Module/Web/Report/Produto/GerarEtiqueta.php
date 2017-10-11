@@ -17,7 +17,7 @@ use Wms\Util\Barcode\eFPDF,
 class GerarEtiqueta extends eFPDF
 {
 
-    public function init(array $nfParams = null,array $prodParams = null, $modelo, $target = "I", $importedFile = false)
+    public function init(array $nfParams = null,array $prodParams = null, $modelo, $target = Recebimento::TARGET_IMPRESSAO_ITEM, $importedFile = false)
     {
         $tipo = "";
         /*  PARA IMPRIMIR ETIQUETAS DE UM PRODUTO
@@ -48,7 +48,6 @@ class GerarEtiqueta extends eFPDF
         } else if ($tipo == "Produto") {
             /** @var ProdutoRepository $produtoRepo */
             $produtoRepo = $em->getRepository('wms:Produto');
-            $target = Recebimento::TARGET_IMPRESSAO_PRODUTO;
             if (!$importedFile) {
                 $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade);
             } else {
