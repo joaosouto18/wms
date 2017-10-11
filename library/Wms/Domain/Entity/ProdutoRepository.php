@@ -315,16 +315,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 $Math = new Math();
 
                 $dadosEmbalagem = $embalagemRepo->findOneBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
-                $pontoReposicao = !empty($pontoReposicao) ? $pontoReposicao : $dadosEmbalagem->getPontoReposicao();
-                $capacidadePicking = !empty($capacidadePicking) ? $capacidadePicking : $dadosEmbalagem->getCapacidadePicking();
-                if (!is_null($dadosEmbalagem->getEndereco()))
-                    $endereco = !empty($endereco) ? $endereco : $dadosEmbalagem->getEndereco()->getDescricao();
-                $altura = !empty($altura) ? $altura : str_replace('.',',',$Math::multiplicar($Math::dividir(str_replace(',','.',$dadosEmbalagem->getAltura()), str_replace(',','.',$dadosEmbalagem->getQuantidade())), str_replace(',','.',$quantidade)));
-                $largura = !empty($largura) ? $largura : str_replace('.',',',$Math::multiplicar($Math::dividir(str_replace(',','.',$dadosEmbalagem->getLargura()), str_replace(',','.',$dadosEmbalagem->getQuantidade())), str_replace(',','.',$quantidade)));
-                $profundidade = !empty($profundidade) ? $profundidade : str_replace('.',',',$Math::multiplicar($Math::dividir(str_replace(',','.',$dadosEmbalagem->getProfundidade()), str_replace(',','.',$dadosEmbalagem->getQuantidade())), str_replace(',','.',$quantidade)));
-                $cubagem = str_replace('.',',',$Math::multiplicar($Math::multiplicar(str_replace(',','.',$altura), str_replace(',','.',$largura)), str_replace(',','.',$profundidade)));
-                $peso = !empty($peso) ? $peso : str_replace('.',',',$Math::multiplicar($Math::dividir(str_replace(',','.',$dadosEmbalagem->getPeso()), str_replace(',','.',$dadosEmbalagem->getQuantidade())), str_replace(',','.',$quantidade)));
-
+                if(!is_null($dadosEmbalagem)) {
+                    $pontoReposicao = !empty($pontoReposicao) ? $pontoReposicao : $dadosEmbalagem->getPontoReposicao();
+                    $capacidadePicking = !empty($capacidadePicking) ? $capacidadePicking : $dadosEmbalagem->getCapacidadePicking();
+                    if (!is_null($dadosEmbalagem->getEndereco()))
+                        $endereco = !empty($endereco) ? $endereco : $dadosEmbalagem->getEndereco()->getDescricao();
+                    $altura = !empty($altura) ? $altura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getAltura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                    $largura = !empty($largura) ? $largura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getLargura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                    $profundidade = !empty($profundidade) ? $profundidade : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getProfundidade()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                    $cubagem = str_replace('.', ',', $Math::multiplicar($Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
+                    $peso = !empty($peso) ? $peso : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getPeso()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                }
                 switch ($itemEmbalagem['acao']) {
                     case 'incluir':
 
