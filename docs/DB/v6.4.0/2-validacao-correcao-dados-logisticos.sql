@@ -32,7 +32,14 @@ SELECT COD_PRODUTO, DSC_GRADE, COUNT( DISTINCT NUM_PESO / QTD_EMBALAGEM)
  */
 
 /*** 1 VALIDAÇÂO - VALIDANDO SE TODAS AS EMBALAGENS ESTÃO PREENCHIDAS ***/
-ççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççççv po-0b
+SELECT * FROM (
+SELECT DISTINCT COD_PRODUTO, DSC_GRADE, 'POSSUI'
+  FROM PRODUTO_EMBALAGEM
+  WHERE NUM_CUBAGEM > 0) S
+LEFT JOIN ( SELECT DISTINCT COD_PRODUTO, DSC_GRADE, 'NAO POSSUI'
+  FROM PRODUTO_EMBALAGEM
+  WHERE NUM_CUBAGEM = 0) N ON S.COD_PRODUTO = N.COD_PRODUTO AND S.DSC_GRADE = N.DSC_GRADE
+WHERE N.COD_PRODUTO IS NOT NULL;
 
 /*** 2 VALIDAÇÃO - VALIDANDO SE A INFORMAÇÃO ANTIGA É DIFERENTE DA INFORMAÇÃO NOVA ***/
 SELECT *
