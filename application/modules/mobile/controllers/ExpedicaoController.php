@@ -268,7 +268,7 @@ class Mobile_ExpedicaoController extends Action {
                         $msg['produto'] = $result['produto'];
                     }else{
                         $msg['msg'] = 'Quantidade conferida com sucesso';
-                        $msg['produto'] = $result;
+                        $msg['produto'] = $result['produto'];
                     }
 
                 }

@@ -652,6 +652,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $grade              = $pedidoProduto->getProduto()->getGrade();
 
             $produtoEntity = $pedidoProduto->getProduto();
+            if($produtoEntity->getVolumes()->count() > 0) {
+                continue;
+            }
             $embalagensEn = $produtoEntity->getEmbalagens()->filter(
                 function($item) {
                     return is_null($item->getDataInativacao());
