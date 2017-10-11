@@ -1,0 +1,33 @@
+<?php
+echo $this->form;
+?>
+
+
+<table class="gTable ">
+    <caption>Funcionalidades <?php echo $this->versaoFiltrada ?></caption>
+    <tbody>
+    <tr class ="gTTitle">
+        <td>Codigo</td>
+        <td>Funcionalidade</td>
+        <td>Versão</td>
+        <td>Data Implantação</td>
+    </tr>
+    <?php
+    foreach ($this->funcionalidades as $funcionalidade):
+        $fontColor = "black";
+        $this->color = !($this->color);?>
+        <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+            <td><?php echo $funcionalidade['COD_FUNCIONALIDADE'] ?></td>
+            <td><?php echo $funcionalidade['DSC_FUNCIONALIDADE'] ?></td>
+            <td><?php echo $funcionalidade['COD_VERSAO'] ?></td>
+            <td><?php echo $funcionalidade['DTH_ATUALIZACAO'] ?></td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
+<div class = "gPager">
+    <span>
+        <?php echo "Total de " . count($this->funcionalidades) . " registros encontrados"?>
+    </span>
+</div>
+
