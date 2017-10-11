@@ -570,4 +570,10 @@ class Web_ProdutoController extends Crud {
         $this->_helper->json($arrayMensagens, true);
     }
 
+    public function atualizaDadoLogisticoAjaxAction() {
+
+        $this->_em->getRepository('wms:Produto')->getProdDadoLog();
+        $this->_helper->json(array(), true);
+    }
+
 }

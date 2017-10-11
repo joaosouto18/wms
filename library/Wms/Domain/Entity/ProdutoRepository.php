@@ -16,6 +16,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\CodigoFornecedor\Referencia,
     Wms\Domain\Entity\Deposito\Endereco,
     Wms\Domain\Entity\Produto\Embalagem;
+use Wms\Math;
 
 /**
  *
@@ -304,20 +305,31 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 $embalagemRepo = $repositorios['embalagemRepo'];
             }
 
-
             //embalagens do produto
             if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
                 return false;
 
-
             foreach ($values['embalagens'] as $id => $itemEmbalagem) {
                 $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
                 extract($itemEmbalagem);
+                $Math = new Math();
+
                 switch ($itemEmbalagem['acao']) {
                     case 'incluir':
+                        $dadosEmbalagem = $embalagemRepo->findOneBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
+                        if(!empty($dadosEmbalagem)) {
+                            $pontoReposicao = !empty($pontoReposicao) ? $pontoReposicao : $dadosEmbalagem->getPontoReposicao();
+                            $capacidadePicking = !empty($capacidadePicking) ? $capacidadePicking : $dadosEmbalagem->getCapacidadePicking();
+                            if (!empty($dadosEmbalagem->getEndereco()))
+                                $endereco = !empty($endereco) ? $endereco : $dadosEmbalagem->getEndereco()->getDescricao();
+                            $altura = !empty($altura) ? $altura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getAltura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                            $largura = !empty($largura) ? $largura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getLargura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                            $profundidade = !empty($profundidade) ? $profundidade : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getProfundidade()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                            $cubagem = str_replace('.', ',', $Math::multiplicar($Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
+                            $peso = !empty($peso) ? $peso : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getPeso()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                        }
 
                         $embalagemEntity = new EmbalagemEntity;
-
                         $embalagemEntity->setProduto($produtoEntity);
                         $embalagemEntity->setGrade($produtoEntity->getGrade());
                         $embalagemEntity->setDescricao($descricao);
@@ -329,21 +341,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
-                        if (isset($largura) && !empty($largura)) {
-                            $embalagemEntity->setLargura($largura);
-                        }
-                        if (isset($altura) && !empty($altura)) {
-                            $embalagemEntity->setAltura($altura);
-                        }
-                        if (isset($peso) && !empty($peso)) {
-                            $embalagemEntity->setPeso($peso);
-                        }
-                        if (isset($profundidade) && !empty($profundidade)) {
-                            $embalagemEntity->setProfundidade($profundidade);
-                        }
-                        if (isset($cubagem) && !empty($cubagem)) {
-                            $embalagemEntity->setCubagem($cubagem);
-                        }
+                        $embalagemEntity->setAltura($altura);
+                        $embalagemEntity->setLargura($largura);
+                        $embalagemEntity->setPeso($peso);
+                        $embalagemEntity->setProfundidade($profundidade);
+                        $embalagemEntity->setCubagem($cubagem);
 
                         //valida o endereco informado
                         if (!empty($endereco)) {
@@ -424,21 +426,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
-                        if (isset($largura) && !empty($largura)) {
-                            $embalagemEntity->setLargura($largura);
-                        }
-                        if (isset($altura) && !empty($altura)) {
-                            $embalagemEntity->setAltura($altura);
-                        }
-                        if (isset($peso) && !empty($peso)) {
-                            $embalagemEntity->setPeso($peso);
-                        }
-                        if (isset($profundidade) && !empty($profundidade)) {
-                            $embalagemEntity->setProfundidade($profundidade);
-                        }
-                        if (isset($cubagem) && !empty($cubagem)) {
-                            $embalagemEntity->setCubagem($cubagem);
-                        }
+                        $embalagemEntity->setLargura($largura);
+                        $embalagemEntity->setAltura($altura);
+                        $embalagemEntity->setPeso($peso);
+                        $embalagemEntity->setProfundidade($profundidade);
+                        $embalagemEntity->setCubagem($cubagem);
 
                         if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])) {
                             if ($webservice == true) {
@@ -447,7 +439,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                                 $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto ativado com sucesso', false, $webservice);
                             } elseif (is_null($embalagemEntity->getDataInativacao())) {
                                 $embalagemEntity->setDataInativacao(new \DateTime());
-//								$embalagemEntity->setDataInativacao(null);
                                 $embalagemEntity->setUsuarioInativacao($idUsuario);
                                 $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto Desativado com sucesso', false, $webservice);
                             }
@@ -455,7 +446,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                             if ($webservice == true) {
                                 if (is_null($embalagemEntity->getDataInativacao())) {
                                     $embalagemEntity->setDataInativacao(new \DateTime());
-//									$embalagemEntity->setDataInativacao(null);
                                     $embalagemEntity->setUsuarioInativacao(null);
                                     $andamentoRepo->save($embalagemEntity->getProduto()->getId(), $embalagemEntity->getGrade(), $idUsuario, 'Produto desativado com sucesso', false, $webservice);
                                 }
@@ -521,6 +511,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $em->persist($embalagemEntity);
                         break;
                 }
+                $altura = null;
+                $largura = null;
+                $profundidade = null;
+                $cubagem = null;
+                $peso = null;
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -1497,6 +1492,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         NVL(np_embalagem.id, np_volume.id) idNorma,
                         NVL(pe.descricao, \'\') descricaoEmbalagem,
                         NVL(pe.quantidade, \'0\') quantidadeEmbalagem,
+                        NVL(pe.capacidadePicking, \'0\') capacidadePicking,
                         NVL(pv.descricao, \'\') descricaoVolume,
                         NVL(de1.descricao, de2.descricao) picking,
                         NVL(pv.codigoSequencial, \'\') sequenciaVolume,
@@ -1829,4 +1825,48 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $result;
     }
 
+    public function getProdDadoLog(){
+        ini_set('memory_limit', '1024M');
+        $sql = "SELECT PE.COD_PRODUTO_EMBALAGEM, PE.COD_DEPOSITO_ENDERECO, PE.QTD_EMBALAGEM, PE.COD_PRODUTO, PE.DSC_GRADE, PD.NUM_ALTURA, PD.NUM_CUBAGEM, PD.NUM_LARGURA, PD.NUM_PESO, PD.NUM_PROFUNDIDADE
+                FROM PRODUTO_EMBALAGEM PE LEFT JOIN PRODUTO_DADO_LOGISTICO PD ON PE.COD_PRODUTO_EMBALAGEM = PD.COD_PRODUTO_EMBALAGEM 
+                ORDER BY PE.COD_PRODUTO, PE.DSC_GRADE DESC";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $preenchidos = array();
+        $vazios = array();
+        foreach($result as $key => $value){
+            if($value['NUM_ALTURA'] != 0 && $value['NUM_ALTURA'] != null){
+                $preenchidos[$value['COD_PRODUTO']] = $result[$key];
+            }
+            if($value['COD_DEPOSITO_ENDERECO'] != null){
+                $preenchidos[$value['COD_PRODUTO']]['COD_DEPOSITO_ENDERECO'] = $value['COD_DEPOSITO_ENDERECO'];
+            }
+            $vazios[$value['COD_PRODUTO']][$value['DSC_GRADE']][] = $result[$key];
+        }
+        $em = $this->getEntityManager();
+        $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+        foreach ($preenchidos as $key => $value){
+            foreach ($vazios[$key][$value['DSC_GRADE']] as $key2 => $value2){
+                $altura = ($value['NUM_ALTURA'] / $value['QTD_EMBALAGEM']) * $vazios[$key][$value['DSC_GRADE']][$key2]['QTD_EMBALAGEM'];
+                $largura = ($value['NUM_LARGURA'] / $value['QTD_EMBALAGEM']) * $vazios[$key][$value['DSC_GRADE']][$key2]['QTD_EMBALAGEM'];
+                $profundidade = ($value['NUM_PROFUNDIDADE'] / $value['QTD_EMBALAGEM']) * $vazios[$key][$value['DSC_GRADE']][$key2]['QTD_EMBALAGEM'];
+                $peso = ($value['NUM_PESO'] / $value['QTD_EMBALAGEM']) * $vazios[$key][$value['DSC_GRADE']][$key2]['QTD_EMBALAGEM'];
+                $cubagem = ( $altura *  $largura *  $profundidade);
+                $codProdutoEmbalagem = $value2['COD_PRODUTO_EMBALAGEM'];
+                if($largura > 0 && $peso > 0) {
+                    $produtoEmbEntity = $embalagemRepo->find($codProdutoEmbalagem);
+                    $produtoEmbEntity->setAltura(number_format($altura, 3, ',', ''));
+                    $produtoEmbEntity->setLargura(number_format($largura, 3, ',', ''));
+                    $produtoEmbEntity->setProfundidade(number_format($profundidade, 3, ',', ''));
+                    $produtoEmbEntity->setCubagem(number_format($cubagem, 4, ',', ''));
+                    $produtoEmbEntity->setPeso(number_format($peso, 3, ',', ''));
+                    if($value['COD_DEPOSITO_ENDERECO'] != null){
+                        $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
+                        $produtoEmbEntity->setEndereco($enderecoRepo->find($value['COD_DEPOSITO_ENDERECO']));
+                    }
+                    $em->persist($produtoEmbEntity);
+                }
+            }
+        }
+        $em->flush();
+    }
 }

@@ -476,41 +476,43 @@ class InventarioRepository extends EntityRepository {
                 $enderecoVazio = false;
 
                 if ($contagemEndEn->getCodProdutoVolume() != null) {
-                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco, 'produtoVolume' => $contagemEndEn->getCodProdutoVolume()));
+                    $estoqueEntities = $estoqueRepo->findBy(array('depositoEndereco' => $idDepositoEndereco, 'produtoVolume' => $contagemEndEn->getCodProdutoVolume()));
                 } elseif ($contagemEndEn->getCodProdutoEmbalagem() != null) {
-                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco, 'codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()));
+                    $estoqueEntities = $estoqueRepo->findBy(array('depositoEndereco' => $idDepositoEndereco, 'codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()));
                 } else {
-                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco));
+                    $estoqueEntities = $estoqueRepo->findBy(array('depositoEndereco' => $idDepositoEndereco));
                     $enderecoVazio = true;
                 }
 
                 $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
-                if ($estoqueEn) {
+                if (count($estoqueEntities) > 0) {
                     //mesmo produto?
-                    $result = $serviceInventario->compareProduto($estoqueEn, $contagemEndEn);
-                    if ($result == true) {
-                        $qtd = $qtdContagem - $estoqueEn->getQtd();
-                        $validadeContagem = $contagemEndEn->getValidade();
-                        $validadeEstoque = $estoqueEn->getValidade();
-                        if (!empty($validadeContagem)) {
-                            $validadeContagem = strtotime($contagemEndEn->getValidade());
-                        }
-                        if (!empty($validadeEstoque)) {
-                            $validadeEstoque = strtotime($estoqueEn->getValidade()->format('Y-m-d 00:00:00'));
-                        }
-                        if ($qtd != 0 || $validadeContagem != $validadeEstoque) {
-                            $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtd, $osEn, $usuarioEn, $estoqueRepo);
-                        }
-                    } else {
-                        if ($enderecoVazio) {
-                            $qtdRetirar = $estoqueEn->getQtd();
-                            $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdRetirar, $osEn, $usuarioEn, $estoqueRepo);
+                    foreach ($estoqueEntities as $estoqueEn) {
+                        $result = $serviceInventario->compareProduto($estoqueEn, $contagemEndEn);
+                        if ($result == true) {
+                            $qtd = $qtdContagem - $estoqueEn->getQtd();
+                            $validadeContagem = $contagemEndEn->getValidade();
+                            $validadeEstoque = $estoqueEn->getValidade();
+                            if (!empty($validadeContagem)) {
+                                $validadeContagem = strtotime($contagemEndEn->getValidade());
+                            }
+                            if (!empty($validadeEstoque)) {
+                                $validadeEstoque = strtotime($estoqueEn->getValidade()->format('Y-m-d 00:00:00'));
+                            }
+                            if ($qtd != 0 || $validadeContagem != $validadeEstoque) {
+                                $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtd, $osEn, $usuarioEn, $estoqueRepo);
+                            }
                         } else {
-                            $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
-                            $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
+                            if ($enderecoVazio) {
+                                $qtdRetirar = $estoqueEn->getQtd();
+                                $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdRetirar, $osEn, $usuarioEn, $estoqueRepo);
+                            } else {
+                                $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
+                                $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
+                            }
                         }
                     }
-                } elseif ($estoqueEn == null) {
+                } else {
                     if ($qtdContagem != 0) {
                         $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
                     }
