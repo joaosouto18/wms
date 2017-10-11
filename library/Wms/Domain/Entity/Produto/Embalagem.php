@@ -399,7 +399,7 @@ class Embalagem {
     }
 
     /**
-     * @param datetime $dataInativacao
+     * @param \DateTime $dataInativacao
      */
     public function setDataInativacao($dataInativacao) {
         $this->dataInativacao = $dataInativacao;

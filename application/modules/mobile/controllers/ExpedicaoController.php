@@ -25,19 +25,20 @@ class Mobile_ExpedicaoController extends Action {
         $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarras'));
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebraRepository $mapaSeparacaoQuebraRepo */
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-        $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
-        $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras));
 
-        $expVolume = null;
-        $expVolume = $volumePatrimonioRepo->findBy(array('id' => $this->_getParam('codigoBarras') ));
-
-        if(!is_null($expVolume)){
-            $codBarras = $this->_getParam('codigoBarras');
+        switch (substr($codBarras,0,2)) {
+            case 12:
+                $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras));
+                if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                    $this->_redirect("mobile/expedicao/confirma-clientes/codigoBarras/$codBarras");
+                } else {
+                    $this->_redirect("mobile/expedicao/confirmar-operacao/codigoBarras/$codBarras");
+                }
+                break;
+            default:
+                $this->_redirect("mobile/expedicao/confirmar-operacao/codigoBarras/$codBarras");
+                break;
         }
-        if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
-            $this->_redirect('mobile/expedicao/confirma-clientes/codigoBarras/' . $codBarras);
-        }
-        $this->_redirect('mobile/expedicao/confirmar-operacao/codigoBarras/' . $this->_getParam('codigoBarras'));
     }
 
     public function confirmaClientesAction() {

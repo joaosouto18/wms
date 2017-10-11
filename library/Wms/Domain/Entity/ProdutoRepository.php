@@ -3,7 +3,7 @@
 namespace Wms\Domain\Entity;
 
 use Doctrine\ORM\EntityRepository,
-    Wms\Domain\Entity\Produto as ProdutoEntity,
+    Wms\Domain\Entity\Produto,
     Wms\Domain\Entity\Produto\Embalagem as EmbalagemEntity,
     Wms\Domain\Entity\Produto\NormaPaletizacao as NormaPaletizacaoEntity,
     Doctrine\Common\Persistence\ObjectRepository,
@@ -87,19 +87,19 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         foreach ($values as $key => $value) {
             if (($value != "") && (is_numeric($value))) {
                 if ($tipo == 'AreaArmazenagem') {
-                    $sequencia = new ProdutoEntity\EnderecamentoAreaArmazenagem();
+                    $sequencia = new Produto\EnderecamentoAreaArmazenagem();
                     $sequencia->setCodAreaArmazenagem($key);
                 }
                 if ($tipo == 'TipoEndereco') {
-                    $sequencia = new ProdutoEntity\EnderecamentoTipoEndereco();
+                    $sequencia = new Produto\EnderecamentoTipoEndereco();
                     $sequencia->setCodTipoEndereco($key);
                 }
                 if ($tipo == 'TipoEstrutura') {
-                    $sequencia = new ProdutoEntity\EnderecamentoTipoEstrutura();
+                    $sequencia = new Produto\EnderecamentoTipoEstrutura();
                     $sequencia->setCodTipoEstrutura($key);
                 }
                 if ($tipo == 'CaracteristicaEndereco') {
-                    $sequencia = new ProdutoEntity\EnderecamentoCaracteristicaEndereco();
+                    $sequencia = new Produto\EnderecamentoCaracteristicaEndereco();
                     $sequencia->setCodCaracteristica($key);
                 }
                 $sequencia->setCodProduto($produtoEn->getId());
@@ -131,7 +131,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         }
     }
 
-    public function save(ProdutoEntity $produtoEntity, array $values) {
+    public function save(Produto $produtoEntity, array $values) {
 
         extract($values['produto']);
 
@@ -185,13 +185,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $em->persist($produtoEntity);
 
             switch ($idTipoComercializacao) {
-                case ProdutoEntity::TIPO_UNITARIO:
+                case Produto::TIPO_UNITARIO:
                     // limpo os volumes se houver
-                    /** @var ProdutoEntity\VolumeRepository $volumeRepo */
+                    /** @var Produto\VolumeRepository $volumeRepo */
                     $volumeRepo = $em->getRepository('wms:Produto\Volume');
                     $volumes = $volumeRepo->findBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
 
-                    /** @var ProdutoEntity\Volume $volumeEntity */
+                    /** @var Produto\Volume $volumeEntity */
                     foreach ($volumes as $volumeEntity) {
                         list($status, $msg) = $volumeRepo->checkEstoqueReservaById($volumeEntity->getId());
                         if ($status === 'error')
@@ -224,9 +224,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                     }
 
                     break;
-                case ProdutoEntity::TIPO_COMPOSTO:
+                case Produto::TIPO_COMPOSTO:
                     // limpo os embalagens se houver
-                    /** @var ProdutoEntity\EmbalagemRepository $embalagemRepo */
+                    /** @var Produto\EmbalagemRepository $embalagemRepo */
                     $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
                     $embalagens = $embalagemRepo->findBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
 
@@ -271,11 +271,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
     /**
      * Persiste as embalagens do produto
      *
-     * @param ProdutoEntity $produtoEntity
+     * @param Produto $produtoEntity
      * @param array $values
      * @return boolean
      */
-    public function persistirEmbalagens(ProdutoEntity $produtoEntity, array &$values, $webservice = false, $flush = true, $repositorios = null) {
+    public function persistirEmbalagens(Produto $produtoEntity, array &$values, $webservice = false, $flush = true, $repositorios = null) {
         try {
 
             $em = $this->getEntityManager();
@@ -527,11 +527,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
     /**
      * Persiste as volumes do produto
      *
-     * @param ProdutoEntity $produtoEntity
+     * @param Produto $produtoEntity
      * @param array $values
      * @return boolean
      */
-    public function persistirVolumes(ProdutoEntity $produtoEntity, array &$values, $webservice = false) {
+    public function persistirVolumes(Produto $produtoEntity, array &$values, $webservice = false) {
         $em = $this->getEntityManager();
         extract($values);
 
@@ -629,7 +629,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     /**
      * Persiste as dadosLogisticos do produto
-     * @param ProdutoEntity $produtoEntity
+     * @param Produto $produtoEntity
      * @param array $values
      */
     public function persistirDadosLogisticos(array &$values, $produtoEntity) {
@@ -776,16 +776,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
      * @param string $id Codigo do Produto
      * @param string $gradeOrigem Grade de origem dos dados
      * @param string $gradeDestino
+     * @param Usuario $usuario
      */
-    public function migrarDadoLogistico($id, $gradeOrigem, $gradeDestino) {
+    public function migrarDadoLogistico($id, $gradeOrigem, $gradeDestino, $usuario, $andamentoRepository) {
         $em = $this->getEntityManager();
-        $produtoRepo = $em->getRepository('wms:Produto');
 
-        $produtoOrigemEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeOrigem));
-        $produtoDestinoEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
+        /** @var Produto $produtoOrigemEntity */
+        $produtoOrigemEntity = $this->findOneBy(array('id' => $id, 'grade' => $gradeOrigem));
+        /** @var Produto $produtoDestinoEntity */
+        $produtoDestinoEntity = $this->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
 
         $tipoComercializacao = $produtoOrigemEntity->getTipoComercializacao();
-        $codigoBarrasBase = $produtoOrigemEntity->getCodigoBarrasBase();
         $numVolumes = $produtoOrigemEntity->getNumVolumes();
         $linhaSeparacao = $produtoOrigemEntity->getLinhaSeparacao();
 
@@ -797,8 +798,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         $em->persist($produtoDestinoEntity);
         $em->flush();
 
-        $this->migrarVolume($id, $gradeOrigem, $gradeDestino);
-        $this->migrarEmbalagem($id, $gradeOrigem, $gradeDestino);
+        if ($tipoComercializacao->getId() == Produto::TIPO_COMPOSTO) {
+            $this->migrarVolume($id, $gradeOrigem, $gradeDestino, $usuario, $andamentoRepository);
+        } elseif($tipoComercializacao->getId() == Produto::TIPO_UNITARIO) {
+            $this->migrarEmbalagem($id, $gradeOrigem, $gradeDestino, $usuario, $andamentoRepository);
+        }
     }
 
     /**
@@ -807,11 +811,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
      * @param string $id Codigo do produto
      * @param string $gradeOrigem Grade de Origem
      * @param string $gradeDestino Grade de destinho
+     * @param Usuario $usuario
+     * @param Produto\AndamentoRepository $andamentoRepository
      */
-    public function migrarVolume($id, $gradeOrigem, $gradeDestino) {
+    public function migrarVolume($id, $gradeOrigem, $gradeDestino, $usuario, $andamentoRepository) {
         $em = $this->getEntityManager();
 
-        $produtoRepo = $em->getRepository('wms:Produto');
         $volumeRepo = $em->getRepository('wms:Produto\Volume');
         $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
 
@@ -819,12 +824,20 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         $idsNormaPaletizacao = array();
 
-        $produtoDestinoEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
+        /** @var Produto $produtoDestinoEntity */
+        $produtoDestinoEntity = $this->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
+        /** @var Produto\Volume[] $volumesDestino */
         $volumesDestino = $volumeRepo->findBy(array('codProduto' => $id, 'grade' => $gradeDestino));
 
         // limpo os volumes existentes
+        /** @var Produto\Volume $volumeEntity */
         foreach ($volumesDestino as $volumeEntity) {
-            $em->remove($volumeEntity);
+            $dth = new \DateTime();
+            $volumeEntity->setDataInativacao($dth);
+            $volumeEntity->setUsuarioInativacao($usuario);
+            $this->_em->persist($volumeEntity);
+            $observacao = "Volume " . $volumeEntity->getDescricao() . " código de barras: ". $volumeEntity->getCodigoBarras() . " inativado por migração de dados logísticos da grade $gradeOrigem.";
+            $andamentoRepository->save($id, $gradeDestino,true, $observacao, false);
         }
 
         // clono os de origem
@@ -878,22 +891,36 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
      * @param string $gradeOrigem Grade de Origem
      * @param string $gradeDestino Grade de destinho
      */
-    public function migrarEmbalagem($id, $gradeOrigem, $gradeDestino) {
+    public function migrarEmbalagem($id, $gradeOrigem, $gradeDestino, $usuario, $andamentoRepository) {
         $em = $this->getEntityManager();
 
-        $produtoRepo = $em->getRepository('wms:Produto');
         $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
         $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
         $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
 
         $embalagemsOrigem = $embalagemRepo->findBy(array('codProduto' => $id, 'grade' => $gradeOrigem));
 
-        $produtoDestinoEntity = $produtoRepo->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
+        /** @var \Wms\Domain\Entity\Produto $produtoDestinoEntity */
+        $produtoDestinoEntity = $this->findOneBy(array('id' => $id, 'grade' => $gradeDestino));
         $embalagemsDestino = $embalagemRepo->findBy(array('codProduto' => $id, 'grade' => $gradeDestino));
 
         // limpo os embalagems existentes
+        /** @var Embalagem $embalagemEntity */
         foreach ($embalagemsDestino as $embalagemEntity) {
-            $em->remove($embalagemEntity);
+            $dth = new \DateTime();
+            $embalagemEntity->setDataInativacao($dth);
+            $embalagemEntity->setUsuarioInativacao($usuario);
+            /** @var Produto\DadoLogistico[] $dadosLogisticos */
+            $dadosLogisticos = $embalagemEntity->getDadosLogisticos();
+
+            foreach($dadosLogisticos as $dadosLogistico){
+                $this->_em->remove($dadosLogistico->getNormaPaletizacao());
+                $this->_em->remove($dadosLogistico);
+            }
+
+            $this->_em->persist($embalagemEntity);
+            $observacao = "Embalagem " . $embalagemEntity->getDescricao() . " código de barras: ". $embalagemEntity->getCodigoBarras() . " inativada por migração de dados logísticos da grade $gradeOrigem.";
+            $andamentoRepository->save($id, $gradeDestino,true, $observacao, false);
         }
 
         // clono os de origem
@@ -1018,7 +1045,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             'NAO' => $nao);
     }
 
-    private function enviaDadosLogisticosEmbalagem(ProdutoEntity $produtoEntity) {
+    private function enviaDadosLogisticosEmbalagem(Produto $produtoEntity) {
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
                 ->from('wms:Produto\DadoLogistico', 'pdl')
