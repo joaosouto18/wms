@@ -172,6 +172,12 @@ class EtiquetaSeparacao
      */
     protected $qtdEmbalagem;
 
+    /**
+     * @var int
+     * @Column(name="TIPO_SAIDA", type="string", nullable=true)
+     */
+    protected $tipoSaida;
+
     public function setDataConferencia($dataConferencia)
     {
         $this->dataConferencia = $dataConferencia;
@@ -479,6 +485,22 @@ class EtiquetaSeparacao
     public function getQtdEmbalagem()
     {
         return $this->qtdEmbalagem;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTipoSaida()
+    {
+        return $this->tipoSaida;
+    }
+
+    /**
+     * @param int $tipoSaida
+     */
+    public function setTipoSaida($tipoSaida)
+    {
+        $this->tipoSaida = $tipoSaida;
     }
 
 }
