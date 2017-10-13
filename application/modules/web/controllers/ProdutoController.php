@@ -65,7 +65,7 @@ class Web_ProdutoController extends Crud {
     }
 
     public function printCodBarProdutoAjaxAction() {
-        $modelo = 4;
+        $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
         $txt = str_replace("\r","",str_replace("\n","",file_get_contents('codigos.txt')));
         $array = explode(";", $txt);
         $grade = 'UNICA';

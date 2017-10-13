@@ -928,8 +928,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
                 }
                 else if ($produtoEntity->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
-                    $codProduto = $pedidoProduto->getProduto()->getId();
-                    $grade = $pedidoProduto->getProduto()->getGrade();
+                    $codProduto = $produtoEntity->getId();
+                    $grade = $produtoEntity->getGrade();
+                    $possuiPesoVariavel = $produtoEntity->getPossuiPesoVariavel();
 
                     $embalagensEn = $produtoEntity->getEmbalagens()->matching(Criteria::create()
                         ->orderBy(array("quantidade" => Criteria::DESC)))->filter(
@@ -972,6 +973,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $idDepositoEndereco = null;
                             $embalagemAtual = null;
                             $semEmbalagemValida = false;
+                            $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
 
                             if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                                 foreach ($embalagensEn as $embalagem) {
@@ -981,6 +983,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                     }
                                 }
                                 if (empty($embalagemAtual)) {
+                                    if ($possuiPesoVariavel == "S")
                                     $semEmbalagemValida = true;
                                 }
                             } else {
@@ -1009,7 +1012,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
                             }
 
-                            $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
                             // Identifico o resto possivel da embalagem atual em relação a qtdBase
                             $restoByFator = Math::resto($quantidadeRestantePedido, $qtdEmbalagemAtual);
                             // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
