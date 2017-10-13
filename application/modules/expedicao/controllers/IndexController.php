@@ -859,7 +859,7 @@ class Expedicao_IndexController extends Action {
         $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'));
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         try {
-            $operacao = $expedicaoRepo->getUrlMobileByCodBarras($this->_getParam('codigoBarrasMapa'));
+            $operacao = $expedicaoRepo->getUrlMobileByCodBarras($codBarras);
             $codPessoa = $this->_getParam('cod_pessoa');
             $this->view->operacao = $operacao['operacao'];
             if (isset($operacao['placa'])) {
