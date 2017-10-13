@@ -120,16 +120,16 @@
         <ul>
             <?php foreach ($this->enderecos as $endereco) : ?>
                 <li>
-                    <p><?php
-                        if (isset($endereco['endereco'])) {
-                            echo $endereco['endereco'];
-                            if (isset($endereco['zerar']) && $endereco['zerar'] > 0 && $this->codigoBarras != null) {
-                                ?>
-                        <a class="gradientBtn btnZerar" style="cursor: pointer; border-radius: 4px;border-color: black; width: 50px;height: 40px;margin: 2px;font-weight: bold;color: #fff; font-size: 12px;" name="btnFinalizar" type="submit" codigo-barras="<?php echo $endereco['zerar'] ?>">&nbsp;Zerar Item&nbsp; </a>
-                                <?php
-                            }
-                        }
-                        ?></p>
+                    <p>
+                        <?php if (isset($endereco['endereco'])) : ?>
+                            <?php echo $endereco['endereco']; ?>
+                            <?php if (isset($endereco['zerar']) && $endereco['zerar'] > 0 && $this->codigoBarras != null) : ?>
+                                <a class="gradientBtn btnZerar" style="cursor: pointer; border-radius: 4px;border-color: black; width: 50px;height: 40px;margin: 2px;font-weight: bold;color: #fff; font-size: 12px;" name="btnFinalizar" type="submit" codigo-barras="<?php echo $endereco['zerar'] ?>">&nbsp;Zerar Item&nbsp; </a>
+                            <?php endif; ?>
+                        <?php else : ?>
+                            <li><?php echo $endereco ?></li>
+                        <?php endif; ?>
+                    </p>
                 </li>
             <?php endforeach; ?>
         </ul>
