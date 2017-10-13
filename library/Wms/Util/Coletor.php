@@ -72,7 +72,8 @@ class Coletor
 
     public static function retiraDigitoIdentificador($codigoBarras)
     {
-        //$codigoBarras = (float) str_replace('.','',$codigoBarras);
+        $codigoBarras = (float) $codigoBarras;
+//        $codigoBarras = (float) str_replace('.','',$codigoBarras);
         return substr($codigoBarras, 0, strlen($codigoBarras)-1);
     }
 } 
