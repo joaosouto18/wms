@@ -28,13 +28,13 @@ class Filtro extends Form
         $this->addElement('text', 'id', array(
                     'label' => 'Código',
                     'size' => 10,
-                    'maxlength' => 10,
+                    'maxlength' => 100,
                     'class' => 'focus',
                 ))
                 ->addElement('text', 'grade', array(
                     'label' => 'Grade',
                     'size' => 10,
-                    'maxlength' => 10,
+                    'maxlength' => 100,
                 ))
                 ->addElement('text', 'descricao', array(
                     'label' => 'Descrição',
