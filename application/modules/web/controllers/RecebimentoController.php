@@ -882,16 +882,9 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         foreach ($notasFiscais as $key1 => $vetItens) {
             foreach ($vetItens['itens'] as $key => $value) {
                 $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['id'], $value['grade'], $value['quantidade']);
-                $embalagem = '';
-                if (!empty($vetEmbalagens[0])) {
-                    $embalagem = $vetEmbalagens[0];
-                } else {
-                    $embalagem = '';
-                }
-                if (!empty($vetEmbalagens[1]) && $embalagem != '') {
-                    $embalagem .= ' + '.$vetEmbalagens[1];
-                } elseif(!empty($vetEmbalagens[1])) {
-                    $embalagem .= $vetEmbalagens[1];
+                $embalagem = $value['quantidade'];
+                if (is_array($vetEmbalagens)) {
+                    $embalagem = implode(' + ',$vetEmbalagens);
                 }
                 $notasFiscais[$key1]['itens'][$key]['quantidade'] = $embalagem;
             }
