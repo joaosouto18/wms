@@ -50,6 +50,9 @@ Class Math
 
     public static function resto($x, $y)
     {
+        $x = strval($x);
+        $y = strval($y);
+
         $quantidade = self::maiorPrecisao($x, $y);
 
         $x = $x * $quantidade;

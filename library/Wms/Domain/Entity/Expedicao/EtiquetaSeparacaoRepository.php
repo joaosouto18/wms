@@ -835,6 +835,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 } else {
                     $reservas[0]['qtd'] = Math::subtrair($pedidoProduto->getQuantidade(),(float)$pedidoProduto->getQtdCortada());
                     $reservas[0]['idEndereco'] = null;
+                    $reservas[0]['quebraPulmaoDoca'] = 'N';
                 }
 
                 if ($produtoEntity->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
@@ -932,12 +933,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $grade = $produtoEntity->getGrade();
                     $possuiPesoVariavel = $produtoEntity->getPossuiPesoVariavel();
 
-                    $embalagensEn = $produtoEntity->getEmbalagens()->matching(Criteria::create()
-                        ->orderBy(array("quantidade" => Criteria::DESC)))->filter(
-                        function ($item) {
+                    $embalagensEn = $produtoEntity->getEmbalagens()->filter(
+                        function($item) {
                             return is_null($item->getDataInativacao());
                         }
                     )->toArray();
+
+                    usort($embalagensEn,function ($itemA, $itemB) {
+                        return $itemA->getQuantidade() < $itemB->getQuantidade();
+                    });
 
                     if (empty($embalagensEn)) {
                         throw new WMS_Exception("O produto $codProduto grade $grade não possui embalagens ativas!");
@@ -992,14 +996,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                     }
                                 }
                             } else {
-                                $embalagemAtual = $menorEmbalagem;
-                                if (!Math::compare($embalagemAtual->getQuantidade(), $quantidadeRestantePedido, "<=")) {
+                                if (!Math::compare($menorEmbalagem->getQuantidade(), $quantidadeRestantePedido, "<=")) {
                                     if ($possuiPesoVariavel == "S") {
                                         $embalagemAtual = $menorEmbalagem;
                                         $qtdEmbalagemAtual = $quantidadeRestantePedido;
                                     } else {
                                         $semEmbalagemValida = true;
                                     }
+                                } else {
+                                    $embalagemAtual = $menorEmbalagem;
+                                    $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
                                 }
                             }
 
@@ -1024,10 +1030,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                             // Identifico o resto possivel da embalagem atual em relação a qtdBase
                             $restoByFator = Math::resto($quantidadeRestantePedido, $qtdEmbalagemAtual);
-                            // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
-                            $qtdSepararEmbalagemAtual = Math::dividir(Math::subtrair($quantidadeRestantePedido, $restoByFator), $qtdEmbalagemAtual);
 
-                            $qtdVincular = Math::multiplicar($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
+                            $qtdSepararEmbalagemAtual = 0;
+                            $qtdVincular = 0;
+                            if (Math::compare($quantidadeRestantePedido, 1,"<")) {
+                                if ($possuiPesoVariavel == "S") {
+                                    $qtdSepararEmbalagemAtual = $qtdEmbalagemAtual;
+                                    $qtdVincular = $qtdEmbalagemAtual;
+                                }
+                            } else {
+                                // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
+                                $qtdSepararEmbalagemAtual = Math::dividir(Math::subtrair($quantidadeRestantePedido, $restoByFator), $qtdEmbalagemAtual);
+                                $qtdVincular = Math::multiplicar($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
+                            }
 
                             // Decrementa a quantidade à vinculada sobre a qtdPendente do pedido
                             $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido, $qtdVincular);
@@ -1339,10 +1354,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $produtoEn = $produto['produtoEn'];
                     while ($qtdTemp !== 0) {
                         $embalagemAtual = null;
+                        $qtdEmbalagemAtual = null;
                         /** @var Produto\Embalagem $embalagemEn */
                         foreach ($produto['embalagensDisponiveis'] as $embalagemEn) {
-                            if (Math::compare($embalagemEn->getQuantidade(), $qtdTemp, '<=')) {
+                            if (Math::compare(Math::resto($qtdTemp, 1), 1, "<")){
+                                if ($produtoEn->getPossuiPesoVariavel() == "S") {
+                                    $embalagemAtual = end($produto['embalagensDisponiveis']);
+                                    $qtdEmbalagemAtual = $qtdTemp;
+                                }
+                            }
+                            elseif (Math::compare($embalagemEn->getQuantidade(), $qtdTemp, '<=')) {
                                 $embalagemAtual = $embalagemEn;
+                                $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
                                 break;
                             }
                         }
@@ -1351,11 +1374,17 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             throw new \Exception($embalagemEn->getQuantidade()." - $qtdTemp - ".$produtoEn->getId());
                         }
 
-                        $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
                         // Identifico o resto possivel da embalagem atual em relação a qtdBase
-                        $restoByFator = Math::resto(strval($qtdTemp), strval($qtdEmbalagemAtual));
+                        $restoByFator = Math::resto($qtdTemp, $qtdEmbalagemAtual);
                         // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
-                        $qtdEmbs = Math::dividir(($qtdTemp - $restoByFator), $qtdEmbalagemAtual);
+                        $qtdEmbs = 0;
+                        if (Math::compare(Math::resto($qtdTemp, 1), 1, "<")){
+                            if ($produtoEn->getPossuiPesoVariavel() == "S") {
+                                $qtdEmbs = $qtdTemp;
+                            }
+                        } else {
+                            $qtdEmbs = Math::dividir(Math::subtrair($qtdTemp, $restoByFator), $qtdEmbalagemAtual);
+                        }
 
                         // A partir disso o restante do pedido é igual ao resto da divisão do fator atual
                         $qtdTemp = $restoByFator;
