@@ -383,14 +383,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido,$idPedido)
     {
-        $writer = new Zend_Log_Writer_Stream(DATA_PATH.'/log/'.date('Y-m-d').'-cancelarPedido.log');
-        $logger = new Zend_Log($writer);
         try {
             $this->_em->beginTransaction();
-
-
-            $logger->debug("Pedido: $idPedido");
-
             $idPedido = trim($idPedido);
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
