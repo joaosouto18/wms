@@ -1,23 +1,6 @@
 INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.4.3','5-trigger-integracao-abrafer.sql');
 
-
--- CRIACAO DE LINKS
-select * from all_db_links
---drop database link
-CREATE DATABASE LINK DBIMPERIUM
-CONNECT TO WMS_CDC IDENTIFIED BY wms_adm
-USING '(DESCRIPTION =
-    (ADDRESS_LIST =
-      (ADDRESS = (PROTOCOL = TCP)(HOST = 52.10.210.138)(PORT = 1521))
-    )
-    (CONNECT_DATA =
-      (SID = XE)
-    )
-  )
-';
-
 -------------------------------------------------------------------------------------------
-
 create or replace TRIGGER trg_imperium_produto
  AFTER
   INSERT OR UPDATE
@@ -28,8 +11,8 @@ declare
 
 begin
 
-merge into produto@DBIMPERIUM_CARAPINA
-           using dual on (produto.cod_produto@DBIMPERIUM_CARAPINA = :new.cod_produto)
+merge into WMS_CARAPINA.PRODUTO
+           using dual on (WMS_CARAPINA.PRODUTO.cod_produto = :new.cod_produto)
 when not matched then
 insert (COD_PRODUTO,
  DSC_PRODUTO,
@@ -103,8 +86,8 @@ declare
 
 begin
 
-merge into produto_andamento@DBIMPERIUM_CARAPINA
-           using dual on (produto_andamento.NUM_SEQUENCIA@DBIMPERIUM_CARAPINA = :new.NUM_SEQUENCIA)
+merge into WMS_CARAPINA.PRODUTO_ANDAMENTO
+           using dual on (WMS_CARAPINA.PRODUTO_ANDAMENTO.NUM_SEQUENCIA = :new.NUM_SEQUENCIA)
 when not matched then
 insert (NUM_SEQUENCIA,
         COD_PRODUTO,
@@ -136,9 +119,9 @@ declare
 
 begin
 
-merge into  produto_embalagem@DBIMPERIUM_CARAPINA
-           using dual on (produto_embalagem.COD_PRODUTO_EMBALAGEM@DBIMPERIUM_CARAPINA = :new.COD_PRODUTO_EMBALAGEM and
-                          produto_embalagem.COD_PRODUTO@DBIMPERIUM_CARAPINA = :new.COD_PRODUTO)
+merge into  WMS_CARAPINA.PRODUTO_EMBALAGEM
+           using dual on (WMS_CARAPINA.PRODUTO_EMBALAGEM.COD_PRODUTO_EMBALAGEM = :new.COD_PRODUTO_EMBALAGEM and
+                          WMS_CARAPINA.PRODUTO_EMBALAGEM.COD_PRODUTO = :new.COD_PRODUTO)
 when not matched then
 insert (COD_PRODUTO_EMBALAGEM,
  DSC_EMBALAGEM,
