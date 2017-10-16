@@ -973,23 +973,33 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $idDepositoEndereco = null;
                             $embalagemAtual = null;
                             $semEmbalagemValida = false;
-                            $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
+                            $qtdEmbalagemAtual = null;
 
                             if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                                 foreach ($embalagensEn as $embalagem) {
                                     if (Math::compare($embalagem->getQuantidade(), $quantidadeRestantePedido, "<=")) {
                                         $embalagemAtual = $embalagem;
+                                        $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
                                         break;
                                     }
                                 }
                                 if (empty($embalagemAtual)) {
-                                    if ($possuiPesoVariavel == "S")
-                                    $semEmbalagemValida = true;
+                                    if ($possuiPesoVariavel == "S") {
+                                        $embalagemAtual = $menorEmbalagem;
+                                        $qtdEmbalagemAtual = $quantidadeRestantePedido;
+                                    } else {
+                                        $semEmbalagemValida = true;
+                                    }
                                 }
                             } else {
                                 $embalagemAtual = $menorEmbalagem;
                                 if (!Math::compare($embalagemAtual->getQuantidade(), $quantidadeRestantePedido, "<=")) {
-                                    $semEmbalagemValida = true;
+                                    if ($possuiPesoVariavel == "S") {
+                                        $embalagemAtual = $menorEmbalagem;
+                                        $qtdEmbalagemAtual = $quantidadeRestantePedido;
+                                    } else {
+                                        $semEmbalagemValida = true;
+                                    }
                                 }
                             }
 
