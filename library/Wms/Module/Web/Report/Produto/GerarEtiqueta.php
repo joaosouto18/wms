@@ -272,13 +272,7 @@ class GerarEtiqueta extends eFPDF
             }
         }
 
-<<<<<<< HEAD
-=======
-
-
-
         //$this->Cell(100, 0, utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 0, 0);
->>>>>>> pulmaoDoca
         $this->Ln(6);
         $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
         $this->Ln(6);
