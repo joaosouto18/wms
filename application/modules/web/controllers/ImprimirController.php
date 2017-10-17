@@ -29,6 +29,7 @@ class Web_ImprimirController extends Action
 
     public function imprimirAction()
     {
+        phpinfo(); exit;
         try {
             $params = $this->_getAllParams();
             $tipo = $this->_getParam('tipo');
