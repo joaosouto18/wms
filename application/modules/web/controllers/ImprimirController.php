@@ -54,7 +54,7 @@ class Web_ImprimirController extends Action
                 $pdf->Output('Etiquetas-endereco-Pulmão.pdf', 'D');
             }
 
-            exit;
+//            exit;
         } catch (Exception $e) {
             $this->addFlashMessage('error', $e->getMessage());
             $this->_redirect('/imprimir');
