@@ -73,7 +73,6 @@ class Soap_IndexController extends Core\Controller\Action\WebService
         }
 
         $this->serviceName = $service;
-        var_dump('abc'); exit;
     }
 
     /**
@@ -82,6 +81,7 @@ class Soap_IndexController extends Core\Controller\Action\WebService
      */
     public function indexAction()
     {
+        var_dump('abc');
         $serviceName = ucwords($this->serviceName);
         // initialize server and set WSDL file location
         $server = new \Zend_Soap_Server($this->conf->soap->{$this->serviceName}->wsdl);
@@ -92,6 +92,7 @@ class Soap_IndexController extends Core\Controller\Action\WebService
         // register exceptions that generate SOAP faults
         $server->registerFaultException('Exception');
         // handle request
+        var_dump($server); exit;
         $server->handle();
     }
 
