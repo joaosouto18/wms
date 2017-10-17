@@ -21,6 +21,7 @@ class Soap_IndexController extends Core\Controller\Action\WebService
 
     public function init()
     {
+        var_dump('abc'); exit;
         parent::init();
 
         $parametroRepo = $this->em->getRepository('wms:Sistema\Parametro');
