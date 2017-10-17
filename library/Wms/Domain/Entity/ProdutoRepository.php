@@ -320,7 +320,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         if(!empty($dadosEmbalagem)) {
                             $pontoReposicao = !empty($pontoReposicao) ? $pontoReposicao : $dadosEmbalagem->getPontoReposicao();
                             $capacidadePicking = !empty($capacidadePicking) ? $capacidadePicking : $dadosEmbalagem->getCapacidadePicking();
-                            if (!empty($dadosEmbalagem->getEndereco()))
+                            $endereco = $dadosEmbalagem->getEndereco();
+                            if (!empty($endereco))
                                 $endereco = !empty($endereco) ? $endereco : $dadosEmbalagem->getEndereco()->getDescricao();
                             $altura = !empty($altura) ? $altura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getAltura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
                             $largura = !empty($largura) ? $largura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getLargura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
