@@ -251,7 +251,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         try{
             $em->beginTransaction();
 
-
             //PREPARANDO AS INFORMAÇÔES PRA FORMATAR CORRETAMENTE
             //BEGIN
             $idFornecedor = trim($idFornecedor);
@@ -284,7 +283,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
             //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
             if (gettype($itens) != "array") {
-                throw new \Exception("Oject");
                 $itensNf = array();
                 foreach ($itens->itens as $itemNf) {
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
@@ -305,7 +303,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 }
                 $itens = $itensNf;
             } else {
-                throw new \Exception("tipo: Array");
                 $itensNf = array();
                 foreach ($itens as $itemNf) {
                     if (is_object($itemNf)) {
