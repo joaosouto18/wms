@@ -155,6 +155,7 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
             });
 
             idProduto.focusout(function(){
+                console.log(idProduto.val());
                 getVolumes(idProduto.val(),grade.val());
 
                 var id = clicky.attr('id');
@@ -203,7 +204,7 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                     }
 
                 });
-                $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+prodId+"/grade/"+encodeURIComponent(grade),function(dataReturn){
+                $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+idProduto+"/grade/"+encodeURIComponent(grade),function(dataReturn){
                     $('#volumes').empty();
                     $('#volumes').parent().hide();
                     $('#embalagens').hide();
