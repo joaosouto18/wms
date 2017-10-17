@@ -179,8 +179,8 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
 //                }
             });
 
-            $('#grade').change(function(){
-                getVolumes(idProduto.val(),grade.val());
+            $('.ui-corner-all').click(function(){
+                getVolumes(idProduto.val(),$(this).text());
 
             });
 
