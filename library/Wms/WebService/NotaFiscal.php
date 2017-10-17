@@ -284,6 +284,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $tipoEnvio = 'array';
 
             //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
+            /*
             if ($tipoEnvio != "array") {
                 $itensNf = array();
                 foreach ($itens->itens as $itemNf) {
@@ -333,8 +334,20 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 }
                 $itens = $itensNf;
             }
+            */
 
-            if (count($itens) == 0) {
+            $itensNf = array();
+            foreach ($itens as $itemNf) {
+                $itemWs['idProduto'] = $itemNf['idProduto'];
+                $itemWs['peso'] =  $itemNf['quantidade'];
+                $itemWs['grade'] = $itemNf['grade'];
+                $itemWs['quantidade']= $itemNf['quantidade'];
+                $itensNf[] = $itemWs;
+            }
+            $itens = $itensNf;
+
+
+                if (count($itens) == 0) {
                 throw new \Exception('A Nota fiscal deve ter ao menos um item');
             }
 
