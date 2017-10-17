@@ -117,7 +117,7 @@ class Expedicao_OsController extends Action
             'urlParams'=> array(
                 'module' => 'expedicao'
             ),
-            'tag' => 'a'
+          //  'tag' => 'a'
         );
 
         Page::configure(array('buttons' => $buttons));

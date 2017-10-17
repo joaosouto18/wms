@@ -10,6 +10,8 @@ use Wms\Domain\Entity\NotaFiscal\Item;
 
 class UMA extends Pdf {
 
+    public $_modelo = "";
+
     public function imprimirPaletes($paletes, $modelo) {
         ini_set('max_execution_time', 3000);
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
@@ -71,6 +73,7 @@ class UMA extends Pdf {
 
             $this->layout($param['paletes'], $produtoEn, $modelo, $param);
         }
+
         $this->Output('UMA-' . $idRecebimento . '.pdf', 'D');
     }
 
@@ -170,17 +173,29 @@ class UMA extends Pdf {
     }
 
     function Footer() {
+
         // Go to 1.5 cm from bottom
         $this->SetY(-15);
         // Select Arial italic 8
         $this->SetFont('Arial', 'I', 8);
         // Print centered page number
         $this->Cell(0, 10, utf8_decode('Página ') . $this->PageNo(), 0, 0, 'C');
-        $this->Cell(-30, 0, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 0, 'C');
+
+
+
+        if ($this->_modelo == "1") {
+            $this->SetY(-30);
+            $this->SetFont('Arial', 'I', 28);
+            $this->Cell(0, 1, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 0, 'R');
+        } else {
+            $this->Cell(-30, 0, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 0, 'C');
+        }
+
     }
 
     public function layout05($palete, $produtoEn, $font_size, $line_width, $params) {
         $this->AddPage();
+
         $descricaoProduto = $produtoEn->getDescricao();
         $codigoProduto = $produtoEn->getId();
         $font_size = 30;
@@ -367,6 +382,7 @@ class UMA extends Pdf {
 
     public function layout01($palete, $produtoEn, $font_size, $line_width, $enderecoPicking, $params = null) {
         $this->AddPage();
+        $this->_modelo = "1";
 
         $descricaoProduto = $produtoEn->getId() . '-' . $produtoEn->getDescricao();
 
