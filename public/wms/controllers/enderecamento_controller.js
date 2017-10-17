@@ -179,10 +179,6 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
 //                }
             });
 
-            $('.ui-corner-all').click(function(){
-                getVolumes(idProduto.val(),$(this).text());
-
-            });
 
             $('#idProduto').keypress(function(event) {
                 var keycode = (event.keyCode ? event.keyCode : event.which);
