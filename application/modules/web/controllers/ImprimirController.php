@@ -29,7 +29,6 @@ class Web_ImprimirController extends Action
 
     public function imprimirAction()
     {
-        var_dump($this->_getAllParams()); exit;
         try {
             $params = $this->_getAllParams();
             $tipo = $this->_getParam('tipo');
@@ -49,6 +48,11 @@ class Web_ImprimirController extends Action
 
                 $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PICKING");
                 $pdf = self::gerarEtiquetasPdf($enderecos, $modelo);
+
+                var_dump($enderecos);
+                var_dump($modelo);
+                exit;
+                
                 $pdf->Output('Etiquetas-endereco-Picking.pdf', 'D');
             } elseif ($tipo == Endereco::ENDERECO_PULMAO) {
                 $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PULMAO");
