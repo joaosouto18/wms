@@ -73,6 +73,7 @@ class Soap_IndexController extends Core\Controller\Action\WebService
         }
 
         $this->serviceName = $service;
+        var_dump('abc'); exit;
     }
 
     /**
