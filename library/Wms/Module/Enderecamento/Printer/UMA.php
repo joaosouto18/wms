@@ -392,7 +392,12 @@ class UMA extends Pdf {
 
         $embalagemRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository("wms:Produto\Embalagem");
         $vetQtd = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $palete['qtd']);
-        $qtd = implode(' - ', $vetQtd);
+        if(is_array($vetQtd)) {
+            $qtd = implode(' - ', $vetQtd);
+        }else{
+            $qtd = $vetQtd;
+        }
+
 
         $this->SetFont('Arial', 'B', 60);
         $this->Cell(75, 40, $qtd, 0, 1);

@@ -91,11 +91,21 @@ class EstoqueReport extends Pdf
                 $qtdReservaEntrada = 0;
                 $qtdReservaSaida   = 0;
 
+
+                $produtoRepo = $em->getRepository('wms:Produto');
+                $produtoEn = $produtoRepo->findOneBy(array('id'=>$produto['COD_PRODUTO'] ,'grade'=>utf8_decode($produto['DSC_GRADE'])));
+                $enderecosPicking = $produtoRepo->getEnderecoPicking($produtoEn);
+
+                $picking = "";
+                if (count($enderecosPicking) >0) {
+                    $picking = " - " . $enderecosPicking{0};
+                }
+
                 //CABEÇALHO
                 $this->SetFont('Arial', 'B', 8);
                 $this->Cell(12, 5, $produto['COD_PRODUTO'], 1, 0);
                 $this->Cell(21, 5, utf8_decode($produto['DSC_GRADE']), 1, 0);
-                $this->Cell(160, 5, substr(utf8_decode($produto['DSC_PRODUTO']),0,80), 1, 1);
+                $this->Cell(160, 5, substr(utf8_decode($produto['DSC_PRODUTO']),0,80) . $picking, 1, 1);
                 $this->Cell(193, 5, 'VOL.: ' . substr(utf8_decode($produto['VOLUME'])     ,0,94), 1, 1);
                 $this->Cell(33, 5, utf8_decode("Endereço"), 1, 0);
                 $this->Cell(60, 5, utf8_decode("Tipo"), 1, 0);
