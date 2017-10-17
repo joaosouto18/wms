@@ -155,7 +155,6 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
             });
 
             idProduto.focusout(function(){
-                console.log(idProduto.val());
                 getVolumes(idProduto.val(),grade.val());
 
                 var id = clicky.attr('id');
@@ -180,6 +179,11 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
 //                }
             });
 
+            $('#grade').change(function(){
+                getVolumes(idProduto.val(),grade.val());
+
+            });
+
             $('#idProduto').keypress(function(event) {
                 var keycode = (event.keyCode ? event.keyCode : event.which);
                 prodId = $('#idProduto').val();
@@ -198,13 +202,13 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
             });
 
             function getVolumes(idProduto,grade){
-                $.getJSON("/enderecamento/movimentacao/get-validade/idProduto/"+idProduto+"/grade/"+encodeURIComponent(grade), function(data){
+                $.post("/enderecamento/movimentacao/get-validade/", {idproduto:idProduto, grade:grade}, function(data){
                     if (data == 'S') {
                         $('#validade').parent().show();
                     }
 
                 });
-                $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+idProduto+"/grade/"+encodeURIComponent(grade),function(dataReturn){
+                $.post("/enderecamento/movimentacao/volumes/", {idproduto:idProduto, grade:grade},function(dataReturn){
                     $('#volumes').empty();
                     $('#volumes').parent().hide();
                     $('#embalagens').hide();
