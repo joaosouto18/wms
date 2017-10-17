@@ -281,8 +281,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 $idFornecedor = $novoIdFornecedor;
             }
 
+            $tipoEnvio = 'array';
+
             //SE VIER O TIPO ITENS DEFINIDO ACIMA, ENTAO CONVERTE PARA ARRAY
-            if (gettype($itens) != "array") {
+            if ($tipoEnvio != "array") {
                 $itensNf = array();
                 foreach ($itens->itens as $itemNf) {
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
