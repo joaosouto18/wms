@@ -44,10 +44,9 @@ class Web_ImprimirController extends Action
             $enderecos = $EnderecoRepository->getImprimirEndereco($codEndereco);
 
             var_dump($enderecos);
-            var_dump($tipo);
+            var_dump($tipo == Endereco::ENDERECO_PICKING);
             exit;
-            if ($tipo == Endereco::ENDERECO_PICKING ||
-                $tipo == Endereco::ENDERECO_PICKING_DINAMICO ) {
+            if ($tipo == Endereco::ENDERECO_PICKING || $tipo == Endereco::ENDERECO_PICKING_DINAMICO) {
 
                 $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PICKING");
                 $pdf = self::gerarEtiquetasPdf($enderecos, $modelo);
