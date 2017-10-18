@@ -51,11 +51,8 @@ class EtiquetaEndereco extends Pdf
                     }
                     break;
                 case 2:
-//                    var_dump(is_int($key / 10));
-//                    var_dump($key > 0);
-//                    exit;
-//                    if (is_int($key / 10) && $key > 0)
-                    $this->AddPage();
+                    if (is_int($key / 10) && $key > 0) $this->AddPage();
+                    var_dump('abc'); exit;
                     $this->layoutModelo2(null,$codBarras);
                     break;
                 case 3:
