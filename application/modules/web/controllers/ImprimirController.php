@@ -46,8 +46,8 @@ class Web_ImprimirController extends Action
             if ($tipo == Endereco::ENDERECO_PICKING || $tipo == Endereco::ENDERECO_PICKING_DINAMICO) {
 
                 $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PICKING");
-                var_dump($modelo); exit;
                 $pdf = self::gerarEtiquetasPdf($enderecos, $modelo);
+                var_dump($pdf); exit;
                 $pdf->Output('Etiquetas-endereco-Picking.pdf', 'D');
             } elseif ($tipo == Endereco::ENDERECO_PULMAO) {
                 $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PULMAO");
