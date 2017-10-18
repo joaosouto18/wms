@@ -241,9 +241,8 @@ class EtiquetaEndereco extends Pdf
             $this->Image(APPLICATION_PATH . '/../data/seta2.png', 5, $posYSeta, 13, 20);
         }
 
-        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 147, $posY , 60, 15);
+//        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 147, $posY , 60, 15);
 
-        var_dump('abc'); exit;
         $this->Cell(5,5," ",0,1);
         $this->Line(0,$this->GetY(),297,$this->GetY());
     }
