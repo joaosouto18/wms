@@ -38,7 +38,6 @@ class EtiquetaEndereco extends Pdf
         $arrPares = array();
 
         foreach($enderecos as $key => $endereco) {
-            var_dump($endereco); exit;
             $codBarras = utf8_decode($endereco['DESCRICAO']);
             switch ((int)$modelo) {
                 case 1:
@@ -52,6 +51,8 @@ class EtiquetaEndereco extends Pdf
                     }
                     break;
                 case 2:
+                    var_dump(is_int($key / 10));
+                    var_dump($key > 0); exit;
                     if (is_int($key / 10) && $key > 0) $this->AddPage();
                     $this->layoutModelo2(null,$codBarras);
                     break;
