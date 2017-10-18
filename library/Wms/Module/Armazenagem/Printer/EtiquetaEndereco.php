@@ -197,6 +197,7 @@ class EtiquetaEndereco extends Pdf
 
     public function layoutModelo2 ($produto, $codBarras){
 
+        phpinfo(); exit;
         if (count($produto) <= 0) {
             $dscProduto = "";
             $dscGrade = "";
