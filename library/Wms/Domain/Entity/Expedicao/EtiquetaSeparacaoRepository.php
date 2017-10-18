@@ -931,12 +931,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $codProduto = $pedidoProduto->getProduto()->getId();
                     $grade = $pedidoProduto->getProduto()->getGrade();
 
-                    $embalagensEn = $produtoEntity->getEmbalagens()->matching(Criteria::create()
-                        ->orderBy(array("quantidade" => Criteria::DESC)))->filter(
-                        function ($item) {
+                    $embalagensEn = $produtoEntity->getEmbalagens()->filter(
+                        function($item) {
                             return is_null($item->getDataInativacao());
                         }
                     )->toArray();
+
+                    usort($embalagensEn,function ($itemA, $itemB) {
+                        return $itemA->getQuantidade() < $itemB->getQuantidade();
+                    });
 
                     if (empty($embalagensEn)) {
                         throw new WMS_Exception("O produto $codProduto grade $grade não possui embalagens ativas!");
