@@ -753,7 +753,7 @@ class RecebimentoRepository extends EntityRepository {
 
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
-        $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idProdutoVolume);
+        $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Produto\Volume', $idProdutoVolume);
         if (isset($params['dataValidade']) && !empty($params['dataValidade'])) {
             $validade = new \DateTime($params['dataValidade']);
         } else {
@@ -1051,6 +1051,7 @@ class RecebimentoRepository extends EntityRepository {
             }
             $result[] = array(
                 'codigo' => $row['COD_PRODUTO'],
+                'id' => $row['COD_PRODUTO'],
                 'produto' => $row['DSC_PRODUTO'],
                 'grade' => $row['DSC_GRADE'],
                 'picking' => $picking,
