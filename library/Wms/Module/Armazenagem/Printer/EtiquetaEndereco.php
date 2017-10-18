@@ -52,7 +52,6 @@ class EtiquetaEndereco extends Pdf
                     break;
                 case 2:
                     if (is_int($key / 10) && $key > 0) $this->AddPage();
-                    var_dump('abc'); exit;
                     $this->layoutModelo2(null,$codBarras);
                     break;
                 case 3:
@@ -242,6 +241,7 @@ class EtiquetaEndereco extends Pdf
             $this->Image(APPLICATION_PATH . '/../data/seta2.png', 5, $posYSeta, 13, 20);
         }
 
+        var_dump('abc'); exit;
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 147, $posY , 60, 15);
 
         $this->Cell(5,5," ",0,1);
