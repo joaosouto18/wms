@@ -982,6 +982,7 @@ class Zend_Soap_Server implements Zend_Server_Interface
 
         $nomeArquivo = $nomeServico ."-".$dthAtual."-request.xml";
         $texto = $this->_request;
+        var_dump($texto); exit;
         $nomeArquivo = $diretorio."/".$nomeArquivo;
 
         $file = fopen($nomeArquivo,"a");
