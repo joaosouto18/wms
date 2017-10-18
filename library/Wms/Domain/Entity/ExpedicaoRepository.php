@@ -2439,12 +2439,10 @@ class ExpedicaoRepository extends EntityRepository {
             }
         }
 
-        if ($tipoEtiqueta == null) {
-            $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
-            $volumePatrimonioEn = $volumePatrimonioRepo->find($codBarras);
-            if (!empty($volumePatrimonioEn)) {
-                $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
-            }
+        $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
+        $volumePatrimonioEn = $volumePatrimonioRepo->find($codBarras);
+        if (!empty($volumePatrimonioEn)) {
+            $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
         }
 
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO) {
