@@ -309,7 +309,7 @@ class Expedicao_IndexController extends Action {
             } catch (\Exception $e) {
                 $this->_helper->messenger('error', $e->getMessage());
             }
-            $this->addFlashMessage('success','Foi criado uma nova expedição código ' . $expedicaoEn->getId() . " com a carga desagrupada");
+            $this->addFlashMessage('success','Foi criado uma nova expedição com a carga desagrupada');
             $this->redirect("index", 'index', 'expedicao');
         } elseif (isset($params['salvar']) && empty($params['placa'])) {
             $this->_helper->messenger('error', 'É necessário digitar uma placa');
