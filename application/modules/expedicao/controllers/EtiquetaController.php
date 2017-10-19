@@ -254,6 +254,31 @@ class Expedicao_EtiquetaController  extends Action
 
     }
 
+    public function verificarReimpressaoAjaxAction () {
+        $request = $this->getRequest();
+        $idExpedicao = $request->getParam('id');
+        $this->view->idExpedicao = $idExpedicao;
+
+        /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
+        $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+
+        $etqReentrega = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao);
+        $etqSeparacao = $EtiquetaRepo->getEtiquetasByExpedicao($idExpedicao, false);
+
+        if (count($etqSeparacao) >0) {
+            $this->view->existeSeparacao = 'S';
+        } else {
+            $this->view->existeSeparacao = 'N';
+        }
+
+        if (count($etqReentrega) >0) {
+            $this->view->existeReentrega = 'S';
+        } else {
+            $this->view->existeReentrega = 'N';
+        }
+
+    }
+
     public function reimprimirAction()
     {
         Page::configure(array(
@@ -265,8 +290,7 @@ class Expedicao_EtiquetaController  extends Action
                         'module' => 'expedicao',
                         'controller' => 'index',
                         'action' => 'index'
-                    ),
-                    'tag' => 'a'
+                    )
                 ),
             )
         ));
@@ -353,8 +377,6 @@ class Expedicao_EtiquetaController  extends Action
 
                     $andamentoRepo->save('Reimpressão da etiqueta:'.$codBarra, $idExpedicao, false, true, $codBarra, $codBarrasProdutos);
                 }
-
-
 
             } else {
                 $this->addFlashMessage('error', 'Senha informada não é válida');
