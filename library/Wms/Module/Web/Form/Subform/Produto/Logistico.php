@@ -46,7 +46,7 @@ class Logistico extends SubForm
                     'required' => true,
                     'label' => 'Grade',
                     'size' => 10,
-                    'maxlength' => 10
+                    'maxlength' => 100
                 ))
                 ->addElement('numeric', 'volumes', array(
                     'required' => true,

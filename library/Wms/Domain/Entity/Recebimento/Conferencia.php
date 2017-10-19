@@ -53,7 +53,7 @@ class Conferencia
 
     /**
      * @var string Grade do produto
-     * @Column(name="DSC_GRADE", type="string", length=10, nullable=false)
+     * @Column(name="DSC_GRADE", type="string", length=255, nullable=false)
      */
     protected $grade;
 

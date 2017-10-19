@@ -35,7 +35,7 @@ class Identificacao extends SubForm
                 ->addElement('text', 'grade', array(
                     'label' => 'Grade',
                     'size' => 10,
-                    'maxlength' => 10,
+                    'maxlength' => 255,
                     'readonly' => 'readonly',
                     'required' => true,
                 ))

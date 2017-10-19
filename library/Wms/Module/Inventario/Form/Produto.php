@@ -27,7 +27,7 @@ class Produto extends Form {
                 ->addElement('text', 'grade', array(
                     'label' => 'Grade',
                     'size' => 10,
-                    'maxlength' => 10,
+                    'maxlength' => 254,
                 ))
                 ->addElement('text', 'descricao', array(
                     'label' => 'Descrição',
