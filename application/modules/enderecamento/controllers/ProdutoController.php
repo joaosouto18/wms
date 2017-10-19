@@ -39,6 +39,16 @@ class Enderecamento_ProdutoController extends Action
             ->render();
     }
 
+    public function enderecamentoPickingAction(){
+        $values = $this->_getAllParams();
+        /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
+        $inventarioRepo = $this->em->getRepository("wms:Inventario");
+
+        $ids = implode(',',$values['mass-id']);
+        $movimentacoes = $inventarioRepo->getMovimentacaoEstoqueByInventario($ids);
+        $this->exportCSV($movimentacoes,'relatorio-movimentacao-estoque-ajax');
+    }
+
     private function configurePage()
     {
         $buttons[] =  array(

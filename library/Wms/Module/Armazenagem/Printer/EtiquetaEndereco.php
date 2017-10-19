@@ -39,10 +39,6 @@ class EtiquetaEndereco extends Pdf
 
         foreach($enderecos as $key => $endereco) {
             $codBarras = utf8_decode($endereco['DESCRICAO']);
-
-//            var_dump($codBarras);
-//            var_dump(substr($codBarras,10,12)); exit;
-//            if ((substr($codBarras,7,-3) != '01' and substr($codBarras,10,12) != '01') or (substr($codBarras,7,-3) != '00' and substr($codBarras,10,12) != 11)) continue;
             switch ((int)$modelo) {
                 case 1:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,true);
@@ -57,19 +53,6 @@ class EtiquetaEndereco extends Pdf
                 case 2:
                     if (is_int($key / 10) && $key > 0) $this->AddPage();
                     $this->layoutModelo2(null,$codBarras);
-//                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
-//                    if (count($produtos) <= 0){
-//                        $this->layoutModelo2(null,$codBarras);
-//                    } else {
-//                        $produtoAnterior = null;
-//                        $grade = null;
-//                        foreach ($produtos as $produto){
-//                            if ($produto['codProduto'] == $produtoAnterior && $produto['grade'] == $grade) continue;
-//                            $this->layoutModelo2($produto,$codBarras);
-//                            $produtoAnterior = $produto['codProduto'];
-//                            $grade = $produto['grade'];
-//                        }
-//                    }
                     break;
                 case 3:
                     $enderecoEn = $enderecoRepo->findOneBy(array('descricao'=>$codBarras));
