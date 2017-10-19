@@ -2483,11 +2483,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
     }
 
-    public function getEtiquetasReentrega($idExpedicao, $codStatus = null, $central = null) {
+    public function getEtiquetasReentrega($idExpedicao, $codStatus = null, $central = null, $idEtiquetas = null) {
         $SQL = "
         SELECT ES.COD_ETIQUETA_SEPARACAO as ETIQUETA,
                ESR.COD_ES_REENTREGA,
                PROD.COD_PRODUTO,
+               PROD.DSC_GRADE,
                PROD.DSC_PRODUTO PRODUTO,
                NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,
                PES.NOM_PESSOA as CLIENTE,
@@ -2516,6 +2517,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         if ($codStatus != null) {
             $SQL = $SQL . " AND ESR.COD_STATUS = $codStatus";
         }
+        if ($idEtiquetas != null) {
+            if (is_array($idEtiquetas)) {
+                $idEtiquetas = implode(",",$idEtiquetas);
+            }
+            $SQL = $SQL . " AND ES.COD_ETIQUETA_SEPARACAO IN ($idEtiquetas) ";
+        }
 
         if ($central != null) {
             $SQL = $SQL . " AND P.PONTO_TRANSBORDO = $central";
@@ -2523,6 +2530,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $SQL .= " GROUP BY ES.COD_ETIQUETA_SEPARACAO,
                    PROD.COD_PRODUTO,
                    PROD.DSC_PRODUTO,
+                   PROD.DSC_GRADE,
                    PE.DSC_EMBALAGEM, PV.DSC_VOLUME,
                    PES.NOM_PESSOA,
                    P.COD_PEDIDO,

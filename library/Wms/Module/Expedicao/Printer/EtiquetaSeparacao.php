@@ -69,7 +69,7 @@ class EtiquetaSeparacao extends Pdf
         $this->chaveCargas = $chaveCarga;
     }
 
-    public function imprimirReentrega($idExpedicao, $status, $modelo, $reimpressao = false){
+    public function imprimirReentrega($idExpedicao, $status, $modelo, $reimpressao = false, $IdEtiquetas = null){
 
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
@@ -79,7 +79,7 @@ class EtiquetaSeparacao extends Pdf
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $etiquetaSeparacaoReentregaRepo */
         $etiquetaSeparacaoReentregaRepo = $em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
 
-        $pendencias = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
+        $pendencias = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status, null, $IdEtiquetas);
 
         if (count($pendencias) <= 0) {
             throw new \Exception('Não Existe Etiquetas de Reentrega com pendência de impressão!');
@@ -93,9 +93,8 @@ class EtiquetaSeparacao extends Pdf
 
         foreach($etiquetas as $etiqueta) {
             $this->etqMae = false;
-            $this->layoutEtiqueta($etiqueta, count($etiquetas), false, $modelo, true);
+            $this->layoutEtiqueta($etiqueta, count($etiquetas), $reimpressao, $modelo, true);
         }
-
 
         if ($reimpressao == false) {
             foreach ($pendencias as $pendencia) {
