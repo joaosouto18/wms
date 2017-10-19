@@ -1177,6 +1177,9 @@ class MapaSeparacaoRepository extends EntityRepository {
         $qtdConferenciaGravar = array();
         $qtdRestante = $qtdInformada;
         foreach ($result as $mapa) {
+            //CASO SEJA CONFERÊNCIA DE EMBALADO NÃO SOMA AS QTDS DO MESMO ITEM DE TODOS OS MAPAS
+            if (!empty($codPessoa) && $mapa['COD_MAPA_SEPARACAO'] != $idMapa) continue;
+
             $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
             $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
 
