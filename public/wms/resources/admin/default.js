@@ -305,7 +305,7 @@ $(document).ready(function(){
     });
 
     function getVolumes(idProduto,grade){
-        $.getJSON("/enderecamento/movimentacao/get-validade/idProduto/"+idProduto+"/grade/"+encodeURIComponent(grade), function(data){
+        $.post("/enderecamento/movimentacao/get-validade/", {idproduto:idProduto, grade:grade}, function(data){
             if (data == 'S') {
                 $('#validade').parent().show();
                 $('#validade').attr('validar','S');
@@ -315,20 +315,35 @@ $(document).ready(function(){
                  $('#validade').attr('validar','N');
             }
         });
-        $.getJSON("/enderecamento/movimentacao/volumes/idproduto/"+idProduto+"/grade/"+encodeURIComponent(grade),function(dataReturn){
-            if (dataReturn.length > 0) {
+        $.post("/enderecamento/movimentacao/volumes/", {idproduto:idProduto, grade:grade},function(dataReturn){
+            $('#volumes').empty();
+            $('#volumes').parent().hide();
+            $('#embalagens').hide();
+            $('#embalagens').parent().hide();
+
+            if (dataReturn.volumes.length >0) {
                 var options = '<option selected value="">Selecione um agrupador de volumes...</option>';
 
-                for (var i = 0; i < dataReturn.length; i++) {
-                    options += '<option selected value="' + dataReturn[i].cod + '">' + dataReturn[i].descricao + '</option>';
+                for (var i = 0; i < dataReturn.volumes.length; i++) {
+                    options += '<option selected value="' + dataReturn.volumes[i].cod + '">' + dataReturn.volumes[i].descricao + '</option>';
                 }
 
                 $('#volumes').html(options);
                 $('#volumes').parent().show();
                 $('#volumes').focus();
             } else {
-                $('#volumes').empty();
-                $('#volumes').parent().hide();
+
+                if (dataReturn.embalagens.length >0) {
+                    var list= '';
+                    list = '<label">Embalagens</label><ul id="embalagens">';
+                    for (var i = 0; i < dataReturn.embalagens.length; i++) {
+                        list += '<li><h2>' + dataReturn.embalagens[i] + '</h2></li>';
+                    }
+                    list += '</ul>';
+
+                    $('#embalagens').parent().show();
+                    $('#embalagens').parent().html(list)
+                }
             }
         })
     }

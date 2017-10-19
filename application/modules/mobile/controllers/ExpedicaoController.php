@@ -21,8 +21,15 @@ class Mobile_ExpedicaoController extends Action {
     }
 
     public function definirOperacaoAction() {
-        
-        $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarras'));
+
+        $codBarras = $this->_getParam('codigoBarras');
+
+        $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
+        $volumePatrimonioEn = $volumePatrimonioRepo->find($codBarras);
+        if (empty($volumePatrimonioEn)) {
+            $codBarras = ColetorUtil::retiraDigitoIdentificador($codBarras);
+        }
+
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoQuebraRepository $mapaSeparacaoQuebraRepo */
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
 

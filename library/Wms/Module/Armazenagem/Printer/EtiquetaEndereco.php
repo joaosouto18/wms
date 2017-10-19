@@ -168,7 +168,7 @@ class EtiquetaEndereco extends Pdf
             }
         }
 
-        $this->Output('etiqueta','I');
+        $this->Output('etiqueta.pdf','I');
 
     }
 

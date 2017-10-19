@@ -74,7 +74,7 @@ class Inventario {
                     $enderecos[$key]['zerar'] = 0;
                 }
             } else {
-                $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'];
+                $enderecos[]['endereco'] = $endereco['DSC_DEPOSITO_ENDERECO'];
             }
         }
         return $enderecos;

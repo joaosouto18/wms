@@ -35,7 +35,7 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
                 $idEmbalagem = $produtoEmbalagemEn->getId();
                 $data['qtd'] = $data['qtd'] * $produtoEmbalagemEn->getQuantidade();
             } else {
-                throw new \Exception(utf8_encode('Código do Produto não cadastrado!'));
+                throw new \Exception(utf8_encode('Nenhum produto encontrado com o código ' . $codBarras ));
             }
 
             /** @var \Wms\Domain\Entity\Produto $produtoRepo */
