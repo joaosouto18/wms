@@ -305,8 +305,8 @@ class Expedicao_IndexController extends Action {
                     $AndamentoRepo->save("Etiquetas da carga " . $cargaEn->getCodCargaExterno() . " canceladas na expedição " . $expedicaoAntiga, $expedicaoEn->getId());
                 }
                 $this->_em->flush();
-                $this->addFlashMessage('success','Foi criado uma nova expedição com a carga desagrupada');
                 $this->redirect("index", 'index', 'expedicao');
+                $this->addFlashMessage('success','Foi criado uma nova expedição com a carga desagrupada');
             } catch (\Exception $e) {
                 $this->_helper->messenger('error', $e->getMessage());
             }
