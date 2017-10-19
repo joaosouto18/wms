@@ -3,7 +3,13 @@
 use Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
     Wms\Domain\Entity\NotaFiscal\Item as ItemNF;
 
-
+class TypeOfParam
+{
+    public static function getType()
+    {
+        return 'Item[]';
+    }
+}
 class Item {
     /** @var string */
     public $idProduto;
@@ -237,7 +243,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
-     * @param array $itens
+     * @param TypeOfParam::getType() $itens
+     * @param string $cnpjDestinatario CNPJ da filial dona da nota
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
      * @param string $tipoNota Identifica se é uma nota de Bonificação(B), Compra(C), etc.
