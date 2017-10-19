@@ -30,7 +30,13 @@ class PedidoEnderecoRepository extends EntityRepository
             $enPedidoEndereco->setBairro($pedidoCliente['bairro']);
             $enPedidoEndereco->setLocalidade($pedidoCliente['cidade']);
             $enPedidoEndereco->setNumero($pedidoCliente['numero']);
-            $enPedidoEndereco->setCep($pedidoCliente['cep']);
+
+            if (isset($pedidoCliente['cep']) && ($pedidoCliente['cep'] != null)) {
+                $enPedidoEndereco->setCep($pedidoCliente['cep']);
+            } else {
+                $enPedidoEndereco->setCep(null);
+            }
+
 
             $em->persist($enPedidoEndereco);
 //            $em->flush();

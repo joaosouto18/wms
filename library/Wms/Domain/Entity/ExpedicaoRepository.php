@@ -1129,38 +1129,62 @@ class ExpedicaoRepository extends EntityRepository {
         }
     }
 
-    private function validaStatusEtiquetas($expedicaoEn, $central) {
+    private function validaStatusEtiquetas ($expedicaoEn, $central)
+    {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-
-        $qtdEtiquetasPendenteConferencia = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA, $expedicaoEn, $central);
-        $qtdEtiquetasPendenteImpressão = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $expedicaoEn, $central);
+        $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
 
         if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
 
             $qtdEtiquetasPendenteReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA, $central);
-            if (count($qtdEtiquetasPendenteReentrega) > 0) {
+            if (count($qtdEtiquetasPendenteReentrega) >0) {
                 return 'Existem etiquetas de reentrega pendentes de conferência nesta expedição';
             }
         }
 
-        if ($qtdEtiquetasPendenteConferencia > 0) {
-            return 'Existem etiquetas pendentes de conferência nesta expedição';
-        } else if ($qtdEtiquetasPendenteImpressão > 0) {
-            return 'Existem etiquetas pendentes de impressão nesta expedição';
-        }
+        $cargaRepo = $this->_em->getRepository('wms:Expedicao\Carga');
+        $cargasEn = $cargaRepo->findBy(array('codExpedicao'=>$expedicaoEn->getId()));
 
-        if ($expedicaoEn->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) {
+        $msgErro = "";
+        foreach ($cargasEn as $cargaEn) {
+            $qtdEtiquetasPendenteConferencia = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA, $expedicaoEn, $central, null, $cargaEn->getId());
+            $qtdEtiquetasPendenteImpressão = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $expedicaoEn, $central, null, $cargaEn->getId());
 
-            $qtdEtiquetasConferidas = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CONFERIDO, $expedicaoEn, $central);
-            $qtdEtiquetasRecebidoTransbordo = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO, $expedicaoEn, $central);
+            $cargaConferida = true;
+            if ($qtdEtiquetasPendenteConferencia > 0) {
+                $msgErro = 'Existem etiquetas pendentes de conferência nesta expedição';
+                $cargaConferida = false;
+            } else if ($qtdEtiquetasPendenteImpressão > 0) {
+                $msgErro = 'Existem etiquetas pendentes de impressão nesta expedição';
+                $cargaConferida = false;
+            }
 
-            if ($qtdEtiquetasConferidas > 0) {
-                return 'Existem etiquetas de produtos de outra central que ainda não foram conferidas';
-            } else if ($qtdEtiquetasRecebidoTransbordo > 0) {
-                return 'Existem etiquetas de produtos de outra central que ainda não foram conferidas';
+            if ($expedicaoEn->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_PARCIALMENTE_FINALIZADO) {
+
+                $qtdEtiquetasConferidas = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CONFERIDO, $expedicaoEn, $central, null, $cargaEn->getId());
+                $qtdEtiquetasRecebidoTransbordo = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_RECEBIDO_TRANSBORDO, $expedicaoEn, $central, null, $cargaEn->getId());
+
+                if ($qtdEtiquetasConferidas > 0) {
+                    $msgErro = 'Existem etiquetas de produtos de outra central que ainda não foram conferidas';
+                    $cargaConferida = false;
+                } else if ($qtdEtiquetasRecebidoTransbordo > 0) {
+                    $msgErro = 'Existem etiquetas de produtos de outra central que ainda não foram conferidas';
+                    $cargaConferida = false;
+                }
+            }
+
+            if ($cargaConferida === true) {
+                $pedidoRepo->finalizaPedidosByCentral($central,$expedicaoEn->getId(),$cargaEn->getId(),false);
             }
         }
+
+        $this->getEntityManager()->flush();
+
+        if ($msgErro != "") {
+            return $msgErro;
+        }
+
     }
 
     public function importaCortesERP($idExpedicao) {
@@ -1209,7 +1233,11 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
-        $expedicaoEn = $this->findOneBy(array('id' => $idExpedicao));
+        $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
+        $codCargaExterno = $this->validaCargaFechada($idExpedicao);
+        if (isset($codCargaExterno) && !empty($codCargaExterno)) {
+            return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
+        }
 
         if ($this->getSystemParameterValue('IMPORTA_CORTES_ERP') == 'S') {
             $result = $this->importaCortesERP($idExpedicao);
@@ -1221,18 +1249,24 @@ class ExpedicaoRepository extends EntityRepository {
             return 'Existem produtos sem etiquetas impressas';
         }
 
-        if ($this->getExistsPendenciaCorte($expedicaoEn, $central)) {
+        if ($this->getExistsPendenciaCorte($expedicaoEn,$central)) {
             return 'Existem etiquetas pendentes de corte nesta expedição';
         }
 
         ini_set('max_execution_time', 3000);
         Try {
-            $this->getEntityManager()->beginTransaction();
+            $transacao = false;
             if ($validaStatusEtiqueta == true) {
-                $result = $this->validaStatusEtiquetas($expedicaoEn, $central);
+                $result = $this->validaStatusEtiquetas($expedicaoEn,$central);
                 if (is_string($result)) {
                     return $result;
                 }
+            }
+
+            $transacao = true;
+            $this->getEntityManager()->beginTransaction();
+
+            if ($validaStatusEtiqueta == true) {
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
                 if (is_string($result)) {
                     return $result;
@@ -1248,6 +1282,10 @@ class ExpedicaoRepository extends EntityRepository {
                     return $result;
                 }
             } else {
+                $codCargaExterno = $this->validaCargaFechada($idExpedicao);
+                if (isset($codCargaExterno) && !empty($codCargaExterno)) {
+                    return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
+                }
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
                 $MapaSeparacaoRepo->forcaConferencia($idExpedicao);
             }
@@ -1271,14 +1309,14 @@ class ExpedicaoRepository extends EntityRepository {
 
             $verificaReconferencia = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'RECONFERENCIA_EXPEDICAO'))->getValor();
 
-            if ($verificaReconferencia == 'S') {
-                $idStatus = $expedicaoEn->getStatus()->getId();
+            if ($verificaReconferencia=='S'){
+                $idStatus=$expedicaoEn->getStatus()->getId();
 
                 /** @var \Wms\Domain\Entity\Expedicao\EtiquetaConferenciaRepository $EtiquetaConfRepo */
                 $EtiquetaConfRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
 
-                if (($idStatus == Expedicao::STATUS_PRIMEIRA_CONFERENCIA) || ($idStatus == Expedicao::STATUS_EM_SEPARACAO)) {
-                    $numEtiquetas = $EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $idExpedicao, $central);
+                if (($idStatus==Expedicao::STATUS_PRIMEIRA_CONFERENCIA) || ($idStatus==Expedicao::STATUS_EM_SEPARACAO)) {
+                    $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $idExpedicao, $central);
 
                     if (count($numEtiquetas) > 0) {
                         return 'Existem etiquetas pendentes de conferência nesta expedição';
@@ -1286,19 +1324,20 @@ class ExpedicaoRepository extends EntityRepository {
                         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
                         $expedicaoEntity = $this->find($idExpedicao);
 
-                        $this->alteraStatus($expedicaoEntity, Expedicao::STATUS_SEGUNDA_CONFERENCIA);
+                        $this->alteraStatus($expedicaoEntity,Expedicao::STATUS_SEGUNDA_CONFERENCIA);
                         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
                         $this->getEntityManager()->flush();
                         $this->getEntityManager()->commit();
                         return 0;
                     }
                 } else {
-                    $numEtiquetas = $EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA, $idExpedicao, $central);
+                    $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA, $idExpedicao, $central);
                     if (count($numEtiquetas) > 0) {
                         return 'Existem etiquetas pendentes de conferência nesta expedição';
                     }
                 }
             }
+
             if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
                 $this->finalizarReentrega($idExpedicao);
             }
@@ -1331,11 +1370,10 @@ class ExpedicaoRepository extends EntityRepository {
                     throw new \Exception($resultAcao);
                 }
             }
-
             $this->getEntityManager()->commit();
             return $result;
-        } catch (\Exception $e) {
-            $this->getEntityManager()->rollback();
+        } catch(\Exception $e) {
+            if ($transacao == true) $this->getEntityManager()->rollback();
             return $e->getMessage();
         }
     }
@@ -1437,16 +1475,17 @@ class ExpedicaoRepository extends EntityRepository {
      * @param array $cargas
      * @return bool
      */
-    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false, $motivo = '') {
+    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false)
+    {
         $codCargaExterno = $this->validaCargaFechada($idExpedicao);
         if (isset($codCargaExterno) && !empty($codCargaExterno)) {
-            return 'As cargas ' . $codCargaExterno . ' estão com pendencias de fechamento';
+            return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
         }
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-        $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
+        $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
         $expedicaoEntity = $this->find($idExpedicao);
@@ -1454,7 +1493,7 @@ class ExpedicaoRepository extends EntityRepository {
         $expedicaoEntity->setTipoFechamento($tipoFinalizacao);
 
         $this->finalizeOSByExpedicao($expedicaoEntity->getId());
-        $pedidoRepo->finalizaPedidosByCentral($centralEntrega, $expedicaoEntity->getId());
+        $pedidoRepo->finalizaPedidosByCentral($centralEntrega,$expedicaoEntity->getId());
 
         $pedidosNaoConferidos = $pedidoRepo->findPedidosNaoConferidos($expedicaoEntity->getId());
         if ($pedidosNaoConferidos == null) {
@@ -1479,7 +1518,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         $this->liberarVolumePatrimonioByExpedicao($expedicaoEntity->getId());
-        $this->alteraStatus($expedicaoEntity, $novoStatus);
+        $this->alteraStatus($expedicaoEntity,$novoStatus);
         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
         $this->getEntityManager()->flush();
         return true;
@@ -2941,6 +2980,12 @@ class ExpedicaoRepository extends EntityRepository {
             if ($codBarraPrefix == '14') {
                 $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_EMBALADO;
             }
+        }
+
+        $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
+        $volumePatrimonioEn = $volumePatrimonioRepo->find($codBarras);
+        if (!empty($volumePatrimonioEn)) {
+            $tipoEtiqueta = EtiquetaSeparacao::PREFIXO_ETIQUETA_VOLUME;
         }
 
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO) {

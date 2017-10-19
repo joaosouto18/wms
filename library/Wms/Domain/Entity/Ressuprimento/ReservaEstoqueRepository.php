@@ -294,7 +294,8 @@ class ReservaEstoqueRepository extends EntityRepository
             return true;
         } else {
             /** @var ReservaEstoqueProduto $produto */
-            $produto = $reservaEstoqueEn->getProdutos()->toArray()[0];
+            $arr = $reservaEstoqueEn->getProdutos()->toArray();
+            $produto = $arr[0];
             $codProduto = $produto->getCodProduto();
             $grade = $produto->getGrade();
             $enderecoEn = $reservaEstoqueEn->getEndereco()->getDescricao();

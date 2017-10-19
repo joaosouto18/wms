@@ -423,7 +423,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         } catch (\Exception $e) {
             $this->_em->rollback();
-            $logger->warn($e->getMessage());
             throw $e;
         }
 

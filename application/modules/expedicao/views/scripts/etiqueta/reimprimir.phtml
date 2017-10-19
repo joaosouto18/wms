@@ -25,6 +25,8 @@
                 <td>Cód Produto</td>
                 <td>Produto</td>
                 <td>Grade</td>
+                <td>Pedido</td>
+                <td>Cliente</td>
             </tr>
             </thead>
             <tbody>
@@ -35,18 +37,20 @@
                     <td><?php echo $etiqueta['codProduto'] ?></td>
                     <td ><?php echo $etiqueta['produto'] ?></td>
                     <td ><?php echo $etiqueta['grade'] ?></td>
+                    <td ><?php echo $etiqueta['pedido'] ?></td>
+                    <td ><?php echo $etiqueta['cliente'] ?></td>
                 </tr>
             <?php endforeach; ?>
             <tr>
-                <td>
+                <td colspan="2">
                     <label>Código de barras etiqueta:</label>
                     <input class="focus" type="text" name="codBarra" id="codBarra"  onkeydown="nextInput(event)" />
                 </td>
-                <td>
+                <td colspan="2">
                     <label>Motivo:</label>
                     <?php echo $this->formText('motivo') ?>
                 </td>
-                <td >
+                <td colspan="2">
                     <?php
                     echo '<label>Senha para confirmação: </label>';
                     echo $this->formPassword("senhaConfirmacao", '', array(

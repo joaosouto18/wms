@@ -656,9 +656,9 @@ class EnderecoRepository extends EntityRepository {
             $sqlWhere = $sqlWhere . " AND P.NUM_RUA >= " . $ruaInicial . " ";
         }
         if(!empty($dataInicial)){
-            $sqlWhere .= " AND P.DTH_ESTOQUE >= TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI')";
+            $sqlWhere .= " AND (P.DTH_ESTOQUE >= TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI'))";
         }if(!empty($dataFinal)){
-            $sqlWhere .= " AND P.DTH_ESTOQUE <= TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))";
+            $sqlWhere .= " AND (P.DTH_ESTOQUE <= TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))";
         }
 
         $sql = "SELECT NUM_RUA,

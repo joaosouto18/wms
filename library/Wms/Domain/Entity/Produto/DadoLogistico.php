@@ -116,8 +116,8 @@ class DadoLogistico {
      * @param decimal $altura 
      */
     public function setAltura($altura) {
-       /* $andamenRepo->checksChange($this->getEmbalagem()->getProduto(), 'Altura', $this->altura, $altura);
-        $this->altura = Converter::brToEn($altura, 3);*/
+       /* $andamenRepo->checksChange($this->getEmbalagem()->getProduto(), 'Altura', $this->altura, $altura);*/
+        $this->altura = Converter::brToEn($altura, 3);
         return $this;
     }
 

@@ -247,7 +247,12 @@ class Mobile_InventarioController extends Action
                 $this->addFlashMessage('warning', 'Contagem de endereço finalizada com divergência');
             }
 
-            $this->redirect('consulta-endereco','inventario', 'mobile', array('idInventario' => $params['idInventario'], 'numContagem' => $params['numContagem'], 'divergencia' => $params['divergencia']));
+            $divergencia = null;
+            if (isset($params['divergencia']) && ($params['divergencia'] <> null)) {
+                $divergencia = $params['divergencia'];
+            }
+
+            $this->redirect('consulta-endereco','inventario', 'mobile', array('idInventario' => $params['idInventario'], 'numContagem' => $params['numContagem'], 'divergencia' => $divergencia));
 
         } catch (Exception $ex) {
             $this->addFlashMessage('error',$ex->getMessage());
