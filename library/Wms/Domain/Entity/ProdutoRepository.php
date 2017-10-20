@@ -581,7 +581,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         $volumeRepo = $em->getRepository('wms:Produto\Volume');
 
-        var_dump($volumes); exit;
         foreach ($volumes as $id => $itemVolume) {
             extract($itemVolume);
 
