@@ -33,8 +33,8 @@ class Filtro extends Form
                 ))
                 ->addElement('text', 'grade', array(
                     'label' => 'Grade',
-                    'size' => 10,
-                    'maxlength' => 10,
+                    'size' => 13,
+                    'maxlength' => 64,
                 ))
                 ->addElement('text', 'descricao', array(
                     'label' => 'Descrição',
