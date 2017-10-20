@@ -116,6 +116,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ->setParameter('idCarga', $idCarga);
         }
 
+        echo $dql->getQuery()->getSql(); exit;
         return $dql->getQuery()->getSingleScalarResult();
     }
 
