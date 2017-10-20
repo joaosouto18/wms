@@ -261,9 +261,15 @@ class GerarEtiqueta extends eFPDF
         $this->Ln(3);
         if (strlen($produto['dscProduto']) <= 25) {
             $this->Cell(100,0,utf8_decode($produto['idProduto']) . " - " . utf8_decode($produto['dscProduto']) ,0,0);
-
         } else {
-            $this->Cell(100,0,'abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz' ,0,0);
+            $this->Cell(22,0,utf8_decode($produto['idProduto']) . " - ",0,0);
+            $part1 = substr($produto['dscProduto'],0,25);
+            $part2 = substr($produto['dscProduto'], 25, strlen($produto['dscProduto']));
+            $this->Cell(80,0, utf8_decode($part1) ,0,0);
+            if (!empty($part2)) {
+                $this->Ln(6);
+                $this->Cell(100, 0, utf8_decode($part2), 0, 0);
+            }
         }
 
         //$this->Cell(100, 0, utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 0, 0);
