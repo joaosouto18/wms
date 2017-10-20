@@ -180,6 +180,7 @@ class ContagemEnderecoRepository extends EntityRepository
                                          FROM PRODUTO_EMBALAGEM
                                          GROUP BY COD_PRODUTO, DSC_GRADE
                                        ) PE3 ON PE3.COD_PRODUTO = PE2.COD_PRODUTO AND PE3.DSC_GRADE = PE2.DSC_GRADE AND PE3.QTD_EMB = PE2.QTD_EMBALAGEM
+                           -- WHERE ROWNUM = 1
                           ) PE ON ICE.COD_PRODUTO = PE.COD_PRODUTO AND ICE.DSC_GRADE = PE.DSC_GRADE
                 WHERE I.COD_INVENTARIO = $id AND I.COD_STATUS = $status
                 GROUP BY ICE.COD_PRODUTO, ICE.DSC_GRADE, ICE.NUM_CONTAGEM, PE.COD_BARRAS";

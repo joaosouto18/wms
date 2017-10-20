@@ -155,10 +155,9 @@ class Inventario_IndexController  extends Action
             foreach ($produtosInventariados as $item) {
                 $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
                 $txtContagem = $item['NUM_CONTAGEM'];
-                $txtCodBarras = str_pad($item['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
+                $txtCodProduto = str_pad($item["COD_PRODUTO"], 6, '0', STR_PAD_LEFT);
                 $txtQtd = str_pad($item["QTD_INV"], 8, '0', STR_PAD_LEFT);
-                $txtCodProduto = str_pad($item["COD_PRODUTO"], 5, '0', STR_PAD_LEFT);
-                $linha = "$txtCodInventario,$txtContagem,$txtCodBarras,$txtQtd,$txtCodProduto\n";
+                $linha = "$txtCodInventario"."$txtContagem"."$txtQtd"."$txtCodProduto"."\r\n";
                 fwrite($file, $linha, strlen($linha));
             }
             fclose($file);
