@@ -1,4 +1,4 @@
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.4.3','5-trigger-integracao-abrafer.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.4.3','3-trigger-integracao-abrafer.sql');
 
 -------------------------------------------------------------------------------------------
 create or replace TRIGGER trg_imperium_produto
