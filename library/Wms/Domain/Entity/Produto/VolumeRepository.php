@@ -25,6 +25,7 @@ class VolumeRepository extends EntityRepository
         $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
 
         extract($values);
+        var_dump($id); exit;
 
         $volumeEntity = (isset($id) && is_numeric($id)) ? $this->find($id) : new VolumeEntity;
 
