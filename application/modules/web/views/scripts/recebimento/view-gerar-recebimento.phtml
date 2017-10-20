@@ -30,7 +30,8 @@ if (count($this->notasFiscais) > 0):
                                 <li><img src="/img/admin/icon_opc.gif" alt="Op&ccedil;&otilde;es" />
                                     <ul>
                                         <li><a href="/consulta_nota-fiscal/view-nota-ajax/id/<?php echo $notaFiscal['id'] ?>" class="dialogAjax" title="Detalhes da NotaFiscal">Visualizar NotaFiscal</a></li>
-                                        <li><a href="/recebimento/excluir-nota/id/<?php echo $notaFiscal['id'] ?>" title="Excluir NotaFiscal">Excluir NotaFiscal</a></li>
+                                        <li><a id="excluir-nota" title="Excluir NotaFiscal" idNota="<?php echo $notaFiscal['id'] ?>">Excluir Nota Fiscal</a></li>
+<!--                                        <li><a href="/recebimento/excluir-nota/id/--><?php //echo $notaFiscal['id'] ?><!--" title="Excluir NotaFiscal">Excluir Nota Fiscal</a></li>-->
 									</ul>
                                 </li>
                             </ul>
@@ -51,3 +52,14 @@ if (count($this->notasFiscais) > 0):
     <?php
 endif;
 ?>
+<script>
+    $("#excluir-nota").click(function () {
+        var id = $(this).attr('idNota');
+        $.wmsDialogConfirm({
+            title: 'Tem certeza?',
+            msg: 'Deseja realmente excluir essa nota?'
+        }, function excluiNf(id) {
+            window.location = "/recebimento/excluir-nota/id/"+id.id;
+        },{id:id});
+    });
+</script>
