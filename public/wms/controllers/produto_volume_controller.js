@@ -119,8 +119,8 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             valores.dataInativacao = 'VOL. ATIVO';
             var produto_volume = null;
 
-            if (id !== '') {
-                valores.acao = id.indexOf('-new') === -1 ? 'alterar' : 'incluir';
+            if (id != '') {
+                valores.acao = id.indexOf('-new') == -1 ? 'alterar' : 'incluir';
                 produto_volume = new Wms.Models.ProdutoVolume(valores);
                 this.show(produto_volume);
             } else {
