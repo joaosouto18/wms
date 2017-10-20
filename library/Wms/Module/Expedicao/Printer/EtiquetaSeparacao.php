@@ -245,6 +245,7 @@ class EtiquetaSeparacao extends Pdf
         $EtiquetaRepo   = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $qtdImpressasPendentes = $EtiquetaRepo->countByStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $ExpedicaoEn);
 
+        var_dump($qtdImpressasPendentes); exit;
         if ($qtdImpressasPendentes == 0) {
             return false;
         }
