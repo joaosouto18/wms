@@ -230,5 +230,5 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (230, '6.4.6', 'Correção: Tela de inventário no coletor exibindo corretamente os endereços a bipar', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (231, '6.5.0', 'Separação por Pulmão-Doca', '10-parametro-status-recebimento-enderecado.sql',SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (232, '6.5.0', 'Log de integração do WebService exclusiva por funcionalidade', '1-log-ws-de-function-exclusiva.sql',SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (XXX, '6.5.0', 'Parametrização do tipo esperado no WebService NotaFiscal:Salvar->itens', '2-parametrizacao-nota-fiscal-salvar-itens.sql',SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (233, '6.5.0', 'Parametrização do tipo esperado no WebService NotaFiscal:Salvar->itens', '2-parametrizacao-nota-fiscal-salvar-itens.sql',SYSDATE);
 
