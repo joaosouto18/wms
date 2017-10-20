@@ -202,6 +202,7 @@ class Expedicao_EtiquetaController  extends Action
             } else {
                 $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
             }
+            var_dump('abc'); exit;
             $ExpedicaoEn = $ExpedicaoRepo->findOneBy(array('id'=>$idExpedicao));
             if ($Etiqueta->jaImpressas($ExpedicaoEn) == false) {
                 $this->addFlashMessage('info', 'Todas as etiquetas já foram impressas');
