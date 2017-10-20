@@ -426,11 +426,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                         qtdMaior =  parseFloat($(this).val().replace(',', '.'));
                                     }
                                 });
-                                if (((parseFloat(el.val().replace(',', '.')) * fator) % qtdMaior) !== 0) {
-                                    this.dialogAlert('<b>Ponto de Reposição</b> deve ser múltiplo da <b>Quantidade de itens</b>');
-                                    el.val(parseFloat(parseFloat($('#fieldset-campos-comuns #pontoReposicao-real').val().replace(',', '.')).toFixed(3) / fator).toFixed(3).replace('.', ','));
-                                    return false;
-                                }
+                                // if (((parseFloat(el.val().replace(',', '.')) * fator) % qtdMaior) !== 0) {
+                                //     this.dialogAlert('<b>Ponto de Reposição</b> deve ser múltiplo da <b>Quantidade de itens</b>');
+                                //     el.val(parseFloat(parseFloat($('#fieldset-campos-comuns #pontoReposicao-real').val().replace(',', '.')).toFixed(3) / fator).toFixed(3).replace('.', ','));
+                                //     return false;
+                                // }
 
                                 $('#fieldset-campos-comuns #pontoReposicao-real').val(parseFloat(fator * parseFloat(el.val())).toFixed(3));
                                 ev.stopImmediatePropagation();
@@ -840,13 +840,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var capacidadePicking = valores.capacidadePicking;
                                 var restoDivisao = 0;
                                 var ret = false;
-                                if ((capacidadePicking % quantidade) == 0) {
-                                    if ((pontoReposicao % quantidade) == 0) {
-                                        ret = true;
-                                    } else {
-                                        this.dialogAlert('<b>Ponto de Reposição</b> deve ser múltiplo da <b>Quantidade de itens</b>');
-                                    }
-                                }
+                                // if ((capacidadePicking % quantidade) == 0) {
+                                //     if ((pontoReposicao % quantidade) == 0) {
+                                //         ret = true;
+                                //     } else {
+                                //         this.dialogAlert('<b>Ponto de Reposição</b> deve ser múltiplo da <b>Quantidade de itens</b>');
+                                //     }
+                                // }
                                 // else {
                                 //     this.dialogAlert('<b>Capacidade de Picking</b> deve ser múltiplo da <b>Quantidade de itens</b>');
                                 // }
