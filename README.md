@@ -36,6 +36,9 @@ caso não encontre no arquivo enclua abaixo dos outros "loadModule"
 
 Habilite a extensão php do php_oci8 em PHP -> PHP extensions
 
+Para que o APACHE não decodifique %2F (/) coloque isso no VirtualHost
+AllowEncodedSlashes NoDecode
+
 Configuração banco local
 ===========================
 

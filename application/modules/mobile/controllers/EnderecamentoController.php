@@ -871,6 +871,7 @@ class Mobile_EnderecamentoController extends Action
             if (!empty($codBarrasUma)) {
                 /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
                 $paleteProdutoRepo = $this->em->getRepository('wms:Enderecamento\PaleteProduto');
+                $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
 
                 /** @var \Wms\Domain\Entity\Enderecamento\PaleteProduto $paleteProduto */
                 $paleteProduto = $paleteProdutoRepo->findOneBy(array('uma' => $codBarrasUma));
@@ -879,8 +880,10 @@ class Mobile_EnderecamentoController extends Action
 
                 $codProduto = $paleteProduto->getCodProduto();
                 $grade = $paleteProduto->getGrade();
+                $produtoVolumeEntity = $produtoVolumeRepo->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade));
 
-                $embalagemEn = $paleteProduto->getEmbalagemEn();
+                if (!isset($produtoVolumeEntity) || empty($produtoVolumeEntity))
+                    $embalagemEn = $paleteProduto->getEmbalagemEn();
 
             } else if (!empty($codBarras)) {
                 $LeituraColetor = new \Wms\Service\Coletor();

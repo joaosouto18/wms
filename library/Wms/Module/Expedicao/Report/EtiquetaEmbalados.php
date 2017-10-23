@@ -184,7 +184,7 @@ class EtiquetaEmbalados extends eFPDF
             $impressao = utf8_decode(substr($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']."\n",0,30));
             $this->MultiCell(110, 6, $impressao, 0, 'L');
 
-            $this->SetFont('Arial', 'B', 16);
+            $this->SetFont('Arial', 'B', 20);
             $impressao = utf8_decode(substr('PEDIDO: '.$volume['COD_PEDIDO']."\n",0,30));
             $this->MultiCell(110, 20, $impressao, 0, 'L');
 

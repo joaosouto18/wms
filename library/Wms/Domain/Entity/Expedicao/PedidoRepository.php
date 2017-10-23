@@ -60,7 +60,7 @@ class PedidoRepository extends EntityRepository
         return $array;
     }
 
-    public function finalizaPedidosByCentral ($PontoTransbordo, $Expedicao)
+    public function finalizaPedidosByCentral ($PontoTransbordo, $Expedicao, $carga = null, $flush = true)
     {
         $query = "SELECT ped
                     FROM wms:Expedicao\Pedido ped
@@ -68,12 +68,19 @@ class PedidoRepository extends EntityRepository
                    WHERE c.codExpedicao = $Expedicao
                      AND ped.pontoTransbordo = $PontoTransbordo";
 
+        if ($carga != null) {
+            $query = $query . " AND c.id = " . $carga;
+        }
+
         $pedidos = $this->getEntityManager()->createQuery($query)->getResult();
         foreach ($pedidos as $pedido) {
             $pedido->setConferido(1);
             $this->_em->persist($pedido);
         }
-        $this->_em->flush();
+
+        if ($flush == true) {
+            $this->_em->flush();
+        }
     }
 
     public function findPedidosNaoConferidos ($idExpedicao, $idCarga = null) {

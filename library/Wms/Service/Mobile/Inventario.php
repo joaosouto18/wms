@@ -74,7 +74,7 @@ class Inventario {
                     $enderecos[$key]['zerar'] = 0;
                 }
             } else {
-                $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'];
+                $enderecos[]['endereco'] = $endereco['DSC_DEPOSITO_ENDERECO'];
             }
         }
         return $enderecos;
@@ -194,9 +194,9 @@ class Inventario {
         $populateForm['idEndereco'] = $params['idEndereco'];
         $populateForm['dscEndereco'] = $enderecoEn->getDescricao();
         $populateForm['descricaoProduto'] = '<b>' . $idProduto . " - " . $produtoEn->getDescricao() . '</b>';
-        if ($embalagemEn == null) {
+        if (!empty($volumeEn)) {
             $populateForm['dscEmbalagem'] = '<b>Volume ' . $volumeEn->getDescricao() . ' - Sequencia ' . number_format($volumeEn->getCodigoSequencial(), 0, ',', '') . '</b>';
-        } else {
+        } elseif (!empty($embalagemEn)) {
             $populateForm['dscEmbalagem'] = '<b>Embalagem ' . $embalagemEn->getDescricao() . ' - Fator ' . number_format($embalagemEn->getQuantidade(), 2, ',', '') . '</b>';
         }
         if ($dscVolume != null) {

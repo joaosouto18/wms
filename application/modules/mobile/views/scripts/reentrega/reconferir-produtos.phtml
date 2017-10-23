@@ -21,12 +21,14 @@
         if (event.which == 13 || event.keyCode == 13) {
             if (document.getElementById('codBarras').value != "") {
                 etiquetaProduto   = document.getElementById('qtd');
-                if (etiquetaProduto) {
-                    etiquetaProduto.focus();
-                    if(event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
+                if (etiquetaProduto.css('display') != 'none') {
+                    if (etiquetaProduto) {
+                        etiquetaProduto.focus();
+                        if(event.preventDefault) {
+                            event.preventDefault();
+                        } else {
+                            event.returnValue = false;
+                        }
                     }
                 }
             }

@@ -17,7 +17,7 @@ use Wms\Util\Barcode\eFPDF,
 class GerarEtiqueta extends eFPDF
 {
 
-    public function init(array $nfParams = null,array $prodParams = null, $modelo, $target = "I")
+    public function init(array $nfParams = null,array $prodParams = null, $modelo, $target = Recebimento::TARGET_IMPRESSAO_ITEM, $importedFile = false)
     {
         $tipo = "";
         /*  PARA IMPRIMIR ETIQUETAS DE UM PRODUTO
@@ -37,6 +37,8 @@ class GerarEtiqueta extends eFPDF
             $tipo = "NF";
         }
 
+        $produtosEn = null;
+
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
 
         /** @var NotaFiscalRepository $notaFiscalRepo */
@@ -46,8 +48,16 @@ class GerarEtiqueta extends eFPDF
         } else if ($tipo == "Produto") {
             /** @var ProdutoRepository $produtoRepo */
             $produtoRepo = $em->getRepository('wms:Produto');
-            $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade);
-            $target = Recebimento::TARGET_IMPRESSAO_PRODUTO;
+            if (!$importedFile) {
+                $produtosEn = $produtoRepo->buscarProdutosImprimirCodigoBarras($codProduto, $grade);
+            } else {
+                foreach ($produtos as $produto) {
+                    $dados = $produtoRepo->buscarProdutosImprimirCodigoBarras($produto, $grade);
+                    foreach($dados as $dado) {
+                        $produtosEn[] = $dado;
+                    }
+                }
+            }
         }
 
         //geracao da etiqueta
@@ -69,6 +79,7 @@ class GerarEtiqueta extends eFPDF
                 }
             }
         }
+
         $this->Output("Etiqueta.pdf","D");
         exit;
     }
@@ -248,8 +259,19 @@ class GerarEtiqueta extends eFPDF
         $codigo = $produto['codigoBarras'];
         $this->AddPage();
         $this->Ln(3);
-        $this->Cell(100,0, self::SetStringByMaxWidth(utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 100) ,0,0);
-        //$this->Cell(100, 0, utf8_decode($produto['idProduto']) . ' - ' . utf8_decode($produto['dscProduto']), 0, 0);
+        if (strlen($produto['dscProduto']) <= 25) {
+            $this->Cell(100,0,utf8_decode($produto['idProduto']) . " - " . utf8_decode($produto['dscProduto']) ,0,0);
+        } else {
+            $this->Cell(22,0,utf8_decode($produto['idProduto']) . " - ",0,0);
+            $part1 = substr($produto['dscProduto'],0,25);
+            $part2 = substr($produto['dscProduto'], 25, strlen($produto['dscProduto']));
+            $this->Cell(80,0, utf8_decode($part1) ,0,0);
+            if (!empty($part2)) {
+                $this->Ln(6);
+                $this->Cell(100, 0, utf8_decode($part2), 0, 0);
+            }
+        }
+
         $this->Ln(6);
         $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
         $this->Ln(6);

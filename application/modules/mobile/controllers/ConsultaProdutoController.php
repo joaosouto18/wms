@@ -31,12 +31,18 @@ class Mobile_ConsultaProdutoController extends Action
                 $this->addFlashMessage('error', 'Nenhum produto encontrado para o código de barras ' . $codigoBarras);
                 $this->redirect("index",'consulta-produto');
             }
-
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            $capacidadePicking = $info[0]['capacidadePicking'];
+            if ($capacidadePicking > 0) {
+                $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($info[0]['idProduto'], $info[0]['grade'], $capacidadePicking);
+                $capacidadePicking = implode(' + ', $vetSeparar);
+            }
             $params = array();
             $params['idProduto'] = $this->view->codProduto = $info[0]['idProduto'];
             $this->view->linhaSeparacao = $info[0]['linhaSeparacao'];
             $params['grade'] = $this->view->grade = $info[0]['grade'];
             $this->view->codigoBarras = $info[0]['codigoBarras'];
+            $this->view->capacidadePicking = $capacidadePicking;
             $this->view->descricao = $info[0]['descricao'];
             $this->view->unitizador = $info[0]['unitizador'];
             $this->view->lastro = $info[0]['numLastro'];

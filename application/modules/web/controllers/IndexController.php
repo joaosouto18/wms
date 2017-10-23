@@ -6,6 +6,69 @@ use Core\Controller\Action,
 
 class Web_IndexController extends Wms\Module\Web\Controller\Action {
 
+    public function versoesAjaxAction(){
+        $versaoAtual = \Wms\Git::getCurrent();
+
+        $params = $this->getRequest()->getParams();
+        $whereVersao = "";
+        $versaoFiltrada = "";
+        $values = array(
+            'versaoAtual' => $versaoAtual
+        );
+        if (isset($params['versao']) && ($params['versao'] != null)) {
+            $whereVersao = " WHERE COD_VERSAO = '" . $params['versao'] . "'";
+            $versaoFiltrada = " - Versão: " . $params['versao'];
+            $values = array(
+                'versao' => $params['versao'],
+                'versaoAtual' => $versaoAtual
+            );
+        }
+
+        $sql = "SELECT COD_FUNCIONALIDADE, DSC_FUNCIONALIDADE, TO_CHAR(DTH_ATUALIZACAO,'DD/MM/YYYY HH24:MI:SS') as DTH_ATUALIZACAO, COD_VERSAO FROM FUNCIONALIDADES $whereVersao ORDER BY TO_DATE(DTH_ATUALIZACAO,'DD/MM/YYYY HH24:MI:SS') DESC, REPLACE(COD_VERSAO,'.','') DESC, COD_FUNCIONALIDADE DESC";
+        $funcionalidades = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $sql = "SELECT DISTINCT COD_VERSAO FROM FUNCIONALIDADES ORDER BY REPLACE(COD_VERSAO,'.','') DESC";
+        $versoes = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        /** @var Sigla $row */
+        $versoesDisponíveis = array();
+        foreach ($versoes as $row) {
+            $versoesDisponíveis[$row['COD_VERSAO']] = $row['COD_VERSAO'];
+        }
+
+        $form = new \Wms\Module\Web\Form();
+
+        $form->addElement('text', 'versaoAtual', array(
+            'size' => 10,
+            'disabled' => 'disabled',
+            'label' => 'Versão Atual',
+            'value' => $versaoAtual,
+            //'decorators' => array('ViewHelper')
+        ));
+
+        $form->addElement('select', 'versao', array(
+            'label' => 'Versão',
+            'multiOptions' => array('firstOpt' => 'Todos', 'options' => $versoesDisponíveis,
+            'value' => $versaoFiltrada
+           // 'decorators' => array('ViewHelper'),
+        )));
+
+        $form->addElement('submit', 'submit', array(
+            'label' => 'Consultar',
+            'class' => 'btn',
+            'decorators' => array('ViewHelper'),
+        ));
+
+        $form->addDisplayGroup(array('versaoAtual','versao','submit'), 'identificacao', array('legend' => 'Versões'));
+        $form->render();
+        $form->setDefaults($values);
+
+        $this->view->form = $form;
+        $this->view->funcionalidades = $funcionalidades;
+        $this->view->versaoFiltrada = $versaoFiltrada;
+
+    }
+
     public function indexAction() {
 
         /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRessuprimentoRepo */

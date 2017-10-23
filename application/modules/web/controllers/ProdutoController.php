@@ -64,28 +64,28 @@ class Web_ProdutoController extends Crud {
         $this->view->form = $form;
     }
 
-    /*    public function printCodBarProdutoAjaxAction() {
-      $modelo = 3;
-      $handle = fopen('C:\wamp64\www\wms\codigos.txt','r');
-      $codProduto = str_replace("\r\n",'',stream_get_contents($handle));
-      $grade = $this->getRequest()->getParam('grade');
-      $gerarEtiqueta = null;
-      switch ($modelo) {
-      case 1:
-      $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
-      break;
-      case 2:
-      $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
-      break;
-      case 3:
-      $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
-      break;
-      }
-
-      $gerarEtiqueta->init(null, array(
-      'codProduto' => $codProduto,
-      'grade' => $grade), $modelo);
-      } */
+    public function printCodBarProdutoAjaxAction() {
+        $modelo = 4;
+        $txt = str_replace("\r","",str_replace("\n","",file_get_contents('codigos.txt')));
+        $array = explode(";", $txt);
+        $grade = 'UNICA';
+        $gerarEtiqueta = null;
+        switch ($modelo) {
+            case 1:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
+                break;
+            case 2:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
+                break;
+            case 3:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
+                break;
+            case 4:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
+                break;
+        }
+        $gerarEtiqueta->init(null, array( 'produtos' => $array, 'grade' => $grade), $modelo,\Wms\Domain\Entity\Recebimento::TARGET_IMPRESSAO_PRODUTO,true);
+    }
 
     /**
      * Lista as normas de paletizacao com dados logisticos
@@ -353,7 +353,10 @@ class Web_ProdutoController extends Crud {
         $params = $this->getRequest()->getParams();
 
         $em = $this->getEntityManager();
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $em->getRepository('wms:Produto');
+        /** @var Produto\Andamento $andamentoRepository */
+        $andamentoRepository = $em->getRepository("wms:Produto\Andamento");
 
         $this->view->id = $params['id'];
         $this->view->grade = $params['grade'];
@@ -361,6 +364,7 @@ class Web_ProdutoController extends Crud {
         if (isset($params['clonar'])) {
 
             try {
+                $usuarioId = \Zend_Auth::getInstance()->getIdentity()->getId();
 
                 // migra dados logisticos
                 if (!isset($params['gradeDe']))
@@ -370,12 +374,12 @@ class Web_ProdutoController extends Crud {
                     throw new \Exception('Não há grades de destino para fazer a clonagem.');
 
                 foreach ($params['gradePara'] as $gradePara) {
-                    $produtoRepo->migrarDadoLogistico($params['id'], $params['gradeDe'], $gradePara);
+                    $produtoRepo->migrarDadoLogistico($params['id'], $params['gradeDe'], $gradePara, $usuarioId, $andamentoRepository);
                 }
 
-                $this->_helper->messenger('success', 'Dados logisticos migrados com sucesso.');
+                $this->addFlashMessage('success', 'Dados logisticos migrados com sucesso.');
             } catch (\Exception $e) {
-                $this->_helper->messenger('error', $e->getMessage());
+                $this->addFlashMessage('error', $e->getMessage());
             }
 
             $this->redirect('index', 'produto', null, array('id' => $params['id'], 'grade' => $params['grade']));
@@ -569,6 +573,12 @@ class Web_ProdutoController extends Crud {
         }
 
         $this->_helper->json($arrayMensagens, true);
+    }
+
+    public function atualizaDadoLogisticoAjaxAction() {
+
+        $this->_em->getRepository('wms:Produto')->getProdDadoLog();
+        $this->_helper->json(array(), true);
     }
 
 }

@@ -46,7 +46,7 @@ class Andamento
     /**
      * Data e hora andamento
      *
-     * @var datetime $dataAndamento
+     * @var \DateTime $dataAndamento
      * @Column(name="DTH_ANDAMENTO", type="datetime", nullable=false)
      */
     protected $dataAndamento;
@@ -139,7 +139,7 @@ class Andamento
     }
 
     /**
-     * @param datetime $dataAndamento
+     * @param \DateTime $dataAndamento
      */
     public function setDataAndamento($dataAndamento)
     {
@@ -147,7 +147,7 @@ class Andamento
     }
 
     /**
-     * @return Wms\Domain\Entity\Usuario
+     * @return Usuario
      */
     public function getUsuario()
     {
@@ -155,7 +155,7 @@ class Andamento
     }
 
     /**
-     * @param Wms\Domain\Entity\Usuario $usuario
+     * @param Usuario $usuario
      */
     public function setUsuario($usuario)
     {

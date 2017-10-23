@@ -1061,11 +1061,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         $this->getEntityManager()->flush();
 
         if($checkout == true){
-//            $retorno =  $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco, $checkout);
-            if(!isset($retorno['checkout'])){
-                $retorno = true;
-            }
-            return $retorno;
+            return  $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco, $checkout);
         }
         
         return true;
@@ -1181,13 +1177,21 @@ class MapaSeparacaoRepository extends EntityRepository {
         $qtdConferenciaGravar = array();
         $qtdRestante = $qtdInformada;
         foreach ($result as $mapa) {
+            //CASO SEJA CONFERÊNCIA DE EMBALADO NÃO SOMA AS QTDS DO MESMO ITEM DE TODOS OS MAPAS
+            if (!empty($codPessoa) && $mapa['COD_MAPA_SEPARACAO'] != $idMapa) continue;
+
             $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
             $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
 
             $codMapa = $mapa['COD_MAPA_SEPARACAO'];
 
             $qtdConferir = $qtdRestante;
-
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            $qtdConferidoTotalEmb = $qtdConferidoTotal;
+            if ($qtdConferidoTotal > 0) {
+                $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $dscGrade, $qtdConferidoTotal);
+                $qtdConferidoTotalEmb = implode(' + ', $vetSeparar);
+            }
             if ($qtdConferir > 0) {
                 $qtdConferenciaGravar[] = array(
                     'codMapaSeparacao' => $codMapa,
@@ -1197,6 +1201,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                     'codProdutoEmbalagem' => $codProdutoEmbalagem,
                     'codPrdutoVolume' => $codProdutoVolume,
                     'qtdEmbalagem' => $fatorCodBarrasBipado,
+                    'qtdConferidaTotalEmb' => $qtdConferidoTotalEmb,
                     'quantidade' => Math::dividir($qtdConferir,$fatorCodBarrasBipado)
                 );
 
@@ -1205,10 +1210,14 @@ class MapaSeparacaoRepository extends EntityRepository {
         }
 
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
-        if ($qtdMapaTotal == $qtdConferidoTotal) {
-            if($checkout == true) {
-                return array('produto' => $codProduto.'-'.$dscGrade, 'checkout' => 'checkout');
+        if($checkout == true) {
+            if ($qtdMapaTotal == $qtdConferidoTotal) {
+                return array('produto' => $qtdConferenciaGravar, 'checkout' => 'checkout');
+            }else{
+                return array('produto' => $qtdConferenciaGravar);
             }
+        }
+        if ($qtdMapaTotal == $qtdConferidoTotal) {
             $msgErro = "O produto $dscProduto já se encontra totalmente conferido ";
             if ($codPessoa != null) {
                 $msgErro .= "para o cliente selecionado";
@@ -1220,7 +1229,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                 }
             }
             throw new \Exception($msgErro);
-        } elseif ($qtdInformada > (Math::subtrair($qtdMapaTotal,$qtdConferidoTotal))) {
+        } elseif (Math::compare(intval($qtdInformada), Math::subtrair($qtdMapaTotal,$qtdConferidoTotal), '>')) {
             throw new \Exception("A quantidade de $qtdInformada excede o solicitado!");
         }
 

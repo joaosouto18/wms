@@ -37,6 +37,7 @@ class InventarioQuantidade extends \Core\Form {
                         'required' => true,
                         'label' => 'Quantidade',
                         'readonly' => true,
+                        'default' => true,
                         'value' => 0,
                         'size' => 10,
                         'maxlength' => 15,

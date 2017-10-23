@@ -178,7 +178,7 @@ use Core\Util\Converter;
             <div id="footer">
                 <p>Wms Imperium <?php $abc = new Zend_Date(); echo $abc->toString('Y') ?></p>
                 <p>&copy; Todos os Direitos Reservados.</p>
-                <p><?php echo "Versão: " . \Wms\Git::getCurrent();?></p>
+                <p><a href="/index/versoes-ajax/"> <?php echo "Versão: " . \Wms\Git::getCurrent();?> </a></p>
                 <?php if (APPLICATION_ENV == 'development') : ?>
                     <p class="development">
                     <?php else: ?>

@@ -36,6 +36,17 @@ class itinerario {
     public $nomeItinerario;
 }
 
+class produtoCortado {
+    /** @var string */
+    public $codProduto;
+    /** @var string */
+    public $grade;
+    /** @var double */
+    public $quantidadeCortada;
+    /** @var string */
+    public $motivoCorte;
+}
+
 class produto {
     /** @var string */
     public $codProduto;
@@ -372,14 +383,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function cancelarPedido ($idCargaExterno, $tipoCarga, $tipoPedido,$idPedido)
     {
-        $writer = new Zend_Log_Writer_Stream(DATA_PATH.'/log/'.date('Y-m-d').'-cancelarPedido.log');
-        $logger = new Zend_Log($writer);
         try {
             $this->_em->beginTransaction();
-
-
-            $logger->debug("Pedido: $idPedido");
-
             $idPedido = trim($idPedido);
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
@@ -423,6 +428,26 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         return true;
     }
+
+
+    /** @var produto[] */
+
+    /**
+     * Realiza o corte de um ou n itens
+     * Deve ser enviado um array de produtos contendo a quantidade original do item e a quantidade restante a atender no pedido
+     * Os itens que não sofreram cortes não precisam ser informados neste método.
+     * Nos itens aonde a quantidade do pedido for igual a quantidade a atender, não serão feitos cortes
+     * Para o corte total do item, basta informar que a quantidade a atender será 0
+     *
+     * @param string $idPedido Código do Pedido que vai ser cortado
+     * @param produtoCortado[] $produtosCortados Array contendo apenas os produtos cortados
+     * @return boolean Flag indicando se foi realizado o corte ou não
+     */
+
+    public function cortarPedido($idPedido, $produtosCortados) {
+        return true;
+    }
+
 
     /**
      * @param integer $idCargaExterno

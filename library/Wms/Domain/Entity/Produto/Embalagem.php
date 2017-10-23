@@ -316,7 +316,7 @@ class Embalagem {
                 $dscDestino = $endereco->getDescricao();
             }
         }
-        
+
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
         $andamentoRepo->checksChange($this->getProduto(), 'Endereço de Picking', $dscOrigem, $dscDestino);
 
@@ -399,7 +399,7 @@ class Embalagem {
     }
 
     /**
-     * @param datetime $dataInativacao
+     * @param \DateTime $dataInativacao
      */
     public function setDataInativacao($dataInativacao) {
         $this->dataInativacao = $dataInativacao;

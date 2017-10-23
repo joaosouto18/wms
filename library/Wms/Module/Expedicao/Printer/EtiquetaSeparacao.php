@@ -69,7 +69,7 @@ class EtiquetaSeparacao extends Pdf
         $this->chaveCargas = $chaveCarga;
     }
 
-    public function imprimirReentrega($idExpedicao, $status, $modelo){
+    public function imprimirReentrega($idExpedicao, $status, $modelo, $reimpressao = false, $IdEtiquetas = null){
 
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
@@ -79,7 +79,7 @@ class EtiquetaSeparacao extends Pdf
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $etiquetaSeparacaoReentregaRepo */
         $etiquetaSeparacaoReentregaRepo = $em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
 
-        $pendencias = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
+        $pendencias = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status, null, $IdEtiquetas);
 
         if (count($pendencias) <= 0) {
             throw new \Exception('Não Existe Etiquetas de Reentrega com pendência de impressão!');
@@ -89,18 +89,20 @@ class EtiquetaSeparacao extends Pdf
             $idEtiqueta[] = $pendencia['ETIQUETA'];
         }
         $idEtiqueta = implode(",",$idEtiqueta);
-        $etiquetas      = $EtiquetaRepo->getEtiquetasByExpedicao(null, null, null, $idEtiqueta);
+        $etiquetas      = $EtiquetaRepo->getEtiquetasByExpedicao(null, null, null, $idEtiqueta,null, true);
 
         foreach($etiquetas as $etiqueta) {
             $this->etqMae = false;
-            $this->layoutEtiqueta($etiqueta, count($etiquetas), false, $modelo, true);
+            $this->layoutEtiqueta($etiqueta, count($etiquetas), $reimpressao, $modelo, true);
         }
 
-        foreach ($pendencias as $pendencia) {
-            $etiquetaSeparacaoReentregaEn = $etiquetaSeparacaoReentregaRepo->find($pendencia['COD_ES_REENTREGA']);
-            $siglaEn = $em->find("wms:Util\Sigla",Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
-            $etiquetaSeparacaoReentregaEn->setStatus($siglaEn);
-            $em->persist($etiquetaSeparacaoReentregaEn);
+        if ($reimpressao == false) {
+            foreach ($pendencias as $pendencia) {
+                $etiquetaSeparacaoReentregaEn = $etiquetaSeparacaoReentregaRepo->find($pendencia['COD_ES_REENTREGA']);
+                $siglaEn = $em->find("wms:Util\Sigla",Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA);
+                $etiquetaSeparacaoReentregaEn->setStatus($siglaEn);
+                $em->persist($etiquetaSeparacaoReentregaEn);
+            }
         }
 
         $em->flush();

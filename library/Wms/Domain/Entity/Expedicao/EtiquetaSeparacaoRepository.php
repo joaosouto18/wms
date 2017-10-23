@@ -287,11 +287,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $result;
     }
 
-    public function getEtiquetasByExpedicao($idExpedicao = null, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $pontoTransbordo = null, $idEtiquetas = null, $idEtiquetaMae = null)
+    public function getEtiquetasByExpedicao($idExpedicao = null, $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $pontoTransbordo = null, $idEtiquetas = null, $idEtiquetaMae = null, $reentrega = false)
     {
+
+        if ($reentrega == true) {
+            $origemEstoque = 'es.pontoTransbordo as codEstoque ,';
+        } else {
+            $origemEstoque = 'es.codEstoque as codEstoque ,';
+        }
+
+
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('etq.id, es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
-                    es.grade, es.fornecedor, es.tipoComercializacao, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
+                    es.grade, es.fornecedor, es.tipoComercializacao, es.linhaSeparacao, ' . $origemEstoque . ' es.codExpedicao,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, etq.codEtiquetaMae,
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia, 
                     p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade
@@ -652,6 +660,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $grade              = $pedidoProduto->getProduto()->getGrade();
 
             $produtoEntity = $pedidoProduto->getProduto();
+            if($produtoEntity->getVolumes()->count() > 0) {
+                continue;
+            }
             $embalagensEn = $produtoEntity->getEmbalagens()->filter(
                 function($item) {
                     return is_null($item->getDataInativacao());
@@ -1135,6 +1146,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $this->_em->flush();
             $this->_em->clear();
 
+            $this->removeMapaSeparacaoVazio($idExpedicao);
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
             if ($parametroConsistencia == 'S') {
                 $resultadoConsistencia = $mapaSeparacaoRepo->verificaConsistenciaSeguranca($idExpedicao);
@@ -1264,15 +1276,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     private function removeMapaSeparacaoVazio($idExpedicao)
     {
-        $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
-        $mapaSeparacaoEntities = $mapaSeparacaoRepo->findBy(array('expedicao' => $idExpedicao));
-        foreach ($mapaSeparacaoEntities as $mapaSeparacaoEntity) {
-            $mapaSeparacaoProdutoEntity = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
-            if (!isset($mapaSeparacaoProdutoEntity) || empty($mapaSeparacaoProdutoEntity)) {
-                $this->getEntityManager()->remove($mapaSeparacaoEntity);
-            }
+        $sql = "SELECT DISTINCT MS.COD_MAPA_SEPARACAO 
+                    FROM MAPA_SEPARACAO MS
+                    LEFT JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                WHERE MS.COD_EXPEDICAO = $idExpedicao AND MSP.COD_MAPA_SEPARACAO IS NULL";
+        $mapaSeparacaoEntities = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        foreach ($mapaSeparacaoEntities as $mapaSeparacao) {
+            $mapaSeparacaoEntity = $mapaSeparacaoRepo->find($mapaSeparacao['COD_MAPA_SEPARACAO']);
+            $this->getEntityManager()->remove($mapaSeparacaoEntity);
         }
+        $this->getEntityManager()->flush();
     }
 
     private function atualizaMapaSeparacaoQuebra($expedicaoEntity, $statusEntity)
@@ -1839,8 +1854,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setQtdCortado(0);
             $mapaProduto->setIndConferido('N');
             $mapaProduto->setDepositoEndereco($depositoEndereco);
-            //$mapaProduto->setCubagem(number_format($cubagem,4,"."));
-            $mapaProduto->setCubagem($cubagem);
+            $mapaProduto->setCubagem(number_format(floatval(str_replace(',','',$cubagem)),6,".",''));
+            //$mapaProduto->setCubagem($cubagem);
         } else {
             $mapaProduto->setQtdSeparar($mapaProduto->getQtdSeparar() + $quantidadePedido);
         }
@@ -2468,11 +2483,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
     }
 
-    public function getEtiquetasReentrega($idExpedicao, $codStatus = null, $central = null) {
+    public function getEtiquetasReentrega($idExpedicao, $codStatus = null, $central = null, $idEtiquetas = null) {
         $SQL = "
         SELECT ES.COD_ETIQUETA_SEPARACAO as ETIQUETA,
                ESR.COD_ES_REENTREGA,
                PROD.COD_PRODUTO,
+               PROD.DSC_GRADE,
                PROD.DSC_PRODUTO PRODUTO,
                NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,
                PES.NOM_PESSOA as CLIENTE,
@@ -2501,6 +2517,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         if ($codStatus != null) {
             $SQL = $SQL . " AND ESR.COD_STATUS = $codStatus";
         }
+        if ($idEtiquetas != null) {
+            if (is_array($idEtiquetas)) {
+                $idEtiquetas = implode(",",$idEtiquetas);
+            }
+            $SQL = $SQL . " AND ES.COD_ETIQUETA_SEPARACAO IN ($idEtiquetas) ";
+        }
 
         if ($central != null) {
             $SQL = $SQL . " AND P.PONTO_TRANSBORDO = $central";
@@ -2508,6 +2530,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $SQL .= " GROUP BY ES.COD_ETIQUETA_SEPARACAO,
                    PROD.COD_PRODUTO,
                    PROD.DSC_PRODUTO,
+                   PROD.DSC_GRADE,
                    PE.DSC_EMBALAGEM, PV.DSC_VOLUME,
                    PES.NOM_PESSOA,
                    P.COD_PEDIDO,
