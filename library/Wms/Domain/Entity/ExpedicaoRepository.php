@@ -1135,14 +1135,6 @@ class ExpedicaoRepository extends EntityRepository {
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
 
-        if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
-
-            $qtdEtiquetasPendenteReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA, $central);
-            if (count($qtdEtiquetasPendenteReentrega) >0) {
-                return 'Existem etiquetas de reentrega pendentes de conferência nesta expedição';
-            }
-        }
-
         $cargaRepo = $this->_em->getRepository('wms:Expedicao\Carga');
         $cargasEn = $cargaRepo->findBy(array('codExpedicao'=>$expedicaoEn->getId()));
 
@@ -1180,6 +1172,13 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         $this->getEntityManager()->flush();
+
+        if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
+            $qtdEtiquetasPendenteReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA, $central);
+            if (count($qtdEtiquetasPendenteReentrega) >0) {
+                $msgErro = 'Existem etiquetas de reentrega pendentes de conferência nesta expedição';
+            }
+        }
 
         if ($msgErro != "") {
             return $msgErro;

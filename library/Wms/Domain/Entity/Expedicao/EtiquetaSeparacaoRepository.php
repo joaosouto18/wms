@@ -2024,8 +2024,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setQtdCortado(0);
             $mapaProduto->setIndConferido('N');
             $mapaProduto->setDepositoEndereco($depositoEndereco);
-            //$mapaProduto->setCubagem(number_format($cubagem,4,"."));
-            $mapaProduto->setCubagem($cubagem);
+            $mapaProduto->setCubagem(number_format(floatval(str_replace(',','',$cubagem)),6,".",''));
+            //$mapaProduto->setCubagem($cubagem);
         } else {
             $mapaProduto->setQtdSeparar($mapaProduto->getQtdSeparar() + $quantidadePedido);
         }
