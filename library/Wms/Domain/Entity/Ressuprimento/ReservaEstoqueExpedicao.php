@@ -11,11 +11,13 @@ use Wms\Domain\Entity\Expedicao\Pedido;
  */
 class ReservaEstoqueExpedicao
 {
+    const SAIDA_SEM_CONTROLE_ESTOQUE = 0;
     const SAIDA_PICKING = 1;
     const SAIDA_SEPARACAO_AEREA = 2;
     const SAIDA_PULMAO_DOCA = 3;
 
     public static $tipoSaidaTxt = array(
+        self::SAIDA_SEM_CONTROLE_ESTOQUE => "SEM CONTROLE DE ESTOQUE",
         self::SAIDA_PICKING => "PICKING",
         self::SAIDA_SEPARACAO_AEREA => "SEPARAÇÃO AÉREA",
         self::SAIDA_PULMAO_DOCA => "PULMÃO-DOCA"
