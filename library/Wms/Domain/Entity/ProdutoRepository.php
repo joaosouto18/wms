@@ -588,7 +588,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 continue;
 
             // id
-            $itemVolume['id'] = $id;
+//            $itemVolume['id'] = $id;
             // pega infos de normas de produtos
             if (!empty($itemVolume['idNormaPaletizacao']))
                 $itemVolume['idNormaPaletizacao'] = $normasPaletizacao[$itemVolume['idNormaPaletizacao']]['id'];
