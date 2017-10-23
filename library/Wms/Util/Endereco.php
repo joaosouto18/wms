@@ -122,6 +122,7 @@ class Endereco
         $result = null;
 
         //Se endereço tiver ponto "." ele será o critério de quebra
+        $endereco = !is_null($endereco) ? $endereco : '';
         if (strpos($endereco,'.')) {
 
             $valor = explode('.', $endereco);
