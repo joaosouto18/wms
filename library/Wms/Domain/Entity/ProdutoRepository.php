@@ -321,8 +321,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                             $pontoReposicao = !empty($pontoReposicao) ? $pontoReposicao : $dadosEmbalagem->getPontoReposicao();
                             $capacidadePicking = !empty($capacidadePicking) ? $capacidadePicking : $dadosEmbalagem->getCapacidadePicking();
                             $endereco = $dadosEmbalagem->getEndereco();
-                            if (!empty($endereco))
-                                $endereco = !empty($endereco) ? $endereco : $dadosEmbalagem->getEndereco()->getDescricao();
+                            $endereco = !empty($endereco) ? $dadosEmbalagem->getEndereco()->getDescricao() : null;
                             $altura = !empty($altura) ? $altura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getAltura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
                             $largura = !empty($largura) ? $largura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getLargura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
                             $profundidade = !empty($profundidade) ? $profundidade : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getProfundidade()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
@@ -349,7 +348,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setCubagem($cubagem);
 
                         //valida o endereco informado
-                        if (!empty($endereco)) {
+                        if (!empty($endereco) && !is_null($endereco)) {
                             $endereco = EnderecoUtil::separar($endereco);
                             $enderecoEntity = $enderecoRepo->findOneBy($endereco);
 

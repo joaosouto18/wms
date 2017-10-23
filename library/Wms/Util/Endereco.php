@@ -120,9 +120,6 @@ class Endereco
     public static function separar($endereco, $qtdDigitos = null)
     {
         $result = null;
-        if (is_null($endereco) || empty($endereco)) {
-            return false;
-        }
 
         //Se endereço tiver ponto "." ele será o critério de quebra
         if (strpos($endereco,'.')) {
