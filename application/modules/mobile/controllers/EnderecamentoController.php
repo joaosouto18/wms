@@ -904,7 +904,7 @@ class Mobile_EnderecamentoController extends Action
             if (empty($estoqueEn))
                 throw new Exception("Não foi encontrado o estoque com endereco " . $endereco->getDescricao() . " produto " . $codProduto . " grade " . $grade);
 
-            if ($embalagemEn != null) {
+            if ($embalagemEn != null && !empty($embalagemEn)) {
                 $qtd = floor($estoqueEn->getQtd() / $embalagemEn->getQuantidade());
                 $qtdReal = floor($estoqueEn->getQtd() / $embalagemEn->getQuantidade()) * $embalagemEn->getQuantidade();
                 $qtdEmbalagem = $embalagemEn->getQuantidade();
