@@ -1366,7 +1366,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $qtdEmbalagemAtual = null;
                         /** @var Produto\Embalagem $embalagemEn */
                         foreach ($produto['embalagensDisponiveis'] as $embalagemEn) {
-                            if (Math::compare(Math::resto($qtdTemp, 1), 1, "<")){
+                            if (Math::compare(Math::resto($qtdTemp, 1), 0, ">")){
                                 if ($produtoEn->getPossuiPesoVariavel() == "S") {
                                     $embalagemAtual = end($produto['embalagensDisponiveis']);
                                     $qtdEmbalagemAtual = $qtdTemp;
