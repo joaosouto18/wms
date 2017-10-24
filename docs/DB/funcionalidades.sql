@@ -229,4 +229,7 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (229, '6.4.6', 'Correção: Inventariar endereço vazio que anteriormente estava com mais de 1 produto', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (230, '6.4.6', 'Correção: Endereçamento não estava respeitando a quantidade recebida de cada norma', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (231, '6.4.6', 'Correção: Ajuste de transferência de estoque para volumes no coletor', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (232, '6.4.6', 'Melhoria: Aumento de fonte/espaçamento entre linhas do mapa de separação', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (233, '6.4.6', 'Cooreção: Validações para não exibir mensagem de erro na tela de edição de produtos', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (XXX, 'X.X.X', 'Correção: Correção do WebService de cancelamento de pedidos com etiqueta ja empressas', null,SYSDATE);
+
