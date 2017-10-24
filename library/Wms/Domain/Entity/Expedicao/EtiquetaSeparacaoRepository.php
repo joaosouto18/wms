@@ -1387,7 +1387,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $restoByFator = Math::resto($qtdTemp, $qtdEmbalagemAtual);
                         // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
                         $qtdEmbs = 0;
-                        if (Math::compare(Math::resto($qtdTemp, 1), 1, "<")){
+                        if (Math::compare(Math::resto($qtdTemp, 1), 0, ">")){
                             if ($produtoEn->getPossuiPesoVariavel() == "S") {
                                 $qtdEmbs = $qtdTemp;
                             }

@@ -597,6 +597,7 @@ class ExpedicaoRepository extends EntityRepository {
         $codProduto = $produtoEn->getId();
         $dscGrade = $produtoEn->getGrade();
         if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
+            /** @var Embalagem $embalagemElem */
             $embalagemElem = $dadosProdutos[$codProduto][$dscGrade]['embalagem'];
             list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn,'EMBALAGEM', array($embalagemElem), 0, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
         } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
@@ -692,6 +693,18 @@ class ExpedicaoRepository extends EntityRepository {
                         $qtdReservar = $qtdEstoque;
                         $zerouEstoque = true;
                     } else {
+
+                        /*//substituir para o teste com a simonetti
+                            /** @var NormaPaletizacao $normaEn */
+                        /*$normaEn = $this->_em->find(NormaPaletizacao::class,$codNorma);
+                        if (Math::compare($normaEn->getNumNorma(), $qtdEstoque, "<=")) {
+                            $qtdReservar = $normaEn->getNumNorma();
+                        }
+                        elseif (!empty($enderecoPicking)) {
+                            $forcarSairDoPicking = true;
+                            break;
+                        }*/
+
                         if (($quebra != $naoUsaPD) && !empty($enderecoPicking)) {  // Nesta condição força saída do picking
                             $forcarSairDoPicking = true;
                             break;
