@@ -153,9 +153,11 @@ class EstoqueRepository extends EntityRepository
             $dscEndereco = $enderecoEn->getDescricao();
             $dscProduto = $produtoEn->getDescricao();
         } else {
+            $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
+            $novaQtd = $estoqueEn->getQtd() + $qtd;
+            
             $saldoAnterior = $estoqueEn->getQtd();
             $idUma = $estoqueEn->getUma();
-            $novaQtd = $estoqueEn->getQtd() + $qtd;
             $dscEndereco = $estoqueEn->getDepositoEndereco()->getDescricao();
             $dscProduto = $estoqueEn->getProduto()->getDescricao();
             $estoqueEn->setQtd($novaQtd);
