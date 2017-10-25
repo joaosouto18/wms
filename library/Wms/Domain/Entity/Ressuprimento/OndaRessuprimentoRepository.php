@@ -537,7 +537,11 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $picking = array();
                 $picking['volumes'] = null;
                 $picking['embalagens'] = array($embalagem->getId());
-                $picking['capacidadePicking'] = $embalagem->getCapacidadePicking();
+                $capacidadePicking = $embalagem->getCapacidadePicking();
+
+                if (empty($capacidadePicking)) throw new \Exception("O produto $codProduto grade $grade não teve sua capacidade de picking definida!");
+
+                $picking['capacidadePicking'] = $capacidadePicking;
                 $picking['pontoReposicao'] = $embalagem->getPontoReposicao();
                 $picking['idPicking'] = $embalagem->getEndereco()->getId();
                 $picking['codProduto'] = $codProduto;
@@ -559,7 +563,11 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
                         $picking['volumes'][] = $volumeEn->getId();
                         $picking['idPicking'] = $pickingEn->getId();
-                        $picking['capacidadePicking'] = $volumeEn->getCapacidadePicking();
+                        $capacidadePicking = $volumeEn->getCapacidadePicking();
+
+                        if (empty($capacidadePicking)) throw new \Exception("O produto $codProduto grade $grade não teve sua capacidade de picking definida!");
+
+                        $picking['capacidadePicking'] = $capacidadePicking;
                         $picking['pontoReposicao'] = $volumeEn->getPontoReposicao();
                     }
                     $pickings[] = $picking;
