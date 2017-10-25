@@ -305,9 +305,9 @@ class InventarioRepository extends EntityRepository {
                 $grade = $dados[2];
             }
 
-            $enderecoEn = $enderecoRepo->findBy(array('inventario' => $codInventario, 'depositoEndereco' => $codEndereco));
+            $enderecoEn = $enderecoRepo->findOneBy(array('inventario' => $codInventario, 'depositoEndereco' => $codEndereco));
             //não adiciona 2x o mesmo endereço
-            if (count($enderecoEn) == 0 && !in_array($codEndereco, $enderecosSalvos)) {
+            if (empty($enderecoEn) && !in_array($codEndereco, $enderecosSalvos)) {
                 $enderecoEn = $enderecoRepo->save(array('codInventario' => $codInventario, 'codDepositoEndereco' => $codEndereco));
                 $enderecosSalvos[] = $codEndereco;
             }

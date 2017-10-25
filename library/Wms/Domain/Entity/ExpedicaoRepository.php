@@ -3524,8 +3524,10 @@ class ExpedicaoRepository extends EntityRepository {
         //Seta na mapa_separacao_pedido a quantidade cortada baseada na quantia já cortada mais a nova qtd
         /** @var ExpedicaoEntity\MapaSeparacaoPedido $mapaPedidoEn */
         $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array("pedidoProduto" => $pedidoProdutoEn));
-        $mapaPedidoEn->addCorte($qtdCortar);
-        $this->getEntityManager()->persist($mapaPedidoEn);
+        if (!empty($mapaPedidoEn)) {
+            $mapaPedidoEn->addCorte($qtdCortar);
+            $this->getEntityManager()->persist($mapaPedidoEn);
+        }
 
         $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
         $observacao = "Item $codProduto - $grade do pedido $codPedido teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
