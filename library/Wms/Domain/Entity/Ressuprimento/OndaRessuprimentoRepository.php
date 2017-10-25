@@ -522,6 +522,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
     public function calculaRessuprimentoByProduto($produtosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
         $qtdRessuprimentos = 0;
+        $arrErro = [];
         foreach ($produtosRessuprir as $produto) {
             $codProduto = $produto['codProduto'];
             $grade = $produto['grade'];
@@ -539,7 +540,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $picking['embalagens'] = array($embalagem->getId());
                 $capacidadePicking = $embalagem->getCapacidadePicking();
 
-                if (empty($capacidadePicking)) throw new \Exception("O produto $codProduto grade $grade não teve sua capacidade de picking definida!");
+                if (empty($capacidadePicking)) $arrErro[] = "$codProduto grade $grade";
 
                 $picking['capacidadePicking'] = $capacidadePicking;
                 $picking['pontoReposicao'] = $embalagem->getPontoReposicao();
@@ -565,7 +566,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                         $picking['idPicking'] = $pickingEn->getId();
                         $capacidadePicking = $volumeEn->getCapacidadePicking();
 
-                        if (empty($capacidadePicking)) throw new \Exception("O produto $codProduto grade $grade não teve sua capacidade de picking definida!");
+                        if (empty($capacidadePicking)) $arrErro[] = "$codProduto grade $grade";
 
                         $picking['capacidadePicking'] = $capacidadePicking;
                         $picking['pontoReposicao'] = $volumeEn->getPontoReposicao();
@@ -573,6 +574,9 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     $pickings[] = $picking;
                 }
             }
+
+            if (!empty($arrErro))
+                throw new \Exception("Os produtos abaixo não tiveram sua capacidade de picking definida: \r\n" .implode(",\r\n", $arrErro));
 
             foreach ($pickings as $picking) {
                 $qtdRessuprimentos = $qtdRessuprimentos + $this->calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios);
