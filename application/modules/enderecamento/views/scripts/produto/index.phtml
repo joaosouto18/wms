@@ -4,5 +4,76 @@ echo $this->render('recebimento/cabecalho.phtml'); ?>
     <a href="<?php echo $this->url(array('module' => 'enderecamento', 'controller' => 'palete', 'action' => 'index', 'id' => $this->recebimento->getId())) ?>" style="float:right" class="btn">Endereçar Todos</a>
     <a href="<?php echo $this->url(array('module' => 'enderecamento', 'controller' => 'produto', 'action' => 'imprimir-ajax', 'id' => $this->recebimento->getId())) ?>" style="float:right;margin-right: 7px;" class="btn">Imprimir Produtos Não Endereçados</a>
 </div>
-<?php echo $this->grid
+
+<?php
+if (count($this->produtos) > 0):
+    ?>
+    <form id="formGerarRecebmento" action="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>" method="post">
+        <div class="gControl">
+            <div class="gPager" style="width: 100%">
+                <input type="submit" name="submit" class="btn" style="float:right" title="Endereça no picking até o limite" value="Endereçar no Picking" />
+                <span>Total de <?php echo count($this->produtos) ?> registros encontrados.</span>
+                <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
+            </div>
+        </div>
+        <table class="gTable">
+            <tr class="gTTitle">
+                <td colspan="2"></td>
+                <td width=""><a title=""><span>Código</span></a></td>
+                <td width=""><a title=""><span>Produto</span></a></td>
+                <td width=""><a title=""><span>Grade</span></a></td>
+                <td width=""><a title=""><span>Qtd. Itens</span></a></td>
+                <td width=""><a title=""><span>Qtd. Recebimento</span></a></td>
+                <td width=""><a title=""><span>Qtd. Recebida</span></a></td>
+                <td width=""><a title=""><span>Qtd. Endereçamento</span></a></td>
+                <td width=""><a title=""><span>Qtd. Endereçada</span></a></td>
+                <td width=""><a title=""><span>Qtd. Total</span></a></td>
+            </tr>
+            <?php foreach ($this->produtos as $key => $produto) : ?>
+            <?php $gRowColor = !($key % 2) ? '' : 'gRowColor'; ?>
+            <tr class="gTResultSet <?php echo $gRowColor ?> ">
+                <td class="gRowCheck"><input type="checkbox" name="produtos[]" value="<?php echo $produto['id'].'-'.$produto['grade'] ?>" /></td>
+                <td class="gTdOpcRow">
+                    <div class="gOpcRow">
+                        <ul>
+                            <li><img src="/img/admin/icon_opc.gif" alt="Op&ccedil;&otilde;es" />
+                                <ul>
+                                    <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>">Endereçar Paletes</a></li>
+                                    <li><a href="/enderecamento/produto/list/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>">Andamento</a></li>
+                                    <li><a href="/enderecamento/produto/alterar-norma/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>">Alterar Norma de Paletização</a></li>
+                                    <?php if ($this->recebimento->getStatus()->getSigla() == 'DESFEITO' || $this->recebimento->getStatus()->getSigla() == 'CANCELADO') : ?>
+                                        <li><a href="/enderecamento/palete/trocar/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>" target="_blank">Trocar U.M.As</a></li>
+                                    <?php endif; ?>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+                <td style="text-align:left"><?php echo $produto['codigo'] ?></td>
+                <td style="text-align:left"><?php echo $produto['produto'] ?></td>
+                <td style="text-align:left"><?php echo $produto['grade'] ?></td>
+                <td style="text-align:left"><?php echo $produto['qtdItensNf'] ?></td>
+                <td style="text-align:left"><?php echo $produto['qtdRecebimento'] ?></td>
+                <td style="text-align:left"><?php echo $produto['qtdRecebida'] ?></td>
+                <td style="text-align:left"><?php echo $produto['qtdEnderecamento'] ?></td>
+                <td style="text-align:left"><?php echo $produto['qtdEnderecada'] ?></td>
+                <td style="text-align:left"><?php echo $produto['qtdTotal'] ?></td>
+                <?php endforeach; ?>
+            </tr>
+        </table>
+    </form>
+    <?php
+endif;
 ?>
+
+<script>
+    $(document).ready(function(){
+        $('#todos').live('click',function(){
+            var checked_status = this.checked;
+            $("input").each(function()
+            {
+                this.checked = checked_status;
+            });
+        });
+    });
+</script>

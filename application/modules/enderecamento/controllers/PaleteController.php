@@ -14,6 +14,7 @@ class Enderecamento_PaleteController extends Action
         $idRecebimento  = $this->getRequest()->getParam('id');
         $codProduto     = $this->getRequest()->getParam('codigo');
         $grade          = $this->getRequest()->getParam('grade');
+        $produtos       = $this->getRequest()->getParam('produtos');
 
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->em->getRepository('wms:Enderecamento\Palete');
@@ -41,13 +42,19 @@ class Enderecamento_PaleteController extends Action
         } else {
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
-            $itens  = $notaFiscalRepo->getItensNotaByRecebimento($idRecebimento);
+            $itens = (isset($produtos)) ? $produtos : $notaFiscalRepo->getItensNotaByRecebimento($idRecebimento);
 
             $result = array();
             /** @var \Wms\Domain\Entity\NotaFiscal\Item $item */
             foreach ($itens as $item) {
-                $codProduto = $item['codProduto'];
-                $grade = $item['grade'];
+                $piece = explode('-',$item);
+                if (isset($piece)) {
+                    $codProduto = $piece[0];
+                    $grade = $piece[1];
+                } else {
+                    $codProduto = $item['codProduto'];
+                    $grade = $item['grade'];
+                }
                 /** @var \Wms\Domain\Entity\Produto $produtoEn */
                 $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
                 $arr = array();

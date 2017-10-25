@@ -1050,6 +1050,7 @@ class RecebimentoRepository extends EntityRepository {
                 $picking = null;
             }
             $result[] = array(
+                'id' => $row['COD_PRODUTO'],
                 'codigo' => $row['COD_PRODUTO'],
                 'produto' => $row['DSC_PRODUTO'],
                 'grade' => $row['DSC_GRADE'],
