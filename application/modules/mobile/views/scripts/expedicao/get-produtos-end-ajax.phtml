@@ -1,0 +1,119 @@
+<style>
+    /* Grid - Table */
+    .gTable {
+        width: 100%;
+        margin-bottom: 5px;
+        margin-left: 7px;
+
+    }
+    .gTable tr.gRowColor td {
+        background: #EDEDED;
+    }
+    .gTable tr:hover {
+        background: #c7d5e2;
+    }
+    .gTable td {
+        border-left: 1px solid #EDFFF9;
+        border-right: 1px solid #EDFFF9;
+        border-bottom: 1px solid #EDFFF9;
+        padding: 0 2px;
+    }
+    .gTTitle {
+        height: 25px;
+    }
+    .gTTitle td {
+        background: #8080808c;
+    }
+    .gTTitle td a {
+        color: #333;
+        font-weight: bold;
+    }
+    .gTTitle td a span {
+        display: block;
+        line-height: 20px;
+        margin: 0 5px;
+    }
+    .gTTitle a.sort {
+        display: block;
+        background: repeat-x top left url(../../img/admin/sort_off_bg.png);
+    }
+    .gTTitle a.sort span {
+        background: no-repeat right center url(../../img/admin/grid_sort_both.png);
+    }
+    .gTTitle a.sortArrowAsc, .gTTitle a.sortArrowDesc {
+        background: repeat-x top left url(../../img/admin/sort_on_bg.gif);
+    }
+    .gTTitle a.sortArrowAsc span {
+        background: no-repeat right center url(../../img/admin/grid_sort_asc.gif);
+    }
+    .gTTitle a.sortArrowDesc span {
+        background: no-repeat right center url(../../img/admin/grid_sort_desc.gif);
+    }
+    .gTFilter {
+        background: #D6E8F5;
+        height: 30px;
+    }
+    .gTResultSet input[type=checkbox] {
+        border: 0;
+    }
+    .gTResultSet .gRowCheck {
+        text-align: center;
+        width: 22px;
+    }
+    .gTResultSet td {
+        line-height:20px;
+    }
+</style>
+<div class="row">
+    <div id="div-busca">
+        <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post" id="form-endereco">
+            <input type="hidden" name="uma" value="" id="uma">
+            <dt id="identification-label">&nbsp;</dt>
+            <dd id="identification-element">
+                <fieldset id="fieldset-identification">
+                    <legend>Produto</legend>
+                    <dl>
+                        <div class="field" style="text-align: center">
+                            <label for="codigoBarras" class="field required">*Código de Barras Produto</label>
+                            <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
+                            <label for="codigoBarras" class="field required">*Quantidade Separada</label>
+                            <input type="text" name="qtdSeparar" id="qtdSeparar" value="" class=" required focus" size="40" maxlength="100" style="width:100px">
+                            <input class="btn gradientBtn text-center" style="margin-top: 10px; text-align: center" type="submit" name="buscar" id="buscar" value="Separar" class="btn gradientBtn">
+                        </div>
+                    </dl>
+                </fieldset>
+            </dd>
+        </form>
+        <br>
+    </div>
+</div>
+    <h4 style="font-size: 15px; font-weight: bold;"><?php echo $this->endereco ?></h4>
+    <table class="gTable " style="font-size: 10px!important;">
+        <tbody>
+        <tr class ="gTTitle">
+            <td><b>Produto</b></td>
+            <td><b>Grade</b></td>
+            <td><b>Qtd. Separar</b></td>
+            <td><b>Embalagem</b></td>
+        </tr>
+        <?php foreach ($this->produtos as $produto) : ?>
+            <tr>
+                <td><?php echo $produto['DSC_PRODUTO'] ?></td>
+                <td><?php echo $produto['DSC_GRADE'] ?></td>
+                <td><?php echo $produto['SEPARAR'] ?></td>
+                <td><?php
+                    if($produto['DSC_EMBALAGEM'] != null && $produto['DSC_EMBALAGEM'] != ''){
+                        echo $produto['DSC_EMBALAGEM'] . ' ('.$produto['QTD_EMBALAGEM'].')';
+                    }else{
+                        echo $produto['DSC_VOLUME'];
+                    }
+                    ?>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+    <div id="footer">
+        <a href="/mobile/expedicao/separacao-ajax/mapa/<?php echo $this->mapa ?>/expedicao/<?php echo $this->idExpedicao ?>" class="btn button finalizar mudar">Próximo Endereço</a>
+    </div>
+

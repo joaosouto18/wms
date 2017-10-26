@@ -4,6 +4,9 @@ use Wms\Controller\Action,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao,
     Wms\Module\Mobile\Form\SenhaLiberacao,
     Wms\Util\Coletor as ColetorUtil,
+    \Wms\Util\Endereco as EnderecoUtil,
+    Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
+    Wms\Domain\Entity\Atividade as AtividadeEntity,
     Wms\Domain\Entity\Expedicao;
 
 class Mobile_ExpedicaoController extends Action {
@@ -1532,6 +1535,47 @@ class Mobile_ExpedicaoController extends Action {
             } catch (\Exception $e) {
                 throw new \Exception($e->getMessage());
             }
+        }
+    }
+
+    public function separacaoAjaxAction(){
+        $mapa = $this->_getParam('mapa');
+        $idExpedicao = $this->_getParam('expedicao');
+        $os = $this->_getParam('os');
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        if(empty($mapa)) {
+            $this->view->mapas = $mapaSeparacaoRepo->findMapasSeparar();
+            $this->view->mapa = null;
+        }else {
+            if ($os == 1) {
+                $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
+                $ordemServicoRepo->save(new OrdemServicoEntity, array(
+                    'identificacao' => array(
+                        'tipoOrdem' => 'expedicao',
+                        'idExpedicao' => $idExpedicao,
+                        'idAtividade' => AtividadeEntity::SEPARACAO,
+                        'formaConferencia' => OrdemServicoEntity::COLETOR,
+                    ),
+                ), false, "Object");
+                $this->getEntityManager()->flush();
+            }
+            $this->view->mapa = $mapa;
+            $this->view->idExpedicao = $idExpedicao;
+            $this->view->enderecos = $mapaSeparacaoRepo->findEnderecosMapa($mapa);
+        }
+    }
+
+    public function getProdutosEndAjaxAction() {
+        $codigoBarras = $this->_getParam('codigoBarras');
+        $codMapa = $this->_getParam('codMapa');
+        $this->view->idExpedicao = $this->_getParam('idExpedicao');
+        $this->view->mapa = $codMapa;
+        if (!empty($codigoBarras)) {
+            $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarras);
+            $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+            $endereco = EnderecoUtil::formatar($codigoBarras);
+            $this->view->endereco = $endereco;
+            $this->view->produtos = $mapaSeparacaoRepo->getProdutosMapaEndereco($endereco, $codMapa);
         }
     }
 

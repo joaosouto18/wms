@@ -1259,4 +1259,40 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         return $qtdConferenciaGravar;
     }
+
+    public function findMapasSeparar(){
+        $sql = "SELECT * FROM MAPA_SEPARACAO WHERE COD_STATUS = 523";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function findEnderecosMapa($codMapaSeparacao){
+        $sql = "SELECT 
+                  DISTINCT(MPS.COD_DEPOSITO_ENDERECO), DE.DSC_DEPOSITO_ENDERECO
+                FROM 
+                  MAPA_SEPARACAO_PRODUTO MPS
+                  INNER JOIN DEPOSITO_ENDERECO DE ON MPS.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                WHERE COD_MAPA_SEPARACAO = $codMapaSeparacao";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getProdutosMapaEndereco($endereco, $codMapa){
+        $sql = "SELECT
+                    (MPS.QTD_SEPARAR - MPS.QTD_CORTADO) AS SEPARAR,
+                    P.DSC_PRODUTO,
+                    P.DSC_GRADE,
+                    PE.DSC_EMBALAGEM,
+                    PE.QTD_EMBALAGEM,
+                    PV.DSC_VOLUME,
+                    DE.DSC_DEPOSITO_ENDERECO
+                FROM 
+                  MAPA_SEPARACAO_PRODUTO MPS
+                  INNER JOIN DEPOSITO_ENDERECO DE ON MPS.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                  INNER JOIN PRODUTO P ON (P.COD_PRODUTO = MPS.COD_PRODUTO AND P.DSC_GRADE = MPS.DSC_GRADE)
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON (PE.COD_PRODUTO_EMBALAGEM = MPS.COD_PRODUTO_EMBALAGEM)
+                  LEFT JOIN PRODUTO_VOLUME PV ON (PV.COD_PRODUTO_VOLUME = MPS.COD_PRODUTO_VOLUME)
+                WHERE 
+                  DE.DSC_DEPOSITO_ENDERECO = '$endereco' AND 
+                  MPS.COD_MAPA_SEPARACAO = $codMapa";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }
