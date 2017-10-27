@@ -66,8 +66,11 @@
 </style>
 <div class="row">
     <div id="div-busca">
-        <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post" id="form-endereco">
-            <input type="hidden" name="uma" value="" id="uma">
+        <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post" id="form-produto">
+            <input type="hidden" name="codMapaSeparacao" id="codMapaSeparacao" value="<?php echo $this->mapa ?>">
+            <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
+            <input type="hidden" name="codOs" id="codOs" value="<?php echo $this->codOs ?>">
+            <input type="hidden" name="codDepositoEndereco" id="codDepositoEndereco" value="<?php echo $this->codDepositoEndereco ?>">
             <dt id="identification-label">&nbsp;</dt>
             <dd id="identification-element">
                 <fieldset id="fieldset-identification">
@@ -77,7 +80,7 @@
                             <label for="codigoBarras" class="field required">*Código de Barras Produto</label>
                             <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
                             <label for="codigoBarras" class="field required">*Quantidade Separada</label>
-                            <input type="text" name="qtdSeparar" id="qtdSeparar" value="" class=" required focus" size="40" maxlength="100" style="width:100px">
+                            <input type="text" name="qtdSeparar" id="qtdSeparar" value="" class="required" size="40" maxlength="100" style="width:100px">
                             <input class="btn gradientBtn text-center" style="margin-top: 10px; text-align: center" type="submit" name="buscar" id="buscar" value="Separar" class="btn gradientBtn">
                         </div>
                     </dl>
@@ -87,33 +90,56 @@
         <br>
     </div>
 </div>
-    <h4 style="font-size: 15px; font-weight: bold;"><?php echo $this->endereco ?></h4>
-    <table class="gTable " style="font-size: 10px!important;">
-        <tbody>
-        <tr class ="gTTitle">
-            <td><b>Produto</b></td>
-            <td><b>Grade</b></td>
-            <td><b>Qtd. Separar</b></td>
-            <td><b>Embalagem</b></td>
+<h4 style="font-size: 15px; font-weight: bold;"><?php echo $this->endereco ?></h4>
+<table class="gTable " style="font-size: 10px!important;">
+    <tbody>
+    <tr class ="gTTitle">
+        <td><b>Produto</b></td>
+        <td><b>Grade</b></td>
+        <td><b>Qtd. Separar</b></td>
+        <td><b>Embalagem</b></td>
+    </tr>
+    <?php foreach ($this->produtos as $produto) : ?>
+        <tr>
+            <td><?php echo $produto['DSC_PRODUTO'] ?></td>
+            <td><?php echo $produto['DSC_GRADE'] ?></td>
+            <td><?php echo $produto['SEPARAR'] ?></td>
+            <td><?php
+                if($produto['DSC_EMBALAGEM'] != null && $produto['DSC_EMBALAGEM'] != ''){
+                    echo $produto['DSC_EMBALAGEM'] . ' ('.$produto['QTD_EMBALAGEM'].')';
+                }else{
+                    echo $produto['DSC_VOLUME'];
+                }
+                ?>
+            </td>
         </tr>
-        <?php foreach ($this->produtos as $produto) : ?>
-            <tr>
-                <td><?php echo $produto['DSC_PRODUTO'] ?></td>
-                <td><?php echo $produto['DSC_GRADE'] ?></td>
-                <td><?php echo $produto['SEPARAR'] ?></td>
-                <td><?php
-                    if($produto['DSC_EMBALAGEM'] != null && $produto['DSC_EMBALAGEM'] != ''){
-                        echo $produto['DSC_EMBALAGEM'] . ' ('.$produto['QTD_EMBALAGEM'].')';
-                    }else{
-                        echo $produto['DSC_VOLUME'];
-                    }
-                    ?>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-    <div id="footer">
-        <a href="/mobile/expedicao/separacao-ajax/mapa/<?php echo $this->mapa ?>/expedicao/<?php echo $this->idExpedicao ?>" class="btn button finalizar mudar">Próximo Endereço</a>
-    </div>
+    <?php endforeach; ?>
+    </tbody>
+</table>
+<div id="footer">
+    <a href="/mobile/expedicao/separacao-ajax/mapa/<?php echo $this->mapa ?>/expedicao/<?php echo $this->idExpedicao ?>/codOs/<?php echo $this->codOs ?>" class="btn button finalizar mudar">Próximo Endereço</a>
+</div>
+
+<script>
+    $( "#form-produto" ).submit(function( event ) {
+        if($('#qtdSeparar').val() == ""){
+            $('#qtdSeparar').focus();
+        }
+        if($('#qtdSeparar').val() != "" && $('#codigoBarras').val() != ""){
+            $.ajax({
+                url: '/mobile/expedicao/separa-produto-ajax',
+                type: 'post',
+                dataType: 'json',
+                async: false,
+                data: $('form').serialize(),
+                success: function (data) {
+//                    $('body').html(data);
+                }
+            });
+        }
+        event.preventDefault();
+        return false;
+
+    });
+</script>
 

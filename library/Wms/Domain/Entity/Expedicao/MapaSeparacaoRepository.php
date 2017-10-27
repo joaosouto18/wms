@@ -1283,7 +1283,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                     PE.DSC_EMBALAGEM,
                     PE.QTD_EMBALAGEM,
                     PV.DSC_VOLUME,
-                    DE.DSC_DEPOSITO_ENDERECO
+                    DE.DSC_DEPOSITO_ENDERECO,
+                    MPS.COD_DEPOSITO_ENDERECO
                 FROM 
                   MAPA_SEPARACAO_PRODUTO MPS
                   INNER JOIN DEPOSITO_ENDERECO DE ON MPS.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO

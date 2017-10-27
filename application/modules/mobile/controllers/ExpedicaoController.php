@@ -1549,15 +1549,17 @@ class Mobile_ExpedicaoController extends Action {
         }else {
             if ($os == 1) {
                 $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
-                $ordemServicoRepo->save(new OrdemServicoEntity, array(
+                $codOs = $ordemServicoRepo->save(new OrdemServicoEntity, array(
                     'identificacao' => array(
                         'tipoOrdem' => 'expedicao',
                         'idExpedicao' => $idExpedicao,
                         'idAtividade' => AtividadeEntity::SEPARACAO,
                         'formaConferencia' => OrdemServicoEntity::COLETOR,
                     ),
-                ), false, "Object");
-                $this->getEntityManager()->flush();
+                ), true, "Id");
+                $this->view->codOs = $codOs;
+            }else{
+                $this->view->codOs = $this->_getParam('codOs');
             }
             $this->view->mapa = $mapa;
             $this->view->idExpedicao = $idExpedicao;
@@ -1569,13 +1571,34 @@ class Mobile_ExpedicaoController extends Action {
         $codigoBarras = $this->_getParam('codigoBarras');
         $codMapa = $this->_getParam('codMapa');
         $this->view->idExpedicao = $this->_getParam('idExpedicao');
+        $this->view->codOs = $this->_getParam('codOs');
         $this->view->mapa = $codMapa;
         if (!empty($codigoBarras)) {
             $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarras);
             $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
             $endereco = EnderecoUtil::formatar($codigoBarras);
             $this->view->endereco = $endereco;
-            $this->view->produtos = $mapaSeparacaoRepo->getProdutosMapaEndereco($endereco, $codMapa);
+            $produtos = $mapaSeparacaoRepo->getProdutosMapaEndereco($endereco, $codMapa);
+            $this->view->produtos = $produtos;
+            $this->view->codDepositoEndereco = $produtos[0]['COD_DEPOSITO_ENDERECO'];
+        }
+    }
+
+    public function separaProdutoAjaxAction(){
+        $codigoBarras = $this->_getParam('codigoBarras');
+        $codMapaSeparacao = $this->_getParam('codMapaSeparacao');
+        $codOs = $this->_getParam('codOs');
+        $codDepositoEndereco = $this->_getParam('codDepositoEndereco');
+        $qtdSeparar = $this->_getParam('qtdSeparar');
+        try{
+            $separacaomapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\SeparacaoMapaSeparacao');
+
+            $separacaomapaSeparacaoRepo->separaProduto($codigoBarras, $codMapaSeparacao, $codOs, $codDepositoEndereco, $qtdSeparar);
+
+            $this->_helper->json(array('status' => 'ok', 'result' => array()));
+        } catch (\Exception $e) {
+            var_dump($e->getMessage());
+            $this->_helper->json(array('error' => 'ok', $e->getMessage()));
         }
     }
 

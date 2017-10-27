@@ -22,7 +22,6 @@ if($this->mapa == null) {
     <div class="row">
         <div id="div-busca">
             <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post" id="form-endereco">
-                <input type="hidden" name="uma" value="" id="uma">
                 <dt id="identification-label">&nbsp;</dt>
                 <dd id="identification-element">
                     <fieldset id="fieldset-identification">
@@ -32,6 +31,7 @@ if($this->mapa == null) {
                                 <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
                                 <input type="hidden" name="codMapa" id="codMapa" value="<?php echo $this->mapa ?>">
                                 <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
+                                <input type="hidden" name="codOs" id="codOs" value="<?php echo $this->codOs ?>">
                                 <input class="btn gradientBtn text-center" style="text-align: center" type="submit" name="buscar" id="buscar" value="Buscar" class="btn gradientBtn">
                             </div>
                         </dl>
@@ -78,17 +78,4 @@ if($this->mapa == null) {
         return false;
 
     });
-    function buildAjax(){
-        alert(URL_MODULO);
-//        $.ajax({
-//            url: URL_MODULO + '/expedicao/get-produtos-end-ajax',
-//            type: 'post',
-//            dataType: 'html',
-//            async: false,
-//            data: $('form').serialize(),
-//            success: function (data) {
-//
-//            }
-//        });
-    }
 </script>
