@@ -461,7 +461,7 @@ class PaleteRepository extends EntityRepository {
       $paleteRepo = $this->_em->getRepository('wms:Enderecamento\Palete');
       $paleteRepo->enderecaPicking($paletesMock);
      */
-    public function enderecaPicking($paletes = array()) {
+    public function enderecaPicking($paletes = array(), $completaPicking = false) {
         $Resultado = "";
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
@@ -506,9 +506,22 @@ class PaleteRepository extends EntityRepository {
                 $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "E");
                 $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "S");
 
-                if (($qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking + $quantidadePalete) > $capacidadePicking) {
-                    $Resultado = "Quantidade nos paletes superior a capacidade do picking";
+                if ($completaPicking) {
+                    if ($capacidadePicking <= $qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking) {
+                        break;
+                    } else if ($capacidadePicking > $qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking) {
+                        if ($quantidadePalete > $capacidadePicking - $qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking) {
+                            $paleteProdutoEn = $this->getEntityManager()->getReference('wms:Enderecamento\PaleteProduto', $produtos[0]->getId());
+                            $paleteProdutoEn->setQtd($capacidadePicking - $qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking);
+                            $this->getEntityManager()->persist($paleteProdutoEn);
+                        }
+                    }
+                } else {
+                    if (($qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking + $quantidadePalete) > $capacidadePicking) {
+                        $Resultado = "Quantidade nos paletes superior a capacidade do picking";
+                    }
                 }
+
 
                 $this->alocaEnderecoPalete($paleteEn->getId(), $embalagem->getEndereco()->getId());
             }

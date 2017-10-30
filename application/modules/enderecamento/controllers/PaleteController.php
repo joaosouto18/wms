@@ -29,7 +29,29 @@ class Enderecamento_PaleteController extends Action
             $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
             try {
+                $completaPicking = false;
+                if (isset($produtos) && !empty($produtos)) {
+                    foreach ($produtos as $produto) {
+                        $piece = explode('-',$produto);
+                        $codProdutoSelecionado = $piece[0];
+                        $gradeSelecionado = $piece[1];
+                        if ($codProdutoSelecionado == $codProduto || $gradeSelecionado == $grade) {
+                            $completaPicking = true;
+                            break;
+                        }
+                    }
+                }
                 $paletes = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+
+                $idPaletes = array();
+                foreach ($paletes as $palete) {
+                    $idPaletes[] = $palete['UMA'];
+                }
+                if ($completaPicking) {
+                    $paleteRepo->enderecaPicking($idPaletes, $completaPicking);
+                    $paletes = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+                }
+
             } catch (Exception $e) {
                 $this->addFlashMessage('error', $e->getMessage());
                 $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
@@ -42,19 +64,26 @@ class Enderecamento_PaleteController extends Action
         } else {
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
-            $itens = (isset($produtos)) ? $produtos : $notaFiscalRepo->getItensNotaByRecebimento($idRecebimento);
+            $itens = $notaFiscalRepo->getItensNotaByRecebimento($idRecebimento);
 
             $result = array();
             /** @var \Wms\Domain\Entity\NotaFiscal\Item $item */
             foreach ($itens as $item) {
-                $piece = explode('-',$item);
-                if (isset($piece)) {
-                    $codProduto = $piece[0];
-                    $grade = $piece[1];
-                } else {
-                    $codProduto = $item['codProduto'];
-                    $grade = $item['grade'];
+                $codProduto = $item['codProduto'];
+                $grade = $item['grade'];
+                $completaPicking = false;
+                if (isset($produtos) && !empty($produtos)) {
+                    foreach ($produtos as $produto) {
+                        $piece = explode('-',$produto);
+                        $codProdutoSelecionado = $piece[0];
+                        $gradeSelecionado = $piece[1];
+                        if ($codProdutoSelecionado == $codProduto || $gradeSelecionado == $grade) {
+                            $completaPicking = true;
+                            break;
+                        }
+                    }
                 }
+
                 /** @var \Wms\Domain\Entity\Produto $produtoEn */
                 $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
                 $arr = array();
@@ -66,6 +95,15 @@ class Enderecamento_PaleteController extends Action
 
                 try {
                     $arr['paletes'] = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+                    $paletes = array();
+                    foreach ($arr['paletes'] as $palete) {
+                        $paletes[] = $palete['UMA'];
+                    }
+                    if ($completaPicking) {
+                        $paleteRepo->enderecaPicking($paletes, $completaPicking);
+                        $arr['paletes'] = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+                    }
+
                 } catch (Exception $e) {
                     $this->addFlashMessage('error', $e->getMessage());
                     $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);

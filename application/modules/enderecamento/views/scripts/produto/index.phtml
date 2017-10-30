@@ -39,8 +39,8 @@ if (count($this->produtos) > 0):
                             <li><img src="/img/admin/icon_opc.gif" alt="Op&ccedil;&otilde;es" />
                                 <ul>
                                     <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>">Endereçar Paletes</a></li>
-                                    <li><a href="/enderecamento/produto/list/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>">Andamento</a></li>
-                                    <li><a href="/enderecamento/produto/alterar-norma/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>">Alterar Norma de Paletização</a></li>
+                                    <li><a href="/enderecamento/produto/list/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>" class="inside-modal">Andamento</a></li>
+                                    <li><a href="/enderecamento/produto/alterar-norma/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>" class="inside-modal">Alterar Norma de Paletização</a></li>
                                     <?php if ($this->recebimento->getStatus()->getSigla() == 'DESFEITO' || $this->recebimento->getStatus()->getSigla() == 'CANCELADO') : ?>
                                         <li><a href="/enderecamento/palete/trocar/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>" target="_blank">Trocar U.M.As</a></li>
                                     <?php endif; ?>
