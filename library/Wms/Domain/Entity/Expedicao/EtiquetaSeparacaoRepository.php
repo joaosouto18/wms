@@ -296,7 +296,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $origemEstoque = 'es.codEstoque as codEstoque ,';
         }
 
-
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('etq.id, es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.linhaSeparacao, ' . $origemEstoque . ' es.codExpedicao,
@@ -306,12 +305,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 ')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
-            ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
             ->leftJoin('wms:Expedicao\EtiquetaMae', 'em', 'WITH', 'em.id = etq.etiquetaMae')
             ->leftJoin('wms:Produto\Embalagem','pe','WITH','pe.id = etq.produtoEmbalagem')
-            ->leftjoin('etq.codDepositoEndereco', 'de')
-            ->distinct(true);
+            ->leftjoin('etq.codDepositoEndereco', 'de');
+
+        if ($reentrega == true) {
+            $dql->innerJoin('etq.reentrega','r')
+                ->innerJoin('r.carga','c');
+        } else {
+            $dql->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga');
+        }
+
+        $dql->distinct(true);
 
         if (isset($idEtiquetaMae) && !empty($idEtiquetaMae)) {
             $dql->andWhere("em.id IN ($idEtiquetaMae)");
