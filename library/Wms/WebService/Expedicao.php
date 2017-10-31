@@ -482,7 +482,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
                 $parametro = $parametroRepo->findOneBy(array('constante' => 'LIBERA_FATUAMENTO_PARCIALMENTE_FINALIZADO'));
 
-                if ($parametro == "S") {
+                if ($parametro->getValor() == 'S') {
                     return array('liberado' => true);
                 } else {
                     /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
