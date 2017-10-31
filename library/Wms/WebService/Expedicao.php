@@ -533,9 +533,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function consultarCarga($idCargaExterno,$tipoCarga){
 
-        var_dump($idCargaExterno);
-        var_dump($tipoCarga);
-        exit;
         $idCargaExterno = trim ($idCargaExterno);
         if ((!isset($tipoCarga)) OR ($tipoCarga == "")) {$tipoCarga = "C";}
         $tipoCarga = trim($tipoCarga);

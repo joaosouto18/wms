@@ -10,7 +10,7 @@ use Wms\Domain\Entity\Pessoa\Papel\Cliente;
 class Pedido
 {
     /**
-     * @Column(name="COD_PEDIDO", type="integer", nullable=false)
+     * @Column(name="COD_PEDIDO", type="string", nullable=false)
      * @Id
      */
     protected $id;
@@ -124,14 +124,20 @@ class Pedido
         return $this->carga;
     }
 
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
+    /**
+     * @return mixed
+     */
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
     }
 
     public function setItinerario($itinerario)
