@@ -541,7 +541,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $pedidoRepo     = $this->_em->getRepository('wms:Expedicao\Pedido');
 
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
+        var_dump($siglaTipoCarga->getId());
+        var_dump($idCargaExterno);
+        exit;
         $cargaEn = $this->_em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno'=>$idCargaExterno,'tipoCarga'=>$siglaTipoCarga->getId()));
+
         if ($cargaEn == null) {
             throw new \Exception($siglaTipoCarga->getSigla(). " $tipoCarga não encontrado(a)!");
         }
