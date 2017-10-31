@@ -321,7 +321,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCargaExterno
+     * @param string $idCargaExterno
      * @param string $tipoCarga
      * @return boolean Se a carga for fechada com sucesso
      */
@@ -346,7 +346,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCargaExterno
+     * @param string $idCargaExterno
      * @param string $tipoCarga
      * @return boolean Se a carga for cancelada com sucesso
      */
@@ -374,7 +374,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCargaExterno
+     * @param string $idCargaExterno
      * @param string $tipoCarga
      * @param string $tipoPedido
      * @param string $idPedido
