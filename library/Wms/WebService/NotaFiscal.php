@@ -91,12 +91,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return array
      * @throws Exception
      */
-    public function buscar($idFornecedor, $numero, $serie = "0", $dataEmissao, $idStatus)
+    public function buscar($idFornecedor, $numero, $serie, $dataEmissao, $idStatus)
     {
 
         $idFornecedor = trim($idFornecedor);
         $numero = trim($numero);
-        $serie = trim($serie);
+        $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao  = trim($dataEmissao);
         $idStatus = trim($idStatus);
 
@@ -168,12 +168,12 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return notaFiscal
      * @throws Exception
      */
-    public function buscarNf($idFornecedor, $numero, $serie = "0", $dataEmissao)
+    public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao)
     {
 
         $idFornecedor = trim($idFornecedor);
         $numero = trim($numero);
-        $serie = trim($serie);
+        $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao = trim($dataEmissao);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
@@ -260,7 +260,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return boolean
      * @throws Exception
      */
-    public function salvar($idFornecedor, $numero, $serie = "0", $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -270,7 +270,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             //BEGIN
             $idFornecedor = trim($idFornecedor);
             $numero = (int) trim($numero);
-            $serie = trim($serie);
+            $serie = (!empty(trim($serie)))? trim($serie) : "0";
             $dataEmissao = trim($dataEmissao);
             $placa = trim($placa);
             $bonificacao = trim ($bonificacao);
@@ -404,7 +404,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return boolean
      * @throws Exception
      */
-    public function salvarJson($idFornecedor, $numero, $serie = "0", $dataEmissao, $placa, $itens, $bonificacao, $observacao){
+    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao){
         /*
         $jsonMockSample ='{"produtos": [';
         $jsonMockSample .='     {"idProduto": "999", ';
@@ -433,11 +433,11 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return array
      * @throws Exception
      */
-    public function status($idFornecedor, $numero, $serie = "0", $dataEmissao)
+    public function status($idFornecedor, $numero, $serie, $dataEmissao)
     {
         $idFornecedor = trim($idFornecedor);
         $numero = trim($numero);
-        $serie = trim($serie);
+        $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao = trim($dataEmissao);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
@@ -481,11 +481,11 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return boolean
      * @throws Exception
      */
-    public function descartar($idFornecedor, $numero, $serie = "0", $dataEmissao, $observacao)
+    public function descartar($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
         $idFornecedor = trim ($idFornecedor);
         $numero = trim($numero);
-        $serie = trim($serie);
+        $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao = trim($dataEmissao);
         $observacao = trim($observacao);
 
@@ -526,11 +526,11 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return boolean
      * @throws Exception
      */
-    public function desfazer($idFornecedor, $numero, $serie = "0", $dataEmissao, $observacao)
+    public function desfazer($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
         $idFornecedor = trim($idFornecedor);
         $numero = trim($numero);
-        $serie = trim($serie);
+        $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao = trim($dataEmissao);
         $observacao = trim($observacao);
 
