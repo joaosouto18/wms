@@ -489,6 +489,9 @@ class PedidoRepository extends EntityRepository
         $PedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
 
         $pedidoEn = $PedidoRepo->find($idPedido);
+        if (!isset($pedidoEn)) {
+            throw new \Exception("Pedido não encontrado no WMS");
+        }
         $idExpedicao = $pedidoEn->getCarga()->getExpedicao()->getId();
 
         if ($pedidoEn == null) {
