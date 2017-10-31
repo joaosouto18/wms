@@ -527,7 +527,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCarga
+     * @param string $idCarga
      * @param string $tipoCarga
      * @return carga Com informações das etiquetas
      */
