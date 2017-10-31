@@ -102,7 +102,7 @@ class PedidoRepository extends EntityRepository
                         INNER JOIN pp.produto p
                         INNER JOIN pp.pedido ped
                         INNER JOIN ped.carga c
-                        WHERE ped.id = $idPedido
+                        WHERE ped.id = '$idPedido'
                         AND ped.id NOT IN (
                           SELECT pp2.codPedido
                             FROM wms:Expedicao\EtiquetaSeparacao ep
