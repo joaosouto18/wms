@@ -22,7 +22,42 @@ class ProdutosParaConferencia extends Grid
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $osRepo */
         $osRepo = $this->getEntityManager()->getRepository('wms:OrdemServico');
         $this->setAttrib('title','Produtos Conferencia');
-        if ($tipoConferencia != null) {
+        if($tipoConferencia == 'SEPARACAO'){
+            $this->setAttrib('title','Produtos Separação');
+            $result = $osRepo->getSeparacaoByOs($idOS);
+            $this->setSource(new \Core\Grid\Source\ArraySource($result))
+                ->setId('expedicao-separacao-grid')
+                ->setAttrib('caption', 'Produtos Separados')
+                ->addColumn(array(
+                    'label' => 'Produto',
+                    'index' => 'COD_PRODUTO',
+                ))
+                ->addColumn(array(
+                    'label' => 'Descrição',
+                    'index' => 'DSC_PRODUTO',
+                ))
+                ->addColumn(array(
+                    'label' => 'Grade',
+                    'index' => 'DSC_GRADE',
+                ))
+                ->addColumn(array(
+                    'label' => 'Mapa Separação',
+                    'index' => 'COD_MAPA_SEPARACAO',
+                ))
+                ->addColumn(array(
+                    'label' => 'Qtd. Embalagem',
+                    'index' => 'QTD_EMBALAGEM',
+                ))
+                ->addColumn(array(
+                    'label' => 'Qtd. Separada',
+                    'index' => 'QTD_SEPARADA',
+                ))
+                ->addColumn(array (
+                    'label' => 'Data Separação',
+                    'index' =>  'DTH_SEPARACAO'
+                ))
+                ->setShowExport(false);
+        }elseif ($tipoConferencia != null) {
             $result = $osRepo->getConferenciaByOs($idOS, $transbordo, $tipoConferencia);
 
             $this->setSource(new \Core\Grid\Source\Doctrine($result))

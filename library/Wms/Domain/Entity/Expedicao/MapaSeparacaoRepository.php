@@ -233,7 +233,7 @@ class MapaSeparacaoRepository extends EntityRepository {
 
     public function finalizaMapaAjax($codMapa){
         $mapaEn = $this->find($codMapa);
-        $mapaEn->setCodStatus(Etiqueta::STATUS_CONFERIDO);
+        $mapaEn->setCodStatus(Etiqueta::STATUS_SEPARADO);
         $this->getEntityManager()->persist($mapaEn);
         $this->getEntityManager()->flush();
     }
