@@ -943,6 +943,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $SiglaRepo      = $repositorios['siglaRepo'];
             $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
 
+            if (!isset($entitySigla) || empty($entitySigla)) {
+                throw new \Exception('Sigla para estado inválida');
+            }
+
             $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
             $cliente['enderecos'][0]['acao'] = 'incluir';
             $cliente['enderecos'][0]['idTipo'] = \Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA;
