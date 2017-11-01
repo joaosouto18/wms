@@ -1559,6 +1559,8 @@ class Mobile_ExpedicaoController extends Action {
                         'formaConferencia' => OrdemServicoEntity::COLETOR,
                     ),
                 ), true, "Id");
+                $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+                $apontamentoMapaRepo->save($mapaSeparacaoRepo->find($mapa), $idPessoa);
                 $this->view->codOs = $codOs;
             }else{
                 $this->view->codOs = $osEn->getId();
@@ -1618,8 +1620,16 @@ class Mobile_ExpedicaoController extends Action {
     public function finalizaMapaAjaxAction(){
         $codMapa = $this->_getParam('codMapa');
         $codOs = $this->_getParam('codOs');
+
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
+        $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+
+        $idPessoa = (isset($idPessoa)) ? $idPessoa : \Zend_Auth::getInstance()->getIdentity()->getId();
+
+        $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $idPessoa, 'mapaSeparacao' => $mapaSeparacaoRepo->find($codMapa)));
+        $apontamentoMapaRepo->update($apontamentoMapaEn);
+
         $mapaSeparacaoRepo->finalizaMapaAjax($codMapa);
         $ordemServicoRepo->finalizar($codOs, 'Separação Coletor');
         $this->_redirect("mobile/expedicao/separacao-ajax");
