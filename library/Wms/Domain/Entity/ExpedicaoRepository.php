@@ -680,18 +680,17 @@ class ExpedicaoRepository extends EntityRepository {
                 );
                 $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
 
-                if (empty($estoquePulmao)) {
-                    $forcarSairDoPicking = true;
-                } else {
+                while ($qtdRestante > 0) {
+                    if (empty($estoquePulmao)) {
+                        $forcarSairDoPicking = true;
+                    } else {
+                        foreach ($estoquePulmao as $estoque) {
+                            $qtdEstoque = $estoque['SALDO'];
+                            $idEndereco = $estoque['COD_DEPOSITO_ENDERECO'];
+                            $zerouEstoque = false;
+                            $saiuQtdNorma = false;
+                            $nextEndereco = false;
 
-                    foreach ($estoquePulmao as $estoque) {
-                        $qtdEstoque = $estoque['SALDO'];
-                        $idEndereco = $estoque['COD_DEPOSITO_ENDERECO'];
-                        $zerouEstoque = false;
-                        $saiuQtdNorma = false;
-                        $nextEndereco = false;
-
-                        while ($qtdRestante > 0) {
                             if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$idElemento])) {
                                 $reserva = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$idElemento];
                                 if ($reserva['estoqueReservado']) {
@@ -701,8 +700,10 @@ class ExpedicaoRepository extends EntityRepository {
                                 }
                             }
 
-                            if ($nextEndereco)
-                                break;
+                            if ($nextEndereco) {
+                                if ($estoque == end($estoquePulmao)) $forcarSairDoPicking = true;
+                                continue;
+                            }
 
                             if (Math::compare($qtdRestante, $qtdEstoque, ">=")) {
                                 $qtdReservar = $qtdEstoque;
@@ -769,8 +770,9 @@ class ExpedicaoRepository extends EntityRepository {
                                     break;
                                 }
                             }
+                            if ($qtdRestante == 0) break;
                         }
-                        if ($qtdRestante == 0 || $forcarSairDoPicking) break;
+                        if ($forcarSairDoPicking) break;
                     }
                 }
             } else {
