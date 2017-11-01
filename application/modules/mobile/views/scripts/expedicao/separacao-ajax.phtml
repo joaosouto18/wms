@@ -7,13 +7,34 @@
  */
 if($this->mapa == null) {
     ?>
-    <h3>Selecione o Mapa</h3>
+    <!--    <h3>Selecione o Mapa</h3>-->
+    <div id="div-busca">
+        <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post" id="form-mapa">
+            <dt id="identification-label">&nbsp;</dt>
+            <dd id="identification-element">
+                <fieldset id="fieldset-identification">
+                    <legend>Mapa</legend>
+                    <dl>
+                        <div class="field" style="text-align: center"><label for="codigoBarras" class="field required">*Cód. Barras Mapa</label>
+                            <input type="hidden" name="codMapa" id="codMapa" value="<?php echo $this->mapa ?>">
+                            <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
+                            <input type="hidden" name="codOs" id="codOs" value="<?php echo $this->codOs ?>">
+                            <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
+                            <input class="btn gradientBtn text-center" style="margin-top: 10px; text-align: center" type="submit" name="buscar" id="buscar" value="Buscar" class="btn gradientBtn">
+                        </div>
+                    </dl>
+                </fieldset>
+            </dd>
+        </form>
+        <br>
+    </div>
     <?php
     foreach ($this->mapas as $values) {
         ?>
         <div class="row">
             <a class="btn gradientBtn"
-               href="/mobile/expedicao/separacao-ajax/os/1/mapa/<?php echo $values['COD_MAPA_SEPARACAO'] ?>/expedicao/<?php echo $values['COD_EXPEDICAO'] ?>"><?php echo $values['COD_MAPA_SEPARACAO'] ?></a>
+               href="/mobile/expedicao/separacao-ajax/mapa/<?php echo $values['COD_MAPA_SEPARACAO'] ?>/expedicao/<?php echo $values['COD_EXPEDICAO'] ?>"><?php echo $values['COD_MAPA_SEPARACAO'] ?></a>
+            <input type="hidden" name="<?php echo $values['COD_MAPA_SEPARACAO'] ?>" id="<?php echo $values['COD_MAPA_SEPARACAO'] ?>" value="<?php echo $values['COD_EXPEDICAO'] ?>">
         </div>
         <?php
     }
@@ -32,7 +53,7 @@ if($this->mapa == null) {
                                 <input type="hidden" name="codMapa" id="codMapa" value="<?php echo $this->mapa ?>">
                                 <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
                                 <input type="hidden" name="codOs" id="codOs" value="<?php echo $this->codOs ?>">
-                                <input class="btn gradientBtn text-center" style="text-align: center" type="submit" name="buscar" id="buscar" value="Buscar" class="btn gradientBtn">
+                                <input class="btn gradientBtn text-center" style="margin-top: 10px; text-align: center" type="submit" name="buscar" id="buscar" value="Buscar" class="btn gradientBtn">
                             </div>
                         </dl>
                     </fieldset>
@@ -57,11 +78,39 @@ if($this->mapa == null) {
             ?>
             </tbody>
         </table>
+        <div id="footer">
+            <a style="cursor: pointer" class="btn button finalizar mudar" id="fim-end">Finalizar Separação</a>
+        </div>
     </div>
     <?php
 }
 ?>
 <script>
+    $( "#fim-end" ).click(function( event ) {
+        $.ajax({
+            url: '/mobile/expedicao/finaliza-mapa-ajax',
+            type: 'post',
+            dataType: 'html',
+            async: false,
+            data: $('#form-endereco').serialize(),
+            success: function (data) {
+                window.location = "/mobile/expedicao/separacao-ajax";
+                event.preventDefault();
+            }
+        });
+    });
+
+    $( "#form-mapa" ).submit(function( event ) {
+        var str = $('#codigoBarras').val().slice(0, -1);
+        var expedicao = $('#'+str).val();
+        var prefixo = str.substring(0,2);
+        if(prefixo == 12){
+            window.location = "/mobile/expedicao/separacao-ajax/mapa/"+str+"/expedicao/"+expedicao;
+        }
+        event.preventDefault();
+        return false;
+
+    });
 
     $( "#form-endereco" ).submit(function( event ) {
         $.ajax({

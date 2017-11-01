@@ -78,6 +78,11 @@ class MapaSeparacaoProduto
     protected $indConferido;
 
     /**
+     * @Column(name="IND_SEPARADO", type="string", nullable=true)
+     */
+    protected $indSeparado;
+
+    /**
      * @Column(name="COD_PEDIDO_PRODUTO", type="integer", nullable=false)
      */
     protected $codPedidoProduto;
@@ -283,6 +288,22 @@ class MapaSeparacaoProduto
     public function getIndConferido()
     {
         return $this->indConferido;
+    }
+
+    /**
+     * @param mixed $indSeparado
+     */
+    public function setIndSeparado($indSeparado)
+    {
+        $this->indSeparado = $indSeparado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIndSeparado()
+    {
+        return $this->indSeparado;
     }
 
     /**

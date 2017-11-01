@@ -3,8 +3,6 @@
     .gTable {
         width: 100%;
         margin-bottom: 5px;
-        margin-left: 7px;
-
     }
     .gTable tr.gRowColor td {
         background: #EDEDED;
@@ -64,79 +62,208 @@
         line-height:20px;
     }
 </style>
-<div class="row">
-    <div id="div-busca">
-        <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post" id="form-produto">
-            <input type="hidden" name="codMapaSeparacao" id="codMapaSeparacao" value="<?php echo $this->mapa ?>">
-            <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
-            <input type="hidden" name="codOs" id="codOs" value="<?php echo $this->codOs ?>">
-            <input type="hidden" name="codDepositoEndereco" id="codDepositoEndereco" value="<?php echo $this->codDepositoEndereco ?>">
-            <dt id="identification-label">&nbsp;</dt>
-            <dd id="identification-element">
-                <fieldset id="fieldset-identification">
-                    <legend>Produto</legend>
-                    <dl>
-                        <div class="field" style="text-align: center">
-                            <label for="codigoBarras" class="field required">*Código de Barras Produto</label>
-                            <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
-                            <label for="codigoBarras" class="field required">*Quantidade Separada</label>
-                            <input type="text" name="qtdSeparar" id="qtdSeparar" value="" class="required" size="40" maxlength="100" style="width:100px">
-                            <input class="btn gradientBtn text-center" style="margin-top: 10px; text-align: center" type="submit" name="buscar" id="buscar" value="Separar" class="btn gradientBtn">
-                        </div>
-                    </dl>
-                </fieldset>
-            </dd>
-        </form>
-        <br>
+<?php
+if(empty($this->error)) {
+    ?>
+    <input type="hidden" id="enviar-form" value="0">
+    <div class="row">
+        <div id="div-busca">
+            <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post"
+                  id="form-produto">
+                <input type="hidden" name="codMapaSeparacao" id="codMapaSeparacao" value="<?php echo $this->mapa ?>">
+                <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
+                <input type="hidden" name="codOs" id="codOs" value="<?php echo $this->codOs ?>">
+                <input type="hidden" name="endereco" id="endereco" value="<?php echo $this->endereco ?>">
+                <input type="hidden" name="codDepositoEndereco" id="codDepositoEndereco"
+                       value="<?php echo $this->codDepositoEndereco ?>">
+                <dt id="identification-label">&nbsp;</dt>
+                <dd id="identification-element">
+                    <fieldset id="fieldset-identification">
+                        <legend>Produto</legend>
+                        <dl>
+                            <div class="field" style="text-align: center">
+                                <label for="codigoBarrasProd" class="field required">*Código de Barras Produto</label>
+                                <input type="text" name="codigoBarrasProd" id="codigoBarrasProd" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
+                                <label for="codigoBarras" class="field required">*Quantidade Separada</label>
+                                <input type="text" name="qtdSeparar" id="qtdSeparar" value="" class="required" size="40" maxlength="100" style="width:70px; text-align: center;">
+                                <span id="dsc-embalagem"></span>
+                            </div>
+                            <div class="field" style="text-align: center">
+                                <input class="btn gradientBtn text-center" style="margin-top: 10px; text-align: center" type="submit" name="buscar" id="buscar" value="Separar" class="btn gradientBtn">
+                            </div>
+                        </dl>
+                    </fieldset>
+                </dd>
+            </form>
+            <br>
+        </div>
     </div>
-</div>
-<h4 style="font-size: 15px; font-weight: bold;"><?php echo $this->endereco ?></h4>
-<table class="gTable " style="font-size: 10px!important;">
-    <tbody>
-    <tr class ="gTTitle">
-        <td><b>Produto</b></td>
-        <td><b>Grade</b></td>
-        <td><b>Qtd. Separar</b></td>
-        <td><b>Embalagem</b></td>
-    </tr>
-    <?php foreach ($this->produtos as $produto) : ?>
-        <tr>
-            <td><?php echo $produto['DSC_PRODUTO'] ?></td>
-            <td><?php echo $produto['DSC_GRADE'] ?></td>
-            <td><?php echo $produto['SEPARAR'] ?></td>
-            <td><?php
-                if($produto['DSC_EMBALAGEM'] != null && $produto['DSC_EMBALAGEM'] != ''){
-                    echo $produto['DSC_EMBALAGEM'] . ' ('.$produto['QTD_EMBALAGEM'].')';
+    <h4 style="font-size: 15px; font-weight: bold;"><?php echo $this->endereco ?></h4>
+    <div id="div-embalgens" style="width: 105%; text-align: center;">
+        <table class="gTable " style="font-size: 10px!important;">
+            <tbody>
+            <tr class="gTTitle">
+                <td><b>Produto</b></td>
+                <td><b>Grade</b></td>
+                <td><b>Qtd. Separar</b></td>
+                <td><b>Embalagem</b></td>
+            </tr>
+            <?php
+            $array = array();
+            foreach ($this->produtos as $produto) :
+                if(array_key_exists($produto['COD_PRODUTO'], $array)) {
+                    $array[$produto['COD_PRODUTO']] = $array[$produto['COD_PRODUTO']] + ($produto['SEPARAR'] * $produto['QTD_EMBALAGEM']);
                 }else{
-                    echo $produto['DSC_VOLUME'];
+                    $array[$produto['COD_PRODUTO']] = ($produto['SEPARAR'] * $produto['QTD_EMBALAGEM']);
                 }
                 ?>
-            </td>
-        </tr>
-    <?php endforeach; ?>
-    </tbody>
-</table>
-<div id="footer">
-    <a href="/mobile/expedicao/separacao-ajax/mapa/<?php echo $this->mapa ?>/expedicao/<?php echo $this->idExpedicao ?>/codOs/<?php echo $this->codOs ?>" class="btn button finalizar mudar">Próximo Endereço</a>
-</div>
-
+                <tr>
+                    <td><?php echo $produto['DSC_PRODUTO'] ?></td>
+                    <td><?php echo $produto['DSC_GRADE'] ?></td>
+                    <td><?php echo $produto['SEPARAR'] ?></td>
+                    <td><?php
+                        if ($produto['DSC_EMBALAGEM'] != null && $produto['DSC_EMBALAGEM'] != '') {
+                            echo $produto['DSC_EMBALAGEM'];
+                        } else {
+                            echo $produto['DSC_VOLUME'];
+                        }
+                        ?>
+                    </td>
+                </tr>
+            <?php endforeach;
+            foreach ($array as $key => $value){
+                ?><input class="prod-sep" type="hidden" name="<?php echo $key ?>" id="<?php echo $key ?>" value="<?php echo $value ?>"><?php
+            }
+            ?>
+            </tbody>
+        </table>
+    </div>
+    <div id="footer">
+        <a href="/mobile/expedicao/separacao-ajax/mapa/<?php echo $this->mapa ?>/expedicao/<?php echo $this->idExpedicao ?>"
+           class="btn button finalizar mudar" id="proximo-end">Próximo Endereço</a>
+    </div>
+    <?php
+}else{
+    ?>
+    <div id="table-embalgens" style="background: #ffb0b0; padding: 7px;">
+        <b><?php echo $this->error ?></b>
+    </div>
+    <div class="row">
+        <div id="div-busca">
+            <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post" id="form-endereco">
+                <dt id="identification-label">&nbsp;</dt>
+                <dd id="identification-element">
+                    <fieldset id="fieldset-identification">
+                        <legend>Endereço</legend>
+                        <dl>
+                            <div class="field" style="text-align: center"><label for="codigoBarras" class="field required">*Código de Barras Endereço</label>
+                                <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
+                                <input type="hidden" name="codMapa" id="codMapa" value="<?php echo $this->mapa ?>">
+                                <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
+                                <input type="hidden" name="codOs" id="codOs" value="<?php echo $this->codOs ?>">
+                                <input class="btn gradientBtn text-center" style="text-align: center" type="submit" name="buscar" id="buscar" value="Buscar" class="btn gradientBtn">
+                            </div>
+                        </dl>
+                    </fieldset>
+                </dd>
+            </form>
+            <br>
+        </div>
+        <table class="table-condensed row">
+            <tbody>
+            <?php
+            $style = "background: #fcbbbb;";
+            foreach ($this->enderecos as $values){
+                ?>
+                <tr>
+                    <td style="<?php echo $style ?>">
+                        <b><?php echo $values['DSC_DEPOSITO_ENDERECO'] ?></b>
+                    </td>
+                </tr>
+                <?php
+                $style = "";
+            }
+            ?>
+            </tbody>
+        </table>
+        <div id="footer">
+            <a href="/mobile/expedicao/separacao-ajax/mapa/<?php echo $this->mapa ?>/expedicao/<?php echo $this->idExpedicao ?>"
+               class="btn button finalizar mudar" id="fim-end">Finalizar Separação</a>
+        </div>
+    </div>
+    <?php
+}
+?>
 <script>
+    $( "#fim-end" ).click(function( event ) {
+        $.ajax({
+            url: '/mobile/expedicao/finaliza-mapa-ajax',
+            type: 'post',
+            dataType: 'html',
+            async: false,
+            data: $('form').serialize(),
+            success: function (data) {
+                window.location = "/mobile/expedicao/separacao-ajax";
+            }
+        });
+    });
+
+    $( "#codigoBarrasProd" ).change(function( event ) {
+        $.ajax({
+            url: '/mobile/expedicao/get-embalagem-cod-ajax',
+            type: 'post',
+            dataType: 'json',
+            async: false,
+            data: $('form').serialize(),
+            success: function (data) {
+                var qtdSeparar = $('#'+data.dados.idProduto).val();
+                var qtdEmb = data.dados.quantidadeEmbalagem;
+                var resto = Math.floor(qtdSeparar / qtdEmb);
+                $('#qtdSeparar').val((qtdEmb * resto) / qtdEmb);
+                $('#dsc-embalagem').text(data.dados.descricaoEmbalagem+' ('+qtdEmb+')');
+            }
+        });
+        $('#qtdSeparar').focus();
+        $('#qtdSeparar').select();
+        $('#enviar-form').val(0);
+    });
+
+    $( "#form-endereco" ).submit(function( event ) {
+        $.ajax({
+            url: '/mobile/expedicao/get-produtos-end-ajax',
+            type: 'post',
+            dataType: 'html',
+            async: false,
+            data: $('form').serialize(),
+            success: function (data) {
+                $('body').html(data);
+            }
+        });
+        event.preventDefault();
+        return false;
+
+    });
+
     $( "#form-produto" ).submit(function( event ) {
         if($('#qtdSeparar').val() == ""){
             $('#qtdSeparar').focus();
         }
-        if($('#qtdSeparar').val() != "" && $('#codigoBarras').val() != ""){
+        if($('#qtdSeparar').val() != "" && $('#codigoBarras').val() != "" && $('#enviar-form').val() == 1){
             $.ajax({
                 url: '/mobile/expedicao/separa-produto-ajax',
                 type: 'post',
-                dataType: 'json',
+                dataType: 'html',
                 async: false,
                 data: $('form').serialize(),
                 success: function (data) {
-//                    $('body').html(data);
+                    $('#div-embalgens').html($(data).find('#table-embalgens'));
+                    $('#codigoBarrasProd').focus();
+                    $('#codigoBarrasProd').val('');
+                    $('#qtdSeparar').val('');
                 }
             });
         }
+        $('#enviar-form').val(1);
         event.preventDefault();
         return false;
 
