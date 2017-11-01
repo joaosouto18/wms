@@ -19,6 +19,9 @@ class PedidoEnderecoRepository extends EntityRepository
             $SiglaRepo      = $this->_em->getRepository('wms:Util\Sigla');
             $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $pedidoCliente['uf']));
 
+            if (!isset($entitySigla) || empty($entitySigla)) {
+                throw new \Exception('Sigla para estado inválida');
+            }
             $enPedidoEndereco->setCodPedido($pedidoEntity->getId());
             //LINHA COMENTADA POR RODRIGO PQ NA WILSO SÓ FUNCIONOU DESSA MANEIRA
             $enPedidoEndereco->setPedido($pedidoEntity);
