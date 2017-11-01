@@ -305,7 +305,6 @@ class OrdemServicoRepository extends EntityRepository
                     SMS.COD_MAPA_SEPARACAO,
                     SMS.COD_PRODUTO,
                     SMS.DSC_GRADE,
-                    SMS.QTD_EMBALAGEM,
                     SUM(SMS.QTD_SEPARADA * SMS.QTD_EMBALAGEM)  AS QTD_SEPARADA,
                     P.DSC_PRODUTO,
                     MAX(TO_CHAR(SMS.DTH_SEPARACAO, 'DD/MM/YYYY')) as DTH_SEPARACAO
@@ -317,7 +316,6 @@ class OrdemServicoRepository extends EntityRepository
                     SMS.COD_MAPA_SEPARACAO,
                     SMS.COD_PRODUTO,
                     SMS.DSC_GRADE,
-                    SMS.QTD_EMBALAGEM,
                     P.DSC_PRODUTO";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);

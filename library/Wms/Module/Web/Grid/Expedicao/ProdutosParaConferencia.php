@@ -45,10 +45,6 @@ class ProdutosParaConferencia extends Grid
                     'index' => 'COD_MAPA_SEPARACAO',
                 ))
                 ->addColumn(array(
-                    'label' => 'Qtd. Embalagem',
-                    'index' => 'QTD_EMBALAGEM',
-                ))
-                ->addColumn(array(
                     'label' => 'Qtd. Separada',
                     'index' => 'QTD_SEPARADA',
                 ))
