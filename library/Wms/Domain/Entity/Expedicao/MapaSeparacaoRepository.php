@@ -362,7 +362,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         $SQL = "SELECT *
                   FROM PEDIDO_PRODUTO PP
                  INNER JOIN MAPA_SEPARACAO_PEDIDO MSP ON MSP.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
-                 WHERE PP.COD_PEDIDO = $pedido
+                 WHERE PP.COD_PEDIDO = '$pedido'
                    AND PP.QUANTIDADE <> NVL(PP.QTD_CORTADA,0)
         ";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
