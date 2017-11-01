@@ -240,13 +240,22 @@ class PedidoRepository extends EntityRepository
                    AND PP.QUANTIDADE = NVL(PP.QTD_CORTADA,0) ";
         $countMapas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
+        $SQL = "SELECT *
+                  FROM ETIQUETA_SEPARACAO ES
+                  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = ES.COD_PEDIDO 
+                                             AND PP.COD_PRODUTO = ES.COD_PRODUTO
+                                             AND PP.DSC_GRADE = ES.DSC_GRADE
+                 WHERE PP.COD_PEDIDO = " . $idPedido ;
+        $countEtiquetas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
         $EntPedido = $this->find($idPedido);
         $idExpedicao = $EntPedido->getCarga()->getExpedicao()->getId();
         $idCarga = $EntPedido->getCarga()->getId();
         $EntPedido->setDataCancelamento(new \DateTime());
         $this->_em->persist($EntPedido);
 
-        if (count($countMapas) == 0) {
+
+        if ((count($countMapas) == 0) && (count($countEtiquetas) == 0)) {
             /** @var PedidoProdutoRepository $pedidoProdRepo */
             $pedidoProdRepo = $this->_em->getRepository("wms:Expedicao\PedidoProduto");
             $itens = $pedidoProdRepo->findBy(array("pedido" => $EntPedido));
