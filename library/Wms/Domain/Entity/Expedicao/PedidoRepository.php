@@ -195,15 +195,17 @@ class PedidoRepository extends EntityRepository
             $EtiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
             $etiquetas = $EtiquetaSeparacaoRepo->getEtiquetasByPedido($idPedido);
 
-            foreach ($etiquetas as $etiqueta){
-                /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetaEn */
-                $etiquetaEn = $EtiquetaSeparacaoRepo->find($etiqueta['codBarras']);
+            if (isset($etiquetas) && !empty($etiquetas)) {
+                foreach ($etiquetas as $etiqueta) {
+                    /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetaEn */
+                    $etiquetaEn = $EtiquetaSeparacaoRepo->find($etiqueta['codBarras']);
 
-                if ($etiquetaEn->getCodStatus() <> EtiquetaSeparacao::STATUS_CORTADO) {
-                    if ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO) {
-                        $this->_em->remove($etiquetaEn);
-                    } else {
-                        $EtiquetaSeparacaoRepo->alteraStatus($etiquetaEn, EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+                    if ($etiquetaEn->getCodStatus() <> EtiquetaSeparacao::STATUS_CORTADO) {
+                        if ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO) {
+                            $this->_em->remove($etiquetaEn);
+                        } else {
+                            $EtiquetaSeparacaoRepo->alteraStatus($etiquetaEn, EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+                        }
                     }
                 }
             }
@@ -229,7 +231,7 @@ class PedidoRepository extends EntityRepository
         $SQL = "SELECT *
                   FROM MAPA_SEPARACAO_PEDIDO MSP
                   LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
-                 WHERE PP.COD_PEDIDO = " . $idPedido . "
+                 WHERE PP.COD_PEDIDO = '$idPedido'
                    AND PP.QUANTIDADE = NVL(PP.QTD_CORTADA,0) ";
         $countMapas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
