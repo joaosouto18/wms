@@ -1723,7 +1723,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         if (isset($params['codProduto']) && !empty($params['codProduto'])) {
             $where .= " AND P.COD_PRODUTO = '$params[codProduto]' ";
         }
-        if (isset($params['linhaSeparacao']) && !empty($params['linhaSeparacao'])) {
+        if ($params['linhaSeparacao'] != '') {
             $where .= "AND P.COD_LINHA_SEPARACAO = '$params[linhaSeparacao]' ";
         }
         if (isset($params['descricao']) && !empty($params['descricao'])) {

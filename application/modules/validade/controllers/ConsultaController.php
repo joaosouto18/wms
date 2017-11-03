@@ -35,10 +35,12 @@ class Validade_ConsultaController extends Action {
         }
         $grid = new ValidadeGrid();
         $this->view->grid = $grid->init($result);
-
         if (isset($params['gerarPdf']) && !empty($params['gerarPdf'])) {
             $pdfReport = new \Wms\Module\Validade\Report\ProdutosAVencer();
             $pdfReport->generatePDF($result, $params['dataReferencia']);
+        }
+        if (isset($params['gerarCsv']) && !empty($params['gerarCsv'])) {
+            $this->exportCSV($result,'produtos_a_vencer',true);
         }
     }
 

@@ -69,7 +69,12 @@ class Validade extends Form
                 'decorators' => array('ViewHelper'),
             ))
             ->addElement('submit', 'gerarPdf', array(
-                'label' => 'Gerar relatório',
+                'label' => 'Gerar relatório PDF',
+                'class' => 'btn',
+                'decorators' => array('ViewHelper')
+            ))
+            ->addElement('submit', 'gerarCsv', array(
+                'label' => 'Gerar relatório CSV',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ));
@@ -84,7 +89,8 @@ class Validade extends Form
             'fornecedor',
             'dataReferencia',
             'submit',
-            'gerarPdf');
+            'gerarPdf',
+            'gerarCsv');
 
         if ($param->getValor() === 'S'){
             $this->addElement('text', 'grade', array(
@@ -101,7 +107,8 @@ class Validade extends Form
                 'fornecedor',
                 'dataReferencia',
                 'submit',
-                'gerarPdf');
+                'gerarPdf',
+                'gerarCsv');
         }
 
         $this->addDisplayGroup($arr, 'formulario', array('legend' => 'Formulário'));
