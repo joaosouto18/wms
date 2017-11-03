@@ -35,7 +35,7 @@ class Enderecamento_PaleteController extends Action
                         $piece = explode('-',$produto);
                         $codProdutoSelecionado = $piece[0];
                         $gradeSelecionado = $piece[1];
-                        if ($codProdutoSelecionado == $codProduto || $gradeSelecionado == $grade) {
+                        if ($codProdutoSelecionado == $codProduto && $gradeSelecionado == $grade) {
                             $completaPicking = true;
                             break;
                         }
@@ -77,7 +77,7 @@ class Enderecamento_PaleteController extends Action
                         $piece = explode('-',$produto);
                         $codProdutoSelecionado = $piece[0];
                         $gradeSelecionado = $piece[1];
-                        if ($codProdutoSelecionado == $codProduto || $gradeSelecionado == $grade) {
+                        if ($codProdutoSelecionado == $codProduto && $gradeSelecionado == $grade) {
                             $completaPicking = true;
                             break;
                         }
