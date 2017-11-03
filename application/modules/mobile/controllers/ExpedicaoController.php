@@ -1588,9 +1588,12 @@ class Mobile_ExpedicaoController extends Action {
                     $this->view->produtos = $produtos;
                     $this->view->codDepositoEndereco = $produtos[0]['COD_DEPOSITO_ENDERECO'];
                 }else{
-                    $this->view->error = "Endereço já conferido ou não pertence ao mapa.";
+                    $this->view->error = "Endereço já conferido ou não pertence ao mapa";
                     $this->view->enderecos = $mapaSeparacaoRepo->findEnderecosMapa($codMapa);
                 }
+            }else{
+                $this->view->error = "Endereço inválido";
+                $this->view->enderecos = $mapaSeparacaoRepo->findEnderecosMapa($codMapa);
             }
         } catch (\Exception $e) {
             $this->view->error = $e->getMessage();
@@ -1620,19 +1623,28 @@ class Mobile_ExpedicaoController extends Action {
     public function finalizaMapaAjaxAction(){
         $codMapa = $this->_getParam('codMapa');
         $codOs = $this->_getParam('codOs');
-
+        $idExpedicao = $this->_getParam('idExpedicao');
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-
         $idPessoa = (isset($idPessoa)) ? $idPessoa : \Zend_Auth::getInstance()->getIdentity()->getId();
 
-        $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $idPessoa, 'mapaSeparacao' => $mapaSeparacaoRepo->find($codMapa)));
-        $apontamentoMapaRepo->update($apontamentoMapaEn);
+        $apontamentoMapa = $apontamentoMapaRepo->findBy(array('mapaSeparacao' => $mapaSeparacaoRepo->find($codMapa)));
+        foreach ($apontamentoMapa as $apontamentoMapaEn){
+            $apontamentoMapaRepo->update($apontamentoMapaEn);
+        }
 
+        $whereOs = array(
+            'idExpedicao' => $idExpedicao,
+            'atividade' => AtividadeEntity::SEPARACAO,
+            'formaConferencia' => OrdemServicoEntity::COLETOR,
+        );
+        $Os = $ordemServicoRepo->findBy($whereOs);
+        foreach ($Os as $osEn){
+            $ordemServicoRepo->finalizar($osEn->getId(), 'Separação Coletor');
+        }
         $mapaSeparacaoRepo->finalizaMapaAjax($codMapa);
-        $ordemServicoRepo->finalizar($codOs, 'Separação Coletor');
-        $this->_redirect("mobile/expedicao/separacao-ajax");
+        $this->_helper->json(array('resposta' => 'success'));
     }
 
     public function getEmbalagemCodAjaxAction(){
