@@ -34,23 +34,32 @@ $.Controller.extend('Wms.Controllers.Produto',
             $('#produto-diasVidaUtilMaximo').parent().hide();
             $('#produto-diasVidaUtilMaximo').hide();
 
+            $('#produto-percentMinVidaUtil').parent().hide();
+            $('#produto-percentMinVidaUtil').hide();
+
             $('#produto-percTolerancia').parent().hide();
             $('#produto-percTolerancia').hide();
 
             $('#produto-toleranciaNominal').parent().hide();
             $('#produto-toleranciaNominal').hide();
 
+            $('#produto-diasVidaUtil').parent().append($('#produto-percentMinVidaUtil'));
+            $('#produto-diasVidaUtil').parent().append(' %');
             //oculta campo de dias para vencimento
             if ($('#produto-validade').val() == 'S') {
                 $('#produto-diasVidaUtil').show();
                 $('#produto-diasVidaUtil').parent().show();
                 $('#produto-diasVidaUtilMaximo').show();
                 $('#produto-diasVidaUtilMaximo').parent().show();
+                $('#produto-percentMinVidaUtil').show();
+                $('#produto-percentMinVidaUtil').parent().show();
             } else if ($('#produto-validade').val() == 'N') {
                 $('#produto-diasVidaUtil').hide();
                 $('#produto-diasVidaUtil').parent().hide();
                 $('#produto-diasVidaUtilMaximo').hide();
                 $('#produto-diasVidaUtilMaximo').parent().hide();
+                $('#produto-percentMinVidaUtil').hide();
+                $('#produto-percentMinVidaUtil').parent().hide();
             }
 
             if ($('#produto-pVariavel').val() == 'S') {
@@ -92,6 +101,11 @@ $.Controller.extend('Wms.Controllers.Produto',
             }
         },
 
+        '#produto-diasVidaUtilMaximo change' : function(e) {
+            var max = e.val();
+            Wms.Controllers.Produto.prototype.changePercent(max);
+        },
+
         '#produto-percTolerancia blur' : function() {
             var pesoTotal = parseFloat($("#produto-peso").val());
             var percTolerancia = parseFloat($("#produto-percTolerancia").val());
@@ -101,6 +115,9 @@ $.Controller.extend('Wms.Controllers.Produto',
         },
 
 
+        changePercent: function (max) {
+            alert(max);
+        },
         /**
          * Valida os formularios de cadastro das Embalagens e Volumes
          */
@@ -337,11 +354,15 @@ $.Controller.extend('Wms.Controllers.Produto',
                 $('#produto-diasVidaUtil').show();
                 $('#produto-diasVidaUtilMaximo').parent().show();
                 $('#produto-diasVidaUtilMaximo').show();
+                $('#produto-percentMinVidaUtil').parent().show();
+                $('#produto-percentMinVidaUtil').show();
             } else if ($('#produto-validade').val() == 'N') {
                 $('#produto-diasVidaUtil').parent().hide();
                 $('#produto-diasVidaUtil').hide();
                 $('#produto-diasVidaUtilMaximo').parent().hide();
                 $('#produto-diasVidaUtilMaximo').hide();
+                $('#produto-percentMinVidaUtil').parent().hide();
+                $('#produto-percentMinVidaUtil').hide();
             }
         },
 
