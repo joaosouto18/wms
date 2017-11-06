@@ -128,7 +128,7 @@ class Identificacao extends SubForm
                             'N' => 'N'
                         )))
                     ->addElement('text', 'diasVidaUtil', array(
-                        'label' => 'Prazo Mín. de Validade (dias)',
+                        'label' => 'Prazo Mín. de Validade Para Recebimento (dias)',
                         'size' => 15,
                         'maxlength' => 4
                     ))
@@ -141,7 +141,7 @@ class Identificacao extends SubForm
                     ->addElement('text', 'percentMinVidaUtil', array(
                         'label' => '       ',
                         'size' => 10,
-                        'maxlength' => 4
+                        'maxlength' => 6
                     ))
                     ->addDisplayGroup(
                         array('validade', 'diasVidaUtilMaximo', 'diasVidaUtil', 'percentMinVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
@@ -168,12 +168,11 @@ class Identificacao extends SubForm
             'idTipoComercializacao' => $produto->getTipoComercializacao()->getId(),
             'validade' => $produto->getValidade(),
             'diasVidaUtil' => $produto->getDiasVidaUtil(),
-            'diasVidaUtilMax' => $produto->getDiasVidaUtilMax(),
+            'diasVidaUtilMaximo' => $produto->getDiasVidaUtilMax(),
             'pVariavel' => $produto->getPossuiPesoVariavel(),
             'percTolerancia' => $produto->getPercTolerancia(),
             'toleranciaNominal' => $produto->getToleranciaNominal()
         );
-
         $this->setDefaults($values);
     }
 

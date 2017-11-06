@@ -45,6 +45,8 @@ $.Controller.extend('Wms.Controllers.Produto',
 
             $('#produto-diasVidaUtil').parent().append($('#produto-percentMinVidaUtil'));
             $('#produto-diasVidaUtil').parent().append(' %');
+
+            Wms.Controllers.Produto.prototype.changePercent($('#produto-diasVidaUtilMaximo').val(), $('#produto-diasVidaUtil').val());
             //oculta campo de dias para vencimento
             if ($('#produto-validade').val() == 'S') {
                 $('#produto-diasVidaUtil').show();
@@ -103,7 +105,19 @@ $.Controller.extend('Wms.Controllers.Produto',
 
         '#produto-diasVidaUtilMaximo change' : function(e) {
             var max = e.val();
-            Wms.Controllers.Produto.prototype.changePercent(max);
+            var min = $('#produto-diasVidaUtil').val();
+            Wms.Controllers.Produto.prototype.changePercent(max, min);
+        },
+
+        '#produto-diasVidaUtil change' : function(e) {
+            var max = $('#produto-diasVidaUtilMaximo').val();
+            var min = e.val();
+            Wms.Controllers.Produto.prototype.changePercent(max, min);
+        },
+
+        '#produto-percentMinVidaUtil change' : function(e) {
+            var total = ($('#produto-diasVidaUtilMaximo').val() * e.val().replace(',', '.')) / 100;
+            $('#produto-diasVidaUtil').val(Math.floor(total));
         },
 
         '#produto-percTolerancia blur' : function() {
@@ -115,8 +129,9 @@ $.Controller.extend('Wms.Controllers.Produto',
         },
 
 
-        changePercent: function (max) {
-            alert(max);
+        changePercent: function (max, min) {
+            var percentual = (min * 100) / max;
+            $('#produto-percentMinVidaUtil').val(percentual.toFixed(2).replace('.', ','));
         },
         /**
          * Valida os formularios de cadastro das Embalagens e Volumes

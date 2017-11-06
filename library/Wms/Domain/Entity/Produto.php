@@ -389,7 +389,7 @@ class Produto {
      */
     public function setDiasVidaUtilMax($diasVidaUtilMax) {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
-        $andamentoRepo->checksChange($this, 'Dias vida Util', $this->diasVidaUtilMax, $diasVidaUtilMax);
+        $andamentoRepo->checksChange($this, 'Dias vida Util Max', $this->diasVidaUtilMax, $diasVidaUtilMax);
         $this->diasVidaUtilMax = $diasVidaUtilMax;
         return $this;
     }
