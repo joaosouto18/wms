@@ -132,8 +132,7 @@ class EnderecoRepository extends EntityRepository
                                 COD_PRODUTO_VOLUME,
                                 COD_INVENTARIO_ENDERECO
                             ) M ON M.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO AND M.MAXC = ICE.NUM_CONTAGEM
-                            AND M.COD_PRODUTO = ICE.COD_PRODUTO
-                            AND M.DSC_GRADE = ICE.DSC_GRADE
+                            AND ((M.COD_PRODUTO = ICE.COD_PRODUTO AND M.DSC_GRADE = ICE.DSC_GRADE) OR (ICE.COD_PRODUTO IS NULL AND ICE.DSC_GRADE IS NULL))
                             AND NVL(M.COD_PRODUTO_VOLUME,0) = NVL(ICE.COD_PRODUTO_VOLUME,0)
                         GROUP BY 
                             ICE.DIVERGENCIA, 
