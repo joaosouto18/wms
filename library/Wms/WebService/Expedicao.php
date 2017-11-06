@@ -1061,7 +1061,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
     public function informarNotaFiscal ($nf)
     {
         try {
-            var_dump($nf); exit;
             $this->_em->beginTransaction();
             /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
             $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
@@ -1087,7 +1086,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
 
                 if ($nfEn != null) {
-                    return true;
+//                    return true;
                     //throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.', série '.$notaFiscal->serieNf.', emitente: ' . $pessoaEn->getNomeFantasia() . ', cnpj ' . $notaFiscal->cnpjEmitente . ' já existe no sistema!');
                 }
 
