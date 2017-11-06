@@ -31,6 +31,9 @@ $.Controller.extend('Wms.Controllers.Produto',
             $('#produto-diasVidaUtil').parent().hide();
             $('#produto-diasVidaUtil').hide();
 
+            $('#produto-diasVidaUtilMaximo').parent().hide();
+            $('#produto-diasVidaUtilMaximo').hide();
+
             $('#produto-percTolerancia').parent().hide();
             $('#produto-percTolerancia').hide();
 
@@ -41,9 +44,13 @@ $.Controller.extend('Wms.Controllers.Produto',
             if ($('#produto-validade').val() == 'S') {
                 $('#produto-diasVidaUtil').show();
                 $('#produto-diasVidaUtil').parent().show();
+                $('#produto-diasVidaUtilMaximo').show();
+                $('#produto-diasVidaUtilMaximo').parent().show();
             } else if ($('#produto-validade').val() == 'N') {
                 $('#produto-diasVidaUtil').hide();
                 $('#produto-diasVidaUtil').parent().hide();
+                $('#produto-diasVidaUtilMaximo').hide();
+                $('#produto-diasVidaUtilMaximo').parent().hide();
             }
 
             if ($('#produto-pVariavel').val() == 'S') {
@@ -328,9 +335,13 @@ $.Controller.extend('Wms.Controllers.Produto',
             if ($('#produto-validade').val() == 'S') {
                 $('#produto-diasVidaUtil').parent().show();
                 $('#produto-diasVidaUtil').show();
+                $('#produto-diasVidaUtilMaximo').parent().show();
+                $('#produto-diasVidaUtilMaximo').show();
             } else if ($('#produto-validade').val() == 'N') {
                 $('#produto-diasVidaUtil').parent().hide();
                 $('#produto-diasVidaUtil').hide();
+                $('#produto-diasVidaUtilMaximo').parent().hide();
+                $('#produto-diasVidaUtilMaximo').hide();
             }
         },
 

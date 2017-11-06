@@ -128,12 +128,17 @@ class Identificacao extends SubForm
                             'N' => 'N'
                         )))
                     ->addElement('text', 'diasVidaUtil', array(
-                        'label' => 'Dias para Vencimento',
+                        'label' => 'Prazo Mín. de Validade',
+                        'size' => 10,
+                        'maxlength' => 4
+                    ))
+                    ->addElement('text', 'diasVidaUtilMaximo', array(
+                        'label' => 'Prazo Máx. de Validade',
                         'size' => 10,
                         'maxlength' => 4
                     ))
                     ->addDisplayGroup(
-                        array('validade', 'diasVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
+                        array('validade', 'diasVidaUtil', 'diasVidaUtilMaximo'), 'validadeProdutos', array('legend' => 'Validade')
                     );
 
     }
