@@ -377,7 +377,7 @@ class ExpedicaoRepository extends EntityRepository {
                         $embalagem = array (
                             "embalagemEn" => $embalagemEn,
                             "pickingEn" => $pickingEn,
-                            "normaPD" => $normaPD
+                            "normaPD" => (!empty($normaPD))? $normaPD : 1
                         );
                     }
                 } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
@@ -407,7 +407,7 @@ class ExpedicaoRepository extends EntityRepository {
                             $volumes['normas'][$norma->getId()][] = array(
                                 'volumeEn' => $volume,
                                 'pickingEn' => $pickingEn,
-                                'normaPD' => $numNorma
+                                'normaPD' => (!empty($numNorma))? $numNorma : 1
                             );
                         }
                     }
