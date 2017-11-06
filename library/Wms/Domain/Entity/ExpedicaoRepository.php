@@ -620,7 +620,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $idExpedicao
      * @param $produtoEn Produto
      * @param $caracteristica
-     * @param $elementos
+     * @param $elementosArr
      * @param $pedidos
      * @param $quebra
      * @param int $criterio
@@ -709,7 +709,9 @@ class ExpedicaoRepository extends EntityRepository {
                                 $qtdReservar = $qtdEstoque;
                                 $zerouEstoque = true;
                             } else {
-                                if (Math::compare($qtdRestante, $normaPD, ">=") && Math::compare($normaPD, $qtdEstoque, "<")) {
+                                if (($quebra != $naoUsaPD) && !empty($normaPD)
+                                    && Math::compare($qtdRestante, $normaPD, ">=")
+                                    && Math::compare($normaPD, $qtdEstoque, "<")) {
                                     $restoNormaPedido = Math::resto($qtdRestante, $normaPD);
                                     $fatorNormaPedido = Math::dividir(Math::subtrair($qtdRestante, $restoNormaPedido), $normaPD);
                                     $xNorma = Math::multiplicar($fatorNormaPedido, $normaPD);
