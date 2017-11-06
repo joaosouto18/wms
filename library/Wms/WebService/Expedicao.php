@@ -1061,6 +1061,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     public function informarNotaFiscal ($nf)
     {
         try {
+            var_dump($nf); exit;
             $this->_em->beginTransaction();
             /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaAndamentoRepository $andamentoNFRepo */
             $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
