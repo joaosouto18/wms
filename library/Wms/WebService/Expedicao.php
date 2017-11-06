@@ -1169,7 +1169,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param string $cnpjEmitente
      * @param integer $numeroNf
      * @param string $serieNF
-     * @param integer $numeroCarga
+     * @param string $numeroCarga
      * @param string $tipoCarga
      * @return boolean Se as notas fiscais foram salvas com sucesso
      */
