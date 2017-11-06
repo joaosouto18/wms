@@ -1136,7 +1136,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => trim($itemNotaFiscal->grade)));
 
                     if ($produtoEn == null) {
-                        throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$itemNotaFiscal->grade.' não encontrado!');
+//                        throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$itemNotaFiscal->grade.' não encontrado!');
                     }
 
                     $itemNfEntity->setCodProduto($produtoEn->getId());
