@@ -867,11 +867,11 @@ class Integracao {
                     $nf->setNumNF($row['NUM_NOTA_FISCAL']);
                     $nf->setCodProduto($row['COD_PRODUTO']);
                     $nf->setSerieNF($row['COD_SERIE_NOTA_FISCAL']);
-                    $nf->setDthEmissao(\DateTime::createFromFormat('d/m/Y', $row['DAT_EMISSAO']));
+                    $nf->setDthEmissao(new \DateTime());
                     $nf->setVeiculo($row['DSC_PLACA_VEICULO']);
                     $nf->setQtdItem(str_replace(",", ".", $row['QTD_ITEM']));
                     $nf->setVlrTotal(str_replace(",", ".", $row['VALOR_TOTAL']));
-                    $nf->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
+                    $nf->setDth(new \DateTime());
                     $this->_em->persist($nf);
                     break;
                 case AcaoIntegracao::INTEGRACAO_PEDIDOS:
