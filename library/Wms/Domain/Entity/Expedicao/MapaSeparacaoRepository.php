@@ -1292,7 +1292,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                   INNER JOIN DEPOSITO_ENDERECO DE ON MPS.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                 WHERE COD_MAPA_SEPARACAO = $codMapaSeparacao  AND
                   (MPS.IND_SEPARADO = 'N' OR MPS.IND_SEPARADO IS NULL)
-                ORDER BY MPS.COD_MAPA_SEPARACAO_PRODUTO";
+                ORDER BY DE.DSC_DEPOSITO_ENDERECO";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         $return = array();
         foreach ($result as $value){
