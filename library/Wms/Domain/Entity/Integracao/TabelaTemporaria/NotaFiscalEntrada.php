@@ -2,6 +2,7 @@
 
 namespace Wms\Domain\Entity\Integracao\TabelaTemporaria;
 
+use Wms\Configuration\Date;
 use Wms\Domain\Configurator;
 
 /**
@@ -60,7 +61,7 @@ class NotaFiscalEntrada
     protected $serieNF;
 
     /**
-     * @var \DateTime
+     * @var date $dthEmissao
      * @Column(name="DAT_EMISSAO", type="datetime", nullable=true)
      */
     protected $dthEmissao;
@@ -81,7 +82,7 @@ class NotaFiscalEntrada
     protected $vlrTotal;
 
     /**
-     * @var \DateTime
+     * @var date $dth
      * @Column(name="DTH", type="datetime", nullable=true)
      */
     protected $dth;
@@ -119,23 +120,15 @@ class NotaFiscalEntrada
     }
 
     /**
-     * @param \DateTime $dth
+     * @return mixed
      */
-    public function setDth($dth)
+    public function getDthEmissao()
     {
-        $this->dth = $dth;
+        return $this->dthEmissao;
     }
 
     /**
-     * @return \DateTime
-     */
-    public function getDth()
-    {
-        return $this->dth;
-    }
-
-    /**
-     * @param \DateTime $dthEmissao
+     * @param mixed $dthEmissao
      */
     public function setDthEmissao($dthEmissao)
     {
@@ -143,11 +136,19 @@ class NotaFiscalEntrada
     }
 
     /**
-     * @return \DateTime
+     * @return Date
      */
-    public function getDthEmissao()
+    public function getDth()
     {
-        return $this->dthEmissao;
+        return $this->dth;
+    }
+
+    /**
+     * @param Date $dth
+     */
+    public function setDth($dth)
+    {
+        $this->dth = $dth;
     }
 
     /**
