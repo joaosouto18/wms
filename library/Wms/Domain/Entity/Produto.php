@@ -151,6 +151,12 @@ class Produto {
      */
     protected $possuiPesoVariavel;
 
+    /**
+     * @var
+     * @Column
+     */
+    protected $unidadeFracionavel;
+
     public function __construct() {
         $this->volumes = new ArrayCollection;
         $this->embalagens = new ArrayCollection;
