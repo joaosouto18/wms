@@ -11,7 +11,7 @@ if (count($this->produtos) > 0):
     <form id="formGerarRecebmento" action="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>" method="post">
         <div class="gControl">
             <div class="gPager" style="width: 100%">
-                <input type="submit" name="submit" class="btn" style="float:right" title="Endereça no picking até o limite" value="Endereçar no Picking" />
+                <input type="submit" name="submit" class="btn" style="float:right" title="Endereça no picking até o limite" value="Endereçar Todos no Picking" />
                 <span>Total de <?php echo count($this->produtos) ?> registros encontrados.</span>
                 <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
             </div>
@@ -41,6 +41,7 @@ if (count($this->produtos) > 0):
                                     <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>">Endereçar Paletes</a></li>
                                     <li><a href="/enderecamento/produto/list/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>" class="inside-modal">Andamento</a></li>
                                     <li><a href="/enderecamento/produto/alterar-norma/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>" class="inside-modal">Alterar Norma de Paletização</a></li>
+                                    <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>/produtos/true">Endereçar Paletes no Picking</a></li>
                                     <?php if ($this->recebimento->getStatus()->getSigla() == 'DESFEITO' || $this->recebimento->getStatus()->getSigla() == 'CANCELADO') : ?>
                                         <li><a href="/enderecamento/palete/trocar/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>" target="_blank">Trocar U.M.As</a></li>
                                     <?php endif; ?>
