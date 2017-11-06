@@ -1280,7 +1280,7 @@ class MapaSeparacaoRepository extends EntityRepository {
     }
 
     public function findMapasSeparar(){
-        $sql = "SELECT * FROM MAPA_SEPARACAO WHERE COD_STATUS = 523";
+        $sql = "SELECT * FROM MAPA_SEPARACAO WHERE COD_STATUS = 523 ORDER BY COD_MAPA_SEPARACAO";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
