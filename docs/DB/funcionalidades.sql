@@ -241,7 +241,8 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (241, '6.5.0', 'Inclusão controle para validar produtos sem capacidade de picking definida', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (242, '6.5.0', 'Alteração regra do pulmão doca para reservar fator da norma em blocado', null,SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (243, '6.5.0', 'Alteração WebService de Nota Fiscal definindo valor default 0 para salvar código de série', null,SYSDATE);
-
-
-
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.x.x', 'Correção: Listagem de volumes embalados exibindo todos os volumes da expedição', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.x.x', 'Correção: Ajustes para não perder estoque quando houver 2 movimentações de produto/endereço simultâneas', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.x.x', 'Melhoria: Criado botão para endereçar no picking até completar, consequentemente endereçar no pulmão', null,SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.x.x', 'Correção: Alteração de nome de triggers de TR_NF_ENTRADA para TR_NOTA_FISCAL_ENTRADA', null,SYSDATE);
 
