@@ -52,6 +52,10 @@ class Mapas extends Grid
                     'label' => '% Conferencia',
                     'index' => 'PERCENTUAL',
                 ))
+                ->addColumn(array(
+                    'label' => '% Separação',
+                    'index' => 'PERCENTUAL_SEPARACAO',
+                ))
                 ->addAction(array(
                     'label'=>'Visualizar produtos',
                     'moduleName'=>'expedicao',

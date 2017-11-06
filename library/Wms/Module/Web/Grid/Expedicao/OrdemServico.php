@@ -71,6 +71,14 @@ class OrdemServico extends Grid
                     'pkIndex' => 'OS'
                 ))
                 ->addAction(array(
+                    'label' => 'Visualizar Separação',
+                    'moduleName' => 'expedicao',
+                    'controllerName' => 'os',
+                    'actionName' => 'view-separacao-ajax',
+                    'cssClass' => 'dialogAjax',
+                    'pkIndex' => 'OS'
+                ))
+                ->addAction(array(
                     'label' => 'Visualizar Conferencia de Transbordo',
                     'moduleName' => 'expedicao',
                     'controllerName' => 'os',
@@ -129,6 +137,14 @@ class OrdemServico extends Grid
                     'moduleName' => 'expedicao',
                     'controllerName' => 'os',
                     'actionName' => 'conferencia-transbordo',
+                    'cssClass' => 'dialogAjax',
+                    'pkIndex' => 'id'
+                ))
+                ->addAction(array(
+                    'label' => 'Visualizar Separação',
+                    'moduleName' => 'expedicao',
+                    'controllerName' => 'os',
+                    'actionName' => 'view-separacao-ajax',
                     'cssClass' => 'dialogAjax',
                     'pkIndex' => 'id'
                 ))

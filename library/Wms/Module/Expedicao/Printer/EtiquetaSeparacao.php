@@ -849,6 +849,7 @@ class EtiquetaSeparacao extends Pdf
         if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
 
         $this->AddPage();
+
         $yImage = 33;
 
         $this->total = $countEtiquetas;
@@ -877,7 +878,6 @@ class EtiquetaSeparacao extends Pdf
         $this->SetFont('Arial', 'B', 9);
         $impressao  = utf8_decode("\n\nPEDIDO:$etiqueta[pedido] - $etiqueta[placaExpedicao]\n");
         $this->MultiCell(100, 2, $impressao, 0, 'L');
-
 
         $this->SetFont('Arial', 'B', 9);
         $impressao = "CODIGO:$etiqueta[codProduto] - EXP:$etiqueta[codExpedicao] \n";

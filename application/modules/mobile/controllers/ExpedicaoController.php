@@ -4,6 +4,9 @@ use Wms\Controller\Action,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao,
     Wms\Module\Mobile\Form\SenhaLiberacao,
     Wms\Util\Coletor as ColetorUtil,
+    \Wms\Util\Endereco as EnderecoUtil,
+    Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
+    Wms\Domain\Entity\Atividade as AtividadeEntity,
     Wms\Domain\Entity\Expedicao;
 
 class Mobile_ExpedicaoController extends Action {
@@ -1533,6 +1536,122 @@ class Mobile_ExpedicaoController extends Action {
                 throw new \Exception($e->getMessage());
             }
         }
+    }
+
+    public function separacaoAjaxAction(){
+        $mapa = $this->_getParam('mapa');
+        $idExpedicao = $this->_getParam('expedicao');
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        if(empty($mapa)) {
+            $this->view->mapas = $mapaSeparacaoRepo->findMapasSeparar();
+            $this->view->mapa = null;
+        }else {
+            $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
+            $idPessoa = (isset($idPessoa)) ? $idPessoa : \Zend_Auth::getInstance()->getIdentity()->getId();
+            $osEn = $ordemServicoRepo->findOneBy(array('atividade' => AtividadeEntity::SEPARACAO, 'formaConferencia' => OrdemServicoEntity::COLETOR,
+                'expedicao' => $idExpedicao, 'pessoa' => $idPessoa, 'dataFinal' => null));
+            if (empty($osEn)) {
+                $codOs = $ordemServicoRepo->save(new OrdemServicoEntity, array(
+                    'identificacao' => array(
+                        'tipoOrdem' => 'expedicao',
+                        'idExpedicao' => $idExpedicao,
+                        'idAtividade' => AtividadeEntity::SEPARACAO,
+                        'formaConferencia' => OrdemServicoEntity::COLETOR,
+                    ),
+                ), true, "Id");
+                $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+                $apontamentoMapaRepo->save($mapaSeparacaoRepo->find($mapa), $idPessoa);
+                $this->view->codOs = $codOs;
+            }else{
+                $this->view->codOs = $osEn->getId();
+            }
+            $this->view->mapa = $mapa;
+            $this->view->idExpedicao = $idExpedicao;
+            $this->view->enderecos = $mapaSeparacaoRepo->findEnderecosMapa($mapa);
+        }
+    }
+
+    public function getProdutosEndAjaxAction() {
+        $codigoBarras = $this->_getParam('codigoBarras');
+        $codMapa = $this->_getParam('codMapa');
+        $this->view->idExpedicao = $this->_getParam('idExpedicao');
+        $this->view->codOs = $this->_getParam('codOs');
+        $this->view->mapa = $codMapa;
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        try{
+            if (!empty($codigoBarras)) {
+                $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarras);
+                $endereco = EnderecoUtil::formatar($codigoBarras);
+                $this->view->endereco = $endereco;
+                $produtos = $mapaSeparacaoRepo->getProdutosMapaEndereco($endereco, $codMapa);
+                if (!empty($produtos)) {
+                    $this->view->produtos = $produtos;
+                    $this->view->codDepositoEndereco = $produtos[0]['COD_DEPOSITO_ENDERECO'];
+                }else{
+                    $this->view->error = "Endereço já conferido ou não pertence ao mapa";
+                    $this->view->enderecos = $mapaSeparacaoRepo->findEnderecosMapa($codMapa);
+                }
+            }else{
+                $this->view->error = "Endereço inválido";
+                $this->view->enderecos = $mapaSeparacaoRepo->findEnderecosMapa($codMapa);
+            }
+        } catch (\Exception $e) {
+            $this->view->error = $e->getMessage();
+            $this->view->enderecos = $mapaSeparacaoRepo->findEnderecosMapa($codMapa);
+        }
+    }
+
+    public function separaProdutoAjaxAction(){
+        $codigoBarras = $this->_getParam('codigoBarrasProd');
+        $codMapaSeparacao = $this->_getParam('codMapaSeparacao');
+        $codOs = $this->_getParam('codOs');
+        $endereco = $this->_getParam('endereco');
+        $codDepositoEndereco = $this->_getParam('codDepositoEndereco');
+        $qtdSeparar = $this->_getParam('qtdSeparar');
+        $this->view->idExpedicao = $this->_getParam('idExpedicao');
+        $this->view->codMapa = $codMapaSeparacao;
+        try{
+            $separacaomapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\SeparacaoMapaSeparacao');
+            $separacaomapaSeparacaoRepo->separaProduto($codigoBarras, $codMapaSeparacao, $codOs, $codDepositoEndereco, $qtdSeparar);
+        } catch (\Exception $e) {
+            $this->view->error = $e->getMessage();
+        }
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        $this->view->produtos = $mapaSeparacaoRepo->getProdutosMapaEndereco($endereco, $codMapaSeparacao);
+    }
+
+    public function finalizaMapaAjaxAction(){
+        $codMapa = $this->_getParam('codMapa');
+        $codOs = $this->_getParam('codOs');
+        $idExpedicao = $this->_getParam('idExpedicao');
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
+        $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+        $idPessoa = (isset($idPessoa)) ? $idPessoa : \Zend_Auth::getInstance()->getIdentity()->getId();
+
+        $apontamentoMapa = $apontamentoMapaRepo->findBy(array('mapaSeparacao' => $mapaSeparacaoRepo->find($codMapa)));
+        foreach ($apontamentoMapa as $apontamentoMapaEn){
+            $apontamentoMapaRepo->update($apontamentoMapaEn);
+        }
+
+        $whereOs = array(
+            'idExpedicao' => $idExpedicao,
+            'atividade' => AtividadeEntity::SEPARACAO,
+            'formaConferencia' => OrdemServicoEntity::COLETOR,
+        );
+        $Os = $ordemServicoRepo->findBy($whereOs);
+        foreach ($Os as $osEn){
+            $ordemServicoRepo->finalizar($osEn->getId(), 'Separação Coletor');
+        }
+        $mapaSeparacaoRepo->finalizaMapaAjax($codMapa);
+        $this->_helper->json(array('resposta' => 'success'));
+    }
+
+    public function getEmbalagemCodAjaxAction(){
+        $codigoBarrasProd = $this->_getParam('codigoBarrasProd');
+        $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
+        $info = $produtoRepo->getEmbalagemByCodBarras($codigoBarrasProd);
+        $this->_helper->json(array('resposta' => 'success', 'dados' => $info[0]));
     }
 
 }
