@@ -440,8 +440,8 @@ class ExpedicaoRepository extends EntityRepository {
 
         $whereCargas = null;
         if (!is_null($cargas) && is_array($cargas)) {
-            $cargas = implode("','", $cargas);
-            $whereCargas = " AND c.codCargaExterno in ('".$cargas."') ";
+            $cargas = "'".implode("','", $cargas)."'";
+            $whereCargas = " AND c.codCargaExterno in ($cargas) ";
         } else if (!is_null($cargas)) {
             $whereCargas = " AND c.codCargaExterno = '$cargas' ";
         }
