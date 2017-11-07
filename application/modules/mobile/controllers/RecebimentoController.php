@@ -225,11 +225,14 @@ class Mobile_RecebimentoController extends Action
                 }
 
                 $shelfLife = $produtoEn->getDiasVidaUtil();
+                $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
+                var_dump($shelfLifeMax);
                 if (is_null($shelfLife) || $shelfLife == '')
                     throw new Exception("O parametro 'Dias de vencimento' do produto " . $produtoEn->getId() . " está vazio.");
 
                 $hoje = new Zend_Date;
                 $PeriodoUtil = $hoje->addDay($shelfLife);
+                $PeriodoUtilMax = $hoje->addDay($shelfLifeMax);
 
                 $data = null;
                 if (strlen($params['dataValidade']) >= 8) {
@@ -245,7 +248,10 @@ class Mobile_RecebimentoController extends Action
                 }
 
                 $objData = new Zend_Date($data);
-                if ($objData <= $PeriodoUtil) {
+                if ($objData <= $PeriodoUtil || $objData > $PeriodoUtilMax) {
+                    if($objData > $PeriodoUtilMax){
+                        throw new \Exception('Data de validade maior que a definida no cadastro.');
+                    }
                     //autoriza recebimento?
                     $arrayRedirect = array(
                         'idRecebimento' => $idRecebimento,

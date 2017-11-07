@@ -55,6 +55,8 @@ $.Controller.extend('Wms.Controllers.Produto',
                 $('#produto-diasVidaUtilMaximo').parent().show();
                 $('#produto-percentMinVidaUtil').show();
                 $('#produto-percentMinVidaUtil').parent().show();
+                $('#produto-diasVidaUtilMaximo').addClass('required');
+                $('#produto-diasVidaUtil').addClass('required');
             } else if ($('#produto-validade').val() == 'N') {
                 $('#produto-diasVidaUtil').hide();
                 $('#produto-diasVidaUtil').parent().hide();
@@ -84,6 +86,10 @@ $.Controller.extend('Wms.Controllers.Produto',
                 ///checa embalagem e volume
                 if(!Wms.Controllers.Produto.prototype.verificarEmbalagemVolume())
                     return false;
+
+                if(!Wms.Controllers.Produto.prototype.verificarValidade())
+                    return false;
+
 
                 $('.saveForm').submit();
             });
@@ -129,10 +135,27 @@ $.Controller.extend('Wms.Controllers.Produto',
         },
 
 
-        changePercent: function (max, min) {
-            var percentual = (min * 100) / max;
-            $('#produto-percentMinVidaUtil').val(percentual.toFixed(2).replace('.', ','));
+        verificarValidade: function (max, min) {
+            if ($('#produto-validade').val() == 'S') {
+                if($('#produto-diasVidaUtil').val() == '' || $('#produto-diasVidaUtilMaximo').val() == ''){
+                    this.dialogAlert('Preencha os campos relacionados a validade.');
+                    $('#produto-diasVidaUtilMaximo').focus();
+                    return false;
+                }else{
+                    return true
+                }
+            }else{
+                return true
+            }
         },
+
+        changePercent: function (max, min) {
+            if(min != '' && max != '' && min > 0 && max > 0) {
+                var percentual = (min * 100) / max;
+                $('#produto-percentMinVidaUtil').val(percentual.toFixed(2).replace('.', ','));
+            }
+        },
+
         /**
          * Valida os formularios de cadastro das Embalagens e Volumes
          */
@@ -369,6 +392,8 @@ $.Controller.extend('Wms.Controllers.Produto',
                 $('#produto-diasVidaUtil').show();
                 $('#produto-diasVidaUtilMaximo').parent().show();
                 $('#produto-diasVidaUtilMaximo').show();
+                $('#produto-diasVidaUtilMaximo').addClass('required');
+                $('#produto-diasVidaUtil').addClass('required');
                 $('#produto-percentMinVidaUtil').parent().show();
                 $('#produto-percentMinVidaUtil').show();
             } else if ($('#produto-validade').val() == 'N') {
