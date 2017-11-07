@@ -620,7 +620,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $idExpedicao
      * @param $produtoEn Produto
      * @param $caracteristica
-     * @param $elementos
+     * @param $elementosArr
      * @param $pedidos
      * @param $quebra
      * @param int $criterio
@@ -709,7 +709,9 @@ class ExpedicaoRepository extends EntityRepository {
                                 $qtdReservar = $qtdEstoque;
                                 $zerouEstoque = true;
                             } else {
-                                if (Math::compare($qtdRestante, $normaPD, ">=") && Math::compare($normaPD, $qtdEstoque, "<")) {
+                                if (($quebra != $naoUsaPD) && !empty($normaPD)
+                                    && Math::compare($qtdRestante, $normaPD, ">=")
+                                    && Math::compare($normaPD, $qtdEstoque, "<")) {
                                     $restoNormaPedido = Math::resto($qtdRestante, $normaPD);
                                     $fatorNormaPedido = Math::dividir(Math::subtrair($qtdRestante, $restoNormaPedido), $normaPD);
                                     $xNorma = Math::multiplicar($fatorNormaPedido, $normaPD);
@@ -975,7 +977,7 @@ class ExpedicaoRepository extends EntityRepository {
             $cargas = implode(',', $cargas);
             $whereCargas = " AND c.codCargaExterno in ($cargas) ";
         } else if (!is_null($cargas)) {
-            $whereCargas = " AND c.codCargaExterno = $cargas ";
+            $whereCargas = " AND c.codCargaExterno = '$cargas' ";
         }
 
         $query = "SELECT pp
@@ -1979,12 +1981,13 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
-            $where = " AND CA.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
-            $whereSubQuery = " C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
+            $codCarga = $parametros['codCargaExterno'];
+            $where = " AND CA.COD_CARGA_EXTERNO = '$codCarga'";
+            $whereSubQuery = " C.COD_CARGA_EXTERNO = '$codCarga'";
             $and = " and ";
             $andSub = " and ";
-            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "))";
-            $WhereCarga .= " AND  (COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . ")";
+            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = '$codCarga'))";
+            $WhereCarga .= " AND  (COD_CARGA_EXTERNO = '$codCarga')";
         }
 
         $JoinExpedicao = "";

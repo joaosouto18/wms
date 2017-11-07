@@ -24,6 +24,8 @@ class Produtos extends Grid
                 ->setId('enderecamento-produtos-grid')
                 ->setAttrib('caption', 'Produtos para Endereçar')
                 ->setAttrib('class', 'grid-enderecamento')
+                ->setShowExport(false)
+                ->addMassAction('index/relatorio','Movimentações no Estoque (xls)')
                 ->addColumn(array(
                     'label'  => 'Código',
                     'index'  => 'codigo',

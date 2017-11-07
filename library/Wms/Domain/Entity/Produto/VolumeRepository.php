@@ -187,4 +187,15 @@ class VolumeRepository extends EntityRepository
         }
         return array($status, $msg);
     }
+
+    public function getVolumeByCodigo($codigo) {
+        $dql = $this->_em->createQueryBuilder()
+            ->select('pv.id')
+            ->from('wms:Produto\Volume', 'pv')
+            ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = pv.codProduto AND p.grade = pv.grade')
+            ->where("pv.codProduto = '$codigo'")
+            ->orWhere("pv.codigoBarras = '$codigo'");
+
+        return $dql->getQuery()->getResult();
+    }
 }

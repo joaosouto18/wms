@@ -44,11 +44,15 @@ class MapaSeparacaoRepository extends EntityRepository {
                        SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) as QTD_SEPARAR,
                        SUM(MSP.QTD_CORTADO) as QTD_CORTADO,
                        NVL(CONF.QTD_CONFERIDA,0) as QTD_CONFERIDA,
+                       NVL(SMS.TOTAL_SEPARADO,0) as QTD_SEPARADA,
                        CASE WHEN (MSP.IND_CONFERIDO = 'S') AND ((CONF.QTD_CONFERIDA <> 0 AND (CONF.QTD_CONFERIDA + SUM(MSP.QTD_CORTADO)) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR)) OR (CONF.QTD_CONFERIDA <> 0 AND (CONF.QTD_CONFERIDA = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR)))) THEN 'CONFERIDO'
                             WHEN (SUM(MSP.QTD_CORTADO) = SUM(MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR)) THEN 'CORTADO'
                             ELSE 'PENDENTE'
                        END AS CONFERIDO
                   FROM MAPA_SEPARACAO_PRODUTO MSP
+                  LEFT JOIN (SELECT SUM(QTD_SEPARADA * QTD_EMBALAGEM) AS TOTAL_SEPARADO, COD_PRODUTO, DSC_GRADE, COD_MAPA_SEPARACAO
+                            FROM  SEPARACAO_MAPA_SEPARACAO  GROUP BY COD_PRODUTO, DSC_GRADE, COD_MAPA_SEPARACAO) SMS ON SMS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO AND
+                            SMS.COD_PRODUTO = MSP.COD_PRODUTO AND SMS.DSC_GRADE = MSP.DSC_GRADE
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = MSP.COD_PRODUTO AND P.DSC_GRADE = MSP.DSC_GRADE
                   LEFT JOIN (SELECT MSC.NUM_CONFERENCIA, MSC.COD_PRODUTO, MSC.DSC_GRADE, MSC.COD_MAPA_SEPARACAO, SUM (MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA) as QTD_CONFERIDA
                                FROM MAPA_SEPARACAO_CONFERENCIA MSC
@@ -70,7 +74,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                         MSP.COD_MAPA_SEPARACAO,
                        CONF.NUM_CONFERENCIA,
                        CONF.QTD_CONFERIDA,
-                        MSP.IND_CONFERIDO
+                        MSP.IND_CONFERIDO,
+                        TOTAL_SEPARADO
                  ORDER BY P.DSC_PRODUTO,
                         P.DSC_GRADE
                           ";
@@ -90,6 +95,10 @@ class MapaSeparacaoRepository extends EntityRepository {
                     $vetConferida = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_CONFERIDA']);
                     $result[$key]['QTD_CONFERIDA'] = implode('<br />', $vetConferida);
                 }
+                if ($value['QTD_SEPARADA'] > 0) {
+                    $vetConferida = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_SEPARADA']);
+                    $result[$key]['QTD_SEPARADA'] = implode('<br />', $vetConferida);
+                }
             }
         }
         return $result;
@@ -98,6 +107,7 @@ class MapaSeparacaoRepository extends EntityRepository {
     public function getResumoConferenciaMapaByExpedicao($idExpedicao) {
         $SQL = "SELECT MS.COD_MAPA_SEPARACAO, MS.DTH_CRIACAO, TRIM(MS.DSC_QUEBRA) as QUEBRA, MSP.QTD_SEPARAR as QTD_TOTAL, NVL(MSC.QTD_CONF,0) as QTD_CONF,
                      CAST((MSC.QTD_CONF/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL,
+                     CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL_SEPARACAO,
                      MS.COD_EXPEDICAO
                 FROM MAPA_SEPARACAO MS
                 LEFT JOIN (SELECT MSP.COD_MAPA_SEPARACAO, SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM)- MSP.QTD_CORTADO) as QTD_SEPARAR
@@ -106,6 +116,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                             GROUP BY MSP.COD_MAPA_SEPARACAO) MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                 LEFT JOIN (SELECT COD_MAPA_SEPARACAO, SUM(QTD_CONFERIDA * QTD_EMBALAGEM) AS QTD_CONF
                              FROM MAPA_SEPARACAO_CONFERENCIA GROUP BY COD_MAPA_SEPARACAO) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                 LEFT JOIN (SELECT SUM(QTD_SEPARADA * QTD_EMBALAGEM) AS TOTAL_SEPARADO, COD_PRODUTO, DSC_GRADE, COD_MAPA_SEPARACAO
+                            FROM  SEPARACAO_MAPA_SEPARACAO  GROUP BY COD_PRODUTO, DSC_GRADE, COD_MAPA_SEPARACAO) SMS ON SMS.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                 WHERE MS.COD_EXPEDICAO = $idExpedicao
                 ORDER BY MS.COD_MAPA_SEPARACAO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -217,6 +229,13 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         $this->getEntityManager()->flush();
         return 0;
+    }
+
+    public function finalizaMapaAjax($codMapa){
+        $mapaEn = $this->find($codMapa);
+        $mapaEn->setCodStatus(Etiqueta::STATUS_SEPARADO);
+        $this->getEntityManager()->persist($mapaEn);
+        $this->getEntityManager()->flush();
     }
 
     private function fechaConferencia($expedicaoEn, $idMapa = null) {
@@ -362,7 +381,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         $SQL = "SELECT *
                   FROM PEDIDO_PRODUTO PP
                  INNER JOIN MAPA_SEPARACAO_PEDIDO MSP ON MSP.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
-                 WHERE PP.COD_PEDIDO = $pedido
+                 WHERE PP.COD_PEDIDO = '$pedido'
                    AND PP.QUANTIDADE <> NVL(PP.QTD_CORTADA,0)
         ";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -1258,5 +1277,83 @@ class MapaSeparacaoRepository extends EntityRepository {
         }
 
         return $qtdConferenciaGravar;
+    }
+
+    public function findMapasSeparar(){
+        $sql = "SELECT * FROM MAPA_SEPARACAO WHERE COD_STATUS = 523 ORDER BY COD_MAPA_SEPARACAO";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function findEnderecosMapa($codMapaSeparacao){
+        $sql = "SELECT 
+                  DISTINCT(MPS.COD_DEPOSITO_ENDERECO), DE.DSC_DEPOSITO_ENDERECO, MPS.COD_MAPA_SEPARACAO_PRODUTO
+                FROM 
+                  MAPA_SEPARACAO_PRODUTO MPS
+                  INNER JOIN DEPOSITO_ENDERECO DE ON MPS.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                WHERE COD_MAPA_SEPARACAO = $codMapaSeparacao  AND
+                  (MPS.IND_SEPARADO = 'N' OR MPS.IND_SEPARADO IS NULL)
+                ORDER BY DE.DSC_DEPOSITO_ENDERECO";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $return = array();
+        foreach ($result as $value){
+            $return[$value['DSC_DEPOSITO_ENDERECO']]['DSC_DEPOSITO_ENDERECO'] = $value['DSC_DEPOSITO_ENDERECO'];
+            $return[$value['DSC_DEPOSITO_ENDERECO']]['COD_DEPOSITO_ENDERECO'] = $value['COD_DEPOSITO_ENDERECO'];
+        }
+        return $return;
+    }
+
+    public function getProdutosMapaEndereco($endereco, $codMapa){
+        $sql = "SELECT
+                    SUM(NVL((((MPS.QTD_SEPARAR - MPS.QTD_CORTADO) * MPS.QTD_EMBALAGEM) - SMS.TOTAL),(MPS.QTD_SEPARAR - MPS.QTD_CORTADO)  * MPS.QTD_EMBALAGEM))  AS SEPARAR,
+                    P.DSC_GRADE,
+                    P.COD_PRODUTO,
+                    P.DSC_PRODUTO,
+                    PV.DSC_VOLUME,
+                    DE.DSC_DEPOSITO_ENDERECO,
+                    MPS.COD_DEPOSITO_ENDERECO
+                FROM 
+                  MAPA_SEPARACAO_PRODUTO MPS
+                  INNER JOIN DEPOSITO_ENDERECO DE ON MPS.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                  INNER JOIN PRODUTO P ON (P.COD_PRODUTO = MPS.COD_PRODUTO AND P.DSC_GRADE = MPS.DSC_GRADE)
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON (PE.COD_PRODUTO_EMBALAGEM = MPS.COD_PRODUTO_EMBALAGEM)
+                  LEFT JOIN PRODUTO_VOLUME PV ON (PV.COD_PRODUTO_VOLUME = MPS.COD_PRODUTO_VOLUME)
+                  LEFT JOIN (SELECT SUM(QTD_SEPARADA * QTD_EMBALAGEM) AS TOTAL, COD_PRODUTO, DSC_GRADE, COD_MAPA_SEPARACAO, COD_PRODUTO_EMBALAGEM
+                            FROM  SEPARACAO_MAPA_SEPARACAO  GROUP BY COD_PRODUTO, DSC_GRADE, COD_MAPA_SEPARACAO, COD_PRODUTO_EMBALAGEM) 
+                SMS ON (SMS.COD_PRODUTO = MPS.COD_PRODUTO AND 
+                SMS.DSC_GRADE = MPS.DSC_GRADE AND
+                MPS.COD_MAPA_SEPARACAO = SMS.COD_MAPA_SEPARACAO AND MPS.COD_PRODUTO_EMBALAGEM = SMS.COD_PRODUTO_EMBALAGEM)
+                WHERE 
+                  DE.DSC_DEPOSITO_ENDERECO = '$endereco' AND 
+                  MPS.COD_MAPA_SEPARACAO = $codMapa AND
+                  (MPS.IND_SEPARADO = 'N' OR MPS.IND_SEPARADO IS NULL)
+                GROUP BY 
+                    P.DSC_GRADE,
+                    P.COD_PRODUTO,
+                    P.DSC_PRODUTO,
+                    PV.DSC_VOLUME,
+                    DE.DSC_DEPOSITO_ENDERECO,
+                    MPS.COD_DEPOSITO_ENDERECO";
+        $result =  $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $return = array();
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        $keyEmb = 0;
+        foreach ($result as $key => $value){
+            if ($value['SEPARAR'] > 0) {
+                $embalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['SEPARAR'], 1);
+                foreach ($embalagens as $emb){
+                    $return[$keyEmb]['DSC_GRADE'] = $value['DSC_GRADE'];
+                    $return[$keyEmb]['COD_PRODUTO'] = $value['COD_PRODUTO'];
+                    $return[$keyEmb]['DSC_PRODUTO'] = $value['DSC_PRODUTO'];
+                    $return[$keyEmb]['DSC_VOLUME'] = $value['DSC_VOLUME'];
+                    $return[$keyEmb]['DSC_DEPOSITO_ENDERECO'] = $value['DSC_DEPOSITO_ENDERECO'];
+                    $return[$keyEmb]['COD_DEPOSITO_ENDERECO'] = $value['COD_DEPOSITO_ENDERECO'];
+                    $return[$keyEmb]['SEPARAR'] = $emb['qtd'];
+                    $return[$keyEmb]['QTD_EMBALAGEM'] = $emb['qtdEmbalagem'];
+                    $return[$keyEmb]['DSC_EMBALAGEM'] = $emb['dsc'].' ( '.$emb['qtdEmbalagem'].' )';
+                    $keyEmb++;
+                }
+            }
+        }
+        return $return;
     }
 }

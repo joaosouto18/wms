@@ -109,7 +109,7 @@ class PedidoRepository extends EntityRepository
                         INNER JOIN pp.produto p
                         INNER JOIN pp.pedido ped
                         INNER JOIN ped.carga c
-                        WHERE ped.id = $idPedido
+                        WHERE ped.id = '$idPedido'
                         AND ped.id NOT IN (
                           SELECT pp2.codPedido
                             FROM wms:Expedicao\EtiquetaSeparacao ep
@@ -202,15 +202,17 @@ class PedidoRepository extends EntityRepository
             $EtiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
             $etiquetas = $EtiquetaSeparacaoRepo->getEtiquetasByPedido($idPedido);
 
-            foreach ($etiquetas as $etiqueta){
-                /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetaEn */
-                $etiquetaEn = $EtiquetaSeparacaoRepo->find($etiqueta['codBarras']);
+            if (isset($etiquetas) && !empty($etiquetas)) {
+                foreach ($etiquetas as $etiqueta) {
+                    /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetaEn */
+                    $etiquetaEn = $EtiquetaSeparacaoRepo->find($etiqueta['codBarras']);
 
-                if ($etiquetaEn->getCodStatus() <> EtiquetaSeparacao::STATUS_CORTADO) {
-                    if ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO) {
-                        $this->_em->remove($etiquetaEn);
-                    } else {
-                        $EtiquetaSeparacaoRepo->alteraStatus($etiquetaEn, EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+                    if ($etiquetaEn->getCodStatus() <> EtiquetaSeparacao::STATUS_CORTADO) {
+                        if ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO) {
+                            $this->_em->remove($etiquetaEn);
+                        } else {
+                            $EtiquetaSeparacaoRepo->alteraStatus($etiquetaEn, EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+                        }
                     }
                 }
             }
@@ -236,7 +238,7 @@ class PedidoRepository extends EntityRepository
         $SQL = "SELECT *
                   FROM MAPA_SEPARACAO_PEDIDO MSP
                   LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
-                 WHERE PP.COD_PEDIDO = " . $idPedido . "
+                 WHERE PP.COD_PEDIDO = '$idPedido'
                    AND PP.QUANTIDADE = NVL(PP.QTD_CORTADA,0) ";
         $countMapas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -505,6 +507,9 @@ class PedidoRepository extends EntityRepository
         $PedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
 
         $pedidoEn = $PedidoRepo->find($idPedido);
+        if (!isset($pedidoEn)) {
+            throw new \Exception("Pedido não encontrado no WMS");
+        }
         $idExpedicao = $pedidoEn->getCarga()->getExpedicao()->getId();
 
         if ($pedidoEn == null) {
@@ -664,7 +669,7 @@ class PedidoRepository extends EntityRepository
                     FROM MAPA_SEPARACAO_CONFERENCIA
                     GROUP BY COD_MAPA_SEPARACAO ) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                 LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_PEDIDO = PP.COD_PEDIDO AND ES.COD_PRODUTO = PP.COD_PRODUTO AND ES.DSC_GRADE = PP.DSC_GRADE
-                WHERE P.COD_PEDIDO = $idPedido AND ((MSP.QTD_SEPARAR != MSC.QTD_CONF OR ES.COD_STATUS NOT IN (524, 525, 526, 531, 532, 552))
+                WHERE P.COD_PEDIDO = '$idPedido' AND ((MSP.QTD_SEPARAR != MSC.QTD_CONF OR ES.COD_STATUS NOT IN (524, 525, 526, 531, 532, 552))
                       OR (PP.COD_PEDIDO_PRODUTO NOT IN (SELECT COD_PEDIDO_PRODUTO FROM MAPA_SEPARACAO_PEDIDO) OR PP.COD_PEDIDO_PRODUTO NOT IN
                         (SELECT PP2.COD_PEDIDO_PRODUTO 
                          FROM ETIQUETA_SEPARACAO ES2 

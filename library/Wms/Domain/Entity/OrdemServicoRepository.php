@@ -300,6 +300,27 @@ class OrdemServicoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getSeparacaoByOs($idOs){
+        $sql = "SELECT 
+                    SMS.COD_MAPA_SEPARACAO,
+                    SMS.COD_PRODUTO,
+                    SMS.DSC_GRADE,
+                    SUM(SMS.QTD_SEPARADA * SMS.QTD_EMBALAGEM)  AS QTD_SEPARADA,
+                    P.DSC_PRODUTO,
+                    MAX(TO_CHAR(SMS.DTH_SEPARACAO, 'DD/MM/YYYY')) as DTH_SEPARACAO
+                FROM
+                    SEPARACAO_MAPA_SEPARACAO SMS
+                    INNER JOIN PRODUTO P ON SMS.COD_PRODUTO = P.COD_PRODUTO AND SMS.DSC_GRADE = P.DSC_GRADE
+                WHERE SMS.COD_OS = $idOs
+                GROUP BY 
+                    SMS.COD_MAPA_SEPARACAO,
+                    SMS.COD_PRODUTO,
+                    SMS.DSC_GRADE,
+                    P.DSC_PRODUTO";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function criarOs($params)
     {
         if (!$params['atividade']) {

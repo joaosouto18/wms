@@ -3,15 +3,8 @@
 namespace Wms\Module\Web\Grid\Expedicao;
           
 
-use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
-use Wms\Module\Web\Grid,
-    Wms\Domain\Entity\Recebimento;
+use Wms\Module\Web\Grid;
 
-/**
- * Grid da Página Inicial da Expedição
- *
- * @author Lucas Chinelate <lucaschinelate@hotmail.com>
- */
 class Embalados extends Grid
 {
     /**
@@ -22,7 +15,7 @@ class Embalados extends Grid
     {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        $this->showPager = false;
+        $this->showPager = true;
         $this->showExport = false;
         $this->setSource(new \Core\Grid\Source\ArraySource($embalados))
                 ->setId('expedicao-mapas-grid')

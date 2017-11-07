@@ -1,0 +1,72 @@
+<script>
+    $('.prod-sep').each(function (e) {
+        $(this).remove();
+    })
+</script>
+<?php
+if(!empty($this->produtos)){
+    if(!empty($this->error)){
+        ?>
+        <div id="table-embalgens" style="background: #ffb0b0; padding: 7px;">
+            <b><?php echo $this->error ?></b>
+        </div>
+        <?php
+    }
+    ?>
+    <table id="table-embalgens" class="gTable " style="font-size: 10px!important;">
+        <tbody>
+        <?php
+        if(empty($this->error)){
+            ?>
+            <div id="table-embalgens" style="background: #70fe9a; padding: 7px;">
+                <b>Produto separado com sucesso.</b>
+            </div>
+            <?php
+        }
+        ?>
+        <tr class ="gTTitle">
+            <td><b>Produto</b></td>
+            <td><b>Grade</b></td>
+            <td><b>Qtd. Separar</b></td>
+            <td><b>Embalagem</b></td>
+        </tr>
+        <?php
+        $array = array();
+        foreach ($this->produtos as $produto) :
+            if(array_key_exists($produto['COD_PRODUTO'], $array)) {
+                $array[$produto['COD_PRODUTO']] = $array[$produto['COD_PRODUTO']] + ($produto['SEPARAR'] * $produto['QTD_EMBALAGEM']);
+            }else{
+                $array[$produto['COD_PRODUTO']] = ($produto['SEPARAR'] * $produto['QTD_EMBALAGEM']);
+            }
+            ?>
+            <tr>
+                <td><?php echo $produto['COD_PRODUTO'].' - '.$produto['DSC_PRODUTO'] ?></td>
+                <td><?php echo $produto['DSC_GRADE'] ?></td>
+                <td><?php echo $produto['SEPARAR'] ?></td>
+                <td><?php
+                    if ($produto['DSC_EMBALAGEM'] != null && $produto['DSC_EMBALAGEM'] != '') {
+                        echo $produto['DSC_EMBALAGEM'];
+                    } else {
+                        echo $produto['DSC_VOLUME'];
+                    }
+                    ?>
+                </td>
+            </tr>
+        <?php
+        endforeach;
+        foreach ($array as $key => $value){
+            ?><input class="prod-sep"  type="hidden" name="<?php echo $key ?>" id="<?php echo $key ?>" value="<?php echo $value ?>"><?php
+        }
+        ?>
+        </tbody>
+    </table>
+    <?php
+}else{
+    ?>
+    <div id="table-embalgens" style="background: #ffb0b0; padding: 7px;">
+        <b>Todos os produtos desse endereço já foram separados. <br />
+        Para continuar click em Próximo Endereço.</b>
+    </div>
+
+    <?php
+}
