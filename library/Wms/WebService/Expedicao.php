@@ -295,8 +295,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'itinerarioRepo' =>$this->_em->getRepository('wms:Expedicao\Itinerario')
             );
 
+            /** @var \Wms\Domain\Entity\Sistema\ParametroRepository $parametroRepo */
+            $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
+            /** @var \Wms\Domain\Entity\Sistema\Parametro $parametro */
+            $parametro = $parametroRepo->findOneBy(array('constante' => "REENTREGA_RESETANDO_EXPEDICAO"));
+            $resetaExpedicao = (!empty($parametro) && $parametro->getValor() == "S");
+
             foreach($cargas as $k1 => $carga) {
-                foreach ($carga['pedidos'] as  $k2 => $pedido) {
+                foreach ($carga['pedidos'] as $k2 => $pedido) {
                     foreach ($pedido['produtos'] as $k3 => $produto){
                         $idProduto = trim($cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto']);
                         $idProduto = ProdutoUtil::formatar($idProduto);
@@ -304,7 +310,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     }
                 }
                 $this->checkProductsExists($repositorios, $carga['pedidos']);
-                $result = $this->checkPedidosExists($repositorios, $carga['pedidos'], $isIntegracaoSQL);
+                $result = $this->checkPedidosExists($repositorios, $carga['pedidos'], $isIntegracaoSQL, $resetaExpedicao);
 
                 if ($result) {
                     $this->_em->flush();
@@ -843,10 +849,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
+     * @param array $repositorios
      * @param array $pedidos
+     * @param bool $isIntegracaoSQL
+     * @param bool $resetaExpedicao
+     * @return bool
      * @throws Exception
      */
-    protected function checkPedidosExists($repositorios, array $pedidos, $isIntegracaoSQL = false) {
+    protected function checkPedidosExists($repositorios, array $pedidos, $isIntegracaoSQL = false, $resetaExpedicao) {
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
         $PedidoRepo = $repositorios['pedidoRepo'];
@@ -871,7 +881,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $countProdutosPendentesCorte = count($this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC));
 
                 if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
-                    ($statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
+                    ($resetaExpedicao && $statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
                     ($countProdutosPendentesCorte == 0)) {
 
                     $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
