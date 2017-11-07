@@ -321,7 +321,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCargaExterno
+     * @param string $idCargaExterno
      * @param string $tipoCarga
      * @return boolean Se a carga for fechada com sucesso
      */
@@ -346,7 +346,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCargaExterno
+     * @param string $idCargaExterno
      * @param string $tipoCarga
      * @return boolean Se a carga for cancelada com sucesso
      */
@@ -374,7 +374,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCargaExterno
+     * @param string $idCargaExterno
      * @param string $tipoCarga
      * @param string $tipoPedido
      * @param string $idPedido
@@ -445,6 +445,23 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
 
     public function cortarPedido($idPedido, $produtosCortados) {
+
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $ppRepo */
+        $ppRepo     = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+        try {
+            $this->_em->beginTransaction();
+
+            foreach ($produtosCortados as $corte) {
+                $ppRepo->cortaItem($idPedido,$corte->codProduto,$corte->grade, $corte->quantidadeCortada, $corte->motivoCorte);
+            }
+
+            $this->_em->flush();
+            $this->_em->commit();
+        } catch (\Exception $e) {
+            $this->_em->rollback();
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+        }
+
         return true;
     }
 
@@ -521,7 +538,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCarga
+     * @param string $idCarga
      * @param string $tipoCarga
      * @return carga Com informações das etiquetas
      */
@@ -535,7 +552,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $pedidoRepo     = $this->_em->getRepository('wms:Expedicao\Pedido');
 
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
-        $cargaEn = $this->_em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno'=>$idCargaExterno,'tipoCarga'=>$siglaTipoCarga->getId()));
+        $cargaEn = $this->_em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno' => $idCargaExterno, 'tipoCarga' => $siglaTipoCarga->getId()));
+
         if ($cargaEn == null) {
             throw new \Exception($siglaTipoCarga->getSigla(). " $tipoCarga não encontrado(a)!");
         }
@@ -843,7 +861,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 $SQL = "SELECT *
                           FROM PEDIDO_PRODUTO PP
-                         WHERE PP.COD_PEDIDO = " . $pedido['codPedido'] . "
+                         WHERE PP.COD_PEDIDO = '" . $pedido['codPedido'] . "'
                            AND PP.QUANTIDADE != NVL(PP.QTD_CORTADA,0) ";
                 $countProdutosPendentesCorte = count($this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC));
 
@@ -935,6 +953,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             $SiglaRepo      = $repositorios['siglaRepo'];
             $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
+
+            if (!isset($entitySigla) || empty($entitySigla)) {
+                throw new \Exception('Sigla para estado inválida');
+            }
 
             $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
             $cliente['enderecos'][0]['acao'] = 'incluir';
@@ -1057,6 +1079,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $pedidoRepo = $this->_em->getRepository("wms:Expedicao\Pedido");
             $nfRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaida");
             $pessoaJuridicaRepo    = $this->_em->getRepository('wms:Pessoa\Juridica');
+            $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
 
             if ((count($nf) == 0) || ($nf == null)) {
                 throw new \Exception("Nenhuma nota fiscal informada");
@@ -1075,7 +1098,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
 
                 if ($nfEn != null) {
-                    return true;
+//                    return true;
                     //throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.', série '.$notaFiscal->serieNf.', emitente: ' . $pessoaEn->getNomeFantasia() . ', cnpj ' . $notaFiscal->cnpjEmitente . ' já existe no sistema!');
                 }
 
@@ -1122,10 +1145,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                     $idProduto = $itemNotaFiscal->codProduto;
                     $idProduto = ProdutoUtil::formatar($idProduto);
-                    $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => trim($itemNotaFiscal->grade)));
+                    $parametroEntity = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
+                    $grade = ($parametroEntity->getValor() == 'N') ? 'UNICA' : trim($itemNotaFiscal->grade);
+
+                    $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
                     if ($produtoEn == null) {
-                        throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$itemNotaFiscal->grade.' não encontrado!');
+                        throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$grade.' não encontrado!');
                     }
 
                     $itemNfEntity->setCodProduto($produtoEn->getId());
@@ -1154,7 +1180,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param string $cnpjEmitente
      * @param integer $numeroNf
      * @param string $serieNF
-     * @param integer $numeroCarga
+     * @param string $numeroCarga
      * @param string $tipoCarga
      * @return boolean Se as notas fiscais foram salvas com sucesso
      */

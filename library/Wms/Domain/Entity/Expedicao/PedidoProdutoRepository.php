@@ -7,6 +7,68 @@ use Doctrine\ORM\EntityRepository,
 class PedidoProdutoRepository extends EntityRepository
 {
 
+        public function cortaItem($codPedido,$codProduto,$grade,$qtd,$motivo) {
+
+            /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+            $andamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+            $mapaSeparacaoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+
+            /* CORTA O PEDIDO */
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoProduto $ppEn */
+            $ppEn = $this->findOneBy(array('codPedido'=>$codPedido,
+                                           'codProduto'=>$codProduto,
+                                           'grade'=>$grade));
+            $expedicaoEn = $ppEn->getPedido()->getCarga()->getExpedicao();
+            $idExpedicao = $expedicaoEn->getId();
+
+            $ppEn->setQtdCortada($ppEn->getQtdCortada() + $qtd);
+            $this->getEntityManager()->persist($ppEn);
+            $this->getEntityManager()->flush();
+
+            $andamentoRepo->save("Corte de $qtd qtd do produto $codProduto, grade $grade no pedido $codPedido - $motivo", $idExpedicao, false, false, null,null, true);
+
+            /* CORTA AS ETIQUETAS */
+            $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
+            $etiquetasEn = $etiquetaRepo->findBy(array('codProduto'=>$codProduto,
+                                                       'dscGrade'=>$grade,
+                                                       'pedido'=>$codPedido),
+                                                 array('qtdEmbalagem'=>'DESC'));
+
+            $qtdPendente = $qtd;
+            foreach ($etiquetasEn as $etiquetaEn){
+                if ($qtdPendente <=0) continue;
+                if ($etiquetaEn->getQtdEmbalagem() > $qtdPendente) continue;
+                if (($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_CORTADO) || ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_CORTE)) continue;
+
+                $qtdPendente = $qtdPendente - $etiquetaEn->getQtdEmbalagem();
+
+                $etiquetaRepo->cortar($etiquetaEn);
+
+                $codBarrasEtiqueta = $etiquetaEn->getId();
+                if ($etiquetaEn->getProdutoEmbalagem() != NULL) {
+                    $codBarrasProdutos = $etiquetaEn->getProdutoEmbalagem()->getCodigoBarras();
+                } else {
+                    $codBarrasProdutos = $etiquetaEn->getProdutoVolume()->getCodigoBarras();
+                }
+
+                $andamentoRepo->save("Etiqueta $codBarrasEtiqueta cortada", $idExpedicao, false, false, $codBarrasEtiqueta, $codBarrasProdutos, true);
+            }
+
+            /* CORTA OS MAPAS */
+            if ($qtdPendente >0) {
+                $corteMapa = array();
+                $corteMapa[] = array(
+                    'carga' => $ppEn->getPedido()->getCarga()->getId(),
+                    'pedido' => $ppEn->getPedido()->getId(),
+                    'produto' => $codProduto,
+                    'grade' => $grade,
+                    'quantidade' => $ppEn->getQuantidade(),
+                    'qtdCortada' => $qtd);
+                $mapaSeparacaoProdutoRepository->validaCorteMapasERP($corteMapa);
+            }
+
+        }
+
         public function aplicaCortesbyERP($pedidosProdutosWMS, $pedidosProdutosERP) {
             /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
             $pedidoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
