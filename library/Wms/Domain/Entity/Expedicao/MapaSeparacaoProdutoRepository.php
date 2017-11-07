@@ -244,6 +244,11 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
         }
         $mapas = implode(",",$mapaArray);
 
+        $whereMapas = '';
+        if (isset($mapas) && !empty($mapas)) {
+            $whereMapas = " AND MS.COD_MAPA_SEPARACAO IN ($mapas) ";
+        }
+
         $SQL = "SELECT MSP.COD_PRODUTO,
                        MSP.DSC_GRADE,
                        SUM(MSP.QTD_SEPARAR) as QTD_TOTAL,
@@ -270,7 +275,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                               WHERE PP.COD_PEDIDO IN ('$pedidos')
                                GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) C ON C.COD_PRODUTO = MSP.COD_PRODUTO AND C.DSC_GRADE = MSP.DSC_GRADE
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = MSP.COD_PRODUTO AND PROD.DSC_GRADE = MSP.DSC_GRADE
-                 WHERE MS.COD_MAPA_SEPARACAO IN ($mapas)
+                 WHERE 1 = 1 $whereMapas
                       AND C.CORTE >0
                  GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE, C.CORTE, PROD.DSC_PRODUTO";
         $produtos =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
