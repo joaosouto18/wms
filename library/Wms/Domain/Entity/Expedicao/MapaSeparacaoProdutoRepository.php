@@ -235,7 +235,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
         $SQL = " SELECT DISTINCT MSP.COD_MAPA_SEPARACAO
                    FROM MAPA_SEPARACAO_PEDIDO MSP
                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
-                  WHERE PP.COD_PEDIDO IN ($pedidos)";
+                  WHERE PP.COD_PEDIDO IN ('$pedidos')";
         $mapas =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $mapaArray = array();
@@ -267,7 +267,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                     ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = MSP.COD_PRODUTO
                   LEFT JOIN (SELECT PP.COD_PRODUTO, PP.DSC_GRADE, SUM(PP.QTD_CORTADA) as CORTE
                                FROM PEDIDO_PRODUTO PP
-                              WHERE PP.COD_PEDIDO IN ($pedidos)
+                              WHERE PP.COD_PEDIDO IN ('$pedidos')
                                GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) C ON C.COD_PRODUTO = MSP.COD_PRODUTO AND C.DSC_GRADE = MSP.DSC_GRADE
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = MSP.COD_PRODUTO AND PROD.DSC_GRADE = MSP.DSC_GRADE
                  WHERE MS.COD_MAPA_SEPARACAO IN ($mapas)
