@@ -451,6 +451,23 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
 
     public function cortarPedido($idPedido, $produtosCortados) {
+
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $ppRepo */
+        $ppRepo     = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+        try {
+            $this->_em->beginTransaction();
+
+            foreach ($produtosCortados as $corte) {
+                $ppRepo->cortaItem($idPedido,$corte->codProduto,$corte->grade, $corte->quantidadeCortada, $corte->motivoCorte);
+            }
+
+            $this->_em->flush();
+            $this->_em->commit();
+        } catch (\Exception $e) {
+            $this->_em->rollback();
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+        }
+
         return true;
     }
 
