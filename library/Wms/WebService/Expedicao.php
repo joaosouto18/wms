@@ -448,11 +448,16 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $ppRepo */
         $ppRepo     = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+        /** @var \Wms\Domain\Entity\Sistema\ParametroRepository $parametroRepo */
+        $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
+        $parametroEntity = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
+
         try {
             $this->_em->beginTransaction();
 
             foreach ($produtosCortados as $corte) {
-                $ppRepo->cortaItem($idPedido,$corte->codProduto,$corte->grade, $corte->quantidadeCortada, $corte->motivoCorte);
+                $grade = ($parametroEntity->getValor() == 'N') ? 'UNICA' : trim($corte->grade);
+                $ppRepo->cortaItem($idPedido, $corte->codProduto, $grade, $corte->quantidadeCortada, $corte->motivoCorte);
             }
 
             $this->_em->flush();
