@@ -1085,6 +1085,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $pedidoRepo = $this->_em->getRepository("wms:Expedicao\Pedido");
             $nfRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaida");
             $pessoaJuridicaRepo    = $this->_em->getRepository('wms:Pessoa\Juridica');
+            $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
 
             if ((count($nf) == 0) || ($nf == null)) {
                 throw new \Exception("Nenhuma nota fiscal informada");
@@ -1103,7 +1104,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
 
                 if ($nfEn != null) {
-                    return true;
+//                    return true;
                     //throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.', série '.$notaFiscal->serieNf.', emitente: ' . $pessoaEn->getNomeFantasia() . ', cnpj ' . $notaFiscal->cnpjEmitente . ' já existe no sistema!');
                 }
 
@@ -1150,10 +1151,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                     $idProduto = $itemNotaFiscal->codProduto;
                     $idProduto = ProdutoUtil::formatar($idProduto);
-                    $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => trim($itemNotaFiscal->grade)));
+                    $parametroEntity = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
+                    $grade = ($parametroEntity->getValor() == 'N') ? 'UNICA' : trim($itemNotaFiscal->grade);
+
+                    $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
                     if ($produtoEn == null) {
-                        throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$itemNotaFiscal->grade.' não encontrado!');
+                        throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$grade.' não encontrado!');
                     }
 
                     $itemNfEntity->setCodProduto($produtoEn->getId());
@@ -1182,7 +1186,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param string $cnpjEmitente
      * @param integer $numeroNf
      * @param string $serieNF
-     * @param integer $numeroCarga
+     * @param string $numeroCarga
      * @param string $tipoCarga
      * @return boolean Se as notas fiscais foram salvas com sucesso
      */
