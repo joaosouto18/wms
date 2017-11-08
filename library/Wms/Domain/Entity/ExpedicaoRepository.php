@@ -123,6 +123,7 @@ class ExpedicaoRepository extends EntityRepository {
                   INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                   INNER JOIN CLIENTE CL ON CL.COD_PESSOA = P.COD_PESSOA
                   WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
+                      AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
                       AND E.COD_EXPEDICAO IN ($expedicoes)
                       AND P.CENTRAL_ENTREGA = $filialExterno
                       AND P.DTH_CANCELAMENTO IS NULL ";
@@ -974,7 +975,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         $whereCargas = null;
         if (!is_null($cargas) && is_array($cargas)) {
-            $cargas = implode(',', $cargas);
+            $cargas = "'".implode("','", $cargas)."'";
             $whereCargas = " AND c.codCargaExterno in ($cargas) ";
         } else if (!is_null($cargas)) {
             $whereCargas = " AND c.codCargaExterno = '$cargas' ";
