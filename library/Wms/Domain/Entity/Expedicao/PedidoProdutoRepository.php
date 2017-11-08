@@ -3,6 +3,7 @@ namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao\PedidoProduto;
+use Wms\Domain\Entity\Expedicao;
 
 class PedidoProdutoRepository extends EntityRepository
 {
@@ -20,6 +21,10 @@ class PedidoProdutoRepository extends EntityRepository
                                            'grade'=>$grade));
             $expedicaoEn = $ppEn->getPedido()->getCarga()->getExpedicao();
             $idExpedicao = $expedicaoEn->getId();
+
+            if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_FINALIZADO) {
+                throw new \Exception('Não pode ter novos cortes em expedição finalizada!');
+            }
 
             $ppEn->setQtdCortada($ppEn->getQtdCortada() + $qtd);
             $this->getEntityManager()->persist($ppEn);
