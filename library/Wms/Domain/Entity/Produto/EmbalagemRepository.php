@@ -155,8 +155,7 @@ class EmbalagemRepository extends EntityRepository {
                 GROUP BY PE.COD_PRODUTO, PE.DSC_GRADE";
 
         $result = $this->_em->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
-        if (!empty($result)) return $result['NORMA'];
 
-        throw new \Exception("O produto $codProduto grade $dscGrade não tem norma de paletização cadastrada");
+        return (!empty($result))? $result['NORMA'] : null;
     }
 }
