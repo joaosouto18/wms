@@ -19,14 +19,14 @@ use Wms\Domain\Entity\ProdutoRepository,
  */
 class Produto {
 
-    const UNID_MEDIDA_KILOGRAMA = 'Kg';
+    const UNID_MEDIDA_KILOGRAMA = 'KG';
     const UNID_MEDIDA_LITRO = 'L';
     const UNID_MEDIDA_METRO = 'M';
 
     public static $listaUnidadeMedida = array(
-        self::UNID_MEDIDA_KILOGRAMA => 'Kilograma',
-        self::UNID_MEDIDA_LITRO => 'Litro',
-        self::UNID_MEDIDA_METRO => 'Metro',
+        self::UNID_MEDIDA_KILOGRAMA => 'KILOGRAMA',
+        self::UNID_MEDIDA_LITRO => 'LITRO',
+        self::UNID_MEDIDA_METRO => 'METRO',
     );
 
 

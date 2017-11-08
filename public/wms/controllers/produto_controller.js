@@ -28,35 +28,9 @@ $.Controller.extend('Wms.Controllers.Produto',
             //checo tipo comercializacao/volumes
             this.validarVolumes();
 
-            $('#produto-diasVidaUtil').parent().hide();
-            $('#produto-diasVidaUtil').hide();
-
-            $('#produto-percTolerancia').parent().hide();
-            $('#produto-percTolerancia').hide();
-
-            $('#produto-toleranciaNominal').parent().hide();
-            $('#produto-toleranciaNominal').hide();
-
-            //oculta campo de dias para vencimento
-            if ($('#produto-validade').val() == 'S') {
-                $('#produto-diasVidaUtil').show();
-                $('#produto-diasVidaUtil').parent().show();
-            } else if ($('#produto-validade').val() == 'N') {
-                $('#produto-diasVidaUtil').hide();
-                $('#produto-diasVidaUtil').parent().hide();
-            }
-
-            if ($('#produto-pVariavel').val() == 'S') {
-                $('#produto-percTolerancia').parent().show();
-                $('#produto-percTolerancia').show();
-                $('#produto-toleranciaNominal').parent().show();
-                $('#produto-toleranciaNominal').show();
-            } else if ($('#produto-pVariavel').val() == 'N') {
-                $('#produto-percTolerancia').parent().hide();
-                $('#produto-percTolerancia').hide();
-                $('#produto-toleranciaNominal').parent().hide();
-                $('#produto-toleranciaNominal').hide();
-            }
+            this.checkShowValidade();
+            this.checkShowPesoVariavel();
+            this.checkShowUnidFracionavel();
 
             //checa quantidade de volumes
             $(".btnSave").off('click').click(function(e) {
@@ -72,17 +46,11 @@ $.Controller.extend('Wms.Controllers.Produto',
 
         },
         '#produto-pVariavel change' : function() {
-            if ($('#produto-pVariavel').val() == 'S') {
-                $('#produto-percTolerancia').parent().show();
-                $('#produto-percTolerancia').show();
-                $('#produto-toleranciaNominal').parent().show();
-                $('#produto-toleranciaNominal').show();
-            } else if ($('#produto-pVariavel').val() == 'N') {
-                $('#produto-percTolerancia').parent().hide();
-                $('#produto-percTolerancia').hide();
-                $('#produto-toleranciaNominal').parent().hide();
-                $('#produto-toleranciaNominal').hide();
-            }
+            this.checkShowPesoVariavel();
+        },
+
+        '#produto-indFracionavel change' : function() {
+            this.checkShowUnidFracionavel();
         },
 
         '#produto-percTolerancia blur' : function() {
@@ -93,6 +61,46 @@ $.Controller.extend('Wms.Controllers.Produto',
             $("#produto-toleranciaNominal").val(pVariavel);
         },
 
+        checkShowValidade: function () {
+            var inptDiasVidaUtil = $('#produto-diasVidaUtil');
+            if ($('#produto-validade').val() === 'S') {
+                inptDiasVidaUtil.show();
+                inptDiasVidaUtil.parent().show();
+            } else {
+                inptDiasVidaUtil.hide();
+                inptDiasVidaUtil.parent().hide();
+            }
+        },
+
+        checkShowPesoVariavel: function () {
+            var inptPercTolerancia = $('#produto-percTolerancia');
+            var inptToleranciaNominal = $('#produto-toleranciaNominal');
+            if ($('#produto-pVariavel').val() === 'S') {
+                inptPercTolerancia.parent().show();
+                inptPercTolerancia.show();
+                inptToleranciaNominal.parent().show();
+                inptToleranciaNominal.show();
+            } else {
+                inptPercTolerancia.parent().hide();
+                inptPercTolerancia.hide();
+                inptToleranciaNominal.parent().hide();
+                inptToleranciaNominal.hide();
+            }
+        },
+
+        checkShowUnidFracionavel: function () {
+            var inptUndFraca= $('#produto-unidFracao');
+            if ($('#produto-indFracionavel').val() === 'S'){
+                inptUndFraca.parent().show();
+                inptUndFraca.show();
+                inptUndFraca.addClass('required');
+            } else {
+                inptUndFraca.parent().hide();
+                inptUndFraca.hide().prop('selectedIndex',0);
+                inptUndFraca.removeClass('required');
+                inptUndFraca.removeClass('invalid');
+            }
+        },
 
         /**
          * Valida os formularios de cadastro das Embalagens e Volumes
@@ -325,13 +333,7 @@ $.Controller.extend('Wms.Controllers.Produto',
         },
 
         '#produto-validade change' : function() {
-            if ($('#produto-validade').val() == 'S') {
-                $('#produto-diasVidaUtil').parent().show();
-                $('#produto-diasVidaUtil').show();
-            } else if ($('#produto-validade').val() == 'N') {
-                $('#produto-diasVidaUtil').parent().hide();
-                $('#produto-diasVidaUtil').hide();
-            }
+            this.checkShowValidade();
         },
 
         /**

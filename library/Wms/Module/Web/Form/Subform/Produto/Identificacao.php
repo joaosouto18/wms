@@ -85,13 +85,13 @@ class Identificacao extends SubForm
                 ))
                  ->addElement('text', 'peso', array(
                     'label' => 'Peso Total (kg)',
-                    'size' => 15,
+                    'size' => 10,
                     'readonly' => 'readonly',
                     'alt' => 'centesimal',
                 ))
                 ->addElement('text', 'cubagem', array(
                     'label' => 'Cubagem Total (m³)',
-                    'size' => 18,
+                    'size' => 13,
                     'readonly' => 'readonly',
                     'alt' => 'centesimal',
                 ))                             
@@ -101,6 +101,7 @@ class Identificacao extends SubForm
 
                 $this->addElement('select', 'pVariavel', array(
                     'label' => 'Possui Peso Variável?',
+                    'required' => true,
                     'multiOptions' => array(
                         'S' => 'SIM',
                         'N' => 'NÃO'
@@ -121,21 +122,23 @@ class Identificacao extends SubForm
 
                 $this->addElement('select', 'indFracionavel', array(
                     'label' => 'Unidade fracionável?',
+                    'required' => true,
                     'multiOptions' => array(
                         'S' => 'SIM',
                         'N' => 'NÃO'
                     )
                 ))->addElement('select', 'unidFracao', array(
-                    'label' => 'Unidade fracionável?',
+                    'label' => 'Unidade de medida',
                     'multiOptions' => ProdutoEntity::$listaUnidadeMedida
                 ))->addDisplayGroup(
-                    array('indFracionavel', 'unidFracao'), 'unidComercio', array('legend' => 'Unidade de comercialização')
+                    array('indFracionavel', 'unidFracao'), 'unidComercio', array('legend' => 'Unidade de medida fracionável')
                 )
                 ;
 
                 $this
                     ->addElement('select', 'validade', array(
                         'label' => 'Possui validade?',
+                        'required' => true,
                         'multiOptions' => array(
                             'S' => 'SIM',
                             'N' => 'NÃO'
@@ -163,19 +166,36 @@ class Identificacao extends SubForm
             'idLinhaSeparacao' => $idLinhaSeparacao,
             'numVolumes' => $produto->getNumVolumes(),
             'referencia' => $produto->getReferencia(),
-//            'peso' => 10,
-//            'cubagem' => 0.1000,
             'codigoBarrasBase' => $produto->getCodigoBarrasBase(),
             'grade' => $produto->getGrade(),
             'idTipoComercializacao' => $produto->getTipoComercializacao()->getId(),
-            'validade' => $produto->getValidade(),
-            'diasVidaUtil' => $produto->getDiasVidaUtil(),
-            'pVariavel' => $produto->getPossuiPesoVariavel(),
-            'percTolerancia' => $produto->getPercTolerancia(),
-            'toleranciaNominal' => $produto->getToleranciaNominal(),
-            'indFracionavel' => $produto->getIndFracionavel(),
-            'unidFracao' => $produto->getUnidadeFracao(),
         );
+
+        if (empty($produto->getValidade())) {
+            $values['validade'] = 'N';
+            $values['diasVidaUtil'] = null;
+        } else {
+            $values['validade'] = $produto->getValidade();
+            $values['diasVidaUtil'] = $produto->getDiasVidaUtil();
+        }
+
+        if (empty($produto->getPossuiPesoVariavel())) {
+            $values['pVariavel'] = 'N';
+            $values['percTolerancia'] = null;
+            $values['toleranciaNominal'] = null;
+        } else {
+            $values['pVariavel'] = $produto->getPossuiPesoVariavel();
+            $values['percTolerancia'] = $produto->getPercTolerancia();
+            $values['toleranciaNominal'] = $produto->getToleranciaNominal();
+        }
+
+        if (empty($produto->getIndFracionavel())) {
+            $values['indFracionavel'] = 'N';
+            $values['unidFracao'] = null;
+        } else {
+            $values['indFracionavel'] = $produto->getIndFracionavel();
+            $values['unidFracao'] = $produto->getUnidadeFracao();
+        }
 
         $this->setDefaults($values);
     }

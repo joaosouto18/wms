@@ -209,6 +209,7 @@ class Web_ProdutoController extends Crud {
             if (!isset($params['id']) || $params['id'] == null || !isset($params['grade']) || $params['grade'] == null)
                 throw new \Exception('Codigo e Grade do produto devem ser fornecidos');
 
+            /** @var ProdutoEntity $entity */
             $entity = $this->repository->findOneBy(array('id' => $params['id'], 'grade' => $params['grade']));
             if ($this->getRequest()->isPost()) {
 
@@ -248,6 +249,8 @@ class Web_ProdutoController extends Crud {
 
                 $entity->setPercTolerancia($params['produto']['percTolerancia']);
                 $entity->setToleranciaNominal($params['produto']['toleranciaNominal']);
+                $entity->setIndFracionavel($params['produto']['indFracionavel']);
+                $entity->setUnidadeFracao($params['produto']['unidFracao']);
                 $paramsSave = $this->getRequest()->getParams();
                 $paramsSave['produto']['possuiPesoVariavel'] = $paramsSave['produto']['pVariavel'];
                 if (isset($paramsSave['embalagens'])) {
