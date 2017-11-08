@@ -923,6 +923,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             } else {
                                 $tudoImpresso = false;
                             }
+                            next($arrVolumesReservas);
                         }
                     } else {
                         foreach ($arrVolumesReservas as $elements) {
