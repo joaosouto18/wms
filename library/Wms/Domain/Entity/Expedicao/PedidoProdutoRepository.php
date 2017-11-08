@@ -22,7 +22,7 @@ class PedidoProdutoRepository extends EntityRepository
             $expedicaoEn = $ppEn->getPedido()->getCarga()->getExpedicao();
             $idExpedicao = $expedicaoEn->getId();
 
-            if ($expedicaoEn->getStatus() == Expedicao::STATUS_FINALIZADO) {
+            if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_FINALIZADO) {
                 throw new \Exception('Não pode ter novos cortes em expedição finalizada!');
             }
 
