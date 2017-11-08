@@ -129,7 +129,7 @@ class Identificacao extends SubForm
                     'label' => 'Unidade fracionável?',
                     'multiOptions' => ProdutoEntity::$listaUnidadeMedida
                 ))->addDisplayGroup(
-                    array('Unidade de comercialização', 'unidComercio'), 'validadeProdutos', array('legend' => 'Validade')
+                    array('indFracionavel', 'unidFracao'), 'unidComercio', array('legend' => 'Unidade de comercialização')
                 )
                 ;
 
