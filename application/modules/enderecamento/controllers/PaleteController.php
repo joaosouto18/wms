@@ -66,7 +66,7 @@ class Enderecamento_PaleteController extends Action
                 } else {
                     $codProduto = $item['codProduto'];
                     $grade = $item['grade'];
-                    $completaPicking = true;
+                    $completaPicking = false;
                 }
 
                 /** @var \Wms\Domain\Entity\Produto $produtoEn */
