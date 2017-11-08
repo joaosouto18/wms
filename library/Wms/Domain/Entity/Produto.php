@@ -19,6 +19,17 @@ use Wms\Domain\Entity\ProdutoRepository,
  */
 class Produto {
 
+    const UNID_MEDIDA_KILOGRAMA = 'Kg';
+    const UNID_MEDIDA_LITRO = 'L';
+    const UNID_MEDIDA_METRO = 'M';
+
+    public static $listaUnidadeMedida = array(
+        self::UNID_MEDIDA_KILOGRAMA => 'Kilograma',
+        self::UNID_MEDIDA_LITRO => 'Litro',
+        self::UNID_MEDIDA_METRO => 'Metro',
+    );
+
+
     const TIPO_UNITARIO = 1;
     const TIPO_COMPOSTO = 2;
     const TIPO_KIT = 3;
@@ -153,9 +164,15 @@ class Produto {
 
     /**
      * @var
-     * @Column
+     * @Column(name="IND_FRACIONAVEL", type="string", nullable=false)
      */
-    protected $unidadeFracionavel;
+    protected $indFracionavel;
+
+    /**
+     * @var
+     * @Column(name="UNID_FRACAO", type="string", nullable=false)
+     */
+    protected $unidadeFracao;
 
     public function __construct() {
         $this->volumes = new ArrayCollection;
@@ -473,6 +490,44 @@ class Produto {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
         $andamentoRepo->checksChange($this, 'Possui peso variavel', $this->possuiPesoVariavel, $possuiPesoVariavel);
         $this->possuiPesoVariavel = $possuiPesoVariavel;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIndFracionavel()
+    {
+        return $this->indFracionavel;
+    }
+
+    /**
+     * @param mixed $indFracionavel
+     * @return Produto
+     */
+    public function setIndFracionavel($indFracionavel)
+    {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Unidade fracionável', $this->indFracionavel, $indFracionavel);
+        $this->indFracionavel = $indFracionavel;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUnidadeFracao()
+    {
+        return $this->unidadeFracao;
+    }
+
+    /**
+     * @param mixed $unidadeFracao
+     * @return Produto
+     */
+    public function setUnidadeFracao($unidadeFracao)
+    {
+        $this->unidadeFracao = $unidadeFracao;
         return $this;
     }
 

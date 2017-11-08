@@ -100,10 +100,10 @@ class Identificacao extends SubForm
                 );
 
                 $this->addElement('select', 'pVariavel', array(
-                    'label' => 'Possui Peso Variável? (S/N)',
+                    'label' => 'Possui Peso Variável?',
                     'multiOptions' => array(
-                        'S' => 'S',
-                        'N' => 'N'
+                        'S' => 'SIM',
+                        'N' => 'NÃO'
                     )))
                     ->addElement('text', 'percTolerancia', array(
                         'label' => 'Porcentagem de Tolerância %',
@@ -119,13 +119,26 @@ class Identificacao extends SubForm
                         array('pVariavel', 'percTolerancia','toleranciaNominal'), 'pesoVariavel', array('legend' => 'Peso Variável')
                     );
 
+                $this->addElement('select', 'indFracionavel', array(
+                    'label' => 'Unidade fracionável?',
+                    'multiOptions' => array(
+                        'S' => 'SIM',
+                        'N' => 'NÃO'
+                    )
+                ))->addElement('select', 'unidFracao', array(
+                    'label' => 'Unidade fracionável?',
+                    'multiOptions' => ProdutoEntity::$listaUnidadeMedida
+                ))->addDisplayGroup(
+                    array('Unidade de comercialização', 'unidComercio'), 'validadeProdutos', array('legend' => 'Validade')
+                )
+                ;
 
                 $this
                     ->addElement('select', 'validade', array(
-                        'label' => 'Possui validade (S/N)',
+                        'label' => 'Possui validade?',
                         'multiOptions' => array(
-                            'S' => 'S',
-                            'N' => 'N'
+                            'S' => 'SIM',
+                            'N' => 'NÃO'
                         )))
                     ->addElement('text', 'diasVidaUtil', array(
                         'label' => 'Dias para Vencimento',
@@ -159,7 +172,9 @@ class Identificacao extends SubForm
             'diasVidaUtil' => $produto->getDiasVidaUtil(),
             'pVariavel' => $produto->getPossuiPesoVariavel(),
             'percTolerancia' => $produto->getPercTolerancia(),
-            'toleranciaNominal' => $produto->getToleranciaNominal()
+            'toleranciaNominal' => $produto->getToleranciaNominal(),
+            'indFracionavel' => $produto->getIndFracionavel(),
+            'unidFracao' => $produto->getUnidadeFracao(),
         );
 
         $this->setDefaults($values);
