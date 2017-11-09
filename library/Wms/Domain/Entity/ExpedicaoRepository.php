@@ -369,7 +369,8 @@ class ExpedicaoRepository extends EntityRepository {
                         $embalagemEn = reset($embalagens);
 
                         $pickingEn = null;
-                        if (!empty($embalagemEn->getEndereco())) {
+                        $endereco = $embalagemEn->getEndereco();
+                        if (!empty($endereco)) {
                             $pickingEn = $embalagemEn->getEndereco();
                         }
 
