@@ -366,12 +366,10 @@ class ExpedicaoRepository extends EntityRepository {
                         throw new \Exception("Produto " . $codProduto . " Grade " . $grade . " não possui embalagem cadastrada ou ativa!");
                     } else {
                         /** @var Embalagem $embalagemEn */
-                        $embalagemEn = $embalagens[0];
+                        $embalagemEn = reset($embalagens);
 
                         $pickingEn = null;
-                        if (!empty($embalagemEn->getEndereco())) {
-                            $pickingEn = $embalagemEn->getEndereco();
-                        }
+                        
 
                         $normaPD = $embalagemRepo->getNormaPD($codProduto, $grade);
 
