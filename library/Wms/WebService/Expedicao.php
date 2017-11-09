@@ -882,14 +882,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
                     ($resetaExpedicao && $statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
-                    ($countProdutosPendentesCorte > 0)) {
+                    ($countProdutosPendentesCorte == 0) || true == true) {
 
                     $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
                     $PedidoRepo->remove($PedidoEntity,false);
 
                 } else {
 
-                    if ($qtdTotal == $qtdCortadas) {
+                    if ($qtdTotal != $qtdCortadas) {
                         if (!$isIntegracaoSQL) {
                             throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
                         } else {
