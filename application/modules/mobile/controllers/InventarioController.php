@@ -227,8 +227,8 @@ class Mobile_InventarioController extends Action
         $this->view->divergencia = $divergencia;
         $this->view->botoes = true;
         $this->view->urlVoltar = '/mobile/inventario/consulta-endereco/idInventario/' . $params['idInventario'] . '/numContagem/' . $params['numContagem'] . '/divergencia/' . $divergencia;
-        $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
-        $this->view->enderecos = $enderecos;
+//        $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
+//        $this->view->enderecos = $enderecos;
         $this->render('form');
 
     }
