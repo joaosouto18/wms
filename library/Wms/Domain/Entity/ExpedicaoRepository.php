@@ -369,7 +369,10 @@ class ExpedicaoRepository extends EntityRepository {
                         $embalagemEn = reset($embalagens);
 
                         $pickingEn = null;
-                        
+                        $endereco = $embalagemEn->getEndereco();
+                        if (!empty($endereco)) {
+                            $pickingEn = $embalagemEn->getEndereco();
+                        }
 
                         $normaPD = $embalagemRepo->getNormaPD($codProduto, $grade);
 
