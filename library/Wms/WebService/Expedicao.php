@@ -897,10 +897,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         }
                     }
 
-                    if (!$isIntegracaoSQL)
-                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
-                    else
+                    if (!$isIntegracaoSQL){
+//                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
+                    } else {
                         return false;
+                    }
                 }
             }
         }
