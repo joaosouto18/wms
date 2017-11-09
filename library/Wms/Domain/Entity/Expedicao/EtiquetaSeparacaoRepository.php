@@ -830,7 +830,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 /** @var Produto $produtoEntity */
                 $produtoEntity = $pedidoProduto->getProduto();
-                $produtoId = $produtoEntity->getId();
+
                 /** @var Filial $filial */
                 $filial = $filialRepository->findOneBy(array('codExterno' => $pedidoEntity->getCentralEntrega()));
                 if ($filial == null) {
@@ -899,7 +899,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                                     $qtd--;
                                     $arrVolumesReservas[$idVolume]['enderecos'][$idEndereco]['qtd'] = $qtd;
-                                    next($arrVolumesReservas);
                                     break;
                                 } else {
                                     continue;
