@@ -56,7 +56,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
             $expedicoes = implode(',', $idsExpedicoes);
 
             $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
-
+            $msgCorte = null;
             if (count($result) > 0) {
                 $cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
 
@@ -65,7 +65,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
                     $itensPCortar = $expedicaoRepo->diluirCorte($expedicoes, $result);
                     $expedicaoRepo->executaCortePedido($itensPCortar, $motivo, $cortarAutomatico);
                     $link = '<a href="' . $this->view->url(array('controller' => 'corte', 'action' => 'relatorio-corte-ajax', 'id' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de cortes automaticos da onda de ressuprimento</a>';
-                    $this->addFlashMessage("warning", "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque. Clique para exibir " . $link);
+                    $msgCorte = "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque. Clique para exibir " . $link;
                 } else {
                     $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
                     $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
@@ -85,6 +85,9 @@ class Expedicao_OndaRessuprimentoController extends Action {
                 throw new Exception($result['observacao']);
             } else {
                 $this->addFlashMessage("success", $result['observacao']);
+                if (!empty($msgCorte)) {
+                    $this->addFlashMessage("warning", $msgCorte);
+                }
             }
         } catch (\Exception $e) {
             $this->em->rollback();

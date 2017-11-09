@@ -295,8 +295,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'itinerarioRepo' =>$this->_em->getRepository('wms:Expedicao\Itinerario')
             );
 
+            /** @var \Wms\Domain\Entity\Sistema\ParametroRepository $parametroRepo */
+            $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
+            /** @var \Wms\Domain\Entity\Sistema\Parametro $parametro */
+            $parametro = $parametroRepo->findOneBy(array('constante' => "REENTREGA_RESETANDO_EXPEDICAO"));
+            $resetaExpedicao = (!empty($parametro) && $parametro->getValor() == "S");
+
             foreach($cargas as $k1 => $carga) {
-                foreach ($carga['pedidos'] as  $k2 => $pedido) {
+                foreach ($carga['pedidos'] as $k2 => $pedido) {
                     foreach ($pedido['produtos'] as $k3 => $produto){
                         $idProduto = trim($cargas[$k1]['pedidos'][$k2]['produtos'][$k3]['codProduto']);
                         $idProduto = ProdutoUtil::formatar($idProduto);
@@ -304,7 +310,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     }
                 }
                 $this->checkProductsExists($repositorios, $carga['pedidos']);
-                $result = $this->checkPedidosExists($repositorios, $carga['pedidos'], $isIntegracaoSQL);
+                $result = $this->checkPedidosExists($repositorios, $carga['pedidos'], $isIntegracaoSQL, $resetaExpedicao);
 
                 if ($result) {
                     $this->_em->flush();
@@ -321,7 +327,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCargaExterno
+     * @param string $idCargaExterno
      * @param string $tipoCarga
      * @return boolean Se a carga for fechada com sucesso
      */
@@ -346,7 +352,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCargaExterno
+     * @param string $idCargaExterno
      * @param string $tipoCarga
      * @return boolean Se a carga for cancelada com sucesso
      */
@@ -374,7 +380,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCargaExterno
+     * @param string $idCargaExterno
      * @param string $tipoCarga
      * @param string $tipoPedido
      * @param string $idPedido
@@ -445,6 +451,28 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
 
     public function cortarPedido($idPedido, $produtosCortados) {
+
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $ppRepo */
+        $ppRepo     = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+        /** @var \Wms\Domain\Entity\Sistema\ParametroRepository $parametroRepo */
+        $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
+        $parametroEntity = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
+
+        try {
+            $this->_em->beginTransaction();
+
+            foreach ($produtosCortados as $corte) {
+                $grade = ($parametroEntity->getValor() == 'N') ? 'UNICA' : trim($corte->grade);
+                $ppRepo->cortaItem($idPedido, $corte->codProduto, $grade, $corte->quantidadeCortada, $corte->motivoCorte);
+            }
+
+            $this->_em->flush();
+            $this->_em->commit();
+        } catch (\Exception $e) {
+            $this->_em->rollback();
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+        }
+
         return true;
     }
 
@@ -521,7 +549,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param integer $idCarga
+     * @param string $idCarga
      * @param string $tipoCarga
      * @return carga Com informações das etiquetas
      */
@@ -535,7 +563,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $pedidoRepo     = $this->_em->getRepository('wms:Expedicao\Pedido');
 
         $siglaTipoCarga = $this->verificaTipoCarga($tipoCarga);
-        $cargaEn = $this->_em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno'=>$idCargaExterno,'tipoCarga'=>$siglaTipoCarga->getId()));
+        $cargaEn = $this->_em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno' => $idCargaExterno, 'tipoCarga' => $siglaTipoCarga->getId()));
+
         if ($cargaEn == null) {
             throw new \Exception($siglaTipoCarga->getSigla(). " $tipoCarga não encontrado(a)!");
         }
@@ -820,10 +849,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
+     * @param array $repositorios
      * @param array $pedidos
+     * @param bool $isIntegracaoSQL
+     * @param bool $resetaExpedicao
+     * @return bool
      * @throws Exception
      */
-    protected function checkPedidosExists($repositorios, array $pedidos, $isIntegracaoSQL = false) {
+    protected function checkPedidosExists($repositorios, array $pedidos, $isIntegracaoSQL = false, $resetaExpedicao) {
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
         $PedidoRepo = $repositorios['pedidoRepo'];
@@ -843,12 +876,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 $SQL = "SELECT *
                           FROM PEDIDO_PRODUTO PP
-                         WHERE PP.COD_PEDIDO = " . $pedido['codPedido'] . "
-                           AND PP.QUANTIDADE != NVL(PP.QTD_CORTADA,0) ";
+                         WHERE PP.COD_PEDIDO = '" . $pedido['codPedido'] . "'
+                           AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
                 $countProdutosPendentesCorte = count($this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC));
 
                 if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
-                    ($statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
+                    ($resetaExpedicao && $statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
                     ($countProdutosPendentesCorte == 0)) {
 
                     $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
@@ -857,16 +890,18 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 } else {
 
                     if ($qtdTotal != $qtdCortadas) {
-                        if (!$isIntegracaoSQL)
-                            throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
-                        else
+                        if (!$isIntegracaoSQL) {
+//                            throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                        } else {
                             return false;
+                        }
                     }
 
-                    if (!$isIntegracaoSQL)
-                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
-                    else
+                    if (!$isIntegracaoSQL){
+//                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
+                    } else {
                         return false;
+                    }
                 }
             }
         }
@@ -935,6 +970,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             $SiglaRepo      = $repositorios['siglaRepo'];
             $entitySigla    = $SiglaRepo->findOneBy(array('referencia' => $cliente['uf']));
+
+            if (!isset($entitySigla) || empty($entitySigla)) {
+                throw new \Exception('Sigla para estado inválida');
+            }
 
             $cliente['cep'] = (isset($cliente['cep']) && !empty($cliente['cep']) ? $cliente['cep'] : '');
             $cliente['enderecos'][0]['acao'] = 'incluir';
@@ -1057,6 +1096,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $pedidoRepo = $this->_em->getRepository("wms:Expedicao\Pedido");
             $nfRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaida");
             $pessoaJuridicaRepo    = $this->_em->getRepository('wms:Pessoa\Juridica');
+            $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
 
             if ((count($nf) == 0) || ($nf == null)) {
                 throw new \Exception("Nenhuma nota fiscal informada");
@@ -1075,7 +1115,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
 
                 if ($nfEn != null) {
-                    return true;
+//                    return true;
                     //throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.', série '.$notaFiscal->serieNf.', emitente: ' . $pessoaEn->getNomeFantasia() . ', cnpj ' . $notaFiscal->cnpjEmitente . ' já existe no sistema!');
                 }
 
@@ -1122,10 +1162,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                     $idProduto = $itemNotaFiscal->codProduto;
                     $idProduto = ProdutoUtil::formatar($idProduto);
-                    $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => trim($itemNotaFiscal->grade)));
+                    $parametroEntity = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
+                    $grade = ($parametroEntity->getValor() == 'N') ? 'UNICA' : trim($itemNotaFiscal->grade);
+
+                    $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
                     if ($produtoEn == null) {
-                        throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$itemNotaFiscal->grade.' não encontrado!');
+                        throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$grade.' não encontrado!');
                     }
 
                     $itemNfEntity->setCodProduto($produtoEn->getId());
@@ -1154,7 +1197,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @param string $cnpjEmitente
      * @param integer $numeroNf
      * @param string $serieNF
-     * @param integer $numeroCarga
+     * @param string $numeroCarga
      * @param string $tipoCarga
      * @return boolean Se as notas fiscais foram salvas com sucesso
      */

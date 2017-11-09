@@ -29,18 +29,7 @@ class Enderecamento_PaleteController extends Action
             $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
             try {
-                $completaPicking = false;
-                if (isset($produtos) && !empty($produtos)) {
-                    foreach ($produtos as $produto) {
-                        $piece = explode('-',$produto);
-                        $codProdutoSelecionado = $piece[0];
-                        $gradeSelecionado = $piece[1];
-                        if ($codProdutoSelecionado == $codProduto && $gradeSelecionado == $grade) {
-                            $completaPicking = true;
-                            break;
-                        }
-                    }
-                }
+                $completaPicking = ($produtos) ? true : false;
                 $paletes = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
 
                 $idPaletes = array();
@@ -64,24 +53,20 @@ class Enderecamento_PaleteController extends Action
         } else {
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
-            $itens = $notaFiscalRepo->getItensNotaByRecebimento($idRecebimento);
+            $itens = isset($produtos) && !empty($produtos) ? $produtos : $notaFiscalRepo->getItensNotaByRecebimento($idRecebimento);
 
             $result = array();
             /** @var \Wms\Domain\Entity\NotaFiscal\Item $item */
             foreach ($itens as $item) {
-                $codProduto = $item['codProduto'];
-                $grade = $item['grade'];
-                $completaPicking = false;
-                if (isset($produtos) && !empty($produtos)) {
-                    foreach ($produtos as $produto) {
-                        $piece = explode('-',$produto);
-                        $codProdutoSelecionado = $piece[0];
-                        $gradeSelecionado = $piece[1];
-                        if ($codProdutoSelecionado == $codProduto && $gradeSelecionado == $grade) {
-                            $completaPicking = true;
-                            break;
-                        }
-                    }
+                $piece = explode('-',$item);
+                if (isset($piece) && !empty($piece)) {
+                    $codProduto = $piece[0];
+                    $grade = $piece[1];
+                    $completaPicking = true;
+                } else {
+                    $codProduto = $item['codProduto'];
+                    $grade = $item['grade'];
+                    $completaPicking = false;
                 }
 
                 /** @var \Wms\Domain\Entity\Produto $produtoEn */

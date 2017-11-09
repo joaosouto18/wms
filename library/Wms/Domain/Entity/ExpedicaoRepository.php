@@ -123,6 +123,7 @@ class ExpedicaoRepository extends EntityRepository {
                   INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                   INNER JOIN CLIENTE CL ON CL.COD_PESSOA = P.COD_PESSOA
                   WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
+                      AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
                       AND E.COD_EXPEDICAO IN ($expedicoes)
                       AND P.CENTRAL_ENTREGA = $filialExterno
                       AND P.DTH_CANCELAMENTO IS NULL ";
@@ -368,7 +369,8 @@ class ExpedicaoRepository extends EntityRepository {
                         $embalagemEn = reset($embalagens);
 
                         $pickingEn = null;
-                        if (!empty($embalagemEn->getEndereco())) {
+                        $endereco = $embalagemEn->getEndereco();
+                        if (!empty($endereco)) {
                             $pickingEn = $embalagemEn->getEndereco();
                         }
 
@@ -514,7 +516,7 @@ class ExpedicaoRepository extends EntityRepository {
             $codCriterio = $itemPedido['COD_PRACA'];
             if (empty($codCriterio)) {
                 throw new \Exception("O cliente $itemPedido[NOM_FANTASIA] não tem PRAÇA cadastra, 
-                por isso não pode ser separado na quebra de pulmão doca na expedição $idExpedicao");
+                por isso não pode ser separado nesta quebra de pulmão doca na expedição $idExpedicao");
             }
             $idPedido = $itemPedido['COD_PEDIDO'];
 
@@ -620,7 +622,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $idExpedicao
      * @param $produtoEn Produto
      * @param $caracteristica
-     * @param $elementos
+     * @param $elementosArr
      * @param $pedidos
      * @param $quebra
      * @param int $criterio
@@ -645,16 +647,17 @@ class ExpedicaoRepository extends EntityRepository {
             $qtdBase = Math::adicionar($qtdBase, $qtdItem['qtd']);
         }
 
-        // Só vai forçar a sair do picking quando a saida direta no pulmão não for possível por:
-        // critério de validade
-        // ou quantidade insuficiente
-        $forcarSairDoPicking = false;
-
         $estoquePulmao = null;
         $enderecos = array();
         $idEndereco = null;
 
         foreach($elementosArr as $key => $elemento) {
+
+            // Só vai forçar a sair do picking quando a saida direta no pulmão não for possível por:
+            // critério de validade
+            // ou quantidade insuficiente
+            $forcarSairDoPicking = false;
+
             $qtdRestante = $qtdBase;
             /** @var Endereco $enderecoPicking */
             $enderecoPicking = $elemento['pickingEn'];
@@ -670,7 +673,7 @@ class ExpedicaoRepository extends EntityRepository {
                 $idElemento = $volume->getId();
             }
 
-            if (($quebra != $naoUsaPD || ($quebra == $naoUsaPD && empty($enderecoPicking))) && !$forcarSairDoPicking) {
+            if ($quebra != $naoUsaPD || ($quebra == $naoUsaPD && empty($enderecoPicking))) {
                 // Separação no estoque que não é o próprio picking do produto.
                 $params = array(
                     'idProduto' => $codProduto,
@@ -683,6 +686,7 @@ class ExpedicaoRepository extends EntityRepository {
                 while ($qtdRestante > 0) {
                     if (empty($estoquePulmao)) {
                         $forcarSairDoPicking = true;
+                        break;
                     } else {
                         foreach ($estoquePulmao as $estoque) {
                             $qtdEstoque = $estoque['SALDO'];
@@ -709,7 +713,9 @@ class ExpedicaoRepository extends EntityRepository {
                                 $qtdReservar = $qtdEstoque;
                                 $zerouEstoque = true;
                             } else {
-                                if (Math::compare($qtdRestante, $normaPD, ">=") && Math::compare($normaPD, $qtdEstoque, "<")) {
+                                if (($quebra != $naoUsaPD) && !empty($normaPD)
+                                    && Math::compare($qtdRestante, $normaPD, ">=")
+                                    && Math::compare($normaPD, $qtdEstoque, "<")) {
                                     $restoNormaPedido = Math::resto($qtdRestante, $normaPD);
                                     $fatorNormaPedido = Math::dividir(Math::subtrair($qtdRestante, $restoNormaPedido), $normaPD);
                                     $xNorma = Math::multiplicar($fatorNormaPedido, $normaPD);
@@ -972,10 +978,10 @@ class ExpedicaoRepository extends EntityRepository {
 
         $whereCargas = null;
         if (!is_null($cargas) && is_array($cargas)) {
-            $cargas = implode(',', $cargas);
+            $cargas = "'".implode("','", $cargas)."'";
             $whereCargas = " AND c.codCargaExterno in ($cargas) ";
         } else if (!is_null($cargas)) {
-            $whereCargas = " AND c.codCargaExterno = $cargas ";
+            $whereCargas = " AND c.codCargaExterno = '$cargas' ";
         }
 
         $query = "SELECT pp
@@ -1979,12 +1985,13 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
-            $where = " AND CA.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
-            $whereSubQuery = " C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
+            $codCarga = $parametros['codCargaExterno'];
+            $where = " AND CA.COD_CARGA_EXTERNO = '$codCarga'";
+            $whereSubQuery = " C.COD_CARGA_EXTERNO = '$codCarga'";
             $and = " and ";
             $andSub = " and ";
-            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "))";
-            $WhereCarga .= " AND  (COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . ")";
+            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = '$codCarga'))";
+            $WhereCarga .= " AND  (COD_CARGA_EXTERNO = '$codCarga')";
         }
 
         $JoinExpedicao = "";

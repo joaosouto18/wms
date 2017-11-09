@@ -428,10 +428,31 @@ class EstoqueRepository extends EntityRepository
         } else {
             $SQLOrderBy = " ORDER BY E.DTH_VALIDADE, E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO";
         }
-        $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $query = "SELECT 
+                       ENDERECO,
+                       COD_ENDERECO,
+                       TIPO,
+                       COD_PRODUTO,
+                       DSC_GRADE,
+                       NORMA,
+                       COD_VOLUME,
+                       VOLUME,
+                       SUM(RESERVA_ENTRADA) AS RESERVA_ENTRADA,
+                       SUM(RESERVA_SAIDA) AS RESERVA_SAIDA,
+                       QTD,
+                       DTH_PRIMEIRA_MOVIMENTACAO,
+                       DSC_PRODUTO,
+                       UMA,
+                       UNITIZADOR,
+                       DTH_VALIDADE
+                  FROM ($SQL $SQLWhere $SQLOrderBy)
+                  GROUP BY ENDERECO,  COD_ENDERECO,  TIPO, COD_PRODUTO, DSC_GRADE, NORMA, COD_VOLUME, VOLUME, QTD,
+                        DTH_PRIMEIRA_MOVIMENTACAO, DSC_PRODUTO, UMA, UNITIZADOR, DTH_VALIDADE";
+        $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
         if ($returnQuery == true) {
-            return $SQL . $SQLWhere . $SQLOrderBy;
+            return $query;
         }
 
         if (isset($maxResult) && !empty($maxResult)) {
