@@ -922,8 +922,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 }
                             } else {
                                 $tudoImpresso = false;
+                                next($arrVolumesReservas);
                             }
-                            next($arrVolumesReservas);
                         }
                     } else {
                         foreach ($arrVolumesReservas as $elements) {
