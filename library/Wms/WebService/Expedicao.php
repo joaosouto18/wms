@@ -877,7 +877,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $SQL = "SELECT *
                           FROM PEDIDO_PRODUTO PP
                          WHERE PP.COD_PEDIDO = '" . $pedido['codPedido'] . "'
-                           AND PP.QUANTIDADE != NVL(PP.QTD_CORTADA,0) ";
+                           AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
                 $countProdutosPendentesCorte = count($this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC));
 
                 if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
@@ -890,16 +890,18 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 } else {
 
                     if ($qtdTotal != $qtdCortadas) {
-                        if (!$isIntegracaoSQL)
-                            throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
-                        else
+                        if (!$isIntegracaoSQL) {
+//                            throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                        } else {
                             return false;
+                        }
                     }
 
-                    if (!$isIntegracaoSQL)
-                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
-                    else
+                    if (!$isIntegracaoSQL){
+//                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
+                    } else {
                         return false;
+                    }
                 }
             }
         }
