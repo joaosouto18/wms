@@ -144,12 +144,23 @@ class Identificacao extends SubForm
                             'N' => 'NÃO'
                         )))
                     ->addElement('text', 'diasVidaUtil', array(
-                        'label' => 'Dias para Vencimento',
-                        'size' => 10,
+                        'label' => 'Prazo Mín. de Validade Para Recebimento (dias)',
+                        'size' => 15,
                         'maxlength' => 4
                     ))
+                    ->addElement('text', 'diasVidaUtilMaximo', array(
+                        'label' => 'Prazo Máx. de Validade (dias)',
+                        'size' => 15,
+                        'alt' => 'number',
+                        'maxlength' => 4
+                    ))
+                    ->addElement('text', 'percentMinVidaUtil', array(
+                        'label' => '       ',
+                        'size' => 10,
+                        'maxlength' => 6
+                    ))
                     ->addDisplayGroup(
-                        array('validade', 'diasVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
+                        array('validade', 'diasVidaUtilMaximo', 'diasVidaUtil', 'percentMinVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
                     );
 
     }
@@ -174,9 +185,11 @@ class Identificacao extends SubForm
         if (empty($produto->getValidade())) {
             $values['validade'] = 'N';
             $values['diasVidaUtil'] = null;
+            $values['diasVidaUtilMaximo'] = null;
         } else {
             $values['validade'] = $produto->getValidade();
             $values['diasVidaUtil'] = $produto->getDiasVidaUtil();
+            $values['diasVidaUtilMaximo'] = $produto->getDiasVidaUtilMax();
         }
 
         if (empty($produto->getPossuiPesoVariavel())) {

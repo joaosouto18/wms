@@ -369,7 +369,8 @@ class ExpedicaoRepository extends EntityRepository {
                         $embalagemEn = reset($embalagens);
 
                         $pickingEn = null;
-                        if (!empty($embalagemEn->getEndereco())) {
+                        $endereco = $embalagemEn->getEndereco();
+                        if (!empty($endereco)) {
                             $pickingEn = $embalagemEn->getEndereco();
                         }
 
@@ -515,7 +516,7 @@ class ExpedicaoRepository extends EntityRepository {
             $codCriterio = $itemPedido['COD_PRACA'];
             if (empty($codCriterio)) {
                 throw new \Exception("O cliente $itemPedido[NOM_FANTASIA] não tem PRAÇA cadastra, 
-                por isso não pode ser separado na quebra de pulmão doca na expedição $idExpedicao");
+                por isso não pode ser separado nesta quebra de pulmão doca na expedição $idExpedicao");
             }
             $idPedido = $itemPedido['COD_PEDIDO'];
 
@@ -646,16 +647,17 @@ class ExpedicaoRepository extends EntityRepository {
             $qtdBase = Math::adicionar($qtdBase, $qtdItem['qtd']);
         }
 
-        // Só vai forçar a sair do picking quando a saida direta no pulmão não for possível por:
-        // critério de validade
-        // ou quantidade insuficiente
-        $forcarSairDoPicking = false;
-
         $estoquePulmao = null;
         $enderecos = array();
         $idEndereco = null;
 
         foreach($elementosArr as $key => $elemento) {
+
+            // Só vai forçar a sair do picking quando a saida direta no pulmão não for possível por:
+            // critério de validade
+            // ou quantidade insuficiente
+            $forcarSairDoPicking = false;
+
             $qtdRestante = $qtdBase;
             /** @var Endereco $enderecoPicking */
             $enderecoPicking = $elemento['pickingEn'];
@@ -671,7 +673,7 @@ class ExpedicaoRepository extends EntityRepository {
                 $idElemento = $volume->getId();
             }
 
-            if (($quebra != $naoUsaPD || ($quebra == $naoUsaPD && empty($enderecoPicking))) && !$forcarSairDoPicking) {
+            if ($quebra != $naoUsaPD || ($quebra == $naoUsaPD && empty($enderecoPicking))) {
                 // Separação no estoque que não é o próprio picking do produto.
                 $params = array(
                     'idProduto' => $codProduto,
@@ -684,6 +686,7 @@ class ExpedicaoRepository extends EntityRepository {
                 while ($qtdRestante > 0) {
                     if (empty($estoquePulmao)) {
                         $forcarSairDoPicking = true;
+                        break;
                     } else {
                         foreach ($estoquePulmao as $estoque) {
                             $qtdEstoque = $estoque['SALDO'];

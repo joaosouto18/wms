@@ -238,8 +238,10 @@ class Web_ProdutoController extends Crud {
                 $entity->setValidade($validade);
                 if ($validade == 'N' || $params['produto']['diasVidaUtil'] == null || empty($params['produto']['diasVidaUtil'])) {
                     $entity->setDiasVidaUtil(0);
+                    $entity->setDiasVidaUtilMax(0);
                 } else {
                     $entity->setDiasVidaUtil($params['produto']['diasVidaUtil']);
+                    $entity->setDiasVidaUtilMax($params['produto']['diasVidaUtilMaximo']);
                 }
 
                 if ($params['produto']['pVariavel'] == 'N') {

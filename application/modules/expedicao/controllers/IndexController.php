@@ -540,6 +540,11 @@ class Expedicao_IndexController extends Action {
 
             $etiquetaInicial = trim($params['etiquetaInicial']);
             $etiquetaFinal = trim($params['etiquetaFinal']);
+            $expedicaoIni = $equipeSeparacaoRepo->getExpedicao($etiquetaInicial);
+            $expedicaoFim = $equipeSeparacaoRepo->getExpedicao($etiquetaFinal);
+            if($expedicaoIni['COD_EXPEDICAO'] != $expedicaoFim['COD_EXPEDICAO']){
+                $erro = 'Etiquetas não pertencem a mesma expedição.';
+            }
             //ENCONTRA O USUARIO DIGITADO
             /** @var Expedicao\EquipeSeparacao $usuarioEn */
             $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));

@@ -168,6 +168,10 @@ class MapaSeparacao extends eFPDF {
                 $codProduto = $produto->getCodProduto();
                 $grade = $produto->getDscGrade();
                 $descricao = utf8_decode($produto->getProduto()->getDescricao());
+                $descricaoView = $descricao;
+                if(strlen ( $descricao) > 50) {
+                    $descricaoView = substr($descricao, 0, 50);
+                }
                 if ($produto->getProdutoVolume() == null) {
                     $embalagem = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
                     $endereco = $produto->getDepositoEndereco();
@@ -195,7 +199,10 @@ class MapaSeparacao extends eFPDF {
                         $this->Cell(18, 6, $embalagem, 0, 0);
                         $this->Cell(18, 6, $quantidade, 0, 0);
                         $this->Cell(15, 6, $caixas, 0, 1, 'C');
-                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        if(strlen ( $descricao) > 50) {
+                            $this->MultiCell(99, 6, $this->SetStringByMaxWidth(substr($descricao, 50, 300), 99), 3, 0);
+                        }
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                         $this->Cell(20, 1, "", 0, 1);
                     } else {
                         $this->Cell(24, 6, $dscEndereco, 0, 0);
@@ -204,26 +211,36 @@ class MapaSeparacao extends eFPDF {
                         $this->Cell(93, 6, $this->SetStringByMaxWidth($descricao, 93), 0, 0);
                         $this->Cell(18, 6, $embalagem, 0, 0);
                         $this->Cell(18, 6, $quantidade, 0, 1, 'C');
-                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        if(strlen ( $descricao) > 50) {
+                            $this->MultiCell(99, 6, $this->SetStringByMaxWidth(substr($descricao, 50, 300), 99), 3, 0);
+                        }
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                         $this->Cell(20, 1, "", 0, 1);
                     }
                 } else {
                     if ($tipoQebra == true) {
+
                         $this->Cell(24, 6, $dscEndereco, 0, 0);
                         $this->Cell(22, 6, $codProduto, 0, 0);
-                        $this->Cell(99, 6, $this->SetStringByMaxWidth($descricao, 99), 0, 0);
+                        $this->Cell(99, 6, $this->SetStringByMaxWidth($descricaoView, 99), 0, 0);
                         $this->Cell(20, 6, $embalagem, 0, 0);
                         $this->Cell(15, 6, $quantidade, 0, 0);
                         $this->Cell(15, 6, $caixas, 0, 1, 'C');
-                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
-                        $this->Cell(20, 1, "", 0, 1);
+                        if(strlen ( $descricao) > 50) {
+                            $this->MultiCell(99, 6, $this->SetStringByMaxWidth(substr($descricao, 50, 300), 99), 3, 0);
+                        }
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(20, 2, "", 0, 1);
                     } else {
                         $this->Cell(24, 6, $dscEndereco, 0, 0);
                         $this->Cell(22, 6, $codProduto, 0, 0);
                         $this->Cell(98, 6, $this->SetStringByMaxWidth($descricao, 98), 0, 0);
                         $this->Cell(31, 6, $embalagem, 0, 0);
                         $this->Cell(20, 6, $quantidade, 0, 1, 'C');
-                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        if(strlen ( $descricao) > 50) {
+                            $this->MultiCell(99, 6, $this->SetStringByMaxWidth(substr($descricao, 50, 300), 99), 3, 0);
+                        }
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                         $this->Cell(20, 1, "", 0, 1);
                     }
                 }
