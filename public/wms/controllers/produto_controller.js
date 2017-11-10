@@ -31,55 +31,10 @@ $.Controller.extend('Wms.Controllers.Produto',
             this.checkShowValidade();
             this.checkShowPesoVariavel();
             this.checkShowUnidFracionavel();
-            $('#produto-diasVidaUtil').parent().hide();
-            $('#produto-diasVidaUtil').hide();
 
-            $('#produto-diasVidaUtilMaximo').parent().hide();
-            $('#produto-diasVidaUtilMaximo').hide();
+            $('#produto-diasVidaUtil').parent().append($('#produto-percentMinVidaUtil')).append(' %');
 
-            $('#produto-percentMinVidaUtil').parent().hide();
-            $('#produto-percentMinVidaUtil').hide();
-
-            $('#produto-percTolerancia').parent().hide();
-            $('#produto-percTolerancia').hide();
-
-            $('#produto-toleranciaNominal').parent().hide();
-            $('#produto-toleranciaNominal').hide();
-
-            $('#produto-diasVidaUtil').parent().append($('#produto-percentMinVidaUtil'));
-            $('#produto-diasVidaUtil').parent().append(' %');
-
-            Wms.Controllers.Produto.prototype.changePercent($('#produto-diasVidaUtilMaximo').val(), $('#produto-diasVidaUtil').val());
-            //oculta campo de dias para vencimento
-            if ($('#produto-validade').val() == 'S') {
-                $('#produto-diasVidaUtil').show();
-                $('#produto-diasVidaUtil').parent().show();
-                $('#produto-diasVidaUtilMaximo').show();
-                $('#produto-diasVidaUtilMaximo').parent().show();
-                $('#produto-percentMinVidaUtil').show();
-                $('#produto-percentMinVidaUtil').parent().show();
-                $('#produto-diasVidaUtilMaximo').addClass('required');
-                $('#produto-diasVidaUtil').addClass('required');
-            } else if ($('#produto-validade').val() == 'N') {
-                $('#produto-diasVidaUtil').hide();
-                $('#produto-diasVidaUtil').parent().hide();
-                $('#produto-diasVidaUtilMaximo').hide();
-                $('#produto-diasVidaUtilMaximo').parent().hide();
-                $('#produto-percentMinVidaUtil').hide();
-                $('#produto-percentMinVidaUtil').parent().hide();
-            }
-
-            if ($('#produto-pVariavel').val() == 'S') {
-                $('#produto-percTolerancia').parent().show();
-                $('#produto-percTolerancia').show();
-                $('#produto-toleranciaNominal').parent().show();
-                $('#produto-toleranciaNominal').show();
-            } else if ($('#produto-pVariavel').val() == 'N') {
-                $('#produto-percTolerancia').parent().hide();
-                $('#produto-percTolerancia').hide();
-                $('#produto-toleranciaNominal').parent().hide();
-                $('#produto-toleranciaNominal').hide();
-            }
+            this.changePercent($('#produto-diasVidaUtilMaximo').val(), $('#produto-diasVidaUtil').val());
 
             //checa quantidade de volumes
             $(".btnSave").off('click').click(function(e) {
@@ -133,29 +88,24 @@ $.Controller.extend('Wms.Controllers.Produto',
 
         checkShowValidade: function () {
             var inptDiasVidaUtil = $('#produto-diasVidaUtil');
+            var inptDiasVidaUtilMaximo = $('#produto-diasVidaUtilMaximo');
+            var inptPercentMinVidaUtil = $('#produto-percentMinVidaUtil');
             if ($('#produto-validade').val() === 'S') {
                 inptDiasVidaUtil.show();
                 inptDiasVidaUtil.parent().show();
+                inptDiasVidaUtil.addClass('required');
+                inptDiasVidaUtilMaximo.parent().show();
+                inptDiasVidaUtilMaximo.show();
+                inptDiasVidaUtilMaximo.addClass('required');
+                inptPercentMinVidaUtil.parent().show();
+                inptPercentMinVidaUtil.show();
             } else {
                 inptDiasVidaUtil.hide();
                 inptDiasVidaUtil.parent().hide();
-            }
-            if ($('#produto-validade').val() == 'S') {
-                $('#produto-diasVidaUtil').parent().show();
-                $('#produto-diasVidaUtil').show();
-                $('#produto-diasVidaUtilMaximo').parent().show();
-                $('#produto-diasVidaUtilMaximo').show();
-                $('#produto-diasVidaUtilMaximo').addClass('required');
-                $('#produto-diasVidaUtil').addClass('required');
-                $('#produto-percentMinVidaUtil').parent().show();
-                $('#produto-percentMinVidaUtil').show();
-            } else if ($('#produto-validade').val() == 'N') {
-                $('#produto-diasVidaUtil').parent().hide();
-                $('#produto-diasVidaUtil').hide();
-                $('#produto-diasVidaUtilMaximo').parent().hide();
-                $('#produto-diasVidaUtilMaximo').hide();
-                $('#produto-percentMinVidaUtil').parent().hide();
-                $('#produto-percentMinVidaUtil').hide();
+                inptDiasVidaUtilMaximo.parent().hide();
+                inptDiasVidaUtilMaximo.hide();
+                inptPercentMinVidaUtil.parent().hide();
+                inptPercentMinVidaUtil.hide();
             }
         },
 
