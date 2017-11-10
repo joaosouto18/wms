@@ -37,6 +37,9 @@ class MapaSeparacao extends eFPDF {
             case 5:
                 $this->layoutModelo5($expedicao, $status, $codBarras);
                 break;
+            case 6:
+                $this->layoutModelo6($expedicao, $status, $codBarras);
+                break;
             default:
                 $this->layoutModelo1($expedicao, $status, $codBarras);
         }
@@ -1121,6 +1124,110 @@ class MapaSeparacao extends eFPDF {
         $em->flush();
         $em->clear();
     }
+
+
+    private function layoutModelo6($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null) {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        if ($codBarras == null) {
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('expedicao' => $idExpedicao, 'codStatus' => $status));
+        } else {
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->getMapaSeparacaoById($codBarras);
+        }
+        \Zend_Layout::getMvcInstance()->disableLayout(true);
+        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+
+        /** @var Parametro $param */
+        $param = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => "UTILIZA_GRADE"));
+        if (!empty($param)) {
+            $usaGrade = $param->getValor();
+        } else {
+            $usaGrade = 'N';
+        }
+        $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
+        $this->AddPage();
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(200, 3, utf8_decode("MAPA DE CONFERENCIA - EXPEDIÇÃO " . $idExpedicao), 0, 1, "C");
+        $count = 0;
+        foreach ($mapaSeparacao as $mapa) {
+            if($count == 7){
+                $this->AddPage();
+                $this->SetFont('Arial', 'B', 10);
+                $this->Cell(200, 3, utf8_decode("MAPA DE CONFERENCIA - EXPEDIÇÃO " . $idExpedicao), 0, 1, "C");
+                $count = 0;
+            }
+
+            $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
+            $em->persist($mapa);
+
+            $this->idMapa = $mapa->getId();
+            $this->idExpedicao = $idExpedicao;
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+            $expedicaoRepo = $em->getRepository('wms:Expedicao');
+            $txtCarga = 'CARGA';
+            $cargasSelecionadas = $this->getCargasSelecionadas();
+            if (empty($cargasSelecionadas)) {
+                $cargas = $expedicaoRepo->getCodCargasExterno($this->idExpedicao);
+                $stringCargas = null;
+                foreach ($cargas as $key => $carga) {
+                    unset($carga['sequencia']);
+                    if ($key >= 1) {
+                        $stringCargas .= ',';
+                    }
+                    $stringCargas .= implode(',', $carga);
+                    $txtCarga = (count($cargas) > 1) ? 'CARGAS' : 'CARGA';
+                }
+            } else {
+                if (is_array($cargasSelecionadas)) {
+                    $stringCargas = implode(',', $cargasSelecionadas);
+                    if (count($cargasSelecionadas) > 1)
+                        $txtCarga = 'CARGAS';
+                } else {
+                    $stringCargas = $cargasSelecionadas;
+                }
+            }
+
+
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(20, 1, "__________________________________________________________________________________________________", 0, 1);
+            $this->Cell(20, 3, "", 0, 1);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell(4, 4, utf8_decode($this->idExpedicao) . ' - ' . $txtCarga . ': ' . $stringCargas, 0, 1);
+
+            $this->SetFont('Arial', 'B', 9);
+
+            $this->Cell(4, 10, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
+            $this->SetFont('Arial', 'B', 7);
+//Go to 1.5 cm from bottom
+            $this->Cell(20, 3, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1, "L");
+
+            $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
+            $this->Image($imgCodBarras, NULL, NULL, 50);
+
+            $this->InFooter = true;
+            $pageSizeA4 = $this->_getpagesize();
+            $wPage = $pageSizeA4[0] / 12;
+            $this->InFooter = false;
+            $count++;
+        }
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo = $em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
+        $ExpedicaoEntity = $ExpedicaoRepo->find($idExpedicao);
+        $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
+        $ExpedicaoEntity->setStatus($statusEntity);
+        $em->persist($ExpedicaoEntity);
+
+        $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');
+
+        $em->flush();
+        $em->clear();
+    }
+
 
     /**
      * @return mixed
