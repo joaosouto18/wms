@@ -108,7 +108,7 @@ class Embalagem {
     protected $embalado;
 
     /**
-     * @Column(name="PONTO_REPOSICAO", type="integer", nullable=false)
+     * @Column(name="PONTO_REPOSICAO", type="decimal", nullable=false)
      */
     protected $pontoReposicao;
 
@@ -380,7 +380,7 @@ class Embalagem {
     public function setPontoReposicao($pontoReposicao) {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
         $andamentoRepo->checksChange($this->getProduto(), 'Ponto de Reposição', $this->pontoReposicao, $pontoReposicao);
-        $this->pontoReposicao = $pontoReposicao;
+        $this->pontoReposicao = str_replace(',', '.', $pontoReposicao);
     }
 
     /**
