@@ -676,7 +676,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     if(pontoReal != 0){
                                         pontoReal = parseFloat(produto_embalagem[0].pontoReposicao).toFixed(3);
                                     }
-                                    console.log(pontoReal);
                                     $('#fieldset-campos-comuns #altura-real').val((parseFloat(produto_embalagem[0].altura.replace(',', '.')) / parseInt(qtdPadrao)).toFixed(5));
                                     $('#fieldset-campos-comuns #peso-real').val((parseFloat(produto_embalagem[0].peso.replace(',', '.')) / parseInt(qtdPadrao)).toFixed(5));
                                     $('#embalagem-fator option[value="' + qtdPadrao + '"]').attr('selected', 'selected');
