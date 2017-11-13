@@ -53,21 +53,42 @@ class Expedicao_OndaRessuprimentoController extends Action {
             if (empty($idsExpedicoes))
                 throw new \Exception("Nenhuma expedição selecionada");
 
-            $expedicoes = implode(',', $idsExpedicoes);
+            $expedicoesTotais = implode(',', $idsExpedicoes);
+            $expedicoesCortar = $expedicaoRepo->getExpedicaoSemProdutos($expedicoesTotais);
+            $codExpedicoes = array();
+            foreach ($idsExpedicoes as $idExpedicao) {
+                $dependenciaCorte = false;
+                foreach ($expedicoesCortar as $expedicaoCorte) {
+                    if ($idExpedicao == $expedicaoCorte['id']) {
+                        $dependenciaCorte = true;
+                        $expedicaoCortar = $expedicaoCorte['id'];
+                        break;
+                    }
+                }
+                if (!$dependenciaCorte) {
+                    $codExpedicoes[] = $idExpedicao;
+                }
+            }
+            $expedicoesSemCorte = implode(',',$codExpedicoes);
+            ini_set('max_execution_time', 300);
+            ini_set('memory_limit', '-1');
 
-            $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
+            $resultGerado = $expedicaoRepo->gerarOnda($expedicoesSemCorte);
+            ini_set('max_execution_time', 30);
+
+            $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoesTotais);
             $msgCorte = null;
             if (count($result) > 0) {
                 $cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
 
                 if ($cortarAutomatico == 'S') {
                     $motivo = "Saldo insuficiente";
-                    $itensPCortar = $expedicaoRepo->diluirCorte($expedicoes, $result);
+                    $itensPCortar = $expedicaoRepo->diluirCorte($expedicoesTotais, $result);
                     $expedicaoRepo->executaCortePedido($itensPCortar, $motivo, $cortarAutomatico);
-                    $link = '<a href="' . $this->view->url(array('controller' => 'corte', 'action' => 'relatorio-corte-ajax', 'id' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de cortes automaticos da onda de ressuprimento</a>';
+                    $link = '<a href="' . $this->view->url(array('controller' => 'corte', 'action' => 'relatorio-corte-ajax', 'id' => $expedicoesTotais)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de cortes automaticos da onda de ressuprimento</a>';
                     $msgCorte = "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque. Clique para exibir " . $link;
                 } else {
-                    $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
+                    $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoesTotais)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
                     $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
 
                     $this->addFlashMessage("error", $mensagem);
@@ -75,16 +96,16 @@ class Expedicao_OndaRessuprimentoController extends Action {
                 }
             }
 
-            ini_set('max_execution_time', 300);
-            ini_set('memory_limit', '-1');
+//            ini_set('max_execution_time', 300);
+//            ini_set('memory_limit', '-1');
+//
+//            $result = $expedicaoRepo->gerarOnda($expedicoes);
+//            ini_set('max_execution_time', 30);
 
-            $result = $expedicaoRepo->gerarOnda($expedicoes);
-            ini_set('max_execution_time', 30);
-
-            if ($result['resultado'] == false) {
-                throw new Exception($result['observacao']);
+            if ($resultGerado['resultado'] == false) {
+                throw new Exception($resultGerado['observacao']);
             } else {
-                $this->addFlashMessage("success", $result['observacao']);
+                $this->addFlashMessage("success", $resultGerado['observacao']);
                 if (!empty($msgCorte)) {
                     $this->addFlashMessage("warning", $msgCorte);
                 }
