@@ -1,36 +1,50 @@
-<h2>Expedição: <?php echo $this->expedicao ?></h2>
+<h2 style="text-align: center;
+    margin: 5px;
+    margin-bottom: 0px;
+    font-size: 14px;">
+    Expedição: <?php echo $this->expedicao ?>
+</h2>
 <div class="padding-top">
-
     <?php if ($this->cargas) : ?>
-        <p><b>Selecione as cargas</b> - <label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecione Todas</label><br></p>
-
-        <div id="cargas">
-            <?php foreach($this->cargas as $carga) : ?>
-                <label>
-                <input
-                       class="checkBoxClass"
-                       style="vertical-align: middle"
-                       type="checkbox"
-                       name="cargas"
-                       value="<?php echo $carga['codCargaExterno']?>"
-                       >
-                Carga <?php echo $carga['codCargaExterno']?>
-                </label><br />
-            <?php endforeach ?>
-        </div>
+        <fieldset id="fieldset-identification" rowspan="2">
+            <legend>Selecione as cargas</legend>
+            <div class="field" style="padding: 12px;">
+                <b><label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecione Todas</label></b>
+            </div>
+            <div id="cargas"><b>
+                    <?php foreach($this->cargas as $carga) : ?>
+                        <div class="field" style="padding: 12px;">
+                            <label>
+                                <input
+                                        class="checkBoxClass"
+                                        style="vertical-align: middle"
+                                        type="checkbox"
+                                        name="cargas"
+                                        value="<?php echo $carga['codCargaExterno']?>"
+                                >
+                                Carga <?php echo $carga['codCargaExterno']?>
+                            </label>
+                        </div>
+                    <?php endforeach ?>
+                </b>
+            </div>
+        </fieldset>
     <?php endif; ?>
+    <fieldset id="fieldset-identification" rowspan="2">
+        <legend>Selecione a central de entregas</legend>
+        <div id="centrais"><b>
+                <input type="hidden" id="controller" value="<?php echo $this->controller; ?>">
+                <input type="hidden" id="action" value="<?php echo $this->action; ?>">
+                <input type="hidden" id="expedicao" value="<?php echo $this->expedicao ?>">
+                <?php foreach($this->centraisEntrega as $central) : ?>
+                <div class="field" style="padding: 12px;">
+                        <input type="button" class="btn" id="<?php echo $central['centralEntrega'] ?>" value="Central <?php echo $central['centralEntrega'] ?>" name="central-<?php echo $central['centralEntrega'] ?>">
+                </div>
+                <?php endforeach; ?>
+            </b>
+        </div>
+    </fieldset>
 
-    <br><p><b>Selecione a central de entregas</b></p>
-    <ul id="centrais">
-        <input type="hidden" id="controller" value="<?php echo $this->controller; ?>">
-        <input type="hidden" id="action" value="<?php echo $this->action; ?>">
-        <input type="hidden" id="expedicao" value="<?php echo $this->expedicao ?>">
-        <?php foreach($this->centraisEntrega as $central) : ?>
-            <li>
-                <input type="button" class="btn" id="<?php echo $central['centralEntrega'] ?>" value="Central <?php echo $central['centralEntrega'] ?>" name="central-<?php echo $central['centralEntrega'] ?>">
-            </li>
-        <?php endforeach; ?>
-    </ul>
 </div>
 
 <script>

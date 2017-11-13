@@ -1025,6 +1025,10 @@ class EstoqueRepository extends EntityRepository
         }
 
         $array = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrder)->fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($array as $key => $value){
+            $array[$key]['VOLUME_PICKING'] =  substr($value['VOLUME_PICKING'], 0, 20);
+            $array[$key]['VOLUMES_ESTOQUE'] = substr($value['VOLUMES_ESTOQUE'], 0, 20);
+        }
         return $array;
     }
 
