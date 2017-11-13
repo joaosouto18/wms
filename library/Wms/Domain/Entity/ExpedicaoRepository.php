@@ -911,14 +911,15 @@ class ExpedicaoRepository extends EntityRepository {
     public function getExpedicaoSemProdutos($codExpedicao)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('e.id')
+            ->select('MAX(e.id) id')
             ->from('wms:Expedicao\PedidoProduto', 'pp')
             ->innerJoin('pp.pedido', 'p')
             ->innerJoin('p.carga', 'c')
             ->innerJoin('c.expedicao', 'e')
             ->leftJoin('wms:Enderecamento\Estoque', 'est', 'WITH', 'est.codProduto = pp.codProduto AND est.grade = pp.grade')
             ->where('est.codProduto is null')
-            ->andWhere("e.id IN ($codExpedicao)");
+            ->andWhere("e.id IN ($codExpedicao)")
+            ->groupBy('e.id');
         return $sql->getQuery()->getResult();
 
     }
