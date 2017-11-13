@@ -855,6 +855,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         return $a->getCodigoSequencial() < $b->getCodigoSequencial();
                     });
 
+                    if ($filial->getIndUtilizaRessuprimento() !== "S") {
+                        $reserva = $reservas[0];
+                        $novasReservas = [];
+                        foreach($arrayVolumes as $volume) {
+                            $reserva['codProdutoVolume'] = $volume->getId();
+                            $novasReservas[] = $reserva;
+                        }
+                        $reservas = $novasReservas;
+                    }
+
                     $arrVolumesReservas = self::regroupReservaVolumes($reservas, $arrayVolumes, $tipoSeparacao);
 
                     if ($tipoSeparacao == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
