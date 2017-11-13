@@ -117,9 +117,10 @@ class Expedicao_IndexController extends Action {
 
         if (!empty($params)) {
 
-            if (!empty($params['idExpedicao']) || !empty($params['codCargaExterno'])) {
+            if (!empty($params['idExpedicao']) || !empty($params['codCargaExterno']) || !empty($params['pedido'])) {
                 $idExpedicao = null;
                 $idCarga = null;
+                $pedido = null;
 
                 if (!empty($params['idExpedicao']))
                     $idExpedicao = $params['idExpedicao'];
@@ -128,9 +129,13 @@ class Expedicao_IndexController extends Action {
                 if (!empty($params['codCargaExterno']))
                     $idCarga = $params['codCargaExterno'];
 
+                if (!empty($params['pedido']))
+                    $pedido = $params['pedido'];
+
                 $params = array();
                 $params['idExpedicao'] = $idExpedicao;
                 $params['codCargaExterno'] = $idCarga;
+                $params['pedido'] = $pedido;
             } else {
                 if (empty($params['dataInicial1'])) {
                     $params['dataInicial1'] = $dataI1->format('d/m/Y');
@@ -154,7 +159,6 @@ class Expedicao_IndexController extends Action {
         }
 
         $params['usaDeclaracaoVP'] = $this->getSystemParameterValue('USA_DECLARACAO_DE_VOLUME_PATRIMONIO');
-
         $form->populate($params);
 
         $Grid = new ExpedicaoGrid();
