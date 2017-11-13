@@ -56,12 +56,13 @@ class Expedicao_OndaRessuprimentoController extends Action {
             $expedicoesTotais = implode(',', $idsExpedicoes);
             $expedicoesCortar = $expedicaoRepo->getExpedicaoSemProdutos($expedicoesTotais);
             $codExpedicoes = array();
+            $expedicaoCortar = array();
             foreach ($idsExpedicoes as $idExpedicao) {
                 $dependenciaCorte = false;
                 foreach ($expedicoesCortar as $expedicaoCorte) {
                     if ($idExpedicao == $expedicaoCorte['id']) {
                         $dependenciaCorte = true;
-                        $expedicaoCortar = $expedicaoCorte['id'];
+                        $expedicaoCortar[] = $expedicaoCorte['id'];
                         break;
                     }
                 }
@@ -70,6 +71,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
                 }
             }
             $expedicoesSemCorte = implode(',',$codExpedicoes);
+            $expedicoesComCorte = implode(',',$expedicaoCortar);
             ini_set('max_execution_time', 300);
             ini_set('memory_limit', '-1');
 
@@ -89,7 +91,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
                     $msgCorte = "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque. Clique para exibir " . $link;
                 } else {
                     $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoesTotais)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
-                    $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
+                    $mensagem = "Existem produtos sem estoque nas expedições $expedicoesComCorte. Clique para exibir " . $link;
 
                     $this->addFlashMessage("error", $mensagem);
                     $this->redirect("index", "onda-ressuprimento", "expedicao");
