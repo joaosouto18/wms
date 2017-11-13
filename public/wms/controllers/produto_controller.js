@@ -31,6 +31,7 @@ $.Controller.extend('Wms.Controllers.Produto',
             this.checkShowValidade();
             this.checkShowPesoVariavel();
             this.checkShowUnidFracionavel();
+            var este = this;
 
             $('#produto-diasVidaUtil').parent().append($('#produto-percentMinVidaUtil')).append(' %');
 
@@ -42,10 +43,10 @@ $.Controller.extend('Wms.Controllers.Produto',
                     $(this).removeClass('required');
                 });
                 ///checa embalagem e volume
-                if(!Wms.Controllers.Produto.prototype.verificarEmbalagemVolume())
+                if(!este.verificarEmbalagemVolume())
                     return false;
 
-                if(!this.verificarValidade())
+                if(!este.verificarValidade())
                     return false;
 
 
@@ -139,10 +140,13 @@ $.Controller.extend('Wms.Controllers.Produto',
             }
         },
 
-        verificarValidade: function (max, min) {
+        verificarValidade: function () {
+            var este = this;
             if ($('#produto-validade').val() == 'S') {
-                if($('#produto-diasVidaUtil').val() == '' || $('#produto-diasVidaUtilMaximo').val() == ''){
-                    this.dialogAlert('Preencha os campos relacionados a validade.');
+                if($('#produto-diasVidaUtil').val() == '' ||
+                    $('#produto-diasVidaUtilMaximo').val() == '' ||
+                    $('#produto-diasVidaUtilMaximo').val() == 0){
+                    este.dialogAlert('Preencha os campos relacionados a validade.');
                     $('#produto-diasVidaUtilMaximo').focus();
                     return false;
                 }else{
