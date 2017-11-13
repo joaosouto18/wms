@@ -908,6 +908,22 @@ class ExpedicaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getExpedicaoSemProdutos($codExpedicao)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('MAX(e.id) id')
+            ->from('wms:Expedicao\PedidoProduto', 'pp')
+            ->innerJoin('pp.pedido', 'p')
+            ->innerJoin('p.carga', 'c')
+            ->innerJoin('c.expedicao', 'e')
+            ->leftJoin('wms:Enderecamento\Estoque', 'est', 'WITH', 'est.codProduto = pp.codProduto AND est.grade = pp.grade')
+            ->where('est.codProduto is null')
+            ->andWhere("e.id IN ($codExpedicao)")
+            ->groupBy('e.id');
+        return $sql->getQuery()->getResult();
+
+    }
+
     public function campareResumoConferenciaByCarga($qtd, $idCargaExterno) {
         $SQL = "SELECT  C.COD_CARGA_EXTERNO as CARGA,
                                 SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
