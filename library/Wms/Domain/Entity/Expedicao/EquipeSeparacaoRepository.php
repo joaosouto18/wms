@@ -41,7 +41,7 @@ class EquipeSeparacaoRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
-    public function getApontamentosProdutividade($cpf, $dataInicio, $dataFim){
+    public function getApontamentosProdutividade($cpf, $dataInicio, $dataFim, $etiqueta){
         $where = '';
         if (isset($dataInicio) && (!empty($dataInicio))) {
             $where .= " AND EP.DTH_VINCULO >= TO_DATE('$dataInicio 00:00','DD-MM-YYYY HH24:MI')";
@@ -51,6 +51,9 @@ class EquipeSeparacaoRepository extends EntityRepository
         }
         if (isset($cpf) && (!empty($cpf))) {
             $where .= " AND PF.NUM_CPF = $cpf";
+        }
+        if (isset($etiqueta) && (!empty($etiqueta))) {
+            $where .= " AND $etiqueta >= EP.ETIQUETA_INICIAL AND $etiqueta <= EP.ETIQUETA_FINAL";
         }
         if($where == ''){
             $where = ' AND 1 = 2';

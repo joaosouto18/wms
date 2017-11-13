@@ -616,11 +616,12 @@ class Expedicao_IndexController extends Action {
 
     public function buscaApontamentoSeparacaoAjaxAction(){
         $params = $this->_getAllParams();
+        $etiqueta = ColetorUtil::retiraDigitoIdentificador($params['etiquetas']['etiquetaBusca']);
         $cpf = str_replace(array('.', '-'), '', $params['etiquetas']['cpfBusca']);
         $dataInicio = $params['etiquetas']['dataInicial'];
         $dataFim = $params['etiquetas']['dataFinal'];
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
-        $result = $equipeSeparacaoRepo->getApontamentosProdutividade($cpf, $dataInicio, $dataFim);
+        $result = $equipeSeparacaoRepo->getApontamentosProdutividade($cpf, $dataInicio, $dataFim, $etiqueta);
         $this->_helper->json(array('dados' => $result));
     }
 
