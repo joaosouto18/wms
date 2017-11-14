@@ -347,6 +347,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setPeso($peso);
                         $embalagemEntity->setProfundidade($profundidade);
                         $embalagemEntity->setCubagem($cubagem);
+                        $embalagemEntity->setIsEmbExpDefault((isset($isEmbExpDefault) && !empty($isEmbExpDefault))?$isEmbExpDefault: 'N');
+                        $embalagemEntity->setIsEmbFracionavelDefault((isset($isEmbFracionavelDefault) && !empty($isEmbFracionavelDefault))?$isEmbFracionavelDefault: 'N');
 
                         //valida o endereco informado
                         if (!empty($endereco)) {

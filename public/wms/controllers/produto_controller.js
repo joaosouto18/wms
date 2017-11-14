@@ -132,10 +132,12 @@ $.Controller.extend('Wms.Controllers.Produto',
 
         checkShowUnidFracionavel: function () {
             var inptUndFraca= $('#produto-unidFracao');
-            if ($('#produto-indFracionavel').val() === 'S'){
+            var embFracionavel = null;
+            var inptIndFracionavel = $('#produto-indFracionavel');
+            if (inptIndFracionavel.val() === 'S'){
                 if ($("#produto-idTipoComercializacao").val() !== "1") {
                     this.dialogAlert("Apenas produtos unitários podem utilizar esta opção.");
-                    $('#produto-indFracionavel').prop('selectedIndex',1);
+                    inptIndFracionavel.prop('selectedIndex',1);
                     return false;
                 }
                 inptUndFraca.parent().show();
@@ -148,15 +150,24 @@ $.Controller.extend('Wms.Controllers.Produto',
                         grade: $("#produto-grade").val(),
                         unidFracao: inptUndFraca.val()
                     };
-                    Wms.Controllers.ProdutoEmbalagem.prototype.checkExistEmbFracionavel(produto);
+                    embFracionavel = Wms.Controllers.ProdutoEmbalagem.prototype.checkExistEmbFracionavel();
+                    if (!embFracionavel) {
+                        Wms.Controllers.ProdutoEmbalagem.prototype.createEmbFracionavel(produto)
+                    } else {
+                        Wms.Controllers.ProdutoEmbalagem.prototype.updateEmbFracionavel(produto)
+                    }
                 }
             } else {
-                inptUndFraca.parent().hide();
-                $("#embalagem-embExpDefault").hide().prop('selectedIndex',-1);
-                inptUndFraca.hide().prop('selectedIndex',0);
-                inptUndFraca.removeClass('required');
-                inptUndFraca.removeClass('invalid');
-                Wms.Controllers.ProdutoEmbalagem.prototype.removeEmbFracionavelDefault();
+                embFracionavel = Wms.Controllers.ProdutoEmbalagem.prototype.checkExistEmbFracionavel();
+                if (!embFracionavel || Wms.Controllers.ProdutoEmbalagem.prototype.removeEmbFracionavelDefault()){
+                        inptUndFraca.parent().hide();
+                        $("#embalagem-embExpDefault").hide().prop('selectedIndex',-1);
+                        inptUndFraca.hide().prop('selectedIndex',0);
+                        inptUndFraca.removeClass('required');
+                        inptUndFraca.removeClass('invalid');
+                } else {
+                    inptIndFracionavel.prop('selectedIndex',0);
+                }
             }
         },
 
@@ -397,6 +408,23 @@ $.Controller.extend('Wms.Controllers.Produto',
             }
         },
 
+        validarUnidFracionavel: function (el) {
+            if (el.val() !== '1') {
+                var produto = {
+                    id: $("#produto-id").val(),
+                    grade: $("#produto-grade").val(),
+                    unidFracao: $('#produto-unidFracao').val()
+                };
+                var embFracionavel = Wms.Controllers.ProdutoEmbalagem.prototype.checkExistEmbFracionavel(produto);
+                if (embFracionavel){
+                    var result = Wms.Controllers.ProdutoEmbalagem.prototype.removeEmbFracionavelDefault();
+                    if (!result) {
+                        el.prop('selectedIndex', 0)
+                    }
+                }
+            }
+        },
+
         /**
          * Checa o valor digitado na quantidade de volumes
          */
@@ -408,7 +436,8 @@ $.Controller.extend('Wms.Controllers.Produto',
         /**
          * Ao alterar o tipo de comercializacao do produto verifica dados novamente
          */
-        '#produto-idTipoComercializacao change': function() {
+        '#produto-idTipoComercializacao change': function(el) {
+            this.validarUnidFracionavel(el);
             this.validarEmbalagens();
             this.validarVolumes();
             this.pesoTotal();

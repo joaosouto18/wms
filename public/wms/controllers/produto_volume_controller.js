@@ -80,7 +80,6 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
 
             var fieldVolume = $('#fieldset-volume');
             var valores = fieldVolume.formParams(false).volume;
-            console.log(valores);
 
             var grupoDadosLogisticos = $('#fieldset-grupo-volumes').find('div.grupoDadosLogisticos');
             var este = this;
@@ -680,6 +679,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             }
 
             if ((codigoBarras === "" && cbInterno === "S") || codigoBarras === codigoBarrasAntigo) {
+                $("#volume-codigoBarras").removeClass('invalid');
                 return true;
             }
 

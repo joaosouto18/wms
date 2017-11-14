@@ -561,7 +561,7 @@ class Embalagem {
     }
 
     /**
-     * @param bool $isEmbFracionavelDefault
+     * @param string $isEmbFracionavelDefault
      * @return Embalagem
      */
     public function setIsEmbFracionavelDefault($isEmbFracionavelDefault)
@@ -579,7 +579,7 @@ class Embalagem {
     }
 
     /**
-     * @param bool $isEmbExpDefault
+     * @param string $isEmbExpDefault
      * @return Embalagem
      */
     public function setIsEmbExpDefault($isEmbExpDefault)
