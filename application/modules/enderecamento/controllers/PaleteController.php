@@ -59,7 +59,10 @@ class Enderecamento_PaleteController extends Action
             $result = array();
             /** @var \Wms\Domain\Entity\NotaFiscal\Item $item */
             foreach ($itens as $item) {
-                $piece = explode('-',$item);
+                $piece = null;
+                if ($produtos) {
+                    $piece = explode('-',$item);
+                }
                 if (isset($piece) && !empty($piece)) {
                     $codProduto = $piece[0];
                     $grade = $piece[1];
