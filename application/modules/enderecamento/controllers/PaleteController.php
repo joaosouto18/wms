@@ -15,6 +15,7 @@ class Enderecamento_PaleteController extends Action
         $codProduto     = $this->getRequest()->getParam('codigo');
         $grade          = $this->getRequest()->getParam('grade');
         $produtos       = $this->getRequest()->getParam('produtos');
+        $grade          = str_replace('&','/',$grade);
 
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->em->getRepository('wms:Enderecamento\Palete');
