@@ -218,11 +218,15 @@ class ConferenciaRepository extends EntityRepository
             }
             if ($qtdConferida > 0) {
                 $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($idProduto, $grade, $qtdConferida);
-                $qtdConferida = implode(' + ', $vetSeparar);
+                if (is_array($vetSeparar)) {
+                    $qtdConferida = implode(' + ', $vetSeparar);
+                }
             }
             if ($qtdDivergencia > 0) {
                 $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($idProduto, $grade, $qtdDivergencia);
-                $qtdDivergencia = implode(' + ', $vetSeparar);
+                if (is_array($vetSeparar)) {
+                    $qtdDivergencia = implode(' + ', $vetSeparar);
+                }
             }
             $resultArr[] = array(
                 'id'=>$idRecebimentoConferencia,
