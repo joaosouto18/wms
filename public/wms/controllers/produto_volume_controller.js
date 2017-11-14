@@ -80,6 +80,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
 
             var fieldVolume = $('#fieldset-volume');
             var valores = fieldVolume.formParams(false).volume;
+            console.log(valores);
 
             var grupoDadosLogisticos = $('#fieldset-grupo-volumes').find('div.grupoDadosLogisticos');
             var este = this;
@@ -361,10 +362,10 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             var id = model.id.toString();
             var este = this;
 
-            //se é um endereço existente (não haja a palavra '-new' no id)
-            if (id.indexOf('-new') === -1) {
-                //limpa o ID
-                id = id.replace('-new', '');
+            //se é um volume existente (não haja a palavra '-new' no id)
+            if (id.indexOf('-new') !== -1) {
+                this.deleteConfirmed(model);
+                return true;
             }
 
             var temReserva = false;
@@ -428,7 +429,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
 
         deleteConfirmed: function(params) {
             var model = params.model;
-            var id = model.id;
+            var id = model.id.toString();
 
             //adiciona à fila para excluir
             $('<input/>', {
