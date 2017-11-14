@@ -65,6 +65,7 @@ class Identificacao extends SubForm
                     'required' => true,
                 ))
                 ->addElement('select', 'idTipoComercializacao', array(
+                    'mostrarSelecione' => false,
                     'label' => 'Tipo Comercialização',
                     'multiOptions' => $tiposComercializacao,
                     'required' => true,
@@ -100,6 +101,7 @@ class Identificacao extends SubForm
                 );
 
                 $this->addElement('select', 'pVariavel', array(
+                    'mostrarSelecione' => false,
                     'label' => 'Possui Peso Variável?',
                     'required' => true,
                     'multiOptions' => array(
@@ -121,6 +123,7 @@ class Identificacao extends SubForm
                     );
 
                 $this->addElement('select', 'indFracionavel', array(
+                    'mostrarSelecione' => false,
                     'label' => 'Unidade fracionável?',
                     'required' => true,
                     'multiOptions' => array(
@@ -137,6 +140,7 @@ class Identificacao extends SubForm
 
                 $this
                     ->addElement('select', 'validade', array(
+                        'mostrarSelecione' => false,
                         'label' => 'Possui validade?',
                         'required' => true,
                         'multiOptions' => array(

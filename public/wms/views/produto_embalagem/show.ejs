@@ -1,25 +1,25 @@
-<div <%=this%> class="blockData">
+<div <%= this %> class="blockData">
 
     <table>
         <tr class="actions">
 
-            <td colspan="3" <%if(this.dataInativacao=='EMB. ATIVA'){%>
+            <td colspan="3" <% if(this.dataInativacao=='EMB. ATIVA'){%>
                 <%='style="float:left; font-weight: bold;color:darkgreen"'%>
             <%} else {%>
                 <%='style="float:left; font-weight: bold;color:red"'%>
-            <%}%>
+            <%}%>>
                 <div style="float:right">
                     Data de Inativação:
                 </div>
                 <div>
-                    <input id="ativarDesativar" value="<%=this.id%>" type="checkbox" name="embalagens[<%=this.id%>][ativarDesativar]" class="ativarDesativar" <%=this.ativarDesativar%> />
-                    <span style{float:left} id="dataInativacao" class="dataInativacao"><%=this.dataInativacao%></span>
+                    <input id="ativarDesativar" value="<%= this.id%>" type="checkbox" name="embalagens[<%= this.id%>][ativarDesativar]" class="ativarDesativar" <%= this.ativarDesativar%> />
+                    <span style="float:left" id="dataInativacao" class="dataInativacao"><%= this.dataInativacao%></span>
                 </div>
             </td>
 
             <td colspan="4">
                 <a href="javascript://" class="btnAction btn-editar-embalagem" title="Clique para Editar">
-                    <img src="<%=URL_SISTEMA%>/img/icons/application_edit.png"" /> Editar
+                    <img src="<%=URL_SISTEMA%>/img/icons/application_edit.png"/> Editar
                 </a>
                 <a href="javascript://" class="btnAction btn-excluir-embalagem" title="Clique para Excluir">
                     <img src="<%=URL_SISTEMA%>/img/icons/delete.png" /> Excluir
@@ -36,39 +36,47 @@
         </tr>
 
         <tr>
-            <td style="width:200px"><%=this.descricao%></td>
-            <td style="width:70px"><%=this.quantidade%></td>
-            <td style="width:80px"><%=this.lblIsPadrao%></td>
-            <td style="width:80px"><%=this.lblCBInterno%></td>
-            <td style="width:100px"><%=this.lblImprimirCB%></td>
+            <td style="width:200px"><%= this.descricao%></td>
+            <td style="width:70px"><%= this.quantidade%></td>
+            <td style="width:80px"><%= this.lblIsPadrao%></td>
+            <td style="width:80px"><%= this.lblCBInterno%></td>
+            <td style="width:100px"><%= this.lblImprimirCB%></td>
         </tr>
 
         <tr style="font-weight: bold">
             <td>Cód. Barras</td>
             <td style="display:none">Endereço</td>
             <td>Embalado</td>
+            <% if(this.lblEmbExpDefault == 'SIM'){%>
+            <td>Padrão Exp.</td>
+            <%} %>
             <td style="display:none">P.Reposição</td>
             <td style="display:none">C.Picking</td>
         </tr>
         <tr>
-            <td><span class="codigoBarras"><%=this.codigoBarras%><span></td>
-            <td style="display:none"><span class="endereco dscEndereco"><%=this.endereco%><span></td>
-            <td><span class="endereco embalado"><%=this.lblEmbalado%><span></td>
-            <td style="display:none"><span class="endereco pontoReposicao"><%=this.pontoReposicao%><span></td>
-            <td style="display:none"><span class="endereco capacidadePicking"><%=this.capacidadePicking%><span></td>
+            <td><span class="codigoBarras"><%= this.codigoBarras%></span></td>
+            <td style="display:none"><span class="endereco dscEndereco"><%= this.endereco%></span></td>
+            <td><span class="endereco embalado"><%= this.lblEmbalado%></span></td>
+            <% if(this.lblEmbExpDefault == 'SIM'){%>
+            <td><span class="lblEmbExpDefault"><%= this.lblEmbExpDefault%></span></td>
+            <%} %>
+            <td style="display:none"><span class="endereco pontoReposicao"><%= this.pontoReposicao%></span></td>
+            <td style="display:none"><span class="endereco capacidadePicking"><%= this.capacidadePicking%></span></td>
         </tr>
     </table>
 
-    <input type="hidden" name="embalagens[<%=this.id%>][acao]" class="acao" value="<%=this.acao%>"/>
-    <input type="hidden" name="embalagens[<%=this.id%>][id]" class="embalagem-id" value="<%=this.id%>"/>
-    <input type="hidden" name="embalagens[<%=this.id%>][descricao]" class="embalagem-descricao" value="<%=this.descricao%>"/>
-    <input type="hidden" name="embalagens[<%=this.id%>][quantidade]" class="qtdItens" value="<%=this.quantidade%>"/>
-    <input type="hidden" name="embalagens[<%=this.id%>][isPadrao]" class="isPadrao" value="<%=this.isPadrao%>"/>
-    <input type="hidden" name="embalagens[<%=this.id%>][CBInterno]" class="CBInterno" value="<%=this.CBInterno%>"/>
-    <input type="hidden" name="embalagens[<%=this.id%>][imprimirCB]" class="imprimirCB" value="<%=this.imprimirCB%>"/>
-    <input type="hidden" name="embalagens[<%=this.id%>][codigoBarras]" class="codigoBarras" value="<%=this.codigoBarras%>"/>
-    <input type="hidden" name="embalagens[<%=this.id%>][endereco]" class="endereco" value="<%=this.endereco%>"/>
-    <input type="hidden" name="embalagens[<%=this.id%>][embalado]" class="embalado" value="<%=this.embalado%>"/>
-    <input type="hidden" name="embalagens[<%=this.id%>][capacidadePicking]" class="capacidadePicking" value="<%=this.capacidadePicking%>"/>
-    <input type="hidden" name="embalagens[<%=this.id%>][pontoReposicao]" class="pontoReposicao" value="<%=this.pontoReposicao%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][acao]" class="acao" value="<%= this.acao%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][id]" class="embalagem-id" value="<%= this.id%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][descricao]" class="embalagem-descricao" value="<%= this.descricao%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][quantidade]" class="qtdItens" value="<%= this.quantidade%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][isPadrao]" class="isPadrao" value="<%= this.isPadrao%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][CBInterno]" class="CBInterno" value="<%= this.CBInterno%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][imprimirCB]" class="imprimirCB" value="<%= this.imprimirCB%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][codigoBarras]" class="codigoBarras" value="<%= this.codigoBarras%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][endereco]" class="endereco" value="<%= this.endereco%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][embalado]" class="embalado" value="<%= this.embalado%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][capacidadePicking]" class="capacidadePicking" value="<%= this.capacidadePicking%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][pontoReposicao]" class="pontoReposicao" value="<%= this.pontoReposicao%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][isEmbFracionavelDefault]" class="isEmbFracionavelDefault" value="<%= this.isEmbFracionavelDefault%>"/>
+    <input type="hidden" name="embalagens[<%= this.id%>][isEmbExpDefault]" class="isEmbExpDefault" value="<%= this.isEmbExpDefault%>"/>
 </div>

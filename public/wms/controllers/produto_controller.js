@@ -62,6 +62,10 @@ $.Controller.extend('Wms.Controllers.Produto',
             this.checkShowUnidFracionavel();
         },
 
+        '#produto-unidFracao change' : function() {
+            this.checkShowUnidFracionavel();
+        },
+
         '#produto-diasVidaUtilMaximo change' : function(e) {
             var max = e.val();
             var min = $('#produto-diasVidaUtil').val();
@@ -129,14 +133,30 @@ $.Controller.extend('Wms.Controllers.Produto',
         checkShowUnidFracionavel: function () {
             var inptUndFraca= $('#produto-unidFracao');
             if ($('#produto-indFracionavel').val() === 'S'){
+                if ($("#produto-idTipoComercializacao").val() !== "1") {
+                    this.dialogAlert("Apenas produtos unitários podem utilizar esta opção.");
+                    $('#produto-indFracionavel').prop('selectedIndex',1);
+                    return false;
+                }
                 inptUndFraca.parent().show();
                 inptUndFraca.show();
                 inptUndFraca.addClass('required');
+                $("#embalagem-embExpDefault").show();
+                if (inptUndFraca.val() !== "") {
+                    var produto = {
+                        id: $("#produto-id").val(),
+                        grade: $("#produto-grade").val(),
+                        unidFracao: inptUndFraca.val()
+                    };
+                    Wms.Controllers.ProdutoEmbalagem.prototype.checkExistEmbFracionavel(produto);
+                }
             } else {
                 inptUndFraca.parent().hide();
+                $("#embalagem-embExpDefault").hide().prop('selectedIndex',-1);
                 inptUndFraca.hide().prop('selectedIndex',0);
                 inptUndFraca.removeClass('required');
                 inptUndFraca.removeClass('invalid');
+                Wms.Controllers.ProdutoEmbalagem.prototype.removeEmbFracionavelDefault();
             }
         },
 
@@ -200,7 +220,7 @@ $.Controller.extend('Wms.Controllers.Produto',
 
                     // caso sem embalagens
                     if ( qtdEmbalagensRecebimento === 0 ) {
-                        this.dialogAlert('O produto deve conter AO MENOS uma embalagem cadastrada do tipo recebimento.');
+                        this.dialogAlert('O produto deve conter UMA embalagem cadastrada do tipo recebimento.');
                         return false;
                     }
                     // caso a quantidade de volumes cadastradados diferentes da
