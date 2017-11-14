@@ -838,6 +838,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     throw new WMS_Exception($msg);
                 }
 
+                $reservas = [];
                 if ($filial->getIndUtilizaRessuprimento() == "S") {
                     $reservas = $reservaEstoqueRepo->getReservasExpedicao($pedidoProduto);
                 } else {
