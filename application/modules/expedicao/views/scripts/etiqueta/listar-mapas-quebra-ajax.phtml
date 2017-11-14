@@ -29,32 +29,61 @@
             for (var i = 0; i < $('input[name="mapas"]:checked').length; i++) {
                 arr[i] = $('input[name="mapas"]:checked')[i].value;
             }
-            window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+arr, '_blank');
+            if(arr.length == 0){
+                $.wmsDialogAlert({
+                    title: 'Erro',
+                    msg: 'Selecione pelo menos um mapa.'
+                });
+            }else{
+                window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+arr, '_blank');
+            }
+
+        });
+
+        $('#imprimir-mapa-conf').click(function (a) {
+            var arr = [];
+            for (var i = 0; i < $('input[name="mapas"]:checked').length; i++) {
+                arr[i] = $('input[name="mapas"]:checked')[i].value;
+            }
+            if(arr.length == 0){
+                $.wmsDialogAlert({
+                    title: 'Erro',
+                    msg: 'Selecione pelo menos um mapa.'
+                });
+            }else{
+                window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/conf/1/idMapa/'+arr, '_blank');
+            }
         });
     });
 </script>
 
 <div class="padding-top">
     <?php if ($this->mapasSeparacao) : ?>
-        <p><b>Selecione o Mapa para Impressão</b>
-
-        <p><b>Selecione Todos</b> - <label><input style="vertical-align: middle" type="checkbox" id="seleciona-todos-mapas"> Selecione Todos</label><br></p>
-
-        <div id="mapas">
-            <?php foreach($this->mapasSeparacao as $mapaSeparacao) : ?>
-                <label>
-                <input
-                    class="checkBoxClass"
-                    style="vertical-align: middle"
-                    type="checkbox"
-                    name="mapas"
-                    value="<?php echo $mapaSeparacao->getId(); ?>"
-                    >
-                Mapa <?php echo $mapaSeparacao->getId().' - '.$mapaSeparacao->getDscQuebra(); ?>
-                </label><br />
-            <?php endforeach ?>
-        </div>
-        <input type="button" class="btn imprimir-mapa" id="imprimir-mapa" value="Imprimir Mapa" name="imprimir-mapa">
+        <fieldset id="fieldset-identification" rowspan="2">
+            <legend>Selecione o Mapa para Impressão</legend>
+            <div id="mapas"><b>
+                <div class="field" style="padding: 12px;">
+                    <label><input style="vertical-align: middle" type="checkbox" id="seleciona-todos-mapas"> Selecionar Todos</label>
+                </div>
+                <?php foreach($this->mapasSeparacao as $mapaSeparacao) : ?>
+                    <div class="field" style="padding: 12px;">
+                        <label>
+                            <input
+                                    class="checkBoxClass"
+                                    style="vertical-align: middle"
+                                    type="checkbox"
+                                    name="mapas"
+                                    value="<?php echo $mapaSeparacao->getId(); ?>"
+                            >
+                            Mapa <?php echo $mapaSeparacao->getId().' - '.$mapaSeparacao->getDscQuebra(); ?>
+                        </label>
+                    </div>
+                <?php endforeach ?>
+                </b>
+            </div>
+            <input type="button" class="btn imprimir-mapa" id="imprimir-mapa" value="Imprimir Mapa" name="imprimir-mapa">
+            <input type="button" class="btn" id="imprimir-mapa-conf" value="Imprimir Mapa Conferência" name="imprimir-mapa-conf">
+        </fieldset>
     <?php endif; ?>
 </div>
 

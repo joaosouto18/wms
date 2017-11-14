@@ -163,6 +163,7 @@ class Expedicao_EtiquetaController  extends Action
         $idMapa            = $this->getRequest()->getParam('idMapa');
         $central           = $this->getRequest()->getParam('central');
         $idEtiquetaMae     = $this->getRequest()->getParam('idEtiqueta');
+        $conf     = $this->getRequest()->getParam('conf');
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
@@ -182,7 +183,12 @@ class Expedicao_EtiquetaController  extends Action
         if ($tipo == "mapa") {
             if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idMapa) > 0) {
                 $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
-                $mapa->layoutMapa($idExpedicao,$this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), $idMapa, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
+                $modelo = $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO');
+                if($conf == 1){
+                    $modelo = 6;
+                }
+
+                $mapa->layoutMapa($idExpedicao, $modelo, $idMapa, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
                 $andamentoRepo->save('Mapas Impressos', $idExpedicao);
@@ -412,6 +418,7 @@ class Expedicao_EtiquetaController  extends Action
         $this->view->mapaSeparacao = $mapaSeparacao;
         $reimprimirTodos = $this->_getParam('btnReimpressao');
         $reimprimirByCodBarras = $this->_getParam('btnConfirmacao');
+        $reimprimirConf = $this->_getParam('btnReimpressaoConf');
 
         $mapa = new MapaSeparacao;
 
@@ -433,6 +440,8 @@ class Expedicao_EtiquetaController  extends Action
             /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
             $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
             $andamentoRepo->save('Reimpressão do Mapa:'.$codBarra, $idExpedicao, false, true, $codBarra);
+        }elseif (isset($reimprimirConf) && $reimprimirConf != null) {
+            $mapa->layoutMapa($idExpedicao, 6, null, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
         }
     }
 

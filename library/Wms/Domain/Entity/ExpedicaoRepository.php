@@ -908,6 +908,22 @@ class ExpedicaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getExpedicaoSemProdutos($codExpedicao)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('MAX(e.id) id')
+            ->from('wms:Expedicao\PedidoProduto', 'pp')
+            ->innerJoin('pp.pedido', 'p')
+            ->innerJoin('p.carga', 'c')
+            ->innerJoin('c.expedicao', 'e')
+            ->leftJoin('wms:Enderecamento\Estoque', 'est', 'WITH', 'est.codProduto = pp.codProduto AND est.grade = pp.grade')
+            ->where('est.codProduto is null')
+            ->andWhere("e.id IN ($codExpedicao)")
+            ->groupBy('e.id');
+        return $sql->getQuery()->getResult();
+
+    }
+
     public function campareResumoConferenciaByCarga($qtd, $idCargaExterno) {
         $SQL = "SELECT  C.COD_CARGA_EXTERNO as CARGA,
                                 SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
@@ -1994,6 +2010,7 @@ class ExpedicaoRepository extends EntityRepository {
             $WhereCarga .= " AND  (COD_CARGA_EXTERNO = '$codCarga')";
         }
 
+
         $JoinExpedicao = "";
         $JoinSigla = "";
         $JoinCarga = "";
@@ -2009,6 +2026,11 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         $FullWhere = $WhereExpedicao . $WhereCarga . $WhereSigla;
+        $joinPedido = '';
+        if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
+            $joinPedido .= " INNER JOIN CARGA C ON (E.COD_EXPEDICAO = C.COD_EXPEDICAO)
+                          INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA AND P.COD_PEDIDO = ".$parametros['pedido'];
+        }
         $FullWhereFinal = $WhereExpedicao . $WhereFinalCarga . $WhereSigla;
 
         if ($whereSubQuery != "")
@@ -2028,6 +2050,7 @@ class ExpedicaoRepository extends EntityRepository {
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                             ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
                   FROM EXPEDICAO E
+                  ' . $joinPedido .'
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
                                     (COUNT(DISTINCT ESEP.COD_ETIQUETA_SEPARACAO)) AS QTDETIQUETA,

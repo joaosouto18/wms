@@ -262,6 +262,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 if (id.indexOf('-new') !== -1) {
                                     //se for apenas objeto js remove direto
                                     this.deleteConfirmed(model);
+                                    return true;
                                 }
 
                                 var temReserva = false;
@@ -283,7 +284,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                                 var idProduto = $('#embalagem-idProduto').val();
                                 var grade = $('#embalagem-grade').val();
-                                var enderecoAntigo = model.endereco;
+                                var enderecoAntigo = model.endereco.toString();
                                 var temEstoque = false;
                                 $.ajax({
                                     url: URL_MODULO + '/endereco/verificar-estoque-ajax',
@@ -356,7 +357,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                             deleteConfirmed: function (params) {
                                 var model = params.model;
-                                var id = model.id;
+                                var id = model.id.toString();
 
                                 $('#fieldset-embalagem #embalagem-enderecoAntigo').val(model.endereco);
 
