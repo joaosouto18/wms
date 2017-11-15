@@ -102,11 +102,12 @@ class EtiquetaEmbalados extends eFPDF
             //monta o restante dos dados da etiqueta
             $this->SetFont('Arial', 'B', 15);
             $impressao = utf8_decode(substr($pessoaEntity->getNome()."\n",0,20));
-            $this->MultiCell(110, 6, $impressao, 0, 'L');
-            $this->Line(0,7,80,7);
+            $this->MultiCell(110, 10, $impressao, 0, 'L');
+            $this->Line(0,10,80,10);
 
             $this->SetFont('Arial', 'B', 12.5);
             $impressao = utf8_decode('CLIENTE: '."\n");
+            $this->MultiCell(110, 6, '', 0, 'L');
             $this->MultiCell(110, 6, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 11.3);
@@ -118,19 +119,20 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(110, 5, $impressao, 0, 'L');
             $impressao = utf8_decode($volume['NOM_BAIRRO'].'  -  '.$volume['NOM_LOCALIDADE'].'  -  '.$volume['COD_REFERENCIA_SIGLA']);
             $this->MultiCell(110, 5, $impressao, 0, 'L');
-            $this->Line(0,30,110,30);
+            $this->Line(0,42,110,42);
 
-            $this->SetFont('Arial', '', 10);
+            $this->SetFont('Arial', '', 20);
+            $this->MultiCell(110, 6, '', 0, 'L');
             $impressao = $existeItensPendentes == false ? 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'] : 'VOLUME: '.$volume['NUM_SEQUENCIA'];
             $this->MultiCell(110, 10, $impressao, 0, 'L');
 
-            $this->SetFont('Arial', 'B', 20);
+            $this->SetFont('Arial', 'B', 22);
             $impressao = utf8_decode(substr($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']."\n",0,30));
             $this->MultiCell(110, 6, $impressao, 0, 'L');
 
 
-            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 45, 35 , 40, 13);
-            $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 77, 0, 25, 12);
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 50, 47 , 45, 13);
+            $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 71, 0, 35, 30);
 
         }
     }

@@ -250,7 +250,8 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                                 if (id.indexOf('-new') !== -1) {
                                     //limpa o ID
-                                    id = id.replace("-new", "");
+                                    this.deleteConfirmed(model);
+                                    return true;
                                 }
 
                                 var temReserva = false;
@@ -346,7 +347,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                             deleteConfirmed: function (params) {
                                 var model = params.model;
-                                var id = model.id;
+                                var id = model.id.toString();
 
                                 $('#fieldset-embalagem #embalagem-enderecoAntigo').val(model.endereco);
 

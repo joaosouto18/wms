@@ -1216,10 +1216,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     private function regroupReservaVolumes($reservas, $volumes, $tipoSeparacao)
     {
-        usort($volumes, function ($a, $b) {
-            return $a->getCodigoSequencial() < $b->getCodigoSequencial();
-        });
-
         $arrReservaRegroup = array();
 
         if ($tipoSeparacao == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
@@ -1572,6 +1568,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             //LINHA DE SEPARAÇÃO
             if ($quebra == MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO) {
+                $linhaSeparacao = $pedidoProduto->getProduto()->getLinhaSeparacao()->getId();
+                if (empty($linhaSeparacao)) {
+                    $codProduto = $pedidoProduto->getProduto()->getId();
+                    $dscGrade = $pedidoProduto->getProduto()->getGrade();
+                    throw new \Exception("O produto $codProduto - $dscGrade não tem uma linha de separação definida");
+                }
                 $codLinhaSeparacao = $pedidoProduto->getProduto()->getLinhaSeparacao()->getId();
                 $nomLinha = $pedidoProduto->getProduto()->getLinhaSeparacao()->getDescricao();
                 if ($qtdQuebras != 0) {

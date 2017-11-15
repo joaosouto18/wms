@@ -26,7 +26,7 @@ class VolumeRepository extends EntityRepository
 
         extract($values);
 
-        $volumeEntity = (isset($id) && is_numeric($id)) ? $this->find($id) : new VolumeEntity;
+        $volumeEntity = (isset($id) && is_numeric($id)) ? $this->find($id) : new VolumeEntity();
 
         if (!$volumeEntity)
             throw new \Exception('Id de volume inválido');
