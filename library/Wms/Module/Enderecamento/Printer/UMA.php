@@ -232,7 +232,7 @@ class UMA extends Pdf {
         $embalagemRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository("wms:Produto\Embalagem");
 
         $vetQtd = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $palete['qtd']);
-        $qtd = implode(' - ', $vetQtd);
+        $qtd = (is_array($vetQtd)) ? implode(' - ', $vetQtd) : $palete['qtd'];
         $this->SetFont('Arial', 'B', 35);
         $this->Cell(75,-60, $qtd .' - '.$palete['conferente']['NOM_PESSOA'], 0, 40);
 
@@ -485,7 +485,7 @@ class UMA extends Pdf {
 
         $embalagemRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository("wms:Produto\Embalagem");
         $vetQtd = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $palete['qtd']);
-        $qtd = implode(' - ', $vetQtd);
+        $qtd = (is_array($vetQtd)) ? implode(' - ', $vetQtd) : $palete['qtd'];
         $this->SetFont('Arial', 'B', 60);
         $this->Cell(75, 40, $qtd, 0, 1);
 
