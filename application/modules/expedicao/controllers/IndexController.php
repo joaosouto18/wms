@@ -302,6 +302,7 @@ class Expedicao_IndexController extends Action {
                 $cargaEn->setExpedicao($expedicaoEn);
                 $cargaEn->setSequencia(1);
                 $cargaEn->setPlacaCarga($placa);
+                $cargaEn->setPlacaExpedicao($placa);
                 $this->_em->persist($cargaEn);
                 if ($countCortadas > 0) {
                     $expedicaoEn->setStatus(EXPEDICAO::STATUS_CANCELADO);
