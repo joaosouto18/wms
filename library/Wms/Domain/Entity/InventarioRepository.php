@@ -750,9 +750,9 @@ class InventarioRepository extends EntityRepository {
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = ESTQ.COD_PRODUTO AND P.DSC_GRADE = ESTQ.DSC_GRADE
                  WHERE NOT(ESTQ.QTD_MOVIMENTADA = 0 AND INV.QTD_CONFERIDA IS NULL AND ESTQ.COD_PRODUTO IS NOT NULL)
                    AND ESTQ.COD_INVENTARIO IN ($idInventario)
-                 ORDER BY DSC_DEPOSITO_ENDERECO,
-                          COD_PRODUTO,
-                          DSC_GRADE,
+                 ORDER BY DE.DSC_DEPOSITO_ENDERECO,
+                          P.COD_PRODUTO,
+                          P.DSC_GRADE,
                           ESTQ.COD_INVENTARIO";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
