@@ -889,7 +889,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 } else {
 
-                    if ($qtdTotal != $qtdCortadas) {
+                    if ($qtdTotal != $qtdCortadas && ($statusExpedicao->getId() == Expedicao::STATUS_EM_CONFERENCIA || $statusExpedicao->getId() == Expedicao::STATUS_EM_SEPARACAO)) {
                         if (!$isIntegracaoSQL) {
                             throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
                         } else {
