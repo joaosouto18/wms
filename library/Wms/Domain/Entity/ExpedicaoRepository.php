@@ -2040,7 +2040,7 @@ class ExpedicaoRepository extends EntityRepository {
                        E.DSC_PLACA_EXPEDICAO AS "placaExpedicao",
                        to_char(E.DTH_INICIO,\'DD/MM/YYYY HH24:MI:SS\') AS "dataInicio",
                        to_char(E.DTH_FINALIZACAO,\'DD/MM/YYYY HH24:MI:SS\') AS "dataFinalizacao",
-                       C.CARGAS AS "carga",
+                       CARGAS.CARGAS AS "carga",
                        S.DSC_SIGLA AS "status",
                        P.IMPRIMIR AS "imprimir",
                        PESO.NUM_PESO as "peso",
@@ -2091,7 +2091,7 @@ class ExpedicaoRepository extends EntityRepository {
                                     LISTAGG (C.COD_CARGA_EXTERNO,\', \') WITHIN GROUP (ORDER BY C.COD_CARGA_EXTERNO) CARGAS
                                FROM CARGA C ' . $JoinExpedicao . $JoinSigla . '
                                WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
-                              GROUP BY C.COD_EXPEDICAO) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                              GROUP BY C.COD_EXPEDICAO) CARGAS ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT COD_EXPEDICAO,
                                     LISTAGG (DSC_ITINERARIO,\', \') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
                                FROM (SELECT DISTINCT C.COD_EXPEDICAO,
