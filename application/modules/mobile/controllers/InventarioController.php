@@ -28,7 +28,6 @@ class Mobile_InventarioController extends Action
 
     public function consultaEnderecoAction()
     {
-
         $idInventario = $this->_getParam('idInventario');
         $numContagem = $this->_getParam('numContagem', null);
         $divergencia = $this->_getParam('divergencia', null);
@@ -38,19 +37,19 @@ class Mobile_InventarioController extends Action
             $inventarioService = $this->_service;
 
             $idContagemOs = $inventarioService->criarOS($idInventario);
-	    $codigoBarras = $this->_getParam('codigoBarras');
- 	    if(empty($codigoBarras)) {           
-            	$enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
-            	$this->view->enderecos = $enderecos;
-            	$this->view->botoes = false;
-	    }
+
+            $codigoBarras = $this->_getParam('codigoBarras');
+            if(empty($codigoBarras)) {
+                $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
+                $this->view->enderecos = $enderecos;
+                $this->view->botoes = false;
+            }
 
             $form = new \Wms\Module\Mobile\Form\Endereco();
             $form->setLabel('Busca por endereço');
             $this->view->form = $form;
-            //$codigoBarras = $this->_getParam('codigoBarras');
-            $nivelParam = $this->_getParam('nivel', null);
             $this->view->codigoBarras = $codigoBarras;
+            $nivelParam = $this->_getParam('nivel', null);
             if (isset($codigoBarras) && !empty($codigoBarras)) {
 
                 $codigoBarrasSemDigito = \Wms\Util\Coletor::retiraDigitoIdentificador($codigoBarras);
@@ -228,8 +227,8 @@ class Mobile_InventarioController extends Action
         $this->view->divergencia = $divergencia;
         $this->view->botoes = true;
         $this->view->urlVoltar = '/mobile/inventario/consulta-endereco/idInventario/' . $params['idInventario'] . '/numContagem/' . $params['numContagem'] . '/divergencia/' . $divergencia;
-        //$enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
-        //$this->view->enderecos = $enderecos;
+//        $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
+//        $this->view->enderecos = $enderecos;
         $this->render('form');
 
     }

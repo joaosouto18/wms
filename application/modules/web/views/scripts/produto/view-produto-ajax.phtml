@@ -108,6 +108,31 @@ if ($produto->getTipoComercializacao()->getId() == $produtoUnitario) :
                     <td><?php echo $embalagem['imprimirCB']; ?></td>
                     <td><?php echo $embalagem['codigoBarras']; ?></td>
                 </tr>
+                <tr>
+                    <td colspan="6" style="height:10px"></td>
+                </tr>
+                <tr>
+                    <td>
+                        <label class="title">Altura(m):</label>
+                        <div><?php echo $embalagem['altura']; ?></div>
+                    </td>
+                    <td>
+                        <label class="title">Largura(m):</label>
+                        <div><?php echo $embalagem['largura']; ?></div>
+                    </td>
+                    <td>
+                        <label class="title">Profundidade(m):</label>
+                        <div><?php echo $embalagem['profundidade']; ?></div>
+                    </td>
+                    <td>
+                        <label class="title">Cubagem(m³):</label>
+                        <div><?php echo $embalagem['cubagem']; ?></div>
+                    </td>
+                    <td>
+                        <label class="title">Peso(Kg):</label>
+                        <div><?php echo $embalagem['peso']; ?></div>
+                    </td>
+                </tr>
 
                 <?php
                 if ($i != count($produtoEmbalagens)):
@@ -156,45 +181,11 @@ if ($produto->getTipoComercializacao()->getId() == $produtoUnitario) :
                             <label class="title">Norma:</label>
                             <div><?php echo $normaPaletizacao['numNorma']; ?></div>
                         </div>
-                        <div style="width: 100px; float: left;">
+                        <div style=" float: left;">
                             <label class="title">Peso(Kg):</label>
                             <div><?php echo $normaPaletizacao['numPeso']; ?></div>
                         </div>
                     </div>
-
-                    <?php
-                    foreach ($normaPaletizacao['dadosLogisticos'] as $dadoLogistico):
-                        ?>
-
-                        <div style="border-top: 1px solid #B7B7B7;">
-                            <div style="height: 20px; margin-top: 5px;">
-                                <label class="title">Descrição: <?php echo $dadoLogistico['dscEmbalagem']; ?></label>
-                            </div>
-                            <div style="width: 120px; float: left;">
-                                <label class="title">Altura(m):</label>
-                                <div><?php echo $dadoLogistico['altura']; ?></div>
-                            </div>
-                            <div style="width: 120px; float: left;">
-                                <label class="title">Largura(m):</label>
-                                <div><?php echo $dadoLogistico['largura']; ?></div>
-                            </div>
-                            <div style="width: 150px; float: left;">
-                                <label class="title">Profundidade(m):</label>
-                                <div><?php echo $dadoLogistico['profundidade']; ?></div>
-                            </div>
-                            <div style="width: 150px; float: left;">
-                                <label class="title">Cubagem(m³):</label>
-                                <div><?php echo $dadoLogistico['cubagem']; ?></div>
-                            </div>
-                            <div style="width: 100%; margin-bottom: 15px;">
-                                <label class="title">Peso(Kg):</label>
-                                <div><?php echo $dadoLogistico['peso']; ?></div>
-                            </div>
-                        </div>
-                        <?php
-                        $i++;
-                    endforeach;
-                    ?>
                 </fieldset>
                 <?php
             endforeach;
