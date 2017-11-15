@@ -2028,8 +2028,8 @@ class ExpedicaoRepository extends EntityRepository {
         $FullWhere = $WhereExpedicao . $WhereCarga . $WhereSigla;
         $joinPedido = '';
         if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
-            $joinPedido .= " INNER JOIN CARGA C ON (E.COD_EXPEDICAO = C.COD_EXPEDICAO)
-                          INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA AND P.COD_PEDIDO = ".$parametros['pedido'];
+            $joinPedido .= " INNER JOIN CARGA CARGA ON (E.COD_EXPEDICAO = CARGA.COD_EXPEDICAO)
+                          INNER JOIN PEDIDO P ON P.COD_CARGA = CARGA.COD_CARGA AND P.COD_PEDIDO = ".$parametros['pedido'];
         }
         $FullWhereFinal = $WhereExpedicao . $WhereFinalCarga . $WhereSigla;
 
