@@ -1057,9 +1057,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     private function enviaDadosLogisticosEmbalagem(Produto $produtoEntity) {
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
-                ->from('wms:Produto\DadoLogistico', 'pdl')
-                ->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
+                ->select('pe.descricao, pe.altura, pe.cubagem, pe.largura, pe.peso, pe.profundidade, pe.quantidade, pe.codigoBarras ')
+                ->from('wms:Produto\Embalagem', 'pe')
                 ->where('pe.codProduto = ?1')
                 ->andWhere('pe.grade = ?2')
                 ->andWhere('pe.isPadrao like ?3')
@@ -1073,9 +1072,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         if (empty($dadosLogisticosEmbalagens)) {
             $dql = $this->getEntityManager()->createQueryBuilder()
-                    ->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
-                    ->from('wms:Produto\DadoLogistico', 'pdl')
-                    ->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
+                    ->select('pe.descricao, pe.altura, pe.cubagem, pe.largura, pe.peso, pe.profundidade, pe.quantidade, pe.codigoBarras ')
+                    ->from('wms:Produto\Embalagem', 'pe')
                     ->where('pe.codProduto = ?1')
                     ->andWhere('pe.grade = ?2')
                     ->andWhere('pe.isPadrao like ?3')

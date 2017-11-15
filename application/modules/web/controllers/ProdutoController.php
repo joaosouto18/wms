@@ -430,6 +430,11 @@ class Web_ProdutoController extends Crud {
                     'codigoBarras' => $embalagem->getCodigoBarras(),
                     'capacidadePicking' => $embalagem->getCapacidadePicking(),
                     'pontoReposicao' => $embalagem->getPontoReposicao(),
+                    'largura' => $embalagem->getLargura(),
+                    'altura' => $embalagem->getAltura(),
+                    'profundidade' => $embalagem->getProfundidade(),
+                    'cubagem' => $embalagem->getCubagem(),
+                    'peso' => $embalagem->getPeso(),
                     'endereco' => ($embalagem->getEndereco()) ? $embalagem->getEndereco()->getDescricao() : '',
                 );
             }
@@ -487,7 +492,6 @@ class Web_ProdutoController extends Crud {
                 }
             }
         }
-
 
 
         $this->view->idProduto = $params['id'];
