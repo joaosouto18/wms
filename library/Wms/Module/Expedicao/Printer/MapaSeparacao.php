@@ -1194,8 +1194,8 @@ class MapaSeparacao extends eFPDF {
             $this->Cell(20, 3, "", 0, 1);
             $this->SetFont('Arial', 'B', 10);
             $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
-            $this->SetFont('Arial', null, 10);
-            $this->Cell(4, 4, utf8_decode($this->idExpedicao) . ' - ' . $txtCarga . ': ' . $stringCargas . 'PLACA:' . $mapa->getExpedicao()->getPlacaExpedicao(), 0, 1);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(4, 4, utf8_decode($this->idExpedicao) . ' - ' . $txtCarga . ': ' . $stringCargas . ' - PLACA: ' . $mapa->getExpedicao()->getPlacaExpedicao(), 0, 1);
 
             $this->SetFont('Arial', 'B', 9);
 
