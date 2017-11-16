@@ -206,7 +206,7 @@ class Expedicao_EtiquetaController  extends Action
             if ($modelo == '1') {
                 $Etiqueta = new Etiqueta();
             } else {
-                $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
+                $Etiqueta = new Etiqueta("L", 'mm', array(110, 70));
             }
             $ExpedicaoEn = $ExpedicaoRepo->findOneBy(array('id'=>$idExpedicao));
             if ($Etiqueta->jaImpressas($ExpedicaoEn) == false) {

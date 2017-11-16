@@ -965,7 +965,7 @@ class EtiquetaSeparacao extends Pdf
                 if ($reentrega == false) {
                     $impressao = utf8_decode("$etiqueta[endereco] - Nº Etiqueta: $etiqueta[codBarras]\n");
                     $this->MultiCell(90, 3.9, $impressao, 0, 'L');
-                    $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 38, 68, 17);
+                    $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 45, 68, 17);
 
                     if (isset($etiqueta['sequenciaPedido']) && ($etiqueta['sequenciaPedido'] != null)) {
                         $this->SetY(8);
