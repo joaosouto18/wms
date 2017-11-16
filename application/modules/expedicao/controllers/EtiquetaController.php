@@ -305,7 +305,6 @@ class Expedicao_EtiquetaController  extends Action
         $complementoUrl = '';
         $reentrega   = $request->getParam('reentrega','N');
         if ($reentrega == 'S') {$complementoUrl = '/reentrega/S';}
-        var_dump($reentrega);exit;
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
