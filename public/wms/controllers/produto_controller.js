@@ -191,6 +191,8 @@ $.Controller.extend('Wms.Controllers.Produto',
                 inptUndFraca.hide().prop('selectedIndex', 0);
                 inptUndFraca.removeClass('required');
                 inptUndFraca.removeClass('invalid');
+            } else {
+                $('#produto-indFracionavel').prop('selectedIndex',0);
             }
         },
 
@@ -431,7 +433,7 @@ $.Controller.extend('Wms.Controllers.Produto',
             }
         },
 
-        validarUnidFracionavel: function (el) {
+        validarUnidFracionavel: function (callback) {
             if (el.val() !== '1') {
                 var produto = {
                     id: $("#produto-id").val(),
@@ -440,16 +442,20 @@ $.Controller.extend('Wms.Controllers.Produto',
                 };
                 var embFracionavel = Wms.Controllers.ProdutoEmbalagem.prototype.checkExistEmbFracionavel(produto);
                 if (embFracionavel){
-                    var result = Wms.Controllers.ProdutoEmbalagem.prototype.removeEmbFracionavelDefault();
-                    if (!result) {
-                        el.prop('selectedIndex', 0)
-                    }
+                    Wms.Controllers.ProdutoEmbalagem.prototype.removeEmbFracionavelDefault(this.callback("resetInputUnidFracionavel"));
                 }
             }
         },
 
-        resetInputUnidFracionavel: function() {
+        resetInputUnidFracionavel: function(result) {
+            if (!result) {
+                $("#produto-idTipoComercializacao").prop('selectedIndex', 0)
+            } else {
 
+                this.validarEmbalagens();
+                this.validarVolumes();
+                this.pesoTotal();
+            }
         },
 
         /**
@@ -465,9 +471,6 @@ $.Controller.extend('Wms.Controllers.Produto',
          */
         '#produto-idTipoComercializacao change': function(el) {
             this.validarUnidFracionavel(el);
-            this.validarEmbalagens();
-            this.validarVolumes();
-            this.pesoTotal();
         },
 
         '#produto-validade change' : function() {
