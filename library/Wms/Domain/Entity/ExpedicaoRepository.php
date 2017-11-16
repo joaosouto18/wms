@@ -1935,7 +1935,6 @@ class ExpedicaoRepository extends EntityRepository {
 
         $WhereFinalCarga = "";
         $WhereSigla = "";
-        $WherePedido = "";
         $WhereCarga = "";
         $WhereExpedicao = "";
         $FullWhereFinal = "";
@@ -1951,8 +1950,6 @@ class ExpedicaoRepository extends EntityRepository {
             $central = "'" . $central . "'";
             $where .= $and . "( PED.CENTRAL_ENTREGA in(" . $central . ")";
             $where .= " OR PED.PONTO_TRANSBORDO in(" . $central . ") )";
-
-            $WherePedido .= " AND ( PED.CENTRAL_ENTREGA in(" . $central . ") OR PED.PONTO_TRANSBORDO in(" . $central . "))";
             $and = " AND ";
         }
 
@@ -2001,15 +1998,13 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
-            $codCarga = $parametros['codCargaExterno'];
-            $where = " AND CA.COD_CARGA_EXTERNO = '$codCarga'";
-            $whereSubQuery = " C.COD_CARGA_EXTERNO = '$codCarga'";
+            $where = " AND CA.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
+            $whereSubQuery = " C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
             $and = " and ";
             $andSub = " and ";
-            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = '$codCarga'))";
-            $WhereCarga .= " AND  (COD_CARGA_EXTERNO = '$codCarga')";
+            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "))";
+            $WhereCarga .= " AND  (COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . ")";
         }
-
 
         $JoinExpedicao = "";
         $JoinSigla = "";
@@ -2025,13 +2020,28 @@ class ExpedicaoRepository extends EntityRepository {
             $JoinCarga = " LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA ";
         }
 
-        $FullWhere = $WhereExpedicao . $WhereCarga . $WhereSigla;
-        $joinPedido = '';
+        $WherePedido = "";
         if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
-            $joinPedido .= " INNER JOIN CARGA CARGA ON (E.COD_EXPEDICAO = CARGA.COD_EXPEDICAO)
-                          INNER JOIN PEDIDO P ON P.COD_CARGA = CARGA.COD_CARGA AND P.COD_PEDIDO = ".$parametros['pedido'];
+            $sql = " SELECT DISTINCT COD_EXPEDICAO FROM CARGA C LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA WHERE P.COD_PEDIDO = '".$parametros['pedido'] . "'";
+            $exp = \Wms\Domain\EntityRepository::nativeQuery($sql);
+
+            $arr = array();
+            foreach ($exp as $idExp) {
+                $arr[] = $idExp['COD_EXPEDICAO'];
+            }
+
+            $exp = implode(";",$arr);
+            if (count($arr) >0) {
+                $WherePedido = " AND E.COD_EXPEDICAO IN (" . $exp . ")";
+            } else {
+                $WherePedido = " AND 1 = 2 ";
+            }
+
         }
-        $FullWhereFinal = $WhereExpedicao . $WhereFinalCarga . $WhereSigla;
+
+
+        $FullWhere = $WhereExpedicao . $WhereCarga . $WhereSigla;
+        $FullWhereFinal = $WhereExpedicao . $WhereFinalCarga . $WhereSigla . $WherePedido;
 
         if ($whereSubQuery != "")
             $cond = " WHERE ";
@@ -2040,7 +2050,7 @@ class ExpedicaoRepository extends EntityRepository {
                        E.DSC_PLACA_EXPEDICAO AS "placaExpedicao",
                        to_char(E.DTH_INICIO,\'DD/MM/YYYY HH24:MI:SS\') AS "dataInicio",
                        to_char(E.DTH_FINALIZACAO,\'DD/MM/YYYY HH24:MI:SS\') AS "dataFinalizacao",
-                       CARGAS.CARGAS AS "carga",
+                       C.CARGAS AS "carga",
                        S.DSC_SIGLA AS "status",
                        P.IMPRIMIR AS "imprimir",
                        PESO.NUM_PESO as "peso",
@@ -2050,7 +2060,6 @@ class ExpedicaoRepository extends EntityRepository {
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                             ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
                   FROM EXPEDICAO E
-                  ' . $joinPedido .'
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
                                     (COUNT(DISTINCT ESEP.COD_ETIQUETA_SEPARACAO)) AS QTDETIQUETA,
@@ -2091,7 +2100,7 @@ class ExpedicaoRepository extends EntityRepository {
                                     LISTAGG (C.COD_CARGA_EXTERNO,\', \') WITHIN GROUP (ORDER BY C.COD_CARGA_EXTERNO) CARGAS
                                FROM CARGA C ' . $JoinExpedicao . $JoinSigla . '
                                WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
-                              GROUP BY C.COD_EXPEDICAO) CARGAS ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                              GROUP BY C.COD_EXPEDICAO) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT COD_EXPEDICAO,
                                     LISTAGG (DSC_ITINERARIO,\', \') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
                                FROM (SELECT DISTINCT C.COD_EXPEDICAO,
