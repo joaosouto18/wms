@@ -54,7 +54,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
                 throw new \Exception("Nenhuma expedição selecionada");
 
             $expedicoesTotais = implode(',', $idsExpedicoes);
-            $expedicoesCortar = $expedicaoRepo->getExpedicaoSemProdutos($expedicoesTotais);
+            /*$expedicoesCortar = $expedicaoRepo->getExpedicaoSemProdutos($expedicoesTotais);
             $codExpedicoes = array();
             $expedicaoCortar = array();
             foreach ($idsExpedicoes as $idExpedicao) {
@@ -75,7 +75,12 @@ class Expedicao_OndaRessuprimentoController extends Action {
             ini_set('max_execution_time', 300);
             ini_set('memory_limit', '-1');
 
-            $resultGerado = $expedicaoRepo->gerarOnda($expedicoesSemCorte);
+            if (!empty($expedicoesSemCorte)) {
+                $resultGerado = $expedicaoRepo->gerarOnda($expedicoesSemCorte);
+            } else {
+                $resultGerado['resultado'] = true;
+                $this->addFlashMessage("error", "Nenhuma expedição em condições de ressuprimento!");
+            }*/
             ini_set('max_execution_time', 30);
 
             $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoesTotais);
@@ -91,13 +96,14 @@ class Expedicao_OndaRessuprimentoController extends Action {
                     $msgCorte = "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque. Clique para exibir " . $link;
                 } else {
                     $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoesTotais)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
-                    $mensagem = "Existem produtos sem estoque nas expedições $expedicoesComCorte. Clique para exibir " . $link;
+                    $mensagem = "Existem produtos sem estoque nas expedições $expedicoesTotais. Clique para exibir " . $link;
 
                     $this->addFlashMessage("error", $mensagem);
                     $this->redirect("index", "onda-ressuprimento", "expedicao");
                 }
             }
 
+            $resultGerado = $expedicaoRepo->gerarOnda($expedicoesTotais);
             if ($resultGerado['resultado'] == false) {
                 throw new Exception($resultGerado['observacao']);
             } else {
