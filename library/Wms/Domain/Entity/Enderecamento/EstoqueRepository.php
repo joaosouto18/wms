@@ -446,9 +446,10 @@ class EstoqueRepository extends EntityRepository
                        UMA,
                        UNITIZADOR,
                        DTH_VALIDADE
-                  FROM ($SQL $SQLWhere $SQLOrderBy)
+                  FROM ($SQL $SQLWhere )
                   GROUP BY ENDERECO,  COD_ENDERECO,  TIPO, COD_PRODUTO, DSC_GRADE, NORMA, COD_VOLUME, VOLUME, QTD,
-                        DTH_PRIMEIRA_MOVIMENTACAO, DSC_PRODUTO, UMA, UNITIZADOR, DTH_VALIDADE";
+                        DTH_PRIMEIRA_MOVIMENTACAO, DSC_PRODUTO, UMA, UNITIZADOR, DTH_VALIDADE
+                        $SQLOrderBy";
         $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
         if ($returnQuery == true) {
