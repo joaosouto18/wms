@@ -1195,13 +1195,15 @@ class MapaSeparacao extends eFPDF {
             $this->SetFont('Arial', 'B', 10);
             $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
             $this->SetFont('Arial', null, 10);
-            $this->Cell(4, 4, utf8_decode($this->idExpedicao) . ' - ' . $txtCarga . ': ' . $stringCargas, 0, 1);
+            $this->Cell(4, 4, utf8_decode($this->idExpedicao) . ' - ' . $txtCarga . ': ' . $stringCargas . 'PLACA:' . $mapa->getExpedicao()->getPlacaExpedicao(), 0, 1);
 
             $this->SetFont('Arial', 'B', 9);
 
             $this->Cell(4, 10, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
             $this->SetFont('Arial', 'B', 7);
 //Go to 1.5 cm from bottom
+
+            $this->Cell(4, 10, utf8_decode($mapa->getDscQuebra()), 0, 1);
             $this->Cell(20, 3, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1, "L");
 
             $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
