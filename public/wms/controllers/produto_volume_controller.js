@@ -423,11 +423,10 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
 
             ev.stopPropagation();
 
-            this.dialogConfirm("Tem certeza que deseja excluir este volume?", this.callback("deleteConfirmed"),{model:model});
+            this.dialogConfirm("Tem certeza que deseja excluir este volume?", this.callback("deleteConfirmed"), model);
         },
 
-        deleteConfirmed: function(params) {
-            var model = params.model;
+        deleteConfirmed: function(model) {
             var id = model.id.toString();
 
             //adiciona à fila para excluir
@@ -748,11 +747,11 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             });
         },
 
-        dialogConfirm: function ( msg, callback, params ) {
+        dialogConfirm: function ( msg, callYes, paramsYes, callNo, paramsNo ) {
             return $.wmsDialogConfirm({
                 title: 'Tem certeza?',
                 msg: msg
-            }, callback, params);
+            }, callYes, paramsYes, callNo, paramsNo);
         }
 
     });

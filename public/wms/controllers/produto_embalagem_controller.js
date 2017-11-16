@@ -255,7 +255,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 this.excluirEmbalagem(model);
                             },
 
-                            excluirEmbalagem: function (model) {
+                            excluirEmbalagem: function (model, callBackReject, paramsReject) {
                                 var id = model.id.toString();
                                 var este = this;
 
@@ -357,8 +357,8 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 if (!permisao)
                                     return false;
 
-                                return this.dialogConfirm("Tem certeza que deseja excluir esta embalagem?", this.callback("deleteConfirmed"), model);
-
+                                this.dialogConfirm("Tem certeza que deseja excluir esta embalagem?", this.callback("deleteConfirmed"), model, callBackReject, paramsReject);
+                                return null;
                             },
 
                             deleteConfirmed: function (model) {
@@ -741,11 +741,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 });
                             },
 
-                            dialogConfirm: function (msg, callback, params) {
+                            dialogConfirm: function (msg, callYes, paramsYes, callNo, paramsNo) {
                                 return $.wmsDialogConfirm({
                                     title: 'Tem certeza?',
                                     msg: msg
-                                }, callback, params);
+                                }, callYes, paramsYes, callNo, paramsNo);
                             },
 
                             /**
@@ -952,10 +952,9 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 this.salvarDadosEmbalagem(embFracionavelDefault);
                             },
 
-                            removeEmbFracionavelDefault: function () {
+                            removeEmbFracionavelDefault: function (callbackAcept, paramsAccept, callbackReject, paramsReject) {
                                 var blocosEmbalagem = $('div.produto_embalagem');
                                 var embFracionavelDefault = null;
-
                                 blocosEmbalagem.each(function () {
                                     var embalagem = $(this).model();
                                     if (embalagem.isEmbFracionavelDefault.toString() === 'S') {
@@ -963,7 +962,12 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     }
                                 });
                                 if (embFracionavelDefault !== null) {
-                                    return this.excluirEmbalagem(embFracionavelDefault);
+                                    var result = this.excluirEmbalagem(embFracionavelDefault, callbackReject, paramsReject);
+                                    if (result === true) {
+                                        callbackAcept()
+                                    } else if (result === false ){
+                                        callbackReject()
+                                    }
                                 }
                             }
                         }
