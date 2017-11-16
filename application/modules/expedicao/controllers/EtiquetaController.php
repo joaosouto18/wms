@@ -302,8 +302,10 @@ class Expedicao_EtiquetaController  extends Action
         ));
         $request = $this->getRequest();
         $idExpedicao = $request->getParam('id');
+        $complementoUrl = '';
         $reentrega   = $request->getParam('reentrega','N');
-
+        if ($reentrega == 'S') {$complementoUrl = '/reentrega/S';}
+        var_dump($reentrega);exit;
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
@@ -335,9 +337,11 @@ class Expedicao_EtiquetaController  extends Action
                 $codBarra    = $request->getParam('codBarra');
                 $codBarra    = ColetorUtil::retiraDigitoIdentificador($codBarra);
                 $motivo      = $request->getParam('motivo');
-                if (!$codBarra || !$motivo) {
+                $etiqueta = $request->getParam('etiqueta');
+
+                if (!$motivo) {
                     $this->addFlashMessage('error', 'É necessário preencher todos os campos');
-                    $this->_redirect('/expedicao/etiqueta/reimprimir/id'.$idExpedicao);
+                    $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id'.$idExpedicao);
                 }
 
                 $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
@@ -352,12 +356,12 @@ class Expedicao_EtiquetaController  extends Action
                     $etiquetaEntity = $EtiquetaRepo->findOneBy(array('id' => $codBarra));
                     if ($etiquetaEntity == null ) {
                         $this->addFlashMessage('error', "Etiqueta não $codBarra encontrada");
-                        $this->_redirect('/expedicao/etiqueta/reimprimir/id/'.$idExpedicao);
+                        $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
                     }
 
                     if ($Etiqueta->jaReimpressa($etiquetaEntity)) {
                         $this->addFlashMessage('info', 'Etiqueta não pode ser reimpressa mais de uma vez');
-                        $this->_redirect('/expedicao');
+                        $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
                     }
                     $Etiqueta->reimprimir($etiquetaEntity, $motivo, $modelo);
 
@@ -368,9 +372,7 @@ class Expedicao_EtiquetaController  extends Action
                     }
                 } else {
                     $codBarrasProdutos = null;
-                    $etiquetas = array();
-                    $etiquetas[] = $codBarra;
-                    $Etiqueta->imprimirReentrega($idExpedicao, null, $modelo,true,$etiquetas);
+                    $Etiqueta->imprimirReentrega($idExpedicao, null, $modelo,true,$etiqueta);
                 }
 
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
@@ -386,7 +388,7 @@ class Expedicao_EtiquetaController  extends Action
 
             } else {
                 $this->addFlashMessage('error', 'Senha informada não é válida');
-                $this->_redirect('/expedicao/etiqueta/reimprimir/id/'.$idExpedicao);
+                $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
             }
 
         }

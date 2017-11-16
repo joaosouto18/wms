@@ -344,8 +344,9 @@ class RecebimentoRepository extends EntityRepository {
                 }
 
                 $idEmbalagem = null;
+                $quantidade = 1;
+
                 if (isset($unMedida) && !empty($unMedida)) {
-                    $quantidade = 1;
                     if (isset($unMedida[$idProduto][$grade])) {
                         $idEmbalagem = $unMedida[$idProduto][$grade];
                         $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
@@ -353,9 +354,11 @@ class RecebimentoRepository extends EntityRepository {
                     }
                     $qtdConferida = $qtdConferida * $quantidade;
                 } elseif (isset($embalagem) && !empty($embalagem)) {
-                    $idEmbalagem = $embalagem[$idProduto][$grade];
-                    $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
-                    $quantidade = $produtoEmbalagemEntity->getQuantidade();
+                    if (isset($embalagem[$idProduto][$grade])) {
+                        $idEmbalagem = $embalagem[$idProduto][$grade];
+                        $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
+                        $quantidade = $produtoEmbalagemEntity->getQuantidade();
+                    }
                     $qtdConferida = $qtdConferida * $quantidade;
                 }
 
