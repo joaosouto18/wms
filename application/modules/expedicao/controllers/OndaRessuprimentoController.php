@@ -40,7 +40,11 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $expedicoes = $this->_getParam("expedicoes");
 
-        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes, true);
+        $sessao = new \Zend_Session_Namespace('deposito');
+        $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+        $central = $deposito->getFilial()->getCodExterno();
+
+        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes, $central, true);
         $this->exportPDF($verificaDisponibilidadeEstoquePedido, 'sem-estoque', 'Produtos sem estoque', 'P');
     }
 
@@ -53,8 +57,12 @@ class Expedicao_OndaRessuprimentoController extends Action {
             if (empty($idsExpedicoes))
                 throw new \Exception("Nenhuma expedição selecionada");
 
+            $sessao = new \Zend_Session_Namespace('deposito');
+            $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+            $central = $deposito->getFilial()->getCodExterno();
+
             $expedicoesTotais = implode(',', $idsExpedicoes);
-            /*$expedicoesCortar = $expedicaoRepo->getExpedicaoSemProdutos($expedicoesTotais);
+            $expedicoesCortar = $expedicaoRepo->getExpedicaoSemProdutos($expedicoesTotais, $central);
             $codExpedicoes = array();
             $expedicaoCortar = array();
             foreach ($idsExpedicoes as $idExpedicao) {
@@ -80,10 +88,10 @@ class Expedicao_OndaRessuprimentoController extends Action {
             } else {
                 $resultGerado['resultado'] = true;
                 $this->addFlashMessage("error", "Nenhuma expedição em condições de ressuprimento!");
-            }*/
+            }
             ini_set('max_execution_time', 30);
 
-            $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoesTotais);
+            $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoesTotais, $central);
             $msgCorte = null;
             if (count($result) > 0) {
                 $cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
@@ -96,14 +104,13 @@ class Expedicao_OndaRessuprimentoController extends Action {
                     $msgCorte = "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque. Clique para exibir " . $link;
                 } else {
                     $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoesTotais)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
-                    $mensagem = "Existem produtos sem estoque nas expedições $expedicoesTotais. Clique para exibir " . $link;
+                    $mensagem = "Existem produtos sem estoque nas expedições $expedicoesComCorte. Clique para exibir " . $link;
 
                     $this->addFlashMessage("error", $mensagem);
                     $this->redirect("index", "onda-ressuprimento", "expedicao");
                 }
             }
 
-            $resultGerado = $expedicaoRepo->gerarOnda($expedicoesTotais);
             if ($resultGerado['resultado'] == false) {
                 throw new Exception($resultGerado['observacao']);
             } else {
