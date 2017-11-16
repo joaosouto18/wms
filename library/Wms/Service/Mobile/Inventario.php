@@ -258,17 +258,19 @@ class Inventario {
                 ->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
         $possuiValidade = null;
-        if (isset($produtoEn) && !empty($produtoEn))
+
+        $hoje = new \Zend_Date();
+        if (isset($produtoEn) && !empty($produtoEn)) {
             $possuiValidade = $produtoEn->getValidade();
+            $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
+            $PeriodoUtilMax = $hoje->addDay($shelfLifeMax);
+        }
 
         $controleValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
 
         $dataValida = true;
         $validade = null;
 
-        $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
-        $hoje = new \Zend_Date();
-        $PeriodoUtilMax = $hoje->addDay($shelfLifeMax);
         if ($possuiValidade == 'S' && $controleValidade == 'S') {
             if (strlen($params['validade']) < 8) {
                 $dataValida = false;

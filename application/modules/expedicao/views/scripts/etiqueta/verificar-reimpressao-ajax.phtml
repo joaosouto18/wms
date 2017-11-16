@@ -1,20 +1,18 @@
-<?php if ($this->existeSeparacao == 'S') {?>
+<?php if ($this->existeReentrega == 'S') {?>
     <div>
-        <form id="" method="get" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'etiqueta', 'action' =>'reimprimir' ))?>">
-            <input type="hidden" value="N" name="reentrega" id="reentrega" />
+        <form id="reentrega" method="get" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'etiqueta', 'action' =>'reimprimir','reentrega'=>'S' ))?>">
             <?php
-                echo $this->formSubmit("btnEtiquetaSeparacao", "Etq. Separação", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
+                echo $this->formSubmit("btnEtiquetaReentrega", "Etq. Reentrega", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
             ?>
         </form>
     </div>
 <?php } ?>
 
-<?php if ($this->existeReentrega == 'S') {?>
+<?php if ($this->existeSeparacao == 'S') {?>
     <div>
-        <form id="" method="get" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'etiqueta', 'action' =>'reimprimir' ))?>">
-            <input type="hidden" value="S" name="reentrega" id="reentrega" />
+        <form id="etqNormal" method="get" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'etiqueta', 'action' =>'reimprimir','reentrega'=>'N' ))?>">
             <?php
-            echo $this->formSubmit("btnEtiquetaReentrega", "Etq. Reentrega", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
+            echo $this->formSubmit("btnEtiquetaSeparacao", "Etq. Separação", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
             ?>
         </form>
     </div>

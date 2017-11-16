@@ -342,11 +342,23 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
-                        $embalagemEntity->setAltura($altura);
-                        $embalagemEntity->setLargura($largura);
-                        $embalagemEntity->setPeso($peso);
-                        $embalagemEntity->setProfundidade($profundidade);
-                        $embalagemEntity->setCubagem($cubagem);
+
+                        if (isset($largura) && !empty($largura)) {
+                            $embalagemEntity->setLargura($largura);
+                        }
+                        if (isset($altura) && !empty($altura)) {
+                            $embalagemEntity->setAltura($altura);
+                        }
+                        if (isset($peso) && !empty($peso)) {
+                            $embalagemEntity->setPeso($peso);
+                        }
+                        if (isset($profundidade) && !empty($profundidade)) {
+                            $embalagemEntity->setProfundidade($profundidade);
+                        }
+                        if (isset($cubagem) && !empty($cubagem)) {
+                            $embalagemEntity->setCubagem($cubagem);
+                        }
+
                         $embalagemEntity->setIsEmbExpDefault((isset($isEmbExpDefault) && !empty($isEmbExpDefault))?$isEmbExpDefault: 'N');
                         $embalagemEntity->setIsEmbFracionavelDefault((isset($isEmbFracionavelDefault) && !empty($isEmbFracionavelDefault))?$isEmbFracionavelDefault: 'N');
 
@@ -1060,9 +1072,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     private function enviaDadosLogisticosEmbalagem(Produto $produtoEntity) {
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
-                ->from('wms:Produto\DadoLogistico', 'pdl')
-                ->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
+                ->select('pe.descricao, pe.altura, pe.cubagem, pe.largura, pe.peso, pe.profundidade, pe.quantidade, pe.codigoBarras ')
+                ->from('wms:Produto\Embalagem', 'pe')
                 ->where('pe.codProduto = ?1')
                 ->andWhere('pe.grade = ?2')
                 ->andWhere('pe.isPadrao like ?3')
@@ -1076,9 +1087,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         if (empty($dadosLogisticosEmbalagens)) {
             $dql = $this->getEntityManager()->createQueryBuilder()
-                    ->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
-                    ->from('wms:Produto\DadoLogistico', 'pdl')
-                    ->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
+                    ->select('pe.descricao, pe.altura, pe.cubagem, pe.largura, pe.peso, pe.profundidade, pe.quantidade, pe.codigoBarras ')
+                    ->from('wms:Produto\Embalagem', 'pe')
                     ->where('pe.codProduto = ?1')
                     ->andWhere('pe.grade = ?2')
                     ->andWhere('pe.isPadrao like ?3')
