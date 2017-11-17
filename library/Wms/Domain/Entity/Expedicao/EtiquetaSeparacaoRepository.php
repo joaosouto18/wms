@@ -240,14 +240,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                       es.codEstoque,
                       de.descricao as endereco,
                       es.pontoTransbordo,
+                      ped.id pedido,
                       CASE WHEN es.codStatus = 522 THEN 'PENDENTE DE IMPRESSÃO'
                            WHEN es.codStatus = 523 THEN 'PENDENTE DE CONFERENCIA'
-                           ELSE 'Consulte o admnistrador do sistema'
+                           ELSE 'Consulte o administrador do sistema'
                       END as pendencia,
                       CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
                       etq.dataConferencia")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'es.codBarras = etq.id')
+            ->innerJoin('etq.pedido','ped')
             ->leftJoin('etq.produto','p')
             ->leftJoin('etq.produtoEmbalagem','emb')
             ->leftJoin('etq.produtoVolume','vol')
