@@ -2303,7 +2303,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $produto['qtd'] = 1;
         $produtos[] = $produto;
 
-        $reservaEstoque = $reservaEstoqueRepo->findReservaEstoque(NULL,$produtos,"S","E",$idExpedicao);
+        $reservaEstoque = $reservaEstoqueRepo->findReservaEstoque(NULL,$produtos,"S","E", array('expedicao' => $idExpedicao));
         $maiorQtd = null;
         if ($reservaEstoque != NULL) {
             $produtosReserva = $reservaEstoque->getProdutos();
@@ -2331,7 +2331,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             if ($reservaZerada == true) {
-                $reservaEstoqueRepo->cancelaReservaEstoque(null,$produtos,"S","E",$idExpedicao);
+                $reservaEstoqueRepo->cancelaReservaEstoque(null,$produtos,"S","E", array('expedicao' => $idExpedicao));
             }
             $this->_em->flush();
 

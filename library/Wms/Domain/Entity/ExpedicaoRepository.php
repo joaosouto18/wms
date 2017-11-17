@@ -845,11 +845,9 @@ class ExpedicaoRepository extends EntityRepository {
         return array($itensReservados, $arrEstoqueReservado);
     }
 
-    public function verificaDisponibilidadeEstoquePedido($expedicoes, $relatorio = false) {
+    public function verificaDisponibilidadeEstoquePedido($expedicoes, $central, $relatorio = false) {
 
-        $sessao = new \Zend_Session_Namespace('deposito');
-        $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
-        $central = $deposito->getFilial()->getCodExterno();
+
         $campoSel = "";
         $campoSub = "";
         if ($relatorio == true) {
@@ -908,7 +906,7 @@ class ExpedicaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getExpedicaoSemProdutos($codExpedicao)
+    public function getExpedicaoSemProdutos($codExpedicao, $centralEntrega)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('MAX(e.id) id')
@@ -919,6 +917,7 @@ class ExpedicaoRepository extends EntityRepository {
             ->leftJoin('wms:Enderecamento\Estoque', 'est', 'WITH', 'est.codProduto = pp.codProduto AND est.grade = pp.grade')
             ->where('est.codProduto is null')
             ->andWhere("e.id IN ($codExpedicao)")
+            ->andWhere("p.centralEntrega = $centralEntrega")
             ->groupBy('e.id');
         return $sql->getQuery()->getResult();
 

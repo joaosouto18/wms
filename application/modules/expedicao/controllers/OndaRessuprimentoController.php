@@ -40,7 +40,11 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $expedicoes = $this->_getParam("expedicoes");
 
-        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes, true);
+        $sessao = new \Zend_Session_Namespace('deposito');
+        $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+        $central = $deposito->getFilial()->getCodExterno();
+
+        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes, $central, true);
         $this->exportPDF($verificaDisponibilidadeEstoquePedido, 'sem-estoque', 'Produtos sem estoque', 'P');
     }
 
@@ -53,8 +57,12 @@ class Expedicao_OndaRessuprimentoController extends Action {
             if (empty($idsExpedicoes))
                 throw new \Exception("Nenhuma expedição selecionada");
 
+            $sessao = new \Zend_Session_Namespace('deposito');
+            $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+            $central = $deposito->getFilial()->getCodExterno();
+
             $expedicoesTotais = implode(',', $idsExpedicoes);
-            $expedicoesCortar = $expedicaoRepo->getExpedicaoSemProdutos($expedicoesTotais);
+            $expedicoesCortar = $expedicaoRepo->getExpedicaoSemProdutos($expedicoesTotais, $central);
             $codExpedicoes = array();
             $expedicaoCortar = array();
             foreach ($idsExpedicoes as $idExpedicao) {
@@ -75,10 +83,15 @@ class Expedicao_OndaRessuprimentoController extends Action {
             ini_set('max_execution_time', 300);
             ini_set('memory_limit', '-1');
 
-            $resultGerado = $expedicaoRepo->gerarOnda($expedicoesSemCorte);
+            if (!empty($expedicoesSemCorte)) {
+                $resultGerado = $expedicaoRepo->gerarOnda($expedicoesSemCorte);
+            } else {
+                $resultGerado['resultado'] = true;
+                $this->addFlashMessage("error", "Nenhuma expedição em condições de ressuprimento!");
+            }
             ini_set('max_execution_time', 30);
 
-            $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoesTotais);
+            $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoesTotais, $central);
             $msgCorte = null;
             if (count($result) > 0) {
                 $cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
