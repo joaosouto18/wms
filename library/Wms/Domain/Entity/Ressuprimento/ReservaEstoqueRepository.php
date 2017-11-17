@@ -78,7 +78,7 @@ class ReservaEstoqueRepository extends EntityRepository
             } else {
                 $reservaEstoqueExpedicaoRepo = $repositorios['reservaEstoqueExpRepo'];
             }
-            $reservaEstoqueArray = $reservaEstoqueExpedicaoRepo->findBy($idOrigem);
+            $reservaEstoqueArray = $reservaEstoqueExpedicaoRepo->findBy(array('expedicao'=> $idOrigem));
         }
 
 
