@@ -63,7 +63,7 @@ class ProdutosSemConferencia extends Pdf
             $novaCarga = utf8_decode($produto["codCargaExterno"]);
 
             if ($novaCarga != $cargaAntiga) {
-                $this->AddPage();
+//                $this->AddPage();
                 $this->Cell(15, 5, "Pedido", "TB");
                 $this->Cell(15, 5, "Etiqueta", "TB");
                 $this->Cell(15, 5, "Produto", "TB");
@@ -96,7 +96,7 @@ class ProdutosSemConferencia extends Pdf
         foreach($produtos as $key => $produto) {
             $novaCarga = utf8_decode($produto["codCargaExterno"]);
             if ($novaCarga != $cargaAntiga) {
-                $this->AddPage();
+//                $this->AddPage();
 
                 $this->Cell(15, 5, "Pedido", "TB");
                 $this->Cell(15, 5, "Etiqueta", "TB");
