@@ -961,7 +961,7 @@ class EtiquetaSeparacao extends Pdf
                 }
 
                 $this->SetFont('Arial', 'B', 10);
-                $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] -  $etiqueta[tipoComercializacao] ($etiqueta[quantidade]) - $etiqueta[tipoPedido]: $etiqueta[codEntrega]"."\n";
+                $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] -  $etiqueta[tipoComercializacao] ($etiqueta[quantidade]) - Pedido: $etiqueta[codEntrega]"."\n";
                 $this->MultiCell(100, 4.5, $impressao, 0, 'L');
                 $this->SetFont('Arial', 'B', 11);
                 if ($reentrega == false) {
