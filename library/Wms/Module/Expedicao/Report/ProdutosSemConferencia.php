@@ -80,10 +80,10 @@ class ProdutosSemConferencia extends Pdf
             $this->Cell(15, 5, utf8_decode($produto["pedido"]) , 0);
             $this->Cell(15, 5, utf8_decode($produto["codBarras"]) , 0);
             $this->Cell(15, 5, utf8_decode($produto["codProduto"])  , 0);
-            $this->Cell(62, 5, utf8_decode($produto["produto"]), 0);
+            $this->Cell(62, 5, substr(utf8_decode($produto["produto"]),0,30), 0);
             $this->Cell(55, 5, utf8_decode($produto["grade"])    , 0);
             $this->Cell(23, 5, utf8_decode($produto["embalagem"])    , 0);
-            $this->Cell(55, 5, utf8_decode($produto["cliente"])  , 0);
+            $this->Cell(55, 5, substr(utf8_decode($produto["cliente"]),0,30), 0);
             $this->Cell(20, 5, utf8_decode($produto["codCargaExterno"])  , 0);
             $this->Cell(20, 5, utf8_decode($produto["codEstoque"]), 0);
             $cargaAntiga = $novaCarga;
