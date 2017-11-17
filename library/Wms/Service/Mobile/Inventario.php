@@ -445,7 +445,10 @@ class Inventario {
             }
             $quantidadeTotal = ($quantidadeContada + $quantidadeAvaria);
             if ($estoqueEn) {
-                $validade = new \DateTime($params['validade']);
+                $validade = null;
+                if (isset($params['validade']) && !empty($params['validade'])) {
+                    $validade = new \DateTime($params['validade']);
+                }
                 $validadeEstoque = $estoqueEn->getValidade();
                 //Houve divergência?
                 $quantidadeEstoque = $estoqueEn->getQtd();

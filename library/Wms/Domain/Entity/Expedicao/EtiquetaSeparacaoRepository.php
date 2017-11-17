@@ -240,14 +240,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                       es.codEstoque,
                       de.descricao as endereco,
                       es.pontoTransbordo,
+                      ped.id pedido,
                       CASE WHEN es.codStatus = 522 THEN 'PENDENTE DE IMPRESSÃO'
                            WHEN es.codStatus = 523 THEN 'PENDENTE DE CONFERENCIA'
-                           ELSE 'Consulte o admnistrador do sistema'
+                           ELSE 'Consulte o administrador do sistema'
                       END as pendencia,
                       CASE WHEN emb.descricao IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
                       etq.dataConferencia")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'es.codBarras = etq.id')
+            ->innerJoin('etq.pedido','ped')
             ->leftJoin('etq.produto','p')
             ->leftJoin('etq.produtoEmbalagem','emb')
             ->leftJoin('etq.produtoVolume','vol')
@@ -277,7 +279,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
         $dql->setParameter('idExpedicao', $idExpedicao)
-            ->orderBy('es.codCargaExterno, es.codBarras, p.descricao, es.codProduto, es.grade');
+            ->orderBy('ped.id, es.codCargaExterno, es.codBarras, p.descricao, es.codProduto, es.grade');
 
         $expedicaoEn = $this->getEntityManager()->getRepository("wms:Expedicao")->findOneBy(array('id'=>$idExpedicao));
         if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
@@ -1069,7 +1071,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             // Decrementa a quantidade à vinculada sobre a qtdPendente do pedido
                             $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido, $qtdVincular);
 
-                            if (!empty($quebraPD) && $quebraPD != "N") {
+                            if (!empty($quebraPD) && $quebraPD != "N" && $reserva['tipoSaida'] == ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA) {
                                 $quebras = array();
                                 $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_PULMAO_DOCA;
                                 if ($embalado == true) {

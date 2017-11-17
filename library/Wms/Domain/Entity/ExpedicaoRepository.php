@@ -2539,8 +2539,8 @@ class ExpedicaoRepository extends EntityRepository {
                 ->innerJoin('c.expedicao', 'e')
                 ->innerJoin('p.pessoa', 'cliente')
                 ->where('es.codProduto = :codProduto')
-                ->orderBy('e.dataFinalizacao', 'DESC')
-                ->setParameter("codProduto", $codProduto);
+                ->setParameter("codProduto", $codProduto)
+                ->orderBy('e.dataFinalizacao', 'DESC');
 
         if (isset($dataInicial) && (!empty($dataInicial))) {
             $dataInicial = str_replace('/', '-', $dataInicial);
@@ -2559,12 +2559,13 @@ class ExpedicaoRepository extends EntityRepository {
                     ->andWhere('e.dataFinalizacao <= :dataFinal');
         }
 
-        if (isset($grade)) {
+        if (isset($grade) && !empty($grade)) {
             $source->andWhere('es.dscGrade = :grade')
                     ->setParameter('grade', $grade);
         }
-        if (isset($filial)) {
-            $source->andWhere('p.centralEntrega = '.$filial);
+        if (isset($filial) && !empty($filial)) {
+            $source->andWhere('p.centralEntrega = :filial')
+                ->setParameter('filial', $filial);
         }
 
         return $source->getQuery()->getResult();
