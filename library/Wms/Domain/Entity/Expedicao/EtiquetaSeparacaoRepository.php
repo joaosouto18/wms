@@ -1071,7 +1071,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             // Decrementa a quantidade à vinculada sobre a qtdPendente do pedido
                             $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido, $qtdVincular);
 
-                            if (!empty($quebraPD) && $quebraPD != "N") {
+                            if (!empty($quebraPD) && $quebraPD != "N" && $reserva['tipoSaida'] == ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA) {
                                 $quebras = array();
                                 $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_PULMAO_DOCA;
                                 if ($embalado == true) {
