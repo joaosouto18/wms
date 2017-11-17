@@ -59,6 +59,7 @@ class ProdutosSemConferencia extends Pdf
 
         $cargaAntiga = "";
         /** @var \Wms\Domain\Entity\Produto $produto */
+        $this->AddPage();
         foreach($produtos as $key => $produto) {
             $novaCarga = utf8_decode($produto["codCargaExterno"]);
 
@@ -92,6 +93,7 @@ class ProdutosSemConferencia extends Pdf
     private function layout2($produtos, $quebraCarga){
         $cargaAntiga = "";
 
+        $this->AddPage();
         /** @var \Wms\Domain\Entity\Produto $produto */
         foreach($produtos as $key => $produto) {
             $novaCarga = utf8_decode($produto["codCargaExterno"]);
