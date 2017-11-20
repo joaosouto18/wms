@@ -123,6 +123,16 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     }
                                 }
 
+                                if (valores.isEmbFracionavelDefault === 'S') {
+                                    $('.produto_dado_logistico input.idEmbalagem').each(function () {
+                                        var pdlModel = $(this).closest('.produto_dado_logistico').model();
+                                        if (pdlModel.idEmbalagem === valores.id) {
+                                            pdlModel.lblEmbalagem = valores.descricao + ' (' + valores.quantidade + ')';
+                                            Wms.Controllers.ProdutoDadoLogistico.prototype.show(pdlModel);
+                                        }
+                                    });
+                                }
+
                                 if (id !== '') {
                                     valores.acao = id.indexOf('-new') === -1 ? 'alterar' : 'incluir';
 
@@ -394,6 +404,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                                 // carregar embalagens nos dados logisticos
                                 this.carregarSelectEmbalagens(produto_embalagens);
+                                Wms.Controllers.Produto.prototype.checkShowUnidFracionavel();
                             },
 
                             /**
@@ -906,18 +917,28 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 } else {
                                     blocosEmbalagem.each(function () {
                                         var embRecebimento = $(this).model();
+                                        var teveMudanca = false;
                                         if (embRecebimento.isEmbFracionavelDefault.toString() === 'S') {
                                             embFracionavelDefault = embRecebimento;
+                                        } else {
+                                            if (embRecebimento.isPadrao !== 'N') {
+                                                embRecebimento.isPadrao = 'N';
+                                                embRecebimento.lblIsPadrao = 'NÃO';
+                                                teveMudanca = true;
+                                            }
                                         }
-                                        embRecebimento.isPadrao = 'N';
-                                        embRecebimento.lblIsPadrao = 'NÃO';
-                                        este.salvarDadosEmbalagem(embRecebimento);
+                                        if (teveMudanca)
+                                            este.salvarDadosEmbalagem(embRecebimento);
                                     });
 
                                     if (embFracionavelDefault !== null) {
-                                        embFracionavelDefault.isPadrao = 'S';
-                                        embFracionavelDefault.descricao = produto.unidFracao;
-                                        este.salvarDadosEmbalagem(embFracionavelDefault);
+                                        var teveMudanca = false;
+                                        if (embFracionavelDefault.descricao !== produto.unidFracao) {
+                                            embFracionavelDefault.descricao = produto.unidFracao;
+                                            teveMudanca = true;
+                                        }
+                                        if (teveMudanca)
+                                            este.salvarDadosEmbalagem(embFracionavelDefault);
                                     } else {
                                         return false
                                     }

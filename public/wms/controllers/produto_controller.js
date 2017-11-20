@@ -30,7 +30,6 @@ $.Controller.extend('Wms.Controllers.Produto',
 
             this.checkShowValidade();
             this.checkShowPesoVariavel();
-            this.checkShowUnidFracionavel();
             var este = this;
 
             $('#produto-diasVidaUtil').parent().append($('#produto-percentMinVidaUtil')).append(' %');
@@ -433,7 +432,7 @@ $.Controller.extend('Wms.Controllers.Produto',
             }
         },
 
-        validarUnidFracionavel: function (callback) {
+        validarUnidFracionavel: function (el) {
             if (el.val() !== '1') {
                 var produto = {
                     id: $("#produto-id").val(),
@@ -442,19 +441,14 @@ $.Controller.extend('Wms.Controllers.Produto',
                 };
                 var embFracionavel = Wms.Controllers.ProdutoEmbalagem.prototype.checkExistEmbFracionavel(produto);
                 if (embFracionavel){
-                    Wms.Controllers.ProdutoEmbalagem.prototype.removeEmbFracionavelDefault(this.callback("resetInputUnidFracionavel"));
+                    this.dialogAlert("Este produto tem embalagem de unidade fracionável. <br /> Remova ela antes de alterar esta opção");
+                    $("#produto-idTipoComercializacao").prop('selectedIndex', 0);
+                    return false;
+                } else {
+                    this.validarEmbalagens();
+                    this.validarVolumes();
+                    this.pesoTotal();
                 }
-            }
-        },
-
-        resetInputUnidFracionavel: function(result) {
-            if (!result) {
-                $("#produto-idTipoComercializacao").prop('selectedIndex', 0)
-            } else {
-
-                this.validarEmbalagens();
-                this.validarVolumes();
-                this.pesoTotal();
             }
         },
 
