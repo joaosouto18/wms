@@ -708,7 +708,7 @@ class NotaFiscalRepository extends EntityRepository {
     public function buscarItemPorCodigoBarras($idRecebimento, $codigoBarras) {
         // busco produto
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('nfi.id idItem, nfi.grade, nfi.quantidade, p.id idProduto, p.descricao,
+                ->select("nfi.id idItem, nfi.grade, nfi.quantidade, p.id idProduto, p.descricao,
                         tc.id idTipoComercializacao, tc.descricao tipoComercializacao,
                         pe.id idEmbalagem, pv.id idVolume, p.validade, p.possuiPesoVariavel,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
@@ -718,11 +718,12 @@ class NotaFiscalRepository extends EntityRepository {
                         NVL(np_embalagem.numPeso, np_volume.numPeso) numPeso,
                         NVL(np_embalagem.numNorma, np_volume.numNorma) numNorma,
                         NVL(np_embalagem.id, np_volume.id) idNorma,
-                        NVL(pe.descricao, \'\') descricaoEmbalagem,
-                        NVL(pe.quantidade, \'0\') quantidadeEmbalagem,
-                        NVL(pv.descricao, \'\') descricaoVolume,
-                        NVL(pv.codigoSequencial, \'\') sequenciaVolume,
-                        NVL(pe.dataInativacao, pv.dataInativacao) dataInativacao')
+                        NVL(pe.descricao, '') descricaoEmbalagem,
+                        NVL(pe.quantidade, '0') quantidadeEmbalagem,
+                        NVL(pv.descricao, '') descricaoVolume,
+                        NVL(pv.codigoSequencial, '') sequenciaVolume,
+                        NVL(pe.isEmbFracionavelDefault, 'N') embFracDefault
+                        ")
                 ->from('wms:NotaFiscal', 'nf')
                 ->innerJoin('nf.itens', 'nfi')
                 ->innerJoin('nfi.produto', 'p', 'WITH', 'p.grade = nfi.grade')

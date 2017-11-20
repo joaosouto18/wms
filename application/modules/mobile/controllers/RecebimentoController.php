@@ -151,10 +151,7 @@ class Mobile_RecebimentoController extends Action
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
 
             if ($itemNF == null)
-                throw new \Exception('Nenhum produto encontrado no recebimento com este código de barras. - ' . $codigoBarras);
-
-            if (!is_null($itemNF['dataInativacao']))
-                throw new \Exception('O produto ' . $itemNF['idProduto'] . ' grade ' . $itemNF['grade'] . ' está inativo!');
+                throw new \Exception('Nenhuma unidade ativa foi encontrada no recebimento com este código de barras. - ' . $codigoBarras);
 
             $idProduto = $itemNF['idProduto'];
             $grade = $itemNF['grade'];
@@ -184,6 +181,7 @@ class Mobile_RecebimentoController extends Action
             $this->view->normasPaletizacao = $normasPaletizacao;
 
             $this->view->pesoVariavel = $pesoVariavel;
+            $this->view->embFracionavelDefault = $itemNF['embFracDefault'];
             $this->view->recebimento = $recebimentoEntity;
             $form->setDefault('idRecebimento', $idRecebimento);
             $this->view->form = $form;

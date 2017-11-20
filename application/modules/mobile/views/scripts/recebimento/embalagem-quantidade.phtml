@@ -13,7 +13,17 @@
                     <td colspan="2">Código de Barras</td>
                 </tr>
                 <tr>
-                    <td><?php echo $this->itemNF['descricaoEmbalagem'] ?></td>
+                    <td>
+                        <?php if ($this->embFracionavelDefault == 'S'){
+                            $unid = $this->itemNF['descricaoEmbalagem'];
+                            $txtEmb = \Wms\Domain\Entity\Produto::$listaUnidadeMedida[$unid];
+                            $dscEmb = "$unid ($txtEmb)";
+                            echo $dscEmb;
+                        } else {
+                            echo $this->itemNF['descricaoEmbalagem'];
+                        }
+                        ?>
+                    </td>
                     <td colspan="2"><?php echo $this->itemNF['codigoBarras'] ?></td>
                 </tr>
 
@@ -33,7 +43,11 @@
                 </tr>
 
                 <tr class="title">
-                    <td>Unidades Por Emb.</td>
+                    <?php if ($this->embFracionavelDefault != 'S') : ?>
+                        <td>Unidades Por Emb.</td>
+                    <?php else : ?>
+                        <td>Embalagem fracionável</td>
+                    <?php endif; ?>
                     <?php if ($this->itemNF['validade'] == 'S') : ?>
                         <td><label class="field required" for="dataValidade">Data Validade</label></td>
                     <?php endif; ?>
@@ -43,22 +57,28 @@
                     <?php if ($this->pesoVariavel == 'S') : ?>
                         <td><label class="field required" for="numPeso">Peso (Kg)</label></td>
                     <?php endif; ?>
-                    <td>Total Unidades</td>
+                    <?php if ($this->embFracionavelDefault != 'S') : ?>
+                        <td>Total Unidades</td>
+                    <?php else : ?>
+                        <td>Total Recebido</td>
+                    <?php endif; ?>
                 </tr>
 
                 <tr>
-                    <td><?php echo $this->itemNF['quantidadeEmbalagem'] ?></td>
+                    <?php if ($this->embFracionavelDefault != 'S') : ?>
+                        <td><?php echo $this->itemNF['quantidadeEmbalagem'] ?></td>
+                    <?php else : ?>
+                        <td>Ao fracionar use ponto "."</td>
+                    <?php endif; ?>
                     <?php if ($this->itemNF['validade'] == 'S') : ?>
                         <td><input type="text" placeholder="dd/mm/yy" maxlength="8" size="10" class="required focus" id="dataValidade" name="dataValidade"/></td>
                     <?php endif; ?>
                     <?php if ($this->pesoVariavel == 'N') : ?>
-                        <td><input type="text" maxlength="15" size="10" class="required <?php if ($this->itemNF['validade'] != 'S') : echo " focus ";
-                    endif
-                        ?>" id="qtdConferida" name="qtdConferida" /></td>
-                               <?php endif; ?>
+                        <td><input type="text" maxlength="15" size="6" class="required <?php if ($this->itemNF['validade'] != 'S') : echo " focus "; endif ?>" id="qtdConferida" name="qtdConferida" /></td>
+                    <?php endif; ?>
                     <?php if ($this->pesoVariavel == 'S') : ?>
-                        <td><input type="text" maxlength="15" size="10" class="required focus" id="numPeso" name="numPeso"/></td>
-<?php endif; ?>
+                        <td><input type="text" maxlength="15" size="6" class="required focus" id="numPeso" name="numPeso"/></td>
+                    <?php endif; ?>
                     <td><span id="totalQuantidade">0</span></td>
                 </tr>
 
