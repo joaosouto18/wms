@@ -38,6 +38,17 @@ if [ -e /vagrant/instantclient-basic-linux.x64-11.2.0.3.0.zip ] && [ -e /vagrant
 		cd oci8-1.4.9
 		phpize
 		./configure --with-oci8=shared,instantclient,/home/vagrant/instantclient_11_2/
+
+		-----------
+		(caso exiba erro no comando ./configure
+
+		yum groupinstall "Development tools"
+
+        Debian base:
+
+        apt-get install build-essential
+        )
+        ------------
 		sudo make
 		sudo make install
 
