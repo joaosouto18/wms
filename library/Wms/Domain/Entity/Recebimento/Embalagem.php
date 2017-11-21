@@ -31,7 +31,7 @@ class Embalagem
     /**
      * Código qtdConferida conferida
      *  
-     * @Column(name="QTD_CONFERIDA", type="decimal", nullable=true)
+     * @Column(name="QTD_CONFERIDA", type="float", nullable=true)
      */
     protected $qtdConferida;
 
@@ -121,7 +121,7 @@ class Embalagem
 
     public function setQtdConferida($qtdConferida)
     {
-        $this->qtdConferida = (int) $qtdConferida;
+        $this->qtdConferida = $qtdConferida;
         return $this;
     }
 

@@ -196,6 +196,7 @@ class Mobile_RecebimentoController extends Action
         $params = $this->getRequest()->getParams();
         extract($params);
 
+        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
         $notaFiscalItemRepo = $this->em->getRepository('wms:NotaFiscal\Item');
 
@@ -209,11 +210,18 @@ class Mobile_RecebimentoController extends Action
             $idOrdemServico = $retorno['id'];
 
             // item conferido
+            /** @var \Wms\Domain\Entity\NotaFiscal\Item $notaFiscalItemEntity */
             $notaFiscalItemEntity = $notaFiscalItemRepo->find($idItem);
-            $idProduto = $notaFiscalItemEntity->getProduto()->getId();
-            $grade = $notaFiscalItemEntity->getGrade();
+            $produtoEn = $notaFiscalItemEntity->getProduto();
+            $idProduto = $produtoEn->getId();
+            $grade = $produtoEn->getGrade();
             /** @var \Wms\Domain\Entity\Produto $produtoEn */
-            $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$idProduto,'grade'=>$grade));
+
+            if (isset($isEmbFracDefault) && $isEmbFracDefault == 'S') {
+                $qtdConferida = (float) $qtdConferida;
+            } else {
+                $qtdConferida = (int) $qtdConferida;
+            }
 
             if ($produtoEn->getValidade() == "S") {
 
@@ -226,10 +234,6 @@ class Mobile_RecebimentoController extends Action
                 $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
                 if (is_null($shelfLife) || $shelfLife == '')
                     throw new Exception("O parametro 'Dias de vencimento' do produto " . $produtoEn->getId() . " está vazio.");
-
-                $hoje = new Zend_Date;
-                $PeriodoUtil = $hoje->addDay($shelfLife);
-                $PeriodoUtilMax = $hoje->addDay($shelfLifeMax);
 
                 $data = null;
                 if (strlen($params['dataValidade']) >= 8) {
@@ -282,7 +286,7 @@ class Mobile_RecebimentoController extends Action
                     $params['numPeso'] = str_replace(",",".",$params['numPeso']);
                     $parametros['COD_PRODUTO'] = $produtoEn->getId();
                     $parametros['DSC_GRADE'] = $produtoEn->getGrade();
-                    $qtdConferida = str_replace(",",".",$params['numPeso']);
+                    $qtdConferida = (float) str_replace(",",".",$params['numPeso']);
 
                     $volumes = (int) $this->em->getRepository('wms:Produto\Volume')->findOneBy(array('codProduto' => $parametros['COD_PRODUTO'], 'grade' => $parametros['DSC_GRADE']));
 
@@ -291,7 +295,6 @@ class Mobile_RecebimentoController extends Action
                     } else {
                         $params['numPeso'] = (float)$params['numPeso'];
                     }
-//                    }
                 }
             } else {
                 $params['numPeso'] = null;
