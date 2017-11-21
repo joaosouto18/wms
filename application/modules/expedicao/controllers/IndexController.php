@@ -15,6 +15,7 @@ class Expedicao_IndexController extends Action {
     public function indexAction() {
         $em = $this->getEntityManager();
         $parametroPedidos = $this->getSystemParameterValue('COD_INTEGRACAO_PEDIDOS');
+        $parametroPedidosTelaExpedicao = $this->getSystemParameterValue('COD_INTEGRACAO_PEDIDOS_TELA_EXP');
         Page::configure(array(
             'buttons' => array(
                 array(
@@ -89,14 +90,14 @@ class Expedicao_IndexController extends Action {
         }
 
         //INTEGRAR CARGAS NO MOMENTO Q ENTRAR NA TELA DE EXPEDICAO
-        if (isset($parametroPedidos) && !empty($parametroPedidos)) {
-            $explodeIntegracoes = explode(',', $parametroPedidos);
+        if (isset($parametroPedidosTelaExpedicao) && !empty($parametroPedidosTelaExpedicao)) {
+            $explodeIntegracoes = explode(',', $parametroPedidosTelaExpedicao);
 
             /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
             $acaoIntegracaoRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
             foreach ($explodeIntegracoes as $codIntegracao) {
                 $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
-                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity);
+                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity,null,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
             }
         }
 

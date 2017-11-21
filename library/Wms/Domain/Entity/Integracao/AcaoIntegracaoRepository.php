@@ -322,7 +322,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             }
 
-            if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) ) {
+            if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
                 /*
                  * Se estiver salvando os dados ja nas tabelas de produção, atualizo a data da ultima execução indicando que a operação foi finalizada para aquela data
                  * Caso estja salvando em tabelas temporarias (com o fim de listagem e validação), a data da ultima execução não deve ser alterada dois a operação ainda não foi concluida
@@ -334,6 +334,16 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $this->_em->persist($acaoEn);
                     }
                 }
+            } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+                $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S' WHERE IND_PROCESSADO IS NULL";
+                $words = explode(" ",trim($query));
+                $update = true;
+                if (strtoupper($words[0]) == "SELECT") {
+                    $update = false;
+                }
+                $conexaoEn = $acaoEn->getConexao();
+                $result = $conexaoRepo->runQuery($query, $conexaoEn, $update);
+
             }
 
             $this->_em->flush();

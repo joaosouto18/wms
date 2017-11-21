@@ -151,13 +151,15 @@ class Integracao {
         $maxDate = null;
         foreach ($this->_dados as $row) {
 
-            $data = \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']);
-            $data = $data->format('Y-m-d H:i:s');
-            if ($maxDate == null) {
-                $maxDate = $data;
-            }
-            if (strtotime($data) > strtotime($maxDate)) {
-                $maxDate = $data;
+            if(isset($row['DTH'])) {
+                $data = \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']);
+                $data = $data->format('Y-m-d H:i:s');
+                if ($maxDate == null) {
+                    $maxDate = $data;
+                }
+                if (strtotime($data) > strtotime($maxDate)) {
+                    $maxDate = $data;
+                }
             }
         }
         if (!is_null($maxDate))
