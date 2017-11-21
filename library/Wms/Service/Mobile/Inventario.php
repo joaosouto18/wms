@@ -300,10 +300,10 @@ class Inventario {
 //                $dias = floor($diferenca / (60 * 60 * 24));
 //                $dataRestante = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$dias day", strtotime($dthMov))));
                 $dataValidade = date_create_from_format('Y-m-d',"20$ano-$mes-$dia");
-                var_dump(strtotime($dataValidade->format('Y-m-d')));
-                var_dump(strtotime($PeriodoUtilMax->toString('YY-MM-dd')));
-                exit;
-                if($dataValidade > $PeriodoUtilMax){
+//                var_dump(strtotime($dataValidade->format('Y-m-d')));
+//                var_dump(strtotime($PeriodoUtilMax->toString('YY-MM-dd')));
+//                exit;
+                if(strtotime($dataValidade->format('Y-m-d')) > strtotime($PeriodoUtilMax->toString('YY-MM-dd'))){
                     $url = "/mobile/inventario/consulta-produto/idInventario/$idInventario/numContagem/$numContagem/divergencia/$divergencia/codigoBarras/$codigoBarras/idEndereco/$idEndereco/idInventarioEnd/$idInventarioEnd/idContagemOs/$idContagemOs";
                     return array('status' => 'error', 'msg' => 'Data de validade acima da data máxima '.date('d/m/Y', strtotime("+$dias day", strtotime($dthMov))), 'url' => $url);
                 }
