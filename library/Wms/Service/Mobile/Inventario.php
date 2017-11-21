@@ -300,8 +300,8 @@ class Inventario {
 //                $dias = floor($diferenca / (60 * 60 * 24));
 //                $dataRestante = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$dias day", strtotime($dthMov))));
                 $dataValidade = date_create_from_format('Y-m-d',"20$ano-$mes-$dia");
-                var_dump($dataValidade);
-                var_dump($PeriodoUtilMax);
+                var_dump(strtotime($dataValidade->format('Y-m-d')));
+                var_dump(strtotime($PeriodoUtilMax->toString('YY-MM-dd')));
                 exit;
                 if($dataValidade > $PeriodoUtilMax){
                     $url = "/mobile/inventario/consulta-produto/idInventario/$idInventario/numContagem/$numContagem/divergencia/$divergencia/codigoBarras/$codigoBarras/idEndereco/$idEndereco/idInventarioEnd/$idInventarioEnd/idContagemOs/$idContagemOs";
