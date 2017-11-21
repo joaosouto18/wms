@@ -296,11 +296,14 @@ class Inventario {
                 return array('status' => 'error', 'msg' => 'Informe uma data de validade correta!', 'url' => $url);
             } else {
                 $dthMov = $this->dthMovimentacao($idEndereco, $idProduto, $grade, $codProdutoVolume);
-                $diferenca = (strtotime(date('Y-m-d')) - strtotime($dthMov));
-                $dias = floor($diferenca / (60 * 60 * 24));
-                $dataRestante = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$dias day", strtotime($dthMov))));
+//                $diferenca = (strtotime(date('Y-m-d')) - strtotime($dthMov));
+//                $dias = floor($diferenca / (60 * 60 * 24));
+//                $dataRestante = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$dias day", strtotime($dthMov))));
                 $dataValidade = date_create_from_format('Y-m-d',"20$ano-$mes-$dia");
-                if($dataValidade > $dataRestante){
+                var_dump($dataValidade);
+                var_dump($PeriodoUtilMax);
+                exit;
+                if($dataValidade > $PeriodoUtilMax){
                     $url = "/mobile/inventario/consulta-produto/idInventario/$idInventario/numContagem/$numContagem/divergencia/$divergencia/codigoBarras/$codigoBarras/idEndereco/$idEndereco/idInventarioEnd/$idInventarioEnd/idContagemOs/$idContagemOs";
                     return array('status' => 'error', 'msg' => 'Data de validade acima da data máxima '.date('d/m/Y', strtotime("+$dias day", strtotime($dthMov))), 'url' => $url);
                 }
