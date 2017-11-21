@@ -494,17 +494,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         if ( !empty($dadosEtiqueta['codEtiquetaMae']) ){
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaMae $EtiquetaMaeRepo */
             $EtiquetaMaeRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaMae');
-            $etiquetaMae=$EtiquetaMaeRepo->find($dadosEtiqueta['codEtiquetaMae']);
+            $etiquetaMae = $EtiquetaMaeRepo->find($dadosEtiqueta['codEtiquetaMae']);
             $enEtiquetaSeparacao->setEtiquetaMae($etiquetaMae);
         }
-
 
         \Zend\Stdlib\Configurator::configure($enEtiquetaSeparacao, $dadosEtiqueta);
 
         $this->_em->persist($enEtiquetaSeparacao);
         $enEtiquetaSeparacao->setId("10".$enEtiquetaSeparacao->getId());
         $this->_em->persist($enEtiquetaSeparacao);
-        $this->_em->flush();
         return $enEtiquetaSeparacao;
     }
 
@@ -885,6 +883,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $enderecoAtual = null;
                         $tudoImpresso = false;
 
+                        if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N")
+                            $quebrasNaoFracionado = array();
+
+                        $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebrasNaoFracionado);
+
                         $primeiroVolume = $arrayVolumes[0]->getId();
                         $ultimoVolume = $arrayVolumes[count($arrayVolumes)-1]->getId();
                         while(!$tudoImpresso) {
@@ -895,11 +898,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             if ($idVolume == $primeiroVolume) {
                                 $codGrupo = $codGrupo + 1;
                             }
-
-                            if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == "N")
-                                $quebrasNaoFracionado = array();
-
-                            $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebrasNaoFracionado);
 
                             foreach ($item['enderecos'] as $idEndereco => $endereco) {
                                 $qtd = $endereco['qtd'];
@@ -1170,10 +1168,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $arrPedidos[$pedidoEntity->getId()] = $pedidoEntity;
                 }
             }
-
-//            usort($arrayEtiquetas, function ($a, $b) {
-//                return $a['tipoSeparacao'] < $b['tipoSeparacao'];
-//            });
 
             foreach ( $arrEtqtSemControleEstoque as $etqt) {
                 $arrayEtiquetas[] = $etqt;

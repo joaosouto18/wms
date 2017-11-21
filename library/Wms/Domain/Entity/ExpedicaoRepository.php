@@ -112,6 +112,7 @@ class ExpedicaoRepository extends EntityRepository {
                       C.COD_CARGA,
                       P.COD_PEDIDO,
                       P.COD_PESSOA AS COD_CLIENTE,
+                      PESS.NOM_PESSOA,
                       CL.COD_PRACA,
                       PP.COD_PEDIDO_PRODUTO,
                       PP.COD_PRODUTO,
@@ -122,6 +123,7 @@ class ExpedicaoRepository extends EntityRepository {
                   INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                   INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                   INNER JOIN CLIENTE CL ON CL.COD_PESSOA = P.COD_PESSOA
+                  INNER JOIN PESSOA PESS ON PESS.COD_PESSOA = P.COD_PESSOA
                   WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                       AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
                       AND E.COD_EXPEDICAO IN ($expedicoes)
@@ -515,7 +517,7 @@ class ExpedicaoRepository extends EntityRepository {
             $idExpedicao = $itemPedido['COD_EXPEDICAO'];
             $codCriterio = $itemPedido['COD_PRACA'];
             if (empty($codCriterio)) {
-                throw new \Exception("O cliente $itemPedido[NOM_FANTASIA] não tem PRAÇA cadastra, 
+                throw new \Exception("O cliente $itemPedido[NOM_PESSOA] não tem PRAÇA cadastra, 
                 por isso não pode ser separado nesta quebra de pulmão doca na expedição $idExpedicao");
             }
             $idPedido = $itemPedido['COD_PEDIDO'];
