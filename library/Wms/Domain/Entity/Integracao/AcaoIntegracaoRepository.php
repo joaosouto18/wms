@@ -172,7 +172,7 @@ class AcaoIntegracaoRepository extends EntityRepository
     public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null, $filtro = AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
-        $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+        $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltroRepository $acaoFiltroRepo */
         $acaoFiltroRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracaoFiltro');
         $idAcao = $acaoEn->getId();
@@ -322,6 +322,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             }
 
+
             if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
                 /*
                  * Se estiver salvando os dados ja nas tabelas de produção, atualizo a data da ultima execução indicando que a operação foi finalizada para aquela data
@@ -335,7 +336,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
-                $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S' WHERE IND_PROCESSADO IS NULL";
+
+                $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S' WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
                 $words = explode(" ",trim($query));
                 $update = true;
                 if (strtoupper($words[0]) == "SELECT") {

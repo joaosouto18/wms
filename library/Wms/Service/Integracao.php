@@ -656,7 +656,10 @@ class Integracao {
         $acaoIntegracaoRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracao');
         $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
         $idIntegracao = $parametroRepo->findOneBy(array('constante' => 'ID_INTEGRACAO_PRODUTOS'));
-        $acaoEn = $acaoIntegracaoRepo->find($idIntegracao->getValor());
+        $acaoEn = null;
+        if (isset($idIntegracao) and !is_null($idIntegracao->getValor()))
+            $acaoEn = $acaoIntegracaoRepo->find($idIntegracao->getValor());
+
         $produtos = implode(',', $idProdutos);
         if ($produtos == "")
             $produtos = "0";
