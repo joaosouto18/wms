@@ -29,6 +29,10 @@ class Pendencias extends Grid
                 ->setAttrib('class', 'grid-expedicao-pendencias')
                 ->setAttrib('caption', $caption)
                 ->addColumn(array(
+                    'label' => 'Pedido',
+                    'index' => 'pedido',
+                ))
+                ->addColumn(array(
                     'label' => 'Etiqueta',
                     'index' => 'codBarras',
                 ))

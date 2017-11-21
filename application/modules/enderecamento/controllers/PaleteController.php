@@ -14,6 +14,8 @@ class Enderecamento_PaleteController extends Action
         $idRecebimento  = $this->getRequest()->getParam('id');
         $codProduto     = $this->getRequest()->getParam('codigo');
         $grade          = $this->getRequest()->getParam('grade');
+        $produtos       = $this->getRequest()->getParam('produtos');
+        $grade          = str_replace('&','/',$grade);
 
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->em->getRepository('wms:Enderecamento\Palete');
@@ -28,7 +30,18 @@ class Enderecamento_PaleteController extends Action
             $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
             try {
+                $completaPicking = ($produtos) ? true : false;
                 $paletes = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+
+                $idPaletes = array();
+                foreach ($paletes as $palete) {
+                    $idPaletes[] = $palete['UMA'];
+                }
+                if ($completaPicking) {
+                    $paleteRepo->enderecaPicking($idPaletes, $completaPicking);
+                    $paletes = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+                }
+
             } catch (Exception $e) {
                 $this->addFlashMessage('error', $e->getMessage());
                 $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
@@ -41,13 +54,25 @@ class Enderecamento_PaleteController extends Action
         } else {
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
-            $itens  = $notaFiscalRepo->getItensNotaByRecebimento($idRecebimento);
+            $itens = isset($produtos) && !empty($produtos) ? $produtos : $notaFiscalRepo->getItensNotaByRecebimento($idRecebimento);
 
             $result = array();
             /** @var \Wms\Domain\Entity\NotaFiscal\Item $item */
             foreach ($itens as $item) {
-                $codProduto = $item['codProduto'];
-                $grade = $item['grade'];
+                $piece = null;
+                if ($produtos) {
+                    $piece = explode('-',$item);
+                }
+                if (isset($piece) && !empty($piece)) {
+                    $codProduto = $piece[0];
+                    $grade = $piece[1];
+                    $completaPicking = true;
+                } else {
+                    $codProduto = $item['codProduto'];
+                    $grade = $item['grade'];
+                    $completaPicking = false;
+                }
+
                 /** @var \Wms\Domain\Entity\Produto $produtoEn */
                 $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
                 $arr = array();
@@ -59,6 +84,15 @@ class Enderecamento_PaleteController extends Action
 
                 try {
                     $arr['paletes'] = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+                    $paletes = array();
+                    foreach ($arr['paletes'] as $palete) {
+                        $paletes[] = $palete['UMA'];
+                    }
+                    if ($completaPicking) {
+                        $paleteRepo->enderecaPicking($paletes, $completaPicking);
+                        $arr['paletes'] = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
+                    }
+
                 } catch (Exception $e) {
                     $this->addFlashMessage('error', $e->getMessage());
                     $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);

@@ -15,6 +15,7 @@ class EtiquetaSeparacao
     const STATUS_CORTADO = 525;
     const STATUS_CONFERIDO = 526;
     const STATUS_RECEBIDO_TRANSBORDO = 532;
+    const STATUS_SEPARADO = 539;
     const STATUS_EXPEDIDO_TRANSBORDO = 531;
     const STATUS_PRIMEIRA_CONFERENCIA = 551;
     const STATUS_SEGUNDA_CONFERENCIA = 552;
@@ -171,6 +172,12 @@ class EtiquetaSeparacao
      * @Column(name="QTD_EMBALAGEM", type="decimal", length=60, nullable=false)
      */
     protected $qtdEmbalagem;
+
+    /**
+     * @var int
+     * @Column(name="TIPO_SAIDA", type="string", nullable=true)
+     */
+    protected $tipoSaida;
 
     public function setDataConferencia($dataConferencia)
     {
@@ -479,6 +486,22 @@ class EtiquetaSeparacao
     public function getQtdEmbalagem()
     {
         return $this->qtdEmbalagem;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTipoSaida()
+    {
+        return $this->tipoSaida;
+    }
+
+    /**
+     * @param int $tipoSaida
+     */
+    public function setTipoSaida($tipoSaida)
+    {
+        $this->tipoSaida = $tipoSaida;
     }
 
 }

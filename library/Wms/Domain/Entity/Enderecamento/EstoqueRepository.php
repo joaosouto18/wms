@@ -155,10 +155,13 @@ class EstoqueRepository extends EntityRepository
         } else {
             $saldoAnterior = $estoqueEn->getQtd();
             $idUma = $estoqueEn->getUma();
-            $novaQtd = $estoqueEn->getQtd() + $qtd;
             $dscEndereco = $estoqueEn->getDepositoEndereco()->getDescricao();
             $dscProduto = $estoqueEn->getProduto()->getDescricao();
-            $estoqueEn->setQtd($novaQtd);
+            if (!is_null($volumeEn)) {
+                $estoqueEn->setQtd($novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn))->getQtd() + $qtd);
+            } else {
+                $estoqueEn->setQtd($novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn))->getQtd() + $qtd);
+            }
             $estoqueEn->setValidade($validade);
             if (isset($unitizadorEn)) {
                 $estoqueEn->setUnitizador($unitizadorEn);
@@ -244,7 +247,7 @@ class EstoqueRepository extends EntityRepository
                     ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
                     NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO,
                     TO_CHAR(ESTQ.DTH_VALIDADE,'DD/MM/YYYY') as DTH_VALIDADE,
-                    CASE WHEN (DE.COD_CARACTERISTICA_ENDERECO = 37) THEN 1
+                    CASE WHEN (DE.COD_CARACTERISTICA_ENDERECO = $endPicking) THEN 1
                          ELSE 2 END AS PRIORIDADE_PICKING
                    FROM ESTOQUE ESTQ
                    LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, SUM(REP.QTD_RESERVADA) QTD_RESERVA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
@@ -260,7 +263,7 @@ class EstoqueRepository extends EntityRepository
                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
                   WHERE ((ESTQ.QTD + NVL(RS.QTD_RESERVA,0)) >0)";
 
-        $SqlOrder = " ORDER BY TO_DATE(DT_MOVIMENTACAO), PRIORIDADE_PICKING, ESTQ.QTD";
+        $SqlOrder = "ORDER BY TO_DATE(ESTQ.DTH_VALIDADE), PRIORIDADE_PICKING, TO_DATE(DT_MOVIMENTACAO), ESTQ.QTD";
         $SqlWhere = "";
 
         if ((isset($params['idProduto'])) && ($params['idProduto'] != null)) {
@@ -288,9 +291,11 @@ class EstoqueRepository extends EntityRepository
             $SqlWhere .= " AND DE.COD_DEPOSITO_ENDERECO <> '" . $params['idEnderecoIgnorar'] . "'";
         }
 
+        $query = $Sql . $SqlWhere . $SqlOrder;
+        
         if ((isset($params['maxResult'])) && ($params['maxResult'] != null)) {
             $maxResult = $params['maxResult'];
-            $resultado = $this->getEntityManager()->getConnection()->query($Sql . $SqlWhere . $SqlOrder)->fetchAll(\PDO::FETCH_ASSOC);
+            $resultado = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
             $arrayResult = array();
             foreach ($resultado as $key => $line) {
@@ -300,7 +305,7 @@ class EstoqueRepository extends EntityRepository
             }
             $result = $arrayResult;
         } else {
-            $result = $this->getEntityManager()->getConnection()->query($Sql . $SqlWhere . $SqlOrder)->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
         }
 
         return $result;
@@ -427,6 +432,7 @@ class EstoqueRepository extends EntityRepository
         } else {
             $SQLOrderBy = " ORDER BY E.DTH_VALIDADE, E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO";
         }
+
         $result = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
 
         if ($returnQuery == true) {
@@ -1003,6 +1009,10 @@ class EstoqueRepository extends EntityRepository
         }
 
         $array = $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrder)->fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($array as $key => $value){
+            $array[$key]['VOLUME_PICKING'] =  substr($value['VOLUME_PICKING'], 0, 20);
+            $array[$key]['VOLUMES_ESTOQUE'] = substr($value['VOLUMES_ESTOQUE'], 0, 20);
+        }
         return $array;
     }
 

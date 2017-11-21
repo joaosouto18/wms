@@ -727,16 +727,15 @@ class NotaFiscalRepository extends EntityRepository {
                 ->innerJoin('nf.itens', 'nfi')
                 ->innerJoin('nfi.produto', 'p', 'WITH', 'p.grade = nfi.grade')
                 ->innerJoin('p.tipoComercializacao', 'tc')
-                ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade')
+                ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade and pe.dataInativacao IS NULL')
                 ->leftJoin('pe.dadosLogisticos', 'dl')
                 ->leftJoin('dl.normaPaletizacao', 'np_embalagem')
                 ->leftJoin('np_embalagem.unitizador', 'unitizador_embalagem')
-                ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
+                ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade and pv.dataInativacao IS NULL')
                 ->leftJoin('pv.normaPaletizacao', 'np_volume')
                 ->leftJoin('np_volume.unitizador', 'unitizador_volume')
                 ->where('nf.recebimento = ?1')
                 ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
-                ->andWhere('(pe.dataInativacao IS NULL OR pv.dataInativacao IS NULL)')
                 ->andWhere('NOT EXISTS(
                     SELECT \'x\'
                     FROM wms:OrdemServico os

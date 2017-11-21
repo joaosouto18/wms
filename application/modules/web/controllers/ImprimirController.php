@@ -43,8 +43,7 @@ class Web_ImprimirController extends Action
             $EnderecoRepository = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
             $enderecos = $EnderecoRepository->getImprimirEndereco($codEndereco);
 
-            if ($tipo == Endereco::ENDERECO_PICKING ||
-                $tipo == Endereco::ENDERECO_PICKING_DINAMICO ) {
+            if ($tipo == Endereco::ENDERECO_PICKING || $tipo == Endereco::ENDERECO_PICKING_DINAMICO) {
 
                 $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PICKING");
                 $pdf = self::gerarEtiquetasPdf($enderecos, $modelo);
@@ -55,7 +54,7 @@ class Web_ImprimirController extends Action
                 $pdf->Output('Etiquetas-endereco-Pulmão.pdf', 'D');
             }
 
-            exit;
+//            exit;
         } catch (Exception $e) {
             $this->addFlashMessage('error', $e->getMessage());
             $this->_redirect('/imprimir');

@@ -118,9 +118,10 @@ class Expedicao_IndexController extends Action {
 
         if (!empty($params)) {
 
-            if (!empty($params['idExpedicao']) || !empty($params['codCargaExterno'])) {
+            if (!empty($params['idExpedicao']) || !empty($params['codCargaExterno']) || !empty($params['pedido'])) {
                 $idExpedicao = null;
                 $idCarga = null;
+                $pedido = null;
 
                 if (!empty($params['idExpedicao']))
                     $idExpedicao = $params['idExpedicao'];
@@ -129,9 +130,13 @@ class Expedicao_IndexController extends Action {
                 if (!empty($params['codCargaExterno']))
                     $idCarga = $params['codCargaExterno'];
 
+                if (!empty($params['pedido']))
+                    $pedido = $params['pedido'];
+
                 $params = array();
                 $params['idExpedicao'] = $idExpedicao;
                 $params['codCargaExterno'] = $idCarga;
+                $params['pedido'] = $pedido;
             } else {
                 if (empty($params['dataInicial1'])) {
                     $params['dataInicial1'] = $dataI1->format('d/m/Y');
@@ -155,7 +160,6 @@ class Expedicao_IndexController extends Action {
         }
 
         $params['usaDeclaracaoVP'] = $this->getSystemParameterValue('USA_DECLARACAO_DE_VOLUME_PATRIMONIO');
-
         $form->populate($params);
 
         $Grid = new ExpedicaoGrid();
@@ -299,6 +303,7 @@ class Expedicao_IndexController extends Action {
                 $cargaEn->setExpedicao($expedicaoEn);
                 $cargaEn->setSequencia(1);
                 $cargaEn->setPlacaCarga($placa);
+                $cargaEn->setPlacaExpedicao($placa);
                 $this->_em->persist($cargaEn);
                 if ($countCortadas > 0) {
                     $expedicaoEn->setStatus(EXPEDICAO::STATUS_CANCELADO);
@@ -306,8 +311,8 @@ class Expedicao_IndexController extends Action {
                     $AndamentoRepo->save("Etiquetas da carga " . $cargaEn->getCodCargaExterno() . " canceladas na expedição " . $expedicaoAntiga, $expedicaoEn->getId());
                 }
                 $this->_em->flush();
-                $this->redirect("index", 'index', 'expedicao');
                 $this->addFlashMessage('success','Foi criado uma nova expedição com a carga desagrupada');
+                $this->redirect("index", 'index', 'expedicao');
             } catch (\Exception $e) {
                 $this->_helper->messenger('error', $e->getMessage());
             }
@@ -541,6 +546,11 @@ class Expedicao_IndexController extends Action {
 
             $etiquetaInicial = trim($params['etiquetaInicial']);
             $etiquetaFinal = trim($params['etiquetaFinal']);
+            $expedicaoIni = $equipeSeparacaoRepo->getExpedicao($etiquetaInicial);
+            $expedicaoFim = $equipeSeparacaoRepo->getExpedicao($etiquetaFinal);
+            if($expedicaoIni['COD_EXPEDICAO'] != $expedicaoFim['COD_EXPEDICAO']){
+                $erro = 'Etiquetas não pertencem a mesma expedição.';
+            }
             //ENCONTRA O USUARIO DIGITADO
             /** @var Expedicao\EquipeSeparacao $usuarioEn */
             $usuarioEn = $pessoaFisicaRepo->findOneBy(array('cpf' => $cpf));
@@ -612,11 +622,12 @@ class Expedicao_IndexController extends Action {
 
     public function buscaApontamentoSeparacaoAjaxAction(){
         $params = $this->_getAllParams();
+        $etiqueta = ColetorUtil::retiraDigitoIdentificador($params['etiquetas']['etiquetaBusca']);
         $cpf = str_replace(array('.', '-'), '', $params['etiquetas']['cpfBusca']);
         $dataInicio = $params['etiquetas']['dataInicial'];
         $dataFim = $params['etiquetas']['dataFinal'];
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
-        $result = $equipeSeparacaoRepo->getApontamentosProdutividade($cpf, $dataInicio, $dataFim);
+        $result = $equipeSeparacaoRepo->getApontamentosProdutividade($cpf, $dataInicio, $dataFim, $etiqueta);
         $this->_helper->json(array('dados' => $result));
     }
 
@@ -860,7 +871,7 @@ class Expedicao_IndexController extends Action {
         $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'));
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         try {
-            $operacao = $expedicaoRepo->getUrlMobileByCodBarras($this->_getParam('codigoBarrasMapa'));
+            $operacao = $expedicaoRepo->getUrlMobileByCodBarras($codBarras);
             $codPessoa = $this->_getParam('cod_pessoa');
             $this->view->operacao = $operacao['operacao'];
             if (isset($operacao['placa'])) {

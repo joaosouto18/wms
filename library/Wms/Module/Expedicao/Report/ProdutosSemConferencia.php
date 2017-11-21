@@ -8,12 +8,16 @@ use Core\Pdf,
 class ProdutosSemConferencia extends Pdf
 {
     protected $idExpedicao;
+    protected $placa;
 
     public function Header()
     {
+
+        $plc = null;
+        if (!empty($this->placa)) $plc = " ( $this->placa )";
         //Select Arial bold 8
         $this->SetFont('Arial','B',10);
-        $this->Cell(20, 20, utf8_decode("RELATÓRIO DE PRODUTOS PENDENTES DE CONFERÊNCIA - EXPEDIÇÃO ". $this->idExpedicao), 0, 1);
+        $this->Cell(20, 20, utf8_decode("RELATÓRIO DE PRODUTOS PENDENTES DE CONFERÊNCIA - EXPEDIÇÃO $this->idExpedicao $plc" ), 0, 1);
 
     }
 
@@ -31,11 +35,10 @@ class ProdutosSemConferencia extends Pdf
         $this->Cell(0,15,utf8_decode('Página ').$this->PageNo(),0,0,'R');
     }
 
-    public function imprimir($idExpedicao, $produtos, $modelo = 1, $quebraCarga = "N")
+    public function imprimir($idExpedicao, $produtos, $modelo = 1, $quebraCarga = "N", $placa = null)
     {
         $this->idExpedicao = $idExpedicao;
-        /** @var \Doctrine\ORM\EntityManager $em */
-        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $this->placa = $placa;
 
         /** @var \Wms\Domain\Entity\Expedicao\VRelProdutosRepository $RelProdutos */
         \Zend_Layout::getMvcInstance()->disableLayout(true);
@@ -59,30 +62,33 @@ class ProdutosSemConferencia extends Pdf
 
         $cargaAntiga = "";
         /** @var \Wms\Domain\Entity\Produto $produto */
+        $this->AddPage();
         foreach($produtos as $key => $produto) {
             $novaCarga = utf8_decode($produto["codCargaExterno"]);
 
             if ($novaCarga != $cargaAntiga) {
-                $this->AddPage();
-                $this->Cell(17, 5, "Etiqueta", "TB");
-                $this->Cell(15, 5, "Produto", "TB");
-                $this->Cell(70, 5, utf8_decode("Descrição"), "TB");
-                $this->Cell(25, 5, "Grade", "TB");
-                $this->Cell(25, 5, "Volume", "TB");
-                $this->Cell(70, 5, "Cliente", "TB");
+                $this->ln(2);
+                $this->Cell(18, 5, "Pedido", "TB");
+                $this->Cell(15, 5, "Etiqueta", "TB");
+                $this->Cell(14, 5, "Produto", "TB");
+                $this->Cell(61, 5, utf8_decode("Descrição"), "TB");
+                $this->Cell(54, 5, "Grade", "TB");
+                $this->Cell(23, 5, "Volume", "TB");
+                $this->Cell(55, 5, "Cliente", "TB");
                 $this->Cell(20, 5, "Carga", "TB");
-                $this->Cell(43, 5, "Estoque", "TB");
+                $this->Cell(20, 5, "Estoque", "TB");
                 $this->Ln();
             }
 
-            $this->Cell(17, 5, utf8_decode($produto["codBarras"]) , 0);
-            $this->Cell(15, 5, utf8_decode($produto["codProduto"])  , 0);
-            $this->Cell(70, 5, utf8_decode($produto["produto"]), 0);
-            $this->Cell(25, 5, utf8_decode($produto["grade"])    , 0);
-            $this->Cell(25, 5, utf8_decode($produto["embalagem"])    , 0);
-            $this->Cell(70, 5, utf8_decode($produto["cliente"])  , 0);
+            $this->Cell(18, 5, utf8_decode($produto["pedido"]) , 0);
+            $this->Cell(15, 5, utf8_decode($produto["codBarras"]) , 0);
+            $this->Cell(14, 5, utf8_decode($produto["codProduto"])  , 0);
+            $this->Cell(61, 5, substr(utf8_decode($produto["produto"]),0,30), 0);
+            $this->Cell(54, 5, substr(utf8_decode($produto["grade"]),0,30), 0);
+            $this->Cell(23, 5, utf8_decode($produto["embalagem"])    , 0);
+            $this->Cell(55, 5, substr(utf8_decode($produto["cliente"]),0,30), 0);
             $this->Cell(20, 5, utf8_decode($produto["codCargaExterno"])  , 0);
-            $this->Cell(43, 5, utf8_decode($produto["codEstoque"]), 0);
+            $this->Cell(20, 5, utf8_decode($produto["codEstoque"]), 0);
             $cargaAntiga = $novaCarga;
             $this->Ln();
         }
@@ -90,31 +96,34 @@ class ProdutosSemConferencia extends Pdf
     private function layout2($produtos, $quebraCarga){
         $cargaAntiga = "";
 
+        $this->AddPage();
         /** @var \Wms\Domain\Entity\Produto $produto */
         foreach($produtos as $key => $produto) {
             $novaCarga = utf8_decode($produto["codCargaExterno"]);
             if ($novaCarga != $cargaAntiga) {
-                $this->AddPage();
+                $this->ln(2);
 
-                $this->Cell(17, 5, "Etiqueta", "TB");
+                $this->Cell(15, 5, "Pedido", "TB");
+                $this->Cell(15, 5, "Etiqueta", "TB");
                 $this->Cell(15, 5, "Produto", "TB");
-                $this->Cell(95, 5, utf8_decode("Descrição"), "TB");
+                $this->Cell(90, 5, utf8_decode("Descrição"), "TB");
                 $this->Cell(25, 5, "Volume", "TB");
-                $this->Cell(70, 5, "Cliente", "TB");
-                $this->cell(22 ,5, utf8_decode("Endereço"),"TB");
+                $this->Cell(65, 5, "Cliente", "TB");
+                $this->cell(20 ,5, utf8_decode("Endereço"),"TB");
                 $this->Cell(18, 5, "Carga", "TB");
                 $this->Cell(15, 5, "Estoque", "TB");
                 $this->Ln();
             }
 
-            $this->Cell(17, 5, utf8_decode($produto["codBarras"]) , 0);
+            $this->Cell(15, 5, utf8_decode($produto["pedido"]) , 0);
+            $this->Cell(15, 5, utf8_decode($produto["codBarras"]) , 0);
             $this->Cell(15, 5, utf8_decode($produto["codProduto"])  , 0);
-            $this->Cell(95, 5, utf8_decode($produto["produto"]), 0);
+            $this->Cell(90, 5, utf8_decode($produto["produto"]), 0);
             $this->Cell(25, 5, utf8_decode($produto["embalagem"])    , 0);
-            $this->Cell(70, 5, utf8_decode($produto["cliente"])  , 0);
-            $this->Cell(22, 5, utf8_decode($produto["endereco"])  , 0);
-            $this->Cell(20, 5, utf8_decode($produto["codCargaExterno"])  , 0);
-            $this->Cell(43, 5, utf8_decode($produto["codEstoque"]), 0);
+            $this->Cell(65, 5, utf8_decode($produto["cliente"])  , 0);
+            $this->Cell(20, 5, utf8_decode($produto["endereco"])  , 0);
+            $this->Cell(18, 5, utf8_decode($produto["codCargaExterno"])  , 0);
+            $this->Cell(15, 5, utf8_decode($produto["codEstoque"]), 0);
             $cargaAntiga = $novaCarga;
 
             $this->Ln();

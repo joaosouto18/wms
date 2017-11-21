@@ -34,9 +34,20 @@ class Enderecamento_ProdutoController extends Action
         $recebimentoStatus = $this->em->getRepository('wms:Recebimento')->buscarStatusSteps($recebimento);
         $this->view->recebimentoStatus = $this->view->steps($recebimentoStatus, $recebimento->getStatus()->getReferencia());
 
-        $Grid = new ProdutosGrid();
-        $this->view->grid = $Grid->init($idRecebimento, $recebimento->getStatus())
-            ->render();
+        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+        $recebimentoRepo      = $this->getEntityManager()->getRepository('wms:Recebimento');
+        $this->view->produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
+
+    }
+
+    public function enderecamentoPickingAction(){
+        $values = $this->_getAllParams();
+        /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
+        $inventarioRepo = $this->em->getRepository("wms:Inventario");
+
+        $ids = implode(',',$values['mass-id']);
+        $movimentacoes = $inventarioRepo->getMovimentacaoEstoqueByInventario($ids);
+        $this->exportCSV($movimentacoes,'relatorio-movimentacao-estoque-ajax');
     }
 
     private function configurePage()
@@ -78,6 +89,7 @@ class Enderecamento_ProdutoController extends Action
         $idRecebimento = $this->_getParam("id");
         $codProduto    = $this->_getParam("codigo");
         $grade         = $this->_getParam("grade");
+        $grade         = str_replace('&','/',$grade);
 
         $this->view->norma = $results = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade, null);
 

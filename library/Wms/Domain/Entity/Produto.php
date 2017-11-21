@@ -47,7 +47,7 @@ class Produto {
     /**
      * @Id
      * @var string Grade do produto
-     * @Column(name="DSC_GRADE", type="string", length=10, nullable=false)
+     * @Column(name="DSC_GRADE", type="string", length=255, nullable=false)
      */
     protected $grade;
 
@@ -120,6 +120,12 @@ class Produto {
      * @var int
      */
     protected $diasVidaUtil;
+
+    /**
+     * @Column(name="DIAS_VIDA_UTIL_MAX", type="integer")
+     * @var int
+     */
+    protected $diasVidaUtilMax;
 
     /**
      * @Column(name="POSSUI_VALIDADE", type="string")
@@ -367,6 +373,24 @@ class Produto {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
         $andamentoRepo->checksChange($this, 'Dias vida Util', $this->diasVidaUtil, $diasVidaUtil);
         $this->diasVidaUtil = $diasVidaUtil;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDiasVidaUtilMax() {
+        return $this->diasVidaUtilMax;
+    }
+
+    /**
+     * @param int $diasVidaUtilMax
+     * @return Produto
+     */
+    public function setDiasVidaUtilMax($diasVidaUtilMax) {
+        $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
+        $andamentoRepo->checksChange($this, 'Dias vida Util Max', $this->diasVidaUtilMax, $diasVidaUtilMax);
+        $this->diasVidaUtilMax = $diasVidaUtilMax;
         return $this;
     }
 

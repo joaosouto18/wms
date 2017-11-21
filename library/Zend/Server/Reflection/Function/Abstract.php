@@ -360,6 +360,16 @@ abstract class Zend_Server_Reflection_Function_Abstract
             if ($parameters[$i]->isOptional()) {
                 array_unshift($tmp, null);
             }
+            foreach ($tmp as $key => $parameter) {
+                if (strstr($parameter, "::")) {
+                    list($class, $methodFull) = explode("::", $parameter);
+                    $param = preg_replace("/[^a-zA-Z-_]/","",substr($methodFull, strpos($methodFull,"(")));
+                    $method = str_replace($param,"", $methodFull);
+                    $method = preg_replace("/[^a-zA-Z]/","", $method);
+                    $realType = $class::$method($param);
+                    $tmp[$key] = $realType;
+                }
+            }
             $paramTypes[] = $tmp;
         }
 

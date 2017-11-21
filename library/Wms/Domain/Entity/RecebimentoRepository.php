@@ -344,8 +344,9 @@ class RecebimentoRepository extends EntityRepository {
                 }
 
                 $idEmbalagem = null;
+                $quantidade = 1;
+
                 if (isset($unMedida) && !empty($unMedida)) {
-                    $quantidade = 1;
                     if (isset($unMedida[$idProduto][$grade])) {
                         $idEmbalagem = $unMedida[$idProduto][$grade];
                         $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
@@ -353,9 +354,11 @@ class RecebimentoRepository extends EntityRepository {
                     }
                     $qtdConferida = $qtdConferida * $quantidade;
                 } elseif (isset($embalagem) && !empty($embalagem)) {
-                    $idEmbalagem = $embalagem[$idProduto][$grade];
-                    $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
-                    $quantidade = $produtoEmbalagemEntity->getQuantidade();
+                    if (isset($embalagem[$idProduto][$grade])) {
+                        $idEmbalagem = $embalagem[$idProduto][$grade];
+                        $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
+                        $quantidade = $produtoEmbalagemEntity->getQuantidade();
+                    }
                     $qtdConferida = $qtdConferida * $quantidade;
                 }
 
@@ -753,7 +756,7 @@ class RecebimentoRepository extends EntityRepository {
 
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
-        $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idProdutoVolume);
+        $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Produto\Volume', $idProdutoVolume);
         if (isset($params['dataValidade']) && !empty($params['dataValidade'])) {
             $validade = new \DateTime($params['dataValidade']);
         } else {
@@ -1050,7 +1053,9 @@ class RecebimentoRepository extends EntityRepository {
                 $picking = null;
             }
             $result[] = array(
+                'id' => $row['COD_PRODUTO'],
                 'codigo' => $row['COD_PRODUTO'],
+                'id' => $row['COD_PRODUTO'],
                 'produto' => $row['DSC_PRODUTO'],
                 'grade' => $row['DSC_GRADE'],
                 'picking' => $picking,

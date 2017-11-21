@@ -70,8 +70,13 @@ class EtiquetaSeparacao extends SubForm
                 'id' => 'cpfBusca',
                 'class' => 'inptText',
             ))
+            ->addElement('text', 'etiquetaBusca', array(
+                'size' => 17,
+                'label' => 'Etiqueta',
+                'class' => 'inptText inptEtiqueta',
+            ))
             ->addDisplayGroup(array('qtdConferentes','etiquetaInicial','etiquetaFinal','showIntervalo','pessoa'), 'identificacao', array('legend' => 'Vincular Etiqueta Separação'))
-            ->addDisplayGroup(array('dataInicial','dataFinal','cpfBusca','buscar'), 'consulta', array('legend' => 'Consulta'));
+            ->addDisplayGroup(array('dataInicial','dataFinal','cpfBusca','etiquetaBusca','buscar'), 'consulta', array('legend' => 'Consulta'));
 
         $this->getElement('etiquetaInicial')->setAttrib('onkeydown','gotoFinal(event)');
         $this->getElement('etiquetaFinal')->setAttrib('onkeydown','gotoPessoa(event)');

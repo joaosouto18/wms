@@ -305,13 +305,16 @@ class InventarioRepository extends EntityRepository {
                 $grade = $dados[2];
             }
 
-            $enderecoEn = $enderecoRepo->findBy(array('inventario' => $codInventario, 'depositoEndereco' => $codEndereco));
+            $enderecoEn = $enderecoRepo->findOneBy(array('inventario' => $codInventario, 'depositoEndereco' => $codEndereco));
             //não adiciona 2x o mesmo endereço
-            if (count($enderecoEn) == 0 && !in_array($codEndereco, $enderecosSalvos)) {
+            if (count($enderecoEn) == 0 && !in_array($codEndereco, $enderecosSalvos) && empty($enderecoEn)) {
                 $enderecoEn = $enderecoRepo->save(array('codInventario' => $codInventario, 'codDepositoEndereco' => $codEndereco));
                 $enderecosSalvos[] = $codEndereco;
             }
 
+            if (!isset($enderecoEn) || empty($enderecoEn)) {
+                continue;
+            }
 
             if (isset($codProduto) && ($codProduto != null)) {
                 $enderecoProdutoRepo->save($codProduto, $grade, $enderecoEn);
@@ -476,41 +479,43 @@ class InventarioRepository extends EntityRepository {
                 $enderecoVazio = false;
 
                 if ($contagemEndEn->getCodProdutoVolume() != null) {
-                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco, 'produtoVolume' => $contagemEndEn->getCodProdutoVolume()));
+                    $estoqueEntities = $estoqueRepo->findBy(array('depositoEndereco' => $idDepositoEndereco, 'produtoVolume' => $contagemEndEn->getCodProdutoVolume()));
                 } elseif ($contagemEndEn->getCodProdutoEmbalagem() != null) {
-                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco, 'codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()));
+                    $estoqueEntities = $estoqueRepo->findBy(array('depositoEndereco' => $idDepositoEndereco, 'codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()));
                 } else {
-                    $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco));
+                    $estoqueEntities = $estoqueRepo->findBy(array('depositoEndereco' => $idDepositoEndereco));
                     $enderecoVazio = true;
                 }
 
                 $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
-                if ($estoqueEn) {
+                if (count($estoqueEntities) > 0) {
                     //mesmo produto?
-                    $result = $serviceInventario->compareProduto($estoqueEn, $contagemEndEn);
-                    if ($result == true) {
-                        $qtd = $qtdContagem - $estoqueEn->getQtd();
-                        $validadeContagem = $contagemEndEn->getValidade();
-                        $validadeEstoque = $estoqueEn->getValidade();
-                        if (!empty($validadeContagem)) {
-                            $validadeContagem = strtotime($contagemEndEn->getValidade());
-                        }
-                        if (!empty($validadeEstoque)) {
-                            $validadeEstoque = strtotime($estoqueEn->getValidade()->format('Y-m-d 00:00:00'));
-                        }
-                        if ($qtd != 0 || $validadeContagem != $validadeEstoque) {
-                            $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtd, $osEn, $usuarioEn, $estoqueRepo);
-                        }
-                    } else {
-                        if ($enderecoVazio) {
-                            $qtdRetirar = $estoqueEn->getQtd();
-                            $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdRetirar, $osEn, $usuarioEn, $estoqueRepo);
+                    foreach ($estoqueEntities as $estoqueEn) {
+                        $result = $serviceInventario->compareProduto($estoqueEn, $contagemEndEn);
+                        if ($result == true) {
+                            $qtd = $qtdContagem - $estoqueEn->getQtd();
+                            $validadeContagem = $contagemEndEn->getValidade();
+                            $validadeEstoque = $estoqueEn->getValidade();
+                            if (!empty($validadeContagem)) {
+                                $validadeContagem = strtotime($contagemEndEn->getValidade());
+                            }
+                            if (!empty($validadeEstoque)) {
+                                $validadeEstoque = strtotime($estoqueEn->getValidade()->format('Y-m-d 00:00:00'));
+                            }
+                            if ($qtd != 0 || $validadeContagem != $validadeEstoque) {
+                                $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtd, $osEn, $usuarioEn, $estoqueRepo);
+                            }
                         } else {
-                            $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
-                            $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
+                            if ($enderecoVazio) {
+                                $qtdRetirar = $estoqueEn->getQtd();
+                                $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdRetirar, $osEn, $usuarioEn, $estoqueRepo);
+                            } else {
+                                $this->retiraEstoque($estoqueEn, $invEnderecoEn, -$qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
+                                $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
+                            }
                         }
                     }
-                } elseif ($estoqueEn == null) {
+                } else {
                     if ($qtdContagem != 0) {
                         $this->entradaEstoque($contagemEndEn, $invEnderecoEn, $qtdContagem, $osEn, $usuarioEn, $estoqueRepo);
                     }
@@ -748,9 +753,9 @@ class InventarioRepository extends EntityRepository {
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = ESTQ.COD_PRODUTO AND P.DSC_GRADE = ESTQ.DSC_GRADE
                  WHERE NOT(ESTQ.QTD_MOVIMENTADA = 0 AND INV.QTD_CONFERIDA IS NULL AND ESTQ.COD_PRODUTO IS NOT NULL)
                    AND ESTQ.COD_INVENTARIO IN ($idInventario)
-                 ORDER BY DSC_DEPOSITO_ENDERECO,
-                          COD_PRODUTO,
-                          DSC_GRADE,
+                 ORDER BY DE.DSC_DEPOSITO_ENDERECO,
+                          P.COD_PRODUTO,
+                          P.DSC_GRADE,
                           ESTQ.COD_INVENTARIO";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }

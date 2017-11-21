@@ -191,6 +191,8 @@ class ConferenciaRepository extends EntityRepository
         $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $resultArr = array();
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+
         foreach ($result as $line) {
             $idProduto = $line['COD_PRODUTO'];
             $idRecebimentoConferencia = $line['COD_RECEBIMENTO_CONFERENCIA'];
@@ -214,7 +216,18 @@ class ConferenciaRepository extends EntityRepository
                 }
                 $qtdDivergencia = $qtdDivergencia . " Kg";
             }
-
+            if ($qtdConferida > 0) {
+                $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($idProduto, $grade, $qtdConferida);
+                if (is_array($vetSeparar)) {
+                    $qtdConferida = implode(' + ', $vetSeparar);
+                }
+            }
+            if ($qtdDivergencia > 0) {
+                $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($idProduto, $grade, $qtdDivergencia);
+                if (is_array($vetSeparar)) {
+                    $qtdDivergencia = implode(' + ', $vetSeparar);
+                }
+            }
             $resultArr[] = array(
                 'id'=>$idRecebimentoConferencia,
                 'idProduto' =>$idProduto,

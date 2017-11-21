@@ -970,23 +970,57 @@ class Zend_Soap_Server implements Zend_Server_Interface
             return;
         }
 
+        $parametro = $parametroRepo->findOneBy(array('constante' => 'LOG_WS_FUNCTION_EXCLUSIVA'));
+        if (!empty($parametro)) {
+            list($classeTarget, $functionTarget) = explode(":", $parametro->getValor());
+            $classe = explode("_", $this->_class)[2];
+
+            if ($classe !== $classeTarget) return;
+
+            $myXML = new XMLReader();
+            $myXML->XML($this->_request);
+            $inXmlBody = false;
+            $element = null;
+            while ($myXML->read()) { //start reading.
+                if ($myXML->nodeType == XMLReader::ELEMENT) { //only opening tags.
+                    $tag = $myXML->name; //make $tag contain the name of the tag
+                    if ($element == "Body") {
+                        $inXmlBody = true;
+                    }
+                    $element = explode(":", $tag)[1];
+                    if ($inXmlBody) {
+                        if ($element != $functionTarget) {
+                            return;
+                        } else {
+                            self::saveLogFile();
+                            return;
+                        }
+                    }
+                }
+            }
+        } else {
+            self::saveLogFile();
+        }
+    }
+
+    private function saveLogFile()
+    {
         $dthAtual = date('Y-m-d H-i-s');
         $dtAtual = date('Y-m-d');
 
-        $diretorio = APPLICATION_PATH .'/../data/log/'.$dtAtual;
+        $diretorio = APPLICATION_PATH . '/../data/log/' . $dtAtual;
 
-        if ( !is_dir($diretorio) ){
-            mkdir($diretorio,777);
+        if (!is_dir($diretorio)) {
+            mkdir($diretorio, 777);
         }
         $nomeServico = $this->_class;
 
-        $nomeArquivo = $nomeServico ."-".$dthAtual."-request.xml";
+        $nomeArquivo = $nomeServico . "-" . $dthAtual . "-request.xml";
         $texto = $this->_request;
-
         $nomeArquivo = $diretorio."/".$nomeArquivo;
 
-        $file = fopen($nomeArquivo,"a");
-        fwrite($file,$texto);
+        $file = fopen($nomeArquivo, "a");
+        fwrite($file, $texto);
         fclose($file);
     }
 

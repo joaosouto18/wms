@@ -2,9 +2,7 @@
 
 namespace Wms\Domain\Entity\Produto;
 
-use Wms\Domain\Entity\Produto,
-    Wms\Domain\Entity\Produto\NormaPaletizacao,
-    Core\Util\Converter;
+use Core\Util\Converter;
 
 /**
  * Description of Dado Logistico
@@ -26,7 +24,7 @@ class DadoLogistico {
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Embalagem")
      * @JoinColumn(name="COD_PRODUTO_EMBALAGEM", referencedColumnName="COD_PRODUTO_EMBALAGEM")
-     * @var Wms\Domain\Entity\Produto\Embalagem $embalagem
+     * @var \Wms\Domain\Entity\Produto\Embalagem $embalagem
      */
     protected $embalagem;
 
@@ -41,31 +39,31 @@ class DadoLogistico {
 
     /**
      * @Column(type="decimal", name="NUM_ALTURA")
-     * @var decimal altura do volume
+     * @var float altura do volume
      */
     protected $altura;
 
     /**
      * @Column(type="decimal", name="NUM_LARGURA")
-     * @var decimal largura do volume
+     * @var float largura do volume
      */
     protected $largura;
 
     /**
      * @Column(type="decimal", name="NUM_PROFUNDIDADE")
-     * @var decimal profundidade do volume
+     * @var float profundidade do volume
      */
     protected $profundidade;
 
     /**
      * @Column(type="decimal", name="NUM_CUBAGEM")
-     * @var decimal cubagem do volume
+     * @var float cubagem do volume
      */
     protected $cubagem;
 
     /**
      * @Column(type="decimal", name="NUM_PESO")
-     * @var decimal peso do volume
+     * @var float peso do volume
      */
     protected $peso;
 
@@ -81,7 +79,8 @@ class DadoLogistico {
         return $this->embalagem;
     }
 
-    public function setEmbalagem($embalagem) {
+    public function setEmbalagem($embalagem)
+    {
         $this->embalagem = $embalagem;
         return $this;
     }
@@ -97,6 +96,7 @@ class DadoLogistico {
     /**
      * Registra a norma de paletizacao
      * @param integer $normaPaletizacaoEntity
+     * @return DadoLogistico
      */
     public function setNormaPaletizacao($normaPaletizacaoEntity) {
         $this->normaPaletizacao = $normaPaletizacaoEntity;
@@ -105,7 +105,7 @@ class DadoLogistico {
 
     /**
      * Retorna a altura do produto
-     * @return decimal
+     * @return float
      */
     public function getAltura() {
         return Converter::enToBr($this->altura, 3);
@@ -113,17 +113,18 @@ class DadoLogistico {
 
     /**
      * Informa a altura do volume
-     * @param decimal $altura 
+     * @param float $altura
+     * @return DadoLogistico
      */
     public function setAltura($altura) {
-       /* $andamenRepo->checksChange($this->getEmbalagem()->getProduto(), 'Altura', $this->altura, $altura);
-        $this->altura = Converter::brToEn($altura, 3);*/
+       /* $andamenRepo->checksChange($this->getEmbalagem()->getProduto(), 'Altura', $this->altura, $altura);*/
+        $this->altura = Converter::brToEn($altura, 3);
         return $this;
     }
 
     /**
      * Retorna a largura do volume
-     * @return decimal
+     * @return float
      */
     public function getLargura() {
         return Converter::enToBr($this->largura, 3);
@@ -131,7 +132,8 @@ class DadoLogistico {
 
     /**
      * Informa a largura do volume
-     * @param decimal $largura 
+     * @param float $largura
+     * @return DadoLogistico
      */
     public function setLargura($largura) {
         /*$andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
@@ -142,7 +144,7 @@ class DadoLogistico {
 
     /**
      * Retorna a profundidade do volume
-     * @return decimal
+     * @return float
      */
     public function getProfundidade() {
         return Converter::enToBr($this->profundidade, 3);
@@ -150,7 +152,8 @@ class DadoLogistico {
 
     /**
      * Informa a profundidade do volume
-     * @param decimal $profundidade 
+     * @param float $profundidade
+     * @return DadoLogistico
      */
     public function setProfundidade($profundidade) {
         /*$andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
@@ -161,7 +164,7 @@ class DadoLogistico {
 
     /**
      * Retorna a cubagem do volume
-     * @return decimal
+     * @return float
      */
     public function getCubagem() {
         return Converter::enToBr($this->cubagem, 4);
@@ -169,7 +172,8 @@ class DadoLogistico {
 
     /**
      * Informa a cubagem do volume
-     * @param decimal $cubagem 
+     * @param float $cubagem
+     * @return DadoLogistico
      */
     public function setCubagem($cubagem) {
         /*$andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
@@ -180,7 +184,7 @@ class DadoLogistico {
 
     /**
      * Retorna o peso do volume
-     * @return decimal
+     * @return float
      */
     public function getPeso() {
         return Converter::enToBr($this->peso, 3);
@@ -188,8 +192,9 @@ class DadoLogistico {
 
     /**
      * Informa o peso do volume
-     * @param decimal $peso 
+     * @param float $peso
      * @param bool $importacao
+     * @return DadoLogistico
      */
     public function setPeso($peso, $importacao = null) {
         if (empty($importacao)) {

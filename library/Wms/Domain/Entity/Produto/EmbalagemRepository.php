@@ -135,7 +135,7 @@ class EmbalagemRepository extends EntityRepository {
 
     public function getEmbalagemByCodigo($codigo) {
         $dql = $this->_em->createQueryBuilder()
-                ->select('de.descricao, pe.capacidadePicking, pe.embalado, p.referencia, p.descricao descricaoProduto')
+                ->select('pe.id, pe.quantidade, de.descricao, pe.capacidadePicking, pe.embalado, p.referencia, p.descricao descricaoProduto')
                 ->from('wms:Produto\Embalagem', 'pe')
                 ->leftJoin('pe.endereco', 'de')
                 ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = pe.codProduto AND p.grade = pe.grade')
@@ -145,4 +145,17 @@ class EmbalagemRepository extends EntityRepository {
         return $dql->getQuery()->getResult();
     }
 
+    public function getNormaPD($codProduto, $dscGrade)
+    {
+        $sql = "SELECT MAX(PE.QTD_EMBALAGEM * NP.NUM_NORMA) as NORMA, PE.COD_PRODUTO, PE.DSC_GRADE
+                FROM PRODUTO_DADO_LOGISTICO PDL
+                INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = PDL.COD_PRODUTO_EMBALAGEM
+                INNER JOIN NORMA_PALETIZACAO NP ON NP.COD_NORMA_PALETIZACAO = PDL.COD_NORMA_PALETIZACAO
+                WHERE PE.COD_PRODUTO = $codProduto AND PE.DSC_GRADE = '$dscGrade'
+                GROUP BY PE.COD_PRODUTO, PE.DSC_GRADE";
+
+        $result = $this->_em->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
+
+        return (!empty($result))? $result['NORMA'] : null;
+    }
 }

@@ -28,7 +28,7 @@ if ($this->erro) {
                 </div>
                 <div class="field">
                     <label for="rua" class="field optional">*Qtd</label>
-                    <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" onclick="selecionar()" onkeydown="nextInput(event)" style="width: 80%">
+                    <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" style="width: 80%">
                 </div>
                 <div class="field">
                     <label for="rua" class="field optional">*Código de Barras</label>
@@ -41,7 +41,7 @@ if ($this->erro) {
                 </div>
                 <div class="field">
                     <label for="rua" class="field optional">*Qtd</label>
-                    <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" onkeydown="nextInput(event)" style="width: 80%">
+                    <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" style="width: 80%">
                 </div>
             <?php endif; ?>
             <input type="button" name="buscar-sumbit" id="buscar-sumbit" value="Conferir" class="btn gradientBtn">
@@ -54,7 +54,7 @@ if ($this->erro) {
                 <a class="btn gradientBtn" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a>
             <?php endif; ?>
             <?php if ($this->separacaoEmbalado) : ?>
-                <input type="button" style="margin-top:20px" class="btn gradientBtn" onclick="window.location='<?php echo '/mobile/expedicao/fecha-mapa-embalado/checkout/1/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>'" value="Fechar Caixa" />
+                <input type="button" style="margin-top:20px" class="btn gradientBtn" onclick="window.open('<?php echo '/mobile/expedicao/fecha-mapa-embalado/checkout/1/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>', '_blanck')" value="Fechar Caixa" />
             <?php endif; ?>
 
         </fieldset>
@@ -84,7 +84,7 @@ if ($this->erro) {
             if (is_array($this->produtos)) {
                 foreach ($this->produtos as $key => $value) {
                     ?>
-                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo  $value['COD_PRODUTO'].' - '.$value['DSC_PRODUTO'].' - '.$value['QUANTIDADE'] ?> </p>
+                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo  $value['COD_PRODUTO'].' - '.$value['DSC_PRODUTO'].' - ' ?> <span id="qtd"></span></span> </p>
                     <?php
                 }
                 foreach ($this->produtosConferidos as $key => $value) {
@@ -100,11 +100,18 @@ if ($this->erro) {
 }
 ?>
 <script>
+    $('#codigoBarras').focus();
     $("input").keydown(function (e) {
         if (e.which == 113) {
             var qtd = $('#qtd');
             qtd.focus();
             qtd.select();
+            return false;
+        }
+    });
+    $("#qtd").keydown(function (e) {
+        if (e.which == 13) {
+            $('#codigoBarras').focus();
             return false;
         }
     });

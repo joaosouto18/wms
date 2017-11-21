@@ -38,7 +38,7 @@ class Sigla extends Form
                 ->addElement('text', 'referencia', array(
                     'label' => 'Referência',
                     'size' => 10,
-                    'maxlength' => 10,
+                    'maxlength' => 100,
                     'class' => 'caixa-alta pequeno'
                 ))
                 ->addDisplayGroup(array(

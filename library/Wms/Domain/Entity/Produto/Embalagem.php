@@ -44,7 +44,7 @@ class Embalagem {
 
     /**
      * @var string Grade do produto
-     * @Column(name="DSC_GRADE", type="string", length=10, nullable=false)
+     * @Column(name="DSC_GRADE", type="string", length=255, nullable=false)
      */
     protected $grade;
 
@@ -282,6 +282,9 @@ class Embalagem {
         return $this;
     }
 
+    /**
+     * @return ArrayCollection
+     */
     public function getDadosLogisticos() {
         return $this->dadosLogisticos;
     }
@@ -316,7 +319,7 @@ class Embalagem {
                 $dscDestino = $endereco->getDescricao();
             }
         }
-        
+
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
         $andamentoRepo->checksChange($this->getProduto(), 'Endereço de Picking', $dscOrigem, $dscDestino);
 
@@ -399,7 +402,7 @@ class Embalagem {
     }
 
     /**
-     * @param datetime $dataInativacao
+     * @param \DateTime $dataInativacao
      */
     public function setDataInativacao($dataInativacao) {
         $this->dataInativacao = $dataInativacao;

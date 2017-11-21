@@ -37,6 +37,9 @@ class MapaSeparacao extends eFPDF {
             case 5:
                 $this->layoutModelo5($expedicao, $status, $codBarras);
                 break;
+            case 6:
+                $this->layoutModelo6($expedicao, $status, $codBarras);
+                break;
             default:
                 $this->layoutModelo1($expedicao, $status, $codBarras);
         }
@@ -168,13 +171,21 @@ class MapaSeparacao extends eFPDF {
                 $codProduto = $produto->getCodProduto();
                 $grade = $produto->getDscGrade();
                 $descricao = utf8_decode($produto->getProduto()->getDescricao());
-                $embalagem = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
+                $descricaoView = $descricao;
+                if(strlen ( $descricao) > 50) {
+                    $descricaoView = substr($descricao, 0, 50);
+                }
+                if ($produto->getProdutoVolume() == null) {
+                    $embalagem = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
+                    $endereco = $produto->getDepositoEndereco();
+                }else{
+                    $embalagem = $produto->getProdutoVolume()->getDescricao();
+                    $endereco = $produto->getProdutoVolume()->getEndereco();
+                }
                 $quantidade = $produto->getQtdSeparar();
                 $caixas = $produto->getNumCaixaInicio() . ' - ' . $produto->getNumCaixaFim();
-                $endereco = $produto->getDepositoEndereco();
                 if ($endereco != null)
                     $dscEndereco = $endereco->getDescricao();
-
 
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
                 if (!empty($pesoProduto)) {
@@ -184,49 +195,60 @@ class MapaSeparacao extends eFPDF {
                 $this->SetFont('Arial', null, 9);
                 if ($usaGrade === "S") {
                     if ($tipoQebra == true) {
-                        $this->Cell(24, 4, $dscEndereco, 0, 0);
-                        $this->Cell(22, 4, $codProduto, 0, 0);
-                        $this->Cell(20, 4, $this->SetStringByMaxWidth($grade, 20), 0, 0);
-                        $this->Cell(78, 4, $this->SetStringByMaxWidth($descricao, 80), 0, 0);
-                        $this->Cell(18, 4, $embalagem, 0, 0);
-                        $this->Cell(18, 4, $quantidade, 0, 0);
-                        $this->Cell(15, 4, $caixas, 0, 1, 'C');
-                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(24, 6, $dscEndereco, 0, 0);
+                        $this->Cell(22, 6, $codProduto, 0, 0);
+                        $this->Cell(20, 6, $this->SetStringByMaxWidth($grade, 20), 0, 0);
+                        $this->Cell(78, 6, $this->SetStringByMaxWidth($descricao, 80), 0, 0);
+                        $this->Cell(18, 6, $embalagem, 0, 0);
+                        $this->Cell(18, 6, $quantidade, 0, 0);
+                        $this->Cell(15, 6, $caixas, 0, 1, 'C');
+                        if(strlen ( $descricao) > 50) {
+                            $this->MultiCell(99, 6, $this->SetStringByMaxWidth(substr($descricao, 50, 300), 99), 3, 0);
+                        }
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                         $this->Cell(20, 1, "", 0, 1);
                     } else {
-                        $this->Cell(24, 4, $dscEndereco, 0, 0);
-                        $this->Cell(22, 4, $codProduto, 0, 0);
-                        $this->Cell(20, 4, $this->SetStringByMaxWidth($grade, 20), 0, 0);
-                        $this->Cell(93, 4, $this->SetStringByMaxWidth($descricao, 93), 0, 0);
-                        $this->Cell(18, 4, $embalagem, 0, 0);
-                        $this->Cell(18, 4, $quantidade, 0, 1, 'C');
-                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(24, 6, $dscEndereco, 0, 0);
+                        $this->Cell(22, 6, $codProduto, 0, 0);
+                        $this->Cell(20, 6, $this->SetStringByMaxWidth($grade, 20), 0, 0);
+                        $this->Cell(93, 6, $this->SetStringByMaxWidth($descricao, 93), 0, 0);
+                        $this->Cell(18, 6, $embalagem, 0, 0);
+                        $this->Cell(18, 6, $quantidade, 0, 1, 'C');
+                        if(strlen ( $descricao) > 50) {
+                            $this->MultiCell(99, 6, $this->SetStringByMaxWidth(substr($descricao, 50, 300), 99), 3, 0);
+                        }
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                         $this->Cell(20, 1, "", 0, 1);
                     }
                 } else {
                     if ($tipoQebra == true) {
-                        $this->Cell(24, 4, $dscEndereco, 0, 0);
-                        $this->Cell(22, 4, $codProduto, 0, 0);
-                        $this->Cell(99, 4, $this->SetStringByMaxWidth($descricao, 99), 0, 0);
-                        $this->Cell(20, 4, $embalagem, 0, 0);
-                        $this->Cell(15, 4, $quantidade, 0, 0);
-                        $this->Cell(15, 4, $caixas, 0, 1, 'C');
-                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
-                        $this->Cell(20, 1, "", 0, 1);
+
+                        $this->Cell(24, 6, $dscEndereco, 0, 0);
+                        $this->Cell(22, 6, $codProduto, 0, 0);
+                        $this->Cell(99, 6, $this->SetStringByMaxWidth($descricaoView, 99), 0, 0);
+                        $this->Cell(20, 6, $embalagem, 0, 0);
+                        $this->Cell(15, 6, $quantidade, 0, 0);
+                        $this->Cell(15, 6, $caixas, 0, 1, 'C');
+                        if(strlen ( $descricao) > 50) {
+                            $this->MultiCell(99, 6, $this->SetStringByMaxWidth(substr($descricao, 50, 300), 99), 3, 0);
+                        }
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(20, 2, "", 0, 1);
                     } else {
-                        $this->Cell(24, 4, $dscEndereco, 0, 0);
-                        $this->Cell(22, 4, $codProduto, 0, 0);
-                        $this->Cell(98, 4, $this->SetStringByMaxWidth($descricao, 98), 0, 0);
-                        $this->Cell(31, 4, $embalagem, 0, 0);
-                        $this->Cell(20, 4, $quantidade, 0, 1, 'C');
-                        $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(24, 6, $dscEndereco, 0, 0);
+                        $this->Cell(22, 6, $codProduto, 0, 0);
+                        $this->Cell(98, 6, $this->SetStringByMaxWidth($descricao, 98), 0, 0);
+                        $this->Cell(31, 6, $embalagem, 0, 0);
+                        $this->Cell(20, 6, $quantidade, 0, 1, 'C');
+                        if(strlen ( $descricao) > 50) {
+                            $this->MultiCell(99, 6, $this->SetStringByMaxWidth(substr($descricao, 50, 300), 99), 3, 0);
+                        }
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
                         $this->Cell(20, 1, "", 0, 1);
                     }
                 }
             }
 
-            $this->SetFont('Arial', null, 10);
-            $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
             $this->SetFont('Arial', 'B', 9);
 
             $this->Cell(4, 10, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
@@ -234,7 +256,6 @@ class MapaSeparacao extends eFPDF {
 //Go to 1.5 cm from bottom
             $this->Cell(20, 3, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1, "L");
 
-//$this->SetY(-92);
             $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
             $this->Image($imgCodBarras, 150, 280, 50);
 
@@ -247,14 +268,12 @@ class MapaSeparacao extends eFPDF {
             $this->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
             $this->SetFont('Arial', null, 10);
             $this->Cell(120, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
-//$this->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
 
             $this->SetFont('Arial', 'B', 9);
             $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
             $this->Cell($wPage * 4, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
             $this->Cell($wPage * 4, 6, utf8_decode("CUBAGEM TOTAL " . $cubagemTotal), 0, 1);
             $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 1);
-//$this->Image($this->imgCodBarras, 143, 280, 50);
             $this->InFooter = false;
         }
 
@@ -1105,6 +1124,112 @@ class MapaSeparacao extends eFPDF {
         $em->flush();
         $em->clear();
     }
+
+
+    private function layoutModelo6($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null) {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        if ($codBarras == null) {
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('expedicao' => $idExpedicao, 'codStatus' => $status));
+        } else {
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->getMapaSeparacaoById($codBarras);
+        }
+        \Zend_Layout::getMvcInstance()->disableLayout(true);
+        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+
+        /** @var Parametro $param */
+        $param = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => "UTILIZA_GRADE"));
+        if (!empty($param)) {
+            $usaGrade = $param->getValor();
+        } else {
+            $usaGrade = 'N';
+        }
+        $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
+        $this->AddPage();
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(200, 3, utf8_decode("MAPA DE CONFERENCIA - EXPEDIÇÃO " . $idExpedicao), 0, 1, "C");
+        $count = 0;
+        foreach ($mapaSeparacao as $mapa) {
+            if($count == 7){
+                $this->AddPage();
+                $this->SetFont('Arial', 'B', 10);
+                $this->Cell(200, 3, utf8_decode("MAPA DE CONFERENCIA - EXPEDIÇÃO " . $idExpedicao), 0, 1, "C");
+                $count = 0;
+            }
+
+            $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
+            $em->persist($mapa);
+
+            $this->idMapa = $mapa->getId();
+            $this->idExpedicao = $idExpedicao;
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+            $expedicaoRepo = $em->getRepository('wms:Expedicao');
+            $txtCarga = 'CARGA';
+            $cargasSelecionadas = $this->getCargasSelecionadas();
+            if (empty($cargasSelecionadas)) {
+                $cargas = $expedicaoRepo->getCodCargasExterno($this->idExpedicao);
+                $stringCargas = null;
+                foreach ($cargas as $key => $carga) {
+                    unset($carga['sequencia']);
+                    if ($key >= 1) {
+                        $stringCargas .= ',';
+                    }
+                    $stringCargas .= implode(',', $carga);
+                    $txtCarga = (count($cargas) > 1) ? 'CARGAS' : 'CARGA';
+                }
+            } else {
+                if (is_array($cargasSelecionadas)) {
+                    $stringCargas = implode(',', $cargasSelecionadas);
+                    if (count($cargasSelecionadas) > 1)
+                        $txtCarga = 'CARGAS';
+                } else {
+                    $stringCargas = $cargasSelecionadas;
+                }
+            }
+
+
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(20, 1, "__________________________________________________________________________________________________", 0, 1);
+            $this->Cell(20, 3, "", 0, 1);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(4, 4, utf8_decode($this->idExpedicao) . ' - ' . $txtCarga . ': ' . $stringCargas . ' - PLACA: ' . $mapa->getExpedicao()->getPlacaExpedicao(), 0, 1);
+
+            $this->SetFont('Arial', 'B', 9);
+
+            $this->Cell(4, 10, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
+            $this->SetFont('Arial', 'B', 7);
+//Go to 1.5 cm from bottom
+
+            $this->Cell(4, 10, utf8_decode($mapa->getDscQuebra()), 0, 1);
+            $this->Cell(20, 3, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1, "L");
+
+            $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
+            $this->Image($imgCodBarras, NULL, NULL, 50);
+
+            $this->InFooter = true;
+            $pageSizeA4 = $this->_getpagesize();
+            $wPage = $pageSizeA4[0] / 12;
+            $this->InFooter = false;
+            $count++;
+        }
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo = $em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
+        $ExpedicaoEntity = $ExpedicaoRepo->find($idExpedicao);
+        $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
+        $ExpedicaoEntity->setStatus($statusEntity);
+        $em->persist($ExpedicaoEntity);
+
+        $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');
+
+        $em->flush();
+        $em->clear();
+    }
+
 
     /**
      * @return mixed

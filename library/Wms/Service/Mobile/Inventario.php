@@ -65,7 +65,7 @@ class Inventario {
         $enderecos = array();
         $produtoEmbalagemRepo = $this->getEm()->getRepository('wms:Produto\Embalagem');
         foreach ($return['enderecos'] as $key => $endereco) {
-            if ($params['divergencia'] == 1) {
+            if ($params['divergencia'] == 1 && !is_null($endereco['DSC_GRADE']) && !is_null($endereco['COD_PRODUTO'])) {
                 $enderecos[$key]['endereco'] = $endereco['DSC_DEPOSITO_ENDERECO'] . ' - ' . $endereco['DSC_PRODUTO'] . ' - ' . $endereco['DSC_GRADE'] . ' - ' . $endereco['COMERCIALIZACAO'];
                 if ($endereco['QTD_CONTADA'] == 0) {
                     $embalagem = $produtoEmbalagemRepo->findOneBy(array('codProduto' => $endereco['COD_PRODUTO'], 'grade' => $endereco['DSC_GRADE']), array('quantidade', 'ASC'));
@@ -74,7 +74,7 @@ class Inventario {
                     $enderecos[$key]['zerar'] = 0;
                 }
             } else {
-                $enderecos[] = $endereco['DSC_DEPOSITO_ENDERECO'];
+                $enderecos[]['endereco'] = $endereco['DSC_DEPOSITO_ENDERECO'];
             }
         }
         return $enderecos;
@@ -194,9 +194,9 @@ class Inventario {
         $populateForm['idEndereco'] = $params['idEndereco'];
         $populateForm['dscEndereco'] = $enderecoEn->getDescricao();
         $populateForm['descricaoProduto'] = '<b>' . $idProduto . " - " . $produtoEn->getDescricao() . '</b>';
-        if ($embalagemEn == null) {
+        if (!empty($volumeEn)) {
             $populateForm['dscEmbalagem'] = '<b>Volume ' . $volumeEn->getDescricao() . ' - Sequencia ' . number_format($volumeEn->getCodigoSequencial(), 0, ',', '') . '</b>';
-        } else {
+        } elseif (!empty($embalagemEn)) {
             $populateForm['dscEmbalagem'] = '<b>Embalagem ' . $embalagemEn->getDescricao() . ' - Fator ' . number_format($embalagemEn->getQuantidade(), 2, ',', '') . '</b>';
         }
         if ($dscVolume != null) {
@@ -258,13 +258,19 @@ class Inventario {
                 ->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
         $possuiValidade = null;
-        if (isset($produtoEn) && !empty($produtoEn))
+
+        $hoje = new \Zend_Date();
+        if (isset($produtoEn) && !empty($produtoEn)) {
             $possuiValidade = $produtoEn->getValidade();
+            $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
+            $PeriodoUtilMax = $hoje->addDay($shelfLifeMax);
+        }
 
         $controleValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
 
         $dataValida = true;
         $validade = null;
+
         if ($possuiValidade == 'S' && $controleValidade == 'S') {
             if (strlen($params['validade']) < 8) {
                 $dataValida = false;
@@ -289,6 +295,15 @@ class Inventario {
                 $url = "/mobile/inventario/consulta-produto/idInventario/$idInventario/numContagem/$numContagem/divergencia/$divergencia/codigoBarras/$codigoBarras/idEndereco/$idEndereco/idInventarioEnd/$idInventarioEnd/idContagemOs/$idContagemOs";
                 return array('status' => 'error', 'msg' => 'Informe uma data de validade correta!', 'url' => $url);
             } else {
+                $dthMov = $this->dthMovimentacao($idEndereco, $idProduto, $grade, $codProdutoVolume);
+                $diferenca = (strtotime(date('Y-m-d')) - strtotime($dthMov));
+                $dias = floor($diferenca / (60 * 60 * 24));
+                $dataRestante = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$dias day", strtotime($dthMov))));
+                $dataValidade = date_create_from_format('Y-m-d',"20$ano-$mes-$dia");
+                if($dataValidade > $dataRestante){
+                    $url = "/mobile/inventario/consulta-produto/idInventario/$idInventario/numContagem/$numContagem/divergencia/$divergencia/codigoBarras/$codigoBarras/idEndereco/$idEndereco/idInventarioEnd/$idInventarioEnd/idContagemOs/$idContagemOs";
+                    return array('status' => 'error', 'msg' => 'Data de validade acima da data máxima '.date('d/m/Y', strtotime("+$dias day", strtotime($dthMov))), 'url' => $url);
+                }
                 $validade = date_create_from_format('d/m/Y', $data);
                 $validade = $validade->format('Y-m-d');
             }
@@ -389,6 +404,21 @@ class Inventario {
         return array('contagemEndId' => $contagemEndId);
     }
 
+    public function dthMovimentacao($idEndereco, $codProduto, $grade, $codProdutoVolume = ''){
+        if($codProdutoVolume == ''){
+            $where = "AND E.COD_PRODUTO = $codProduto AND E.DSC_GRADE = '$grade'";
+        }else{
+            $where = "AND E.COD_PRODUTO_VOLUME = $codProdutoVolume";
+        }
+        $sql = "SELECT TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO, 'YYYY-MM-DD') AS DTH
+                FROM ESTOQUE E WHERE E.DTH_PRIMEIRA_MOVIMENTACAO IS NOT NULL AND E.COD_DEPOSITO_ENDERECO = $idEndereco $where";
+        $return =  $this->getEm()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        if(empty($return)){
+            $return[0]['DTH'] = date('Y-m-d');
+        }
+        return $return[0]['DTH'];
+    }
+
     public function validaEstoqueAtual($params, $parametroSistema) {
         if ($parametroSistema == 'S') {
 
@@ -413,12 +443,17 @@ class Inventario {
             } else {
                 $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $idDepositoEndereco));
             }
-
             $quantidadeTotal = ($quantidadeContada + $quantidadeAvaria);
             if ($estoqueEn) {
+                $validade = null;
+                if (isset($params['validade']) && !empty($params['validade'])) {
+                    $validade = new \DateTime($params['validade']);
+                }
+                $validadeEstoque = $estoqueEn->getValidade();
                 //Houve divergência?
                 $quantidadeEstoque = $estoqueEn->getQtd();
-                if ($quantidadeEstoque != $quantidadeTotal || ($this->compareProduto($estoqueEn, $contagemEndEn) == false)) {
+                if ($quantidadeEstoque != $quantidadeTotal || ($this->compareProduto($estoqueEn, $contagemEndEn) == false) ||
+                    ($validade != $validadeEstoque)) {
                     $inventarioEndEn->setInventariado(null);
                     $inventarioEndEn->setDivergencia(1);
                     $contagemEndEn->setQtdDivergencia($quantidadeContada - $quantidadeEstoque);
@@ -957,11 +992,10 @@ class Inventario {
             $params['grade'] = $contagemEndEn->getGrade();
             $params['codProdutoEmbalagem'] = $contagemEndEn->getCodProdutoEmbalagem();
             $params['codProdutoVolume'] = $contagemEndEn->getCodProdutoVolume();
-
+            $params['validade'] = $contagemEndEn->getValidade();
             $estoqueValidado = $this->validaEstoqueAtual($params, $validaEstoqueAtual);
 
             $regraContagem = $this->regraContagem($params, $regraContagemParam, $estoqueValidado);
-
             $contagemEndComDivergencia = $this->contagemEndComDivergencia($params);
 
             if (false == $regraContagem && $regraContagemParam == '2') {

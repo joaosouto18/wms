@@ -62,7 +62,7 @@ class Embalagem extends SubForm
                 ->addElement('text', 'endereco', array(
                     'label' => 'Endereço',
                     'alt' => 'endereco',
-                    'size' => 10,
+                    'size' => 14,
                     'placeholder' => $placeholder,
                 ))
                 ->addElement('select', 'embalado', array(

@@ -5,8 +5,8 @@ namespace Wms\Domain\Entity\Ressuprimento;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Produto;
-use Wms\Math;
 
 class OndaRessuprimentoRepository extends EntityRepository {
 
@@ -252,13 +252,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
             $tipoComercializacao = $produtoEn->getTipoComercializacao()->getId();
             if ($tipoComercializacao == Produto::TIPO_UNITARIO) {
-                $embalagensEn = $dadosProdutos[$codProduto][$grade]['embalagensASC'];
-
-                if (!isset($embalagensEn[0])) {
-                    throw new \Exception("Produto " . $codProduto . " Grade " . $grade . " não possui embalagem cadastrada!");
-                }
-
-                $embalagem = $embalagensEn[0];
+                $embalagem = reset($dadosProdutos[$codProduto][$grade]['embalagensASC']);
 
                 $idPicking = null;
                 if ($embalagem->getEndereco() != null) {
@@ -324,10 +318,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
             }
         }
 
-        return array(
-            'picking' => $arraySaidaPicking,
-            'pulmao' => $arraySaidaPulmao
-        );
+        return array($arraySaidaPicking,$arraySaidaPulmao);
     }
 
     public function relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
@@ -343,17 +334,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
             $pedidoEn = $pedidoRepo->findOneBy(array('id' => $codPedido));
-
-            /* $sql = "INSERT INTO ONDA_RESSUPRIMENTO_PEDIDO (COD_ONDA_RESSUPRIMENTO_PEDIDO, COD_ONDA_RESSUPRIMENTO, COD_PEDIDO, COD_PRODUTO, QTD)
-              VALUES (SQ_ONDA_RESSUPRIMENTO_PEDIDO.NEXTVAL, :idOnda, :idPedido, :idProduto, :qtd )";
-
-              $conn = $this->_em->getConnection();
-              $stmt = $conn->prepare($sql);
-              $stmt->bindValue('idOnda', $ondaEn->getId());
-              $stmt->bindValue('idPedido', $pedidoEn->getId());
-              $stmt->bindValue('idProduto', $produtoEn->getId());
-              $stmt->bindValue('qtd', $qtd);
-              $stmt->execute(); */
 
             $ondaPedido = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoPedido();
             $ondaPedido->setOndaRessuprimento($ondaEn);
@@ -449,8 +429,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
         if ($reservaEntrada == false) {
             $produtosEntrada[0]['qtd'] = 0;
         }
-        $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
-        $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(), $produtosSaida, "S", "O", $ondaRessuprimentoOs, $osEn, null, null, null, $repositorios);
+        $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null,  $repositorios);
+        $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(), $produtosSaida, "S", "O", $ondaRessuprimentoOs, $osEn, null, null,  $repositorios);
     }
 
     private function calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios) {
@@ -490,7 +470,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
             $params = array(
                 'idProduto' => $codProduto,
                 'grade' => $grade,
-                'idVolume' => $volumes,
+                'idVolume' => $idVolume,
                 'idEnderecoIgnorar' => $idPicking
             );
             $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
@@ -541,58 +521,68 @@ class OndaRessuprimentoRepository extends EntityRepository {
     }
 
     public function calculaRessuprimentoByProduto($produtosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
-        $volumeRepo = $repositorios['volumeRepo'];
         $qtdRessuprimentos = 0;
+        $arrErro = [];
         foreach ($produtosRessuprir as $produto) {
-            $codProduto = $produto['COD_PRODUTO'];
-            $grade = $produto['DSC_GRADE'];
+            $codProduto = $produto['codProduto'];
+            $grade = $produto['grade'];
 
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
 
             $pickings = array();
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {
 
-                $embalagensEn = $dadosProdutos[$codProduto][$grade]['embalagensASC'];
+                /** @var Produto\Embalagem $embalagem */
+                $embalagem = $dadosProdutos[$codProduto][$grade]['embalagem']['embalagemEn'];
 
-                $embalagem = $embalagensEn[0];
-                $embalagens = array();
-                $embalagens[] = $embalagem->getId();
+                $picking = array();
+                $picking['volumes'] = null;
+                $picking['embalagens'] = array($embalagem->getId());
+                $capacidadePicking = $embalagem->getCapacidadePicking();
 
-                if ($embalagem->getEndereco() != null) {
-                    $picking = array();
-                    $picking['volumes'] = null;
-                    $picking['embalagens'] = $embalagens;
-                    $picking['capacidadePicking'] = $embalagem->getCapacidadePicking();
-                    $picking['pontoReposicao'] = $embalagem->getPontoReposicao();
-                    $picking['idPicking'] = $embalagem->getEndereco()->getId();
-                    $picking['codProduto'] = $codProduto;
-                    $picking['grade'] = $grade;
-                    $pickings[] = $picking;
+                if (empty($capacidadePicking)) {
+                    $arrErro[] = "Código $codProduto grade $grade";
+                    continue;
                 }
+
+                $picking['capacidadePicking'] = $capacidadePicking;
+                $picking['pontoReposicao'] = $embalagem->getPontoReposicao();
+                $picking['idPicking'] = $embalagem->getEndereco()->getId();
+                $picking['codProduto'] = $codProduto;
+                $picking['grade'] = $grade;
+                $pickings[] = $picking;
+
             } else {
-                $normas = $volumeRepo->getNormasByProduto($codProduto, $grade);
-                foreach ($normas as $norma) {
-                    $volumesEn = $volumeRepo->getVolumesByNorma($norma->getId(), $codProduto, $grade);
+                $normas = $dadosProdutos[$codProduto][$grade]['volumes']['normas'];
+                foreach ($normas as $norma => $volumesArr) {
                     $picking = array();
-                    $picking['volumes'] = array();
                     $picking['codProduto'] = $codProduto;
                     $picking['grade'] = $grade;
                     $picking['embalagens'] = null;
-                    $idPicking = null;
-                    foreach ($volumesEn as $volume) {
-                        if ($volume->getEndereco() != null) {
-                            $idPicking = $volume->getEndereco()->getId();
+                    foreach ($volumesArr as $item) {
+                        /** @var Produto\Volume $volumeEn */
+                        $volumeEn = $item['volumeEn'];
+                        /** @var Endereco $pickingEn */
+                        $pickingEn = $item['pickingEn'];
+
+                        $picking['volumes'][] = $volumeEn->getId();
+                        $picking['idPicking'] = $pickingEn->getId();
+                        $capacidadePicking = $volumeEn->getCapacidadePicking();
+
+                        if (empty($capacidadePicking)) {
+                            $arrErro[] = "Código $codProduto grade $grade";
+                            continue;
                         }
-                        $picking['volumes'][] = $volume->getId();
-                        $picking['idPicking'] = $idPicking;
-                        $picking['capacidadePicking'] = $volume->getCapacidadePicking();
-                        $picking['pontoReposicao'] = $volume->getPontoReposicao();
+
+                        $picking['capacidadePicking'] = $capacidadePicking;
+                        $picking['pontoReposicao'] = $volumeEn->getPontoReposicao();
                     }
-                    if ($idPicking != null) {
-                        $pickings[] = $picking;
-                    }
+                    $pickings[] = $picking;
                 }
             }
+
+            if (!empty($arrErro))
+                throw new \Exception("Produto(s) sem capacidade de picking definida: " .implode(", ", $arrErro));
 
             foreach ($pickings as $picking) {
                 $qtdRessuprimentos = $qtdRessuprimentos + $this->calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios);
@@ -965,7 +955,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 ON PRODUTO_EMBALAGEM.COD_PRODUTO = PA.COD_PRODUTO
                 AND PRODUTO_EMBALAGEM.DSC_GRADE = PA.DSC_GRADE
                 INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PRODUTO_EMBALAGEM.COD_DEPOSITO_ENDERECO
-            WHERE 1 = 1 $where --AND PA.COD_PRODUTO = 30916
+            WHERE PRODUTO_EMBALAGEM.CAPACIDADE_PICKING > 0 $where --AND PA.COD_PRODUTO = 30916
             ORDER 
                 BY PA.COD_PRODUTO";
 

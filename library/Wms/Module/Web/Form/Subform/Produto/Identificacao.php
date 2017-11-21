@@ -34,8 +34,8 @@ class Identificacao extends SubForm
                 ))
                 ->addElement('text', 'grade', array(
                     'label' => 'Grade',
-                    'size' => 10,
-                    'maxlength' => 10,
+                    'size' => 13,
+                    'maxlength' => 64,
                     'readonly' => 'readonly',
                     'required' => true,
                 ))
@@ -128,12 +128,23 @@ class Identificacao extends SubForm
                             'N' => 'N'
                         )))
                     ->addElement('text', 'diasVidaUtil', array(
-                        'label' => 'Dias para Vencimento',
-                        'size' => 10,
+                        'label' => 'Prazo Mín. de Validade Para Recebimento (dias)',
+                        'size' => 15,
                         'maxlength' => 4
                     ))
+                    ->addElement('text', 'diasVidaUtilMaximo', array(
+                        'label' => 'Prazo Máx. de Validade (dias)',
+                        'size' => 15,
+                        'alt' => 'number',
+                        'maxlength' => 4
+                    ))
+                    ->addElement('text', 'percentMinVidaUtil', array(
+                        'label' => '       ',
+                        'size' => 10,
+                        'maxlength' => 6
+                    ))
                     ->addDisplayGroup(
-                        array('validade', 'diasVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
+                        array('validade', 'diasVidaUtilMaximo', 'diasVidaUtil', 'percentMinVidaUtil'), 'validadeProdutos', array('legend' => 'Validade')
                     );
 
     }
@@ -157,11 +168,11 @@ class Identificacao extends SubForm
             'idTipoComercializacao' => $produto->getTipoComercializacao()->getId(),
             'validade' => $produto->getValidade(),
             'diasVidaUtil' => $produto->getDiasVidaUtil(),
+            'diasVidaUtilMaximo' => $produto->getDiasVidaUtilMax(),
             'pVariavel' => $produto->getPossuiPesoVariavel(),
             'percTolerancia' => $produto->getPercTolerancia(),
             'toleranciaNominal' => $produto->getToleranciaNominal()
         );
-
         $this->setDefaults($values);
     }
 

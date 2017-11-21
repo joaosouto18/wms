@@ -2,9 +2,11 @@
 
 namespace Wms\Domain\Entity\Ressuprimento;
 
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
+use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Produto;
 
 class ReservaEstoqueRepository extends EntityRepository
@@ -20,7 +22,7 @@ class ReservaEstoqueRepository extends EntityRepository
      * produtos[0]['grade'] = 'Grade do Produto'
      * produtos[0]['qtd'] = '10' ou '-10'
     */
-    public function adicionaReservaEstoque ($idEndereco, $produtos = array(), $tipoReserva, $origemReserva, $idOrigem, $Os = null, $idUsuario = null, $observacao = "", $idPedido = null, $repositorios = null)
+    public function adicionaReservaEstoque ($endereco, $produtos = array(), $tipoReserva, $origemReserva, $idOrigem, $Os = null, $idUsuario = null, $observacao = "", $repositorios = null)
     {
         if ($repositorios == null) {
             $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
@@ -33,8 +35,11 @@ class ReservaEstoqueRepository extends EntityRepository
         if ($idUsuario == null) {
             $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
         }
-
-        $enderecoEn = $enderecoRepo->findOneBy(array('id'=>$idEndereco));
+        if (!is_object($endereco)) {
+            $enderecoEn = $enderecoRepo->findOneBy(array('id' => $endereco));
+        } else {
+            $enderecoEn = $endereco;
+        }
         $usuarioEn = $usuarioRepo->find($idUsuario);
 
         if ($enderecoEn == NULL) throw new \Exception("Endereço não encontrado");
@@ -51,7 +56,7 @@ class ReservaEstoqueRepository extends EntityRepository
         } else if ($origemReserva == "U") {
             return $this->addReservaEstoqueUma($enderecoEn,$produtos,$tipoReserva,$idOrigem,$usuarioEn,$observacao);
         } else if ($origemReserva == "E") {
-            return $this->addReservaEstoqueExpedicao($enderecoEn,$produtos,$idOrigem,$usuarioEn,$observacao,$idPedido,$repositorios);
+            return $this->addReservaEstoqueExpedicao($enderecoEn, $produtos, $idOrigem, $usuarioEn, $observacao, $repositorios);
         }
     }
 
@@ -73,8 +78,7 @@ class ReservaEstoqueRepository extends EntityRepository
             } else {
                 $reservaEstoqueExpedicaoRepo = $repositorios['reservaEstoqueExpRepo'];
             }
-            $reservaEstoqueArray = $reservaEstoqueExpedicaoRepo->findBy(array('expedicao'=> $idOrigem['idExpedicao'],
-                                                                              'pedido'=>$idOrigem['idPedido']));
+            $reservaEstoqueArray = $reservaEstoqueExpedicaoRepo->findBy($idOrigem);
         }
 
 
@@ -290,7 +294,8 @@ class ReservaEstoqueRepository extends EntityRepository
             return true;
         } else {
             /** @var ReservaEstoqueProduto $produto */
-            $produto = $reservaEstoqueEn->getProdutos()->toArray()[0];
+            $arr = $reservaEstoqueEn->getProdutos()->toArray();
+            $produto = $arr[0];
             $codProduto = $produto->getCodProduto();
             $grade = $produto->getGrade();
             $enderecoEn = $reservaEstoqueEn->getEndereco()->getDescricao();
@@ -365,7 +370,7 @@ class ReservaEstoqueRepository extends EntityRepository
         return $reservaEstoqueEn;
     }
 
-    private function addReservaEstoqueExpedicao ($enderecoEn, $produtos, $idExpedicao, $usuarioReserva, $observacoes, $idPedido = null, $repositorios = null){
+    private function addReservaEstoqueExpedicao ($enderecoEn, $produtos, $criterioReserva, $usuarioReserva, $observacoes,  $repositorios = null){
 
         if ($repositorios == null) {
             $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
@@ -375,8 +380,7 @@ class ReservaEstoqueRepository extends EntityRepository
             $pedidoRepo = $repositorios['pedidoRepo'];
         }
 
-        $reservaEstoqueEn = $this->findReservaEstoque($enderecoEn->getId(),$produtos,"S","E",array('idExpedicao'=>$idExpedicao,
-                                                                                                    'idPedido'=>$idPedido), null, $repositorios);
+        $reservaEstoqueEn = $this->findReservaEstoque($enderecoEn->getId(),$produtos,"S","E", $criterioReserva, null, $repositorios);
 
         if ($reservaEstoqueEn != NULL) {
             $reservaProdutos = $reservaEstoqueEn->getProdutos();
@@ -391,14 +395,20 @@ class ReservaEstoqueRepository extends EntityRepository
                 }
             }
         } else {
-            $expedicaoEn = $expedicaoRepo->findOneBy(array('id'=>$idExpedicao));
-            $pedidoEn = $pedidoRepo->findOneBy(array('id' => $idPedido));
+
+            /** @var Expedicao $expedicaoEn */
+            $expedicaoEn = $expedicaoRepo->findOneBy(array('id'=>$criterioReserva['expedicao']));
+            /** @var Expedicao\Pedido $pedidoEn */
+            $pedidoEn = $pedidoRepo->findOneBy(array('id' => $criterioReserva['pedido']));
 
             $reservaEstoqueEn = $this->addReservaEstoque($enderecoEn,$produtos,"S",$usuarioReserva,$observacoes, $repositorios);
             $reservaEstoqueExpedicao = new \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao();
             $reservaEstoqueExpedicao->setExpedicao($expedicaoEn);
             $reservaEstoqueExpedicao->setReservaEstoque($reservaEstoqueEn);
             $reservaEstoqueExpedicao->setPedido($pedidoEn);
+            $reservaEstoqueExpedicao->setQuebraPulmaoDoca($criterioReserva['quebraPulmaoDoca']);
+            $reservaEstoqueExpedicao->setCodCriterioPD($criterioReserva['codCriterioPD']);
+            $reservaEstoqueExpedicao->setTipoSaida($criterioReserva['tipoSaida']);
             $this->getEntityManager()->persist($reservaEstoqueExpedicao);
         }
         return $reservaEstoqueEn;
@@ -475,4 +485,35 @@ class ReservaEstoqueRepository extends EntityRepository
 
     }
 
+    /**
+     * @param $produtoPedido Expedicao\PedidoProduto
+     * @return array
+     */
+    public function getReservasExpedicao($produtoPedido)
+    {
+        $produto = $produtoPedido->getProduto();
+        $dql = $this->_em->createQueryBuilder()
+            ->select("
+                        de.id as idEndereco,
+                        ree.quebraPulmaoDoca,
+                        ree.codCriterioPD,
+                        ree.tipoSaida,
+                        rep.codProdutoVolume,
+                        (rep.qtd * -1) as qtd
+                        ")
+            ->from("wms:Ressuprimento\ReservaEstoque", "re")
+            ->innerJoin("wms:Ressuprimento\ReservaEstoqueProduto", "rep", "WITH" , "rep.reservaEstoque = re")
+            ->innerJoin("wms:Ressuprimento\ReservaEstoqueExpedicao", "ree", "WITH", "ree.reservaEstoque = re")
+            ->innerJoin("re.endereco", "de")
+            ->leftJoin("wms:Produto\Volume", "pv", "WITH", "pv = rep.produtoVolume and pv.dataInativacao is null")
+            ->where("re.atendida = 'N' and ree.pedido = :pedido and rep.codProduto = :codProduto and rep.grade = :grade")
+            ->setParameter(":pedido", $produtoPedido->getPedido())
+            ->setParameter(":codProduto", $produto->getId())
+            ->setParameter(":grade", $produto->getGrade())
+            ->orderBy("pv.codigoSequencial, de.rua, de.predio, de.nivel, de.apartamento")
+        ;
+
+        return $dql->getQuery()->getResult();
+
+    }
 }

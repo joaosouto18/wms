@@ -1,9 +1,24 @@
 <?php
 
-use Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity,
-    Wms\Domain\Entity\NotaFiscal\Item as ItemNF;
+use Wms\Domain\Entity\NotaFiscal as NotaFiscalEntity;
 
+class TypeOfParam
+{
 
+    public static function getType($destination)
+    {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $paramRepo = $em->getRepository('wms:Sistema\Parametro');
+        /** @var Wms\Domain\Entity\Sistema\Parametro $parametro */
+        $parametro = $paramRepo->findOneBy(array('constante' => $destination));
+
+        if (!empty($parametro))
+            return $parametro->getValor();
+
+        throw new Exception("Não foi definido o parâmetro $destination");
+    }
+}
 class Item {
     /** @var string */
     public $idProduto;
@@ -81,7 +96,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         $idFornecedor = trim($idFornecedor);
         $numero = trim($numero);
-        $serie = trim($serie);
+        $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao  = trim($dataEmissao);
         $idStatus = trim($idStatus);
 
@@ -158,7 +173,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         $idFornecedor = trim($idFornecedor);
         $numero = trim($numero);
-        $serie = trim($serie);
+        $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao = trim($dataEmissao);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
@@ -237,26 +252,25 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
-     * @param string $cnpjDestinatario CNPJ da filial dona da nota
-     * @param itens $itens
+     * @param TypeOfParam::getType(NOTA_FISCAL_SALVAR_ITENS) $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
-     * @param string $tipoNota Identifica se é uma nota de Bonificação(B), Compra(C), etc.
      * @param string $observacao Observações da Nota Fiscal
+     * @param string $tipoNota Identifica se é uma nota de Bonificação(B), Compra(C), etc.
+     * @param string $cnpjDestinatario CNPJ da filial dona da nota
      * @return boolean
      * @throws Exception
      */
-    public function salvar($idFornecedor, $numero, $serie, $cnpjDestinatario, $dataEmissao, $placa, $itens, $bonificacao, $tipoNota, $observacao)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
             $em->beginTransaction();
 
-
             //PREPARANDO AS INFORMAÇÔES PRA FORMATAR CORRETAMENTE
             //BEGIN
             $idFornecedor = trim($idFornecedor);
             $numero = (int) trim($numero);
-            $serie = trim($serie);
+            $serie = (!empty(trim($serie)))? trim($serie) : "0";
             $dataEmissao = trim($dataEmissao);
             $placa = trim($placa);
             $bonificacao = trim ($bonificacao);
@@ -403,7 +417,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         try {
             $array = json_decode($itens, true);
             $arrayItens = $array['produtos'];
-            return $this->salvar($idFornecedor,$numero,$serie,"",$dataEmissao,$placa,$arrayItens,$bonificacao, "", $observacao);
+            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$arrayItens,$bonificacao, $observacao, "","");
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -423,7 +437,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     {
         $idFornecedor = trim($idFornecedor);
         $numero = trim($numero);
-        $serie = trim($serie);
+        $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao = trim($dataEmissao);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
@@ -471,7 +485,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     {
         $idFornecedor = trim ($idFornecedor);
         $numero = trim($numero);
-        $serie = trim($serie);
+        $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao = trim($dataEmissao);
         $observacao = trim($observacao);
 
@@ -516,7 +530,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     {
         $idFornecedor = trim($idFornecedor);
         $numero = trim($numero);
-        $serie = trim($serie);
+        $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao = trim($dataEmissao);
         $observacao = trim($observacao);
 

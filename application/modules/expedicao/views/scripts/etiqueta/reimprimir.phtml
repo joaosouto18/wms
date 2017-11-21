@@ -15,38 +15,86 @@
         }
         return true;
     }
+
+    function checkEtiqueta(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            var codBarras = document.getElementById('codBarra').value;
+            if (codBarras != "") {
+
+                codBarras = codBarras.trim();
+                codBarras = codBarras.substring(0,codBarras.length -1);
+                codBarras = codBarras.replace(/^(0+)(\d)/g,"$2");
+
+                var aChk = document.getElementsByName('etiqueta[]');
+                var count = aChk.length;
+                var encontrou = "N";
+
+                for (var i=0; i<count ;i++){
+                    if (aChk[i].value == codBarras) {
+                        aChk[i].checked = true;
+                        document.getElementById('codBarra').value = "";
+                        encontrou = "S";
+                    }
+                }
+
+                if (encontrou == "N") {
+                    alert("Nenhuma etiqueta com o cód. barras " + codBarras + " nesta expedição para reimprimir " );
+                }
+
+            }
+
+            if(event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
+        }
+        return true;
+    }
+
+    function checkAll(event) {
+        alert('teste');
+        return true;
+    }
+
 </script>
 <form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'etiqueta', 'action' =>'reimprimir' ))?>">
     <div id="quantidade-grid" class="grid">
         <table class="gTable ">
             <thead>
             <tr class="gTTitle">
+                <td><p><input style="vertical-align: middle" value="checkAll" name="checkAll" type="checkbox"  onclick="checkAll(event);"/></p></td>
                 <td>Cód de barras</td>
                 <td>Cód Produto</td>
                 <td>Produto</td>
                 <td>Grade</td>
+                <td>Pedido</td>
+                <td>Cliente</td>
             </tr>
             </thead>
             <tbody>
             <?php
             foreach ($this->etiquetas as $etiqueta): ?>
                 <tr height="35">
+                    <td><input name="etiqueta[]" value="<?php echo $etiqueta['codBarras'] ?>" type="checkbox" /></td>
                     <td><?php echo $etiqueta['codBarras'] ?></td>
                     <td><?php echo $etiqueta['codProduto'] ?></td>
                     <td ><?php echo $etiqueta['produto'] ?></td>
                     <td ><?php echo $etiqueta['grade'] ?></td>
+                    <td ><?php echo $etiqueta['pedido'] ?></td>
+                    <td ><?php echo $etiqueta['cliente'] ?></td>
                 </tr>
             <?php endforeach; ?>
             <tr>
-                <td>
+                <td colspan="3">
                     <label>Código de barras etiqueta:</label>
-                    <input class="focus" type="text" name="codBarra" id="codBarra"  onkeydown="nextInput(event)" />
+                    <input class="focus" type="text" name="codBarra" id="codBarra"  onkeydown="checkEtiqueta(event)" />
                 </td>
-                <td>
+                <td colspan="2">
                     <label>Motivo:</label>
                     <?php echo $this->formText('motivo') ?>
                 </td>
-                <td >
+                <td colspan="2">
                     <?php
                     echo '<label>Senha para confirmação: </label>';
                     echo $this->formPassword("senhaConfirmacao", '', array(

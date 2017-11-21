@@ -117,7 +117,7 @@ class Expedicao_OsController extends Action
             'urlParams'=> array(
                 'module' => 'expedicao'
             ),
-            'tag' => 'a'
+          //  'tag' => 'a'
         );
 
         Page::configure(array('buttons' => $buttons));
@@ -315,6 +315,32 @@ class Expedicao_OsController extends Action
 
         $Grid = new ConferenciaGrid();
         $this->view->grid = $Grid->init($idOS, true, null)
+            ->render();
+    }
+
+    public function viewSeparacaoAjaxAction()
+    {
+        $request = $this->getRequest();
+        $idOS = $request->getParam('id');
+
+        /** @var \Wms\Domain\Entity\OrdemServicoRepository $OsRepo */
+        $OsRepo   = $this->_em->getRepository('wms:OrdemServico');
+        $resumoOS = $OsRepo->getResumoOsById($idOS);
+
+        $this->view->idOS        = $resumoOS['idOS'];
+        $this->view->conferente  = $resumoOS['pessoa'];
+        $this->view->inicioOS    = $resumoOS['dataInicial']->format('d/m/Y H:i:s');
+        $this->view->atividade   = $resumoOS['atividade'];
+        $this->view->idExpedicao = $resumoOS['idExpedicao'];
+
+        if ($resumoOS['dataFinal'] == Null) {
+            $this->view->fimOS = "OS Aberta";
+        } else {
+            $this->view->fimOS = $resumoOS['dataFinal']->format('d/m/Y H:i:s');
+        }
+
+        $Grid = new ConferenciaGrid();
+        $this->view->grid = $Grid->init($idOS, false, 'SEPARACAO')
             ->render();
     }
 

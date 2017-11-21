@@ -26,7 +26,7 @@ class VolumeRepository extends EntityRepository
 
         extract($values);
 
-        $volumeEntity = (isset($id) && is_numeric($id)) ? $this->find($id) : new VolumeEntity;
+        $volumeEntity = (isset($id) && is_numeric($id)) ? $this->find($id) : new VolumeEntity();
 
         if (!$volumeEntity)
             throw new \Exception('Id de volume inválido');
@@ -186,5 +186,16 @@ class VolumeRepository extends EntityRepository
             if ($status === 'error') break;
         }
         return array($status, $msg);
+    }
+
+    public function getVolumeByCodigo($codigo) {
+        $dql = $this->_em->createQueryBuilder()
+            ->select('pv.id')
+            ->from('wms:Produto\Volume', 'pv')
+            ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = pv.codProduto AND p.grade = pv.grade')
+            ->where("pv.codProduto = '$codigo'")
+            ->orWhere("pv.codigoBarras = '$codigo'");
+
+        return $dql->getQuery()->getResult();
     }
 }

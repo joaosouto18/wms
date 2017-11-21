@@ -1,4 +1,4 @@
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.0.0','xx-qtd-funcionario-apontamento-produtividade.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.0.0','10-qtd-funcionario-apontamento-produtividade.sql');
 
 ALTER TABLE EQUIPE_SEPARACAO
   ADD NUM_FUNCIONARIO NUMBER(15,3) DEFAULT 0 NULL;

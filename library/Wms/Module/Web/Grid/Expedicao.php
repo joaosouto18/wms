@@ -161,6 +161,8 @@ class Expedicao extends Grid
                     },
                 'pkIndex' => 'id'
             ))
+
+        /*
             ->addAction(array(
                 'label' => 'Reimprimir Etiqueta',
                 'modelName' => 'expedicao',
@@ -169,6 +171,18 @@ class Expedicao extends Grid
                 'condition' => function ($row) {
                     return $row['status'] != "FINALIZADO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
                 },
+                'pkIndex' => 'id'
+            ))
+        */
+            ->addAction(array(
+                'label' => 'Reimprimir Etiqueta',
+                'modelName' => 'expedicao',
+                'controllerName' => 'etiqueta',
+                'actionName' => 'verificar-reimpressao-ajax',
+                'cssClass' => 'dialogAjax pdf',
+                'condition' => function ($row) {
+                        return $row['status'] != "FINALIZADO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
+                    },
                 'pkIndex' => 'id'
             ))
             ->addAction(array(

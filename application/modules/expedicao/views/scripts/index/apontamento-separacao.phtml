@@ -6,6 +6,7 @@
     label[for='qtdConferentes'],
     label[for='dataInicial'],
     label[for='cpfBusca'],
+    label[for='etiquetas-etiquetaBusca'],
     label[for='dataFinal'],
     label[for='mapas-codMapaSeparacao'],
     label[for='mapas-pessoa'],
@@ -95,7 +96,8 @@
     }
 
     function gotoBuscar(event) {
-        if (event.which == 13 || event.keyCode == 13) {
+
+        if (event.which == 13 || event.keyCode == 13 || event.keyCode == 9 || event.which == 9) {
             if (document.getElementById('etiquetas-pessoa').value != "") {
                 addLista();
             }

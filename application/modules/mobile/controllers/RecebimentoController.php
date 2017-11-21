@@ -225,11 +225,13 @@ class Mobile_RecebimentoController extends Action
                 }
 
                 $shelfLife = $produtoEn->getDiasVidaUtil();
+                $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
                 if (is_null($shelfLife) || $shelfLife == '')
                     throw new Exception("O parametro 'Dias de vencimento' do produto " . $produtoEn->getId() . " está vazio.");
 
                 $hoje = new Zend_Date;
                 $PeriodoUtil = $hoje->addDay($shelfLife);
+                $PeriodoUtilMax = $hoje->addDay($shelfLifeMax);
 
                 $data = null;
                 if (strlen($params['dataValidade']) >= 8) {
@@ -243,9 +245,14 @@ class Mobile_RecebimentoController extends Action
                     $this->_helper->messenger('error', 'Informe uma data de validade correta');
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                 }
-
+                $dateConf = date_create_from_format('Y-m-d',"$ano-$mes-$dia");
+                $PeriodoUtil = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLife day", strtotime(date('Y-m-d')))));
+                $PeriodoUtilMax = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLifeMax day", strtotime(date('Y-m-d')))));
                 $objData = new Zend_Date($data);
-                if ($objData <= $PeriodoUtil) {
+                if ($dateConf < $PeriodoUtil || $dateConf > $PeriodoUtilMax) {
+                    if($dateConf > $PeriodoUtilMax){
+                        throw new \Exception('Data de validade maior que a definida no cadastro.');
+                    }
                     //autoriza recebimento?
                     $arrayRedirect = array(
                         'idRecebimento' => $idRecebimento,
