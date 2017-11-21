@@ -284,7 +284,6 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                                         for (var j = 0; j < dadosLogisticos.length; j++) {
                                             // transformo em um model do tipo produto_dado_logistico
                                             var produto_dado_logistico = new Wms.Models.ProdutoDadoLogistico(dadosLogisticos[j]);
-                                            console.log(produto_dado_logistico);
                                             // mando exibir
                                             $(this).append($.View('//wms/views/produto_dado_logistico/show', produto_dado_logistico));
                                         }
