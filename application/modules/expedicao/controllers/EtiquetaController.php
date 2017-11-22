@@ -205,6 +205,8 @@ class Expedicao_EtiquetaController  extends Action
 
             if ($modelo == '1') {
                 $Etiqueta = new Etiqueta();
+            } elseif ($modelo == '10') {
+                $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
             } else {
                 $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
             }
@@ -227,6 +229,8 @@ class Expedicao_EtiquetaController  extends Action
 
             if ($modelo == '1') {
                 $Etiqueta = new Etiqueta();
+            } elseif ($modelo == '10') {
+                $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
             } else {
                 $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
             }
@@ -346,7 +350,9 @@ class Expedicao_EtiquetaController  extends Action
                 $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
                 if ($modelo == '1') {
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 40));
-                }else {
+                } elseif ($modelo == '10') {
+                    $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
+                } else {
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
                 }
 
