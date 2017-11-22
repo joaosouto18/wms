@@ -1,7 +1,6 @@
 <?php
 namespace Wms\Domain\Entity\Expedicao;
 
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Deposito\EnderecoRepository;
@@ -10,7 +9,6 @@ use Wms\Domain\Entity\Filial;
 use Wms\Domain\Entity\FilialRepository;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao;
-use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicaoRepository;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository;
 use Wms\Math;
 use Wms\Util\WMS_Exception;
@@ -836,12 +834,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             $etiquetaMaePadrao = null;
-            $utilizaEtiquetaMae = $modeloSeparacaoEn->getUtilizaEtiquetaMae();
-            if (($utilizaEtiquetaMae == "N") || (empty($utilizaEtiquetaMae))) {
-                $expedicaoEntity = $expedicaoRepo->findOneBy(array('id'=>$idExpedicao));
-                $quebras = array();
-                $etiquetaMaePadrao = $this->getEtiquetaMae(null, $quebras,$expedicaoEntity);
-            }
 
             $this->qtdIteracoesMapa = 0;
             $this->qtdIteracoesMapaProduto = 0;
@@ -908,6 +900,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         $utilizaEtiquetaMae = $modeloSeparacaoEn->getUtilizaEtiquetaMae();
                         if (($utilizaEtiquetaMae == "N") || (empty($utilizaEtiquetaMae))) {
+                            if (empty($etiquetaMaePadrao)) {
+                                $expedicaoEntity = $expedicaoRepo->findOneBy(array('id'=>$idExpedicao));
+                                $quebras = array();
+                                $etiquetaMaePadrao = $this->getEtiquetaMae(null, $quebras,$expedicaoEntity);
+                            }
                             $etiquetaMae = $etiquetaMaePadrao;
                         } else {
                             $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebrasNaoFracionado);
@@ -1125,6 +1122,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                                 $utilizaEtiquetaMae = $modeloSeparacaoEn->getUtilizaEtiquetaMae();
                                 if (($utilizaEtiquetaMae == "N") || (empty($utilizaEtiquetaMae))) {
+                                    if (empty($etiquetaMaePadrao)) {
+                                        $expedicaoEntity = $expedicaoRepo->findOneBy(array('id'=>$idExpedicao));
+                                        $quebras = array();
+                                        $etiquetaMaePadrao = $this->getEtiquetaMae(null, $quebras,$expedicaoEntity);
+                                    }
                                     $etiquetaMae = $etiquetaMaePadrao;
                                 } else {
                                     $etiquetaMae = $this->getEtiquetaMae($pedidoProduto, $quebras);
@@ -1508,17 +1510,16 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         if (count($result) > 0) {
             for ($numCarrinho = 2; $numCarrinho <= $result[0]['NUM_CARRINHO']; $numCarrinho++) {
-                $mapaSeparacaoEn = new MapaSeparacao();
+
+                $selectId = "SELECT SQ_MAPA_SEPARACAO_01.NEXTVAL FROM DUAL";
+                $newIdMapa = $this->_em->getConnection()->query($selectId)->fetchAll(\PDO::FETCH_ASSOC);
+
+                $mapaSeparacaoEn = new MapaSeparacao("12" . $newIdMapa[0]['NEXTVAL']);
                 $mapaSeparacaoEn->setExpedicao($expedicaoEntity);
                 $mapaSeparacaoEn->setStatus($statusEntity);
                 $mapaSeparacaoEn->setDataCriacao(new \DateTime());
                 $mapaSeparacaoEn->setDscQuebra('MAPA DE SEPARAÇÃO CONSOLIDADA');
                 $this->getEntityManager()->persist($mapaSeparacaoEn);
-                $mapaSeparacaoEn->setId("12".$mapaSeparacaoEn->getId());
-                $this->getEntityManager()->persist($mapaSeparacaoEn);
-                $this->getEntityManager()->flush();
-                $novoId = $mapaSeparacaoEn->getId();
-                $mapaSeparacaoEn = $mapaSeparacaoRepo->find($novoId);
 
                 $mapaQuebra = new MapaSeparacaoQuebra();
                 $mapaQuebra->setMapaSeparacao($mapaSeparacaoEn);
@@ -1549,11 +1550,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $mapaSeparacaoProdutoEn->setNumCaixaInicio($caixaInicio);
                         $mapaSeparacaoProdutoEn->setNumCaixaFim($caixaFim);
                         $this->getEntityManager()->persist($mapaSeparacaoProdutoEn);
-                    }
-                    if (!isset($mapasSeparacaoProdutoEn) || empty($mapasSeparacaoProdutoEn)) {
-                        if (isset($mapaSeparacao) && !empty($mapaSeparacao)) {
-//                            $this->getEntityManager()->remove($mapaSeparacao);
-                        }
                     }
                 }
             }
@@ -1773,7 +1769,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
-        $arryMapas = array();
+        $arrayMapas = array();
         foreach ($result as $mapa) {
             $idMapa = $mapa['COD_MAPA_SEPARACAO'];
             $tipoQuebra = $mapa['IND_TIPO_QUEBRA'];
@@ -1930,19 +1926,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         if (isset($this->mapas[$idReentrega][$idCarrinho][$idCliente][$idRua][$idLinhaSeparacao][$idPraca][$idPulmaoDoca])) {
             $mapaSeparacao = $this->mapas[$idReentrega][$idCarrinho][$idCliente][$idRua][$idLinhaSeparacao][$idPraca][$idPulmaoDoca];
         } else {
-            $mapaSeparacao = new MapaSeparacao();
+
+            $selectId = "SELECT SQ_MAPA_SEPARACAO_01.NEXTVAL FROM DUAL";
+            $newIdMapa = $this->_em->getConnection()->query($selectId)->fetchAll(\PDO::FETCH_ASSOC);
+
+            $mapaSeparacao = new MapaSeparacao("12" . $newIdMapa[0]['NEXTVAL']);
             $mapaSeparacao->setExpedicao($expedicaoEntity);
             $mapaSeparacao->setStatus($siglaEntity);
             $mapaSeparacao->setCodStatus($codStatus);
             $mapaSeparacao->setDataCriacao(new \DateTime());
             $mapaSeparacao->setDscQuebra("");
             $this->getEntityManager()->persist($mapaSeparacao);
-            $mapaSeparacao->setId("12".$mapaSeparacao->getId());
-            $this->getEntityManager()->persist($mapaSeparacao);
-            $this->getEntityManager()->flush();
-            $novoId = $mapaSeparacao->getId();
-            $this->getEntityManager()->clear($mapaSeparacao);
-            $mapaSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacao")->find($novoId);
+
             $dscQuebra = "";
             foreach ($quebras as $quebra) {
                 $quebra = $quebra['tipoQuebra'];
@@ -1990,7 +1985,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
             $mapaSeparacao->setDscQuebra(trim($dscQuebra));
             $this->getEntityManager()->persist($mapaSeparacao);
-            $this->getEntityManager()->flush();
 
             $this->mapas[$idReentrega][$idCarrinho][$idCliente][$idRua][$idLinhaSeparacao][$idPraca][$idPulmaoDoca] = $mapaSeparacao;
         }
