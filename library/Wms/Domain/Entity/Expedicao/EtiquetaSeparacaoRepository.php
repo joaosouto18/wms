@@ -626,7 +626,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $produtoRepo     = $arrayRepositorios['produto'];
 
         $statusEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
-        $this->iniciaMapaSeparacao($idExpedicao, $statusEntity);
+        $this->iniciaMapaSeparacao($idExpedicao, $statusEntity->getId());
 
         $produtos = $reentregaRepo->getItemNotasByExpedicao($idExpedicao);
         $expedicaoEn = $expedicaoRepo->find($idExpedicao);
@@ -816,7 +816,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         try {
 
             $statusEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
-            $this->iniciaMapaSeparacao($idExpedicao, $statusEntity);
+            $this->iniciaMapaSeparacao($idExpedicao, $statusEntity->getId());
 
             if (empty($status)) {
                 $status = EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
