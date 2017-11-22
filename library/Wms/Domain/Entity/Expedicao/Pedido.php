@@ -11,6 +11,7 @@ class Pedido
 {
     /**
      * @Column(name="COD_PEDIDO", type="string", nullable=false)
+     * @Id
      */
     protected $id;
 
