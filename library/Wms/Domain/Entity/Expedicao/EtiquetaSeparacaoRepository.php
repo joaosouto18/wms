@@ -639,7 +639,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $pedidos = $nfProdutoRepo->findBy(array('codNotaFiscalSaida'=>$numNF));
 
             $qtdMapa = $this->defineEtiquetaReentrega($pedidos,$codProduto,$grade,$qtdReentregue, $numReentrega, $arrayRepositorios);
-            $this->geraMapaReentrega($produtoEn, $qtdMapa, $expedicaoEn, $arrayRepositorios);
+
+            if ($qtdMapa > 0) {
+                $this->geraMapaReentrega($produtoEn, $qtdMapa, $expedicaoEn, $arrayRepositorios);
+            }
 
         }
 
