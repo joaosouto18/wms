@@ -70,6 +70,16 @@ class AcaoIntegracao
     protected $indExecucao;
 
     /**
+     * @Column(name="IND_TIPO_CONTROLE", type="string")
+     */
+    protected $tipoControle;
+
+    /**
+     * @Column(name="TABELA_REFERENCIA", type="string")
+     */
+    protected $tabelaReferencia;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -179,6 +189,38 @@ class AcaoIntegracao
     public function getIndExecucao()
     {
         return $this->indExecucao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoControle()
+    {
+        return $this->tipoControle;
+    }
+
+    /**
+     * @param mixed $tipoControle
+     */
+    public function setTipoControle($tipoControle)
+    {
+        $this->tipoControle = $tipoControle;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTabelaReferencia()
+    {
+        return $this->tabelaReferencia;
+    }
+
+    /**
+     * @param mixed $tabelaReferencia
+     */
+    public function setTabelaReferencia($tabelaReferencia)
+    {
+        $this->tabelaReferencia = $tabelaReferencia;
     }
 
 }
