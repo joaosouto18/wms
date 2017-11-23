@@ -914,14 +914,15 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         if (!$isIntegracaoSQL) {
                             throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
                         } else {
-                            return false;
+//                            return false;
                         }
                     }
 
                     if (!$isIntegracaoSQL){
                         throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
                     } else {
-                        return false;
+                        //entender pq esta retornando false
+//                        return false;
                     }
                 }
             }
