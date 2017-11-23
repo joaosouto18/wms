@@ -230,7 +230,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                 $arrayPedidos[] = $pedido;
             }
         }
-        $pedidos = implode(",",$arrayPedidos);
+        $pedidos = "'".implode(",",$arrayPedidos)."'";
 
         $SQL = " SELECT DISTINCT MSP.COD_MAPA_SEPARACAO
                    FROM MAPA_SEPARACAO_PEDIDO MSP

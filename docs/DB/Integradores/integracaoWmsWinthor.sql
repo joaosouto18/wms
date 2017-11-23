@@ -349,3 +349,407 @@ INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO, COD_CONEXAO_INTEGRACAO, DSC_QU
  */
 INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO, COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO, IND_EXECUCAO)
   VALUES (25, 2, 'SELECT CARGA, PLACA, PEDIDO, TIPO_PEDIDO, COD_PRACA, DSC_PRACA, COD_ROTA, DSC_ROTA, COD_CLIENTE, NOME, CPF_CNPJ, TIPO_PESSOA, LOGRADOURO, NUMERO, BAIRRO, CIDADE, UF, COMPLEMENTO, REFERENCIA, CEP, PRODUTO, GRADE, QTD, VLR_VENDA FROM TR_PEDIDO',602, 'S', SYSDATE, 'N');
+
+INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO) VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 25, 611, 'AND IND_PROCESSADO = '||'''N'''||' OR IND_PROCESSADO IS NULL');
+
+UPDATE ACAO_INTEGRACAO SET IND_TIPO_CONTROLE = 'F', TABELA_REFERENCIA = 'TR_PEDIDO' WHERE COD_ACAO_INTEGRACAO = 25;
+
+INSERT INTO ACAO_INTEGRACAO (COD_ACAO_INTEGRACAO, COD_CONEXAO_INTEGRACAO, DSC_QUERY, COD_TIPO_ACAO_INTEGRACAO, IND_UTILIZA_LOG, DTH_ULTIMA_EXECUCAO, IND_EXECUCAO)
+  VALUES (26, 2, 'SELECT COD_FORNECEDOR, COD_PRODUTO, NOM_FORNECEDOR, CPF_CNPJ, DSC_GRADE, INSCRICAO_ESTADUAL, NUM_NOTA_FISCAL, COD_SERIE_NOTA_FISCAL, TO_CHAR(DAT_EMISSAO,'||'''DD/MM/YYYY HH24:MI:SS'''||') DAT_EMISSAO, TIPO_NOTA, DSC_PLACA_VEICULO, QTD_ITEM, VALOR_TOTAL, IND_PROCESSADO FROM TR_NOTA_FISCAL_ENTRADA WHERE 1 = 1 :where',
+  605, 'S', SYSDATE, 'N');
+
+UPDATE ACAO_INTEGRACAO SET IND_TIPO_CONTROLE = 'F', TABELA_REFERENCIA = 'TR_NOTA_FISCAL_ENTRADA' WHERE COD_ACAO_INTEGRACAO = 26;
+
+INSERT INTO ACAO_INTEGRACAO_FILTRO (COD_ACAO_INTEGRACAO_FILTRO, COD_ACAO_INTEGRACAO, COD_TIPO_REGISTRO, DSC_FILTRO) VALUES (SQ_ACAO_INTEGRACAO_FILTRO_01.NEXTVAL, 26, 611, 'AND IND_PROCESSADO = '||'''N'''||' OR IND_PROCESSADO IS NULL');
+
+
+/**
+  * TRIGGERS
+ */
+
+--CANCELAMENTO DE CARGAS
+CREATE OR REPLACE TRIGGER WMSIMPERIUM.IMPERIUM_TR_CANCELA_CARGA
+ AFTER
+  UPDATE
+ ON marcosart.pccarreg
+REFERENCING NEW AS NEW OLD AS OLD
+ FOR EACH ROW
+declare
+
+begin
+
+  if :new.dt_cancel is not null then
+
+      INSERT INTO wms_adm.tr_cancelamento_carga@dbIMPERIUM(cod_carga_externo, dth_cancelamento) values (:old.numcar, sysdate);
+
+  end if;
+
+
+  end;
+
+--VENDA BALCAO
+CREATE OR REPLACE TRIGGER WMSIMPERIUM.TRG_IMPERIUM_VENDA_BALCAO
+ BEFORE
+ INSERT
+ ON marcosart.pccarreg
+ REFERENCING OLD AS OLD NEW AS NEW
+ FOR EACH ROW
+declare
+
+vcarga          number;
+vpedido         number;
+vcodpraca       number;
+vpraca          varchar(100);
+vcodrota        number;
+vrota           varchar(100);
+vcodcli         number;
+vrazao          varchar(200);
+vcnpj           varchar(20);
+vtipofj         varchar(1);
+vendereco       varchar(200);
+vnumero         varchar(10);
+vbairro         varchar(100);
+vcidade         varchar(100);
+vuf             varchar(2);
+vcomplemento    varchar(200);
+vreferencia     varchar(100);
+vcep            varchar(10);
+vcodprod        number;
+vgrade          varchar(10);
+vqtd            number(15,4);
+vvalor          number(15,2);
+vveiculo        varchar(10);
+
+begin
+
+    if (:new.numcar = 0) and (:new.destino = 'VENDA BALCAO') then
+
+select pcveicul.placa, pcpedc.numped, pcpedc.codpraca, pcpraca.praca, pcpraca.rota, pcrotaexp.descricao, pcpedc.codcli,
+pcclient.cliente, pcclient.cgcent, pcclient.tipofj,
+pcclient.enderent, pcclient.numeroent, pcclient.bairroent,
+pcclient.municent, pcclient.estent, pcclient.complementoent,
+pcclient.pontorefer, pcclient.cepent, pcpedi.codprod,
+pcpedi.qt, (pcpedi.qt * pcpedi.pvenda) VLR_VENDA
+
+into vveiculo, vpedido, vcodpraca, vpraca, vcodrota, vrota,
+     vcodcli, vrazao, vcnpj, vtipofj, vendereco, vnumero,
+     vbairro, vcidade, vuf, vcomplemento, vreferencia, vcep,
+     vcodprod, vqtd, vvalor
+from marcosart.pcpedc
+inner join marcosart.pcpedi on
+pcpedi.numped = pcpedc.numped
+inner join (select codcli, cliente, cepent,
+codpraca, pontorefer, complementoent,
+estent, municent, bairroent,
+enderent, numeroent,
+cgcent, tipofj
+from marcosart.pcclient) pcclient on pcclient.codcli = pcpedc.codcli
+inner join (select pcveicul.codveiculo, pcveicul.placa from marcosart.pcveicul) pcveicul on pcveicul.codveiculo = :new.codveiculo
+inner join (select pcpraca.praca, pcpraca.codpraca, pcpraca.rota from marcosart.pcpraca) pcpraca on pcpraca.codpraca = pcclient.codpraca
+inner join (select pcrotaexp.codrota, pcrotaexp.descricao from marcosart.pcrotaexp) pcrotaexp on pcrotaexp.codrota = pcpraca.rota
+where pcpedc.numcar = :new.numcar and PCPEDC.ORIGEMPED IN ('B');
+
+    insert into TR_PEDIDO@DBIMPERIUM
+    (CARGA,
+ PLACA,
+     PEDIDO,
+     TIPO_PEDIDO,
+     COD_PRACA,
+     DSC_PRACA,
+     COD_ROTA,
+     DSC_ROTA,
+     COD_CLIENTE,
+     NOME,
+     CPF_CNPJ,
+     TIPO_PESSOA,
+     LOGRADOURO,
+     NUMERO,
+     BAIRRO,
+     CIDADE,
+     UF,
+     COMPLEMENTO,
+     REFERENCIA,
+     CEP,
+     PRODUTO,
+     GRADE,
+     QTD,
+     VLR_VENDA)
+
+    values
+
+    (:new.numcar,
+     vveiculo,
+     vpedido,
+     '521',
+     vcodpraca,
+     vpraca,
+     vcodrota,
+     vrota,
+     vcodcli,
+     vrazao,
+     vcnpj,
+     vtipofj,
+     vendereco,
+     vnumero,
+     vbairro,
+     vcidade,
+     vuf,
+     vcomplemento,
+     vreferencia,
+     vcep,
+     vcodprod,
+     'UNICA',
+     vqtd,
+     vvalor);
+
+     end if;
+end;
+
+--SAIDA PRODUTOS KIT
+CREATE OR REPLACE TRIGGER WMSIMPERIUM.TRG_IMPERIUM_SAIDA_KIT
+ BEFORE
+ INSERT
+ ON marcosart.PCMOV
+ REFERENCING OLD AS OLD NEW AS NEW
+ FOR EACH ROW
+declare
+
+vcodigo Varchar(2);
+vrazao Varchar(40);
+vcodcli number;
+vcnpj Varchar(14);
+vie Varchar(20);
+vendereco  Varchar(200);
+vbairro  Varchar(100);
+vcidade  Varchar(100);
+vuf Varchar(2);
+vcodpraca number;
+vpraca  Varchar(100);
+vcodrota number;
+vrota Varchar(100);
+vtipofj Varchar(1);
+vnumero Varchar(10);
+vcep varchar(9);
+
+begin
+
+    select
+    pcfilial.codigo,
+    pcfilial.razaosocial,
+    pcfilial.codcli,
+    pcfilial.cgc,
+    pcfilial.ie,
+    pcfilial.endereco,
+    pcfilial.bairro,
+    pcfilial.cidade,
+    pcfilial.UF,
+    pcpraca.codpraca,
+    pcpraca.praca,
+    pcrotaexp.codrota,
+    pcrotaexp.descricao,
+    pcclient.tipofj,
+    pcfilial.numero,
+    pcfilial.cep
+    into
+    vcodigo,
+    vrazao,
+    vcodcli,
+    vcnpj,
+    vie,
+    vendereco,
+    vbairro,
+    vcidade,
+    vuf,
+    vcodpraca,
+    vpraca,
+    vcodrota,
+    vrota,
+    vtipofj,
+    vnumero,
+    vcep
+    from marcosart.pcfilial
+    inner join marcosart.pcclient on
+    pcclient.codcli = pcfilial.codcli
+    inner join marcosart.pcpraca on
+    pcpraca.codpraca = pcclient.codpraca
+    inner join marcosart.pcrotaexp on
+    pcrotaexp.codrota = pcpraca.rota
+    where codigo = :new.codfilial;
+
+
+    if (:new.codoper = 'SP') then
+
+     insert into TR_PEDIDO@DBIMPERIUM
+    (CARGA,
+     PLACA,
+     PEDIDO,
+     TIPO_PEDIDO,
+     COD_PRACA,
+     DSC_PRACA,
+     COD_ROTA,
+     DSC_ROTA,
+     COD_CLIENTE,
+     NOME,
+     CPF_CNPJ,
+     TIPO_PESSOA,
+     LOGRADOURO,
+     NUMERO,
+     BAIRRO,
+     CIDADE,
+     UF,
+     COMPLEMENTO,
+     REFERENCIA,
+     CEP,
+     PRODUTO,
+     GRADE,
+     QTD,
+     VLR_VENDA)
+
+    VALUES
+
+    (:new.numtransvenda,
+     'AAA-0000',
+     :new.numtransvenda,
+     '1',
+     vcodpraca,
+     vpraca,
+     vcodrota,
+     vrota,
+     vcodcli,
+     vrazao,
+     vcnpj,
+     vtipofj,
+     vendereco,
+     vnumero,
+     vbairro,
+     vcidade,
+     vuf,
+     null,
+     null,
+     vcep,
+     :new.codprod,
+     'UNICA',
+     :new.qt,
+     :new.qt * :new.custofin);
+
+
+
+    end if;
+end;
+
+--
+
+
+--ROTINA 1322
+CREATE OR REPLACE TRIGGER WMSIMPERIUM.trg_imperium_simple_remessa
+ BEFORE
+  INSERT
+ ON marcosart.pcmov
+REFERENCING NEW AS NEW OLD AS OLD
+ FOR EACH ROW
+declare
+
+
+
+vcarga          number;
+vpedido         number;
+vcodpraca       number;
+vpraca          varchar(100);
+vcodrota        number;
+vrota           varchar(100);
+vcodcli         number;
+vrazao          varchar(200);
+vcnpj           varchar(20);
+vtipofj         varchar(1);
+vendereco       varchar(200);
+vnumero         varchar(10);
+vbairro         varchar(100);
+vcidade         varchar(100);
+vuf             varchar(2);
+vcomplemento    varchar(200);
+vreferencia     varchar(100);
+vcep            varchar(10);
+vcodprod        number;
+vgrade          varchar(10);
+vqtd            number(15,4);
+vvalor          number(15,2);
+
+
+begin
+
+    if (:new.rotinacad = 'PCSIS1322.EXE') then
+
+
+    select pccli.codcli, pccli.cliente, pccli.cgcent, pccli.tipofj,
+           pccli.enderent, pccli.numeroent, pccli.bairroent, pccli.municent,
+           pccli.estent, pccli.complementoent, pccli.pontorefer, pccli.cepent,
+           pccli.codpraca
+
+           into vcodcli, vrazao, vcnpj, vtipofj, vendereco, vnumero,
+                vbairro, vcidade, vuf, vcomplemento, vreferencia, vcep, vcodpraca
+           from marcosart.pcclient pccli where codcli = :new.codcli;
+
+
+    select pcpraca.codpraca, pcpraca.praca, pcrotaexp.codrota, pcrotaexp.descricao
+           into vcodpraca, vpraca, vcodrota, vrota
+           from marcosart.pcpraca
+           inner join marcosart.pcrotaexp on
+           pcrotaexp.codrota = pcpraca.rota
+           where pcpraca.codpraca = vcodpraca;
+
+
+    insert into TR_PEDIDO@DBIMPERIUM
+    (CARGA,
+     PLACA,
+     PEDIDO,
+     TIPO_PEDIDO,
+     COD_PRACA,
+     DSC_PRACA,
+     COD_ROTA,
+     DSC_ROTA,
+     COD_CLIENTE,
+     NOME,
+     CPF_CNPJ,
+     TIPO_PESSOA,
+     LOGRADOURO,
+     NUMERO,
+     BAIRRO,
+     CIDADE,
+     UF,
+     COMPLEMENTO,
+     REFERENCIA,
+     CEP,
+     PRODUTO,
+     GRADE,
+     QTD,
+     VLR_VENDA)
+
+    values
+
+    (:new.numcar,
+     'AAA0000',
+     :new.numped,
+     '521',
+     vcodpraca,
+     vpraca,
+     vcodrota,
+     vrota,
+     vcodcli,
+     vrazao,
+     vcnpj,
+     vtipofj,
+     vendereco,
+     vnumero,
+     vbairro,
+     vcidade,
+     vuf,
+     vcomplemento,
+     vreferencia,
+     vcep,
+     :new.codprod,
+     'UNICA',
+     :new.qt,
+     :new.punit * :new.qt);
+
+    end if;
+end;

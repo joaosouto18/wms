@@ -193,7 +193,6 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (193, '6.3.0', 'Correção: Parametro para liberar o faturamento de cargas parcialmente finalizadas sem verificar a conferencia do pedido na central de transbordo', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (194, '6.3.1', 'Correção: Integração via consulta de embalagens com dados de cubagem', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (195, '6.3.2', 'Alteração do layout de etiqueta de produtos modelo 4 (Hidraumaquinas) e funcionalidade para imprimir produtos importados de .txt', null, SYSDATE);
-<<<<<<< HEAD
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (196, '6.3.3', 'Correção migração de dados logisticos', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (197, '6.3.4', 'Correção leitura de prefixos de codigos de barras no coletor', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (198, '6.4.0', 'Correção: Exibição de quantidade de itens de notas fiscais para ERP Winthor', null, SYSDATE);
