@@ -230,12 +230,12 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                 $arrayPedidos[] = $pedido;
             }
         }
-        $pedidos = "'".implode(",",$arrayPedidos)."'";
+        $pedidos = "'".implode("','",$arrayPedidos)."'";
 
         $SQL = " SELECT DISTINCT MSP.COD_MAPA_SEPARACAO
                    FROM MAPA_SEPARACAO_PEDIDO MSP
                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
-                  WHERE PP.COD_PEDIDO IN ('$pedidos')";
+                  WHERE PP.COD_PEDIDO IN ($pedidos)";
         $mapas =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $mapaArray = array();

@@ -40,3 +40,5 @@ INSERT INTO PARAMETRO (COD_PARAMETRO, COD_CONTEXTO_PARAMETRO, DSC_PARAMETRO, DSC
   VALUES (SQ_PARAMETRO_01.NEXTVAL, 2, 'COD_INTEGRACAO_NOTAS_FISCAIS_TELA_ENTR', 'Código para integração de Notas Fiscais em tela Recebimento', 'S', 'A', 26);
 
 UPDATE PARAMETRO SET DSC_TITULO_PARAMETRO = 'Código para integração de Notas Fiscais em tela Genérica' WHERE DSC_PARAMETRO = 'COD_INTEGRACAO_NOTAS_FISCAIS';
+
+update acao_integracao set ind_tipo_controle = 'D' where ind_tipo_controle is null;
