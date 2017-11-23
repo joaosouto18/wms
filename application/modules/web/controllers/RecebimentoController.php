@@ -1265,6 +1265,9 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             case 4:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
                 break;
+            case 5:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(120, 70));
+                break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
                 break;
