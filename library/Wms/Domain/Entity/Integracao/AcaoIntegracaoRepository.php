@@ -336,16 +336,16 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
-
-                $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S' WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
-                $words = explode(" ",trim($query));
-                $update = true;
-                if (strtoupper($words[0]) == "SELECT") {
-                    $update = false;
+                if ($sucess=="S") {
+                    $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S' WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
+                    $words = explode(" ",trim($query));
+                    $update = true;
+                    if (strtoupper($words[0]) == "SELECT") {
+                        $update = false;
+                    }
+                    $conexaoEn = $acaoEn->getConexao();
+                    $result = $conexaoRepo->runQuery($query, $conexaoEn, $update);
                 }
-                $conexaoEn = $acaoEn->getConexao();
-                $result = $conexaoRepo->runQuery($query, $conexaoEn, $update);
-
             }
 
             $this->_em->flush();
