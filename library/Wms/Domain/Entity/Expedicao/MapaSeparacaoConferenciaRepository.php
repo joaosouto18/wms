@@ -142,8 +142,8 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                    PROD.DSC_PRODUTO,
                    LS.DSC_LINHA_SEPARACAO,
                    E.DSC_PLACA_EXPEDICAO
-             ORDER BY PROD.COD_PRODUTO";
-
+             ORDER BY P.SEQUENCIA, PROD.COD_PRODUTO";
+        echo $sql;die;
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
