@@ -921,7 +921,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     if (!$isIntegracaoSQL){
                         throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
                     } else {
-                        //entender pq esta retornando false
                         return false;
                     }
                 }
