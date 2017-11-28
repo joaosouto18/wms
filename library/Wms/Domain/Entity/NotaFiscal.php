@@ -144,6 +144,11 @@ class NotaFiscal
      */
     protected $pesoTotal;
 
+    /**
+     * @Column(name="COD_PESSOA", type="integer", nullable=true)
+     */
+    protected $codPessoa;
+
     public function __construct()
     {
         $this->itens = new ArrayCollection;
@@ -336,6 +341,23 @@ class NotaFiscal
     public function setRecebimentoFinalizado($recebimentoFinalizado)
     {
         $this->recebimentoFinalizado = $recebimentoFinalizado;
+    }
+
+
+    /**
+     * @param mixed $codPessoa
+     */
+    public function setCodPessoa($codPessoa)
+    {
+        $this->codPessoa = $codPessoa;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodPessoa()
+    {
+        return $this->codPessoa;
     }
 
 }

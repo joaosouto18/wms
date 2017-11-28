@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\Enderecamento;
 use Doctrine\ORM\EntityRepository,
     Core\Util\Produto as ProdutoUtil,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity,
+    Wms\Domain\Entity\Enderecamento\EstoqueProprietario as EstoqueProprietarioEntity,
     Wms\Util\Endereco as EnderecoUtil;
 
 class EstoqueRepository extends EntityRepository
@@ -197,7 +198,10 @@ class EstoqueRepository extends EntityRepository
         $historico->setProdutoEmbalagem($embalagemEn);
         $historico->setProdutoVolume($volumeEn);
         $em->persist($historico);
-
+        $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+        if($controleProprietario == 'S' && !empty($params['codProprietario'])) {
+            $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->save($produtoEn, $qtd, EstoqueProprietarioEntity::MOVIMENTACAO, $params['codProprietario']);
+        }
         //VERIFICA SE O ENDERECO VAI ESTAR DISPONIVEL OU NÃO PARA ENDEREÇAMENTO
         if ($novaQtd > 0) {
             if ($enderecoEn->getDisponivel() == "S") {

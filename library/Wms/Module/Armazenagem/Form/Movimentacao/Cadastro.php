@@ -12,6 +12,7 @@ class Cadastro extends Form
     {
 
         $normasPaletizacao = $this->getEm()->getRepository('wms:Armazenagem\Unitizador')->getIdValue(true);
+        $proprietario = $this->getEm()->getRepository('wms:Filial')->getIdValue(true);
         $placeholder = Endereco::mascara();
 
         $this
@@ -86,6 +87,11 @@ class Cadastro extends Form
                 'mostrarSelecione' => true,
                 'multiOptions' => $normasPaletizacao,
             ))
+            ->addElement('select', 'codPessoa', array(
+                'label' => 'Proprietário',
+                'mostrarSelecione' => true,
+                'multiOptions' => $proprietario,
+            ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Movimentar',
                 'class' => 'btn',
@@ -130,7 +136,7 @@ class Cadastro extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','embalagens','validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'))
+            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','embalagens','validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'codPessoa','submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'))
             ->addDisplayGroup(array('endereco_origem','ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
 
     }

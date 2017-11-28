@@ -16,6 +16,7 @@ class Enderecamento_MovimentacaoController extends Action
         $data = $this->_getAllParams();
         $transferir = $this->_getParam('transferir');
         $quantidade = str_replace(',','.',$this->_getParam('quantidade'));
+        $this->view->controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
 
         //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
@@ -50,6 +51,7 @@ class Enderecamento_MovimentacaoController extends Action
                     'apto' => $data['apto'],
                     'validade' => str_replace('/', '-', $data['validade']),
                     'quantidade' => $quantidade,
+                    'codProprietario' => $data['codPessoa'],
                     'idNormaPaletizacao' => $data['idNormaPaletizacao']));
             }
         }
@@ -118,6 +120,7 @@ class Enderecamento_MovimentacaoController extends Action
             $params['observacoes'] = 'Movimentação manual';
             $params['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_MOVIMENTACAO;
             $params['unitizador'] = $unitizadorEn;
+            $params['codProprietario'] = $data['codProprietario'];
 
             $params['validade'] = null;
             if ($produtoEn->getValidade() == 'S' ) {

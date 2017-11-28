@@ -168,15 +168,24 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return notaFiscal
      * @throws Exception
      */
-    public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao)
+    public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao, $CNPJProprietario = null)
     {
 
         $idFornecedor = trim($idFornecedor);
+        $CNPJProprietario = trim($CNPJProprietario);
         $numero = trim($numero);
         $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao = trim($dataEmissao);
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
+
+        $controleProprietario = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+        if($controleProprietario == 'S'){
+            $pessoaEn = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($CNPJProprietario);
+            if($pessoaEn == null){
+                throw new \Exception('CNPJ do proprietário não encontrado');
+            }
+        }
 
         $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
         if ($fornecedorEntity == null) {
