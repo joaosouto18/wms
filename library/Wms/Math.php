@@ -9,8 +9,6 @@ Class Math
         $precisaoA = 0;
         $precisaoB = 0;
 
-        var_dump($x);
-        var_dump($y);
         $a = explode('.',$x);
         $b = explode('.',$y);
         if (count($a) > 1) {
