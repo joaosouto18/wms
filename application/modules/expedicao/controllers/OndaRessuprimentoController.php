@@ -100,6 +100,8 @@ class Expedicao_OndaRessuprimentoController extends Action {
 
             if ($result['resultado'] == false) {
                 throw new Exception($result['observacao']);
+            } else {
+                $this->addFlashMessage("success", $result['observacao']);
             }
         } catch (\Exception $e) {
             $this->em->rollback();
