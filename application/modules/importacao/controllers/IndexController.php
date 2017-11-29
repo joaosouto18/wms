@@ -704,6 +704,10 @@ class Importacao_IndexController extends Action
                         $arquivoAtual = $file;
                     }
 
+                    var_dump($tLinhas);
+                    var_dump($cols);
+                    exit;
+
                     if (ucfirst($cabecalho) == 'S') {
                         $this->statusProgress["tLinha"] = $tLinhas - 1;
                     } else {
