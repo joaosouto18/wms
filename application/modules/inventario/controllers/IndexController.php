@@ -152,14 +152,35 @@ class Inventario_IndexController  extends Action
             $filename = "Exp_Inventario_$id($codInvErp).txt";
 
             $file = fopen($filename, 'w');
+            $prodAnterior = null;
+            $gradeAnterior = null;
+            $numContAnterior = null;
+            $endAnterior = null;
+            $inventario = array();
+            $qtdTotal = 0;
             foreach ($produtosInventariados as $item) {
+                if ($item['COD_PRODUTO'] == $prodAnterior && $item['DSC_GRADE'] == $gradeAnterior) {
+                    if ($item['COD_DEPOSITO_ENDERECO'] != $endAnterior) {
+                        $qtdTotal = $qtdTotal + $item['QTD_INV'];
+                        $inventario[$item['COD_PRODUTO']]['QUANTIDADE'] = $qtdTotal;
+                        $inventario[$item['COD_PRODUTO']]['NUM_CONTAGEM'] = $item['NUM_CONTAGEM'];
+
+                    }
+                }
+                $prodAnterior = $item['COD_PRODUTO'];
+                $gradeAnterior = $item['DSC_GRADE'];
+                $endAnterior = $item['COD_DEPOSITO_ENDERECO'];
+            }
+
+            foreach ($inventario as $key => $produto) {
                 $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
-                $txtContagem = $item['NUM_CONTAGEM'];
-                $txtCodProduto = str_pad($item["COD_PRODUTO"], 6, '0', STR_PAD_LEFT);
-                $txtQtd = str_pad($item["QTD_INV"], 8, '0', STR_PAD_LEFT);
+                $txtContagem = $produto['NUM_CONTAGEM'];
+                $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
+                $txtQtd = str_pad($produto["QUANTIDADE"], 8, '0', STR_PAD_LEFT);
                 $linha = "$txtCodInventario"."$txtContagem"."$txtQtd"."$txtCodProduto"."\r\n";
                 fwrite($file, $linha, strlen($linha));
             }
+
             fclose($file);
 
             header("Content-Type: application/force-download");
