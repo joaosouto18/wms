@@ -156,13 +156,18 @@ class Inventario_IndexController  extends Action
 
             $invEnderecosEn = $enderecoRepo->getComContagem($inventarioEn->getId());
             $qtdTotal = 0;
+            $produtoAnterior = null;
             foreach ($invEnderecosEn as $invEnderecoEn) {
                 $contagemEndEnds = $enderecoRepo->getUltimaContagem($invEnderecoEn);
                 foreach ($contagemEndEnds as $contagemEndEn) {
+                    if ($produtoAnterior != $contagemEndEn->getCodProduto())
+                        $qtdTotal = 0;
+                    
                     $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
                     $qtdTotal = $qtdTotal + $qtdContagem;
                     $inventario[$contagemEndEn->getCodProduto()]['QUANTIDADE'] = $qtdTotal;
                     $inventario[$contagemEndEn->getCodProduto()]['NUM_CONTAGEM'] = $contagemEndEn->getNumContagem();
+                    $produtoAnterior = $contagemEndEn->getCodProduto();
                 }
             }
 
