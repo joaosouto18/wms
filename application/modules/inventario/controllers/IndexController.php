@@ -155,8 +155,8 @@ class Inventario_IndexController  extends Action
             $file = fopen($filename, 'w');
 
             $invEnderecosEn = $enderecoRepo->getComContagem($inventarioEn->getId());
+            $qtdTotal = 0;
             foreach ($invEnderecosEn as $invEnderecoEn) {
-                $qtdTotal = 0;
                 $contagemEndEnds = $enderecoRepo->getUltimaContagem($invEnderecoEn);
                 foreach ($contagemEndEnds as $contagemEndEn) {
                     $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
