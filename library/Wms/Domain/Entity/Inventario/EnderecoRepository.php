@@ -15,6 +15,7 @@ class EnderecoRepository extends EntityRepository
     public function save($params)
     {
 
+        var_dump($params); exit;
         if (empty($params['codInventario']) and empty($params['inventarioEn'])) {
             throw new \Exception("O inventário não foi especificado");
         }
