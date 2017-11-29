@@ -181,8 +181,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         $controleProprietario = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         if($controleProprietario == 'S'){
-            $pessoaEn = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($CNPJProprietario);
-            if($pessoaEn == null){
+            $proprietarioEn = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($CNPJProprietario);
+            if($proprietarioEn == null){
                 throw new \Exception('CNPJ do proprietário não encontrado');
             }
         }
@@ -269,7 +269,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return boolean
      * @throws Exception
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario, $codProprietario = null)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -387,7 +387,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
 
             } else {
-                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao);
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao, $codProprietario);
             }
 
             $em->flush();

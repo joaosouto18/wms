@@ -200,7 +200,7 @@ class EstoqueRepository extends EntityRepository
         $em->persist($historico);
         $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         if($controleProprietario == 'S' && !empty($params['codProprietario'])) {
-            $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->save($produtoEn, $qtd, EstoqueProprietarioEntity::MOVIMENTACAO, $params['codProprietario']);
+            $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->save($produtoEn->getId(), $produtoEn->getGrade(), $qtd, EstoqueProprietarioEntity::MOVIMENTACAO, $params['codProprietario']);
         }
         //VERIFICA SE O ENDERECO VAI ESTAR DISPONIVEL OU NÃO PARA ENDEREÇAMENTO
         if ($novaQtd > 0) {

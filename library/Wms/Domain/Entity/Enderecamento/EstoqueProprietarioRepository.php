@@ -11,18 +11,33 @@ use Doctrine\ORM\EntityRepository;
 
 class EstoqueProprietarioRepository extends EntityRepository
 {
-    public function save($produtoEn, $qtd, $operacao, $codPessoa){
+    public function save($codProduto, $grade, $qtd, $operacao, $codPessoa){
         $estoqueProprietario = new EstoqueProprietario();
-        $estoqueProprietario->setCodProduto($produtoEn->getId());
-        $estoqueProprietario->setGrade($produtoEn->getGrade());
+        $estoqueProprietario->setCodProduto($codProduto);
+        $estoqueProprietario->setGrade($grade);
         $estoqueProprietario->setQtd($qtd);
-        $estoqueProprietario->setProduto($produtoEn);
         $estoqueProprietario->setCodPessoa($codPessoa);
         $estoqueProprietario->setOperacao($operacao);
         $estoqueProprietario->setDthOperacao(new \DateTime);
 
         $this->_em->persist($estoqueProprietario);
         $this->_em->flush();
+    }
+
+    public function efetivaEstoquePropRecebimento($idRecebimento){
+        $nfRepository = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+        $nfVetEntity = $nfRepository->findBy(array('recebimento' => $idRecebimento));
+        if(!empty($nfVetEntity)){
+            foreach ($nfVetEntity as $nf){
+                $itemsNF = $nfRepository->getConferencia($nf->getFornecedor()->getId(), $nf->getNumero(), $nf->getSerie(), '', $nf->getStatus()->getId());
+                if(!empty($itemsNF)){
+                    foreach ($itemsNF as $itens){
+                        $this->save($itens['COD_PRODUTO'], $itens['DSC_GRADE'],$itens['QTD_CONFERIDA'], EstoqueProprietario::RECEBIMENTO, $nf->getCodPessoa());
+                    }
+                }
+        var_dump($itemsNF);
+            }
+        }
     }
 
     public function verificaProprietarioExistente($cnpj){
