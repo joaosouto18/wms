@@ -158,18 +158,19 @@ class Inventario_IndexController  extends Action
             $endAnterior = null;
             $inventario = array();
             $qtdTotal = 0;
-            foreach ($produtosInventariados as $item) {
-                if ($item['COD_PRODUTO'] == $prodAnterior && $item['DSC_GRADE'] == $gradeAnterior) {
+            foreach ($produtosInventariados as $key => $item) {
+                if ($key === 0) {
+                    $qtdTotal = $item['QTD_INV'];
+                } else if ($item['COD_PRODUTO'] == $prodAnterior && $item['DSC_GRADE'] == $gradeAnterior) {
                     if ($item['COD_DEPOSITO_ENDERECO'] != $endAnterior) {
                         $qtdTotal = $qtdTotal + $item['QTD_INV'];
                         $inventario[$item['COD_PRODUTO']]['QUANTIDADE'] = $qtdTotal;
                         $inventario[$item['COD_PRODUTO']]['NUM_CONTAGEM'] = $item['NUM_CONTAGEM'];
-
                     }
                 }
-                $prodAnterior = $item['COD_PRODUTO'];
+                $prodAnterior  = $item['COD_PRODUTO'];
                 $gradeAnterior = $item['DSC_GRADE'];
-                $endAnterior = $item['COD_DEPOSITO_ENDERECO'];
+                $endAnterior   = $item['COD_DEPOSITO_ENDERECO'];
             }
 
             foreach ($inventario as $key => $produto) {
