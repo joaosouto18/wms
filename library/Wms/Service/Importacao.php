@@ -899,7 +899,6 @@ class Importacao
                 $codProduto = $saldo->getCodProduto();
                 $grade = $saldo->getGrade();
                 if (!in_array($enderecoEn->getId(), $enderecosSalvos)) {
-                    var_dump($produto['inventarioEn']->getId());
                     $enderecoEn = $invEnderecoRepo->save(array('inventarioEn' => $produto['inventarioEn'], 'depositoEnderecoEn' => $enderecoEn));
                     $enderecosSalvos[] = $enderecoEn->getId();
                 }
@@ -908,7 +907,6 @@ class Importacao
                     $invEndProdRepo->save($codProduto, $grade, $enderecoEn, $saldo->getProduto());
                 }
             }
-            exit;
 
 
             return true;
