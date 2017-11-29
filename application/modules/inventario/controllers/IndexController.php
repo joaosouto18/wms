@@ -141,6 +141,8 @@ class Inventario_IndexController  extends Action
 
             /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $prodContEnd */
             $prodContEnd = $this->_em->getRepository('wms:Inventario\ContagemEndereco');
+            /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
+            $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
 
             $produtosInventariados = $prodContEnd->getProdutosInventariados($id);
 
@@ -150,27 +152,18 @@ class Inventario_IndexController  extends Action
             }
 
             $filename = "Exp_Inventario_$id($codInvErp).txt";
-
             $file = fopen($filename, 'w');
-            $prodAnterior = null;
-            $gradeAnterior = null;
-            $numContAnterior = null;
-            $endAnterior = null;
-            $inventario = array();
-            $qtdTotal = 0;
-            foreach ($produtosInventariados as $key => $item) {
-                if ($key === 0) {
-                    $qtdTotal = $item['QTD_INV'];
-                } else if ($item['COD_PRODUTO'] == $prodAnterior && $item['DSC_GRADE'] == $gradeAnterior) {
-                    if ($item['COD_DEPOSITO_ENDERECO'] != $endAnterior) {
-                        $qtdTotal = $qtdTotal + $item['QTD_INV'];
-                        $inventario[$item['COD_PRODUTO']]['QUANTIDADE'] = $qtdTotal;
-                        $inventario[$item['COD_PRODUTO']]['NUM_CONTAGEM'] = $item['NUM_CONTAGEM'];
-                    }
+
+            $invEnderecosEn = $enderecoRepo->getComContagem($inventarioEn->getId());
+            foreach ($invEnderecosEn as $invEnderecoEn) {
+                $qtdTotal = 0;
+                $contagemEndEnds = $enderecoRepo->getUltimaContagem($invEnderecoEn);
+                foreach ($contagemEndEnds as $contagemEndEn) {
+                    $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
+                    $qtdTotal = $qtdTotal + $qtdContagem;
+                    $inventario[$contagemEndEn->getCodProduto()]['QUANTIDADE'] = $qtdTotal;
+                    $inventario[$contagemEndEn->getCodProduto()]['NUM_CONTAGEM'] = $contagemEndEn->getNumContagem();
                 }
-                $prodAnterior  = $item['COD_PRODUTO'];
-                $gradeAnterior = $item['DSC_GRADE'];
-                $endAnterior   = $item['COD_DEPOSITO_ENDERECO'];
             }
 
             foreach ($inventario as $key => $produto) {
