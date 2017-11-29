@@ -164,19 +164,4 @@ class ContagemEnderecoRepository extends EntityRepository
 
     }
 
-    public function getProdutosInventariados($id)
-    {
-
-        $status = Inventario::STATUS_FINALIZADO;
-
-        $sql = "SELECT ICE.NUM_CONTAGEM, SUM(ICE.QTD_CONTADA) QTD_INV, IE.COD_DEPOSITO_ENDERECO, ICE.COD_PRODUTO, ICE.DSC_GRADE, 0 AS COD_BARRAS
-                FROM INVENTARIO_CONTAGEM_ENDERECO ICE 
-                INNER JOIN INVENTARIO_ENDERECO IE ON IE.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
-                INNER JOIN INVENTARIO I ON IE.COD_INVENTARIO = I.COD_INVENTARIO
-                WHERE I.COD_INVENTARIO = $id AND I.COD_STATUS = $status
-                GROUP BY ICE.NUM_CONTAGEM, IE.COD_DEPOSITO_ENDERECO, ICE.COD_PRODUTO, ICE.DSC_GRADE
-                ORDER BY ICE.COD_PRODUTO, ICE.DSC_GRADE, IE.COD_DEPOSITO_ENDERECO, ICE.NUM_CONTAGEM DESC";
-
-        return $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-    }
 }

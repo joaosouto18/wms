@@ -139,12 +139,10 @@ class Inventario_IndexController  extends Action
             /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
             $inventarioEn = $this->em->find('wms:Inventario', $id);
 
-            /** @var \Wms\Domain\Entity\Inventario\ContagemEnderecoRepository $prodContEnd */
-            $prodContEnd = $this->_em->getRepository('wms:Inventario\ContagemEndereco');
             /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
-
-            $produtosInventariados = $prodContEnd->getProdutosInventariados($id);
+            /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+            $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
             $codInvErp = $inventarioEn->getCodInventarioERP();
             if (empty($codInvErp)){
@@ -157,26 +155,32 @@ class Inventario_IndexController  extends Action
             $invEnderecosEn = $enderecoRepo->getComContagem($inventarioEn->getId());
             $qtdTotal = 0;
             $produtoAnterior = null;
+            $inventario = array();
             foreach ($invEnderecosEn as $invEnderecoEn) {
                 $contagemEndEnds = $enderecoRepo->getUltimaContagem($invEnderecoEn);
                 foreach ($contagemEndEnds as $contagemEndEn) {
+                    $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()), array('quantidade' => 'ASC'));
                     if ($produtoAnterior != $contagemEndEn->getCodProduto())
                         $qtdTotal = 0;
-                    
+
+
                     $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
                     $qtdTotal = $qtdTotal + $qtdContagem;
                     $inventario[$contagemEndEn->getCodProduto()]['QUANTIDADE'] = $qtdTotal;
                     $inventario[$contagemEndEn->getCodProduto()]['NUM_CONTAGEM'] = $contagemEndEn->getNumContagem();
+                    $inventario[$contagemEndEn->getCodProduto()]['COD_BARRAS'] = $embalagemEntity[0]->getCodigoBarras();
                     $produtoAnterior = $contagemEndEn->getCodProduto();
                 }
             }
 
             foreach ($inventario as $key => $produto) {
                 $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
-                $txtContagem = $produto['NUM_CONTAGEM'];
-                $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
-                $txtQtd = str_pad($produto["QUANTIDADE"], 8, '0', STR_PAD_LEFT);
-                $linha = "$txtCodInventario"."$txtContagem"."$txtQtd"."$txtCodProduto"."\r\n";
+                $txtContagem = '001';
+                $txtLocal = '001';
+                $txtCodBarras = str_pad($produto['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
+                $txtQtd = str_pad(number_format($produto["QUANTIDADE"],3,'',''), 10, '0', STR_PAD_LEFT);
+                $txtCodProduto = str_pad($key, 7, '0', STR_PAD_LEFT);
+                $linha = "$txtCodInventario"."$txtContagem"."$txtLocal"."$txtCodBarras"."$txtQtd"."$txtCodProduto"."\r\n";
                 fwrite($file, $linha, strlen($linha));
             }
 
