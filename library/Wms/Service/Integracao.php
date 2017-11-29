@@ -151,13 +151,15 @@ class Integracao {
         $maxDate = null;
         foreach ($this->_dados as $row) {
 
-            $data = \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']);
-            $data = $data->format('Y-m-d H:i:s');
-            if ($maxDate == null) {
-                $maxDate = $data;
-            }
-            if (strtotime($data) > strtotime($maxDate)) {
-                $maxDate = $data;
+            if(isset($row['DTH'])) {
+                $data = \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']);
+                $data = $data->format('Y-m-d H:i:s');
+                if ($maxDate == null) {
+                    $maxDate = $data;
+                }
+                if (strtotime($data) > strtotime($maxDate)) {
+                    $maxDate = $data;
+                }
             }
         }
         if (!is_null($maxDate))
@@ -654,7 +656,10 @@ class Integracao {
         $acaoIntegracaoRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracao');
         $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
         $idIntegracao = $parametroRepo->findOneBy(array('constante' => 'ID_INTEGRACAO_PRODUTOS'));
-        $acaoEn = $acaoIntegracaoRepo->find($idIntegracao->getValor());
+        $acaoEn = null;
+        if (isset($idIntegracao) and !is_null($idIntegracao->getValor()))
+            $acaoEn = $acaoIntegracaoRepo->find($idIntegracao->getValor());
+
         $produtos = implode(',', $idProdutos);
         if ($produtos == "")
             $produtos = "0";
@@ -867,11 +872,11 @@ class Integracao {
                     $nf->setNumNF($row['NUM_NOTA_FISCAL']);
                     $nf->setCodProduto($row['COD_PRODUTO']);
                     $nf->setSerieNF($row['COD_SERIE_NOTA_FISCAL']);
-                    $nf->setDthEmissao(\DateTime::createFromFormat('d/m/Y', $row['DAT_EMISSAO']));
+                    $nf->setDthEmissao(new \DateTime());
                     $nf->setVeiculo($row['DSC_PLACA_VEICULO']);
                     $nf->setQtdItem(str_replace(",", ".", $row['QTD_ITEM']));
                     $nf->setVlrTotal(str_replace(",", ".", $row['VALOR_TOTAL']));
-                    $nf->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
+                    $nf->setDth(new \DateTime());
                     $this->_em->persist($nf);
                     break;
                 case AcaoIntegracao::INTEGRACAO_PEDIDOS:

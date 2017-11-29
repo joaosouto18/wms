@@ -41,7 +41,7 @@ class EtiquetaEndereco extends Pdf
             $codBarras = utf8_decode($endereco['DESCRICAO']);
             switch ((int)$modelo) {
                 case 1:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,true);
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
                     if (count($produtos) <= 0){
                         $this->layoutModelo1(null,$codBarras);
                     } else {
@@ -145,8 +145,14 @@ class EtiquetaEndereco extends Pdf
 
                     break;
                 default:
-                    $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
-                    $this->layoutModelo1($produto,$codBarras);
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras, false);
+                    if (count($produtos) <= 0){
+                        $this->layoutModelo1($produto,$codBarras);
+                    } else {
+                        foreach ($produtos as $produto){
+                            $this->layoutModelo1($produto,$codBarras);
+                        }
+                    }
                     break;
             }
         }

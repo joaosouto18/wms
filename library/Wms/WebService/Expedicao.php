@@ -457,14 +457,35 @@ class Wms_WebService_Expedicao extends Wms_WebService
         /** @var \Wms\Domain\Entity\Sistema\ParametroRepository $parametroRepo */
         $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
         $parametroEntity = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
+        $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
+
 
         try {
             $this->_em->beginTransaction();
 
+            $ppCortados = array();
             foreach ($produtosCortados as $corte) {
                 $grade = ($parametroEntity->getValor() == 'N') ? 'UNICA' : trim($corte->grade);
                 $ppRepo->cortaItem($idPedido, $corte->codProduto, $grade, $corte->quantidadeCortada, $corte->motivoCorte);
+                $ppCortados[$corte->codProduto][$grade] = $corte->quantidadeCortada;
             }
+            $ppExistentes = $ppRepo->findBy(array('pedido' => $idPedido));
+            $pedidoCortado = false;
+            foreach ($ppExistentes as $item) {
+                if (array_key_exists($item->getCodProduto(), $ppCortados)) {
+                    if (array_key_exists($item->getGrade(), $ppCortados[$item->getCodProduto()])) {
+                        if ($item->getQuantidade() == $ppCortados[$item->getCodProduto()][$item->getGrade()]) {
+                            $pedidoCortado = true;
+                            continue;
+                        }
+                    }
+                }
+                $pedidoCortado = false;
+                break;
+            }
+            if ($pedidoCortado)
+                $pedidoRepository->cancelar($idPedido);
 
             $this->_em->flush();
             $this->_em->commit();

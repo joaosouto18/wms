@@ -172,7 +172,7 @@ class AcaoIntegracaoRepository extends EntityRepository
     public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null, $filtro = AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
-        $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+        $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltroRepository $acaoFiltroRepo */
         $acaoFiltroRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracaoFiltro');
         $idAcao = $acaoEn->getId();
@@ -322,7 +322,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             }
 
-            if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) ) {
+
+            if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
                 /*
                  * Se estiver salvando os dados ja nas tabelas de produção, atualizo a data da ultima execução indicando que a operação foi finalizada para aquela data
                  * Caso estja salvando em tabelas temporarias (com o fim de listagem e validação), a data da ultima execução não deve ser alterada dois a operação ainda não foi concluida
@@ -333,6 +334,13 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $acaoEn->setDthUltimaExecucao($maxDate);
                         $this->_em->persist($acaoEn);
                     }
+                }
+            } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+                if ($sucess=="S") {
+                    $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S' WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
+                    $update = true;
+                    $conexaoEn = $acaoEn->getConexao();
+                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
                 }
             }
 

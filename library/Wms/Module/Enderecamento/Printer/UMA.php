@@ -96,6 +96,8 @@ class UMA extends Pdf {
             $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
         }
 
+        if (empty($produtoEn)) throw new \Exception("Produto de cógio $codProduto e grade $grade não foi encontrado!");
+
         $this->layout($params['paletes'], $produtoEn, $modelo, $params);
         $this->Output('UMA-' . $idRecebimento . '-' . $codProduto . '.pdf', 'D');
     }
@@ -118,7 +120,7 @@ class UMA extends Pdf {
             $PaleteProdutoEntity = $PaleteProdutoRepository->findOneBy(array('uma' => $palete['idUma']));
 
             $picking = null;
-            if (isset($PaleteProdutoEntity)) {
+            if (!empty($PaleteProdutoEntity)) {
                 $produtoEn = $PaleteProdutoEntity->getProduto();
                 $dataValidade = $PaleteProdutoEntity->getValidade();
                 if (!is_null($dataValidade)) {

@@ -1176,7 +1176,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->view->form = $filtroNotaFiscalForm;
 
         //INTEGRAR NOTAS FISCAIS NO MOMENTO Q ENTRAR NA TELA DE GERAR RECEBIMENTO
-        $codAcaoIntegracao = $this->getSystemParameterValue('COD_INTEGRACAO_NOTAS_FISCAIS');
+        $codAcaoIntegracao = $this->getSystemParameterValue('COD_INTEGRACAO_NOTAS_FISCAIS_TELA_ENTR');
 
         if (isset($codAcaoIntegracao) && !empty($codAcaoIntegracao)) {
             $explodeIntegracoes = explode(',',$codAcaoIntegracao);
@@ -1185,7 +1185,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $acaoIntegracaoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
             foreach ($explodeIntegracoes as $codIntegracao) {
                 $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
-                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity);
+                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity,null,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
             }
         }
 
@@ -1264,6 +1264,9 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 break;
             case 4:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
+                break;
+            case 5:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(120, 70));
                 break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));

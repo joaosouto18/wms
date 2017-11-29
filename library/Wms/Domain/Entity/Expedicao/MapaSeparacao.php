@@ -9,12 +9,11 @@ namespace Wms\Domain\Entity\Expedicao;
  */
 class MapaSeparacao
 {
-
+//     * @GeneratedValue(strategy="SEQUENCE")
+//     * @SequenceGenerator(sequenceName="SQ_MAPA_SEPARACAO_01", initialValue=1, allocationSize=1)
     /**
      * @Id
-     * @GeneratedValue(strategy="SEQUENCE")
      * @Column(name="COD_MAPA_SEPARACAO", type="integer", nullable=false)
-     * @SequenceGenerator(sequenceName="SQ_MAPA_SEPARACAO_01", initialValue=1, allocationSize=1)
      */
     protected $id;
 
@@ -49,6 +48,11 @@ class MapaSeparacao
      * @Column(name="DSC_QUEBRA", type="string", nullable=false)
      */
     protected $dscQuebra;
+
+    public function __construct($id)
+    {
+        $this->id = $id;
+    }
 
     /**
      * @param mixed $codStatus
