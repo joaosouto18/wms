@@ -42,7 +42,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $expedicoes = $this->_getParam("expedicoes");
 
         $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
-        $this->exportPDF($verificaDisponibilidadeEstoquePedido, 'sem-estoque', 'Produtos sem estoque', 'P');
+        $this->exportPDF($verificaDisponibilidadeEstoquePedido, 'sem-estoque', 'Produtos sem estoque', 'L');
     }
 
     public function gerarAction() {
