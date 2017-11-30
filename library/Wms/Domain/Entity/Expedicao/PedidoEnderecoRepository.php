@@ -23,7 +23,6 @@ class PedidoEnderecoRepository extends EntityRepository
                 throw new \Exception('Sigla para estado inválida');
             }
             $enPedidoEndereco->setCodPedido($pedidoEntity->getId());
-            //LINHA COMENTADA POR RODRIGO PQ NA WILSO SÓ FUNCIONOU DESSA MANEIRA
             $enPedidoEndereco->setPedido($pedidoEntity);
             $enPedidoEndereco->setIdTipo(\Wms\Domain\Entity\Pessoa\Endereco\Tipo::ENTREGA);
             $enPedidoEndereco->setUf($entitySigla);
