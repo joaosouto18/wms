@@ -49,7 +49,7 @@ class Mobile_IndexController  extends Action
             ),
             11 => array(
                 'url' => '/mobile/index/separacao-pulmao-doca-ajax',
-                'label' => 'SEPARAÇÃO PULMAO DOCA'
+                'label' => 'SEPARAÇÃO PULMÃO DOCA'
             )
 
 
