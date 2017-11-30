@@ -49,7 +49,7 @@ class Mobile_IndexController  extends Action
             ),
             11 => array(
                 'url' => '/mobile/index/separacao-pulmao-doca-ajax',
-                'label' => 'SEPARACAO PULMAO DOCA'
+                'label' => 'SEPARAÇÃO PULMAO DOCA'
             )
 
 
@@ -113,7 +113,7 @@ class Mobile_IndexController  extends Action
         $expedicao = $this->_getParam('expedicao');
         $codEndereco = $this->_getParam('endereco');
         $etiquetaSeparacaoRepo = $this->em->getRepository("wms:Expedicao\EtiquetaSeparacao");
-        $etiquetas = $etiquetaSeparacaoRepo->getProdutoByEtiqueta($codEndereco, $expedicao);
+        $etiquetas = $etiquetaSeparacaoRepo->getProdutoByEtiquetaConfir($codEndereco, $expedicao);
         foreach ($etiquetas as $etiqueta) {
             $etiquetaEn = $etiquetaSeparacaoRepo->find($etiqueta['COD_ETIQUETA_SEPARACAO']);
             $etiquetaEn->setDthSeparacao(new \DateTime());
