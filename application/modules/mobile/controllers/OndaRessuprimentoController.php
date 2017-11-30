@@ -14,18 +14,20 @@ class Mobile_OndaRessuprimentoController extends Action
         $html = '
             <div class="row pull-right" >
          <a  class="btn" style="width: auto;float: none; margin: 0px 0px 6px 0px" href="/mobile/onda-ressuprimento/filtrar" title="filtrar" >Filtrar Produto</a>
+         <a  class="btn" style="width: auto;float: none; margin: 0px 0px 6px 0px" href="/mobile/onda-ressuprimento/filtrar/expedicao/1" title="filtrar" >Filtrar Expedicao</a>
         </div>';
 
-        if ($this->_getParam('codProduto') != null) {
+        if ($this->_getParam('codProduto') != null || $this->_getParam('expedicao') != null) {
             $codProduto = $this->_getParam('codProduto');
             $grade = $this->_getParam('grade');
             $html .= '
          <a  class="finalizar" href="/mobile/onda-ressuprimento/listar-ondas/" style="background-image: -moz-linear-gradient(center top , #e5c062, #e5c062); border: 1px solid #e5c062; float: none; margin: 0px 0px 0px 0px" href="teste" title="Filtrar" >Mostrar Todas</a>
         ';
         }
+        $expedicao = $this->_getParam('expedicao');
         /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
         $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
-        $ondas = $ondaRepo->getOndasEmAberto($codProduto,$grade);
+        $ondas = $ondaRepo->getOndasEmAberto($codProduto,$grade, null, $expedicao);
 
         $menu = array();
         $enderecoAnterior = null;
@@ -53,12 +55,20 @@ class Mobile_OndaRessuprimentoController extends Action
         $form = new PickingLeitura();
         $form->setControllerUrl("onda-ressuprimento");
         $form->setActionUrl("filtrar");
-        $form->setLabel("Busca de Produto/Picking");
-        $form->setLabelElement("Código de Barras ou Código do Produto");
+        $expedicao = $this->_getParam('expedicao');
+        if($expedicao == 1){
+            $form->setLabel("Busca de Expedicao");
+            $form->setLabelElement("Código da Expedicao");
+        }else {
+            $form->setLabel("Busca de Produto/Picking");
+            $form->setLabelElement("Código de Barras ou Código do Produto");
+        }
 
         $codigoBarras = $this->_getParam('codigoBarras');
         if ($codigoBarras != NULL) {
-
+            if($expedicao == 1){
+                $this->redirect("listar-ondas",'onda-ressuprimento','mobile',array('expedicao'=>$codigoBarras));
+            }
             //VERIFICA SE FOI DIGITADO O CÓDIGO DE UM PRODUTO
             $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
             $produtoEn = $produtoRepo->findOneBy(array('id'=>$codigoBarras));
