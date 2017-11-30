@@ -272,7 +272,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                     ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = MSP.COD_PRODUTO
                   LEFT JOIN (SELECT PP.COD_PRODUTO, PP.DSC_GRADE, SUM(PP.QTD_CORTADA) as CORTE
                                FROM PEDIDO_PRODUTO PP
-                              WHERE PP.COD_PEDIDO IN ('$pedidos')
+                              WHERE PP.COD_PEDIDO IN ($pedidos)
                                GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) C ON C.COD_PRODUTO = MSP.COD_PRODUTO AND C.DSC_GRADE = MSP.DSC_GRADE
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = MSP.COD_PRODUTO AND PROD.DSC_GRADE = MSP.DSC_GRADE
                  WHERE 1 = 1 $whereMapas
