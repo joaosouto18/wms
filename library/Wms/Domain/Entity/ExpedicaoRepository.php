@@ -3841,7 +3841,7 @@ class ExpedicaoRepository extends EntityRepository {
         $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA;
         $SQL = "SELECT DISTINCT E.COD_EXPEDICAO FROM 
                 EXPEDICAO E INNER JOIN RESERVA_ESTOQUE_EXPEDICAO RE ON RE.COD_EXPEDICAO = E.COD_EXPEDICAO 
-                WHERE RE.TIPO_SAIDA = $tipoSaida AND E.COD_STATUS IN(463, 464)";
+                WHERE RE.TIPO_SAIDA = $tipoSaida AND E.COD_STATUS IN(463, 464) ORDER BY E.COD_EXPEDICAO";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
