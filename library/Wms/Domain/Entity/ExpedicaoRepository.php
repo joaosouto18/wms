@@ -3851,8 +3851,8 @@ class ExpedicaoRepository extends EntityRepository {
                 INNER JOIN ETIQUETA_MAE EM ON ES.COD_ETIQUETA_MAE = EM.COD_ETIQUETA_MAE
                 INNER JOIN DEPOSITO_ENDERECO DE ON ES.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                 INNER JOIN ETIQUETA_SEPARACAO ES ON ES.COD_ETIQUETA_MAE = EM.COD_ETIQUETA_MAE
-                WHERE EM.COD_EXPEDICAO = $codExpedicao AND ES.DTH_SEPARACAO IS NULL";
-//                 AND ES.TIPO_SAIDA = $tipoSaida";
+                WHERE EM.COD_EXPEDICAO = $codExpedicao AND ES.DTH_SEPARACAO IS NULL AND ES.TIPO_SAIDA = $tipoSaida";
+//                 ";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
