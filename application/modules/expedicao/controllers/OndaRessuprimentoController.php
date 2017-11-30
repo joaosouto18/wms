@@ -40,7 +40,11 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $expedicoes = $this->_getParam("expedicoes");
 
-        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes, true);
+        $sessao = new \Zend_Session_Namespace('deposito');
+        $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+        $central = $deposito->getFilial()->getCodExterno();
+
+        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes, $central, true);
         $this->exportPDF($verificaDisponibilidadeEstoquePedido, 'sem-estoque', 'Produtos sem estoque', 'P');
     }
 
