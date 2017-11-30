@@ -652,173 +652,190 @@ class ExpedicaoRepository extends EntityRepository {
         $estoquePulmao = null;
         $enderecos = array();
         $idEndereco = null;
+        $enderecoPulmaoAutal = null;
+        $idsElementos = array();
+        $embalagem = null;
+        $volume = null;
 
-        foreach($elementosArr as $key => $elemento) {
+        $elemento = reset($elementosArr);
 
-            // Só vai forçar a sair do picking quando a saida direta no pulmão não for possível por:
-            // critério de validade
-            // ou quantidade insuficiente
-            $forcarSairDoPicking = false;
+        // Só vai forçar a sair do picking quando a saida direta no pulmão não for possível por:
+        // critério de validade
+        // ou quantidade insuficiente
+        $forcarSairDoPicking = false;
 
-            $qtdRestante = $qtdBase;
-            /** @var Endereco $enderecoPicking */
-            $enderecoPicking = $elemento['pickingEn'];
-            $normaPD = $elemento['normaPD'];
+        $qtdRestante = $qtdBase;
+        /** @var Endereco $enderecoPicking */
+        $enderecoPicking = $elemento['pickingEn'];
+        $normaPD = $elemento['normaPD'];
+        $idElemento = null;
 
-            if ($caracteristica == "EMBALAGEM") {
-                /** @var Embalagem $embalagem */
-                $embalagem = $elemento['embalagemEn'];
-                $idElemento = $embalagem->getId();
-            } else {
-                /** @var Volume $volume */
-                $volume = $elemento['volumeEn'];
-                $idElemento = $volume->getId();
+        if ($caracteristica == "EMBALAGEM") {
+            /** @var Embalagem $embalagem */
+            $embalagem = $elemento['embalagemEn'];
+            $idElemento = $embalagem->getId();
+            $idsElementos[] = $idElemento;
+        } else {
+            foreach ($elementosArr as $elemento) {
+                if (empty($idElemento)) {
+                    /** @var Volume $volume */
+                    $volume = $elemento['volumeEn'];
+                    $idElemento = $volume->getId();
+                }
+                $idsElementos[] = $elemento['volumeEn']->getId();
             }
+        }
 
-            if ($quebra != $naoUsaPD || ($quebra == $naoUsaPD && empty($enderecoPicking))) {
-                // Separação no estoque que não é o próprio picking do produto.
-                $params = array(
-                    'idProduto' => $codProduto,
-                    'grade' => $dscGrade,
-                    'idVolume' => (empty($volume)) ? null : $volume->getId(),
-                    'idEnderecoIgnorar' => (!empty($enderecoPicking))? $enderecoPicking->getId() : null
-                );
-                $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
+        if ($quebra != $naoUsaPD || ($quebra == $naoUsaPD && empty($enderecoPicking))) {
+            // Separação no estoque que não é o próprio picking do produto.
+            $params = array(
+                'idProduto' => $codProduto,
+                'grade' => $dscGrade,
+                'idVolume' => (empty($volume)) ? null : $volume->getId(),
+                'idEnderecoIgnorar' => (!empty($enderecoPicking))? $enderecoPicking->getId() : null
+            );
+            $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
 
-                while ($qtdRestante > 0) {
-                    if (empty($estoquePulmao)) {
-                        $forcarSairDoPicking = true;
-                        break;
-                    } else {
-                        foreach ($estoquePulmao as $estoque) {
-                            $qtdEstoque = $estoque['SALDO'];
-                            $idEndereco = $estoque['COD_DEPOSITO_ENDERECO'];
-                            $zerouEstoque = false;
-                            $saiuQtdNorma = false;
-                            $nextEndereco = false;
+            while ($qtdRestante > 0) {
+                if (empty($estoquePulmao)) {
+                    $forcarSairDoPicking = true;
+                    break;
+                } else {
+                    foreach ($estoquePulmao as $estoque) {
+                        $qtdEstoque = $estoque['SALDO'];
+                        $idEndereco = $estoque['COD_DEPOSITO_ENDERECO'];
+                        $zerouEstoque = false;
+                        $saiuQtdNorma = false;
+                        $nextEndereco = false;
 
-                            if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$idElemento])) {
-                                $reserva = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$idElemento];
-                                if ($reserva['estoqueReservado']) {
-                                    $nextEndereco = true;
-                                } else {
-                                    $qtdEstoque = Math::subtrair($qtdEstoque, $reserva['qtdReservada']);
+                        if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$idElemento])) {
+                            $reserva = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$idElemento];
+                            if ($reserva['estoqueReservado']) {
+                                $nextEndereco = true;
+                            } else {
+                                $qtdEstoque = Math::subtrair($qtdEstoque, $reserva['qtdReservada']);
+                            }
+                        }
+
+                        if ($nextEndereco) {
+                            if ($estoque == end($estoquePulmao)) $forcarSairDoPicking = true;
+                            continue;
+                        }
+                        $qtdReservar = 0;
+
+                        if (Math::compare($qtdRestante, $qtdEstoque, ">=")) {
+                            $qtdReservar = $qtdEstoque;
+                            $zerouEstoque = true;
+                        } else {
+                            if (($quebra != $naoUsaPD) && !empty($normaPD)
+                                && Math::compare($qtdRestante, $normaPD, ">=")
+                                && Math::compare($normaPD, $qtdEstoque, "<")) {
+                                $restoNormaPedido = Math::resto($qtdRestante, $normaPD);
+                                $fatorNormaPedido = Math::dividir(Math::subtrair($qtdRestante, $restoNormaPedido), $normaPD);
+                                $xNorma = Math::multiplicar($fatorNormaPedido, $normaPD);
+                                if (Math::compare($xNorma, $qtdEstoque, "<")) {
+                                    $qtdReservar = $xNorma;
+                                    $saiuQtdNorma = true;
                                 }
-                            }
-
-                            if ($nextEndereco) {
-                                if ($estoque == end($estoquePulmao)) $forcarSairDoPicking = true;
-                                continue;
-                            }
-
-                            if (Math::compare($qtdRestante, $qtdEstoque, ">=")) {
-                                $qtdReservar = $qtdEstoque;
-                                $zerouEstoque = true;
+                            } elseif (($quebra != $naoUsaPD) && !empty($enderecoPicking)) {
+                                $forcarSairDoPicking = true;
+                                break;
                             } else {
-                                if (($quebra != $naoUsaPD) && !empty($normaPD)
-                                    && Math::compare($qtdRestante, $normaPD, ">=")
-                                    && Math::compare($normaPD, $qtdEstoque, "<")) {
-                                    $restoNormaPedido = Math::resto($qtdRestante, $normaPD);
-                                    $fatorNormaPedido = Math::dividir(Math::subtrair($qtdRestante, $restoNormaPedido), $normaPD);
-                                    $xNorma = Math::multiplicar($fatorNormaPedido, $normaPD);
-                                    if (Math::compare($xNorma, $qtdEstoque, "<")) {
-                                        $qtdReservar = $xNorma;
-                                        $saiuQtdNorma = true;
-                                    }
-                                } elseif (($quebra != $naoUsaPD) && !empty($enderecoPicking)) {
-                                    $forcarSairDoPicking = true;
-                                    break;
+                                $qtdReservar = $qtdRestante;
+                            }
+                        }
+
+                        foreach ($idsElementos as $id) {
+                            if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$id]['qtdReservada'])) {
+                                $qtdReservadaAtual = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$id]['qtdReservada'];
+                                $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$id]['qtdReservada'] = Math::adicionar($qtdReservadaAtual, $qtdReservar);
+                            } else {
+                                $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$id]['qtdReservada'] = $qtdReservar;
+                            }
+                            $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$id]['estoqueReservado'] = $zerouEstoque;
+                        }
+
+                        if (($quebra != $naoUsaPD) && ($zerouEstoque || $saiuQtdNorma)) {
+                            $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA;
+                        } else {
+                            $tipoSaida = ReservaEstoqueExpedicao::SAIDA_SEPARACAO_AEREA;
+                        }
+
+                        $qtdRestante = Math::subtrair($qtdRestante, $qtdReservar);
+
+                        foreach ($pedidos as $codPedido => $qtdItenPedido) {
+                            if ($qtdReservar > 0) {
+                                $qtdAtendida = (isset($elemento[$codPedido])) ? $elemento[$codPedido]['atendida'] : 0;
+                                if ($qtdAtendida == $qtdItenPedido['qtd']) {
+                                    continue;
                                 } else {
-                                    $qtdReservar = $qtdRestante;
+                                    $qtdPendente = Math::subtrair($qtdItenPedido['qtd'], $qtdAtendida);
                                 }
-                            }
 
-                            if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$idElemento]['qtdReservada'])) {
-                                $qtdReservadaAtual = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$idElemento]['qtdReservada'];
-                                $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$idElemento]['qtdReservada'] = Math::adicionar($qtdReservadaAtual, $qtdReservar);
-                            } else {
-                                $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$idElemento]['qtdReservada'] = $qtdReservar;
-                            }
-                            $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$caracteristica][$idElemento]['estoqueReservado'] = $zerouEstoque;
+                                if (Math::compare($qtdReservar, $qtdPendente, ">=")) {
+                                    $qtdReservada = $qtdPendente;
+                                } else {
+                                    $qtdReservada = $qtdReservar;
+                                }
 
-                            if (($quebra != $naoUsaPD) && ($zerouEstoque || $saiuQtdNorma)) {
-                                $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA;
-                            } else {
-                                $tipoSaida = ReservaEstoqueExpedicao::SAIDA_SEPARACAO_AEREA;
-                            }
-
-                            $qtdRestante = Math::subtrair($qtdRestante, $qtdReservar);
-
-                            foreach ($pedidos as $codPedido => $qtdItenPedido) {
-                                if ($qtdReservar > 0) {
-                                    $qtdAtendida = (isset($elemento[$codPedido])) ? $elemento[$codPedido]['atendida'] : 0;
-                                    if ($qtdAtendida == $qtdItenPedido['qtd']) {
-                                        continue;
-                                    } else {
-                                        $qtdPendente = Math::subtrair($qtdItenPedido['qtd'], $qtdAtendida);
-                                    }
-
-                                    if (Math::compare($qtdReservar, $qtdPendente, ">=")) {
-                                        $qtdReservada = $qtdPendente;
-                                    } else {
-                                        $qtdReservada = $qtdReservar;
-                                    }
-
-                                    $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$idElemento] = array(
-                                        'codProdutoEmbalagem' => (!empty($embalagem)) ? $embalagem->getId() : null,
-                                        'codProdutoVolume' => (!empty($volume)) ? $volume->getId() : null,
+                                foreach($idsElementos as $id) {
+                                    $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id] = array(
+                                        'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
+                                        'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
                                         'codProduto' => $codProduto,
                                         'grade' => $dscGrade,
                                         'qtd' => $qtdReservada
                                     );
-
-                                    $elemento[$codPedido]['atendida'] = Math::adicionar($qtdAtendida, $qtdReservada);
-                                    $qtdReservar = Math::subtrair($qtdReservar, $qtdReservada);
-                                } else {
-                                    break;
                                 }
+
+                                $elemento[$codPedido]['atendida'] = Math::adicionar($qtdAtendida, $qtdReservada);
+                                $qtdReservar = Math::subtrair($qtdReservar, $qtdReservada);
+                            } else {
+                                break;
                             }
-                            if ($qtdRestante == 0) break;
                         }
-                        if ($forcarSairDoPicking) break;
+                        if ($qtdRestante == 0) break;
                     }
+                    if ($forcarSairDoPicking) break;
                 }
-            } else {
-                $forcarSairDoPicking = true;
             }
+        } else {
+            $forcarSairDoPicking = true;
+        }
 
-            if ($forcarSairDoPicking) {
-                foreach ($pedidos as $codPedido => $qtdItenPedido) {
-                    if ($qtdRestante > 0) {
-                        $qtdAtendida = (isset($elemento[$codPedido])) ? $elemento[$codPedido]['atendida'] : 0;
-                        if ($qtdAtendida == $qtdItenPedido['qtd']) {
-                            continue;
-                        } else {
-                            $qtdPendente = Math::subtrair($qtdItenPedido['qtd'], $qtdAtendida);
-                        }
+        if ($forcarSairDoPicking) {
+            foreach ($pedidos as $codPedido => $qtdItenPedido) {
+                if ($qtdRestante > 0) {
+                    $qtdAtendida = (isset($elemento[$codPedido])) ? $elemento[$codPedido]['atendida'] : 0;
+                    if ($qtdAtendida == $qtdItenPedido['qtd']) {
+                        continue;
+                    } else {
+                        $qtdPendente = Math::subtrair($qtdItenPedido['qtd'], $qtdAtendida);
+                    }
 
-                        if (Math::compare($qtdRestante, $qtdPendente, ">=")) {
-                            $qtdReservada = $qtdPendente;
-                        } else {
-                            $qtdReservada = $qtdRestante;
-                        }
+                    if (Math::compare($qtdRestante, $qtdPendente, ">=")) {
+                        $qtdReservada = $qtdPendente;
+                    } else {
+                        $qtdReservada = $qtdRestante;
+                    }
 
-                        $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PICKING;
-                        $idEndereco = $enderecoPicking->getId();
+                    $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PICKING;
+                    $idEndereco = $enderecoPicking->getId();
 
-                        $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$idElemento] = array(
-                            'codProdutoEmbalagem' => (!empty($embalagem)) ? $embalagem->getId() : null,
-                            'codProdutoVolume' => (!empty($volume)) ? $volume->getId() : null,
+                    foreach($idsElementos as $id) {
+                        $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id] = array(
+                            'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
+                            'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
                             'codProduto' => $codProduto,
                             'grade' => $dscGrade,
                             'qtd' => $qtdReservada
                         );
-
-                        $elemento[$codPedido]['atendida'] = Math::adicionar($qtdAtendida, $qtdReservada);
-                        $qtdRestante = Math::subtrair($qtdRestante, $qtdReservada);
-                    } else {
-                        break;
                     }
+
+                    $elemento[$codPedido]['atendida'] = Math::adicionar($qtdAtendida, $qtdReservada);
+                    $qtdRestante = Math::subtrair($qtdRestante, $qtdReservada);
+                } else {
+                    break;
                 }
             }
         }
