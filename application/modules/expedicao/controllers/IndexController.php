@@ -97,7 +97,7 @@ class Expedicao_IndexController extends Action {
             $acaoIntegracaoRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
             foreach ($explodeIntegracoes as $codIntegracao) {
                 $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
-                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity,null,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
+                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity,null,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::DATA_ESPECIFICA);
             }
         }
 
