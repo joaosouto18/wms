@@ -72,7 +72,11 @@ class Mobile_IndexController  extends Action
     public function enderecosSeparacaoPdAjaxAction(){
         $this->view->idExpedicao = $this->_getParam('expedicao');
         $expRepository = $this->getEntityManager()->getRepository('wms:Expedicao');
-        $this->view->enderecos = $expRepository->getEtiquetasPd($this->_getParam('expedicao'));
+        $enderecos = $expRepository->getEtiquetasPd($this->_getParam('expedicao'));
+        if(empty($enderecos)){
+            $this->_redirect('/mobile/index/separacao-pulmao-doca-ajax');
+        }
+        $this->view->enderecos = $enderecos;
     }
 
     public function getProdutosPdAjaxAction(){
