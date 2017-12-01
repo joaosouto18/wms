@@ -209,7 +209,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $data = $acaoEn->getDthUltimaExecucao();
 
-            if (!empty($data)) {
+            if (!empty($data) && !is_null($data)) {
                 if ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
                     if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
                         $options[] = $data->format("Y-m-d");
