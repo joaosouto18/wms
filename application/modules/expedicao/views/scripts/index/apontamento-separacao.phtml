@@ -96,7 +96,6 @@
     }
 
     function gotoBuscar(event) {
-
         if (event.which == 13 || event.keyCode == 13 || event.keyCode == 9 || event.which == 9) {
             if (document.getElementById('etiquetas-pessoa').value != "") {
                 addLista();
@@ -316,15 +315,17 @@
 
             var intervalo = eI + " - " + eF;
 
-            var cpf = $('#etiquetas-pessoa').val();
-
+            var cpf = $('#etiquetas-pessoa').val().trim();
+            cpf = cpf.replace("-", "");
+            cpf = cpf.replace(".", "");
+            cpf = cpf.replace(".", "");
             if (cpf == null || cpf == "") {
                 $.wmsDialogAlert({
                     title: 'Alerta',
                     msg: 'Informe um CPF'
                 });
                 return false;
-            } else if (cpf.length != 14) {
+            } else if (cpf.length != 11) {
                 $.wmsDialogAlert({
                     title: 'Alerta',
                     msg: 'CPF incompleto ou inválido'
