@@ -2816,4 +2816,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         return $sql->getQuery()->getResult();
     }
+
+    public function getProdutoByEtiqueta($codEndereco, $expedicao){
+        $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA;
+        $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO, ES.COD_ETIQUETA_SEPARACAO,P.DSC_PRODUTO,P.DSC_GRADE,ES.QTD_PRODUTO,P.COD_PRODUTO 
+                FROM ETIQUETA_SEPARACAO ES 
+                INNER JOIN PRODUTO P ON (P.COD_PRODUTO = ES.COD_PRODUTO AND P.DSC_GRADE = ES.DSC_GRADE)
+                INNER JOIN ETIQUETA_MAE EM ON ES.COD_ETIQUETA_MAE = EM.COD_ETIQUETA_MAE
+                INNER JOIN DEPOSITO_ENDERECO DE ON ES.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                WHERE ES.COD_DEPOSITO_ENDERECO = $codEndereco AND EM.COD_EXPEDICAO = $expedicao AND ES.TIPO_SAIDA = $tipoSaida";
+        return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

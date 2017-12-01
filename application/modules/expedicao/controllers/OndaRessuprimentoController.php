@@ -37,11 +37,12 @@ class Expedicao_OndaRessuprimentoController extends Action {
     }
 
     public function relatorioSemEstoqueAjaxAction() {
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $expedicoes = $this->_getParam("expedicoes");
 
-        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes, true);
-        $this->exportPDF($verificaDisponibilidadeEstoquePedido, 'sem-estoque', 'Produtos sem estoque', 'P');
+        $verificaDisponibilidadeEstoquePedido = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
+        $this->exportPDF($verificaDisponibilidadeEstoquePedido, 'sem-estoque', 'Produtos sem estoque', 'L');
     }
 
     public function gerarAction() {

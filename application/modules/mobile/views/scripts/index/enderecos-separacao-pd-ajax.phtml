@@ -1,0 +1,54 @@
+<div class="row">
+    <div id="div-busca">
+        <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'index', 'action' => 'get-produtos-pd-ajax')) ?>" method="post" id="form-endereco">
+            <dt id="identification-label">&nbsp;</dt>
+            <dd id="identification-element">
+                <fieldset id="fieldset-identification">
+                    <legend>Endereço</legend>
+                    <dl>
+                        <div class="field" style="text-align: center">
+                            <label for="codigoBarras" class="field required">*Código de Barras Endereço</label>
+                            <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
+                            <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
+                            <label>Nível:</label>
+                            <input style="width: 100px;" type="text" name="nivel" id="nivel" value="" />
+                            <input class="btn gradientBtn text-center" style="margin-top: 10px; text-align: center" type="submit" name="buscar" id="buscar" value="Buscar" class="btn gradientBtn">
+                        </div>
+                    </dl>
+                </fieldset>
+            </dd>
+        </form>
+        <br>
+    </div>
+    <?php if(!empty($this->enderecos)){ ?>
+        <table class="gTable  table-condensed row">
+            <tbody>
+            <?php
+            $style = "background: #fcbbbb;";
+            foreach ($this->enderecos as $values){
+                ?>
+                <tr>
+                    <td style="<?php echo $style ?>">
+                        <b><?php echo $values['DSC_DEPOSITO_ENDERECO'] ?></b>
+                    </td>
+                </tr>
+                <?php
+                $style = "";
+            }
+            ?>
+            </tbody>
+        </table>
+    <?php }else{
+        ?><h5 style="color: red;"><b>Todos os endereços já confirmados.</b></h5><?php
+    }?>
+</div>
+
+<script>
+
+    $( "#form-endereco" ).submit(function( event ) {
+        if($('#nivel').val() == ''){
+            $('#nivel').focus();
+            return false;
+        }
+    });
+</script>
