@@ -169,6 +169,7 @@ class Inventario_IndexController  extends Action
                     $inventario[$contagemEndEn->getCodProduto()]['QUANTIDADE'] = $qtdTotal;
                     $inventario[$contagemEndEn->getCodProduto()]['NUM_CONTAGEM'] = $contagemEndEn->getNumContagem();
                     $inventario[$contagemEndEn->getCodProduto()]['COD_BARRAS'] = $embalagemEntity[0]->getCodigoBarras();
+                    $inventario[$contagemEndEn->getCodProduto()]['FATOR'] = $embalagemEntity[0]->getQuantidade();
                     $produtoAnterior = $contagemEndEn->getCodProduto();
                 }
             }
@@ -178,8 +179,8 @@ class Inventario_IndexController  extends Action
                 $txtContagem = '001';
                 $txtLocal = '001';
                 $txtCodBarras = str_pad($produto['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
-                $txtQtd = str_pad(number_format($produto["QUANTIDADE"],3,'',''), 10, '0', STR_PAD_LEFT);
-                $txtCodProduto = str_pad($key, 7, '0', STR_PAD_LEFT);
+                $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 10, '0', STR_PAD_LEFT);
+                $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
                 $linha = "$txtCodInventario"."$txtContagem"."$txtLocal"."$txtCodBarras"."$txtQtd"."$txtCodProduto"."\r\n";
                 fwrite($file, $linha, strlen($linha));
             }
