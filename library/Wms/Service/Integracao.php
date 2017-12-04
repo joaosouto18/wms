@@ -337,10 +337,11 @@ class Integracao {
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
         $codCargaExterno = implode(',', $cargas);
         $sql = $em->createQueryBuilder()
-                ->select('c.codCargaExterno carga, p.id pedido, p.tipoPedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade, pp.qtdCortada')
+                ->select('c.codCargaExterno carga, p.id pedido, sigla.id tipoPedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade, pp.qtdCortada')
                 ->from('wms:Expedicao\PedidoProduto', 'pp')
                 ->innerJoin('pp.pedido', 'p')
                 ->innerJoin('p.carga', 'c')
+                ->innerJoin('p.tipoPedido', 'sigla')
                 ->where("c.codCargaExterno IN ($codCargaExterno)")
                 ->orderBy('p.id, pp.codProduto, pp.grade');
 
