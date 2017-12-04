@@ -475,6 +475,7 @@ class Integracao {
             foreach ($dados as $key => $row) {
                 $idPedido = $row['PEDIDO'];
                 $idCarga = $row['CARGA'];
+                $tipoPedido = (isset($row['TIPO_PEDIDO']) && !empty($row['TIPO_PEDIDO'])) ? $row['TIPO_PEDIDO'] : null;
 
                 $produto = array(
                     'codProduto' => $row['PRODUTO'],
@@ -505,13 +506,14 @@ class Integracao {
                         'cep' => $row['CEP']
                     );
 
+
                     $pedido = array(
                         'codPedido' => $idPedido,
                         'cliente' => $cliente,
                         'itinerario' => $itinerario,
                         'produtos' => $produtos,
                         'linhaEntrega' => $row['DSC_ROTA'],
-                        'tipoPedido' => $row['TIPO_PEDIDO']
+                        'tipoPedido' => $tipoPedido
 
                     );
 
