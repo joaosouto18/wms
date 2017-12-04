@@ -510,7 +510,9 @@ class Integracao {
                         'cliente' => $cliente,
                         'itinerario' => $itinerario,
                         'produtos' => $produtos,
-                        'linhaEntrega' => $row['DSC_ROTA']
+                        'linhaEntrega' => $row['DSC_ROTA'],
+                        'tipoPedido' => $row['TIPO_PEDIDO']
+
                     );
 
                     $pedidos[] = $pedido;
