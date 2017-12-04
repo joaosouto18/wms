@@ -887,6 +887,11 @@ class Expedicao_IndexController extends Action {
             $sessao = new \Zend_Session_Namespace('coletor');
             $central = $sessao->centralSelecionada;
             $this->view->separacaoEmbalado = (empty($codPessoa)) ? false : true;
+
+            $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
+            $Expedicao->validacaoExpedicao();
+            $Expedicao->osLiberada();
+
             $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
             if (empty($codPessoa)) {
                 /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
