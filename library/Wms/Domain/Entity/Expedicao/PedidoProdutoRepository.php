@@ -88,6 +88,10 @@ class PedidoProdutoRepository extends EntityRepository
                 if ($produtoWms['qtdCortada'] != null) {
                     $qtdCortadaWms= str_replace(',','.',$produtoWms['qtdCortada']);;
                 }
+
+                if ($produtoWms['tipoPedido'] == 618)
+                    continue;
+
                 foreach ($pedidosProdutosERP as $key => $produtoERP) {
                     $codProdutoERP = $produtoERP['PRODUTO'];
                     $codPedidoERP = $produtoERP['PEDIDO'];
