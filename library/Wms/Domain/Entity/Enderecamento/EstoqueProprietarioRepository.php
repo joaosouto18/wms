@@ -35,7 +35,6 @@ class EstoqueProprietarioRepository extends EntityRepository
                         $this->save($itens['COD_PRODUTO'], $itens['DSC_GRADE'],$itens['QTD_CONFERIDA'], EstoqueProprietario::RECEBIMENTO, $nf->getCodPessoa());
                     }
                 }
-        var_dump($itemsNF);
             }
         }
     }

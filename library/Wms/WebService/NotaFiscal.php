@@ -165,14 +165,15 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $numero Numero da nota fiscal
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
+     * @param string $cnpjDestinatario CNPJ da filial dona da nota
      * @return notaFiscal
      * @throws Exception
      */
-    public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao, $CNPJProprietario = null)
+    public function buscarNf($idFornecedor, $numero, $serie, $dataEmissao, $cnpjDestinatario = null)
     {
 
         $idFornecedor = trim($idFornecedor);
-        $CNPJProprietario = trim($CNPJProprietario);
+        $cnpjDestinatario = trim($cnpjDestinatario);
         $numero = trim($numero);
         $serie = (!empty(trim($serie)))? trim($serie) : "0";
         $dataEmissao = trim($dataEmissao);
@@ -181,7 +182,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         $controleProprietario = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         if($controleProprietario == 'S'){
-            $proprietarioEn = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($CNPJProprietario);
+            $proprietarioEn = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjDestinatario);
             if($proprietarioEn == null){
                 throw new \Exception('CNPJ do proprietário não encontrado');
             }
@@ -269,7 +270,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @return boolean
      * @throws Exception
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario, $codProprietario = null)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -387,6 +388,17 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
 
             } else {
+                $codProprietario = null;
+                $controleProprietario = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+                if($controleProprietario == 'S'){
+                    $cnpjDestinatario = trim($cnpjDestinatario);
+                    $proprietarioEn = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjDestinatario);
+                    if($proprietarioEn == null){
+                        throw new \Exception('CNPJ do proprietário não encontrado');
+                    }else{
+                        $codProprietario = $proprietarioEn->getId();
+                    }
+                }
                 $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao, $codProprietario);
             }
 
