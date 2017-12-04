@@ -343,6 +343,7 @@ class Integracao {
                 ->innerJoin('p.carga', 'c')
                 ->innerJoin('p.tipoPedido', 'sigla')
                 ->where("c.codCargaExterno IN ($codCargaExterno)")
+                ->andWhere('sigla.id <> 618')
                 ->orderBy('p.id, pp.codProduto, pp.grade');
 
         $pedidosProdutosWMS = $sql->getQuery()->getResult();
