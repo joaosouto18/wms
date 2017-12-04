@@ -40,6 +40,7 @@ class PedidoRepository extends EntityRepository
             $enPedido->setPontoTransbordo($pedido['pontoTransbordo']);
             $enPedido->setEnvioParaLoja($pedido['envioParaLoja']);
             $enPedido->setIndEtiquetaMapaGerado('N');
+            $enPedido->setProprietario($pedido['codProprietario']);
             $em->persist($enPedido);
  //           $em->flush();
  //           $em->commit();

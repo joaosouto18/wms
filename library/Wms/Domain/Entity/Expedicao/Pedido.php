@@ -71,6 +71,11 @@ class Pedido
     protected $pessoa;
 
     /**
+     * @Column(name="COD_PESSOA_PROPRIETARIO", type="integer", nullable=treu)
+     */
+    protected $proprietario;
+
+    /**
      * @Column(name="SEQUENCIA", type="integer", nullable=false)
      */
     protected $sequencia;
@@ -177,6 +182,16 @@ class Pedido
     public function setPessoa($pessoa)
     {
         $this->pessoa = $pessoa;
+    }
+
+    public function getProprietario()
+    {
+        return $this->proprietario;
+    }
+
+    public function setProprietario($proprietario)
+    {
+        $this->proprietario = $proprietario;
     }
 
     public function setCodCarga($codCarga)
