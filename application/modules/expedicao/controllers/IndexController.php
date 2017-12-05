@@ -608,18 +608,32 @@ class Expedicao_IndexController extends Action {
                 }
             }
         }else{
+            $erro = '';
             $usuario = $usuarioRepo->getPessoaByCpf($cpf);
-            if(isset($params['mapa'])){
-                if($params['mapa'] == 'false'){
+            $salvar = true;
+            if(!empty($usuario)) {
+                if (isset($params['mapa'])) {
                     $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-                    $mapa = $apontamentoMapaRepository->getMapaAbertoUsuario($usuario[0]['COD_PESSOA']);
-                    if(!empty($mapa)){
-                        $codMapa = $mapa[0]['COD_MAPA_SEPARACAO'];
+                    if ($params['mapa'] == 'false') {
+                        $mapa = $apontamentoMapaRepository->getMapaAbertoUsuario($usuario[0]['COD_PESSOA']);
+                        if (!empty($mapa)) {
+                            $codMapa = $mapa[0]['COD_MAPA_SEPARACAO'];
+                        }
+                    } else {
+                        $mapa = ColetorUtil::retiraDigitoIdentificador($params['mapa']);
+                        $qtdMax = $this->getSystemParameterValue('MAX_PRODUTIVIDADE_MAPA');
+                        $qtdMapa = $apontamentoMapaRepository->getQtdApontamentoMapa($mapa);
+                        if ($qtdMapa['QTD'] >= $qtdMax) {
+                            $erro = 'Quantidade máxima de funcionários já vinculadas a esse mapa';
+                            $salvar = false;
+                        }
                     }
                 }
+            }else{
+                $erro = 'Nenhum conferente encontrado com este CPF';
+                $salvar = false;
             }
-            $erro = '';
-            $salvar = true;
+
         }
 
 

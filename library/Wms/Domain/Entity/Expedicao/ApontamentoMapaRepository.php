@@ -377,4 +377,11 @@ class ApontamentoMapaRepository extends EntityRepository {
                 WHERE COD_USUARIO = $codPessoa AND DTH_FIM_CONFERENCIA IS NULL";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function getQtdApontamentoMapa($mapa){
+        $sql = "SELECT COUNT(COD_MAPA_SEPARACAO) AS QTD
+                FROM APONTAMENTO_SEPARACAO_MAPA
+                WHERE COD_MAPA_SEPARACAO = $mapa";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
+    }
 }
