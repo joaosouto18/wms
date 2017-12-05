@@ -371,4 +371,10 @@ class ApontamentoMapaRepository extends EntityRepository {
         return $result;
     }
 
+    public function getMapaAbertoUsuario($codPessoa){
+        $sql = "SELECT COD_MAPA_SEPARACAO
+                FROM APONTAMENTO_SEPARACAO_MAPA
+                WHERE COD_USUARIO = $codPessoa AND DTH_FIM_CONFERENCIA IS NULL";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

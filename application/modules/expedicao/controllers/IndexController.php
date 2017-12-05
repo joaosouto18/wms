@@ -378,7 +378,7 @@ class Expedicao_IndexController extends Action {
                     'cssClass' => 'btn limpar',
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
                 ),array(
-                    'label' => 'Última Separação',
+                    'label' => 'Fechar Mapa',
                     'cssClass' => 'btn updateSeparacao',
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
                 ),
@@ -480,8 +480,12 @@ class Expedicao_IndexController extends Action {
 
                         $codMapaSeparacao = $params['mapa'];
                         $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
+
                         if (is_null($mapaSeparacaoEn))
                             throw new \Exception("Mapa de Separação $codMapaSeparacao não encontrado!");
+
+                        if ($mapaSeparacaoEn->getStatus()->getId() != 523)
+                            throw new \Exception("Mapa de Separação $codMapaSeparacao não está aberto!");
 
                         $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn));
                         if (!isset($apontamentoMapaEn) || empty($apontamentoMapaEn))
@@ -536,6 +540,7 @@ class Expedicao_IndexController extends Action {
     public function conferenteApontamentoSeparacaoAjaxAction() {
         $params = $this->_getAllParams();
         $cpf = str_replace(array('.', '-'), '', $params['cpf']);
+        $codMapa = 0;
         $erro = '';
         /** @var \Wms\Domain\Entity\UsuarioRepository $usuarioRepo */
         $usuarioRepo = $this->getEntityManager()->getRepository('wms:Usuario');
@@ -604,13 +609,22 @@ class Expedicao_IndexController extends Action {
             }
         }else{
             $usuario = $usuarioRepo->getPessoaByCpf($cpf);
+            if(isset($params['mapa'])){
+                if($params['mapa'] == 'false'){
+                    $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+                    $mapa = $apontamentoMapaRepository->getMapaAbertoUsuario($usuario[0]['COD_PESSOA']);
+                    if(!empty($mapa)){
+                        $codMapa = $mapa[0]['COD_MAPA_SEPARACAO'];
+                    }
+                }
+            }
             $erro = '';
             $salvar = true;
         }
 
 
         if (empty($erro) && $salvar == true) {
-            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA']);
+            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA'], 'mapa' => $codMapa);
         } elseif($salvar == false && empty($erro)) {
             $response = array('result' => 'Error', 'msg' => "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA']);
         }else{
