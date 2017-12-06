@@ -107,6 +107,7 @@ class FormProdutividadeDetalhada extends Form {
         ));
         $this->addElement('button', 'btnRelatorio', array(
                     'label' => 'Gerar Relatorio',
+                    'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
                 ->addDisplayGroup($this->getElements(), 'apontamento', array('legend' => 'Relatório de produtividade Detalhada')
