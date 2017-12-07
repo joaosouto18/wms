@@ -312,6 +312,8 @@ class EstoqueRepository extends EntityRepository
     }
 
     public function getEstoqueGroupByVolumns($params) {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '-1');
         $subQuery = $this->getEstoqueAndVolumeByParams($params, null, true, null, true);
         $SQL = "
             SELECT ESTQ.ENDERECO,

@@ -46,7 +46,8 @@ class EstoqueReport extends Pdf
 
     public function init($params = array())
     {
-
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '-1');
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
