@@ -24,6 +24,7 @@ class Enderecamento_PaleteController extends Action
         $ProdutoRepository = $this->em->getRepository('wms:Produto');
 
         if (!empty($codProduto) && !empty($grade)) {
+            /** @var \Wms\Domain\Entity\Produto $produtoEn */
             $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
             $this->view->endPicking = $ProdutoRepository->getEnderecoPicking($produtoEn);
 

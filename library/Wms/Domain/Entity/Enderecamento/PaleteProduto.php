@@ -75,6 +75,11 @@ class PaleteProduto
     protected $validade;
 
     /**
+     * @Column(name="NUM_PECAS", type="integer")
+     * @var integer
+     */
+    protected $numPecas;
+    /**
      * @param mixed $codNormaPaletizacao
      */
     public function setCodNormaPaletizacao($codNormaPaletizacao)
@@ -260,6 +265,22 @@ class PaleteProduto
             $embalagemEn = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('id'=>$this->getCodProdutoEmbalagem()));
         }
         return $embalagemEn;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNumPecas()
+    {
+        return $this->numPecas;
+    }
+
+    /**
+     * @param int $numPecas
+     */
+    public function setNumPecas($numPecas)
+    {
+        $this->numPecas = $numPecas;
     }
 
 }

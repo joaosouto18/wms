@@ -80,9 +80,15 @@ class Estoque
 
     /**
      * @Column(name="DTH_VALIDADE", type="date")
-     * @var date
+     * @var \DateTime
      */
     protected $validade;
+
+    /**
+     * @Column(name="NUM_PECAS", type="integer")
+     * @var integer
+     */
+    protected $numPecas;
 
     /**
      * @param mixed $codProduto
@@ -261,7 +267,7 @@ class Estoque
     }
 
     /**
-     * @return date
+     * @return \DateTime
      */
     public function getValidade()
     {
@@ -269,11 +275,27 @@ class Estoque
     }
 
     /**
-     * @param date $validade
+     * @param \DateTime $validade
      */
     public function setValidade($validade)
     {
         $this->validade = $validade;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNumPecas()
+    {
+        return $this->numPecas;
+    }
+
+    /**
+     * @param int $numPecas
+     */
+    public function setNumPecas($numPecas)
+    {
+        $this->numPecas = $numPecas;
     }
 
 }

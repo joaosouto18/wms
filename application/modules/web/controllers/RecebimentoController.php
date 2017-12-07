@@ -380,14 +380,27 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             //produtos
             $itensConferir = $notaFiscalRepo->getItemConferencia($idRecebimento);
 
-            $produtos = array();
+            $temFracionavel = false;
+            $controlaValidade = false;
+
             foreach ($itensConferir as $key => $item) {
+                if ($item['possui_validade'] == 'S') {
+                    $controlaValidade = true;
+                }
                 if ($item['cod_tipo_comercializacao'] == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) {
                     /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
                     $embalagemRepo = $this->em->getRepository('wms:Produto\Embalagem');
-                    $result = $embalagemRepo->findBy(
-                        array('codProduto' => $item['codigo'], 'grade' => $item['grade'], 'dataInativacao' => null),
-                        array('quantidade' => 'ASC'));
+
+                    if ($item['ind_fracionavel'] == 'S') {
+                        $temFracionavel = true;
+                    }
+
+                    $arrCriterio = [
+                        'codProduto' => $item['codigo'],
+                        'grade' => $item['grade'],
+                        'dataInativacao' => null];
+
+                    $result = $embalagemRepo->findBy($arrCriterio, array('quantidade' => 'ASC'));
 
                     if (empty($result))
                         throw new Exception("O produto $item[codigo] - $item[grade] não tem embalagen ativa");
@@ -395,7 +408,11 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                     $embalagens = array();
                     /** @var ProdutoEntity\Embalagem $embalagem */
                     foreach( $result as $embalagem ) {
-                        $embalagens[$embalagem->getId()] = $embalagem->getDescricao();
+                        $embalagens[] = [
+                            "id" => $embalagem->getId(),
+                            "isFracDefault" => $embalagem->isEmbFracionavelDefault(),
+                            "dsc" => $embalagem->getDescricao()
+                        ];
                     }
 
                     $itensConferir[$key]['embalagens'] = $embalagens;
@@ -406,6 +423,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 }
             }
 
+            $this->view->temFracionavel = $temFracionavel;
+            $this->view->controlaValidade = $controlaValidade;
             $this->view->produtos = $itensConferir;
 
             //salvar produto e quantidade Conferencia
@@ -415,13 +434,14 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $qtdNFs = $this->getRequest()->getParam('qtdNF');
                 $qtdAvarias = $this->getRequest()->getParam('qtdAvaria');
                 $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
+                $qtdUnidFracionavel = $this->getRequest()->getParam('qtdUnidFracionavel');
                 $embalagem = $this->getRequest()->getParam('embalagem');
                 $unMedida = $this->getRequest()->getParam('unMedida');
                 $dataValidade = $this->getRequest()->getParam('dataValidade');
                 $numPeso = $this->getRequest()->getParam('numPeso');
 
                 // executa os dados da conferencia
-                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $embalagem, $idConferente, true, $unMedida, $dataValidade, $numPeso);
+                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $qtdUnidFracionavel, $embalagem, $idConferente, true, $unMedida, $dataValidade, $numPeso);
 
                 if ($result['exception'] != null) {
                     throw $result['exception'];

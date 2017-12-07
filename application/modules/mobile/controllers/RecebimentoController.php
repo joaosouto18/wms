@@ -182,6 +182,7 @@ class Mobile_RecebimentoController extends Action
 
             $this->view->pesoVariavel = $pesoVariavel;
             $this->view->embFracionavelDefault = $itemNF['embFracDefault'];
+            $this->view->indFracionavel = $itemNF['indFracionavel'];
             $this->view->recebimento = $recebimentoEntity;
             $form->setDefault('idRecebimento', $idRecebimento);
             $this->view->form = $form;
@@ -259,6 +260,7 @@ class Mobile_RecebimentoController extends Action
                     $arrayRedirect = array(
                         'idRecebimento' => $idRecebimento,
                         'idOrdemServico' => $idOrdemServico,
+                        'qtdUnidFracionavel' => $qtdUnidFracionavel,
                         'qtdConferida' => $qtdConferida,
                         'idNormaPaletizacao' => $idNormaPaletizacao,
                         'dataValidade' => $objData->toString('dd-MM-YY'),
@@ -303,7 +305,7 @@ class Mobile_RecebimentoController extends Action
             // caso embalagem
             if ($this->_hasParam('idProdutoEmbalagem')) {
                 // gravo conferencia do item
-                $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params, $params['numPeso']);
+                $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $qtdUnidFracionavel, $idNormaPaletizacao, $params, $params['numPeso']);
                 $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
             }
 

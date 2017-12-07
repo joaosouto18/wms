@@ -5,7 +5,7 @@
         <input type="hidden" id="idRecebimento" name="idRecebimento" value="<?php echo $this->recebimento->getId() ?>" />
         <input type="hidden" id="idItem" name="idItem" value="<?php echo $this->itemNF['idItem'] ?>" />
         <input type="hidden" id="idProdutoEmbalagem" name="idProdutoEmbalagem" value="<?php echo $this->itemNF['idEmbalagem'] ?>" />
-        <input type="hidden" id="unidadePorEmbalagem" name="unidadePorEmbalagem" value="<?php echo $this->itemNF['quantidadeEmbalagem'] ?>" />
+        <input type="hidden" id="unidadePorEmbalagem" name="unidadePorEmbalagem" value="<?php echo ($this->indFracionavel != "S") ? $this->itemNF['quantidadeEmbalagem'] : 1 ?>" />
         <input type="hidden" id="isEmbFracDefault" name="isEmbFracDefault" value="<?php echo $this->embFracionavelDefault ?>" />
 
         <div>
@@ -17,9 +17,8 @@
                 <tr>
                     <td>
                         <?php if ($this->embFracionavelDefault == 'S'){
-                            $unid = $this->itemNF['descricaoEmbalagem'];
-                            $txtEmb = \Wms\Domain\Entity\Produto::$listaUnidadeMedida[$unid];
-                            $dscEmb = "$unid ($txtEmb)";
+                            $txtEmb = \Wms\Domain\Entity\Produto::$listaUnidadeMedida[$this->itemNF['unidFracao']];
+                            $dscEmb = $this->itemNF['descricaoEmbalagem']." ($txtEmb)";
                             echo $dscEmb;
                         } else {
                             echo $this->itemNF['descricaoEmbalagem'];
@@ -45,21 +44,24 @@
                 </tr>
 
                 <tr class="title">
-                    <?php if ($this->embFracionavelDefault != 'S') : ?>
+                    <?php if ($this->indFracionavel != 'S') : ?>
                         <td>Unidades Por Emb.</td>
                     <?php else : ?>
-                        <td>Embalagem fracionável</td>
+                        <td><label class="field required" for="qtdUnidFracionavel">Qtd unitária</label></td>
                     <?php endif; ?>
                     <?php if ($this->itemNF['validade'] == 'S') : ?>
                         <td><label class="field required" for="dataValidade">Data Validade</label></td>
                     <?php endif; ?>
-                    <?php if ($this->pesoVariavel == 'N') : ?>
-                        <td><label class="field required" for="qtdConferida">Quantidade</label></td>
-                    <?php endif; ?>
-                    <?php if ($this->pesoVariavel == 'S') : ?>
+                    <?php if ($this->pesoVariavel != 'S') :
+                            if ($this->indFracionavel == "S") :?>
+                                <td><label class="field required" for="qtdConferida"><?php echo \Wms\Domain\Entity\Produto::$listaUnidadeMedida[$this->itemNF['unidFracao']] . "S"?></label></td>
+                            <?php else : ?>
+                                <td><label class="field required" for="numPeso">Quantidade</label></td>
+                            <?php endif;
+                        else : ?>
                         <td><label class="field required" for="numPeso">Peso (Kg)</label></td>
                     <?php endif; ?>
-                    <?php if ($this->embFracionavelDefault != 'S') : ?>
+                    <?php if ($this->indFracionavel != 'S') : ?>
                         <td>Total Unidades</td>
                     <?php else : ?>
                         <td>Total Recebido</td>
@@ -67,24 +69,25 @@
                 </tr>
 
                 <tr>
-                    <?php if ($this->embFracionavelDefault != 'S') : ?>
+                    <?php if ($this->indFracionavel != 'S') : ?>
                         <td><?php echo $this->itemNF['quantidadeEmbalagem'] ?></td>
                     <?php else : ?>
-                        <td>Ao fracionar use ponto "."</td>
+                        <td><input type="text" value="1" size="6" name="qtdUnidFracionavel" id="qtdUnidFracionavel" class="required"/></td>
                     <?php endif; ?>
                     <?php if ($this->itemNF['validade'] == 'S') : ?>
                         <td><input type="text" placeholder="dd/mm/yy" maxlength="8" size="10" class="required focus" id="dataValidade" name="dataValidade"/></td>
                     <?php endif; ?>
-                    <?php if ($this->pesoVariavel == 'N') : ?>
+                    <?php if ($this->pesoVariavel !== 'S') : ?>
                         <td><input type="text" maxlength="15" size="6" class="required <?php if ($this->itemNF['validade'] != 'S') : echo " focus "; endif ?>" id="qtdConferida" name="qtdConferida" /></td>
-                    <?php endif; ?>
-                    <?php if ($this->pesoVariavel == 'S') : ?>
+                    <?php else : ?>
                         <td><input type="text" maxlength="15" size="6" class="required focus" id="numPeso" name="numPeso"/></td>
                     <?php endif; ?>
                     <td><span id="totalQuantidade">0</span></td>
                 </tr>
-
             </table>
+            <?php if ($this->indFracionavel == 'S') : ?>
+                <p>Para a fração utilizar ponto "." ex.: 3.25</p>
+            <?php endif; ?>
         </div>
         <input type="submit" class="btn gradientBtn" value="Salvar" id="submit" name="submit">
     </form>

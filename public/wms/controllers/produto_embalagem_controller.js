@@ -902,6 +902,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 } else {
                                     blocosEmbalagem.each(function () {
                                         var embRecebimento = $(this).model();
+                                        console.log(embRecebimento);
                                         if (embRecebimento.isEmbFracionavelDefault.toString() === 'S') {
                                             embFracionavelDefault = embRecebimento;
                                         }

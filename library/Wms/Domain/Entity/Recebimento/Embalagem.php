@@ -1,6 +1,8 @@
 <?php
 
 namespace Wms\Domain\Entity\Recebimento;
+use Wms\Domain\Entity\Produto\NormaPaletizacao;
+use Wms\Domain\Entity\Recebimento;
 
 /**
  * Recebimento Embalagem
@@ -23,7 +25,7 @@ class Embalagem
     /**
      * Data e hora iniciou ou recebimento
      * 
-     * @var datetime $dataInclusao
+     * @var \DateTime $dataInclusao
      * @Column(name="DTH_CONFERENCIA", type="datetime", nullable=false)
      */
     protected $dataConferencia;
@@ -36,21 +38,21 @@ class Embalagem
     protected $qtdConferida;
 
     /**
-     * @var Wms\Domain\Entity\OrdemServico $ordemServico
+     * @var \Wms\Domain\Entity\OrdemServico $ordemServico
      * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
      * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS") 
      */
     protected $ordemServico;
 
     /**
-     * @var Wms\Domain\Entity\Recebimento $recebimento
+     * @var Recebimento $recebimento
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Recebimento")
      * @JoinColumn(name="COD_RECEBIMENTO", referencedColumnName="COD_RECEBIMENTO") 
      */
     protected $recebimento;
 
     /**
-     * @var Wms\Domain\Entity\Produto\Embalagem $embalagem
+     * @var \Wms\Domain\Entity\Produto\Embalagem $embalagem
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Embalagem", inversedBy="recebimentoEmbalagens")
      * @JoinColumn(name="COD_PRODUTO_EMBALAGEM", referencedColumnName="COD_PRODUTO_EMBALAGEM") 
      */
@@ -66,13 +68,13 @@ class Embalagem
      *
      * @OneToOne(targetEntity="Wms\Domain\Entity\Produto\NormaPaletizacao")
      * @JoinColumn(name="COD_NORMA_PALETIZACAO", referencedColumnName="COD_NORMA_PALETIZACAO")
-     * @var Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
+     * @var NormaPaletizacao $normaPaletizacao
      */
     protected $normaPaletizacao;
 
     /**
      * @Column(name="DTH_VALIDADE", type="date")
-     * @var date
+     * @var \DateTime
      */
     protected $dataValidade;
 
@@ -83,7 +85,13 @@ class Embalagem
     protected $numPeso;
 
     /**
-     * @param \Wms\Domain\Entity\Recebimento\Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
+     * @Column(name="NUM_PECAS", type="integer")
+     * @var integer
+     */
+    protected $numPecas;
+
+    /**
+     * @param NormaPaletizacao $normaPaletizacao
      */
     public function setNormaPaletizacao($normaPaletizacao)
     {
@@ -91,7 +99,7 @@ class Embalagem
     }
 
     /**
-     * @return \Wms\Domain\Entity\Recebimento\Wms\Domain\Entity\Produto\NormaPaletizacao
+     * @return NormaPaletizacao
      */
     public function getNormaPaletizacao()
     {
@@ -159,7 +167,7 @@ class Embalagem
     }
 
     /**
-     * @return date
+     * @return \DateTime
      */
     public function getDataValidade()
     {
@@ -167,7 +175,7 @@ class Embalagem
     }
 
     /**
-     * @param date $dataValidade
+     * @param \DateTime $dataValidade
      */
     public function setDataValidade($dataValidade)
     {
@@ -204,6 +212,22 @@ class Embalagem
     public function getQtdEmbalagem()
     {
         return $this->qtdEmbalagem;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNumPecas()
+    {
+        return $this->numPecas;
+    }
+
+    /**
+     * @param int $numPecas
+     */
+    public function setNumPecas($numPecas)
+    {
+        $this->numPecas = $numPecas;
     }
 
 }
