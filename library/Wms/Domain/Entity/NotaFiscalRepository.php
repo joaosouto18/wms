@@ -831,7 +831,7 @@ class NotaFiscalRepository extends EntityRepository {
                           ls.descricao as dscLinhaSeparacao,
                           fb.nome as fabricante,
                           tc.descricao as dscTipoComercializacao,
-                          pe.id as idEmbalagem, pe.descricao as dscEmbalagem,
+                          pe.id as idEmbalagem, pe.descricao as dscEmbalagem, pe.quantidade,
                           pv.id as idVolume, pv.codigoSequencial as codSequencialVolume, pv.descricao as dscVolume,
                           NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras')
                 ->from('wms:NotaFiscal', 'nf')

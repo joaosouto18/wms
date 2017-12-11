@@ -132,7 +132,7 @@ class GerarEtiqueta extends eFPDF
 
         if ($produto['idEmbalagem'] != null) {
             $this->Ln(3);
-            $this->Cell(100, 0, 'Embalagem: ' . utf8_decode($produto['dscEmbalagem']) . " - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
+            $this->Cell(100, 0, 'Embalagem: ' . utf8_decode($produto['dscEmbalagem']) . " (".$produto['quantidade'].") - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
         }
 
         if ($produto['idVolume'] != null) {
