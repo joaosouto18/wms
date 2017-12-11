@@ -87,6 +87,11 @@ class Produto extends DadoLogistico {
                 ->setShowExport(false)
                 ->addMassAction('mass-select', 'Selecionar');
 
+        if(isset($params['incluir-lista'])) {
+            if ($params['incluir-lista'] == 1) {
+                return $source->getQuery()->getResult();
+            }
+        }
         return $this;
     }
 
