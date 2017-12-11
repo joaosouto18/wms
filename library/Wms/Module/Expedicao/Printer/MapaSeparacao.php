@@ -24,7 +24,6 @@ class MapaSeparacao extends eFPDF {
 
 //($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null)
     public function layoutMapa($expedicao, $modelo, $codBarras = null, $status) {
-        $modelo = 7;
         switch ($modelo) {
             case 2:
                 $this->layoutModelo2($expedicao, $status, $codBarras);
