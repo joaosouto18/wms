@@ -248,17 +248,17 @@ class ApontamentoMapaRepository extends EntityRepository {
 
         if (isset($dataInicio) && !empty($dataInicio)) {
             if (isset($horaInicio) && !empty($horaInicio)) {
-                $andWhere .= " AND DTH_INICIO >= TO_DATE('$dataInicio $horaInicio', 'DD/MM/YYYY HH24:MI') ";
+                $andWhere .= " AND PD.DTH_INICIO >= TO_DATE('$dataInicio $horaInicio', 'DD/MM/YYYY HH24:MI') ";
             } else {
-                $andWhere .= " AND DTH_INICIO >= TO_DATE('$dataInicio 00:00', 'DD/MM/YYYY HH24:MI') ";
+                $andWhere .= " AND PD.DTH_INICIO >= TO_DATE('$dataInicio 00:00', 'DD/MM/YYYY HH24:MI') ";
             }
         }
 
         if (isset($dataFim) && !empty($dataFim)) {
             if (isset($horaFim) && !empty($horaFim)) {
-                $andWhere .= " AND DTH_FIM <= TO_DATE('$dataFim $horaFim', 'DD/MM/YYYY HH24:MI') ";
+                $andWhere .= " AND PD.DTH_FIM <= TO_DATE('$dataFim $horaFim', 'DD/MM/YYYY HH24:MI') ";
             } else {
-                $andWhere .= " AND DTH_FIM <= TO_DATE('$dataFim 23:59', 'DD/MM/YYYY HH24:MI') ";
+                $andWhere .= " AND PD.DTH_FIM <= TO_DATE('$dataFim 23:59', 'DD/MM/YYYY HH24:MI') ";
             }
         }
         switch ($ordem) {
@@ -276,9 +276,10 @@ class ApontamentoMapaRepository extends EntityRepository {
                     PE.NOM_PESSOA, 
                     IDENTIDADE,
                     MP.COD_EXPEDICAO,
+                    E.COD_EXPEDICAO AS ETIQUETA_EX,
                     DSC_ATIVIDADE,
-                    TO_CHAR(MIN(DTH_INICIO), 'DD/MM/YYYY HH24:MI:SS') DTH_INICIO,
-                    TO_CHAR(MAX(DTH_FIM), 'DD/MM/YYYY HH24:MI:SS') DTH_FIM,
+                    TO_CHAR(MIN(PD.DTH_INICIO), 'DD/MM/YYYY HH24:MI:SS') DTH_INICIO,
+                    TO_CHAR(MAX(PD.DTH_FIM), 'DD/MM/YYYY HH24:MI:SS') DTH_FIM,
                     SUM(QTD_PESO) AS QTD_PESO,
                     SUM(QTD_VOLUMES) AS QTD_VOLUMES,
                     SUM(QTD_CUBAGEM) AS QTD_CUBAGEM,
@@ -288,11 +289,13 @@ class ApontamentoMapaRepository extends EntityRepository {
                     FROM PRODUTIVIDADE_DETALHE PD
                   INNER JOIN PESSOA PE ON PE.COD_PESSOA = PD.COD_PESSOA
                   LEFT JOIN MAPA_SEPARACAO MP ON (PD.IDENTIDADE = MP.COD_MAPA_SEPARACAO AND (PD.DSC_ATIVIDADE = 'CONF. SEPARACAO' OR PD.DSC_ATIVIDADE = 'SEPARACAO'))
+                  LEFT JOIN EXPEDICAO E ON (PD.IDENTIDADE = E.COD_EXPEDICAO AND PD.DSC_ATIVIDADE = 'SEPARACAO')
                   WHERE 1 = 1
                   $andWhere 
                   GROUP BY 
                   PE.NOM_PESSOA, 
                     IDENTIDADE,
+                    E.COD_EXPEDICAO,
                     DSC_ATIVIDADE,
                     MP.COD_EXPEDICAO,
                     PD.COD_PESSOA
@@ -320,14 +323,18 @@ class ApontamentoMapaRepository extends EntityRepository {
             if($value['COD_EXPEDICAO'] == null){
                 $result[$key]['COD_EXPEDICAO'] = ' - ';
             }
-            
+
+            if($value['ETIQUETA_EX'] != null){
+                $result[$key]['COD_EXPEDICAO'] = $value['ETIQUETA_EX'];
+            }
             $result[$key]['QTD_VOLUMES'] = number_format($value['QTD_VOLUMES'], 2, ',', '.');
             $result[$key]['QTD_PESO'] = number_format($value['QTD_PESO'], 2, ',', '');
             $result[$key]['QTD_CUBAGEM'] = number_format($value['QTD_CUBAGEM'], 2, ',', '.');
             $intervalo = date_diff($tempoInicial, $tempoFinal);
             $result[$key]['TEMPO_GASTO'] = $intervalo->format('%H:%I:%S');
-            $pesoTotal = $pesoTotal + number_format($value['QTD_PESO'], 2, ',', '');
+            $pesoTotal = $value['QTD_PESO'];
             $volumeTotal = $volumeTotal + $value['QTD_VOLUMES'];
+            $pesoTotal = $pesoTotal + $value['QTD_PESO'];
             $cubagemTotal = $cubagemTotal + $value['QTD_CUBAGEM'];
             $quantidadeTotal = $quantidadeTotal + $value['QTD_PRODUTOS'];
             $quantidadeCarga = $quantidadeCarga + $value['QTD_CARGA'];
@@ -356,7 +363,7 @@ class ApontamentoMapaRepository extends EntityRepository {
         }
         $result[$qtdRows]['NOM_PESSOA'] = 'TOTAIS';
         $result[$qtdRows]['IDENTIDADE'] = '-';
-        $result[$qtdRows]['QTD_PESO'] = $pesoTotal;
+        $result[$qtdRows]['QTD_PESO'] = number_format($pesoTotal, 2, ',', '.');;
         $result[$qtdRows]['QTD_VOLUMES'] = number_format($volumeTotal, 2, ',', '.');
         $result[$qtdRows]['QTD_PRODUTOS'] = number_format($quantidadeTotal, 0, ',', '.');
         $result[$qtdRows]['QTD_CUBAGEM'] = number_format($cubagemTotal, 2, ',', '.');
@@ -371,4 +378,17 @@ class ApontamentoMapaRepository extends EntityRepository {
         return $result;
     }
 
+    public function getMapaAbertoUsuario($codPessoa){
+        $sql = "SELECT COD_MAPA_SEPARACAO
+                FROM APONTAMENTO_SEPARACAO_MAPA
+                WHERE COD_USUARIO = $codPessoa AND DTH_FIM_CONFERENCIA IS NULL";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getQtdApontamentoMapa($mapa){
+        $sql = "SELECT COUNT(COD_MAPA_SEPARACAO) AS QTD
+                FROM APONTAMENTO_SEPARACAO_MAPA
+                WHERE COD_MAPA_SEPARACAO = $mapa";
+        return $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
+    }
 }

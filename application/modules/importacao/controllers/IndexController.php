@@ -787,8 +787,8 @@ class Importacao_IndexController extends Action
 
                         if ($countFlush >= 1) {
                             $countFlush = 0;
-                            $em->flush();
-                            $em->clear();
+//                            $em->flush();
+//                            $em->clear();
                         }
                     }
                 } elseif ($extencao == "csv") {

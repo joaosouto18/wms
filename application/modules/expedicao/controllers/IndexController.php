@@ -378,7 +378,7 @@ class Expedicao_IndexController extends Action {
                     'cssClass' => 'btn limpar',
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
                 ),array(
-                    'label' => 'Última Separação',
+                    'label' => 'Fechar Mapa',
                     'cssClass' => 'btn updateSeparacao',
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
                 ),
@@ -480,8 +480,12 @@ class Expedicao_IndexController extends Action {
 
                         $codMapaSeparacao = $params['mapa'];
                         $mapaSeparacaoEn = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao')->find($codMapaSeparacao);
+
                         if (is_null($mapaSeparacaoEn))
                             throw new \Exception("Mapa de Separação $codMapaSeparacao não encontrado!");
+
+                        if ($mapaSeparacaoEn->getStatus()->getId() != 523)
+                            throw new \Exception("Mapa de Separação $codMapaSeparacao não está aberto!");
 
                         $apontamentoMapaEn = $apontamentoMapaRepo->findOneBy(array('codUsuario' => $usuarioEn->getId(), 'mapaSeparacao' => $mapaSeparacaoEn));
                         if (!isset($apontamentoMapaEn) || empty($apontamentoMapaEn))
@@ -536,6 +540,7 @@ class Expedicao_IndexController extends Action {
     public function conferenteApontamentoSeparacaoAjaxAction() {
         $params = $this->_getAllParams();
         $cpf = str_replace(array('.', '-'), '', $params['cpf']);
+        $codMapa = 0;
         $erro = '';
         /** @var \Wms\Domain\Entity\UsuarioRepository $usuarioRepo */
         $usuarioRepo = $this->getEntityManager()->getRepository('wms:Usuario');
@@ -603,14 +608,37 @@ class Expedicao_IndexController extends Action {
                 }
             }
         }else{
-            $usuario = $usuarioRepo->getPessoaByCpf($cpf);
             $erro = '';
+            $usuario = $usuarioRepo->getPessoaByCpf($cpf);
             $salvar = true;
+            if(!empty($usuario)) {
+                if (isset($params['mapa'])) {
+                    $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+                    if ($params['mapa'] == 'false') {
+                        $mapa = $apontamentoMapaRepository->getMapaAbertoUsuario($usuario[0]['COD_PESSOA']);
+                        if (!empty($mapa)) {
+                            $codMapa = $mapa[0]['COD_MAPA_SEPARACAO'];
+                        }
+                    } else {
+                        $mapa = ColetorUtil::retiraDigitoIdentificador($params['mapa']);
+                        $qtdMax = $this->getSystemParameterValue('MAX_PRODUTIVIDADE_MAPA');
+                        $qtdMapa = $apontamentoMapaRepository->getQtdApontamentoMapa($mapa);
+                        if ($qtdMapa['QTD'] >= $qtdMax) {
+                            $erro = 'Quantidade máxima de funcionários já vinculadas a esse mapa';
+                            $salvar = false;
+                        }
+                    }
+                }
+            }else{
+                $erro = 'Nenhum conferente encontrado com este CPF';
+                $salvar = false;
+            }
+
         }
 
 
         if (empty($erro) && $salvar == true) {
-            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA']);
+            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA'], 'mapa' => $codMapa);
         } elseif($salvar == false && empty($erro)) {
             $response = array('result' => 'Error', 'msg' => "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA']);
         }else{
@@ -887,6 +915,11 @@ class Expedicao_IndexController extends Action {
             $sessao = new \Zend_Session_Namespace('coletor');
             $central = $sessao->centralSelecionada;
             $this->view->separacaoEmbalado = (empty($codPessoa)) ? false : true;
+
+            $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
+            $Expedicao->validacaoExpedicao();
+            $Expedicao->osLiberada();
+
             $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
             if (empty($codPessoa)) {
                 /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */

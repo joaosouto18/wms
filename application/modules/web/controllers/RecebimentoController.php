@@ -1205,7 +1205,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $acaoIntegracaoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
             foreach ($explodeIntegracoes as $codIntegracao) {
                 $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
-                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity,null,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
+                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity,null,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::DATA_ESPECIFICA);
             }
         }
 

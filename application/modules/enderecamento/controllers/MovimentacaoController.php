@@ -424,7 +424,7 @@ class Enderecamento_MovimentacaoController extends Action
 
     public function getValidadeAction()
     {
-        $codProduto = $this->_getParam('idProduto');
+        $codProduto = $this->_getParam('idproduto');
         $grade = $this->_getParam('grade');
         $grade = trim($grade);
         $codProduto = trim($codProduto);

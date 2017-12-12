@@ -65,14 +65,23 @@ class Inventario_ParcialController extends Action
                 $values['incluirinput'] = 0;
                 $values['id'] = 1;
             }
-            $grid->init($values)->render();
+            if(isset($values['incluir-lista'])){
+                if($values['incluir-lista'] == 1) {
+                    $listValues = $grid->init($values);
+                    $this->_helper->json(array('success' => $listValues));
+                    die;
+                }else{
+                    $grid->init($values)->render();
+                }
+            }else{
+                $grid->init($values)->render();
+            }
             $pager = $grid->getPager();
             $pager->setMaxPerPage(30000);
             $grid->setPager($pager);
             $this->view->grid = $grid->render();
             if(isset($values['limpar-lista'])){
                 $values['incluirinput'] = '';
-//                $values['id'] = '';
                 unset($values['limpar-lista']);
                 unset($values['idLinhaSeparacao']);
                 unset($values['grade']);
