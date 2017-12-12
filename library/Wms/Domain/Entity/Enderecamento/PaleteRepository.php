@@ -502,26 +502,26 @@ class PaleteRepository extends EntityRepository {
                     }
                 }
 
-                $qtdPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto, $grade, $pickingEn->getId(), $volumes);
+                $saldoPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto, $grade, $pickingEn->getId(), $volumes);
                 $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "E");
                 $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "S");
+                $saldoPickingVirtual = $saldoPickingReal + $reservaEntradaPicking + $reservaSaidaPicking;
 
                 if ($completaPicking) {
-                    if ($capacidadePicking <= $qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking) {
-                        break;
-                    } else if ($capacidadePicking > $qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking) {
-                        if ($quantidadePalete > $capacidadePicking - $qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking) {
+                    if ($capacidadePicking <= $saldoPickingVirtual) {
+                        break; //picking completo, não é necessário abastecer
+                    } else  {
+                        if ($quantidadePalete > $saldoPickingVirtual) {
                             $paleteProdutoEn = $this->getEntityManager()->getReference('wms:Enderecamento\PaleteProduto', $produtos[0]->getId());
-                            $paleteProdutoEn->setQtd($capacidadePicking - $qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking);
+                            $paleteProdutoEn->setQtd($capacidadePicking - $saldoPickingVirtual);
                             $this->getEntityManager()->persist($paleteProdutoEn);
                         }
                     }
                 } else {
-                    if (($qtdPickingReal + $reservaEntradaPicking + $reservaSaidaPicking + $quantidadePalete) > $capacidadePicking) {
+                    if (($saldoPickingVirtual + $quantidadePalete) > $capacidadePicking) {
                         $Resultado = "Quantidade nos paletes superior a capacidade do picking";
                     }
                 }
-
 
                 $this->alocaEnderecoPalete($paleteEn->getId(), $embalagem->getEndereco()->getId());
             }
@@ -977,7 +977,7 @@ class PaleteRepository extends EntityRepository {
         $arrayProdutos = $paleteEn->getProdutosArray();
 
         if ($enderecoAntigoEn != NULL) {
-            $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigoEn, $qtdAdjacente, "LIBERAR");
+            $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigoEn, $qtdAdjacente, "LIBERAR", $paleteEn->getId());
             $reservaEstoqueRepo->cancelaReservaEstoque($paleteEn->getDepositoEndereco()->getId(), $arrayProdutos, "E", "U", $paleteEn->getId());
             if ($enderecoAntigoEn->getId() != $enderecoNovoEn->getId()) {
                 $paleteEn->setImpresso("N");
@@ -1140,7 +1140,7 @@ class PaleteRepository extends EntityRepository {
                     $enderecoAntigo = $paleteEn->getDepositoEndereco();
                     if ($enderecoAntigo != NULL) {
                         $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
-                        $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR");
+                        $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR", $paleteEn->getId());
                         $reservaEstoqueRepo->cancelaReservaEstoque($idEndereco, $paleteEn->getProdutosArray(), "E", "U", $idUma);
                     }
 

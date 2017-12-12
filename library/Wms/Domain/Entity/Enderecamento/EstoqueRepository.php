@@ -79,6 +79,7 @@ class EstoqueRepository extends EntityRepository
         }
 
         $volumeEn = null;
+
         if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])){
             $volumeEn = $params['volume'];
             $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn));
@@ -205,10 +206,36 @@ class EstoqueRepository extends EntityRepository
                 $em->persist($enderecoEn);
             }
         } else {
-            if ($enderecoEn->getDisponivel() == "N") {
-                $enderecoEn->setDisponivel("S");
-                $em->persist($enderecoEn);
+
+            $existeReservaEntradaPendente = false;
+            $existeOutroEstoque = false;
+
+            $SQL = " SELECT * 
+                       FROM RESERVA_ESTOQUE_ENDERECAMENTO REE
+                       INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+                       WHERE RE.IND_ATENDIDA = 'N'
+                         AND RE.COD_DEPOSITO_ENDERECO = '$endereco'";
+            $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+            if (count($result) > 0) {
+                $existeReservaEntradaPendente = true;
             }
+
+            $SQL = " SELECT *
+                       FROM ESTOQUE E 
+                      WHERE E.COD_DEPOSITO_ENDERECO = '$endereco'
+                        AND NOT(E.COD_PRODUTO = '$codProduto' AND E.DSC_GRADE = '$grade')";
+            $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+            if (count($result) > 0) {
+                $existeOutroEstoque = true;
+            }
+
+            if (($existeOutroEstoque == false) && ($existeReservaEntradaPendente == false)) {
+                if ($enderecoEn->getDisponivel() == "N") {
+                    $enderecoEn->setDisponivel("S");
+                    $em->persist($enderecoEn);
+                }
+            }
+
         }
 
         if ($runFlush == true)

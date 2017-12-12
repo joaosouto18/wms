@@ -3839,11 +3839,10 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function getExpedicoesPD(){
         $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA;
-        $SQL = "SELECT DISTINCT E.COD_EXPEDICAO FROM 
-                EXPEDICAO E INNER JOIN RESERVA_ESTOQUE_EXPEDICAO RE ON RE.COD_EXPEDICAO = E.COD_EXPEDICAO
+        $SQL = "SELECT DISTINCT E.COD_EXPEDICAO FROM EXPEDICAO E
                 INNER JOIN ETIQUETA_MAE EM ON E.COD_EXPEDICAO = EM.COD_EXPEDICAO
                 INNER JOIN ETIQUETA_SEPARACAO ES ON ES.COD_ETIQUETA_MAE = EM.COD_ETIQUETA_MAE
-                WHERE RE.TIPO_SAIDA = $tipoSaida AND E.COD_STATUS IN(463, 464) AND ES.DTH_SEPARACAO IS NULL  AND ES.TIPO_SAIDA = 3 ORDER BY E.COD_EXPEDICAO";
+                WHERE E.COD_STATUS IN(463, 464) AND ES.DTH_SEPARACAO IS NULL  AND ES.TIPO_SAIDA = $tipoSaida ORDER BY E.COD_EXPEDICAO";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -3854,7 +3853,6 @@ class ExpedicaoRepository extends EntityRepository {
                 INNER JOIN DEPOSITO_ENDERECO DE ON ES.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                 INNER JOIN ETIQUETA_SEPARACAO ES ON ES.COD_ETIQUETA_MAE = EM.COD_ETIQUETA_MAE
                 WHERE EM.COD_EXPEDICAO = $codExpedicao AND ES.DTH_SEPARACAO IS NULL AND ES.TIPO_SAIDA = $tipoSaida";
-//                 ";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
