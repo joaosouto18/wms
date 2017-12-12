@@ -32,7 +32,7 @@ class NotaFiscalSaidaRepository extends EntityRepository {
                 ->innerJoin('wms:Pessoa\Juridica', 'pj', 'WITH', 'pj.id = pes.id');
 
         if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
-            $sql->andWhere("nfs.numeroNf = $data[notaFiscal]");
+            $sql->andWhere("nfs.numeroNf IN (".$data['notaFiscal'].")");
         } elseif (isset($data['carga']) && !empty($data['carga'])) {
             $sql->andWhere("c.codCargaExterno = $data[carga]");
         }
@@ -45,7 +45,6 @@ class NotaFiscalSaidaRepository extends EntityRepository {
         $sql->groupBy('nfs.numeroNf', 'c.codCargaExterno', 'nfs.serieNf', 'nfs.id', 'pj.cnpj', 'pes.nome');
 
         $result = $sql->getQuery()->getResult();
-
         if ($recursive == false) {
             if (count($result) == 0) {
                 if ($this->getSystemParameterValue('IND_UTILIZA_INTEGRACAO_NF_SAIDA') == 'S') {
