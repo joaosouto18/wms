@@ -89,7 +89,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var id = $("#fieldset-embalagem #embalagem-id").val();
                                 var este = this;
 
-                                if (!this.verificarEmbalagemRecebimento(id, valores)) {
+                                if (!this.verificarEmbalagens(id, valores)) {
                                     return false;
                                 }
 
@@ -411,7 +411,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                              * @param {jQuery} el A jQuery wrapped element.
                              * @param {Event} ev A jQuery event whose default action is prevented.
                              */
-                            '##embalagem-CBInterno change': function (el, ev) {
+                            '#embalagem-CBInterno change': function (el, ev) {
                                 var inptCodBarras = $('#embalagem-codigoBarras');
                                 if (el.val() === "S") {
                                     $('#embalagem-imprimirCB').val('S');
@@ -541,7 +541,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                             /**
                              * Valida as embalagens cadastradas
                              */
-                            verificarEmbalagemRecebimento: function (id, valores) {
+                            verificarEmbalagens: function (id, valores) {
 
                                 // constantes tipo comercializacao
                                 var UNITARIO = 1;
@@ -553,7 +553,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 // variaveis
                                 var qtdEmbalagensCadastradas = $('.produto_embalagem').size();
                                 // campos da embalagem
-                                var inputsEmbalagem = $('#div-lista-embalagens input');
+                                var blocosEmbalagem = $('div.produto_embalagem');
                                 // controle da quantidade de embalagens do tipo recebimento
                                 var qtdEmbalagensRecebimento = 0;
                                 // controle da quantidade de embalagens do tipo expedicao
@@ -561,19 +561,30 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 // quantidades de itens da embalagem de recebimento cadastrada
                                 var qtdItemEmbalagemRecebimento = 0;
 
-                                // verifico se existe embalagem de recebimento
-                                inputsEmbalagem.each(function (i, v) {
+                                var errEmb = false;
 
-                                    if (this.className == 'isPadrao') {
-                                        if (this.value == 'S') {
-                                            // adiciono o valor da embalagem de recebimento
-                                            qtdItemEmbalagemRecebimento = parseFloat($(this).parent('div').find('.qtdItens').val().replace(',', '.'));
-                                            // incremento a qtd de embalagens de recebimento cadastradas
-                                            qtdEmbalagensRecebimento = qtdEmbalagensRecebimento + 1;
-                                        } else
-                                            qtdEmbalagensExpedicao = qtdEmbalagensExpedicao + 1;
+                                // verifico se existe embalagem de recebimento
+                                blocosEmbalagem.each(function (i, v) {
+                                    var embalagem = $(this).model();
+
+                                    if (valores.isEmbExpDefault === "S" && embalagem.isEmbExpDefault.toString() === 'S') {
+                                        errEmb = true;
+                                    }
+
+                                    if (embalagem.isPadrao === 'S') {
+                                        // adiciono o valor da embalagem de recebimento
+                                        qtdItemEmbalagemRecebimento = parseFloat($(this).parent('div').find('.qtdItens').val().replace(',', '.'));
+                                        // incremento a qtd de embalagens de recebimento cadastradas
+                                        qtdEmbalagensRecebimento = qtdEmbalagensRecebimento + 1;
+                                    } else {
+                                        qtdEmbalagensExpedicao = qtdEmbalagensExpedicao + 1;
                                     }
                                 });
+
+                                if (errEmb) {
+                                    this.dialogAlert("Já existe uma embalagem padrão de expedição, exclua ou edite a mesma.");
+                                    return false;
+                                }
 
                                 // se não houver embalagem cadastrada
                                 if (qtdEmbalagensCadastradas == 0) {
@@ -728,11 +739,10 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var blocosEmbalagem = $('div.produto_embalagem');
 
                                 blocosEmbalagem.each(function () {
-                                    var id = $(this).find('.embalagem-id').val();
-                                    var isPadrao = $(this).find('.isPadrao').val();
+                                    var embalagem = $(this).model();
 
-                                    if (isPadrao === 'S') {
-                                        idEmbalagemRecebimento = id;
+                                    if (embalagem.isPadrao === 'S') {
+                                        idEmbalagemRecebimento = embalagem.id;
                                     }
                                 });
 
@@ -847,7 +857,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var endereco = valores.endereco;
                                 var pontoReposicao = valores.pontoReposicao * valores.quantidade;
                                 var capacidadePicking = valores.capacidadePicking * valores.quantidade;
-                                var quantidade = valores.quantidade;
                                 $('input.acao').each(function () {
                                     $(this).val('alterar');
                                 });
@@ -902,7 +911,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 } else {
                                     blocosEmbalagem.each(function () {
                                         var embRecebimento = $(this).model();
-                                        console.log(embRecebimento);
                                         if (embRecebimento.isEmbFracionavelDefault.toString() === 'S') {
                                             embFracionavelDefault = embRecebimento;
                                         }

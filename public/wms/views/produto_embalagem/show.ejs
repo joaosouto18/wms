@@ -12,7 +12,7 @@
                     Data de Inativação:
                 </div>
                 <div>
-                    <input id="ativarDesativar" value="<%= this.id%>" type="checkbox" name="embalagens[<%= this.id%>][ativarDesativar]" class="ativarDesativar" <%= this.ativarDesativar%> />
+                    <input <% if (this.isEmbFracionavelDefault == 'S') {%><%="disabled"%><%}%> id="ativarDesativar" value="<%= this.id%>" type="checkbox" name="embalagens[<%= this.id%>][ativarDesativar]" class="ativarDesativar" <%= this.ativarDesativar%> />
                     <span style="float:left" id="dataInativacao" class="dataInativacao"><%= this.dataInativacao%></span>
                 </div>
             </td>

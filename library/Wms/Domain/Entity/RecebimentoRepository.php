@@ -1236,9 +1236,10 @@ class RecebimentoRepository extends EntityRepository {
     public function buscarConferenciaPorEmbalagem($produto, $grade, $idOrdemServico) {
         // busca embalagens
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('pe.quantidade qtdEmbalagem, re.qtdConferida')
+                ->select("CASE WHEN p.indFracionavel != 'S' THEN pe.quantidade ELSE 1 END AS qtdEmbalagem, re.qtdConferida")
                 ->from('wms:Produto\Embalagem', 'pe')
                 ->innerJoin('pe.recebimentoEmbalagens', 're')
+                ->innerJoin("pe.produto", "p")
                 ->where('pe.codProduto = :produto AND pe.grade = :grade')
                 ->andWhere('re.ordemServico = ?1')
                 ->setParameters(

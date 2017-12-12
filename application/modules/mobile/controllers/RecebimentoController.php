@@ -180,6 +180,25 @@ class Mobile_RecebimentoController extends Action
             $normasPaletizacao = $this->em->getRepository('wms:Produto\NormaPaletizacao')->getUnitizadoresByProduto($itemNF['idProduto'],$itemNF['grade']);
             $this->view->normasPaletizacao = $normasPaletizacao;
 
+            $dscEmbFracionavelDefault = null;
+            if ($itemNF['indFracionavel'] == 'S' && $itemNF['embFracDefault'] == 'S') {
+                $prodEmbRepo = $this->_em->getRepository("wms:Produto\Embalagem");
+                $args = [
+                    "codProduto" => $idProduto,
+                    "grade" => $grade,
+                    "isEmbFracionavelDefault" => "N",
+                    "dataInativacao" => null,
+                    "isEmbExpDefault" => "N"
+                ];
+                $embArmazenagem = $prodEmbRepo->findBy($args, array("quantidade" => "DESC"));
+                if (!empty($embArmazenagem)) {
+                    $dscEmbFracionavelDefault = $embArmazenagem[0]->getDescricao();
+                }
+            } elseif ($itemNF['indFracionavel'] == 'S' && $itemNF['embFracDefault'] == 'N') {
+                $dscEmbFracionavelDefault = $itemNF['descricaoEmbalagem'];
+            }
+
+            $this->view->dscEmbFracDefault = $dscEmbFracionavelDefault;
             $this->view->pesoVariavel = $pesoVariavel;
             $this->view->embFracionavelDefault = $itemNF['embFracDefault'];
             $this->view->indFracionavel = $itemNF['indFracionavel'];
@@ -353,6 +372,7 @@ class Mobile_RecebimentoController extends Action
                 $idConferente = unserialize($params['idConferente']);
                 $unMedida = unserialize($params['unMedida']);
                 $dataValidade = unserialize($params['dataValidade']);
+                $qtdUnidFracionavel = unserialize($params['qtdUnidFracionavel']);
             } else {
                 $idRecebimento = $params['idRecebimento'];
                 $idOrdemServico = $params['idOrdemServico'];
@@ -386,10 +406,10 @@ class Mobile_RecebimentoController extends Action
                     }
                     // gravo conferencia do item
                     if (isset($idProdutoVolume)) {
-                        $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params);
+                        $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $qtdUnidFracionavel, $idNormaPaletizacao, $params);
                         $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
                     } elseif (isset($idProdutoEmbalagem)) {
-                        $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $idNormaPaletizacao, $params);
+                        $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $qtdUnidFracionavel, $idNormaPaletizacao, $params);
                         $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
                     }
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
