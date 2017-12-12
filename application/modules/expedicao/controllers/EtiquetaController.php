@@ -329,6 +329,9 @@ class Expedicao_EtiquetaController  extends Action
 
         if ($request->isPost()) {
 
+            /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+            $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
+
             $senhaDigitada    = $request->getParam('senhaConfirmacao');
             $senhaAutorizacao = $this->em->getRepository('wms:Sistema\Parametro')->findOneBy(array('idContexto' => 3, 'constante' => 'SENHA_AUTORIZAR_DIVERGENCIA'));
             $senhaAutorizacao = $senhaAutorizacao->getValor();
@@ -352,37 +355,45 @@ class Expedicao_EtiquetaController  extends Action
 
                 if ($reentrega == "N") {
 
-                    $etiquetaEntity = $EtiquetaRepo->findOneBy(array('id' => $codBarra));
-                    if ($etiquetaEntity == null ) {
-                        $this->addFlashMessage('error', "Etiqueta não $codBarra encontrada");
-                        $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
+                    $arrEtiquetasEn = array();
+                    foreach($etiqueta as $etq) {
+                        $etiquetaEntity = $EtiquetaRepo->findOneBy(array('id' => $etq));
+                        if ($etiquetaEntity == null ) {
+                            $this->addFlashMessage('error', "Etiqueta não $codBarra encontrada");
+                            $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
+                        }
+
+                        if ($Etiqueta->jaReimpressa($etiquetaEntity)) {
+                            $this->addFlashMessage('info', "Etiqueta $etq não pode ser reimpressa mais de uma vez");
+                            $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
+                        }
+
+                        if ($etiquetaEntity->getProdutoEmbalagem() != NULL) {
+                            $codBarrasProdutos = $etiquetaEntity->getProdutoEmbalagem()->getCodigoBarras();
+                        } else {
+                            $codBarrasProdutos = $etiquetaEntity->getProdutoVolume()->getCodigoBarras();
+                        }
+
+                        $andamentoRepo->save('Reimpressão da etiqueta:'.$codBarra, $idExpedicao, false, false, $etq, $codBarrasProdutos);
+
+                        $arrEtiquetasEn[] = $etiquetaEntity;
                     }
 
-                    if ($Etiqueta->jaReimpressa($etiquetaEntity)) {
-                        $this->addFlashMessage('info', 'Etiqueta não pode ser reimpressa mais de uma vez');
-                        $this->_redirect('/expedicao/etiqueta/reimprimir' . $complementoUrl . '/id/'.$idExpedicao);
-                    }
                     $Etiqueta->reimprimir($etiquetaEntity, $motivo, $modelo);
 
-                    if ($etiquetaEntity->getProdutoEmbalagem() != NULL) {
-                        $codBarrasProdutos = $etiquetaEntity->getProdutoEmbalagem()->getCodigoBarras();
-                    } else {
-                        $codBarrasProdutos = $etiquetaEntity->getProdutoVolume()->getCodigoBarras();
-                    }
                 } else {
-                    $codBarrasProdutos = null;
                     $Etiqueta->imprimirReentrega($idExpedicao, null, $modelo,true,$etiqueta);
+
+                    foreach ($etiqueta as $etq) {
+                        $andamentoRepo->save('Reimpressão da etiqueta de reentrega:'.$etq, $idExpedicao, false, false, $etq, null);
+                    }
+
                 }
 
-                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-                $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
+                $this->getEntityManager()->flush();
 
                 if ($reentrega == "S") {
-                    $andamentoRepo->save('Reimpressão da etiqueta de reentrega:'.$codBarra, $idExpedicao, false, true, $codBarra, $codBarrasProdutos);
                     exit;
-                } else {
-
-                    $andamentoRepo->save('Reimpressão da etiqueta:'.$codBarra, $idExpedicao, false, true, $codBarra, $codBarrasProdutos);
                 }
 
             } else {
