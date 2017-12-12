@@ -977,7 +977,7 @@ class PaleteRepository extends EntityRepository {
         $arrayProdutos = $paleteEn->getProdutosArray();
 
         if ($enderecoAntigoEn != NULL) {
-            $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigoEn, $qtdAdjacente, "LIBERAR");
+            $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigoEn, $qtdAdjacente, "LIBERAR", $paleteEn->getId());
             $reservaEstoqueRepo->cancelaReservaEstoque($paleteEn->getDepositoEndereco()->getId(), $arrayProdutos, "E", "U", $paleteEn->getId());
             if ($enderecoAntigoEn->getId() != $enderecoNovoEn->getId()) {
                 $paleteEn->setImpresso("N");
@@ -1140,7 +1140,7 @@ class PaleteRepository extends EntityRepository {
                     $enderecoAntigo = $paleteEn->getDepositoEndereco();
                     if ($enderecoAntigo != NULL) {
                         $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
-                        $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR");
+                        $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR", $paleteEn->getId());
                         $reservaEstoqueRepo->cancelaReservaEstoque($idEndereco, $paleteEn->getProdutosArray(), "E", "U", $idUma);
                     }
 

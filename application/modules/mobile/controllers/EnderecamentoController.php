@@ -333,7 +333,7 @@ class Mobile_EnderecamentoController extends Action
                     $this->createXml('error', "Só é permitido endereçar no picking quando o recebimento estiver finalizado");
                 }
                 if ($enderecoAntigo != NULL) {
-                    $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR");
+                    $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR" , $paleteEn->getId());
                     $reservaEstoqueRepo->cancelaReservaEstoque($paleteEn->getDepositoEndereco()->getId(), $paleteEn->getProdutosArray(), "E", "U", $paleteEn->getId());
                 }
                 $reservaEstoqueRepo->adicionaReservaEstoque($enderecoEn->getId(), $paleteEn->getProdutosArray(), "E", "U", $paleteEn->getId());
@@ -345,7 +345,7 @@ class Mobile_EnderecamentoController extends Action
                     $this->createXml('error', 'Espaço insuficiente no endereço');
                 }
                 if ($enderecoAntigo != NULL) {
-                    $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR");
+                    $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR", $paleteEn->getId());
                     $reservaEstoqueRepo->cancelaReservaEstoque($paleteEn->getDepositoEndereco()->getId(), $paleteEn->getProdutosArray(), "E", "U", $paleteEn->getId());
                 }
                 $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoEn, $qtdAdjacente, "OCUPAR");
@@ -435,7 +435,7 @@ class Mobile_EnderecamentoController extends Action
                 throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
             }
             if ($enderecoAntigo != NULL) {
-                $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo,$qtdAdjacente,"LIBERAR");
+                $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo,$qtdAdjacente,"LIBERAR", $paleteEn->getId());
                 $reservaEstoqueRepo->cancelaReservaEstoque($paleteEn->getDepositoEndereco()->getId(),$paleteEn->getProdutosArray(),"E","U",$paleteEn->getId());
             }
         } else {
@@ -444,7 +444,7 @@ class Mobile_EnderecamentoController extends Action
                 $this->_redirect('mobile/enderecamento/ler-codigo-barras');
             }
             if ($enderecoAntigo != NULL) {
-                $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo,$qtdAdjacente,"LIBERAR");
+                $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo,$qtdAdjacente,"LIBERAR", $paleteEn->getId());
                 $reservaEstoqueRepo->cancelaReservaEstoque($paleteEn->getDepositoEndereco()->getId(),$paleteEn->getProdutosArray(),"E","U",$paleteEn->getId());
             }
             $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoEn,$qtdAdjacente,"OCUPAR");
