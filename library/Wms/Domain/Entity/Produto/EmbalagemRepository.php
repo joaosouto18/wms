@@ -3,6 +3,8 @@
 namespace Wms\Domain\Entity\Produto;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Entity\Produto;
+use Wms\Math;
 
 class EmbalagemRepository extends EntityRepository {
 
@@ -105,17 +107,31 @@ class EmbalagemRepository extends EntityRepository {
         $embalagensEn = $this->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
         $qtdRestante = $qtd;
         $return = $qtd;
+        $embFracDefault = null;
         if (!empty($embalagensEn)) {
+            /**
+             * @var int $key
+             * @var Embalagem $embalagem
+             */
             foreach ($embalagensEn as $key => $embalagem) {
+                if ($embalagem->isEmbFracionavelDefault() == "S") {
+                    $embFracDefault = $embalagem;
+                }
                 $qtdEmbalagem = $embalagem->getQuantidade();
-                if ($qtdRestante >= $qtdEmbalagem) {
-                    $qtdSeparar = (int) ($qtdRestante / $qtdEmbalagem);
-                    $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
+                if (Math::compare($qtdRestante, $qtdEmbalagem, '>=')) {
+                    $resto = Math::resto($qtdRestante, $qtdEmbalagem);
+                    $qtdSeparar = Math::dividir(Math::subtrair($qtdRestante, $resto), $qtdEmbalagem);
+                    $qtdRestante = $resto;
                     if ($array === 0) {
                         if ($embalagem->getDescricao() != null) {
-                            $arrayQtds[] = $qtdSeparar . ' ' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+                            if ($embalagem->isEmbFracionavelDefault() != "S") {
+                                $fatorEmb = $embalagem->getDescricao(). "(" . $embalagem->getQuantidade() . ")";
+                            } else {
+                                $fatorEmb = Produto::$listaUnidadeMedida[$embalagem->getProduto()->getUnidadeFracao()] . "S";
+                            }
+                            $arrayQtds[$embalagem->getId()] = $qtdSeparar . ' ' . $fatorEmb;
                         } else {
-                            $arrayQtds[] = $qtd;
+                            $arrayQtds[$embalagem->getId()] = $qtd;
                         }
                     } else {
                         if ($embalagem->getDescricao() == null) {
@@ -128,6 +144,15 @@ class EmbalagemRepository extends EntityRepository {
                     }
                 }
             }
+            if ($qtdRestante > 0 && !empty($embFracDefault)) {
+                if (isset($arrayQtds[$embFracDefault->getId()])) {
+                    $pref = $arrayQtds[$embFracDefault->getId()];
+                    $args = explode(' ', $pref);
+                    $args[0] = Math::adicionar($args[0], $qtdRestante) ;
+                    $arrayQtds[$embFracDefault->getId()] = implode(' ', $args);
+                }
+            }
+
             $return = $arrayQtds;
         }
         return $return;
