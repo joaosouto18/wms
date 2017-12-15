@@ -734,6 +734,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
     }
 
     public function getQueryRessuprimentoPreventivo($parametros) {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '-1');
         $SQL = "SELECT DISTINCT P.COD_PRODUTO,
                     P.DSC_GRADE,
                     DE.DSC_DEPOSITO_ENDERECO,
