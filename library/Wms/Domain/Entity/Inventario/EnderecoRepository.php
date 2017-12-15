@@ -200,7 +200,7 @@ class EnderecoRepository extends EntityRepository
             ->from("wms:Inventario\Endereco","ie")
             ->andWhere("ie.inventariado = 1")
             ->andWhere("ie.atualizaEstoque = 1")
-            ->andWhere("ie.inventario = $idInventario");
+            ->andWhere("ie.inventario IN ($idInventario)");
 
         return $query->getQuery()->getResult();
     }

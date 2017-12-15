@@ -144,15 +144,22 @@ class Inventario_IndexController  extends Action
             /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
             $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
+            $inventarioRepo = $this->_em->getRepository('wms:Inventario');
+
             $codInvErp = $inventarioEn->getCodInventarioERP();
             if (empty($codInvErp)){
                 throw new Exception("Este inventário não tem o código do inventário respectivo no ERP");
             }
+            $inventariosByErp = $inventarioRepo->findBy(array('codInventarioERP' => $codInvErp));
+            foreach ($inventariosByErp as $inventarios) {
+                $inventario[] = $inventarios->getId();
+            }
+            $codInventarios = implode(',', $inventario);
 
-            $filename = "Exp_Inventario_$id($codInvErp).txt";
+            $filename = "Exp_Inventario($codInvErp).txt";
             $file = fopen($filename, 'w');
 
-            $invEnderecosEn = $enderecoRepo->getComContagem($inventarioEn->getId());
+            $invEnderecosEn = $enderecoRepo->getComContagem($codInventarios);
             $qtdTotal = 0;
             $produtoAnterior = null;
             $inventario = array();
@@ -217,14 +224,14 @@ class Inventario_IndexController  extends Action
             if (!empty($codInventarioErp)) {
                 /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
                 $inventarioRepo = $this->em->getRepository('wms:Inventario');
-                $check = $inventarioRepo->findOneBy(array('codInventarioERP' => $codInventarioErp));
-                if (empty($check)) {
+//                $check = $inventarioRepo->findOneBy(array('codInventarioERP' => $codInventarioErp));
+//                if (empty($check)) {
                     $inventarioRepo->setCodInventarioERP($id,$codInventarioErp);
                     $this->addFlashMessage('success', 'Código vinculado com sucesso!');
-                } else {
-                    $idInventario = $check->getId();
-                    $this->addFlashMessage('error', "O inventário $idInventario já está vinculado com esse código $codInventarioErp");
-                }
+//                } else {
+//                    $idInventario = $check->getId();
+//                    $this->addFlashMessage('error', "O inventário $idInventario já está vinculado com esse código $codInventarioErp");
+//                }
                 $this->redirect('index');
             }
 
