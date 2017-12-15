@@ -41,7 +41,7 @@
                         <td><?php echo $produto['grade'] ?></td>
                         <td>
                         <?php if (isset($produto['embalagens'])) {
-                                echo "<select class='Embalagem' title='[$produto[codigo]][$produto[grade]]' id='embalagem-$produto[codigo]-$produto[grade]'>";
+                                echo "<select class='Embalagem' name='embalagem[$produto[codigo]][$produto[grade]]' title='Embalagem do produto $produto[codigo]-$produto[grade]' id='embalagem-$produto[codigo]-$produto[grade]'>";
                                 foreach ($produto['embalagens'] as $embalagem) {
                                     echo "<option value='$embalagem[id]' data-fracionavel-default='$embalagem[isFracDefault]'>$embalagem[dsc]</option>";
                                 }
