@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Produto;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Math;
 
 class EmbalagemRepository extends EntityRepository {
 
@@ -105,12 +106,13 @@ class EmbalagemRepository extends EntityRepository {
         $embalagensEn = $this->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
         $qtdRestante = $qtd;
         $return = $qtd;
+        $Math = new Math();
         if (!empty($embalagensEn)) {
             foreach ($embalagensEn as $key => $embalagem) {
                 $qtdEmbalagem = $embalagem->getQuantidade();
-                if ($qtdRestante >= $qtdEmbalagem) {
-                    $qtdSeparar = (int) ($qtdRestante / $qtdEmbalagem);
-                    $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
+                if ($Math::compare($qtdRestante, $qtdEmbalagem, '>=')) {
+                    $qtdSeparar = $Math::dividir($qtdRestante, $qtdEmbalagem);
+                    $qtdRestante = $Math::subtrair($qtdRestante, $Math::multiplicar($qtdSeparar, $qtdEmbalagem));
                     if ($array === 0) {
                         if ($embalagem->getDescricao() != null) {
                             $arrayQtds[] = $qtdSeparar . ' ' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";

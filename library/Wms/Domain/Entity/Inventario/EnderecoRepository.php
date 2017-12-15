@@ -181,7 +181,7 @@ class EnderecoRepository extends EntityRepository
             ->from("wms:Inventario\Endereco","ie")
             ->innerJoin("wms:Inventario\ContagemEndereco", 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
             ->andWhere("ie.id IN ($idInvEnd)")
-            ->groupBy('ce.codProduto, ce.grade, ce.codProdutoEmbalagem, ce.codProdutoVolume, ie.inventario, ie.id')
+            ->groupBy('ce.codProduto, ce.grade, ce.codProdutoEmbalagem, ce.codProdutoVolume, ie.id')
             ->orderBy('ce.codProduto, ce.grade');
 
         $results = $query->getQuery()->getResult();

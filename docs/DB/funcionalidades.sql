@@ -285,4 +285,5 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (285, '6.6.0', 'Melhoria: Ajuste no apontamento de produtividade mapa', '6-ajuste-produtividade.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.x.x', 'Melhoria: Ajuste produtividade detalhada para etiqueta', '7-procedure-produtividade-detalhe-etiqueta.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.x.x', 'Melhoria: Ajuste de importação de inventário para ERP Winthor', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.x.x', 'Correção: Chamada de classe Math para exibiçao de produtos em caixa master', null, SYSDATE);
 
