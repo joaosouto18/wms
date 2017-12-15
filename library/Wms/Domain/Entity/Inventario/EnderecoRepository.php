@@ -174,14 +174,15 @@ class EnderecoRepository extends EntityRepository
 
     public function getUltimaContagem($enderecoEntity)
     {
-        $idInvEnd = $enderecoEntity->getId();
+        $idInvEnd = (is_object($enderecoEntity)) ? $enderecoEntity->getId() : $enderecoEntity;
 
         $query = $this->_em->createQueryBuilder()
             ->select('max(ce.id) id, ce.codProduto, ce.grade, ce.codProdutoEmbalagem, ce.codProdutoVolume')
             ->from("wms:Inventario\Endereco","ie")
             ->innerJoin("wms:Inventario\ContagemEndereco", 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
-            ->andWhere("ie.id = $idInvEnd")
-            ->groupBy('ce.codProduto, ce.grade, ce.codProdutoEmbalagem, ce.codProdutoVolume');
+            ->andWhere("ie.id IN ($idInvEnd)")
+            ->groupBy('ce.codProduto, ce.grade, ce.codProdutoEmbalagem, ce.codProdutoVolume, ie.inventario, ie.id')
+            ->orderBy('ce.codProduto, ce.grade');
 
         $results = $query->getQuery()->getResult();
         /** @var \Wms\Domain\Entity\Inventario\ContagemEndereco $invContagemEndRepo */

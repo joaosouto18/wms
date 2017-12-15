@@ -164,21 +164,23 @@ class Inventario_IndexController  extends Action
             $produtoAnterior = null;
             $inventario = array();
             foreach ($invEnderecosEn as $invEnderecoEn) {
-                $contagemEndEnds = $enderecoRepo->getUltimaContagem($invEnderecoEn);
-                foreach ($contagemEndEnds as $contagemEndEn) {
-                    $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()), array('quantidade' => 'ASC'));
-                    if ($produtoAnterior != $contagemEndEn->getCodProduto())
-                        $qtdTotal = 0;
+                $codInventarioEnderecos[] = $invEnderecoEn->getId();
+            }
+            $codInventarioEndereco = implode(',',$codInventarioEnderecos);
 
+            $contagemEndEnds = $enderecoRepo->getUltimaContagem($codInventarioEndereco);
+            foreach ($contagemEndEnds as $contagemEndEn) {
+                $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()), array('quantidade' => 'ASC'));
+                if (!$embalagemEntity) continue;
+                if ($produtoAnterior != $contagemEndEn->getCodProduto()) $qtdTotal = 0;
 
-                    $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
-                    $qtdTotal = $qtdTotal + $qtdContagem;
-                    $inventario[$contagemEndEn->getCodProduto()]['QUANTIDADE'] = $qtdTotal;
-                    $inventario[$contagemEndEn->getCodProduto()]['NUM_CONTAGEM'] = $contagemEndEn->getNumContagem();
-                    $inventario[$contagemEndEn->getCodProduto()]['COD_BARRAS'] = $embalagemEntity[0]->getCodigoBarras();
-                    $inventario[$contagemEndEn->getCodProduto()]['FATOR'] = $embalagemEntity[0]->getQuantidade();
-                    $produtoAnterior = $contagemEndEn->getCodProduto();
-                }
+                $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
+                $qtdTotal = $qtdTotal + $qtdContagem;
+                $inventario[$contagemEndEn->getCodProduto()]['QUANTIDADE'] = $qtdTotal;
+                $inventario[$contagemEndEn->getCodProduto()]['NUM_CONTAGEM'] = $contagemEndEn->getNumContagem();
+                $inventario[$contagemEndEn->getCodProduto()]['COD_BARRAS'] = reset($embalagemEntity)->getCodigoBarras();
+                $inventario[$contagemEndEn->getCodProduto()]['FATOR'] = reset($embalagemEntity)->getQuantidade();
+                $produtoAnterior = $contagemEndEn->getCodProduto();
             }
 
             foreach ($inventario as $key => $produto) {
