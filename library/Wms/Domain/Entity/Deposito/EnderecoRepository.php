@@ -315,20 +315,29 @@ class EnderecoRepository extends EntityRepository {
      * @param bool $picking | true pega endereço do tipo picking
      * @return array
      */
-    public function getProdutoByEndereco($dscEndereco, $unico = true, $picking = false)
+    public function getProdutoByEndereco($dscEndereco, $unico = true, $picking = false, $detalharVolume = true)
     {
 
         $endereco = EnderecoUtil::formatar($dscEndereco);
 
+        $select = "
+            p.id as codProduto, 
+            p.grade,
+            p.descricao, 
+            NVL(pe.capacidadePicking, pv.capacidadePicking) capacidadePicking, 
+            f.nome fabricante, 
+            p.referencia
+        ";
+
+        if ($detalharVolume == true) {
+            $select = $select & "            
+            ,NVL(pe.descricao, pv.descricao) descricaoEmbVol, 
+             NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, 
+            ";
+        }
+
         $dql = $this->_em->createQueryBuilder()
-            ->select('p.id as codProduto, 
-                            p.grade,
-                            p.descricao, 
-                            NVL(pe.capacidadePicking, pv.capacidadePicking) capacidadePicking, 
-                            NVL(pe.descricao, pv.descricao) descricaoEmbVol, 
-                            NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, 
-                            f.nome fabricante, 
-                            p.referencia')
+            ->select($select)
             ->distinct(true)
             ->from("wms:Deposito\Endereco", "de")
             ->leftJoin("wms:Produto\Volume", "pv", "WITH", "pv.endereco = de")
@@ -477,7 +486,7 @@ class EnderecoRepository extends EntityRepository {
         }
     }
 
-    public function ocuparLiberarEnderecosAdjacentes($enderecoEn, $qtdAdjacente, $operacao = "OCUPAR", $idUma = "") {
+    public function ocuparLiberarEnderecosAdjacentes($enderecoEn, $qtdAdjacente, $operacao = "OCUPAR") {
         if ($operacao == "OCUPAR") {
             if ($enderecoEn->getDisponivel() == "S") {
                 $enderecoEn->setDisponivel("N");
