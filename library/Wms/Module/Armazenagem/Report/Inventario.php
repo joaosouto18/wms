@@ -16,9 +16,10 @@ class Inventario extends Pdf
         $this->SetFont('Arial', 'B', 8);
         $this->Cell(20,  5, utf8_decode("Endereço")  ,1, 0);
         $this->Cell(15,  5, utf8_decode("Código")   ,1, 0);
-        $this->Cell(105, 5, utf8_decode("Descrição") ,1, 0);
-        $this->Cell(60, 5, utf8_decode("Volume") ,1, 0);
-        $this->Cell(55, 5, utf8_decode("Unitizador") ,1, 0);
+        $this->Cell(80, 5, utf8_decode("Descrição") ,1, 0);
+        $this->Cell(50, 5, utf8_decode("Grade") ,1, 0);
+        $this->Cell(50, 5, utf8_decode("Volume") ,1, 0);
+        $this->Cell(40, 5, utf8_decode("Unitizador") ,1, 0);
         $this->Cell(12,  5, "Qtde" ,1, 1);
     }
 
@@ -63,7 +64,7 @@ class Inventario extends Pdf
             $codProdutoAnterior = $saldo[0]['codProduto'];
             $dscProdutoAnterior = $saldo[0]['descricao'];
             $unitizadorAnterior = $saldo[0]['unitizador'];
-            $gradeAnterior= $saldo[0]['grade'];
+            $gradeAnterior = substr($saldo[0]['grade'], 0 , 27);
             $qtdAnterior = "";
 
             if ($exibirEstoque == true) {
@@ -78,7 +79,7 @@ class Inventario extends Pdf
             $dscProduto = str_replace('  ',' ',$estoque['descricao']);
             $descricaoVolume = str_replace(";CADASTRO","",$estoque['volume']);
             $unitizador = $estoque['unitizador'];
-            $grade= $estoque['grade'];
+            $grade = substr($estoque['grade'], 0, 27);
             $qtd = "";
 
             if ($exibirEstoque == true) {
@@ -95,12 +96,13 @@ class Inventario extends Pdf
                     $estoque['unitizador'] = "";
                 }
 
-                $this->Cell(20,5, $enderecoAnterior ,1, 0);
-                $this->Cell(15, 5, $codProdutoAnterior ,1, 0);
-                $this->Cell(105, 5, str_replace('  ',' ',$dscProdutoAnterior),1, 0);
-                $this->Cell(60, 5, $dscVolumes ,1, 0);
-                $this->Cell(55, 5, $unitizadorAnterior ,1, 0);
-                $this->Cell(12, 5, $qtdAnterior ,1, 1);
+                $this->Cell(20,5, $enderecoAnterior, 1, 0);
+                $this->Cell(15, 5, $codProdutoAnterior, 1, 0);
+                $this->Cell(80, 5, str_replace('  ',' ',$dscProdutoAnterior),1, 0);
+                $this->Cell(50, 5, $gradeAnterior, 1, 0);
+                $this->Cell(50, 5, $dscVolumes, 1, 0);
+                $this->Cell(40, 5, $unitizadorAnterior, 1, 0);
+                $this->Cell(12, 5, $qtdAnterior, 1, 1);
 
                 $dscVolumes = "";
             }
@@ -124,9 +126,10 @@ class Inventario extends Pdf
 
                 $this->Cell(20,5,$enderecoAnterior ,1, 0);
                 $this->Cell(15, 5, $codProdutoAnterior ,1, 0);
-                $this->Cell(105, 5, str_replace('  ',' ',$dscProdutoAnterior),1, 0);
-                $this->Cell(60, 5, $dscVolumes ,1, 0);
-                $this->Cell(55, 5, $unitizadorAnterior ,1, 0);
+                $this->Cell(80, 5, str_replace('  ',' ',$dscProdutoAnterior),1, 0);
+                $this->Cell(50, 5, $gradeAnterior, 1, 0);
+                $this->Cell(50, 5, $dscVolumes ,1, 0);
+                $this->Cell(40, 5, $unitizadorAnterior ,1, 0);
                 $this->Cell(12, 5, $qtdAnterior ,1, 1);
             }
         }
