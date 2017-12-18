@@ -15,10 +15,16 @@ class EnderecoRepository extends EntityRepository
     public function save($params)
     {
 
+        if (isset($params['inventario']) && !empty($params['inventario'])) {
+            $params['inventarioEn'] = $params['inventario'];
+        }
         if (empty($params['codInventario']) and empty($params['inventarioEn'])) {
             throw new \Exception("O inventário não foi especificado");
         }
 
+        if (isset($params['depositoEndereco']) && !empty($params['depositoEndereco'])) {
+            $params['depositoEnderecoEn'] = $params['depositoEndereco'];
+        }
         if (empty($params['codDepositoEndereco']) and empty($params['depositoEnderecoEn'])) {
             throw new \Exception("O endereço não foi especificado");
         }
