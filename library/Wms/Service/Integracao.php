@@ -3,6 +3,7 @@
 namespace Wms\Service;
 
 use Core\Util\String;
+use Doctrine\DBAL\Types\BooleanType;
 use Doctrine\ORM\EntityManager;
 use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
 use Wms\Domain\Entity\Integracao\TabelaTemporaria;
