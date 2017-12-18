@@ -49,7 +49,7 @@ class Mobile_IndexController  extends Action
             ),
             11 => array(
                 'url' => '/mobile/index/separacao-pulmao-doca-ajax',
-                'label' => 'SEPRACACAO PULMAO DOCA'
+                'label' => 'SEPARAÇÃO PULMÃO DOCA'
             )
 
 
@@ -72,7 +72,11 @@ class Mobile_IndexController  extends Action
     public function enderecosSeparacaoPdAjaxAction(){
         $this->view->idExpedicao = $this->_getParam('expedicao');
         $expRepository = $this->getEntityManager()->getRepository('wms:Expedicao');
-        $this->view->enderecos = $expRepository->getEtiquetasPd($this->_getParam('expedicao'));
+        $enderecos = $expRepository->getEtiquetasPd($this->_getParam('expedicao'));
+        if(empty($enderecos)){
+            $this->_redirect('/mobile/index/separacao-pulmao-doca-ajax');
+        }
+        $this->view->enderecos = $enderecos;
     }
 
     public function getProdutosPdAjaxAction(){
@@ -113,7 +117,7 @@ class Mobile_IndexController  extends Action
         $expedicao = $this->_getParam('expedicao');
         $codEndereco = $this->_getParam('endereco');
         $etiquetaSeparacaoRepo = $this->em->getRepository("wms:Expedicao\EtiquetaSeparacao");
-        $etiquetas = $etiquetaSeparacaoRepo->getProdutoByEtiqueta($codEndereco, $expedicao);
+        $etiquetas = $etiquetaSeparacaoRepo->getProdutoByEtiquetaConfir($codEndereco, $expedicao);
         foreach ($etiquetas as $etiqueta) {
             $etiquetaEn = $etiquetaSeparacaoRepo->find($etiqueta['COD_ETIQUETA_SEPARACAO']);
             $etiquetaEn->setDthSeparacao(new \DateTime());
