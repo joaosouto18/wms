@@ -15,6 +15,7 @@ class Produto extends Mobile
         $this->addElement('hidden', 'idInventarioEnd');
         $this->addElement('hidden', 'numContagem');
         $this->addElement('hidden', 'contagemEndId');
+        $this->addElement('hidden', 'idInventario');
         parent::init();
     }
 

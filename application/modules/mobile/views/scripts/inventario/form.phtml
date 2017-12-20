@@ -69,6 +69,7 @@
     });
 </script>
 
+
 <input type="hidden" id="codigoBarras" value="<?php echo $this->codigoBarras ?>">
 <input type="hidden" id="parametroValidade" value="<?php echo $this->parametroValidade ?>">
 <input type="hidden" id="validadeProduto" value="<?php echo $this->validadeProduto ?>">
@@ -122,16 +123,16 @@
         <ul>
             <?php foreach ($this->enderecos as $endereco) : ?>
                 <li>
-                    <p>
-                        <?php if (isset($endereco['endereco'])) : ?>
-                            <?php echo $endereco['endereco']; ?>
-                            <?php if (isset($endereco['zerar']) && $endereco['zerar'] > 0 && $this->codigoBarras != null) : ?>
-                                <a class="gradientBtn btnZerar" style="cursor: pointer; border-radius: 4px;border-color: black; width: 50px;height: 40px;margin: 2px;font-weight: bold;color: #fff; font-size: 12px;" name="btnFinalizar" type="submit" codigo-barras="<?php echo $endereco['zerar'] ?>">&nbsp;Zerar Item&nbsp; </a>
-                            <?php endif; ?>
-                        <?php else : ?>
-                            <li><?php echo $endereco ?></li>
-                        <?php endif; ?>
-                    </p>
+                <p>
+                <?php if (isset($endereco['endereco'])) : ?>
+                    <?php echo $endereco['endereco']; ?>
+                    <?php if (isset($endereco['zerar']) && $endereco['zerar'] > 0 && $this->codigoBarras != null) : ?>
+                        <a class="gradientBtn btnZerar" style="cursor: pointer; border-radius: 4px;border-color: black; width: 50px;height: 40px;margin: 2px;font-weight: bold;color: #fff; font-size: 12px;" name="btnFinalizar" type="submit" codigo-barras="<?php echo $endereco['zerar'] ?>">&nbsp;Zerar Item&nbsp; </a>
+                    <?php endif; ?>
+                <?php else : ?>
+                    <li><?php echo $endereco ?></li>
+                <?php endif; ?>
+                </p>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -144,4 +145,27 @@
         $('#submit').click();
     });
 </script>
+<?php
+if($this->parametroItem == 'S'){
+    ?>
+    <script>
+        $('.field #codigoBarras').css('margin-bottom', '10px');
+        $('#fieldset-identification div.field').prepend('<label for="qtdConferida" class="field required">*Quantidade</label>' +
+            '<input size="5" style="text-align: center" type="text" id="qtdConferida" name="qtdConferida" value="1"/>')
 
+        $( "form" ).submit(function( event ) {
+            $.ajax({
+                url: '/mobile/inventario/confirma-contagem/',
+                type: 'post',
+                dataType: 'html',
+                async: false,
+                data: $('form').serialize(),
+                success: function (data) {
+//                    $('body').html(data);
+                }
+            });
+            return false;
+
+        });
+    </script>
+<?php }?>

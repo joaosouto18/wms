@@ -51,6 +51,7 @@ class Mobile_InventarioController extends Action
             $this->view->codigoBarras = $codigoBarras;
             $nivelParam = $this->_getParam('nivel', null);
             if (isset($codigoBarras) && !empty($codigoBarras)) {
+            $this->view->parametroItem = $this->getSystemParameterValue('INVENTARIO_ITEM_A_ITEM');
 
                 $codigoBarrasSemDigito = \Wms\Util\Coletor::retiraDigitoIdentificador($codigoBarras);
                 if (($nivelParam != null)) {
@@ -77,10 +78,12 @@ class Mobile_InventarioController extends Action
                     $resultOsEnd = $inventarioService->consultaOseEnd($idContagemOs, $result['idInventarioEnd'], $idInventario, $recontagemMesmoUsuario);
                     $this->checkErrors($resultOsEnd);
 
-                    $populateForm = array('idEndereco' => $enderecoEn->getId(), 'codigoBarrasEndereco' => $codigoBarras, 'idContagemOs' => $idContagemOs, 'idInventarioEnd' => $result['idInventarioEnd'], 'numContagem' => $numContagem);
+                    $populateForm = array('idEndereco' => $enderecoEn->getId(), 'codigoBarrasEndereco' => $codigoBarras, 'idContagemOs' => $idContagemOs, 'idInventarioEnd' => $result['idInventarioEnd'], 'numContagem' => $numContagem, 'idInventario' => $idInventario);
                     $this->view->idInventarioEnd = $result['idInventarioEnd'];
                     $this->view->numContagem = $numContagem;
                     $this->view->divergencia = $divergencia;
+                    $this->view->idInventario = $idInventario;
+
                     $this->view->botoes = true;
                     if (count($produtosEndPicking) > 0) {
                         $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
