@@ -730,7 +730,7 @@ class NotaFiscalRepository extends EntityRepository {
                 ->innerJoin('nf.itens', 'nfi')
                 ->innerJoin('nfi.produto', 'p', 'WITH', 'p.grade = nfi.grade')
                 ->innerJoin('p.tipoComercializacao', 'tc')
-                ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade and pe.dataInativacao IS NULL')
+                ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.dataInativacao IS NULL')
                 ->leftJoin('pe.dadosLogisticos', 'dl')
                 ->leftJoin('dl.normaPaletizacao', 'np_embalagem')
                 ->leftJoin('np_embalagem.unitizador', 'unitizador_embalagem')

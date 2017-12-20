@@ -383,6 +383,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $temFracionavel = false;
             $controlaValidade = false;
 
+            /** @var ProdutoEntity\NormaPaletizacaoRepository $normaRepo */
+            $normaRepo = $this->em->getRepository('wms:Produto\NormaPaletizacao');
             foreach ($itensConferir as $key => $item) {
                 if ($item['possui_validade'] == 'S') {
                     $controlaValidade = true;
@@ -416,6 +418,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                     }
 
                     $itensConferir[$key]['embalagens'] = $embalagens;
+                    $itensConferir[$key]['unitizadores'] = $normaRepo->getUnitizadoresByProduto($item['codigo'],$item['grade']);
                 } else {
                     //unidade Medida
                     $produtoRepo = $this->em->getRepository('wms:Produto');

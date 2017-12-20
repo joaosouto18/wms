@@ -31,6 +31,7 @@
                     <?php if ($this->controlaValidade) { ?>
                         <td>Data Validade</td>
                     <?php } ?>
+                    <td>Unitizador</td>
                     <td>Qtde. Avaria</td>
                 </tr>
             </thead>
@@ -98,17 +99,6 @@
                             </div>
                         </td>
                         <?php } ?>
-<!--                        <td>-->
-<!--                            --><?php
-//                            echo $this->formText("numPeso[{$produto['codigo']}][{$produto['grade']}]", 0, array(
-//                                'size' => 8,
-//                                'validators' => array('numeric'),
-//                                'alt' => 'centesimal',
-//                                'class' => 'numPeso',
-//                                'title' => "[{$produto['codigo']}][{$produto['grade']}]",
-//                            ));
-//                            ?>
-<!--                        </td>-->
                         <?php if ($this->controlaValidade) { ?>
                             <td>
                                 <?php
@@ -126,6 +116,16 @@
                                 ?>
                             </td>
                         <?php  } ?>
+                        <td>
+                            <?php
+                            echo $this->formSelect("unitizador[{$produto['codigo']}][{$produto['grade']}]", key($produto['unitizadores']) ,array(
+                                    'required' => true,
+                                    'class' => "unitizador",
+                                    'title' => "Unitizador do produto $produto[codigo]-$produto[grade]",
+                                    'empty_option' => "Selecione o unitizador"
+                            ), $produto['unitizadores'])
+                            ?>
+                        </td>
                         <td>
                             <?php
                             echo $this->formText("qtdAvaria[{$produto['codigo']}][{$produto['grade']}]", 0, array(
