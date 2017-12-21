@@ -41,6 +41,38 @@ $.Controller.extend('Wms.Controllers.Produto',
                 $('form input').each(function(e){
                     $(this).removeClass('required');
                 });
+
+                var unitizadores = [];
+                var invalido = false;
+
+                $("select.unitizador option:selected").each(function () {
+
+                    var option = $(this);
+
+                    var result = unitizadores.find(function(i) {
+                        return option.val() === i;
+                    });
+
+                    if (result === undefined) {
+                        unitizadores.push($(this).val());
+                    }
+                    else {
+                        invalido = true;
+                    }
+
+                });
+
+                if (invalido) {
+                    $.wmsDialogAlert({
+                        title: 'Processo cancelado',
+                        msg: "Existem normas com o mesmo unitizador. " +
+                        "<br />Altere ou remova uma das normas e tente novamente!",
+                        height: 140,
+                        resizable: false
+                    });
+                    return false;
+                }
+
                 ///checa embalagem e volume
                 if(!este.verificarEmbalagemVolume())
                     return false;
