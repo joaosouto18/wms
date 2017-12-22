@@ -1159,6 +1159,15 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 /* @var pedidoFaturado $pedidoNf */
                 foreach ($notaFiscal->pedidos as $pedidoNf) {
+
+                    // @Todo Temporário remover após correção dos dados da simonetti
+                        $pedidosEn = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaPedido")->findBy(array('codPedido'=> $pedidoNf->codPedido));
+                        $andamentoNFRepo->save($nfEntity, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true,null,null,null,"Remoção da vinculação do pedido " . $pedidoNf->codPedido . " a nota fiscal via integração");
+                        foreach ($pedidosEn as $pedidoEn) {
+                            $this->_em->remove($pedidoEn);
+                        }
+                    // Fim @Todo
+
                     $nfPedidoEntity = new Expedicao\NotaFiscalSaidaPedido();
                     $nfPedidoEntity->setNotaFiscalSaida($nfEntity);
                     $nfPedidoEntity->setCodNotaFiscalSaida($nfEntity->getId());
