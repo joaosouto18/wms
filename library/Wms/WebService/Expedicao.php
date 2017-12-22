@@ -1114,23 +1114,44 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
 
-                if ($nfEn != null) {
-//                    return true;
-                    //throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.', série '.$notaFiscal->serieNf.', emitente: ' . $pessoaEn->getNomeFantasia() . ', cnpj ' . $notaFiscal->cnpjEmitente . ' já existe no sistema!');
-                }
-
                 $statusEn = $this->_em->getReference('wms:Util\Sigla', (int) Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
 
-                $nfEntity = new Expedicao\NotaFiscalSaida();
-                $nfEntity->setNumeroNf($notaFiscal->numeroNf);
-                $nfEntity->setCodPessoa($pessoaEn->getId());
-                $nfEntity->setPessoa($pessoaEn);
-                $nfEntity->setSerieNf($notaFiscal->serieNf);
-                $nfEntity->setValorTotal($notaFiscal->valorVenda);
-                $nfEntity->setStatus($statusEn);
-                $this->_em->persist($nfEntity);
+                if ($nfEn != null) {
+                    $nfEn->setNumeroNf($notaFiscal->numeroNf);
+                    $nfEn->setCodPessoa($pessoaEn->getId());
+                    $nfEn->setPessoa($pessoaEn);
+                    $nfEn->setSerieNf($notaFiscal->serieNf);
+                    $nfEn->setValorTotal($notaFiscal->valorVenda);
+                    $nfEn->setStatus($statusEn);
+                    $this->_em->persist($nfEn);
 
-                $andamentoNFRepo->save($nfEntity, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true);
+                    $pedidosEn = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaPedido")->findBy(array('codNotaFiscalSaida'=>$nfEn->getId()));
+                    $produtosEn = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaProduto")->findBy(array('codNotaFiscalSaida'=>$nfEn->getId()));
+
+                    foreach ($pedidosEn as $pedidoEn) {
+                        $this->_em->remove($pedidoEn);
+                    }
+
+                    foreach ($produtosEn as $produtoEn) {
+                        $this->_em->remove($produtoEn);
+                    }
+
+                    $andamentoNFRepo->save($nfEn, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true,null,null,null,"Nota Fiscal atualizada via WebService");
+
+                    // return true;
+                    // throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.', série '.$notaFiscal->serieNf.', emitente: ' . $pessoaEn->getNomeFantasia() . ', cnpj ' . $notaFiscal->cnpjEmitente . ' já existe no sistema!');
+                } else {
+                    $nfEntity = new Expedicao\NotaFiscalSaida();
+                    $nfEntity->setNumeroNf($notaFiscal->numeroNf);
+                    $nfEntity->setCodPessoa($pessoaEn->getId());
+                    $nfEntity->setPessoa($pessoaEn);
+                    $nfEntity->setSerieNf($notaFiscal->serieNf);
+                    $nfEntity->setValorTotal($notaFiscal->valorVenda);
+                    $nfEntity->setStatus($statusEn);
+                    $this->_em->persist($nfEntity);
+
+                    $andamentoNFRepo->save($nfEntity, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true);
+                }
 
                 if ((count($notaFiscal->pedidos) == 0) || ($notaFiscal->pedidos == null)) {
                     throw new \Exception("Nenhuma pedido informado na nota fiscal " .$notaFiscal->numeroNf . " / " . $notaFiscal->serieNf);
