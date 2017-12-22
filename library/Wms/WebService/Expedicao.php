@@ -1112,21 +1112,23 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     throw new \Exception("Emitente não encontrado para o cnpj " . $notaFiscal->cnpjEmitente);
                 }
 
-                $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
+                $nfEntity = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
 
                 $statusEn = $this->_em->getReference('wms:Util\Sigla', (int) Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
 
-                if ($nfEn != null) {
-                    $nfEn->setNumeroNf($notaFiscal->numeroNf);
-                    $nfEn->setCodPessoa($pessoaEn->getId());
-                    $nfEn->setPessoa($pessoaEn);
-                    $nfEn->setSerieNf($notaFiscal->serieNf);
-                    $nfEn->setValorTotal($notaFiscal->valorVenda);
-                    $nfEn->setStatus($statusEn);
-                    $this->_em->persist($nfEn);
+                if ($nfEntity != null) {
+                    $idNf = $nfEntity->getId();
 
-                    $pedidosEn = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaPedido")->findBy(array('codNotaFiscalSaida'=>$nfEn->getId()));
-                    $produtosEn = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaProduto")->findBy(array('codNotaFiscalSaida'=>$nfEn->getId()));
+                    $nfEntity->setNumeroNf($notaFiscal->numeroNf);
+                    $nfEntity->setCodPessoa($pessoaEn->getId());
+                    $nfEntity->setPessoa($pessoaEn);
+                    $nfEntity->setSerieNf($notaFiscal->serieNf);
+                    $nfEntity->setValorTotal($notaFiscal->valorVenda);
+                    $nfEntity->setStatus($statusEn);
+                    $this->_em->persist($nfEntity);
+
+                    $pedidosEn = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaPedido")->findBy(array('codNotaFiscalSaida'=>$idNf));
+                    $produtosEn = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaProduto")->findBy(array('codNotaFiscalSaida'=>$idNf));
 
                     foreach ($pedidosEn as $pedidoEn) {
                         $this->_em->remove($pedidoEn);
@@ -1136,7 +1138,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         $this->_em->remove($produtoEn);
                     }
 
-                    $andamentoNFRepo->save($nfEn, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true,null,null,null,"Nota Fiscal atualizada via WebService");
+                    $andamentoNFRepo->save($nfEntity, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true,null,null,null,"Nota Fiscal atualizada via WebService");
 
                     // return true;
                     // throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.', série '.$notaFiscal->serieNf.', emitente: ' . $pessoaEn->getNomeFantasia() . ', cnpj ' . $notaFiscal->cnpjEmitente . ' já existe no sistema!');
@@ -1162,8 +1164,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                     // @Todo Temporário remover após correção dos dados da simonetti
                         $pedidosEn = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaPedido")->findBy(array('codPedido'=> $pedidoNf->codPedido));
-                        $andamentoNFRepo->save($nfEntity, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true,null,null,null,"Remoção da vinculação do pedido " . $pedidoNf->codPedido . " a nota fiscal via integração");
                         foreach ($pedidosEn as $pedidoEn) {
+                            $andamentoNFRepo->save($pedidoEn->getNotaFiscalSaida(), Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true,null,null,null,"Remoção da vinculação do pedido " . $pedidoNf->codPedido . " a nota fiscal via integração");
                             $this->_em->remove($pedidoEn);
                         }
                     // Fim @Todo
@@ -1216,7 +1218,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $this->_em->commit();
         } catch (\Exception $e) {
             $this->_em->rollback();
-            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+            throw new \Exception($e->getMessage() . ' - Trace:' . $e->getTraceAsString());
         }
         return true;
     }
