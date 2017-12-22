@@ -313,7 +313,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             foreach ($values['embalagens'] as $id => $itemEmbalagem) {
                 $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
                 extract($itemEmbalagem);
-                $Math = new Math();
 
                 switch ($itemEmbalagem['acao']) {
                     case 'incluir':
@@ -323,11 +322,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                             $capacidadePicking = !empty($capacidadePicking) ? $capacidadePicking : $dadosEmbalagem->getCapacidadePicking();
                             $endereco = $dadosEmbalagem->getEndereco();
                             $endereco = !empty($endereco) ? $endereco->getDescricao() : null;
-                            $altura = !empty($altura) ? $altura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getAltura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
-                            $largura = !empty($largura) ? $largura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getLargura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
-                            $profundidade = !empty($profundidade) ? $profundidade : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getProfundidade()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
-                            $cubagem = str_replace('.', ',', $Math::multiplicar($Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
-                            $peso = !empty($peso) ? $peso : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getPeso()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                            $altura = !empty($altura) ? $altura : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getAltura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                            $largura = !empty($largura) ? $largura : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getLargura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                            $profundidade = !empty($profundidade) ? $profundidade : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getProfundidade()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                            $cubagem = str_replace('.', ',', Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
+                            $peso = !empty($peso) ? $peso : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getPeso()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
                         }
 
                         $embalagemEntity = new EmbalagemEntity;
@@ -342,6 +341,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
+                        $embalagemEntity->setIsEmbExpDefault((isset($isEmbExpDefault) && !empty($isEmbExpDefault))?$isEmbExpDefault: 'N');
+                        $embalagemEntity->setIsEmbFracionavelDefault((isset($isEmbFracionavelDefault) && !empty($isEmbFracionavelDefault))?$isEmbFracionavelDefault: 'N');
 
                         if (isset($largura) && !empty($largura)) {
                             $embalagemEntity->setLargura($largura);
@@ -358,9 +359,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         if (isset($cubagem) && !empty($cubagem)) {
                             $embalagemEntity->setCubagem($cubagem);
                         }
-
-                        $embalagemEntity->setIsEmbExpDefault((isset($isEmbExpDefault) && !empty($isEmbExpDefault))?$isEmbExpDefault: 'N');
-                        $embalagemEntity->setIsEmbFracionavelDefault((isset($isEmbFracionavelDefault) && !empty($isEmbFracionavelDefault))?$isEmbFracionavelDefault: 'N');
 
                         //valida o endereco informado
                         if (!empty($endereco)) {
