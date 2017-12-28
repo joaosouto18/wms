@@ -148,24 +148,100 @@
 <?php
 if($this->parametroItem == 'S'){
     ?>
+    <span id="dummy"></span>
+    <bgsound id="bgSoundId" loop="0" volume="100" />
     <script>
+        $('form #codigoBarras').focus();
+        $("input").keydown(function (e) {
+            if (e.which == 113) {
+                $('.vali').show();
+            }
+        });
+        function playSound(soundfile) {
+            document.getElementById("dummy").innerHTML=
+                "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+        }
+
+        var codbarras = 0;
+        var validade = 'N';
+        var erro = 0;
+
+        $('#content').prepend('<div id="conferido" style="background: #13b213;text-align: center;font-weight: bold; display: none">Produto Conferido</div>');
+
         $('.field #codigoBarras').css('margin-bottom', '10px');
+        $('#fieldset-identification div.field').prepend('<br /><label for="validade" class="field required vali" style="display:none">*Validade</label>' +
+            '<input type="text" name="validade" id="validade" class="vali" value="" size="10" maxlength="8" placeholder="dd/mm/yy" style="text-align: center">');
         $('#fieldset-identification div.field').prepend('<label for="qtdConferida" class="field required">*Quantidade</label>' +
-            '<input size="5" style="text-align: center" type="text" id="qtdConferida" name="qtdConferida" value="1"/>')
+            '<input size="5" style="text-align: center" type="text" id="qtdConferida" name="qtdConferida" value="1"/>');
+
+        var append = '<input type="hidden" id="idProduto" name="idProduto" value="0"/>' +
+            '<input type="hidden" id="grade" name="grade" value="0"/>' +
+            '<input type="hidden" id="codProdutoEmbalagem" name="codProdutoEmbalagem" value="0"/> ' +
+            '<input type="hidden" id="contagemEndId" name="contagemEndId" value/>' +
+            '<input type="hidden" id="qtdAvaria" name="qtdAvaria" value="0"/>' +
+            '<input type="hidden" id="itemAitem" name="itemAitem" value="1"/>' +
+            '<input type="hidden" name="divergencia" value="<?php echo $this->divergencia ?>" id="divergencia">';
+        $( "form" ).append(append);
 
         $( "form" ).submit(function( event ) {
-            $.ajax({
-                url: '/mobile/inventario/confirma-contagem/',
-                type: 'post',
-                dataType: 'html',
-                async: false,
-                data: $('form').serialize(),
-                success: function (data) {
-//                    $('body').html(data);
+            $('#conferido').hide();
+            if(codbarras == 0 || codbarras != $('form #codigoBarras').val()){
+                codbarras = $('form #codigoBarras').val();
+                $.ajax({
+                    url: '/mobile/inventario/get-emb-produto-ajax/',
+                    type: 'post',
+                    dataType: 'json',
+                    async: false,
+                    data: $('form').serialize(),
+                    success: function (data) {
+                        $('#idProduto').val(data.idProduto);
+                        $('#grade').val(data.grade);
+                        $('#codProdutoEmbalagem').val(data.codProdutoEmbalagem);
+                        $('#contagemEndId').val(data.contagemEndId);
+                        if(data.status == 'ok'){
+                            validade = data.validade;
+                            if(data.validade == 'S'){
+                                $('.vali').show();
+                                if($('#validade').val() == ''){
+                                    erro = 1;
+                                    $('form #codigoBarras').val('');
+                                    alert('Produto possui validade');
+                                    return false;
+                                }
+                            }else{
+                                $('.vali').hide();
+                            }
+                        }else{
+                            erro = 1;
+                            alert(data.msg);
+                        }
+                    }
+                });
+            }
+            if(erro == 0) {
+                $('form #codigoBarras').val('');
+                if ($('#validade').val() == '' && validade == 'S') {
+                    alert('Produto possui validade');
+                    return false;
+                } else {
+                    $.ajax({
+                        url: '/mobile/inventario/confirma-contagem/',
+                        type: 'post',
+                        dataType: 'json',
+                        async: false,
+                        data: $('form').serialize(),
+                        success: function (data) {
+                            if(data.status == 'ok'){
+                                $('#conferido').show();
+                                playSound("/confirm2.mp3");
+                            }
+                        }
+                    });
                 }
-            });
+            }else{
+                erro = 0;
+            }
             return false;
-
         });
     </script>
 <?php }?>
