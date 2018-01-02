@@ -842,6 +842,11 @@ class ExpedicaoRepository extends EntityRepository {
                     }
 
                     $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PICKING;
+
+                    if ($enderecoPicking == null) {
+                        throw new \Exception("Produto " . $codProduto . " sem endereço de picking definido");
+                    }
+
                     $idEndereco = $enderecoPicking->getId();
 
                     foreach($idsElementos as $id) {

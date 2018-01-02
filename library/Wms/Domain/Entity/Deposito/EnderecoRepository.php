@@ -315,20 +315,29 @@ class EnderecoRepository extends EntityRepository {
      * @param bool $picking | true pega endereço do tipo picking
      * @return array
      */
-    public function getProdutoByEndereco($dscEndereco, $unico = true, $picking = false)
+    public function getProdutoByEndereco($dscEndereco, $unico = true, $picking = false, $detalharVolume = true)
     {
 
         $endereco = EnderecoUtil::formatar($dscEndereco);
 
+        $select = "
+            p.id as codProduto, 
+            p.grade,
+            p.descricao, 
+            NVL(pe.capacidadePicking, pv.capacidadePicking) capacidadePicking, 
+            f.nome fabricante, 
+            p.referencia
+        ";
+
+        if ($detalharVolume == true) {
+            $select = $select & "            
+            ,NVL(pe.descricao, pv.descricao) descricaoEmbVol, 
+             NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, 
+            ";
+        }
+
         $dql = $this->_em->createQueryBuilder()
-            ->select('p.id as codProduto, 
-                            p.grade,
-                            p.descricao, 
-                            NVL(pe.capacidadePicking, pv.capacidadePicking) capacidadePicking, 
-                            NVL(pe.descricao, pv.descricao) descricaoEmbVol, 
-                            NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, 
-                            f.nome fabricante, 
-                            p.referencia')
+            ->select($select)
             ->distinct(true)
             ->from("wms:Deposito\Endereco", "de")
             ->leftJoin("wms:Produto\Volume", "pv", "WITH", "pv.endereco = de")
@@ -484,9 +493,35 @@ class EnderecoRepository extends EntityRepository {
                 $this->getEntityManager()->persist($enderecoEn);
             }
         } else {
-            if ($enderecoEn->getDisponivel() == "N") {
-                $enderecoEn->setDisponivel("S");
-                $this->getEntityManager()->persist($enderecoEn);
+
+            $existeReservaEntradaPendente = false;
+            $existeOutroEstoque = false;
+
+            $SQL = " SELECT * 
+                       FROM RESERVA_ESTOQUE_ENDERECAMENTO REE
+                       INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+                       WHERE RE.IND_ATENDIDA = 'N'
+                         AND RE.COD_DEPOSITO_ENDERECO = '" . $enderecoEn->getId() . "'
+                         AND REE.UMA <> $idUma";
+
+            $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+            if (count($result) > 0) {
+                $existeReservaEntradaPendente = true;
+            }
+
+            $SQL = " SELECT *
+                       FROM ESTOQUE E 
+                      WHERE E.COD_DEPOSITO_ENDERECO = '" . $enderecoEn->getId() . "'";
+            $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+            if (count($result) > 0) {
+                $existeOutroEstoque = true;
+            }
+
+            if (($existeOutroEstoque == false) && ($existeReservaEntradaPendente == false)) {
+                if ($enderecoEn->getDisponivel() == "N") {
+                    $enderecoEn->setDisponivel("S");
+                    $this->getEntityManager()->persist($enderecoEn);
+                }
             }
         }
     }
