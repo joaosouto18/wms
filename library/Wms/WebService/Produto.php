@@ -261,7 +261,8 @@ class Wms_WebService_Produto extends Wms_WebService {
             if ($produtoNovo == true) {
                 $produto
                     ->setTipoComercializacao($tipoComercializacaoEntity)
-                    ->setNumVolumes($numVolumes);
+                    ->setNumVolumes($numVolumes)
+                    ->setIndFracionavel('N');
             }
 
             $em->persist($produto);
