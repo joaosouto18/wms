@@ -43,7 +43,7 @@ class NormaPaletizacaoRepository extends EntityRepository
         return $normaPaletizacaoEntity;
     }
 
-    public function getUnitizadoresByProduto($codProduto, $grade) {
+    public function getNormasByProduto($codProduto, $grade) {
 
         $sql = "SELECT 
                   NP.COD_NORMA_PALETIZACAO , U.DSC_UNITIZADOR

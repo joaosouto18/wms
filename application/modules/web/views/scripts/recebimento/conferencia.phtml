@@ -118,12 +118,12 @@
                         <?php  } ?>
                         <td>
                             <?php
-                            echo $this->formSelect("unitizador[{$produto['codigo']}][{$produto['grade']}]", key($produto['unitizadores']) ,array(
+                            echo $this->formSelect("norma[{$produto['codigo']}][{$produto['grade']}]", key($produto['normas']) ,array(
                                     'required' => true,
-                                    'class' => "unitizador",
-                                    'title' => "Unitizador do produto $produto[codigo]-$produto[grade]",
-                                    'empty_option' => "Selecione o unitizador"
-                            ), $produto['unitizadores'])
+                                    'class' => "norma",
+                                    'title' => "Norma de paletizacao do produto $produto[codigo]-$produto[grade]",
+                                    'empty_option' => "Selecione a norma"
+                            ), $produto['normas'])
                             ?>
                         </td>
                         <td>

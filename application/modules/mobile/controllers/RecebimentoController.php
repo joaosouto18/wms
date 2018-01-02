@@ -177,7 +177,7 @@ class Mobile_RecebimentoController extends Action
             elseif ($itemNF['idVolume'])
                 $this->_helper->viewRenderer('recebimento/volume-quantidade', null, true);
 
-            $normasPaletizacao = $this->em->getRepository('wms:Produto\NormaPaletizacao')->getUnitizadoresByProduto($itemNF['idProduto'],$itemNF['grade']);
+            $normasPaletizacao = $this->em->getRepository('wms:Produto\NormaPaletizacao')->getNormasByProduto($itemNF['idProduto'],$itemNF['grade']);
             $this->view->normasPaletizacao = $normasPaletizacao;
 
             $dscEmbFracionavelDefault = null;
@@ -358,6 +358,8 @@ class Mobile_RecebimentoController extends Action
             $this->view->unMedida = $params['unMedida'];
             $this->view->dataValidade = $params['dataValidade'];
             $this->view->conferenciaCega = $params['conferenciaCega'];
+            $this->view->qtdUnidFracionavel = $params['qtdUnidFracionavel'];
+            $this->view->norma = $params['idNormaPaletizacao'];
         }
         if ($request->isPost()) {
             $senhaDigitada = $params['senhaConfirmacao'];
@@ -373,6 +375,7 @@ class Mobile_RecebimentoController extends Action
                 $unMedida = unserialize($params['unMedida']);
                 $dataValidade = unserialize($params['dataValidade']);
                 $qtdUnidFracionavel = unserialize($params['qtdUnidFracionavel']);
+                $norma = unserialize($params['norma']);
             } else {
                 $idRecebimento = $params['idRecebimento'];
                 $idOrdemServico = $params['idOrdemServico'];
@@ -390,7 +393,7 @@ class Mobile_RecebimentoController extends Action
             if ($submit == 'semConferencia' || $submit == 'Autorizar Recebimento') {
                 if ($senhaDigitada == $senhaAutorizacao) {
                     if ($params['conferenciaCega'] == true) {
-                        $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $idConferente, true, $unMedida, $dataValidade);
+                        $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $norma, $qtdUnidFracionavel, $idConferente, true, $unMedida, $dataValidade);
 
                         if ($result['exception'] != null) {
                             throw $result['exception'];

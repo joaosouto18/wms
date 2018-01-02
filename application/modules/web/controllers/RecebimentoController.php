@@ -418,7 +418,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                     }
 
                     $itensConferir[$key]['embalagens'] = $embalagens;
-                    $itensConferir[$key]['unitizadores'] = $normaRepo->getUnitizadoresByProduto($item['codigo'],$item['grade']);
+                    $itensConferir[$key]['normas'] = $normaRepo->getNormasByProduto($item['codigo'],$item['grade']);
                 } else {
                     //unidade Medida
                     $produtoRepo = $this->em->getRepository('wms:Produto');
@@ -442,9 +442,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $unMedida = $this->getRequest()->getParam('unMedida');
                 $dataValidade = $this->getRequest()->getParam('dataValidade');
                 $numPeso = $this->getRequest()->getParam('numPeso');
+                $normas = $this->getRequest()->getParam('norma');
 
                 // executa os dados da conferencia
-                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $qtdUnidFracionavel, $embalagem, $idConferente, true, $unMedida, $dataValidade, $numPeso);
+                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas, $qtdUnidFracionavel, $embalagem, $idConferente, true, $unMedida, $dataValidade, $numPeso);
 
                 if ($result['exception'] != null) {
                     throw $result['exception'];
