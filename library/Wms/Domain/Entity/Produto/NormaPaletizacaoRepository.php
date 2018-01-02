@@ -46,7 +46,7 @@ class NormaPaletizacaoRepository extends EntityRepository
     public function getUnitizadoresByProduto($codProduto, $grade) {
 
         $sql = "SELECT 
-                  U.COD_UNITIZADOR , U.DSC_UNITIZADOR
+                  NP.COD_NORMA_PALETIZACAO , U.DSC_UNITIZADOR
                 FROM 
                   UNITIZADOR U
                 INNER JOIN NORMA_PALETIZACAO NP ON NP.COD_UNITIZADOR = U.COD_UNITIZADOR
@@ -64,7 +64,7 @@ class NormaPaletizacaoRepository extends EntityRepository
 
         $normas = array();
         foreach ($result as $norma)
-            $normas[$norma['COD_UNITIZADOR']] = $norma['DSC_UNITIZADOR'];
+            $normas[$norma['COD_NORMA_PALETIZACAO']] = $norma['DSC_UNITIZADOR'];
         return $normas;
 
     }
