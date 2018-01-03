@@ -144,34 +144,43 @@ class Inventario_IndexController  extends Action
             /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
             $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
+            $inventarioRepo = $this->_em->getRepository('wms:Inventario');
+
             $codInvErp = $inventarioEn->getCodInventarioERP();
             if (empty($codInvErp)){
                 throw new Exception("Este inventário não tem o código do inventário respectivo no ERP");
             }
+            $inventariosByErp = $inventarioRepo->findBy(array('codInventarioERP' => $codInvErp));
+            foreach ($inventariosByErp as $inventarios) {
+                $inventario[] = $inventarios->getId();
+            }
+            $codInventarios = implode(',', $inventario);
 
-            $filename = "Exp_Inventario_$id($codInvErp).txt";
+            $filename = "Exp_Inventario($codInvErp).txt";
             $file = fopen($filename, 'w');
 
-            $invEnderecosEn = $enderecoRepo->getComContagem($inventarioEn->getId());
+            $invEnderecosEn = $enderecoRepo->getComContagem($codInventarios);
             $qtdTotal = 0;
             $produtoAnterior = null;
             $inventario = array();
             foreach ($invEnderecosEn as $invEnderecoEn) {
-                $contagemEndEnds = $enderecoRepo->getUltimaContagem($invEnderecoEn);
-                foreach ($contagemEndEnds as $contagemEndEn) {
-                    $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()), array('quantidade' => 'ASC'));
-                    if ($produtoAnterior != $contagemEndEn->getCodProduto())
-                        $qtdTotal = 0;
+                $codInventarioEnderecos[] = $invEnderecoEn->getId();
+            }
+            $codInventarioEndereco = implode(',',$codInventarioEnderecos);
 
+            $contagemEndEnds = $enderecoRepo->getUltimaContagem($codInventarioEndereco);
+            foreach ($contagemEndEnds as $contagemEndEn) {
+                $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()), array('quantidade' => 'ASC'));
+                if (!$embalagemEntity) continue;
+                if ($produtoAnterior != $contagemEndEn->getCodProduto()) $qtdTotal = 0;
 
-                    $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
-                    $qtdTotal = $qtdTotal + $qtdContagem;
-                    $inventario[$contagemEndEn->getCodProduto()]['QUANTIDADE'] = $qtdTotal;
-                    $inventario[$contagemEndEn->getCodProduto()]['NUM_CONTAGEM'] = $contagemEndEn->getNumContagem();
-                    $inventario[$contagemEndEn->getCodProduto()]['COD_BARRAS'] = $embalagemEntity[0]->getCodigoBarras();
-                    $inventario[$contagemEndEn->getCodProduto()]['FATOR'] = $embalagemEntity[0]->getQuantidade();
-                    $produtoAnterior = $contagemEndEn->getCodProduto();
-                }
+                $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
+                $qtdTotal = $qtdTotal + $qtdContagem;
+                $inventario[$contagemEndEn->getCodProduto()]['QUANTIDADE'] = $qtdTotal;
+                $inventario[$contagemEndEn->getCodProduto()]['NUM_CONTAGEM'] = $contagemEndEn->getNumContagem();
+                $inventario[$contagemEndEn->getCodProduto()]['COD_BARRAS'] = reset($embalagemEntity)->getCodigoBarras();
+                $inventario[$contagemEndEn->getCodProduto()]['FATOR'] = reset($embalagemEntity)->getQuantidade();
+                $produtoAnterior = $contagemEndEn->getCodProduto();
             }
 
             foreach ($inventario as $key => $produto) {
@@ -217,14 +226,14 @@ class Inventario_IndexController  extends Action
             if (!empty($codInventarioErp)) {
                 /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
                 $inventarioRepo = $this->em->getRepository('wms:Inventario');
-                $check = $inventarioRepo->findOneBy(array('codInventarioERP' => $codInventarioErp));
-                if (empty($check)) {
+//                $check = $inventarioRepo->findOneBy(array('codInventarioERP' => $codInventarioErp));
+//                if (empty($check)) {
                     $inventarioRepo->setCodInventarioERP($id,$codInventarioErp);
                     $this->addFlashMessage('success', 'Código vinculado com sucesso!');
-                } else {
-                    $idInventario = $check->getId();
-                    $this->addFlashMessage('error', "O inventário $idInventario já está vinculado com esse código $codInventarioErp");
-                }
+//                } else {
+//                    $idInventario = $check->getId();
+//                    $this->addFlashMessage('error', "O inventário $idInventario já está vinculado com esse código $codInventarioErp");
+//                }
                 $this->redirect('index');
             }
 

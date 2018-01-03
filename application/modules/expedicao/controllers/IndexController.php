@@ -306,7 +306,7 @@ class Expedicao_IndexController extends Action {
                 $cargaEn->setPlacaExpedicao($placa);
                 $this->_em->persist($cargaEn);
                 if ($countCortadas > 0) {
-                    $expedicaoEn->setStatus(EXPEDICAO::STATUS_CANCELADO);
+                    $expedicaoEn->getCodStatus(EXPEDICAO::STATUS_CANCELADO);
                     $this->_em->persist($expedicaoEn);
                     $AndamentoRepo->save("Etiquetas da carga " . $cargaEn->getCodCargaExterno() . " canceladas na expedição " . $expedicaoAntiga, $expedicaoEn->getId());
                 }

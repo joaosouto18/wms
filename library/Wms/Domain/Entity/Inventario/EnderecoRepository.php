@@ -15,10 +15,16 @@ class EnderecoRepository extends EntityRepository
     public function save($params)
     {
 
+        if (isset($params['inventario']) && !empty($params['inventario'])) {
+            $params['inventarioEn'] = $params['inventario'];
+        }
         if (empty($params['codInventario']) and empty($params['inventarioEn'])) {
             throw new \Exception("O inventário não foi especificado");
         }
 
+        if (isset($params['depositoEndereco']) && !empty($params['depositoEndereco'])) {
+            $params['depositoEnderecoEn'] = $params['depositoEndereco'];
+        }
         if (empty($params['codDepositoEndereco']) and empty($params['depositoEnderecoEn'])) {
             throw new \Exception("O endereço não foi especificado");
         }
@@ -174,14 +180,15 @@ class EnderecoRepository extends EntityRepository
 
     public function getUltimaContagem($enderecoEntity)
     {
-        $idInvEnd = $enderecoEntity->getId();
+        $idInvEnd = (is_object($enderecoEntity)) ? $enderecoEntity->getId() : $enderecoEntity;
 
         $query = $this->_em->createQueryBuilder()
             ->select('max(ce.id) id, ce.codProduto, ce.grade, ce.codProdutoEmbalagem, ce.codProdutoVolume')
             ->from("wms:Inventario\Endereco","ie")
             ->innerJoin("wms:Inventario\ContagemEndereco", 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
-            ->andWhere("ie.id = $idInvEnd")
-            ->groupBy('ce.codProduto, ce.grade, ce.codProdutoEmbalagem, ce.codProdutoVolume');
+            ->andWhere("ie.id IN ($idInvEnd)")
+            ->groupBy('ce.codProduto, ce.grade, ce.codProdutoEmbalagem, ce.codProdutoVolume, ie.id')
+            ->orderBy('ce.codProduto, ce.grade');
 
         $results = $query->getQuery()->getResult();
         /** @var \Wms\Domain\Entity\Inventario\ContagemEndereco $invContagemEndRepo */
@@ -200,7 +207,7 @@ class EnderecoRepository extends EntityRepository
             ->from("wms:Inventario\Endereco","ie")
             ->andWhere("ie.inventariado = 1")
             ->andWhere("ie.atualizaEstoque = 1")
-            ->andWhere("ie.inventario = $idInventario");
+            ->andWhere("ie.inventario IN ($idInventario)");
 
         return $query->getQuery()->getResult();
     }

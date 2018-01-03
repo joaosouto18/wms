@@ -57,7 +57,7 @@ class NotaFiscalSaidaRepository extends EntityRepository {
                         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
                         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
                         $acaoEn = $acaoIntRepo->find($idIntegracao);
-                        $result = $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 611);
+                        $result = $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 612);
                         if ($result == true) {
                             return $this->getNotaFiscalOuCarga($data, true);
                         }
