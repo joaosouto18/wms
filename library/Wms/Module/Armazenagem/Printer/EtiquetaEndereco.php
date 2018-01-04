@@ -6,6 +6,7 @@ use
     Core\Pdf,
     Wms\Util\CodigoBarras,
     Wms\Domain\Entity\Expedicao;
+use Wms\Math;
 use Wms\Util\Endereco;
 
 class EtiquetaEndereco extends Pdf
@@ -265,7 +266,7 @@ class EtiquetaEndereco extends Pdf
             $dscGrade  = utf8_decode($produto['grade']);
         }
 
-        $lenCodBarras      = 75;
+        $lenCodBarras      = 70;
         $lenEndereco       = 112.5;
         $fontSizeCodBarras = 32;
         $fontSizeEndereco  = 18;
@@ -286,8 +287,21 @@ class EtiquetaEndereco extends Pdf
         $this->SetFont('Arial', 'B', $fontSizeCodBarras);
         $this->Cell($lenCodBarras,8,$codBarras,0,0);
 
-        $this->SetFont('Arial', 'B', $fontSizeEndereco);
-        $this->Cell($lenEndereco,8,$dscEndereco,0,1);
+        $strWidth = $this->GetStringWidth($dscEndereco);
+        if (Math::compare($strWidth, $lenEndereco)) {
+            $fontSizeEndereco = 14;
+            $str1 = substr($dscEndereco, 0, strlen($dscEndereco) / 2);
+            $str2 = substr($dscEndereco, (strlen($dscEndereco) / 2), strlen($dscEndereco));
+
+            $this->SetFont('Arial', 'B', $fontSizeEndereco);
+            $this->SetXY(80, $posY);
+            $this->MultiCell($lenEndereco,8,$str1);
+            $this->SetXY(80, $posY + 5);
+            $this->MultiCell($lenEndereco,8,$str2);
+        } else {
+            $this->SetFont('Arial', 'B', $fontSizeEndereco);
+            $this->Cell($lenEndereco,8,$dscEndereco,0,1);
+        }
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 147, $posY , 60, 15);
 
