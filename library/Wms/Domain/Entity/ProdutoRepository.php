@@ -173,6 +173,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $produtoEntity->setReferencia($referencia);
             $produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
             $produtoEntity->setPossuiPesoVariavel((isset($possuiPesoVariavel) && !empty($possuiPesoVariavel)) ? $possuiPesoVariavel : "N");
+            $produtoEntity->setIndFracionavel((isset($indFracionavel) && !empty($indFracionavel))? $indFracionavel : 'N');
 
             if ($produtoEntity->getId() == null) {
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01", 1);
@@ -341,22 +342,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
-
-                        if (isset($largura) && !empty($largura)) {
-                            $embalagemEntity->setLargura($largura);
-                        }
-                        if (isset($altura) && !empty($altura)) {
-                            $embalagemEntity->setAltura($altura);
-                        }
-                        if (isset($peso) && !empty($peso)) {
-                            $embalagemEntity->setPeso($peso);
-                        }
-                        if (isset($profundidade) && !empty($profundidade)) {
-                            $embalagemEntity->setProfundidade($profundidade);
-                        }
-                        if (isset($cubagem) && !empty($cubagem)) {
-                            $embalagemEntity->setCubagem($cubagem);
-                        }
+                        $embalagemEntity->setAltura($altura);
+                        $embalagemEntity->setLargura($largura);
+                        $embalagemEntity->setPeso($peso);
+                        $embalagemEntity->setProfundidade($profundidade);
+                        $embalagemEntity->setCubagem($cubagem);
 
                         //valida o endereco informado
                         if (!empty($endereco)) {
@@ -1068,8 +1058,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     private function enviaDadosLogisticosEmbalagem(Produto $produtoEntity) {
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('pe.descricao, pe.altura, pe.cubagem, pe.largura, pe.peso, pe.profundidade, pe.quantidade, pe.codigoBarras ')
-                ->from('wms:Produto\Embalagem', 'pe')
+                ->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
+                ->from('wms:Produto\DadoLogistico', 'pdl')
+                ->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
                 ->where('pe.codProduto = ?1')
                 ->andWhere('pe.grade = ?2')
                 ->andWhere('pe.isPadrao like ?3')
@@ -1083,8 +1074,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         if (empty($dadosLogisticosEmbalagens)) {
             $dql = $this->getEntityManager()->createQueryBuilder()
-                    ->select('pe.descricao, pe.altura, pe.cubagem, pe.largura, pe.peso, pe.profundidade, pe.quantidade, pe.codigoBarras ')
-                    ->from('wms:Produto\Embalagem', 'pe')
+                    ->select('pe.descricao, pdl.altura, pdl.cubagem, pdl.largura, pdl.peso, pdl.profundidade, pe.quantidade, pe.codigoBarras ')
+                    ->from('wms:Produto\DadoLogistico', 'pdl')
+                    ->innerJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'pe.id = pdl.embalagem')
                     ->where('pe.codProduto = ?1')
                     ->andWhere('pe.grade = ?2')
                     ->andWhere('pe.isPadrao like ?3')
@@ -1171,6 +1163,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       tc.descricao as dscTipoComercializacao,
                       pe.id as idEmbalagem,
                       pe.descricao as dscEmbalagem,
+                      pe.quantidade,
                       pv.id as idVolume,
                       pv.codigoSequencial as codSequencialVolume,
                       pv.descricao as dscVolume,
