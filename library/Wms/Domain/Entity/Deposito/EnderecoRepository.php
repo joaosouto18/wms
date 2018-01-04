@@ -330,9 +330,9 @@ class EnderecoRepository extends EntityRepository {
         ";
 
         if ($detalharVolume == true) {
-            $select = $select & "            
+            $select = $select . "            
             ,NVL(pe.descricao, pv.descricao) descricaoEmbVol, 
-             NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, 
+             NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras 
             ";
         }
 

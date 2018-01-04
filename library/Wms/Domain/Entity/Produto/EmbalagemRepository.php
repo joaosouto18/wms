@@ -111,7 +111,7 @@ class EmbalagemRepository extends EntityRepository {
             foreach ($embalagensEn as $key => $embalagem) {
                 $qtdEmbalagem = $embalagem->getQuantidade();
                 if ($Math::compare($qtdRestante, $qtdEmbalagem, '>=')) {
-                    $qtdSeparar = $Math::dividir($qtdRestante, $qtdEmbalagem);
+                    $qtdSeparar = (int) ($qtdRestante / $qtdEmbalagem);
                     $qtdRestante = $Math::subtrair($qtdRestante, $Math::multiplicar($qtdSeparar, $qtdEmbalagem));
                     if ($array === 0) {
                         if ($embalagem->getDescricao() != null) {

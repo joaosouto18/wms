@@ -709,7 +709,6 @@ class MapaSeparacao extends eFPDF {
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
-        $pesoProdutoRepo = $em->getRepository('wms:Produto\DadoLogistico');
         /** @var Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
         $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $expedicaoRepo = $em->getRepository('wms:Expedicao');
@@ -787,7 +786,6 @@ class MapaSeparacao extends eFPDF {
                 $quantidade = $produto->getQtdSeparar();
                 $caixaInicio = $produto->getNumCaixaInicio();
                 $caixaFim = $produto->getNumCaixaFim();
-                $pesoProduto = $pesoProdutoRepo->findOneBy(array('embalagem' => $embalagemEn));
 
                 $caixas = $caixaInicio . ' - ' . $caixaFim;
                 $dscEndereco = '';
@@ -798,11 +796,10 @@ class MapaSeparacao extends eFPDF {
                 }
                 if (isset($embalagemEn) && !empty($embalagemEn))
                     $codigoBarras = $embalagemEn->getCodigoBarras();
+
                 $embalagem = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
-                if (isset($pesoProduto) && !empty($pesoProduto)) {
-                    $pesoTotal += Math::multiplicar(str_replace(',', '.', $pesoProduto->getPeso()), str_replace(',', '.', $quantidade));
-                    $cubagemTotal += Math::multiplicar(str_replace(',', '.', $pesoProduto->getCubagem()), str_replace(',', '.', $quantidade));
-                }
+                $pesoTotal += Math::multiplicar(str_replace(',', '.', $embalagemEn->getPeso()), str_replace(',', '.', $quantidade));
+                $cubagemTotal += Math::multiplicar(str_replace(',', '.', $embalagemEn->getCubagem()), str_replace(',', '.', $quantidade));
 
                 if ($ruaAnterior != $rua) {
                     $this->Cell(20, 7, "", 0, 1);
