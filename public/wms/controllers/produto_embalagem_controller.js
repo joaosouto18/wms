@@ -114,6 +114,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                             salvarDadosEmbalagem: function (valores) {
                                 var id = valores.id.toString();
+                                console.log(valores);
 
                                 if (valores.acao === 'incluir') {
                                     valores.dataInativacao = 'EMB. ATIVA';
@@ -224,13 +225,12 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 $('#fieldset-embalagem #embalagem-imprimirCB').val(produto_embalagem.imprimirCB);
                                 $('#fieldset-embalagem #embalagem-endereco').val(produto_embalagem.endereco).removeClass("invalid");
                                 $('#fieldset-embalagem #embalagem-embalado').val(produto_embalagem.embalado);
-//                                $('#fieldset-embalagem #embalagem-capacidadePicking').val(produto_embalagem.capacidadePicking);
                                 $('#fieldset-embalagem #embalagem-enderecoAntigo').val(produto_embalagem.endereco);
-//                                $('#fieldset-embalagem #embalagem-pontoReposicao').val(produto_embalagem.pontoReposicao);
                                 $('#fieldset-embalagem #embalagem-dataInativacao').val(produto_embalagem.dataInativacao);
                                 $('#fieldset-embalagem #embalagem-CBInterno').val(produto_embalagem.CBInterno);
                                 $('#fieldset-embalagem #embalagem-codigoBarras').val(produto_embalagem.codigoBarras).removeClass("invalid");
                                 $('#fieldset-embalagem #embalagem-codigoBarrasAntigo').val(produto_embalagem.codigoBarras);
+                                $('#fieldset-embalagem #embalagem-isEmbFracionavelDefault').val(produto_embalagem.isEmbFracionavelDefault);
                                 $('#fieldset-embalagem #embalagem-descricao').val(produto_embalagem.descricao).removeClass("invalid");
                                 $('#fieldset-embalagem #embalagem-quantidade').val(produto_embalagem.quantidade).removeClass("invalid");
 
