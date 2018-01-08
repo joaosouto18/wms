@@ -173,7 +173,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $produtoEntity->setReferencia($referencia);
             $produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
             $produtoEntity->setPossuiPesoVariavel((isset($possuiPesoVariavel) && !empty($possuiPesoVariavel)) ? $possuiPesoVariavel : "N");
-            $produtoEntity->setIndFracionavel((isset($indFracionavel) && !empty($indFracionavel))? $indFracionavel : 'N');
+           // $produtoEntity->setIndFracionavel((isset($indFracionavel) && !empty($indFracionavel))? $indFracionavel : 'N');
 
             if ($produtoEntity->getId() == null) {
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01", 1);
