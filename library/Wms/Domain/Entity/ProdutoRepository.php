@@ -759,11 +759,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     /**
      *
-     * @param type $id
-     * @param type $grade
-     * @return type
+     * @param string $id
+     * @param string $grade
+     * @return array
      */
-    public function buscarDadoLogistico($id, $grade = false) {
+    public function buscarDadoLogistico($id, $grade = "UNICA")
+    {
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('p, tc.id idTipoComercializacao, tc.descricao tipoComercializacao')
                 ->addSelect("
@@ -1003,6 +1004,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
      * Busca todos os dados de produto, produto volume, produto embalagem, dados logisticos e norma paletizacao
      *
      * @param array $params
+     * @return array
      */
     public function buscarDadosProduto(array $params) {
         extract($params);
@@ -1173,6 +1175,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       tc.descricao as dscTipoComercializacao,
                       pe.id as idEmbalagem,
                       pe.descricao as dscEmbalagem,
+                      pe.quantidade,
                       pv.id as idVolume,
                       pv.codigoSequencial as codSequencialVolume,
                       pv.descricao as dscVolume,
@@ -1597,7 +1600,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_DEPOSITO_ENDERECO=DE.COD_DEPOSITO_ENDERECO
                 LEFT JOIN PRODUTO_VOLUME    PV ON PV.COD_DEPOSITO_ENDERECO=DE.COD_DEPOSITO_ENDERECO
                 WHERE (PV.COD_DEPOSITO_ENDERECO IS NULL AND PE.COD_DEPOSITO_ENDERECO IS NULL)
-                    AND DE.COD_CARACTERISTICA_ENDERECO <> 37 AND DE.IND_SITUACAO='D' $cond
+                    AND DE.COD_CARACTERISTICA_ENDERECO <> 37 AND DE.IND_SITUACAO = 'D' $cond
                 ORDER BY \"descricao\"";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -1734,7 +1737,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         if (isset($params['codProduto']) && !empty($params['codProduto'])) {
             $where .= " AND P.COD_PRODUTO = '$params[codProduto]' ";
         }
-        if ($params['linhaSeparacao'] != '') {
+        if (isset($params['linhaSeparacao']) && !empty($params['linhaSeparacao'])) {
             $where .= "AND P.COD_LINHA_SEPARACAO = '$params[linhaSeparacao]' ";
         }
         if (isset($params['descricao']) && !empty($params['descricao'])) {

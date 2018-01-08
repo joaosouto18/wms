@@ -25,15 +25,15 @@ if ($this->erro) {
                 <input type="hidden" name="tipoQuebraVolume" id="tipoQuebraVolume" value="<?php echo $this->tipoQuebraVolume ?>" >
                 <input type="hidden" name="chekcout" id="chekcout" value="chekcout" >
                 <?php if ($this->confereQtd) : ?>
-                </div>
-                <div class="field">
-                    <label for="rua" class="field optional">*Qtd</label>
-                    <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" style="width: 80%">
-                </div>
-                <div class="field">
-                    <label for="rua" class="field optional">*Código de Barras</label>
-                    <input type="text" name="codigoBarras" id="codigoBarras" class="focus" size="40" maxlength="100" style="width: 99%">
-                </div>
+            </div>
+            <div class="field">
+                <label for="rua" class="field optional">*Qtd</label>
+                <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" style="width: 80%">
+            </div>
+            <div class="field">
+                <label for="rua" class="field optional">*Código de Barras</label>
+                <input type="text" name="codigoBarras" id="codigoBarras" class="focus" size="40" maxlength="100" style="width: 99%">
+            </div>
             <?php else : ?>
                 <div class="field">
                     <label for="rua" class="field optional">*Código de Barras</label>
@@ -59,8 +59,8 @@ if ($this->erro) {
 
         </fieldset>
     </form>
-<div style="text-align: center;font-size: 12px; color: #f14c4c; font-weight: bold;" id="error"></div>
-<div style="text-align: center;font-size: 12px; color: #19bd06; font-weight: bold;" id="success"></div>
+    <div style="text-align: center;font-size: 12px; color: #f14c4c; font-weight: bold;" id="error"></div>
+    <div style="text-align: center;font-size: 12px; color: #19bd06; font-weight: bold;" id="success"></div>
     <div style="margin: 25px 17px 100px 17px;">
         <div style="margin-bottom: 10px;">
             <span style="font-size: 14px;color: #1c94c4;font-weight: bold; margin-left: 16%; margin-right: 32%;">PRODUTOS A CONFERIR</span>
@@ -71,7 +71,7 @@ if ($this->erro) {
             if (is_array($this->produtos)) {
                 foreach ($this->produtos as $key => $value) {
                     ?>
-                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" 
+                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>"
                        style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; margin-top: 10px; text-align: center;">
                         <?php echo$value['COD_PRODUTO'].' - '. $value['DSC_PRODUTO'] ?> </p>
                     <?php
@@ -81,16 +81,29 @@ if ($this->erro) {
         </div>
         <div id="conferidos" class="boxConfer" style="float: right;">
             <?php
+            $conferidos = array();
             if (is_array($this->produtos)) {
-                foreach ($this->produtos as $key => $value) {
+                foreach ($this->produtosConferidos as $key => $value) {
+                    $background = $span = $quantidade = '';
+                    if($value['QTD_SEPARAR'] != $value['QTD_CONFERIDA']){
+                        $background = 'background: rgb(250, 208, 208);';
+                        $span = '<span id="qtd">'.$value['QTD_CONFERIDA_EMB'].'</span>';
+                    }else{
+                        $quantidade = $value['QUANTIDADE'];
+                    }
+                    $conferidos[$value['COD_PRODUTO'] . '-' . $value['DSC_GRADE']] = 1;
                     ?>
-                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo  $value['COD_PRODUTO'].' - '.$value['DSC_PRODUTO'].' - ' ?> <span id="qtd"></span></span> </p>
+                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="<?php echo $background;?> color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center;margin-top: 10px; "><?php echo  $value['COD_PRODUTO'].' - '.$value['DSC_PRODUTO'].' - '.$quantidade.' '.$span ?> </p>
                     <?php
                 }
-                foreach ($this->produtosConferidos as $key => $value) {
-                    ?>
-                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center;margin-top: 10px; "><?php echo  $value['COD_PRODUTO'].' - '.$value['DSC_PRODUTO'].' - '.$value['QUANTIDADE'] ?> </p>
-                    <?php
+                foreach ($this->produtos as $key => $value) {
+                    if(empty($conferidos[$value['COD_PRODUTO'] . '-' . $value['DSC_GRADE']])) {
+                        ?>
+                        <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>"
+                           style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo $value['COD_PRODUTO'] . ' - ' . $value['DSC_PRODUTO'] . ' - ' ?>
+                            <span id="qtd"></span></span> </p>
+                        <?php
+                    }
                 }
             }
             ?>

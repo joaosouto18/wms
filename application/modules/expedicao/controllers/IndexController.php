@@ -306,7 +306,7 @@ class Expedicao_IndexController extends Action {
                 $cargaEn->setPlacaExpedicao($placa);
                 $this->_em->persist($cargaEn);
                 if ($countCortadas > 0) {
-                    $expedicaoEn->setStatus(EXPEDICAO::STATUS_CANCELADO);
+                    $expedicaoEn->getCodStatus(EXPEDICAO::STATUS_CANCELADO);
                     $this->_em->persist($expedicaoEn);
                     $AndamentoRepo->save("Etiquetas da carga " . $cargaEn->getCodCargaExterno() . " canceladas na expedição " . $expedicaoAntiga, $expedicaoEn->getId());
                 }
@@ -937,6 +937,7 @@ class Expedicao_IndexController extends Action {
                     }
                 }
                 $produtosConferidos = $mapaSeparacaoRepo->getProdutosConferidosTotalByClientes($codBarras, $codPessoa);
+
                 if (!empty($produtosConferidos)) {
                     foreach ($produtosConferidos as $key => $value) {
                         if ($value['QUANTIDADE'] > 0) {
@@ -944,6 +945,12 @@ class Expedicao_IndexController extends Action {
                             $produtosConferidos[$key]['QUANTIDADE'] = implode(' - ', $vetSeparar);
                         } else {
                             $value['QUANTIDADE'] = 0;
+                        }
+                        if ($value['QTD_CONFERIDA'] > 0) {
+                            $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_CONFERIDA']);
+                            $produtosConferidos[$key]['QTD_CONFERIDA_EMB'] = implode(' - ', $vetSeparar);
+                        } else {
+                            $value['QTD_CONFERIDA_EMB'] = 0;
                         }
                     }
                 }

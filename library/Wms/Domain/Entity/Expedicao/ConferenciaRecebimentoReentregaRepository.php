@@ -62,7 +62,7 @@ class ConferenciaRecebimentoReentregaRepository extends EntityRepository
                                                              AND PE2.QTD_EMBALAGEM = PE.QTD_EMBALAGEM
                               LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = ES.COD_PRODUTO AND PV.DSC_GRADE = ES.DSC_GRADE
                              WHERE ES.COD_ETIQUETA_SEPARACAO = " . $etiqueta .  "
-                               AND NVL(PE2.COD_BARRAS, PV.COD_BARRAS) = " . $codBarras;
+                               AND NVL(PE2.COD_BARRAS, PV.COD_BARRAS) = '" . $codBarras . "'";
                     $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
                     if (count($result) == 0) {
                         throw new \Exception(utf8_encode('Código da Etiqueta não confere com Código de Barras do Produto!'));
