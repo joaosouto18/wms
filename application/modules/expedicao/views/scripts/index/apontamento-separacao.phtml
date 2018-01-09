@@ -537,10 +537,11 @@
             if (data.length > 0) {
                 $.post("apontamento-separacao", {data: data}).success(function (data) {
                     if (data.result === 'Ok') {
-                        $.wmsDialogAlert({
-                            title: 'Alerta',
-                            msg: 'Todos os apontamentos foram salvos com sucesso!'
-                        });
+//                        $.wmsDialogAlert({
+//                            title: 'Alerta',
+//                            msg: 'Todos os apontamentos foram salvos com sucesso!'
+//                        },  false);
+                        alert('Todos os apontamentos foram salvos com sucesso!');
                         window.location.href = 'apontamento-separacao';
                     } else if (data.result === 'Error') {
                         $.wmsDialogAlert({
