@@ -488,7 +488,7 @@ class EnderecoRepository extends EntityRepository {
         }
     }
 
-    public function ocuparLiberarEnderecosAdjacentes($enderecoEn, $qtdAdjacente, $operacao = "OCUPAR") {
+    public function ocuparLiberarEnderecosAdjacentes($enderecoEn, $qtdAdjacente, $operacao = "OCUPAR", $idUma = "") {
         if ($operacao == "OCUPAR") {
             if ($enderecoEn->getDisponivel() == "S") {
                 $enderecoEn->setDisponivel("N");
