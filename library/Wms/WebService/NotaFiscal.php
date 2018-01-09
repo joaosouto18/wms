@@ -96,7 +96,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
         $idFornecedor = trim($idFornecedor);
         $numero = trim($numero);
-        $serie = (!empty(trim($serie)))? trim($serie) : "0";
+        $serieTrim = trim($serie);
+        $serie = (!empty($serieTrim))? $serieTrim : "0";
         $dataEmissao  = trim($dataEmissao);
         $idStatus = trim($idStatus);
 
