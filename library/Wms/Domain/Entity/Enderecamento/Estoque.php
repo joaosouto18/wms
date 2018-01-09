@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Enderecamento;
+use Wms\Domain\Entity\Produto;
 
 
 /**
@@ -20,6 +21,7 @@ class Estoque
     protected $id;
 
     /**
+     * @var Produto
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
      * @JoinColumns({
      *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
@@ -149,7 +151,7 @@ class Estoque
     }
 
     /**
-     * @param mixed $produto
+     * @param Produto $produto
      */
     public function setProduto($produto)
     {
@@ -157,7 +159,7 @@ class Estoque
     }
 
     /**
-     * @return mixed
+     * @return Produto
      */
     public function getProduto()
     {

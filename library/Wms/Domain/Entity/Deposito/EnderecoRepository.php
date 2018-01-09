@@ -7,6 +7,8 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity,
     Wms\Util\Endereco as EnderecoUtil,
     Core\Util\Converter;
+use Wms\Domain\Entity\Enderecamento\Estoque;
+use Wms\Domain\Entity\Produto;
 
 /**
  * Endereco
@@ -982,26 +984,54 @@ class EnderecoRepository extends EntityRepository {
             throw new \Exception("Endereço não encontrado");
         } else {
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
             $result = $vetEmbalagens = array();
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
             $itens = $estoqueRepo->findBy(array('depositoEndereco' => $enderecoEn));
-            $produtoEmbalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-            $itensPicking = $produtoEmbalagemRepo->findBy(array('endereco' => $enderecoEn->getId()), array('codProduto' => 'ASC'));
-            if (!empty($itensPicking)) {
-                foreach ($itensPicking as $key => $itemPincking) {
-                    $produtoEn = $itemPincking->getProduto();
+            $itensPickingEmb = $embalagemRepo->findBy(array('endereco' => $enderecoEn->getId()), array('codProduto' => 'ASC'));
+            $itensPickingVol = $volumeRepo->findBy(array('endereco' => $enderecoEn->getId()), array('codProduto' => 'ASC'));
+            if (!empty($itensPickingEmb)) {
+                /**
+                 * @var int $key
+                 * @var Produto\Embalagem $itemPinckingEmb
+                 */
+                foreach ($itensPickingEmb as $key => $itemPinckingEmb) {
+                    $produtoEn = $itemPinckingEmb->getProduto();
                     $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
                         'desc' => $produtoEn->getDescricao(), 'qtd' => 0);
                     $result[$produtoEn->getId()] = $produto;
                 }
             }
+            if (!empty($itensPickingVol)) {
+                /**
+                 * @var int $key
+                 * @var Produto\Volume $itemPinckingVol
+                 */
+                foreach ($itensPickingVol as $key => $itemPinckingVol) {
+                    $produtoEn = $itemPinckingVol->getProduto();
+                    $result[$produtoEn->getId()."-".$itemPinckingVol->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
+                        'desc' => $produtoEn->getDescricao() . " - (" . $itemPinckingVol->getDescricao() . ")", 'qtd' => 0);
+                }
+            }
+
             if (!empty($itens)) {
+                /**
+                 * @var int $key
+                 * @var Estoque $item
+                 */
                 foreach ($itens as $key => $item) {
                     $produtoEn = $item->getProduto();
-                    $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $item->getQtd());
-                    $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                        'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens));
-                    $result[$produtoEn->getId()] = $produto;
+                    if ($produtoEn->getTipoComercializacao() == Produto::TIPO_UNITARIO) {
+                        $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $item->getQtd());
+                        $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
+                            'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens));
+                        $result[$produtoEn->getId()] = $produto;
+                    } elseif ($produtoEn->getTipoComercializacao() == Produto::TIPO_COMPOSTO) {
+                        /** @var Produto\Volume $volumeEn */
+                        $volumeEn = $volumeRepo->find($item->getProdutoVolume());
+                        $result[$produtoEn->getId()."-".$volumeEn->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
+                            'desc' => $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ")", 'qtd' => $item->getQtd());
+                    }
                 }
             }
             if (empty($result)) {
