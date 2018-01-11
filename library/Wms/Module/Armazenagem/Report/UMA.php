@@ -82,7 +82,7 @@ class UMA extends Pdf
             }
             $this->Cell(20, 5, $uma['QTD'], 1, 0);
             $this->Cell(30, 5, $uma['STATUS'], 1, 0);
-            $this->Cell(21, 5, $uma['DTH_VALIDADE'], 1, 0);
+            $this->Cell(21, 5, date_format(date_create_from_format('Y-m-d H:m:s', $uma['DTH_VALIDADE']),'d/m/Y'), 1, 0);
             $this->Cell(18, 5, $uma['ENDERECO'], 1, 1);
 
         }
