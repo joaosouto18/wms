@@ -300,7 +300,6 @@ class ApontamentoMapaRepository extends EntityRepository {
                     MP.COD_EXPEDICAO,
                     PD.COD_PESSOA
                     ORDER BY $order";
-        echo $sql;
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         $qtdRows = count($result);
         $pesoTotal = 0;
