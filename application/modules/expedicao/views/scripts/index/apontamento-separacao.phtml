@@ -150,6 +150,9 @@
         return false;
     });
     $(function () {
+        $(document).keydown(function (event) {
+             console.log(event.width + " -- " + event.keyCode)
+        });
         $('#etiquetas-etiquetaInicial').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
                 if ($(this).val() != "") {
@@ -346,7 +349,6 @@
                 var vetIntervalo = new Array();
                 var first = parseInt(vet[0]);
                 var end = parseInt(vet[1]);
-                var etiquetaInical = parseInt(eI);
                 var etiquetaFinal = parseInt(eF + 1);
                 var pessoa = $(this).parent().find('.identifica').text();
                 if (pessoa == cpf && erro == false) {
@@ -366,8 +368,8 @@
                 }
             });
 
-            var result = {intervalo: intervalo, total: total, cpf: cpf, pessoa: null};
             if (erro == false) {
+                var result = {intervalo: intervalo, total: total, cpf: cpf, pessoa: null};
                 $.ajax({
                     url: 'conferente-apontamento-separacao-ajax/cpf/' + cpf + '/etiquetaInicial/' + eI + '/etiquetaFinal/' + eF,
                     success: function (data) {
@@ -408,18 +410,17 @@
                                 msg: data.msg
                             });
                             $('#etiquetas-pessoa').val('');
+                            return false;
                         }
                     }
                 });
             } else {
-                alert('Etiqueta ' + (erro-1) + ' já foi bipada para esse funcionário');
-                $('#etiquetas-pessoa').val('');
-                $('#etiquetas-pessoa').focus();
+                $('#etiquetas-pessoa').val('').focus();
                 $.wmsDialogAlert({
                     title: 'Alerta',
                     msg: 'Etiqueta ' + (erro-1) + ' já foi bipada para esse funcionário'
                 });
-
+                return false;
             }
         },
 
