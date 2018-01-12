@@ -150,6 +150,9 @@
         return false;
     });
     $(function () {
+        $(document).keydown(function (event) {
+             console.log(event.width + " -- " + event.keyCode)
+        });
         $('#etiquetas-etiquetaInicial').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
                 if ($(this).val() != "") {
@@ -326,13 +329,16 @@
 
             var cpf = $('#etiquetas-pessoa').val();
 
-            if (cpf == null || cpf == "") {
+            var cpfUnformat = cpf.replace(".","");
+            cpfUnformat = cpfUnformat.replace("-","");
+
+            if (cpfUnformat == null || cpfUnformat == "") {
                 $.wmsDialogAlert({
                     title: 'Alerta',
                     msg: 'Informe um CPF'
                 });
                 return false;
-            } else if (cpf.length != 14) {
+            } else if (cpfUnformat.length != 11) {
                 $.wmsDialogAlert({
                     title: 'Alerta',
                     msg: 'CPF incompleto ou inválido'
@@ -346,7 +352,6 @@
                 var vetIntervalo = new Array();
                 var first = parseInt(vet[0]);
                 var end = parseInt(vet[1]);
-                var etiquetaInical = parseInt(eI);
                 var etiquetaFinal = parseInt(eF + 1);
                 var pessoa = $(this).parent().find('.identifica').text();
                 if (pessoa == cpf && erro == false) {
@@ -366,8 +371,8 @@
                 }
             });
 
-            var result = {intervalo: intervalo, total: total, cpf: cpf, pessoa: null};
             if (erro == false) {
+                var result = {intervalo: intervalo, total: total, cpf: cpf, pessoa: null};
                 $.ajax({
                     url: 'conferente-apontamento-separacao-ajax/cpf/' + cpf + '/etiquetaInicial/' + eI + '/etiquetaFinal/' + eF,
                     success: function (data) {
@@ -408,18 +413,17 @@
                                 msg: data.msg
                             });
                             $('#etiquetas-pessoa').val('');
+                            return false;
                         }
                     }
                 });
             } else {
-                alert('Etiqueta ' + (erro-1) + ' já foi bipada para esse funcionário');
-                $('#etiquetas-pessoa').val('');
-                $('#etiquetas-pessoa').focus();
+                $('#etiquetas-pessoa').val('').focus();
                 $.wmsDialogAlert({
                     title: 'Alerta',
                     msg: 'Etiqueta ' + (erro-1) + ' já foi bipada para esse funcionário'
                 });
-
+                return false;
             }
         },
 
@@ -537,10 +541,11 @@
             if (data.length > 0) {
                 $.post("apontamento-separacao", {data: data}).success(function (data) {
                     if (data.result === 'Ok') {
-                        $.wmsDialogAlert({
-                            title: 'Alerta',
-                            msg: 'Todos os apontamentos foram salvos com sucesso!'
-                        });
+//                        $.wmsDialogAlert({
+//                            title: 'Alerta',
+//                            msg: 'Todos os apontamentos foram salvos com sucesso!'
+//                        },  false);
+                        alert('Todos os apontamentos foram salvos com sucesso!');
                         window.location.href = 'apontamento-separacao';
                     } else if (data.result === 'Error') {
                         $.wmsDialogAlert({
@@ -602,36 +607,6 @@
             }
         });
     });
-    function mascaraMutuario(o,f){
-        v_obj=o
-        v_fun=f
-        setTimeout('execmascara()',1)
-    }
-
-    function execmascara(){
-        v_obj.value=v_fun(v_obj.value)
-    }
-    function cpfCnpj(v){
-
-        //Remove tudo o que não é dígito
-        v=v.replace(/\D/g,"")
-
-        if (v.length <= 14) { //CPF
-
-            //Coloca um ponto entre o terceiro e o quarto dígitos
-            v=v.replace(/(\d{3})(\d)/,"$1.$2")
-
-            //Coloca um ponto entre o terceiro e o quarto dígitos
-            //de novo (para o segundo bloco de números)
-            v=v.replace(/(\d{3})(\d)/,"$1.$2")
-
-            //Coloca um hífen entre o terceiro e o quarto dígitos
-            v=v.replace(/(\d{3})(\d{1,2})$/,"$1-$2")
-
-        }
-        return v
-
-    }
 </script>
 
 <?php

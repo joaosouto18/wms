@@ -340,7 +340,7 @@ class PaleteRepository extends EntityRepository {
                         PROD.VOLUMES,
                         NVL(QTD_VOL.QTD,1) as QTD_VOL_TOTAL,
                         NVL(QTD_VOL_CONFERIDO.QTD,1) as QTD_VOL_CONFERIDO,
-                        P.DTH_VALIDADE
+                        PP.DTH_VALIDADE
                    FROM PALETE P
                    LEFT JOIN UNITIZADOR U ON P.COD_UNITIZADOR = U.COD_UNITIZADOR
                    LEFT JOIN SIGLA S ON P.COD_STATUS = S.COD_SIGLA

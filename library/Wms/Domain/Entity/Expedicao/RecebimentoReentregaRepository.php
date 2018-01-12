@@ -5,6 +5,8 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\NotaFiscal;
 use Wms\Domain\Entity\Pessoa\Juridica;
+use Wms\Domain\Entity\Sistema\Parametro;
+use Wms\Domain\Entity\Sistema\ParametroRepository;
 use Wms\Service\ExpedicaoService;
 
 class RecebimentoReentregaRepository extends EntityRepository
@@ -77,6 +79,8 @@ class RecebimentoReentregaRepository extends EntityRepository
             $andamentoNFRepo = $this->_em->getRepository("wms:Expedicao\NotaFiscalSaidaAndamento");
             /** @var \Wms\Domain\Entity\Expedicao\RecebimentoReentregaNotaRepository $recebimentoReentregaNotaRepo */
             $recebimentoReentregaNotaRepo = $this->_em->getRepository('wms:Expedicao\RecebimentoReentregaNota');
+            /** @var ParametroRepository $sisParamRepo */
+            $sisParamRepo = $this->_em->getRepository('wms:Sistema\Parametro');
 
             $expedicaoService = new ExpedicaoService($this->_em);
 
@@ -110,7 +114,11 @@ class RecebimentoReentregaRepository extends EntityRepository
                 $andamentoNFRepo->save($nfEntity, \Wms\Domain\Entity\Expedicao\RecebimentoReentrega::RECEBIMENTO_CONCLUIDO,false, null,null, $recebimentoReentregaEn);
                 $nfEntity->setStatus($statusNfFinalizadaEn);
                 $this->getEntityManager()->persist($nfEntity);
-                $expedicaoService->createCargaReentrega($nfEntity);
+                /** @var Parametro $resultParam */
+                $resultParam = $sisParamRepo->findOneBy(array('constante' => 'IND_REENTREGA_RECEB_TO_EXP'));
+                if (empty($resultParam) || (!empty($resultParam) && $resultParam->getValor() != 'N')) {
+                    $expedicaoService->createCargaReentrega($nfEntity);
+                }
             }
 
             $this->_em->flush();

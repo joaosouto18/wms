@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Web\Form\MapaSeparacao;
 
+use Wms\Domain\Entity\MapaSeparacao\PracaFaixa;
 use Wms\Module\Web\Form,
     Core\Form\SubForm,
     Wms\Domain\Entity\Movimentacao\Veiculo as VeiculoEntity;
@@ -90,23 +91,28 @@ class Praca extends \Wms\Module\Web\Form
 
         }
 
-
-
-
         $this->addSubFormTab('Identificação', $formPraca, 'identificacao', null);
     }
 
     public function setDefaultsFromIdPraca ($idPraca){
-        $values = array(
-            'identificacao' => array(
-                'nomePraca' => 'TESTE',
-                'faixa1_1' => '26100-001',
-                'faixa2_1' => '26199-999',
-                'faixa1_2' => '105',
-                'faixa2_2' => '100',
-                'num_pracas' => '2'
-            )
-        );
+
+        /** @var \Wms\Domain\Entity\MapaSeparacao\Praca $praca */
+        $praca = $this->getEm()->find("wms:MapaSeparacao\Praca", $idPraca);
+        $faixas = $this->getEm()->getRepository("wms:MapaSeparacao\PracaFaixa")->findBy(['codPraca' => $idPraca]);
+
+        $result = [];
+        $result['nomePraca']  = $praca->getNomePraca();
+        /**
+         * @var int $key
+         * @var PracaFaixa $faixa
+         */
+        foreach ($faixas as $key => $faixa) {
+            $result["faixa1_" . ($key + 1)] = $faixa->getFaixaCep1();
+            $result["faixa2_" . ($key + 1)] = $faixa->getFaixaCep2();
+        }
+
+        $result['num_pracas'] = count($faixas);
+        $values = [ 'identificacao' => $result ];
         $this->setDefaults($values);
     }
 
