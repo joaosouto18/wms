@@ -308,6 +308,7 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (308, '6.11.14', 'Correção: Remoção de valores estáticos na tela de edição de PRAÇA', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (309, '6.11.14', 'Correção: Correção na geração de Mapa/Etiqueta com quebra por PRAÇA onde o CEP era exatamente ou a FAIXA INICIAL ou a FINAL', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (310, '6.11.14', 'Correção: Consulta de endereço no coletor', null, SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.X.X', 'Melhoria: Inclusão da movimentação por unidade fracionavel', '8-unidade-fracionavel.sql', SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.X.X', 'Melhoria: Inclusão da movimentação por unidade fracionavel', 'x-unidade-fracionavel.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.X.X', 'Correção: Norma de paletização, trava para duplicidade de unitizador, correção no cálculo de capacidade da norma', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.X.X', 'Correção: Endereçamento manual no mobile, aceitava quantidade negativa e exceder fração em relação ao recebido', null, SYSDATE);
 
