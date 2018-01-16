@@ -508,15 +508,15 @@ class PaleteRepository extends EntityRepository {
                 $saldoPickingVirtual = $saldoPickingReal + $reservaEntradaPicking + $reservaSaidaPicking;
 
                 if ($completaPicking) {
-                    if ($capacidadePicking <= $saldoPickingVirtual) {
-                        break; //picking completo, não é necessário abastecer
-                    } else  {
-                        if ($quantidadePalete > $saldoPickingVirtual) {
-                            $paleteProdutoEn = $this->getEntityManager()->getReference('wms:Enderecamento\PaleteProduto', $produtos[0]->getId());
-                            $paleteProdutoEn->setQtd($capacidadePicking - $saldoPickingVirtual);
-                            $this->getEntityManager()->persist($paleteProdutoEn);
-                        }
+                    $quantidadeEnderecarPicking = PaleteProdutoRepository::getQuantidadeEnderecarPicking($capacidadePicking, $saldoPickingVirtual, $quantidadePalete);
+                    if (is_string($quantidadeEnderecarPicking)) {
+                        throw new \Exception($quantidadeEnderecarPicking);
                     }
+
+                    $paleteProdutoEn = $this->getEntityManager()->getReference('wms:Enderecamento\PaleteProduto', $produtos[0]->getId());
+                    $paleteProdutoEn->setQtd($quantidadeEnderecarPicking);
+                    $this->getEntityManager()->persist($paleteProdutoEn);
+
                 } else {
                     if (($saldoPickingVirtual + $quantidadePalete) > $capacidadePicking) {
                         $Resultado = "Quantidade nos paletes superior a capacidade do picking";
