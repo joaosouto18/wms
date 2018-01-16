@@ -22,10 +22,12 @@ class Enderecamento_PaleteController extends Action
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
         $ProdutoRepository = $this->em->getRepository('wms:Produto');
+        $produtoEspecifico = false;
 
         if (!empty($codProduto) && !empty($grade)) {
             $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
             $this->view->endPicking = $ProdutoRepository->getEnderecoPicking($produtoEn);
+            $produtoEspecifico = true;
 
             $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
@@ -105,7 +107,7 @@ class Enderecamento_PaleteController extends Action
         }
 
         $this->view->idRecebimento = $idRecebimento;
-        $this->configurePage($idRecebimento);
+        $this->configurePage($idRecebimento, $produtoEspecifico);
     }
 
     /**
@@ -241,7 +243,7 @@ class Enderecamento_PaleteController extends Action
      * @param $idRecebimento
      * @param $buttons
      */
-    public function configurePage($idRecebimento)
+    public function configurePage($idRecebimento, $produtoEspecifico)
     {
         $buttons[] = array(
             'label' => 'Voltar',
@@ -310,15 +312,16 @@ class Enderecamento_PaleteController extends Action
                 ),
                 'tag' => 'a'
             );
-            $buttons[] = array(
-                'label' => 'Trocar U.M.A',
-                'urlParams' => array(
-                    'module' => 'enderecamento',
-                    'controller' => 'palete',
-                    'action' => 'trocar'
-                ),
-                'tag' => 'a',
-            );
+            if ($produtoEspecifico)
+                $buttons[] = array(
+                    'label' => 'Trocar U.M.A',
+                    'urlParams' => array(
+                        'module' => 'enderecamento',
+                        'controller' => 'palete',
+                        'action' => 'trocar'
+                    ),
+                    'tag' => 'a',
+                );
         }
 
 
@@ -385,12 +388,13 @@ class Enderecamento_PaleteController extends Action
         $params = $this->_getAllParams();
         $idRecebimento  = $this->getRequest()->getParam('id');
         $codProduto     = $this->getRequest()->getParam('codigo');
+        $grade          = $this->getRequest()->getParam('grade');
 
         if (!is_null($trocaUma)) {
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             // verifica se novo recebimento possui o produto selecionado
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
-            $result = $notaFiscalRepo->buscarItensPorNovoRecebimento($params['novo-recebimento-id'], $codProduto);
+            $result = $notaFiscalRepo->buscarItensPorNovoRecebimento($params['novo-recebimento-id'], $codProduto, $grade);
 
             if (count($result) > 0) {
                 // realizar trocas de U.M.As para novo recebimento
