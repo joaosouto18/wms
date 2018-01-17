@@ -1557,7 +1557,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @param array $cargas
      * @return bool
      */
-    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false)
+    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false, $motivo)
     {
         $codCargaExterno = $this->validaCargaFechada($idExpedicao);
         if (isset($codCargaExterno) && !empty($codCargaExterno)) {
