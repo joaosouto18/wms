@@ -1196,6 +1196,13 @@ class PaleteRepository extends EntityRepository {
         return $query->getQuery()->getArrayResult();
     }
 
+    /**
+     * @param $recebimento
+     * @param $codProduto
+     * @param $grade
+     * @return bool
+     * @throws \Exception
+     */
     public function validaTroca($recebimento, $codProduto, $grade) {
         $params = array('id' => $recebimento,
             'codigo' => $codProduto,
@@ -1204,21 +1211,24 @@ class PaleteRepository extends EntityRepository {
         $paletes = $this->getPaletesByProdutoAndGrade($params);
         foreach ($paletes as $palete) {
             if ($palete['impresso'] == 'S') {
-                $msg = "Existem paletes já impressos para este produto no novo recebimento";
-                return array('result' => false,
-                    'msg' => $msg);
+                throw new \Exception("Existem paletes já impressos para este produto no novo recebimento");
             }
             if (($palete['codStatus'] == Palete::STATUS_ENDERECADO) || ($palete['codStatus'] == Palete::STATUS_EM_ENDERECAMENTO)) {
-                $msg = "Existem paletes em endereçamento ou endereçados para este produto no novo recebimento";
-                return array('result' => false,
-                    'msg' => $msg);
+                throw new \Exception( "Existem paletes em endereçamento ou endereçados para este produto no novo recebimento");
             }
         }
 
-        return array('result' => true,
-            'msg' => '');
+        return true;
     }
 
+    /**
+     * @param $novoRecebimento
+     * @param array $umas
+     * @param $recebimentoAntigo
+     * @param $codProduto
+     * @param $grade
+     * @throws \Exception
+     */
     public function realizaTroca($novoRecebimento, array $umas, $recebimentoAntigo, $codProduto, $grade) {
         $this->getEntityManager()->beginTransaction();
         try {
@@ -1237,14 +1247,14 @@ class PaleteRepository extends EntityRepository {
                 //TROCO A UMA PARA O NOVO RECEBIMENTO
                 $entity = $this->find($uma);
                 $entRecebimento = $this->_em->getReference('wms:Recebimento', $novoRecebimento);
-                $entity->setStatus($entity->getStatus());
                 $entity->setRecebimento($entRecebimento);
 
                 $produtos = $entity->getProdutos();
                 $produtoEn = $produtos[0]->getProduto();
 
                 //EFETIVO A RESERVA DE ESTOQUE CASO NECESSARIO
-                if ($entRecebimento->getStatus()->getId() == RecebimentoEntity::STATUS_FINALIZADO) {
+                if ($entRecebimento->getStatus()->getId() == RecebimentoEntity::STATUS_FINALIZADO
+                    && $entity->getStatus()->getId() == Palete::STATUS_ENDERECADO) {
                     /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
                     $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
@@ -1271,10 +1281,9 @@ class PaleteRepository extends EntityRepository {
 
             $this->_em->flush();
             $this->getEntityManager()->commit();
-            return true;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
-            throw new $e->getMessage();
+            throw $e;
         }
     }
 

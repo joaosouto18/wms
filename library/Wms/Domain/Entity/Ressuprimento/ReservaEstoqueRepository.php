@@ -123,7 +123,7 @@ class ReservaEstoqueRepository extends EntityRepository
         }
     }
 
-    /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+    /** @param \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
     public function efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, $origemReserva, $idOrigem, $usuarioEn = null, $osEn = null, $unitizadorEn = null, $dataValidade=null)
     {
         if ($usuarioEn == NULL)  {
