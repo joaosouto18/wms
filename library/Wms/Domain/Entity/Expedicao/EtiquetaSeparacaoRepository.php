@@ -1343,7 +1343,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             /** @var Produto\Volume $volume */
             foreach ($volumes as $volume) {
 
-                if (!empty($volume->getDataInativacao()))
+                if ($volume->getDataInativacao() != null)
                     continue;
 
                 $arrEnderecos = array();
@@ -1374,7 +1374,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $enderecoEn = null;
                 foreach ($volumes as $volume) {
 
-                    if (!empty($volume->getDataInativacao()))
+                    if ($volume->getDataInativacao() != null)
                         continue;
 
                     if ($reserva['codProdutoVolume'] == $volume->getId()) {
