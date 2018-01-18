@@ -150,6 +150,16 @@ class EmbalagemRepository extends EntityRepository {
                     $args = explode(' ', $pref);
                     $args[0] = Math::adicionar($args[0], $qtdRestante) ;
                     $arrayQtds[$embFracDefault->getId()] = implode(' ', $args);
+                } else {
+                    if ($embalagem->isEmbFracionavelDefault() != "S") {
+                        $fatorEmb = $embalagem->getDescricao(). "(" . $embalagem->getQuantidade() . ")";
+                    } else {
+                        $fatorEmb = Produto::$listaUnidadeMedida[$embalagem->getProduto()->getUnidadeFracao()] . "S";
+                    }
+                    if (Math::compare($qtdRestante, 1, '<')) {
+                        $qtdRestante = (float) $qtdRestante;
+                    }
+                    $arrayQtds[$embFracDefault->getId()] = $qtdRestante . ' ' . $fatorEmb;
                 }
             }
 
