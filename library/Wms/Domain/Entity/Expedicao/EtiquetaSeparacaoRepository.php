@@ -868,7 +868,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if ($filial->getIndUtilizaRessuprimento() == "S") {
                     $reservas = $reservaEstoqueRepo->getReservasExpedicao($pedidoProduto);
                 } else {
-                    $reservas[0]['qtd'] = Math::subtrair($pedidoProduto->getQuantidade(),(float)$pedidoProduto->getQtdCortada());
+                    $reservas[0]['qtd'] = Math::subtrair($pedidoProduto->getQuantidade(), $pedidoProduto->getQtdCortada());
                     $reservas[0]['idEndereco'] = null;
                     $reservas[0]['quebraPulmaoDoca'] = 'N';
                     $reservas[0]['tipoSaida'] = ReservaEstoqueExpedicao::SAIDA_SEM_CONTROLE_ESTOQUE;
