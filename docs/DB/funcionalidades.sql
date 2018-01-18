@@ -312,4 +312,5 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (311, '6.11.15', 'Correção: Verificações da função de troca de UMA entre Recebimentos', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.X.X', 'Melhoria: Inclusão da movimentação por unidade fracionavel', '8-unidade-fracionavel.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.X.X', 'Correção: Norma de paletização, trava para duplicidade de unitizador, correção no cálculo de capacidade da norma', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.X.X', 'Correção: Endereçamento manual no mobile, aceitava quantidade negativa e exceder fração em relação ao recebido', null, SYSDATE);
 
