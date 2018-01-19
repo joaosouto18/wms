@@ -54,11 +54,11 @@ if (count($this->produtos) > 0):
                 <td style="text-align:left"><?php echo $produto['codigo'] ?></td>
                 <td style="text-align:left"><?php echo $produto['produto'] ?></td>
                 <td style="text-align:left"><?php echo $produto['grade'] ?></td>
-                <td style="text-align:left"><?php echo $produto['qtdItensNf'] ?></td>
-                <td style="text-align:left"><?php echo $produto['qtdRecebimento'] ?></td>
-                <td style="text-align:left"><?php echo $produto['qtdRecebida'] ?></td>
-                <td style="text-align:left"><?php echo $produto['qtdEnderecamento'] ?></td>
-                <td style="text-align:left"><?php echo $produto['qtdEnderecada'] ?></td>
+                <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdItensNf'], 1) != 0)? (float)$produto['qtdItensNf'] : $produto['qtdItensNf'] ?></td>
+                <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdRecebimento'], 1) != 0)? (float)$produto['qtdRecebimento'] : $produto['qtdRecebimento']  ?></td>
+                <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdRecebida'], 1) != 0)? (float)$produto['qtdRecebida'] : $produto['qtdRecebida']  ?></td>
+                <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdEnderecamento'], 1) != 0)? (float)$produto['qtdEnderecamento'] : $produto['qtdEnderecamento']  ?></td>
+                <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdEnderecada'], 1) != 0)? (float)$produto['qtdEnderecada'] : $produto['qtdEnderecada']  ?></td>
                 <td style="text-align:left"><?php echo $produto['qtdTotal'] ?></td>
                 <?php endforeach; ?>
             </tr>

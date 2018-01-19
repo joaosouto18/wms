@@ -1632,7 +1632,7 @@ class RecebimentoRepository extends EntityRepository {
                         FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD
                                 FROM PALETE P
                                 LEFT JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
-                               WHERE P.COD_STATUS IN (536,535,534) OR P.IND_IMPRESSO = 'S')
+                               WHERE P.COD_STATUS IN (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_ENDERECAMENTO.",".Palete::STATUS_RECEBIDO.") OR P.IND_IMPRESSO = 'S')
                        GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE) P
                   ON P.COD_RECEBIMENTO = V.COD_RECEBIMENTO
                  AND P.COD_PRODUTO = V.COD_PRODUTO
@@ -1647,7 +1647,7 @@ class RecebimentoRepository extends EntityRepository {
                                 LEFT JOIN PESSOA PES ON PES.COD_PESSOA = NF.COD_FORNECEDOR)
                        GROUP BY COD_RECEBIMENTO) F ON F.COD_RECEBIMENTO = R.COD_RECEBIMENTO
           WHERE (NVL(V.QTD,0) - NVL(P.QTD,0) >0)
-            AND R.COD_STATUS NOT IN (458,460)
+            AND R.COD_STATUS NOT IN (".Recebimento::STATUS_DESFEITO.",".Recebimento::STATUS_CANCELADO.")
             $whereStatus
           ORDER BY R.DTH_INICIO_RECEB DESC
  ";

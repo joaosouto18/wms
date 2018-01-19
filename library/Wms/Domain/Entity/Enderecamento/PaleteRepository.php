@@ -1127,9 +1127,9 @@ class PaleteRepository extends EntityRepository {
 
                     $reservaEstoqueRepo->reabrirReservaEstoque($idEndereco, $paleteEn->getProdutosArray(), "E", "U", $idUma);
                     $paleteEn->setCodStatus(Palete::STATUS_EM_ENDERECAMENTO);
-                    $this->getEntityManager()->persist($paleteEn);
+                    $this->_em->persist($paleteEn);
 
-                    $ordensServicoEn = $this->getEntityManager()->getRepository('wms:OrdemServico')->findBy(array('idEnderecamento' => $paleteEn->getId()));
+                    $ordensServicoEn = $this->_em->getRepository('wms:OrdemServico')->findBy(array('idEnderecamento' => $paleteEn->getId()));
                     foreach ($ordensServicoEn as $osEn) {
                         if ($osEn->getDscObservacao() == NULL) {
                             $osEn->setDscObservacao('Endereçamento desfeito');
@@ -1149,7 +1149,7 @@ class PaleteRepository extends EntityRepository {
                     $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();
                     $enderecoAntigo = $paleteEn->getDepositoEndereco();
                     if ($enderecoAntigo != NULL) {
-                        $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
+                        $enderecoRepo = $this->_em->getRepository("wms:Deposito\Endereco");
                         $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR", $paleteEn->getId());
                         $reservaEstoqueRepo->cancelaReservaEstoque($idEndereco, $paleteEn->getProdutosArray(), "E", "U", $idUma);
                     }
@@ -1157,7 +1157,7 @@ class PaleteRepository extends EntityRepository {
                     $paleteEn->setDepositoEndereco(NULL);
                     $paleteEn->setImpresso("N");
                     $paleteEn->setCodStatus($codStatus);
-                    $this->getEntityManager()->persist($paleteEn);
+                    $this->_em->persist($paleteEn);
                     break;
                 case Palete::STATUS_RECEBIDO:
                     /** @var ReservaEstoqueEnderecamentoRepository $reservaEstoqueEnderecamentoRepo */
@@ -1170,19 +1170,20 @@ class PaleteRepository extends EntityRepository {
                         $produtosReserva = $reserva->getProdutos()->toArray();
 
                         foreach ($produtosReserva as $produtoReserva) {
-                            $this->getEntityManager()->remove($produtoReserva);
+                            $this->_em->remove($produtoReserva);
                         }
 
-                        $this->getEntityManager()->remove($reservaEnderecamento);
-                        $this->getEntityManager()->remove($reserva);
-                        $this->getEntityManager()->remove($paleteEn);
+                        $this->_em->remove($reservaEnderecamento);
+                        $this->_em->remove($reserva);
+                        $this->_em->remove($paleteEn);
                     }
                     break;
                 case Palete::STATUS_EM_RECEBIMENTO:
-                    $this->getEntityManager()->remove($paleteEn);
+                    $this->_em->remove($paleteEn);
                     break;
             }
-            $this->getEntityManager()->flush();
+            $this->_em->flush();
+            $this->_em->commit();
         } catch (\Exception $e) {
             throw $e;
         }
