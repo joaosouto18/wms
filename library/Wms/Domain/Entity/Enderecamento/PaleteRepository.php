@@ -9,6 +9,8 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
     Wms\Domain\Entity\Recebimento;
 use Wms\Domain\Entity\Produto\EmbalagemRepository;
+use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueEnderecamento;
+use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueEnderecamentoRepository;
 use Wms\Math;
 
 class PaleteRepository extends EntityRepository {
@@ -1101,6 +1103,11 @@ class PaleteRepository extends EntityRepository {
         }
     }
 
+    /**
+     * @param $idUma
+     * @return bool
+     * @throws \Exception
+     */
     public function desfazerPalete($idUma) {
 
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
@@ -1153,13 +1160,31 @@ class PaleteRepository extends EntityRepository {
                     $this->getEntityManager()->persist($paleteEn);
                     break;
                 case Palete::STATUS_RECEBIDO:
+                    /** @var ReservaEstoqueEnderecamentoRepository $reservaEstoqueEnderecamentoRepo */
+                    $reservaEstoqueEnderecamentoRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
+
+                    /** @var ReservaEstoqueEnderecamento $reservaEnderecamento */
+                    $reservasEnderecamento = $reservaEstoqueEnderecamentoRepo->findBy(['palete' => $paleteEn->getId()]);
+                    foreach ($reservasEnderecamento as $reservaEnderecamento) {
+                        $reserva = $reservaEnderecamento->getReservaEstoque();
+                        $produtosReserva = $reserva->getProdutos()->toArray();
+
+                        foreach ($produtosReserva as $produtoReserva) {
+                            $this->getEntityManager()->remove($produtoReserva);
+                        }
+
+                        $this->getEntityManager()->remove($reservaEnderecamento);
+                        $this->getEntityManager()->remove($reserva);
+                        $this->getEntityManager()->remove($paleteEn);
+                    }
+                    break;
                 case Palete::STATUS_EM_RECEBIMENTO:
                     $this->getEntityManager()->remove($paleteEn);
                     break;
             }
             $this->getEntityManager()->flush();
-        } catch (Exception $e) {
-            throw new \Exception($e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
         }
         return true;
     }

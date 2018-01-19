@@ -368,10 +368,11 @@ class Enderecamento_PaleteController extends Action
         $produtosEn = $paleteEn->getProdutos();
         $codProduto = $produtosEn[0]->getCodProduto();
         $grade      = $produtosEn[0]->getGrade();
-
+        $this->em->beginTransaction();
         try{
             $paleteRepo->desfazerPalete($idPalete);
         } catch(Exception $e) {
+            $this->em->rollback();
             $this->addFlashMessage('error',$e->getMessage());
         }
 
