@@ -51,9 +51,9 @@
                         <td style="text-align: center" ><?php echo $produtoConferencia['qtdAvaria'] ?></td>
                         <td ><?php echo $produtoConferencia['qtdDivergencia'] ?></td>
                     <?php else : ?>
-                        <td style="text-align: center" ><?php echo (\Wms\Math::resto($produtoConferencia['qtdConferida'], 1) != 0)? (float)$produtoConferencia['qtdConferida'] : $produtoConferencia['qtdConferida'] ?></td>
-                        <td style="text-align: center" ><?php echo (\Wms\Math::resto($produtoConferencia['qtdAvaria'], 1) != 0)? (float)$produtoConferencia['qtdAvaria'] : $produtoConferencia['qtdAvaria'] ?></td>
-                        <td ><?php echo ((\Wms\Math::resto($produtoConferencia['qtdDivergencia'], 1) != 0)? (float)$produtoConferencia['qtdDivergencia'] : $produtoConferencia['qtdDivergencia']) . ' (' . $tipoDivergencia . ')' ?></td>
+                        <td style="text-align: center" ><?php echo $produtoConferencia['qtdConferida'] ?></td>
+                        <td style="text-align: center" ><?php echo $produtoConferencia['qtdAvaria'] ?></td>
+                        <td ><?php echo "$produtoConferencia[qtdDivergencia] ($tipoDivergencia)" ?></td>
                     <?php endif; ?>
                     <td>
                         <?php
