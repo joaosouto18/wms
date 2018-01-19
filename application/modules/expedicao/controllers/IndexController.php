@@ -59,9 +59,11 @@ class Expedicao_IndexController extends Action {
             $cargasCanceladasEntities = $acaoIntRepo->processaAcao($acaoEn, null, 'L');
             foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
                 $cargaEntity = $cargaRepository->findOneBy(array('codCargaExterno' => $cargaCanceladaEntity['COD_CARGA_EXTERNO']));
-                if ($cargaEntity->getExpedicao()->getCodStatus() == Expedicao::STATUS_FINALIZADO) {
-                    $expedicaoAndamentoRepository->save('Tentativa de cancelamento da carga ' . $cargaEntity->getCodCargaExterno() . ', porém não cancelada', $cargaEntity->getCodExpedicao(), false, false);
-                    continue;
+                if(!empty($cargaEntity)) {
+                    if ($cargaEntity->getExpedicao()->getCodStatus() == Expedicao::STATUS_FINALIZADO) {
+                        $expedicaoAndamentoRepository->save('Tentativa de cancelamento da carga ' . $cargaEntity->getCodCargaExterno() . ', porém não cancelada', $cargaEntity->getCodExpedicao(), false, false);
+                        continue;
+                    }
                 }
                 $cargaCanceladaEntity = $triggerCancelamentoCargaRepository->find($cargaCanceladaEntity['COD_CARGA_EXTERNO']);
                 if (!$cargaEntity && $cargaCanceladaEntity) {
