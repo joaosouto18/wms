@@ -144,7 +144,7 @@ class EmbalagemRepository extends EntityRepository {
                     }
                 }
             }
-            if ($qtdRestante > 0 && !empty($embFracDefault)) {
+            if (!empty($qtdRestante) && !empty($embFracDefault)) {
                 if (isset($arrayQtds[$embFracDefault->getId()])) {
                     $pref = $arrayQtds[$embFracDefault->getId()];
                     $args = explode(' ', $pref);
