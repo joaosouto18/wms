@@ -150,10 +150,10 @@
                 </div>
                 <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
             </dl>
-            <?php if ($this->idVolume != "") : ?>
-                <legend>Volume: <?php echo $this->dscVolume ?></legend>
-                <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a></td>
-            <?php endif; ?>
+            <div id="divBtnFechaVolume" <?php echo ($this->idVolume == "")? 'style="display: none"' : '' ?>>
+                <legend>Volume: <span id="spnDscVolume"><?php echo $this->dscVolume ?></span></legend>
+                <td><a id="btnFechaVolume" class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/var_id_volume' ?>" >Fechar</a></td>
+            </div>
 
             <?php if ($this->separacaoEmbalado) :         ?>
             <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>" >Fechar Caixa</a></td>
@@ -172,6 +172,7 @@
 
     $('#submit').on('click', function (e) {
         var qtd = $("#qtd");
+        var inptIdVolume = $("#idVolume");
 
         if (qtd !== '') {
             $.ajax({
@@ -185,19 +186,33 @@
                         var error = "";
                         var success = "";
                         var song = "";
+                        var volumePatrimonio = "";
 
                         if (data.retorno.resposta == 'error') {
                             error = data.retorno.message;
                             success = "";
                             song = "/alarme.mp3";
+                            volumePatrimonio = data.retorno.volumePatrimonio;
                         } else {
                             success = data.retorno.message;
                             error = "";
                             song = "/confirm2.mp3";
+                            volumePatrimonio = data.retorno.volumePatrimonio;
                         }
 
                         $("#erro").html(error);
                         $("#success").html(success);
+
+                        if (volumePatrimonio !== '') {
+                            inptIdVolume.val(volumePatrimonio.idVolume);
+                            $("#spnDscVolume").text(volumePatrimonio.dscVolume);
+                            var href = $("#btnFechaVolume").attr("href");
+                            $("#btnFechaVolume").attr("href", href.replace('var_id_volume', volumePatrimonio.idVolume));
+                        }
+
+                        if (inptIdVolume.val() !== '') {
+                            $("#divBtnFechaVolume").show();
+                        }
 
                         try {
                             playSound(song);

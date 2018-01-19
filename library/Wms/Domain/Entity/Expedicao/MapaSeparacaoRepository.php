@@ -1296,10 +1296,6 @@ class MapaSeparacaoRepository extends EntityRepository {
 
 
         if ($utilizaVolumePatrimonio == 'S') {
-            if ((isset($idVolumePatrimonio)) && ($idVolumePatrimonio != null) && ($embalado == false)) {
-                throw new \Exception("O produto $codProduto / $dscGrade - $dscProduto - $dscEmbalagem não é embalado");
-            }
-
             if ((!(isset($idVolumePatrimonio)) || ($idVolumePatrimonio == null)) && ($embalado == true)) {
                 throw new \Exception("O produto $codProduto / $dscGrade - $dscProduto - $dscEmbalagem é embalado");
             }
