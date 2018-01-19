@@ -167,12 +167,12 @@
         <?php endif; ?>
 
         <?php if ((isset($this->placa)) && ($this->placa != "")) : ?>
-            <input name="placa" type="hidden" value="<?php echo $this->placa ?>" />
-            <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+            <input name="placa" placeholder="Placa" type="hidden" value="<?php echo $this->placa ?>" />
+            <input type="text" placeholder="Etiqueta de separação" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
         <?php else : ?>
-            <input type="text" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+            <input type="text" placeholder="Etiqueta de separação" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
             <?php if ($this->segundaConferencia != "S") { ?>
-                <input type="text" name="etiquetaProduto" id="etiquetaProduto" value="" />
+                <input type="text" placeholder="Etiqueta do produto" name="etiquetaProduto" id="etiquetaProduto" value="" />
             <?php } ?>
 
         <?php endif; ?>
