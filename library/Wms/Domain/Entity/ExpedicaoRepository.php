@@ -2091,6 +2091,7 @@ class ExpedicaoRepository extends EntityRepository {
                        PESO.NUM_CUBAGEM as "cubagem",
                        NVL(REE.QTD,0) as "reentrega",
                        I.ITINERARIOS AS "itinerario",
+                       TIPO_PEDIDO.TIPO_PEDIDO AS "tipopedido",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                             ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
                   FROM EXPEDICAO E
@@ -2180,6 +2181,20 @@ class ExpedicaoRepository extends EntityRepository {
                                LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO AND PESO.DSC_GRADE = PP.DSC_GRADE
                                WHERE 1 = 1  ' . $FullWhere . $andWhere . '
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
+                              
+                  LEFT JOIN (
+                              SELECT PED.COD_EXPEDICAO,
+                                  LISTAGG (S.DSC_SIGLA,\',\') WITHIN GROUP (ORDER BY S.DSC_SIGLA) TIPO_PEDIDO
+                                  FROM SIGLA S
+                                  LEFT JOIN (
+                                    SELECT P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
+                                    FROM PEDIDO P
+                                    INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                                    GROUP BY P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
+                                  ) PED ON PED.COD_TIPO_PEDIDO = S.COD_SIGLA
+                                  WHERE PED.COD_EXPEDICAO IS NOT NULL
+                                  GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO 
+                                                               
                  WHERE 1 = 1' . $FullWhereFinal . '
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
