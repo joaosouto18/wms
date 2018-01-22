@@ -20,6 +20,7 @@
 input{
     background: #FFFFFF!important;
     border-color: #999!important;
+    color: #000000!important;
 }
 #top, #menu, #content, #footer {
     float:left;
