@@ -371,14 +371,25 @@ class UMA extends Pdf {
         }else{
             $qtd = $vetQtd;
         }
-        $this->SetFont('Arial', 'B', 60);
+        $size = 60;
+        if(strlen ($qtd) > 15){
+            $size = 50;
+        }
+        if(strlen ($qtd) >= 20){
+            $size = 40;
+        }
+        if(strlen ($qtd) >= 25){
+            $size = 30;
+        }
+        $this->SetFont('Arial', 'B', $size);
+        $this->SetXY(140, 110);
         $this->Cell(-15, 30, $qtd, 0, 1);
 
         $this->SetFont('Arial', 'B', 32);
-        $this->SetXY(15, 110);
+        $this->SetXY(10, 110);
         $this->Cell(45, 30, utf8_decode("Prod"), 0, 0);
 
-        $this->SetFont('Arial', 'B', 100);
+        $this->SetFont('Arial', 'B', 80);
         $this->Cell(95, 30, $codigoProduto, 0, 1);
     }
 
