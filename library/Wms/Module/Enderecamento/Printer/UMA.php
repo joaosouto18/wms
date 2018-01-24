@@ -381,7 +381,7 @@ class UMA extends Pdf {
         if(strlen ($qtd) >= 25){
             $size = 30;
         }
-        
+
         $this->SetFont('Arial', 'B', $size);
         $this->SetXY(145, 110);
         $this->Cell(-15, 30, $qtd, 0, 1);
