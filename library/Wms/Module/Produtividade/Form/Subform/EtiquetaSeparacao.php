@@ -81,6 +81,6 @@ class EtiquetaSeparacao extends SubForm
         $this->getElement('etiquetaInicial')->setAttrib('onkeydown','gotoFinal(event)');
         $this->getElement('etiquetaFinal')->setAttrib('onkeydown','gotoPessoa(event)');
         $this->getElement('pessoa')->setAttrib('onkeydown','gotoBuscar(event)');
-        $this->getElement('pessoa')->setAttrib('onkeypress','mascaraMutuario(this,cpfCnpj)');
+        //$this->getElement('pessoa')->setAttrib('onkeypress','mascaraMutuario(this,cpfCnpj)');
     }
 }

@@ -332,7 +332,6 @@ class ApontamentoMapaRepository extends EntityRepository {
             $result[$key]['QTD_CUBAGEM'] = number_format($value['QTD_CUBAGEM'], 2, ',', '.');
             $intervalo = date_diff($tempoInicial, $tempoFinal);
             $result[$key]['TEMPO_GASTO'] = $intervalo->format('%H:%I:%S');
-            $pesoTotal = $value['QTD_PESO'];
             $volumeTotal = $volumeTotal + $value['QTD_VOLUMES'];
             $pesoTotal = $pesoTotal + $value['QTD_PESO'];
             $cubagemTotal = $cubagemTotal + $value['QTD_CUBAGEM'];
@@ -344,7 +343,6 @@ class ApontamentoMapaRepository extends EntityRepository {
             $seconds += $i * 60;
             $seconds += $s % 60;
         }
-
         $hoje = date('Y-m-d H:i:s');
         $intervalo = date_diff(\DateTime::createFromFormat('Y-m-d H:i:s', $hoje), \DateTime::createFromFormat('Y-m-d H:i:s', date('Y-m-d H:i:s', strtotime($hoje . '+ ' . $seconds . ' seconds'))));
         $min = $intervalo->i;
@@ -361,9 +359,10 @@ class ApontamentoMapaRepository extends EntityRepository {
         } else {
             $tempoTotal = date('H:i:s', strtotime("$intervalo->h:$min:$sec"));
         }
+
         $result[$qtdRows]['NOM_PESSOA'] = 'TOTAIS';
         $result[$qtdRows]['IDENTIDADE'] = '-';
-        $result[$qtdRows]['QTD_PESO'] = number_format($pesoTotal, 2, ',', '.');;
+        $result[$qtdRows]['QTD_PESO'] = $pesoTotal;//number_format($pesoTotal, 2, ',', '.');
         $result[$qtdRows]['QTD_VOLUMES'] = number_format($volumeTotal, 2, ',', '.');
         $result[$qtdRows]['QTD_PRODUTOS'] = number_format($quantidadeTotal, 0, ',', '.');
         $result[$qtdRows]['QTD_CUBAGEM'] = number_format($cubagemTotal, 2, ',', '.');
