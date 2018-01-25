@@ -58,17 +58,17 @@ class MapaSeparacaoProduto
     protected $produtoVolume;
 
     /**
-     * @Column(name="QTD_EMBALAGEM", type="decimal", nullable=false)
+     * @Column(name="QTD_EMBALAGEM", type="float", nullable=false)
      */
     protected $qtdEmbalagem;
 
     /**
-     * @Column(name="QTD_SEPARAR", type="decimal", nullable=false)
+     * @Column(name="QTD_SEPARAR", type="float", nullable=false)
      */
     protected $qtdSeparar;
 
     /**
-     * @Column(name="QTD_CORTADO", type="decimal", nullable=false)
+     * @Column(name="QTD_CORTADO", type="float", nullable=false)
      */
     protected $qtdCortado;
 

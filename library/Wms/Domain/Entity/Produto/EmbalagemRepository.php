@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Produto;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Entity\Produto;
 use Wms\Math;
 
 class EmbalagemRepository extends EntityRepository {
@@ -106,18 +107,31 @@ class EmbalagemRepository extends EntityRepository {
         $embalagensEn = $this->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
         $qtdRestante = $qtd;
         $return = $qtd;
-        $Math = new Math();
+        $embFracDefault = null;
         if (!empty($embalagensEn)) {
+            /**
+             * @var int $key
+             * @var Embalagem $embalagem
+             */
             foreach ($embalagensEn as $key => $embalagem) {
+                if ($embalagem->isEmbFracionavelDefault() == "S") {
+                    $embFracDefault = $embalagem;
+                }
                 $qtdEmbalagem = $embalagem->getQuantidade();
-                if ($Math::compare($qtdRestante, $qtdEmbalagem, '>=')) {
-                    $qtdSeparar = (int) ($qtdRestante / $qtdEmbalagem);
-                    $qtdRestante = $Math::subtrair($qtdRestante, $Math::multiplicar($qtdSeparar, $qtdEmbalagem));
+                if (Math::compare($qtdRestante, $qtdEmbalagem, '>=')) {
+                    $resto = Math::resto($qtdRestante, $qtdEmbalagem);
+                    $qtdSeparar = Math::dividir(Math::subtrair($qtdRestante, $resto), $qtdEmbalagem);
+                    $qtdRestante = $resto;
                     if ($array === 0) {
                         if ($embalagem->getDescricao() != null) {
-                            $arrayQtds[] = $qtdSeparar . ' ' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+                            if ($embalagem->isEmbFracionavelDefault() != "S") {
+                                $fatorEmb = $embalagem->getDescricao(). "(" . $embalagem->getQuantidade() . ")";
+                            } else {
+                                $fatorEmb = Produto::$listaUnidadeMedida[$embalagem->getProduto()->getUnidadeFracao()] . "S";
+                            }
+                            $arrayQtds[$embalagem->getId()] = $qtdSeparar . ' ' . $fatorEmb;
                         } else {
-                            $arrayQtds[] = $qtd;
+                            $arrayQtds[$embalagem->getId()] = $qtd;
                         }
                     } else {
                         if ($embalagem->getDescricao() == null) {
@@ -130,6 +144,25 @@ class EmbalagemRepository extends EntityRepository {
                     }
                 }
             }
+            if (!empty($qtdRestante) && !empty($embFracDefault)) {
+                if (isset($arrayQtds[$embFracDefault->getId()])) {
+                    $pref = $arrayQtds[$embFracDefault->getId()];
+                    $args = explode(' ', $pref);
+                    $args[0] = Math::adicionar($args[0], $qtdRestante) ;
+                    $arrayQtds[$embFracDefault->getId()] = implode(' ', $args);
+                } else {
+                    if ($embalagem->isEmbFracionavelDefault() != "S") {
+                        $fatorEmb = $embalagem->getDescricao(). "(" . $embalagem->getQuantidade() . ")";
+                    } else {
+                        $fatorEmb = Produto::$listaUnidadeMedida[$embalagem->getProduto()->getUnidadeFracao()] . "S";
+                    }
+                    if (Math::compare($qtdRestante, 1, '<')) {
+                        $qtdRestante = (float) $qtdRestante;
+                    }
+                    $arrayQtds[$embFracDefault->getId()] = $qtdRestante . ' ' . $fatorEmb;
+                }
+            }
+
             $return = $arrayQtds;
         }
         return $return;

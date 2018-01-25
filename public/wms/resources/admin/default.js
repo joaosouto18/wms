@@ -264,7 +264,6 @@ $(document).ready(function(){
     });
 
     $('.grade-inventario').keyup(function (e) {
-        console.log($(this).parent().parent().children().find('input.idProduto-inventario').val());
         var produtoVal  = $(this).parent().parent().children().find('input.idProduto-inventario').val();
         if (produtoVal == '') {
             return false;

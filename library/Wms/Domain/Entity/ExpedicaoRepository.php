@@ -343,6 +343,12 @@ class ExpedicaoRepository extends EntityRepository {
         return $arrItensPicking;
     }
 
+    /**
+     * @param $itensExpedicoes
+     * @param $repositorios
+     * @return array
+     * @throws \Exception
+     */
     private function getProdutoElements($itensExpedicoes, $repositorios)
     {
         /** @var ProdutoRepository $produtoRepo */
@@ -430,6 +436,14 @@ class ExpedicaoRepository extends EntityRepository {
         return $dadosProdutos;
     }
 
+    /**
+     * @param $arrItens
+     * @param string $quebraPulmaoDoca
+     * @param $dadosProdutos
+     * @param $repositorios
+     * @return array|mixed
+     * @throws \Exception
+     */
     private function prepareArrayRessup($arrItens, $quebraPulmaoDoca = ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA, $dadosProdutos, $repositorios)
     {
         switch ($quebraPulmaoDoca) {
@@ -508,6 +522,14 @@ class ExpedicaoRepository extends EntityRepository {
         return $itensReservar;
     }
 
+    /**
+     * @param $quebra
+     * @param $arrItens
+     * @param $dadosProdutos
+     * @param $repositorios
+     * @return array|mixed
+     * @throws \Exception
+     */
     private function getArraysByQuebraPulmaoDocaPraca($quebra, $arrItens, $dadosProdutos, $repositorios)
     {
         $sumQtdItemExpedicao = array();

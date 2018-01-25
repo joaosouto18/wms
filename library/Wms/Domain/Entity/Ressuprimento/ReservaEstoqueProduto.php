@@ -75,6 +75,12 @@ class ReservaEstoqueProduto
     protected $validade;
 
     /**
+     * @Column(name="NUM_PECAS", type="integer")
+     * @var integer
+     */
+    protected $numPecas;
+
+    /**
      * @param mixed $codProdutoEmbalagem
      */
     public function setCodProdutoEmbalagem($codProdutoEmbalagem)
@@ -248,6 +254,22 @@ class ReservaEstoqueProduto
     public function setGrade($grade)
     {
         $this->grade = $grade;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNumPecas()
+    {
+        return $this->numPecas;
+    }
+
+    /**
+     * @param int $numPecas
+     */
+    public function setNumPecas($numPecas)
+    {
+        $this->numPecas = $numPecas;
     }
 
 }

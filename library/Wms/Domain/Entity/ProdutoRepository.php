@@ -173,6 +173,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $produtoEntity->setReferencia($referencia);
             $produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
             $produtoEntity->setPossuiPesoVariavel((isset($possuiPesoVariavel) && !empty($possuiPesoVariavel)) ? $possuiPesoVariavel : "N");
+            $produtoEntity->setIndFracionavel((isset($indFracionavel) && !empty($indFracionavel))? $indFracionavel : 'N');
 
             if ($produtoEntity->getId() == null) {
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01", 1);
@@ -340,6 +341,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
+                        $embalagemEntity->setIsEmbExpDefault((isset($isEmbExpDefault) && !empty($isEmbExpDefault))?$isEmbExpDefault: 'N');
+                        $embalagemEntity->setIsEmbFracionavelDefault((isset($isEmbFracionavelDefault) && !empty($isEmbFracionavelDefault))?$isEmbFracionavelDefault: 'N');
 
                         if (isset($largura) && !empty($largura)) {
                             $embalagemEntity->setLargura($largura);

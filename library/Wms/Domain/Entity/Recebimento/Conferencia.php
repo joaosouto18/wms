@@ -112,6 +112,12 @@ class Conferencia
      * @Column(name="IND_DIVERGENCIA_PESO", type="string", length=10, nullable=false)
      */
     protected $divergenciaPeso;
+
+    /**
+     * @Column(name="NUM_PECAS", type="integer")
+     * @var integer
+     */
+    protected $numPecas;
     
     public function getId()
     {
@@ -284,6 +290,22 @@ class Conferencia
     public function setDivergenciaPeso($divergenciaPeso)
     {
         $this->divergenciaPeso = $divergenciaPeso;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNumPecas()
+    {
+        return $this->numPecas;
+    }
+
+    /**
+     * @param int $numPecas
+     */
+    public function setNumPecas($numPecas)
+    {
+        $this->numPecas = $numPecas;
     }
     
 }

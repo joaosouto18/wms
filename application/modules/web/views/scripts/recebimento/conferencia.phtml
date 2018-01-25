@@ -20,12 +20,18 @@
         <table class="gTable produtos">
             <thead>
                 <tr class="gTTitle">
-                    <td>Cód. - Produto</td>
+                    <td>Cód. Produto</td>
                     <td>Grade</td>
                     <td>Unidade</td>
-                    <td>Quantidade</td>
-                    <td>Peso</td>
-                    <td>Data Validade</td>
+                    <td>Qtd Peças</td>
+                    <?php if ($this->temFracionavel) { ?>
+                        <td>Total em</td>
+                    <?php } ?>
+<!--                    <td>Peso</td>-->
+                    <?php if ($this->controlaValidade) { ?>
+                        <td>Data Validade</td>
+                    <?php } ?>
+                    <td>Unitizador</td>
                     <td>Qtde. Avaria</td>
                 </tr>
             </thead>
@@ -33,71 +39,92 @@
                 <?php foreach ($this->produtos as $produto) { ?>
                     <tr height="35">
                         <td><?php echo $produto['codigo'] . ' - ' . $produto['descricao'] ?></td>
-                        <td ><?php echo $produto['grade'] ?></td>
+                        <td><?php echo $produto['grade'] ?></td>
                         <td>
                         <?php if (isset($produto['embalagens'])) {
-                            echo $this->formSelect("embalagem[{$produto['codigo']}][{$produto['grade']}]", null, array(
-                                'class' => "Embalagem",
-                                'title' => "[{$produto['codigo']}][{$produto['grade']}]",
-                            ), $produto['embalagens']);
-                        } else {
-                            $medida = null;
-                            foreach ($this->unMedida as $key => $medidas) {
-                                if ($medidas['produto'] == $produto['codigo'] && $medidas['grade'] == $produto['grade']) {
-                                    $medida[$medidas['id']] = $medidas['descricao'];
+                                echo "<select class='Embalagem' name='embalagem[$produto[codigo]][$produto[grade]]' title='Embalagem do produto $produto[codigo]-$produto[grade]' id='embalagem-$produto[codigo]-$produto[grade]'>";
+                                foreach ($produto['embalagens'] as $embalagem) {
+                                    echo "<option value='$embalagem[id]' data-fracionavel-default='$embalagem[isFracDefault]'>$embalagem[dsc]</option>";
+                                }
+                                echo "</select>";
+                            } else {
+                                $medida = null;
+                                foreach ($this->unMedida as $key => $medidas) {
+                                    if ($medidas['produto'] == $produto['codigo'] && $medidas['grade'] == $produto['grade']) {
+                                        $medida[$medidas['id']] = $medidas['descricao'];
+                                    }
+                                }
+                                if (isset($medida) && $medida != null) {
+                                    echo $this->formSelect("unMedida[{$produto['codigo']}][{$produto['grade']}]", null, array(
+                                        'validators' => array('numeric'),
+                                        'alt' => 'number',
+                                        'class' => "unMedida",
+                                        'title' => "[{$produto['codigo']}][{$produto['grade']}]",
+                                    ), $medida);
+                                } else {
+                                    echo '-';
                                 }
                             }
-                            if (isset($medida) && $medida != null) {
-                                //($name, $value = null, $attribs = null, $options = null, $listsep = "<br />\n")
-                                echo $this->formSelect("unMedida[{$produto['codigo']}][{$produto['grade']}]", null, array(
-                                    'validators' => array('numeric'),
-                                    'alt' => 'number',
-                                    'class' => "unMedida",
-                                    'title' => "[{$produto['codigo']}][{$produto['grade']}]",
-                                ), $medida);
-                            } else {
-                                echo '-';
-                            }
-                        }
-                            ?>
+                        ?>
                         </td>
                         <td>
                             <?php
                             echo $this->formHidden("qtdNF[{$produto['codigo']}][{$produto['grade']}]", $produto['quantidade'], array(
                                 'title' => "[{$produto['codigo']}][{$produto['grade']}]",
-                                'class' => "qtdNF",
+                                'class' => "qtdNF"
                             ));
-                            echo $this->formText("qtdConferida[{$produto['codigo']}][{$produto['grade']}]", 0, array(
+
+                            echo $this->formText("qtdConferida[{$produto['codigo']}][{$produto['grade']}]", 0, [
                                 'size' => 8,
                                 'validators' => array('numeric'),
                                 'alt' => 'number',
                                 'class' => "qtdConferida",
-                                'title' => "[{$produto['codigo']}][{$produto['grade']}]",
-                            ));
+                                'title' => "[{$produto['codigo']}][{$produto['grade']}]"
+                            ]);
                             ?>
                         </td>
-
+                        <?php if ($this->temFracionavel) { ?>
+                        <td>
+                            <div id="<?php echo "div-$produto[codigo]-$produto[grade]"?>">
+                                <?php
+                                if ($produto['ind_fracionavel'] == 'S') {
+                                echo $this->formText("qtdUnidFracionavel[{$produto['codigo']}][{$produto['grade']}]", 0, [
+                                    'size' => 8,
+                                    'validators' => array('numeric'),
+                                    'alt' => 'centesimal',
+                                    'class' => "qtdUnidFracionavel required",
+                                    'title' => "Total unid fracionavel [{$produto['codigo']}][{$produto['grade']}]"
+                                ]); } ?>
+                                <span id="<?php echo "txtUnid-$produto[codigo]-$produto[grade]"?>"></span>
+                            </div>
+                        </td>
+                        <?php } ?>
+                        <?php if ($this->controlaValidade) { ?>
+                            <td>
+                                <?php
+                                if ($produto['possui_validade']) {
+                                $date = new DateTime('now');
+                                echo $this->formText("dataValidade[{$produto['codigo']}][{$produto['grade']}]", $date->format('d/m/Y'), array(
+                                    'size' => 11,
+                                    'validators' => array('numeric'),
+                                    'alt' => 'date',
+                                    'class' => "date dthValidade",
+                                    'title' => "dataValidade[{$produto['codigo']}][{$produto['grade']}]",
+                                    'maxLenght' => 10
+                                ));
+                                }
+                                ?>
+                            </td>
+                        <?php  } ?>
                         <td>
                             <?php
-                            echo $this->formText("numPeso[{$produto['codigo']}][{$produto['grade']}]", 0, array(
-                                'size' => 8,
-                                'validators' => array('numeric'),
-                                'alt' => 'centesimal',
-                                'class' => 'numPeso',
-                                'title' => "[{$produto['codigo']}][{$produto['grade']}]",
-                            ));
+                            echo $this->formSelect("norma[{$produto['codigo']}][{$produto['grade']}]", key($produto['normas']) ,array(
+                                    'required' => true,
+                                    'class' => "norma",
+                                    'title' => "Norma de paletizacao do produto $produto[codigo]-$produto[grade]",
+                                    'empty_option' => "Selecione a norma"
+                            ), $produto['normas'])
                             ?>
-                        </td>
-
-                        <td>
-                            <?php if ($produto['possui_validade'] == 'S') {
-
-                                $inputName = "dataValidade[{$produto['codigo']}][{$produto['grade']}]";
-                                $id = "dataValidade-{$produto['codigo']}-{$produto['grade']}";
-                                $date = new DateTime('now');
-
-                                echo '<input type="text" name="'.$inputName.'" id="'.$id.'" value="' . $date->format('d/m/Y') . '" size="11" maxLength="10" alt="date" class="date dthValidade" />';
-                            }?>
                         </td>
                         <td>
                             <?php
@@ -122,7 +149,6 @@
                             foreach ($this->conferentes as $key => $conferente) {
                                 $conferentes[$key] = $conferente;
                             }
-                            //($name, $value = null, $attribs = null, $options = null, $listsep = "<br />\n")
                             echo $this->formSelect("idPessoa", null, null, $conferentes);
                             ?> 
                         </label>
@@ -152,6 +178,25 @@
 </div>
 
 <script>
+    $(function () {
+        $(".qtdUnidFracionavel").each(function () {
+            getUnidadeFracionavel($(this));
+        })
+    });
+
+    function getUnidadeFracionavel (elem) {
+        var arrId = elem.attr("id").toString().split('-');
+        var cod = arrId[1];
+        var grade = arrId[2];
+        var inptSelect = $("#embalagem-" + cod + "-" + grade).children("[data-fracionavel-default='S']").text();
+        var arrUnids = <?php echo json_encode(\Wms\Domain\Entity\Produto::$listaUnidadeMedida)?>;
+        var strUnid = arrUnids[inptSelect] + "S";
+        var txtUnidElem = $("#txtUnid-" + cod + "-" + grade);
+        if (txtUnidElem.length) {
+            txtUnidElem.text(strUnid);
+        }
+    }
+
     $("#enviar").click(function () {
         var produtos = [];
         $(".dthValidade").each(function () {

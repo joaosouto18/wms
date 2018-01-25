@@ -89,11 +89,17 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var id = $("#fieldset-embalagem #embalagem-id").val();
                                 var este = this;
 
-                                if (!this.verificarEmbalagemRecebimento(id, valores)) {
+                                if (!this.verificarEmbalagens(id, valores)) {
                                     return false;
                                 }
 
                                 if (este.verificarCodigoBarras(valores)) {
+                                    valores.lblIsPadrao = $('#fieldset-embalagem #embalagem-isPadrao option:selected').text();
+                                    valores.lblCBInterno = $('#fieldset-embalagem #embalagem-CBInterno option:selected').text();
+                                    valores.lblImprimirCB = $('#fieldset-embalagem #embalagem-imprimirCB option:selected').text();
+                                    valores.lblEmbalado = $('#fieldset-embalagem #embalagem-embalado option:selected').text();
+                                    valores.lblEmbExpDefault = $('#fieldset-embalagem #embalagem-isEmbExpDefault option:selected').text();
+                                    valores.dataInativacao = $('#fieldset-embalagem #embalagem-dataInativacao').val();
                                     este.salvarDadosEmbalagem(valores);
                                 } else {
                                     $('#embalagem-codigoBarras').focus();
@@ -107,19 +113,25 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                             },
 
                             salvarDadosEmbalagem: function (valores) {
-                                var id = valores.id;
-                                valores.lblIsPadrao = $('#fieldset-embalagem #embalagem-isPadrao option:selected').text();
-                                valores.lblCBInterno = $('#fieldset-embalagem #embalagem-CBInterno option:selected').text();
-                                valores.lblImprimirCB = $('#fieldset-embalagem #embalagem-imprimirCB option:selected').text();
-                                valores.lblEmbalado = $('#fieldset-embalagem #embalagem-embalado option:selected').text();
+                                var id = valores.id.toString();
+                                console.log(valores);
 
                                 if (valores.acao === 'incluir') {
                                     valores.dataInativacao = 'EMB. ATIVA';
                                 } else {
-                                    valores.dataInativacao = $('#fieldset-embalagem #embalagem-dataInativacao').val();
                                     if (valores.dataInativacao !== 'EMB. ATIVA') {
                                         valores.ativarDesativar = ' checked ';
                                     }
+                                }
+
+                                if (valores.isEmbFracionavelDefault === 'S') {
+                                    $('.produto_dado_logistico input.idEmbalagem').each(function () {
+                                        var pdlModel = $(this).closest('.produto_dado_logistico').model();
+                                        if (pdlModel.idEmbalagem === valores.id) {
+                                            pdlModel.lblEmbalagem = valores.descricao + ' (' + valores.quantidade + ')';
+                                            Wms.Controllers.ProdutoDadoLogistico.prototype.show(pdlModel);
+                                        }
+                                    });
                                 }
 
                                 if (id !== '') {
@@ -213,13 +225,12 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 $('#fieldset-embalagem #embalagem-imprimirCB').val(produto_embalagem.imprimirCB);
                                 $('#fieldset-embalagem #embalagem-endereco').val(produto_embalagem.endereco).removeClass("invalid");
                                 $('#fieldset-embalagem #embalagem-embalado').val(produto_embalagem.embalado);
-//                                $('#fieldset-embalagem #embalagem-capacidadePicking').val(produto_embalagem.capacidadePicking);
                                 $('#fieldset-embalagem #embalagem-enderecoAntigo').val(produto_embalagem.endereco);
-//                                $('#fieldset-embalagem #embalagem-pontoReposicao').val(produto_embalagem.pontoReposicao);
                                 $('#fieldset-embalagem #embalagem-dataInativacao').val(produto_embalagem.dataInativacao);
                                 $('#fieldset-embalagem #embalagem-CBInterno').val(produto_embalagem.CBInterno);
                                 $('#fieldset-embalagem #embalagem-codigoBarras').val(produto_embalagem.codigoBarras).removeClass("invalid");
                                 $('#fieldset-embalagem #embalagem-codigoBarrasAntigo').val(produto_embalagem.codigoBarras);
+                                $('#fieldset-embalagem #embalagem-isEmbFracionavelDefault').val(produto_embalagem.isEmbFracionavelDefault);
                                 $('#fieldset-embalagem #embalagem-descricao').val(produto_embalagem.descricao).removeClass("invalid");
                                 $('#fieldset-embalagem #embalagem-quantidade').val(produto_embalagem.quantidade).removeClass("invalid");
 
@@ -234,6 +245,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     $('#fieldset-embalagem #embalagem-quantidade').prop("disabled", true);
                                 }
 
+                                if (produto_embalagem.isEmbFracionavelDefault === 'S') {
+                                    $('#fieldset-embalagem #embalagem-descricao').prop("disabled", true);
+                                    $('#fieldset-embalagem #embalagem-quantidade').prop("disabled", true);
+                                    $('#fieldset-embalagem #embalagem-isPadrao').prop("disabled", true);
+                                    $('#fieldset-embalagem #embalagem-isEmbExpDefault').prop("disabled", true);
+                                }
+
                                 // checa opcoes de Codigo de Barras Interno
                                 this.checarCBInterno();
 
@@ -243,13 +261,21 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                              * Handle's clicking on a produto_embalagem's destroy link.
                              */
                             '.btn-excluir-embalagem click': function (el, ev) {
-
                                 var model = el.closest('.produto_embalagem').model();
+                                this.excluirEmbalagem(model);
+                            },
+
+                            excluirEmbalagem: function (model, returnFunction) {
                                 var id = model.id.toString();
                                 var este = this;
 
+                                if (model.isEmbFracionavelDefault === 'S' && $("#produto-indFracionavel").val() === 'S') {
+                                    this.dialogAlert("Esta embalagem é obrigatória deste produto que tem unidade fracionável!");
+                                    return false;
+                                }
+
                                 if (id.indexOf('-new') !== -1) {
-                                    //limpa o ID
+                                    //se for apenas objeto js remove direto
                                     this.deleteConfirmed(model);
                                     return true;
                                 }
@@ -273,7 +299,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                                 var idProduto = $('#embalagem-idProduto').val();
                                 var grade = $('#embalagem-grade').val();
-                                var enderecoAntigo = model.endereco.toString();
+                                var enderecoAntigo = model.endereco;
                                 var temEstoque = false;
                                 $.ajax({
                                     url: URL_MODULO + '/endereco/verificar-estoque-ajax',
@@ -302,13 +328,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     }
                                 });
                                 if (count > 0) {
-                                    este.dialogAlert('Não é possível excluir esta embalagem. <br>Remova os dados logísticos cadastrados dela primeiro.');
+                                    var dscEmb = model.descricao.toString();
+                                    este.dialogAlert('Não é possível excluir esta embalagem (' + dscEmb + '). <br>Remova os dados logísticos cadastrados dela primeiro.');
                                     return false;
                                 }
 
-                                var isPadrao = $(el).parent('div').find('.isPadrao').val();
                                 // caso seja uma embalagem de recebimento
-                                if (isPadrao === 'S') {
+                                if (model.isPadrao === 'S') {
                                     // embalagens
                                     var inputsIsPadrao = $('#div-lista-embalagens input.isPadrao');
                                     // controle da quantidade de embalagens do tipo expedicao
@@ -341,13 +367,12 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 if (!permisao)
                                     return false;
 
-                                this.dialogConfirm("Tem certeza que deseja excluir esta embalagem?", this.callback("deleteConfirmed"), {model: model});
-
+                                this.dialogConfirm("Tem certeza que deseja excluir esta embalagem?", this.callback("deleteConfirmed"), model, returnFunction);
+                                return null;
                             },
 
-                            deleteConfirmed: function (params) {
-                                var model = params.model;
-                                var id = model.id.toString();
+                            deleteConfirmed: function (model) {
+                                var id = model.id;
 
                                 $('#fieldset-embalagem #embalagem-enderecoAntigo').val(model.endereco);
 
@@ -362,7 +387,9 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 //reseta o form
                                 this.resetarForm();
                                 // carregar embalagens nos dados logisticos
-                                this.carregarSelectEmbalagens(params);
+                                this.carregarSelectEmbalagens(model);
+
+                                return true;
                             },
 
                             /**
@@ -377,13 +404,14 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                                 // carregar embalagens nos dados logisticos
                                 this.carregarSelectEmbalagens(produto_embalagens);
+                                Wms.Controllers.Produto.prototype.checkShowUnidFracionavel();
                             },
 
                             /**
                              * @param {jQuery} el A jQuery wrapped element.
                              * @param {Event} ev A jQuery event whose default action is prevented.
                              */
-                            '##embalagem-CBInterno change': function (el, ev) {
+                            '#embalagem-CBInterno change': function (el, ev) {
                                 var inptCodBarras = $('#embalagem-codigoBarras');
                                 if (el.val() === "S") {
                                     $('#embalagem-imprimirCB').val('S');
@@ -513,7 +541,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                             /**
                              * Valida as embalagens cadastradas
                              */
-                            verificarEmbalagemRecebimento: function (id, valores) {
+                            verificarEmbalagens: function (id, valores) {
 
                                 // constantes tipo comercializacao
                                 var UNITARIO = 1;
@@ -525,7 +553,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 // variaveis
                                 var qtdEmbalagensCadastradas = $('.produto_embalagem').size();
                                 // campos da embalagem
-                                var inputsEmbalagem = $('#div-lista-embalagens input');
+                                var blocosEmbalagem = $('div.produto_embalagem');
                                 // controle da quantidade de embalagens do tipo recebimento
                                 var qtdEmbalagensRecebimento = 0;
                                 // controle da quantidade de embalagens do tipo expedicao
@@ -533,19 +561,30 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 // quantidades de itens da embalagem de recebimento cadastrada
                                 var qtdItemEmbalagemRecebimento = 0;
 
-                                // verifico se existe embalagem de recebimento
-                                inputsEmbalagem.each(function (i, v) {
+                                var errEmb = false;
 
-                                    if (this.className == 'isPadrao') {
-                                        if (this.value == 'S') {
-                                            // adiciono o valor da embalagem de recebimento
-                                            qtdItemEmbalagemRecebimento = parseFloat($(this).parent('div').find('.qtdItens').val().replace(',', '.'));
-                                            // incremento a qtd de embalagens de recebimento cadastradas
-                                            qtdEmbalagensRecebimento = qtdEmbalagensRecebimento + 1;
-                                        } else
-                                            qtdEmbalagensExpedicao = qtdEmbalagensExpedicao + 1;
+                                // verifico se existe embalagem de recebimento
+                                blocosEmbalagem.each(function (i, v) {
+                                    var embalagem = $(this).model();
+
+                                    if (valores.isEmbExpDefault === "S" && embalagem.isEmbExpDefault.toString() === 'S') {
+                                        errEmb = true;
+                                    }
+
+                                    if (embalagem.isPadrao === 'S') {
+                                        // adiciono o valor da embalagem de recebimento
+                                        qtdItemEmbalagemRecebimento = parseFloat($(this).parent('div').find('.qtdItens').val().replace(',', '.'));
+                                        // incremento a qtd de embalagens de recebimento cadastradas
+                                        qtdEmbalagensRecebimento = qtdEmbalagensRecebimento + 1;
+                                    } else {
+                                        qtdEmbalagensExpedicao = qtdEmbalagensExpedicao + 1;
                                     }
                                 });
+
+                                if (errEmb) {
+                                    this.dialogAlert("Já existe uma embalagem padrão de expedição, exclua ou edite a mesma.");
+                                    return false;
+                                }
 
                                 // se não houver embalagem cadastrada
                                 if (qtdEmbalagensCadastradas == 0) {
@@ -590,19 +629,21 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                                 // calculo de quantidade de itens para embalagens de expedição de produto unitarios
                                 if (($('#produto-idTipoComercializacao').val() == UNITARIO) && ($('#embalagem-isPadrao').val() == 'N')) {
-                                    var qtdItensEmbalagem = parseFloat($('#embalagem-quantidade').val().replace(',', '.'));
+                                    if ($("#produto-indFracionavel").val() !== 'S' && $("#embalagem-isEmbExpDefault").val() !== 'S') {
+                                        var qtdItensEmbalagem = parseFloat($('#embalagem-quantidade').val().replace(',', '.'));
 
-                                    if (qtdItemEmbalagemRecebimento < qtdItensEmbalagem) {
-                                        this.dialogAlert('Quantidade de itens da embalagem de expedição, deve ser menor ou igual da quantidade de itens da embalagem de recebimento.');
-                                        return false;
-                                    }
+                                        if (qtdItemEmbalagemRecebimento < qtdItensEmbalagem) {
+                                            this.dialogAlert('Quantidade de itens da embalagem de expedição, deve ser menor ou igual da quantidade de itens da embalagem de recebimento.');
+                                            return false;
+                                        }
 
-                                    //multiplicacao para transformar itens em inteiro para nao ter erro de divisao causado pela linguagem
-                                    qtdItemEmbalagemRecebimento = qtdItemEmbalagemRecebimento * 100;
-                                    qtdItensEmbalagem = qtdItensEmbalagem * 100;
-                                    if (((qtdItemEmbalagemRecebimento) % (qtdItensEmbalagem)) !== 0) {
-                                        this.dialogAlert('Quantidade de itens da embalagem de expedição deve ser multipla da quantidade de itens da embalagem de recebimento.');
-                                        return false;
+                                        //multiplicacao para transformar itens em inteiro para nao ter erro de divisao causado pela linguagem
+                                        qtdItemEmbalagemRecebimento = qtdItemEmbalagemRecebimento * 100;
+                                        qtdItensEmbalagem = qtdItensEmbalagem * 100;
+                                        if (((qtdItemEmbalagemRecebimento) % (qtdItensEmbalagem)) !== 0) {
+                                            this.dialogAlert('Quantidade de itens da embalagem de expedição deve ser multipla da quantidade de itens da embalagem de recebimento.');
+                                            return false;
+                                        }
                                     }
                                 }
 
@@ -698,11 +739,10 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var blocosEmbalagem = $('div.produto_embalagem');
 
                                 blocosEmbalagem.each(function () {
-                                    var id = $(this).find('.embalagem-id').val();
-                                    var isPadrao = $(this).find('.isPadrao').val();
+                                    var embalagem = $(this).model();
 
-                                    if (isPadrao === 'S') {
-                                        idEmbalagemRecebimento = id;
+                                    if (embalagem.isPadrao === 'S') {
+                                        idEmbalagemRecebimento = embalagem.id;
                                     }
                                 });
 
@@ -730,11 +770,11 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 });
                             },
 
-                            dialogConfirm: function (msg, callback, params) {
+                            dialogConfirm: function (msg, callback, params, returnFunction) {
                                 return $.wmsDialogConfirm({
                                     title: 'Tem certeza?',
                                     msg: msg
-                                }, callback, params);
+                                }, callback, params, returnFunction);
                             },
 
                             /**
@@ -750,6 +790,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 este.checarCBInterno();
 
                                 if ((codigoBarras === "" && cbInterno === "S") || codigoBarras === codigoBarrasAntigo) {
+                                    $("#embalagem-codigoBarras").removeClass('required').removeClass('invalid');
                                     return true;
                                 }
 
@@ -816,7 +857,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var endereco = valores.endereco;
                                 var pontoReposicao = valores.pontoReposicao * valores.quantidade;
                                 var capacidadePicking = valores.capacidadePicking * valores.quantidade;
-                                var quantidade = valores.quantidade;
                                 $('input.acao').each(function () {
                                     $(this).val('alterar');
                                 });
@@ -860,6 +900,113 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 //     this.dialogAlert('<b>Capacidade de Picking</b> deve ser múltiplo da <b>Quantidade de itens</b>');
                                 // }
                                 return ret;
+                            },
+
+                            checkExistEmbFracionavel: function () {
+                                var blocosEmbalagem = $('div.produto_embalagem');
+                                var embFracionavelDefault = null;
+
+                                if (blocosEmbalagem.length < 1) {
+                                    return false
+                                } else {
+                                    blocosEmbalagem.each(function () {
+                                        var embRecebimento = $(this).model();
+                                        if (embRecebimento.isEmbFracionavelDefault.toString() === 'S') {
+                                            embFracionavelDefault = embRecebimento;
+                                        }
+                                    });
+
+                                    if (embFracionavelDefault !== null) {
+                                        return embFracionavelDefault;
+                                    } else {
+                                        return false
+                                    }
+                                }
+                            },
+
+                            updateEmbFracionavel: function (produto) {
+                                var este = this;
+                                var blocosEmbalagem = $('div.produto_embalagem');
+                                var embFracionavelDefault = null;
+
+                                if (blocosEmbalagem.length < 1) {
+                                    return false
+                                } else {
+                                    blocosEmbalagem.each(function () {
+                                        var embRecebimento = $(this).model();
+                                        var teveMudanca = false;
+                                        if (embRecebimento.isEmbFracionavelDefault.toString() === 'S') {
+                                            embFracionavelDefault = embRecebimento;
+                                        } else {
+                                            if (embRecebimento.isPadrao !== 'N') {
+                                                embRecebimento.isPadrao = 'N';
+                                                embRecebimento.lblIsPadrao = 'NÃO';
+                                                teveMudanca = true;
+                                            }
+                                        }
+                                        if (teveMudanca)
+                                            este.salvarDadosEmbalagem(embRecebimento);
+                                    });
+
+                                    if (embFracionavelDefault !== null) {
+                                        var teveMudanca = false;
+                                        if (embFracionavelDefault.descricao !== produto.unidFracao) {
+                                            embFracionavelDefault.descricao = produto.unidFracao;
+                                            teveMudanca = true;
+                                        }
+                                        if (teveMudanca)
+                                            este.salvarDadosEmbalagem(embFracionavelDefault);
+                                    } else {
+                                        return false
+                                    }
+                                    return embFracionavelDefault;
+                                }
+                            },
+
+                            createEmbFracionavel: function (produto) {
+                                var embFracionavelDefault = {
+                                    CBInterno: "S",
+                                    acao: "incluir",
+                                    codigoBarras: "",
+                                    codigoBarrasAntigo: "",
+                                    dataInativacao: "EMB. ATIVA",
+                                    descricao: produto.unidFracao,
+                                    embalado: "N",
+                                    enderecoAntigo: "",
+                                    grade: produto.grade,
+                                    id: "",
+                                    idProduto: produto.id,
+                                    imprimirCB: "S",
+                                    isPadrao: "S",
+                                    lblCBInterno: "SIM",
+                                    lblEmbalado: "NÃO",
+                                    lblImprimirCB: "SIM",
+                                    lblIsPadrao: "SIM",
+                                    lblEmbExpDefault: "NÃO",
+                                    isEmbFracionavelDefault: "S",
+                                    quantidade: "1"
+                                };
+
+                                this.salvarDadosEmbalagem(embFracionavelDefault);
+                            },
+
+                            removeEmbFracionavelDefault: function (returnFunction) {
+                                var blocosEmbalagem = $('div.produto_embalagem');
+                                var embFracionavelDefault = null;
+                                blocosEmbalagem.each(function () {
+                                    var embalagem = $(this).model();
+                                    if (embalagem.isEmbFracionavelDefault.toString() === 'S') {
+                                        embFracionavelDefault = embalagem;
+                                    }
+                                });
+                                if (embFracionavelDefault !== null) {
+                                    var result = this.excluirEmbalagem(embFracionavelDefault, returnFunction);
+                                    if (result === true || result === false) {
+                                        if($.isFunction(returnFunction)){
+                                            returnFunction.call(this, result);
+                                        }
+                                    }
+                                }
                             }
                         }
                 );

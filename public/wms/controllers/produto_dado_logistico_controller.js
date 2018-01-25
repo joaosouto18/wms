@@ -45,31 +45,6 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                                     $('#dadoLogistico-idEmbalagem').focus();
                                     return false;
                                 }
-//                                if ($('#dadoLogistico-altura').val() == "") {
-//                                    alert('Preecha o Altura');
-//                                    $('#dadoLogistico-altura').focus();
-//                                    return false;
-//                                }
-//                                if ($('#dadoLogistico-largura').val() == "") {
-//                                    alert('Preecha a Largura');
-//                                    $('#dadoLogistico-largura').focus();
-//                                    return false;
-//                                }
-//                                if ($('#dadoLogistico-profundidade').val() == "") {
-//                                    alert('Preecha o Profundidade');
-//                                    $('#dadoLogistico-profundidade').focus();
-//                                    return false;
-//                                }
-//                                if ($('#dadoLogistico-cubagem').val() == "") {
-//                                    alert('Preecha o Cubagem');
-//                                    $('#dadoLogistico-cubagem').focus();
-//                                    return false;
-//                                }
-//                                if ($('#dadoLogistico-peso').val() == "") {
-//                                    alert('Preecha o Peso');
-//                                    $('#dadoLogistico-peso').focus();
-//                                    return false;
-//                                }
 
                                 // caso a quantidade de grupos de normatizacao seja igual a zero
                                 if (grupoDadosLogisticos.size() == 0) {
@@ -255,21 +230,14 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                             },
                             /**
                              * Lista de normas de paletizacao
-                             * @param {Array} produto_dado_logisticos An array of Wms.Models.ProdutoVolume objects.
+                             * @param {Array} normas_paletizacao
                              */
                             listNorma: function (normas_paletizacao) {
                                 var $this = this;
                                 $('#fieldset-grupo-normas').append($.View('//wms/views/norma_paletizacao/init', {
                                     normas_paletizacao: normas_paletizacao
                                 }));
-//                                setTimeout(function () {
-//                                    $('#fieldset-grupo-normas #embalagens-norma').each(function () {
-//                                        $(this).find('option[embalagem=' + $(this).attr('embalagem') + ']').attr('selected', 'selected');
-//                                    });
-//                                }, 2000);
 
-
-//                                $('#fieldset-grupo-normas #embalagens-norma option[value=' + qtdPadrao + ']').attr('selected', 'selected');
                                 var grupoDadosLogisticos = $('div.grupoDadosLogisticos');
 
                                 grupoDadosLogisticos.each(function () {
