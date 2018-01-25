@@ -313,11 +313,11 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (313, '6.11.15', 'Correção: Correção da leitura de código de barras no recebimento de transbordo', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (314, '6.11.15', 'Melhoria: Inventario item a item', '9-inventario-item-a-item.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (315, '6.11.15', 'Melhoria: Correção de conferência de checkout para multiplos mapas', null, SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.12.0', 'Melhoria: Tela de expedição exibindo o tipo do pedido.', null, SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.12.0', 'Melhoria: Tela de expedição exibindo o itinerário apenas 1 vez.', null, SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.12.0', 'Melhoria: Inclusão da movimentação por unidade fracionavel', '8-unidade-fracionavel.sql', SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.12.0', 'Correção: Norma de paletização, trava para duplicidade de unitizador, correção no cálculo de capacidade da norma', null, SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.12.0', 'Correção: Endereçamento manual no mobile, aceitava quantidade negativa e exceder fração em relação ao recebido', null, SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.12.0', 'Correção: Lógica de vinculação de volume-patrimonio na conferência de mapa', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (317, '6.12.0', 'Melhoria: Tela de expedição exibindo o tipo do pedido.', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (318, '6.12.0', 'Melhoria: Tela de expedição exibindo o itinerário apenas 1 vez.', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (319, '6.12.0', 'Melhoria: Inclusão da movimentação por unidade fracionavel', '8-unidade-fracionavel.sql', SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (320, '6.12.0', 'Correção: Norma de paletização, trava para duplicidade de unitizador, correção no cálculo de capacidade da norma', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (321, '6.12.0', 'Correção: Endereçamento manual no mobile, aceitava quantidade negativa e exceder fração em relação ao recebido', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (322, '6.12.0', 'Correção: Lógica de vinculação de volume-patrimonio na conferência de mapa', null, SYSDATE);
 
 
