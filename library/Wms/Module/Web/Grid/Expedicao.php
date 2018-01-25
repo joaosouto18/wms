@@ -38,6 +38,14 @@ class Expedicao extends Grid
                 'index' => 'id',
             ))
             ->addColumn(array(
+                'label' => 'Cargas',
+                'index' => 'carga',
+            ))
+            ->addColumn(array(
+                'label' => 'Tipo Pedido',
+                'index' => 'tipopedido',
+            ))
+            ->addColumn(array(
                 'label' => 'Cubagem',
                 'index' => 'cubagem',
                 'render' => 'N3'
@@ -51,10 +59,7 @@ class Expedicao extends Grid
                 'label' => 'Placa',
                 'index' => 'placaExpedicao'
             ))
-            ->addColumn(array(
-                'label' => 'Cargas',
-                'index' => 'carga',
-            ))
+
             ->addColumn(array(
                 'label' => 'Itinerarios',
                 'index' => 'itinerario',

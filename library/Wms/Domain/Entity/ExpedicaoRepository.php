@@ -1557,7 +1557,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @param array $cargas
      * @return bool
      */
-    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false)
+    private function finalizar($idExpedicao, $centralEntrega, $tipoFinalizacao = false, $motivo = '')
     {
         $codCargaExterno = $this->validaCargaFechada($idExpedicao);
         if (isset($codCargaExterno) && !empty($codCargaExterno)) {
@@ -2091,6 +2091,7 @@ class ExpedicaoRepository extends EntityRepository {
                        PESO.NUM_CUBAGEM as "cubagem",
                        NVL(REE.QTD,0) as "reentrega",
                        I.ITINERARIOS AS "itinerario",
+                       TIPO_PEDIDO.TIPO_PEDIDO AS "tipopedido",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                             ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
                   FROM EXPEDICAO E
@@ -2136,15 +2137,17 @@ class ExpedicaoRepository extends EntityRepository {
                                WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
                               GROUP BY C.COD_EXPEDICAO) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT COD_EXPEDICAO,
-                                    LISTAGG (DSC_ITINERARIO,\', \') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
-                               FROM (SELECT DISTINCT C.COD_EXPEDICAO,
-                                            I.DSC_ITINERARIO,
-                                            COD_CARGA_EXTERNO
-                                       FROM CARGA C
-                                      INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA ' . $JoinExpedicao . $JoinSigla . '
-                                      INNER JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO
-                                      WHERE 1 = 1 ' . $FullWhere . ')
-                              GROUP BY COD_EXPEDICAO) I ON I.COD_EXPEDICAO = E.COD_EXPEDICAO
+                                    LISTAGG (DSC_ITINERARIO, \',\') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
+                              FROM ITINERARIO I
+                              INNER JOIN (
+                                SELECT DISTINCT C.COD_EXPEDICAO,
+                                      P.COD_ITINERARIO
+                                 FROM CARGA C
+                                INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA ' . $JoinExpedicao . $JoinSigla . '
+                                WHERE 1 = 1 ' . $FullWhere . '
+                                GROUP BY P.COD_ITINERARIO, C.COD_EXPEDICAO) CARGAS ON CARGAS.COD_ITINERARIO = I.COD_ITINERARIO
+                        GROUP BY COD_EXPEDICAO
+                  )  I ON I.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                     CASE WHEN (SUM(CASE WHEN (P.IND_ETIQUETA_MAPA_GERADO = \'N\') OR ((R.IND_ETIQUETA_MAPA_GERADO = \'N\' AND PARAM.DSC_VALOR_PARAMETRO = \'S\')) THEN 1 ELSE 0 END)) + NVL(MAP.QTD,0) + NVL(PED.QTD,0) > 0 THEN \'SIM\'
                                          ELSE \'\' END AS IMPRIMIR
@@ -2180,6 +2183,19 @@ class ExpedicaoRepository extends EntityRepository {
                                LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO AND PESO.DSC_GRADE = PP.DSC_GRADE
                                WHERE 1 = 1  ' . $FullWhere . $andWhere . '
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
+                              
+                  LEFT JOIN (
+                              SELECT PED.COD_EXPEDICAO,
+                                  LISTAGG (S.DSC_SIGLA,\',\') WITHIN GROUP (ORDER BY S.DSC_SIGLA) TIPO_PEDIDO
+                                  FROM SIGLA S
+                                  INNER JOIN (
+                                    SELECT P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
+                                    FROM PEDIDO P
+                                    INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                                    GROUP BY P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
+                                  ) PED ON PED.COD_TIPO_PEDIDO = S.COD_SIGLA
+                                  GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO 
+                                                               
                  WHERE 1 = 1' . $FullWhereFinal . '
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
