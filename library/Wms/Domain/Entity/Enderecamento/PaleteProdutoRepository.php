@@ -47,7 +47,7 @@ class PaleteProdutoRepository extends EntityRepository
              * endereça no picking a capacidade do picking menos o saldo do picking,
              * caso contrario, irá retornar valor negativo com mensagem abaixo
             */
-            if (Math::subtrair($capacidadePicking, $saldoPickingVirtual) < 0) {
+            if (Math::subtrair($capacidadePicking, $saldoPickingVirtual) <= 0) {
                 return 'Não é possível endereçar o produto no picking, imprima a UMA e faça o endereçamento manual!';
             }
             return floatval(Math::subtrair($capacidadePicking, $saldoPickingVirtual));

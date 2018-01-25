@@ -98,8 +98,8 @@ class EstoqueReport extends Pdf
                 $enderecosPicking = $produtoRepo->getEnderecoPicking($produtoEn);
 
                 $picking = "";
-                if (count($enderecosPicking) >0) {
-                    $picking = " - " . $enderecosPicking{0};
+                if (count($enderecosPicking) > 0) {
+                    $picking = " - " . reset($enderecosPicking);
                 }
 
                 //CABEÇALHO
