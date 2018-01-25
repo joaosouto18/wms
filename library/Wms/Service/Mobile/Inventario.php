@@ -723,7 +723,6 @@ class Inventario {
         if (empty($params['idInventarioEnd'])) {
             throw new \Exception('idInventarioEnd não pode ser vazio');
         }
-
         $numContagem = $params['numContagem'];
         $codProdutoVolume = !empty($params['codProdutoVolume']) ? $params['codProdutoVolume'] : null;
         if (isset($params['codProdutoEmbalagem'])) {
