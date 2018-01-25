@@ -760,7 +760,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
      * @param string $grade
      * @return array
      */
-    public function buscarDadoLogistico($id, $grade = "UNICA")
+    public function buscarDadoLogistico($id, $grade = false)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('p, tc.id idTipoComercializacao, tc.descricao tipoComercializacao')
