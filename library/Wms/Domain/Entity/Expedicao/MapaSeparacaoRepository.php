@@ -1202,6 +1202,8 @@ class MapaSeparacaoRepository extends EntityRepository {
             $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
             $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
 
+            if ($qtdMapaTotal == $qtdConferidoTotal) continue;
+
             $codMapa = $mapa['COD_MAPA_SEPARACAO'];
 
             $qtdConferir = $qtdRestante;
