@@ -8,7 +8,9 @@ use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as Etiqueta;
 use Wms\Domain\Entity\Produto\Embalagem;
+use Wms\Domain\Entity\Produto\EmbalagemRepository;
 use Wms\Domain\Entity\Produto\Volume;
+use Wms\Domain\Entity\ProdutoRepository;
 use Wms\Math;
 
 class MapaSeparacaoRepository extends EntityRepository {
@@ -1087,6 +1089,14 @@ class MapaSeparacaoRepository extends EntityRepository {
 
     }
 
+    /**
+     * @param $dadosConferencia
+     * @param $paramsModeloSeparacao
+     * @param bool $checkout
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Exception
+     */
     public function validaConferenciaMapaProduto($dadosConferencia, $paramsModeloSeparacao, $checkout = false) {
 
         $idExpedicao = $dadosConferencia['idExpedicao'];
@@ -1126,12 +1136,15 @@ class MapaSeparacaoRepository extends EntityRepository {
                        P.DSC_PRODUTO,
                        P.COD_PRODUTO,
                        P.DSC_GRADE,
+                       P.IND_FRACIONAVEL,
                        PE.COD_PRODUTO_EMBALAGEM,
                        PV.COD_PRODUTO_VOLUME,
                        NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME) as DSC_EMBALAGEM,
                        NVL(PE.QTD_EMBALAGEM,1) as QTD_EMBAlAGEM,
                        NVL(CONF.QTD_CONFERIDA,0) as QTD_CONFERIDA,
-                       NVL(PE.IND_EMBALADO,'N') as IND_EMBALADO
+                       NVL(PE.IND_EMBALADO,'N') as IND_EMBALADO,
+                       NVL(PE.IS_EMB_FRACIONAVEL_DEFAULT, 'N') as IS_EMB_FRACIONAVEL_DEFAULT,
+                       NVL(PE.IS_EMB_EXPEDICAO_DEFAULT, 'N') as IS_EMB_EXP_DEFAULT
                   FROM MAPA_SEPARACAO MS
                   LEFT JOIN (SELECT COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME,
                                     SUM((QTD_EMBALAGEM * QTD_SEPARAR) - NVL(QTD_CORTADO,0)) as QTD_SEPARAR
@@ -1187,6 +1200,22 @@ class MapaSeparacaoRepository extends EntityRepository {
         $codProduto = $result[0]['COD_PRODUTO'];
         $dscGrade = $result[0]['DSC_GRADE'];
         $dscEmbalagem = $result[0]['DSC_EMBALAGEM'] . "($fatorCodBarrasBipado)";
+        $prodFracionavel = $result[0]['IND_FRACIONAVEL'];
+        $isEmbExpDefault = $result[0]['IS_EMB_EXP_DEFAULT'];
+
+        if ($prodFracionavel == 'S') {
+            /** @var EmbalagemRepository $embalagemRepo */
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            /** @var Embalagem $embExpDefault */
+            $embExpDefault = $embalagemRepo->findOneBy(['codProduto' => $codProduto, 'grade' => $dscGrade, 'isEmbExpDefault' => 'S']);
+            if (!empty($embFracDefault) && $isEmbExpDefault != 'S') {
+                throw new \Exception("Este produto $codProduto - $dscGrade só pode ser expedido na embalagem " . $embExpDefault->getDescricao());
+            }
+        } else {
+            if (Math::resto($qtd, 1) > 0) {
+                throw new \Exception("O produto $codProduto - $dscGrade não pode ser expedido em uma fração da menor embalagem!");
+            }
+        }
 
         //CALCULO A QUANTIDADE PENDENTE DE CONFERENCIA PARA CADA MAPA, SE UTILIZAR QUEBRA O FILTRO VAI TRAZER APENAS UM MAPA
         $qtdConferidoTotal = 0;
@@ -1201,6 +1230,8 @@ class MapaSeparacaoRepository extends EntityRepository {
 
             $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
             $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
+
+            if ($qtdMapaTotal == $qtdConferidoTotal) continue;
 
             $codMapa = $mapa['COD_MAPA_SEPARACAO'];
 
@@ -1248,7 +1279,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                 }
             }
             throw new \Exception($msgErro);
-        } elseif (Math::compare(intval($qtdInformada), Math::subtrair($qtdMapaTotal,$qtdConferidoTotal), '>')) {
+        } elseif (Math::compare($qtdInformada, Math::subtrair($qtdMapaTotal,$qtdConferidoTotal), '>')) {
             throw new \Exception("A quantidade de $qtdInformada excede o solicitado!");
         }
 
@@ -1267,10 +1298,6 @@ class MapaSeparacaoRepository extends EntityRepository {
 
 
         if ($utilizaVolumePatrimonio == 'S') {
-            if ((isset($idVolumePatrimonio)) && ($idVolumePatrimonio != null) && ($embalado == false)) {
-                throw new \Exception("O produto $codProduto / $dscGrade - $dscProduto - $dscEmbalagem não é embalado");
-            }
-
             if ((!(isset($idVolumePatrimonio)) || ($idVolumePatrimonio == null)) && ($embalado == true)) {
                 throw new \Exception("O produto $codProduto / $dscGrade - $dscProduto - $dscEmbalagem é embalado");
             }

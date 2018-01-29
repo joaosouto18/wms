@@ -41,6 +41,8 @@ class Embalagem extends SubForm
                     'multiOptions' => array('S' => 'SIM', 'N' => 'NÃO'),
                     'value' => 'S',
                 ))
+                ->addElement('hidden', 'isEmbFracionavelDefault', array(
+                ))
                 ->addElement('select', 'CBInterno', array(
                     'mostrarSelecione' => false,
                     'label' => 'Cod. Barras Automático',
@@ -68,6 +70,12 @@ class Embalagem extends SubForm
                 ->addElement('select', 'embalado', array(
                     'mostrarSelecione' => false,
                     'label' => 'Embalado',
+                    'multiOptions' => array('S' => 'SIM', 'N' => 'NÃO'),
+                    'value' => 'N',
+                ))
+                ->addElement('select', 'isEmbExpDefault', array(
+                    'mostrarSelecione' => false,
+                    'label' => 'Emb.Padrão Exp',
                     'multiOptions' => array('S' => 'SIM', 'N' => 'NÃO'),
                     'value' => 'N',
                 ))

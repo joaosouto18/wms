@@ -261,7 +261,8 @@ class Wms_WebService_Produto extends Wms_WebService {
             if ($produtoNovo == true) {
                 $produto
                     ->setTipoComercializacao($tipoComercializacaoEntity)
-                    ->setNumVolumes($numVolumes);
+                    ->setNumVolumes($numVolumes)
+                    ->setIndFracionavel('N');
             }
 
             $em->persist($produto);
@@ -309,7 +310,9 @@ class Wms_WebService_Produto extends Wms_WebService {
                         'embalado' => $embalagemCadastrada->getEmbalado(),
                         'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
                         'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
-                        'descricao' => $descricaoEmbalagem
+                        'descricao' => $descricaoEmbalagem,
+                        'isEmbExpDefault' => $embalagemCadastrada->isEmpExpDefault(),
+                        'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
                     );
 
                     if ($encontrouEmbalagem == false) {
@@ -350,7 +353,9 @@ class Wms_WebService_Produto extends Wms_WebService {
                             'embalado' => 'N',
                             'capacidadePicking' => 0,
                             'pontoReposicao' => 0,
-                            'endereco' => null
+                            'endereco' => null,
+                            'isEmbExpDefault' => 'N',
+                            'isEmbFracionavelDefault' => 'N'
                         );
                         $embalagensArray[] = $embalagemArray;
                     }

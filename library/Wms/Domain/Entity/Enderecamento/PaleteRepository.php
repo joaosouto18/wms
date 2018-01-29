@@ -8,6 +8,10 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
     Wms\Domain\Entity\Recebimento;
+use Wms\Domain\Entity\Produto\EmbalagemRepository;
+use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueEnderecamento;
+use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueEnderecamentoRepository;
+use Wms\Math;
 
 class PaleteRepository extends EntityRepository {
 
@@ -404,6 +408,7 @@ class PaleteRepository extends EntityRepository {
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (!empty($result) && is_array($result)) {
+            /** @var EmbalagemRepository $embalagemRepo */
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
             foreach ($result as $key => $value) {
                 if ($value['QTD'] > 0) {
@@ -505,18 +510,18 @@ class PaleteRepository extends EntityRepository {
                 $saldoPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto, $grade, $pickingEn->getId(), $volumes);
                 $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "E");
                 $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "S");
-                $saldoPickingVirtual = $saldoPickingReal + $reservaEntradaPicking + $reservaSaidaPicking;
+                $saldoPickingVirtual = Math::adicionar(Math::adicionar($saldoPickingReal, $reservaEntradaPicking), $reservaSaidaPicking);
 
                 if ($completaPicking) {
-                    if ($capacidadePicking <= $saldoPickingVirtual) {
-                        break; //picking completo, não é necessário abastecer
-                    } else  {
-                        if ($quantidadePalete > $saldoPickingVirtual) {
-                            $paleteProdutoEn = $this->getEntityManager()->getReference('wms:Enderecamento\PaleteProduto', $produtos[0]->getId());
-                            $paleteProdutoEn->setQtd($capacidadePicking - $saldoPickingVirtual);
-                            $this->getEntityManager()->persist($paleteProdutoEn);
-                        }
+                    $quantidadeEnderecarPicking = PaleteProdutoRepository::getQuantidadeEnderecarPicking($capacidadePicking, $saldoPickingVirtual, $quantidadePalete);
+                    if (is_string($quantidadeEnderecarPicking)) {
+                        throw new \Exception($quantidadeEnderecarPicking);
                     }
+
+                    $paleteProdutoEn = $this->getEntityManager()->getReference('wms:Enderecamento\PaleteProduto', $produtos[0]->getId());
+                    $paleteProdutoEn->setQtd($quantidadeEnderecarPicking);
+                    $this->getEntityManager()->persist($paleteProdutoEn);
+
                 } else {
                     if (($saldoPickingVirtual + $quantidadePalete) > $capacidadePicking) {
                         $Resultado = "Quantidade nos paletes superior a capacidade do picking";
@@ -1098,6 +1103,11 @@ class PaleteRepository extends EntityRepository {
         }
     }
 
+    /**
+     * @param $idUma
+     * @return bool
+     * @throws \Exception
+     */
     public function desfazerPalete($idUma) {
 
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
@@ -1117,9 +1127,9 @@ class PaleteRepository extends EntityRepository {
 
                     $reservaEstoqueRepo->reabrirReservaEstoque($idEndereco, $paleteEn->getProdutosArray(), "E", "U", $idUma);
                     $paleteEn->setCodStatus(Palete::STATUS_EM_ENDERECAMENTO);
-                    $this->getEntityManager()->persist($paleteEn);
+                    $this->_em->persist($paleteEn);
 
-                    $ordensServicoEn = $this->getEntityManager()->getRepository('wms:OrdemServico')->findBy(array('idEnderecamento' => $paleteEn->getId()));
+                    $ordensServicoEn = $this->_em->getRepository('wms:OrdemServico')->findBy(array('idEnderecamento' => $paleteEn->getId()));
                     foreach ($ordensServicoEn as $osEn) {
                         if ($osEn->getDscObservacao() == NULL) {
                             $osEn->setDscObservacao('Endereçamento desfeito');
@@ -1139,7 +1149,7 @@ class PaleteRepository extends EntityRepository {
                     $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();
                     $enderecoAntigo = $paleteEn->getDepositoEndereco();
                     if ($enderecoAntigo != NULL) {
-                        $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
+                        $enderecoRepo = $this->_em->getRepository("wms:Deposito\Endereco");
                         $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR", $paleteEn->getId());
                         $reservaEstoqueRepo->cancelaReservaEstoque($idEndereco, $paleteEn->getProdutosArray(), "E", "U", $idUma);
                     }
@@ -1147,16 +1157,35 @@ class PaleteRepository extends EntityRepository {
                     $paleteEn->setDepositoEndereco(NULL);
                     $paleteEn->setImpresso("N");
                     $paleteEn->setCodStatus($codStatus);
-                    $this->getEntityManager()->persist($paleteEn);
+                    $this->_em->persist($paleteEn);
                     break;
                 case Palete::STATUS_RECEBIDO:
+                    /** @var ReservaEstoqueEnderecamentoRepository $reservaEstoqueEnderecamentoRepo */
+                    $reservaEstoqueEnderecamentoRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
+
+                    /** @var ReservaEstoqueEnderecamento $reservaEnderecamento */
+                    $reservasEnderecamento = $reservaEstoqueEnderecamentoRepo->findBy(['palete' => $paleteEn->getId()]);
+                    foreach ($reservasEnderecamento as $reservaEnderecamento) {
+                        $reserva = $reservaEnderecamento->getReservaEstoque();
+                        $produtosReserva = $reserva->getProdutos()->toArray();
+
+                        foreach ($produtosReserva as $produtoReserva) {
+                            $this->_em->remove($produtoReserva);
+                        }
+
+                        $this->_em->remove($reservaEnderecamento);
+                        $this->_em->remove($reserva);
+                    }
+                    $this->_em->remove($paleteEn);
+                    break;
                 case Palete::STATUS_EM_RECEBIMENTO:
-                    $this->getEntityManager()->remove($paleteEn);
+                    $this->_em->remove($paleteEn);
                     break;
             }
-            $this->getEntityManager()->flush();
-        } catch (Exception $e) {
-            throw new \Exception($e->getMessage());
+            $this->_em->flush();
+            $this->_em->commit();
+        } catch (\Exception $e) {
+            throw $e;
         }
         return true;
     }

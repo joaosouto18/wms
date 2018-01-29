@@ -25,6 +25,7 @@ class Web_ProdutoEmbalagemController extends Crud
         $embalagens = $repoEmbalagem->findBy(array('codProduto' => $params['idProduto'], 'grade' => $params['grade']), array('isPadrao' => 'DESC', 'descricao' => 'ASC'));
         $arrayEmbalagens = array();
 
+        /** @var Embalagem $embalagem */
         foreach ($embalagens as $embalagem) {
 
             $dataInativacao = "EMB. ATIVA";
@@ -50,6 +51,9 @@ class Web_ProdutoEmbalagemController extends Crud
                 'embalado' => $embalagem->getEmbalado(),
                 'capacidadePicking' => $embalagem->getCapacidadePicking(),
                 'pontoReposicao' => $embalagem->getPontoReposicao(),
+                'isEmbFracionavelDefault' => $embalagem->isEmbFracionavelDefault(),
+                'isEmbExpDefault' => $embalagem->isEmbExpDefault(),
+                'lblEmbExpDefault' => ($embalagem->isEmbExpDefault() == 'S') ? 'SIM' : 'NÃO',
                 'lblEmbalado' => ($embalagem->getEmbalado() == 'S') ? 'SIM' : 'NÃO',
                 'ativarDesativar' => $checked,
                 'dataInativacao' => $dataInativacao,

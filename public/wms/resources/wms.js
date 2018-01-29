@@ -50,7 +50,7 @@
         });
     };
 
-    $.wmsDialogConfirm = function(settings, callbackFnk, params){
+    $.wmsDialogConfirm = function(settings, callback, params, returnFunction){
         var config = {
             'title': settings.title,
             'msg': settings.msg,
@@ -61,13 +61,19 @@
             'modal' :  (!!settings.modal)? settings.modal :  true,
             'buttons': (!!settings.buttons)? settings.buttons :  {
                 "Confirmar": function (){
-                    if($.isFunction(callbackFnk)){
-                        callbackFnk.call(this, params);
+                    if($.isFunction(callback)){
+                        callback.call(this, params);
+                    }
+                    if($.isFunction(returnFunction)){
+                        returnFunction.call(this, true);
                     }
                     $(this).remove();
                 },
                 "Cancelar": function () {
-                    $(this).remove()
+                    if($.isFunction(returnFunction)){
+                        returnFunction.call(this, false);
+                    }
+                    $(this).remove();
                 }
             }
         };

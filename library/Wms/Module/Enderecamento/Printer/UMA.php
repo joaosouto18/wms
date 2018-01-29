@@ -375,22 +375,23 @@ class UMA extends Pdf {
         if(strlen ($qtd) > 15){
             $size = 50;
         }
-        if(strlen ($qtd) >= 20){
+        if(strlen ($qtd) >= 18){
             $size = 40;
         }
         if(strlen ($qtd) >= 25){
             $size = 30;
         }
+
         $this->SetFont('Arial', 'B', $size);
-        $this->SetXY(140, 110);
+        $this->SetXY(145, 110);
         $this->Cell(-15, 30, $qtd, 0, 1);
 
         $this->SetFont('Arial', 'B', 32);
         $this->SetXY(10, 110);
-        $this->Cell(45, 30, utf8_decode("Prod"), 0, 0);
+        $this->Cell(35, 30, utf8_decode("Prod"), 0, 0);
 
-        $this->SetFont('Arial', 'B', 80);
-        $this->Cell(95, 30, $codigoProduto, 0, 1);
+        $this->SetFont('Arial', 'B', 70);
+        $this->Cell(40, 30, $codigoProduto, 0, 1);
     }
 
     public function layout01($palete, $produtoEn, $font_size, $line_width, $enderecoPicking, $params = null) {

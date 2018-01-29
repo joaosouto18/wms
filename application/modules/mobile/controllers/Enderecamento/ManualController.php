@@ -18,13 +18,16 @@ class Mobile_Enderecamento_ManualController extends Action
         try{
             if (isset($params['submit'])&& $params['submit'] != null) {
                 if (isset($params['produto']) && trim($params['produto']) == "") {
-                    throw new \Exception("Informe um produto");
+                    throw new \Exception("Informe um produto!");
                 }
-                if (isset($params['endereco']) && trim($params['endereco']) == "") {
-                    throw new \Exception("Informe um endereço");
+                elseif (isset($params['endereco']) && trim($params['endereco']) == "") {
+                    throw new \Exception("Informe um endereço!");
                 }
-                if (isset($params['qtd']) && trim($params['qtd']) == "") {
-                    throw new \Exception("Informe uma quantidade");
+                elseif (!isset($params['qtd']) || empty($params['qtd'])) {
+                    throw new \Exception("Informe uma quantidade!");
+                }
+                elseif (\Wms\Math::compare($params['qtd'], 0, '<')) {
+                    throw new \Exception("Não é possível endereçar uma quantidade negativa!");
                 }
 
                 unset($params['module']);
@@ -75,15 +78,16 @@ class Mobile_Enderecamento_ManualController extends Action
                 $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
                 $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
 
-                if ($sumQtdRecebimento < ((((int)$params['qtd']) * $params['qtdEmbalagem']) + (int)$paleteProdutoEn[0]['qtd'])) {
+                $qtdEndTotalFator = \Wms\Math::multiplicar($params['qtd'], $params['qtdEmbalagem']);
+                $enderecadoMaisEnderecar = \Wms\Math::adicionar($qtdEndTotalFator, $paleteProdutoEn[0]['qtd']);
+
+                if (\Wms\Math::compare($sumQtdRecebimento, $enderecadoMaisEnderecar, '<')) {
                     if (isset($params['paleteGerado'])) unset($params['paleteGerado']);
                     throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
                 }
 
                 $this->validarEndereco($params['endereco'], $params, 'ler-codigo-barras', 'enderecar-manual');
 
-            } else {
-//                $this->addFlashMessage('info', "Informe um produto, endereço e quantidade para endereçar");
             }
         } catch (\Exception $ex) {
             $this->addFlashMessage('error', $ex->getMessage());
@@ -201,7 +205,10 @@ class Mobile_Enderecamento_ManualController extends Action
             $paleteProdutoRepo = $this->em->getRepository('wms:Enderecamento\PaleteProduto');
             $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($idRecebimento, $codProduto, $grade);
 
-            if ($sumQtdRecebimento < ((((int)$params['qtd']) * $params['qtdEmbalagem']) + (int)$paleteProdutoEn[0]['qtd'])) {
+            $qtdEndTotalFator = \Wms\Math::multiplicar($params['qtd'], $params['qtdEmbalagem']);
+            $enderecadoMaisEnderecar = \Wms\Math::adicionar($qtdEndTotalFator, $paleteProdutoEn[0]['qtd']);
+
+            if (\Wms\Math::compare($sumQtdRecebimento, $enderecadoMaisEnderecar, '<')) {
                 throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
             }
 

@@ -465,6 +465,11 @@ class Expedicao_EtiquetaController  extends Action
 
     /**
      * @param $idExpedicao
+     * @param $central
+     * @param $cargas
+     * @param $arrayRepositorios
+     * @throws Exception
+     * @throws \Wms\Util\WMS_Exception
      */
     protected function gerarMapaEtiqueta($idExpedicao, $central, $cargas, $arrayRepositorios) {
 

@@ -43,33 +43,28 @@ class NormaPaletizacaoRepository extends EntityRepository
         return $normaPaletizacaoEntity;
     }
 
-    public function getUnitizadoresByProduto($codProduto, $grade) {
-        $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('
-                NVL(unitizador_embalagem.id,        unitizador_volume.id) idUnitizador,
-                NVL(unitizador_embalagem.descricao, unitizador_volume.descricao) descricaoUnitizador,
-                NVL(np_embalagem.numLastro,  np_volume.numLastro) numLastro,
-                NVL(np_embalagem.numCamadas, np_volume.numCamadas) numCamadas,
-                NVL(np_embalagem.numPeso,    np_volume.numPeso) numPeso,
-                NVL(np_embalagem.numNorma,   np_volume.numNorma) numNorma,
-                NVL(np_embalagem.id,         np_volume.id) idNorma'
-            )
-            ->from('wms:Produto', 'p')
-            ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade')
-            ->leftJoin('pe.dadosLogisticos', 'dl')
-            ->leftJoin('dl.normaPaletizacao', 'np_embalagem')
-            ->leftJoin('np_embalagem.unitizador', 'unitizador_embalagem')
-            ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
-            ->leftJoin('pv.normaPaletizacao', 'np_volume')
-            ->leftJoin('np_volume.unitizador', 'unitizador_volume')
-            ->where("p.id = '$codProduto'")
-            ->andWhere("p.grade = '$grade'");
+    public function getNormasByProduto($codProduto, $grade) {
 
-        $result = $dql->getQuery()->getResult();
+        $sql = "SELECT 
+                  NP.COD_NORMA_PALETIZACAO , U.DSC_UNITIZADOR
+                FROM 
+                  UNITIZADOR U
+                INNER JOIN NORMA_PALETIZACAO NP ON NP.COD_UNITIZADOR = U.COD_UNITIZADOR
+                WHERE NP.COD_NORMA_PALETIZACAO IN (
+                    SELECT DISTINCT PDL.COD_NORMA_PALETIZACAO
+                    FROM PRODUTO_EMBALAGEM PE
+                    INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+                    WHERE PE.COD_PRODUTO = $codProduto AND PE.DSC_GRADE = '$grade' )
+                OR NP.COD_NORMA_PALETIZACAO IN (
+                    SELECT DISTINCT PV.COD_NORMA_PALETIZACAO 
+                    FROM PRODUTO_VOLUME PV
+                    WHERE PV.COD_PRODUTO = $codProduto AND PV.DSC_GRADE = '$grade' )";
+
+        $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         $normas = array();
         foreach ($result as $norma)
-            $normas[$norma['idNorma']] = $norma['descricaoUnitizador'];
+            $normas[$norma['COD_NORMA_PALETIZACAO']] = $norma['DSC_UNITIZADOR'];
         return $normas;
 
     }
