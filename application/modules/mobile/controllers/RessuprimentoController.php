@@ -170,7 +170,8 @@ class Mobile_RessuprimentoController extends Action
                     $this->view->grade = $grade = $result[0]['GRADE'];
                     $this->view->descricaoProduto = $result[0]['DESCRICAO'];
                     $this->view->endereco = $dscEndereco = $result[0]['ENDERECO'];
-                    $this->view->qtd = reset($result)['PICKING'];
+                    $this->view->picking = reset($result)['PICKING'];
+                    $this->view->qtd = $result[0]['QTD'];
                 }
             }
 

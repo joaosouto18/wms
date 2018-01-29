@@ -22,7 +22,7 @@
                             <td>&nbsp;</td><td>&nbsp;</td>
                             <td><?php echo $this->grade ?></td>
                             <td>&nbsp;</td><td>&nbsp;</td>
-                            <td><?php echo $this->qtd ?></td>
+                            <td><?php echo $this->picking ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -52,7 +52,7 @@
                     <?php } ?>
                     <tr>
                         <td>Quantidade:</td>
-                        <td><input class="focus form-control" title="Quantidade" type="text" name="quantidade" id="quantidade" value="" width="30px"/></td>
+                        <td><input class="focus form-control" title="Quantidade" type="text" name="quantidade" id="quantidade" value="<?php echo $this->qtd ?>" width="30px"/></td>
                     </tr>
                 </table>
             </div>
