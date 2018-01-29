@@ -23,7 +23,6 @@ class ProdutosMapa extends Grid
         $this->setShowPager(true);
         $pager = new Pager(count($array), 1, 100);
         $this->setpager($pager);
-        $this->setShowPager(false);
 
         $this->setSource(new \Core\Grid\Source\ArraySource($array))
             ->setId('expedicao-mapas-grid')
