@@ -59,6 +59,9 @@ class PickingLeitura extends \Core\Form
                             'action' => $this->_actionUrl
                         ))
                 )
+                ->setAttribs(array(
+                    'method' => 'get',
+                ))
                 ->addElement('text', 'codigoBarras', array(
                     'required' => true,
                     'label' => $this->_labelElement,
