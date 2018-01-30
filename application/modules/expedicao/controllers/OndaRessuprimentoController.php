@@ -49,15 +49,18 @@ class Expedicao_OndaRessuprimentoController extends Action {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $idsExpedicoes = $this->_getParam("expedicao");
+        $expedicoes = null;
         try {
-            $this->em->beginTransaction();
             if (empty($idsExpedicoes))
                 throw new \Exception("Nenhuma expedição selecionada");
 
             $expedicoes = implode(',', $idsExpedicoes);
 
-            $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes);
+            $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes, true);
 
+            $expedicaoRepo->changeStatusExpedicao($expedicoes, 'S');
+
+            $this->em->beginTransaction();
             if (count($result) > 0) {
                 $cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
 
@@ -95,6 +98,8 @@ class Expedicao_OndaRessuprimentoController extends Action {
             if (count($idsExpedicoes) >0) {
                 $expedicoes = implode(',', $idsExpedicoes);
                 $result = $expedicaoRepo->gerarOnda($expedicoes);
+            } else {
+                throw new Exception("A(s) expedição(ões) selecionada(s) já foi(ram) ressuprido(s) ou está(ão) em processo de ressupriemnto em outra máquina!");
             }
 
             ini_set('max_execution_time', 30);
@@ -104,8 +109,10 @@ class Expedicao_OndaRessuprimentoController extends Action {
             } else {
                 $this->addFlashMessage("success", $result['observacao']);
             }
+            $expedicaoRepo->changeStatusExpedicao($expedicoes, 'N');
         } catch (\Exception $e) {
             $this->em->rollback();
+            $expedicaoRepo->changeStatusExpedicao($expedicoes, 'N');
             $this->addFlashMessage("error", "Falha gerando ressuprimento. " . $e->getMessage());
         }
         $this->redirect("index", "onda-ressuprimento", "expedicao");
