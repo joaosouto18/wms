@@ -19,7 +19,6 @@ class Mobile_ConsultaProdutoController extends Action
 
         $this->view->exibe = false;
         if ($codigoBarras != NULL) {
-            var_dump($codigoBarras); exit;
             $this->view->exibe = true;
             $codigoBarras = ColetorUtil::adequaCodigoBarras($codigoBarras);
 
