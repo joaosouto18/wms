@@ -1022,12 +1022,12 @@ class EnderecoRepository extends EntityRepository {
                  */
                 foreach ($itens as $key => $item) {
                     $produtoEn = $item->getProduto();
-                    if ($produtoEn->getTipoComercializacao() == Produto::TIPO_UNITARIO) {
+                    if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
                         $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $item->getQtd());
                         $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
                             'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens));
                         $result[$produtoEn->getId()] = $produto;
-                    } elseif ($produtoEn->getTipoComercializacao() == Produto::TIPO_COMPOSTO) {
+                    } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
                         /** @var Produto\Volume $volumeEn */
                         $volumeEn = $volumeRepo->find($item->getProdutoVolume());
                         $result[$produtoEn->getId()."-".$volumeEn->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
