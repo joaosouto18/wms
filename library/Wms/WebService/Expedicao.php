@@ -214,7 +214,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
      * @return boolean Se as cargas foram salvas com sucesso
      */
     public function enviarPedidos ($codCarga, $placa, $pedidos) {
-        var_dump($pedidos); exit;
         $pedidosArray = array();
         foreach ($pedidos->pedidos as $pedidoWs) {
             $cliente = array();
