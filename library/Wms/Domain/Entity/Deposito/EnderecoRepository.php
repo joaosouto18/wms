@@ -1029,7 +1029,7 @@ class EnderecoRepository extends EntityRepository {
                         $result[$produtoEn->getId()] = $produto;
                     } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
                         /** @var Produto\Volume $volumeEn */
-                        $volumeEn = $volumeRepo->find($item->getProdutoVolume());
+                        $volumeEn = $volumeRepo->find($item->getProdutoVolume()->getId());
                         $result[$produtoEn->getId()."-".$volumeEn->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
                             'desc' => $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ")", 'qtd' => $item->getQtd());
                     }
