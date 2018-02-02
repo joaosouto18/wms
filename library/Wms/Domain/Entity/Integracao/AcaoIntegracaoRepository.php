@@ -224,6 +224,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             //STRING DA QUERY DE INTEGRAÇÃO
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro, $data);
+            echo $acaoEn->getId() . ' - ' . $query;
             var_dump($acaoEn->getId() . ' - ' . $query);
             if ($dados == null) {
                 $words = explode(" ",trim($query));
