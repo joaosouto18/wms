@@ -9,6 +9,7 @@
     label[for='etiquetas-etiquetaBusca'],
     label[for='dataFinal'],
     label[for='mapas-codMapaSeparacao'],
+    label[for='etiquetas-expedicao'],
     label[for='mapas-pessoa'],
     label[for='etiquetas-etiquetaInicial']{
         font-size: 15px;
@@ -61,11 +62,29 @@
     });
 
     function gotoFinal(event) {
-        if (event.which == 13 || event.keyCode == 13) {
+        if (event.which == 13 || event.keyCode == 13 || event.keyCode == 9 || event.which == 9) {
             if (document.getElementById('etiquetas-etiquetaInicial').value != "") {
+                var eI = document.getElementById('etiquetas-etiquetaInicial').value;
+                eI = parseInt(eI.substring(0, eI.length - 1));
                 codBarrasFinal = document.getElementById('etiquetas-etiquetaFinal');
                 if (codBarrasFinal) {
-                    codBarrasFinal.focus();
+                    $.ajax({
+                        url: 'verifica-etiqueta-valida-ajax/etiqueta/' + eI,
+                        success: function (data) {
+                            if (data.result === "Ok") {
+                                codBarrasFinal.focus();
+                            } else if (data.result = 'Error') {
+                                $.wmsDialogAlert({
+                                    title: 'Alerta',
+                                    msg: data.msg
+                                });
+                                $('#etiquetas-etiquetaInicial').val('');
+                                $('#etiquetas-etiquetaInicial').focus();
+                                return false;
+                            }
+                        }
+                    });
+
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -83,7 +102,6 @@
                 pessoa = document.getElementById('etiquetas-pessoa');
                 if (pessoa) {
                     pessoa.focus();
-
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -129,7 +147,6 @@
                 buscar = document.getElementById('mapas-salvarMapa');
                 if (buscar) {
                     buscar.focus();
-
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -145,6 +162,12 @@
         $('#etiquetas-etiquetaInicial').val('');
         $('#etiquetas-etiquetaFinal').val('');
         $('#txtIntervalo').val('');
+        $('#etiquetas-pessoa').val('');
+        $('#dataInicial').val('');
+        $('#dataFinal').val('');
+        $('#cpfBusca').val('');
+        $('#etiquetas-etiquetaBusca').val('');
+        $('#etiquetas-expedicao').val('');
         $('#etiquetas-etiquetaInicial').focus();
         qtdBipados = 0;
         return false;
@@ -160,11 +183,7 @@
                     if (inptCodBarraFinal) {
                         inptCodBarraFinal.focus();
                         event.stopPropagation();
-//                        if (event.preventDefault) {
-//                            event.preventDefault();
-//                        } else {
-//                            event.returnValue = false;
-//                        }
+
                     }
                 }
             }
@@ -178,11 +197,7 @@
                     if (inptConferente) {
                         inptConferente.focus();
                         event.stopPropagation();
-//                        if (event.preventDefault) {
-//                            event.preventDefault();
-//                        } else {
-//                            event.returnValue = false;
-//                        }
+
                     }
                 }
             }
@@ -192,17 +207,6 @@
         $('#etiquetas-pessoa').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
                 if ($(this).val() != "") {
-//                    addLista();
-//                    var inptConferente = $("#etiquetas-buscar");
-//                    if (inptConferente) {
-//                        inptConferente.focus();
-//                        event.stopPropagation();
-////                        if (event.preventDefault) {
-////                            event.preventDefault();
-////                        } else {
-////                            event.returnValue = false;
-////                        }
-//                    }
                     return true;
                 }
             }
@@ -504,14 +508,30 @@
                 eI = parseInt(eI.substring(0, eI.length - 1));
                 eF = parseInt(eF.substring(0, eF.length - 1));
 
-                if (eI > eF) {
-                    var aux = eF;
+                $.ajax({
+                    url: 'verifica-etiqueta-valida-ajax/expedicao/1/etiqueta/' + eF + '/etiquetaInicial/' + eI,
+                    success: function (data) {
+                        if (data.result === "Ok") {
+                            if (eI > eF) {
+                                var aux = eF;
 
-                    eF = eI;
-                    eI = aux;
-                }
-                $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira: eI, ultima: eF}, function (data) {
-                    $("#txtIntervalo").val(data.result);
+                                eF = eI;
+                                eI = aux;
+                            }
+                            $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira: eI, ultima: eF}, function (data) {
+                                $("#txtIntervalo").val(data.result);
+                            });
+                        } else if (data.result = 'Error') {
+                            $.wmsDialogAlert({
+                                title: 'Alerta',
+                                msg: data.msg
+                            });
+                            $('#etiquetas-etiquetaFinal').val('');
+                            $("#txtIntervalo").val('');
+                            $('#etiquetas-etiquetaFinal').focus();
+                            return false;
+                        }
+                    }
                 });
             }
         });
