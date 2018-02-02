@@ -51,6 +51,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                          TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
                         FROM INTEGRACAO_NF_ENTRADA
                         $where
+                  ORDER by NUM_NOTA_FISCAL, COD_SERIE_NOTA_FISCAL, COD_FORNECEDOR, TO_CHAR(DAT_EMISSAO,'DD/MM/YYYY')
                 ";
                 break;
             case AcaoIntegracao::INTEGRACAO_PEDIDOS:

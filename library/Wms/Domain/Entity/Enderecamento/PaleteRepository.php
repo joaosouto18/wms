@@ -1175,8 +1175,8 @@ class PaleteRepository extends EntityRepository {
 
                         $this->_em->remove($reservaEnderecamento);
                         $this->_em->remove($reserva);
-                        $this->_em->remove($paleteEn);
                     }
+                    $this->_em->remove($paleteEn);
                     break;
                 case Palete::STATUS_EM_RECEBIMENTO:
                     $this->_em->remove($paleteEn);
