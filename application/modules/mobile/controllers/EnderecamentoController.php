@@ -345,10 +345,10 @@ class Mobile_EnderecamentoController extends Action
                     $this->createXml('error', 'Espaço insuficiente no endereço');
                 }
                 if ($enderecoAntigo != NULL) {
-                    $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR", $paleteEn->getId());
+                    $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR", $paleteEn->getId(), $paleteEn->getId());
                     $reservaEstoqueRepo->cancelaReservaEstoque($paleteEn->getDepositoEndereco()->getId(), $paleteEn->getProdutosArray(), "E", "U", $paleteEn->getId());
                 }
-                $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoEn, $qtdAdjacente, "OCUPAR");
+                $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoEn, $qtdAdjacente, "OCUPAR", $paleteEn->getId());
                 $reservaEstoqueRepo->adicionaReservaEstoque($enderecoEn->getId(), $paleteEn->getProdutosArray(), "E", "U", $paleteEn->getId());
             }
 
