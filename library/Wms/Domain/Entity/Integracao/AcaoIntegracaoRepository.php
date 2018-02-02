@@ -253,6 +253,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $result = true;
                 }
             } else {
+                var_dump($result);
                 if (($tipoExecucao == "E") && ($destino == "T")) {
                     $integracaoService = new Integracao($this->getEntityManager(),
                         array('acao'=>$acaoEn,
