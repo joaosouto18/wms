@@ -80,7 +80,7 @@ class AcaoIntegracao
     protected $tabelaReferencia;
 
     /**
-     * @Column(name="COD_ACAO_INTEGRACAO_RELACIONADA", type="string")
+     * @Column(name="COD_ACAO_RELACIONADA", type="string")
      */
     protected $idAcaoRelacionada;
 
