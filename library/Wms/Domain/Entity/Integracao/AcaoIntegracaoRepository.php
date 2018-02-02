@@ -224,7 +224,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             //STRING DA QUERY DE INTEGRAÇÃO
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro, $data);
-
+            var_dump($acaoEn->getId() . ' - ' . $query);
             if ($dados == null) {
                 $words = explode(" ",trim($query));
                 $update = true;
@@ -247,7 +247,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                     $options = array();
                     $options[] = $dadosFiltrar;
-                    var_dump($options);
                     $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
                 } else {
                     $result = true;
