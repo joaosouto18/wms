@@ -154,10 +154,33 @@ class VolumeRepository extends EntityRepository
         /** @var Volume $volumesEntity */
         foreach ($volumesEntities as $volumesEntity) {
             $volumesEntity->setEndereco($enderecoEn);
-            $volumeEn->setCapacidadePicking($capacidadePicking);
+            $volumesEntity->setCapacidadePicking($capacidadePicking);
             $this->_em->persist($volumesEntity);
         }
 
+        $this->_em->flush();
+    }
+
+    public function setNormaPaletizacaoVolume($codBarras, $numLastro, $numCamadas, $unitizador)
+    {
+        /** @var VolumeRepository $embalagemRepo */
+        $volumeRepo = $this->_em->getRepository('wms:Produto\Volume');
+        $unitizadorRepo = $this->_em->getRepository('wms:Armazenagem\Unitizador');
+        $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $codBarras));
+
+        if (empty($volumeEn)) {
+            throw new \Exception('Volume não encontrado');
+        }
+
+        $normaPaletizacaoEn = $volumeEn->getNormaPaletizacao();
+        $unitizadorEn = $unitizadorRepo->find($unitizador);
+        if ($normaPaletizacaoEn) {
+            $normaPaletizacaoEn->setNumLastro($numLastro);
+            $normaPaletizacaoEn->setNumCamadas($numCamadas);
+            $normaPaletizacaoEn->setNumNorma($numLastro * $numCamadas);
+            $normaPaletizacaoEn->setUnitizador($unitizadorEn);
+            $this->_em->persist($normaPaletizacaoEn);
+        }
         $this->_em->flush();
     }
 

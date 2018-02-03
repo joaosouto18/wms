@@ -66,6 +66,31 @@ class EmbalagemRepository extends EntityRepository {
         $this->getEntityManager()->flush();
     }
 
+    public function setNormaPaletizacaoEmbalagem($codBarras, $numLastro, $numCamadas, $unitizador)
+    {
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+        $produtoDadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
+        $produtoDadoLogisticoEn = $produtoDadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemEn));
+        $unitizadorRepo = $this->_em->getRepository('wms:Armazenagem\Unitizador');
+        $normaPaletizacaoEn = $produtoDadoLogisticoEn->getNormaPaletizacao();
+
+        $unitizadorEn = $unitizadorRepo->find($unitizador);
+
+        if (empty($embalagemEn)) {
+            throw new \Exception('Embalagem não encontrada');
+        }
+
+        if ($normaPaletizacaoEn) {
+            $normaPaletizacaoEn->setNumLastro($numLastro);
+            $normaPaletizacaoEn->setNumCamadas($numCamadas);
+            $normaPaletizacaoEn->setNumNorma($numLastro * $numCamadas);
+            $normaPaletizacaoEn->setUnitizador($unitizadorEn);
+            $this->_em->persist($normaPaletizacaoEn);
+        }
+        $this->_em->flush();
+    }
+
     public function checkEstoqueReservaById($id) {
         $dql = $this->_em->createQueryBuilder()
                 ->select('NVL(e.id, rep.id)')
