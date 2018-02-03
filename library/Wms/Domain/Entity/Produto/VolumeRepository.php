@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Util\CodigoBarras,
     Core\Util\Produto,
     Wms\Util\Endereco as EnderecoUtil;
+use Wms\Util\Coletor;
 
 /**
  * 
@@ -143,6 +144,7 @@ class VolumeRepository extends EntityRepository
     {
         /** @var VolumeRepository $embalagemRepo */
         $volumeRepo = $this->_em->getRepository('wms:Produto\Volume');
+        $codBarras = Coletor::adequaCodigoBarras($codBarras);
         $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $codBarras));
 
         if (empty($volumeEn)) {
@@ -166,6 +168,7 @@ class VolumeRepository extends EntityRepository
         /** @var VolumeRepository $embalagemRepo */
         $volumeRepo = $this->_em->getRepository('wms:Produto\Volume');
         $unitizadorRepo = $this->_em->getRepository('wms:Armazenagem\Unitizador');
+        $codBarras = Coletor::adequaCodigoBarras($codBarras);
         $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $codBarras));
 
         if (empty($volumeEn)) {
