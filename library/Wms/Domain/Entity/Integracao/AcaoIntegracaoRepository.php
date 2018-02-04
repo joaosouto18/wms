@@ -242,11 +242,11 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                     $dadosFiltrar = array();
                     foreach ($result as $row) {
-                        $dadosFiltrar = $row['ID'];
+                        $dadosFiltrar[] = $row['ID'];
                     }
                     $options = array();
-                    $options[] = $dadosFiltrar;
-                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+                    $options[] = implode(",", $dadosFiltrar);
+                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
                 } else {
                     $result = true;
                 }
