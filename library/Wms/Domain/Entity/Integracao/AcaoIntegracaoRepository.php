@@ -224,11 +224,6 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             //STRING DA QUERY DE INTEGRAÇÃO
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro, $data);
-            if ($acaoEn->getId() == 1) {
-                echo $acaoEn->getId() . ' - ' . $query;
-                var_dump($acaoEn->getId() . ' - ' . $query);
-
-            }
             if ($dados == null) {
                 $words = explode(" ",trim($query));
                 $update = true;
@@ -256,7 +251,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $result = true;
                 }
             } else {
-                var_dump($result);
                 if (($tipoExecucao == "E") && ($destino == "T")) {
                     $integracaoService = new Integracao($this->getEntityManager(),
                         array('acao'=>$acaoEn,
