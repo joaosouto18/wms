@@ -89,7 +89,6 @@ class Enderecamento_ProdutoController extends Action
         $idRecebimento = $this->_getParam("id");
         $codProduto    = $this->_getParam("codigo");
         $grade         = $this->_getParam("grade");
-        $grade         = str_replace('&','/',$grade);
 
         $this->view->norma = $results = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade, null);
 
