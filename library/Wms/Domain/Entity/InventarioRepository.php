@@ -424,6 +424,7 @@ class InventarioRepository extends EntityRepository {
                 ->innerJoin('ie.depositoEndereco', 'de')
                 ->where('i.id = :idInventario')
                 ->andWhere('ce.divergencia is not null')
+                ->groupBy('de.descricao, ce.codProduto, ce.grade, pe.codigoBarras, pv.codigoBarras, ce.qtdContada, ce.qtdDivergencia, ce.numContagem, p.descricao')
                 ->orderBy('de.descricao')
                 ->setParameter('idInventario', $idInventario);
 
