@@ -812,8 +812,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         /** @var ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoque");
         $verificaReentrega = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
-        $cubagemCaixa = (float)$this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
-        $parametroQtdCaixas = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
 
         try {
 
@@ -1208,6 +1206,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $consolidado = 'N';
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()])) {
                                     $cubagem = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
+                                    $idPedidoProduto = $pedidoEntity->getId();
                                     $quebras = array();
                                     $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
                                     $consolidado = 'S';
