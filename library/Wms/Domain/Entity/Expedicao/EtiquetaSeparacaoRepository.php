@@ -1206,7 +1206,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $consolidado = 'N';
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()])) {
                                     $cubagem = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
-                                    $idPedidoProduto = $pedidoEntity->getId();
                                     $quebras = array();
                                     $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
                                     $consolidado = 'S';
