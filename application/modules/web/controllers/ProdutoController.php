@@ -206,7 +206,6 @@ class Web_ProdutoController extends Crud {
                     $params['embalagens'][$key]['endereco'] = $params['embalagem']['endereco'];
                 }
             }
-            $params['grade'] = '95.1.CARV/NUDE/S/V';
             if (!isset($params['id']) || $params['id'] == null || !isset($params['grade']) || $params['grade'] == null)
                 throw new \Exception('Codigo e Grade do produto devem ser fornecidos');
 
