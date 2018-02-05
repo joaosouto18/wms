@@ -443,7 +443,7 @@ class Expedicao_IndexController extends Action {
                         if (is_null($etiquetaInicial))
                             $etiquetaInicial = $etiquetaFinal;
 
-                        $equipeSeparacaoEn = $equipeSeparacaoRepo->getIntervaloEtiquetaUsuario($usuarioEn);
+                        $equipeSeparacaoEn = null;//$equipeSeparacaoRepo->getIntervaloEtiquetaUsuario($usuarioEn);
 
                         //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
                         $inicial = 0;
@@ -466,6 +466,7 @@ class Expedicao_IndexController extends Action {
                                     $final = $etiquetaInicial - 1;
                                 }
                             }
+
                             if ($etiquetaInicial < $menorIntervalo) {
                                 $equipeSeparacaoRepo->save($etiquetaInicial, $menorIntervalo - 1, $usuarioEn,$numFunc, false);
                             }
@@ -543,6 +544,35 @@ class Expedicao_IndexController extends Action {
         }
     }
 
+    public function verificaEtiquetaValidaAjaxAction(){
+
+        $etiqueta = $this->_getParam('etiqueta');
+        $verificaExpedicao = $this->_getParam('expedicao');
+        $etiquetaInicial = $this->_getParam('etiquetaInicial');
+        $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $etiquetaEn = $EtiquetaRepo->find($etiqueta);
+
+        if(empty($etiquetaEn)){
+            $response = array('result' => 'Error', 'msg' => 'Etiqueta invalida');
+        }else{
+            if($verificaExpedicao == 1){
+                $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+                $etiquetaInicial = trim($etiquetaInicial);
+                $etiquetaFinal = trim($etiqueta);
+                $expedicaoIni = $equipeSeparacaoRepo->getExpedicao($etiquetaInicial);
+                $expedicaoFim = $equipeSeparacaoRepo->getExpedicao($etiquetaFinal);
+                if($expedicaoIni['COD_EXPEDICAO'] != $expedicaoFim['COD_EXPEDICAO']){
+                    $response = array('result' => 'Error', 'msg' => 'Etiquetas não pertencem a mesma expedição.');
+                }else{
+                    $response = array('result' => 'Ok');
+                }
+            }else{
+                $response = array('result' => 'Ok');
+            }
+        }
+        $this->_helper->json($response);
+    }
+
     public function conferenteApontamentoSeparacaoAjaxAction() {
         $params = $this->_getAllParams();
         $cpf = str_replace(array('.', '-'), '', $params['cpf']);
@@ -586,28 +616,21 @@ class Expedicao_IndexController extends Action {
             $salvar = false;
             if (empty($erro)) {
                 $equipeSeparacaoEn = $equipeSeparacaoRepo->getIntervaloEtiquetaUsuario($usuarioEn);
+                $salvar = true;
                 if (is_array($equipeSeparacaoEn) && count($equipeSeparacaoEn) > 0) {
                     foreach ($equipeSeparacaoEn as $intervalo) {
-
-                        if ($inicial != 0) {
-                            $iteracao = $intervalo['etiquetaInicial'] - $final;
-                            if ($iteracao > 1) {
-                                $salvar = true;
-                            }
-                        } else {
-                            $menorIntervalo = $intervalo['etiquetaInicial'];
+                        if($etiquetaInicial >= $intervalo['etiquetaInicial'] && $etiquetaInicial <= $intervalo['etiquetaFinal']){
+                            $erro = "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA'];
+                            $salvar = false;
                         }
-                        $inicial = $intervalo['etiquetaInicial'];
-                        $final = $intervalo['etiquetaFinal'];
-                        if ($intervalo['etiquetaFinal'] < $etiquetaInicial) {
-                            $final = $etiquetaInicial - 1;
+                        if($etiquetaFinal >= $intervalo['etiquetaInicial'] && $etiquetaFinal <= $intervalo['etiquetaFinal']){
+                            $erro = "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA'];
+                            $salvar = false;
                         }
-                    }
-                    if ($etiquetaInicial < $menorIntervalo) {
-                        $salvar = true;
-                    }
-                    if ($etiquetaFinal > $final) {
-                        $salvar = true;
+                        if($etiquetaInicial <= $intervalo['etiquetaInicial'] && $etiquetaFinal >= $intervalo['etiquetaFinal']){
+                            $erro = "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA'];
+                            $salvar = false;
+                        }
                     }
                 } else {
                     $salvar = true;
@@ -660,8 +683,9 @@ class Expedicao_IndexController extends Action {
         $cpf = str_replace(array('.', '-'), '', $params['etiquetas']['cpfBusca']);
         $dataInicio = $params['etiquetas']['dataInicial'];
         $dataFim = $params['etiquetas']['dataFinal'];
+        $expedicao = $params['etiquetas']['expedicao'];
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
-        $result = $equipeSeparacaoRepo->getApontamentosProdutividade($cpf, $dataInicio, $dataFim, $etiqueta);
+        $result = $equipeSeparacaoRepo->getApontamentosProdutividade($cpf, $dataInicio, $dataFim, $etiqueta,$expedicao);
         $this->_helper->json(array('dados' => $result));
     }
 
