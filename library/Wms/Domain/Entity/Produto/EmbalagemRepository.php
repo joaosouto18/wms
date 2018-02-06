@@ -75,6 +75,9 @@ class EmbalagemRepository extends EntityRepository {
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
         $produtoDadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
         $produtoDadoLogisticoEn = $produtoDadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemEn));
+        if (!$produtoDadoLogisticoEn)
+            throw new \Exception('Dado Logistico nao cadastrado! Verifique com o PCE.');
+
         $unitizadorRepo = $this->_em->getRepository('wms:Armazenagem\Unitizador');
         $normaPaletizacaoEn = $produtoDadoLogisticoEn->getNormaPaletizacao();
 
