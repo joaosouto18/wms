@@ -320,5 +320,6 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (321, '6.12.0', 'Correção: Endereçamento manual no mobile, aceitava quantidade negativa e exceder fração em relação ao recebido', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (322, '6.12.0', 'Correção: Lógica de vinculação de volume-patrimonio na conferência de mapa', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Correção: Falha ao importar nota fiscal do ERP, dividindo a nota fiscal de entrada em duas notas diferentes', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Melhoria: Otimização na geração de mapa consolidado e inclusão de possibilidade de quebra consolidado', 'xx-quebras-separacao-embalados.sql', SYSDATE);
 
 
