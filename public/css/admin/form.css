@@ -239,7 +239,7 @@ input[type=text]:hover, textarea:hover, input[type=password]:hover,select:hover 
 }
 input[type=text]:focus,input[type=password]:focus, textarea:focus,select:focus{
     background: #ffffff;
-    border:0px !important;
+    /*border:0px !important;*/
     box-shadow: 1px 1px 8px #06516f !important;
     border-radius:6px;
 }
