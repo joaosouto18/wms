@@ -42,36 +42,37 @@ $.Controller.extend('Wms.Controllers.Produto',
                     $(this).removeClass('required');
                 });
 
-                var unitizadores = [];
-                var invalido = false;
-
-                $("select.unitizador option:selected").each(function () {
-
-                    var option = $(this);
-
-                    var result = unitizadores.find(function(i) {
-                        return option.val() === i;
-                    });
-
-                    if (result === undefined) {
-                        unitizadores.push($(this).val());
-                    }
-                    else {
-                        invalido = true;
-                    }
-
-                });
-
-                if (invalido) {
-                    $.wmsDialogAlert({
-                        title: 'Processo cancelado',
-                        msg: "Existem normas com o mesmo unitizador. " +
-                        "<br />Altere ou remova uma das normas e tente novamente!",
-                        height: 140,
-                        resizable: false
-                    });
-                    return false;
-                }
+                // Trava retirada para fazer nova trava de proporcionalidade
+                // var unitizadores = [];
+                // var invalido = false;
+                //
+                // $("select.unitizador option:selected").each(function () {
+                //
+                //     var option = $(this);
+                //
+                //     var result = unitizadores.find(function(i) {
+                //         return option.val() === i;
+                //     });
+                //
+                //     if (result === undefined) {
+                //         unitizadores.push($(this).val());
+                //     }
+                //     else {
+                //         invalido = true;
+                //     }
+                //
+                // });
+                //
+                // if (invalido) {
+                //     $.wmsDialogAlert({
+                //         title: 'Processo cancelado',
+                //         msg: "Existem normas com o mesmo unitizador. " +
+                //         "<br />Altere ou remova uma das normas e tente novamente!",
+                //         height: 140,
+                //         resizable: false
+                //     });
+                //     return false;
+                // }
 
                 ///checa embalagem e volume
                 if(!este.verificarEmbalagemVolume())
@@ -80,6 +81,15 @@ $.Controller.extend('Wms.Controllers.Produto',
                 if(!este.verificarValidade())
                     return false;
 
+                if(!este.verificarNormaPaletizacao()){
+                        $.wmsDialogAlert({
+                            title: 'Processo cancelado',
+                            msg: "Existem normas com o mesmo unitizador e quantidade de itens diferentes.",
+                            height: 140,
+                            resizable: false
+                        });
+                    return false;
+                }
 
                 $('.saveForm').submit();
             });
@@ -242,6 +252,21 @@ $.Controller.extend('Wms.Controllers.Produto',
             }else{
                 return true
             }
+        },
+
+        verificarNormaPaletizacao: function () {
+            var ret = true;
+            var array = [];
+            $('.grupoDadosLogisticos').each(function () {
+                if(array[$(this).find('.unitizador').val()]){
+                    if(array[$(this).find('.unitizador').val()] != $(this).find('#normaPaletizacao-numNorma').val() * $(this).find('.qtdEmbalagem').val()){
+                        ret = false;
+                    }
+                }else {
+                    array[$(this).find('.unitizador').val()] = $(this).find('#normaPaletizacao-numNorma').val() * $(this).find('.qtdEmbalagem').val();
+                }
+            });
+            return ret;
         },
 
         changePercent: function (max, min) {

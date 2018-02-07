@@ -158,6 +158,7 @@ class Web_ProdutoController extends Crud {
                     'peso' => $dadoLogistico->getEmbalagem()->getPeso(),
                     'normaPaletizacao' => $dadoLogistico->getNormaPaletizacao()->getId(),
                     'lblEmbalagem' => $lblEmbalagem,
+                    'qtdEmbalagem' => $dadoLogistico->getEmbalagem()->getQuantidade(),
                     'acao' => 'alterar',
                 );
             }
