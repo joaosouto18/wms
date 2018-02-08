@@ -560,30 +560,46 @@ class Web_ProdutoController extends Crud {
     public function verificarCodigoBarrasAjaxAction() {
 
         $codigoBarras = $this->getRequest()->getParam("codigoBarras");
+        $idElemento = $this->getRequest()->getParam("idElemento");
+        $tipoComercializacao = $this->getRequest()->getParam("tipoComercializacao");
 
-        $arrayMensagens = array(
+        $arrayMensagen = array(
             'status' => 'success',
             'msg' => 'Sucesso!',
         );
 
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('p.id idProduto, p.grade')
+                ->select('p.id idProduto, p.grade, NVL(pe.descricao, pv.descricao) dsc_elemento')
                 ->from('wms:Produto', 'p')
                 ->leftJoin('p.embalagens', 'pe')
                 ->leftJoin('p.volumes', 'pv')
-                ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+                ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
                 ->setParameter('codigoBarras', $codigoBarras);
 
-        $produto = $dql->getQuery()->getFirstResult();
-
-        if ($produto) {
-            $arrayMensagens = array(
-                'status' => 'error',
-                'msg' => "Este código de barras ja foi cadastrado no produto $produto[idProduto] grade $produto[grade]."
-            );
+        if ($tipoComercializacao == Produto::TIPO_UNITARIO) {
+            $dql->andWhere("pe.id != :idElemento")
+                ->setParameter('idElemento', $idElemento);
+        } elseif ($tipoComercializacao == Produto::TIPO_COMPOSTO) {
+            $dql->andWhere("pv.id != :idElemento")
+                ->setParameter('idElemento', $idElemento);
         }
 
-        $this->_helper->json($arrayMensagens, true);
+        $result = $dql->getQuery()->getResult();
+
+        if (!empty($result)) {
+            $arrItens = [];
+            foreach ($result as $produto) {
+                $arrItens[] = "<br /> - item $produto[idProduto] / $produto[grade] ($produto[dsc_elemento])";
+            }
+            $str = implode(", ", $arrItens);
+            $arrayMensagen = array(
+                'status' => 'error',
+                'msg' => "Este código de barras ja foi cadastrado: $str."
+            );
+
+        }
+
+        $this->_helper->json($arrayMensagen, true);
     }
 
     public function atualizaDadoLogisticoAjaxAction() {
