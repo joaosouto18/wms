@@ -37,6 +37,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var date = $(el).parent('div').find('.dataInativacao');
                                 var div = $(el).parent('div').parent('td');
                                 var este = this;
+                                var model = el.closest('.produto_embalagem').model();
 
                                 $.ajax({
                                     url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
@@ -65,11 +66,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                                     today = dd + '/' + mm + '/' + yyyy;
 
                                                     date.text(today);
+                                                    model.dataInativacao = today;
                                                 }
                                                 div.css("color", "red");
                                             } else {
                                                 date.text("EMB. ATIVA");
                                                 div.css("color", "green");
+                                                model.dataInativacao = "EMB. ATIVA";
                                             }
                                         }
                                     }
@@ -114,7 +117,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                             salvarDadosEmbalagem: function (valores) {
                                 var id = valores.id.toString();
-                                console.log(valores);
 
                                 if (valores.acao === 'incluir') {
                                     valores.dataInativacao = 'EMB. ATIVA';

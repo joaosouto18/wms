@@ -46,6 +46,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             var check = $(el).parent('div').find('.ativarDesativar');
             var date = $(el).parent('div').find('.dataInativacao');
             var div = $(el).parent('div').parent('td');
+            var model = el.closest('.produto_volume').model();
 
             if (check.is(":checked") === true) {
                 if (date.text() === "VOL. ATIVO") {
@@ -63,11 +64,13 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                     today = dd+'/'+mm+'/'+yyyy;
 
                     date.text(today);
+                    model.dataInativacao = today;
                 }
                 div.css("color","red");
             } else {
                 date.text("VOL. ATIVO");
                 div.css("color","green");
+                model.dataInativacao = "VOL. ATIVO";
             }
         },
 
