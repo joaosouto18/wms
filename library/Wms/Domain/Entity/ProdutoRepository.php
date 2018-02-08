@@ -1928,7 +1928,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         $ret = false;
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $embalagemEn = $embalagemRepo->findBy(array('codigoBarras' => $codigoBarras));
-        if(isset($embalagemEn) && is_array($embalagemEn)){
+        if(!empty($embalagemEn) && is_array($embalagemEn)){
             foreach ($embalagemEn as $embalagem){
                 if($embalagem->getId() != $id){
                     $ret = $embalagem->getProduto()->getId();
