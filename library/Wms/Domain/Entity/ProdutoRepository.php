@@ -309,10 +309,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             //embalagens do produto
             if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
                 return false;
-
             foreach ($values['embalagens'] as $id => $itemEmbalagem) {
                 $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
                 extract($itemEmbalagem);
+            $produtoCodBarras = $this->naoExisteCodBarras($codigoBarras, $id);
+            if($produtoCodBarras != false){
+                throw new \Exception('O codigo de barras ' . $codigoBarras . ' já esta cadastrado para o produto '.$produtoCodBarras);
+            }
 
                 switch ($itemEmbalagem['acao']) {
                     case 'incluir':
@@ -1919,5 +1922,19 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             }
         }
         $em->flush();
+    }
+
+    public function naoExisteCodBarras($codigoBarras, $id = null){
+        $ret = false;
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $embalagemEn = $embalagemRepo->findBy(array('codigoBarras' => $codigoBarras));
+        if(isset($embalagemEn) && is_array($embalagemEn)){
+            foreach ($embalagemEn as $embalagem){
+                if($embalagem->getId() != $id){
+                    $ret = $embalagem->getProduto()->getId();
+                }
+            }
+        }
+        return $ret;
     }
 }

@@ -225,6 +225,10 @@ class Mobile_RecebimentoController extends Action
             if (!$this->getRequest()->isPost())
                 throw new \Exception('Escaneie o volume/embalagem novamente.');
 
+            if (!isset($qtdUnidFracionavel)) {
+                $qtdUnidFracionavel = 1;
+            }
+
             // verifica se tem ordem de servico aberto
             $retorno = $recebimentoRepo->checarOrdemServicoAberta($idRecebimento);
             $idOrdemServico = $retorno['id'];

@@ -1,7 +1,7 @@
 /**
  * @tag controllers, home
- * Displays a table of produto_dado_logisticos.	 Lets the user 
- * ["Wms.Controllers.ProdutoDadoLogistico.prototype.form submit" create], 
+ * Displays a table of produto_dado_logisticos.	 Lets the user
+ * ["Wms.Controllers.ProdutoDadoLogistico.prototype.form submit" create],
  * ["Wms.Controllers.ProdutoDadoLogistico.prototype.&#46;edit click" edit],
  * or ["Wms.Controllers.ProdutoDadoLogistico.prototype.&#46;destroy click" destroy] produto_dado_logisticos.
  */
@@ -64,6 +64,7 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                                 var largura = parseFloat($('#fieldset-campos-comuns').formParams().embalagem.largura.replace(',', '.')).toFixed(3);
 
                                 valores.lblEmbalagem = $('#fieldset-dado-logistico #dadoLogistico-idEmbalagem option:selected').text();
+                                valores.qtdEmbalagem = emSelec;
                                 valores.idNormaPaletizacao = $(grupoDadosLogisticos[0]).find('.normasPaletizacao-id').val();
                                 valores.acao = 'incluir';
                                 valores.altura = alturaReal.replace('.', ',');
@@ -95,7 +96,7 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                                 ev.preventDefault();
                             },
                             /**
-                             * 
+                             *
                              */
                             '#fieldset-grupo-normas #btn-add-grupo click': function (el, ev) {
                                 this.createGroupBlock();
@@ -304,7 +305,7 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                             },
 
                             /**
-                             * 
+                             *
                              */
                             '#btn-excluir-grupo click': function (el, ev) {
                                 var grupoVolume = el.closest('.grupoDadosLogisticos');
@@ -331,6 +332,25 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                                 $('#dadoLogistico-cubagem').val(cubagem);
                             },
 
+                            '#normaPaletizacao-numLastro change': function (el, ev) {
+                                this.calcularNormaProporcional(el);
+                            },
+
+                            '#normaPaletizacao-numCamadas change': function (el, ev) {
+                                var unitizador = el.parent().parent().find('.unitizador').val();
+                                $('.dataNormaPaletizacao').each(function () {
+                                    if($(this).find('.unitizador').val() == unitizador) {
+                                        $(this).find('#normaPaletizacao-numCamadas').val(el.val());
+                                        var grupoVolume = $(this).find('#normaPaletizacao-numCamadas').closest('.grupoDadosLogisticos');
+                                        var lastro = grupoVolume.find('#normaPaletizacao-numLastro').val().replace('.', '').replace(',', '.');
+                                        var camadas = grupoVolume.find('#normaPaletizacao-numCamadas').val().replace('.', '').replace(',', '.');
+                                        var numNormaPaletizacao = Wms.Controllers.CalculoMedida.prototype.calculaNormaPaletizacao(lastro, camadas);
+                                        grupoVolume.find('#normaPaletizacao-numNorma').val(numNormaPaletizacao);
+                                    }
+                                });
+                                this.calcularPesoNormaPaletizacao();
+                            },
+
                             /**
                              * Calculo de norma de paletizacao
                              */
@@ -343,6 +363,35 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
 
                                 grupoVolume.find('#normaPaletizacao-numNorma').val(numNormaPaletizacao);
                                 //Calcula o peso para norma de paletizacao
+                                this.calcularPesoNormaPaletizacao();
+                            },
+
+                            calcularNormaProporcional: function(el){
+                                var unitizador = el.parent().parent().find('.unitizador').val();
+                                var fatorAtual = el.parent().parent().parent().find('.qtdEmbalagem').val();
+                                $('.unitizador').each(function () {
+                                    if($(this).val() == unitizador) {
+                                        var qtdEmb = $(this).parent().parent().parent().find('.qtdEmbalagem').val();
+                                        var novoLastro = (el.val() * fatorAtual) / qtdEmb;
+                                        if (Number.isInteger(novoLastro) == true) {
+                                            $(this).parent().parent().parent().find('#normaPaletizacao-numLastro').val(novoLastro);
+
+                                            var grupoVolume = $(this).parent().parent().parent().find('#normaPaletizacao-numLastro').closest('.grupoDadosLogisticos');
+                                            var lastro = grupoVolume.find('#normaPaletizacao-numLastro').val().replace('.', '').replace(',', '.');
+                                            var camadas = grupoVolume.find('#normaPaletizacao-numCamadas').val().replace('.', '').replace(',', '.');
+                                            var numNormaPaletizacao = Wms.Controllers.CalculoMedida.prototype.calculaNormaPaletizacao(lastro, camadas);
+
+                                            grupoVolume.find('#normaPaletizacao-numNorma').val(numNormaPaletizacao);
+                                        } else {
+                                            $.wmsDialogAlert({
+                                                title: 'Erro',
+                                                msg: "Valores inconsistentes.",
+                                                height: 140,
+                                                resizable: false
+                                            });
+                                        }
+                                    }
+                                });
                                 this.calcularPesoNormaPaletizacao();
                             },
 

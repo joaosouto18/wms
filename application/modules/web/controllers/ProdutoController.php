@@ -158,6 +158,7 @@ class Web_ProdutoController extends Crud {
                     'peso' => $dadoLogistico->getEmbalagem()->getPeso(),
                     'normaPaletizacao' => $dadoLogistico->getNormaPaletizacao()->getId(),
                     'lblEmbalagem' => $lblEmbalagem,
+                    'qtdEmbalagem' => $dadoLogistico->getEmbalagem()->getQuantidade(),
                     'acao' => 'alterar',
                 );
             }
@@ -196,8 +197,9 @@ class Web_ProdutoController extends Crud {
         /** @var \Wms\Module\Web\Form\Produto $form */
         $form = new $formClass;
 
+        $params = $this->getRequest()->getParams();
+        $entity = $this->repository->findOneBy(array('id' => $params['id'], 'grade' => $params['grade']));
         try {
-            $params = $this->getRequest()->getParams();
             if (isset($params['embalagens'])) {
                 $fator = $params['embalagem-fator'];
                 foreach ($params['embalagens'] as $key => $value) {
@@ -210,7 +212,6 @@ class Web_ProdutoController extends Crud {
                 throw new \Exception('Codigo e Grade do produto devem ser fornecidos');
 
             /** @var ProdutoEntity $entity */
-            $entity = $this->repository->findOneBy(array('id' => $params['id'], 'grade' => $params['grade']));
             if ($this->getRequest()->isPost()) {
 
                 $linhaEn = $entity->getLinhaSeparacao();
@@ -291,35 +292,36 @@ class Web_ProdutoController extends Crud {
                 $this->addFlashMessage('success', 'Produto alterado com sucesso.');
                 $this->_redirect('/produto');
             }
-            $form->setDefaultsFromEntity($entity); // pass values to form
-            $fornecedorRefRepo = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
-            $this->view->codigosFornecedores = $fornecedorRefRepo->findBy(array('idProduto' => $entity->getIdProduto()));
-            $repoEmbalagem = $this->_em->getRepository('wms:Produto\Embalagem');
-
-            /** @var \Wms\Module\Web\Form\Subform\Produto\CodigoFornecedor $subFormCodForn */
-            $subFormCodForn = $form->getSubForm('codigoFornecedor');
-
-            /** @var Zend_Form_Element_Select $selectEmbalagem */
-            $selectEmbalagem = $subFormCodForn->getElement('embalagem');
-
-            $criterio = array(
-                'codProduto' => $params['id'],
-                'grade' => $params['grade']
-            );
-
-            $orderBy = array('isPadrao' => 'DESC', 'descricao' => 'ASC');
-
-            $embalagens = $repoEmbalagem->findBy($criterio, $orderBy);
-            $options = array();
-            /** @var Produto\Embalagem $embalagem */
-            foreach ($embalagens as $embalagem) {
-                $options[$embalagem->getId()] = $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
-            }
-
-            $selectEmbalagem->setMultiOptions($options);
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
+
+        $form->setDefaultsFromEntity($entity); // pass values to form
+        $fornecedorRefRepo = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+        $this->view->codigosFornecedores = $fornecedorRefRepo->findBy(array('idProduto' => $entity->getIdProduto()));
+        $repoEmbalagem = $this->_em->getRepository('wms:Produto\Embalagem');
+
+        /** @var \Wms\Module\Web\Form\Subform\Produto\CodigoFornecedor $subFormCodForn */
+        $subFormCodForn = $form->getSubForm('codigoFornecedor');
+
+        /** @var Zend_Form_Element_Select $selectEmbalagem */
+        $selectEmbalagem = $subFormCodForn->getElement('embalagem');
+
+        $criterio = array(
+            'codProduto' => $params['id'],
+            'grade' => $params['grade']
+        );
+
+        $orderBy = array('isPadrao' => 'DESC', 'descricao' => 'ASC');
+
+        $embalagens = $repoEmbalagem->findBy($criterio, $orderBy);
+        $options = array();
+        /** @var Produto\Embalagem $embalagem */
+        foreach ($embalagens as $embalagem) {
+            $options[$embalagem->getId()] = $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+        }
+
+        $selectEmbalagem->setMultiOptions($options);
         $this->view->form = $form;
     }
 

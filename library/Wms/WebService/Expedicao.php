@@ -858,7 +858,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     'codPedido' => $enPedido->getId(),
                     'pedido' => $enPedido,
                     'produto' => $enProduto,
-                    'valorVenda' =>$produto['valorVenda'],
+                    'valorVenda' => (isset($produto['valorVenda'])) ? $produto['valorVenda'] : null,
                     'grade' => $produto['grade'],
                     'quantidade' => $qtdCorrigida
                 );
