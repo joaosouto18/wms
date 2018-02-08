@@ -847,6 +847,7 @@ class ExpedicaoRepository extends EntityRepository {
                         throw new \Exception("Produto $codProduto - $dscGrade sem endereço de picking definido");
                     }
 
+
                     $idEndereco = $enderecoPicking->getId();
 
                     foreach($idsElementos as $id) {

@@ -245,10 +245,8 @@ class PaleteRepository extends EntityRepository {
                   FROM (SELECT P.UMA, PP.QTD,PP.COD_NORMA_PALETIZACAO, SUM(P.PESO) AS PESO
                           FROM PALETE P
                      LEFT JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
-                     LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = PP.COD_PRODUTO_VOLUME
-                     LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = PP.COD_PRODUTO_EMBALAGEM
-                         WHERE ((PE.COD_PRODUTO = '$idProduto' AND PE.DSC_GRADE = '$grade')
-                            OR (PV.COD_PRODUTO = '$idProduto' AND PV.DSC_GRADE = '$grade'))
+                         WHERE PP.COD_PRODUTO = '$idProduto' 
+                           AND PP.DSC_GRADE = '$grade'
                            AND P.COD_RECEBIMENTO = '$idRecebimento'
                            AND (P.IND_IMPRESSO <> 'N' OR P.COD_STATUS <> " . Palete::STATUS_EM_RECEBIMENTO . ")
                      GROUP BY
@@ -426,7 +424,6 @@ class PaleteRepository extends EntityRepository {
 
     public function deletaPaletesEmRecebimento($idRecebimento, $idProduto, $grade) {
 
-        $ppRepository = $this->_em->getRepository("wms:Enderecamento\PaleteProduto");
         $reservaEstoqueRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoque");
         $reservaEstoqueEnderecamentoRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
 
@@ -435,20 +432,15 @@ class PaleteRepository extends EntityRepository {
                 ->select("pa")
                 ->from("wms:Enderecamento\Palete", "pa")
                 ->leftJoin("wms:Enderecamento\PaleteProduto", "pp", 'WITH', 'pp.uma = pa.id')
-                ->leftJoin("wms:Produto\Embalagem", "pe", 'WITH', 'pe.id = pp.codProdutoEmbalagem')
-                ->leftJoin("wms:Produto\Volume", "pv", 'WITH', 'pv.id = pp.codProdutoVolume')
                 ->innerJoin("pa.recebimento", "r")
                 ->innerJoin("pa.status", "s")
                 ->where("r.id = '$idRecebimento'")
                 ->andWhere("s.id = '$statusRecebimento'")
                 ->andWhere("pa.impresso = 'N'")
-                ->andWhere("(pv.codProduto = '$idProduto' AND pv.grade = '$grade') OR (pe.codProduto = '$idProduto' AND pe.grade = '$grade')");
+                ->andWhere("(pp.codProduto = '$idProduto' AND pp.grade = '$grade')")
+                ->distinct(true);
         $paletes = $query->getQuery()->getResult();
         foreach ($paletes as $key => $palete) {
-            $produtos = $ppRepository->findBy(array('uma' => $palete->getId()));
-            foreach ($produtos as $produto) {
-                $this->getEntityManager()->remove($produto);
-            }
             $reservaEstoqueEnderecamentoEn = $reservaEstoqueEnderecamentoRepo->findOneBy(array('palete' => $palete->getId()));
 
             if (count($reservaEstoqueEnderecamentoEn) > 0) {
