@@ -889,24 +889,16 @@ class Expedicao_IndexController extends Action {
             /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
             $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
             $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
-            foreach ($clientes as $key => $cliente) {
-                $numeroCaixas = explode(',', $cliente['NUM_CAIXA_PC_INI']);
-                $caixaAnterior = null;
-                $arrCaixas = array();
-                foreach ($numeroCaixas as $caixa) {
-                    if ($caixa != $caixaAnterior)
-                        $arrCaixas[] = $caixa;
-                    $caixaAnterior = $caixa;
-                }
-                $clientes[$key]['NUM_CAIXA_PC_INI'] = implode('; ', $arrCaixas);
-            }
+
             if (empty($clientes)) {
                 $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-                $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'))));
-                if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'));
+                $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
+                if (!empty($mapaSeparacaoQuebraEn)) {
                     $clientes = 'finalizar';
                 }
             }
+
             $cargaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
             $this->view->clientes = $clientes;
             $mapaSeparacaoEn = $mapaSeparacaoRepo->find($idMapaSeparacao);

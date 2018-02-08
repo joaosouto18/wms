@@ -570,7 +570,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             });
 
             foreach ($arrayVolumes as $volumeEntity) {
-                $mapaSeparacao = $this->getMapaSeparacao(null,$quebras, $statusEntity, $expedicaoEntity);
+                list($mapaSeparacao) = $this->getMapaSeparacao(null, null, $quebras, $statusEntity, $expedicaoEntity);
                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,$quantidade,$volumeEntity,null,array(),null,null,null,$arrayRepositorios);
             }
 
@@ -606,7 +606,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido,$embalagemAtual->getQuantidade());
 
-                $mapaSeparacao = $this->getMapaSeparacao(null,$quebras,$statusEntity, $expedicaoEntity);
+                list($mapaSeparacao) = $this->getMapaSeparacao(null, null, $quebras,$statusEntity, $expedicaoEntity);
                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, array(), null);
             }
 
@@ -828,6 +828,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 throw new \Exception("O modelo de separação $idModeloSeparacao não foi encontrado");
             $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
             $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
+            $quebrasEmbalado = $modeloSeparacaoRepo->getQuebraEmbalado($idModeloSeparacao);
 
             $cubagemPedidos = 0;
             if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
@@ -991,7 +992,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             foreach ($elements['volumes'] as $value) {
                                 $volumeEntity = $value['volumeEn'];
                                 $quantidade = $value['qtd'];
-                                $mapaSeparacao = $this->getMapaSeparacao($pedidoProduto, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
+                                list($mapaSeparacao) = $this->getMapaSeparacao($pedidoProduto, null, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao, $produtoEntity, $quantidade, $volumeEntity, null, array($pedidoProduto), $depositoEnderecoEn, null, $pedidoEntity, $arrayRepositorios);
                             }
                         }
@@ -1205,8 +1206,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $cubagem = null;
                                 $consolidado = 'N';
                                 if (isset($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()])) {
-                                    $cubagem[$pedidoEntity->getId()][$embalagemAtual->getId()] = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
-                                    $quebras = array();
+                                    $cubagem = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
+                                    $quebras = $quebrasEmbalado;
                                     $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
                                     $consolidado = 'S';
                                 }
@@ -1214,10 +1215,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if (isset($arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco])) {
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco]['qtd'] += $qtdSepararEmbalagemAtual;
                                 } else {
+                                    //list($mapa, $caixaInicio, $caixaFim) = $this->getMapaSeparacao($pedidoProduto, $arrElemConsolidado, $quebras, $statusEntity, $expedicaoEntity);
+                                    list($strQuebrasConcat, $arrQuebras) = self::getSetupQuebras($quebras, $pedidoProduto);
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco] = array(
                                         'qtd' => $qtdSepararEmbalagemAtual,
                                         'consolidado' => $consolidado,
-                                        'mapa' => $this->getMapaSeparacao($pedidoProduto, $quebras, $statusEntity, $expedicaoEntity),
+                                        'strQuebrasConcat' => $strQuebrasConcat,
+                                        'quebras' => $arrQuebras,
+                                        'expedicaoEn' => $expedicaoEntity,
                                         'cubagem' => $cubagem,
                                         'pedidoProdutoEn' => $pedidoProduto,
                                         'embalagensDisponiveis' => $embalagensEn,
@@ -1289,34 +1294,42 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
             }
 
-            $arrReagrupado = $this->regroupMapaProduto($arrMapasEmbPP);
+            $arrReagrupado = self::regroupMapaProduto($arrMapasEmbPP);
 
-            foreach ($arrReagrupado as $pedidoProduto) {
-                foreach ($pedidoProduto as $endereco) {
+            foreach ($arrReagrupado as $idPedProd => $pedidoProduto) {
+                $mapaSeparacaoEn = self::getMapaSeparacao($pedidoProduto['quebras'], $statusEntity, $pedidoProduto['expedicaoEn']);
+                foreach ($pedidoProduto['enderecos'] as $endereco) {
                     foreach ($endereco as $element) {
-                        $mapaSeparacaoEn = $element['mapa'];
                         $qtdMapa = $element['qtd'];
                         $arrPedProd = $element['arrPedProd'];
                         $embalagemEn = $element['embalagemEn'];
                         $pedidoEn = $element['pedidoEn'];
                         $produtoEn = $element['produtoEn'];
                         $enderecoEn = $element['enderecoEn'];
-                        $cubagem = $element['cubagem'];
                         $consolidado = $element['consolidado'];
-                        $this->salvaMapaSeparacaoProduto($mapaSeparacaoEn, $produtoEn, $qtdMapa, null, $embalagemEn, $arrPedProd, $enderecoEn, $cubagem, $pedidoEn, $arrayRepositorios, $consolidado);
+                        $dadosConsolidado = [];
+                        if ($consolidado == 'S') {
+                            $dadosConsolidado = [
+                                'cubagem' => $element['cubagem'],
+                                'carrinho' => $pedidoProduto['quebras'][MapaSeparacaoQuebra::QUEBRA_CARRINHO]['codQuebra'],
+                                'caixaInicio' => $element['caixaInicio'],
+                                'caixaFim' => $element['caixaFim']
+                            ];
+                        }
+                        self::salvaMapaSeparacaoProduto($mapaSeparacaoEn, $produtoEn, $qtdMapa, null, $embalagemEn, $arrPedProd, $enderecoEn, $dadosConsolidado, $pedidoEn, $arrayRepositorios, $consolidado);
                     }
                 }
             }
-            $this->atualizaMapaSeparacaoQuebra($expedicaoEntity, $statusEntity);
+
+            //$this->atualizaMapaSeparacaoQuebra($expedicaoEntity, $statusEntity);
 
             foreach($arrPedidos as $pedido) {
                 $this->_em->persist($pedido);
             }
 
             $this->_em->flush();
-            $this->_em->clear();
 
-            $this->removeMapaSeparacaoVazio($idExpedicao);
+            //$this->removeMapaSeparacaoVazio($idExpedicao);
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
             if ($parametroConsistencia == 'S') {
                 $resultadoConsistencia = $mapaSeparacaoRepo->verificaConsistenciaSeguranca($idExpedicao);
@@ -1407,7 +1420,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      */
     private function regroupMapaProduto($arrItens)
     {
-        $newArray = $arrayTemp = array();
+        $arrConsolidado = $arrItensCaixas = $newArray = $arrayTemp = array();
+        $cubagemCaixa = (float)$this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
+        $maxCaixasCarrinho = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
 
         // Passa por todos os possíveis registros de mapaProduto e soma as quantidades por mapa->endereco->produto
         foreach ($arrItens as $pedidoProduto) {
@@ -1417,8 +1432,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $embalagens = $element['embalagensDisponiveis'];
                     $qtdMapa = $element['qtd'];
 
-                    /** @var MapaSeparacao $mapaSeparacaoEn */
-                    $mapaSeparacaoEn = $element['mapa'];
                     /** @var PedidoProduto $pedidoProdutoEn */
                     $pedidoProdutoEn = $element['pedidoProdutoEn'];
                     /** @var Produto\Embalagem $embalagemEn */
@@ -1428,35 +1441,45 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     /** @var Endereco $enderecoEn */
                     $enderecoEn = $element['enderecoEn'];
 
+                    $expedicaoEn = $element['expedicaoEn'];
+
+                    $quebras = $element['quebras'];
+                    $strQuebrasConcat = $element['strQuebrasConcat'];
+
                     if ($element['consolidado'] == 'S') {
-                        $newArray[$pedidoProdutoEn->getId()][$enderecoEn->getId()][$embalagemEn->getId()] = array(
+                        $idCliente = $pedidoProdutoEn->getPedido()->getPessoa()->getId();
+
+                        $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$pedidoProdutoEn->getId()]['quebras'] = $quebras;
+                        $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$pedidoProdutoEn->getId()]['expedicaoEn'] = $expedicaoEn;
+                        $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$pedidoProdutoEn->getId()]['enderecos'][$enderecoEn->getId()][$embalagemEn->getId()] = array(
                             'qtd' => $qtdMapa,
                             'consolidado' => $element['consolidado'],
-                            'mapa' => $mapaSeparacaoEn,
                             'cubagem' => $element['cubagem'],
                             'arrPedProd' => array($pedidoProdutoEn->getId() => $pedidoProdutoEn),
                             'pedidoEn' => $pedidoProdutoEn->getPedido(),
                             'produtoEn' => $produtoEn,
                             'embalagemEn' => $embalagemEn,
                             'enderecoEn' => $enderecoEn);
+
+
                         continue;
                     }
 
-                    $mapaId = $mapaSeparacaoEn->getId();
                     $enderecoId = (!empty($enderecoEn)) ? $enderecoEn->getId() : null;
                     $produtoGrade = $produtoEn->getId().'-'.$produtoEn->getGrade();
                     $qtd = Math::multiplicar($qtdMapa, $embalagemEn->getQuantidade());
 
-                    if (isset($arrayTemp[$mapaId][$enderecoId][$produtoGrade])){
-                        $qtdAtual = $arrayTemp[$mapaId][$enderecoId][$produtoGrade]['qtd'];
-                        $arrayTemp[$mapaId][$enderecoId][$produtoGrade]['qtd'] = Math::adicionar($qtdAtual, $qtd);
-                        $arrayTemp[$mapaId][$enderecoId][$produtoGrade]['arrPedProd'][$pedidoProdutoEn->getId()] = $pedidoProdutoEn;
+                    if (isset($arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGrade])){
+                        $qtdAtual = $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGrade]['qtd'];
+                        $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGrade]['qtd'] = Math::adicionar($qtdAtual, $qtd);
+                        $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGrade]['arrPedProd'][$pedidoProdutoEn->getId()] = $pedidoProdutoEn;
                     } else {
-                        $arrayTemp[$mapaId][$enderecoId][$produtoGrade] = array(
+                        $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGrade] = array(
                             'qtd' => $qtd,
                             'embalagensDisponiveis' => $embalagens,
                             'arrPedProd' => array($pedidoProdutoEn->getId() => $pedidoProdutoEn),
-                            'mapaEn' => $mapaSeparacaoEn,
+                            'quebras' => $quebras,
+                            'expedicaoEn' => $expedicaoEn,
                             'enderecoEn' => $enderecoEn,
                             'produtoEn' => $produtoEn);
                     }
@@ -1464,13 +1487,148 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
-        foreach ($arrayTemp as $mapa) {
-            foreach ($mapa as $endereco) {
+        $novaCaixa = false;
+        $totalCaixas = 0;
+        // AQUI IDENTIFICO A QUANTIDADE NECESSÁRIA DE CAIXAS PARA CADA CLIENTE DE MAPA CONSOLIDADO
+        foreach ($arrConsolidado as $strQuebra => $clientes) {
+            foreach ($clientes as $idCliente => $dadosCliente) {
+                $idCaixa = 0;
+                foreach($dadosCliente['itens'] as $idPedProd => $item) {
+                    foreach ($item['enderecos'] as $idEndereco => $embs) {
+                        foreach ($embs as $idEmb => $emb) {
+                            $cubagemRestante = $emb['cubagem'];
+                            while ($cubagemRestante > 0) {
+                                $caixa = [];
+                                if (isset($arrConsolidado[$strQuebra][$idCliente]['caixas'])) {
+                                    foreach ($arrConsolidado[$strQuebra][$idCliente]['caixas'] as $key => $cx) {
+                                        if (Math::compare($cx['cubagemDisponivel'], 0, '>')) {
+                                            $caixa = $cx;
+                                            $idCaixa = $key;
+                                        }
+                                    }
+                                }
+
+                                if (empty($caixa)) {
+                                    $novaCaixa = true;
+                                }
+
+                                if ($novaCaixa) {
+                                    $idCaixa++;
+                                    $caixa = ['cubagemDisponivel' => $cubagemCaixa];
+                                    $novaCaixa = false;
+                                }
+
+                                if (Math::compare($cubagemRestante, $caixa['cubagemDisponivel'], '<=')) {
+                                    $caixa['cubagemDisponivel'] = Math::subtrair($caixa['cubagemDisponivel'], $cubagemRestante);
+                                    $caixa['itens'][] = "$idPedProd-$idEndereco-$idEmb";
+                                    if (!isset($arrConsolidado[$strQuebra][$idCliente]['itens'][$idPedProd]['enderecos'][$idEndereco][$idEmb]['caixaInicio'])) {
+                                        $arrConsolidado[$strQuebra][$idCliente]['itens'][$idPedProd]['enderecos'][$idEndereco][$idEmb]['caixaInicio'] = $idCaixa;
+                                    }
+                                    $arrConsolidado[$strQuebra][$idCliente]['itens'][$idPedProd]['enderecos'][$idEndereco][$idEmb]['caixaFim'] = $idCaixa;
+                                    $cubagemRestante = 0;
+                                } else {
+                                    $cubagemRestante = Math::subtrair($cubagemRestante, $caixa['cubagemDisponivel']);
+                                    $caixa['cubagemDisponivel'] = 0;
+                                    $caixa['itens'][] = "$idPedProd-$idEndereco-$idEmb";
+                                    if (!isset($arrConsolidado[$strQuebra][$idCliente]['itens'][$idPedProd]['enderecos'][$idEndereco][$idEmb]['caixaInicio'])) {
+                                        $arrConsolidado[$strQuebra][$idCliente]['itens'][$idPedProd]['enderecos'][$idEndereco][$idEmb]['caixaInicio'] = $idCaixa;
+                                    }
+                                }
+                                $arrConsolidado[$strQuebra][$idCliente]['caixas'][$idCaixa] = $caixa;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // AQUI ORDENO OS CLIENTES DO ARRAY CONSOLIDADO DO MAIOR PARA O MENOR EM RELAÇÃO AO TOTAL DE CAIXAS NECESSÁRIAS
+        foreach($arrConsolidado as $quebras => $clientes) {
+            uasort($clientes, function ($a, $b) {
+                return count($a['caixas']) < count($b['caixas']);
+            });
+            $arrConsolidado[$quebras] = $clientes;
+        }
+
+        // AQUI O SISTEMA QUEBRA PELA QUANTIDADE MAXIMA DE CAIXAS EM CADA CARRINHO DE ACORDO COM AS QUEBRAS PRÉ-DEFINIDAS
+
+        $arrCarrinhos = [];
+        $novoCarrinho = false;
+        $lastCarByQuebra = [];
+
+        foreach ($arrConsolidado as $strQuebras => $clientes) {
+            foreach ($clientes as $idCliente => $dadosCliente) {
+                $caixasRestantes = count($dadosCliente['caixas']);
+                $carrinho = [];
+                $numCarrinho = 0;
+                if (isset($arrCarrinhos[$strQuebras])) {
+                    foreach ($arrCarrinhos[$strQuebras] as $idCarrinho => $car) {
+                        if ($caixasRestantes <= $car['caixasLivres']) {
+                            $carrinho = $car;
+                            $numCarrinho = $idCarrinho;
+                            break;
+                        }
+                    }
+                }
+
+                if (empty($carrinho)) {
+                    $novoCarrinho = true;
+                }
+
+                if ($novoCarrinho) {
+                    if (isset($lastCarByQuebra[$strQuebras])) {
+                        $numCarrinho = $lastCarByQuebra[$strQuebras];
+                    }
+                    $numCarrinho++;
+                    $lastCarByQuebra[$strQuebras] = $numCarrinho;
+                    $carrinho = ['clientes' => [], 'caixasLivres' => $maxCaixasCarrinho];
+                    $novoCarrinho = false;
+                }
+
+                if ($carrinho['caixasLivres'] < $maxCaixasCarrinho) {
+                    $proximaCaixaLivre = $maxCaixasCarrinho - $carrinho['caixasLivres'];
+                    $arrCheck = [];
+                    foreach ($dadosCliente['caixas'] as $idCaixa => $caixa) {
+                        foreach ($caixa['itens'] as $item) {
+                            if (!in_array($item, $arrCheck)) {
+                                $arrCheck[] = $item;
+                                list($idPedProd, $idEndereco, $idEmb) = explode("-", $item);
+                                $arrValues = $dadosCliente['itens'][$idPedProd]['enderecos'][$idEndereco][$idEmb];
+                                $intervalo = $arrValues['caixaFim'] - $arrValues['caixaInicio'];
+                                $dadosCliente['itens'][$idPedProd]['enderecos'][$idEndereco][$idEmb]['caixaInicio'] = $proximaCaixaLivre + $idCaixa;
+                                $dadosCliente['itens'][$idPedProd]['enderecos'][$idEndereco][$idEmb]['caixaFim'] = $proximaCaixaLivre + $idCaixa + $intervalo;
+                            }
+                        }
+                    }
+                }
+
+                $carrinho['caixasLivres'] -= $caixasRestantes;
+                foreach($dadosCliente['itens'] as $idPedProd => $dados) {
+                    $dadosCliente['itens'][$idPedProd]['quebras'][MapaSeparacaoQuebra::QUEBRA_CARRINHO]['codQuebra'] = $numCarrinho;
+                }
+                $carrinho['clientes'][$idCliente] = $dadosCliente;
+                $arrCarrinhos[$strQuebras][$numCarrinho] = $carrinho;
+            }
+        }
+
+        foreach ($arrCarrinhos as $strQuebra => $carrinhos) {
+            foreach ($carrinhos as $idCarrinho => $infoCarrinho) {
+                foreach ($infoCarrinho['clientes'] as $idCliente => $infoCliente) {
+                    foreach ($infoCliente['itens'] as $idPedProd => $dadosPedProd) {
+                        $newArray[$idPedProd] = $dadosPedProd;
+                    }
+                }
+            }
+        }
+
+        foreach ($arrayTemp as $strQuebrasConcat) {
+            foreach ($strQuebrasConcat as $endereco) {
                 foreach ($endereco as $produto) {
                     $qtdTemp = $produto['qtd'];
-                    $mapaEn = $produto['mapaEn'];
+                    $quebras = $produto['quebras'];
                     $enderecoEn = $produto['enderecoEn'];
                     $produtoEn = $produto['produtoEn'];
+                    $expedicaoEn = $produto['expedicaoEn'];
 
                     $embsFiltered1 = array_filter($produto['embalagensDisponiveis'], function($emb){
                         /** @var Produto\Embalagem $emb */
@@ -1508,7 +1666,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
 
                         if (is_null($embalagemAtual)) {
-                            throw new \Exception("Erro ao otimizar o mapa " . $mapaEn->getId() . " produto ".$produtoEn->getId(). "-".$produtoEn->getGrade() ."<br /> Qtd embalagem " . $embalagemEn->getQuantidade()." - qtd à separar $qtdTemp");
+                            throw new \Exception("Erro ao otimizar o produto ".$produtoEn->getId(). "-".$produtoEn->getGrade() ."<br /> Qtd embalagem " . $embalagemEn->getQuantidade()." - qtd à separar $qtdTemp");
                         }
 
                         if ($embalagemAtual->isEmbFracionavelDefault() != "S") {
@@ -1526,22 +1684,118 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         $enderecoId = (!empty($enderecoEn)) ? $enderecoEn->getId() : null;
                         $pedidoProduto = reset($produto['arrPedProd']);
-                        $newArray[$pedidoProduto->getId()][$enderecoId][$embalagemAtual->getId()] = array(
+                        $newArray[$pedidoProduto->getId()]['enderecos'][$enderecoId][$embalagemAtual->getId()] = array(
                             'qtd' => $qtdEmbs,
                             'consolidado' => "N",
-                            'mapa' => $mapaEn,
                             'cubagem' => null,
                             'arrPedProd' => $produto['arrPedProd'],
                             'embalagemEn' => $embalagemAtual,
                             'produtoEn' => $produtoEn,
                             'pedidoEn' => null,
                             'enderecoEn' => $enderecoEn);
+                        $newArray[$pedidoProduto->getId()]['quebras'] = $quebras;
+                        $newArray[$pedidoProduto->getId()]['expedicaoEn'] = $expedicaoEn;
                     }
                 }
             }
         }
 
         return $newArray;
+    }
+
+    /**
+     * @param $quebras array
+     * @param $pedidoProdutoEn PedidoProduto
+     */
+    private function getSetupQuebras($quebras, $pedidoProdutoEn)
+    {
+
+        $arrQuebras = [];
+        $codQuebra = 0;
+        $dscQuebra = "";
+
+        foreach ($quebras as $item) {
+            $quebra = $item['tipoQuebra'];
+            if ($quebra == null) continue;
+
+            //MAPA DE REENTREGA
+            elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_REENTREGA) {
+                $dscQuebra = "MAPA DE REENTREGAS";
+                $codQuebra = "";
+            }
+
+            //UTILIZA CARRINHO
+            elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                $dscQuebra = "MAPA DE SEPARAÇÃO CONSOLIDADA";
+                $codQuebra = 0;
+            }
+
+            //CLIENTE
+            elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_CLIENTE)  {
+                $cliente = $pedidoProdutoEn->getPedido()->getPessoa();
+                $nomCliente = $cliente->getPessoa()->getNome();
+                $codQuebra = $cliente->getCodClienteExterno();
+                $dscQuebra = "CLIENTE: $codQuebra - $nomCliente";
+            }
+
+            //RUA
+            elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_RUA) {
+                $codQuebra = 0;
+                $endereco = null;
+                $dscQuebra = "RUA: (SEM ENDEREÇO DE PICKING)";
+                $embalagens = $pedidoProdutoEn->getProduto()->getEmbalagens();
+                $volumes = $pedidoProdutoEn->getProduto()->getVolumes();
+                if (count($embalagens) >0) $endereco = $embalagens[0]->getEndereco();
+                if (count($volumes) >0) $endereco = $volumes[0]->getEndereco();
+                if (!empty($endereco)) {
+                    $codQuebra = $endereco->getRua();
+                    $dscQuebra = "RUA: $codQuebra";
+                }
+            }
+
+            //LINHA DE SEPARAÇÃO
+            elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO) {
+                $codQuebra = 0;
+                $nomLinha = "(SEM LINHA DE SEPARACAO)";
+                if ($pedidoProdutoEn->getProduto()->getLinhaSeparacao() != null) {
+                    $codQuebra = $pedidoProdutoEn->getProduto()->getLinhaSeparacao()->getId();
+                    $nomLinha = $pedidoProdutoEn->getProduto()->getLinhaSeparacao()->getDescricao();
+                }
+                $dscQuebra = "LINHA: $codQuebra - $nomLinha";
+            }
+
+            //PRAÇA
+            elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_PRACA) {
+                $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
+                $codQuebra = $clienteRepo->getCodPracaByClienteId($pedidoProdutoEn->getPedido()->getPessoa()->getCodClienteExterno());
+                if ($codQuebra == 0){
+                    $nomPraca = "(SEM PRAÇA DEFINIDA)";
+                } else {
+                    $pracaEn = $this->getEntityManager()->getRepository("wms:MapaSeparacao\Praca")->find($codQuebra);
+                    $nomPraca = $pracaEn->getNomePraca();
+                }
+                $dscQuebra = "PRACA: $codQuebra - $nomPraca";
+            }
+
+            //PULMAO-DOCA
+            elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_PULMAO_DOCA) {
+                $dscQuebra = "PULMÃO-DOCA";
+                $codQuebra = 2;
+            }
+
+            $arrQuebras[$quebra] = [
+                'codQuebra' => $codQuebra,
+                'dscQuebra' => $dscQuebra
+            ];
+        }
+
+        $quebrasConcat = "";
+        foreach ($arrQuebras as $tipoQuebra => $quebra) {
+            $quebrasConcat[] = "$tipoQuebra:$quebra[codQuebra]";
+        }
+        $strQuebrasConcat = implode("_", $quebrasConcat);
+
+        return array($strQuebrasConcat, $arrQuebras);
     }
 
     private function removeMapaSeparacaoVazio($idExpedicao)
@@ -1900,100 +2154,55 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
     }
-    
-    public function getMapaSeparacao($pedidoProduto, $quebras, $siglaEntity, $expedicaoEntity){
 
-        $codCliente = "";
-        $nomCliente = "";
-        $codPraca = "";
-        $nomPraca = "";
-        $numRua = "";
-        $dscRua = "";
-        $codLinhaSeparacao = "";
-        $nomLinha = "";
-
-        $codStatus = $siglaEntity->getId();
-        $quebraReentrega = MapaSeparacaoQuebra::QUEBRA_REENTREGA;
-        $quebraCarrinho = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
-        $quebraCliente = MapaSeparacaoQuebra::QUEBRA_CLIENTE;
-        $quebraRua = MapaSeparacaoQuebra::QUEBRA_RUA;
-        $quebraLinha = MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO;
-        $quebraPraca = MapaSeparacaoQuebra::QUEBRA_PRACA;
-        $quebraPD = MapaSeparacaoQuebra::QUEBRA_PULMAO_DOCA;
+    public function getMapaSeparacao($quebras, $siglaEntity, $expedicaoEntity){
 
         $idReentrega = "N";
-        $idCarrinho = "N";
+        $idCarrinho = 0;
         $idCliente = 0;
         $idRua = 0;
         $idLinhaSeparacao = 0;
         $idPraca = 0;
         $idPulmaoDoca = "N";
 
-        foreach ($quebras as $quebra) {
-            $quebra = $quebra['tipoQuebra'];
-            if ($quebra == null) continue;
+        $arrDscQuebra = [];
+        foreach ($quebras as $tipo => $quebra) {
+
+            $arrDscQuebra[] = $quebra['dscQuebra'];
 
             //MAPA DE REENTREGA
-            if ($quebras == $quebraReentrega) {
-                $idReentrega = $quebraReentrega;
+            if ($tipo == MapaSeparacaoQuebra::QUEBRA_REENTREGA) {
+                $idReentrega = $quebra['codQuebra'];
             }
 
             //UTILIZA CARRINHO
-            if ($quebra == $quebraCarrinho) {
-                $idCarrinho = $quebraCarrinho;
+            elseif ($tipo == MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                $idCarrinho = $quebra['codQuebra'];
             }
 
             //CLIENTE
-            if ($quebra == $quebraCliente)  {
-                $codCliente = $pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno();
-                $nomCliente = $pedidoProduto->getPedido()->getPessoa()->getPessoa()->getNome();
-                $idCliente = $codCliente;
+            elseif ($tipo == MapaSeparacaoQuebra::QUEBRA_CLIENTE)  {
+                $idCliente = $quebra['codQuebra'];
             }
 
             //RUA
-            if ($quebra == $quebraRua) {
-                $numRua = 0;
-                $embalagens = $pedidoProduto->getProduto()->getEmbalagens();
-                $volumes = $pedidoProduto->getProduto()->getVolumes();
-                if (count($embalagens) >0) $endereco = $embalagens[0]->getEndereco();
-                if (count($volumes) >0) $endereco = $volumes[0]->getEndereco();
-                if (isset($endereco)) {
-                    $numRua = $endereco->getRua();
-                    $dscRua = $numRua;
-                } else {
-                    $dscRua = "SEM ENDEREÇO DE PICKING";
-                }
-                $idRua = $numRua;
+            elseif ($tipo == MapaSeparacaoQuebra::QUEBRA_RUA) {
+                $idRua = $quebra['codQuebra'];
             }
 
             //LINHA DE SEPARAÇÃO
-            if ($quebra == $quebraLinha) {
-
-                $codLinhaSeparacao = 0;
-                $nomLinha = "(SEM LINHA DE SEPARACAO)";
-                if ($pedidoProduto->getProduto()->getLinhaSeparacao() != null) {
-                    $codLinhaSeparacao = $pedidoProduto->getProduto()->getLinhaSeparacao()->getId();
-                    $nomLinha = $pedidoProduto->getProduto()->getLinhaSeparacao()->getDescricao();
-                }
-                $idLinhaSeparacao = $codLinhaSeparacao;
+            elseif ($tipo == MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO) {
+                $idLinhaSeparacao = $quebra['codQuebra'];
             }
 
             //PRAÇA
-            if ($quebra == $quebraPraca) {
-                $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
-                $codPraca = $clienteRepo->getCodPracaByClienteId($pedidoProduto->getPedido()->getPessoa()->getCodClienteExterno());
-                if ($codPraca == 0){
-                    $nomPraca = "Sem Praça Definida";
-                } else {
-                    $pracaEn = $this->getEntityManager()->getRepository("wms:MapaSeparacao\Praca")->find($codPraca);
-                    $nomPraca = $pracaEn->getNomePraca();
-                }
-                $idPraca = $codPraca;
+            elseif ($tipo == MapaSeparacaoQuebra::QUEBRA_PRACA) {
+                $idPraca = $quebra['codQuebra'];
             }
 
             //PULMAO-DOCA
-            if ($quebra == $quebraPD) {
-                $idPulmaoDoca = $quebraPD;
+            elseif ($tipo == MapaSeparacaoQuebra::QUEBRA_PULMAO_DOCA) {
+                $idPulmaoDoca = $quebra['codQuebra'];
             }
         }
 
@@ -2007,57 +2216,21 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaSeparacao = new MapaSeparacao("12" . $newIdMapa[0]['NEXTVAL']);
             $mapaSeparacao->setExpedicao($expedicaoEntity);
             $mapaSeparacao->setStatus($siglaEntity);
-            $mapaSeparacao->setCodStatus($codStatus);
+            $mapaSeparacao->setCodStatus($siglaEntity->getId());
             $mapaSeparacao->setDataCriacao(new \DateTime());
-            $mapaSeparacao->setDscQuebra("");
+
+            $dsQuebraConcat = implode(", ", $arrDscQuebra);
+            $mapaSeparacao->setDscQuebra($dsQuebraConcat);
+
             $this->getEntityManager()->persist($mapaSeparacao);
 
-            $dscQuebra = "";
-            foreach ($quebras as $quebra) {
-                $quebra = $quebra['tipoQuebra'];
-                if ($quebra == null) continue;
-                $codQuebra = 0;
-                if ($dscQuebra != "") {
-                    $dscQuebra = "$dscQuebra, ";
-                }
-
-                if ($quebra == $quebraReentrega) {
-                    $dscQuebra = "$dscQuebra MAPA DE REENTREGAS";
-                    $codQuebra = "";
-                }
-
-                if ($quebra == $quebraCarrinho) {
-                    $dscQuebra = "$dscQuebra MAPA DE SEPARAÇÃO CONSOLIDADA";
-                    $codQuebra = 1;
-                }
-
-                if ($quebra == $quebraCliente)  {
-                    $dscQuebra = "$dscQuebra CLIENTE: $codCliente - $nomCliente";
-                    $codQuebra = $codCliente;
-                }
-                if ($quebra == $quebraRua) {
-                    $dscQuebra = "$dscQuebra RUA: $dscRua";
-                    $codQuebra = $numRua;
-                }
-                if ($quebra == $quebraLinha) {
-                    $dscQuebra = "$dscQuebra LINHA: $codLinhaSeparacao - $nomLinha";
-                    $codQuebra = $codLinhaSeparacao;
-                }
-                if ($quebra == $quebraPraca) {
-                    $dscQuebra = "$dscQuebra PRACA: $codPraca - $nomPraca ";
-                    $codQuebra = $codPraca;
-                }
-                if ($quebra == $quebraPD) {
-                    $dscQuebra = "$dscQuebra PULMÃO-DOCA";
-                    $codQuebra = 1;
-                }
+            foreach ($quebras as $tipo => $quebra) {
                 $mapaQuebra = new MapaSeparacaoQuebra();
                 $mapaQuebra->setMapaSeparacao($mapaSeparacao);
-                $mapaQuebra->setTipoQuebra($quebra);
-                $mapaQuebra->setCodQuebra($codQuebra);
+                $mapaQuebra->setTipoQuebra($tipo);
+                $mapaQuebra->setCodQuebra($quebra['codQuebra']);
                 $this->getEntityManager()->persist($mapaQuebra);
             }
-            $mapaSeparacao->setDscQuebra(trim($dscQuebra));
             $this->getEntityManager()->persist($mapaSeparacao);
 
             $this->mapas[$idReentrega][$idCarrinho][$idCliente][$idRua][$idLinhaSeparacao][$idPraca][$idPulmaoDoca] = $mapaSeparacao;
@@ -2110,7 +2283,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         return $etiqueta;
     }
 
-    public function salvaMapaSeparacaoProduto ($mapaSeparacaoEntity,$produtoEntity,$quantidadePedido,$volumeEntity,$embalagemEntity,$arrPedidoProduto,$depositoEndereco,$cubagem = null,$pedidoEntity = null, $arrays = null, $consolidado = 'N') {
+    public function salvaMapaSeparacaoProduto ($mapaSeparacaoEntity,$produtoEntity,$quantidadePedido,$volumeEntity,$embalagemEntity,$arrPedidoProduto,$depositoEndereco,$dadosConsolidado = null,$pedidoEntity = null, $arrays = null, $consolidado = 'N') {
 
         if ($arrays == null) {
             /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaProdutoRepo */
@@ -2122,8 +2295,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaPedidoRepo = $arrays['mapaSeparacaoPedido'];
         }
 
-        $cubagemCaixa = (float)$this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
-        $parametroQtdCaixas = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
         $mapaProduto = null;
         $quantidadeEmbalagem = 1;
         if ($volumeEntity != null) {
@@ -2162,11 +2333,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $mapaPedidoEn->setQtd($pedidoProduto->getQuantidade());
                 $this->getEntityManager()->persist($mapaPedidoEn);
             }
-            if ($consolidado == 'S') {
-                if (isset($cubagem[$pedidoProduto->getPedido()->getId()][$embalagemEntity->getId()])) {
-                    $cubagem = $cubagem[$pedidoProduto->getPedido()->getId()][$embalagemEntity->getId()];
-                }
-            }
         }
 
         if ($mapaProduto == null) {
@@ -2188,53 +2354,58 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setQtdCortado(0);
             $mapaProduto->setIndConferido('N');
             $mapaProduto->setDepositoEndereco($depositoEndereco);
-            $mapaProduto->setCubagem(number_format(floatval(str_replace(',','',$cubagem)),6,".",''));
+            if ($consolidado == 'S') {
+                $mapaProduto->setCubagem(number_format(floatval(str_replace(',','',$dadosConsolidado['cubagem'])),6,".",''));
+                $mapaProduto->setNumCarrinho($dadosConsolidado['carrinho']);
+                $mapaProduto->setNumCaixaInicio($dadosConsolidado['caixaInicio']);
+                $mapaProduto->setNumCaixaFim($dadosConsolidado['caixaFim']);
+            }
             //$mapaProduto->setCubagem($cubagem);
         } else {
             $mapaProduto->setQtdSeparar($mapaProduto->getQtdSeparar() + $quantidadePedido);
         }
 
-        if ($consolidado == 'S') {
-            $qtdCaixas = ceil($cubagem / $cubagemCaixa);
-            $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,false);
-
-            if ($qtdCaixas == 0) {
-                $mapaProduto->setNumCaixaInicio(null);
-                $mapaProduto->setNumCaixaFim(null);
-                $mapaProduto->setCubagem(null);
-            }
-
-            elseif (count($caixasUsadas) == 0) {
-                $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
-                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
-                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
-            }
-
-            elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
-                $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,false);
-                if ($caixasUsadas[0]['cubagem'] + $cubagem <= $cubagemCaixa) {
-                    $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
-                    $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
-                } else {
-                    $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
-                    $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
-                    $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
-                }
-            }
-
-            else {
-                $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
-                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
-                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
-            }
-
-            $numeroCarrinho = $mapaProduto->getNumCaixaFim() / $parametroQtdCaixas;
-            $mapaProduto->setNumCarrinho(ceil($numeroCarrinho));
-
-        }
+//        if ($consolidado == 'S') {
+//            $qtdCaixas = ceil($cubagem / $cubagemCaixa);
+//            $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,false);
+//
+//            if ($qtdCaixas == 0) {
+//                $mapaProduto->setNumCaixaInicio(null);
+//                $mapaProduto->setNumCaixaFim(null);
+//                $mapaProduto->setCubagem(null);
+//            }
+//
+//            elseif (count($caixasUsadas) == 0) {
+//                $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
+//                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
+//                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
+//            }
+//
+//            elseif (count($caixasUsadas) > 0 && $caixasUsadas[0]['numCaixaInicio'] > 0 && $caixasUsadas[0]['numCaixaFim'] > 0) {
+//                $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,false);
+//                if ($caixasUsadas[0]['cubagem'] + $cubagem <= $cubagemCaixa) {
+//                    $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaInicio']);
+//                    $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim']);
+//                } else {
+//                    $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
+//                    $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
+//                    $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
+//                }
+//            }
+//
+//            else {
+//                $caixasUsadas = $mapaProdutoRepo->getCaixasByExpedicao($mapaSeparacaoEntity->getExpedicao(),$pedidoEntity,true);
+//                $mapaProduto->setNumCaixaInicio($caixasUsadas[0]['numCaixaFim'] + 1);
+//                $mapaProduto->setNumCaixaFim($caixasUsadas[0]['numCaixaFim'] + $qtdCaixas);
+//            }
+//
+//            $numeroCarrinho = $mapaProduto->getNumCaixaFim() / $parametroQtdCaixas;
+//            $mapaProduto->setNumCarrinho(ceil($numeroCarrinho));
+//
+//        }
 
         $this->_em->persist($mapaProduto);
-        $this->_em->flush($mapaProduto);
+        //$this->_em->flush($mapaProduto);
     }
 
     /**
