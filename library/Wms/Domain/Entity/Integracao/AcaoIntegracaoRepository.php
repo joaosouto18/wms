@@ -203,7 +203,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->beginTransaction();
 
             if ($existeOutraTransacaoAtiva == 'S') {
-//                throw new \Exception("Integração em andamento em outro processo");
+                throw new \Exception("Integração em andamento em outro processo");
             }
 
             $conexaoEn = $acaoEn->getConexao();
@@ -224,7 +224,6 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             //STRING DA QUERY DE INTEGRAÇÃO
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro, $data);
-
             if ($dados == null) {
                 $words = explode(" ",trim($query));
                 $update = true;
@@ -236,19 +235,36 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $result = $dados;
             }
 
+            if ($acaoEn->getidAcaoRelacionada() != null) {
+                if (count($result) >0) {
 
-            if (($tipoExecucao == "E") && ($destino == "T")) {
-                $integracaoService = new Integracao($this->getEntityManager(),
-                    array('acao'=>$acaoEn,
-                        'dados'=>$result));
-                $result = $integracaoService->salvaTemporario();
+                    $acaoRelacionadaEn = $this->find($acaoEn->getidAcaoRelacionada());
+
+                    $dadosFiltrar = array();
+                    foreach ($result as $row) {
+                        $dadosFiltrar[] = $row['ID'];
+                    }
+                    $options = array();
+                    $options[] = implode(",", $dadosFiltrar);
+                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+                } else {
+                    $result = true;
+                }
             } else {
-                $integracaoService = new Integracao($this->getEntityManager(),
-                    array('acao'=>$acaoEn,
-                          'options'=>$options,
-                          'tipoExecucao' => $tipoExecucao,
-                          'dados'=>$result));
-                $result = $integracaoService->processaAcao();
+                if (($tipoExecucao == "E") && ($destino == "T")) {
+                    $integracaoService = new Integracao($this->getEntityManager(),
+                        array('acao'=>$acaoEn,
+                            'dados'=>$result));
+                    $result = $integracaoService->salvaTemporario();
+                } else {
+                    $integracaoService = new Integracao($this->getEntityManager(),
+                        array('acao'=>$acaoEn,
+                            'options'=>$options,
+                            'tipoExecucao' => $tipoExecucao,
+                            'dados'=>$result));
+                    $result = $integracaoService->processaAcao();
+                }
+
             }
 
             $this->_em->flush();
@@ -278,7 +294,6 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->rollback();
             $this->_em->clear();
         }
-
 
         try {
 

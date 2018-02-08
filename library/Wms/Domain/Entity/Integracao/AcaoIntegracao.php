@@ -80,6 +80,27 @@ class AcaoIntegracao
     protected $tabelaReferencia;
 
     /**
+     * @Column(name="COD_ACAO_RELACIONADA", type="string")
+     */
+    protected $idAcaoRelacionada;
+
+    /**
+     * @return mixed
+     */
+    public function getIdAcaoRelacionada()
+    {
+        return $this->idAcaoRelacionada;
+    }
+
+    /**
+     * @param mixed $idAcaoRelacionada
+     */
+    public function setIdAcaoRelacionada($idAcaoRelacionada)
+    {
+        $this->idAcaoRelacionada = $idAcaoRelacionada;
+    }
+
+    /**
      * @return mixed
      */
     public function getId()
