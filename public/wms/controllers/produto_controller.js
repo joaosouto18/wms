@@ -81,13 +81,23 @@ $.Controller.extend('Wms.Controllers.Produto',
                 if(!este.verificarValidade())
                     return false;
 
-                if(!este.verificarNormaPaletizacao()){
+                if(!este.verificarNormaPaletizacaoProdutoDadoLogistico()){
                         $.wmsDialogAlert({
                             title: 'Processo cancelado',
-                            msg: "Existem normas com o mesmo unitizador e quantidade de itens diferentes.",
+                            msg: "Existe alguma norma de paletização com mais de um grupo de dado logistico.",
                             height: 140,
                             resizable: false
                         });
+                    return false;
+                }
+
+                if(!este.verificarNormaPaletizacao()){
+                    $.wmsDialogAlert({
+                        title: 'Processo cancelado',
+                        msg: "Existem normas com o mesmo unitizador e quantidade de itens diferentes.",
+                        height: 140,
+                        resizable: false
+                    });
                     return false;
                 }
 
@@ -264,6 +274,16 @@ $.Controller.extend('Wms.Controllers.Produto',
                     }
                 }else {
                     array[$(this).find('.unitizador').val()] = $(this).find('#normaPaletizacao-numNorma').val() * $(this).find('.qtdEmbalagem').val();
+                }
+            });
+            return ret;
+        },
+
+        verificarNormaPaletizacaoProdutoDadoLogistico: function () {
+            var ret = true;
+            $('.grupoDadosLogisticos').each(function () {
+                if($(this).find('.produto_dado_logistico').length > 1){
+                    ret = false;
                 }
             });
             return ret;

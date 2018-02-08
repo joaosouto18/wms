@@ -38,7 +38,21 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                                 // variaveis
                                 var idTipoComercializacao = parseInt($('#produto-idTipoComercializacao').val());
                                 var grupoDadosLogisticos = $('#fieldset-grupo-normas').find('div.grupoDadosLogisticos');
-
+                                var grupoDadosLogisticosLimpo = '';
+                                grupoDadosLogisticos.each(function () {
+                                    if($(this).find('.produto_dado_logistico').length == 0){
+                                        grupoDadosLogisticosLimpo = $(this);
+                                    }
+                                });
+                                if(grupoDadosLogisticosLimpo.length == 0){
+                                    $.wmsDialogAlert({
+                                        title: 'Processo cancelado',
+                                        msg: "Adicione uma nova norma de paletização para poder incluir uma embalagem.",
+                                        height: 140,
+                                        resizable: false
+                                    });
+                                    return false;
+                                }
                                 //fieldset validation
                                 if (($('#dadoLogistico-idEmbalagem').val() == "") || ($('#dadoLogistico-idEmbalagem').val() == null)) {
                                     alert('Escolha uma embalagem');
@@ -65,7 +79,7 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
 
                                 valores.lblEmbalagem = $('#fieldset-dado-logistico #dadoLogistico-idEmbalagem option:selected').text();
                                 valores.qtdEmbalagem = emSelec;
-                                valores.idNormaPaletizacao = $(grupoDadosLogisticos[0]).find('.normasPaletizacao-id').val();
+                                valores.idNormaPaletizacao = $(grupoDadosLogisticosLimpo).find('.normasPaletizacao-id').val();
                                 valores.acao = 'incluir';
                                 valores.altura = alturaReal.replace('.', ',');
                                 valores.largura = $('#fieldset-campos-comuns').formParams().embalagem.largura;
@@ -80,8 +94,9 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                                     var d = new Date();
                                     valores.id = d.getTime() + '-new';
                                     produto_dado_logistico = new Wms.Models.ProdutoDadoLogistico(valores);
-                                    $(grupoDadosLogisticos[0]).append(this.view("show", produto_dado_logistico));
+                                    $(grupoDadosLogisticosLimpo).append(this.view("show", produto_dado_logistico));
                                 }
+                                // console.log($(grupoDadosLogisticosLimpo).find('.unitizador').val());
 
                                 //limpo form
                                 this.resetarForm();
@@ -92,7 +107,8 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                                 Wms.Controllers.Produto.prototype.cubagemTotal();
                                 //Calcula o peso para norma de paletizacao
                                 this.calcularPesoNormaPaletizacao();
-
+                                $('.unitizador [value=32]').first().parent().parent().parent().find('#normaPaletizacao-numLastro').change();
+                                $('.unitizador [value=32]').first().parent().parent().parent().find('#normaPaletizacao-numCamadas').change();
                                 ev.preventDefault();
                             },
                             /**
