@@ -1,4 +1,4 @@
-/* 
+/*
  * SCRIPT PARA: Criar tabela e constrains pra quebra na separação de embalados
  * DATA DE CRIAÇÃO: 06/02/2018 
  * CRIADO POR: Pichau
@@ -7,14 +7,14 @@
 DECLARE
   CHECK_RESULT VARCHAR2(100);
 BEGIN
-  SELECT FUNC_CHECK_SCRIPT('xx-quebras-separacao-embalados.sql', '')
+  SELECT FUNC_CHECK_SCRIPT('12-quebras-separacao-embalados.sql', '')
   INTO CHECK_RESULT
   FROM DUAL;
   IF (CHECK_RESULT <> 'TRUE')
   THEN
     DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
   ELSE
-    INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.13.0', 'xx-quebras-separacao-embalados.sql');
+    INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.13.0', '12-quebras-separacao-embalados.sql');
     /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
