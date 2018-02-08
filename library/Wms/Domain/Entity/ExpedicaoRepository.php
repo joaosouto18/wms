@@ -128,7 +128,8 @@ class ExpedicaoRepository extends EntityRepository {
                       AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
                       AND E.COD_EXPEDICAO IN ($expedicoes)
                       AND P.CENTRAL_ENTREGA = $filialExterno
-                      AND P.DTH_CANCELAMENTO IS NULL ";
+                      AND P.DTH_CANCELAMENTO IS NULL 
+                      AND E.IND_PROCESSANDO = 'N'";
 
         $result = $this->getEntityManager()->getConnection()->query($Query)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -892,11 +893,16 @@ class ExpedicaoRepository extends EntityRepository {
         return array($itensReservados, $arrEstoqueReservado);
     }
 
-    public function verificaDisponibilidadeEstoquePedido($expedicoes) {
+    public function verificaDisponibilidadeEstoquePedido($expedicoes, $gerarNovaOnda = false) {
 
         $sessao = new \Zend_Session_Namespace('deposito');
         $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
         $central = $deposito->getFilial()->getCodExterno();
+
+        $andWhere = '';
+        if ($gerarNovaOnda) {
+            $andWhere = "AND EXP.IND_PROCESSANDO = 'N'";
+        }
 
         $sql = "
          SELECT DISTINCT
@@ -958,7 +964,8 @@ class ExpedicaoRepository extends EntityRepository {
             INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
              LEFT JOIN ONDA_RESSUPRIMENTO_PEDIDO ORP ON PP.COD_PEDIDO = ORP.COD_PEDIDO AND PP.COD_PRODUTO = ORP.COD_PRODUTO AND PP.DSC_GRADE = ORP.DSC_GRADE
             INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
-            WHERE P.CENTRAL_ENTREGA = $central AND ORP.COD_PEDIDO IS NULL AND P.DTH_CANCELAMENTO IS NULL AND C.COD_EXPEDICAO IN ($expedicoes)
+            INNER JOIN EXPEDICAO EXP ON EXP.COD_EXPEDICAO = C.COD_EXPEDICAO
+            WHERE P.CENTRAL_ENTREGA = $central AND ORP.COD_PEDIDO IS NULL AND P.DTH_CANCELAMENTO IS NULL AND C.COD_EXPEDICAO IN ($expedicoes) $andWhere
                   ORDER BY Codigo, Grade, Produto
         ";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -1741,6 +1748,7 @@ class ExpedicaoRepository extends EntityRepository {
                    AND E.COD_STATUS <> $statusCancelada
                    AND P.DTH_CANCELAMENTO IS NULL
                    AND P.CENTRAL_ENTREGA = $central
+                   AND E.IND_PROCESSANDO = 'N'
                    ";
 
         if (isset($parametros['idExpedicao']) && !empty($parametros['idExpedicao'])) {
@@ -3905,4 +3913,8 @@ class ExpedicaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function changeStatusExpedicao($idsExpedicoes, $processando = 'N') {
+        $sql = "UPDATE EXPEDICAO SET IND_PROCESSANDO = '$processando' WHERE COD_EXPEDICAO IN ($idsExpedicoes)";
+        $this->_em->getConnection()->query($sql)->execute();
+    }
 }
