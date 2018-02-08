@@ -794,29 +794,38 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     return true;
                                 }
 
+                                var codigoRepetidoInternamente = false;
                                 // verifico se existe embalagens neste produto com o mesmo codigo de barras
                                 codigosBarras.each(function () {
                                     if (this.value === codigoBarras) {
-                                        este.dialogAlert("Este código de barras já foi cadastrado neste produto.");
-                                        return false;
+                                        codigoRepetidoInternamente = true;
                                     }
                                 });
 
-                                var result = null;
-                                $.ajax({
-                                    url: URL_MODULO + '/produto/verificar-codigo-barras-ajax',
-                                    type: 'post',
-                                    async: false,
-                                    dataType: 'json',
-                                    data: {codigoBarras: codigoBarras}
-                                }).success(function (data) {
-                                    if (data.status === "success") {
-                                        result = true;
-                                    } else if (data.status === "error") {
-                                        este.dialogAlert(data.msg);
-                                        result = false;
-                                    }
-                                });
+                                var result = true;
+                                if (codigoRepetidoInternamente) {
+                                    este.dialogAlert("Este código de barras já foi cadastrado neste produto.");
+                                    result = false;
+                                } else {
+                                    $.ajax({
+                                        url: URL_MODULO + '/produto/verificar-codigo-barras-ajax',
+                                        type: 'post',
+                                        async: false,
+                                        dataType: 'json',
+                                        data: {
+                                            codigoBarras: codigoBarras,
+                                            idElemento: valores.id,
+                                            tipoComercializacao: 1
+                                        }
+                                    }).success(function (data) {
+                                        if (data.status === "success") {
+                                            result = true;
+                                        } else if (data.status === "error") {
+                                            este.dialogAlert(data.msg);
+                                            result = false;
+                                        }
+                                    });
+                                }
                                 return result;
                             },
 

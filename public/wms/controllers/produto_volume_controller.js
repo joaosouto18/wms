@@ -695,7 +695,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                 type: 'post',
                 async: false,
                 dataType: 'json',
-                data: { codigoBarras:codigoBarras }
+                data: {codigoBarras: codigoBarras, idElemento: valores.id, tipoComercializacao: 2}
             }).success(function (data) {
                 if (data.status === "success") {
                     result = true;

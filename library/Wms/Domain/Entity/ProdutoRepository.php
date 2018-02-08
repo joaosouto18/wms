@@ -312,10 +312,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             foreach ($values['embalagens'] as $id => $itemEmbalagem) {
                 $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
                 extract($itemEmbalagem);
-            $produtoCodBarras = $this->naoExisteCodBarras($codigoBarras, $id);
-            if($produtoCodBarras != false){
-                throw new \Exception('O codigo de barras ' . $codigoBarras . ' já esta cadastrado para o produto '.$produtoCodBarras);
-            }
+
+                $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_UNITARIO);
+                if(!empty($check)){
+                    $arrItens = [];
+                    foreach ($check as $produto) {
+                        $arrItens[] = "item $produto[idProduto] / $produto[grade] ($produto[dsc_elemento])";
+                    }
+                    $str = implode(", ", $arrItens);
+                    throw new \Exception("O codigo de barras $codigoBarras já esta cadastrado: $str");
+                }
 
                 switch ($itemEmbalagem['acao']) {
                     case 'incluir':
@@ -612,6 +618,15 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             if (!isset($acao))
                 continue;
 
+            $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_COMPOSTO);
+            if(!empty($check)){
+                $arrItens = [];
+                foreach ($check as $produto) {
+                    $arrItens[] = "item $produto[idProduto] / $produto[grade] ($produto[dsc_elemento])";
+                }
+                $str = implode(", ", $arrItens);
+                throw new \Exception("O codigo de barras $codigoBarras já esta cadastrado: $str");
+            }
             // id
 //            $itemVolume['id'] = $id;
             // pega infos de normas de produtos
@@ -1924,17 +1939,23 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         $em->flush();
     }
 
-    public function naoExisteCodBarras($codigoBarras, $id = null){
-        $ret = false;
-        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
-        $embalagemEn = $embalagemRepo->findBy(array('codigoBarras' => $codigoBarras));
-        if(isset($embalagemEn) && is_array($embalagemEn)){
-            foreach ($embalagemEn as $embalagem){
-                if($embalagem->getId() != $id){
-                    $ret = $embalagem->getProduto()->getId();
-                }
-            }
+    public function checkCodBarrasRepetido($codigoBarras, $tipoComercializacao){
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id idProduto, p.grade, NVL(pe.descricao, pv.descricao) dsc_elemento')
+            ->from('wms:Produto', 'p')
+            ->leftJoin('p.embalagens', 'pe')
+            ->leftJoin('p.volumes', 'pv')
+            ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+            ->setParameter('codigoBarras', $codigoBarras);
+
+        if ($tipoComercializacao == Produto::TIPO_UNITARIO) {
+            $dql->andWhere("pe.id != :idElemento")
+                ->setParameter('idElemento', $idElemento);
+        } elseif ($tipoComercializacao == Produto::TIPO_COMPOSTO) {
+            $dql->andWhere("pv.id != :idElemento")
+                ->setParameter('idElemento', $idElemento);
         }
-        return $ret;
+
+        return $dql->getQuery()->getResult();
     }
 }
