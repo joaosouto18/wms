@@ -20,6 +20,10 @@
             'modal' :  (!!settings.modal)? settings.modal :  true,
             'buttons': (!!settings.buttons)? settings.buttons :  {
                 "Ok": function () {
+                    // now we are calling our own callback function
+                    if($.isFunction(callbackFnk)){
+                        callbackFnk.call(this);
+                    }
                     $(this).remove();
                 }
             }
@@ -41,11 +45,6 @@
             close: function(event, ui) {
                 // remove div with all data and events
                 dialog.remove();
-                
-                // now we are calling our own callback function
-                if($.isFunction(callbackFnk)){
-                    callbackFnk.call(this);
-                }
             }
         });
     };

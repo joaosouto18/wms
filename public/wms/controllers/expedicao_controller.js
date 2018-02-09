@@ -44,6 +44,15 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                     $('#aguarde').attr('style','background-color: lightsteelblue; text-align: center; padding: 5px');
             });
 
+            function processoCancelado() {
+                $('#aguarde').attr('style','display:none');
+                $("input[name*='expedicao[]']").each(function( index, value ){
+                    if ( $(this).prop('checked') ){
+                        $(this).prop('checked', false);
+                    }
+                });
+            }
+
             /*
              * Valida seleção de expedições
              * @array checkBoxes de expedições
@@ -58,7 +67,30 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                 });
 
                 if (clickSelection){
-                    $('#relatorio-picking-listar').submit();
+                    var liberado = true;
+                    $.ajax({
+                        url: URL_BASE + '/expedicao/onda-ressuprimento/verificar-expedicoes-processando-ajax',
+                        type: 'post',
+                        async: false,
+                        dataType: 'json',
+                        data: $('#relatorio-picking-listar').serialize()
+                    }).success(function (data) {
+                        if (data.status === "Ok") {
+                            liberado = true;
+                        } else if (data.status === "Error") {
+                            $.wmsDialogAlert({
+                                title: "Notificação!",
+                                msg: data.msg
+                            }, function(){
+                                window.location = URL_BASE + "/expedicao/onda-ressuprimento";
+                            });
+                            liberado = false;
+                            processoCancelado();
+                        }
+                    });
+                    if (liberado) {
+                        $('#relatorio-picking-listar').submit();
+                    }
                 } else {
                     alert('Selecione pelo menos uma expedição');
                 }

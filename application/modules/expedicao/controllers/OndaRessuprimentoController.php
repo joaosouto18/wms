@@ -119,6 +119,27 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $this->redirect("index", "onda-ressuprimento", "expedicao");
     }
 
+    public function verificarExpedicoesProcessandoAjaxAction() {
+
+        $expedicoes = $this->getRequest()->getParam('expedicao');
+        $expedicaoRepo = $this->em->getRepository("wms:Expedicao");
+        $result = $expedicaoRepo->findBy(["id" => $expedicoes, "indProcessando" => "S"]);
+        $str = [];
+        $status = "Ok";
+        $msg = null;
+
+        if (!empty($result)) {
+            /** @var \Wms\Domain\Entity\Expedicao $expedicao */
+            foreach ($result as $expedicao) {
+                $str[] = $expedicao->getId();
+            }
+            $status = "Error";
+            $msg = "As expedições a seguir já estão sendo processadas: ". implode(", ", $str);
+        }
+
+        $this->_helper->json(["status" => $status, "msg" => $msg]);
+    }
+
     public function gerenciarOsAction() {
         $form = new FiltroDadosOnda;
         $actionParams = $this->_getParam('actionParams', false);
