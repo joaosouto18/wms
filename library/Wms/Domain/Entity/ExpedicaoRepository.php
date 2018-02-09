@@ -128,8 +128,7 @@ class ExpedicaoRepository extends EntityRepository {
                       AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
                       AND E.COD_EXPEDICAO IN ($expedicoes)
                       AND P.CENTRAL_ENTREGA = $filialExterno
-                      AND P.DTH_CANCELAMENTO IS NULL 
-                      AND E.IND_PROCESSANDO = 'N'";
+                      AND P.DTH_CANCELAMENTO IS NULL";
 
         $result = $this->getEntityManager()->getConnection()->query($Query)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
