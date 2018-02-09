@@ -118,7 +118,7 @@ class EmbalagemRepository extends EntityRepository {
                     $embFracDefault = $embalagem;
                 }
                 $qtdEmbalagem = $embalagem->getQuantidade();
-                if (Math::compare($qtdRestante, $qtdEmbalagem, '>=')) {
+                if (Math::compare(abs($qtdRestante), abs($qtdEmbalagem), '>=')) {
                     $resto = Math::resto($qtdRestante, $qtdEmbalagem);
                     $qtdSeparar = Math::dividir(Math::subtrair($qtdRestante, $resto), $qtdEmbalagem);
                     $qtdRestante = $resto;
