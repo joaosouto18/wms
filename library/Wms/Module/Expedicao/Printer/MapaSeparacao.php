@@ -651,7 +651,7 @@ class MapaSeparacao extends eFPDF {
                     $this->Cell(20, 4, $dscEndereco, 0, 0);
                     $this->Cell(20, 4, $codProduto, 0, 0);
                     $this->Cell(85, 4, substr($descricao, 0, 57), 0, 0);
-                    $this->Cell(40, 4, $produto->getProduto()->getGrade(), 0, 0);
+                    $this->Cell(40, 4, substr($produto->getProduto()->getGrade(), 0, 20), 0, 0);
                     $this->Cell(20, 4, $codigoBarras, 0, 0);
                     $this->SetFont('Arial', "B", 10);
                     $this->Cell(15, 4, $quantidade, 0, 1, 'C');
