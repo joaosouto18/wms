@@ -45,6 +45,17 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $this->exportPDF($verificaDisponibilidadeEstoquePedido, 'sem-estoque', 'Produtos sem estoque', 'L');
     }
 
+    public function produtosDescasadosAjaxAction()
+    {
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+        $expedicoes = $this->_getParam("expedicoes");
+
+        $produtosDescasados = $expedicaoRepo->getProdutosDescasadosExpedicao($expedicoes);
+        $this->exportPDF($produtosDescasados, 'produtos-descasados', 'Produtos Descasados', 'L');
+
+    }
+
     public function gerarAction() {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
@@ -87,6 +98,24 @@ class Expedicao_OndaRessuprimentoController extends Action {
 
                     $this->addFlashMessage("error", $mensagem);
                 }
+            }
+
+            $produtosDescasados = $expedicaoRepo->getProdutosDescasadosExpedicao($expedicoes);
+
+            if (count($produtosDescasados) > 0) {
+
+                $expedicaoDescasada = array();
+                foreach ($produtosDescasados as $expedicao) {
+                    if (!in_array($expedicao['COD_EXPEDICAO'],$expedicaoDescasada)) {
+                        $expedicaoDescasada[] = $expedicao['COD_EXPEDICAO'];
+                    }
+                }
+                $expedicoes = implode(',',$expedicaoDescasada);
+
+                $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'produtos-descasados-ajax', 'expedicoes' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos Descasados</a>';
+                $mensagem = 'Existem Produtos descasados nas Expedições Selecionadas. Clique para exibir ' . $link;
+
+                $this->addFlashMessage("error", $mensagem);
             }
 
             ini_set('max_execution_time', 300);
