@@ -38,12 +38,13 @@ if (count($this->produtos) > 0):
                         <ul>
                             <li><img src="/img/admin/icon_opc.gif" alt="Op&ccedil;&otilde;es" />
                                 <ul>
-                                    <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>">Endereçar Paletes</a></li>
-                                    <li><a href="/enderecamento/produto/list/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>" class="inside-modal">Andamento</a></li>
-                                    <li><a href="/enderecamento/produto/alterar-norma/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>" class="inside-modal">Alterar Norma de Paletização</a></li>
-                                    <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>/produtos/true">Endereçar Paletes no Picking</a></li>
+                                    <?php $grade = str_replace('/','&',$produto['grade']) ?>
+                                    <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>">Endereçar Paletes</a></li>
+                                    <li><a href="/enderecamento/produto/list/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>" class="inside-modal">Andamento</a></li>
+                                    <li><a href="/enderecamento/produto/alterar-norma/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>" class="inside-modal">Alterar Norma de Paletização</a></li>
+                                    <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>/produtos/true">Endereçar Paletes no Picking</a></li>
                                     <?php if ($this->recebimento->getStatus()->getSigla() == 'DESFEITO' || $this->recebimento->getStatus()->getSigla() == 'CANCELADO') : ?>
-                                        <li><a href="/enderecamento/palete/trocar/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>" target="_blank">Trocar U.M.As</a></li>
+                                        <li><a href="/enderecamento/palete/trocar/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $produto['grade'] ?>" target="_blank">Trocar U.M.As</a></li>
                                     <?php endif; ?>
                                 </ul>
                             </li>
