@@ -14,7 +14,7 @@
             'title': settings.title,
             'msg': settings.msg,
             'width': (!!settings.width)? settings.width : 350,
-            'height': (!!settings.height)? settings.height : 130,
+            'height': (!!settings.height)? settings.height : 'auto',
             'resizable': (!!settings.resizable)? settings.resizable : false,
             'position' : (!!settings.position)? settings.position : 'center',
             'modal' :  (!!settings.modal)? settings.modal :  true,

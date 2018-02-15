@@ -64,7 +64,7 @@ function playSound(soundfile) {
                                 var qtd = $("#qtd");
                                 if (qtd !== '') {
                                     $.ajax({
-                                        url: '<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'conferte-produto-ajax')) ?>',
+                                        url: '<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
                                         data: $('form').serialize(),
                                         async: false,
                                         type: 'post',
@@ -83,6 +83,7 @@ function playSound(soundfile) {
                                                     }
                                                     success = "";
                                                 } else {
+
                                                     playSound("/confirm2.mp3");
                                                     $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').show();
                                                     $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"] #qtd').text(data.retorno.produto[0]['qtdConferidaTotalEmb']);

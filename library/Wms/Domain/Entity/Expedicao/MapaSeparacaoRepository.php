@@ -1198,38 +1198,44 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         $qtdConferenciaGravar = array();
         $qtdRestante = $qtdInformada;
-        foreach ($result as $mapa) {
-            //CASO SEJA CONFERÊNCIA DE EMBALADO NÃO SOMA AS QTDS DO MESMO ITEM DE TODOS OS MAPAS
-            if (!empty($codPessoa) && $mapa['COD_MAPA_SEPARACAO'] != $idMapa) continue;
+        while ($qtdRestante != 0) {
+            foreach ($result as $mapa) {
+                //CASO SEJA CONFERÊNCIA DE EMBALADO NÃO SOMA AS QTDS DO MESMO ITEM DE TODOS OS MAPAS
+                if (!empty($codPessoa) && $mapa['COD_MAPA_SEPARACAO'] != $idMapa) continue;
 
-            $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
-            $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
+                $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
+                $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
+                $qtdPendenteConferenciaMapa = Math::subtrair($mapa['QTD_SEPARAR'], $mapa['QTD_CONFERIDA']);
 
-            if ($qtdMapaTotal == $qtdConferidoTotal) continue;
+                $codMapa = $mapa['COD_MAPA_SEPARACAO'];
 
-            $codMapa = $mapa['COD_MAPA_SEPARACAO'];
+                if (Math::compare($qtdRestante, $qtdPendenteConferenciaMapa, "<=")) {
+                    $qtdConferir = $qtdRestante;
+                } else {
+                    $qtdConferir = $qtdPendenteConferenciaMapa;
+                }
 
-            $qtdConferir = $qtdRestante;
-            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
-            $qtdConferidoTotalEmb = $qtdConferidoTotal;
-            if ($qtdConferidoTotal > 0) {
-                $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $dscGrade, $qtdConferidoTotal);
-                $qtdConferidoTotalEmb = implode(' + ', $vetSeparar);
-            }
-            if ($qtdConferir > 0) {
-                $qtdConferenciaGravar[] = array(
-                    'codMapaSeparacao' => $codMapa,
-                    'codProduto' => $codProduto,
-                    'dscGrade' => $dscGrade,
-                    'numConferencia' => 1,
-                    'codProdutoEmbalagem' => $codProdutoEmbalagem,
-                    'codPrdutoVolume' => $codProdutoVolume,
-                    'qtdEmbalagem' => $fatorCodBarrasBipado,
-                    'qtdConferidaTotalEmb' => $qtdConferidoTotalEmb,
-                    'quantidade' => Math::dividir($qtdConferir,$fatorCodBarrasBipado)
-                );
+                $qtdConferidoTotalEmb = $qtdConferidoTotal;
+                if ($qtdConferidoTotal > 0) {
+                    $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+                    $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $dscGrade, $qtdConferidoTotal);
+                    $qtdConferidoTotalEmb = implode(' + ', $vetSeparar);
+                }
+                if ($qtdConferir > 0) {
+                    $qtdConferenciaGravar[] = array(
+                        'codMapaSeparacao' => $codMapa,
+                        'codProduto' => $codProduto,
+                        'dscGrade' => $dscGrade,
+                        'numConferencia' => 1,
+                        'codProdutoEmbalagem' => $codProdutoEmbalagem,
+                        'codPrdutoVolume' => $codProdutoVolume,
+                        'qtdEmbalagem' => $fatorCodBarrasBipado,
+                        'qtdConferidaTotalEmb' => $qtdConferidoTotalEmb,
+                        'quantidade' => Math::dividir($qtdConferir, $fatorCodBarrasBipado)
+                    );
 
-                $qtdRestante = Math::subtrair($qtdRestante,$qtdConferir);
+                    $qtdRestante = Math::subtrair($qtdRestante, $qtdConferir);
+                }
             }
         }
 
