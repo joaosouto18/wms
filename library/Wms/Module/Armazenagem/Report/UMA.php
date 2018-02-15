@@ -85,7 +85,7 @@ class UMA extends Pdf
 
             $dthValidade = utf8_decode("Ñ CONTROLA");
             if (!empty($uma['DTH_VALIDADE'])) {
-                $dthValidade = date_format(date_create_from_format('Y-m-d H:m:s', $uma['DTH_VALIDADE']),'d/m/Y');
+                $dthValidade = date("d/m/Y", strtotime($uma['DTH_VALIDADE']));
             }
             $this->Cell(21, 5, $dthValidade, 1, 0);
             $this->Cell(18, 5, $uma['ENDERECO'], 1, 1);
