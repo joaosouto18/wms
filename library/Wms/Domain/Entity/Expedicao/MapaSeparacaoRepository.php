@@ -1109,6 +1109,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         //QUERY PRINCIPAL PARA VALIDAÇÃO DE CONFERENCIA
         $SQL = "SELECT $SQLFields
                        MS.COD_MAPA_SEPARACAO,
+                       CASE WHEN MS.COD_MAPA_SEPARACAO = $idMapa THEN 0 ELSE 1 END as ORDENADOR,
                        MSP.QTD_SEPARAR,
                        P.DSC_PRODUTO,
                        P.COD_PRODUTO,
@@ -1151,6 +1152,8 @@ class MapaSeparacaoRepository extends EntityRepository {
         } else {
             $SQL = $SQL . " AND MS.COD_EXPEDICAO = $idExpedicao";
         }
+
+        $SQL .= " ORDER BY ORDENADOR";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
