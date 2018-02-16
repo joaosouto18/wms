@@ -400,7 +400,7 @@ class Expedicao_IndexController extends Action {
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
         /** @var \Wms\Domain\Entity\Expedicao\EquipeSeparacaoRepository $equipeSeparacaoRepo */
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
-        $numFunc = $equipeSeparacaoRepo->findBy(array(),array('numFuncionario'=>'DESC'));
+        $numFunc = $equipeSeparacaoRepo->findBy(array(),array('id'=>'DESC'));
         if(empty($numFunc)){
             $func = 1;
         }else{
@@ -667,7 +667,7 @@ class Expedicao_IndexController extends Action {
 
 
         if (empty($erro) && $salvar == true) {
-            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA'], 'mapa' => $codMapa);
+            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA'], 'mapa' => $codMapa, 'expedicao' => $expedicaoIni['COD_EXPEDICAO'], 'dth_vinculo' => date('d/m/Y'));
         } elseif($salvar == false && empty($erro)) {
             $response = array('result' => 'Error', 'msg' => "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA']);
         }else{

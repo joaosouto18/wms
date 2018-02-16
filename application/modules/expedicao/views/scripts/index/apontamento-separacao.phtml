@@ -294,6 +294,10 @@
         });
 
         addLista = function () {
+            if($('#input-busca').val() == 1){
+                $('#tbResult tr').remove();
+                $('#input-busca').val(0);
+            }
             var total = parseInt($('#txtIntervalo').val());
             var eI = $('#etiquetas-etiquetaInicial').val();
             var eF = $('#etiquetas-etiquetaFinal').val();
@@ -382,6 +386,8 @@
                     success: function (data) {
                         if (data.result === "Ok") {
                             result.pessoa = data.pessoa;
+                            result.expedicao = data.expedicao;
+                            result.dth_vinculo = data.dth_vinculo;
                             var addLinha = true;
                             $('.gTResultSet').each(function (e) {
                                 if ($(this).find('.identifica').text() == result.cpf && $(this).find('.intervalo').text() == result.intervalo) {
@@ -412,10 +418,12 @@
                             }
 
                         } else if (data.result = 'Error') {
-                            $.wmsDialogAlert({
-                                title: 'Alerta',
-                                msg: data.msg
-                            });
+//                            $.wmsDialogAlert({
+//                                title: 'Alerta',
+//                                msg: data.msg
+//                            });
+                            alert(data.msg);
+                            $('#etiquetas-pessoa').focus();
                             $('#etiquetas-pessoa').val('');
                             return false;
                         }
@@ -430,9 +438,12 @@
                 return false;
             }
         },
-
+        $('.ui-button-text').click(function () {
+            $('#etiquetas-pessoa').focus();
+        });
         $("#etiquetas-buscar").click(function () {
            $('#tbResult tr').remove();
+           $('#input-busca').val(1);
             $.ajax({
                 url: 'busca-apontamento-separacao-ajax/',
                 type: 'post',
@@ -446,6 +457,8 @@
                         object.total = dados['TOTAL'];
                         object.cpf = dados['CPF'].trim();
                         object.codEquipe = dados['COD_EQUIPE_SEPARACAO'];
+                        object.expedicao = dados['COD_EXPEDICAO'];
+                        object.dth_vinculo = dados['DTH_VINCULO'];
                         addRow(object);
                     });
                 }
@@ -457,17 +470,25 @@
             var total = null;
             var mapa = null;
             var tipo = null;
+            var expedicao = null;
+            var dth_vinculo = null;
 
             if (data.hasOwnProperty('mapa')) {
                 mapa = data.mapa;
                 intervalo = "N/D";
                 total = "N/D";
                 tipo = "Mapa";
+                expedicao = ' - '
+                dth_vinculo = ' - '
+                $('#td-mapa').show();
             } else {
                 intervalo = data.intervalo;
                 total = data.total;
                 mapa = "N/D";
                 tipo = "Etiquetas";
+                expedicao = data.expedicao;
+                dth_vinculo = data.dth_vinculo;
+                $('#td-mapa').hide();
             }
 
             var cpf = data.cpf;
@@ -475,13 +496,16 @@
 
             var tbody = $('#tbResult');
             var tr = $('<tr>').addClass('gTResultSet');
-
             tr.append($('<td>').text(pessoa));
             tr.append($('<td class="identifica">').text(cpf));
-            tr.append($('<td class="mapa">').text(mapa));
+            if(tipo == 'Mapa') {
+                tr.append($('<td class="mapa">').text(mapa));
+            }
             tr.append($('<td class="intervalo">').text(intervalo));
             tr.append($('<td>').text(total));
             tr.append($('<td class="tipo">').text(tipo));
+            tr.append($('<td class="expedicao">').text(expedicao));
+            tr.append($('<td class="data">').text(dth_vinculo));
             tr.append(
                     $('<td>').css('text-align', 'center').append(
                     $('<a>').attr('id', data.codEquipe).addClass('removeRow').prop('href', 'javascript://').append(
@@ -549,6 +573,13 @@
         });
 
         $('.save').click(function () {
+            if($('#input-busca').val() == 1){
+                $.wmsDialogAlert({
+                    title: 'Alerta',
+                    msg: 'Não é possivel salvar uma busca!'
+                },  false);
+                return false;
+            }
             var data = [];
             $.each($('#tbResult').children(), function () {
                 var mapa = $(this).children(".mapa").text();
@@ -632,16 +663,19 @@
 <?php
 echo $this->form;
 ?>
+<input type="hidden" id="input-busca" value="0">
 <div id="exibe-pessoa-grid" class="grid">
     <table class="gTable ">
         <caption>Conferentes</caption>
         <tr class ="gTTitle">
             <td width="30%">Nome</td>
             <td width="13%">CPF</td>
-            <td width="14%">Mapa</td>
+            <td id="td-mapa" width="10%">Mapa</td>
             <td width="19%">Etiqueta Inicial - Final</td>
             <td width="6%">Intervalo</td>
             <td width="10%">Tipo Conferência</td>
+            <td width="7%">Expedicao</td>
+            <td width="10%">Data Vinculo</td>
             <td width="4%" style="text-align: center">X</td>
         </tr>
         <tbody id="tbResult" class="tbFont">
