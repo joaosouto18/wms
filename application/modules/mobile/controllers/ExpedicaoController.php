@@ -187,7 +187,7 @@ class Mobile_ExpedicaoController extends Action {
         }
     }
 
-    public function conferteProdutoAjaxAction() {
+    public function confereProdutoAjaxAction() {
         $idMapa = $this->_getParam("idMapa");
         $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
@@ -283,7 +283,6 @@ class Mobile_ExpedicaoController extends Action {
             }
         }
 
-        //$this->getHelper('viewRenderer')->setNoRender(true);
         $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg'], 'produto' => $msg['produto'], 'volumePatrimonio' => $volume));
         $this->_helper->json($vetRetorno);
     }

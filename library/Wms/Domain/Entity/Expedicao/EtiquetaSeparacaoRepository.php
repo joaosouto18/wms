@@ -849,7 +849,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $codGrupo = 0;
             $expedicaoEntity = null;
 
-            foreach ($pedidosProdutos as $key => $pedidoProduto) {
+            foreach ($pedidosProdutos as $pedidoProduto) {
                 $expedicaoEntity = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
 
                 /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoEntity */
@@ -1215,7 +1215,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if (isset($arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco])) {
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco]['qtd'] += $qtdSepararEmbalagemAtual;
                                 } else {
-                                    //list($mapa, $caixaInicio, $caixaFim) = $this->getMapaSeparacao($pedidoProduto, $arrElemConsolidado, $quebras, $statusEntity, $expedicaoEntity);
                                     list($strQuebrasConcat, $arrQuebras) = self::getSetupQuebras($quebras, $pedidoProduto);
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco] = array(
                                         'qtd' => $qtdSepararEmbalagemAtual,
@@ -1260,7 +1259,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             $arrayGrupos = array();
-            foreach ($arrayEtiquetas as $key => $etiqueta) {
+            foreach ($arrayEtiquetas as $i => $etiqueta) {
                 $statusEntity = $etiqueta['statusEntity'];
                 $produtoEntity = $etiqueta['produtoEntity'];
                 $pedidoEntity = $etiqueta['pedidoEntity'];
@@ -1297,9 +1296,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $arrReagrupado = self::regroupMapaProduto($arrMapasEmbPP);
 
             foreach ($arrReagrupado as $idPedProd => $pedidoProduto) {
-                $mapaSeparacaoEn = self::getMapaSeparacao($pedidoProduto['quebras'], $statusEntity, $pedidoProduto['expedicaoEn']);
                 foreach ($pedidoProduto['enderecos'] as $endereco) {
                     foreach ($endereco as $element) {
+                        $mapaSeparacaoEn = self::getMapaSeparacao($element['quebras'], $statusEntity, $pedidoProduto['expedicaoEn']);
                         $qtdMapa = $element['qtd'];
                         $arrPedProd = $element['arrPedProd'];
                         $embalagemEn = $element['embalagemEn'];
@@ -1311,7 +1310,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         if ($consolidado == 'S') {
                             $dadosConsolidado = [
                                 'cubagem' => $element['cubagem'],
-                                'carrinho' => $pedidoProduto['quebras'][MapaSeparacaoQuebra::QUEBRA_CARRINHO]['codQuebra'],
+                                'carrinho' => $element['quebras'][MapaSeparacaoQuebra::QUEBRA_CARRINHO]['codQuebra'],
                                 'caixaInicio' => $element['caixaInicio'],
                                 'caixaFim' => $element['caixaFim']
                             ];
@@ -1449,7 +1448,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     if ($element['consolidado'] == 'S') {
                         $idCliente = $pedidoProdutoEn->getPedido()->getPessoa()->getId();
 
-                        $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$pedidoProdutoEn->getId()]['quebras'] = $quebras;
                         $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$pedidoProdutoEn->getId()]['expedicaoEn'] = $expedicaoEn;
                         $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$pedidoProdutoEn->getId()]['enderecos'][$enderecoEn->getId()][$embalagemEn->getId()] = array(
                             'qtd' => $qtdMapa,
@@ -1458,6 +1456,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             'arrPedProd' => array($pedidoProdutoEn->getId() => $pedidoProdutoEn),
                             'pedidoEn' => $pedidoProdutoEn->getPedido(),
                             'produtoEn' => $produtoEn,
+                            'quebras' => $quebras,
                             'embalagemEn' => $embalagemEn,
                             'enderecoEn' => $enderecoEn);
 
@@ -1487,9 +1486,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
-        $novaCaixa = false;
         $totalCaixas = 0;
-        // AQUI IDENTIFICO A QUANTIDADE NECESSÁRIA DE CAIXAS PARA CADA CLIENTE DE MAPA CONSOLIDADO
+        // IDENTIFICA A QUANTIDADE NECESSÁRIA DE CAIXAS PARA CADA CLIENTE DE MAPA CONSOLIDADO
         foreach ($arrConsolidado as $strQuebra => $clientes) {
             foreach ($clientes as $idCliente => $dadosCliente) {
                 $idCaixa = 0;
@@ -1499,6 +1497,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $cubagemRestante = $emb['cubagem'];
                             while ($cubagemRestante > 0) {
                                 $caixa = [];
+
+                                // VERIFICA SE TEM UMA CAIXA QUE NÃO ESTEJA CHEIA
                                 if (isset($arrConsolidado[$strQuebra][$idCliente]['caixas'])) {
                                     foreach ($arrConsolidado[$strQuebra][$idCliente]['caixas'] as $key => $cx) {
                                         if (Math::compare($cx['cubagemDisponivel'], 0, '>')) {
@@ -1508,16 +1508,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                     }
                                 }
 
+                                // SE NÃO TIVER CAIXA ABERTA CRIA UMA NOVA
                                 if (empty($caixa)) {
-                                    $novaCaixa = true;
-                                }
-
-                                if ($novaCaixa) {
                                     $idCaixa++;
                                     $caixa = ['cubagemDisponivel' => $cubagemCaixa];
-                                    $novaCaixa = false;
                                 }
 
+                                // VERIFICA SE O ITEM CABE POR COMPLETO NA MESMA CAIXA OU SE SERÁ DIVIDIO ENTRE A ATUAL E UMA NOVA
                                 if (Math::compare($cubagemRestante, $caixa['cubagemDisponivel'], '<=')) {
                                     $caixa['cubagemDisponivel'] = Math::subtrair($caixa['cubagemDisponivel'], $cubagemRestante);
                                     $caixa['itens'][] = "$idPedProd-$idEndereco-$idEmb";
@@ -1534,6 +1531,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                         $arrConsolidado[$strQuebra][$idCliente]['itens'][$idPedProd]['enderecos'][$idEndereco][$idEmb]['caixaInicio'] = $idCaixa;
                                     }
                                 }
+
+                                // REGISTRA A CAIXA NO DEVIDO CLIENTE
                                 $arrConsolidado[$strQuebra][$idCliente]['caixas'][$idCaixa] = $caixa;
                             }
                         }
@@ -1542,7 +1541,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
-        // AQUI ORDENO OS CLIENTES DO ARRAY CONSOLIDADO DO MAIOR PARA O MENOR EM RELAÇÃO AO TOTAL DE CAIXAS NECESSÁRIAS
+        // ORDENA OS CLIENTES DO ARRAY CONSOLIDADO DO MAIOR PARA O MENOR EM RELAÇÃO AO TOTAL DE CAIXAS NECESSÁRIAS
         foreach($arrConsolidado as $quebras => $clientes) {
             uasort($clientes, function ($a, $b) {
                 return count($a['caixas']) < count($b['caixas']);
@@ -1550,17 +1549,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $arrConsolidado[$quebras] = $clientes;
         }
 
-        // AQUI O SISTEMA QUEBRA PELA QUANTIDADE MAXIMA DE CAIXAS EM CADA CARRINHO DE ACORDO COM AS QUEBRAS PRÉ-DEFINIDAS
-
         $arrCarrinhos = [];
-        $novoCarrinho = false;
         $lastCarByQuebra = [];
-
+        // AGRUPAMENTO POR QUEBRA PELA QUANTIDADE MAXIMA DE CAIXAS POR CARRINHO DE ACORDO COM AS QUEBRAS PRÉ-DEFINIDAS
         foreach ($arrConsolidado as $strQuebras => $clientes) {
             foreach ($clientes as $idCliente => $dadosCliente) {
                 $caixasRestantes = count($dadosCliente['caixas']);
+                if ($caixasRestantes > $maxCaixasCarrinho)
+                    throw new \Exception("As $caixasRestantes caixas necessárias para o cliente de ID $idCliente excede a capacidade de $maxCaixasCarrinho caixas suportada pelo carrinho! Entre em contato com o suporte.");
                 $carrinho = [];
                 $numCarrinho = 0;
+
+                // VERIFICA SE EXISTE ALGUM CARRINHO LIVRE QUE COMPORTE A QTD DE CAIXAS RESTANTES
                 if (isset($arrCarrinhos[$strQuebras])) {
                     foreach ($arrCarrinhos[$strQuebras] as $idCarrinho => $car) {
                         if ($caixasRestantes <= $car['caixasLivres']) {
@@ -1571,23 +1571,22 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
                 }
 
+                // SE NÃO TIVER CARRINHO CRIA UM NOVO
                 if (empty($carrinho)) {
-                    $novoCarrinho = true;
-                }
-
-                if ($novoCarrinho) {
                     if (isset($lastCarByQuebra[$strQuebras])) {
                         $numCarrinho = $lastCarByQuebra[$strQuebras];
                     }
                     $numCarrinho++;
                     $lastCarByQuebra[$strQuebras] = $numCarrinho;
                     $carrinho = ['clientes' => [], 'caixasLivres' => $maxCaixasCarrinho];
-                    $novoCarrinho = false;
                 }
 
-                if ($carrinho['caixasLivres'] < $maxCaixasCarrinho) {
+                // VERIFICA SE A CAIXA ATUAL COMPORTA A QUANTIDADE DE CAIXAS NECESSÁRIAS DO CLIENTE ATUAL
+                if ($caixasRestantes <= $carrinho['caixasLivres']) {
                     $proximaCaixaLivre = $maxCaixasCarrinho - $carrinho['caixasLivres'];
                     $arrCheck = [];
+
+                    // REIDENTIFICA OS PRODUTOS NAS CAIXAS DE ACORDO COM O ALOCAMENTO NO CARRINHO
                     foreach ($dadosCliente['caixas'] as $idCaixa => $caixa) {
                         foreach ($caixa['itens'] as $item) {
                             if (!in_array($item, $arrCheck)) {
@@ -1600,17 +1599,25 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
                         }
                     }
-                }
 
-                $carrinho['caixasLivres'] -= $caixasRestantes;
-                foreach($dadosCliente['itens'] as $idPedProd => $dados) {
-                    $dadosCliente['itens'][$idPedProd]['quebras'][MapaSeparacaoQuebra::QUEBRA_CARRINHO]['codQuebra'] = $numCarrinho;
+                    // REDEFINE A QUANTIDADE DE CAIXAS LIVRES DO CARRINHO
+                    $carrinho['caixasLivres'] -= $caixasRestantes;
+
+                    // REGISTRA O NÚMERO DO CARRINHO COMO CÓDIGO DE QUEBRA DO MAPA
+                    foreach ($dadosCliente['itens'] as $idPedProd => $dados) {
+                        foreach ($dados['enderecos'] as $idEndereco => $embArr)
+                            foreach ($embArr as $idEmb => $emb)
+                                $dadosCliente['itens'][$idPedProd]['enderecos'][$idEndereco][$idEmb]['quebras'][MapaSeparacaoQuebra::QUEBRA_CARRINHO]['codQuebra'] = $numCarrinho;
+                    }
+
+                    // SALVA AS ALTERAÇÕES NA MATRIZ TEMPORÁRIA
+                    $carrinho['clientes'][$idCliente] = $dadosCliente;
+                    $arrCarrinhos[$strQuebras][$numCarrinho] = $carrinho;
                 }
-                $carrinho['clientes'][$idCliente] = $dadosCliente;
-                $arrCarrinhos[$strQuebras][$numCarrinho] = $carrinho;
             }
         }
 
+        // PASSA O RESULTADO DO AGRUPAMENTO DOS CARRINHOS PARA A MATRIZ PRINCIPAL
         foreach ($arrCarrinhos as $strQuebra => $carrinhos) {
             foreach ($carrinhos as $idCarrinho => $infoCarrinho) {
                 foreach ($infoCarrinho['clientes'] as $idCliente => $infoCliente) {
@@ -1692,8 +1699,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             'embalagemEn' => $embalagemAtual,
                             'produtoEn' => $produtoEn,
                             'pedidoEn' => null,
+                            'quebras' => $quebras,
                             'enderecoEn' => $enderecoEn);
-                        $newArray[$pedidoProduto->getId()]['quebras'] = $quebras;
                         $newArray[$pedidoProduto->getId()]['expedicaoEn'] = $expedicaoEn;
                     }
                 }

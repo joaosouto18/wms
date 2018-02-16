@@ -124,7 +124,7 @@ class Embalagem extends SubForm
                 ->addElement('hidden', 'acao', array(
                     'value' => 'incluir',
                 ))
-                ->addElement('submit', 'btnEmbalagem', array(
+                ->addElement('button', 'btnEmbalagem', array(
                     'label' => 'Adicionar',
                     'attribs' => array(
                         'id' => 'btn-salvar-embalagem',
