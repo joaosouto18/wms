@@ -89,9 +89,9 @@ function playSound(soundfile) {
                                                     $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"] #qtd').text(data.retorno.produto[0]['qtdConferidaTotalEmb']);
                                                     if (data.retorno.message == 'checkout') {
                                                         $('#conferir').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').hide();
-                                                        $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').css('background','#f3f3f3');;
+                                                        $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').css('background','#f3f3f3');
                                                     }else{
-                                                        $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').css('background','#fad0d0');;
+                                                        $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').css('background','#fad0d0');
                                                     }
                                                     error = "";
                                                 }
