@@ -67,7 +67,9 @@ class EquipeSeparacaoRepository extends EntityRepository
                     (EP.ETIQUETA_INICIAL || ' - ' || EP.ETIQUETA_FINAL) AS INTERVALO,
                     ((EP.ETIQUETA_FINAL - EP.ETIQUETA_INICIAL) + 1) AS TOTAL,
                     DECODE(PF.NUM_CPF, NULL,NULL,
-                    TRANSLATE(TO_CHAR(PF.NUM_CPF/100,'000,000,000.00'),',.','.-')) CPF
+                    TRANSLATE(TO_CHAR(PF.NUM_CPF/100,'000,000,000.00'),',.','.-')) CPF,
+                    CG.COD_EXPEDICAO,
+                    TO_CHAR(EP.DTH_VINCULO,'DD/MM/YYYY') AS DTH_VINCULO
                 FROM
                   EQUIPE_SEPARACAO EP
                   INNER JOIN PESSOA P ON (EP.COD_USUARIO = P.COD_PESSOA)
