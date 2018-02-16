@@ -1839,6 +1839,7 @@ class ExpedicaoRepository extends EntityRepository {
             $statusEntity = $em->getReference('wms:Util\Sigla', ExpedicaoEntity::STATUS_INTEGRADO);
             $enExpedicao->setStatus($statusEntity);
             $enExpedicao->setDataInicio(new \DateTime);
+            $enExpedicao->setIndProcessando("N");
 
             $em->persist($enExpedicao);
             if ($runFlush) {
