@@ -19,7 +19,8 @@ BEGIN
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
 
-    EXECUTE IMMEDIATE 'ALTER TABLE EXPEDICAO ADD IND_PROCESSANDO CHAR(1) DEFAULT ''N'' NOT NULL';
+    EXECUTE IMMEDIATE 'ALTER TABLE EXPEDICAO ADD IND_PROCESSANDO CHAR(1)';
+    EXECUTE IMMEDIATE 'ALTER TABLE EXPEDICAO MODIFY IND_PROCESSANDO DEFAULT ''N''';
 
     /************************************************************************
 **                 NÃO ALTERAR ABAIXO DESTA REGIÃO                     **
