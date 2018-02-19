@@ -50,7 +50,8 @@
     }
 
     .tbFont tr td{
-        font-size: 15px !important;
+        font-size: 13px !important;
+        padding: 10px;
     }
 
 </style>
@@ -297,6 +298,7 @@
             if($('#input-busca').val() == 1){
                 $('#tbResult tr').remove();
                 $('#input-busca').val(0);
+                $('#title-busca').hide();
             }
             var total = parseInt($('#txtIntervalo').val());
             var eI = $('#etiquetas-etiquetaInicial').val();
@@ -444,6 +446,7 @@
         $("#etiquetas-buscar").click(function () {
            $('#tbResult tr').remove();
            $('#input-busca').val(1);
+            $('#title-busca').show();
             $.ajax({
                 url: 'busca-apontamento-separacao-ajax/',
                 type: 'post',
@@ -663,22 +666,26 @@
 <?php
 echo $this->form;
 ?>
+<fieldset id="fieldset-conferente" style="background: #FFFFFF!important;">
+    <legend>Conferentes</legend>
 <input type="hidden" id="input-busca" value="0">
 <div id="exibe-pessoa-grid" class="grid">
-    <table class="gTable ">
-        <caption>Conferentes</caption>
-        <tr class ="gTTitle">
+    <table class="gTable" style="text-align: center;">
+<!--        <caption>Conferentes</caption>-->
+        <h4 style="background:#FFFFFF!important; text-align: center; display: none; padding-bottom: 10px;" id="title-busca">Resultado Busca</h4>
+        <tr class ="gTTitle"  style="font-weight: bold;">
             <td width="30%">Nome</td>
             <td width="13%">CPF</td>
             <td id="td-mapa" width="10%">Mapa</td>
             <td width="19%">Etiqueta Inicial - Final</td>
             <td width="6%">Intervalo</td>
             <td width="10%">Tipo Conferência</td>
-            <td width="7%">Expedicao</td>
-            <td width="10%">Data Vinculo</td>
+            <td width="7%">Expedição</td>
+            <td width="10%">Data Vínculo</td>
             <td width="4%" style="text-align: center">X</td>
         </tr>
         <tbody id="tbResult" class="tbFont">
         </tbody>
     </table>
 </div>
+</fieldset>
