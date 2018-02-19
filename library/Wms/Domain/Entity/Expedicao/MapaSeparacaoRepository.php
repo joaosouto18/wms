@@ -1107,7 +1107,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         }
 
         //QUERY PRINCIPAL PARA VALIDAÇÃO DE CONFERENCIA
-        $SQL = "SELECT $SQLFields
+        $SQL = "SELECT DISTINCT $SQLFields
                        MS.COD_MAPA_SEPARACAO,
                        CASE WHEN MS.COD_MAPA_SEPARACAO = $idMapa THEN 0 ELSE 1 END as ORDENADOR,
                        MSP.QTD_SEPARAR,
@@ -1219,7 +1219,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             if (Math::compare($qtdRestante, $qtdPendenteConferenciaMapa, "<=")) {
                 $qtdConferir = $qtdRestante;
             } else {
-                $qtdConferir = $qtdPendenteConferenciaMapa;
+                $qtdConferir = (!$checkout) ? $qtdPendenteConferenciaMapa: $qtdRestante ;
             }
 
             $qtdConferidoTotalEmb = $qtdConferidoTotal;
@@ -1245,7 +1245,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             }
         }
 
-        if (Math::compare($qtdRestante, 0, ">")) {
+        if (Math::compare($qtdRestante, 0, ">") && !$checkout) {
             throw new \Exception("A quantidade de $qtdInformada para o produto $codProduto / $dscGrade excede o solicitado!");
         }
 
