@@ -305,6 +305,7 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Correçao: Correção de passagem de parametro em metodo reimprimir, chamado em reimprimirAction, para reimprimir todas as etiquetetas selecionadas', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Correçao: Relatório de produtos sem picking exportando para CSV', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Correçao: Grade do produto com str_replace sem necessidade :(', null, SYSDATE);
-INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Melhoria: trava para não gerar onda de expedição caso exista produtos descasados e a norma igual para todos os volumes', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Melhoria: Trava para não gerar onda de expedição caso exista produtos descasados e a norma igual para todos os volumes', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Correção: Corte total vindo do ERP deve considerar apenas o pedido cortado', null, SYSDATE);
 
 

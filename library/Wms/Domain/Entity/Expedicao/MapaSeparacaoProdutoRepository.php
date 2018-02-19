@@ -247,6 +247,8 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
         $whereMapas = '';
         if (isset($mapas) && !empty($mapas)) {
             $whereMapas = " AND MS.COD_MAPA_SEPARACAO IN ($mapas) ";
+        } else {
+            $mapas = 0;
         }
 
         $SQL = "SELECT MSP.COD_PRODUTO,
@@ -268,15 +270,17 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                                     COD_PRODUTO,
                                     DSC_GRADE,
                                     SUM(QTD_CONFERIDA * QTD_EMBALAGEM) AS QTD_CONF
-                               FROM MAPA_SEPARACAO_CONFERENCIA GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSC
-                    ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = MSP.COD_PRODUTO
+                               FROM MAPA_SEPARACAO_CONFERENCIA
+                              WHERE COD_MAPA_SEPARACAO IN ($mapas)
+                               GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSC
+                    ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = MSP.COD_PRODUTO MSC.DSC_GRADE = MSP.DSC_GRADE 
                   LEFT JOIN (SELECT PP.COD_PRODUTO, PP.DSC_GRADE, SUM(PP.QTD_CORTADA) as CORTE
                                FROM PEDIDO_PRODUTO PP
                               WHERE PP.COD_PEDIDO IN ($pedidos)
                                GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) C ON C.COD_PRODUTO = MSP.COD_PRODUTO AND C.DSC_GRADE = MSP.DSC_GRADE
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = MSP.COD_PRODUTO AND PROD.DSC_GRADE = MSP.DSC_GRADE
                  WHERE 1 = 1 $whereMapas
-                      AND C.CORTE >0
+                      AND C.CORTE > 0
                  GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE, C.CORTE, PROD.DSC_PRODUTO";
         $produtos =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         $produtosCortar = array();
