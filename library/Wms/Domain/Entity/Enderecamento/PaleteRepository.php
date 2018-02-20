@@ -615,7 +615,7 @@ class PaleteRepository extends EntityRepository {
 
         $this->deletaPaletesEmRecebimento($recebimentoEn->getId(), $idProduto, $grade);
         $qtdEnderecada = $this->getQtdEnderecadaByNormaPaletizacao($recebimentoEn->getId(), $idProduto, $grade);
-        if (is_null($produtoEn->getVolumes())) {
+        if (count($produtoEn->getVolumes()) == 0) {
             $tipo = "E";
             $idOs = $conferenciaRepo->getLastOsRecebimentoEmbalagem($idRecebimento, $idProduto, $grade);
             $qtdRecebida = $conferenciaRepo->getQtdByRecebimentoEmbalagemAndNorma($idOs, $idProduto, $grade);

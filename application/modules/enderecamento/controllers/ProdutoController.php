@@ -136,7 +136,7 @@ class Enderecamento_ProdutoController extends Action
     public function confirmarAlteracaoAction() {
         $idRecebimento = $this->_getParam("id");
         $codProduto    = $this->_getParam("codigo");
-        $grade         = $this->_getParam("grade");
+        $grade         = str_replace('&','/',$this->_getParam("grade"));
         $idNorma       = $this->_getParam("norma");
 
         $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
