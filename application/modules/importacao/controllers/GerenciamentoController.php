@@ -30,6 +30,8 @@ class Importacao_GerenciamentoController extends Action
             )
         ));
 
+        $acaoIntEntity = null;
+
         try {
             /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
             $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
@@ -91,7 +93,15 @@ class Importacao_GerenciamentoController extends Action
 
             $this->view->valores = $arrayFinal;
         } catch (\Exception $e) {
-            $this->_helper->json(array('error' => $e->getMessage()));
+            $redirect = "/";
+            if (!empty($acaoIntEntity)) {
+                if ($acaoIntEntity->getTipoAcao()->getId() ==  AcaoIntegracao::INTEGRACAO_NOTAS_FISCAIS) {
+                    $redirect = '/web/recebimento/index';
+                } else if ($acaoIntEntity->getTipoAcao()->getId() == AcaoIntegracao::INTEGRACAO_PEDIDOS) {
+                    $redirect = '/expedicao/index/index';
+                }
+            }
+            $this->_helper->json(array('error' => $e->getMessage(), 'redirect' => $redirect));
         }
     }
 }

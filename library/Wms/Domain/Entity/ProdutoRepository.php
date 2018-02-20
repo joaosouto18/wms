@@ -313,7 +313,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
                 extract($itemEmbalagem);
 
-                $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_UNITARIO);
+                $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_UNITARIO, $id);
                 if(!empty($check)){
                     $arrItens = [];
                     foreach ($check as $produto) {
@@ -618,7 +618,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             if (!isset($acao))
                 continue;
 
-            $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_COMPOSTO);
+            $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_COMPOSTO, $id);
             if(!empty($check)){
                 $arrItens = [];
                 foreach ($check as $produto) {
@@ -1939,7 +1939,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         $em->flush();
     }
 
-    public function checkCodBarrasRepetido($codigoBarras, $tipoComercializacao){
+    public function checkCodBarrasRepetido($codigoBarras, $tipoComercializacao, $idElemento){
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('p.id idProduto, p.grade, NVL(pe.descricao, pv.descricao) dsc_elemento')
             ->from('wms:Produto', 'p')
