@@ -657,6 +657,9 @@ class Expedicao_IndexController extends Action {
                             $salvar = false;
                         }
                     }
+                    /** @var Expedicao\MapaSeparacao $mapaEn */
+                    $mapaEn = $this->em->find("wms:Expedicao\MapaSeparacao", $mapa);
+                    $expedicaoIni['COD_EXPEDICAO'] = $mapaEn->getCodExpedicao();
                 }
             }else{
                 $erro = 'Nenhum conferente encontrado com este CPF';
