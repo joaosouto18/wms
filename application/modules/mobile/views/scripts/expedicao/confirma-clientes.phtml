@@ -3,7 +3,7 @@
     <?php foreach ($this->clientes as $cliente) : ?>
         <li>
             <a href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'ler-produto-mapa', 'idMapa' => $this->idMapa, 'idExpedicao' => $this->idExpedicao, 'cliente' => $cliente['COD_PESSOA']),null, true); ?>"
-               title="<?php echo $cliente['NOM_PESSOA'] ?>" ><?php echo $cliente['NOM_PESSOA'] ?> - <?php echo ' CAIXA(S): '.$cliente['NUM_CAIXA_PC_INI'] ?></a>
+               title="<?php echo $cliente['NOM_PESSOA'] ?>" ><?php echo "$cliente[NOM_PESSOA] - CAIXA(S): $cliente[NUM_CAIXA_PC_INI] à $cliente[NUM_CAIXA_PC_FIM]"?></a>
         </li>
     <?php endforeach; ?>
 </ul>

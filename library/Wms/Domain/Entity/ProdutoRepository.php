@@ -309,10 +309,19 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             //embalagens do produto
             if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
                 return false;
-
             foreach ($values['embalagens'] as $id => $itemEmbalagem) {
                 $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
                 extract($itemEmbalagem);
+
+                $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_UNITARIO);
+                if(!empty($check)){
+                    $arrItens = [];
+                    foreach ($check as $produto) {
+                        $arrItens[] = "item $produto[idProduto] / $produto[grade] ($produto[dsc_elemento])";
+                    }
+                    $str = implode(", ", $arrItens);
+                    throw new \Exception("O codigo de barras $codigoBarras já esta cadastrado: $str");
+                }
 
                 switch ($itemEmbalagem['acao']) {
                     case 'incluir':
@@ -609,6 +618,15 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             if (!isset($acao))
                 continue;
 
+            $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_COMPOSTO);
+            if(!empty($check)){
+                $arrItens = [];
+                foreach ($check as $produto) {
+                    $arrItens[] = "item $produto[idProduto] / $produto[grade] ($produto[dsc_elemento])";
+                }
+                $str = implode(", ", $arrItens);
+                throw new \Exception("O codigo de barras $codigoBarras já esta cadastrado: $str");
+            }
             // id
 //            $itemVolume['id'] = $id;
             // pega infos de normas de produtos
@@ -1919,5 +1937,25 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             }
         }
         $em->flush();
+    }
+
+    public function checkCodBarrasRepetido($codigoBarras, $tipoComercializacao){
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id idProduto, p.grade, NVL(pe.descricao, pv.descricao) dsc_elemento')
+            ->from('wms:Produto', 'p')
+            ->leftJoin('p.embalagens', 'pe')
+            ->leftJoin('p.volumes', 'pv')
+            ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+            ->setParameter('codigoBarras', $codigoBarras);
+
+        if ($tipoComercializacao == Produto::TIPO_UNITARIO) {
+            $dql->andWhere("pe.id != :idElemento")
+                ->setParameter('idElemento', $idElemento);
+        } elseif ($tipoComercializacao == Produto::TIPO_COMPOSTO) {
+            $dql->andWhere("pv.id != :idElemento")
+                ->setParameter('idElemento', $idElemento);
+        }
+
+        return $dql->getQuery()->getResult();
     }
 }

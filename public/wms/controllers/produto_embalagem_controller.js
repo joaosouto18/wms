@@ -37,6 +37,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var date = $(el).parent('div').find('.dataInativacao');
                                 var div = $(el).parent('div').parent('td');
                                 var este = this;
+                                var model = el.closest('.produto_embalagem').model();
 
                                 $.ajax({
                                     url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
@@ -65,11 +66,13 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                                     today = dd + '/' + mm + '/' + yyyy;
 
                                                     date.text(today);
+                                                    model.dataInativacao = today;
                                                 }
                                                 div.css("color", "red");
                                             } else {
                                                 date.text("EMB. ATIVA");
                                                 div.css("color", "green");
+                                                model.dataInativacao = "EMB. ATIVA";
                                             }
                                         }
                                     }
@@ -114,7 +117,6 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                             salvarDadosEmbalagem: function (valores) {
                                 var id = valores.id.toString();
-                                console.log(valores);
 
                                 if (valores.acao === 'incluir') {
                                     valores.dataInativacao = 'EMB. ATIVA';
@@ -794,29 +796,38 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     return true;
                                 }
 
+                                var codigoRepetidoInternamente = false;
                                 // verifico se existe embalagens neste produto com o mesmo codigo de barras
                                 codigosBarras.each(function () {
                                     if (this.value === codigoBarras) {
-                                        este.dialogAlert("Este código de barras já foi cadastrado neste produto.");
-                                        return false;
+                                        codigoRepetidoInternamente = true;
                                     }
                                 });
 
-                                var result = null;
-                                $.ajax({
-                                    url: URL_MODULO + '/produto/verificar-codigo-barras-ajax',
-                                    type: 'post',
-                                    async: false,
-                                    dataType: 'json',
-                                    data: {codigoBarras: codigoBarras}
-                                }).success(function (data) {
-                                    if (data.status === "success") {
-                                        result = true;
-                                    } else if (data.status === "error") {
-                                        este.dialogAlert(data.msg);
-                                        result = false;
-                                    }
-                                });
+                                var result = true;
+                                if (codigoRepetidoInternamente) {
+                                    este.dialogAlert("Este código de barras já foi cadastrado neste produto.");
+                                    result = false;
+                                } else {
+                                    $.ajax({
+                                        url: URL_MODULO + '/produto/verificar-codigo-barras-ajax',
+                                        type: 'post',
+                                        async: false,
+                                        dataType: 'json',
+                                        data: {
+                                            codigoBarras: codigoBarras,
+                                            idElemento: valores.id,
+                                            tipoComercializacao: 1
+                                        }
+                                    }).success(function (data) {
+                                        if (data.status === "success") {
+                                            result = true;
+                                        } else if (data.status === "error") {
+                                            este.dialogAlert(data.msg);
+                                            result = false;
+                                        }
+                                    });
+                                }
                                 return result;
                             },
 

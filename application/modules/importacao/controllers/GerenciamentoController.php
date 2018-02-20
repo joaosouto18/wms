@@ -91,7 +91,7 @@ class Importacao_GerenciamentoController extends Action
 
             $this->view->valores = $arrayFinal;
         } catch (\Exception $e) {
-            $this->_helper->json(array('error' => 'abc'));
+            $this->_helper->json(array('error' => $e->getMessage()));
         }
     }
 }

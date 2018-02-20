@@ -16,7 +16,7 @@ class EtiquetaEndereco extends Pdf
     public $y;
     public $count;
 
-    public function imprimir(array $enderecos = array(), $modelo)
+    public function imprimir(array $enderecos = array(), $modelo, $unico = false)
     {
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -43,6 +43,7 @@ class EtiquetaEndereco extends Pdf
             switch ((int)$modelo) {
                 case 1:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false,false,false);
+
                     if (count($produtos) <= 0){
                         $this->layoutModelo1(null,$codBarras);
                     } else {
@@ -83,7 +84,7 @@ class EtiquetaEndereco extends Pdf
                     }
                     break;
                 case 9:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false);
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,$unico);
                     if (count($produtos) <= 0){
                         $this->layoutModelo9(null,$codBarras);
                     } else {

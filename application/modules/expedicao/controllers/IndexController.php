@@ -400,7 +400,7 @@ class Expedicao_IndexController extends Action {
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
         /** @var \Wms\Domain\Entity\Expedicao\EquipeSeparacaoRepository $equipeSeparacaoRepo */
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
-        $numFunc = $equipeSeparacaoRepo->findBy(array(),array('numFuncionario'=>'DESC'));
+        $numFunc = $equipeSeparacaoRepo->findBy(array(),array('id'=>'DESC'));
         if(empty($numFunc)){
             $func = 1;
         }else{
@@ -443,7 +443,7 @@ class Expedicao_IndexController extends Action {
                         if (is_null($etiquetaInicial))
                             $etiquetaInicial = $etiquetaFinal;
 
-                        $equipeSeparacaoEn = $equipeSeparacaoRepo->getIntervaloEtiquetaUsuario($usuarioEn);
+                        $equipeSeparacaoEn = null;//$equipeSeparacaoRepo->getIntervaloEtiquetaUsuario($usuarioEn);
 
                         //SALVA OS DADOS NA TABELA EQUIPE_SEPARACAO
                         $inicial = 0;
@@ -466,6 +466,7 @@ class Expedicao_IndexController extends Action {
                                     $final = $etiquetaInicial - 1;
                                 }
                             }
+
                             if ($etiquetaInicial < $menorIntervalo) {
                                 $equipeSeparacaoRepo->save($etiquetaInicial, $menorIntervalo - 1, $usuarioEn,$numFunc, false);
                             }
@@ -543,6 +544,35 @@ class Expedicao_IndexController extends Action {
         }
     }
 
+    public function verificaEtiquetaValidaAjaxAction(){
+
+        $etiqueta = $this->_getParam('etiqueta');
+        $verificaExpedicao = $this->_getParam('expedicao');
+        $etiquetaInicial = $this->_getParam('etiquetaInicial');
+        $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        $etiquetaEn = $EtiquetaRepo->find($etiqueta);
+
+        if(empty($etiquetaEn)){
+            $response = array('result' => 'Error', 'msg' => 'Etiqueta invalida');
+        }else{
+            if($verificaExpedicao == 1){
+                $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+                $etiquetaInicial = trim($etiquetaInicial);
+                $etiquetaFinal = trim($etiqueta);
+                $expedicaoIni = $equipeSeparacaoRepo->getExpedicao($etiquetaInicial);
+                $expedicaoFim = $equipeSeparacaoRepo->getExpedicao($etiquetaFinal);
+                if($expedicaoIni['COD_EXPEDICAO'] != $expedicaoFim['COD_EXPEDICAO']){
+                    $response = array('result' => 'Error', 'msg' => 'Etiquetas não pertencem a mesma expedição.');
+                }else{
+                    $response = array('result' => 'Ok');
+                }
+            }else{
+                $response = array('result' => 'Ok');
+            }
+        }
+        $this->_helper->json($response);
+    }
+
     public function conferenteApontamentoSeparacaoAjaxAction() {
         $params = $this->_getAllParams();
         $cpf = str_replace(array('.', '-'), '', $params['cpf']);
@@ -586,28 +616,21 @@ class Expedicao_IndexController extends Action {
             $salvar = false;
             if (empty($erro)) {
                 $equipeSeparacaoEn = $equipeSeparacaoRepo->getIntervaloEtiquetaUsuario($usuarioEn);
+                $salvar = true;
                 if (is_array($equipeSeparacaoEn) && count($equipeSeparacaoEn) > 0) {
                     foreach ($equipeSeparacaoEn as $intervalo) {
-
-                        if ($inicial != 0) {
-                            $iteracao = $intervalo['etiquetaInicial'] - $final;
-                            if ($iteracao > 1) {
-                                $salvar = true;
-                            }
-                        } else {
-                            $menorIntervalo = $intervalo['etiquetaInicial'];
+                        if($etiquetaInicial >= $intervalo['etiquetaInicial'] && $etiquetaInicial <= $intervalo['etiquetaFinal']){
+                            $erro = "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA'];
+                            $salvar = false;
                         }
-                        $inicial = $intervalo['etiquetaInicial'];
-                        $final = $intervalo['etiquetaFinal'];
-                        if ($intervalo['etiquetaFinal'] < $etiquetaInicial) {
-                            $final = $etiquetaInicial - 1;
+                        if($etiquetaFinal >= $intervalo['etiquetaInicial'] && $etiquetaFinal <= $intervalo['etiquetaFinal']){
+                            $erro = "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA'];
+                            $salvar = false;
                         }
-                    }
-                    if ($etiquetaInicial < $menorIntervalo) {
-                        $salvar = true;
-                    }
-                    if ($etiquetaFinal > $final) {
-                        $salvar = true;
+                        if($etiquetaInicial <= $intervalo['etiquetaInicial'] && $etiquetaFinal >= $intervalo['etiquetaFinal']){
+                            $erro = "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA'];
+                            $salvar = false;
+                        }
                     }
                 } else {
                     $salvar = true;
@@ -634,6 +657,9 @@ class Expedicao_IndexController extends Action {
                             $salvar = false;
                         }
                     }
+                    /** @var Expedicao\MapaSeparacao $mapaEn */
+                    $mapaEn = $this->em->find("wms:Expedicao\MapaSeparacao", $mapa);
+                    $expedicaoIni['COD_EXPEDICAO'] = $mapaEn->getCodExpedicao();
                 }
             }else{
                 $erro = 'Nenhum conferente encontrado com este CPF';
@@ -644,7 +670,7 @@ class Expedicao_IndexController extends Action {
 
 
         if (empty($erro) && $salvar == true) {
-            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA'], 'mapa' => $codMapa);
+            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA'], 'mapa' => $codMapa, 'expedicao' => $expedicaoIni['COD_EXPEDICAO'], 'dth_vinculo' => date('d/m/Y'));
         } elseif($salvar == false && empty($erro)) {
             $response = array('result' => 'Error', 'msg' => "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA']);
         }else{
@@ -660,8 +686,9 @@ class Expedicao_IndexController extends Action {
         $cpf = str_replace(array('.', '-'), '', $params['etiquetas']['cpfBusca']);
         $dataInicio = $params['etiquetas']['dataInicial'];
         $dataFim = $params['etiquetas']['dataFinal'];
+        $expedicao = $params['etiquetas']['expedicao'];
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
-        $result = $equipeSeparacaoRepo->getApontamentosProdutividade($cpf, $dataInicio, $dataFim, $etiqueta);
+        $result = $equipeSeparacaoRepo->getApontamentosProdutividade($cpf, $dataInicio, $dataFim, $etiqueta,$expedicao);
         $this->_helper->json(array('dados' => $result));
     }
 
@@ -858,31 +885,23 @@ class Expedicao_IndexController extends Action {
 
     public function confirmarClienteAjaxAction() {
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-        $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'))));
+        $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa')), 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
 
         if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
             $this->view->idMapa = $idMapaSeparacao = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'));
             /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
             $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
             $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
-            foreach ($clientes as $key => $cliente) {
-                $numeroCaixas = explode(',', $cliente['NUM_CAIXA_PC_INI']);
-                $caixaAnterior = null;
-                $arrCaixas = array();
-                foreach ($numeroCaixas as $caixa) {
-                    if ($caixa != $caixaAnterior)
-                        $arrCaixas[] = $caixa;
-                    $caixaAnterior = $caixa;
-                }
-                $clientes[$key]['NUM_CAIXA_PC_INI'] = implode('; ', $arrCaixas);
-            }
+
             if (empty($clientes)) {
                 $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-                $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'))));
-                if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'));
+                $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
+                if (!empty($mapaSeparacaoQuebraEn)) {
                     $clientes = 'finalizar';
                 }
             }
+
             $cargaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
             $this->view->clientes = $clientes;
             $mapaSeparacaoEn = $mapaSeparacaoRepo->find($idMapaSeparacao);

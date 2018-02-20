@@ -14,12 +14,16 @@
             'title': settings.title,
             'msg': settings.msg,
             'width': (!!settings.width)? settings.width : 350,
-            'height': (!!settings.height)? settings.height : 130,
+            'height': (!!settings.height)? settings.height : 'auto',
             'resizable': (!!settings.resizable)? settings.resizable : false,
             'position' : (!!settings.position)? settings.position : 'center',
             'modal' :  (!!settings.modal)? settings.modal :  true,
             'buttons': (!!settings.buttons)? settings.buttons :  {
                 "Ok": function () {
+                    // now we are calling our own callback function
+                    if($.isFunction(callbackFnk)){
+                        callbackFnk.call(this);
+                    }
                     $(this).remove();
                 }
             }
@@ -41,11 +45,6 @@
             close: function(event, ui) {
                 // remove div with all data and events
                 dialog.remove();
-                
-                // now we are calling our own callback function
-                if($.isFunction(callbackFnk)){
-                    callbackFnk.call(this);
-                }
             }
         });
     };

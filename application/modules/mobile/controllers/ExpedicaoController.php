@@ -38,8 +38,8 @@ class Mobile_ExpedicaoController extends Action {
 
         switch (substr($codBarras,0,2)) {
             case 12:
-                $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras));
-                if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
+                if (!empty($mapaSeparacaoQuebraEn)) {
                     $this->_redirect("mobile/expedicao/confirma-clientes/codigoBarras/$codBarras");
                 } else {
                     $this->_redirect("mobile/expedicao/confirmar-operacao/codigoBarras/$codBarras");
@@ -55,20 +55,8 @@ class Mobile_ExpedicaoController extends Action {
         $this->view->idMapa = $idMapaSeparacao = $this->_getParam('codigoBarras');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
-        $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
 
-        foreach ($clientes as $key => $cliente) {
-            $numeroCaixas = explode(',', $cliente['NUM_CAIXA_PC_INI']);
-            $caixaAnterior = null;
-            $arrCaixas = array();
-            foreach ($numeroCaixas as $caixa) {
-                if ($caixa != $caixaAnterior)
-                    $arrCaixas[] = $caixa;
-                $caixaAnterior = $caixa;
-            }
-            $clientes[$key]['NUM_CAIXA_PC_INI'] = implode('; ', $arrCaixas);
-        }
-        $this->view->clientes = $clientes;
+        $this->view->clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
 
         $mapaSeparacaoEn = $mapaSeparacaoRepo->find($idMapaSeparacao);
         $idExpedicao = $mapaSeparacaoEn->getExpedicao()->getId();
@@ -199,7 +187,7 @@ class Mobile_ExpedicaoController extends Action {
         }
     }
 
-    public function conferteProdutoAjaxAction() {
+    public function confereProdutoAjaxAction() {
         $idMapa = $this->_getParam("idMapa");
         $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
@@ -295,7 +283,6 @@ class Mobile_ExpedicaoController extends Action {
             }
         }
 
-        //$this->getHelper('viewRenderer')->setNoRender(true);
         $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg'], 'produto' => $msg['produto'], 'volumePatrimonio' => $volume));
         $this->_helper->json($vetRetorno);
     }

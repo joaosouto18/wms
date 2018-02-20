@@ -9,6 +9,7 @@
     label[for='etiquetas-etiquetaBusca'],
     label[for='dataFinal'],
     label[for='mapas-codMapaSeparacao'],
+    label[for='etiquetas-expedicao'],
     label[for='mapas-pessoa'],
     label[for='etiquetas-etiquetaInicial']{
         font-size: 15px;
@@ -49,7 +50,8 @@
     }
 
     .tbFont tr td{
-        font-size: 15px !important;
+        font-size: 13px !important;
+        padding: 10px;
     }
 
 </style>
@@ -61,11 +63,29 @@
     });
 
     function gotoFinal(event) {
-        if (event.which == 13 || event.keyCode == 13) {
+        if (event.which == 13 || event.keyCode == 13 || event.keyCode == 9 || event.which == 9) {
             if (document.getElementById('etiquetas-etiquetaInicial').value != "") {
+                var eI = document.getElementById('etiquetas-etiquetaInicial').value;
+                eI = parseInt(eI.substring(0, eI.length - 1));
                 codBarrasFinal = document.getElementById('etiquetas-etiquetaFinal');
                 if (codBarrasFinal) {
-                    codBarrasFinal.focus();
+                    $.ajax({
+                        url: 'verifica-etiqueta-valida-ajax/etiqueta/' + eI,
+                        success: function (data) {
+                            if (data.result === "Ok") {
+                                codBarrasFinal.focus();
+                            } else if (data.result = 'Error') {
+                                $.wmsDialogAlert({
+                                    title: 'Alerta',
+                                    msg: data.msg
+                                });
+                                $('#etiquetas-etiquetaInicial').val('');
+                                $('#etiquetas-etiquetaInicial').focus();
+                                return false;
+                            }
+                        }
+                    });
+
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -83,7 +103,6 @@
                 pessoa = document.getElementById('etiquetas-pessoa');
                 if (pessoa) {
                     pessoa.focus();
-
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -129,7 +148,6 @@
                 buscar = document.getElementById('mapas-salvarMapa');
                 if (buscar) {
                     buscar.focus();
-
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -145,6 +163,12 @@
         $('#etiquetas-etiquetaInicial').val('');
         $('#etiquetas-etiquetaFinal').val('');
         $('#txtIntervalo').val('');
+        $('#etiquetas-pessoa').val('');
+        $('#dataInicial').val('');
+        $('#dataFinal').val('');
+        $('#cpfBusca').val('');
+        $('#etiquetas-etiquetaBusca').val('');
+        $('#etiquetas-expedicao').val('');
         $('#etiquetas-etiquetaInicial').focus();
         qtdBipados = 0;
         return false;
@@ -160,11 +184,7 @@
                     if (inptCodBarraFinal) {
                         inptCodBarraFinal.focus();
                         event.stopPropagation();
-//                        if (event.preventDefault) {
-//                            event.preventDefault();
-//                        } else {
-//                            event.returnValue = false;
-//                        }
+
                     }
                 }
             }
@@ -178,11 +198,7 @@
                     if (inptConferente) {
                         inptConferente.focus();
                         event.stopPropagation();
-//                        if (event.preventDefault) {
-//                            event.preventDefault();
-//                        } else {
-//                            event.returnValue = false;
-//                        }
+
                     }
                 }
             }
@@ -192,17 +208,6 @@
         $('#etiquetas-pessoa').keyup(function (event) {
             if (event.which == 13 || event.keyCode == 13) {
                 if ($(this).val() != "") {
-//                    addLista();
-//                    var inptConferente = $("#etiquetas-buscar");
-//                    if (inptConferente) {
-//                        inptConferente.focus();
-//                        event.stopPropagation();
-////                        if (event.preventDefault) {
-////                            event.preventDefault();
-////                        } else {
-////                            event.returnValue = false;
-////                        }
-//                    }
                     return true;
                 }
             }
@@ -290,6 +295,11 @@
         });
 
         addLista = function () {
+            if($('#input-busca').val() == 1){
+                $('#tbResult tr').remove();
+                $('#input-busca').val(0);
+                $('#title-busca').hide();
+            }
             var total = parseInt($('#txtIntervalo').val());
             var eI = $('#etiquetas-etiquetaInicial').val();
             var eF = $('#etiquetas-etiquetaFinal').val();
@@ -378,6 +388,8 @@
                     success: function (data) {
                         if (data.result === "Ok") {
                             result.pessoa = data.pessoa;
+                            result.expedicao = data.expedicao;
+                            result.dth_vinculo = data.dth_vinculo;
                             var addLinha = true;
                             $('.gTResultSet').each(function (e) {
                                 if ($(this).find('.identifica').text() == result.cpf && $(this).find('.intervalo').text() == result.intervalo) {
@@ -408,10 +420,12 @@
                             }
 
                         } else if (data.result = 'Error') {
-                            $.wmsDialogAlert({
-                                title: 'Alerta',
-                                msg: data.msg
-                            });
+//                            $.wmsDialogAlert({
+//                                title: 'Alerta',
+//                                msg: data.msg
+//                            });
+                            alert(data.msg);
+                            $('#etiquetas-pessoa').focus();
                             $('#etiquetas-pessoa').val('');
                             return false;
                         }
@@ -426,9 +440,13 @@
                 return false;
             }
         },
-
+        $('.ui-button-text').click(function () {
+            $('#etiquetas-pessoa').focus();
+        });
         $("#etiquetas-buscar").click(function () {
            $('#tbResult tr').remove();
+           $('#input-busca').val(1);
+            $('#title-busca').show();
             $.ajax({
                 url: 'busca-apontamento-separacao-ajax/',
                 type: 'post',
@@ -442,6 +460,8 @@
                         object.total = dados['TOTAL'];
                         object.cpf = dados['CPF'].trim();
                         object.codEquipe = dados['COD_EQUIPE_SEPARACAO'];
+                        object.expedicao = dados['COD_EXPEDICAO'];
+                        object.dth_vinculo = dados['DTH_VINCULO'];
                         addRow(object);
                     });
                 }
@@ -453,17 +473,25 @@
             var total = null;
             var mapa = null;
             var tipo = null;
+            var expedicao = null;
+            var dth_vinculo = null;
 
             if (data.hasOwnProperty('mapa')) {
                 mapa = data.mapa;
                 intervalo = "N/D";
                 total = "N/D";
                 tipo = "Mapa";
+                expedicao = ' - '
+                dth_vinculo = ' - '
+                $('#td-mapa').show();
             } else {
                 intervalo = data.intervalo;
                 total = data.total;
                 mapa = "N/D";
                 tipo = "Etiquetas";
+                expedicao = data.expedicao;
+                dth_vinculo = data.dth_vinculo;
+                $('#td-mapa').hide();
             }
 
             var cpf = data.cpf;
@@ -471,13 +499,16 @@
 
             var tbody = $('#tbResult');
             var tr = $('<tr>').addClass('gTResultSet');
-
             tr.append($('<td>').text(pessoa));
             tr.append($('<td class="identifica">').text(cpf));
-            tr.append($('<td class="mapa">').text(mapa));
+            if(tipo == 'Mapa') {
+                tr.append($('<td class="mapa">').text(mapa));
+            }
             tr.append($('<td class="intervalo">').text(intervalo));
             tr.append($('<td>').text(total));
             tr.append($('<td class="tipo">').text(tipo));
+            tr.append($('<td class="expedicao">').text(expedicao));
+            tr.append($('<td class="data">').text(dth_vinculo));
             tr.append(
                     $('<td>').css('text-align', 'center').append(
                     $('<a>').attr('id', data.codEquipe).addClass('removeRow').prop('href', 'javascript://').append(
@@ -504,14 +535,30 @@
                 eI = parseInt(eI.substring(0, eI.length - 1));
                 eF = parseInt(eF.substring(0, eF.length - 1));
 
-                if (eI > eF) {
-                    var aux = eF;
+                $.ajax({
+                    url: 'verifica-etiqueta-valida-ajax/expedicao/1/etiqueta/' + eF + '/etiquetaInicial/' + eI,
+                    success: function (data) {
+                        if (data.result === "Ok") {
+                            if (eI > eF) {
+                                var aux = eF;
 
-                    eF = eI;
-                    eI = aux;
-                }
-                $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira: eI, ultima: eF}, function (data) {
-                    $("#txtIntervalo").val(data.result);
+                                eF = eI;
+                                eI = aux;
+                            }
+                            $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira: eI, ultima: eF}, function (data) {
+                                $("#txtIntervalo").val(data.result);
+                            });
+                        } else if (data.result = 'Error') {
+                            $.wmsDialogAlert({
+                                title: 'Alerta',
+                                msg: data.msg
+                            });
+                            $('#etiquetas-etiquetaFinal').val('');
+                            $("#txtIntervalo").val('');
+                            $('#etiquetas-etiquetaFinal').focus();
+                            return false;
+                        }
+                    }
                 });
             }
         });
@@ -529,6 +576,13 @@
         });
 
         $('.save').click(function () {
+            if($('#input-busca').val() == 1){
+                $.wmsDialogAlert({
+                    title: 'Alerta',
+                    msg: 'Não é possivel salvar uma busca!'
+                },  false);
+                return false;
+            }
             var data = [];
             $.each($('#tbResult').children(), function () {
                 var mapa = $(this).children(".mapa").text();
@@ -612,19 +666,26 @@
 <?php
 echo $this->form;
 ?>
+<fieldset id="fieldset-conferente" style="background: #FFFFFF!important;">
+    <legend>Conferentes</legend>
+<input type="hidden" id="input-busca" value="0">
 <div id="exibe-pessoa-grid" class="grid">
-    <table class="gTable ">
-        <caption>Conferentes</caption>
-        <tr class ="gTTitle">
+    <table class="gTable" style="text-align: center;">
+<!--        <caption>Conferentes</caption>-->
+        <h4 style="background:#FFFFFF!important; text-align: center; display: none; padding-bottom: 10px;" id="title-busca">Resultado Busca</h4>
+        <tr class ="gTTitle"  style="font-weight: bold;">
             <td width="30%">Nome</td>
             <td width="13%">CPF</td>
-            <td width="14%">Mapa</td>
+            <td id="td-mapa" width="10%">Mapa</td>
             <td width="19%">Etiqueta Inicial - Final</td>
             <td width="6%">Intervalo</td>
             <td width="10%">Tipo Conferência</td>
+            <td width="7%">Expedição</td>
+            <td width="10%">Data Vínculo</td>
             <td width="4%" style="text-align: center">X</td>
         </tr>
         <tbody id="tbResult" class="tbFont">
         </tbody>
     </table>
 </div>
+</fieldset>

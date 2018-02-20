@@ -10,6 +10,7 @@ class Enderecamento_Relatorio_DisponibilidadePickingController extends Action
         $values = $form->getParams();
         if ($values)
         {
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
             $enderecos = $enderecoRepo->getPickingSemProdutos($values);
             $this->view->enderecos = $enderecos;

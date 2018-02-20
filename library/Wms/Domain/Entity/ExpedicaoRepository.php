@@ -26,6 +26,7 @@ class ExpedicaoRepository extends EntityRepository {
              LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_PEDIDO = P.COD_PEDIDO
              LEFT JOIN MAPA_SEPARACAO MS ON MS.COD_EXPEDICAO = C.COD_EXPEDICAO
                  WHERE (ES.COD_STATUS = 522 OR P.IND_ETIQUETA_MAPA_GERADO = 'N' OR MS.COD_STATUS = 522)
+                   AND P.DTH_CANCELAMENTO IS NULL
                    AND C.COD_EXPEDICAO = " . $idExpedicao;
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -128,7 +129,7 @@ class ExpedicaoRepository extends EntityRepository {
                       AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
                       AND E.COD_EXPEDICAO IN ($expedicoes)
                       AND P.CENTRAL_ENTREGA = $filialExterno
-                      AND P.DTH_CANCELAMENTO IS NULL ";
+                      AND P.DTH_CANCELAMENTO IS NULL";
 
         $result = $this->getEntityManager()->getConnection()->query($Query)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -847,6 +848,7 @@ class ExpedicaoRepository extends EntityRepository {
                         throw new \Exception("Produto $codProduto - $dscGrade sem endereço de picking definido");
                     }
 
+
                     $idEndereco = $enderecoPicking->getId();
 
                     foreach($idsElementos as $id) {
@@ -891,11 +893,16 @@ class ExpedicaoRepository extends EntityRepository {
         return array($itensReservados, $arrEstoqueReservado);
     }
 
-    public function verificaDisponibilidadeEstoquePedido($expedicoes) {
+    public function verificaDisponibilidadeEstoquePedido($expedicoes, $gerarNovaOnda = false) {
 
         $sessao = new \Zend_Session_Namespace('deposito');
         $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
         $central = $deposito->getFilial()->getCodExterno();
+
+        $andWhere = '';
+        if ($gerarNovaOnda) {
+            $andWhere = "AND EXP.IND_PROCESSANDO = 'N'";
+        }
 
         $sql = "
          SELECT DISTINCT
@@ -957,7 +964,8 @@ class ExpedicaoRepository extends EntityRepository {
             INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
              LEFT JOIN ONDA_RESSUPRIMENTO_PEDIDO ORP ON PP.COD_PEDIDO = ORP.COD_PEDIDO AND PP.COD_PRODUTO = ORP.COD_PRODUTO AND PP.DSC_GRADE = ORP.DSC_GRADE
             INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
-            WHERE P.CENTRAL_ENTREGA = $central AND ORP.COD_PEDIDO IS NULL AND P.DTH_CANCELAMENTO IS NULL AND C.COD_EXPEDICAO IN ($expedicoes)
+            INNER JOIN EXPEDICAO EXP ON EXP.COD_EXPEDICAO = C.COD_EXPEDICAO
+            WHERE P.CENTRAL_ENTREGA = $central AND ORP.COD_PEDIDO IS NULL AND P.DTH_CANCELAMENTO IS NULL AND C.COD_EXPEDICAO IN ($expedicoes) $andWhere
                   ORDER BY Codigo, Grade, Produto
         ";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -1740,6 +1748,7 @@ class ExpedicaoRepository extends EntityRepository {
                    AND E.COD_STATUS <> $statusCancelada
                    AND P.DTH_CANCELAMENTO IS NULL
                    AND P.CENTRAL_ENTREGA = $central
+                   AND E.IND_PROCESSANDO = 'N'
                    ";
 
         if (isset($parametros['idExpedicao']) && !empty($parametros['idExpedicao'])) {
@@ -1831,6 +1840,7 @@ class ExpedicaoRepository extends EntityRepository {
             $statusEntity = $em->getReference('wms:Util\Sigla', ExpedicaoEntity::STATUS_INTEGRADO);
             $enExpedicao->setStatus($statusEntity);
             $enExpedicao->setDataInicio(new \DateTime);
+            $enExpedicao->setIndProcessando("N");
 
             $em->persist($enExpedicao);
             if ($runFlush) {
@@ -3786,6 +3796,10 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function getMovimentacaoEstoqueExpedicaoByParams($params) {
 
+        $sessao = new \Zend_Session_Namespace('deposito');
+        $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
+        $central = $deposito->getFilial()->getCodExterno();
+
         $whereReserva = "";
         $whereFinal = "";
 
@@ -3837,6 +3851,7 @@ class ExpedicaoRepository extends EntityRepository {
                        AND R.COD_PEDIDO = PP.COD_PEDIDO
                        AND R.COD_PRODUTO = PP.COD_PRODUTO
                   WHERE 1 = 1
+                        AND P.CENTRAL_ENTREGA = $central
                         $whereFinal
                   ORDER BY COD_EXPEDICAO, INICIO_EXPEDICAO, FIM_EXPEDICAO, C.COD_CARGA_EXTERNO, COD_CLIENTE_EXTERNO, COD_PEDIDO, COD_PRODUTO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -3899,4 +3914,8 @@ class ExpedicaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function changeStatusExpedicao($idsExpedicoes, $processando = 'N') {
+        $sql = "UPDATE EXPEDICAO SET IND_PROCESSANDO = '$processando' WHERE COD_EXPEDICAO IN ($idsExpedicoes)";
+        $this->_em->getConnection()->query($sql)->execute();
+    }
 }

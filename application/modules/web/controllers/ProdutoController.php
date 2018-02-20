@@ -158,6 +158,7 @@ class Web_ProdutoController extends Crud {
                     'peso' => $dadoLogistico->getEmbalagem()->getPeso(),
                     'normaPaletizacao' => $dadoLogistico->getNormaPaletizacao()->getId(),
                     'lblEmbalagem' => $lblEmbalagem,
+                    'qtdEmbalagem' => $dadoLogistico->getEmbalagem()->getQuantidade(),
                     'acao' => 'alterar',
                 );
             }
@@ -196,8 +197,9 @@ class Web_ProdutoController extends Crud {
         /** @var \Wms\Module\Web\Form\Produto $form */
         $form = new $formClass;
 
+        $params = $this->getRequest()->getParams();
+        $entity = $this->repository->findOneBy(array('id' => $params['id'], 'grade' => $params['grade']));
         try {
-            $params = $this->getRequest()->getParams();
             if (isset($params['embalagens'])) {
                 $fator = $params['embalagem-fator'];
                 foreach ($params['embalagens'] as $key => $value) {
@@ -210,7 +212,6 @@ class Web_ProdutoController extends Crud {
                 throw new \Exception('Codigo e Grade do produto devem ser fornecidos');
 
             /** @var ProdutoEntity $entity */
-            $entity = $this->repository->findOneBy(array('id' => $params['id'], 'grade' => $params['grade']));
             if ($this->getRequest()->isPost()) {
 
                 $linhaEn = $entity->getLinhaSeparacao();
@@ -291,35 +292,36 @@ class Web_ProdutoController extends Crud {
                 $this->addFlashMessage('success', 'Produto alterado com sucesso.');
                 $this->_redirect('/produto');
             }
-            $form->setDefaultsFromEntity($entity); // pass values to form
-            $fornecedorRefRepo = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
-            $this->view->codigosFornecedores = $fornecedorRefRepo->findBy(array('idProduto' => $entity->getIdProduto()));
-            $repoEmbalagem = $this->_em->getRepository('wms:Produto\Embalagem');
-
-            /** @var \Wms\Module\Web\Form\Subform\Produto\CodigoFornecedor $subFormCodForn */
-            $subFormCodForn = $form->getSubForm('codigoFornecedor');
-
-            /** @var Zend_Form_Element_Select $selectEmbalagem */
-            $selectEmbalagem = $subFormCodForn->getElement('embalagem');
-
-            $criterio = array(
-                'codProduto' => $params['id'],
-                'grade' => $params['grade']
-            );
-
-            $orderBy = array('isPadrao' => 'DESC', 'descricao' => 'ASC');
-
-            $embalagens = $repoEmbalagem->findBy($criterio, $orderBy);
-            $options = array();
-            /** @var Produto\Embalagem $embalagem */
-            foreach ($embalagens as $embalagem) {
-                $options[$embalagem->getId()] = $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
-            }
-
-            $selectEmbalagem->setMultiOptions($options);
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
+
+        $form->setDefaultsFromEntity($entity); // pass values to form
+        $fornecedorRefRepo = $this->_em->getRepository('wms:CodigoFornecedor\Referencia');
+        $this->view->codigosFornecedores = $fornecedorRefRepo->findBy(array('idProduto' => $entity->getIdProduto()));
+        $repoEmbalagem = $this->_em->getRepository('wms:Produto\Embalagem');
+
+        /** @var \Wms\Module\Web\Form\Subform\Produto\CodigoFornecedor $subFormCodForn */
+        $subFormCodForn = $form->getSubForm('codigoFornecedor');
+
+        /** @var Zend_Form_Element_Select $selectEmbalagem */
+        $selectEmbalagem = $subFormCodForn->getElement('embalagem');
+
+        $criterio = array(
+            'codProduto' => $params['id'],
+            'grade' => $params['grade']
+        );
+
+        $orderBy = array('isPadrao' => 'DESC', 'descricao' => 'ASC');
+
+        $embalagens = $repoEmbalagem->findBy($criterio, $orderBy);
+        $options = array();
+        /** @var Produto\Embalagem $embalagem */
+        foreach ($embalagens as $embalagem) {
+            $options[$embalagem->getId()] = $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
+        }
+
+        $selectEmbalagem->setMultiOptions($options);
         $this->view->form = $form;
     }
 
@@ -558,30 +560,46 @@ class Web_ProdutoController extends Crud {
     public function verificarCodigoBarrasAjaxAction() {
 
         $codigoBarras = $this->getRequest()->getParam("codigoBarras");
+        $idElemento = $this->getRequest()->getParam("idElemento");
+        $tipoComercializacao = $this->getRequest()->getParam("tipoComercializacao");
 
-        $arrayMensagens = array(
+        $arrayMensagen = array(
             'status' => 'success',
             'msg' => 'Sucesso!',
         );
 
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('p.id idProduto, p.grade')
+                ->select('p.id idProduto, p.grade, NVL(pe.descricao, pv.descricao) dsc_elemento')
                 ->from('wms:Produto', 'p')
                 ->leftJoin('p.embalagens', 'pe')
                 ->leftJoin('p.volumes', 'pv')
-                ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+                ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
                 ->setParameter('codigoBarras', $codigoBarras);
 
-        $produto = $dql->getQuery()->getFirstResult();
-
-        if ($produto) {
-            $arrayMensagens = array(
-                'status' => 'error',
-                'msg' => "Este código de barras ja foi cadastrado no produto $produto[idProduto] grade $produto[grade]."
-            );
+        if ($tipoComercializacao == Produto::TIPO_UNITARIO) {
+            $dql->andWhere("pe.id != :idElemento")
+                ->setParameter('idElemento', $idElemento);
+        } elseif ($tipoComercializacao == Produto::TIPO_COMPOSTO) {
+            $dql->andWhere("pv.id != :idElemento")
+                ->setParameter('idElemento', $idElemento);
         }
 
-        $this->_helper->json($arrayMensagens, true);
+        $result = $dql->getQuery()->getResult();
+
+        if (!empty($result)) {
+            $arrItens = [];
+            foreach ($result as $produto) {
+                $arrItens[] = "<br /> - item $produto[idProduto] / $produto[grade] ($produto[dsc_elemento])";
+            }
+            $str = implode(", ", $arrItens);
+            $arrayMensagen = array(
+                'status' => 'error',
+                'msg' => "Este código de barras ja foi cadastrado: $str."
+            );
+
+        }
+
+        $this->_helper->json($arrayMensagen, true);
     }
 
     public function atualizaDadoLogisticoAjaxAction() {

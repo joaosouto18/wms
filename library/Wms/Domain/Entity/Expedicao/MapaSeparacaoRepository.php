@@ -852,37 +852,11 @@ class MapaSeparacaoRepository extends EntityRepository {
 
     public function getClientesByConferencia($idMapaSeparacao) {
         $statusEmbalado = MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO;
-        $sql = "SELECT P.NOM_PESSOA, P.COD_PESSOA,
-                LISTAGG(MSPROD.NUM_CAIXA_PC_INI, ',') WITHIN GROUP (ORDER BY MSPROD.NUM_CAIXA_PC_INI) AS NUM_CAIXA_PC_INI
-                    FROM MAPA_SEPARACAO MS
-                    INNER JOIN MAPA_SEPARACAO_PEDIDO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                    INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
-                    INNER JOIN PEDIDO PED ON PP.COD_PEDIDO = PED.COD_PEDIDO
-                    INNER JOIN PESSOA P ON P.COD_PESSOA = PED.COD_PESSOA
-                    INNER JOIN (
-                      SELECT SUM(DISTINCT MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR - NVL(MSP.QTD_CORTADO,0)) QTD_SEPARAR,
-                      MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM,
-                      MSP.COD_MAPA_SEPARACAO,
-                      MSP.COD_PEDIDO_PRODUTO, MSP.COD_PRODUTO, MSP.DSC_GRADE
-                      FROM MAPA_SEPARACAO_PRODUTO MSP
-                      WHERE MSP.COD_MAPA_SEPARACAO = $idMapaSeparacao
-                      GROUP BY MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM, MSP.COD_MAPA_SEPARACAO,
-                      MSP.COD_PEDIDO_PRODUTO, MSP.COD_PRODUTO, MSP.DSC_GRADE
-                    ) MSPROD ON MSPROD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSPROD.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
-                    INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                    LEFT JOIN (
-                      SELECT SUM(MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA) QTD_CONFERIDA, MSC.COD_PRODUTO, MSC.DSC_GRADE, MS.COD_MAPA_SEPARACAO, MSC.COD_PESSOA
-                      FROM MAPA_SEPARACAO_CONFERENCIA MSC
-                      INNER JOIN MAPA_SEPARACAO MS ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                      WHERE MSC.COD_MAPA_SEPARACAO = $idMapaSeparacao
-                      GROUP BY MSC.COD_PRODUTO, MSC.DSC_GRADE, MS.COD_MAPA_SEPARACAO, MSC.COD_PESSOA) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = PROD.COD_PRODUTO AND MSC.DSC_GRADE = PROD.DSC_GRADE AND MSC.COD_PESSOA = P.COD_PESSOA
-                WHERE MS.COD_MAPA_SEPARACAO = $idMapaSeparacao AND MSPROD.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0)
-                GROUP BY P.NOM_PESSOA, P.COD_PESSOA
-                ORDER BY NUM_CAIXA_PC_INI";
 
         $sql = "SELECT P.NOM_PESSOA,
                        P.COD_PESSOA,
-                       LISTAGG(MSP.NUM_CAIXA_PC_INI, ',') WITHIN GROUP (ORDER BY MSP.NUM_CAIXA_PC_INI) AS NUM_CAIXA_PC_INI
+                       MIN(MSP.NUM_CAIXA_PC_INI) NUM_CAIXA_PC_INI,
+                       MAX(MSP.NUM_CAIXA_PC_FIM) NUM_CAIXA_PC_FIM
                  FROM (SELECT SUM(DISTINCT MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR - NVL(MSP.QTD_CORTADO,0)) QTD_SEPARAR,
                               MSP.NUM_CAIXA_PC_INI, MSP.NUM_CAIXA_PC_FIM,
                               MSP.COD_MAPA_SEPARACAO,
@@ -904,7 +878,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                        AND MSC.COD_PESSOA = P.COD_PESSOA
                  WHERE MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0)
                  GROUP BY P.NOM_PESSOA, P.COD_PESSOA
-                 ORDER BY NUM_CAIXA_PC_INI";
+                 ORDER BY MIN(MSP.NUM_CAIXA_PC_INI)";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
@@ -1112,6 +1086,7 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         $whereMSPEmbalado = "";
         $whereMSCEmbalado = "";
+        $whereOnNaoConsolidado = "";
         if ($codPessoa != null) {
             $whereMSPEmbalado = "
                 INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
@@ -1119,6 +1094,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                 WHERE P.COD_PESSOA = " . $codPessoa;
             $whereMSCEmbalado = "
                 WHERE COD_PESSOA = " . $codPessoa;
+        } else {
+            $whereOnNaoConsolidado = "AND MSQ.IND_TIPO_QUEBRA <> 'T'";
         }
 
         //SE O INDICADOR DE EMBALADO NAO FOR O PRODUTO E SIM A EMBALAGEM FRACIONADA, ENTÂO JA RETORNA ISSO NA QUERY
@@ -1130,8 +1107,9 @@ class MapaSeparacaoRepository extends EntityRepository {
         }
 
         //QUERY PRINCIPAL PARA VALIDAÇÃO DE CONFERENCIA
-        $SQL = "SELECT $SQLFields
+        $SQL = "SELECT DISTINCT $SQLFields
                        MS.COD_MAPA_SEPARACAO,
+                       CASE WHEN MS.COD_MAPA_SEPARACAO = $idMapa THEN 0 ELSE 1 END as ORDENADOR,
                        MSP.QTD_SEPARAR,
                        P.DSC_PRODUTO,
                        P.COD_PRODUTO,
@@ -1146,7 +1124,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                        NVL(PE.IS_EMB_FRACIONAVEL_DEFAULT, 'N') as IS_EMB_FRACIONAVEL_DEFAULT,
                        NVL(PE.IS_EMB_EXPEDICAO_DEFAULT, 'N') as IS_EMB_EXP_DEFAULT
                   FROM MAPA_SEPARACAO MS
-                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME,
+                  INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO
+                  INNER JOIN (SELECT COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME,
                                     SUM((QTD_EMBALAGEM * QTD_SEPARAR) - NVL(QTD_CORTADO,0)) as QTD_SEPARAR
                                FROM MAPA_SEPARACAO_PRODUTO MSP
                                $whereMSPEmbalado
@@ -1164,6 +1143,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = MSP.COD_PRODUTO AND P.DSC_GRADE = MSP.DSC_GRADE
                   $SQLJoin
                  WHERE 1 = 1
+                    $whereOnNaoConsolidado
                     AND ((PE.COD_BARRAS = '$codBarras' AND PE.DTH_INATIVACAO IS NULL) OR (PV.COD_BARRAS = '$codBarras' AND PV.DTH_INATIVACAO IS NULL))";
 
         //SE UTIILIZAR QUEBRA NA CONFERENCIA ENTÃO COMPARO APENAS COM O MAPA INFORMADO, CASO CONTRARIO COMPARO COM TODOS OS MAPAS DA EXPEDIÇÃO
@@ -1172,6 +1152,8 @@ class MapaSeparacaoRepository extends EntityRepository {
         } else {
             $SQL = $SQL . " AND MS.COD_EXPEDICAO = $idExpedicao";
         }
+
+        $SQL .= " ORDER BY ORDENADOR";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -1230,15 +1212,19 @@ class MapaSeparacaoRepository extends EntityRepository {
 
             $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
             $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
-
-            if ($qtdMapaTotal == $qtdConferidoTotal) continue;
+            $qtdPendenteConferenciaMapa = Math::subtrair($mapa['QTD_SEPARAR'], $mapa['QTD_CONFERIDA']);
 
             $codMapa = $mapa['COD_MAPA_SEPARACAO'];
 
-            $qtdConferir = $qtdRestante;
-            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            if (Math::compare($qtdRestante, $qtdPendenteConferenciaMapa, "<=")) {
+                $qtdConferir = $qtdRestante;
+            } else {
+                $qtdConferir = (!$checkout) ? $qtdPendenteConferenciaMapa: $qtdRestante ;
+            }
+
             $qtdConferidoTotalEmb = $qtdConferidoTotal;
             if ($qtdConferidoTotal > 0) {
+                $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
                 $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $dscGrade, $qtdConferidoTotal);
                 $qtdConferidoTotalEmb = implode(' + ', $vetSeparar);
             }
@@ -1252,11 +1238,15 @@ class MapaSeparacaoRepository extends EntityRepository {
                     'codPrdutoVolume' => $codProdutoVolume,
                     'qtdEmbalagem' => $fatorCodBarrasBipado,
                     'qtdConferidaTotalEmb' => $qtdConferidoTotalEmb,
-                    'quantidade' => Math::dividir($qtdConferir,$fatorCodBarrasBipado)
+                    'quantidade' => Math::dividir($qtdConferir, $fatorCodBarrasBipado)
                 );
 
-                $qtdRestante = Math::subtrair($qtdRestante,$qtdConferir);
+                $qtdRestante = Math::subtrair($qtdRestante, $qtdConferir);
             }
+        }
+
+        if (Math::compare($qtdRestante, 0, ">") && !$checkout) {
+            throw new \Exception("A quantidade de $qtdInformada para o produto $codProduto / $dscGrade excede o solicitado!");
         }
 
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA

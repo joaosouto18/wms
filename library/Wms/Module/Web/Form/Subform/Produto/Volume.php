@@ -103,7 +103,7 @@ class Volume extends SubForm
                 ->addElement('hidden', 'idProduto')
                 ->addElement('hidden', 'grade')
                 ->addElement('hidden', 'acao')
-                ->addElement('submit', 'btnVolume', array(
+                ->addElement('button', 'btnVolume', array(
                     'label' => 'Adicionar Volume',
                     'attribs' => array(
                         'id' => 'btn-salvar-volume',

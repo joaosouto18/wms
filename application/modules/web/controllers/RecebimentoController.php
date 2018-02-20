@@ -112,12 +112,12 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $em->flush();
 
             $this->addFlashMessage('success', 'Nota Fiscal excluida com sucesso');
-            $this->redirect('index');
+            $this->redirect('buscar-nota');
         } catch (\Exception $e) {
             $em->rollback();
 
             $this->addFlashMessage('error', $e->getMessage());
-            $this->redirect('index');
+            $this->redirect('buscar-nota');
         }
     }
 

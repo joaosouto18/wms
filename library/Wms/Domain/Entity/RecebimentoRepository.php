@@ -297,7 +297,7 @@ class RecebimentoRepository extends EntityRepository {
      *  )
      * @param int $idConferente
      */
-    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas, $qtdUnidFracionavel, $embalagem, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null, $numPeso = null) {
+    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas = null, $qtdUnidFracionavel = null, $embalagem = null, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null, $numPeso = null) {
         $em = $this->_em;
         $ordemServicoRepo = $em->getRepository('wms:OrdemServico');
         $vQtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
@@ -354,7 +354,10 @@ class RecebimentoRepository extends EntityRepository {
                     $dataValidade['dataValidade'] = null;
                 }
 
-                $norma = $normas[$idProduto][$grade];
+                $norma = null;
+                if (!empty($normas)) {
+                    $norma = $normas[$idProduto][$grade];
+                }
 
                 $idEmbalagem = null;
                 $quantidade = 1;

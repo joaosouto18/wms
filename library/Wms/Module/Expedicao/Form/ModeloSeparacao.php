@@ -50,6 +50,7 @@ class ModeloSeparacao extends Form
             )
         ))->addElement('select', 'separacaoPc', array(
             'label' => 'Separação com carrinho',
+            'id' => 'separacaoPc',
             'multiOptions' => array('S' => 'Sim', 'N' => 'Não'),
         ))->addElement('select', 'tipoDefaultEmbalado', array(
             'label' => 'Tipo Default de Embalados',
@@ -86,30 +87,24 @@ class ModeloSeparacao extends Form
             'multiOptions' => array(
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
-        ))->addElement('checkbox', 'ruaFracionados', array(
-            'label' => 'Rua',
-            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_RUA
-        ))->addElement('checkbox', 'linhaDeSeparacaoFracionados', array(
-            'label' => 'Linha de Separação',
-            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO
-        ))->addElement('checkbox', 'pracaFracionados', array(
-            'label' => 'Praça',
-            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_PRACA
-        ))->addElement('checkbox', 'clienteFracionados', array(
-            'label' => 'Cliente',
-            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_CLIENTE
-        ))->addElement('checkbox', 'ruaNaoFracionados', array(
-            'label' => 'Rua',
-            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_RUA
-        ))->addElement('checkbox', 'linhaDeSeparacaoNaoFracionados', array(
-            'label' => 'Linha de Separação',
-            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO
-        ))->addElement('checkbox', 'pracaNaoFracionados', array(
-            'label' => 'Praça',
-            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_PRACA
-        ))->addElement('checkbox', 'clienteNaoFracionados', array(
-            'label' => 'Cliente',
-            'checkedValue' => MapaSeparacaoQuebra::QUEBRA_CLIENTE
+        ))->addElement('multiCheckbox', 'quebraFracionados', array(
+            'multiOptions' => [
+                MapaSeparacaoQuebra::QUEBRA_RUA => 'Rua',
+                MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO => 'Linha de Separação',
+                MapaSeparacaoQuebra::QUEBRA_PRACA => 'Praça',
+                MapaSeparacaoQuebra::QUEBRA_CLIENTE => 'Cliente',
+            ]
+        ))->addElement('multiCheckbox', 'quebraNaoFracionados', array(
+            'multiOptions' => [
+                MapaSeparacaoQuebra::QUEBRA_RUA => 'Rua',
+                MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO => 'Linha de Separação',
+                MapaSeparacaoQuebra::QUEBRA_PRACA => 'Praça',
+                MapaSeparacaoQuebra::QUEBRA_CLIENTE => 'Cliente',
+            ]
+        ))->addElement('multiCheckbox', 'quebraEmbalados', array(
+            'multiOptions' => [
+                MapaSeparacaoQuebra::QUEBRA_PRACA => 'Praça'
+            ]
         ));
 
         $form->addDisplayGroup(array('descricao',
@@ -128,14 +123,9 @@ class ModeloSeparacao extends Form
             'tipoSeparacaoNaoFracionado',
             'tipoSeparacaoFracionadoEmbalado',
             'tipoSeparacaoNaoFracionadoEmbalado',
-            'ruaFracionados',
-            'linhaDeSeparacaoFracionados',
-            'pracaFracionados',
-            'clienteFracionados',
-            'ruaNaoFracionados',
-            'linhaDeSeparacaoNaoFracionados',
-            'pracaNaoFracionados',
-            'clienteNaoFracionados'), 'identificacao');
+            'quebraFracionados',
+            'quebraNaoFracionados',
+            'quebraEmbalados'), 'identificacao');
         $this->addSubFormTab("Identificação", $form, 'identificacao');
     }
 

@@ -276,6 +276,7 @@ class Wms_WebService_Produto extends Wms_WebService {
                 $embalagensArray = array();
 
                 //PRIMEIRO INATIVA AS EMBALAGENS NÃO ENVIADAS
+                /** @var ProdutoEntity\Embalagem $embalagemCadastrada */
                 foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
@@ -311,7 +312,7 @@ class Wms_WebService_Produto extends Wms_WebService {
                         'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
                         'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
                         'descricao' => $descricaoEmbalagem,
-                        'isEmbExpDefault' => $embalagemCadastrada->isEmpExpDefault(),
+                        'isEmbExpDefault' => $embalagemCadastrada->isEmbExpDefault(),
                         'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
                     );
 
