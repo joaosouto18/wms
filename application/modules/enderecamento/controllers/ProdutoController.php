@@ -121,7 +121,7 @@ class Enderecamento_ProdutoController extends Action
 
         $this->view->idRecebimento = $idRecebimento;
         $this->view->codProduto = $codProduto;
-        $this->view->grade = $grade;
+        $this->view->grade = str_replace('/','&',$this->_getParam("grade"));
     }
 
     public function listAction() {

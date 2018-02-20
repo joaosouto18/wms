@@ -27,9 +27,8 @@ echo $this->msg;
         <br>
         <tr>
             <?php if ($this->botaoConfirma == true) {?>
-                <?php $grade = str_replace('/','&',urlencode($this->grade)) ?>
                 <td><a class="btn reader dialogAjax"
-                   href="<?php echo "/enderecamento/produto/confirmar-alteracao/id/" . $this->idRecebimento . "/codigo/" . $this->codProduto . "/grade/" . $grade . '/norma/' . $norma['idNorma']?>">Confirmar</a></td>
+                   href="<?php echo "/enderecamento/produto/confirmar-alteracao/id/" . $this->idRecebimento . "/codigo/" . $this->codProduto . "/grade/" . urlencode($this->grade) . '/norma/' . $norma['idNorma']?>">Confirmar</a></td>
             <?php }?>
         </tr>
         <tr><td><br></td></tr>
