@@ -1948,10 +1948,10 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
             ->setParameter('codigoBarras', $codigoBarras);
 
-        if ($tipoComercializacao == Produto::TIPO_UNITARIO) {
+        if ($tipoComercializacao == Produto::TIPO_UNITARIO && !strpos($idElemento, "-new")) {
             $dql->andWhere("pe.id != :idElemento")
                 ->setParameter('idElemento', $idElemento);
-        } elseif ($tipoComercializacao == Produto::TIPO_COMPOSTO) {
+        } elseif ($tipoComercializacao == Produto::TIPO_COMPOSTO && !strpos($idElemento, "-new")) {
             $dql->andWhere("pv.id != :idElemento")
                 ->setParameter('idElemento', $idElemento);
         }
