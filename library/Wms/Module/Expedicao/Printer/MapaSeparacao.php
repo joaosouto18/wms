@@ -1641,9 +1641,10 @@ class MapaSeparacao extends eFPDF {
             $inicio = utf8_decode($object->idExpedicao) . ' - CARGAS: ';
             foreach ($vetCargas as $cargas){
                 $count++;
-                $stringCargas .= $cargas;
-                if($count != 0){
-                    $stringCargas .= ', ';
+                if($count == 0){
+                    $stringCargas .= $cargas;
+                }else{
+                    $stringCargas .= ', '.$cargas;
                 }
                 if($count == 11){
                     $object->SetFont('Arial', null, 10);
