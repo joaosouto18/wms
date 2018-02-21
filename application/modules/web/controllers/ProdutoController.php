@@ -264,19 +264,21 @@ class Web_ProdutoController extends Crud {
                     $profundidade = floatval(str_replace(',', '.', $paramsSave['embalagem']['profundidade']));
 
                     foreach ($paramsSave['embalagens'] as $key => $value) {
-                        $altura = $alturaReal * $value['quantidade'];
-                        $peso = $pesoReal * $value['quantidade'];
-                        $cubagem = $altura * $largura * $profundidade;
-                        $paramsSave['embalagens'][$key]['capacidadePicking'] = $fator * $paramsSave['embalagem']['capacidadePicking'];
-                        $paramsSave['embalagens'][$key]['pontoReposicao'] = $fator * $paramsSave['embalagem']['pontoReposicao'];
-                        $paramsSave['embalagens'][$key]['endereco'] = $paramsSave['embalagem']['endereco'];
-                        $paramsSave['embalagens'][$key]['altura'] = number_format($altura, 3, ',', '');
-                        $paramsSave['embalagens'][$key]['profundidade'] = $paramsSave['embalagem']['profundidade'];
-                        $paramsSave['embalagens'][$key]['cubagem'] = number_format($cubagem, 4, ',', '');
-                        $paramsSave['embalagens'][$key]['peso'] = number_format($peso, 3, ',', '');
-                        $paramsSave['embalagens'][$key]['largura'] = $paramsSave['embalagem']['largura'];
-                        if (empty($paramsSave['embalagens'][$key]['acao'])) {
-                            $paramsSave['embalagens'][$key]['acao'] = 'alterar';
+                        if (isset($paramsSave['embalagens'][$key]['acao']) && $paramsSave['embalagens'][$key]['acao'] != 'excluir') {
+                            $altura = $alturaReal * $value['quantidade'];
+                            $peso = $pesoReal * $value['quantidade'];
+                            $cubagem = $altura * $largura * $profundidade;
+                            $paramsSave['embalagens'][$key]['capacidadePicking'] = $fator * $paramsSave['embalagem']['capacidadePicking'];
+                            $paramsSave['embalagens'][$key]['pontoReposicao'] = $fator * $paramsSave['embalagem']['pontoReposicao'];
+                            $paramsSave['embalagens'][$key]['endereco'] = $paramsSave['embalagem']['endereco'];
+                            $paramsSave['embalagens'][$key]['altura'] = number_format($altura, 3, ',', '');
+                            $paramsSave['embalagens'][$key]['profundidade'] = $paramsSave['embalagem']['profundidade'];
+                            $paramsSave['embalagens'][$key]['cubagem'] = number_format($cubagem, 4, ',', '');
+                            $paramsSave['embalagens'][$key]['peso'] = number_format($peso, 3, ',', '');
+                            $paramsSave['embalagens'][$key]['largura'] = $paramsSave['embalagem']['largura'];
+                            if (empty($paramsSave['embalagens'][$key]['acao'])) {
+                                $paramsSave['embalagens'][$key]['acao'] = 'alterar';
+                            }
                         }
                     }
                 }
