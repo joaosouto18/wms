@@ -1624,6 +1624,7 @@ class MapaSeparacao extends eFPDF {
     }
 
     public function buildHead($object, $imgCodBarras, $tipoQebra, $stringCargas, $paginas = '', $ref = true) {
+        $vetCargas = explode(',',$stringCargas);
         $object->SetFont('Arial', 'B', 10);
         $object->Cell(200, 3, utf8_decode($paginas), 0, 1);
         $object->Cell(200, 3, utf8_decode(" MAPA DE SEPARAÇÃO " . $object->idMapa), 0, 1, "C");
@@ -1631,8 +1632,32 @@ class MapaSeparacao extends eFPDF {
         $object->Cell(20, 3, "", 0, 1);
         $object->SetFont('Arial', 'B', 10);
         $object->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
-        $object->SetFont('Arial', null, 10);
-        $object->Cell(4, 4, utf8_decode($object->idExpedicao) . ' - CARGAS: ' . $stringCargas, 0, 1);
+        if(count($vetCargas) <= 11) {
+            $object->SetFont('Arial', null, 10);
+            $object->Cell(4, 4, utf8_decode($object->idExpedicao) . ' - CARGAS: ' . $stringCargas, 0, 1);
+        }else{
+            $count = 0;
+            $stringCargas = '';
+            $inicio = utf8_decode($object->idExpedicao) . ' - CARGAS: ';
+            foreach ($vetCargas as $cargas){
+                $count++;
+                $stringCargas .= $cargas;
+                if($count != 0){
+                    $stringCargas .= ', ';
+                }
+                if($count == 11){
+                    $object->SetFont('Arial', null, 10);
+                    $object->Cell(4, 4, $inicio . $stringCargas, 0, 1);
+                    $count = 0;
+                    $stringCargas = '';
+                    $inicio = '';
+                }
+            }
+            if($count < 5){
+                $object->SetFont('Arial', null, 10);
+                $object->Cell(4, 4, $stringCargas, 0, 1);
+            }
+        }
         $object->SetFont('Arial', null, 10);
         $object->Cell(4, 4, '', 0, 1);
         $object->SetFont('Arial', 'B', 10);
