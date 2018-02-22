@@ -1530,7 +1530,7 @@ class MapaSeparacao extends eFPDF {
                     $paginas = $pgAtual . ' de ' . $totalPg;
                     $this->buildHead($this, $imgCodBarras, $tipoQebra, $stringCargas, $paginas);
                 }
-                $this->SetFont('Arial', null, 8);
+                $this->SetFont('Arial', null, 9);
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
                 $codigoBarras = '';
@@ -1557,19 +1557,20 @@ class MapaSeparacao extends eFPDF {
                     $cubagemTotal += Math::multiplicar(str_replace(',', '.', $embalagemEn->getCubagem()), str_replace(',', '.', $quantidade));
                 }
 
+                $this->Cell(20, 1, " ", 0, 1);
                 if ($tipoQebra == true) {
-                    $this->Cell(21, 4, $dscEndereco, 0, 0);
+                    $this->Cell(23, 4, $dscEndereco, 0, 0);
                     $this->Cell(13, 4, $codProduto, 0, 0);
-                    $this->Cell(100, 4, $descricao, 0, 0);
+                    $this->Cell(98, 4, $descricao, 0, 0);
                     $this->Cell(30, 4, $codigoBarras, 0, 0,'C');
                     $this->Cell(17, 4, $embalagem, 0, 0, 'C');
                     $this->SetFont('Arial', "B", 10);
                     $this->Cell(15, 4, $quantidade, 0, 0,'L');
                     $this->Cell(15, 4, $caixas, 0, 1, 'C');
                 } else {
-                    $this->Cell(21, 4, $dscEndereco, 0, 0);
+                    $this->Cell(23, 4, $dscEndereco, 0, 0);
                     $this->Cell(13, 4, $codProduto, 0, 0);
-                    $this->Cell(100, 4, $descricao, 0, 0);
+                    $this->Cell(98, 4, $descricao, 0, 0);
                     $this->Cell(30, 4, $codigoBarras, 0, 0,'C');
                     $this->Cell(17, 4, $embalagem, 0, 0,'C');
                     $this->SetFont('Arial', "B", 10);
@@ -1578,6 +1579,7 @@ class MapaSeparacao extends eFPDF {
                 $this->SetFont('Arial', null, 8);
                 $total += $quantidade;
                 $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                $this->Cell(20, 1, " ", 0, 1);
             }
             //FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA
             /**
@@ -1691,17 +1693,17 @@ class MapaSeparacao extends eFPDF {
             }
         }else{
             if ($tipoQebra == true) {
-                $object->Cell(21, 5, utf8_decode("Endereço"), 1, 0);
+                $object->Cell(23, 5, utf8_decode("Endereço"), 1, 0);
                 $object->Cell(13, 5, utf8_decode("Cod."), 1, 0);
-                $object->Cell(100, 5, utf8_decode("Produto"), 1, 0);
+                $object->Cell(98, 5, utf8_decode("Produto"), 1, 0);
                 $object->Cell(30, 5, utf8_decode("Cod. Barras"), 1, 0);
                 $object->Cell(15, 5, utf8_decode("Emb."), 1, 0);
                 $object->Cell(17, 5, utf8_decode("Qtd."), 1, 0);
                 $object->Cell(17, 5, utf8_decode("Caixas"), 1, 1);
             } else {
-                $object->Cell(21, 5, utf8_decode("Endereço"), 1, 0);
+                $object->Cell(23, 5, utf8_decode("Endereço"), 1, 0);
                 $object->Cell(13, 5, utf8_decode("Cod."), 1, 0);
-                $object->Cell(100, 5, utf8_decode("Produto"), 1, 0);
+                $object->Cell(98, 5, utf8_decode("Produto"), 1, 0);
                 $object->Cell(30, 5, utf8_decode("Cod. Barras"), 1, 0);
                 $object->Cell(17, 5, utf8_decode("Emb."), 1, 0);
                 $object->Cell(12, 5, utf8_decode("Qtd."), 1, 1);
