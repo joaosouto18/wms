@@ -1511,7 +1511,7 @@ class MapaSeparacao extends eFPDF {
             $this->Cell(20, 1, "", 0, 1);
             $total = 0;
             $contadorPg = 0;
-            $limitPg = 45;
+            $limitPg = 42;
             $totalPg = ceil(count($produtos) / $limitPg);
             $pgAtual = 1;
             $this->buildHead($this, $imgCodBarras, $tipoQebra, $stringCargas, '1 de ' . $totalPg, false);
