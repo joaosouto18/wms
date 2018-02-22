@@ -18,8 +18,8 @@
         });
         $('.gTdOpcRow').hover(function () {
             if (($('body').height() - (mousey)) <= ($(this).find('.gOpcRow ul li ul').height() + $(window).scrollTop())) {
-                if ($(this).find('.gOpcRow ul li ul').height() > 150) {
-                    $(this).find('.gOpcRow ul li ul').css('top', '-200px');
+                if ($(this).find('.gOpcRow ul li ul').height() > 110) {
+                    $(this).find('.gOpcRow ul li ul').css('top', '-150px');
                 }
             } else {
                 $(this).find('.gOpcRow ul li ul').css('top', '0px');
