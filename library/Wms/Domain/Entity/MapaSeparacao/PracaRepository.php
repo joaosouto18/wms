@@ -95,4 +95,17 @@ class PracaRepository extends EntityRepository
         return $rows;
     }
 
+    public function save($idPraca, $nomePraca)
+    {
+        $entity = new Praca();
+        $entity->setId($idPraca);
+        $entity->setNomePraca($nomePraca);
+
+        $this->getEntityManager()->persist($entity);
+        $this->getEntityManager()->flush();
+
+        return $entity;
+
+    }
+
 }
