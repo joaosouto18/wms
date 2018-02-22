@@ -1063,19 +1063,27 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $ExpedicaoRepo      = $repositorios['expedicaoRepo'];
         $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
         $parametro = $parametroRepo->findOneBy(array('constante' => 'AGRUPAR_CARGAS'));
-        if($parametro->getValor() == 'N'){
-            $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
-        }else {
+        if(!empty($parametro)) {
+            if ($parametro->getValor() == 'N') {
+                $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
+            } else {
+                $entityExpedicao = $ExpedicaoRepo->findOneBy(array('placaExpedicao' => $placaExpedicao, 'status' => array(Expedicao::STATUS_INTEGRADO, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA)));
+                if ($entityExpedicao == null) {
+                    $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
+                }
+                if ($entityExpedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
+                    throw new \Exception('Expedicao ' . $entityExpedicao->getId() . ' já está finalizada');
+                }
+            }
+        }else{
             $entityExpedicao = $ExpedicaoRepo->findOneBy(array('placaExpedicao' => $placaExpedicao, 'status' => array(Expedicao::STATUS_INTEGRADO, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA)));
             if ($entityExpedicao == null) {
                 $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
             }
-
             if ($entityExpedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
                 throw new \Exception('Expedicao ' . $entityExpedicao->getId() . ' já está finalizada');
             }
         }
-
         return $entityExpedicao;
     }
 
