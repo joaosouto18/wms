@@ -788,7 +788,7 @@ class Importacao
                     );
 
                     $parametroEmbalagensInativas = $parametroRepo->findOneBy(array('constante' => 'INATIVA_EMBALAGENS_INEXISTENTES_ERP'));
-                    if ($encontrouEmbalagem == false && $parametroEmbalagensInativas == 'S') {
+                    if ($encontrouEmbalagem == false && $parametroEmbalagensInativas->getValor() == 'S') {
                         $embalagemArray['ativarDesativar'] = false;
                     } else {
                         $embalagemArray['ativarDesativar'] = true;
