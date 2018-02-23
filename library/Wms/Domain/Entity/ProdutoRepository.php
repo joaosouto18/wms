@@ -1221,7 +1221,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 ->andWhere("p.grade = :grade")
                 ->setParameter('codProduto', $codProduto)
                 ->setParameter('grade', $grade)
-                ->andWhere('(pe.codigoBarras IS NOT NULL OR pv.codigoBarras IS NOT NULL)');
+                ->andWhere('(pe.codigoBarras IS NOT NULL OR pv.codigoBarras IS NOT NULL)')
+                ->orderBy('pe.quantidade', 'desc');
 
         return $dql->getQuery()->getResult();
     }
