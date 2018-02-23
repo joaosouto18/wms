@@ -787,12 +787,14 @@ class Importacao
                         'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
                     );
 
-                    if ($encontrouEmbalagem == false) {
-                        $embalagemArray['ativarDesativar'] = false;
-                    } else {
-                        $embalagemArray['ativarDesativar'] = true;
+                    $parametroEmbalagensInativas = $parametroRepo->findOneBy(array('constante' => 'INATIVA_EMBALAGENS_INEXISTENTES_ERP'));
+                    if ($parametroEmbalagensInativas == 'S') {
+                        if ($encontrouEmbalagem == false) {
+                            $embalagemArray['ativarDesativar'] = false;
+                        } else {
+                            $embalagemArray['ativarDesativar'] = true;
+                        }
                     }
-
                     $embalagensArray[] = $embalagemArray;
 
                 }
