@@ -105,6 +105,12 @@ class GerarEtiqueta extends eFPDF
 
                 $this->layout4($produto, $tipo);
                 break;
+            case 5:
+                $this->SetMargins(0, 5);
+                $this->SetFont('Arial', 'B', 8);
+
+                $this->layout5($produto, $tipo);
+                break;
             default:
                 $this->SetMargins(7, 5, 0);
                 $this->SetFont('Arial', 'B', 8);
@@ -313,6 +319,42 @@ class GerarEtiqueta extends eFPDF
 
     }
 
+    public function layout5($produto, $tipo)
+    {
+        $codigo = $produto['codigoBarras'];
+        $this->AddPage();
+        $this->MultiCell(100,2.7,utf8_decode($produto['idProduto']) . ' - ' . substr(utf8_decode($produto['dscProduto']), 0, 25),0,"L");
+        $this->Ln(1.5);
+        $this->MultiCell(100,2.7, substr(utf8_decode($produto['dscProduto']), 25, 200),0,"L");
+        $this->Ln(3);
+        $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fabricante: $produto[fabricante]"), 60), 0, 0);
+        if ($tipo == "NF") {
+            $this->Ln(3);
+            $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[fornecedor]"), 50), 0, 0);
+        }
+        $this->Ln(1.5);
+        if ($produto['idEmbalagem'] != null) {
+            $this->Ln(3);
+            $this->Cell(100, 0, 'Embalagem: ' . utf8_decode($produto['dscEmbalagem'])  . " (".$produto['quantidade'].") ", 0, 0);
+        }
 
+        if ($produto['idVolume'] != null) {
+            $this->Ln(3);
+            $this->Cell(100, 0, 'Volume: ' . utf8_decode($produto['dscVolume']) . " - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
+        }
+
+
+        $x        = 30;
+        $y        = 35;
+        $height   = 8;
+        $angle    = 0;
+        $type     = 'code128';
+        $black    = '000000';
+        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.45,15);
+        $len = $this->GetStringWidth($data['hri']);
+
+        $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 11,$codigo);
+
+    }
 
 }
