@@ -720,6 +720,7 @@ class Importacao
                     ->setFabricante($fabricante)
                     ->setClasse($classe)
                     ->setReferencia($referencia)
+                    ->setIndFracionavel("N")
                     ->setPossuiPesoVariavel($indPesoVariavel);
 
             if (is_null($possuiValidade)) {
@@ -781,7 +782,9 @@ class Importacao
                         'embalado' => $embalagemCadastrada->getEmbalado(),
                         'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
                         'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
-                        'descricao' => $descricaoEmbalagem
+                        'descricao' => $descricaoEmbalagem,
+                        'isEmbExpDefault' => $embalagemCadastrada->isEmbExpDefault(),
+                        'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
                     );
 
                     if ($encontrouEmbalagem == false) {
@@ -807,8 +810,6 @@ class Importacao
 
                     if ($encontrouEmbalagem == false) {
 
-                        $this->verificaCodigoBarrasDuplicado($em,$embalagemWs->codBarras,$idProduto,$grade);
-
                         $embalagemArray = array (
                             'acao' => 'incluir',
                             'descricao' => $embalagemWs->descricao,
@@ -820,7 +821,9 @@ class Importacao
                             'embalado' => 'N',
                             'capacidadePicking' => 0,
                             'pontoReposicao' => 0,
-                            'endereco' => null
+                            'endereco' => null,
+                            'isEmbExpDefault' => 'N',
+                            'isEmbFracionavelDefault' => 'N'
                         );
                         $embalagensArray[] = $embalagemArray;
                     }
