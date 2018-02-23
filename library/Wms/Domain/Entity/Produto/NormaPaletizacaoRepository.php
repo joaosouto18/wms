@@ -54,7 +54,7 @@ class NormaPaletizacaoRepository extends EntityRepository
                   LEFT JOIN NORMA_PALETIZACAO NP ON NP.COD_NORMA_PALETIZACAO = PDL.COD_NORMA_PALETIZACAO
                                               OR NP.COD_NORMA_PALETIZACAO = PV.COD_NORMA_PALETIZACAO
                   LEFT JOIN UNITIZADOR U ON U.COD_UNITIZADOR = NP.COD_UNITIZADOR
-                 WHERE P.COD_PRODUTO = '$codProduto' AND P.DSC_GRADE = '$grade'";
+                 WHERE P.COD_PRODUTO = '$codProduto' AND P.DSC_GRADE = '$grade' AND NP.COD_NORMA_PALETIZACAO IS NOT NULL";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
