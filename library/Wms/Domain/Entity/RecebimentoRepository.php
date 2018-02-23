@@ -1679,8 +1679,10 @@ class RecebimentoRepository extends EntityRepository {
         if (isset($status) && (!empty($status))) {
             $where .= " AND R.COD_STATUS = " . $status;
         }
-        if ((isset($idRecebimento) && (!empty($idRecebimento))) || (isset($uma) && (!empty($uma)))) {
+        if (isset($idRecebimento) && !empty($idRecebimento)) {
             $where .= " AND R.COD_RECEBIMENTO = " . $idRecebimento;
+        } elseif (isset($uma) && !empty($uma)) {
+            $where .= " AND R.COD_RECEBIMENTO IN (SELECT DISTINCT COD_RECEBIMENTO FROM PALETE WHERE UMA = $idRecebimento)";
         }
 
         $sql = "  
