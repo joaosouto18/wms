@@ -757,6 +757,7 @@ class Importacao
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
 
+
                     $fator = $embalagemCadastrada->getQuantidade();
                     foreach ($embalagens as $embalagemWs) {
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
@@ -787,9 +788,17 @@ class Importacao
                         'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
                     );
 
-                    $parametroEmbalagensInativas = $parametroRepo->findOneBy(array('constante' => 'INATIVA_EMBALAGENS_INEXISTENTES_ERP'));
-                    if ($encontrouEmbalagem == false && $parametroEmbalagensInativas->getValor() == 'S') {
-                        $embalagemArray['ativarDesativar'] = false;
+                    if ($encontrouEmbalagem == false) {
+                        $parametroEmbalagensInativas = $parametroRepo->findOneBy(array('constante' => 'INATIVA_EMBALAGENS_INEXISTENTES_ERP'));
+                        if ($parametroEmbalagensInativas->getValor() == 'S') {
+                            $embalagemAtiva = false;
+                        } else {
+                            $embalagemAtiva = false;
+                            if ($embalagemCadastrada->getDataInativacao() == null) {
+                                $embalagemAtiva = true;
+                            }
+                        }
+                        $embalagemArray['ativarDesativar'] = $embalagemAtiva;
                     } else {
                         $embalagemArray['ativarDesativar'] = true;
                     }
