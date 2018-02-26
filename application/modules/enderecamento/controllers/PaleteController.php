@@ -15,7 +15,7 @@ class Enderecamento_PaleteController extends Action
         $codProduto     = $this->getRequest()->getParam('codigo');
         $grade          = $this->getRequest()->getParam('grade');
         $produtos       = $this->getRequest()->getParam('produtos');
-        $grade          = str_replace('&','/',$grade);
+        $grade          = urldecode($grade);
 
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->em->getRepository('wms:Enderecamento\Palete');
@@ -390,7 +390,7 @@ class Enderecamento_PaleteController extends Action
         $params = $this->_getAllParams();
         $idRecebimento  = $this->getRequest()->getParam('id');
         $codProduto     = $this->getRequest()->getParam('codigo');
-        $grade          = $this->getRequest()->getParam('grade');
+        $grade          = urldecode($this->getRequest()->getParam('grade'));
 
         if (!is_null($trocaUma)) {
             try {
@@ -410,7 +410,7 @@ class Enderecamento_PaleteController extends Action
                 $this->addFlashMessage('error', $e->getMessage());
             }
 
-            $this->_redirect("/enderecamento/produto/index/id/$idRecebimento/codigo/$codProduto/grade/". urlencode($params['grade']));
+            $this->_redirect("/enderecamento/produto/index/id/$idRecebimento/codigo/$codProduto/grade/$params[grade]");
         }
 
         $grid = new \Wms\Module\Enderecamento\Grid\Trocar();
@@ -438,7 +438,7 @@ class Enderecamento_PaleteController extends Action
 
         $idRecebimentoAntigo = $params['id'];
         $codProduto          = $params['codigo'];
-        $grade               = $params['grade'];
+        $grade               = urldecode($params['grade']);
 
         if ($existeRecebimento == null) {
             throw new Exception('Recebimento inexistente!');
