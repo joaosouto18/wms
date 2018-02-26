@@ -69,29 +69,8 @@ class MovimentacaoProduto extends Pdf {
         $historicoReport = $HistEstoqueRepo->getMovimentacaoProduto($params);
 
         $this->SetFont('Arial', 'B', 8);
-        $codProdutoAnterior = "";
-        $gradeAnterior = "";
-        $volumeAnterior = "";
         $qtde = 0;
-        $primeiroProduto = true;
         foreach ($historicoReport as $produto) {
-
-            /* if (($codProdutoAnterior != $produto['codProduto']) || ($gradeAnterior != $produto['grade']) || ($volumeAnterior != $produto['volume'])) {
-
-              if ($primeiroProduto == false) {
-              $this->Cell(198, 5, utf8_decode("Quantidade movimentada no período: $qtde"), 0, 1, "R");
-              $this->Cell(198, 5, "", 0, 1);
-              }
-
-              $this->Cell(198, 5, utf8_decode($produto['codProduto'] . '/' . $produto['grade'] . ' - ' . $produto['nomeProduto']), 1, 1);
-              $this->Cell(198, 5, utf8_decode("Volume Movimentado:  - " . $produto['volume']), 1, 1);
-
-              $qtde = 0;
-              $codProdutoAnterior = $produto['codProduto'];
-              $gradeAnterior = $produto['grade'];
-              $volumeAnterior = $produto['volume'];
-              $primeiroProduto = false;
-              } */
 
             if ($produto['qtd'] > 0)
                 $tipomovim = "ENTRADA";
