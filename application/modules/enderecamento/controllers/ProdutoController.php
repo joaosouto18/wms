@@ -89,7 +89,7 @@ class Enderecamento_ProdutoController extends Action
         $idRecebimento = $this->_getParam("id");
         $codProduto    = $this->_getParam("codigo");
         $grade         = $this->_getParam("grade");
-        $grade         = str_replace('&','/',$grade);
+        $grade         = urldecode($grade);
 
         $this->view->norma = $results = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade, null);
 
@@ -128,7 +128,7 @@ class Enderecamento_ProdutoController extends Action
     public function listAction() {
         $idRecebimento = $this->_getParam("id");
         $codProduto    = $this->_getParam("codigo");
-        $grade         = $this->_getParam("grade");
+        $grade         = urldecode($this->_getParam("grade"));
 
         $grid = new \Wms\Module\Web\Grid\Enderecamento\Andamento();
         $this->view->grid = $grid->init($idRecebimento,$codProduto,$grade)->render();;

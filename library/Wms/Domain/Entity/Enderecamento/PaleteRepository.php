@@ -1309,6 +1309,7 @@ class PaleteRepository extends EntityRepository {
     }
 
     public function getPaletesByProdutoAndGrade($params) {
+        $grade = urldecode($params['grade']);
         $query = $this->getEntityManager()->createQueryBuilder()
                 ->select("pa.id, u.descricao unitizador, pp.qtd, sigla.sigla status, de.descricao endereco, pa.impresso, pa.codStatus")
                 ->from("wms:Enderecamento\Palete", "pa")
@@ -1319,7 +1320,7 @@ class PaleteRepository extends EntityRepository {
                 ->leftJoin('pa.depositoEndereco', 'de')
                 ->setParameter('recebimento', $params['id'])
                 ->setParameter('produto', $params['codigo'])
-                ->setParameter('grade', $params['grade'])
+                ->setParameter('grade', $grade)
                 ->andWhere('pp.codProduto = :produto')
                 ->andWhere('pp.grade = :grade')
                 ->andWhere('pa.recebimento = :recebimento')
