@@ -137,7 +137,7 @@ class Enderecamento_ProdutoController extends Action
     public function confirmarAlteracaoAction() {
         $idRecebimento = $this->_getParam("id");
         $codProduto    = $this->_getParam("codigo");
-        $grade         = $this->_getParam("grade");
+        $grade         = urldecode($this->_getParam("grade"));
         $idNorma       = $this->_getParam("norma");
 
         $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
@@ -190,7 +190,7 @@ class Enderecamento_ProdutoController extends Action
             $paleteRepo  = $this->_em->getRepository('wms:Enderecamento\Palete');
             $paleteRepo->deletaPaletesRecebidos($idRecebimento,$codProduto, $grade);
             $this->addFlashMessage('success',"Norma de paletização para o produto $codProduto, grade $grade alterada com sucesso neste recebimento");
-            $this->_redirect('enderecamento/palete/index/id/'.$idRecebimento . '/codigo/'. $codProduto . '/grade/'. $grade);
+            $this->_redirect('enderecamento/palete/index/id/'.$idRecebimento . '/codigo/'. $codProduto . '/grade/'. urlencode($grade));
         } catch (\Exception $ex) {
             $this->addFlashMessage('error',$ex->getMessage());
             $this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);

@@ -26,6 +26,11 @@ class Enderecamento_IndexController extends Action
                 'idRecebimento' => '',
                 'uma' => ''
             );
+        } elseif (isset($values['idRecebimento']) && !empty($values['idRecebimento'])) {
+            $values['dataInicial1'] = null;
+            $values['dataInicial2'] = null;
+            $values['dataFinal1'] = null;
+            $values['dataFinal2'] = null;
         }
 
         // grid
