@@ -1,0 +1,10 @@
+<h5><b>Expedições</b></h5>
+<?php
+foreach ($this->expedicoes as $values) {
+    ?>
+    <div class="row">
+        <a class="btn gradientBtn"
+           href="/mobile/index/enderecos-separacao-pd-ajax/expedicao/<?php echo $values['COD_EXPEDICAO'] ?>"><?php echo $values['COD_EXPEDICAO'] ?></a>
+    </div>
+    <?php
+}

@@ -201,7 +201,7 @@ class UsuarioRepository extends AtorRepository {
     public function getPessoaByCpf($cpf)
     {
 
-        $sql = "SELECT P.NOM_PESSOA
+        $sql = "SELECT P.NOM_PESSOA, P.COD_PESSOA
                 FROM PESSOA P
                 INNER JOIN PESSOA_FISICA PF ON PF.COD_PESSOA = P.COD_PESSOA
                 WHERE PF.NUM_CPF = '$cpf'";

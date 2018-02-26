@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Enderecamento;
+use Wms\Domain\Entity\Produto;
 
 
 /**
@@ -20,6 +21,7 @@ class Estoque
     protected $id;
 
     /**
+     * @var Produto
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
      * @JoinColumns({
      *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
@@ -80,9 +82,15 @@ class Estoque
 
     /**
      * @Column(name="DTH_VALIDADE", type="date")
-     * @var date
+     * @var \DateTime
      */
     protected $validade;
+
+    /**
+     * @Column(name="NUM_PECAS", type="integer")
+     * @var integer
+     */
+    protected $numPecas;
 
     /**
      * @param mixed $codProduto
@@ -149,7 +157,7 @@ class Estoque
     }
 
     /**
-     * @param mixed $produto
+     * @param Produto $produto
      */
     public function setProduto($produto)
     {
@@ -157,7 +165,7 @@ class Estoque
     }
 
     /**
-     * @return mixed
+     * @return Produto
      */
     public function getProduto()
     {
@@ -261,7 +269,7 @@ class Estoque
     }
 
     /**
-     * @return date
+     * @return \DateTime
      */
     public function getValidade()
     {
@@ -269,11 +277,27 @@ class Estoque
     }
 
     /**
-     * @param date $validade
+     * @param \DateTime $validade
      */
     public function setValidade($validade)
     {
         $this->validade = $validade;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNumPecas()
+    {
+        return $this->numPecas;
+    }
+
+    /**
+     * @param int $numPecas
+     */
+    public function setNumPecas($numPecas)
+    {
+        $this->numPecas = $numPecas;
     }
 
 }

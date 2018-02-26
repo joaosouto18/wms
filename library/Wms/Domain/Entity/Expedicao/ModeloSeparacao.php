@@ -110,15 +110,21 @@ class ModeloSeparacao
 
     /**
      * @OneToMany(targetEntity="Wms\Domain\Entity\Expedicao\ModeloSeparacaoTipoQuebraFracionado", mappedBy="modeloSeparacao", cascade={"persist", "remove"})
-     * @var ArrayCollection tipos de quebra para fracionados
+     * @var ModeloSeparacaoTipoQuebraFracionado[] tipos de quebra para fracionados
      */
     protected $tiposQuebraFracionado;
 
     /**
      * @OneToMany(targetEntity="Wms\Domain\Entity\Expedicao\ModeloSeparacaoTipoQuebraNaoFracionado", mappedBy="modeloSeparacao", cascade={"persist", "remove"})
-     * @var ArrayCollection tipos de quebra para nao fracionados
+     * @var ModeloSeparacaoTipoQuebraNaoFracionado[] tipos de quebra para nao fracionados
      */
     protected $tiposQuebraNaoFracionado;
+
+    /**
+     * @OneToMany(targetEntity="Wms\Domain\Entity\Expedicao\ModeloSeparacaoTipoQuebraEmbalado", mappedBy="modeloSeparacao", cascade={"persist", "remove"})
+     * @var ModeloSeparacaoTipoQuebraEmbalado[] tipos de quebra para nao fracionados
+     */
+    protected $tiposQuebraEmbalado;
 
     /**
      * @column(name="IND_IMPRIME_ETQ_VOLUME", type="string", nullable=true)
@@ -323,7 +329,7 @@ class ModeloSeparacao
     }
 
     /**
-     * @return ArrayCollection
+     * @return ModeloSeparacaoTipoQuebraFracionado[]
      */
     public function getTiposQuebraFracionado()
     {
@@ -331,7 +337,7 @@ class ModeloSeparacao
     }
 
     /**
-     * @param ArrayCollection $tiposQuebraFracionado
+     * @param ModeloSeparacaoTipoQuebraFracionado[] $tiposQuebraFracionado
      */
     public function setTiposQuebraFracionado($tiposQuebraFracionado)
     {
@@ -339,7 +345,7 @@ class ModeloSeparacao
     }
 
     /**
-     * @return ArrayCollection
+     * @return ModeloSeparacaoTipoQuebraNaoFracionado[]
      */
     public function getTiposQuebraNaoFracionado()
     {
@@ -347,11 +353,27 @@ class ModeloSeparacao
     }
 
     /**
-     * @param ArrayCollection $tiposQuebraNaoFracionado
+     * @param ModeloSeparacaoTipoQuebraNaoFracionado[] $tiposQuebraNaoFracionado
      */
     public function setTiposQuebraNaoFracionado($tiposQuebraNaoFracionado)
     {
         $this->tiposQuebraNaoFracionado = $tiposQuebraNaoFracionado;
+    }
+
+    /**
+     * @return ModeloSeparacaoTipoQuebraEmbalado[]
+     */
+    public function getTiposQuebraEmbalado()
+    {
+        return $this->tiposQuebraEmbalado;
+    }
+
+    /**
+     * @param ModeloSeparacaoTipoQuebraEmbalado[] $tiposQuebraEmbalado
+     */
+    public function setTiposQuebraEmbalado($tiposQuebraEmbalado)
+    {
+        $this->tiposQuebraEmbalado = $tiposQuebraEmbalado;
     }
 
     /**

@@ -46,6 +46,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             var check = $(el).parent('div').find('.ativarDesativar');
             var date = $(el).parent('div').find('.dataInativacao');
             var div = $(el).parent('div').parent('td');
+            var model = el.closest('.produto_volume').model();
 
             if (check.is(":checked") === true) {
                 if (date.text() === "VOL. ATIVO") {
@@ -63,11 +64,13 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                     today = dd+'/'+mm+'/'+yyyy;
 
                     date.text(today);
+                    model.dataInativacao = today;
                 }
                 div.css("color","red");
             } else {
                 date.text("VOL. ATIVO");
                 div.css("color","green");
+                model.dataInativacao = "VOL. ATIVO";
             }
         },
 
@@ -80,7 +83,6 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
 
             var fieldVolume = $('#fieldset-volume');
             var valores = fieldVolume.formParams(false).volume;
-            console.log(valores);
 
             var grupoDadosLogisticos = $('#fieldset-grupo-volumes').find('div.grupoDadosLogisticos');
             var este = this;
@@ -424,11 +426,10 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
 
             ev.stopPropagation();
 
-            this.dialogConfirm("Tem certeza que deseja excluir este volume?", this.callback("deleteConfirmed"),{model:model});
+            this.dialogConfirm("Tem certeza que deseja excluir este volume?", this.callback("deleteConfirmed"), model);
         },
 
-        deleteConfirmed: function(params) {
-            var model = params.model;
+        deleteConfirmed: function(model) {
             var id = model.id.toString();
 
             //adiciona à fila para excluir
@@ -680,6 +681,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             }
 
             if ((codigoBarras === "" && cbInterno === "S") || codigoBarras === codigoBarrasAntigo) {
+                $("#volume-codigoBarras").removeClass('invalid');
                 return true;
             }
 
@@ -696,7 +698,7 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
                 type: 'post',
                 async: false,
                 dataType: 'json',
-                data: { codigoBarras:codigoBarras }
+                data: {codigoBarras: codigoBarras, idElemento: valores.id, tipoComercializacao: 2}
             }).success(function (data) {
                 if (data.status === "success") {
                     result = true;
@@ -748,11 +750,11 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             });
         },
 
-        dialogConfirm: function ( msg, callback, params ) {
+        dialogConfirm: function ( msg, callYes, paramsYes, callNo, paramsNo ) {
             return $.wmsDialogConfirm({
                 title: 'Tem certeza?',
                 msg: msg
-            }, callback, params);
+            }, callYes, paramsYes, callNo, paramsNo);
         }
 
     });

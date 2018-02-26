@@ -491,8 +491,8 @@ class Importacao_IndexController extends Action
                         }
                         $arrRegistro['endereco'] = implode(".", $enderecoParsed);
                     }
-                    $endereco = \Wms\Util\Endereco::formatar($arrRegistro['endereco'], null, $arrQtdDigitos);
-                    $arrEndereco = \Wms\Util\Endereco::separar($endereco, $arrQtdDigitos);
+                    $arrRegistro['endereco'] = \Wms\Util\Endereco::formatar($arrRegistro['endereco'], null, $arrQtdDigitos);
+                    $arrEndereco = \Wms\Util\Endereco::separar($arrRegistro['endereco'], $arrQtdDigitos);
                     $arrRegistro = array_merge($arrRegistro, $arrEndereco);
 
                     $entity = $em->getRepository('wms:Deposito\Endereco')->findOneBy($arrEndereco);
@@ -787,8 +787,8 @@ class Importacao_IndexController extends Action
 
                         if ($countFlush >= 1) {
                             $countFlush = 0;
-                            $em->flush();
-                            $em->clear();
+//                            $em->flush();
+//                            $em->clear();
                         }
                     }
                 } elseif ($extencao == "csv") {

@@ -11,7 +11,7 @@
 
         <div class="field">
             <label for="grupo-unitizador" class="field optional">Unitizador:</label>
-            <select name="normasPaletizacao[<%=this.id%>][idUnitizador]" mostrarselecione="" class="valid">
+            <select name="normasPaletizacao[<%=this.id%>][idUnitizador]" mostrarselecione="" class="valid unitizador">
                 <%for(var i=0; i < this.unitizadores.length; i++) { %>
                     <option value="<%=this.unitizadores[i].id%>" <% if(this.idUnitizador == this.unitizadores[i].id) { %> selected="selected" <% } %>><%=this.unitizadores[i].descricao%></option>
                 <% }%>
@@ -20,7 +20,7 @@
 
         <div class="field">
             <label for="grupo-isPadrao" class="field optional">Padrão:</label>
-            <select name="normasPaletizacao[<%=this.id%>][isPadrao]" class="valid">
+            <select name="normasPaletizacao[<%=this.id%>][isPadrao]" class="valid normaPadrao">
                 <option value="S" <% if(this.isPadrao == 'S') { %> selected="selected" <% } %>>SIM</option>
                 <option value="N" <% if(this.isPadrao == 'N') { %> selected="selected" <% } %>>NÃO</option>
             </select>

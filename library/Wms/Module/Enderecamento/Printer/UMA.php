@@ -96,6 +96,8 @@ class UMA extends Pdf {
             $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
         }
 
+        if (empty($produtoEn)) throw new \Exception("Produto de cógio $codProduto e grade $grade não foi encontrado!");
+
         $this->layout($params['paletes'], $produtoEn, $modelo, $params);
         $this->Output('UMA-' . $idRecebimento . '-' . $codProduto . '.pdf', 'D');
     }
@@ -118,7 +120,7 @@ class UMA extends Pdf {
             $PaleteProdutoEntity = $PaleteProdutoRepository->findOneBy(array('uma' => $palete['idUma']));
 
             $picking = null;
-            if (isset($PaleteProdutoEntity)) {
+            if (!empty($PaleteProdutoEntity)) {
                 $produtoEn = $PaleteProdutoEntity->getProduto();
                 $dataValidade = $PaleteProdutoEntity->getValidade();
                 if (!is_null($dataValidade)) {
@@ -369,15 +371,27 @@ class UMA extends Pdf {
         }else{
             $qtd = $vetQtd;
         }
-        $this->SetFont('Arial', 'B', 60);
+        $size = 60;
+        if(strlen ($qtd) > 15){
+            $size = 50;
+        }
+        if(strlen ($qtd) >= 18){
+            $size = 40;
+        }
+        if(strlen ($qtd) >= 25){
+            $size = 30;
+        }
+
+        $this->SetFont('Arial', 'B', $size);
+        $this->SetXY(145, 110);
         $this->Cell(-15, 30, $qtd, 0, 1);
 
         $this->SetFont('Arial', 'B', 32);
-        $this->SetXY(15, 110);
-        $this->Cell(45, 30, utf8_decode("Prod"), 0, 0);
+        $this->SetXY(10, 110);
+        $this->Cell(35, 30, utf8_decode("Prod"), 0, 0);
 
-        $this->SetFont('Arial', 'B', 100);
-        $this->Cell(95, 30, $codigoProduto, 0, 1);
+        $this->SetFont('Arial', 'B', 70);
+        $this->Cell(40, 30, $codigoProduto, 0, 1);
     }
 
     public function layout01($palete, $produtoEn, $font_size, $line_width, $enderecoPicking, $params = null) {

@@ -65,6 +65,7 @@ class Identificacao extends SubForm
                     'required' => true,
                 ))
                 ->addElement('select', 'idTipoComercializacao', array(
+                    'mostrarSelecione' => false,
                     'label' => 'Tipo Comercialização',
                     'multiOptions' => $tiposComercializacao,
                     'required' => true,
@@ -85,13 +86,13 @@ class Identificacao extends SubForm
                 ))
                  ->addElement('text', 'peso', array(
                     'label' => 'Peso Total (kg)',
-                    'size' => 15,
+                    'size' => 10,
                     'readonly' => 'readonly',
                     'alt' => 'centesimal',
                 ))
                 ->addElement('text', 'cubagem', array(
                     'label' => 'Cubagem Total (m³)',
-                    'size' => 18,
+                    'size' => 13,
                     'readonly' => 'readonly',
                     'alt' => 'centesimal',
                 ))                             
@@ -100,10 +101,12 @@ class Identificacao extends SubForm
                 );
 
                 $this->addElement('select', 'pVariavel', array(
-                    'label' => 'Possui Peso Variável? (S/N)',
+                    'mostrarSelecione' => false,
+                    'label' => 'Possui Peso Variável?',
+                    'required' => true,
                     'multiOptions' => array(
-                        'S' => 'S',
-                        'N' => 'N'
+                        'S' => 'SIM',
+                        'N' => 'NÃO'
                     )))
                     ->addElement('text', 'percTolerancia', array(
                         'label' => 'Porcentagem de Tolerância %',
@@ -119,13 +122,30 @@ class Identificacao extends SubForm
                         array('pVariavel', 'percTolerancia','toleranciaNominal'), 'pesoVariavel', array('legend' => 'Peso Variável')
                     );
 
+                $this->addElement('select', 'indFracionavel', array(
+                    'mostrarSelecione' => false,
+                    'label' => 'Unidade fracionável?',
+                    'required' => true,
+                    'multiOptions' => array(
+                        'S' => 'SIM',
+                        'N' => 'NÃO'
+                    )
+                ))->addElement('select', 'unidFracao', array(
+                    'label' => 'Unidade de medida',
+                    'multiOptions' => ProdutoEntity::$listaUnidadeMedida
+                ))->addDisplayGroup(
+                    array('indFracionavel', 'unidFracao'), 'unidComercio', array('legend' => 'Unidade de medida fracionável')
+                )
+                ;
 
                 $this
                     ->addElement('select', 'validade', array(
-                        'label' => 'Possui validade (S/N)',
+                        'mostrarSelecione' => false,
+                        'label' => 'Possui validade?',
+                        'required' => true,
                         'multiOptions' => array(
-                            'S' => 'S',
-                            'N' => 'N'
+                            'S' => 'SIM',
+                            'N' => 'NÃO'
                         )))
                     ->addElement('text', 'diasVidaUtil', array(
                         'label' => 'Prazo Mín. de Validade Para Recebimento (dias)',
@@ -161,18 +181,39 @@ class Identificacao extends SubForm
             'idLinhaSeparacao' => $idLinhaSeparacao,
             'numVolumes' => $produto->getNumVolumes(),
             'referencia' => $produto->getReferencia(),
-//            'peso' => 10,
-//            'cubagem' => 0.1000,
             'codigoBarrasBase' => $produto->getCodigoBarrasBase(),
             'grade' => $produto->getGrade(),
             'idTipoComercializacao' => $produto->getTipoComercializacao()->getId(),
-            'validade' => $produto->getValidade(),
-            'diasVidaUtil' => $produto->getDiasVidaUtil(),
-            'diasVidaUtilMaximo' => $produto->getDiasVidaUtilMax(),
-            'pVariavel' => $produto->getPossuiPesoVariavel(),
-            'percTolerancia' => $produto->getPercTolerancia(),
-            'toleranciaNominal' => $produto->getToleranciaNominal()
         );
+
+        if (empty($produto->getValidade())) {
+            $values['validade'] = 'N';
+            $values['diasVidaUtil'] = null;
+            $values['diasVidaUtilMaximo'] = null;
+        } else {
+            $values['validade'] = $produto->getValidade();
+            $values['diasVidaUtil'] = $produto->getDiasVidaUtil();
+            $values['diasVidaUtilMaximo'] = $produto->getDiasVidaUtilMax();
+        }
+
+        if (empty($produto->getPossuiPesoVariavel())) {
+            $values['pVariavel'] = 'N';
+            $values['percTolerancia'] = null;
+            $values['toleranciaNominal'] = null;
+        } else {
+            $values['pVariavel'] = $produto->getPossuiPesoVariavel();
+            $values['percTolerancia'] = $produto->getPercTolerancia();
+            $values['toleranciaNominal'] = $produto->getToleranciaNominal();
+        }
+
+        if (empty($produto->getIndFracionavel())) {
+            $values['indFracionavel'] = 'N';
+            $values['unidFracao'] = null;
+        } else {
+            $values['indFracionavel'] = $produto->getIndFracionavel();
+            $values['unidFracao'] = $produto->getUnidadeFracao();
+        }
+
         $this->setDefaults($values);
     }
 

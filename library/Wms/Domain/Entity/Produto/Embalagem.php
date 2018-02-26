@@ -130,6 +130,18 @@ class Embalagem {
     protected $usuarioInativacao;
 
     /**
+     * @var string
+     * @Column(name="IS_EMB_FRACIONAVEL_DEFAULT", type="string", nullable=true)
+     */
+    protected $isEmbFracionavelDefault;
+
+    /**
+     * @var string
+     * @Column(name="IS_EMB_EXPEDICAO_DEFAULT", type="string", nullable=true)
+     */
+    protected $isEmbExpDefault;
+
+    /**
      * @Column(type="decimal", name="NUM_ALTURA")
      * @var decimal altura do volume
      */
@@ -537,6 +549,42 @@ class Embalagem {
         }
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
         $andamentoRepo->checksChange($this->getProduto(), 'Peso', $this->peso, $peso);
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function isEmbFracionavelDefault()
+    {
+        return $this->isEmbFracionavelDefault;
+    }
+
+    /**
+     * @param string $isEmbFracionavelDefault
+     * @return Embalagem
+     */
+    public function setIsEmbFracionavelDefault($isEmbFracionavelDefault)
+    {
+        $this->isEmbFracionavelDefault = $isEmbFracionavelDefault;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function isEmbExpDefault()
+    {
+        return $this->isEmbExpDefault;
+    }
+
+    /**
+     * @param string $isEmbExpDefault
+     * @return Embalagem
+     */
+    public function setIsEmbExpDefault($isEmbExpDefault)
+    {
+        $this->isEmbExpDefault = $isEmbExpDefault;
         return $this;
     }
 

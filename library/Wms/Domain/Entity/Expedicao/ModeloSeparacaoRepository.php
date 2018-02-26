@@ -9,6 +9,88 @@ use Wms\Domain\Entity\Expedicao;
 class ModeloSeparacaoRepository extends EntityRepository
 {
 
+    public function save(ModeloSeparacao $entity, $params) {
+
+        $entity->setDescricao($params['descricao']);
+        $entity->setUtilizaCaixaMaster($params['utilizaCaixaMaster']);
+        $entity->setUtilizaQuebraColetor($params['utilizaQuebraColetor']);
+        $entity->setUtilizaEtiquetaMae($params['utilizaEtiquetaMae']);
+        $entity->setUtilizaVolumePatrimonio($params['utilizaVolumePatrimonio']);
+        $entity->setImprimeEtiquetaVolume($params['imprimeEtiquetaPatrimonio']);
+        $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
+        $entity->setTipoQuebraVolume($params['tipoQuebraVolume']);
+        $entity->setSeparacaoPC($params['separacaoPc']);
+        $entity->setTipoDefaultEmbalado($params['tipoDefaultEmbalado']);
+        $entity->setTipoConferenciaEmbalado($params['tipoConferenciaEmbalado']);
+        $entity->setTipoConferenciaNaoEmbalado($params['tipoConferenciaNaoEmbalado']);
+        $entity->setTipoSeparacaoNaoFracionado($params['tipoSeparacaoNaoFracionado']);
+        $entity->setTipoSeparacaoFracionado($params['tipoSeparacaoFracionado']);
+        $entity->setTipoSeparacaoNaoFracionadoEmbalado($params['tipoSeparacaoNaoFracionadoEmbalado']);
+        $entity->setTipoSeparacaoFracionadoEmbalado($params['tipoSeparacaoFracionadoEmbalado']);
+        $this->_em->persist($entity);
+
+        $entityModeloSeparacaoTipoQuebraFracionado = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacaoTipoQuebraFracionado")->findBy(array('modeloSeparacao' => $entity));
+
+        /** @var Expedicao\ModeloSeparacaoTipoQuebraFracionado $tipoFracionado */
+        foreach ($entityModeloSeparacaoTipoQuebraFracionado as $tipoFracionado) {
+            $posFracionado = array_search($tipoFracionado->getTipoQuebra(), $params['quebraFracionados']);
+            if ($posFracionado === false || $posFracionado === null ) {
+                $this->_em->remove($tipoFracionado);
+            } else {
+                unset($params['quebraFracionados'][$posFracionado]);
+            }
+        }
+
+        $entityModeloSeparacaoTipoQuebraNaoFracionado = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacaoTipoQuebraNaoFracionado")->findBy(array('modeloSeparacao' => $entity));
+
+        /** @var Expedicao\ModeloSeparacaoTipoQuebraNaoFracionado $tipoNaoFracionado */
+        foreach ($entityModeloSeparacaoTipoQuebraNaoFracionado as $tipoNaoFracionado) {
+            $posNaoFracionado = array_search($tipoNaoFracionado->getTipoQuebra(), $params['quebraNaoFracionados']);
+            if ($posNaoFracionado === false || $posNaoFracionado === null ) {
+                $this->_em->remove($tipoNaoFracionado);
+            } else {
+                unset($params['quebraNaoFracionados'][$posNaoFracionado]);
+            }
+        }
+
+        $entityModeloSeparacaoTipoQuebraEmbalado = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacaoTipoQuebraEmbalado")->findBy(array('modeloSeparacao' => $entity));
+
+        /** @var Expedicao\ModeloSeparacaoTipoQuebraEmbalado $tipoEmbalado */
+        foreach ($entityModeloSeparacaoTipoQuebraEmbalado as $tipoEmbalado) {
+            $posEmbalado = array_search($tipoEmbalado->getTipoQuebra(), $params['quebraEmbalados']);
+            if ($posEmbalado === false || $posEmbalado === null ) {
+                $this->_em->remove($tipoEmbalado);
+            } else {
+                unset($params['quebraEmbalados'][$posEmbalado]);
+            }
+        }
+
+        foreach ($params['quebraFracionados'] as $quebraFracionado) {
+            $quebraFracionadoEn = new Expedicao\ModeloSeparacaoTipoQuebraFracionado();
+            $quebraFracionadoEn->setModeloSeparacao($entity);
+            $quebraFracionadoEn->setTipoQuebra($quebraFracionado);
+            $this->_em->persist($quebraFracionadoEn);
+        }
+
+        foreach ($params['quebraNaoFracionados'] as $quebraNaoFracionado) {
+            $quebraNaoFracionadoEn = new Expedicao\ModeloSeparacaoTipoQuebraNaoFracionado();
+            $quebraNaoFracionadoEn->setModeloSeparacao($entity);
+            $quebraNaoFracionadoEn->setTipoQuebra($quebraNaoFracionado);
+            $this->_em->persist($quebraNaoFracionadoEn);
+        }
+
+        foreach ($params['quebraEmbalados'] as $quebraEmbalado) {
+            $quebraEmbaladoEn = new Expedicao\ModeloSeparacaoTipoQuebraEmbalado();
+            $quebraEmbaladoEn->setModeloSeparacao($entity);
+            $quebraEmbaladoEn->setTipoQuebra($quebraEmbalado);
+            $this->_em->persist($quebraEmbaladoEn);
+        }
+
+        $this->_em->flush();
+
+        return $entity;
+    }
+
     public function getModelos() {
         $source = $this->getEntityManager()->createQueryBuilder()
             ->select('m')
@@ -69,6 +151,16 @@ class ModeloSeparacaoRepository extends EntityRepository
         return $resultado;
     }
 
+    public function getQuebraEmbalado($idModelo){
+        $source = $this->getEntityManager()->createQueryBuilder()
+            ->select('tqEmb.tipoQuebra')
+            ->from('wms:Expedicao\ModeloSeparacao', 'm')
+            ->innerJoin('m.tiposQuebraEmbalado', 'tqEmb')
+            ->where('m.id='.$idModelo)
+            ->orderBy("m.id");
+        $resultado = $source->getQuery()->getArrayResult();
+        return $resultado;
+    }
 
 
 }

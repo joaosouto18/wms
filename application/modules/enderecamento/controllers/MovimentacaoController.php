@@ -25,7 +25,6 @@ class Enderecamento_MovimentacaoController extends Action
                 'nivel' => $data['nivel'], 'apto' => $data['apto'], 'ruaDestino' => $data['ruaDestino'], 'predioDestino' => $data['predioDestino'],
                 'nivelDestino' => $data['nivelDestino'], 'aptoDestino' => $data['aptoDestino'], 'validade' => $data['validade'], 'quantidade' => $quantidade));
         }
-
         if (isset($data['return'])) {
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
@@ -37,6 +36,20 @@ class Enderecamento_MovimentacaoController extends Action
             $data['predio'] = $enderecoEn->getPredio();
             $data['nivel'] = $enderecoEn->getNivel();
             $data['apto'] = $enderecoEn->getApartamento();
+            if ($request->isPost() && empty($transferir) && $data['submit'] == 'Movimentar') {
+                $this->redirect('movimentar', 'movimentacao', 'enderecamento', array(
+                    'idProduto' => $data['idProduto'],
+                    'grade' => $data['grade'],
+                    'embalagem' => (isset($data['embalagem']) && !empty($data['embalagem']))? $data['embalagem'] : null,
+                    'volumes' => (isset($data['volumes']) && !empty($data['volumes']))? $data['volumes'] : null,
+                    'rua' => $data['rua'],
+                    'predio' => $data['predio'],
+                    'nivel' => $data['nivel'],
+                    'apto' => $data['apto'],
+                    'validade' => str_replace('/', '-', $data['validade']),
+                    'quantidade' => $quantidade,
+                    'idNormaPaletizacao' => $data['idNormaPaletizacao']));
+            }
             $form->populate($data);
         } else {
             if ($request->isPost() && empty($transferir)) {
@@ -427,7 +440,7 @@ class Enderecamento_MovimentacaoController extends Action
 
     public function getValidadeAction()
     {
-        $codProduto = $this->_getParam('idProduto');
+        $codProduto = $this->_getParam('idproduto');
         $grade = $this->_getParam('grade');
         $grade = trim($grade);
         $codProduto = trim($codProduto);

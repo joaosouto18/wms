@@ -85,6 +85,12 @@ class Expedicao
      */
     protected $carga;
 
+    /**
+     * @var string
+     * @Column(name="IND_PROCESSANDO", type="string")
+     */
+    protected $indProcessando;
+
 	
 	public function setCarga($carga)
     {
@@ -209,6 +215,22 @@ class Expedicao
     public function setCodStatus($codStatus)
     {
         $this->codStatus = $codStatus;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIndProcessando()
+    {
+        return $this->indProcessando;
+    }
+
+    /**
+     * @param string $indProcessando
+     */
+    public function setIndProcessando($indProcessando)
+    {
+        $this->indProcessando = $indProcessando;
     }
 
 }

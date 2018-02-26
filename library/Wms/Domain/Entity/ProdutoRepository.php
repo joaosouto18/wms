@@ -173,6 +173,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $produtoEntity->setReferencia($referencia);
             $produtoEntity->setCodigoBarrasBase($codigoBarrasBase);
             $produtoEntity->setPossuiPesoVariavel((isset($possuiPesoVariavel) && !empty($possuiPesoVariavel)) ? $possuiPesoVariavel : "N");
+            $produtoEntity->setIndFracionavel((isset($indFracionavel) && !empty($indFracionavel))? $indFracionavel : 'N');
 
             if ($produtoEntity->getId() == null) {
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01", 1);
@@ -308,11 +309,23 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             //embalagens do produto
             if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
                 return false;
-
             foreach ($values['embalagens'] as $id => $itemEmbalagem) {
-                $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
+                if (isset($itemEmbalagem['quantidade']))
+                    $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
+
                 extract($itemEmbalagem);
-                $Math = new Math();
+
+                if ($itemEmbalagem['acao'] != 'excluir') {
+                    $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_UNITARIO, $id);
+                    if (!empty($check)) {
+                        $arrItens = [];
+                        foreach ($check as $produto) {
+                            $arrItens[] = "item $produto[idProduto] / $produto[grade] ($produto[dsc_elemento])";
+                        }
+                        $str = implode(", ", $arrItens);
+                        throw new \Exception("O codigo de barras $codigoBarras já esta cadastrado: $str");
+                    }
+                }
 
                 switch ($itemEmbalagem['acao']) {
                     case 'incluir':
@@ -322,11 +335,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                             $capacidadePicking = !empty($capacidadePicking) ? $capacidadePicking : $dadosEmbalagem->getCapacidadePicking();
                             $endereco = $dadosEmbalagem->getEndereco();
                             $endereco = !empty($endereco) ? $endereco->getDescricao() : null;
-                            $altura = !empty($altura) ? $altura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getAltura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
-                            $largura = !empty($largura) ? $largura : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getLargura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
-                            $profundidade = !empty($profundidade) ? $profundidade : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getProfundidade()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
-                            $cubagem = str_replace('.', ',', $Math::multiplicar($Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
-                            $peso = !empty($peso) ? $peso : str_replace('.', ',', $Math::multiplicar($Math::dividir(str_replace(',', '.', $dadosEmbalagem->getPeso()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                            $altura = !empty($altura) ? $altura : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getAltura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                            $largura = !empty($largura) ? $largura : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getLargura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                            $profundidade = !empty($profundidade) ? $profundidade : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getProfundidade()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
+                            $cubagem = str_replace('.', ',', Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
+                            $peso = !empty($peso) ? $peso : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getPeso()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
                         }
 
                         $embalagemEntity = new EmbalagemEntity;
@@ -341,6 +354,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
+                        $embalagemEntity->setIsEmbExpDefault((isset($isEmbExpDefault) && !empty($isEmbExpDefault))?$isEmbExpDefault: 'N');
+                        $embalagemEntity->setIsEmbFracionavelDefault((isset($isEmbFracionavelDefault) && !empty($isEmbFracionavelDefault))?$isEmbFracionavelDefault: 'N');
 
                         if (isset($largura) && !empty($largura)) {
                             $embalagemEntity->setLargura($largura);
@@ -607,6 +622,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             if (!isset($acao))
                 continue;
 
+            if ($itemEmbalagem['acao'] != 'excluir') {
+                $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_COMPOSTO, $id);
+                if(!empty($check)){
+                    $arrItens = [];
+                    foreach ($check as $produto) {
+                        $arrItens[] = "item $produto[idProduto] / $produto[grade] ($produto[dsc_elemento])";
+                    }
+                    $str = implode(", ", $arrItens);
+                    throw new \Exception("O codigo de barras $codigoBarras já esta cadastrado: $str");
+                }
+            }
             // id
 //            $itemVolume['id'] = $id;
             // pega infos de normas de produtos
@@ -757,11 +783,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     /**
      *
-     * @param type $id
-     * @param type $grade
-     * @return type
+     * @param string $id
+     * @param string $grade
+     * @return array
      */
-    public function buscarDadoLogistico($id, $grade = false) {
+    public function buscarDadoLogistico($id, $grade = false)
+    {
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('p, tc.id idTipoComercializacao, tc.descricao tipoComercializacao')
                 ->addSelect("
@@ -1001,6 +1028,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
      * Busca todos os dados de produto, produto volume, produto embalagem, dados logisticos e norma paletizacao
      *
      * @param array $params
+     * @return array
      */
     public function buscarDadosProduto(array $params) {
         extract($params);
@@ -1171,6 +1199,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                       tc.descricao as dscTipoComercializacao,
                       pe.id as idEmbalagem,
                       pe.descricao as dscEmbalagem,
+                      pe.quantidade,
                       pv.id as idVolume,
                       pv.codigoSequencial as codSequencialVolume,
                       pv.descricao as dscVolume,
@@ -1595,7 +1624,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_DEPOSITO_ENDERECO=DE.COD_DEPOSITO_ENDERECO
                 LEFT JOIN PRODUTO_VOLUME    PV ON PV.COD_DEPOSITO_ENDERECO=DE.COD_DEPOSITO_ENDERECO
                 WHERE (PV.COD_DEPOSITO_ENDERECO IS NULL AND PE.COD_DEPOSITO_ENDERECO IS NULL)
-                    AND DE.COD_CARACTERISTICA_ENDERECO <> 37 AND DE.IND_SITUACAO='D' $cond
+                    AND DE.COD_CARACTERISTICA_ENDERECO <> 37 AND DE.IND_SITUACAO = 'D' $cond
                 ORDER BY \"descricao\"";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -1732,7 +1761,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         if (isset($params['codProduto']) && !empty($params['codProduto'])) {
             $where .= " AND P.COD_PRODUTO = '$params[codProduto]' ";
         }
-        if ($params['linhaSeparacao'] != '') {
+        if (isset($params['linhaSeparacao']) && !empty($params['linhaSeparacao'])) {
             $where .= "AND P.COD_LINHA_SEPARACAO = '$params[linhaSeparacao]' ";
         }
         if (isset($params['descricao']) && !empty($params['descricao'])) {
@@ -1914,5 +1943,25 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             }
         }
         $em->flush();
+    }
+
+    public function checkCodBarrasRepetido($codigoBarras, $tipoComercializacao, $idElemento){
+        $dql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id idProduto, p.grade, NVL(pe.descricao, pv.descricao) dsc_elemento')
+            ->from('wms:Produto', 'p')
+            ->leftJoin('p.embalagens', 'pe')
+            ->leftJoin('p.volumes', 'pv')
+            ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+            ->setParameter('codigoBarras', $codigoBarras);
+
+        if ($tipoComercializacao == Produto::TIPO_UNITARIO && !strpos($idElemento, "-new")) {
+            $dql->andWhere("pe.id != :idElemento")
+                ->setParameter('idElemento', $idElemento);
+        } elseif ($tipoComercializacao == Produto::TIPO_COMPOSTO && !strpos($idElemento, "-new")) {
+            $dql->andWhere("pv.id != :idElemento")
+                ->setParameter('idElemento', $idElemento);
+        }
+
+        return $dql->getQuery()->getResult();
     }
 }

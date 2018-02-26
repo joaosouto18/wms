@@ -51,6 +51,7 @@ class Mobile_InventarioController extends Action
             $this->view->codigoBarras = $codigoBarras;
             $nivelParam = $this->_getParam('nivel', null);
             if (isset($codigoBarras) && !empty($codigoBarras)) {
+            $this->view->parametroItem = $this->getSystemParameterValue('INVENTARIO_ITEM_A_ITEM');
 
                 $codigoBarrasSemDigito = \Wms\Util\Coletor::retiraDigitoIdentificador($codigoBarras);
                 if (($nivelParam != null)) {
@@ -77,10 +78,12 @@ class Mobile_InventarioController extends Action
                     $resultOsEnd = $inventarioService->consultaOseEnd($idContagemOs, $result['idInventarioEnd'], $idInventario, $recontagemMesmoUsuario);
                     $this->checkErrors($resultOsEnd);
 
-                    $populateForm = array('idEndereco' => $enderecoEn->getId(), 'codigoBarrasEndereco' => $codigoBarras, 'idContagemOs' => $idContagemOs, 'idInventarioEnd' => $result['idInventarioEnd'], 'numContagem' => $numContagem);
+                    $populateForm = array('idEndereco' => $enderecoEn->getId(), 'codigoBarrasEndereco' => $codigoBarras, 'idContagemOs' => $idContagemOs, 'idInventarioEnd' => $result['idInventarioEnd'], 'numContagem' => $numContagem, 'idInventario' => $idInventario);
                     $this->view->idInventarioEnd = $result['idInventarioEnd'];
                     $this->view->numContagem = $numContagem;
                     $this->view->divergencia = $divergencia;
+                    $this->view->idInventario = $idInventario;
+
                     $this->view->botoes = true;
                     if (count($produtosEndPicking) > 0) {
                         $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
@@ -207,6 +210,7 @@ class Mobile_InventarioController extends Action
     public function confirmaContagemAction()
     {
         $params = $this->_getAllParams();
+//        var_dump($params);die;
         $divergencia = $this->_getParam('divergencia', null);
         /** @var \Wms\Service\Mobile\Inventario $inventarioService */
         $inventarioService = $this->_service;
@@ -229,8 +233,11 @@ class Mobile_InventarioController extends Action
         $this->view->urlVoltar = '/mobile/inventario/consulta-endereco/idInventario/' . $params['idInventario'] . '/numContagem/' . $params['numContagem'] . '/divergencia/' . $divergencia;
 //        $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
 //        $this->view->enderecos = $enderecos;
-        $this->render('form');
-
+        if($params['itemAitem'] == 1) {
+            $this->_helper->json(array('status' => 'ok', 'msg' => 'Produto conferido.'));
+        }else {
+            $this->render('form');
+        }
     }
 
     public function mudarEnderecoAction()
@@ -276,6 +283,34 @@ class Mobile_InventarioController extends Action
             $this->_redirect($result['url']);
         } else {
             return $result;
+        }
+    }
+
+    public function getEmbProdutoAjaxAction(){
+        $embalagemEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $this->_getParam('codigoBarras')));
+        $array['idInventarioEnd'] = $this->_getParam('idInventarioEnd');
+        $array['divergencia'] = $this->_getParam('divergencia');
+        $array['numContagem'] = $this->_getParam('numContagem');
+        $inventarioService = $this->_service;
+        if(!empty($embalagemEn)) {
+            $array['codProdutoEmbalagem'] = $embalagemEn->getId();
+            $array['idProduto'] = $embalagemEn->getProduto()->getId();
+            $array['grade'] = $embalagemEn->getProduto()->getGrade();
+            $result = $inventarioService->verificaContagemEnd($array);
+            $this->_helper->json(array('status' => 'ok','idProduto' => $embalagemEn->getProduto()->getId(), 'grade' => $embalagemEn->getProduto()->getGrade(),
+                'contagemEndId' => $result, 'codProdutoEmbalagem' => $embalagemEn->getId(), 'validade' => $embalagemEn->getProduto()->getValidade()));
+        }else{
+            $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('codigoBarras' => $this->_getParam('codigoBarras')));
+            if(!empty($volumeEn)) {
+                $array['codProdutoVolume'] = $volumeEn->getId();
+                $array['idProduto'] = $volumeEn->getProduto()->getId();
+                $array['grade'] = $volumeEn->getProduto()->getGrade();
+                $result = $inventarioService->verificaContagemEnd($array);
+                $this->_helper->json(array('status' => 'ok', 'idProduto' => $volumeEn->getProduto()->getId(), 'grade' => $volumeEn->getProduto()->getGrade(),
+                    'contagemEndId' => $result, 'codProdutoVolume' => $volumeEn->getId(), 'validade' => $volumeEn->getProduto()->getValidade()));
+            }else {
+                $this->_helper->json(array('status' => 'error', 'msg' => 'Produto não encontrado.'));
+            }
         }
     }
 

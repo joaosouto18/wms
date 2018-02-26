@@ -51,6 +51,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                          TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
                         FROM INTEGRACAO_NF_ENTRADA
                         $where
+                  ORDER by NUM_NOTA_FISCAL, COD_SERIE_NOTA_FISCAL, COD_FORNECEDOR, TO_DATE(DAT_EMISSAO)
                 ";
                 break;
             case AcaoIntegracao::INTEGRACAO_PEDIDOS:
@@ -223,7 +224,6 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             //STRING DA QUERY DE INTEGRAÇÃO
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro, $data);
-
             if ($dados == null) {
                 $words = explode(" ",trim($query));
                 $update = true;
@@ -235,19 +235,36 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $result = $dados;
             }
 
+            if ($acaoEn->getidAcaoRelacionada() != null) {
+                if (count($result) >0) {
 
-            if (($tipoExecucao == "E") && ($destino == "T")) {
-                $integracaoService = new Integracao($this->getEntityManager(),
-                    array('acao'=>$acaoEn,
-                        'dados'=>$result));
-                $result = $integracaoService->salvaTemporario();
+                    $acaoRelacionadaEn = $this->find($acaoEn->getidAcaoRelacionada());
+
+                    $dadosFiltrar = array();
+                    foreach ($result as $row) {
+                        $dadosFiltrar[] = $row['ID'];
+                    }
+                    $options = array();
+                    $options[] = implode(",", $dadosFiltrar);
+                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+                } else {
+                    $result = true;
+                }
             } else {
-                $integracaoService = new Integracao($this->getEntityManager(),
-                    array('acao'=>$acaoEn,
-                          'options'=>$options,
-                          'tipoExecucao' => $tipoExecucao,
-                          'dados'=>$result));
-                $result = $integracaoService->processaAcao();
+                if (($tipoExecucao == "E") && ($destino == "T")) {
+                    $integracaoService = new Integracao($this->getEntityManager(),
+                        array('acao'=>$acaoEn,
+                            'dados'=>$result));
+                    $result = $integracaoService->salvaTemporario();
+                } else {
+                    $integracaoService = new Integracao($this->getEntityManager(),
+                        array('acao'=>$acaoEn,
+                            'options'=>$options,
+                            'tipoExecucao' => $tipoExecucao,
+                            'dados'=>$result));
+                    $result = $integracaoService->processaAcao();
+                }
+
             }
 
             $this->_em->flush();
@@ -277,7 +294,6 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->rollback();
             $this->_em->clear();
         }
-
 
         try {
 
@@ -336,16 +352,12 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
-
-                $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S' WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
-                $words = explode(" ",trim($query));
-                $update = true;
-                if (strtoupper($words[0]) == "SELECT") {
-                    $update = false;
+                if ($sucess=="S") {
+                    $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
+                    $update = true;
+                    $conexaoEn = $acaoEn->getConexao();
+                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
                 }
-                $conexaoEn = $acaoEn->getConexao();
-                $result = $conexaoRepo->runQuery($query, $conexaoEn, $update);
-
             }
 
             $this->_em->flush();

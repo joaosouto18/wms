@@ -583,7 +583,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
-     * @param string $idCarga
+     * @param string $idCargaExterno
      * @param string $tipoCarga
      * @return carga Com informações das etiquetas
      */
@@ -872,7 +872,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     'codPedido' => $enPedido->getId(),
                     'pedido' => $enPedido,
                     'produto' => $enProduto,
-                    'valorVenda' =>$produto['valorVenda'],
+                    'valorVenda' => (isset($produto['valorVenda'])) ? $produto['valorVenda'] : null,
                     'grade' => $produto['grade'],
                     'quantidade' => $qtdCorrigida
                 );
@@ -935,7 +935,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     if (!$isIntegracaoSQL){
                         throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
                     } else {
-                        //entender pq esta retornando false
                         return false;
                     }
                 }
@@ -1075,14 +1074,20 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     protected function findExpedicaoByPlacaExpedicao($repositorios, $placaExpedicao) {
-        $ExpedicaoRepo      = $repositorios['expedicaoRepo'];
-        $entityExpedicao    = $ExpedicaoRepo->findOneBy(array('placaExpedicao' => $placaExpedicao, 'status' => array(Expedicao::STATUS_INTEGRADO, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA)));
-        if ($entityExpedicao == null) {
-            $entityExpedicao= $ExpedicaoRepo->save($placaExpedicao, false);
-        }
+        $ExpedicaoRepo = $repositorios['expedicaoRepo'];
+        $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
+        $parametro = $parametroRepo->findOneBy(array('constante' => 'AGRUPAR_CARGAS'));
 
-        if ($entityExpedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
-            throw new \Exception('Expedicao ' . $entityExpedicao->getId() . ' já está finalizada');
+        if (!empty($parametro) && $parametro->getValor() == 'N') {
+            $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
+        } else {
+            $entityExpedicao = $ExpedicaoRepo->findOneBy(array('placaExpedicao' => $placaExpedicao, 'status' => array(Expedicao::STATUS_INTEGRADO, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_EM_CONFERENCIA)));
+            if ($entityExpedicao == null) {
+                $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
+            }
+            if ($entityExpedicao->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
+                throw new \Exception('Expedicao ' . $entityExpedicao->getId() . ' já está finalizada');
+            }
         }
 
         return $entityExpedicao;
@@ -1151,7 +1156,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
 
                 if ($nfEn != null) {
-//                    return true;
+                    return true;
                     //throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.', série '.$notaFiscal->serieNf.', emitente: ' . $pessoaEn->getNomeFantasia() . ', cnpj ' . $notaFiscal->cnpjEmitente . ' já existe no sistema!');
                 }
 

@@ -22,10 +22,13 @@ class Enderecamento_PaleteController extends Action
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $ProdutoRepository */
         $ProdutoRepository = $this->em->getRepository('wms:Produto');
+        $produtoEspecifico = false;
 
         if (!empty($codProduto) && !empty($grade)) {
+            /** @var \Wms\Domain\Entity\Produto $produtoEn */
             $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
             $this->view->endPicking = $ProdutoRepository->getEnderecoPicking($produtoEn);
+            $produtoEspecifico = true;
 
             $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
@@ -56,33 +59,33 @@ class Enderecamento_PaleteController extends Action
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
             $itens = isset($produtos) && !empty($produtos) ? $produtos : $notaFiscalRepo->getItensNotaByRecebimento($idRecebimento);
 
-            $result = array();
-            /** @var \Wms\Domain\Entity\NotaFiscal\Item $item */
-            foreach ($itens as $item) {
-                $piece = null;
-                if ($produtos) {
-                    $piece = explode('-',$item);
-                }
-                if (isset($piece) && !empty($piece)) {
-                    $codProduto = $piece[0];
-                    $grade = $piece[1];
-                    $completaPicking = true;
-                } else {
-                    $codProduto = $item['codProduto'];
-                    $grade = $item['grade'];
-                    $completaPicking = false;
-                }
+            try {
+                $result = array();
+                /** @var \Wms\Domain\Entity\NotaFiscal\Item $item */
+                foreach ($itens as $item) {
+                    $piece = null;
+                    if ($produtos) {
+                        $piece = explode('-', $item);
+                    }
+                    if (isset($piece) && !empty($piece)) {
+                        $codProduto = $piece[0];
+                        $grade = $piece[1];
+                        $completaPicking = true;
+                    } else {
+                        $codProduto = $item['codProduto'];
+                        $grade = $item['grade'];
+                        $completaPicking = false;
+                    }
 
-                /** @var \Wms\Domain\Entity\Produto $produtoEn */
-                $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
-                $arr = array();
-                $arr['codProduto'] = $codProduto;
-                $arr['grade'] = $grade;
-                $arr['descricao'] = $produtoEn->getDescricao();
-                $arr['endPicking'] = $ProdutoRepository->getEnderecoPicking($produtoEn);
-                $arr['qtdTotal'] = $paleteRepo->getQtdTotalByPicking($codProduto,$grade);
+                    /** @var \Wms\Domain\Entity\Produto $produtoEn */
+                    $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+                    $arr = array();
+                    $arr['codProduto'] = $codProduto;
+                    $arr['grade'] = $grade;
+                    $arr['descricao'] = $produtoEn->getDescricao();
+                    $arr['endPicking'] = $ProdutoRepository->getEnderecoPicking($produtoEn);
+                    $arr['qtdTotal'] = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
-                try {
                     $arr['paletes'] = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
                     $paletes = array();
                     foreach ($arr['paletes'] as $palete) {
@@ -92,20 +95,20 @@ class Enderecamento_PaleteController extends Action
                         $paleteRepo->enderecaPicking($paletes, $completaPicking);
                         $arr['paletes'] = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
                     }
-
-                } catch (Exception $e) {
-                    $this->addFlashMessage('error', $e->getMessage());
-                    $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
+                    $result[] = $arr;
                 }
-                $result[] = $arr;
+            } catch (Exception $e) {
+                $this->addFlashMessage('error', $e->getMessage());
+                $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
             }
+
             $this->view->isIndivudal = false;
             $this->view->utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
             $this->view->itens = $result;
         }
 
         $this->view->idRecebimento = $idRecebimento;
-        $this->configurePage($idRecebimento);
+        $this->configurePage($idRecebimento, $produtoEspecifico);
     }
 
     /**
@@ -255,7 +258,7 @@ class Enderecamento_PaleteController extends Action
      * @param $idRecebimento
      * @param $buttons
      */
-    public function configurePage($idRecebimento)
+    public function configurePage($idRecebimento, $produtoEspecifico)
     {
         $buttons[] = array(
             'label' => 'Voltar',
@@ -324,15 +327,16 @@ class Enderecamento_PaleteController extends Action
                 ),
                 'tag' => 'a'
             );
-            $buttons[] = array(
-                'label' => 'Trocar U.M.A',
-                'urlParams' => array(
-                    'module' => 'enderecamento',
-                    'controller' => 'palete',
-                    'action' => 'trocar'
-                ),
-                'tag' => 'a',
-            );
+            if ($produtoEspecifico)
+                $buttons[] = array(
+                    'label' => 'Trocar U.M.A',
+                    'urlParams' => array(
+                        'module' => 'enderecamento',
+                        'controller' => 'palete',
+                        'action' => 'trocar'
+                    ),
+                    'tag' => 'a',
+                );
         }
 
 
@@ -378,10 +382,11 @@ class Enderecamento_PaleteController extends Action
         $produtosEn = $paleteEn->getProdutos();
         $codProduto = $produtosEn[0]->getCodProduto();
         $grade      = $produtosEn[0]->getGrade();
-
+        $this->em->beginTransaction();
         try{
             $paleteRepo->desfazerPalete($idPalete);
         } catch(Exception $e) {
+            $this->em->rollback();
             $this->addFlashMessage('error',$e->getMessage());
         }
 
@@ -399,25 +404,27 @@ class Enderecamento_PaleteController extends Action
         $params = $this->_getAllParams();
         $idRecebimento  = $this->getRequest()->getParam('id');
         $codProduto     = $this->getRequest()->getParam('codigo');
+        $grade          = $this->getRequest()->getParam('grade');
 
         if (!is_null($trocaUma)) {
-            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-            // verifica se novo recebimento possui o produto selecionado
-            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
-            $result = $notaFiscalRepo->buscarItensPorNovoRecebimento($params['novo-recebimento-id'], $codProduto);
+            try {
+                /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+                // verifica se novo recebimento possui o produto selecionado
+                $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+                $result = $notaFiscalRepo->buscarItensPorNovoRecebimento($params['novo-recebimento-id'], $codProduto, $grade);
 
-            if (count($result) > 0) {
-                // realizar trocas de U.M.As para novo recebimento
-                $result = $this->confirmaTroca();
-
-                if ($result) {
-                    $this->addFlashMessage('info', $result);
-                    $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
+                if (count($result) > 0) {
+                    // realizar trocas de U.M.As para novo recebimento
+                    $this->confirmaTroca();
+                    $this->addFlashMessage('success', 'A troca foi realizada com sucesso!');
+                } else {
+                    $this->addFlashMessage('info', 'Este produto não consta no recebimento: ' . $params['novo-recebimento-id']);
                 }
-            } else {
-                $this->addFlashMessage('info', 'Este produto não consta no recebimento: '.$params['novo-recebimento-id']);
-                $this->_redirect('/enderecamento/produto/index/id/' . $idRecebimento);
+            } catch (Exception $e) {
+                $this->addFlashMessage('error', $e->getMessage());
             }
+
+            $this->_redirect("/enderecamento/produto/index/id/$idRecebimento/codigo/$codProduto/grade/". urlencode($params['grade']));
         }
 
         $grid = new \Wms\Module\Enderecamento\Grid\Trocar();
@@ -429,6 +436,10 @@ class Enderecamento_PaleteController extends Action
         $this->view->grid = $grid->init($params);
     }
 
+    /**
+     * @return bool
+     * @throws Exception
+     */
     public function confirmaTroca()
     {
         $params = $this->_getAllParams();
@@ -444,21 +455,14 @@ class Enderecamento_PaleteController extends Action
         $grade               = $params['grade'];
 
         if ($existeRecebimento == null) {
-            return 'Recebimento inexistente!';
+            throw new Exception('Recebimento inexistente!');
         }
 
-        if ($paleteRepo->validaTroca($novoRecebimento,$codProduto,$grade) == true) {
-            $result = $paleteRepo->realizaTroca($novoRecebimento, $params['mass-id'], $idRecebimentoAntigo, $codProduto,$grade);
-            if ($result['result'] == true) {
-                $recebimentoRepo->gravarAndamento($novoRecebimento, "Troca UMA do Recb: $params[id] produto $params[codigo] - $params[grade]");
-                $this->addFlashMessage('success', 'Troca realizada com sucesso');
-            } else {
-                $this->addFlashMessage('error', $result['msg']);
-            }
-        }
+        $paleteRepo->validaTroca($novoRecebimento,$codProduto,$grade);
+        $paleteRepo->realizaTroca($novoRecebimento, $params['mass-id'], $idRecebimentoAntigo, $codProduto,$grade);
+        $recebimentoRepo->gravarAndamento($novoRecebimento, "Troca UMA do Recb: $params[id] produto $params[codigo] - $params[grade]");
 
-        $url = '/enderecamento/produto/index/id/' . $params['id'] . '/codigo/' . $params['codigo'] . '/grade/' . urlencode($params['grade']);
-        $this->_redirect($url);
+        return true;
     }
 
 } 

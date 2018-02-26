@@ -75,12 +75,17 @@ class EtiquetaSeparacao extends SubForm
                 'label' => 'Etiqueta',
                 'class' => 'inptText inptEtiqueta',
             ))
+            ->addElement('text', 'expedicao', array(
+                'size' => 11,
+                'label' => 'Expedição',
+                'class' => 'inptText',
+            ))
             ->addDisplayGroup(array('qtdConferentes','etiquetaInicial','etiquetaFinal','showIntervalo','pessoa'), 'identificacao', array('legend' => 'Vincular Etiqueta Separação'))
-            ->addDisplayGroup(array('dataInicial','dataFinal','cpfBusca','etiquetaBusca','buscar'), 'consulta', array('legend' => 'Consulta'));
+            ->addDisplayGroup(array('dataInicial','dataFinal','cpfBusca','etiquetaBusca','expedicao','buscar'), 'consulta', array('legend' => 'Consulta'));
 
         $this->getElement('etiquetaInicial')->setAttrib('onkeydown','gotoFinal(event)');
         $this->getElement('etiquetaFinal')->setAttrib('onkeydown','gotoPessoa(event)');
         $this->getElement('pessoa')->setAttrib('onkeydown','gotoBuscar(event)');
-        $this->getElement('pessoa')->setAttrib('onkeypress','mascaraMutuario(this,cpfCnpj)');
+        //$this->getElement('pessoa')->setAttrib('onkeypress','mascaraMutuario(this,cpfCnpj)');
     }
 }

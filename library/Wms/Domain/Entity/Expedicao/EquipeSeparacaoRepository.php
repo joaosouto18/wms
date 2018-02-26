@@ -41,7 +41,7 @@ class EquipeSeparacaoRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
-    public function getApontamentosProdutividade($cpf, $dataInicio, $dataFim, $etiqueta){
+    public function getApontamentosProdutividade($cpf, $dataInicio, $dataFim, $etiqueta, $expedicao){
         $where = '';
         if (isset($dataInicio) && (!empty($dataInicio))) {
             $where .= " AND EP.DTH_VINCULO >= TO_DATE('$dataInicio 00:00','DD-MM-YYYY HH24:MI')";
@@ -55,6 +55,9 @@ class EquipeSeparacaoRepository extends EntityRepository
         if (isset($etiqueta) && (!empty($etiqueta))) {
             $where .= " AND $etiqueta >= EP.ETIQUETA_INICIAL AND $etiqueta <= EP.ETIQUETA_FINAL";
         }
+        if (isset($expedicao) && (!empty($expedicao))) {
+            $where .= " AND CG.COD_EXPEDICAO = $expedicao";
+        }
         if($where == ''){
             $where = ' AND 1 = 2';
         }
@@ -64,11 +67,16 @@ class EquipeSeparacaoRepository extends EntityRepository
                     (EP.ETIQUETA_INICIAL || ' - ' || EP.ETIQUETA_FINAL) AS INTERVALO,
                     ((EP.ETIQUETA_FINAL - EP.ETIQUETA_INICIAL) + 1) AS TOTAL,
                     DECODE(PF.NUM_CPF, NULL,NULL,
-                    TRANSLATE(TO_CHAR(PF.NUM_CPF/100,'000,000,000.00'),',.','.-')) CPF
+                    TRANSLATE(TO_CHAR(PF.NUM_CPF/100,'000,000,000.00'),',.','.-')) CPF,
+                    CG.COD_EXPEDICAO,
+                    TO_CHAR(EP.DTH_VINCULO,'DD/MM/YYYY') AS DTH_VINCULO
                 FROM
                   EQUIPE_SEPARACAO EP
                   INNER JOIN PESSOA P ON (EP.COD_USUARIO = P.COD_PESSOA)
                   INNER JOIN PESSOA_FISICA PF ON (EP.COD_USUARIO = PF.COD_PESSOA)
+                  INNER JOIN ETIQUETA_SEPARACAO ES ON (EP.ETIQUETA_FINAL = ES.COD_ETIQUETA_SEPARACAO)
+                  INNER JOIN PEDIDO PD ON PD.COD_PEDIDO = ES.COD_PEDIDO
+                  INNER JOIN CARGA CG ON PD.COD_CARGA = CG.COD_CARGA
                 WHERE 1 = 1
                 $where ";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);

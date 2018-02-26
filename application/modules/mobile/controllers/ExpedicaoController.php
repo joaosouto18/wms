@@ -38,8 +38,8 @@ class Mobile_ExpedicaoController extends Action {
 
         switch (substr($codBarras,0,2)) {
             case 12:
-                $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras));
-                if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+                $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
+                if (!empty($mapaSeparacaoQuebraEn)) {
                     $this->_redirect("mobile/expedicao/confirma-clientes/codigoBarras/$codBarras");
                 } else {
                     $this->_redirect("mobile/expedicao/confirmar-operacao/codigoBarras/$codBarras");
@@ -55,20 +55,8 @@ class Mobile_ExpedicaoController extends Action {
         $this->view->idMapa = $idMapaSeparacao = $this->_getParam('codigoBarras');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
-        $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
 
-        foreach ($clientes as $key => $cliente) {
-            $numeroCaixas = explode(',', $cliente['NUM_CAIXA_PC_INI']);
-            $caixaAnterior = null;
-            $arrCaixas = array();
-            foreach ($numeroCaixas as $caixa) {
-                if ($caixa != $caixaAnterior)
-                    $arrCaixas[] = $caixa;
-                $caixaAnterior = $caixa;
-            }
-            $clientes[$key]['NUM_CAIXA_PC_INI'] = implode('; ', $arrCaixas);
-        }
-        $this->view->clientes = $clientes;
+        $this->view->clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
 
         $mapaSeparacaoEn = $mapaSeparacaoRepo->find($idMapaSeparacao);
         $idExpedicao = $mapaSeparacaoEn->getExpedicao()->getId();
@@ -199,7 +187,7 @@ class Mobile_ExpedicaoController extends Action {
         }
     }
 
-    public function conferteProdutoAjaxAction() {
+    public function confereProdutoAjaxAction() {
         $idMapa = $this->_getParam("idMapa");
         $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
@@ -217,6 +205,7 @@ class Mobile_ExpedicaoController extends Action {
             $codPessoa = null;
         }
         $msg['msg'] = "";
+        $volume = "";
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
@@ -232,10 +221,11 @@ class Mobile_ExpedicaoController extends Action {
             try {
                 $codBarrasProcessado = intval($codBarras);
 
+                /** @var Expedicao\VolumePatrimonio $volumePatrimonioEn */
+                $volumePatrimonioEn = null;
                 if ((strlen($codBarrasProcessado) > 2) && ((substr($codBarrasProcessado, 0, 2)) == "13")) {
                     $tipoProvavelCodBarras = 'volume';
-                    $idVolume = $codBarrasProcessado;
-                    $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+                    $volumePatrimonioEn = $volumePatrimonioRepo->find($codBarrasProcessado);
                     if (empty($volumePatrimonioEn)) {
                         $tipoProvavelCodBarras = 'produto';
                     }
@@ -243,18 +233,16 @@ class Mobile_ExpedicaoController extends Action {
                     $tipoProvavelCodBarras = 'produto';
                 }
 
-                $volumePatrimonioEn = null;
-                if ($tipoProvavelCodBarras === 'volume') {
+                if ($tipoProvavelCodBarras === 'volume' || !empty($volumePatrimonioEn)) {
                     if ((!empty($idVolume)) && ($idVolume != null)) {
-                        $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
-                    }
-                    if (!empty($volumePatrimonioEn)) {
-                        throw new \Exception("Já existe um volume patrimonio aberto, feche a caixa " . $volumePatrimonioEn->getId() . " antes de abrir um novo volume.");
-                    }
-                    $idVolume = $codBarrasProcessado;
-                    $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
-                    if (empty($volumePatrimonioEn)) {
-                        throw new \Exception("Nenhum volume-patrimônio foi encontrado com o código $idVolume");
+                        $volumePatrimonioEnById = $volumePatrimonioRepo->find($idVolume);
+                        if (empty($volumePatrimonioEnById)) {
+                            throw new \Exception("Nenhum volume-patrimônio foi encontrado com o código $idVolume");
+                        } elseif (!empty($volumePatrimonioEnById) && !empty($novoVolumePatrimonio)) {
+                            throw new \Exception("Já existe um volume patrimonio aberto, feche a caixa " . $volumePatrimonioEn->getId() . " antes de abrir um novo volume.");
+                        }
+                    } elseif (empty($idVolume) && !empty($volumePatrimonioEn)) {
+                        $idVolume = $volumePatrimonioEn->getId();
                     }
 
                     /** @var Expedicao\ExpedicaoVolumePatrimonioRepository $expVolumePatrimonioRepo */
@@ -268,11 +256,17 @@ class Mobile_ExpedicaoController extends Action {
                     }
                     $expVolumePatrimonioRepo->vinculaExpedicaoVolume($idVolume, $idExpedicao, $codQuebra);
 
-                    $this->view->idVolume = $codBarras;
-                    $this->addFlashMessage('info', "Volume $codBarrasProcessado vinculada a expedição");
+                    $this->view->idVolume = $idVolume;
+                    $msg['msg'] = "Volume $codBarrasProcessado vinculada a expedição";
+                    $volume = ['idVolume' => $volumePatrimonioEn->getId(), 'dscVolume' => $volumePatrimonioEn->getDescricao()];
+                    $msg['produto'] = "";
                 } else if ($tipoProvavelCodBarras === 'produto') {
                     $codBarras = ColetorUtil::adequaCodigoBarras($codBarras, true);
 
+                    if (!empty($idVolume)) {
+                        $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
+                        $volume = ['idVolume' => $volumePatrimonioEn->getId(), 'dscVolume' => $volumePatrimonioEn->getDescricao()];
+                    }
                     $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa, null, $chekcout);
                     if(isset($result['checkout'])){
                         $msg['msg'] = 'checkout';
@@ -284,13 +278,12 @@ class Mobile_ExpedicaoController extends Action {
 
                 }
             } catch (\Exception $e) {
-                $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => ''));
+                $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => '', 'volumePatrimonio' => ''));
                 $this->_helper->json($vetRetorno);
             }
         }
 
-        //$this->getHelper('viewRenderer')->setNoRender(true);
-        $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg'], 'produto' => $msg['produto']));
+        $vetRetorno = array('retorno' => array('resposta' => 'success', 'message' => $msg['msg'], 'produto' => $msg['produto'], 'volumePatrimonio' => $volume));
         $this->_helper->json($vetRetorno);
     }
 

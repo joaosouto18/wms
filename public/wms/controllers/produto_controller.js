@@ -28,97 +28,105 @@ $.Controller.extend('Wms.Controllers.Produto',
             //checo tipo comercializacao/volumes
             this.validarVolumes();
 
-            $('#produto-diasVidaUtil').parent().hide();
-            $('#produto-diasVidaUtil').hide();
+            this.checkShowValidade();
+            this.checkShowPesoVariavel();
+            var este = this;
 
-            $('#produto-diasVidaUtilMaximo').parent().hide();
-            $('#produto-diasVidaUtilMaximo').hide();
+            $('#produto-diasVidaUtil').parent().append($('#produto-percentMinVidaUtil')).append(' %');
 
-            $('#produto-percentMinVidaUtil').parent().hide();
-            $('#produto-percentMinVidaUtil').hide();
-
-            $('#produto-percTolerancia').parent().hide();
-            $('#produto-percTolerancia').hide();
-
-            $('#produto-toleranciaNominal').parent().hide();
-            $('#produto-toleranciaNominal').hide();
-
-            $('#produto-diasVidaUtil').parent().append($('#produto-percentMinVidaUtil'));
-            $('#produto-diasVidaUtil').parent().append(' %');
-
-            Wms.Controllers.Produto.prototype.changePercent($('#produto-diasVidaUtilMaximo').val(), $('#produto-diasVidaUtil').val());
-            //oculta campo de dias para vencimento
-            if ($('#produto-validade').val() == 'S') {
-                $('#produto-diasVidaUtil').show();
-                $('#produto-diasVidaUtil').parent().show();
-                $('#produto-diasVidaUtilMaximo').show();
-                $('#produto-diasVidaUtilMaximo').parent().show();
-                $('#produto-percentMinVidaUtil').show();
-                $('#produto-percentMinVidaUtil').parent().show();
-                $('#produto-diasVidaUtilMaximo').addClass('required');
-                $('#produto-diasVidaUtil').addClass('required');
-            } else if ($('#produto-validade').val() == 'N') {
-                $('#produto-diasVidaUtil').hide();
-                $('#produto-diasVidaUtil').parent().hide();
-                $('#produto-diasVidaUtilMaximo').hide();
-                $('#produto-diasVidaUtilMaximo').parent().hide();
-                $('#produto-percentMinVidaUtil').hide();
-                $('#produto-percentMinVidaUtil').parent().hide();
-            }
-
-            if ($('#produto-pVariavel').val() == 'S') {
-                $('#produto-percTolerancia').parent().show();
-                $('#produto-percTolerancia').show();
-                $('#produto-toleranciaNominal').parent().show();
-                $('#produto-toleranciaNominal').show();
-            } else if ($('#produto-pVariavel').val() == 'N') {
-                $('#produto-percTolerancia').parent().hide();
-                $('#produto-percTolerancia').hide();
-                $('#produto-toleranciaNominal').parent().hide();
-                $('#produto-toleranciaNominal').hide();
-            }
+            this.changePercent($('#produto-diasVidaUtilMaximo').val(), $('#produto-diasVidaUtil').val());
 
             //checa quantidade de volumes
             $(".btnSave").off('click').click(function(e) {
                 $('form input').each(function(e){
                     $(this).removeClass('required');
                 });
+
+                // Trava retirada para fazer nova trava de proporcionalidade
+                // var unitizadores = [];
+                // var invalido = false;
+                //
+                // $("select.unitizador option:selected").each(function () {
+                //
+                //     var option = $(this);
+                //
+                //     var result = unitizadores.find(function(i) {
+                //         return option.val() === i;
+                //     });
+                //
+                //     if (result === undefined) {
+                //         unitizadores.push($(this).val());
+                //     }
+                //     else {
+                //         invalido = true;
+                //     }
+                //
+                // });
+                //
+                // if (invalido) {
+                //     $.wmsDialogAlert({
+                //         title: 'Processo cancelado',
+                //         msg: "Existem normas com o mesmo unitizador. " +
+                //         "<br />Altere ou remova uma das normas e tente novamente!",
+                //         height: 140,
+                //         resizable: false
+                //     });
+                //     return false;
+                // }
+
                 ///checa embalagem e volume
-                if(!Wms.Controllers.Produto.prototype.verificarEmbalagemVolume())
+                if(!este.verificarEmbalagemVolume())
                     return false;
 
-                if(!Wms.Controllers.Produto.prototype.verificarValidade())
+                if(!este.verificarValidade())
                     return false;
 
+                if(!este.verificarNormaPaletizacaoProdutoDadoLogistico()){
+                        $.wmsDialogAlert({
+                            title: 'Processo cancelado',
+                            msg: "Existe alguma norma de paletização com mais de um grupo de dado logistico.",
+                            height: 140,
+                            resizable: false
+                        });
+                    return false;
+                }
+
+                if(!este.verificarNormaPaletizacao()){
+                    $.wmsDialogAlert({
+                        title: 'Processo cancelado',
+                        msg: "Existem normas com o mesmo unitizador e quantidade de itens diferentes.",
+                        height: 140,
+                        resizable: false
+                    });
+                    return false;
+                }
 
                 $('.saveForm').submit();
             });
 
         },
         '#produto-pVariavel change' : function() {
-            if ($('#produto-pVariavel').val() == 'S') {
-                $('#produto-percTolerancia').parent().show();
-                $('#produto-percTolerancia').show();
-                $('#produto-toleranciaNominal').parent().show();
-                $('#produto-toleranciaNominal').show();
-            } else if ($('#produto-pVariavel').val() == 'N') {
-                $('#produto-percTolerancia').parent().hide();
-                $('#produto-percTolerancia').hide();
-                $('#produto-toleranciaNominal').parent().hide();
-                $('#produto-toleranciaNominal').hide();
-            }
+            this.checkShowPesoVariavel();
+        },
+
+        '#produto-indFracionavel change' : function() {
+            this.checkShowUnidFracionavel();
+        },
+
+        '#produto-unidFracao change' : function() {
+            this.checkShowUnidFracionavel();
         },
 
         '#produto-diasVidaUtilMaximo change' : function(e) {
             var max = e.val();
             var min = $('#produto-diasVidaUtil').val();
-            Wms.Controllers.Produto.prototype.changePercent(max, min);
+            this.changePercent(max, min);
         },
 
         '#produto-diasVidaUtil change' : function(e) {
             var max = $('#produto-diasVidaUtilMaximo').val();
             var min = e.val();
-            Wms.Controllers.Produto.prototype.changePercent(max, min);
+            this.changePercent(max, min);
         },
 
         '#produto-percentMinVidaUtil change' : function(e) {
@@ -134,11 +142,118 @@ $.Controller.extend('Wms.Controllers.Produto',
             $("#produto-toleranciaNominal").val(pVariavel);
         },
 
+        checkShowValidade: function () {
+            var inptDiasVidaUtil = $('#produto-diasVidaUtil');
+            var inptDiasVidaUtilMaximo = $('#produto-diasVidaUtilMaximo');
+            var inptPercentMinVidaUtil = $('#produto-percentMinVidaUtil');
+            if ($('#produto-validade').val() === 'S') {
+                inptDiasVidaUtil.show();
+                inptDiasVidaUtil.parent().show();
+                inptDiasVidaUtil.addClass('required');
+                inptDiasVidaUtilMaximo.parent().show();
+                inptDiasVidaUtilMaximo.show();
+                inptDiasVidaUtilMaximo.addClass('required');
+                inptPercentMinVidaUtil.parent().show();
+                inptPercentMinVidaUtil.show();
+            } else {
+                inptDiasVidaUtil.hide();
+                inptDiasVidaUtil.parent().hide();
+                inptDiasVidaUtilMaximo.parent().hide();
+                inptDiasVidaUtilMaximo.hide();
+                inptPercentMinVidaUtil.parent().hide();
+                inptPercentMinVidaUtil.hide();
+            }
+        },
 
-        verificarValidade: function (max, min) {
+        checkShowPesoVariavel: function () {
+            var inptPercTolerancia = $('#produto-percTolerancia');
+            var inptToleranciaNominal = $('#produto-toleranciaNominal');
+            var inptPesoVar = $('#produto-pVariavel');
+            if (inptPesoVar.val() === 'S') {
+                if ($("#produto-indFracionavel").val() === "S") {
+                    this.dialogAlert("Este produto tem unidade fracionável, não pode ter peso variavel no momento.");
+                    inptPesoVar.prop('selectedIndex',1);
+                    return false;
+                }
+                inptPercTolerancia.parent().show();
+                inptPercTolerancia.show();
+                inptToleranciaNominal.parent().show();
+                inptToleranciaNominal.show();
+            } else {
+                inptPercTolerancia.parent().hide();
+                inptPercTolerancia.hide();
+                inptToleranciaNominal.parent().hide();
+                inptToleranciaNominal.hide();
+            }
+        },
+
+        checkShowUnidFracionavel: function () {
+            var inptUndFraca= $('#produto-unidFracao');
+            var embFracionavel = null;
+            var inptIndFracionavel = $('#produto-indFracionavel');
+            var este = this;
+            if (inptIndFracionavel.val() === 'S'){
+                if ($("#produto-idTipoComercializacao").val() !== "1") {
+                    this.dialogAlert("Apenas produtos unitários podem utilizar esta opção.");
+                    inptIndFracionavel.prop('selectedIndex',1);
+                    return false;
+                }
+                if ($("#produto-pVariavel").val() === 'S') {
+                    this.dialogAlert("Produtos de peso variável não podem utilizar esta opção.");
+                    inptIndFracionavel.prop('selectedIndex',1);
+                    return false;
+                }
+                inptUndFraca.parent().show();
+                inptUndFraca.show();
+                inptUndFraca.addClass('required');
+                $("#embalagem-embExpDefault").show();
+                if (inptUndFraca.val() !== "") {
+                    var produto = {
+                        id: $("#produto-id").val(),
+                        grade: $("#produto-grade").val(),
+                        unidFracao: inptUndFraca.val()
+                    };
+                    embFracionavel = Wms.Controllers.ProdutoEmbalagem.prototype.checkExistEmbFracionavel();
+                    if (!embFracionavel) {
+                        Wms.Controllers.ProdutoEmbalagem.prototype.createEmbFracionavel(produto)
+                    } else {
+                        Wms.Controllers.ProdutoEmbalagem.prototype.updateEmbFracionavel(produto)
+                    }
+                }
+            } else {
+                embFracionavel = Wms.Controllers.ProdutoEmbalagem.prototype.checkExistEmbFracionavel();
+                if (embFracionavel) {
+                    Wms.Controllers.ProdutoEmbalagem.prototype.removeEmbFracionavelDefault(
+                        este.callback('hideUnidFracionavel')
+                    );
+                } else if (!embFracionavel) {
+                    este.hideUnidFracionavel(true)
+                } else {
+                    inptIndFracionavel.prop('selectedIndex',0);
+                }
+            }
+        },
+
+        hideUnidFracionavel: function ( result ) {
+            if (result) {
+                var inptUndFraca = $('#produto-unidFracao');
+                inptUndFraca.parent().hide();
+                $("#embalagem-embExpDefault").hide().prop('selectedIndex', -1);
+                inptUndFraca.hide().prop('selectedIndex', 0);
+                inptUndFraca.removeClass('required');
+                inptUndFraca.removeClass('invalid');
+            } else {
+                $('#produto-indFracionavel').prop('selectedIndex',0);
+            }
+        },
+
+        verificarValidade: function () {
+            var este = this;
             if ($('#produto-validade').val() == 'S') {
-                if($('#produto-diasVidaUtil').val() == '' || $('#produto-diasVidaUtilMaximo').val() == ''){
-                    this.dialogAlert('Preencha os campos relacionados a validade.');
+                if($('#produto-diasVidaUtil').val() == '' ||
+                    $('#produto-diasVidaUtilMaximo').val() == '' ||
+                    $('#produto-diasVidaUtilMaximo').val() == 0){
+                    este.dialogAlert('Preencha os campos relacionados a validade.');
                     $('#produto-diasVidaUtilMaximo').focus();
                     return false;
                 }else{
@@ -147,6 +262,31 @@ $.Controller.extend('Wms.Controllers.Produto',
             }else{
                 return true
             }
+        },
+
+        verificarNormaPaletizacao: function () {
+            var ret = true;
+            var array = [];
+            $('.grupoDadosLogisticos').each(function () {
+                if(array[$(this).find('.unitizador').val()]){
+                    if(array[$(this).find('.unitizador').val()] != $(this).find('#normaPaletizacao-numNorma').val() * $(this).find('.qtdEmbalagem').val()){
+                        ret = false;
+                    }
+                }else {
+                    array[$(this).find('.unitizador').val()] = $(this).find('#normaPaletizacao-numNorma').val() * $(this).find('.qtdEmbalagem').val();
+                }
+            });
+            return ret;
+        },
+
+        verificarNormaPaletizacaoProdutoDadoLogistico: function () {
+            var ret = true;
+            $('.grupoDadosLogisticos').each(function () {
+                if($(this).find('.produto_dado_logistico').length > 1){
+                    ret = false;
+                }
+            });
+            return ret;
         },
 
         changePercent: function (max, min) {
@@ -192,7 +332,7 @@ $.Controller.extend('Wms.Controllers.Produto',
 
                     // caso sem embalagens
                     if ( qtdEmbalagensRecebimento === 0 ) {
-                        this.dialogAlert('O produto deve conter AO MENOS uma embalagem cadastrada do tipo recebimento.');
+                        this.dialogAlert('O produto deve conter UMA embalagem cadastrada do tipo recebimento.');
                         return false;
                     }
                     // caso a quantidade de volumes cadastradados diferentes da
@@ -369,6 +509,26 @@ $.Controller.extend('Wms.Controllers.Produto',
             }
         },
 
+        validarUnidFracionavel: function (el) {
+            if (el.val() !== '1') {
+                var produto = {
+                    id: $("#produto-id").val(),
+                    grade: $("#produto-grade").val(),
+                    unidFracao: $('#produto-unidFracao').val()
+                };
+                var embFracionavel = Wms.Controllers.ProdutoEmbalagem.prototype.checkExistEmbFracionavel(produto);
+                if (embFracionavel){
+                    this.dialogAlert("Este produto tem embalagem de unidade fracionável. <br /> Remova ela antes de alterar esta opção");
+                    $("#produto-idTipoComercializacao").prop('selectedIndex', 0);
+                    return false;
+                } else {
+                    this.validarEmbalagens();
+                    this.validarVolumes();
+                    this.pesoTotal();
+                }
+            }
+        },
+
         /**
          * Checa o valor digitado na quantidade de volumes
          */
@@ -380,30 +540,12 @@ $.Controller.extend('Wms.Controllers.Produto',
         /**
          * Ao alterar o tipo de comercializacao do produto verifica dados novamente
          */
-        '#produto-idTipoComercializacao change': function() {
-            this.validarEmbalagens();
-            this.validarVolumes();
-            this.pesoTotal();
+        '#produto-idTipoComercializacao change': function(el) {
+            this.validarUnidFracionavel(el);
         },
 
         '#produto-validade change' : function() {
-            if ($('#produto-validade').val() == 'S') {
-                $('#produto-diasVidaUtil').parent().show();
-                $('#produto-diasVidaUtil').show();
-                $('#produto-diasVidaUtilMaximo').parent().show();
-                $('#produto-diasVidaUtilMaximo').show();
-                $('#produto-diasVidaUtilMaximo').addClass('required');
-                $('#produto-diasVidaUtil').addClass('required');
-                $('#produto-percentMinVidaUtil').parent().show();
-                $('#produto-percentMinVidaUtil').show();
-            } else if ($('#produto-validade').val() == 'N') {
-                $('#produto-diasVidaUtil').parent().hide();
-                $('#produto-diasVidaUtil').hide();
-                $('#produto-diasVidaUtilMaximo').parent().hide();
-                $('#produto-diasVidaUtilMaximo').hide();
-                $('#produto-percentMinVidaUtil').parent().hide();
-                $('#produto-percentMinVidaUtil').hide();
-            }
+            this.checkShowValidade();
         },
 
         /**

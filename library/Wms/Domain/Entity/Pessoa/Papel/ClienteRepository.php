@@ -104,14 +104,13 @@ class ClienteRepository extends AtorRepository
             if ($praca != null) return $praca->getId();
 
         $enderecos = $clienteEn->getPessoa()->getEnderecos();
-        if (count($enderecos) >0){
+        if (count($enderecos) > 0){
             $cep = $enderecos[0]->getCep();
             if ($cep != null) {
                 $cep = str_replace(".","",$cep);
                 $cep = str_replace("-","",$cep);
                 $SQL = "SELECT COD_PRACA FROM PRACA_FAIXA
-                         WHERE REPLACE(REPLACE(FAIXA_CEP1,'-',''),'.','') < $cep
-                           AND REPLACE(REPLACE(FAIXA_CEP2,'-',''),'.','') > $cep";
+                         WHERE $cep BETWEEN REPLACE(REPLACE(FAIXA_CEP1,'-',''),'.','') AND REPLACE(REPLACE(FAIXA_CEP2,'-',''),'.','')";
 
                 $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
                 if(count($result) >0) {

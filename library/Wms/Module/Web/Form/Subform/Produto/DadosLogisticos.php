@@ -60,7 +60,7 @@ class DadosLogisticos extends SubForm
                 ->addElement('hidden', 'idProduto')
                 ->addElement('hidden', 'grade')
                 ->addElement('hidden', 'acao')
-                ->addElement('submit', 'btnDadosLogisticos', array(
+                ->addElement('button', 'btnDadosLogisticos', array(
                     'label' => 'Adicionar Dado Logistico',
                     'attribs' => array(
                         'id' => 'btn-salvar-dado-logistico',

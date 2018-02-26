@@ -95,7 +95,7 @@ class HistoricoEstoqueRepository extends EntityRepository {
         } else {
             $query->orderBy("hist.codProduto, hist.grade, vol.descricao, hist.data, hist.qtd, dep.descricao");
         }
-        
+
         $resultado = $query->getQuery()->getResult();
         return $resultado;
     }

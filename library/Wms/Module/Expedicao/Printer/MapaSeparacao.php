@@ -40,6 +40,12 @@ class MapaSeparacao extends eFPDF {
             case 6:
                 $this->layoutModelo6($expedicao, $status, $codBarras);
                 break;
+            case 7:
+                $this->layoutModelo7($expedicao, $status, $codBarras);
+                break;
+            case 8:
+                $this->layoutModelo8($expedicao, $status, $codBarras);
+                break;
             default:
                 $this->layoutModelo1($expedicao, $status, $codBarras);
         }
@@ -706,7 +712,6 @@ class MapaSeparacao extends eFPDF {
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
-        $pesoProdutoRepo = $em->getRepository('wms:Produto\DadoLogistico');
         /** @var Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
         $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $expedicaoRepo = $em->getRepository('wms:Expedicao');
@@ -784,7 +789,6 @@ class MapaSeparacao extends eFPDF {
                 $quantidade = $produto->getQtdSeparar();
                 $caixaInicio = $produto->getNumCaixaInicio();
                 $caixaFim = $produto->getNumCaixaFim();
-                $pesoProduto = $pesoProdutoRepo->findOneBy(array('embalagem' => $embalagemEn));
 
                 $caixas = $caixaInicio . ' - ' . $caixaFim;
                 $dscEndereco = '';
@@ -795,11 +799,10 @@ class MapaSeparacao extends eFPDF {
                 }
                 if (isset($embalagemEn) && !empty($embalagemEn))
                     $codigoBarras = $embalagemEn->getCodigoBarras();
+
                 $embalagem = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
-                if (isset($pesoProduto) && !empty($pesoProduto)) {
-                    $pesoTotal += Math::multiplicar(str_replace(',', '.', $pesoProduto->getPeso()), str_replace(',', '.', $quantidade));
-                    $cubagemTotal += Math::multiplicar(str_replace(',', '.', $pesoProduto->getCubagem()), str_replace(',', '.', $quantidade));
-                }
+                $pesoTotal += Math::multiplicar(str_replace(',', '.', $embalagemEn->getPeso()), str_replace(',', '.', $quantidade));
+                $cubagemTotal += Math::multiplicar(str_replace(',', '.', $embalagemEn->getCubagem()), str_replace(',', '.', $quantidade));
 
                 if ($ruaAnterior != $rua) {
                     $this->Cell(20, 7, "", 0, 1);
@@ -1231,6 +1234,373 @@ class MapaSeparacao extends eFPDF {
     }
 
 
+    private function layoutModelo7($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null) {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        if ($codBarras == null) {
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('expedicao' => $idExpedicao, 'codStatus' => $status));
+        } else {
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->getMapaSeparacaoById($codBarras);
+        }
+        \Zend_Layout::getMvcInstance()->disableLayout(true);
+        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+
+        /** @var Parametro $param */
+        $param = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => "UTILIZA_GRADE"));
+        if (!empty($param)) {
+            $usaGrade = $param->getValor();
+        } else {
+            $usaGrade = 'N';
+        }
+        $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
+        foreach ($mapaSeparacao as $mapa) {
+            $produtos = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto')->getMapaProduto($mapa->getId());
+            $mapaQuebra = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
+            $quebras = $mapa->getDscQuebra();
+            $tipoQebra = false;
+            if (isset($mapaQuebra) && !empty($mapaQuebra))
+                $tipoQebra = true;
+
+            $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
+            $em->persist($mapa);
+
+            $this->idMapa = $mapa->getId();
+            $this->quebrasEtiqueta = $quebras;
+            $this->idExpedicao = $idExpedicao;
+
+            $this->AddPage();
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+            $expedicaoRepo = $em->getRepository('wms:Expedicao');
+            $txtCarga = 'CARGA';
+            $cargasSelecionadas = $this->getCargasSelecionadas();
+            if (empty($cargasSelecionadas)) {
+                $cargas = $expedicaoRepo->getCodCargasExterno($this->idExpedicao);
+                $stringCargas = null;
+                foreach ($cargas as $key => $carga) {
+                    unset($carga['sequencia']);
+                    if ($key >= 1) {
+                        $stringCargas .= ',';
+                    }
+                    $stringCargas .= implode(',', $carga);
+                    $txtCarga = (count($cargas) > 1) ? 'CARGAS' : 'CARGA';
+                }
+            } else {
+                if (is_array($cargasSelecionadas)) {
+                    $stringCargas = implode(',', $cargasSelecionadas);
+                    if (count($cargasSelecionadas) > 1)
+                        $txtCarga = 'CARGAS';
+                } else {
+                    $stringCargas = $cargasSelecionadas;
+                }
+            }
+
+//Select Arial bold 8
+
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1, "C");
+            $this->Cell(20, 1, "__________________________________________________________________________________________________", 0, 1);
+            $this->Cell(20, 3, "", 0, 1);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell(4, 4, utf8_decode($this->idExpedicao) . ' - ' . $txtCarga . ': ' . $stringCargas, 0, 1);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
+            $this->Cell(20, 4, "", 0, 1);
+
+            $this->SetFont('Arial', 'B', 9);
+
+            if ($usaGrade === 'N') {
+                if ($tipoQebra == true) {
+                    $this->Cell(24, 5, utf8_decode("Endereço"), 1, 0);
+                    $this->Cell(20, 5, utf8_decode("Embalagem"), 1, 0);
+                    $this->Cell(15, 5, utf8_decode("Qtd."), 1, 0);
+                    $this->Cell(15, 5, utf8_decode("Caixas"), 1, 1);
+                    $this->Cell(20, 1, "", 0, 1);
+                } else {
+                    $this->Cell(60, 5, utf8_decode("Endereço"), 1, 0, 'C');
+                    $this->Cell(60, 5, utf8_decode("Emb"), 1, 0, 'C');
+                    $this->Cell(60, 5, utf8_decode("Qtd."), 1, 1, 'C');
+                    $this->Cell(20, 1, "", 0, 1);
+                }
+            } else {
+                if ($tipoQebra == true) {
+                    $this->Cell(24, 5, utf8_decode("Endereço"), 1, 0);
+                    $this->Cell(18, 5, utf8_decode("Emb"), 1, 0); //10
+                    $this->Cell(18, 5, utf8_decode("Qtd."), 1, 0);
+                    $this->Cell(15, 5, utf8_decode("Caixas"), 1, 1);
+                    $this->Cell(20, 1, "", 0, 1);
+//195
+                } else {
+                    $this->Cell(60, 5, utf8_decode("Endereço"), 1, 0, 'C');
+                    $this->Cell(60, 5, utf8_decode("Emb"), 1, 0, 'C'); //15
+                    $this->Cell(60, 5, utf8_decode("Qtd"), 1, 1, 'C');
+                    $this->Cell(20, 1, "", 0, 1);
+                }
+            }
+            $pesoTotal = 0;
+            $cubagemTotal = 0;
+            /** @var Expedicao\MapaSeparacaoProduto $produto */
+            foreach ($produtos as $produto) {
+                $dscEndereco = "";
+                $embalagem = $produto->getProdutoEmbalagem();
+                $descricao = utf8_decode($produto->getProduto()->getDescricao());
+                if ($produto->getProdutoVolume() == null) {
+                    $embalagem = $embalagem->getDescricao() . ' (' . $embalagem->getQuantidade() . ')';
+                    $endereco = $produto->getDepositoEndereco();
+                }else{
+                    $embalagem = $produto->getProdutoVolume()->getDescricao();
+                    $endereco = $produto->getProdutoVolume()->getEndereco();
+                }
+                $quantidade = $produto->getQtdSeparar();
+                $caixas = $produto->getNumCaixaInicio() . ' - ' . $produto->getNumCaixaFim();
+                if ($endereco != null)
+                    $dscEndereco = $endereco->getDescricao();
+
+                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
+                if (!empty($pesoProduto)) {
+                    $pesoTotal += ($pesoProduto->getPeso() * $quantidade);
+                    $cubagemTotal += ($pesoProduto->getCubagem() * $quantidade);
+                }
+                $this->SetFont('Arial', null, 9);
+                if ($usaGrade === "S") {
+                    if ($tipoQebra == true) {
+                        $this->Cell(24, 6, $dscEndereco, 0, 0);
+                        $this->Cell(18, 6, $embalagem, 0, 0);
+                        $this->Cell(18, 6, $quantidade, 0, 0);
+                        $this->Cell(15, 6, $caixas, 0, 1, 'C');
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(20, 1, "", 0, 1);
+                    } else {
+                        $this->Cell(60, 6, $dscEndereco, 0, 0, 'C');
+                        $this->Cell(60, 6, $embalagem, 0, 0, 'C');
+                        $this->Cell(60, 6, $quantidade, 0, 1, 'C');
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(20, 1, "", 0, 1);
+                    }
+                } else {
+                    if ($tipoQebra == true) {
+
+                        $this->Cell(24, 6, $dscEndereco, 0, 0);
+                        $this->Cell(20, 6, $embalagem, 0, 0);
+                        $this->Cell(15, 6, $quantidade, 0, 0);
+                        $this->Cell(15, 6, $caixas, 0, 1, 'C');
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(20, 2, "", 0, 1);
+                    } else {
+                        $this->Cell(60, 6, $dscEndereco, 0, 0, 'C');
+                        $this->Cell(60, 6, $embalagem, 0, 0, 'C');
+                        $this->Cell(60, 6, $quantidade, 0, 1, 'C');
+                        $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+                        $this->Cell(20, 1, "", 0, 1);
+                    }
+                }
+            }
+
+            $this->SetFont('Arial', 'B', 9);
+
+            $this->Cell(4, 10, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
+            $this->SetFont('Arial', 'B', 7);
+//Go to 1.5 cm from bottom
+            $this->Cell(20, 3, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1, "L");
+
+            $imgCodBarras = @CodigoBarras::gerarNovo($this->idMapa);
+            $this->Image($imgCodBarras, 150, 280, 50);
+
+            $this->InFooter = true;
+            $pageSizeA4 = $this->_getpagesize();
+            $wPage = $pageSizeA4[0] / 12;
+
+            $this->SetY(-23);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell(120, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
+
+            $this->SetFont('Arial', 'B', 9);
+            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
+            $this->Cell($wPage * 4, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
+            $this->Cell($wPage * 4, 6, utf8_decode("CUBAGEM TOTAL " . $cubagemTotal), 0, 1);
+            $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 1);
+            $this->InFooter = false;
+        }
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        $ExpedicaoRepo = $em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
+        $ExpedicaoEntity = $ExpedicaoRepo->find($idExpedicao);
+        $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
+        $ExpedicaoEntity->setStatus($statusEntity);
+        $em->persist($ExpedicaoEntity);
+
+        $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');
+
+        $em->flush();
+        $em->clear();
+    }
+
+    private function layoutModelo8($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null) {
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        if ($codBarras == null) {
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->findBy(array('expedicao' => $idExpedicao, 'codStatus' => $status));
+        } else {
+            $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->getMapaSeparacaoById($codBarras);
+        }
+        \Zend_Layout::getMvcInstance()->disableLayout(true);
+        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+        $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+
+        $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
+        $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        $expedicaoRepo = $em->getRepository('wms:Expedicao');
+
+        foreach ($mapaSeparacao as $mapa) {
+
+            $mapaQuebra = $em->getRepository('wms:Expedicao\MapaSeparacaoQuebra')->findOneBy(array('mapaSeparacao' => $mapa, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
+            $tipoQebra = false;
+            if (isset($mapaQuebra) && !empty($mapaQuebra))
+                $tipoQebra = true;
+
+            $produtos = $mapaSeparacaoProdutoRepo->getMapaProduto($mapa->getId());
+
+
+            $quebras = $mapa->getDscQuebra();
+
+            if ($mapa->getCodStatus() == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO) {
+                $mapa->setCodStatus(\Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
+                $em->persist($mapa);
+            }
+
+            $this->idMapa = $mapa->getId();
+            $this->quebrasEtiqueta = $quebras;
+            $this->idExpedicao = $idExpedicao;
+            $pesoTotal = 0;
+            $cubagemTotal = 0;
+
+            $this->AddPage();
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+            $cargasSelecionadas = $this->getCargasSelecionadas();
+            if (empty($cargasSelecionadas)) {
+                $cargas = $expedicaoRepo->getCodCargasExterno($this->idExpedicao);
+                $stringCargas = null;
+                foreach ($cargas as $key => $carga) {
+                    unset($carga['sequencia']);
+                    if ($key >= 1) {
+                        $stringCargas .= ',';
+                    }
+                    $stringCargas .= implode(',', $carga);
+                }
+            } else {
+                if (is_array($cargasSelecionadas)) {
+                    $stringCargas = implode(',', $cargasSelecionadas);
+                } else {
+                    $stringCargas = $cargasSelecionadas;
+                }
+            }
+
+            $imgCodBarras = @CodigoBarras::gerarNovo($mapa->getId());
+            /**
+             * Cria cabeçalho
+             */
+            //Select Arial bold 8
+            $this->Cell(20, 1, "", 0, 1);
+            $total = 0;
+            $contadorPg = 0;
+            $limitPg = 45;
+            $totalPg = ceil(count($produtos) / $limitPg);
+            $pgAtual = 1;
+            $this->buildHead($this, $imgCodBarras, $tipoQebra, $stringCargas, '1 de ' . $totalPg, false);
+            foreach ($produtos as $key => $produto) {
+                $contadorPg++;
+                if ($contadorPg == $limitPg) {
+                    $contadorPg = 0;
+                    $pgAtual++;
+                    /**
+                     * Cria rodape
+                     */
+                    $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total);
+                    /**
+                     * Cria cabeçalho
+                     */
+                    $paginas = $pgAtual . ' de ' . $totalPg;
+                    $this->buildHead($this, $imgCodBarras, $tipoQebra, $stringCargas, $paginas);
+                }
+                $this->SetFont('Arial', null, 8);
+                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
+
+                $codigoBarras = '';
+                $embalagem = '';
+
+                $embalagemEn = $produto->getProdutoEmbalagem();
+                if (isset($embalagemEn) && !empty($embalagemEn)) {
+                    $codigoBarras = $embalagemEn->getCodigoBarras();
+                    $embalagem = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
+                }
+
+                $endereco = $produto->getDepositoEndereco();
+                $codProduto = $produto->getCodProduto();
+                $descricao = self::SetStringByMaxWidth(utf8_decode($produto->getProduto()->getDescricao()), 90);
+                $quantidade = $produto->getQtdSeparar();
+                $caixas = $produto->getNumCaixaInicio() . ' - ' . $produto->getNumCaixaFim();
+                $dscEndereco = "";
+
+                if ($endereco != null)
+                    $dscEndereco = $endereco->getDescricao();
+
+                if (isset($pesoProduto) && !empty($pesoProduto)) {
+                    $pesoTotal += Math::multiplicar(str_replace(',', '.', $embalagemEn->getPeso()), str_replace(',', '.', $quantidade));
+                    $cubagemTotal += Math::multiplicar(str_replace(',', '.', $embalagemEn->getCubagem()), str_replace(',', '.', $quantidade));
+                }
+
+                if ($tipoQebra == true) {
+                    $this->Cell(21, 4, $dscEndereco, 0, 0);
+                    $this->Cell(13, 4, $codProduto, 0, 0);
+                    $this->Cell(100, 4, $descricao, 0, 0);
+                    $this->Cell(30, 4, $codigoBarras, 0, 0,'C');
+                    $this->Cell(17, 4, $embalagem, 0, 0, 'C');
+                    $this->SetFont('Arial', "B", 10);
+                    $this->Cell(15, 4, $quantidade, 0, 0,'L');
+                    $this->Cell(15, 4, $caixas, 0, 1, 'C');
+                } else {
+                    $this->Cell(21, 4, $dscEndereco, 0, 0);
+                    $this->Cell(13, 4, $codProduto, 0, 0);
+                    $this->Cell(100, 4, $descricao, 0, 0);
+                    $this->Cell(30, 4, $codigoBarras, 0, 0,'C');
+                    $this->Cell(17, 4, $embalagem, 0, 0,'C');
+                    $this->SetFont('Arial', "B", 10);
+                    $this->Cell(15, 4, $quantidade, 0, 1, 'L');
+                }
+                $this->SetFont('Arial', null, 8);
+                $total += $quantidade;
+                $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+            }
+            //FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA
+            /**
+             * Cria rodape
+             */
+            if ($contadorPg > 0) {
+                $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total);
+            }
+        }
+        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
+        $ExpedicaoEntity = $expedicaoRepo->find($idExpedicao);
+        if ($ExpedicaoEntity->getCodStatus() == Expedicao::STATUS_INTEGRADO) {
+            $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
+            $ExpedicaoEntity->setStatus($statusEntity);
+            $em->persist($ExpedicaoEntity);
+        }
+
+        $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');
+
+        $em->flush();
+        $em->clear();
+    }
+
     /**
      * @return mixed
      */
@@ -1253,7 +1623,8 @@ class MapaSeparacao extends eFPDF {
         
     }
 
-    public function buildHead($object, $imgCodBarras, $tipoQebra, $stringCargas, $paginas = '') {
+    public function buildHead($object, $imgCodBarras, $tipoQebra, $stringCargas, $paginas = '', $ref = true) {
+        $vetCargas = explode(',',$stringCargas);
         $object->SetFont('Arial', 'B', 10);
         $object->Cell(200, 3, utf8_decode($paginas), 0, 1);
         $object->Cell(200, 3, utf8_decode(" MAPA DE SEPARAÇÃO " . $object->idMapa), 0, 1, "C");
@@ -1261,8 +1632,33 @@ class MapaSeparacao extends eFPDF {
         $object->Cell(20, 3, "", 0, 1);
         $object->SetFont('Arial', 'B', 10);
         $object->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
-        $object->SetFont('Arial', null, 10);
-        $object->Cell(4, 4, utf8_decode($object->idExpedicao) . ' - CARGAS: ' . $stringCargas, 0, 1);
+        if(count($vetCargas) <= 11) {
+            $object->SetFont('Arial', null, 10);
+            $object->Cell(4, 4, utf8_decode($object->idExpedicao) . ' - CARGAS: ' . $stringCargas, 0, 1);
+        }else{
+            $count = 0;
+            $stringCargas = '';
+            $inicio = utf8_decode($object->idExpedicao) . ' - CARGAS: ';
+            foreach ($vetCargas as $cargas){
+                $count++;
+                if($count == 0){
+                    $stringCargas .= $cargas;
+                }else{
+                    $stringCargas .= ', '.$cargas;
+                }
+                if($count == 11){
+                    $object->SetFont('Arial', null, 10);
+                    $object->Cell(4, 4, $inicio . $stringCargas, 0, 1);
+                    $count = 0;
+                    $stringCargas = '';
+                    $inicio = '';
+                }
+            }
+            if($count < 5){
+                $object->SetFont('Arial', null, 10);
+                $object->Cell(4, 4, $stringCargas, 0, 1);
+            }
+        }
         $object->SetFont('Arial', null, 10);
         $object->Cell(4, 4, '', 0, 1);
         $object->SetFont('Arial', 'B', 10);
@@ -1274,29 +1670,49 @@ class MapaSeparacao extends eFPDF {
         $object->Cell(20, 4, "", 0, 1);
         $object->SetFont('Arial', 'B', 8);
 
-        if ($tipoQebra == true) {
-            $object->Cell(21, 5, utf8_decode("Endereço"), 1, 0);
-            $object->Cell(13, 5, utf8_decode("Cod."), 1, 0);
-            $object->Cell(90, 5, utf8_decode("Produto"), 1, 0);
-            $object->Cell(20, 5, utf8_decode("Cod. Barras"), 1, 0);
-            $object->Cell(25, 5, utf8_decode("Refer."), 1, 0);
-            $object->Cell(15, 5, utf8_decode("Emb."), 1, 0);
-            $object->Cell(12, 5, utf8_decode("Qtd."), 1, 0);
-            $object->Cell(17, 5, utf8_decode("Caixas"), 1, 1);
-        } else {
-            $object->Cell(21, 5, utf8_decode("Endereço"), 1, 0);
-            $object->Cell(13, 5, utf8_decode("Cod."), 1, 0);
-            $object->Cell(90, 5, utf8_decode("Produto"), 1, 0);
-            $object->Cell(20, 5, utf8_decode("Cod. Barras"), 1, 0);
-            $object->Cell(25, 5, utf8_decode("Refer."), 1, 0);
-            $object->Cell(12, 5, utf8_decode("Emb."), 1, 0);
-            $object->Cell(12, 5, utf8_decode("Qtd."), 1, 1);
+        if($ref == true) {
+            if ($tipoQebra == true) {
+                $object->Cell(21, 5, utf8_decode("Endereço"), 1, 0);
+                $object->Cell(13, 5, utf8_decode("Cod."), 1, 0);
+                $object->Cell(90, 5, utf8_decode("Produto"), 1, 0);
+                $object->Cell(20, 5, utf8_decode("Cod. Barras"), 1, 0);
+                $object->Cell(25, 5, utf8_decode("Refer."), 1, 0);
+                $object->Cell(15, 5, utf8_decode("Emb."), 1, 0);
+                $object->Cell(12, 5, utf8_decode("Qtd."), 1, 0);
+                $object->Cell(17, 5, utf8_decode("Caixas"), 1, 1);
+            } else {
+                $object->Cell(21, 5, utf8_decode("Endereço"), 1, 0);
+                $object->Cell(13, 5, utf8_decode("Cod."), 1, 0);
+                $object->Cell(90, 5, utf8_decode("Produto"), 1, 0);
+                $object->Cell(20, 5, utf8_decode("Cod. Barras"), 1, 0);
+                $object->Cell(25, 5, utf8_decode("Refer."), 1, 0);
+                $object->Cell(12, 5, utf8_decode("Emb."), 1, 0);
+                $object->Cell(12, 5, utf8_decode("Qtd."), 1, 1);
+            }
+        }else{
+            if ($tipoQebra == true) {
+                $object->Cell(21, 5, utf8_decode("Endereço"), 1, 0);
+                $object->Cell(13, 5, utf8_decode("Cod."), 1, 0);
+                $object->Cell(100, 5, utf8_decode("Produto"), 1, 0);
+                $object->Cell(30, 5, utf8_decode("Cod. Barras"), 1, 0);
+                $object->Cell(15, 5, utf8_decode("Emb."), 1, 0);
+                $object->Cell(17, 5, utf8_decode("Qtd."), 1, 0);
+                $object->Cell(17, 5, utf8_decode("Caixas"), 1, 1);
+            } else {
+                $object->Cell(21, 5, utf8_decode("Endereço"), 1, 0);
+                $object->Cell(13, 5, utf8_decode("Cod."), 1, 0);
+                $object->Cell(100, 5, utf8_decode("Produto"), 1, 0);
+                $object->Cell(30, 5, utf8_decode("Cod. Barras"), 1, 0);
+                $object->Cell(17, 5, utf8_decode("Emb."), 1, 0);
+                $object->Cell(12, 5, utf8_decode("Qtd."), 1, 1);
+            }
         }
         return $object;
     }
 
     public function buildFooter($object, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total) {
         $object->SetFont('Arial', null, 10);
+        $object->Cell(20, 4, utf8_decode(" "), 0, 1);
         $object->Cell(20, 4, utf8_decode("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - TOTAL À SEPARAR ==> $total"), 0, 1);
 
         $this->total = $total;
@@ -1320,8 +1736,8 @@ class MapaSeparacao extends eFPDF {
         $object->Cell($wPage * 3, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
         $object->Cell($wPage * 2.5, 6, utf8_decode("EXPEDIÇÃO: " . $this->idExpedicao), 0, 0);
         $object->Cell($wPage * 3, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
-        $object->Cell($wPage * 3, 6, utf8_decode("CUBAGEM TOTAL " . $this->cubagemTotal), 0, 0);
-        $object->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . $this->pesoTotal), 0, 1);
+        $object->Cell($wPage * 3, 6, utf8_decode("CUBAGEM TOTAL " .  number_format($this->cubagemTotal, 2, ',', '.')), 0, 0);
+        $object->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . number_format($this->pesoTotal, 2, ',', '.')), 0, 1);
 
         $object->Image($imgCodBarras, 143, 280, 50);
         $object->InFooter = false;

@@ -220,7 +220,7 @@ class EtiquetaSeparacao extends Pdf
 
     }
 
-    public function reimprimir($etiquetaEntity, $motivo, $modelo) {
+    public function reimprimir($etiquetas, $motivo, $modelo) {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
 
@@ -229,14 +229,18 @@ class EtiquetaSeparacao extends Pdf
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        $etiqueta      = $EtiquetaRepo->getEtiquetaById($etiquetaEntity->getId());
 
-        $this->layoutEtiqueta($etiqueta,1,true, $modelo);
 
-        $this->Output('etiqueta-'.$etiquetaEntity->getId().'.pdf','D');
+        foreach($etiquetas as $etiquetaEntity) {
+            $etiqueta      = $EtiquetaRepo->getEtiquetaById($etiquetaEntity->getId());
+            $this->layoutEtiqueta($etiqueta,1,true, $modelo);
+            $etiquetaEntity->setReimpressao($motivo);
+            $em->persist($etiquetaEntity);
 
-        $etiquetaEntity->setReimpressao($motivo);
-        $em->persist($etiquetaEntity);
+        }
+
+        $this->Output('etiqueta-reimpressao.pdf','D');
+
         $em->flush();
     }
 
@@ -924,7 +928,11 @@ class EtiquetaSeparacao extends Pdf
         $this->SetFont('Arial', 'B', 9);
         $impressao  = utf8_decode("EXP:$etiqueta[codExpedicao] - PLACA:$etiqueta[placaExpedicao] - $etiqueta[tipoCarga]:$etiqueta[codCargaExterno]\n");
         $this->MultiCell(100, 4.5, $impressao, 0, 'L');
-        $this->SetFont('Arial', 'B', 10);
+        if (strlen("$etiqueta[cliente]") <= 30) {
+            $this->SetFont('Arial', 'B', 10);
+        } else {
+            $this->SetFont('Arial', 'B', 8);
+        }
         $impressao = substr(utf8_decode("$etiqueta[cliente]"),0,40)."\n";
 
         if (strlen("COD.: $etiqueta[codProduto] - GRD.: $etiqueta[grade]") <= 33) {

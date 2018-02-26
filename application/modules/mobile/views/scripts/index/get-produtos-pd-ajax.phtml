@@ -1,0 +1,91 @@
+<style>
+    /* Grid - Table */
+    .gTable {
+        width: 95%;
+        margin-bottom: 5px;
+    }
+    .gTable tr.gRowColor td {
+        background: #EDEDED;
+    }
+    .gTable tr:hover {
+        background: #c7d5e2;
+    }
+    .gTable td {
+        border-left: 1px solid #EDFFF9;
+        border-right: 1px solid #EDFFF9;
+        border-bottom: 1px solid #EDFFF9;
+        padding: 0 2px;
+    }
+    .gTTitle {
+        height: 25px;
+    }
+    .gTTitle td {
+        background: #8080808c;
+    }
+    .gTTitle td a {
+        color: #333;
+        font-weight: bold;
+    }
+    .gTTitle td a span {
+        display: block;
+        line-height: 20px;
+        margin: 0 5px;
+    }
+    .gTTitle a.sort {
+        display: block;
+        background: repeat-x top left url(../../img/admin/sort_off_bg.png);
+    }
+    .gTTitle a.sort span {
+        background: no-repeat right center url(../../img/admin/grid_sort_both.png);
+    }
+    .gTTitle a.sortArrowAsc, .gTTitle a.sortArrowDesc {
+        background: repeat-x top left url(../../img/admin/sort_on_bg.gif);
+    }
+    .gTTitle a.sortArrowAsc span {
+        background: no-repeat right center url(../../img/admin/grid_sort_asc.gif);
+    }
+    .gTTitle a.sortArrowDesc span {
+        background: no-repeat right center url(../../img/admin/grid_sort_desc.gif);
+    }
+    .gTFilter {
+        background: #D6E8F5;
+        height: 30px;
+    }
+    .gTResultSet input[type=checkbox] {
+        border: 0;
+    }
+    .gTResultSet .gRowCheck {
+        text-align: center;
+        width: 22px;
+    }
+    .gTResultSet td {
+        line-height:20px;
+    }
+</style>
+<div style="width: 95%; text-align: center;">
+    <h5><b>Produtos</b></h5>
+    <table class="gTable " style="font-size: 10px!important;">
+        <tbody>
+        <tr class="gTTitle">
+            <td><b>Produto</b></td>
+            <td><b>Grade</b></td>
+            <td><b>Qtd.</b></td>
+<!--            <td><b>Endereço</b></td>-->
+        </tr>
+        <?php
+        $array = array();
+        foreach ($this->produtos as $produto) :
+            ?>
+            <tr>
+                <td><?php echo $produto['COD_PRODUTO'].' - '.$produto['DSC_PRODUTO'] ?></td>
+                <td><?php echo $produto['DSC_GRADE'] ?></td>
+                <td><?php echo $produto['QTD_PRODUTO'] ?></td>
+<!--                <td>--><?php //echo $produto['DSC_DEPOSITO_ENDERECO'] ?><!--</td>-->
+            </tr>
+        <?php endforeach;?>
+        </tbody>
+    </table>
+</div>
+    <div style="width: 60%; text-align: center;">
+<a style="width: 95%" href="/mobile/index/confirmar-separcao-pd-ajax/expedicao/<?php echo $this->idExpedicao?>/endereco/<?php echo $this->codEndereco?>" class="btn button finalizar mudar" id="fim-end">Confirmar</a>
+</div>

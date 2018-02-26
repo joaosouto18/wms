@@ -63,6 +63,7 @@ class Web_ImprimirController extends Action
 
     private function gerarEtiquetasPdf($enderecos, $modelo)
     {
+        $unico = false;
         if (($modelo == 4) || ($modelo == 6)) {
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(110, 60));
         } elseif ($modelo == 7) {
@@ -73,10 +74,17 @@ class Web_ImprimirController extends Action
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(150, 91));
         } elseif ($modelo == 11) {
             $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
-        } else {
+        } elseif($modelo == 12){
+            $modelo = 9;
+            $unico = true;
+            /*
+             * Usa o modelo 9 na Campo Bom
+             * porem precisa imprimir apenas uma etiqueta
+             */
+        }else {
             $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
         }
-        $etiqueta->imprimir($enderecos, $modelo);
+        $etiqueta->imprimir($enderecos, $modelo, $unico);
         return $etiqueta;
     }
 }

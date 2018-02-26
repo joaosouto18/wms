@@ -3,6 +3,7 @@
 namespace Wms\Service;
 
 use Core\Util\String;
+use Doctrine\DBAL\Types\BooleanType;
 use Doctrine\ORM\EntityManager;
 use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
 use Wms\Domain\Entity\Integracao\TabelaTemporaria;
@@ -337,11 +338,13 @@ class Integracao {
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
         $codCargaExterno = implode(',', $cargas);
         $sql = $em->createQueryBuilder()
-                ->select('c.codCargaExterno carga, p.id pedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade, pp.qtdCortada')
+                ->select('c.codCargaExterno carga, p.id pedido, sigla.id tipoPedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade, pp.qtdCortada')
                 ->from('wms:Expedicao\PedidoProduto', 'pp')
                 ->innerJoin('pp.pedido', 'p')
                 ->innerJoin('p.carga', 'c')
+                ->innerJoin('p.tipoPedido', 'sigla')
                 ->where("c.codCargaExterno IN ($codCargaExterno)")
+                ->andWhere('sigla.id <> 618')
                 ->orderBy('p.id, pp.codProduto, pp.grade');
 
         $pedidosProdutosWMS = $sql->getQuery()->getResult();
@@ -473,6 +476,7 @@ class Integracao {
             foreach ($dados as $key => $row) {
                 $idPedido = $row['PEDIDO'];
                 $idCarga = $row['CARGA'];
+                $tipoPedido = (isset($row['TIPO_PEDIDO']) && !empty($row['TIPO_PEDIDO'])) ? $row['TIPO_PEDIDO'] : null;
 
                 $produto = array(
                     'codProduto' => $row['PRODUTO'],
@@ -503,12 +507,15 @@ class Integracao {
                         'cep' => $row['CEP']
                     );
 
+
                     $pedido = array(
                         'codPedido' => $idPedido,
                         'cliente' => $cliente,
                         'itinerario' => $itinerario,
                         'produtos' => $produtos,
-                        'linhaEntrega' => $row['DSC_ROTA']
+                        'linhaEntrega' => $row['DSC_ROTA'],
+                        'tipoPedido' => $tipoPedido
+
                     );
 
                     $pedidos[] = $pedido;

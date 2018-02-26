@@ -169,6 +169,16 @@ class EtiquetaSeparacao
     protected $dataGeracao;
 
     /**
+     * @Column(name="DTH_SEPARACAO", type="date", nullable=true)
+     */
+    protected $dthSeparacao;
+
+    /**
+     * @Column(name="COD_USUARIO_SEPARACAO", type="integer", nullable=true)
+     */
+    protected $usuarioSeparacao;
+
+    /**
      * @Column(name="QTD_EMBALAGEM", type="decimal", length=60, nullable=false)
      */
     protected $qtdEmbalagem;
@@ -473,6 +483,22 @@ class EtiquetaSeparacao
     }
 
     /**
+     * @return date
+     */
+    public function getDthSeparacao()
+    {
+        return $this->dthSeparacao;
+    }
+
+    /**
+     * @param date $dthSeparacao
+     */
+    public function setDthSeparacao($dthSeparacao)
+    {
+        $this->dthSeparacao = $dthSeparacao;
+    }
+
+    /**
      * @param mixed $qtdEmbalagem
      */
     public function setQtdEmbalagem($qtdEmbalagem)
@@ -486,6 +512,22 @@ class EtiquetaSeparacao
     public function getQtdEmbalagem()
     {
         return $this->qtdEmbalagem;
+    }
+
+    /**
+     * @param mixed $usuarioSeparacao
+     */
+    public function setUsuarioSeparacao($usuarioSeparacao)
+    {
+        $this->usuarioSeparacao = $usuarioSeparacao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUsuarioSeparacao()
+    {
+        return $this->usuarioSeparacao;
     }
 
     /**

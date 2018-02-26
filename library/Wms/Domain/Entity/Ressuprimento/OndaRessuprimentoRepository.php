@@ -10,7 +10,7 @@ use Wms\Domain\Entity\Produto;
 
 class OndaRessuprimentoRepository extends EntityRepository {
 
-    public function getOndasEmAberto($codProduto, $grade, $codEndereco = null) {
+    public function getOndasEmAberto($codProduto, $grade, $codEndereco = null, $expedicao = null) {
         $query = $this->getEntityManager()->createQueryBuilder()
                 ->select("os.id as OS,
                           w.id as Onda,
@@ -23,12 +23,18 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 ->leftJoin("wos.os", "os")
                 ->leftJoin("wos.endereco", 'e')
                 ->leftJoin("wos.ondaRessuprimento", "w")
+                ->leftJoin('wms:Ressuprimento\OndaRessuprimentoPedido', 'orp', 'WITH','orp.ondaRessuprimento = w.id')
+                ->leftJoin('orp.pedido', 'ped')
+                ->leftJoin('ped.carga', 'c')
                 ->where("wos.status = " . \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_ONDA_GERADA)
                 ->orderBy("wos.sequencia")
                 ->distinct(true);
 
         if ($codProduto != null) {
             $query->andWhere("prod.id = '$codProduto' AND prod.grade ='$grade'");
+        }
+        if ($expedicao != null) {
+            $query->andWhere("c.expedicao = '$expedicao'");
         }
         if ($codEndereco != null) {
             $query->andWhere("e.id = " . $codEndereco);
@@ -728,6 +734,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
     }
 
     public function getQueryRessuprimentoPreventivo($parametros) {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '-1');
         $SQL = "SELECT DISTINCT P.COD_PRODUTO,
                     P.DSC_GRADE,
                     DE.DSC_DEPOSITO_ENDERECO,

@@ -123,7 +123,7 @@ class ReservaEstoqueRepository extends EntityRepository
         }
     }
 
-    /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+    /** @param \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
     public function efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, $origemReserva, $idOrigem, $usuarioEn = null, $osEn = null, $unitizadorEn = null, $dataValidade=null)
     {
         if ($usuarioEn == NULL)  {
@@ -208,6 +208,18 @@ class ReservaEstoqueRepository extends EntityRepository
         return $this->efetivaReservaByReservaEntity($estoqueRepo,$reservaEstoqueEn,$origemReserva,$idOrigem,$usuarioEn,$osEn,$unitizadorEn,$dataValidade);
     }
 
+    /**
+     * @param $idEndereco
+     * @param $produtos
+     * @param $tipoReserva
+     * @param $origemReserva
+     * @param $idOrigem
+     * @param bool $throwException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
+     * @throws \Exception
+     */
     public function reabrirReservaEstoque($idEndereco,$produtos, $tipoReserva, $origemReserva, $idOrigem, $throwException = false )
     {
         $reservaEstoqueEn = $this->findReservaEstoque($idEndereco,$produtos,$tipoReserva,$origemReserva,$idOrigem);
@@ -243,9 +255,11 @@ class ReservaEstoqueRepository extends EntityRepository
             $params['observacoes'] = $observacoes;
 
             foreach ($produtos as $produto) {
+                /** @var Produto\Embalagem $embalagenEn */
                 $embalagenEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findOneBy(array('id'=>$produto['codProdutoEmbalagem']));
+                /** @var Produto\Volume $volumeEn */
                 $volumeEn = $this->getEntityManager()->getRepository("wms:Produto\Volume")->findOneBy(array('id'=>$produto['codProdutoVolume']));
-                $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id'=>$produto['codProduto'], 'grade'=>$produto['grade']));
+                $produtoEn = (!empty($embalagenEn))? $embalagenEn->getProduto() : $volumeEn->getProduto();
 
                 $params['validade'] = null;
                 if ($produtoEn->getValidade() == 'S' ) {
