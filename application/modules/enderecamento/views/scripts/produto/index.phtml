@@ -53,7 +53,7 @@ if (count($this->produtos) > 0):
                 </td>
                 <td style="text-align:left"><?php echo $produto['codigo'] ?></td>
                 <td style="text-align:left"><?php echo $produto['produto'] ?></td>
-                <td style="text-align:left"><?php echo $grade ?></td>
+                <td style="text-align:left"><?php echo $produto['grade'] ?></td>
                 <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdItensNf'], 1) != 0)? (float)$produto['qtdItensNf'] : $produto['qtdItensNf'] ?></td>
                 <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdRecebimento'], 1) != 0)? (float)$produto['qtdRecebimento'] : $produto['qtdRecebimento']  ?></td>
                 <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdRecebida'], 1) != 0)? (float)$produto['qtdRecebida'] : $produto['qtdRecebida']  ?></td>

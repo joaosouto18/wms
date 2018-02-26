@@ -50,12 +50,11 @@ class AndamentoRepository extends EntityRepository
 
             ->innerJoin("a.recebimento","r")
             ->innerJoin("a.produto","pr")
-            ->where('r.id = ' . $idRecebimento)
-            ->andWhere("pr.id = " . $codProduto)
-            ->andWhere("pr.grade = '".$grade . "'")
+            ->where("r.id = $idRecebimento")
+            ->andWhere("pr.id = $codProduto")
+            ->andWhere("pr.grade = '$grade'")
             ->orderBy("a.id" , "DESC");
 
-        $result = $source->getQuery()->getResult();
         return $source;
     }
 
