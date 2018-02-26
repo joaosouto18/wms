@@ -1196,7 +1196,7 @@ class PaleteRepository extends EntityRepository {
 
         $array = $query->getQuery()->getArrayResult();
 
-        $norma = $array[0]['descricao'];
+        $norma = (!empty($array))? $array[0]['descricao']: null;
         return $norma;
     }
 

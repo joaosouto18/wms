@@ -341,8 +341,6 @@ class Wms_WebService_Produto extends Wms_WebService {
 
                     if ($encontrouEmbalagem == false) {
 
-                        $this->verificaCodigoBarrasDuplicado($embalagemWs->codBarras,$idProduto,$grade);
-
                         $embalagemArray = array (
                             'acao' => 'incluir',
                             'descricao' => $embalagemWs->descricao,
