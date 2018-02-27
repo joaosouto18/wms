@@ -188,6 +188,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $existeOutraTransacaoAtiva = "N";
         $iniciouTransacaoAtual = 'N';
         $integracaoService = null;
+        $idTabelaTemp = '0';
 
         if ($acaoEn->getIndExecucao() == 'S') {
             $existeOutraTransacaoAtiva = "S";
@@ -257,6 +258,13 @@ class AcaoIntegracaoRepository extends EntityRepository
                             'dados'=>$result));
                     $result = $integracaoService->salvaTemporario();
                 } else {
+                    //pegar os ID's das tabelas temporárias das triggers
+                    $dadosFiltrar = array();
+                    foreach ($result as $row) {
+                        $dadosFiltrar[] = $row['ID'];
+                    }
+                    $idTabelaTemp = implode(",", $dadosFiltrar);
+
                     $integracaoService = new Integracao($this->getEntityManager(),
                         array('acao'=>$acaoEn,
                             'options'=>$options,
@@ -353,7 +361,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
                 if ($sucess=="S") {
-                    $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
+                    $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($idTabelaTemp) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
                     $update = true;
                     $conexaoEn = $acaoEn->getConexao();
                     $conexaoRepo->runQuery($query, $conexaoEn, $update);
