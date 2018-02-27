@@ -720,6 +720,7 @@ class Importacao
                     ->setFabricante($fabricante)
                     ->setClasse($classe)
                     ->setReferencia($referencia)
+                    ->setIndFracionavel("N")
                     ->setPossuiPesoVariavel($indPesoVariavel);
 
             if (is_null($possuiValidade)) {
@@ -756,6 +757,7 @@ class Importacao
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
 
+
                     $fator = $embalagemCadastrada->getQuantidade();
                     foreach ($embalagens as $embalagemWs) {
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
@@ -781,15 +783,25 @@ class Importacao
                         'embalado' => $embalagemCadastrada->getEmbalado(),
                         'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
                         'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
-                        'descricao' => $descricaoEmbalagem
+                        'descricao' => $descricaoEmbalagem,
+                        'isEmbExpDefault' => $embalagemCadastrada->isEmbExpDefault(),
+                        'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
                     );
 
                     if ($encontrouEmbalagem == false) {
-                        $embalagemArray['ativarDesativar'] = false;
+                        $parametroEmbalagensInativas = $parametroRepo->findOneBy(array('constante' => 'INATIVA_EMBALAGENS_INEXISTENTES_ERP'));
+                        if ($parametroEmbalagensInativas->getValor() == 'S') {
+                            $embalagemAtiva = false;
+                        } else {
+                            $embalagemAtiva = false;
+                            if ($embalagemCadastrada->getDataInativacao() == null) {
+                                $embalagemAtiva = true;
+                            }
+                        }
+                        $embalagemArray['ativarDesativar'] = $embalagemAtiva;
                     } else {
                         $embalagemArray['ativarDesativar'] = true;
                     }
-
                     $embalagensArray[] = $embalagemArray;
 
                 }
@@ -807,8 +819,6 @@ class Importacao
 
                     if ($encontrouEmbalagem == false) {
 
-                        $this->verificaCodigoBarrasDuplicado($em,$embalagemWs->codBarras,$idProduto,$grade);
-
                         $embalagemArray = array (
                             'acao' => 'incluir',
                             'descricao' => $embalagemWs->descricao,
@@ -820,7 +830,9 @@ class Importacao
                             'embalado' => 'N',
                             'capacidadePicking' => 0,
                             'pontoReposicao' => 0,
-                            'endereco' => null
+                            'endereco' => null,
+                            'isEmbExpDefault' => 'N',
+                            'isEmbFracionavelDefault' => 'N'
                         );
                         $embalagensArray[] = $embalagemArray;
                     }

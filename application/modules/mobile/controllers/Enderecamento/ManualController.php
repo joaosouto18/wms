@@ -241,7 +241,12 @@ class Mobile_Enderecamento_ManualController extends Action
 
             $novaCapacidadePicking = $params['capacidadePicking'];
 
-            $embalagens = $produtoEn->getEmbalagens();
+            $embalagens = $produtoEn->getEmbalagens()->filter(
+                function($item) {
+                    return is_null($item->getDataInativacao());
+                }
+            )->toArray();
+
             $arrDL = array();
             $normaRelativa = null;
             /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagem */
@@ -333,6 +338,14 @@ class Mobile_Enderecamento_ManualController extends Action
         }
     }
 
+    /**
+     * @param $qtd
+     * @param $produtoEn \Wms\Domain\Entity\Produto
+     * @param $idRecebimento
+     * @return object|\Wms\Domain\Entity\Enderecamento\Palete
+     * @throws Exception
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     private function createPalete($qtd, $produtoEn, $idRecebimento)
     {
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
@@ -352,6 +365,12 @@ class Mobile_Enderecamento_ManualController extends Action
         $statusEn      = $this->getEntityManager()->getRepository('wms:Util\Sigla')->find(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO);
 
         $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto, $grade);
+
+        if ($produtoEn->getTipoComercializacao()->getId() == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) {
+            $tmp[0]['COD_PRODUTO_EMBALAGEM'] = $volumes[0]['COD_PRODUTO_EMBALAGEM'];
+            $tmp[0]['COD_PRODUTO_VOLUME'] = NULL;
+            $volumes = $tmp;
+        }
 
         if (count($volumes) == 0) {
             throw new \Exception('Produto não possui volumes ou embalagem padrão definidas');

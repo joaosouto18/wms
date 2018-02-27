@@ -38,7 +38,7 @@ if (count($this->produtos) > 0):
                         <ul>
                             <li><img src="/img/admin/icon_opc.gif" alt="Op&ccedil;&otilde;es" />
                                 <ul>
-                                    <?php $grade = str_replace('/','&',$produto['grade']) ?>
+                                    <?php $grade = urlencode($produto['grade']) ?>
                                     <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>">Endereçar Paletes</a></li>
                                     <li><a href="/enderecamento/produto/list/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>" class="inside-modal">Andamento</a></li>
                                     <li><a href="/enderecamento/produto/alterar-norma/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>" class="inside-modal">Alterar Norma de Paletização</a></li>

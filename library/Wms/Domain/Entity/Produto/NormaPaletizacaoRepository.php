@@ -45,20 +45,16 @@ class NormaPaletizacaoRepository extends EntityRepository
 
     public function getNormasByProduto($codProduto, $grade) {
 
-        $sql = "SELECT 
-                  NP.COD_NORMA_PALETIZACAO , U.DSC_UNITIZADOR
-                FROM 
-                  UNITIZADOR U
-                INNER JOIN NORMA_PALETIZACAO NP ON NP.COD_UNITIZADOR = U.COD_UNITIZADOR
-                WHERE NP.COD_NORMA_PALETIZACAO IN (
-                    SELECT DISTINCT PDL.COD_NORMA_PALETIZACAO
-                    FROM PRODUTO_EMBALAGEM PE
-                    INNER JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
-                    WHERE PE.COD_PRODUTO = $codProduto AND PE.DSC_GRADE = '$grade' )
-                OR NP.COD_NORMA_PALETIZACAO IN (
-                    SELECT DISTINCT PV.COD_NORMA_PALETIZACAO 
-                    FROM PRODUTO_VOLUME PV
-                    WHERE PV.COD_PRODUTO = $codProduto AND PV.DSC_GRADE = '$grade' )";
+        $sql = "SELECT NP.COD_NORMA_PALETIZACAO,
+                       U.DSC_UNITIZADOR
+                  FROM PRODUTO P
+                  LEFT JOIN PRODUTO_VOLUME PV ON P.COD_PRODUTO = PV.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
+                  LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+                  LEFT JOIN NORMA_PALETIZACAO NP ON NP.COD_NORMA_PALETIZACAO = PDL.COD_NORMA_PALETIZACAO
+                                              OR NP.COD_NORMA_PALETIZACAO = PV.COD_NORMA_PALETIZACAO
+                  LEFT JOIN UNITIZADOR U ON U.COD_UNITIZADOR = NP.COD_UNITIZADOR
+                 WHERE P.COD_PRODUTO = '$codProduto' AND P.DSC_GRADE = '$grade' AND NP.COD_NORMA_PALETIZACAO IS NOT NULL";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
