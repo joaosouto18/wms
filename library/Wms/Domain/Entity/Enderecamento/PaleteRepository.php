@@ -240,9 +240,18 @@ class PaleteRepository extends EntityRepository {
         return $result;
     }
 
-    public function getQtdEnderecadaByNormaPaletizacao($idRecebimento, $idProduto, $grade, $showVolumes = false) {
+    public function getQtdEnderecadaByNormaPaletizacao($idRecebimento, $idProduto, $grade, $tipo = "V") {
+
+        if ($tipo == "V") {
+            $norma = " PP.COD_NORMA_PALETIZACAO ";
+            $groupNorma = ", PP.COD_NORMA_PALETIZACAO ";
+        } else {
+            $norma = " 0 ";
+            $groupNorma = " ";
+        }
+
         $SQL = "SELECT SUM(QTD.QTD) as QTD, QTD.COD_NORMA_PALETIZACAO, SUM(QTD.PESO) AS PESO
-                  FROM (SELECT P.UMA, PP.QTD,PP.COD_NORMA_PALETIZACAO, SUM(P.PESO) AS PESO
+                  FROM (SELECT P.UMA, PP.QTD, $norma as COD_NORMA_PALETIZACAO, SUM(P.PESO) AS PESO
                           FROM PALETE P
                      LEFT JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                          WHERE PP.COD_PRODUTO = '$idProduto' 
@@ -250,7 +259,7 @@ class PaleteRepository extends EntityRepository {
                            AND P.COD_RECEBIMENTO = '$idRecebimento'
                            AND (P.IND_IMPRESSO <> 'N' OR P.COD_STATUS <> " . Palete::STATUS_EM_RECEBIMENTO . ")
                      GROUP BY
-                        P.UMA, PP.QTD,PP.COD_NORMA_PALETIZACAO
+                        P.UMA, PP.QTD $groupNorma
                            ) QTD
                  GROUP BY QTD.COD_NORMA_PALETIZACAO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -609,15 +618,15 @@ class PaleteRepository extends EntityRepository {
             $recebimentoFinalizado = false;
         }
         $statusEn = $this->getEntityManager()->getRepository('wms:Util\Sigla')->find($codStatus);
-
         $this->deletaPaletesEmRecebimento($recebimentoEn->getId(), $idProduto, $grade);
-        $qtdEnderecada = $this->getQtdEnderecadaByNormaPaletizacao($recebimentoEn->getId(), $idProduto, $grade);
         if (count($produtoEn->getVolumes()) == 0) {
             $tipo = "E";
+            $qtdEnderecada = $this->getQtdEnderecadaByNormaPaletizacao($recebimentoEn->getId(), $idProduto, $grade, $tipo);
             $idOs = $conferenciaRepo->getLastOsRecebimentoEmbalagem($idRecebimento, $idProduto, $grade);
             $qtdRecebida = $conferenciaRepo->getQtdByRecebimentoEmbalagemAndNorma($idOs, $idProduto, $grade);
         } else {
             $tipo = "V";
+            $qtdEnderecada = $this->getQtdEnderecadaByNormaPaletizacao($recebimentoEn->getId(), $idProduto, $grade, $tipo);
             $idOs = $conferenciaRepo->getLastOsRecebimentoVolume($idRecebimento, $idProduto, $grade);
             $qtdRecebida = $conferenciaRepo->getQtdByRecebimentoVolumeAndNorma($idOs, $idProduto, $grade);
         }
