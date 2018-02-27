@@ -127,7 +127,6 @@ class AtorRepository extends EntityRepository {
         }
 
         $ator->setPessoa($pessoa);
-        $ator->setPraca($values['rotaPraca']['pracaEntity']);
         $em->persist($pessoa);
         return $pessoa;
     }

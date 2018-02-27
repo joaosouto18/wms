@@ -24,6 +24,12 @@ class Praca
      */
     protected $nomePraca;
 
+    /**
+     * @Column(name="COD_PRACA_EXTERNO", type="string", length=50, nullable=false)
+     */
+    protected $codPracaExterno;
+
+
     public function setNomePraca($nomePraca)
     {
         $this->nomePraca = $nomePraca;
@@ -46,6 +52,22 @@ class Praca
     public function setId($id)
     {
         $this->id = $id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodPracaExterno()
+    {
+        return $this->codPracaExterno;
+    }
+
+    /**
+     * @param mixed $codPracaExterno
+     */
+    public function setCodPracaExterno($codPracaExterno)
+    {
+        $this->codPracaExterno = $codPracaExterno;
     }
 
 }

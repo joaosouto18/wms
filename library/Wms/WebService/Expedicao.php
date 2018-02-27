@@ -1028,15 +1028,16 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $entityPessoa = $ClienteRepo->persistirAtor($entityCliente, $cliente, false);
             } else {
                 $entityCliente->setPessoa($entityPessoa);
-                $entityCliente->setPraca($cliente['rotaPraca']['pracaEntity']);
+
             }
 
             $entityCliente->setId($entityPessoa->getId());
             $entityCliente->setCodClienteExterno($cliente['codCliente']);
-
-            $this->_em->persist($entityCliente);
-            //$this->_em->flush();
         }
+
+        $entityCliente->setPraca($cliente['rotaPraca']['pracaEntity']);
+        $entityCliente->setRota($cliente['rotaPraca']['rotaEntity']);
+        $this->_em->persist($entityCliente);
 
         return $entityCliente;
     }
@@ -1343,9 +1344,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
     public function findRotaPracaByIdExterno($repositorios, $itinerario)
     {
-        $rotaEntity  = $repositorios['rotaRepo']->findOneBy(array('id' => $itinerario['idItinerario']));
-        $pracaEntity = $repositorios['pracaRepo']->findOneBy(array('id' => $itinerario['idPraca']));
-        $rotaPracaEntity = $repositorios['rotaPracaRepo']->findOneBy(array('codRota' => $itinerario['idItinerario'], 'codPraca' => $itinerario['idPraca']));
+        $rotaEntity  = $repositorios['rotaRepo']->findOneBy(array('codRotaExterno' => $itinerario['idItinerario']));
+        $pracaEntity = $repositorios['pracaRepo']->findOneBy(array('codPracaExterno' => $itinerario['idPraca']));
 
         if (!$rotaEntity) {
             $rotaEntity = $repositorios['rotaRepo']->save($itinerario['idItinerario'], $itinerario['nomeItinerario']);
@@ -1353,6 +1353,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
         if (!$pracaEntity) {
             $pracaEntity = $repositorios['pracaRepo']->save($itinerario['idPraca'], $itinerario['nomePraca']);
         }
+
+        $rotaPracaEntity = $repositorios['rotaPracaRepo']->findOneBy(array('rota' => $rotaEntity, 'praca' => $pracaEntity));
         if (!$rotaPracaEntity) {
             $rotaPracaEntity = $repositorios['rotaPracaRepo']->save($rotaEntity, $pracaEntity);
         }

@@ -24,6 +24,11 @@ class Rota
      */
     protected $nomeRota;
 
+    /**
+     * @Column(name="COD_ROTA_EXTERNO", type="string", length=50, nullable=true)
+     */
+    protected $codRotaExterno;
+
     public function setNomeRota($nomeRota)
     {
         $this->nomeRota = $nomeRota;
@@ -47,5 +52,20 @@ class Rota
         $this->id = $id;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getCodRotaExterno()
+    {
+        return $this->codRotaExterno;
+    }
+
+    /**
+     * @param mixed $codRotaExterno
+     */
+    public function setCodRotaExterno($codRotaExterno)
+    {
+        $this->codRotaExterno = $codRotaExterno;
+    }
 
 }
