@@ -1838,10 +1838,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         }
         if (!empty($produtoEn)) {
             $dias = $produtoEn->getDiasVidaUtil();
-            $hoje = new \DateTime('now');
-            $periodoUtil = $hoje->add(date_interval_create_from_date_string("$dias days"));
-            $validade = date_create($validade);
-            return ($validade >= $periodoUtil) ? true : false;
+            $periodoUtil = date('Y-m-d', strtotime("+ $dias days"));
+            $vetValidade = explode('/', $validade);
+            return ((strtotime("$vetValidade[2]-$vetValidade[1]-$vetValidade[0]") >= strtotime($periodoUtil))) ? true : false;
         }
         return false;
     }
