@@ -118,14 +118,14 @@ class ConferenciaRepository extends EntityRepository
     }
 
     public function getQtdByRecebimentoEmbalagemAndNorma ($idOs, $codProduto, $grade){
-        $SQL = "SELECT SUM(RE.QTD_CONFERIDA * RE.QTD_EMBALAGEM) as QTD, RE.COD_NORMA_PALETIZACAO, (NP.NUM_NORMA * PE.QTD_EMBALAGEM) as NUM_NORMA, NP.COD_UNITIZADOR, SUM(RE.NUM_PESO) as PESO
+        $SQL = "SELECT SUM(RE.QTD_CONFERIDA * RE.QTD_EMBALAGEM) as QTD, 0 as COD_NORMA_PALETIZACAO, (NP.NUM_NORMA * PE.QTD_EMBALAGEM) as NUM_NORMA, NP.COD_UNITIZADOR, SUM(RE.NUM_PESO) as PESO
                   FROM RECEBIMENTO_EMBALAGEM RE
                  INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
                  INNER JOIN NORMA_PALETIZACAO NP ON NP.COD_NORMA_PALETIZACAO = RE.COD_NORMA_PALETIZACAO 
                  WHERE COD_OS = '$idOs'
                    AND PE.COD_PRODUTO = '$codProduto'
                    AND PE.DSC_GRADE = '$grade'
-                 GROUP BY RE.COD_NORMA_PALETIZACAO, (NP.NUM_NORMA * PE.QTD_EMBALAGEM) , NP.COD_UNITIZADOR";
+                 GROUP BY  (NP.NUM_NORMA * PE.QTD_EMBALAGEM) , NP.COD_UNITIZADOR";
         return $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
     }
 
