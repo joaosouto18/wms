@@ -240,9 +240,18 @@ class PaleteRepository extends EntityRepository {
         return $result;
     }
 
-    public function getQtdEnderecadaByNormaPaletizacao($idRecebimento, $idProduto, $grade, $showVolumes = false) {
+    public function getQtdEnderecadaByNormaPaletizacao($idRecebimento, $idProduto, $grade, $tipo = "V") {
+
+        if ($tipo == "V") {
+            $norma = " PP.COD_NORMA_PALETIZACAO ";
+            $groupNorma = ", PP.COD_NORMA_PALETIZACAO ";
+        } else {
+            $norma = " 0 ";
+            $groupNorma = " ";
+        }
+
         $SQL = "SELECT SUM(QTD.QTD) as QTD, QTD.COD_NORMA_PALETIZACAO, SUM(QTD.PESO) AS PESO
-                  FROM (SELECT P.UMA, PP.QTD,PP.COD_NORMA_PALETIZACAO, SUM(P.PESO) AS PESO
+                  FROM (SELECT P.UMA, PP.QTD, $norma as COD_NORMA_PALETIZACAO, SUM(P.PESO) AS PESO
                           FROM PALETE P
                      LEFT JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                          WHERE PP.COD_PRODUTO = '$idProduto' 
@@ -250,7 +259,7 @@ class PaleteRepository extends EntityRepository {
                            AND P.COD_RECEBIMENTO = '$idRecebimento'
                            AND (P.IND_IMPRESSO <> 'N' OR P.COD_STATUS <> " . Palete::STATUS_EM_RECEBIMENTO . ")
                      GROUP BY
-                        P.UMA, PP.QTD,PP.COD_NORMA_PALETIZACAO
+                        P.UMA, PP.QTD $groupNorma
                            ) QTD
                  GROUP BY QTD.COD_NORMA_PALETIZACAO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -266,7 +275,6 @@ class PaleteRepository extends EntityRepository {
          INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
           WHERE RE.COD_RECEBIMENTO = '$codRecebimento'
         AND RE.COD_OS = '$codOs'
-        AND RE.COD_NORMA_PALETIZACAO = '$normaPaletizacao'
         AND PE.COD_PRODUTO = '$codProduto'
         AND PE.DSC_GRADE = '$grade'";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -609,15 +617,15 @@ class PaleteRepository extends EntityRepository {
             $recebimentoFinalizado = false;
         }
         $statusEn = $this->getEntityManager()->getRepository('wms:Util\Sigla')->find($codStatus);
-
         $this->deletaPaletesEmRecebimento($recebimentoEn->getId(), $idProduto, $grade);
-        $qtdEnderecada = $this->getQtdEnderecadaByNormaPaletizacao($recebimentoEn->getId(), $idProduto, $grade);
         if (count($produtoEn->getVolumes()) == 0) {
             $tipo = "E";
+            $qtdEnderecada = $this->getQtdEnderecadaByNormaPaletizacao($recebimentoEn->getId(), $idProduto, $grade, $tipo);
             $idOs = $conferenciaRepo->getLastOsRecebimentoEmbalagem($idRecebimento, $idProduto, $grade);
             $qtdRecebida = $conferenciaRepo->getQtdByRecebimentoEmbalagemAndNorma($idOs, $idProduto, $grade);
         } else {
             $tipo = "V";
+            $qtdEnderecada = $this->getQtdEnderecadaByNormaPaletizacao($recebimentoEn->getId(), $idProduto, $grade, $tipo);
             $idOs = $conferenciaRepo->getLastOsRecebimentoVolume($idRecebimento, $idProduto, $grade);
             $qtdRecebida = $conferenciaRepo->getQtdByRecebimentoVolumeAndNorma($idOs, $idProduto, $grade);
         }
@@ -719,6 +727,19 @@ class PaleteRepository extends EntityRepository {
         $pesoTotal = 0;
         foreach ($qtdRecebida as $unitizador) {
             $idNorma = $unitizador['COD_NORMA_PALETIZACAO'];
+
+            if ($idNorma == 0) {
+                $sql = "SELECT PDL.COD_NORMA_PALETIZACAO
+                          FROM PRODUTO_EMBALAGEM PE
+                          LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PE.COD_PRODUTO_EMBALAGEM = PDL.COD_PRODUTO_EMBALAGEM 
+                          LEFT JOIN NORMA_PALETIZACAO NP ON NP.COD_NORMA_PALETIZACAO = PDL.COD_NORMA_PALETIZACAO
+                         WHERE PE.COD_PRODUTO = '" . $produtoEn->getId() . "' 
+                           AND PE.DSC_GRADE = '" . $produtoEn->getGrade() . "'
+                           AND NP.COD_UNITIZADOR = " . $unitizador['COD_UNITIZADOR'];
+                $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+                $idNorma = $result[0]['COD_NORMA_PALETIZACAO'];
+            }
+
             if ($unitizador['QTD'] > 0) {
                 if ($unitizador['NUM_NORMA'] == 0) {
                     throw new Exception("O produto $idProduto não possui norma de paletização");
