@@ -177,7 +177,13 @@ class Mobile_RecebimentoController extends Action
             elseif ($itemNF['idVolume'])
                 $this->_helper->viewRenderer('recebimento/volume-quantidade', null, true);
 
-            $normasPaletizacao = $this->em->getRepository('wms:Produto\NormaPaletizacao')->getNormasByProduto($itemNF['idProduto'],$itemNF['grade']);
+            if ($itemNF['idTipoComercializacao'] == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) {
+                /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaRepo */
+                $normaRepo = $this->em->getRepository('wms:Produto\NormaPaletizacao');
+                $normasPaletizacao = $normaRepo->getNormasByProduto($itemNF['idProduto'], $itemNF['grade']);
+            } else {
+                $normasPaletizacao[$itemNF['idNorma']] = $itemNF["dscUnitizador"];
+            }
             $this->view->normasPaletizacao = $normasPaletizacao;
 
             $dscEmbFracionavelDefault = null;

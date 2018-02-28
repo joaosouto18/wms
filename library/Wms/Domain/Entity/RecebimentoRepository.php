@@ -515,9 +515,11 @@ class RecebimentoRepository extends EntityRepository {
 
     /**
      * Finaliza o recebimento, alterando status e lançando observações
-     *
      * @param integer $idRecebimento
-     * @throws Exception
+     * @param bool $divergencia
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Exception
      */
     public function finalizar($idRecebimento, $divergencia = false) {
         $em = $this->getEntityManager();
@@ -526,7 +528,7 @@ class RecebimentoRepository extends EntityRepository {
         $recebimentoEntity = $this->find($idRecebimento);
 
         if (!$this->checarConferenciaComDivergencia($idRecebimento)) {
-
+            $this->checkPaletesVolumesRecebimento($idRecebimento);
             try {
                 $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_FINALIZADO);
 
@@ -555,11 +557,11 @@ class RecebimentoRepository extends EntityRepository {
                 $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
                 $osRepo = $this->getEntityManager()->getRepository("wms:OrdemServico");
 
-                /** @var \Wms\Domain\Entity\Enderecamento\Palete $palete */
                 $paletes = $em->getRepository("wms:Enderecamento\Palete")->findBy(array('recebimento' => $recebimentoEntity->getId(), 'codStatus' => PaleteEntity::STATUS_ENDERECADO));
                 /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
                 $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
 
+                /** @var \Wms\Domain\Entity\Enderecamento\Palete $palete */
                 foreach ($paletes as $key => $palete) {
                     /** @var \Wms\Domain\Entity\OrdemServico $osEn */
                     $osEn = $osRepo->findOneBy(array('idEnderecamento' => $palete->getId()));
@@ -1769,4 +1771,51 @@ class RecebimentoRepository extends EntityRepository {
         return $result;
     }
 
+    /**
+     * @param $idRecebimento
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Exception
+     */
+    private function checkPaletesVolumesRecebimento($idRecebimento) {
+
+        $statusEnderecado = Palete::STATUS_ENDERECADO;
+        $statusEmEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
+
+        $sql = "SELECT PLT.QTD_TOTAL, PLT.COD_PRODUTO, PLT.DSC_GRADE
+                FROM ( 
+                    SELECT DISTINCT (SUM(PP.QTD) / COUNT(DISTINCT NVL(PP.COD_PRODUTO_VOLUME, 1))) QTD_TOTAL, PP.COD_PRODUTO, PP.DSC_GRADE, P.COD_RECEBIMENTO
+                    FROM PALETE_PRODUTO PP
+                    INNER JOIN PALETE P ON P.UMA = PP.UMA
+                    WHERE P.COD_RECEBIMENTO = $idRecebimento AND (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN ($statusEnderecado, $statusEmEnderecamento))
+                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PP.COD_NORMA_PALETIZACAO, P.COD_RECEBIMENTO) PLT
+                INNER JOIN (
+                        SELECT PV.COD_PRODUTO, PV.DSC_GRADE, OSV.COD_OS, RV.QTD_CONFERIDA AS QTD, RV.COD_NORMA_PALETIZACAO
+                        FROM (
+                            SELECT MAX(COD_OS) COD_OS, COD_NORMA_PALETIZACAO FROM RECEBIMENTO_VOLUME 
+                            WHERE COD_RECEBIMENTO = $idRecebimento GROUP BY COD_NORMA_PALETIZACAO
+                        ) OSV
+                        INNER JOIN RECEBIMENTO_VOLUME RV ON RV.COD_OS = OSV.COD_OS AND RV.COD_NORMA_PALETIZACAO = OSV.COD_NORMA_PALETIZACAO
+                        INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
+                        UNION
+                        SELECT PE.COD_PRODUTO, PE.DSC_GRADE, OSE.COD_OS, RE.QTD_CONFERIDA AS QTD, RE.COD_NORMA_PALETIZACAO
+                        FROM (
+                            SELECT MAX(COD_OS) COD_OS, COD_NORMA_PALETIZACAO FROM RECEBIMENTO_EMBALAGEM 
+                            WHERE COD_RECEBIMENTO = $idRecebimento GROUP BY COD_NORMA_PALETIZACAO
+                        ) OSE
+                        INNER JOIN RECEBIMENTO_EMBALAGEM RE ON RE.COD_OS = OSE.COD_OS AND RE.COD_NORMA_PALETIZACAO = OSE.COD_NORMA_PALETIZACAO
+                        INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
+                      )RC ON V.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE
+                WHERE PLT.QTD_TOTAL > RC.QTD
+                 ";
+
+        $result = $this->_em->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
+
+        if (!empty($result)) {
+            $str = "";
+            foreach ($result as $item) {
+                $str = "$item[COD_PRODUTO] - ($item[DSC_GRADE])";
+            }
+            throw new \Exception("Existem normas descasadas, corrija antes de finalizar o recebimento: " . implode(", ", $str));
+        }
+    }
 }
