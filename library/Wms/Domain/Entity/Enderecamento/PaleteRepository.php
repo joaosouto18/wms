@@ -275,7 +275,6 @@ class PaleteRepository extends EntityRepository {
          INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
           WHERE RE.COD_RECEBIMENTO = '$codRecebimento'
         AND RE.COD_OS = '$codOs'
-        AND RE.COD_NORMA_PALETIZACAO = '$normaPaletizacao'
         AND PE.COD_PRODUTO = '$codProduto'
         AND PE.DSC_GRADE = '$grade'";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -728,6 +727,19 @@ class PaleteRepository extends EntityRepository {
         $pesoTotal = 0;
         foreach ($qtdRecebida as $unitizador) {
             $idNorma = $unitizador['COD_NORMA_PALETIZACAO'];
+
+            if ($idNorma == 0) {
+                $sql = "SELECT PDL.COD_NORMA_PALETIZACAO
+                          FROM PRODUTO_EMBALAGEM PE
+                          LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PE.COD_PRODUTO_EMBALAGEM = PDL.COD_PRODUTO_EMBALAGEM 
+                          LEFT JOIN NORMA_PALETIZACAO NP ON NP.COD_NORMA_PALETIZACAO = PDL.COD_NORMA_PALETIZACAO
+                         WHERE PE.COD_PRODUTO = '" . $produtoEn->getId() . "' 
+                           AND PE.DSC_GRADE = '" . $produtoEn->getGrade() . "'
+                           AND NP.COD_UNITIZADOR = " . $unitizador['COD_UNITIZADOR'];
+                $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+                $idNorma = $result[0]['COD_NORMA_PALETIZACAO'];
+            }
+
             if ($unitizador['QTD'] > 0) {
                 if ($unitizador['NUM_NORMA'] == 0) {
                     throw new Exception("O produto $idProduto não possui norma de paletização");
