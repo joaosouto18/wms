@@ -20,6 +20,7 @@ class ModeloSeparacao
 
     const QUEBRA_PULMAO_DOCA_CLIENTE = "C";
     const QUEBRA_PULMAO_DOCA_PRACA = "P";
+    const QUEBRA_PULMAO_DOCA_ROTA = 'RT';
     const QUEBRA_PULMAO_DOCA_EXPEDICAO = "E";
     const QUEBRA_PULMAO_DOCA_CARGA = "G";
     const QUEBRA_PULMAO_DOCA_NAO_USA = "N";
