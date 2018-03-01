@@ -1064,6 +1064,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
         $parametro = $parametroRepo->findOneBy(array('constante' => 'AGRUPAR_CARGAS'));
 
+
         if (!empty($parametro) && $parametro->getValor() == 'N') {
             $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
         } else {

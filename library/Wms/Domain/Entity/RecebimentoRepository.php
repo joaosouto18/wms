@@ -368,18 +368,18 @@ class RecebimentoRepository extends EntityRepository {
                         $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
                         $quantidade = $produtoEmbalagemEntity->getQuantidade();
                     }
-                    $qtdConferida = $qtdConferida * $quantidade;
+//                    $qtdConferida = $qtdConferida * $quantidade;
                 } elseif (isset($embalagem) && !empty($embalagem)) {
                     if (isset($embalagem[$idProduto][$grade])) {
                         $idEmbalagem = $embalagem[$idProduto][$grade];
                         $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
                         $quantidade = $produtoEmbalagemEntity->getQuantidade();
                     }
-                    $qtdConferida = $qtdConferida * $quantidade;
+//                    $qtdConferida = $qtdConferida * $quantidade;
                 }
-
+                $qtdConferidaItem = $qtdConferida * $quantidade;
                 $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
-                $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel);
+                $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferidaItem, $numPecas, $qtdAvaria, $divergenciaPesoVariavel);
                 if ($qtdDivergencia != 0) {
                     $divergencia = true;
                 }
