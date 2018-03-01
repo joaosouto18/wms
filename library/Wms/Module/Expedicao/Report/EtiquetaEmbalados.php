@@ -119,7 +119,9 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(110, 5, $impressao, 0, 'L');
             $impressao = utf8_decode($volume['NOM_BAIRRO'].'  -  '.$volume['NOM_LOCALIDADE'].'  -  '.$volume['COD_REFERENCIA_SIGLA']);
             $this->MultiCell(110, 5, $impressao, 0, 'L');
-            $this->Line(0,42,110,42);
+            $impressao = utf8_decode('CARGA: '.$volume['COD_CARGA_EXTERNO']);
+            $this->MultiCell(110, 5, $impressao, 0, 'L');
+            $this->Line(0,45,110,45);
 
             $this->SetFont('Arial', '', 20);
             $this->MultiCell(110, 6, '', 0, 'L');

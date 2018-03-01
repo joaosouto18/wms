@@ -40,4 +40,16 @@ class RotaPracaRepository extends EntityRepository
         }
     }
 
+    public function save($rotaEntity, $pracaEntity)
+    {
+        $entity= new \Wms\Domain\Entity\MapaSeparacao\RotaPraca();
+
+        $entity->setPraca($pracaEntity);
+        $entity->setRota($rotaEntity);
+        $this->getEntityManager()->persist($entity);
+        $this->getEntityManager()->flush();
+
+        return $entity;
+    }
+
 }

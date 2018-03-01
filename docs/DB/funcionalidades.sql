@@ -345,3 +345,6 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (346, '6.13.4', 'Melhoria: Parâmetro para inativar embalagens inexistentes do ERP na integração SQL', '17-parametro-embalagens.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (347, '6.13.5', 'Correção: Ao realizar o recebimento em uma embalagem que não é a padrão do recebimento, ao fazer endereçamento manual o sistema dobrava as quantidades', '17-parametro-embalagens.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (348, '6.13.5', 'Correção: Falha ao importar um pedido para WMS paralelo a montagem de carga no ERP', '17-parametro-embalagens.sql', SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (349, '6.14.0', 'Melhoria: Cadastro de rotas e praças no modelo de separação para mapa de separação', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (350, '6.14.0', 'Melhoria: Número de carga em etiqueta de separação de embalados', null, SYSDATE);
+

@@ -1784,6 +1784,25 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $dscQuebra = "PRACA: $codQuebra - $nomPraca";
             }
 
+            //PRAÇA
+            elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_ROTA) {
+
+                $codQuebra = 0;
+                $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
+                $clienteEn = $clienteRepo->findOneBy(array('codClienteExterno' => $pedidoProdutoEn->getPedido()->getPessoa()->getCodClienteExterno()));
+                $rota = $clienteEn->getRota();
+                if ($rota != null) $codQuebra = $rota->getId();
+
+
+                if ($codQuebra == 0){
+                    $nomRota = "(SEM ROTA DEFINIDA)";
+                } else {
+                    $rotaEn = $this->getEntityManager()->getRepository('wms:MapaSeparacao\Rota')->find($codQuebra);
+                    $nomRota = $rotaEn->getNomeRota();
+                }
+                $dscQuebra = "ROTA: $codQuebra - $nomRota";
+            }
+
             //PULMAO-DOCA
             elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_PULMAO_DOCA) {
                 $dscQuebra = "PULMÃO-DOCA";
@@ -2170,6 +2189,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $idRua = 0;
         $idLinhaSeparacao = 0;
         $idPraca = 0;
+        $idRota = 0;
         $idPulmaoDoca = "N";
 
         $arrDscQuebra = [];
@@ -2211,10 +2231,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             elseif ($tipo == MapaSeparacaoQuebra::QUEBRA_PULMAO_DOCA) {
                 $idPulmaoDoca = $quebra['codQuebra'];
             }
+
+            elseif ($tipo == MapaSeparacaoQuebra::QUEBRA_ROTA) {
+                $idRota = $quebra['codQuebra'];
+            }
         }
 
-        if (isset($this->mapas[$idReentrega][$idCarrinho][$idCliente][$idRua][$idLinhaSeparacao][$idPraca][$idPulmaoDoca])) {
-            $mapaSeparacao = $this->mapas[$idReentrega][$idCarrinho][$idCliente][$idRua][$idLinhaSeparacao][$idPraca][$idPulmaoDoca];
+        if (isset($this->mapas[$idReentrega][$idCarrinho][$idCliente][$idRua][$idLinhaSeparacao][$idPraca][$idRota][$idPulmaoDoca])) {
+            $mapaSeparacao = $this->mapas[$idReentrega][$idCarrinho][$idCliente][$idRua][$idLinhaSeparacao][$idPraca][$idRota][$idPulmaoDoca];
         } else {
 
             $selectId = "SELECT SQ_MAPA_SEPARACAO_01.NEXTVAL FROM DUAL";
@@ -2240,7 +2264,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
             $this->getEntityManager()->persist($mapaSeparacao);
 
-            $this->mapas[$idReentrega][$idCarrinho][$idCliente][$idRua][$idLinhaSeparacao][$idPraca][$idPulmaoDoca] = $mapaSeparacao;
+            $this->mapas[$idReentrega][$idCarrinho][$idCliente][$idRua][$idLinhaSeparacao][$idPraca][$idRota][$idPulmaoDoca] = $mapaSeparacao;
         }
 
         return $mapaSeparacao;

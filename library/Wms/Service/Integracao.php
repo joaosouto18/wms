@@ -489,7 +489,9 @@ class Integracao {
                 if (($key == count($dados) - 1) || (isset($dados[$key + 1]) && ($idPedido != $dados[$key + 1]['PEDIDO']))) {
                     $itinerario = array(
                         'idItinerario' => $row['COD_ROTA'],
-                        'nomeItinerario' => $row['DSC_ROTA']
+                        'nomeItinerario' => $row['DSC_ROTA'],
+                        'idPraca' => $row['COD_PRACA'],
+                        'nomePraca' => $row['DSC_PRACA']
                     );
 
                     $cliente = array(
