@@ -292,7 +292,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 'pessoaJuridicaRepo' => $this->_em->getRepository('wms:Pessoa\Juridica'),
                 'pessoaFisicaRepo' => $this->_em->getRepository('wms:Pessoa\Fisica'),
                 'siglaRepo' => $this->_em->getRepository('wms:Util\Sigla'),
-                'itinerarioRepo' =>$this->_em->getRepository('wms:Expedicao\Itinerario')
+                'itinerarioRepo' =>$this->_em->getRepository('wms:Expedicao\Itinerario'),
+                'rotaRepo' => $this->_em->getRepository('wms:MapaSeparacao\Rota'),
+                'pracaRepo' => $this->_em->getRepository('wms:MapaSeparacao\Praca'),
+                'rotaPracaRepo' => $this->_em->getRepository('wms:MapaSeparacao\RotaPraca')
             );
 
             /** @var \Wms\Domain\Entity\Sistema\ParametroRepository $parametroRepo */
@@ -814,8 +817,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $cliente = $cliente[0];
         }
 
+        $cliente['rotaPraca']   = $this->findRotaPracaByIdExterno($repositorios, $pedido['itinerario']);
         $entityCliente          = $this->findClienteByCodigoExterno($repositorios,$cliente);
         $entityItinerario       = $this->findItinerarioById($repositorios, $pedido['itinerario']);
+
 
         $arrayPedido = array (
             'codPedido' => $pedido['codPedido'],
@@ -1023,14 +1028,16 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $entityPessoa = $ClienteRepo->persistirAtor($entityCliente, $cliente, false);
             } else {
                 $entityCliente->setPessoa($entityPessoa);
+
             }
 
             $entityCliente->setId($entityPessoa->getId());
             $entityCliente->setCodClienteExterno($cliente['codCliente']);
-
-            $this->_em->persist($entityCliente);
-            //$this->_em->flush();
         }
+
+        $entityCliente->setPraca($cliente['rotaPraca']['pracaEntity']);
+        $entityCliente->setRota($cliente['rotaPraca']['rotaEntity']);
+        $this->_em->persist($entityCliente);
 
         return $entityCliente;
     }
@@ -1063,6 +1070,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $ExpedicaoRepo = $repositorios['expedicaoRepo'];
         $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
         $parametro = $parametroRepo->findOneBy(array('constante' => 'AGRUPAR_CARGAS'));
+
 
         if (!empty($parametro) && $parametro->getValor() == 'N') {
             $entityExpedicao = $ExpedicaoRepo->save($placaExpedicao, false);
@@ -1339,7 +1347,31 @@ class Wms_WebService_Expedicao extends Wms_WebService
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
         }
+    }
 
-}
+    public function findRotaPracaByIdExterno($repositorios, $itinerario)
+    {
+        $rotaEntity  = $repositorios['rotaRepo']->findOneBy(array('codRotaExterno' => $itinerario['idItinerario']));
+        $pracaEntity = $repositorios['pracaRepo']->findOneBy(array('codPracaExterno' => $itinerario['idPraca']));
+
+        if (!$rotaEntity) {
+            $rotaEntity = $repositorios['rotaRepo']->save($itinerario['idItinerario'], $itinerario['nomeItinerario']);
+        }
+        if (!$pracaEntity) {
+            $pracaEntity = $repositorios['pracaRepo']->save($itinerario['idPraca'], $itinerario['nomePraca']);
+        }
+
+        $rotaPracaEntity = $repositorios['rotaPracaRepo']->findOneBy(array('rota' => $rotaEntity, 'praca' => $pracaEntity));
+        if (!$rotaPracaEntity) {
+            $rotaPracaEntity = $repositorios['rotaPracaRepo']->save($rotaEntity, $pracaEntity);
+        }
+        return $array = array(
+            'rotaEntity' => $rotaEntity,
+            'pracaEntity' => $pracaEntity,
+            'rotaPracaEntity' => $rotaPracaEntity
+        );
+
+    }
+
 
 }

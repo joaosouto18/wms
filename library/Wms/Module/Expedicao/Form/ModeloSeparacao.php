@@ -40,6 +40,7 @@ class ModeloSeparacao extends Form
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO => 'Por Expedição',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CARGA => 'Por Carga',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA => 'Por Praça',
+                \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_ROTA => 'Rota',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE => 'Por Cliente'
             )
         ))->addElement('select', 'tipoQuebraVolume', array(
@@ -92,6 +93,7 @@ class ModeloSeparacao extends Form
                 MapaSeparacaoQuebra::QUEBRA_RUA => 'Rua',
                 MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO => 'Linha de Separação',
                 MapaSeparacaoQuebra::QUEBRA_PRACA => 'Praça',
+                MapaSeparacaoQuebra::QUEBRA_ROTA => 'Rota',
                 MapaSeparacaoQuebra::QUEBRA_CLIENTE => 'Cliente',
             ]
         ))->addElement('multiCheckbox', 'quebraNaoFracionados', array(
@@ -99,11 +101,13 @@ class ModeloSeparacao extends Form
                 MapaSeparacaoQuebra::QUEBRA_RUA => 'Rua',
                 MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO => 'Linha de Separação',
                 MapaSeparacaoQuebra::QUEBRA_PRACA => 'Praça',
+                MapaSeparacaoQuebra::QUEBRA_ROTA => 'Rota',
                 MapaSeparacaoQuebra::QUEBRA_CLIENTE => 'Cliente',
             ]
         ))->addElement('multiCheckbox', 'quebraEmbalados', array(
             'multiOptions' => [
-                MapaSeparacaoQuebra::QUEBRA_PRACA => 'Praça'
+                MapaSeparacaoQuebra::QUEBRA_PRACA => 'Praça',
+                MapaSeparacaoQuebra::QUEBRA_ROTA => 'Rota'
             ]
         ));
 

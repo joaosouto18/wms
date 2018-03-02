@@ -81,6 +81,7 @@ class Web_ImprimirController extends Action
              * Usa o modelo 9 na Campo Bom
              * porem precisa imprimir apenas uma etiqueta
              */
+            $etiqueta = new EtiquetaEndereco("L", 'mm', array(85, 30));
         }else {
             $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
         }
