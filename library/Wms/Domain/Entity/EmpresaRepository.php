@@ -35,7 +35,7 @@ class EmpresaRepository extends EntityRepository
 
         // request
         $empresa->setNomEmpresa($nomEmpresa);
-        $empresa->setIdentificacao($identificacao);
+        $empresa->setIdentificacao(str_replace(array('.','-','/'), '',$identificacao));
         $empresa->setPrioridadeEstoque($prioridadeEstoque);
 
         $em->persist($empresa);

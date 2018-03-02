@@ -221,19 +221,7 @@ class Enderecamento_PaleteController extends Action
                 if ($result && !is_string($result)) {
                     $this->em->commit();
                     $this->addFlashMessage('success', 'Endereçamento finalizado com sucesso');
-                    /**
-                     * Se o paramentro controle de proprietario estiver ligado
-                     * inserir registros na tabela ESTOQUE_PROPRIETARIO somente quando
-                     * todos os paletes forem endereçados
-                     */
-                    $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
-                    if($controleProprietario == 'S') {
-                        $recebimentoRepo = $this->em->getRepository("wms:Recebimento");
-                        $result = $recebimentoRepo->checkRecebimentoEnderecado($id);
-                        if (empty($result)) {
-                            $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->efetivaEstoquePropRecebimento($id);
-                        }
-                    }
+
                     if (!empty($codigo) && !empty($grade)) {
                         $this->_redirect('enderecamento/palete/index/id/' . $id . '/codigo/' . $codigo . '/grade/' . urlencode($grade));
                     } else {

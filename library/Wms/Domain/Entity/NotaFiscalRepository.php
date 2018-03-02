@@ -412,7 +412,6 @@ class NotaFiscalRepository extends EntityRepository {
                                 AND RC2.DSC_GRADE = RC.DSC_GRADE
                                 AND RC2.COD_RECEBIMENTO_CONFERENCIA > RC.COD_RECEBIMENTO_CONFERENCIA
                                 )";
-
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -994,7 +993,7 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setStatus($statusEntity);
             $notaFiscalEntity->setObservacao($observacao);
             $notaFiscalEntity->setPlaca($placa);
-            $notaFiscalEntity->setCodPessoa($codProprietario);
+            $notaFiscalEntity->setCodPessoaProprietario($codProprietario);
 
             /** @var ReferenciaRepository $fornRefRepo */
             $fornRefRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');

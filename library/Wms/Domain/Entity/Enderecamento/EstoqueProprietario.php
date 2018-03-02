@@ -46,9 +46,20 @@ class EstoqueProprietario
     protected $codPessoa;
 
     /**
+     * @Column(name="COD_OPERACAO", type="integer", nullable=false)
+     */
+
+    protected $codOperacao;
+
+    /**
      * @Column(name="QTD", type="decimal", nullable=false)
      */
     protected $qtd;
+
+    /**
+     * @Column(name="SALDO_FINAL", type="decimal", nullable=false)
+     */
+    protected $saldoFinal;
 
     /**
      * @Column(name="IND_OPERCAO", type="string", nullable=false)
@@ -69,6 +80,22 @@ class EstoqueProprietario
     public function getCodProduto()
     {
         return $this->codProduto;
+    }
+
+    /**
+     * @param mixed $codOperacao
+     */
+    public function setCodOperacao($codOperacao)
+    {
+        $this->codOperacao = $codOperacao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodOperacao()
+    {
+        return $this->codOperacao;
     }
 
     /**
@@ -117,6 +144,22 @@ class EstoqueProprietario
     public function setQtd($qtd)
     {
         $this->qtd = $qtd;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSaldoFinal()
+    {
+        return $this->saldoFinal;
+    }
+
+    /**
+     * @param mixed $saldoFinal
+     */
+    public function setSaldoFinal($saldoFinal)
+    {
+        $this->saldoFinal = $saldoFinal;
     }
 
     /**

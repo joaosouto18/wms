@@ -145,9 +145,9 @@ class NotaFiscal
     protected $pesoTotal;
 
     /**
-     * @Column(name="COD_PESSOA", type="integer", nullable=true)
+     * @Column(name="COD_PESSOA_PROPRIETARIO", type="integer", nullable=true)
      */
-    protected $codPessoa;
+    protected $codPessoaProprietario;
 
     public function __construct()
     {
@@ -345,19 +345,19 @@ class NotaFiscal
 
 
     /**
-     * @param mixed $codPessoa
+     * @param mixed $codPessoaProprietario
      */
-    public function setCodPessoa($codPessoa)
+    public function setCodPessoaProprietario($codPessoaProprietario)
     {
-        $this->codPessoa = $codPessoa;
+        $this->codPessoa = $codPessoaProprietario;
     }
 
     /**
      * @return mixed
      */
-    public function getCodPessoa()
+    public function getCodPessoaProprietario()
     {
-        return $this->codPessoa;
+        return $this->codPessoaProprietario;
     }
 
 }

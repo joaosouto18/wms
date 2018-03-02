@@ -16,7 +16,7 @@ class Web_EmpresaController extends Crud
     public function indexAction()
     {
         $source = $this->em->createQueryBuilder()
-            ->select('e')
+            ->select('e, e.identificacao as cnpj')
             ->from('wms:Empresa', 'e')
             ->orderBy('e.nomEmpresa');
 
@@ -33,15 +33,16 @@ class Web_EmpresaController extends Crud
             ),
         ))
             ->addColumn(array(
-            'label' => 'CNPJ',
-            'index' => 'identificacao',
-            'filter' => array(
-                'render' => array(
-                    'type' => 'text',
-                    'condition' => array('match' => array('fulltext'))
+                'label' => 'CNPJ',
+                'index' => 'cnpj',
+                'render' => 'documento',
+                'filter' => array(
+                    'render' => array(
+                        'type' => 'number',
+                    ),
                 ),
-            ),
-        ))
+                'hasOrdering' => false,
+            ))
             ->addColumn(array(
             'label' => 'Prioridade Estoque',
             'index' => 'prioridadeEstoque',
