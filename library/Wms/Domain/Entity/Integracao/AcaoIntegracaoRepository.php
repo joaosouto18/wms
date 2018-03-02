@@ -258,7 +258,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $result = $integracaoService->salvaTemporario();
                 } else {
                     //pegar os ID's das tabelas temporárias das triggers
-                    if (count($result)) {
+                    if (count($result) && !is_null($acaoEn->getTabelaReferencia())) {
                         $dadosFiltrar = array();
                         foreach ($result as $row) {
                             $dadosFiltrar[] = $row['ID'];

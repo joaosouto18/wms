@@ -570,7 +570,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             });
 
             foreach ($arrayVolumes as $volumeEntity) {
-                list($mapaSeparacao) = $this->getMapaSeparacao(null, null, $quebras, $statusEntity, $expedicaoEntity);
+                $mapaSeparacao = $this->getMapaSeparacao($quebras, $statusEntity, $expedicaoEntity);
                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,$quantidade,$volumeEntity,null,array(),null,null,null,$arrayRepositorios);
             }
 
@@ -606,7 +606,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido,$embalagemAtual->getQuantidade());
 
-                list($mapaSeparacao) = $this->getMapaSeparacao(null, null, $quebras,$statusEntity, $expedicaoEntity);
+                $mapaSeparacao = $this->getMapaSeparacao($quebras, $statusEntity, $expedicaoEntity);
                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, array(), null);
             }
 
@@ -992,7 +992,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             foreach ($elements['volumes'] as $value) {
                                 $volumeEntity = $value['volumeEn'];
                                 $quantidade = $value['qtd'];
-                                list($mapaSeparacao) = $this->getMapaSeparacao($pedidoProduto, null, $quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
+                                $mapaSeparacao = $this->getMapaSeparacao($quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao, $produtoEntity, $quantidade, $volumeEntity, null, array($pedidoProduto), $depositoEnderecoEn, null, $pedidoEntity, $arrayRepositorios);
                             }
                         }
