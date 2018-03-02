@@ -528,7 +528,8 @@ class RecebimentoRepository extends EntityRepository {
         $recebimentoEntity = $this->find($idRecebimento);
 
         if (!$this->checarConferenciaComDivergencia($idRecebimento)) {
-            $this->checkPaletesVolumesRecebimento($idRecebimento);
+            $this->checkVolumesDivergentes($idRecebimento);
+            $this->checkPaletesProcessados($idRecebimento);
             try {
                 $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_FINALIZADO);
 
@@ -1776,46 +1777,99 @@ class RecebimentoRepository extends EntityRepository {
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Exception
      */
-    private function checkPaletesVolumesRecebimento($idRecebimento) {
+    private function checkPaletesProcessados($idRecebimento) {
 
         $statusEnderecado = Palete::STATUS_ENDERECADO;
         $statusEmEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
 
-        $sql = "SELECT PLT.QTD_TOTAL, PLT.COD_PRODUTO, PLT.DSC_GRADE
+        $sql = "SELECT DISTINCT PLT.COD_PRODUTO, PLT.DSC_GRADE, RC.QTD AS QTD_RECEBIDA, PLT.QTD_TOTAL AS QTD_PALETIZADA
                 FROM ( 
                     SELECT DISTINCT (SUM(PP.QTD) / COUNT(DISTINCT NVL(PP.COD_PRODUTO_VOLUME, 1))) QTD_TOTAL, PP.COD_PRODUTO, PP.DSC_GRADE, P.COD_RECEBIMENTO
                     FROM PALETE_PRODUTO PP
                     INNER JOIN PALETE P ON P.UMA = PP.UMA
-                    WHERE P.COD_RECEBIMENTO = $idRecebimento AND (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN ($statusEnderecado, $statusEmEnderecamento))
+                    WHERE P.COD_RECEBIMENTO = $idRecebimento AND (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN ($statusEmEnderecamento, $statusEnderecado))
                     GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PP.COD_NORMA_PALETIZACAO, P.COD_RECEBIMENTO) PLT
                 INNER JOIN (
-                        SELECT PV.COD_PRODUTO, PV.DSC_GRADE, OSV.COD_OS, RV.QTD_CONFERIDA AS QTD, RV.COD_NORMA_PALETIZACAO
-                        FROM (
-                            SELECT MAX(COD_OS) COD_OS, COD_NORMA_PALETIZACAO FROM RECEBIMENTO_VOLUME 
-                            WHERE COD_RECEBIMENTO = $idRecebimento GROUP BY COD_NORMA_PALETIZACAO
-                        ) OSV
-                        INNER JOIN RECEBIMENTO_VOLUME RV ON RV.COD_OS = OSV.COD_OS AND RV.COD_NORMA_PALETIZACAO = OSV.COD_NORMA_PALETIZACAO
-                        INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
-                        UNION
-                        SELECT PE.COD_PRODUTO, PE.DSC_GRADE, OSE.COD_OS, RE.QTD_CONFERIDA AS QTD, RE.COD_NORMA_PALETIZACAO
-                        FROM (
-                            SELECT MAX(COD_OS) COD_OS, COD_NORMA_PALETIZACAO FROM RECEBIMENTO_EMBALAGEM 
-                            WHERE COD_RECEBIMENTO = $idRecebimento GROUP BY COD_NORMA_PALETIZACAO
-                        ) OSE
-                        INNER JOIN RECEBIMENTO_EMBALAGEM RE ON RE.COD_OS = OSE.COD_OS AND RE.COD_NORMA_PALETIZACAO = OSE.COD_NORMA_PALETIZACAO
-                        INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
-                      )RC ON V.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE
-                WHERE PLT.QTD_TOTAL > RC.QTD
-                 ";
+                        SELECT COD_PRODUTO, DSC_GRADE, COD_OS, SUM(QTD) AS QTD , COD_NORMA_PALETIZACAO FROM (
+                            SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE, OSV.COD_OS, RV.QTD_CONFERIDA AS QTD, RV.COD_NORMA_PALETIZACAO
+                            FROM RECEBIMENTO_VOLUME RV 
+                            INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
+                            INNER JOIN (
+                                SELECT DISTINCT DTH_FINAL_ATIVIDADE,
+                                        COD_OS,
+                                        COD_RECEBIMENTO,
+                                        RANK() OVER(PARTITION BY COD_RECEBIMENTO, COD_PRODUTO_VOLUME ORDER BY DTH_FINAL_ATIVIDADE DESC) RANK
+                                FROM (SELECT NVL( OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999','dd/mm/yyyy')) AS DTH_FINAL_ATIVIDADE,
+                                             OS.COD_OS,
+                                             OS.COD_RECEBIMENTO,
+                                             RV.COD_PRODUTO_VOLUME
+                                      FROM RECEBIMENTO_VOLUME RV
+                                      LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = RV.COD_OS
+                                      WHERE RV.COD_RECEBIMENTO = $idRecebimento)
+                            ) OSV ON OSV.RANK <= 1 AND RV.COD_OS = OSV.COD_OS
+                            UNION
+                            SELECT DISTINCT PE.COD_PRODUTO, PE.DSC_GRADE, OSE.COD_OS, RE.QTD_CONFERIDA * PE.QTD_EMBALAGEM AS QTD, RE.COD_NORMA_PALETIZACAO
+                            FROM RECEBIMENTO_EMBALAGEM RE
+                            INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
+                            INNER JOIN (
+                                SELECT DISTINCT DTH_FINAL_ATIVIDADE,
+                                       COD_OS,
+                                       COD_RECEBIMENTO,
+                                       RANK() OVER(PARTITION BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE ORDER BY DTH_FINAL_ATIVIDADE DESC) RANK
+                                FROM (SELECT NVL(OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999','dd/mm/yyyy')) AS DTH_FINAL_ATIVIDADE,
+                                             MAX(OS.COD_OS) COD_OS,
+                                             OS.COD_RECEBIMENTO,
+                                             PE.COD_PRODUTO,
+                                             PE.DSC_GRADE
+                                      FROM RECEBIMENTO_EMBALAGEM RE
+                                      INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
+                                      LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = RE.COD_OS
+                                      WHERE RE.COD_RECEBIMENTO = $idRecebimento
+                                      GROUP BY OS.COD_RECEBIMENTO, PE.COD_PRODUTO, PE.DSC_GRADE, NVL(OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999','dd/mm/yyyy')))
+                            ) OSE ON OSE.RANK <= 1 AND RE.COD_OS = OSE.COD_OS
+                        ) GROUP BY COD_PRODUTO, DSC_GRADE, COD_OS, COD_NORMA_PALETIZACAO
+                      )RC ON RC.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE
+                WHERE PLT.QTD_TOTAL > RC.QTD";
 
-        $result = $this->_em->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
+        $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         if (!empty($result)) {
             $str = "";
             foreach ($result as $item) {
-                $str = "$item[COD_PRODUTO] - ($item[DSC_GRADE])";
+                $str[] = "Produto: $item[COD_PRODUTO] Grade: $item[DSC_GRADE]";
             }
-            throw new \Exception("Existem normas descasadas, corrija antes de finalizar o recebimento: " . implode(", ", $str));
+            throw new \Exception("Existe itens com quantidade superior ao recebido em U.M.A.'s impressas ou endereçadas, corrija antes de finalizar o recebimento: " . implode(", ", $str));
+        }
+    }
+
+    private function checkVolumesDivergentes($idRecebimento) {
+        $sql = "SELECT COD_PRODUTO, DSC_GRADE 
+                FROM (SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE, OSV.COD_OS, RV.QTD_CONFERIDA
+                        FROM RECEBIMENTO_VOLUME RV 
+                        INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
+                        INNER JOIN (
+                            SELECT DISTINCT DTH_FINAL_ATIVIDADE,
+                                  COD_OS,
+                                  COD_RECEBIMENTO,
+                                  RANK() OVER(PARTITION BY COD_RECEBIMENTO, COD_PRODUTO_VOLUME ORDER BY DTH_FINAL_ATIVIDADE DESC) RANK
+                            FROM (SELECT NVL( OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999','dd/mm/yyyy')) AS DTH_FINAL_ATIVIDADE,
+                                       OS.COD_OS,
+                                       OS.COD_RECEBIMENTO,
+                                       RV.COD_PRODUTO_VOLUME
+                                FROM RECEBIMENTO_VOLUME RV
+                                LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = RV.COD_OS
+                                WHERE RV.COD_RECEBIMENTO = $idRecebimento)
+                        ) OSV ON OSV.RANK <= 1 )
+                GROUP BY COD_PRODUTO, DSC_GRADE HAVING COUNT(DISTINCT QTD_CONFERIDA) > 1 ";
+
+        $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (!empty($result)) {
+            $str = "";
+            foreach ($result as $item) {
+                $str[] = "Produto: $item[COD_PRODUTO] Grade: $item[DSC_GRADE]";
+            }
+            throw new \Exception("Existe itens com quantidades divergentes entre os volumes: " . implode(", ", $str));
         }
     }
 }
