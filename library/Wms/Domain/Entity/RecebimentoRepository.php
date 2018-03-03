@@ -316,6 +316,12 @@ class RecebimentoRepository extends EntityRepository {
         // recebimento
         $idRecebimento = $ordemServicoEntity->getRecebimento()->getId();
 
+        $check = $this->checkPaletesProcessados($idRecebimento, $idOrdemServico);
+        if (!empty($check))
+            return array('message' => $check,
+                'exception' => null,
+                'concluido' => false);
+
         // checo se recebimento ja n tem uma conferencia em andamento
         if ($this->checarConferenciaComDivergencia($idRecebimento))
             return array('message' => "Este recebimento ja possui uma conferencia em andamento",
@@ -368,16 +374,15 @@ class RecebimentoRepository extends EntityRepository {
                         $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
                         $quantidade = $produtoEmbalagemEntity->getQuantidade();
                     }
-//                    $qtdConferida = $qtdConferida * $quantidade;
                 } elseif (isset($embalagem) && !empty($embalagem)) {
                     if (isset($embalagem[$idProduto][$grade])) {
                         $idEmbalagem = $embalagem[$idProduto][$grade];
                         $produtoEmbalagemEntity = $produtoEmbalagemRepo->find($idEmbalagem);
                         $quantidade = $produtoEmbalagemEntity->getQuantidade();
                     }
-//                    $qtdConferida = $qtdConferida * $quantidade;
                 }
                 $qtdConferidaItem = $qtdConferida * $quantidade;
+
                 $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
                 $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferidaItem, $numPecas, $qtdAvaria, $divergenciaPesoVariavel);
                 if ($qtdDivergencia != 0) {
@@ -528,8 +533,6 @@ class RecebimentoRepository extends EntityRepository {
         $recebimentoEntity = $this->find($idRecebimento);
 
         if (!$this->checarConferenciaComDivergencia($idRecebimento)) {
-            $this->checkVolumesDivergentes($idRecebimento);
-            $this->checkPaletesProcessados($idRecebimento);
             try {
                 $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_FINALIZADO);
 
@@ -673,12 +676,17 @@ class RecebimentoRepository extends EntityRepository {
         $ordemServicoEntity = $em->find('wms:OrdemServico', $idOrdemServico);
         $recebimentoEntity = $ordemServicoEntity->getRecebimento();
 
+        $temVolumesDivergentes = $this->checkVolumesDivergentes($recebimentoEntity->getId(), $idOrdemServico, $idProduto, $grade);
+
+        /**
+         * @ToDo Verificar regra para identificação da data de validade caso o recebimento seja feito em mais de uma embalagem com datas de validades diferentes
+         */
         $produtoEmbalagemEntity = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
 
         $dataValidade = null;
-        if (isset($produtoEmbalagemEntity) && !empty($produtoEmbalagemEntity)) {
+        if (!empty($produtoEmbalagemEntity)) {
             $recebimentoEmbalagemEntity = $em->getRepository('wms:Recebimento\Embalagem')->findOneBy(array('recebimento' => $recebimentoEntity, 'embalagem' => $produtoEmbalagemEntity));
-            if (isset($recebimentoEmbalagemEntity) && !empty($recebimentoEmbalagemEntity)) {
+            if (!empty($recebimentoEmbalagemEntity)) {
                 $dataValidade = $recebimentoEmbalagemEntity->getDataValidade();
             }
         } else {
@@ -707,6 +715,13 @@ class RecebimentoRepository extends EntityRepository {
         $conferenciaEntity->setDivergenciaPeso($divergenciaPesoVariavel);
         $conferenciaEntity->setDataValidade($dataValidade);
         $conferenciaEntity->setNumPecas($numPecas);
+
+        if ($temVolumesDivergentes) {
+            $conferenciaEntity->setIndDivergVolumes("S");
+            $qtdDivergencia = 1;
+        } else {
+            $conferenciaEntity->setIndDivergVolumes("N");
+        }
 
         $em->persist($conferenciaEntity);
         $em->flush();
@@ -1777,7 +1792,7 @@ class RecebimentoRepository extends EntityRepository {
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Exception
      */
-    private function checkPaletesProcessados($idRecebimento) {
+    private function checkPaletesProcessados($idRecebimento, $idOrdemServico) {
 
         $statusEnderecado = Palete::STATUS_ENDERECADO;
         $statusEmEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
@@ -1790,86 +1805,43 @@ class RecebimentoRepository extends EntityRepository {
                     WHERE P.COD_RECEBIMENTO = $idRecebimento AND (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN ($statusEmEnderecamento, $statusEnderecado))
                     GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PP.COD_NORMA_PALETIZACAO, P.COD_RECEBIMENTO) PLT
                 INNER JOIN (
-                        SELECT COD_PRODUTO, DSC_GRADE, COD_OS, SUM(QTD) AS QTD , COD_NORMA_PALETIZACAO FROM (
-                            SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE, OSV.COD_OS, RV.QTD_CONFERIDA AS QTD, RV.COD_NORMA_PALETIZACAO
+                        SELECT COD_PRODUTO, DSC_GRADE, SUM(QTD) AS QTD , COD_NORMA_PALETIZACAO
+                        FROM (
+                            SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE, RV.QTD_CONFERIDA AS QTD, RV.COD_NORMA_PALETIZACAO
                             FROM RECEBIMENTO_VOLUME RV 
                             INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
-                            INNER JOIN (
-                                SELECT DISTINCT DTH_FINAL_ATIVIDADE,
-                                        COD_OS,
-                                        COD_RECEBIMENTO,
-                                        RANK() OVER(PARTITION BY COD_RECEBIMENTO, COD_PRODUTO_VOLUME ORDER BY DTH_FINAL_ATIVIDADE DESC) RANK
-                                FROM (SELECT NVL( OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999','dd/mm/yyyy')) AS DTH_FINAL_ATIVIDADE,
-                                             OS.COD_OS,
-                                             OS.COD_RECEBIMENTO,
-                                             RV.COD_PRODUTO_VOLUME
-                                      FROM RECEBIMENTO_VOLUME RV
-                                      LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = RV.COD_OS
-                                      WHERE RV.COD_RECEBIMENTO = $idRecebimento)
-                            ) OSV ON OSV.RANK <= 1 AND RV.COD_OS = OSV.COD_OS
+                            WHERE RV.COD_OS = $idOrdemServico
                             UNION
-                            SELECT DISTINCT PE.COD_PRODUTO, PE.DSC_GRADE, OSE.COD_OS, RE.QTD_CONFERIDA * PE.QTD_EMBALAGEM AS QTD, RE.COD_NORMA_PALETIZACAO
+                            SELECT DISTINCT PE.COD_PRODUTO, PE.DSC_GRADE, RE.QTD_CONFERIDA * RE.QTD_EMBALAGEM AS QTD, RE.COD_NORMA_PALETIZACAO
                             FROM RECEBIMENTO_EMBALAGEM RE
                             INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
-                            INNER JOIN (
-                                SELECT DISTINCT DTH_FINAL_ATIVIDADE,
-                                       COD_OS,
-                                       COD_RECEBIMENTO,
-                                       RANK() OVER(PARTITION BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE ORDER BY DTH_FINAL_ATIVIDADE DESC) RANK
-                                FROM (SELECT NVL(OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999','dd/mm/yyyy')) AS DTH_FINAL_ATIVIDADE,
-                                             MAX(OS.COD_OS) COD_OS,
-                                             OS.COD_RECEBIMENTO,
-                                             PE.COD_PRODUTO,
-                                             PE.DSC_GRADE
-                                      FROM RECEBIMENTO_EMBALAGEM RE
-                                      INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
-                                      LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = RE.COD_OS
-                                      WHERE RE.COD_RECEBIMENTO = $idRecebimento
-                                      GROUP BY OS.COD_RECEBIMENTO, PE.COD_PRODUTO, PE.DSC_GRADE, NVL(OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999','dd/mm/yyyy')))
-                            ) OSE ON OSE.RANK <= 1 AND RE.COD_OS = OSE.COD_OS
-                        ) GROUP BY COD_PRODUTO, DSC_GRADE, COD_OS, COD_NORMA_PALETIZACAO
+                            WHERE RE.COD_OS = $idOrdemServico
+                        ) GROUP BY COD_PRODUTO, DSC_GRADE, COD_NORMA_PALETIZACAO
                       )RC ON RC.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE
                 WHERE PLT.QTD_TOTAL > RC.QTD";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
+        $return = null;
         if (!empty($result)) {
             $str = "";
             foreach ($result as $item) {
                 $str[] = "Produto: $item[COD_PRODUTO] Grade: $item[DSC_GRADE]";
             }
-            throw new \Exception("Existe itens com quantidade superior ao recebido em U.M.A.'s impressas ou endereçadas, corrija antes de finalizar o recebimento: " . implode(", ", $str));
+            $return = "Existe itens em U.M.A.'s impressas ou já endereçadas com quantidade superior ao recebido, desfaça estas U.M.A.'s antes de finalizar o recebimento: " . implode(", ", $str);
         }
+        return $return;
     }
 
-    private function checkVolumesDivergentes($idRecebimento) {
-        $sql = "SELECT COD_PRODUTO, DSC_GRADE 
-                FROM (SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE, OSV.COD_OS, RV.QTD_CONFERIDA
-                        FROM RECEBIMENTO_VOLUME RV 
-                        INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
-                        INNER JOIN (
-                            SELECT DISTINCT DTH_FINAL_ATIVIDADE,
-                                  COD_OS,
-                                  COD_RECEBIMENTO,
-                                  RANK() OVER(PARTITION BY COD_RECEBIMENTO, COD_PRODUTO_VOLUME ORDER BY DTH_FINAL_ATIVIDADE DESC) RANK
-                            FROM (SELECT NVL( OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999','dd/mm/yyyy')) AS DTH_FINAL_ATIVIDADE,
-                                       OS.COD_OS,
-                                       OS.COD_RECEBIMENTO,
-                                       RV.COD_PRODUTO_VOLUME
-                                FROM RECEBIMENTO_VOLUME RV
-                                LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = RV.COD_OS
-                                WHERE RV.COD_RECEBIMENTO = $idRecebimento)
-                        ) OSV ON OSV.RANK <= 1 )
-                GROUP BY COD_PRODUTO, DSC_GRADE HAVING COUNT(DISTINCT QTD_CONFERIDA) > 1 ";
+    private function checkVolumesDivergentes($idRecebimento, $idOrdemServico, $idProduto, $dscGrade) {
+        $sql = "SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE
+                FROM RECEBIMENTO_VOLUME RV 
+                INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
+                WHERE PV.COD_PRODUTO = '$idProduto' AND PV.DSC_GRADE = '$dscGrade' AND RV.COD_RECEBIMENTO = $idRecebimento AND RV.COD_OS = $idOrdemServico
+                GROUP BY PV.COD_PRODUTO, PV.DSC_GRADE HAVING COUNT(DISTINCT RV.QTD_CONFERIDA) > 1";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-        if (!empty($result)) {
-            $str = "";
-            foreach ($result as $item) {
-                $str[] = "Produto: $item[COD_PRODUTO] Grade: $item[DSC_GRADE]";
-            }
-            throw new \Exception("Existe itens com quantidades divergentes entre os volumes: " . implode(", ", $str));
-        }
+        return (!empty($result));
     }
 }

@@ -167,7 +167,8 @@ class ConferenciaRepository extends EntityRepository
                         P.DSC_REFERENCIA,
                         NVL(V.NUM_PESO,0) as PES_RECEBIDO,
                         P.TOLERANCIA_NOMINAL,
-                        P.IND_POSSUI_PESO_VARIAVEL
+                        P.IND_POSSUI_PESO_VARIAVEL,
+                        RC.IND_DIVERG_VOLUMES
                    FROM RECEBIMENTO_CONFERENCIA RC
                   INNER JOIN PRODUTO P ON P.COD_PRODUTO = RC.COD_PRODUTO AND P.DSC_GRADE = RC.DSC_GRADE
                    LEFT JOIN (SELECT * FROM V_QTD_RECEBIMENTO V WHERE COD_OS = $idOrdemServico) V
@@ -187,7 +188,7 @@ class ConferenciaRepository extends EntityRepository
                                                                   AND PESONF.COD_PRODUTO = RC.COD_PRODUTO
                                                                   AND PESONF.DSC_GRADE = RC.DSC_GRADE
                   WHERE RC.COD_OS = $idOrdemServico
-                    AND (RC.QTD_DIVERGENCIA <> 0 OR RC.IND_DIVERGENCIA_PESO = 'S')";
+                    AND (RC.QTD_DIVERGENCIA <> 0 OR RC.IND_DIVERGENCIA_PESO = 'S' OR RC.IND_DIVERG_VOLUMES = 'S')";
         $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $resultArr = array();
@@ -206,6 +207,7 @@ class ConferenciaRepository extends EntityRepository
             $toleranciaNominal = $line['TOLERANCIA_NOMINAL'];
             $referencia = $line['DSC_REFERENCIA'];
             $possuiPesoVariavel = $line['IND_POSSUI_PESO_VARIAVEL'];
+            $divergenciaVolumes = $line['IND_DIVERG_VOLUMES'];
 
             if ($qtdDivergencia == 0) {
                 $qtdConferida = $pesoRecebimento . " Kg";
@@ -237,7 +239,8 @@ class ConferenciaRepository extends EntityRepository
                 'qtdAvaria' => $qtdAvaria,
                 'qtdDivergencia' => $qtdDivergencia,
                 'referencia' => $referencia,
-                'possui_peso_variavel' => $possuiPesoVariavel
+                'possui_peso_variavel' => $possuiPesoVariavel,
+                'divergenciaVolumes' => $divergenciaVolumes
             );
         }
         return $resultArr;

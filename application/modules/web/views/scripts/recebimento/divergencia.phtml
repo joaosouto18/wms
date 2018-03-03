@@ -55,6 +55,7 @@
                         <td style="text-align: center" ><?php echo $produtoConferencia['qtdAvaria'] ?></td>
                         <td ><?php echo "$produtoConferencia[qtdDivergencia] ($tipoDivergencia)" ?></td>
                     <?php endif; ?>
+                    <?php if ($produtoConferencia['divergenciaVolumes'] == 'N') :?>
                     <td>
                         <?php
                         echo $this->formSelect("notasFiscais[{$produtoConferencia['id']}]", '', array('style' => 'max-width: 150px', 'class' => 'notaFiscal'), $produtoConferencia['nfs']);
@@ -65,6 +66,11 @@
                         echo $this->formSelect("motivosDivergencia[{$produtoConferencia['id']}]", '', array('style' => 'width: 250px', 'class' => 'motivosDivergencia'), $this->motivosDivergencia);
                         ?>
                     </td>
+                    <?php else : ?>
+                        <td colspan="2" style="text-align: center !important">
+                            Divergência entre volumes. Recontagem obrigatória
+                        </td>
+                    <?php endif;?>
                 </tr>
             <?php endforeach; ?>
             <tr style="line-height: 50px;">
