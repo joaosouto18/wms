@@ -106,12 +106,15 @@ class PaleteRepository extends EntityRepository {
             }
         }
 
+        $stsPaleteEnderecado = Palete::STATUS_ENDERECADO;
+        $recebimentoFinalizado = Recebimento::STATUS_FINALIZADO;
+
         $query = "
         SELECT R.COD_RECEBIMENTO,
                R.DTH_INICIO_RECEB,
                R.DTH_FINAL_RECEB,
                '' as FORNECEDORES,
-               CASE WHEN R.COD_STATUS = 457 AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) THEN 'ENDEREÇADO' ELSE
+               CASE WHEN R.COD_STATUS = $recebimentoFinalizado AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) THEN 'ENDEREÇADO' ELSE
                S.DSC_SIGLA END as STATUS,
                QTD_TOTAL.QTD_TOTAL as QTD_RECEBIDA,
                NVL(QTD_END.QTD,0) As QTD_ENDERECADA,
@@ -124,21 +127,18 @@ class PaleteRepository extends EntityRepository {
                                $whereCodRecebimento
                               GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE)
                       GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND QTD_TOTAL.QTD_TOTAL > 0
-          LEFT JOIN (SELECT SUM(PP.QTD) as QTD, P.COD_RECEBIMENTO
-                       FROM (SELECT MIN(QTD) as QTD, COD_PRODUTO, DSC_GRADE, UMA 
-                               FROM (SELECT SUM(PP.QTD) as QTD, PP.COD_PRODUTO, PP.DSC_GRADE, NVL(PP.COD_PRODUTO_VOLUME,PP.COD_PRODUTO_EMBALAGEM), PP.UMA
-                                       FROM PALETE_PRODUTO PP
-                                       LEFT JOIN PALETE R ON R.UMA = PP.UMA
-                                       $whereCodRecebimento
-                                      GROUP BY PP.UMA, PP.COD_PRODUTO, PP.DSC_GRADE, NVL(PP.COD_PRODUTO_VOLUME,PP.COD_PRODUTO_EMBALAGEM))
-                              GROUP BY COD_PRODUTO, DSC_GRADE, UMA) PP
-                      LEFT JOIN PALETE P ON P.UMA = PP.UMA
-                     WHERE P.COD_STATUS = 536
+          LEFT JOIN (SELECT TRUNC(SUM(QTD)) as QTD, COD_RECEBIMENTO
+                     FROM (SELECT DISTINCT (SUM(PP.QTD) / COUNT(DISTINCT NVL(PP.COD_PRODUTO_VOLUME, 1))) QTD, PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO
+                            FROM PALETE_PRODUTO PP
+                            INNER JOIN PALETE R ON R.UMA = PP.UMA
+                            $whereCodRecebimento
+                            AND R.COD_STATUS = $stsPaleteEnderecado
+                            GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO)
                      GROUP BY COD_RECEBIMENTO) QTD_END ON QTD_END.COD_RECEBIMENTO = R.COD_RECEBIMENTO";
         $query = $query . $whereCodRecebimento;
 
         if (isset($status) && (!empty($status))) {
-            if ($status == 536) {
+            if ($status == $stsPaleteEnderecado) {
                 $query .= " AND QTD_TOTAL.QTD_TOTAL = NVL(QTD_END.QTD,0) ";
             }
         }

@@ -1093,7 +1093,6 @@ class RecebimentoRepository extends EntityRepository {
             $result[] = array(
                 'id' => $row['COD_PRODUTO'],
                 'codigo' => $row['COD_PRODUTO'],
-                'id' => $row['COD_PRODUTO'],
                 'produto' => $row['DSC_PRODUTO'],
                 'grade' => $row['DSC_GRADE'],
                 'picking' => $picking,
@@ -1787,10 +1786,12 @@ class RecebimentoRepository extends EntityRepository {
         return $result;
     }
 
+
     /**
      * @param $idRecebimento
+     * @param $idOrdemServico
+     * @return null|string
      * @throws \Doctrine\DBAL\DBALException
-     * @throws \Exception
      */
     private function checkPaletesProcessados($idRecebimento, $idOrdemServico) {
 

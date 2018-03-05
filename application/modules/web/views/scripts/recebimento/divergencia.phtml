@@ -39,6 +39,7 @@
             </thead>
             <tbody>
             <?php
+            $temDivergenciaDeVolume = false;
             foreach ($this->produtosConferencia as $produtoConferencia):
                 $tipoDivergencia = ($produtoConferencia['qtdDivergencia'] < 0) ? 'Falta' : 'Sobra';
                 ?>
@@ -66,7 +67,7 @@
                         echo $this->formSelect("motivosDivergencia[{$produtoConferencia['id']}]", '', array('style' => 'width: 250px', 'class' => 'motivosDivergencia'), $this->motivosDivergencia);
                         ?>
                     </td>
-                    <?php else : ?>
+                    <?php else : $temDivergenciaDeVolume = true;?>
                         <td colspan="2" style="text-align: center !important">
                             Divergência entre volumes. Recontagem obrigatória
                         </td>
@@ -87,7 +88,7 @@
                     echo $this->formSubmit("btnRecontagem", "Gerar Recontagem", array('class' => 'btn', 'style' => 'margin-top: 0;'));
                     ?>
                 </td>
-<!--                --><?php //if ($this->pesoDivergente == false) : ?>
+                    <?php if (!$temDivergenciaDeVolume) : ?>
                     <td colspan="3">
                         <?php
                         echo '<label>Senha de Divergencia: </label>';
@@ -98,7 +99,7 @@
                         echo $this->formSubmit("btnDivergencia", "Fechar Recebimento com Divergencia", array('class' => 'btnAlert', 'style' => 'margin: 0 0 0 10px;'));
                         ?>
                     </td>
-<!--                --><?php //endif; ?>
+                    <?php endif; ?>
             </tr>
             </tbody>
         </table>

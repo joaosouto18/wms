@@ -133,7 +133,7 @@ class ConferenciaRepository extends EntityRepository
     {
         $query = $this->getEntityManager()->createQueryBuilder()
             ->select("r.qtd, r.codNormaPaletizacao as idNormaPaletizacao, np.numNorma, un.id as idUnitizador")
-            ->from("wms:Recebimento\VQtdRecebimento", "r")
+            ->from("wms:Recebimento\VQtdRecebimentoDetalhada", "r")
             ->leftjoin("wms:Produto\NormaPaletizacao", "np","WITH","np.id = r.codNormaPaletizacao")
             ->leftJoin('np.unitizador','un')
             ->where("r.codProduto = '$idProduto'")

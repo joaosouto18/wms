@@ -347,4 +347,6 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (348, '6.13.5', 'Correção: Falha ao importar um pedido para WMS paralelo a montagem de carga no ERP', '17-parametro-embalagens.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (349, '6.14.0', 'Melhoria: Cadastro de rotas e praças no modelo de separação para mapa de separação', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (350, '6.14.0', 'Melhoria: Número de carga em etiqueta de separação de embalados', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'xxxxxx', 'Melhoria: Trava para impedir recebimento com volumes em quantidades divergentes', 'xx-Conferencia-volumes-divergentes.sql', SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'xxxxxx', 'Correção: Correção na View V_QTD_RECEBIMENTO e criação da view detalhada à nivel de norma de paletizacao', 'xx-V_QTD_RECEBIMENTO-Versao-Final.sql', SYSDATE);
 
