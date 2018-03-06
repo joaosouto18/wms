@@ -561,4 +561,20 @@ class Enderecamento_MovimentacaoController extends Action
         echo $this->_helper->json($result);
     }
 
+    public function consultaEstoqueProprietarioAjaxAction(){
+        $idProprietario = $this->_getParam('idProprietario');
+        $idProduto = $this->_getParam('idProduto');
+        $grade = $this->_getParam('grade');
+        $quantidade = $this->_getParam('quantidade') * -1;
+        $estoque = $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->getEstoqueProprietario($idProprietario, $idProduto, $grade);
+        $status = 'erro';
+        if(is_array($estoque)) {
+            $compare = \Wms\Math::compare($estoque['SALDO_FINAL'], $quantidade, '>');
+            if ($compare == true) {
+                $status = 'ok';
+            }
+        }
+        $this->_helper->json(array('status' => $status));
+    }
+
 }

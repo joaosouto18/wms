@@ -71,7 +71,7 @@ class Pedido
     protected $pessoa;
 
     /**
-     * @Column(name="COD_PESSOA_PROPRIETARIO", type="integer", nullable=treu)
+     * @Column(name="COD_PESSOA_PROPRIETARIO", type="integer", nullable=true)
      */
     protected $proprietario;
 

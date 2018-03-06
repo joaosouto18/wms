@@ -6,3 +6,29 @@
 </div>
 <div id="estoque-por-produto">
 </div>
+<script>
+    $('input, #codPessoa, #idNormaPaletizacao').change(function () {
+        if($('#quantidade').val() < 0 && $('#codPessoa').val() != '') {
+            $.ajax({
+                url: URL_MODULO + '/movimentacao/consulta-estoque-proprietario-ajax/',
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    idProprietario: $('#codPessoa').val(),
+                    quantidade: $('#quantidade').val(),
+                    idProduto: $('#idProduto').val(),
+                    grade: $('#grade').val(),
+                },
+                success: function (data) {
+                    if (data.status == 'erro') {
+                        $.wmsDialogAlert({
+                            title: 'ALERTA',
+                            msg: 'Esse proprietário não possui estoque suficiente para essa movimentação.' +
+                            '<br /><br />Se optar por prosseguir o sistema irá retirar o restante de outro propriétario.'
+                        });
+                    }
+                }
+            });
+        }
+    });
+</script>

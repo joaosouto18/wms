@@ -56,6 +56,8 @@ class produto {
     public $quantidade;
     /** @var string */
     public $quantidadeAtendida;
+    /** @var string */
+    public $proprietario;
 }
 
 class pedido {
@@ -735,6 +737,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $produto->codProduto = $item['COD_PRODUTO'];
             $produto->grade = $item['DSC_GRADE'];
             $produto->quantidade = $item['QTD_PEDIDO'];
+            $produto->proprietario = 'luis';
             if (is_null($item['ATENDIDA'])) {
                 $produto->quantidadeAtendida = 0;
             } else {

@@ -67,6 +67,11 @@ class EstoqueProprietario
     protected $operacao;
 
     /**
+     * @Column(name="COD_OPERACAO_DETALHE", type="string", nullable=false)
+     */
+    protected $codOperacaoDetalhe;
+
+    /**
      * @param mixed $codProduto
      */
     public function setCodProduto($codProduto)
@@ -208,6 +213,22 @@ class EstoqueProprietario
     public function getOperacao()
     {
         return $this->operacao;
+    }
+
+    /**
+     * @param mixed $codOperacaoDetalhe
+     */
+    public function setCodOperacaoDetalhe($codOperacaoDetalhe)
+    {
+        $this->codOperacaoDetalhe = $codOperacaoDetalhe;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodOperacaoDetalhe()
+    {
+        return $this->codOperacaoDetalhe;
     }
 
 }
