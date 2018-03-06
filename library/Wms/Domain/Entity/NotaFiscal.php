@@ -349,7 +349,7 @@ class NotaFiscal
      */
     public function setCodPessoaProprietario($codPessoaProprietario)
     {
-        $this->codPessoa = $codPessoaProprietario;
+        $this->codPessoaProprietario = $codPessoaProprietario;
     }
 
     /**
