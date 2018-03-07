@@ -390,7 +390,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $cnpjDestinatario = trim($cnpjDestinatario);
                     $codProprietario = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjDestinatario);
                     if($codProprietario == false){
-                        throw new \Exception('CNPJ do proprietário não encontrado');
+                        throw new \Exception('CNPJ do destinatário não encontrado');
                     }
                 }
                 $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao, $codProprietario);

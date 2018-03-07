@@ -231,6 +231,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $cliente['tipoPessoa'] = $pedidoWs->cliente->tipoPessoa;
             $cliente['uf'] = $pedidoWs->cliente->uf;
 
+            $controleProprietario = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+            if($controleProprietario == 'S'){
+                $cnpjProprietario = trim($pedidoWs->cliente->cpf_cnpj);
+                $codProprietario = $this->_em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjProprietario);
+                if($codProprietario == false){
+                    throw new \Exception('CNPJ do proprietário não encontrado');
+                }
+            }
             $itinerario = array();
             $itinerario['idItinerario'] = $pedidoWs->itinerario->idItinerario;
             $itinerario['nomeItinerario'] = $pedidoWs->itinerario->nomeItinerario;
@@ -243,17 +251,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $produtos[] = $produto;
             }
 
-            $codProprietario = null;
-            $controleProprietario = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
-            if($controleProprietario == 'S'){
-                $cnpjProprietario = trim($pedidoWs->cnpjProprietario);
-                $proprietarioEn = $this->_em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjProprietario);
-                if($proprietarioEn == null){
-                    throw new \Exception('CNPJ do proprietário não encontrado');
-                }else{
-                    $codProprietario = $proprietarioEn->getId();
-                }
-            }
 
             $pedido = array();
             $pedido['codPedido'] = $pedidoWs->codPedido;
