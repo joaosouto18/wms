@@ -977,7 +977,31 @@ class EnderecoRepository extends EntityRepository {
         }
     }
 
-    public function getProdutoPorEndereco($endereco) {
+
+    public function getEnderecosPorProduto($endereco) {
+        $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
+                       CE.DSC_CARACTERISTICA_ENDERECO as TIPO,
+                       E.QTD,
+                       P.COD_PRODUTO,
+                       P.DSC_GRADE,
+                       P.DSC_PRODUTO,
+                       DE2.DSC_DEPOSITO_ENDERECO AS PICKING_PRODUTO,
+                       PE.COD_BARRAS
+                  FROM ESTOQUE E
+                  LEFT JOIN PRODUTO_EMbALAGEM PE ON PE.COD_PRODUTO = E.COD_PRODUTO AND PE.DSC_GRADE = E.DSC_GRADE
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = E.COD_PRODUTO_VOLUME
+                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
+                  LEFT JOIN CARACTERISTICA_ENDERECO CE ON CE.COD_CARACTERISTICA_ENDERECO = DE.COD_CARACTERISTICA_ENDERECO
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
+                  LEFT JOIN DEPOSITO_ENDERECO DE2 ON DE2.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO OR DE2.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
+                  WHERE PE.COD_BARRAS = '$endereco' OR PV.COD_BARRAS = '$endereco'";
+
+        $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $array;
+
+    }
+
+        public function getProdutoPorEndereco($endereco) {
 
         $enderecoEn = $this->findOneBy(array('descricao' => $endereco));
         if (!isset($enderecoEn) || empty($enderecoEn)) {

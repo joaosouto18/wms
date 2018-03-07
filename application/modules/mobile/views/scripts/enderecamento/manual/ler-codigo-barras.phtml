@@ -4,7 +4,9 @@
             if (document.getElementById('produto').value != "") {
                 endereco = document.getElementById('endereco');
                 if (endereco) {
+                    consultar();
                     endereco.focus();
+
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -26,6 +28,55 @@
         }
         return true;
     }
+
+    function consultar() {
+        var codBarras = $('#produto');
+
+        var val = codBarras.val();
+        if (val != '') {
+            $.ajax({
+                url: '/mobile/consulta-endereco/consultar/codigoBarras/' + val,
+                success: function (data) {
+                    if (data.status === 'ok') {
+
+                        var txt = '<fieldset id="fieldset-dadosProduto">'
+                        txt += '<legend>Endereços do produto</legend>' +
+                            '    <table class="gTable " style="font-size: 10px!important;">' +
+                            '        <tbody>' +
+                            '        <tr class="gTTitle">' +
+                            '            <td><b>Endereço</b></td>' +
+                            '            <td><b>Tipo</b></td>' +
+                            '            <td><b>Qtd.</b></td>' +
+                            '        </tr>'
+                        
+                        $.each(data.result, function (key, value) {
+                            txt += '<tr>'
+                            txt += '   <td>' +value.ENDERECO + '</td>'
+                            txt += '   <td>' +value.TIPO + '</td>'
+                            txt += '   <td>' +value.QTD + '</td>'
+                            txt += '</tr>'
+                        });
+
+                        txt += '</tbody>' +
+                               '</table>'
+                        txt += '</fieldset>'
+                        $('#lista-endereco').html(txt);
+                    } else {
+                        showErro(data.msg)
+                    }
+                }
+            });
+        } else {
+            showErro("Informe um endereço");
+        }
+
+    }
+
+    function showErro(msg) {
+        $('#lista-endereco').text(msg)
+    }
+
+
 </script>
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/enderecamento.js')); ?>
 <div class="row text-center" >
@@ -50,6 +101,16 @@
                 <div id="inserir"></div>
                 <input class="btn gradientBtn" type="submit" name="submit" id="submit" value="Buscar" />
             </fieldset>
+
+            <?php if ($this->teste == "S") {?>
+                <fieldset id="Produto">
+                    <legend>Endereços do Produto</legend>
+                    <legend><?php echo $this->teste; ?></legend>
+                </fieldset>
+            <?php }?>
+
+            <div id="lista-endereco"></div>
+
         </dd>
     </form>
 </div>
