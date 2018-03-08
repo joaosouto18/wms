@@ -118,6 +118,12 @@ class Conferencia
      * @var integer
      */
     protected $numPecas;
+
+    /**
+     * @var string
+     * @Column(name="IND_DIVERG_VOLUMES", type="string", length=1, nullable=false)
+     */
+    protected $indDivergVolumes;
     
     public function getId()
     {
@@ -306,6 +312,22 @@ class Conferencia
     public function setNumPecas($numPecas)
     {
         $this->numPecas = $numPecas;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIndDivergVolumes()
+    {
+        return $this->indDivergVolumes;
+    }
+
+    /**
+     * @param string $indDivergVolumes
+     */
+    public function setIndDivergVolumes($indDivergVolumes)
+    {
+        $this->indDivergVolumes = $indDivergVolumes;
     }
     
 }

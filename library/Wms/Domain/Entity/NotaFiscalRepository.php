@@ -713,6 +713,7 @@ class NotaFiscalRepository extends EntityRepository {
                         pe.id idEmbalagem, pv.id idVolume, p.validade, p.possuiPesoVariavel,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                         NVL(unitizador_embalagem.id, unitizador_volume.id) idUnitizador,
+                        NVL(unitizador_embalagem.descricao, unitizador_volume.descricao) dscUnitizador,
                         NVL(np_embalagem.numLastro, np_volume.numLastro) numLastro,
                         NVL(np_embalagem.numCamadas, np_volume.numCamadas) numCamadas,
                         NVL(np_embalagem.numPeso, np_volume.numPeso) numPeso,
