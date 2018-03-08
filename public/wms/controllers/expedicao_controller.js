@@ -142,6 +142,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                             }
                         });
                         dispararMsg(msgs);
+                        console.log(expedicoes);
 
                         if (expedicoes !== null) {
                             $.wmsDialogConfirm({
@@ -157,6 +158,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
             });
 
             function dispararMsg(msgs) {
+                console.log(msgs);
                 $.wmsDialogAlert({
                     title: "Notificação!",
                     msg: msgs
