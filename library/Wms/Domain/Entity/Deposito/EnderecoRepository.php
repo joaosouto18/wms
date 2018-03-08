@@ -494,6 +494,7 @@ class EnderecoRepository extends EntityRepository {
                 $enderecoEn->setDisponivel("N");
                 $this->getEntityManager()->persist($enderecoEn);
             }
+
         } else {
 
             $existeReservaEntradaPendente = false;

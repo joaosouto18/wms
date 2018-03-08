@@ -17,7 +17,6 @@ class Mobile_ConsultaProdutoController extends Action
 
         $codigoBarras = $this->_getParam('codigoBarras');
 
-
         $this->view->exibe = false;
         if ($codigoBarras != NULL) {
             $this->view->exibe = true;

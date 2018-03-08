@@ -478,7 +478,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             foreach ($ppExistentes as $item) {
                 if (array_key_exists($item->getCodProduto(), $ppCortados)) {
                     if (array_key_exists($item->getGrade(), $ppCortados[$item->getCodProduto()])) {
-                        if ($item->getQuantidade() == $ppCortados[$item->getCodProduto()][$item->getGrade()]) {
+                        if ($item->getQuantidade() <= $ppCortados[$item->getCodProduto()][$item->getGrade()]) {
                             $pedidoCortado = true;
                             continue;
                         }

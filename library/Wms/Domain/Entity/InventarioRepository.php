@@ -419,11 +419,12 @@ class InventarioRepository extends EntityRepository {
                 ->innerJoin('wms:Inventario\Endereco', 'ie', 'WITH', 'i.id = ie.inventario')
                 ->innerJoin('wms:Inventario\ContagemEndereco', 'ce', 'WITH', 'ie.id = ce.inventarioEndereco')
                 ->innerJoin('ce.produto', 'p')
-                ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', "pe.codProduto = p.id AND pe.grade = p.grade AND pe.isPadrao = 'S' and pe.dataInativacao IS NULL")
-                ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'pv.codProduto = p.id AND pv.grade = p.grade and pv.dataInativacao IS NULL')
+                ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', "pe.codProduto = p.id AND pe.grade = p.grade AND pe.isPadrao = 'S' and pe.dataInativacao IS NULL and pe.id = ce.codProdutoEmbalagem")
+                ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'pv.codProduto = p.id AND pv.grade = p.grade and pv.dataInativacao IS NULL and pv.id = ce.codProdutoVolume')
                 ->innerJoin('ie.depositoEndereco', 'de')
                 ->where('i.id = :idInventario')
                 ->andWhere('ce.divergencia is not null')
+                ->groupBy('de.descricao, ce.codProduto, ce.grade, pe.codigoBarras, pv.codigoBarras, ce.qtdContada, ce.qtdDivergencia, ce.numContagem, p.descricao')
                 ->orderBy('de.descricao')
                 ->setParameter('idInventario', $idInventario);
 

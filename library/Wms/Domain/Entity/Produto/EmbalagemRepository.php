@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\Produto;
 use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Entity\Produto;
 use Wms\Math;
+use Wms\Util\Coletor;
 
 class EmbalagemRepository extends EntityRepository {
 
@@ -48,6 +49,7 @@ class EmbalagemRepository extends EntityRepository {
 
     public function setPickingEmbalagem($codBarras, $enderecoEn, $capacidadePicking, $embalado) {
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $codBarras = Coletor::adequaCodigoBarras($codBarras);
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
 
         if (empty($embalagemEn)) {
@@ -65,6 +67,35 @@ class EmbalagemRepository extends EntityRepository {
         $embalagemEn->setEmbalado($embalado);
         $this->getEntityManager()->persist($embalagemEn);
         $this->getEntityManager()->flush();
+    }
+
+    public function setNormaPaletizacaoEmbalagem($codBarras, $numLastro, $numCamadas, $unitizador)
+    {
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+        $codBarras = Coletor::adequaCodigoBarras($codBarras);
+        $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $codBarras));
+        $produtoDadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
+        $produtoDadoLogisticoEn = $produtoDadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemEn));
+        if (!$produtoDadoLogisticoEn)
+            throw new \Exception('Dado Logistico nao cadastrado! Verifique com o PCE.');
+
+        $unitizadorRepo = $this->_em->getRepository('wms:Armazenagem\Unitizador');
+        $normaPaletizacaoEn = $produtoDadoLogisticoEn->getNormaPaletizacao();
+
+        $unitizadorEn = $unitizadorRepo->find($unitizador);
+
+        if (empty($embalagemEn)) {
+            throw new \Exception('Embalagem não encontrada');
+        }
+
+        if ($normaPaletizacaoEn) {
+            $normaPaletizacaoEn->setNumLastro($numLastro);
+            $normaPaletizacaoEn->setNumCamadas($numCamadas);
+            $normaPaletizacaoEn->setNumNorma($numLastro * $numCamadas);
+            $normaPaletizacaoEn->setUnitizador($unitizadorEn);
+            $this->_em->persist($normaPaletizacaoEn);
+        }
+        $this->_em->flush();
     }
 
     public function checkEstoqueReservaById($id) {

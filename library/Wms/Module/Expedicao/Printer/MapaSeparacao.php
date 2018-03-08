@@ -519,6 +519,7 @@ class MapaSeparacao extends eFPDF {
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
         $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+        $volumeRepo = $em->getRepository('wms:Produto\Volume');
 
         $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
         $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
@@ -595,16 +596,16 @@ class MapaSeparacao extends eFPDF {
                 $this->Cell(20, 5, utf8_decode("Endereço"), 1, 0);
                 $this->Cell(17, 5, utf8_decode("Cod.Prod."), 1, 0);
                 $this->Cell(85, 5, utf8_decode("Produto"), 1, 0);
+                $this->Cell(15, 5, utf8_decode("Grade."), 1, 0);
                 $this->Cell(30, 5, utf8_decode("Cod. Barras"), 1, 0);
-                $this->Cell(15, 5, utf8_decode("Refer."), 1, 0);
                 $this->Cell(12, 5, utf8_decode("Qtd."), 1, 0);
                 $this->Cell(17, 5, utf8_decode("Caixas"), 1, 1);
             } else {
                 $this->Cell(20, 5, utf8_decode("Endereço"), 1, 0);
                 $this->Cell(20, 5, utf8_decode("Cod.Produto"), 1, 0);
-                $this->Cell(100, 5, utf8_decode("Produto"), 1, 0);
-                $this->Cell(30, 5, utf8_decode("Cod. Barras"), 1, 0);
-                $this->Cell(15, 5, utf8_decode("Refer."), 1, 0);
+                $this->Cell(85, 5, utf8_decode("Produto"), 1, 0);
+                $this->Cell(40, 5, utf8_decode("Grade."), 1, 0);
+                $this->Cell(20, 5, utf8_decode("Cod. Barras"), 1, 0);
                 $this->Cell(12, 5, utf8_decode("Quant."), 1, 1);
             }
 
@@ -614,6 +615,10 @@ class MapaSeparacao extends eFPDF {
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
                 $embalagemEn = $embalagemRepo->findOneBy(array('codProduto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade(), 'isPadrao' => 'S'));
+                $volumeEntity = $produto->getProdutoVolume();
+                if (isset($volumeEntity) && !empty($volumeEntity)) {
+                    $volumeEn  = $volumeRepo->find($produto->getProdutoVolume()->getId());
+                }
                 $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
                 $endereco = $produto->getDepositoEndereco();
@@ -626,8 +631,11 @@ class MapaSeparacao extends eFPDF {
                 $codigoBarras = '';
                 if ($endereco != null)
                     $dscEndereco = $endereco->getDescricao();
-                if (isset($embalagemEn) && !empty($embalagemEn))
+                if (isset($embalagemEn) && !empty($embalagemEn)) {
                     $codigoBarras = $embalagemEn->getCodigoBarras();
+                } elseif (isset($volumeEn) && !empty($volumeEn)) {
+                    $codigoBarras = $volumeEn->getDescricao();
+                }
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
                     $pesoTotal += ($pesoProduto->getPeso() * $quantidade);
                     $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;
@@ -637,17 +645,17 @@ class MapaSeparacao extends eFPDF {
                     $this->Cell(20, 4, $dscEndereco, 0, 0);
                     $this->Cell(17, 4, $codProduto, 0, 0);
                     $this->Cell(85, 4, substr($descricao, 0, 45), 0, 0);
+                    $this->Cell(15, 4, $produto->getProduto()->getGrade(), 0, 0);
                     $this->Cell(30, 4, $codigoBarras, 0, 0);
-                    $this->Cell(15, 4, $referencia, 0, 0);
                     $this->SetFont('Arial', "B", 10);
                     $this->Cell(15, 4, $quantidade, 0, 0);
                     $this->Cell(15, 4, $caixas, 0, 1, 'C');
                 } else {
                     $this->Cell(20, 4, $dscEndereco, 0, 0);
                     $this->Cell(20, 4, $codProduto, 0, 0);
-                    $this->Cell(100, 4, substr($descricao, 0, 57), 0, 0);
-                    $this->Cell(30, 4, $codigoBarras, 0, 0);
-                    $this->Cell(15, 4, $referencia, 0, 0);
+                    $this->Cell(85, 4, substr($descricao, 0, 57), 0, 0);
+                    $this->Cell(40, 4, substr($produto->getProduto()->getGrade(), 0, 20), 0, 0);
+                    $this->Cell(20, 4, $codigoBarras, 0, 0);
                     $this->SetFont('Arial', "B", 10);
                     $this->Cell(15, 4, $quantidade, 0, 1, 'C');
                 }
