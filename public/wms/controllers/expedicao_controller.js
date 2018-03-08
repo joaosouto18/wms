@@ -59,14 +59,15 @@ $.Controller.extend('Wms.Controllers.Expedicao',
              * return action submit / alert
              */
             $("#gerar").live('click', function() {
-                clickSelection=false;
-                $("input[name*='expedicao[]']").each(function( index, value ){
-                    if ( $(this).prop('checked') ){
-                        clickSelection=true;
-                    }
-                });
+                // clickSelection=false;
+                // $("input[name*='expedicao[]']").each(function( index, value ){
+                //     if ( $(this).prop('checked') ){
+                //         clickSelection=true;
+                //     }
+                // });
+                var este = this;
 
-                if (clickSelection){
+                if ($("input[name*='expedicao[]']:checked").length > 0){
                     var liberado = true;
                     $.ajax({
                         url: URL_BASE + '/expedicao/onda-ressuprimento/verificar-expedicoes-processando-ajax',
@@ -89,13 +90,47 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                         }
                     });
                     if (liberado) {
-                        $('#relatorio-picking-listar').submit();
+                        var msgs = null;
+                        var expedicoes = null;
+                        $.ajax({
+                            url: URL_BASE + "/expedicao/onda-ressuprimento/gerar",
+                            type: 'post',
+                            async: false,
+                            dataType: 'json',
+                            data: $('#relatorio-picking-listar').serialize()
+                        }).success(function (data) {
+                            if (data.status === "Ok") {
+                                expedicoes = data.expedicoes;
+                                msgs = data.response;
+                            } else if (data.status === "Error") {
+                                msgs = data.response;
+                            }
+                        });
+                        dispararMsg(msgs);
+
+                        if (expedicoes !== null) {
+                            $.wmsDialogConfirm({
+                                title: "Sistema!",
+                                msg: "Deseja já gerar e imprimir os mapas e etiquetas destas expedições ressupridas?"
+                            }, this.callback("gerarMapasEtiquetas"), expedicoes)
+                        }
+                        //$('#relatorio-picking-listar').submit();
                     }
                 } else {
                     alert('Selecione pelo menos uma expedição');
                 }
-
             });
+
+            function dispararMsg(msgs) {
+                $.wmsDialogAlert({
+                    title: "Notificação!",
+                    msg: msgs
+                });
+            }
+
+            function gerarMapasEtiquetas(expedicoes) {
+
+            }
 
             grade = $("#grade");
 

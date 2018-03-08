@@ -51,6 +51,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $idsExpedicoes = $this->_getParam("expedicao");
         $expedicoes = null;
+        $return = [];
         try {
             if (empty($idsExpedicoes))
                 throw new \Exception("Nenhuma expedição selecionada");
@@ -89,7 +90,8 @@ class Expedicao_OndaRessuprimentoController extends Action {
                     $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoesComCorte)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
                     $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
 
-                    $this->addFlashMessage("error", $mensagem);
+                    $return['response'][] = $mensagem;
+                    //$this->addFlashMessage("error", $mensagem);
                 }
             }
 
@@ -108,15 +110,23 @@ class Expedicao_OndaRessuprimentoController extends Action {
             if ($result['resultado'] == false) {
                 throw new Exception($result['observacao']);
             } else {
-                $this->addFlashMessage("success", $result['observacao']);
+                $return['status'] = 'Ok';
+                $return['response'][] = $result['observacao'];
+                $return['expedicoes'] = $idsExpedicoes;
+                //$this->addFlashMessage("success", $result['observacao']);
             }
+
             $expedicaoRepo->changeStatusExpedicao($expedicoes, 'N');
         } catch (\Exception $e) {
             $this->em->rollback();
             $expedicaoRepo->changeStatusExpedicao($expedicoes, 'N');
-            $this->addFlashMessage("error", "Falha gerando ressuprimento. " . $e->getMessage());
+            $return['status'] = 'Error';
+            $return['response'][] = "Falha gerando ressuprimento. " . $e->getMessage();
+            $return['expedicoes'] = null;
+            //$this->addFlashMessage("error", "Falha gerando ressuprimento. " . $e->getMessage());
         }
-        $this->redirect("index", "onda-ressuprimento", "expedicao");
+        //$this->redirect("index", "onda-ressuprimento", "expedicao");
+        $this->_helper->json($return);
     }
 
     public function verificarExpedicoesProcessandoAjaxAction() {
