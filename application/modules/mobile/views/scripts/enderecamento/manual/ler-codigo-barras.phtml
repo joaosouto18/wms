@@ -41,21 +41,36 @@
 
                         var txt = '<fieldset id="fieldset-dadosProduto">'
                         txt += '<legend>Endereços do produto</legend>' +
-                            '    <table class="gTable " style="font-size: 10px!important;">' +
+                            '    <table class="gTable " style="width: 100%; border: 1px solid #E0E0E0;">' +
                             '        <tbody>' +
-                            '        <tr class="gTTitle">' +
+                            '        <tr class="gTTitle" style="background-color: #EDEDED; border-radius: 4px;\n' +
+                            '    border: 1px solid #E0E0E0;' +
+                            'line-height: 20px;">' +
                             '            <td><b>Endereço</b></td>' +
                             '            <td><b>Tipo</b></td>' +
                             '            <td><b>Qtd.</b></td>' +
                             '        </tr>'
-                        
-                        $.each(data.result, function (key, value) {
-                            txt += '<tr>'
-                            txt += '   <td>' +value.ENDERECO + '</td>'
-                            txt += '   <td>' +value.TIPO + '</td>'
-                            txt += '   <td>' +value.QTD + '</td>'
-                            txt += '</tr>'
-                        });
+
+                        var color = true;
+                        if (data.result.length >0) {
+                            $.each(data.result, function (key, value) {
+                                color = !color;
+
+                                if (color == true) {
+                                    txt += '<tr style="background-color: #EDEDED">'
+                                } else {
+                                    txt += '<tr>'
+                                }
+
+                                txt += '   <td>' + value.ENDERECO + '</td>'
+                                txt += '   <td>' + value.TIPO + '</td>'
+                                txt += '   <td>' + value.QTD + '</td>'
+                                txt += '</tr>'
+
+                            });
+                        } else {
+                            txt += '<tr> <td colspan="3"> Produto não endereçado </td> </tr>'
+                        }
 
                         txt += '</tbody>' +
                                '</table>'

@@ -978,7 +978,19 @@ class EnderecoRepository extends EntityRepository {
     }
 
 
-    public function getEnderecosPorProduto($endereco) {
+    public function getEnderecosPorProduto($codbarras) {
+
+        $SQL = "SELECT * 
+                  FROM PRODUTO P 
+                  LEFT JOIN PRODUTO_EMbALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE AND PE.DTH_INATIVACAO IS NULL
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE AND PV.DTH_INATIVACAO IS NULL
+            WHERE PE.COD_BARRAS = '$codbarras' OR PV.COD_BARRAS = '$codbarras'";
+        $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($array) == 0) {
+            throw new \Exception("Nenhum produto encontrado com o código de barras: " . $codbarras);
+        }
+
         $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
                        CE.DSC_CARACTERISTICA_ENDERECO as TIPO,
                        E.QTD,
@@ -994,7 +1006,7 @@ class EnderecoRepository extends EntityRepository {
                   LEFT JOIN CARACTERISTICA_ENDERECO CE ON CE.COD_CARACTERISTICA_ENDERECO = DE.COD_CARACTERISTICA_ENDERECO
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
                   LEFT JOIN DEPOSITO_ENDERECO DE2 ON DE2.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO OR DE2.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
-                  WHERE PE.COD_BARRAS = '$endereco' OR PV.COD_BARRAS = '$endereco'";
+                  WHERE PE.COD_BARRAS = '$codbarras' OR PV.COD_BARRAS = '$codbarras'";
 
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;

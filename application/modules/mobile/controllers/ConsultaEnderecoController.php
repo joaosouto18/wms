@@ -30,8 +30,11 @@ class Mobile_ConsultaEnderecoController extends Action {
                 //$endereco = EnderecoUtil::formatar($codigoBarras);
 
                 /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+                $codigoBarras = ColetorUtil::adequaCodigoBarras($codigoBarras);
+
                 $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
                 $result = $enderecoRepo->getEnderecosPorProduto($codigoBarras);
+
                 $this->_helper->json(array('status' => 'ok', 'result' => $result));
             } catch (Exception $e) {
                 $this->_helper->json(array('status' => 'exception', 'msg' => $e->getMessage()));
