@@ -296,7 +296,7 @@ class Expedicao_IndexController extends Action {
                 if ($countTotal >0) {
                     if ($countTotal != $countCortadas) {
                         throw new \Exception('Não é permitido desagrupar cargas que possuem etiquetas em operação');
-                    } elseif ($countCortadas == $countTotal) {
+                    } else {
                         throw new \Exception('Não é permitido desagrupar cargas que possuem todas as etiquetas cortadas');
                     }
                 }
