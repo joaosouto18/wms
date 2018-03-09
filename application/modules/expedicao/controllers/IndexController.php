@@ -289,11 +289,18 @@ class Expedicao_IndexController extends Action {
                     $mapaSeparacaoEn = $mapaSeparacaoRepository->find($mapaSeparacao['codMapaSeparacao']);
                     $this->_em->remove($mapaSeparacaoEn);
                 }
+
                 $countCortadas = $EtiquetaRepo->countByStatus(Expedicao\EtiquetaSeparacao::STATUS_CORTADO, $cargaEn->getExpedicao(), null, null, $idCarga);
                 $countTotal = $EtiquetaRepo->countByStatus(null, $cargaEn->getExpedicao(), null, null, $idCarga);
-                if ($countTotal != $countCortadas) {
-                    throw new \Exception('A Carga ' . $cargaEn->getCodCargaExterno() . ' possui etiquetas que não foram cortadas e não pode ser removida da expedição');
+
+                if ($countTotal >0) {
+                    if ($countTotal != $countCortadas) {
+                        throw new \Exception('Não é permitido desagrupar cargas que possuem etiquetas em operação');
+                    } elseif ($countCortadas == $countTotal) {
+                        throw new \Exception('Não é permitido desagrupar cargas que possuem todas as etiquetas cortadas');
+                    }
                 }
+
                 $cargas = $ExpedicaoRepo->getCargas($cargaEn->getCodExpedicao());
                 if (count($cargas) <= 1) {
                     throw new \Exception('A Expedição não pode ficar sem cargas');
