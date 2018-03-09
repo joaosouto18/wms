@@ -96,7 +96,7 @@ class UMA extends Pdf {
             $produtoEn = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
         }
 
-        if (empty($produtoEn)) throw new \Exception("Produto de cógio $codProduto e grade $grade não foi encontrado!");
+        if (empty($produtoEn)) throw new \Exception("Produto de código $codProduto e grade $grade não foi encontrado!");
 
         $this->layout($params['paletes'], $produtoEn, $modelo, $params);
         $this->Output('UMA-' . $idRecebimento . '-' . $codProduto . '.pdf', 'D');
@@ -418,7 +418,7 @@ class UMA extends Pdf {
         $this->Cell(165, 40, $produtoEn->getGrade(), 0, 0);
 
         $this->SetFont('Arial', 'B', 32);
-        $this->Cell(25, 40, "Qtd", 0, 0);
+        $this->Cell(25, 40, '', 0, 0);
 
         $embalagemRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository("wms:Produto\Embalagem");
         $vetQtd = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $palete['qtd']);
@@ -430,16 +430,16 @@ class UMA extends Pdf {
 
 
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(75, 40, $qtd, 0, 1);
+        $this->Cell(75, 40, '', 0, 1);
 
         $this->SetFont('Arial', 'B', 32);
 
         if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
-            $this->Cell(75, 20, utf8_decode("Picking $enderecoPicking - Validade $dataValidade"), 0, 1);
+            $this->Cell(75, 20, utf8_decode("Picking $enderecoPicking - Validade $dataValidade - Qtd: $qtd"), 0, 1);
         } else {
-            $this->Cell(75, 20, utf8_decode("Picking $enderecoPicking"), 0, 1);
+            $this->Cell(75, 20, utf8_decode("Picking $enderecoPicking - Qtd: $qtd"), 0, 1);
         }
 
         $this->SetFont('Arial', 'B', 32);

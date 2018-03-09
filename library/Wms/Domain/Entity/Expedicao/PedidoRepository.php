@@ -195,7 +195,7 @@ class PedidoRepository extends EntityRepository
     /**
      * @param $idPedido
      */
-    public function cancelar($idPedido)
+    public function cancelar($idPedido, $webService = true)
     {
         try {
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaSeparacaoRepo */
@@ -219,7 +219,7 @@ class PedidoRepository extends EntityRepository
             $this->_em->flush();
             $this->gerarEtiquetasById($idPedido, EtiquetaSeparacao::STATUS_CORTADO);
             $this->removeReservaEstoque($idPedido, true);
-            $this->cancelaPedido($idPedido);
+            $this->cancelaPedido($idPedido, $webService);
 
         } catch (\Exception $e) {
             throw $e;
@@ -230,7 +230,7 @@ class PedidoRepository extends EntityRepository
     /**
      * @param $idPedido
      */
-    protected function cancelaPedido($idPedido)
+    protected function cancelaPedido($idPedido, $webService = true)
     {
 
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
@@ -267,8 +267,13 @@ class PedidoRepository extends EntityRepository
             $this->_em->remove($EntPedido);
         }
 
-        $idUsuario = $this->getSystemParameterValue('ID_USER_ERP');
-        $expedicaoAndamentoRepo->save("Pedido " . $idPedido . " cancelado da Expedição:" . $idExpedicao . ", Carga:" . $idCarga. " via integração", $idExpedicao, $idUsuario);
+        if ($webService == true) {
+            $idUsuario = $this->getSystemParameterValue('ID_USER_ERP');
+            $expedicaoAndamentoRepo->save("Pedido " . $idPedido . " cancelado da Expedição:" . $idExpedicao . ", Carga:" . $idCarga. " via integração", $idExpedicao, $idUsuario);
+        } else {
+            $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
+            $expedicaoAndamentoRepo->save("Pedido " . $idPedido . " cancelado da Expedição:" . $idExpedicao . ", Carga:" . $idCarga. " manualmente ", $idExpedicao, $idUsuario);
+        }
 
         $this->_em->flush();
     }

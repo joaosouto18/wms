@@ -345,10 +345,10 @@ class Mobile_EnderecamentoController extends Action
                     $this->createXml('error', 'Espaço insuficiente no endereço');
                 }
                 if ($enderecoAntigo != NULL) {
-                    $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR", $paleteEn->getId());
+                    $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoAntigo, $qtdAdjacente, "LIBERAR", $paleteEn->getId(), $paleteEn->getId());
                     $reservaEstoqueRepo->cancelaReservaEstoque($paleteEn->getDepositoEndereco()->getId(), $paleteEn->getProdutosArray(), "E", "U", $paleteEn->getId());
                 }
-                $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoEn, $qtdAdjacente, "OCUPAR");
+                $enderecoRepo->ocuparLiberarEnderecosAdjacentes($enderecoEn, $qtdAdjacente, "OCUPAR", $paleteEn->getId());
                 $reservaEstoqueRepo->adicionaReservaEstoque($enderecoEn->getId(), $paleteEn->getProdutosArray(), "E", "U", $paleteEn->getId());
             }
 
@@ -1336,7 +1336,11 @@ class Mobile_EnderecamentoController extends Action
         $capacidadePicking = $this->_getParam('capacidade');
         $embalado = $this->_getParam('embalado');
         $isEmbalagem = $this->_getParam('isEmbalagem');
+        $lastro = $this->_getParam('lastro');
+        $camada = $this->_getParam('camada');
+        $unitizador = $this->_getParam('unitizador');
 
+        $this->view->unitizadores = $unitizadores = $this->getEntityManager()->getRepository('wms:Armazenagem\Unitizador')->getIdDescricaoAssoc();
         try {
             if (!empty($codBarras) && !empty($codigoBarrasEndereco) && !empty($capacidadePicking)) {
                 $codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarrasEndereco);
@@ -1354,10 +1358,12 @@ class Mobile_EnderecamentoController extends Action
                     /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
                     $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
                     $embalagemRepo->setPickingEmbalagem($codBarras, $enderecoEn, $capacidadePicking, $embalado);
+                    $embalagemRepo->setNormaPaletizacaoEmbalagem($codBarras, $lastro, $camada, $unitizador);
                 } else {
                     /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
                     $volumeRepo = $this->em->getRepository('wms:Produto\Volume');
                     $volumeRepo->setPickingVolume($codBarras, $enderecoEn, $capacidadePicking);
+                    $volumeRepo->setNormaPaletizacaoVolume($codBarras, $lastro, $camada, $unitizador);
                 }
 
                 $this->addFlashMessage('success', 'Cadastrado com sucesso!');

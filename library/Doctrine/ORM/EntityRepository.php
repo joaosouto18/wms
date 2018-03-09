@@ -281,7 +281,7 @@ class EntityRepository implements ObjectRepository, Selectable
         $parametro = $parametroRepo->findOneBy(array('constante' => $param));
 
         if ($parametro == NULL) {
-            return "";
+            throw new \Exception("Parâmetro $param não encontrado no sistema, entre em contato com o suporte!");
         } else {
             return $parametro->getValor();
         }

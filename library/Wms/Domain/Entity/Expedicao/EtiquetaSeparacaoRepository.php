@@ -992,7 +992,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             foreach ($elements['volumes'] as $value) {
                                 $volumeEntity = $value['volumeEn'];
                                 $quantidade = $value['qtd'];
-                                list($mapaSeparacao) = $this->getMapaSeparacao($quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
+                                $mapaSeparacao = $this->getMapaSeparacao($quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao, $produtoEntity, $quantidade, $volumeEntity, null, array($pedidoProduto), $depositoEnderecoEn, null, $pedidoEntity, $arrayRepositorios);
                             }
                         }

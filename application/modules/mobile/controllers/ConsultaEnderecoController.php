@@ -22,4 +22,24 @@ class Mobile_ConsultaEnderecoController extends Action {
         }
     }
 
+    public function consultarAction() {
+        $codigoBarras = $this->_getParam('codigoBarras');
+        if (!empty($codigoBarras)) {
+            try {
+                //$codigoBarras = ColetorUtil::retiraDigitoIdentificador($codigoBarras);
+                //$endereco = EnderecoUtil::formatar($codigoBarras);
+
+                /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+                $codigoBarras = ColetorUtil::adequaCodigoBarras($codigoBarras);
+
+                $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+                $result = $enderecoRepo->getEnderecosPorProduto($codigoBarras);
+
+                $this->_helper->json(array('status' => 'ok', 'result' => $result));
+            } catch (Exception $e) {
+                $this->_helper->json(array('status' => 'exception', 'msg' => $e->getMessage()));
+            }
+        }
+    }
+
 }

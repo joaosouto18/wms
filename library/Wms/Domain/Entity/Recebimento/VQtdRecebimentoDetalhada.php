@@ -3,10 +3,10 @@ namespace Wms\Domain\Entity\Recebimento;
 
 /**
  *
- * @Table(name="V_QTD_RECEBIMENTO")
- * @Entity(repositoryClass="Wms\Domain\Entity\Recebimento\VQtdRecebimentoRepository")
+ * @Table(name="V_QTD_RECEBIMENTO_DETALHADA")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Recebimento\VQtdRecebimentoDetalhadaRepository")
  */
-class VQtdRecebimento
+class VQtdRecebimentoDetalhada
 {
     /**
      * @Column(name="QTD", type="integer", nullable=false)
@@ -35,6 +35,11 @@ class VQtdRecebimento
      * @Column(name="COD_OS", type="integer", nullable=false)
      */
     protected $codOs;
+
+    /**
+     * @Column(name="COD_NORMA_PALETIZACAO", type="integer", nullable=false)
+     */
+    protected $codNormaPaletizacao;
 
     /**
      * @Column(name="NUM_PESO", type="decimal", nullable=false)
@@ -119,6 +124,22 @@ class VQtdRecebimento
     public function getQtd()
     {
         return $this->qtd;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodNormaPaletizacao()
+    {
+        return $this->codNormaPaletizacao;
+    }
+
+    /**
+     * @param mixed $codNormaPaletizacao
+     */
+    public function setCodNormaPaletizacao($codNormaPaletizacao)
+    {
+        $this->codNormaPaletizacao = $codNormaPaletizacao;
     }
 
     /**
