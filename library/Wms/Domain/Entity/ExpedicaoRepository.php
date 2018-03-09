@@ -1648,11 +1648,13 @@ class ExpedicaoRepository extends EntityRepository {
 
         $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuarioEn = $usuarioRepo->find($idUsuario);
-
+        $arrayFlush = array();
         foreach ($reservaEstoqueArray as $re) {
+            $pedido['codPedido'] = $re->getPedido()->getId();
+            $pedido['codProprietario'] = $re->getPedido()->getProprietario();
             $reservaEstoqueEn = $re->getReservaEstoque();
             if ($reservaEstoqueEn->getAtendida() == 'N') {
-                $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, "E", $idExpedicao, $usuarioEn);
+                $arrayFlush = $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, "E", $idExpedicao, $usuarioEn, null, null, null, $pedido, $arrayFlush);
             }
         }
     }

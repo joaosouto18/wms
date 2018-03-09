@@ -155,7 +155,7 @@ class EstoqueProprietarioRepository extends EntityRepository
         }
     }
 
-    public function verificaProprietarioExistente($cnpj){
+    public function verificaProprietarioExistente($cnpj, $inserir = true){
         $cnpj = str_replace(array('.','-','/'),'',$cnpj);
         $empresa = $this->findEmpresaProprietario($cnpj);
         if(empty($empresa)){
@@ -163,7 +163,11 @@ class EstoqueProprietarioRepository extends EntityRepository
         }else{
             $entityFilial = $this->getEntityManager()->getRepository('wms:Pessoa\Juridica')->findOneBy(array('cnpj' => $cnpj));
             if(empty($entityFilial)){
-                $entityFilial = $this->insereFilialEmpresa($cnpj, $empresa);
+                if($inserir == true) {
+                    $entityFilial = $this->insereFilialEmpresa($cnpj, $empresa);
+                }else{
+                    return false;
+                }
             }
             $idPessoa = $entityFilial->getId();
         }
@@ -221,6 +225,40 @@ class EstoqueProprietarioRepository extends EntityRepository
                   ORDER BY 
                     EP.SALDO_FINAL DESC";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getHistoricoEstoqueProprietario($idProprietario, $codProduto, $grade){
+        $where = '';
+        $whereSub = '';
+        if(!empty($idProprietario)){
+            $whereSub = "WHERE COD_PESSOA = $idProprietario";
+        }
+        if(!empty($codProduto)){
+            $where .= " AND EP.COD_PRODUTO = $codProduto";
+        }
+        if(!empty($grade)){
+            $where .= " AND EP.DSC_GRADE = '$grade'";
+        }
+        $sql = "SELECT 
+                  MAX(EP.COD_ESTOQUE_PROPRIETARIO) as COD, 
+                  PJ.NOM_FANTASIA AS PROPRIETARIO,
+                  EP.COD_PRODUTO AS PRODUTO,
+                  EP.DSC_GRADE AS GRADE,
+                  EP.SALDO_FINAL AS SALDO
+                FROM 
+                  ESTOQUE_PROPRIETARIO EP 
+                  INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
+                WHERE 1 = 1 $where AND
+                  EP.COD_ESTOQUE_PROPRIETARIO IN (
+                      SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO 
+                      $whereSub
+                      GROUP BY COD_PESSOA)
+                  GROUP BY 
+                      EP.SALDO_FINAL, EP.COD_PRODUTO, EP.DSC_GRADE, PJ.NOM_FANTASIA
+                  ORDER BY 
+                      PJ.NOM_FANTASIA, EP.COD_PRODUTO, EP.SALDO_FINAL DESC";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 }

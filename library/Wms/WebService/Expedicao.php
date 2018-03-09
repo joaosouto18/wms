@@ -234,7 +234,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $controleProprietario = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
             if($controleProprietario == 'S'){
                 $cnpjProprietario = trim($pedidoWs->cliente->cpf_cnpj);
-                $codProprietario = $this->_em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjProprietario);
+                $codProprietario = $this->_em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjProprietario, false);
                 if($codProprietario == false){
                     throw new \Exception('CNPJ do proprietário não encontrado');
                 }
