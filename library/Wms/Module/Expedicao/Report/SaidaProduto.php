@@ -20,12 +20,17 @@ class SaidaProduto extends Report
             $grade = ' Grade:'.$params['grade'];
         }
 
+        $filial = " - Filial: Todas";
+        if ($params['filial']) {
+            $filial = " -  Filial: " .$params['filial'];
+        }
+
         //geracao de relatorio
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $pdf = new \Wms\Module\Web\Pdf('L', 'mm', 'A4');
-        $pdf->setTitle(utf8_decode('Saída Cod.Produto:'.$produtos[0]['codProduto'].$grade))
+        $pdf->setTitle(utf8_decode('Saída Cod.Produto:'.$produtos[0]['codProduto'].$grade.$filial))
                 ->setLabelHeight(6)
                 ->setColHeight(7);
 
