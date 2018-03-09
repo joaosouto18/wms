@@ -60,29 +60,8 @@
                     }
                 }
             }
-            if (document.getElementById('endereco').value == "") {
-                endereco = document.getElementById('endereco');
-                if (endereco) {
-                    endereco.focus();
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
-                    }
-                }
-            }
-            if (document.getElementById('endereco').value != "") {
-                capacidade = document.getElementById('capacidade');
-                if (capacidade) {
-                    capacidade.focus();
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
-                    }
-                }
-            }
         }
+        return true;
     }
 
     function nextInputEndereco(event) {
@@ -113,6 +92,64 @@
         return true;
     }
 
+    function nextInputCapacidade(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('capacidade').value != "") {
+                endereco = document.getElementById('lastro');
+                if (endereco) {
+                    endereco.focus();
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+            if (document.getElementById('capacidade').value == "") {
+                endereco = document.getElementById('capacidade');
+                if (codigoBarras) {
+                    codigoBarras.focus();
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function nextInputLastro(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('lastro').value != "") {
+                endereco = document.getElementById('camada');
+                if (endereco) {
+                    endereco.focus();
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+            if (document.getElementById('lastro').value == "") {
+                endereco = document.getElementById('capacidade');
+                if (codigoBarras) {
+                    codigoBarras.focus();
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+
+
 </script>
 <div class="row">
     <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'enderecamento', 'action' => 'cadastro-produto-endereco')) ?>" method="post">
@@ -130,13 +167,28 @@
         </div>
         <div class="row">
             <label>Cap:</label>
-            <input type="text"  name="capacidade" id="capacidade" required size=6 maxlength=5 value="" />
+            <input type="text"  name="capacidade" id="capacidade" required size=6 maxlength=5 value="" onkeydown="nextInputCapacidade(event)" />
         </div>
-        <br>
+        <div class="row">
+            <label>Lastro:</label>
+            <input type="text" name="lastro" id="lastro" required size=6 maxlength=5 value="" onkeydown="nextInputLastro(event)" />
+        </div>
+        <div class="row">
+            <label>Camada:</label>
+            <input type="text" name="camada" id="camada" required size=6 maxlength=5 value="" />
+        </div>
 
         <div id="divEmb" style="display: none">
             <label>Emb:</label>
             <input type="text"  name="embalado" id="embalado" size=1 maxlength=1 value="" />
+        </div>
+        <div class="row">
+            <label>Unitizador:</label>
+            <select name="unitizador" id="unitizador" >
+                <?php foreach ($this->unitizadores as $unitizador) : ?>
+                    <option value="<?php echo $unitizador['id'] ?>"><?php echo $unitizador['descricao'] ?></option>
+                <?php endforeach; ?>
+            </select>
         </div>
         <br>
         <div class="row">

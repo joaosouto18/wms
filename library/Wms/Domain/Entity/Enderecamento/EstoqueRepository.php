@@ -169,10 +169,10 @@ class EstoqueRepository extends EntityRepository
             }
         }
 
-        if ($novaQtd > 0) {
-            $em->persist($estoqueEn);
-        } else if ($novaQtd + $qtdReserva < 0) {
+        if ($novaQtd + $qtdReserva < 0) {
             throw new \Exception("Não é permitido estoque negativo para o endereço $dscEndereco com o produto $codProduto / $grade - $dscProduto");
+        } else if ($novaQtd > 0) {
+            $em->persist($estoqueEn);
         } else {
             $em->remove($estoqueEn);
         }
@@ -908,11 +908,13 @@ class EstoqueRepository extends EntityRepository
     public function getProdutoByCodBarrasAndEstoque($etiquetaProduto, $idEndereco)
     {
         $em = $this->getEntityManager();
-        $dql = "SELECT p0_.DSC_PRODUTO AS descricao, p0_.COD_PRODUTO AS id, p0_.DSC_GRADE AS grade, e1_.QTD / NVL(p3_.QTD_EMBALAGEM,1) AS qtd, NVL(p3_.DSC_EMBALAGEM,'') DSC_EMBALAGEM, p3_.COD_PRODUTO_EMBALAGEM, d2_.DSC_DEPOSITO_ENDERECO AS ENDERECO
+        $dql = "SELECT p0_.DSC_PRODUTO AS descricao, p0_.COD_PRODUTO AS id, p0_.DSC_GRADE AS grade, e1_.QTD / NVL(p3_.QTD_EMBALAGEM,1) AS qtd, NVL(p3_.DSC_EMBALAGEM,'') DSC_EMBALAGEM, p3_.COD_PRODUTO_EMBALAGEM, d2_.DSC_DEPOSITO_ENDERECO AS ENDERECO,
+                    DE.DSC_DEPOSITO_ENDERECO PICKING
                     FROM ESTOQUE e1_ INNER JOIN PRODUTO p0_ ON e1_.COD_PRODUTO = p0_.COD_PRODUTO AND e1_.DSC_GRADE = p0_.DSC_GRADE
                     LEFT JOIN DEPOSITO_ENDERECO d2_ ON e1_.COD_DEPOSITO_ENDERECO = d2_.COD_DEPOSITO_ENDERECO
                     LEFT JOIN PRODUTO_EMBALAGEM p3_ ON (p3_.COD_PRODUTO = e1_.COD_PRODUTO AND p3_.DSC_GRADE = e1_.DSC_GRADE AND p3_.DTH_INATIVACAO is null)
                     LEFT JOIN PRODUTO_VOLUME p4_ ON p0_.COD_PRODUTO = p4_.COD_PRODUTO AND p0_.DSC_GRADE = p4_.DSC_GRADE
+                    LEFT JOIN DEPOSITO_ENDERECO DE ON p3_.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO OR p4_.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                     WHERE ((p3_.COD_BARRAS = '$etiquetaProduto' OR p4_.COD_BARRAS = '$etiquetaProduto')) AND d2_.COD_DEPOSITO_ENDERECO = $idEndereco";
 
         return $em->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);

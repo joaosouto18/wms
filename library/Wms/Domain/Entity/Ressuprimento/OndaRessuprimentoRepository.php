@@ -528,7 +528,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
     public function calculaRessuprimentoByProduto($produtosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
         $qtdRessuprimentos = 0;
-        $arrErro = [];
+        $arrErroCapacidade = [];
+        $arrErroVolSemPicking = [];
         foreach ($produtosRessuprir as $produto) {
             $codProduto = $produto['codProduto'];
             $grade = $produto['grade'];
@@ -547,7 +548,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $capacidadePicking = $embalagem->getCapacidadePicking();
 
                 if (empty($capacidadePicking)) {
-                    $arrErro[] = "Código $codProduto grade $grade";
+                    $arrErroCapacidade[] = "Código $codProduto grade $grade";
                     continue;
                 }
 
@@ -571,12 +572,17 @@ class OndaRessuprimentoRepository extends EntityRepository {
                         /** @var Endereco $pickingEn */
                         $pickingEn = $item['pickingEn'];
 
+                        if (empty($pickingEn)) {
+                            $arrErroVolSemPicking[$codProduto][$grade]['txt'] = "Código $codProduto grade $grade";
+                            continue;
+                        }
+
                         $picking['volumes'][] = $volumeEn->getId();
                         $picking['idPicking'] = $pickingEn->getId();
                         $capacidadePicking = $volumeEn->getCapacidadePicking();
 
                         if (empty($capacidadePicking)) {
-                            $arrErro[] = "Código $codProduto grade $grade";
+                            $arrErroCapacidade[] = "Código $codProduto grade $grade";
                             continue;
                         }
 
@@ -587,8 +593,17 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
             }
 
-            if (!empty($arrErro))
-                throw new \Exception("Produto(s) sem capacidade de picking definida: " .implode(", ", $arrErro));
+            if (!empty($arrErroCapacidade))
+                throw new \Exception("Produto(s) sem capacidade de picking definida: " .implode(", ", $arrErroCapacidade));
+
+            if (!empty($arrErroVolSemPicking)) {
+                foreach ($arrErroVolSemPicking as $cod => $grades) {
+                    foreach($grades as $grade) {
+                        $arr[] = $grade['txt'];
+                    }
+                }
+                throw new \Exception("Produto(s) sem picking em uma das normas: " .implode(", ", $arr));
+            }
 
             foreach ($pickings as $picking) {
                 $qtdRessuprimentos = $qtdRessuprimentos + $this->calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios);

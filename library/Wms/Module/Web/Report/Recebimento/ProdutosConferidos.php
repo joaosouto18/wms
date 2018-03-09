@@ -18,6 +18,8 @@ class ProdutosConferidos extends Report
         $em = $this->getEm();
 
         $recebimentoEntity = $em->getRepository('wms:Recebimento')->find($idRecebimento);
+        $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
+        $parametro = $parametroRepo->findOneBy(array('constante' => 'CONTROLE_VALIDADE'));
 
         //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
@@ -66,15 +68,23 @@ class ProdutosConferidos extends Report
         $pdf->addLabel(1, 2, '', '', 0, 'L');
         $pdf->addLabel(2, 83, 'Produto', 'B', 0, 'L');
         $pdf->addLabel(2, 2, '', '', 0, 'L');
-        $pdf->addLabel(3, 20, 'Grade', 'B', 0, 'L');
-        $pdf->addLabel(3, 2, '', '', 0, 'L');
+        if ($parametro->getValor() == 'S') {
+            $pdf->addLabel(3, 20, 'Grade', 'B', 0, 'L');
+            $pdf->addLabel(3, 2, '', '', 0, 'L');
+        } else {
+            $pdf->addLabel(3, 50, 'Grade', 'B', 0, 'L');
+            $pdf->addLabel(3, 2, '', '', 0, 'L');
+        }
+
         $pdf->addLabel(4, 25, 'Data Conf.', 'B', 0, 'L');
         $pdf->addLabel(4, 2, '', '', 0, 'L');
         $pdf->addLabel(5, 28, 'Qtd. Conferida', 'B', 0, 'L');
         $pdf->addLabel(5, 2, '', '', 0, 'L');
 
-        $pdf->addLabel(5, 28, 'Data Validade', 'B', 0, 'L');
-        $pdf->addLabel(5, 2, '', '', 0, 'L');
+        if ($parametro->getValor() == 'S') {
+            $pdf->addLabel(5, 28, 'Data Validade', 'B', 0, 'L');
+            $pdf->addLabel(5, 2, '', '', 0, 'L');
+        }
 
         $pdf->addLabel(6, 22, 'Qtd. Avaria', 'B', 0, 'L');
         $pdf->addLabel(6, 2, '', '', 0, 'L');
@@ -122,17 +132,22 @@ class ProdutosConferidos extends Report
             //$pdf->addCol(1, 279, $notaFiscal, $borderNF, 1, 'L');
             $pdf->addCol(3, 17, $item['COD_PRODUTO'], $border, 0, 'L');
             $pdf->addCol(4, 85, utf8_decode(substr($item['DSC_PRODUTO'], 0, 40)), $border, 0, 'L');
-            $pdf->addCol(5, 22, $item['DSC_GRADE'], $border, 0, 'L');
+            if ($parametro->getValor() == 'S') {
+                $pdf->addCol(5, 22, $item['DSC_GRADE'], $border, 0, 'L');
+            } else {
+                $pdf->addCol(5, 50, $item['DSC_GRADE'], $border, 0, 'L');
+            }
             $pdf->addCol(6, 27, $dataConf->format('d/m/y H:i'), $border, 0, 'L');
             $pdf->addCol(7, 28, $item['QTD_CONFERIDA'], $border, 0, 'C');
 
-            if (!is_null($item['DTH_VALIDADE'])) {
-                $dataValidade = new \DateTime($item['DTH_VALIDADE']);
-                $pdf->addCol(7, 28, $dataValidade->format('d/m/y'), $border, 0, 'C');
-            } else {
-                $pdf->addCol(7, 28, '-', $border, 0, 'C');
+            if ($parametro->getValor() == 'S') {
+                if (!is_null($item['DTH_VALIDADE'])) {
+                    $dataValidade = new \DateTime($item['DTH_VALIDADE']);
+                    $pdf->addCol(7, 28, $dataValidade->format('d/m/y'), $border, 0, 'C');
+                } else {
+                    $pdf->addCol(7, 28, '-', $border, 0, 'C');
+                }
             }
-
 
             $pdf->addCol(8, 24, $item['QTD_AVARIA'], $border, 0, 'C');
             $pdf->addCol(9, 27, $item['QTD_DIVERGENCIA'], $border, 0, 'C');

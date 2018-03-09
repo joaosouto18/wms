@@ -675,10 +675,10 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
 
             este.checarCBInterno();
 
-            if((codBarrasBase.val() !== '') && (cbInterno === 'S')) {
-                this.dialogAlert('Este Produto contém Código de Barras Base. Não é permitido ter volumes com Código de Barras Automático.');
-                return false;
-            }
+            // if((codBarrasBase.val() !== '') && (cbInterno === 'S')) {
+            //     this.dialogAlert('Este Produto contém Código de Barras Base. Não é permitido ter volumes com Código de Barras Automático.');
+            //     return false;
+            // }
 
             if ((codigoBarras === "" && cbInterno === "S") || codigoBarras === codigoBarrasAntigo) {
                 $("#volume-codigoBarras").removeClass('invalid');

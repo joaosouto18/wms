@@ -63,6 +63,7 @@ class Web_ImprimirController extends Action
 
     private function gerarEtiquetasPdf($enderecos, $modelo)
     {
+        $quantidadeByPage = null;
         $unico = false;
         if (($modelo == 4) || ($modelo == 6)) {
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(110, 60));
@@ -74,6 +75,9 @@ class Web_ImprimirController extends Action
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(150, 91));
         } elseif ($modelo == 11) {
             $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
+        } elseif ($modelo == 1) {
+            $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
+            $quantidadeByPage = 9;
         } elseif($modelo == 12){
             $modelo = 9;
             $unico = true;
@@ -85,7 +89,7 @@ class Web_ImprimirController extends Action
         }else {
             $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
         }
-        $etiqueta->imprimir($enderecos, $modelo, $unico);
+        $etiqueta->imprimir($enderecos, $modelo, $unico, $quantidadeByPage);
         return $etiqueta;
     }
 }

@@ -2193,7 +2193,7 @@ class ExpedicaoRepository extends EntityRepository {
                         GROUP BY COD_EXPEDICAO
                   )  I ON I.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT C.COD_EXPEDICAO,
-                                    CASE WHEN (SUM(CASE WHEN (P.IND_ETIQUETA_MAPA_GERADO = \'N\') OR ((R.IND_ETIQUETA_MAPA_GERADO = \'N\' AND PARAM.DSC_VALOR_PARAMETRO = \'S\')) THEN 1 ELSE 0 END)) + NVL(MAP.QTD,0) + NVL(PED.QTD,0) > 0 THEN \'SIM\'
+                                    CASE WHEN (SUM(CASE WHEN (P.IND_ETIQUETA_MAPA_GERADO = \'N\' AND P.DTH_CANCELAMENTO IS NULL) OR ((R.IND_ETIQUETA_MAPA_GERADO = \'N\' AND PARAM.DSC_VALOR_PARAMETRO = \'S\')) THEN 1 ELSE 0 END)) + NVL(MAP.QTD,0) + NVL(PED.QTD,0) > 0 THEN \'SIM\'
                                          ELSE \'\' END AS IMPRIMIR
                                FROM (SELECT DSC_VALOR_PARAMETRO FROM PARAMETRO WHERE DSC_PARAMETRO = \'CONFERE_EXPEDICAO_REENTREGA\') PARAM,
                                     CARGA C
@@ -3719,6 +3719,18 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         $this->getEntityManager()->flush();
+
+        $SQL = "SELECT * 
+                  FROM PEDIDO_PRODUTO PP
+                 WHERE COD_PEDIDO = $codPedido 
+                   AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
+        $ppSemCortes = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($ppSemCortes) == 0) {
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
+            $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
+            $pedidoRepository->cancelar($codPedido,false);
+        }
+
     }
 
     public function getProdutosExpedicaoCorte($idPedido) {
@@ -3924,6 +3936,65 @@ class ExpedicaoRepository extends EntityRepository {
                 WHERE EM.COD_EXPEDICAO = $codExpedicao AND ES.DTH_SEPARACAO IS NULL AND ES.TIPO_SAIDA = $tipoSaida";
 //                 ";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getProdutosDescasadosExpedicao($expedicoes)
+    {
+        $sql = "SELECT DISTINCT
+                       PP.COD_EXPEDICAO,
+                       PP.COD_PRODUTO,
+                       PP.DSC_GRADE,
+                       PP.QTD_PEDIDO,
+                       NVL(RE.QTD,0) as RESERVA_PICKING,
+                       NVL(E.QTD,0) as ESTOQUE_PICKING,
+                       NVL(E.QTD,0) + NVL(RE.QTD,0) - PP.QTD_PEDIDO as SALDO_PICKING,
+                       NVL(EP.DSC_DEPOSITO_ENDERECO,'') as END_PULMAO,
+                       NVL(EP.QTD_VOLUMES_CADASTRO,0) as QTD_VOL_CADASTRO,
+                       NVL(EP.QTD_VOLUMES_ENDERECO,0) as QTD_VOL_ENDERECO
+                  FROM (SELECT PP.COD_PRODUTO, PP.DSC_GRADE,
+                               SUM(PP.QUANTIDADE) as QTD_PEDIDO,
+                               C.COD_EXPEDICAO
+                          FROM PEDIDO_PRODUTO PP
+                         INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                         INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                         WHERE C.COD_EXPEDICAO IN ($expedicoes)
+                         GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, C.COD_EXPEDICAO) PP
+                 INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PP.COD_PRODUTO AND PV.DSC_GRADE = PP.DSC_GRADE
+                 LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO_VOLUME,
+                                   CASE WHEN SUM(QTD_RESERVADA)IS NULL THEN 0 ELSE SUM(QTD_RESERVADA) END AS QTD
+                              FROM RESERVA_ESTOQUE RE
+                              LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
+                             WHERE RE.IND_ATENDIDA = 'N' AND REP.COD_PRODUTO_VOLUME IS NOT NULL
+                             GROUP BY RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO_VOLUME) RE
+                        ON RE.COD_PRODUTO_VOLUME = PV.COD_PRODUTO_VOLUME
+                       AND RE.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
+                 LEFT JOIN (SELECT E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO_VOLUME,
+                                   SUM(E.QTD) as QTD
+                              FROM ESTOQUE E
+                             GROUP BY E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO_VOLUME) E
+                        ON E.COD_PRODUTO_VOLUME = PV.COD_PRODUTO_VOLUME
+                       AND E.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
+                 LEFT JOIN (SELECT E.COD_DEPOSITO_ENDERECO, DE.DSC_DEPOSITO_ENDERECO, E.COD_PRODUTO, E.DSC_GRADE, PV.COD_NORMA_PALETIZACAO,
+                                   CAD.QTD_VOLUMES as QTD_VOLUMES_CADASTRO,
+                                   COUNT(E.COD_PRODUTO_VOLUME) as QTD_VOLUMES_ENDERECO
+                              FROM ESTOQUE E
+                             INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = E.COD_PRODUTO_VOLUME
+                              LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
+                              LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, COD_NORMA_PALETIZACAO, COUNT(COD_PRODUTO_VOLUME) as QTD_VOLUMES
+                                           FROM PRODUTO_VOLUME
+                                          GROUP BY COD_PRODUTO, DSC_GRADE, COD_NORMA_PALETIZACAO) CAD
+                                     ON CAD.COD_PRODUTO = PV.COD_PRODUTO
+                                    AND CAD.DSC_GRADE = PV.DSC_GRADE
+                                    AND CAD.COD_NORMA_PALETIZACAO = PV.COD_NORMA_PALETIZACAO
+                             GROUP BY E.COD_DEPOSITO_ENDERECO, DE.DSC_DEPOSITO_ENDERECO, E.COD_PRODUTO, E.DSC_GRADE, PV.COD_NORMA_PALETIZACAO, CAD.QTD_VOLUMES) EP
+                        ON EP.COD_NORMA_PALETIZACAO = PV.COD_NORMA_PALETIZACAO
+                       AND EP.COD_DEPOSITO_ENDERECO <> NVL(PV.COD_DEPOSITO_ENDERECO,0)
+                 WHERE 1 = 1
+                   AND (NVL(E.QTD,0) + NVL(RE.QTD,0) - PP.QTD_PEDIDO) <=0
+                   AND QTD_VOLUMES_CADASTRO <> QTD_VOLUMES_ENDERECO
+                 ORDER BY PP.COD_PRODUTO, PP.DSC_GRADE, NVL(EP.DSC_DEPOSITO_ENDERECO,'')";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function changeStatusExpedicao($idsExpedicoes, $processando = 'N') {
