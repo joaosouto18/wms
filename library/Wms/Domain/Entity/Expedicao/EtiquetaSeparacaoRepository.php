@@ -608,6 +608,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 $mapaSeparacao = $this->getMapaSeparacao($quebras, $statusEntity, $expedicaoEntity);
                 $this->salvaMapaSeparacaoProduto($mapaSeparacao,$produtoEntity,1,null,$embalagemAtual, array(), null);
+                $this->getEntityManager()->flush();
             }
 
         }
