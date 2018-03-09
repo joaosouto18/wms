@@ -212,6 +212,10 @@ class ExpedicaoRepository extends EntityRepository {
                 throw new \Exception("A Filial " . $deposito->getFilial()->getPessoa()->getNomeFantasia() . " não utiliza ressuprimento");
             }
 
+            $countmodeloSeparacao = $this->countModeloSeparacaoByExpedicoes($strExpedicao);
+            if (count($countmodeloSeparacao) > 1)
+                throw new \Exception('Não é possível gerar onda de ressuprimento para '.count($countmodeloSeparacao).' modelos distintos');
+
             $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
             $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
 
@@ -3930,5 +3934,18 @@ class ExpedicaoRepository extends EntityRepository {
     public function changeStatusExpedicao($idsExpedicoes, $processando = 'N') {
         $sql = "UPDATE EXPEDICAO SET IND_PROCESSANDO = '$processando' WHERE COD_EXPEDICAO IN ($idsExpedicoes)";
         $this->_em->getConnection()->query($sql)->execute();
+    }
+
+    public function countModeloSeparacaoByExpedicoes($codExpedicoes)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('distinct ms.id')
+            ->from('wms:Expedicao','e')
+            ->leftJoin('e.modeloSeparacao', 'ms')
+            ->where("e.id IN ($codExpedicoes)")
+            ->groupBy('ms.id, e.id');
+
+        return $sql->getQuery()->getResult();
+
     }
 }
