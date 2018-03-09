@@ -162,6 +162,25 @@ class ModeloSeparacaoRepository extends EntityRepository
         return $resultado;
     }
 
+    public function setModeloSeparacaoExpedicao($expedicaoEntity,$modeloSeparacaoEntity)
+    {
+        $expedicaoEntity->setModeloSeparacao($modeloSeparacaoEntity);
+        $this->getEntityManager()->persist($expedicaoEntity);
+
+        return true;
+    }
+
+    public function getModeloSeparacao($idExpedicao)
+    {
+        $expedicaoEntity = $this->getEntityManager()->getReference('wms:Expedicao',$idExpedicao);
+        if (!is_null($expedicaoEntity->getModeloSeparacao())) {
+            $modeloSeparacaoEn = $expedicaoEntity->getModeloSeparacao();
+        } else {
+            $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+            $modeloSeparacaoEn = $this->find($idModeloSeparacao);
+        }
+        return $modeloSeparacaoEn;
+    }
 
 }
 

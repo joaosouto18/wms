@@ -270,7 +270,12 @@ class MapaSeparacaoRepository extends EntityRepository {
             $sinal = ' = ';
         }
 
-        $modeloSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\ModeloSeparacao', $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO'));
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepository */
+        $modeloSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
+
+        //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+        $modeloSeparacaoEn = $modeloSeparacaoRepository->getModeloSeparacao($expedicao);
+
         $andWhere = ' ';
         if ($setDivergencia == false) {
             $andWhere = " AND MSP.IND_DIVERGENCIA = 'S' ";
@@ -340,8 +345,11 @@ class MapaSeparacaoRepository extends EntityRepository {
         $idMapa = $mapaEn->getId();
         $idExpedicao = $mapaEn->getExpedicao()->getId();
 
-        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-        $modeloSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\ModeloSeparacao', $idModeloSeparacao);
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepository */
+        $modeloSeparacaoRepository = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
+        //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+        $modeloSeparacaoEn = $modeloSeparacaoRepository->getModeloSeparacao($idExpedicao);
+
         $quebraColetor = $modeloSeparacaoEn->getUtilizaQuebraColetor();
         if ($quebraColetor == 'S') {
             $whereQuebra = " AND M.COD_MAPA_SEPARACAO = $idMapa";

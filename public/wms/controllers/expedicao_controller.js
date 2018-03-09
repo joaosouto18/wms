@@ -53,6 +53,11 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                 $('#modelo-separacao').attr('style','display:none');
             });
 
+            $('#alterar-modelo').live('click', function () {
+                $('#inserir').html('<center><img src="/img/ajax-loader.gif" width="31" height="31"/>Processando...</center>');
+                $('#inserir').show();
+            });
+
             function processoCancelado() {
                 $('#aguarde').attr('style','display:none');
                 $("input[name*='expedicao[]']").each(function( index, value ){
