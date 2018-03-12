@@ -229,10 +229,14 @@ class Mobile_RecebimentoController extends Action
             $retorno = $recebimentoRepo->checarOrdemServicoAberta($idRecebimento);
             $idOrdemServico = $retorno['id'];
 
+            $sql = "SELECT COD_PRODUTO, DSC_GRADE FROM NOTA_FISCAL_ITEM WHERE COD_NOTA_FISCAL_ITEM = $idItem";
+            $result = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
             // item conferido
-            /** @var \Wms\Domain\Entity\NotaFiscal\Item $notaFiscalItemEntity */
-            $notaFiscalItemEntity = $notaFiscalItemRepo->find($idItem);
-            $produtoEn = $notaFiscalItemEntity->getProduto();
+//            /** @var \Wms\Domain\Entity\NotaFiscal\Item $notaFiscalItemEntity */
+//            $notaFiscalItemEntity = $notaFiscalItemRepo->find($idItem);
+//            $produtoEn = $notaFiscalItemEntity->getProduto();
+            $produtoEn = $this->em->getRepository("wms:Produto")->findOneBy(["id" => $result[0]['COD_PRODUTO'], "grade" => $result[0]['DSC_GRADE']]);
             $idProduto = $produtoEn->getId();
             $grade = $produtoEn->getGrade();
             /** @var \Wms\Domain\Entity\Produto $produtoEn */
