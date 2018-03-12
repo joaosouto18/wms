@@ -11,7 +11,8 @@
             <div class="field" style="padding: 12px;">
                 <b><label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecione Todas</label></b>
             </div>
-            <div id="cargas"><b>
+            <div id="cargas">
+                <b>
                     <?php foreach($this->cargas as $carga) : ?>
                         <div class="field" style="padding: 12px;">
                             <label>
@@ -30,21 +31,34 @@
             </div>
         </fieldset>
     <?php endif; ?>
-    <fieldset id="fieldset-identification" rowspan="2">
-        <legend>Selecione a central de entregas</legend>
-        <div id="centrais"><b>
-                <input type="hidden" id="controller" value="<?php echo $this->controller; ?>">
-                <input type="hidden" id="action" value="<?php echo $this->action; ?>">
-                <input type="hidden" id="expedicao" value="<?php echo $this->expedicao ?>">
-                <?php foreach($this->centraisEntrega as $central) : ?>
-                <div class="field" style="padding: 12px;">
-                        <input type="button" class="btn" id="<?php echo $central['centralEntrega'] ?>" value="Central <?php echo $central['centralEntrega'] ?>" name="central-<?php echo $central['centralEntrega'] ?>">
-                </div>
-                <?php endforeach; ?>
-            </b>
-        </div>
-    </fieldset>
-
+    <?php foreach($this->centraisEntrega as $central) : ?>
+        <fieldset id="fieldset-identification">
+            <legend>Central <?php echo $central['centralEntrega'] ?></legend>
+            <div id="centrais">
+                <table>
+                    <tr>
+                        <b>
+                            <div class="field" style="padding: 12px;">
+                                <input type="button" class="btn selectCentral" data-id="<?php echo $central['centralEntrega'] ?>" id="central-<?php echo $central['centralEntrega'] ?>" value="Selecionar Mapa/Etiqueta" name="central-<?php echo $central['centralEntrega'] ?>">
+                            </div>
+                        </b>
+                        <b>
+                            <div class="field" style="padding: 12px;">
+                                <input type="button" class="btn printAll" data-id="<?php echo $central['centralEntrega'] ?>" id="printAll-<?php echo $central['centralEntrega'] ?>" value="Imprimir tudo" name="printAll-<?php echo $central['centralEntrega'] ?>">
+                            </div>
+                        </b>
+                    </tr>
+                    <tr>
+                        <b>
+                            <div class="field" style="padding: 12px;">
+                                <input type="button" class="btn printConf" data-id="<?php echo $central['centralEntrega'] ?>" id="printConf-<?php echo $central['centralEntrega'] ?>" value="Imprimir Mapas Conferência" name="printConf-<?php echo $central['centralEntrega'] ?>">
+                            </div>
+                        </b>
+                    </tr>
+                </table>
+            </div>
+        </fieldset>
+    <?php endforeach; ?>
 </div>
 
 <script>
@@ -57,17 +71,13 @@
             });
         });
 
-        $('.btn').click(function (a) {
+        $('.selectCentral').click(function (a) {
             var arr = [];
             for (var i = 0; i < $('input[name="cargas"]:checked').length; i++) {
                 arr[i] = $('input[name="cargas"]:checked')[i].value;
             }
-//            if (arr.length == 0){
-//                alert("Selecione uma carga!");
-//                return false;
-//            }
             $.ajax({
-                url: URL_MODULO + '/' + $('#controller').val() + '/' + $('#action').val() + '/id/' + $('#expedicao').val() + '/central/' + $(this).attr('id'),
+                url: URL_MODULO + '/etiqueta/imprimir/id/<?php echo $this->expedicao ?>/central/' + $(this).attr('data-id'),
                 type: 'POST',
                 data: { cargas: arr },
                 success: function(data){
@@ -88,8 +98,8 @@
                     $.wmsDialogAjax({
                         width: 750,
                         height: 450,
-                        url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/'+$('#expedicao').val(),
-                        title: 'Mapas Pendentes de Impressão'
+                        url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>',
+                        title: 'Mapas/Etiquetas Pendentes de Impressão'
                     });
                 }
             });

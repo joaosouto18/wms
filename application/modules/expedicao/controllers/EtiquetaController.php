@@ -12,8 +12,6 @@ class Expedicao_EtiquetaController  extends Action
     public function indexAction()
     {
         $idExpedicao    = $this->getRequest()->getParam('id');
-        $action         = $this->getRequest()->getParam('urlAction');
-        $controller     = $this->getRequest()->getParam('urlController');
         $showCarga      = $this->getRequest()->getParam('sc');
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
@@ -22,8 +20,7 @@ class Expedicao_EtiquetaController  extends Action
         if ($showCarga) {
             $this->view->cargas          = $ExpedicaoRepo->getCodCargasExterno($idExpedicao);
         }
-        $this->view->action          = $action;
-        $this->view->controller      = $controller;
+
         $this->view->expedicao       = $idExpedicao;
     }
 
