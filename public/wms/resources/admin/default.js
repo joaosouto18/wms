@@ -16,7 +16,7 @@ $(document).ready(function(){
         });
     });
 
-    $('.dialogAjax').click(function (ev, el) {
+    $('.dialogAjax').live('click', function (ev, el) {
         //stop event    
         ev.preventDefault();
         //load window

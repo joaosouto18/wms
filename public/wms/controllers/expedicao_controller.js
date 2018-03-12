@@ -199,7 +199,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
             var divExpedicoes = '';
             $.each(expedicoes, function (k,v) {
                 console.log(divExpedicoes);
-                divExpedicoes = divExpedicoes.concat('<b style="padding: 12px;"><a href="' + URL_MODULO + '/etiqueta/index/id/' + v + '" type="button" class="dialogAjax pdf" target="_self">' + v + '</a></b>');
+                divExpedicoes = divExpedicoes.concat('<b style="padding: 12px;"><a href="' + URL_MODULO + '/etiqueta/index/id/' + v + '/sc/1" type="button" class="btn btn-primary dialogAjax">' + v + '</a></b>');
             });
             var htmlBody =
                 '<h2 style="text-align: center; margin: 5px; margin-bottom: 0px; font-size: 14px;">' +

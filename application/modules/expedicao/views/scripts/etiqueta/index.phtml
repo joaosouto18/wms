@@ -35,27 +35,11 @@
         <fieldset id="fieldset-identification">
             <legend>Central <?php echo $central['centralEntrega'] ?></legend>
             <div id="centrais">
-                <table>
-                    <tr>
-                        <b>
-                            <div class="field" style="padding: 12px;">
-                                <input type="button" class="btn selectCentral" data-id="<?php echo $central['centralEntrega'] ?>" id="central-<?php echo $central['centralEntrega'] ?>" value="Selecionar Mapa/Etiqueta" name="central-<?php echo $central['centralEntrega'] ?>">
-                            </div>
-                        </b>
-                        <b>
-                            <div class="field" style="padding: 12px;">
-                                <input type="button" class="btn printAll" data-id="<?php echo $central['centralEntrega'] ?>" id="printAll-<?php echo $central['centralEntrega'] ?>" value="Imprimir tudo" name="printAll-<?php echo $central['centralEntrega'] ?>">
-                            </div>
-                        </b>
-                    </tr>
-                    <tr>
-                        <b>
-                            <div class="field" style="padding: 12px;">
-                                <input type="button" class="btn printConf" data-id="<?php echo $central['centralEntrega'] ?>" id="printConf-<?php echo $central['centralEntrega'] ?>" value="Imprimir Mapas Conferência" name="printConf-<?php echo $central['centralEntrega'] ?>">
-                            </div>
-                        </b>
-                    </tr>
-                </table>
+                <b>
+                    <input type="button" class="btn selectCentral" data-id="<?php echo $central['centralEntrega'] ?>" id="central-<?php echo $central['centralEntrega'] ?>" value="Selecionar Mapa/Etiqueta" name="central-<?php echo $central['centralEntrega'] ?>">
+                    <input type="button" class="btn printAll" data-id="<?php echo $central['centralEntrega'] ?>" id="printAll-<?php echo $central['centralEntrega'] ?>" value="Imprimir tudo" name="printAll-<?php echo $central['centralEntrega'] ?>">
+                    <input type="button" class="btn printConf" data-id="<?php echo $central['centralEntrega'] ?>" id="printConf-<?php echo $central['centralEntrega'] ?>" value="Imprimir Mapas Conferência" name="printConf-<?php echo $central['centralEntrega'] ?>">
+                </b>
             </div>
         </fieldset>
     <?php endforeach; ?>
@@ -72,6 +56,10 @@
         });
 
         $('.selectCentral').click(function (a) {
+            executeCommand("userSelect");
+        });
+
+        function executeCommand(option) {
             var arr = [];
             for (var i = 0; i < $('input[name="cargas"]:checked').length; i++) {
                 arr[i] = $('input[name="cargas"]:checked')[i].value;
@@ -95,14 +83,21 @@
                         return
                     }
                     a.preventDefault();
-                    $.wmsDialogAjax({
-                        width: 750,
-                        height: 450,
-                        url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>',
-                        title: 'Mapas/Etiquetas Pendentes de Impressão'
-                    });
+                    if (option === '"userSelect') {
+                        $.wmsDialogAjax({
+                            width: 750,
+                            height: 450,
+                            url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>',
+                            title: 'Mapas/Etiquetas Pendentes de Impressão'
+                        });
+                    } else {
+                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+arr, '_blank');
+                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+arr, '_blank');
+                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/conf/1/idMapa/'+arr, '_blank');
+                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/idExpedicao/<?php echo $this->idExpedicao; ?>/tipo/reentrega/todas/N/', '_blank');
+                    }
                 }
             });
-        });
+        }
     });
 </script>
