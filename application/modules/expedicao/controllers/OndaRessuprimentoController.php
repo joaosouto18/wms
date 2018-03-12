@@ -102,7 +102,6 @@ class Expedicao_OndaRessuprimentoController extends Action {
                     $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
 
                     $return['response'][] = $mensagem;
-                    //$this->addFlashMessage("error", $mensagem);
                 }
             }
 
@@ -121,7 +120,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
                 $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'produtos-descasados-ajax', 'expedicoes' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos Descasados</a>';
                 $mensagem = 'Existem Produtos descasados nas Expedições Selecionadas. Clique para exibir ' . $link;
 
-                $this->addFlashMessage("error", $mensagem);
+                $return['response'][] = $mensagem;
             }
 
             ini_set('max_execution_time', 300);
@@ -142,7 +141,6 @@ class Expedicao_OndaRessuprimentoController extends Action {
                 $return['status'] = 'Ok';
                 $return['response'][] = $result['observacao'];
                 $return['expedicoes'] = $idsExpedicoes;
-                //$this->addFlashMessage("success", $result['observacao']);
             }
 
             $expedicaoRepo->changeStatusExpedicao($expedicoes, 'N');
@@ -152,11 +150,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
             $return['status'] = 'Error';
             $return['response'][] = "Falha gerando ressuprimento. " . $e->getMessage();
             $return['expedicoes'] = null;
-            //$this->addFlashMessage("error", "Falha gerando ressuprimento. " . $e->getMessage());
         }
-        //$this->redirect("index", "onda-ressuprimento", "expedicao");
-        $return['response'][] = "Mensagem Teste";
-        $return['expedicoes'][] = "9999";
 
         $this->_helper->json($return);
     }

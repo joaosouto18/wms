@@ -55,17 +55,31 @@
             });
         });
 
-        $('.selectCentral').click(function (a) {
-            executeCommand("userSelect");
+        $('.selectCentral').click(function (ev) {
+            executeCommand($(this), "userSelect", ev);
         });
 
-        function executeCommand(option) {
+        $('.printAll').click(function (ev) {
+            executeCommand($(this), "printAll", ev);
+        });
+
+        $('.printConf').click(function (ev) {
+            executeCommand($(this), "printConf", ev);
+        });
+
+        function executeCommand(element, option, ev) {
             var arr = [];
             for (var i = 0; i < $('input[name="cargas"]:checked').length; i++) {
                 arr[i] = $('input[name="cargas"]:checked')[i].value;
             }
+            if (arr.length === 0) {
+                $.wmsDialogAlert({
+                    title: "---  Sistema  ---",
+                    msg: "Selecione ao menos uma carga"
+                })
+            }
             $.ajax({
-                url: URL_MODULO + '/etiqueta/imprimir/id/<?php echo $this->expedicao ?>/central/' + $(this).attr('data-id'),
+                url: URL_MODULO + '/etiqueta/imprimir/id/<?php echo $this->expedicao ?>/central/' + element.attr('data-id'),
                 type: 'POST',
                 data: { cargas: arr },
                 success: function(data){
@@ -82,7 +96,7 @@
                         }
                         return
                     }
-                    a.preventDefault();
+                    ev.preventDefault();
                     if (option === '"userSelect') {
                         $.wmsDialogAjax({
                             width: 750,
@@ -98,9 +112,14 @@
                             success: function (data) {
                                 if (option === "printAll") {
                                     if (data.mapas.length > 0) {
-                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+arr, '_blank');
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+ data.mapas , '_blank');
                                     }
-
+                                    if (data.etiquetas.length > 0) {
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+ data.etiquetas, '_blank');
+                                    }
+                                    if (data.temReentrega === "S") {
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/reentrega/idExpedicao/<?php echo $this->idExpedicao; ?>/todas/N/', '_blank');
+                                    }
                                 } else {
                                     if (data.mapas.length > 0) {
                                         window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/conf/1/idMapa/' + data.mapas, '_blank');
@@ -113,8 +132,6 @@
                                 }
                             }
                         });
-
-
                     }
                 }
             });
