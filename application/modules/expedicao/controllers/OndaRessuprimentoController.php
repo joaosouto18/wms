@@ -155,6 +155,9 @@ class Expedicao_OndaRessuprimentoController extends Action {
             //$this->addFlashMessage("error", "Falha gerando ressuprimento. " . $e->getMessage());
         }
         //$this->redirect("index", "onda-ressuprimento", "expedicao");
+        $return['response'][] = "Mensagem Teste";
+        $return['expedicoes'][] = "9999";
+
         $this->_helper->json($return);
     }
 

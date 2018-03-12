@@ -78,7 +78,7 @@
         };
 
         // show a spinner or something via css
-        var dialog = $('<div id="wms-dialog-msg" style="display:none; font-size: 12px;">' + config.msg + '</div>').appendTo('body');
+        var dialog = $('<div id="wms-dialog-confirm" style="display:none; font-size: 12px;">' + config.msg + '</div>').appendTo('body');
 
         // open the dialog
         dialog.dialog({
@@ -185,5 +185,35 @@
                 $.blockUI();
             }
         }); 
+    };
+
+    $.wmsDialogModal = function(settings, htmlBodyModal){
+        var config = {
+            'title': settings.title,
+            'width': (!!settings.width)? settings.width : 500,
+            'height': (!!settings.height)? settings.height : 'auto',
+            'resizable': (!!settings.resizable)? settings.resizable : true,
+            'position' : (!!settings.position)? settings.position : 'center',
+            'modal' :  (!!settings.modal)? settings.modal :  true
+        };
+
+        // show a spinner or something via css
+        var dialog = $('<div id="wms-dialog-modal" style="display:none; font-size: 12px;">' + htmlBodyModal + '</div>').appendTo('body');
+
+        // open the dialog
+        dialog.dialog({
+            width : config.width,
+            height : config.height,
+            resizable: config.resizable,
+            title : config.title,
+            modal: config.modal,
+            position: config.position,
+            buttons: config.buttons,
+            // add a close listener to prevent adding multiple divs to the document
+            close: function(event, ui) {
+                // remove div with all data and events
+                dialog.remove();
+            }
+        });
     };
 })(jQuery);

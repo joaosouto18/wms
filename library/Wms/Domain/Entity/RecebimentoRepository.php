@@ -1836,7 +1836,8 @@ class RecebimentoRepository extends EntityRepository {
 
     private function checkVolumesDivergentes($idRecebimento, $idOrdemServico, $idProduto, $dscGrade) {
         $sql = "SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE
-                FROM RECEBIMENTO_VOLUME RV 
+                FROM (SELECT COD_PRODUTO_VOLUME, COD_OS, SUM(QTD_CONFERIDA) QTD_CONFERIDA, COD_RECEBIMENTO
+                      FROM RECEBIMENTO_VOLUME GROUP BY COD_RECEBIMENTO, COD_OS, COD_PRODUTO_VOLUME) RV 
                 INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
                 WHERE PV.COD_PRODUTO = '$idProduto' AND PV.DSC_GRADE = '$dscGrade' AND RV.COD_RECEBIMENTO = $idRecebimento AND RV.COD_OS = $idOrdemServico
                 GROUP BY PV.COD_PRODUTO, PV.DSC_GRADE HAVING COUNT(DISTINCT RV.QTD_CONFERIDA) > 1";
