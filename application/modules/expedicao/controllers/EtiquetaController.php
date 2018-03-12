@@ -126,24 +126,41 @@ class Expedicao_EtiquetaController  extends Action
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
         $idExpedicao = $this->_getParam('id',0);
+        $return = $this->_getParam('return', 'view');
 
         $this->view->idExpedicao = $idExpedicao;
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
-        $this->view->mapasSeparacao = $mapaSeparacaoEn = $mapaSeparacaoRepo->findBy(array('codExpedicao' => $idExpedicao, 'codStatus' => \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO), array('id' => 'ASC'));
+        $mapas = $mapaSeparacaoRepo->findBy(array('codExpedicao' => $idExpedicao, 'codStatus' => \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO), array('id' => 'ASC'));
 
         /**@var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaSeparacaoRepo */
         $etiquetaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        $this->view->etiquetasSeparacao = $etiquetaSeparacaoEn = $etiquetaSeparacaoRepo->getEtiquetaPendenteImpressao($idExpedicao);
+        $etiquetas = $etiquetaSeparacaoRepo->getEtiquetaPendenteImpressao($idExpedicao);
 
         $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
         $pendencias = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status);
         if (count($pendencias) >0) {
-            $this->view->reentrega = 'S';
+            $temReentrega = 'S';
         } else {
-            $this->view->reentrega = 'N';
+            $temReentrega = 'N';
         }
 
+        if ($return == "view") {
+            $this->view->mapasSeparacao = $mapas;
+            $this->view->etiquetasSeparacao = $etiquetas;
+            $this->view->reentrega = $temReentrega;
+        } else {
+            $idsMapas = [];
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacao $mapa */
+            foreach ($mapas as $mapa) {
+                $idsMapas[] = $mapa->getId();
+            }
+            $idsEtiquetas = [];
+            foreach($etiquetas as $etiquetaSeparacao) {
+                $idsEtiquetas[] = $etiquetaSeparacao['id'];
+            }
+            $this->_helper->json(["mapas" => $idsMapas, "etiquetas" => $idsEtiquetas, "temReentrega", $temReentrega]);
+        }
     }
 
     public function etiquetaCargaAjaxAction(){
@@ -180,9 +197,10 @@ class Expedicao_EtiquetaController  extends Action
         if ($tipo == "mapa") {
             if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idMapa) > 0) {
                 $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
-                $modelo = $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO');
                 if($conf == 1){
                     $modelo = 6;
+                } else {
+                    $modelo = $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO');
                 }
 
                 $mapa->layoutMapa($idExpedicao, $modelo, $idMapa, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);

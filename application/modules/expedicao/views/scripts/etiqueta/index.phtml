@@ -87,14 +87,34 @@
                         $.wmsDialogAjax({
                             width: 750,
                             height: 450,
-                            url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>',
+                            url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>/return/view',
                             title: 'Mapas/Etiquetas Pendentes de Impressão'
                         });
                     } else {
-                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+arr, '_blank');
-                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+arr, '_blank');
-                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/conf/1/idMapa/'+arr, '_blank');
-                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/idExpedicao/<?php echo $this->idExpedicao; ?>/tipo/reentrega/todas/N/', '_blank');
+                        $.ajax({
+                            url: URL_MODULO + '/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>/return/json',
+                            type: 'GET',
+                            assync: false,
+                            success: function (data) {
+                                if (option === "printAll") {
+                                    if (data.mapas.length > 0) {
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+arr, '_blank');
+                                    }
+
+                                } else {
+                                    if (data.mapas.length > 0) {
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/conf/1/idMapa/' + data.mapas, '_blank');
+                                    } else {
+                                        $.wmsDialogAlert({
+                                            title: 'Falha no procedimento',
+                                            msg: "Nenhum mapa foi gerado para conferência"
+                                        });
+                                    }
+                                }
+                            }
+                        });
+
+
                     }
                 }
             });
