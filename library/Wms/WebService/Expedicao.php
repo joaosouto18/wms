@@ -761,7 +761,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
             'codTipoCarga' => $carga['tipoCarga'],
             'centralEntrega' => $carga['centralEntrega'],
             'placaCarga' => $carga['placa'],
-            'placaExpedicao' => $carga['placaExpedicao']
+            'placaExpedicao' => $carga['placaExpedicao'],
+            'motorista' => $carga['motorista']
         );
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */

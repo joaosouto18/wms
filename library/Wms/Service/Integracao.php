@@ -531,7 +531,8 @@ class Integracao {
                         'idCarga' => $idCarga,
                         'placaExpedicao' => $row['PLACA'],
                         'placa' => $row['PLACA'],
-                        'pedidos' => $pedidos
+                        'pedidos' => $pedidos,
+                        'motorista' => $row['NOM_MOTORISTA']
                     );
                     $cargas[] = $carga;
 
