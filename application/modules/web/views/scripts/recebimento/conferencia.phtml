@@ -118,12 +118,13 @@
                         <?php  } ?>
                         <td>
                             <?php
-                            echo $this->formSelect("norma[{$produto['codigo']}][{$produto['grade']}]", key($produto['normas']) ,array(
-                                    'required' => true,
-                                    'class' => "norma",
-                                    'title' => "Norma de paletizacao do produto $produto[codigo]-$produto[grade]",
-                                    'empty_option' => "Selecione a norma"
-                            ), $produto['normas'])
+                            if (isset($produto['normas']) && !empty($produto['normas']))
+                                echo $this->formSelect("norma[{$produto['codigo']}][{$produto['grade']}]", key($produto['normas']) ,array(
+                                        'required' => true,
+                                        'class' => "norma",
+                                        'title' => "Norma de paletizacao do produto $produto[codigo]-$produto[grade]",
+                                        'empty_option' => "Selecione a norma"
+                                ), $produto['normas'])
                             ?>
                         </td>
                         <td>
