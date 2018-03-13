@@ -639,8 +639,22 @@ class PaleteRepository extends EntityRepository {
         $qtdTotalConferido = 0;
         $pesoTotalConferido = 0;
         foreach ($qtdRecebida as $recebido) {
-            $qtdTotalConferido = $qtdTotalConferido + $recebido['QTD'];
-            $pesoTotalConferido += $recebido['PESO'];
+            if ($tipo == "E") {
+                $qtdTotalConferido = $qtdTotalConferido + $recebido['QTD'];
+                $pesoTotalConferido += $recebido['PESO'];
+            } else {
+                if ($qtdTotalConferido == 0) {
+                    $qtdTotalConferido = $recebido['QTD'];
+                } else if ($recebido['QTD'] < $qtdTotalConferido) {
+                    $qtdTotalConferido = $recebido['QTD'];
+                }
+
+                if ($pesoTotalConferido == 0) {
+                    $pesoTotalConferido = $recebido['PESO'];
+                } else if ($recebido['PESO'] < $pesoTotalConferido) {
+                    $pesoTotalConferido = $recebido['PESO'];
+                }
+            }
         }
 
         foreach ($qtdEnderecada as $enderecado) {
