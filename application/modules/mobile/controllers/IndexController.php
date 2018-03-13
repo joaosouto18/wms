@@ -74,6 +74,7 @@ class Mobile_IndexController  extends Action
         $expRepository = $this->getEntityManager()->getRepository('wms:Expedicao');
         $enderecos = $expRepository->getEtiquetasPd($this->_getParam('expedicao'));
         if(empty($enderecos)){
+            $this->addFlashMessage('info','Todas as etiquetas de pulmão doca da expedição '. $this->_getParam('expedicao') . ' já foram separadas')
             $this->_redirect('/mobile/index/separacao-pulmao-doca-ajax');
         }
         $this->view->enderecos = $enderecos;

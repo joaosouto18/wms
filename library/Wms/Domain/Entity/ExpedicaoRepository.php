@@ -3908,10 +3908,13 @@ class ExpedicaoRepository extends EntityRepository {
     }
 
     public function getExpedicoesPD(){
-        $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA;
-        $SQL = "SELECT DISTINCT E.COD_EXPEDICAO FROM 
-                EXPEDICAO E INNER JOIN RESERVA_ESTOQUE_EXPEDICAO RE ON RE.COD_EXPEDICAO = E.COD_EXPEDICAO 
-                WHERE RE.TIPO_SAIDA = $tipoSaida AND E.COD_STATUS = 463";
+
+        $SQL = "SELECT DISTINCT E.COD_EXPEDICAO
+                     FROM ETIQUETA_SEPARACAO ES
+                    INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                    INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                    INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                    WHERE ES.DTH_SEPARACAO IS NULL AND ES.TIPO_SAIDA = 3 AND E.COD_STATUS IN (463,464)";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
