@@ -985,7 +985,7 @@ class RecebimentoRepository extends EntityRepository {
                               GROUP BY R.COD_PRODUTO, R.DSC_GRADE, P.IND_POSSUI_PESO_VARIAVEL) CONFERIDO
                     ON CONFERIDO.COD_PRODUTO = V.COD_PRODUTO
                    AND CONFERIDO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) / PV.QTD_NORMAS as QTD,
+                  LEFT JOIN (SELECT SUM(QTD) / NVL(PV.QTD_NORMAS,1) as QTD,
                                     V.COD_PRODUTO,
                                     V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
@@ -1006,7 +1006,7 @@ class RecebimentoRepository extends EntityRepository {
                                       GROUP BY V.COD_PRODUTO, V.DSC_GRADE, PV.QTD_NORMAS) RECEBIDO
                     ON RECEBIDO.COD_PRODUTO = V.COD_PRODUTO
                    AND RECEBIDO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) / PV.QTD_NORMAS as QTD,
+                  LEFT JOIN (SELECT SUM(QTD) / NVL(PV.QTD_NORMAS,1) as QTD,
                                     V.COD_PRODUTO,
                                     V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
@@ -1027,7 +1027,7 @@ class RecebimentoRepository extends EntityRepository {
                                       GROUP BY V.COD_PRODUTO, V.DSC_GRADE, PV.QTD_NORMAS) ENDERECADO
                     ON ENDERECADO.COD_PRODUTO = V.COD_PRODUTO
                    AND ENDERECADO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) / PV.QTD_NORMAS as QTD,
+                  LEFT JOIN (SELECT SUM(QTD) / NVL(PV.QTD_NORMAS,1) as QTD,
                                     V.COD_PRODUTO,
                                     V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
@@ -1048,7 +1048,7 @@ class RecebimentoRepository extends EntityRepository {
                                       GROUP BY V.COD_PRODUTO, V.DSC_GRADE, PV.QTD_NORMAS) ENDERECAMENTO
                     ON ENDERECAMENTO.COD_PRODUTO = V.COD_PRODUTO
                    AND ENDERECAMENTO.DSC_GRADE = V.DSC_GRADE   
-                  LEFT JOIN (SELECT SUM(QTD) / QTD_NORMAS as QTD,
+                  LEFT JOIN (SELECT SUM(QTD) / NVL(QTD_NORMAS,1) as QTD,
                                     V.COD_PRODUTO,
                                     V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
