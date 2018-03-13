@@ -127,13 +127,15 @@ class PaleteRepository extends EntityRepository {
                                $whereCodRecebimento
                               GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE)
                       GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND QTD_TOTAL.QTD_TOTAL > 0
-          LEFT JOIN (SELECT TRUNC(SUM(QTD)) as QTD, COD_RECEBIMENTO
-                     FROM (SELECT DISTINCT (SUM(PP.QTD) / COUNT(DISTINCT NVL(PP.COD_PRODUTO_VOLUME, 1))) QTD, PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO
-                            FROM PALETE_PRODUTO PP
-                            INNER JOIN PALETE R ON R.UMA = PP.UMA
-                            $whereCodRecebimento
-                            AND R.COD_STATUS = $stsPaleteEnderecado
-                            GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO)
+          LEFT JOIN (SELECT SUM(QTD) as QTD, COD_RECEBIMENTO
+                       FROM (SELECT DISTINCT (SUM(PP.QTD) / NVL(PV.QTD_NORMAS, 1)) QTD, PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO
+                               FROM PALETE_PRODUTO PP
+                              INNER JOIN PALETE R ON R.UMA = PP.UMA
+                               LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV 
+                                 ON PV.COD_PRODUTO = PP.COD_PRODUTO AND PV.DSC_GRADE = PP.DSC_GRADE
+                                    $whereCodRecebimento
+                                AND R.COD_STATUS = $stsPaleteEnderecado
+                              GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO, PV.QTD_NORMAS)
                      GROUP BY COD_RECEBIMENTO) QTD_END ON QTD_END.COD_RECEBIMENTO = R.COD_RECEBIMENTO";
         $query = $query . $whereCodRecebimento;
 

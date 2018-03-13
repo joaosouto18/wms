@@ -985,9 +985,9 @@ class RecebimentoRepository extends EntityRepository {
                               GROUP BY R.COD_PRODUTO, R.DSC_GRADE, P.IND_POSSUI_PESO_VARIAVEL) CONFERIDO
                     ON CONFERIDO.COD_PRODUTO = V.COD_PRODUTO
                    AND CONFERIDO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
-                                    COD_PRODUTO,
-                                    DSC_GRADE 
+                  LEFT JOIN (SELECT SUM(QTD) / PV.QTD_NORMAS as QTD,
+                                    V.COD_PRODUTO,
+                                    V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
                                                      CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
                                                           ELSE PP.QTD 
@@ -1001,13 +1001,14 @@ class RecebimentoRepository extends EntityRepository {
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
-                                        AND P.COD_STATUS = 534)
-                                      GROUP BY COD_PRODUTO, DSC_GRADE) RECEBIDO
+                                        AND P.COD_STATUS = 534) V
+                                       LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = V.COD_PRODUTO AND PV.DSC_GRADE = V.DSC_GRADE
+                                      GROUP BY V.COD_PRODUTO, V.DSC_GRADE, PV.QTD_NORMAS) RECEBIDO
                     ON RECEBIDO.COD_PRODUTO = V.COD_PRODUTO
                    AND RECEBIDO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
-                                    COD_PRODUTO,
-                                    DSC_GRADE 
+                  LEFT JOIN (SELECT SUM(QTD) / PV.QTD_NORMAS as QTD,
+                                    V.COD_PRODUTO,
+                                    V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
                                                      CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
                                                           ELSE PP.QTD 
@@ -1021,13 +1022,14 @@ class RecebimentoRepository extends EntityRepository {
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
-                                        AND P.COD_STATUS = 536)
-                                      GROUP BY COD_PRODUTO, DSC_GRADE) ENDERECADO
+                                        AND P.COD_STATUS = 536) V
+                                       LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = V.COD_PRODUTO AND PV.DSC_GRADE = V.DSC_GRADE
+                                      GROUP BY V.COD_PRODUTO, V.DSC_GRADE, PV.QTD_NORMAS) ENDERECADO
                     ON ENDERECADO.COD_PRODUTO = V.COD_PRODUTO
                    AND ENDERECADO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
-                                    COD_PRODUTO,
-                                    DSC_GRADE 
+                  LEFT JOIN (SELECT SUM(QTD) / PV.QTD_NORMAS as QTD,
+                                    V.COD_PRODUTO,
+                                    V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
                                                      CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
                                                           ELSE PP.QTD 
@@ -1041,13 +1043,14 @@ class RecebimentoRepository extends EntityRepository {
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
-                                        AND P.COD_STATUS = 535)
-                                      GROUP BY COD_PRODUTO, DSC_GRADE) ENDERECAMENTO
+                                        AND P.COD_STATUS = 535) V
+                                       LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = V.COD_PRODUTO AND PV.DSC_GRADE = V.DSC_GRADE
+                                      GROUP BY V.COD_PRODUTO, V.DSC_GRADE, PV.QTD_NORMAS) ENDERECAMENTO
                     ON ENDERECAMENTO.COD_PRODUTO = V.COD_PRODUTO
                    AND ENDERECAMENTO.DSC_GRADE = V.DSC_GRADE   
-                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
-                                    COD_PRODUTO,
-                                    DSC_GRADE 
+                  LEFT JOIN (SELECT SUM(QTD) / QTD_NORMAS as QTD,
+                                    V.COD_PRODUTO,
+                                    V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
                                                      CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
                                                           ELSE PP.QTD 
@@ -1061,8 +1064,9 @@ class RecebimentoRepository extends EntityRepository {
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
-                                        AND P.COD_STATUS <> 537)
-                                      GROUP BY COD_PRODUTO, DSC_GRADE) GERADO
+                                        AND P.COD_STATUS <> 537) V
+                                       LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = V.COD_PRODUTO AND PV.DSC_GRADE = V.DSC_GRADE
+                                      GROUP BY V.COD_PRODUTO, V.DSC_GRADE, PV.QTD_NORMAS) GERADO
                     ON GERADO.COD_PRODUTO = V.COD_PRODUTO
                    AND GERADO.DSC_GRADE = V.DSC_GRADE   
                   LEFT JOIN (SELECT CASE WHEN P.IND_POSSUI_PESO_VARIAVEL = 'S' THEN SUM(NVL(NFI.NUM_PESO,0))
