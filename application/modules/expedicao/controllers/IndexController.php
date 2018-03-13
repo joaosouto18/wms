@@ -328,6 +328,7 @@ class Expedicao_IndexController extends Action {
                 $this->redirect("index", 'index', 'expedicao');
             } catch (\Exception $e) {
                 $this->_helper->messenger('error', $e->getMessage());
+                $this->redirect("index", 'index', 'expedicao');
             }
 
         } elseif (isset($params['salvar']) && empty($params['placa'])) {

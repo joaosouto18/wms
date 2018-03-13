@@ -98,9 +98,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->where('es.codExpedicao = :idExpedicao')
-            ->andWhere('es.codStatus = :Status')
-            ->setParameter('idExpedicao', $expedicaoEn->getId())
-            ->setParameter('Status', $status);
+            ->setParameter('idExpedicao', $expedicaoEn->getId());
+
+        if ($status != null) {
+            $dql->andWhere('es.codStatus = :Status')
+                ->setParameter('Status', $status);
+        }
 
         if ($centralEntrega != NULL) {
             if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO) {
