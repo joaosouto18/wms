@@ -1096,12 +1096,12 @@ class RecebimentoRepository extends EntityRepository {
                 'produto' => $row['DSC_PRODUTO'],
                 'grade' => $row['DSC_GRADE'],
                 'picking' => $picking,
-                'qtdItensNf' => $row['QTD_NOTA_FISCAL'],
-                'qtdRecebimento' => $row['QTD_RECEBIMENTO'],
-                'qtdRecebida' => $row['QTD_RECEBIDA'],
-                'qtdEnderecamento' => $row['QTD_ENDERECAMENTO'],
-                'qtdEnderecada' => $row['QTD_ENDERECADA'],
-                'qtdTotal' => $row['QTD_TOTAL']
+                'qtdItensNf' => round($row['QTD_NOTA_FISCAL'],5),
+                'qtdRecebimento' => round($row['QTD_RECEBIMENTO'],5),
+                'qtdRecebida' => round($row['QTD_RECEBIDA'],5),
+                'qtdEnderecamento' => round($row['QTD_ENDERECAMENTO'],5),
+                'qtdEnderecada' => round($row['QTD_ENDERECADA'],5),
+                'qtdTotal' => round($row['QTD_TOTAL'],5)
             );
         }
 
