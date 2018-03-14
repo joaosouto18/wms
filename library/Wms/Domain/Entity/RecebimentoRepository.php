@@ -1815,7 +1815,7 @@ class RecebimentoRepository extends EntityRepository {
                             SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE, RV.QTD_CONFERIDA AS QTD, RV.COD_NORMA_PALETIZACAO
                             FROM RECEBIMENTO_VOLUME RV 
                             INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
-                            WHERE RV.COD_OS = $idOrdemServico
+                            WHERE RV.COD_OS = $idOrdemServico AND RV.COD_NORMA_PALETIZACAO IS NOT NULL
                             UNION ALL
                             SELECT PE.COD_PRODUTO, PE.DSC_GRADE, RE.QTD_CONFERIDA * RE.QTD_EMBALAGEM AS QTD, RE.COD_NORMA_PALETIZACAO
                             FROM RECEBIMENTO_EMBALAGEM RE
