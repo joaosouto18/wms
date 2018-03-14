@@ -139,12 +139,11 @@ class Expedicao_OndaRessuprimentoController extends Action {
             } else {
                 $this->addFlashMessage("success", $result['observacao']);
             }
-            $expedicaoRepo->changeStatusExpedicao($expedicoes, 'N');
         } catch (\Exception $e) {
             $this->em->rollback();
-            $expedicaoRepo->changeStatusExpedicao($expedicoes, 'N');
             $this->addFlashMessage("error", "Falha gerando ressuprimento. " . $e->getMessage());
         }
+        $expedicaoRepo->changeStatusExpedicao($expedicoes, 'N');
         $this->redirect("index", "onda-ressuprimento", "expedicao");
     }
 
