@@ -361,4 +361,5 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (362, '6.15.0', 'Melhoria: Inclusão de um campo com o grupo de volumes no relatório de produtos para exportação', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (363, '6.15.0', 'Melhoria: Trava para impedir recebimento com volumes em quantidades divergentes', '19-Conferencia-volumes-divergentes.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (364, '6.15.0', 'Correção: Correção na View V_QTD_RECEBIMENTO e criação da view detalhada à nivel de norma de paletizacao', '20-V_QTD_RECEBIMENTO-Versao-Final.sql', SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '6.15.x', 'Correção: Regra de corte caso item controle validade respeitando FIFO ou otimizando separação caso controle validade', null, SYSDATE);
 

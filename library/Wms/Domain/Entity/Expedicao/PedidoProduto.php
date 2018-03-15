@@ -76,16 +76,6 @@ class PedidoProduto
      * @Column(name="QTD_CORTADO_AUTOMATICO", type="decimal")
      */
     protected $qtdCortadoAutomatico;
-
-    public function setProdutos($produtos)
-    {
-        $this->produtos = $produtos;
-    }
-
-    public function getProdutos()
-    {
-        return $this->produtos;
-    }
         
     public function setGrade($grade)
     {
