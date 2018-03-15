@@ -3423,7 +3423,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
-            $where = " AND P.COD_PEDIDO = " . $parametros['pedido'] . "";
+            $where = " AND P.COD_PEDIDO = '" . $parametros['pedido'] . "'";
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
@@ -3535,7 +3535,7 @@ class ExpedicaoRepository extends EntityRepository {
           FROM PEDIDO_PRODUTO PP
           LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
           LEFT JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
-          WHERE COD_PEDIDO = $idPedido";
+          WHERE COD_PEDIDO = '$idPedido'";
 
         if ($params['pedidoCompleto'] == false) {
             if (isset($params['idProduto']) && ($params['idProduto'] != null)) {
@@ -3710,7 +3710,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         $SQL = "SELECT * 
                   FROM PEDIDO_PRODUTO PP
-                 WHERE COD_PEDIDO = $codPedido 
+                 WHERE COD_PEDIDO = '$codPedido' 
                    AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
         $ppSemCortes = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (count($ppSemCortes) == 0) {
@@ -3732,7 +3732,7 @@ class ExpedicaoRepository extends EntityRepository {
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
                   LEFT JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                 WHERE PP.COD_PEDIDO = $idPedido
+                 WHERE PP.COD_PEDIDO = '$idPedido'
                  GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
