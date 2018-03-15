@@ -3595,6 +3595,18 @@ class ExpedicaoRepository extends EntityRepository {
         }
     }
 
+    /**
+     * @param $codPedido
+     * @param $pedidoProdutoEn ExpedicaoEntity\PedidoProduto
+     * @param $codProduto
+     * @param $grade
+     * @param $qtdCortar
+     * @param $motivo
+     * @param null $corteAutomatico
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
+     */
     public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null) {
 
         /** @var ExpedicaoEntity\AndamentoRepository $expedicaoAndamentoRepo */
@@ -3622,12 +3634,21 @@ class ExpedicaoRepository extends EntityRepository {
             $qtdCortar = Math::subtrair($qtdPedido, $qtdCortada);
         }
 
+        $produtoEn = $pedidoProdutoEn->getProduto();
+
+        if ($produtoEn->getValidade() == "N") {
+            $ordenacao = "TO_NUMBER(REP.QTD_RESERVADA * -1) ASC";
+        } else {
+            $ordenacao = "TO_NUMBER(REE.COD_RESERVA_ESTOQUE) DESC";
+        }
+
         $SQL = "SELECT DISTINCT REE.COD_RESERVA_ESTOQUE ID, REP.QTD_RESERVADA QTD
                   FROM RESERVA_ESTOQUE_EXPEDICAO REE
                   LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
                  WHERE REE.COD_PEDIDO = '$codPedido'
                    AND REP.COD_PRODUTO = '$codProduto'
-                   AND REP.DSC_GRADE = '$grade'";
+                   AND REP.DSC_GRADE = '$grade'
+                 ORDER BY $ordenacao";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $valToNext = 0;
@@ -3642,6 +3663,7 @@ class ExpedicaoRepository extends EntityRepository {
                 } else {
                     $reservaEstoqueProduto->setQtd($check);
                     $this->getEntityManager()->persist($reservaEstoqueProduto);
+                    $valToNext = 0;
                 }
             }
             $qtdRemoveReserva = $valToNext;
