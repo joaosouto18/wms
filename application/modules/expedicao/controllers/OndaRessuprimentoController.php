@@ -67,8 +67,8 @@ class Expedicao_OndaRessuprimentoController extends Action {
                 throw new \Exception("Nenhuma expedição selecionada");
 
             $expedicoes = implode(',', $idsExpedicoes);
-
-            $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoes, true);
+            $expedicoesSelecionadas = $expedicoes;
+            $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoesSelecionadas, true);
 
             $expedicaoRepo->changeStatusExpedicao($expedicoes, 'S');
 
@@ -143,7 +143,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
             $this->em->rollback();
             $this->addFlashMessage("error", "Falha gerando ressuprimento. " . $e->getMessage());
         }
-        $expedicaoRepo->changeStatusExpedicao($expedicoes, 'N');
+        $expedicaoRepo->changeStatusExpedicao($expedicoesSelecionadas, 'N');
         $this->redirect("index", "onda-ressuprimento", "expedicao");
     }
 
