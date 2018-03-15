@@ -3615,7 +3615,6 @@ class ExpedicaoRepository extends EntityRepository {
         $mapaSeparacaoPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-        $mapaPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
 
         if (empty($pedidoProdutoEn)) {
             /** @var ExpedicaoEntity\PedidoProdutoRepository $pedidoProdutoRepo */
@@ -3680,18 +3679,12 @@ class ExpedicaoRepository extends EntityRepository {
         $this->getEntityManager()->persist($pedidoProdutoEn);
 
         //Seta na mapa_separacao_pedido a quantidade cortada baseada na quantia já cortada mais a nova qtd
-        /** @var ExpedicaoEntity\MapaSeparacaoPedido $mapaPedidoEn */
-        $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array("pedidoProduto" => $pedidoProdutoEn));
-        if (!empty($mapaPedidoEn)) {
-            $mapaPedidoEn->addCorte($qtdCortar);
-            $this->getEntityManager()->persist($mapaPedidoEn);
+        /** @var ExpedicaoEntity\MapaSeparacaoPedido $mapaSeparacaoPedido */
+        $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array("pedidoProduto" => $pedidoProdutoEn));
+        if (!empty($mapaSeparacaoPedido)) {
+            $mapaSeparacaoPedido->addCorte($qtdCortar);
+            $this->getEntityManager()->persist($mapaSeparacaoPedido);
         }
-
-        $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
-        $observacao = "Item $codProduto - $grade do pedido $codPedido teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
-        $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
-
-        $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array('codPedidoProduto' => $pedidoProdutoEn->getId()));
 
         if (!empty($mapaSeparacaoPedido)) {
             $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapaSeparacaoPedido->getMapaSeparacao(),
@@ -3699,27 +3692,27 @@ class ExpedicaoRepository extends EntityRepository {
                 'dscGrade' => $grade));
 
             if (!empty($entidadeMapaProduto)) {
-                /** @var ExpedicaoEntity\MapaSeparacaoProduto $mapa */
-                foreach ($entidadeMapaProduto as $mapa) {
-                    $qtdCortadaMapa = $mapa->getQtdCortado();
-                    $qtdSeparar = Math::multiplicar($mapa->getQtdEmbalagem(), $mapa->getQtdSeparar());
+                /** @var ExpedicaoEntity\MapaSeparacaoProduto $itemMapa */
+                foreach ($entidadeMapaProduto as $itemMapa) {
+                    $qtdCortadaMapa = $itemMapa->getQtdCortado();
+                    $qtdSeparar = Math::multiplicar($itemMapa->getQtdEmbalagem(), $itemMapa->getQtdSeparar());
                     if (Math::compare($qtdCortadaMapa, $qtdSeparar, '<')) {
                         $qtdDisponivelDeCorte = Math::subtrair($qtdSeparar, $qtdCortadaMapa);
                         if (Math::compare($qtdDisponivelDeCorte, $qtdCortar, '>=')) {
-                            $mapa->setQtdCortado(Math::adicionar($qtdCortar, $qtdCortadaMapa));
-                            $qtdCortar = Math::decrementar($qtdCortar);
+                            $itemMapa->setQtdCortado(Math::adicionar($qtdCortar, $qtdCortadaMapa));
+                            $qtdCortar = 0;
                         } else {
-                            $mapa->setQtdCortado($mapa->getQtdSeparar());
-                            $qtdCortar = Math::decrementar($qtdCortar);
+                            $itemMapa->setQtdCortado($itemMapa->getQtdSeparar());
+                            $qtdCortar = Math::subtrair($qtdCortar, $itemMapa->getQtdSeparar());
                         }
-                        $result = Math::subtrair($qtdSeparar, $mapa->getQtdCortado());
+                        $result = Math::subtrair($qtdSeparar, $itemMapa->getQtdCortado());
                         if (empty($result)) {
-                            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('codMapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
+                            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('codMapaSeparacao' => $itemMapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
                             foreach ($mapaConferenciaEn as $conferencia) {
                                 $this->getEntityManager()->remove($conferencia);
                             }
                         }
-                        $this->getEntityManager()->persist($mapa);
+                        $this->getEntityManager()->persist($itemMapa);
                     }
                     if (empty($qtdCortar)) {
                         break;
@@ -3727,6 +3720,10 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
         }
+
+        $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
+        $observacao = "Item $codProduto - $grade do pedido $codPedido teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
+        $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
 
         $this->getEntityManager()->flush();
 
