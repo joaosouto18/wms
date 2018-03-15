@@ -22,7 +22,7 @@ class VEtiquetaSeparacao
 
     /**
      * Código do pedido
-     * @Column(name="ENTREGA", type="integer", nullable=false)
+     * @Column(name="ENTREGA", type="string", nullable=false)
      */
     protected $codEntrega;
 

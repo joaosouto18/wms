@@ -1371,11 +1371,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         } else {
                             $enderecoEn = $volume->getEndereco();
                         }
-                        $arrEnderecos[$reserva['idEndereco']] = array(
-                            'qtd' => $reserva['qtd'],
-                            'enderecoEn' => $enderecoEn,
-                            'tipoSaida' => $reserva['tipoSaida']
-                        );
+                        
+                        if ($enderecoEn != null) {
+                            $arrEnderecos[$enderecoEn->getId()] = array(
+                                'qtd' => $reserva['qtd'],
+                                'enderecoEn' => $enderecoEn,
+                                'tipoSaida' => $reserva['tipoSaida']
+                            );
+                        } else {
+                            $arrEnderecos[] = array(
+                                'qtd' => $reserva['qtd'],
+                                'enderecoEn' => $enderecoEn,
+                                'tipoSaida' => $reserva['tipoSaida']
+                            );
+                        }
                     }
                 }
 
