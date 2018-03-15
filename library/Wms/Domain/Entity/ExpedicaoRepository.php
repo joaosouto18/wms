@@ -3637,9 +3637,9 @@ class ExpedicaoRepository extends EntityRepository {
         $produtoEn = $pedidoProdutoEn->getProduto();
 
         if ($produtoEn->getValidade() == "N") {
-            $ordenacao = "TO_NUMBER(REP.QTD_RESERVADA) DESC";
+            $ordenacao = "TO_NUMBER(REP.QTD_RESERVADA * -1) ASC";
         } else {
-            $ordenacao = "TO_NUMBER(REE.COD_RESERVA_ESTOQUE) ASC";
+            $ordenacao = "TO_NUMBER(REE.COD_RESERVA_ESTOQUE) DESC";
         }
 
         $SQL = "SELECT DISTINCT REE.COD_RESERVA_ESTOQUE ID, REP.QTD_RESERVADA QTD
