@@ -361,4 +361,11 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (362, '6.15.0', 'Melhoria: Inclusão de um campo com o grupo de volumes no relatório de produtos para exportação', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (363, '6.15.0', 'Melhoria: Trava para impedir recebimento com volumes em quantidades divergentes', '19-Conferencia-volumes-divergentes.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (364, '6.15.0', 'Correção: Correção na View V_QTD_RECEBIMENTO e criação da view detalhada à nivel de norma de paletizacao', '20-V_QTD_RECEBIMENTO-Versao-Final.sql', SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (365, '6.15.1', 'Correção: Correção da consulta de pedidos com o numero do pedido como string', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (366, '6.15.1', 'Correção: Correção da impressão do numero da entrega na etiqueta quando o pedido é string', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (367, '6.15.1', 'Correção: Correção da trava de finalizar recebimento com quantidade endereçadas superior a quantidade recebida', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (368, '6.15.1', 'Correção: Aumentando o timeout da geração de ressuprimento', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (369, '6.15.1', 'Correção: Correção da impressão da etiqueta de picking', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (370, '6.15.1', 'Correção: Correção da impressão da etiqueta de reentrega', null, SYSDATE);
+
 
