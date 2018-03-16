@@ -71,7 +71,6 @@ class Web_Relatorio_ProdutosConferidosSenhaController extends \Wms\Controller\Ac
                 ->addColumn(array(
                     'label' => 'Validade',
                     'index' => 'DTH_VALIDADE',
-                    'render' => 'Data'
                 ))
                 ->addColumn(array(
                     'label' => 'ShelfLife',
@@ -80,7 +79,6 @@ class Web_Relatorio_ProdutosConferidosSenhaController extends \Wms\Controller\Ac
                 ->addColumn(array(
                     'label' => 'Dth. Conferencia',
                     'index' => 'DTH_CONFERENCIA',
-                    'render' => 'DataTime'
                 ))
                 ->addColumn(array(
                     'label' => 'Conferente',
@@ -89,7 +87,6 @@ class Web_Relatorio_ProdutosConferidosSenhaController extends \Wms\Controller\Ac
                 ->addColumn(array(
                     'label' => 'Dth. Finalização',
                     'index' => 'DTH_FINALIZACAO',
-                    'render' => 'DataTime'
                 ))
                 ->addColumn(array(
                     'label' => 'Usuário Finalização',
