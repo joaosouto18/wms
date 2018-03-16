@@ -2119,8 +2119,8 @@ class ExpedicaoRepository extends EntityRepository {
                        C.CARGAS AS "carga",
                        S.DSC_SIGLA AS "status",
                        P.IMPRIMIR AS "imprimir",
-                       PESO.NUM_PESO as "peso",
-                       PESO.NUM_CUBAGEM as "cubagem",
+                       PESO.NUM_PESO + NVL(PESO_REENTREGA.NUM_PESO,0) as "peso",
+                       PESO.NUM_CUBAGEM + NVL(PESO_REENTREGA.NUM_CUBAGEM,0) as "cubagem",
                        NVL(REE.QTD,0) as "reentrega",
                        I.ITINERARIOS AS "itinerario",
                        TIPO_PEDIDO.TIPO_PEDIDO AS "tipopedido",
@@ -2215,7 +2215,17 @@ class ExpedicaoRepository extends EntityRepository {
                                LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO AND PESO.DSC_GRADE = PP.DSC_GRADE
                                WHERE 1 = 1  ' . $FullWhere . $andWhere . '
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
-                              
+                  LEFT JOIN (SELECT C.COD_EXPEDICAO,
+                                    SUM(NVL(PESO.NUM_PESO,0) * (NFPROD.QUANTIDADE)) as NUM_PESO,
+                                    SUM(NVL(PESO.NUM_CUBAGEM,0) * (NFPROD.QUANTIDADE)) as NUM_CUBAGEM
+                               FROM REENTREGA R
+                              INNER JOIN CARGA                     C      ON C.COD_CARGA = R.COD_CARGA
+                              INNER JOIN NOTA_FISCAL_SAIDA_PRODUTO NFPROD ON NFPROD.COD_NOTA_FISCAL_SAIDA = R.COD_NOTA_FISCAL_SAIDA
+                              INNER JOIN NOTA_FISCAL_SAIDA_PEDIDO  NFPED  ON NFPED.COD_NOTA_FISCAL_SAIDA = R.COD_NOTA_FISCAL_SAIDA
+                              INNER JOIN PEDIDO                    P      ON P.COD_PEDIDO = NFPED.COD_PEDIDO  ' . $JoinExpedicao . $JoinSigla . '
+                              INNER JOIN PRODUTO_PESO              PESO   ON PESO.COD_PRODUTO = NFPROD.COD_PRODUTO AND PESO.DSC_GRADE = NFPROD.DSC_GRADE
+                              WHERE 1 = 1  ' . $FullWhere . $andWhere . ' 
+                              GROUP BY C.COD_EXPEDICAO) PESO_REENTREGA ON PESO_REENTREGA.COD_EXPEDICAO = E.COD_EXPEDICAO 
                   LEFT JOIN (
                               SELECT PED.COD_EXPEDICAO,
                                   LISTAGG (S.DSC_SIGLA,\',\') WITHIN GROUP (ORDER BY S.DSC_SIGLA) TIPO_PEDIDO
