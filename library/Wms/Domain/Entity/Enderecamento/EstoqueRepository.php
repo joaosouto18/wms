@@ -197,6 +197,7 @@ class EstoqueRepository extends EntityRepository
         $historico->setUnitizador($unitizadorEn);
         $historico->setProdutoEmbalagem($embalagemEn);
         $historico->setProdutoVolume($volumeEn);
+        $historico->setValidade($validade);
         $em->persist($historico);
 
         //VERIFICA SE O ENDERECO VAI ESTAR DISPONIVEL OU NÃO PARA ENDEREÇAMENTO
