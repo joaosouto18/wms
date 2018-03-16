@@ -538,6 +538,8 @@ class PaleteRepository extends EntityRepository {
 
     public function deletaPaletesRecebidos($idRecebimento, $idProduto, $grade) {
         $ppRepository = $this->_em->getRepository("wms:Enderecamento\PaleteProduto");
+        /** @var ReservaEstoqueEnderecamentoRepository $reservaEstoqueEndRepository */
+        $reservaEstoqueEndRepository = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
 
         $statusRecebimento = Palete::STATUS_RECEBIDO;
         $query = $this->getEntityManager()->createQueryBuilder()
@@ -553,10 +555,14 @@ class PaleteRepository extends EntityRepository {
                 ->andWhere("(pv.codProduto = '$idProduto' AND pv.grade = '$grade') OR (pe.codProduto = '$idProduto' AND pe.grade = '$grade')");
         $paletes = $query->getQuery()->getResult();
         foreach ($paletes as $key => $palete) {
+
             $produtos = $ppRepository->findBy(array('uma' => $palete->getId()));
             foreach ($produtos as $produto) {
                 $this->getEntityManager()->remove($produto);
             }
+
+            $reservaEstoqueEndRepository->removerReservaUMA($palete);
+
             $this->getEntityManager()->remove($palete);
         }
         $this->_em->flush();
@@ -1191,19 +1197,8 @@ class PaleteRepository extends EntityRepository {
                     /** @var ReservaEstoqueEnderecamentoRepository $reservaEstoqueEnderecamentoRepo */
                     $reservaEstoqueEnderecamentoRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
 
-                    /** @var ReservaEstoqueEnderecamento $reservaEnderecamento */
-                    $reservasEnderecamento = $reservaEstoqueEnderecamentoRepo->findBy(['palete' => $paleteEn->getId()]);
-                    foreach ($reservasEnderecamento as $reservaEnderecamento) {
-                        $reserva = $reservaEnderecamento->getReservaEstoque();
-                        $produtosReserva = $reserva->getProdutos()->toArray();
+                    $reservaEstoqueEnderecamentoRepo->removerReservaUMA($paleteEn);
 
-                        foreach ($produtosReserva as $produtoReserva) {
-                            $this->_em->remove($produtoReserva);
-                        }
-
-                        $this->_em->remove($reservaEnderecamento);
-                        $this->_em->remove($reserva);
-                    }
                     $this->_em->remove($paleteEn);
                     break;
                 case Palete::STATUS_EM_RECEBIMENTO:

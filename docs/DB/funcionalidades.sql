@@ -372,4 +372,5 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (373, '6.15.1', 'Melhoria: Inserindo o CPF dos conferentes nos relatórios de ocupação', null , SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (374, '6.15.2', 'Correção: Regra de corte caso item controle validade respeitando FIFO ou otimizando separação caso controle validade', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (375, '6.15.3', 'Correção: Regra de corte não estava cortando saldo pendente de corte restante nos demais endereços solicitados no mapa', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'xxxxxx', 'Correção: Troca de norma de paletizacao de palete travando por ter reserva de estoque mesmo que cancelada', null, SYSDATE);
 
