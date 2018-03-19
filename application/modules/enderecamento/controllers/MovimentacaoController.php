@@ -17,10 +17,13 @@ class Enderecamento_MovimentacaoController extends Action
         $transferir = $this->_getParam('transferir');
         $quantidade = str_replace(',','.',$this->_getParam('quantidade'));
 
+        $embalagem = (isset($data['embalagem'])) ? $data['embalagem'] : null;
+        $volumesParam = (isset($data['volumes'])) ? $data['volumes'] : null;
+
         //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
             $this->redirect('transferir', 'movimentacao', 'enderecamento', array('idProduto' => $data['idProduto'], 'grade' => $data['grade'],
-                'embalagem' => $data['embalagem'], 'volumes' => $data['volumes'], 'rua' => $data['rua'], 'predio' => $data['predio'],
+                'embalagem' => $embalagem, 'volumes' => $volumesParam, 'rua' => $data['rua'], 'predio' => $data['predio'],
                 'nivel' => $data['nivel'], 'apto' => $data['apto'], 'ruaDestino' => $data['ruaDestino'], 'predioDestino' => $data['predioDestino'],
                 'nivelDestino' => $data['nivelDestino'], 'aptoDestino' => $data['aptoDestino'], 'validade' => $data['validade'], 'quantidade' => $quantidade));
         }
