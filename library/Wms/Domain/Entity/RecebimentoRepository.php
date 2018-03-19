@@ -1802,28 +1802,28 @@ class RecebimentoRepository extends EntityRepository {
         $statusEnderecado = Palete::STATUS_ENDERECADO;
         $statusEmEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
 
-        $sql = "SELECT DISTINCT PLT.COD_PRODUTO, PLT.DSC_GRADE, RC.QTD AS QTD_RECEBIDA, PLT.QTD_TOTAL AS QTD_PALETIZADA
-                FROM ( 
-                    SELECT DISTINCT (SUM(PP.QTD) / COUNT(DISTINCT NVL(PP.COD_PRODUTO_VOLUME, 1))) QTD_TOTAL, PP.COD_PRODUTO, PP.DSC_GRADE, P.COD_RECEBIMENTO
-                    FROM PALETE_PRODUTO PP
-                    INNER JOIN PALETE P ON P.UMA = PP.UMA
-                    WHERE P.COD_RECEBIMENTO = $idRecebimento AND (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN ($statusEmEnderecamento, $statusEnderecado))
-                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PP.COD_NORMA_PALETIZACAO, P.COD_RECEBIMENTO) PLT
-                INNER JOIN (
-                        SELECT COD_PRODUTO, DSC_GRADE, SUM(QTD) AS QTD , COD_NORMA_PALETIZACAO
-                        FROM (
-                            SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE, RV.QTD_CONFERIDA AS QTD, RV.COD_NORMA_PALETIZACAO
-                            FROM RECEBIMENTO_VOLUME RV 
-                            INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
-                            WHERE RV.COD_OS = $idOrdemServico AND RV.COD_NORMA_PALETIZACAO IS NOT NULL
-                            UNION ALL
-                            SELECT PE.COD_PRODUTO, PE.DSC_GRADE, RE.QTD_CONFERIDA * RE.QTD_EMBALAGEM AS QTD, RE.COD_NORMA_PALETIZACAO
-                            FROM RECEBIMENTO_EMBALAGEM RE
-                            INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
-                            WHERE RE.COD_OS = $idOrdemServico
-                        ) GROUP BY COD_PRODUTO, DSC_GRADE, COD_NORMA_PALETIZACAO
-                      )RC ON RC.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE
-                WHERE PLT.QTD_TOTAL > RC.QTD";
+        $sql = "SELECT DISTINCT PLT.COD_PRODUTO, 
+                       PLT.DSC_GRADE, 
+                       RC.QTD AS QTD_RECEBIDA, 
+                       PLT.QTD_TOTAL AS QTD_PALETIZADA
+                  FROM (SELECT DISTINCT (SUM(PP.QTD) / COUNT(DISTINCT NVL(PP.COD_PRODUTO_VOLUME, 1))) QTD_TOTAL, 
+                               PP.COD_PRODUTO, 
+                               PP.DSC_GRADE, 
+                               P.COD_RECEBIMENTO
+                          FROM PALETE_PRODUTO PP
+                         INNER JOIN PALETE P ON P.UMA = PP.UMA
+                         WHERE P.COD_RECEBIMENTO = $idRecebimento 
+                           AND (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN ($statusEmEnderecamento, $statusEnderecado))
+                         GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PP.COD_NORMA_PALETIZACAO, P.COD_RECEBIMENTO) PLT
+                 INNER JOIN (SELECT COD_PRODUTO, 
+                                    DSC_GRADE, 
+                                    QTD, 
+                                    COD_NORMA_PALETIZACAO 
+                               FROM V_QTD_RECEBIMENTO_DETALHADA 
+                              WHERE COD_OS = $idOrdemServico
+                                AND COD_RECEBIMENTO = $idRecebimento)RC 
+                    ON RC.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE
+                 WHERE PLT.QTD_TOTAL > RC.QTD ";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
