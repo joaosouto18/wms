@@ -58,6 +58,9 @@ Class Math
         $x = $x * $quantidade;
         $y = $y * $quantidade;
 
+        if ($x == 0 || $y == 0)
+            return 0;
+
         return ($x % $y) / $quantidade;
     }
 
@@ -109,11 +112,14 @@ Class Math
     {
         $divisor = strval($divisor);
         $dividendo = strval($dividendo);
-    
+
         $quantidade = self::maiorPrecisao($divisor, $dividendo);
 
         $x = $divisor * $quantidade;
         $y = $dividendo * $quantidade;
+
+        if ($x == 0 || $y == 0)
+            return 0;
 
         return $x / $y;
     }
