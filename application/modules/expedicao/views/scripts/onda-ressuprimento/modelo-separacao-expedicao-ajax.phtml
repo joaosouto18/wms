@@ -1,0 +1,35 @@
+<form id="modal-modelo-separacao" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'onda-ressuprimento', 'action' =>'alterar-modelo-separacao'))?>">
+    <div class="grid">
+
+        <table class="gTable">
+            <tbody>
+                <tr class ="gTTitle">
+                    <td>Expedição</td>
+                    <td>Modelo Separação</td>
+                </tr>
+
+                <?php foreach ($this->expedicoes as $expedicao) : ?>
+                    <?php $this->color = !($this->color); ?>
+                    <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                        <td><?php echo $expedicao->getId() ?></td>
+                        <input type="hidden" name="id-expedicao[]" id="id-expedicao" value="<?php echo $expedicao->getId() ?>" >
+                        <?php if (is_null($expedicao->getModeloSeparacao())) : ?>
+                            <td><?php echo $this->modeloSeparacaoPadrao->getDescricao() ?></td>
+                        <?php else : ?>
+                            <td><?php echo $expedicao->getModeloSeparacao()->getDescricao() ?></td>
+                        <?php endif; ?>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <select name="id-modelo" id="id-modelo">
+            <?php foreach ($this->modeloSeparacao as $key => $modeloSeparacao) : ?>
+                <option value="<?php echo $key; ?>"><?php echo $modeloSeparacao ?></option>
+            <?php endforeach; ?>
+        </select>
+
+        <input type="submit" style="margin-bottom: 15px;" name="busca" value="Alterar Modelo de Separação e Gerar Onda" id="alterar-modelo" class="btn">
+    </div>
+    <div id="inserir"></div>
+</form>

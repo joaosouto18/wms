@@ -391,5 +391,4 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'xxxxxx', 'Melhoria: Trava para impedir recebimento com volumes em quantidades divergentes', 'xx-Conferencia-volumes-divergentes.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'xxxxxx', 'Correção: Correção na View V_QTD_RECEBIMENTO e criação da view detalhada à nivel de norma de paletizacao', 'xx-V_QTD_RECEBIMENTO-Versao-Final.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'xxxxxx', 'Melhoria: Cadastro de motorista responsavel pelo carregamento', 'xx-cadastro-motorista.sql', SYSDATE);
-
-
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, 'x.xx.x', 'Melhoria: Modelo de separação selecionado de acordo com as expedições', null, SYSDATE);

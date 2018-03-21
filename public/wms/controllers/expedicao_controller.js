@@ -24,6 +24,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
              */
             $("input[name*='expedicao[]']").live('click', function() {
                 $('#gerar').attr('style','display:block');
+                $('#modelo-separacao').attr('style','display:block');
                 clickSelection=false;
                 $("input[name*='expedicao[]']").each(function( index, value ){
                     if ( $(this).prop('checked') ){
@@ -32,16 +33,29 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                 });
 
                 if (clickSelection){
-                    $('#gerar').attr('style','display:block');
+                    $('#gerar').attr('style','display:inline');
+                    $('#modelo-separacao').attr('style','height: 26px');
                 } else {
                     $('#gerar').attr('style','display:none');
+                    $('#modelo-separacao').attr('style','display:none');
                 }
             });
 
             $('#aguarde').attr('style','display:none');
             $("#gerar").live('click', function() {
                     $('#gerar').attr('style','display:none');
+                    $('#modelo-separacao').attr('style','display:none');
                     $('#aguarde').attr('style','background-color: lightsteelblue; text-align: center; padding: 5px');
+            });
+
+            $("#modelo-separacao").live('click', function() {
+                $('#gerar').attr('style','display:none');
+                $('#modelo-separacao').attr('style','display:none');
+            });
+
+            $('#alterar-modelo').live('click', function () {
+                $('#inserir').html('<center><img src="/img/ajax-loader.gif" width="31" height="31"/>Processando...</center>');
+                $('#inserir').show();
             });
 
             function processoCancelado() {
@@ -52,6 +66,32 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                     }
                 });
             }
+
+            $('#modelo-separacao').live('click', function () {
+                clickSelection=false;
+                $("input[name*='expedicao[]']").each(function( index, value ){
+                    if ( $(this).prop('checked') ){
+                        clickSelection=true;
+                    }
+                });
+
+                if (clickSelection){
+                    var liberado = true;
+                    $.ajax({
+                        url: URL_BASE + '/expedicao/onda-ressuprimento/modelo-separacao-expedicao-ajax',
+                        type: 'post',
+                        async: false,
+                        dataType: 'html',
+                        data: $('#relatorio-picking-listar').serialize()
+                    }).success(function (data) {
+                        console.log(data);
+                        $('#inside-modal-dialog').append(data);
+                    });
+                } else {
+                    alert('Selecione pelo menos uma expedição');
+                }
+
+            });
 
             /*
              * Valida seleção de expedições

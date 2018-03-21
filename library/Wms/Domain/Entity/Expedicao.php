@@ -91,7 +91,13 @@ class Expedicao
      */
     protected $indProcessando;
 
-	
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\ModeloSeparacao")
+     * @JoinColumn(name="COD_MODELO_SEPARACAO", referencedColumnName="COD_MODELO_SEPARACAO")
+     */
+    protected $modeloSeparacao;
+
+
 	public function setCarga($carga)
     {
         $this->carga = $carga;
@@ -231,6 +237,22 @@ class Expedicao
     public function setIndProcessando($indProcessando)
     {
         $this->indProcessando = $indProcessando;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getModeloSeparacao()
+    {
+        return $this->modeloSeparacao;
+    }
+
+    /**
+     * @param mixed $modeloSeparacao
+     */
+    public function setModeloSeparacao($modeloSeparacao)
+    {
+        $this->modeloSeparacao = $modeloSeparacao;
     }
 
 }

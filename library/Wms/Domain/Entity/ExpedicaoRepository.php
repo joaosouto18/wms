@@ -203,6 +203,8 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function gerarOnda($strExpedicao) {
         try {
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+            $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
             $sessao = new \Zend_Session_Namespace('deposito');
             $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
             $central = $deposito->getFilial()->getCodExterno();
@@ -210,9 +212,23 @@ class ExpedicaoRepository extends EntityRepository {
                 throw new \Exception("A Filial " . $deposito->getFilial()->getPessoa()->getNomeFantasia() . " não utiliza ressuprimento");
             }
 
+            $countmodeloSeparacao = $this->countModeloSeparacaoByExpedicoes($strExpedicao);
+            if (count($countmodeloSeparacao) > 1)
+                throw new \Exception('Não é possível gerar onda de ressuprimento para '.count($countmodeloSeparacao).' modelos distintos');
+
             $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
-            /** @var ExpedicaoEntity\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
+
+            //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+            $codEexpedicoes = explode(',',$strExpedicao);
+            foreach ($codEexpedicoes as $codExpedicao) {
+                $expedicaoEntity = $expedicaoRepo->find($codExpedicao);
+                if (!is_null($expedicaoEntity->getModeloSeparacao())) {
+                    $modeloSeparacaoEn = $expedicaoEntity->getModeloSeparacao();
+                    break;
+                }
+            }
+
             $quebraPulmaoDoca = $modeloSeparacaoEn->getQuebraPulmaDoca();
 
             $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
@@ -238,7 +254,6 @@ class ExpedicaoRepository extends EntityRepository {
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
             $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-            $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
             $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
@@ -288,8 +303,6 @@ class ExpedicaoRepository extends EntityRepository {
                     throw new \Exception("Existiram falhas gerando reserva de estoque para estas expedições. Consulte a equipe de desenvolvimento");
                 }
             }
-
-            $this->getEntityManager()->commit();
 
             $resultado = array();
             $msg = "Ondas Geradas com sucesso";
@@ -3121,6 +3134,8 @@ class ExpedicaoRepository extends EntityRepository {
     public function getUrlMobileByCodBarras($codBarras) {
         $codBarras = (float) $codBarras;
         $tipoEtiqueta = null;
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
+        $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
 
         if (strlen($codBarras) > 2) {
             $arrPrefxEtiquetaSeparacao = array("10","39","68","69");
@@ -3203,12 +3218,13 @@ class ExpedicaoRepository extends EntityRepository {
                     case EtiquetaSeparacao::STATUS_ETIQUETA_GERADA:
                         $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
 
-                        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-                        $modeloSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
+                        //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+                        $modeloSeparacao = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
+
                         if ($modeloSeparacao == null)
                             throw new \Exception("Modelo de Separação não encontrado");
-                        $embalagem = $etiquetaSeparacao->getProdutoEmbalagem();
 
+                        $embalagem = $etiquetaSeparacao->getProdutoEmbalagem();
                         $embalado = false;
                         if ($embalagem != null) {
                             if ($modeloSeparacao->getTipoDefaultEmbalado() == "P") {
@@ -3283,11 +3299,6 @@ class ExpedicaoRepository extends EntityRepository {
                 throw new \Exception("Nenhuma etiqueta mãe encontrada com este código de barras $codBarras");
 
             $etiquetas = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacao")->findBy(array('codEtiquetaMae' => $codBarras));
-            $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-
-            $modeloSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
-            if ($modeloSeparacao == null)
-                throw new \Exception("Modelo de Separação não encontrado");
 
             $embalado = false;
             $idCliente = 0;
@@ -3297,6 +3308,12 @@ class ExpedicaoRepository extends EntityRepository {
                 $idCliente = $etiqueta->getPedido()->getPessoa()->getCodClienteExterno();
                 $idCarga = $etiqueta->getPedido()->getCarga()->getId();
                 $idExpedicao = $etiqueta->getPedido()->getCarga()->getExpedicao()->getId();
+
+                //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+                $modeloSeparacao = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
+
+                if ($modeloSeparacao == null)
+                    throw new \Exception("Modelo de Separação não encontrado");
 
                 $embalagem = $etiqueta->getProdutoEmbalagem();
                 $embalado = false;
@@ -4023,5 +4040,18 @@ class ExpedicaoRepository extends EntityRepository {
     public function changeStatusExpedicao($idsExpedicoes, $processando = 'N') {
         $sql = "UPDATE EXPEDICAO SET IND_PROCESSANDO = '$processando' WHERE COD_EXPEDICAO IN ($idsExpedicoes)";
         $this->_em->getConnection()->query($sql)->execute();
+    }
+
+    public function countModeloSeparacaoByExpedicoes($codExpedicoes)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('distinct ms.id')
+            ->from('wms:Expedicao','e')
+            ->leftJoin('e.modeloSeparacao', 'ms')
+            ->where("e.id IN ($codExpedicoes)")
+            ->groupBy('ms.id, e.id');
+
+        return $sql->getQuery()->getResult();
+
     }
 }

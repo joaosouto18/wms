@@ -1008,8 +1008,8 @@ class Expedicao_IndexController extends Action {
                     $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
             }
 
-            $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-            $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+            //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+            $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
 
             /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
             $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $idMapa));

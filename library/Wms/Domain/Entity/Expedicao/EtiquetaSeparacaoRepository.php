@@ -556,13 +556,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         if ($quantidade <= 0) return;
 
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
         $modeloSeparacaoRepo = $arrayRepositorios['modeloSeparacao'];
-        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
+
+        //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+        $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($expedicaoEntity->getId());
         $quebras = array(0=>array('tipoQuebra'=>MapaSeparacaoQuebra::QUEBRA_REENTREGA));
         $statusEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
         $codProduto = $produtoEntity->getId();
         $grade = $produtoEntity->getGrade();
-        $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
 
 
         if ($produtoEntity->getVolumes()->count() > 0) {
@@ -826,10 +828,19 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
             $statusEntity = $this->_em->getReference('wms:Util\Sigla', $status);
 
+            $expedicaoEntity = $this->getEntityManager()->getReference('wms:Expedicao',$idExpedicao);
+            if (!is_null($expedicaoEntity->getModeloSeparacao()))
+                $idModeloSeparacao = $expedicaoEntity->getModeloSeparacao()->getId();
+
+
+            //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+            $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
+
+
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
-            $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
             if (empty($modeloSeparacaoEn))
                 throw new \Exception("O modelo de separação $idModeloSeparacao não foi encontrado");
+
             $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
             $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
             $quebrasEmbalado = $modeloSeparacaoRepo->getQuebraEmbalado($idModeloSeparacao);
