@@ -40,6 +40,7 @@ class PedidoRepository extends EntityRepository
             $enPedido->setPontoTransbordo($pedido['pontoTransbordo']);
             $enPedido->setEnvioParaLoja($pedido['envioParaLoja']);
             $enPedido->setIndEtiquetaMapaGerado('N');
+            $enPedido->setProprietario($pedido['codProprietario']);
             $em->persist($enPedido);
  //           $em->flush();
  //           $em->commit();
@@ -53,9 +54,18 @@ class PedidoRepository extends EntityRepository
     }
 
     public function getQtdPedidaAtendidaByPedido ($codPedido) {
-        $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PP.QUANTIDADE - NVL(PP.qtd_cortada,0) as ATENDIDA
-                  FROM PEDIDO_PRODUTO PP
-                 WHERE PP.COD_PEDIDO = '$codPedido'";
+            //regexp_replace(LPAD(PJ.NUM_CNPJ, 15, '0'),'([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{4})([0-9]{2})','\1.\2.\3/\4-\5') as CNPJ
+        $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+        if($controleProprietario == 'S'){
+            $SQL = "SELECT EP.COD_PESSOA, (EP.QTD * -1) as ATENDIDA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PJ.NUM_CNPJ as CNPJ
+                    FROM PEDIDO_PRODUTO PP 
+                    LEFT JOIN ESTOQUE_PROPRIETARIO EP ON (PP.COD_PRODUTO = EP.COD_PRODUTO AND PP.DSC_GRADE = EP.DSC_GRADE AND PP.COD_PEDIDO = EP.COD_OPERACAO_DETALHE)
+                    LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
+                    WHERE PP.COD_PEDIDO = $codPedido";
+        }else {
+            $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PP.QUANTIDADE - NVL(PP.qtd_cortada,0) as ATENDIDA, '' AS CNPJ
+                  FROM PEDIDO_PRODUTO PP WHERE PP.COD_PEDIDO = '$codPedido'";
+        }
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
     }

@@ -949,7 +949,7 @@ class NotaFiscalRepository extends EntityRepository {
         return $entity;
     }
 
-    public function salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null) {
+    public function salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $codProprietario = null) {
 
         $em = $this->getEntityManager();
         $em->beginTransaction();
@@ -994,6 +994,7 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setStatus($statusEntity);
             $notaFiscalEntity->setObservacao($observacao);
             $notaFiscalEntity->setPlaca($placa);
+            $notaFiscalEntity->setCodPessoaProprietario($codProprietario);
 
             /** @var ReferenciaRepository $fornRefRepo */
             $fornRefRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');

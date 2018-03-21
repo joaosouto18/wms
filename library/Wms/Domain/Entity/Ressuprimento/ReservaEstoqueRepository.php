@@ -124,7 +124,7 @@ class ReservaEstoqueRepository extends EntityRepository
     }
 
     /** @param \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-    public function efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, $origemReserva, $idOrigem, $usuarioEn = null, $osEn = null, $unitizadorEn = null, $dataValidade=null)
+    public function efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, $origemReserva, $idOrigem, $usuarioEn = null, $osEn = null, $unitizadorEn = null, $dataValidade=null, $pedido = null, $arrayFlush = array())
     {
         if ($usuarioEn == NULL)  {
             $auth = \Zend_Auth::getInstance();
@@ -132,24 +132,25 @@ class ReservaEstoqueRepository extends EntityRepository
             $pessoaRepo = $this->getEntityManager()->getRepository("wms:Usuario");
             $usuarioEn = $pessoaRepo->find($usuarioSessao->getId());
         }
-
+        $tipo = "";
         $observacoes = "";
         $idUma = null;
         if ($origemReserva == "U") {
             $observacoes = "Mov. ref. endereçamento do Palete " . $idOrigem;
-            $params['tipo'] = HistoricoEstoque::TIPO_ENDERECAMENTO;
+            $tipo = HistoricoEstoque::TIPO_ENDERECAMENTO;
             $idUma = $idOrigem;
         }
         elseif ($origemReserva == "O") {
             $observacoes = "Mov. ref. onda " . $idOrigem . ", OS: " . $osEn->getId();
-            $params['tipo'] = HistoricoEstoque::TIPO_RESSUPRIMENTO;
+            $tipo = HistoricoEstoque::TIPO_RESSUPRIMENTO;
         }
         elseif ($origemReserva == "E") {
             $observacoes = "Mov. ref. expedicao " . $idOrigem;
-            $params['tipo'] = HistoricoEstoque::TIPO_EXPEDICAO;
+            $tipo = HistoricoEstoque::TIPO_EXPEDICAO;
         }
 
         $reservaProdutos = $reservaEstoqueEn->getProdutos();
+        $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto $reservaProduto */
         foreach ($reservaProdutos as $reservaProduto) {
             $params = array();
@@ -163,15 +164,29 @@ class ReservaEstoqueRepository extends EntityRepository
             $params['os'] = $osEn;
             $params['uma'] = $idUma;
             $params['usuario'] = $usuarioEn;
+            $params['tipo'] = $tipo;
             $dataValidade['dataValidade'] = $reservaProduto->getValidade();
+            if($controleProprietario == 'S') {
+                $params['codPedido'] = $pedido['codPedido'];
+                $params['codProprietario'] = $pedido['codProprietario'];
+                $codProduto = $reservaProduto->getProduto()->getId();
+                $grade = $reservaProduto->getProduto()->getGrade();
+                if (isset($arrayFlush[$codProduto][$grade])) {
+                    $arrayFlush = array();
+                    $this->getEntityManager()->flush();
+                }
+                $arrayFlush[$codProduto][$grade] = 1;
+            }
             $estoqueRepo->movimentaEstoque($params, false, null, $dataValidade);
         }
-
         if ($reservaEstoqueEn != NULL) {
             $reservaEstoqueEn->setAtendida("S");
             $reservaEstoqueEn->setDataAtendimento(new \DateTime());
             $reservaEstoqueEn->setUsuarioAtendimento($usuarioEn);
             $this->getEntityManager()->persist($reservaEstoqueEn);
+        }
+        if($controleProprietario == 'S') {
+            return $arrayFlush;
         }
         return true;
     }
