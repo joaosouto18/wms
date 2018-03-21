@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Recebimento;
+use Wms\Domain\Entity\Produto;
 
 /**
  * Conferencia da carga
@@ -37,10 +38,12 @@ class Conferencia
     protected $qtdConferida;
 
     /**
-     * Produto
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto", cascade={"persist"})
-     * @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO")
-     * @var Wms\Domain\Entity\Produto
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
+     * @JoinColumns({
+     *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
+     *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
+     * })
+     * @var Produto
      */
     protected $produto;
 
@@ -58,7 +61,7 @@ class Conferencia
     protected $grade;
 
     /**
-     * @var Wms\Domain\Entity\OrdemServico $ordemServico
+     * @var \Wms\Domain\Entity\OrdemServico $ordemServico
      * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
      * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS") 
      */
@@ -79,7 +82,7 @@ class Conferencia
     protected $qtdAvaria;
 
     /**
-     * @var Wms\Domain\Entity\Recebimento\Divergencia\Motivo $motivoDivergencia
+     * @var \Wms\Domain\Entity\Recebimento\Divergencia\Motivo $motivoDivergencia
      * @OneToOne(targetEntity="Wms\Domain\Entity\Recebimento\Divergencia\Motivo")
      * @JoinColumn(name="COD_MOTIVO_DIVER_RECEB", referencedColumnName="COD_MOTIVO_DIVER_RECEB")
      */
@@ -90,12 +93,12 @@ class Conferencia
      * 
      * @ManyToOne(targetEntity="Wms\Domain\Entity\NotaFiscal")
      * @JoinColumn(name="COD_NOTA_FISCAL", referencedColumnName="COD_NOTA_FISCAL")
-     * @var Wms\Domain\Entity\NotaFiscal
+     * @var \Wms\Domain\Entity\NotaFiscal
      */
     protected $notaFiscal;
     
      /**
-     * @var Wms\Domain\Entity\Recebimento $ordemServico
+     * @var \Wms\Domain\Entity\Recebimento $ordemServico
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Recebimento")
      * @JoinColumn(name="COD_RECEBIMENTO", referencedColumnName="COD_RECEBIMENTO") 
      */
@@ -103,7 +106,7 @@ class Conferencia
 
     /**
      * @Column(name="DTH_VALIDADE", type="date")
-     * @var date
+     * @var \DateTime
      */
     protected $dataValidade;
 
@@ -251,7 +254,7 @@ class Conferencia
     }
 
     /**
-     * @return date
+     * @return \DateTime
      */
     public function getDataValidade()
     {
@@ -259,7 +262,7 @@ class Conferencia
     }
 
     /**
-     * @param date $dataValidade
+     * @param \DateTime $dataValidade
      */
     public function setDataValidade($dataValidade)
     {
