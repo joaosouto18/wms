@@ -238,6 +238,8 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                   WHERE PP.COD_PEDIDO IN ($pedidos)";
         $mapas =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
+        if (empty($mapas)) return true;
+
         $mapaArray = array();
         foreach ($mapas as $mapa) {
             $mapaArray[] = $mapa['COD_MAPA_SEPARACAO'];
