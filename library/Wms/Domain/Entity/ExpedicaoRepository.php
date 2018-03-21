@@ -1766,14 +1766,26 @@ class ExpedicaoRepository extends EntityRepository {
 
         if (isset($parametros['idExpedicao']) && !empty($parametros['idExpedicao'])) {
             $Query = $Query . " AND E.COD_EXPEDICAO = " . $parametros['idExpedicao'];
+            unset($parametros['dataInicial1']);
+            unset($parametros['dataInicial2']);
+            unset($parametros['dataFinal1']);
+            unset($parametros['dataFinal2']);
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
             $Query = $Query . " AND C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'];
+            unset($parametros['dataInicial1']);
+            unset($parametros['dataInicial2']);
+            unset($parametros['dataFinal1']);
+            unset($parametros['dataFinal2']);
         }
 
         if (isset($parametros['placa']) && !empty($parametros['placa'])) {
             $Query = $Query . " AND E.DSC_PLACA_EXPEDICAO = '$parametros[placa]'" ;
+            unset($parametros['dataInicial1']);
+            unset($parametros['dataInicial2']);
+            unset($parametros['dataFinal1']);
+            unset($parametros['dataFinal2']);
         }
 
         if (isset($parametros['dataInicial1']) && (!empty($parametros['dataInicial1'])) && (!empty($parametros['dataInicial2']))) {

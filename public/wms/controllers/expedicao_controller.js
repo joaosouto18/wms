@@ -11,6 +11,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
     {
         '{window} load' : function() {
 
+            var este = this;
             $('#centrais a').live('click', function() {
                 var urlImpressao = $(this).attr('href');
                 urlImpressao = urlImpressao+'?'+$('#cargas input:checked').serialize();
@@ -23,18 +24,9 @@ $.Controller.extend('Wms.Controllers.Expedicao',
              * @array checkBoxes de expedições
              */
             $("input[name*='expedicao[]']").live('click', function() {
-                $('#gerar').attr('style','display:block');
-                $('#modelo-separacao').attr('style','display:block');
-                clickSelection=false;
-                $("input[name*='expedicao[]']").each(function( index, value ){
-                    if ( $(this).prop('checked') ){
-                        clickSelection=true;
-                    }
-                });
-
-                if (clickSelection){
+                if ($("input[name*='expedicao[]']:checked").length > 0){
                     $('#gerar').attr('style','display:inline');
-                    $('#modelo-separacao').attr('style','height: 26px');
+                    $('#modelo-separacao').attr('style','height: 26px; display:block');
                 } else {
                     $('#gerar').attr('style','display:none');
                     $('#modelo-separacao').attr('style','display:none');
@@ -43,14 +35,16 @@ $.Controller.extend('Wms.Controllers.Expedicao',
 
             $('#aguarde').attr('style','display:none');
             $("#gerar").live('click', function() {
-                    $('#gerar').attr('style','display:none');
-                    $('#modelo-separacao').attr('style','display:none');
-                    $('#aguarde').attr('style','background-color: lightsteelblue; text-align: center; padding: 5px');
+                $('#gerar').attr('style','display:none');
+                $('#modelo-separacao').attr('style','display:none');
+                $('#aguarde').attr('style','background-color: lightsteelblue; text-align: center; padding: 5px');
+                este.gerarRessuprimento();
             });
 
             $("#modelo-separacao").live('click', function() {
                 $('#gerar').attr('style','display:none');
                 $('#modelo-separacao').attr('style','display:none');
+                este.gerarRessuprimento();
             });
 
             $('#alterar-modelo').live('click', function () {
@@ -171,7 +165,116 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                     }
                 });
             });
+        },
+
+        /*
+         * Valida seleção de expedições
+         * @array checkBoxes de expedições
+         * return action submit / alert
+         */
+        gerarRessuprimento: function () {
+            var este = this;
+
+            if ($("input[name*='expedicao[]']:checked").length > 0){
+                var liberado = true;
+                $.ajax({
+                    url: URL_BASE + '/expedicao/onda-ressuprimento/verificar-expedicoes-processando-ajax',
+                    type: 'post',
+                    async: false,
+                    dataType: 'json',
+                    data: $('#relatorio-picking-listar').serialize()
+                }).success(function (data) {
+                    if (data.status === "Ok") {
+                        liberado = true;
+                    } else if (data.status === "Error") {
+                        este.dialogAlert(data.msg, function(){
+                            window.location = URL_BASE + "/expedicao/onda-ressuprimento";
+                        });
+                        liberado = false;
+                        este.processoCancelado();
+                    }
+                });
+                if (liberado) {
+                    var msgs = null;
+                    var expedicoes = null;
+                    $.ajax({
+                        url: URL_BASE + "/expedicao/onda-ressuprimento/gerar",
+                        type: 'post',
+                        async: false,
+                        dataType: 'json',
+                        data: $('#relatorio-picking-listar').serialize()
+                    }).success(function (data) {
+                        if (data.status === "Ok") {
+                            expedicoes = data.expedicoes;
+                            msgs = data.response;
+                        } else if (data.status === "Error") {
+                            msgs = data.response;
+                        }
+                    });
+
+                    if (expedicoes !== null) {
+                        este.dialogConfirm(
+                            "Deseja já gerar e imprimir os mapas e etiquetas destas expedições ressupridas?",
+                            expedicoes,
+                            este.callback("selectExpToPrint")
+                        )
+                    }
+
+                    este.dispararMultiMsgs(msgs);
+                    //$('#relatorio-picking-listar').submit();
+                }
+            } else {
+                alert('Selecione pelo menos uma expedição');
+            }
+        },
+
+        processoCancelado: function () {
+            $('#aguarde').attr('style','display:none');
+            $("input[name*='expedicao[]']").each(function( index, value ){
+                if ( $(this).prop('checked') ){
+                    $(this).prop('checked', false);
+                }
+            });
+        },
+
+        selectExpToPrint: function (expedicoes) {
+            var divExpedicoes = '';
+            $.each(expedicoes, function (k,v) {
+                divExpedicoes = divExpedicoes.concat('<b style="padding: 12px;"><a href="' + URL_MODULO + '/etiqueta/index/id/' + v + '/sc/1" type="button" class="btn btn-primary dialogAjax">' + v + '</a></b>');
+            });
+            var htmlBody =
+                '<h2 style="text-align: center; margin: 5px; margin-bottom: 0px; font-size: 14px;">' +
+                '    Selecione uma das expedições para imprimir' +
+                '</h2>' +
+                '<div class="padding-top">' +
+                '    <fieldset id="fieldset-identification" rowspan="2">' +
+                '        <legend>Expedições</legend>' +
+                '        <div id="div-fieldset-expedicoes">' + divExpedicoes + '</div>' +
+                '    </fieldset>' +
+                '</div>';
+            $.wmsDialogModal({
+                title: "---  Sistema  ---"
+            }, htmlBody)
+        },
+
+        dispararMultiMsgs : function (msgs) {
+            var este = this;
+            $.each(msgs, function (k,v) {
+                este.dialogAlert(v)
+            });
+        },
+
+        dialogAlert: function (msg, funct) {
+            $.wmsDialogAlert({
+                title: 'Alerta',
+                msg: msg
+            }, funct);
+        },
+
+        dialogConfirm: function (msg, params, confirmFunction) {
+            $.wmsDialogConfirm({
+                title: "---  Sistema  ---",
+                msg: msg
+            }, confirmFunction, params)
         }
-
-
     });

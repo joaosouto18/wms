@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\NotaFiscal;
+use Wms\Domain\Entity\Produto;
 
 /**
  * Nota fiscal
@@ -30,10 +31,12 @@ class Item
      */
     protected $notaFiscal;
     /**
-     * Grade do produto
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
-     * @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO")
-     * @var \Wms\Domain\Entity\Produto
+     * @JoinColumns({
+     *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
+     *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
+     * })
+     * @var Produto
      */
     protected $produto;
     /**
