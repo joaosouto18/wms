@@ -323,16 +323,19 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                             /**
                              *
                              */
-                            '#btn-excluir-grupo click': function (el, ev) {
+                            '#btn-excluir-grupo click': function( el , ev ){
                                 var grupoVolume = el.closest('.grupoDadosLogisticos');
 
-                                if (grupoVolume.find('.produto_dado_logistico').size() != '') {
-                                    if (confirm("Esta norma de paletização deve está vazia para poder ser excluida.")) {
-                                        return false;
-                                    }
-                                } else if (confirm("Tem certeza que deseja excluir esta norma de paletização?")) {
-                                    grupoVolume.remove();
+                                if (grupoVolume.find('.produto_volume').size() > 0) {
+                                    this.dialogAlert("Esta norma de paletização deve estar vazia para poder ser excluida.");
+                                    return false;
+                                } else {
+                                    this.dialogConfirm("Tem certeza que deseja excluir esta norma de paletização?", this.callback("excluirNorma"), grupoVolume);
                                 }
+                            },
+
+                            excluirNorma: function (norma) {
+                                norma.remove()
                             },
 
                             /**
