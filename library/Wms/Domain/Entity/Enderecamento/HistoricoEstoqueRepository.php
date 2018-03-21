@@ -22,7 +22,7 @@ class HistoricoEstoqueRepository extends EntityRepository {
                        usu.login nomePessoa,
                        un.id as Unitizador,
                        NVL(vol.descricao, 'PRODUTO UNITÁRIO') as volume,
-                       e.validade,
+                       NVL(hist.validade,e.validade) as validade,
                        un.descricao as Norma")
                 ->from('wms:Enderecamento\HistoricoEstoque', 'hist')
                 ->innerJoin("hist.produto", "prod")

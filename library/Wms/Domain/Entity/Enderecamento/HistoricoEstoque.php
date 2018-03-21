@@ -135,6 +135,27 @@ class HistoricoEstoque
     protected $saldoFinal;
 
     /**
+     * @Column(name="DTH_VALIDADE", type="datetime", nullable=true)
+     */
+    protected $validade;
+
+    /**
+     * @return mixed
+     */
+    public function getValidade()
+    {
+        return $this->validade;
+    }
+
+    /**
+     * @param mixed $validade
+     */
+    public function setValidade($validade)
+    {
+        $this->validade = $validade;
+    }
+
+    /**
      * @param mixed $codProduto
      */
     public function setCodProduto($codProduto)
