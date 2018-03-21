@@ -156,7 +156,6 @@ class Expedicao_IndexController extends Action {
         } else {
             $dataI1 = new \DateTime;
             $dataI2 = new \DateTime;
-//            $dataI1->sub(new DateInterval('P01D'));
 
             $params = array(
                 'dataInicial1' => $dataI1->format('d/m/Y'),

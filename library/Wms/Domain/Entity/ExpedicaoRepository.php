@@ -2123,6 +2123,7 @@ class ExpedicaoRepository extends EntityRepository {
                        PESO.NUM_CUBAGEM as "cubagem",
                        NVL(REE.QTD,0) as "reentrega",
                        I.ITINERARIOS AS "itinerario",
+                       MOT.NOM_MOTORISTA AS "motorista",
                        TIPO_PEDIDO.TIPO_PEDIDO AS "tipopedido",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                             ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
@@ -2168,6 +2169,17 @@ class ExpedicaoRepository extends EntityRepository {
                                FROM CARGA C ' . $JoinExpedicao . $JoinSigla . '
                                WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
                               GROUP BY C.COD_EXPEDICAO) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN (SELECT E.COD_EXPEDICAO,
+                                    LISTAGG (MOTORISTA.NOM_MOTORISTA,\', \') WITHIN GROUP (ORDER BY MOTORISTA.NOM_MOTORISTA) NOM_MOTORISTA 
+                              FROM EXPEDICAO E
+                              LEFT JOIN (SELECT DISTINCT E.COD_EXPEDICAO,
+                                        C.NOM_MOTORISTA 
+                                    FROM CARGA C
+                                    INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                                    WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . ' 
+                                    GROUP BY E.COD_EXPEDICAO, C.NOM_MOTORISTA) MOTORISTA ON MOTORISTA.COD_EXPEDICAO = E.COD_EXPEDICAO
+                              WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
+                              GROUP BY E.COD_EXPEDICAO) MOT ON MOT.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT COD_EXPEDICAO,
                                     LISTAGG (DSC_ITINERARIO, \',\') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
                               FROM ITINERARIO I
