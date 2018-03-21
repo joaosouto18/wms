@@ -10,13 +10,14 @@ class Enderecamento_MovimentacaoController extends Action
     {
         $this->configurePage();
         $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
+        $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         $form = new \Wms\Module\Armazenagem\Form\Movimentacao\Cadastro();
-        $form->init($utilizaGrade);
+        $form->init($utilizaGrade, $controleProprietario);
         $request = $this->getRequest();
         $data = $this->_getAllParams();
         $transferir = $this->_getParam('transferir');
         $quantidade = str_replace(',','.',$this->_getParam('quantidade'));
-        $this->view->controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+        $this->view->controleProprietario = $controleProprietario;
 
         $embalagem = (isset($data['embalagem'])) ? $data['embalagem'] : null;
         $volumesParam = (isset($data['volumes'])) ? $data['volumes'] : null;
