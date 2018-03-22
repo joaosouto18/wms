@@ -24,18 +24,9 @@ $.Controller.extend('Wms.Controllers.Expedicao',
              * @array checkBoxes de expedições
              */
             $("input[name*='expedicao[]']").live('click', function() {
-                $('#gerar').attr('style','display:block');
-                $('#modelo-separacao').attr('style','display:block');
-                clickSelection=false;
-                $("input[name*='expedicao[]']").each(function( index, value ){
-                    if ( $(this).prop('checked') ){
-                        clickSelection=true;
-                    }
-                });
-
-                if (clickSelection){
+                if ($("input[name*='expedicao[]']:checked").length > 0){
                     $('#gerar').attr('style','display:inline');
-                    $('#modelo-separacao').attr('style','height: 26px');
+                    $('#modelo-separacao').attr('style','height: 26px; display:block');
                 } else {
                     $('#gerar').attr('style','display:none');
                     $('#modelo-separacao').attr('style','display:none');
@@ -44,9 +35,10 @@ $.Controller.extend('Wms.Controllers.Expedicao',
 
             $('#aguarde').attr('style','display:none');
             $("#gerar").live('click', function() {
-                    $('#gerar').attr('style','display:none');
-                    $('#modelo-separacao').attr('style','display:none');
-                    $('#aguarde').attr('style','background-color: lightsteelblue; text-align: center; padding: 5px');
+                $('#gerar').attr('style','display:none');
+                $('#modelo-separacao').attr('style','display:none');
+
+                este.gerarRessuprimento();
             });
 
             $("#modelo-separacao").live('click', function() {
@@ -55,15 +47,8 @@ $.Controller.extend('Wms.Controllers.Expedicao',
             });
 
             $('#modelo-separacao').live('click', function () {
-                clickSelection=false;
-                $("input[name*='expedicao[]']").each(function( index, value ){
-                    if ( $(this).prop('checked') ){
-                        clickSelection=true;
-                    }
-                });
-
-                if (clickSelection){
-                    var liberado = true;
+                var este = this;
+                if ($("input[name*='expedicao[]']:checked").length > 0){
                     $.ajax({
                         url: URL_BASE + '/expedicao/onda-ressuprimento/modelo-separacao-expedicao-ajax',
                         type: 'post',
@@ -71,11 +56,10 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                         dataType: 'html',
                         data: $('#relatorio-picking-listar').serialize()
                     }).success(function (data) {
-                        console.log(data);
-                        $('#inside-modal-dialog').append(data);
+                        este.dialogModal(data);
                     });
                 } else {
-                    alert('Selecione pelo menos uma expedição');
+                    este.dialogAlert('Selecione pelo menos uma expedição');
                 }
 
             });
@@ -179,7 +163,6 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                     }
 
                     este.dispararMultiMsgs(msgs);
-                    //$('#relatorio-picking-listar').submit();
                 }
             } else {
                 alert('Selecione pelo menos uma expedição');
@@ -198,8 +181,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
         selectExpToPrint: function (expedicoes) {
             var divExpedicoes = '';
             $.each(expedicoes, function (k,v) {
-                console.log(divExpedicoes);
-                divExpedicoes = divExpedicoes.concat('<b style="padding: 12px;"><a href="' + URL_MODULO + '/etiqueta/index/id/' + v + '" type="button" class="dialogAjax pdf" target="_self">' + v + '</a></b>');
+                divExpedicoes = divExpedicoes.concat('<b style="padding: 12px;"><a href="' + URL_MODULO + '/etiqueta/index/id/' + v + '/sc/1" type="button" class="btn btn-primary dialogAjax">' + v + '</a></b>');
             });
             var htmlBody =
                 '<h2 style="text-align: center; margin: 5px; margin-bottom: 0px; font-size: 14px;">' +
@@ -211,10 +193,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                 '        <div id="div-fieldset-expedicoes">' + divExpedicoes + '</div>' +
                 '    </fieldset>' +
                 '</div>';
-            console.log(htmlBody);
-            $.wmsDialogModal({
-                title: "---  Sistema  ---"
-            }, htmlBody)
+            this.dialogModal(htmlBody);
         },
 
         dispararMultiMsgs : function (msgs) {
@@ -236,5 +215,11 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                 title: "---  Sistema  ---",
                 msg: msg
             }, confirmFunction, params)
+        },
+
+        dialogModal: function (htmlBody) {
+            $.wmsDialogModal({
+                title: "---  Sistema  ---"
+            }, htmlBody)
         }
     });
