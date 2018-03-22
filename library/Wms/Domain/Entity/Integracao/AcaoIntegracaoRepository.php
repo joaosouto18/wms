@@ -261,7 +261,9 @@ class AcaoIntegracaoRepository extends EntityRepository
                     if (count($result) && !is_null($acaoEn->getTabelaReferencia())) {
                         $dadosFiltrar = array();
                         foreach ($result as $row) {
-                            $dadosFiltrar[] = $row['ID'];
+                            if(isset($row['ID'])) {
+                                $dadosFiltrar[] = $row['ID'];
+                            }
                         }
                         $idTabelaTemp = implode(",", $dadosFiltrar);
                     }
@@ -361,8 +363,12 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
-                if ($sucess == 'S' && !empty($idTabelaTemp)) {
-                    $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($idTabelaTemp) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                if ($sucess == 'S') {
+                    if(!empty($idTabelaTemp)) {
+                        $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($idTabelaTemp) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                    }else{
+                        $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
+                    }
                     $update = true;
                     $conexaoEn = $acaoEn->getConexao();
                     $conexaoRepo->runQuery($query, $conexaoEn, $update);
