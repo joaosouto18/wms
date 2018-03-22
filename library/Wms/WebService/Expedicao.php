@@ -56,6 +56,8 @@ class produto {
     public $quantidade;
     /** @var string */
     public $quantidadeAtendida;
+    /** @var string */
+    public $proprietario;
 }
 
 class pedido {
@@ -229,6 +231,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $cliente['tipoPessoa'] = $pedidoWs->cliente->tipoPessoa;
             $cliente['uf'] = $pedidoWs->cliente->uf;
 
+            $controleProprietario = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+            if($controleProprietario == 'S'){
+                $cnpjProprietario = trim($pedidoWs->cliente->cpf_cnpj);
+                $codProprietario = $this->_em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjProprietario, false);
+                if($codProprietario == false){
+                    throw new \Exception('CNPJ do proprietário não encontrado');
+                }
+            }
             $itinerario = array();
             $itinerario['idItinerario'] = $pedidoWs->itinerario->idItinerario;
             $itinerario['nomeItinerario'] = $pedidoWs->itinerario->nomeItinerario;
@@ -241,12 +251,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $produtos[] = $produto;
             }
 
+
             $pedido = array();
             $pedido['codPedido'] = $pedidoWs->codPedido;
             $pedido['cliente'] = $cliente;
             $pedido['itinerario'] = $itinerario;
             $pedido['produtos'] = $produtos;
             $pedido['linhaEntrega'] = $pedidoWs->linhaEntrega;
+            $pedido['codProprietario'] = $codProprietario;
 
             $pedidosArray[] = $pedido;
         }
@@ -642,21 +654,24 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $pedido->cliente = $cliente;
             $pedido->conferido = $pedidoRepo->getSituacaoPedido($pedidoEn->getId());
             $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
-            foreach ($produtos as $item) {
-                $produto = new produto();
-                $produto->codProduto = $item['COD_PRODUTO'];
-                $produto->grade = $item['DSC_GRADE'];
-                $produto->quantidade = $item['QTD_PEDIDO'];
-                if (is_null($item['ATENDIDA'])) {
-                    $produto->quantidadeAtendida = 0;
-                } else {
-                    if ($pedidoEn->getCarga()->getExpedicao()->getStatus()->getId() == EXPEDICAO::STATUS_FINALIZADO) {
-                        $produto->quantidadeAtendida = $item['ATENDIDA'];
-                    } else {
+            if(is_array($produtos)) {
+                foreach ($produtos as $item) {
+                    $produto = new produto();
+                    $produto->codProduto = $item['COD_PRODUTO'];
+                    $produto->grade = $item['DSC_GRADE'];
+                    $produto->quantidade = $item['QTD_PEDIDO'];
+                    $produto->proprietario = $item['CNPJ'];
+                    if (is_null($item['ATENDIDA'])) {
                         $produto->quantidadeAtendida = 0;
+                    } else {
+                        if ($pedidoEn->getCarga()->getExpedicao()->getStatus()->getId() == EXPEDICAO::STATUS_FINALIZADO) {
+                            $produto->quantidadeAtendida = $item['ATENDIDA'];
+                        } else {
+                            $produto->quantidadeAtendida = 0;
+                        }
                     }
+                    $pedido->produtos[] = $produto;
                 }
-                $pedido->produtos[] = $produto;
             }
             $carga->pedidos[] = $pedido;
         }
@@ -725,6 +740,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $produto->codProduto = $item['COD_PRODUTO'];
             $produto->grade = $item['DSC_GRADE'];
             $produto->quantidade = $item['QTD_PEDIDO'];
+            $produto->proprietario = $item['CNPJ'];
             if (is_null($item['ATENDIDA'])) {
                 $produto->quantidadeAtendida = 0;
             } else {
@@ -761,7 +777,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
             'codTipoCarga' => $carga['tipoCarga'],
             'centralEntrega' => $carga['centralEntrega'],
             'placaCarga' => $carga['placa'],
-            'placaExpedicao' => $carga['placaExpedicao']
+            'placaExpedicao' => $carga['placaExpedicao'],
+            'motorista' => $carga['motorista']
         );
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
@@ -831,6 +848,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             'itinerario' => $entityItinerario,
             'pessoa' => $entityCliente,
             'pontoTransbordo' => $pedido['pontoTransbordo'],
+            'codProprietario' => $pedido['codProprietario'],
             'envioParaLoja' => (isset($pedido['envioParaLoja'])) ? $pedido['envioParaLoja'] : null
         );
 

@@ -125,8 +125,13 @@ class EtiquetaSeparacao extends Pdf
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
 
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
+        $modeloSeparacaoRepo = $em->getRepository("wms:Expedicao\ModeloSeparacao");
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        /** @var \Wms\Domain\Entity\Sistema\ParametroRepository $parametroRepo */
+        $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
+
         $etiquetas      = $EtiquetaRepo->getEtiquetasByExpedicao($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $centralEntregaPedido, null, $idEtiquetaMae);
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
@@ -136,15 +141,8 @@ class EtiquetaSeparacao extends Pdf
 
         $etiquetaMaeAnterior = 0;
 
-        $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
-        $parametro = $parametroRepo->findOneBy(array('constante' => 'MODELO_SEPARACAO_PADRAO'));
-        $idModeloSeparacao = $parametro->getValor();
-
-        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
-        $modeloSeparacaoRepo = $em->getRepository("wms:Expedicao\ModeloSeparacao");
-
-        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
-        $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+        //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+        $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
 
         foreach($etiquetas as $etiqueta) {
             if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == 'S') {

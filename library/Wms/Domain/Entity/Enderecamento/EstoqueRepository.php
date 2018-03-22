@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\Enderecamento;
 use Doctrine\ORM\EntityRepository,
     Core\Util\Produto as ProdutoUtil,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity,
+    Wms\Domain\Entity\Enderecamento\EstoqueProprietario as EstoqueProprietarioEntity,
     Wms\Util\Endereco as EnderecoUtil;
 
 class EstoqueRepository extends EntityRepository
@@ -124,7 +125,7 @@ class EstoqueRepository extends EntityRepository
         }
         if (isset($params['validade']) and !empty($params['validade'])) {
             $validadeParam = new \Zend_Date($params['validade']);
-            $validadeParam = $validadeParam->toString('Y-MM-dd');
+            $validadeParam = $validadeParam->toString('yyyy-MM-dd');
             $validadeParam = new \DateTime($validadeParam);
         } elseif (isset($dataValidade['dataValidade']) and !empty($dataValidade['dataValidade'])) {
             $validadeParam = (is_string($dataValidade['dataValidade'])) ? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
@@ -197,8 +198,20 @@ class EstoqueRepository extends EntityRepository
         $historico->setUnitizador($unitizadorEn);
         $historico->setProdutoEmbalagem($embalagemEn);
         $historico->setProdutoVolume($volumeEn);
+        $historico->setValidade($validade);
         $em->persist($historico);
-
+        $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+        if($controleProprietario == 'S') {
+            if($tipo == 'M') {
+                if (!empty($params['codProprietario'])) {
+                    $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->buildMovimentacaoEstoque($produtoEn->getId(), $produtoEn->getGrade(), $qtd, EstoqueProprietarioEntity::MOVIMENTACAO, $params['codProprietario'], $idUma);
+                } else {
+                    throw new \Exception('Selecione um proprietário.');
+                }
+            }elseif($tipo == 'S'){
+                $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->buildMovimentacaoEstoque($produtoEn->getId(), $produtoEn->getGrade(), $qtd, EstoqueProprietarioEntity::EXPEDICAO, $params['codProprietario'], $params['codPedido']);
+            }
+        }
         //VERIFICA SE O ENDERECO VAI ESTAR DISPONIVEL OU NÃO PARA ENDEREÇAMENTO
         if ($novaQtd > 0) {
             if ($enderecoEn->getDisponivel() == "S") {

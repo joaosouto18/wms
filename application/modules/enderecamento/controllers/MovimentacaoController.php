@@ -10,17 +10,22 @@ class Enderecamento_MovimentacaoController extends Action
     {
         $this->configurePage();
         $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
+        $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         $form = new \Wms\Module\Armazenagem\Form\Movimentacao\Cadastro();
-        $form->init($utilizaGrade);
+        $form->init($utilizaGrade, $controleProprietario);
         $request = $this->getRequest();
         $data = $this->_getAllParams();
         $transferir = $this->_getParam('transferir');
         $quantidade = str_replace(',','.',$this->_getParam('quantidade'));
+        $this->view->controleProprietario = $controleProprietario;
+
+        $embalagem = (isset($data['embalagem'])) ? $data['embalagem'] : null;
+        $volumesParam = (isset($data['volumes'])) ? $data['volumes'] : null;
 
         //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
             $this->redirect('transferir', 'movimentacao', 'enderecamento', array('idProduto' => $data['idProduto'], 'grade' => $data['grade'],
-                'embalagem' => $data['embalagem'], 'volumes' => $data['volumes'], 'rua' => $data['rua'], 'predio' => $data['predio'],
+                'embalagem' => $embalagem, 'volumes' => $volumesParam, 'rua' => $data['rua'], 'predio' => $data['predio'],
                 'nivel' => $data['nivel'], 'apto' => $data['apto'], 'ruaDestino' => $data['ruaDestino'], 'predioDestino' => $data['predioDestino'],
                 'nivelDestino' => $data['nivelDestino'], 'aptoDestino' => $data['aptoDestino'], 'validade' => $data['validade'], 'quantidade' => $quantidade));
         }
@@ -63,6 +68,7 @@ class Enderecamento_MovimentacaoController extends Action
                     'apto' => $data['apto'],
                     'validade' => str_replace('/', '-', $data['validade']),
                     'quantidade' => $quantidade,
+                    'codProprietario' => $data['codPessoa'],
                     'idNormaPaletizacao' => $data['idNormaPaletizacao']));
             }
         }
@@ -131,6 +137,7 @@ class Enderecamento_MovimentacaoController extends Action
             $params['observacoes'] = 'Movimentação manual';
             $params['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_MOVIMENTACAO;
             $params['unitizador'] = $unitizadorEn;
+            $params['codProprietario'] = $data['codProprietario'];
 
             $params['validade'] = null;
             if ($produtoEn->getValidade() == 'S' ) {
@@ -556,6 +563,22 @@ class Enderecamento_MovimentacaoController extends Action
         $result = $produtoRepo->verificaSeEProdutoComposto($idProduto);
 
         echo $this->_helper->json($result);
+    }
+
+    public function consultaEstoqueProprietarioAjaxAction(){
+        $idProprietario = $this->_getParam('idProprietario');
+        $idProduto = $this->_getParam('idProduto');
+        $grade = $this->_getParam('grade');
+        $quantidade = $this->_getParam('quantidade') * -1;
+        $estoque = $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->getEstoqueProprietario($idProprietario, $idProduto, $grade);
+        $status = 'erro';
+        if(is_array($estoque)) {
+            $compare = \Wms\Math::compare($estoque['SALDO_FINAL'], $quantidade, '>');
+            if ($compare == true) {
+                $status = 'ok';
+            }
+        }
+        $this->_helper->json(array('status' => $status));
     }
 
 }

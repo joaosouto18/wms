@@ -37,7 +37,6 @@ $.Controller.extend('Wms.Controllers.Expedicao',
             $("#gerar").live('click', function() {
                 $('#gerar').attr('style','display:none');
                 $('#modelo-separacao').attr('style','display:none');
-
                 este.gerarRessuprimento();
             });
 

@@ -66,6 +66,8 @@ class notaFiscal {
     /** @var string */
     public $placa;
     /** @var string */
+    public $cnpjDestinatario;
+    /** @var string */
     public $status;
     /** @var string */
     public $dataEntrada;
@@ -254,15 +256,15 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
+     * @param string $cnpjDestinatario CNPJ da filial
      * @param TypeOfParam::getType(NOTA_FISCAL_SALVAR_ITENS) $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
      * @param string $tipoNota Identifica se é uma nota de Bonificação(B), Compra(C), etc.
-     * @param string $cnpjDestinatario CNPJ da filial dona da nota
      * @return boolean
      * @throws Exception
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $cnpjDestinatario, $itens, $bonificacao, $observacao, $tipoNota)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -276,6 +278,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $serie = (!empty($serieTrim))? $serieTrim : "0";
             $dataEmissao = trim($dataEmissao);
             $placa = trim($placa);
+            $cnpjDestinatario = trim ($cnpjDestinatario);
             $bonificacao = trim ($bonificacao);
 
             if ($bonificacao == "E") {
@@ -381,7 +384,16 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
 
             } else {
-                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao);
+                $codProprietario = null;
+                $controleProprietario = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+                if($controleProprietario == 'S'){
+                    $cnpjDestinatario = trim($cnpjDestinatario);
+                    $codProprietario = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjDestinatario);
+                    if($codProprietario == false){
+                        throw new \Exception('CNPJ do destinatário não encontrado');
+                    }
+                }
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao, $codProprietario);
             }
 
             $em->flush();
@@ -401,13 +413,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
+     * @param string $cnpjDestinatario CNPJ da filial dona da nota
      * @param string $itens Itens da Nota {Json}
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
      * @return boolean
      * @throws Exception
      */
-    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao){
+    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $cnpjDestinatario, $itens, $bonificacao, $observacao){
         /*
         $jsonMockSample ='{"produtos": [';
         $jsonMockSample .='     {"idProduto": "999", ';
@@ -420,7 +433,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         try {
             $array = json_decode($itens, true);
             $arrayItens = $array['produtos'];
-            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$arrayItens,$bonificacao, $observacao, "","");
+            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$cnpjDestinatario, $arrayItens,$bonificacao, $observacao, "","");
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

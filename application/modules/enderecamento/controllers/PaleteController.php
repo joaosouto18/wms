@@ -204,6 +204,7 @@ class Enderecamento_PaleteController extends Action
         $this->view->id = $id = $this->_getParam('id');
         $this->view->codigo = $codigo = $this->_getParam('codigo');
         $this->view->grade = $grade = urldecode($this->_getParam('grade'));
+
         try {
             $this->em->beginTransaction();
             $usuarioRepo = $this->em->getRepository('wms:Usuario');
@@ -220,6 +221,7 @@ class Enderecamento_PaleteController extends Action
                 if ($result && !is_string($result)) {
                     $this->em->commit();
                     $this->addFlashMessage('success', 'Endereçamento finalizado com sucesso');
+
                     if (!empty($codigo) && !empty($grade)) {
                         $this->_redirect('enderecamento/palete/index/id/' . $id . '/codigo/' . $codigo . '/grade/' . urlencode($grade));
                     } else {

@@ -96,10 +96,7 @@
                     </table>
                     <fieldset>
                         <legend>Quebras</legend>
-                        <?php echo $this->form->getSubForm('identificacao')->getElement('ruaFracionados'); ?><br />
-                        <?php echo $this->form->getSubForm('identificacao')->getElement('linhaDeSeparacaoFracionados'); ?><br />
-                        <?php echo $this->form->getSubForm('identificacao')->getElement('pracaFracionados'); ?><br />
-                        <?php echo $this->form->getSubForm('identificacao')->getElement('clienteFracionados'); ?>
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('quebraFracionados'); ?>
                     </fieldset>
                 </fieldset>
 
@@ -119,13 +116,29 @@
 
                     <fieldset>
                         <legend>Quebras</legend>
-                        <?php echo $this->form->getSubForm('identificacao')->getElement('ruaNaoFracionados'); ?><br />
-                        <?php echo $this->form->getSubForm('identificacao')->getElement('linhaDeSeparacaoNaoFracionados'); ?><br />
-                        <?php echo $this->form->getSubForm('identificacao')->getElement('pracaNaoFracionados'); ?><br />
-                        <?php echo $this->form->getSubForm('identificacao')->getElement('clienteNaoFracionados'); ?>
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('quebraNaoFracionados'); ?>
                     </fieldset>
                 </fieldset>
             </div>
         </div>
     </fieldset>
 </form>
+<script>
+    $(function () {
+        $(document).ready(function () {
+            checkStatusSeparacaoPc();
+        });
+
+        $("#separacaoPc").change(function () {
+            checkStatusSeparacaoPc();
+        });
+
+        function checkStatusSeparacaoPc() {
+            if ($("#separacaoPc").val() === 'S') {
+                $("#fieldsetQuebraEmbalados").show();
+            } else {
+                $("#fieldsetQuebraEmbalados").hide();
+            }
+        }
+    })
+</script>

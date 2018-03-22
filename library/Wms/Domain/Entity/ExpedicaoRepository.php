@@ -202,6 +202,8 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function gerarOnda($strExpedicao) {
         try {
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+            $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
             $sessao = new \Zend_Session_Namespace('deposito');
             $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
             $central = $deposito->getFilial()->getCodExterno();
@@ -209,9 +211,24 @@ class ExpedicaoRepository extends EntityRepository {
                 throw new \Exception("A Filial " . $deposito->getFilial()->getPessoa()->getNomeFantasia() . " não utiliza ressuprimento");
             }
 
+            $countmodeloSeparacao = $this->countModeloSeparacaoByExpedicoes($strExpedicao);
+            if (count($countmodeloSeparacao) > 1)
+                throw new \Exception('Não é possível gerar onda de ressuprimento para '.count($countmodeloSeparacao).' modelos distintos');
+
             $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
             /** @var Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
+
+            //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+            $codEexpedicoes = explode(',',$strExpedicao);
+            foreach ($codEexpedicoes as $codExpedicao) {
+                $expedicaoEntity = $expedicaoRepo->find($codExpedicao);
+                if (!is_null($expedicaoEntity->getModeloSeparacao())) {
+                    $modeloSeparacaoEn = $expedicaoEntity->getModeloSeparacao();
+                    break;
+                }
+            }
+
             $quebraPulmaoDoca = $modeloSeparacaoEn->getQuebraPulmaDoca();
 
             $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
@@ -237,7 +254,6 @@ class ExpedicaoRepository extends EntityRepository {
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
             $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-            $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
             $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
@@ -287,8 +303,6 @@ class ExpedicaoRepository extends EntityRepository {
                     throw new \Exception("Existiram falhas gerando reserva de estoque para estas expedições. Consulte a equipe de desenvolvimento");
                 }
             }
-
-            $this->getEntityManager()->commit();
 
             $resultado = array();
             $msg = "Ondas Geradas com sucesso";
@@ -1647,11 +1661,13 @@ class ExpedicaoRepository extends EntityRepository {
 
         $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuarioEn = $usuarioRepo->find($idUsuario);
-
+        $arrayFlush = array();
         foreach ($reservaEstoqueArray as $re) {
+            $pedido['codPedido'] = $re->getPedido()->getId();
+            $pedido['codProprietario'] = $re->getPedido()->getProprietario();
             $reservaEstoqueEn = $re->getReservaEstoque();
             if ($reservaEstoqueEn->getAtendida() == 'N') {
-                $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, "E", $idExpedicao, $usuarioEn);
+                $arrayFlush = $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, "E", $idExpedicao, $usuarioEn, null, null, null, $pedido, $arrayFlush);
             }
         }
     }
@@ -2130,10 +2146,11 @@ class ExpedicaoRepository extends EntityRepository {
                        C.CARGAS AS "carga",
                        S.DSC_SIGLA AS "status",
                        P.IMPRIMIR AS "imprimir",
-                       PESO.NUM_PESO as "peso",
-                       PESO.NUM_CUBAGEM as "cubagem",
+                       PESO.NUM_PESO + NVL(PESO_REENTREGA.NUM_PESO,0) as "peso",
+                       PESO.NUM_CUBAGEM + NVL(PESO_REENTREGA.NUM_CUBAGEM,0) as "cubagem",
                        NVL(REE.QTD,0) as "reentrega",
                        I.ITINERARIOS AS "itinerario",
+                       MOT.NOM_MOTORISTA AS "motorista",
                        TIPO_PEDIDO.TIPO_PEDIDO AS "tipopedido",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                             ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
@@ -2179,6 +2196,17 @@ class ExpedicaoRepository extends EntityRepository {
                                FROM CARGA C ' . $JoinExpedicao . $JoinSigla . '
                                WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
                               GROUP BY C.COD_EXPEDICAO) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN (SELECT E.COD_EXPEDICAO,
+                                    LISTAGG (MOTORISTA.NOM_MOTORISTA,\', \') WITHIN GROUP (ORDER BY MOTORISTA.NOM_MOTORISTA) NOM_MOTORISTA 
+                              FROM EXPEDICAO E
+                              LEFT JOIN (SELECT DISTINCT E.COD_EXPEDICAO,
+                                        C.NOM_MOTORISTA 
+                                    FROM CARGA C
+                                    INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                                    WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . ' 
+                                    GROUP BY E.COD_EXPEDICAO, C.NOM_MOTORISTA) MOTORISTA ON MOTORISTA.COD_EXPEDICAO = E.COD_EXPEDICAO
+                              WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
+                              GROUP BY E.COD_EXPEDICAO) MOT ON MOT.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT COD_EXPEDICAO,
                                     LISTAGG (DSC_ITINERARIO, \',\') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
                               FROM ITINERARIO I
@@ -2226,7 +2254,17 @@ class ExpedicaoRepository extends EntityRepository {
                                LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO AND PESO.DSC_GRADE = PP.DSC_GRADE
                                WHERE 1 = 1  ' . $FullWhere . $andWhere . '
                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
-                              
+                  LEFT JOIN (SELECT C.COD_EXPEDICAO,
+                                    SUM(NVL(PESO.NUM_PESO,0) * (NFPROD.QUANTIDADE)) as NUM_PESO,
+                                    SUM(NVL(PESO.NUM_CUBAGEM,0) * (NFPROD.QUANTIDADE)) as NUM_CUBAGEM
+                               FROM REENTREGA R
+                              INNER JOIN CARGA                     C      ON C.COD_CARGA = R.COD_CARGA
+                              INNER JOIN NOTA_FISCAL_SAIDA_PRODUTO NFPROD ON NFPROD.COD_NOTA_FISCAL_SAIDA = R.COD_NOTA_FISCAL_SAIDA
+                              INNER JOIN NOTA_FISCAL_SAIDA_PEDIDO  NFPED  ON NFPED.COD_NOTA_FISCAL_SAIDA = R.COD_NOTA_FISCAL_SAIDA
+                              INNER JOIN PEDIDO                    P      ON P.COD_PEDIDO = NFPED.COD_PEDIDO  ' . $JoinExpedicao . $JoinSigla . '
+                              INNER JOIN PRODUTO_PESO              PESO   ON PESO.COD_PRODUTO = NFPROD.COD_PRODUTO AND PESO.DSC_GRADE = NFPROD.DSC_GRADE
+                              WHERE 1 = 1  ' . $FullWhere . $andWhere . ' 
+                              GROUP BY C.COD_EXPEDICAO) PESO_REENTREGA ON PESO_REENTREGA.COD_EXPEDICAO = E.COD_EXPEDICAO 
                   LEFT JOIN (
                               SELECT PED.COD_EXPEDICAO,
                                   LISTAGG (S.DSC_SIGLA,\',\') WITHIN GROUP (ORDER BY S.DSC_SIGLA) TIPO_PEDIDO
@@ -3120,6 +3158,8 @@ class ExpedicaoRepository extends EntityRepository {
     public function getUrlMobileByCodBarras($codBarras) {
         $codBarras = (float) $codBarras;
         $tipoEtiqueta = null;
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
+        $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
 
         if (strlen($codBarras) > 2) {
             $arrPrefxEtiquetaSeparacao = array("10","39","68","69");
@@ -3149,6 +3189,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO) {
             //ETIQUETA DE SEPARAÇÃO
+            /** @var Expedicao\EtiquetaSeparacao $etiquetaSeparacao */
             $etiquetaSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao')->find($codBarras);
             if ($etiquetaSeparacao == null) {
                 throw new \Exception("Nenhuma Etiqueta de Separação encontrada com o codigo de barras " . $codBarras);
@@ -3202,12 +3243,14 @@ class ExpedicaoRepository extends EntityRepository {
                     case EtiquetaSeparacao::STATUS_ETIQUETA_GERADA:
                         $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
 
-                        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-                        $modeloSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
+                        //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+                    //REFAZERAQUI
+                        $modeloSeparacao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->;
+
                         if ($modeloSeparacao == null)
                             throw new \Exception("Modelo de Separação não encontrado");
-                        $embalagem = $etiquetaSeparacao->getProdutoEmbalagem();
 
+                        $embalagem = $etiquetaSeparacao->getProdutoEmbalagem();
                         $embalado = false;
                         if ($embalagem != null) {
                             if ($modeloSeparacao->getTipoDefaultEmbalado() == "P") {
@@ -3282,11 +3325,6 @@ class ExpedicaoRepository extends EntityRepository {
                 throw new \Exception("Nenhuma etiqueta mãe encontrada com este código de barras $codBarras");
 
             $etiquetas = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacao")->findBy(array('codEtiquetaMae' => $codBarras));
-            $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-
-            $modeloSeparacao = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($idModeloSeparacao);
-            if ($modeloSeparacao == null)
-                throw new \Exception("Modelo de Separação não encontrado");
 
             $embalado = false;
             $idCliente = 0;
@@ -3296,6 +3334,13 @@ class ExpedicaoRepository extends EntityRepository {
                 $idCliente = $etiqueta->getPedido()->getPessoa()->getCodClienteExterno();
                 $idCarga = $etiqueta->getPedido()->getCarga()->getId();
                 $idExpedicao = $etiqueta->getPedido()->getCarga()->getExpedicao()->getId();
+
+                //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+                //REFAZERAQUI
+                $modeloSeparacao = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
+
+                if ($modeloSeparacao == null)
+                    throw new \Exception("Modelo de Separação não encontrado");
 
                 $embalagem = $etiqueta->getProdutoEmbalagem();
                 $embalado = false;
@@ -3434,7 +3479,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
-            $where = " AND P.COD_PEDIDO = " . $parametros['pedido'] . "";
+            $where = " AND P.COD_PEDIDO = '" . $parametros['pedido'] . "'";
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
@@ -3546,7 +3591,7 @@ class ExpedicaoRepository extends EntityRepository {
           FROM PEDIDO_PRODUTO PP
           LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
           LEFT JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
-          WHERE COD_PEDIDO = $idPedido";
+          WHERE COD_PEDIDO = '$idPedido'";
 
         if ($params['pedidoCompleto'] == false) {
             if (isset($params['idProduto']) && ($params['idProduto'] != null)) {
@@ -3606,6 +3651,18 @@ class ExpedicaoRepository extends EntityRepository {
         }
     }
 
+    /**
+     * @param $codPedido
+     * @param $pedidoProdutoEn ExpedicaoEntity\PedidoProduto
+     * @param $codProduto
+     * @param $grade
+     * @param $qtdCortar
+     * @param $motivo
+     * @param null $corteAutomatico
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
+     */
     public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null) {
 
         /** @var Expedicao\AndamentoRepository $expedicaoAndamentoRepo */
@@ -3614,7 +3671,6 @@ class ExpedicaoRepository extends EntityRepository {
         $mapaSeparacaoPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-        $mapaPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
 
         if (empty($pedidoProdutoEn)) {
             /** @var Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
@@ -3633,12 +3689,21 @@ class ExpedicaoRepository extends EntityRepository {
             $qtdCortar = Math::subtrair($qtdPedido, $qtdCortada);
         }
 
+        $produtoEn = $pedidoProdutoEn->getProduto();
+
+        if ($produtoEn->getValidade() == "N") {
+            $ordenacao = "TO_NUMBER(REP.QTD_RESERVADA * -1) ASC";
+        } else {
+            $ordenacao = "TO_NUMBER(REE.COD_RESERVA_ESTOQUE) DESC";
+        }
+
         $SQL = "SELECT DISTINCT REE.COD_RESERVA_ESTOQUE ID, REP.QTD_RESERVADA QTD
                   FROM RESERVA_ESTOQUE_EXPEDICAO REE
                   LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
                  WHERE REE.COD_PEDIDO = '$codPedido'
                    AND REP.COD_PRODUTO = '$codProduto'
-                   AND REP.DSC_GRADE = '$grade'";
+                   AND REP.DSC_GRADE = '$grade'
+                 ORDER BY $ordenacao";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $valToNext = 0;
@@ -3653,6 +3718,7 @@ class ExpedicaoRepository extends EntityRepository {
                 } else {
                     $reservaEstoqueProduto->setQtd($check);
                     $this->getEntityManager()->persist($reservaEstoqueProduto);
+                    $valToNext = 0;
                 }
             }
             $qtdRemoveReserva = $valToNext;
@@ -3669,18 +3735,12 @@ class ExpedicaoRepository extends EntityRepository {
         $this->getEntityManager()->persist($pedidoProdutoEn);
 
         //Seta na mapa_separacao_pedido a quantidade cortada baseada na quantia já cortada mais a nova qtd
-        /** @var Expedicao\MapaSeparacaoPedido $mapaPedidoEn */
-        $mapaPedidoEn = $mapaPedidoRepo->findOneBy(array("pedidoProduto" => $pedidoProdutoEn));
-        if (!empty($mapaPedidoEn)) {
-            $mapaPedidoEn->addCorte($qtdCortar);
-            $this->getEntityManager()->persist($mapaPedidoEn);
+        /** @var Expedicao\MapaSeparacaoPedido $mapaSeparacaoPedido */
+        $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array("pedidoProduto" => $pedidoProdutoEn));
+        if (!empty($mapaSeparacaoPedido)) {
+            $mapaSeparacaoPedido->addCorte($qtdCortar);
+            $this->getEntityManager()->persist($mapaSeparacaoPedido);
         }
-
-        $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
-        $observacao = "Item $codProduto - $grade do pedido $codPedido teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
-        $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
-
-        $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array('codPedidoProduto' => $pedidoProdutoEn->getId()));
 
         if (!empty($mapaSeparacaoPedido)) {
             $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapaSeparacaoPedido->getMapaSeparacao(),
@@ -3688,27 +3748,27 @@ class ExpedicaoRepository extends EntityRepository {
                 'dscGrade' => $grade));
 
             if (!empty($entidadeMapaProduto)) {
-                /** @var Expedicao\MapaSeparacaoProduto $mapa */
-                foreach ($entidadeMapaProduto as $mapa) {
-                    $qtdCortadaMapa = $mapa->getQtdCortado();
-                    $qtdSeparar = Math::multiplicar($mapa->getQtdEmbalagem(), $mapa->getQtdSeparar());
+                /** @var Expedicao\MapaSeparacaoProduto $itemMapa */
+                foreach ($entidadeMapaProduto as $itemMapa) {
+                    $qtdCortadaMapa = $itemMapa->getQtdCortado();
+                    $qtdSeparar = Math::multiplicar($itemMapa->getQtdEmbalagem(), $itemMapa->getQtdSeparar());
                     if (Math::compare($qtdCortadaMapa, $qtdSeparar, '<')) {
                         $qtdDisponivelDeCorte = Math::subtrair($qtdSeparar, $qtdCortadaMapa);
                         if (Math::compare($qtdDisponivelDeCorte, $qtdCortar, '>=')) {
-                            $mapa->setQtdCortado(Math::adicionar($qtdCortar, $qtdCortadaMapa));
-                            $qtdCortar = Math::decrementar($qtdCortar);
+                            $itemMapa->setQtdCortado(Math::adicionar($qtdCortar, $qtdCortadaMapa));
+                            $qtdCortar = 0;
                         } else {
-                            $mapa->setQtdCortado($mapa->getQtdSeparar());
-                            $qtdCortar = Math::decrementar($qtdCortar);
+                            $itemMapa->setQtdCortado($itemMapa->getQtdSeparar());
+                            $qtdCortar = Math::subtrair($qtdCortar, $itemMapa->getQtdSeparar());
                         }
-                        $result = Math::subtrair($qtdSeparar, $mapa->getQtdCortado());
+                        $result = Math::subtrair($qtdSeparar, $itemMapa->getQtdCortado());
                         if (empty($result)) {
-                            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('codMapaSeparacao' => $mapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
+                            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('codMapaSeparacao' => $itemMapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
                             foreach ($mapaConferenciaEn as $conferencia) {
                                 $this->getEntityManager()->remove($conferencia);
                             }
                         }
-                        $this->getEntityManager()->persist($mapa);
+                        $this->getEntityManager()->persist($itemMapa);
                     }
                     if (empty($qtdCortar)) {
                         break;
@@ -3717,11 +3777,15 @@ class ExpedicaoRepository extends EntityRepository {
             }
         }
 
+        $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
+        $observacao = "Item $codProduto - $grade do pedido $codPedido teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
+        $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
+
         $this->getEntityManager()->flush();
 
         $SQL = "SELECT * 
                   FROM PEDIDO_PRODUTO PP
-                 WHERE COD_PEDIDO = $codPedido 
+                 WHERE COD_PEDIDO = '$codPedido' 
                    AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
         $ppSemCortes = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if (count($ppSemCortes) == 0) {
@@ -3743,7 +3807,7 @@ class ExpedicaoRepository extends EntityRepository {
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
                   LEFT JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                 WHERE PP.COD_PEDIDO = $idPedido
+                 WHERE PP.COD_PEDIDO = '$idPedido'
                  GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -3919,21 +3983,25 @@ class ExpedicaoRepository extends EntityRepository {
     }
 
     public function getExpedicoesPD(){
-        $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA;
-        $SQL = "SELECT DISTINCT E.COD_EXPEDICAO FROM 
-                EXPEDICAO E INNER JOIN RESERVA_ESTOQUE_EXPEDICAO RE ON RE.COD_EXPEDICAO = E.COD_EXPEDICAO 
-                WHERE RE.TIPO_SAIDA = $tipoSaida AND E.COD_STATUS = 463";
+
+        $SQL = "SELECT DISTINCT E.COD_EXPEDICAO
+                     FROM ETIQUETA_SEPARACAO ES
+                    INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                    INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                    INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                    WHERE ES.DTH_SEPARACAO IS NULL AND ES.TIPO_SAIDA = 3 AND E.COD_STATUS IN (463,464)";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function getEtiquetasPd($codExpedicao){
         $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA;
-        $SQL = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO FROM ETIQUETA_SEPARACAO ES 
-                INNER JOIN ETIQUETA_MAE EM ON ES.COD_ETIQUETA_MAE = EM.COD_ETIQUETA_MAE
-                INNER JOIN DEPOSITO_ENDERECO DE ON ES.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
-                INNER JOIN ETIQUETA_SEPARACAO ES ON ES.COD_ETIQUETA_MAE = EM.COD_ETIQUETA_MAE
-                WHERE EM.COD_EXPEDICAO = $codExpedicao AND ES.DTH_SEPARACAO IS NULL AND ES.TIPO_SAIDA = $tipoSaida";
-//                 ";
+        $SQL = "   SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO 
+                     FROM ETIQUETA_SEPARACAO ES
+                    INNER JOIN PEDIDO P ON P.COD_PEDIDO = ES.COD_PEDIDO
+                    INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                    INNER JOIN DEPOSITO_ENDERECO DE ON ES.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                    WHERE C.COD_EXPEDICAO = $codExpedicao AND ES.DTH_SEPARACAO IS NULL AND ES.TIPO_SAIDA = $tipoSaida";
+
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -3999,6 +4067,19 @@ class ExpedicaoRepository extends EntityRepository {
     public function changeStatusExpedicao($idsExpedicoes, $processando = 'N') {
         $sql = "UPDATE EXPEDICAO SET IND_PROCESSANDO = '$processando' WHERE COD_EXPEDICAO IN ($idsExpedicoes)";
         $this->_em->getConnection()->query($sql)->execute();
+    }
+
+    public function countModeloSeparacaoByExpedicoes($codExpedicoes)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('distinct ms.id')
+            ->from('wms:Expedicao','e')
+            ->leftJoin('e.modeloSeparacao', 'ms')
+            ->where("e.id IN ($codExpedicoes)")
+            ->groupBy('ms.id, e.id');
+
+        return $sql->getQuery()->getResult();
+
     }
 
     /**

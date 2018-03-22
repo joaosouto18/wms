@@ -40,6 +40,7 @@ class PedidoRepository extends EntityRepository
             $enPedido->setPontoTransbordo($pedido['pontoTransbordo']);
             $enPedido->setEnvioParaLoja($pedido['envioParaLoja']);
             $enPedido->setIndEtiquetaMapaGerado('N');
+            $enPedido->setProprietario($pedido['codProprietario']);
             $em->persist($enPedido);
  //           $em->flush();
  //           $em->commit();
@@ -53,9 +54,18 @@ class PedidoRepository extends EntityRepository
     }
 
     public function getQtdPedidaAtendidaByPedido ($codPedido) {
-        $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PP.QUANTIDADE - NVL(PP.qtd_cortada,0) as ATENDIDA
-                  FROM PEDIDO_PRODUTO PP
-                 WHERE PP.COD_PEDIDO = '$codPedido'";
+            //regexp_replace(LPAD(PJ.NUM_CNPJ, 15, '0'),'([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{4})([0-9]{2})','\1.\2.\3/\4-\5') as CNPJ
+        $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+        if($controleProprietario == 'S'){
+            $SQL = "SELECT EP.COD_PESSOA, (EP.QTD * -1) as ATENDIDA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PJ.NUM_CNPJ as CNPJ
+                    FROM PEDIDO_PRODUTO PP 
+                    LEFT JOIN ESTOQUE_PROPRIETARIO EP ON (PP.COD_PRODUTO = EP.COD_PRODUTO AND PP.DSC_GRADE = EP.DSC_GRADE AND PP.COD_PEDIDO = EP.COD_OPERACAO_DETALHE)
+                    LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
+                    WHERE PP.COD_PEDIDO = $codPedido";
+        }else {
+            $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PP.QUANTIDADE - NVL(PP.qtd_cortada,0) as ATENDIDA, '' AS CNPJ
+                  FROM PEDIDO_PRODUTO PP WHERE PP.COD_PEDIDO = '$codPedido'";
+        }
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
     }
@@ -247,7 +257,7 @@ class PedidoRepository extends EntityRepository
                   LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = ES.COD_PEDIDO 
                                              AND PP.COD_PRODUTO = ES.COD_PRODUTO
                                              AND PP.DSC_GRADE = ES.DSC_GRADE
-                 WHERE PP.COD_PEDIDO = " . $idPedido ;
+                 WHERE PP.COD_PEDIDO = '" . $idPedido . "'";
         $countEtiquetas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $EntPedido = $this->find($idPedido);
@@ -591,7 +601,7 @@ class PedidoRepository extends EntityRepository
                   LEFT JOIN ITINERARIO I ON I.COD_ITINERARIO = P.COD_ITINERARIO
                   LEFT JOIN PESSOA_ENDERECO ENDERECO ON ENDERECO.COD_PESSOA = PES.COD_PESSOA AND ENDERECO.COD_TIPO_ENDERECO = 22
                   LEFT JOIN SIGLA UF ON UF.COD_SIGLA = ENDERECO.COD_UF
-                  WHERE P.COD_PEDIDO = " . $codPedido;
+                  WHERE P.COD_PEDIDO = '" . $codPedido . "'";
 
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -610,7 +620,7 @@ class PedidoRepository extends EntityRepository
           FROM PEDIDO_PRODUTO PP
           LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
           LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO AND PESO.DSC_GRADE = PP.DSC_GRADE
-         WHERE PP.COD_PEDIDO = $codPedido ORDER BY COD_PRODUTO, DSC_GRADE";
+         WHERE PP.COD_PEDIDO = '$codPedido' ORDER BY COD_PRODUTO, DSC_GRADE";
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
@@ -628,7 +638,7 @@ class PedidoRepository extends EntityRepository
           LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ES.COD_PRODUTO_VOLUME
           LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
           LEFT JOIN SIGLA S ON S.COD_SIGLA = ES.COD_STATUS
-         WHERE ES.COD_PEDIDO = $codPedido ORDER BY ES.COD_ETIQUETA_SEPARACAO";
+         WHERE ES.COD_PEDIDO = '$codPedido' ORDER BY ES.COD_ETIQUETA_SEPARACAO";
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
 

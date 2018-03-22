@@ -7,14 +7,14 @@
 DECLARE
   CHECK_RESULT VARCHAR2(100);
 BEGIN
-  SELECT FUNC_CHECK_SCRIPT('xx-V_QTD_RECEBIMENTO-Versao-Final.sql', '')
+  SELECT FUNC_CHECK_SCRIPT('20-V_QTD_RECEBIMENTO-Versao-Final.sql', '')
   INTO CHECK_RESULT
   FROM DUAL;
   IF (CHECK_RESULT <> 'TRUE')
   THEN
     DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
   ELSE
-    INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6', 'xx-V_QTD_RECEBIMENTO-Versao-Final.sql');
+    INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6', '20-V_QTD_RECEBIMENTO-Versao-Final.sql');
     /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
