@@ -3244,8 +3244,7 @@ class ExpedicaoRepository extends EntityRepository {
                         $idExpedicao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->getId();
 
                         //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
-                    //REFAZERAQUI
-                        $modeloSeparacao = $etiquetaSeparacao->getPedido()->getCarga()->getExpedicao()->;
+                        $modeloSeparacao = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
 
                         if ($modeloSeparacao == null)
                             throw new \Exception("Modelo de Separação não encontrado");
@@ -3336,7 +3335,6 @@ class ExpedicaoRepository extends EntityRepository {
                 $idExpedicao = $etiqueta->getPedido()->getCarga()->getExpedicao()->getId();
 
                 //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
-                //REFAZERAQUI
                 $modeloSeparacao = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
 
                 if ($modeloSeparacao == null)
@@ -4089,7 +4087,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
      */
-    public function setModeloSeparacao($idExpedicao, $idModelo) {
+    public function defineModeloSeparacao($idExpedicao, $idModelo, $flush = true) {
 
         /** @var Expedicao $expedicaoEn */
         $expedicaoEn =  $this->find($idExpedicao);
@@ -4097,8 +4095,12 @@ class ExpedicaoRepository extends EntityRepository {
         $modeloEn = $this->_em->find("wms:Expedicao\ModeloSeparacao", $idModelo);
 
         if (!empty($expedicaoEn) && !empty($modeloEn)) {
-            $expedicaoEn->set
+            $expedicaoEn->setModeloSeparacao($modeloEn);
         }
+
+        $this->_em->persist($expedicaoEn);
+
+        if ($flush) $this->_em->flush();
 
     }
 }

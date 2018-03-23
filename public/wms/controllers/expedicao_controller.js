@@ -46,7 +46,8 @@ $.Controller.extend('Wms.Controllers.Expedicao',
             });
 
             $('#modelo-separacao').live('click', function () {
-                var este = this;
+                var divLoading = $("#loading");
+                divLoading.show();
                 if ($("input[name*='expedicao[]']:checked").length > 0){
                     $.ajax({
                         url: URL_BASE + '/expedicao/onda-ressuprimento/modelo-separacao-expedicao-ajax',
@@ -55,6 +56,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                         dataType: 'html',
                         data: $('#relatorio-picking-listar').serialize()
                     }).success(function (data) {
+                        divLoading.hide();
                         este.dialogModal(data);
                     });
                 } else {
@@ -70,6 +72,10 @@ $.Controller.extend('Wms.Controllers.Expedicao',
              */
             $("#gerar").live('click', function() {
                 este.gerarRessuprimento();
+            });
+
+            $("#alterar-modelo").live('click', function() {
+                este.alterarModelo();
             });
 
             grade = $("#grade");
@@ -115,7 +121,8 @@ $.Controller.extend('Wms.Controllers.Expedicao',
          */
         gerarRessuprimento: function () {
             var este = this;
-
+            var divLoading = $("#loading");
+            divLoading.show();
             if ($("input[name*='expedicao[]']:checked").length > 0){
                 var liberado = true;
                 $.ajax({
@@ -128,6 +135,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                     if (data.status === "Ok") {
                         liberado = true;
                     } else if (data.status === "Error") {
+                        divLoading.hide();
                         este.dialogAlert(data.msg, function(){
                             window.location = URL_BASE + "/expedicao/onda-ressuprimento";
                         });
@@ -145,6 +153,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                         dataType: 'json',
                         data: $('#relatorio-picking-listar').serialize()
                     }).success(function (data) {
+                        divLoading.hide();
                         if (data.status === "Ok") {
                             expedicoes = data.expedicoes;
                             msgs = data.response;
@@ -166,6 +175,27 @@ $.Controller.extend('Wms.Controllers.Expedicao',
             } else {
                 alert('Selecione pelo menos uma expedição');
             }
+        },
+
+        alterarModelo: function () {
+            var expedicoes = [];
+            var este = this;
+            var divLoading = $("#loading");
+            divLoading.show();
+            $.ajax({
+                url: URL_BASE + "/expedicao/onda-ressuprimento/alterar-modelo-separacao",
+                type: 'post',
+                async: false,
+                dataType: 'json',
+                data: $('#relatorio-picking-listar').serialize()
+            }).success(function (data) {
+                divLoading.hide();
+                if (data.status === "Ok") {
+                    expedicoes = data.expedicoes;
+                } else if (data.status === "Error") {
+                    este.dialogAlert(data.msg)
+                }
+            });
         },
 
         processoCancelado: function () {

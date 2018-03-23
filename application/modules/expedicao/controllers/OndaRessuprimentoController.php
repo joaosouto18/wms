@@ -319,15 +319,20 @@ class Expedicao_OndaRessuprimentoController extends Action
     public function alterarModeloSeparacaoAction()
     {
         $params = $this->_getAllParams();
-        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepository */
-        $modeloSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
         $expedicaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao');
 
-        $modeloSeparacaoEntity = $modeloSeparacaoRepository->find($params['id-modelo']);
+        try {
+            foreach ($params['id-expedicao'] as $codExpedicao) {
+                $expedicaoRepository->defineModeloSeparacao($codExpedicao, $params['id-modelo']);
+            }
 
-        foreach ($params['id-expedicao'] as $codExpedicao) {
-            $expedicaoRepository->setModeloSeparacao($codExpedicao, $params['id-modelo']);
+            $this->_helper->json(["status" => "Ok", "expedicoes" => $params['id-expedicao']]);
+
+        }catch (Exception $e) {
+
+            $this->_helper->json(["status" => "Error", "msg" => $e->getMessage()]);
+
         }
 
     }
