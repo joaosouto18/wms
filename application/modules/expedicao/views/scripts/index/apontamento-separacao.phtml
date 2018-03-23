@@ -131,7 +131,6 @@
                 pessoa = document.getElementById('mapas-pessoa');
                 if (pessoa) {
                     pessoa.focus();
-
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -176,6 +175,11 @@
     });
     $(function () {
         $(document).keydown(function (event) {
+            if(event.keyCode == 17){
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                $('#etiquetas-etiquetaInicial').click();
+            }
              console.log(event.width + " -- " + event.keyCode)
         });
         $('#etiquetas-etiquetaInicial').keyup(function (event) {
