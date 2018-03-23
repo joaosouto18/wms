@@ -52,6 +52,8 @@ class Expedicao_IndexController extends Action {
         $expedicaoRepository = $em->getRepository('wms:Expedicao');
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
+        $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
 
         //CANCELAR CARGAS NO WMS JA CANCELADAS NO ERP
         if ($this->getSystemParameterValue('REPLICAR_CANCELAMENTO_CARGA') == 'S') {
@@ -65,11 +67,12 @@ class Expedicao_IndexController extends Action {
                         continue;
                     }
                 }
-                $cargaCanceladaEntity = $triggerCancelamentoCargaRepository->find($cargaCanceladaEntity['COD_CARGA_EXTERNO']);
                 if (!$cargaEntity && $cargaCanceladaEntity) {
-                    $em->remove($cargaCanceladaEntity);
+                    $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($cargaCanceladaEntity[ID]) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                    $update = true;
+                    $conexaoEn = $acaoEn->getConexao();
+                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
                     $em->flush();
-                    continue;
                 }
                 $pedidoEntities = $cargaRepository->getPedidos($cargaEntity->getId());
                 foreach ($pedidoEntities as $pedidoEntity) {
@@ -89,7 +92,10 @@ class Expedicao_IndexController extends Action {
                 $expedicaoAndamentoRepository->save('carga ' . $cargaEntity->getCodCargaExterno() . ' removida', $cargaEntity->getCodExpedicao(), false, false);
 
                 if ($cargaCanceladaEntity) {
-                    $em->remove($cargaCanceladaEntity);
+                    $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($cargaCanceladaEntity[ID]) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                    $update = true;
+                    $conexaoEn = $acaoEn->getConexao();
+                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
                 }
                 $em->flush();
             }
