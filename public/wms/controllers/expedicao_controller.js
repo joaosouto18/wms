@@ -46,8 +46,6 @@ $.Controller.extend('Wms.Controllers.Expedicao',
             });
 
             $('#modelo-separacao').live('click', function () {
-                var divLoading = $("#loading");
-                divLoading.show();
                 if ($("input[name*='expedicao[]']:checked").length > 0){
                     $.ajax({
                         url: URL_BASE + '/expedicao/onda-ressuprimento/modelo-separacao-expedicao-ajax',
@@ -56,22 +54,12 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                         dataType: 'html',
                         data: $('#relatorio-picking-listar').serialize()
                     }).success(function (data) {
-                        divLoading.hide();
                         este.dialogModal(data);
                     });
                 } else {
                     este.dialogAlert('Selecione pelo menos uma expedição');
                 }
 
-            });
-
-            /*
-             * Valida seleção de expedições
-             * @array checkBoxes de expedições
-             * return action submit / alert
-             */
-            $("#gerar").live('click', function() {
-                este.gerarRessuprimento();
             });
 
             $("#alterar-modelo").live('click', function() {
@@ -121,8 +109,6 @@ $.Controller.extend('Wms.Controllers.Expedicao',
          */
         gerarRessuprimento: function () {
             var este = this;
-            var divLoading = $("#loading");
-            divLoading.show();
             if ($("input[name*='expedicao[]']:checked").length > 0){
                 var liberado = true;
                 $.ajax({
@@ -135,12 +121,11 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                     if (data.status === "Ok") {
                         liberado = true;
                     } else if (data.status === "Error") {
-                        divLoading.hide();
                         este.dialogAlert(data.msg, function(){
                             window.location = URL_BASE + "/expedicao/onda-ressuprimento";
                         });
                         liberado = false;
-                        este.processoCancelado();
+                        este.clearCheckBox();
                     }
                 });
                 if (liberado) {
@@ -150,10 +135,10 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                         url: URL_BASE + "/expedicao/onda-ressuprimento/gerar",
                         type: 'post',
                         async: false,
+                        timeout: 900,
                         dataType: 'json',
                         data: $('#relatorio-picking-listar').serialize()
                     }).success(function (data) {
-                        divLoading.hide();
                         if (data.status === "Ok") {
                             expedicoes = data.expedicoes;
                             msgs = data.response;
@@ -178,28 +163,25 @@ $.Controller.extend('Wms.Controllers.Expedicao',
         },
 
         alterarModelo: function () {
-            var expedicoes = [];
             var este = this;
-            var divLoading = $("#loading");
-            divLoading.show();
+            var params = {"expedicoes" : $("input[name*='id-expedicao[]']").map(function(){return $(this).val()}).get(), "id-modelo" : $("#id-modelo").val()};
             $.ajax({
-                url: URL_BASE + "/expedicao/onda-ressuprimento/alterar-modelo-separacao",
+                url: URL_BASE + "/expedicao/onda-ressuprimento/alterar-modelo-separacao-ajax",
                 type: 'post',
                 async: false,
                 dataType: 'json',
-                data: $('#relatorio-picking-listar').serialize()
+                data: params
             }).success(function (data) {
-                divLoading.hide();
+                $("#wms-dialog-modal").remove();
                 if (data.status === "Ok") {
-                    expedicoes = data.expedicoes;
+                    este.gerarRessuprimento();
                 } else if (data.status === "Error") {
                     este.dialogAlert(data.msg)
                 }
             });
         },
 
-        processoCancelado: function () {
-            $('#aguarde').attr('style','display:none');
+        clearCheckBox: function () {
             $("input[name*='expedicao[]']").each(function( index, value ){
                 if ( $(this).prop('checked') ){
                     $(this).prop('checked', false);
