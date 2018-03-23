@@ -60,6 +60,7 @@
         // Run code
         $('#qtdConferentes').val(<?php echo $this->qtdFunc?>);
         $('#etiquetas-etiquetaInicial').focus();
+        $("#etiquetas-pessoa").attr('readonly', 'readonly');
     });
 
     function gotoFinal(event) {
@@ -295,7 +296,11 @@
         });
 
         addLista = function () {
+            $("#etiquetas-pessoa").removeAttr('readonly');
+            $("#etiquetas-etiquetaInicial").attr('readonly', 'readonly');
+            $("#etiquetas-etiquetaFinal").attr('readonly', 'readonly');
             if($('#input-busca').val() == 1){
+                $("#etiquetas-pessoa").attr('readonly', 'readonly');
                 $('#tbResult tr').remove();
                 $('#input-busca').val(0);
                 $('#title-busca').hide();
@@ -545,8 +550,10 @@
                                 eF = eI;
                                 eI = aux;
                             }
+                            $("#etiquetas-pessoa").attr('readonly', 'readonly');
                             $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira: eI, ultima: eF}, function (data) {
                                 $("#txtIntervalo").val(data.result);
+                                $('#etiquetas-pessoa').removeAttr('readonly');
                             });
                         } else if (data.result = 'Error') {
                             $.wmsDialogAlert({
@@ -617,6 +624,19 @@
             }
         });
 
+        $('#qtdConferentes').focus(function() {
+            prev_val = $(this).val();
+        }).change(function() {
+            $(this).blur() // Firefox fix as suggested by AgDude
+            if($(this).val() == 0 || $(this).val().length == 0){
+                $(this).val(prev_val);
+                $.wmsDialogAlert({
+                    title: 'Alerta',
+                    msg: 'Números de funcionários precisa estar preenchido.'
+                });
+                return false;
+            }
+        });
 
         $('.updateSeparacao').click(function () {
             $.each($('#tbResult').children(), function () {

@@ -396,7 +396,7 @@ class Expedicao_IndexController extends Action {
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
                 ),
                 array(
-                    'label' => 'Salvar',
+                    'label' => 'Efetivar Apontamento ',
                     'cssClass' => 'btn save',
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
                 )
