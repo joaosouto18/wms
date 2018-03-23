@@ -463,14 +463,17 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
         '#btn-excluir-grupo click': function( el , ev ){
             var grupoVolume = el.closest('.grupoDadosLogisticos');
 
-            if(grupoVolume.find('.produto_volume').size() !== ''){
+            if(grupoVolume.find('.produto_volume').size() > 0){
                 this.dialogAlert("Esta norma de paletização deve estar vazia para poder ser excluida.");
                 return false;
             }else {
-                this.dialogConfirm("Tem certeza que deseja excluir esta norma de paletização?", grupoVolume.remove());
+                this.dialogConfirm("Tem certeza que deseja excluir esta norma de paletização?", this.callback("excluirNorma"), grupoVolume);
             }
         },
 
+        excluirNorma: function (norma) {
+            norma.remove()
+        },
 
         /**
          * Checa status dos grupos de norma de paletizacao
@@ -750,11 +753,11 @@ $.Controller.extend('Wms.Controllers.ProdutoVolume',
             });
         },
 
-        dialogConfirm: function ( msg, callYes, paramsYes, callNo, paramsNo ) {
+        dialogConfirm: function (msg, callback, params, returnFunction) {
             return $.wmsDialogConfirm({
-                title: 'Tem certeza?',
+                title: '---  Sistema  ---',
                 msg: msg
-            }, callYes, paramsYes, callNo, paramsNo);
+            }, callback, params, returnFunction);
         }
 
     });

@@ -65,6 +65,10 @@ class Expedicao extends Grid
                 'index' => 'itinerario',
             ))
             ->addColumn(array(
+                'label' => 'Motorista',
+                'index' => 'motorista',
+            ))
+            ->addColumn(array(
                 'label' => 'Data Inicial',
                 'index' => 'dataInicio',
             ))

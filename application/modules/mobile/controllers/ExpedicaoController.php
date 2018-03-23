@@ -146,8 +146,8 @@ class Mobile_ExpedicaoController extends Action {
                     $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
             }
 
-            $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-            $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+            //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+            $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
 
             /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
             $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $idMapa));
@@ -406,9 +406,11 @@ class Mobile_ExpedicaoController extends Action {
         $idExpedicao = $this->_getParam('idExpedicao');
         $volume = $this->_getParam('volume');
         $parametroEtiquetaVolume = $this->getSystemParameterValue('MODELO_ETIQUETA_VOLUME');
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepository */
+        $modeloSeparacaoRepository = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
 
-        $modeloSeparacaoId = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-        $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->find($modeloSeparacaoId);
+        //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+        $modeloSeparacaoEn = $modeloSeparacaoRepository->getModeloSeparacao($idExpedicao);
 
         /** @var Expedicao\ExpedicaoVolumePatrimonioRepository $expVolumePatrimonioRepo */
         $expVolumePatrimonioRepo = $this->em->getRepository('wms:Expedicao\ExpedicaoVolumePatrimonio');
@@ -645,8 +647,8 @@ class Mobile_ExpedicaoController extends Action {
 
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
 
-        $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-        $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+        //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+        $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
         $quebraColetor = $modeloSeparacaoEn->getUtilizaQuebraColetor();
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */

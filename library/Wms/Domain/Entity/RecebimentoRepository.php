@@ -576,6 +576,13 @@ class RecebimentoRepository extends EntityRepository {
                     $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId(), false, $dataValidade);
                     $em->flush();
                 }
+
+                $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+                if($controleProprietario == 'S') {
+                    if (empty($result)) {
+                        $em->getRepository("wms:Enderecamento\EstoqueProprietario")->efetivaEstoquePropRecebimento($recebimentoEntity->getId());
+                    }
+                }
                 $em->flush();
                 $em->commit();
                 return array('exception' => null);
@@ -985,9 +992,9 @@ class RecebimentoRepository extends EntityRepository {
                               GROUP BY R.COD_PRODUTO, R.DSC_GRADE, P.IND_POSSUI_PESO_VARIAVEL) CONFERIDO
                     ON CONFERIDO.COD_PRODUTO = V.COD_PRODUTO
                    AND CONFERIDO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
-                                    COD_PRODUTO,
-                                    DSC_GRADE 
+                  LEFT JOIN (SELECT SUM(QTD) / NVL(PV.QTD_NORMAS,1) as QTD,
+                                    V.COD_PRODUTO,
+                                    V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
                                                      CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
                                                           ELSE PP.QTD 
@@ -1001,13 +1008,14 @@ class RecebimentoRepository extends EntityRepository {
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
-                                        AND P.COD_STATUS = 534)
-                                      GROUP BY COD_PRODUTO, DSC_GRADE) RECEBIDO
+                                        AND P.COD_STATUS = 534) V
+                                       LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = V.COD_PRODUTO AND PV.DSC_GRADE = V.DSC_GRADE
+                                      GROUP BY V.COD_PRODUTO, V.DSC_GRADE, PV.QTD_NORMAS) RECEBIDO
                     ON RECEBIDO.COD_PRODUTO = V.COD_PRODUTO
                    AND RECEBIDO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
-                                    COD_PRODUTO,
-                                    DSC_GRADE 
+                  LEFT JOIN (SELECT SUM(QTD) / NVL(PV.QTD_NORMAS,1) as QTD,
+                                    V.COD_PRODUTO,
+                                    V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
                                                      CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
                                                           ELSE PP.QTD 
@@ -1021,13 +1029,14 @@ class RecebimentoRepository extends EntityRepository {
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
-                                        AND P.COD_STATUS = 536)
-                                      GROUP BY COD_PRODUTO, DSC_GRADE) ENDERECADO
+                                        AND P.COD_STATUS = 536) V
+                                       LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = V.COD_PRODUTO AND PV.DSC_GRADE = V.DSC_GRADE
+                                      GROUP BY V.COD_PRODUTO, V.DSC_GRADE, PV.QTD_NORMAS) ENDERECADO
                     ON ENDERECADO.COD_PRODUTO = V.COD_PRODUTO
                    AND ENDERECADO.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
-                                    COD_PRODUTO,
-                                    DSC_GRADE 
+                  LEFT JOIN (SELECT SUM(QTD) / NVL(PV.QTD_NORMAS,1) as QTD,
+                                    V.COD_PRODUTO,
+                                    V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
                                                      CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
                                                           ELSE PP.QTD 
@@ -1041,13 +1050,14 @@ class RecebimentoRepository extends EntityRepository {
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
-                                        AND P.COD_STATUS = 535)
-                                      GROUP BY COD_PRODUTO, DSC_GRADE) ENDERECAMENTO
+                                        AND P.COD_STATUS = 535) V
+                                       LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = V.COD_PRODUTO AND PV.DSC_GRADE = V.DSC_GRADE
+                                      GROUP BY V.COD_PRODUTO, V.DSC_GRADE, PV.QTD_NORMAS) ENDERECAMENTO
                     ON ENDERECAMENTO.COD_PRODUTO = V.COD_PRODUTO
                    AND ENDERECAMENTO.DSC_GRADE = V.DSC_GRADE   
-                  LEFT JOIN (SELECT SUM(QTD) / COUNT(DISTINCT COD_NORMA_PALETIZACAO) as QTD,
-                                    COD_PRODUTO,
-                                    DSC_GRADE 
+                  LEFT JOIN (SELECT SUM(QTD) / NVL(QTD_NORMAS,1) as QTD,
+                                    V.COD_PRODUTO,
+                                    V.DSC_GRADE 
                                FROM (SELECT DISTINCT P.UMA, 
                                                      CASE WHEN PROD.IND_POSSUI_PESO_VARIAVEL = 'S' THEN P.PESO
                                                           ELSE PP.QTD 
@@ -1061,8 +1071,9 @@ class RecebimentoRepository extends EntityRepository {
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
                                       WHERE P.COD_RECEBIMENTO = $idRecebimento
-                                        AND P.COD_STATUS <> 537)
-                                      GROUP BY COD_PRODUTO, DSC_GRADE) GERADO
+                                        AND P.COD_STATUS <> 537) V
+                                       LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = V.COD_PRODUTO AND PV.DSC_GRADE = V.DSC_GRADE
+                                      GROUP BY V.COD_PRODUTO, V.DSC_GRADE, PV.QTD_NORMAS) GERADO
                     ON GERADO.COD_PRODUTO = V.COD_PRODUTO
                    AND GERADO.DSC_GRADE = V.DSC_GRADE   
                   LEFT JOIN (SELECT CASE WHEN P.IND_POSSUI_PESO_VARIAVEL = 'S' THEN SUM(NVL(NFI.NUM_PESO,0))
@@ -1096,12 +1107,12 @@ class RecebimentoRepository extends EntityRepository {
                 'produto' => $row['DSC_PRODUTO'],
                 'grade' => $row['DSC_GRADE'],
                 'picking' => $picking,
-                'qtdItensNf' => $row['QTD_NOTA_FISCAL'],
-                'qtdRecebimento' => $row['QTD_RECEBIMENTO'],
-                'qtdRecebida' => $row['QTD_RECEBIDA'],
-                'qtdEnderecamento' => $row['QTD_ENDERECAMENTO'],
-                'qtdEnderecada' => $row['QTD_ENDERECADA'],
-                'qtdTotal' => $row['QTD_TOTAL']
+                'qtdItensNf' => round($row['QTD_NOTA_FISCAL'],5),
+                'qtdRecebimento' => round($row['QTD_RECEBIMENTO'],5),
+                'qtdRecebida' => round($row['QTD_RECEBIDA'],5),
+                'qtdEnderecamento' => round($row['QTD_ENDERECAMENTO'],5),
+                'qtdEnderecada' => round($row['QTD_ENDERECADA'],5),
+                'qtdTotal' => round($row['QTD_TOTAL'],5)
             );
         }
 
@@ -1798,28 +1809,28 @@ class RecebimentoRepository extends EntityRepository {
         $statusEnderecado = Palete::STATUS_ENDERECADO;
         $statusEmEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
 
-        $sql = "SELECT DISTINCT PLT.COD_PRODUTO, PLT.DSC_GRADE, RC.QTD AS QTD_RECEBIDA, PLT.QTD_TOTAL AS QTD_PALETIZADA
-                FROM ( 
-                    SELECT DISTINCT (SUM(PP.QTD) / COUNT(DISTINCT NVL(PP.COD_PRODUTO_VOLUME, 1))) QTD_TOTAL, PP.COD_PRODUTO, PP.DSC_GRADE, P.COD_RECEBIMENTO
-                    FROM PALETE_PRODUTO PP
-                    INNER JOIN PALETE P ON P.UMA = PP.UMA
-                    WHERE P.COD_RECEBIMENTO = $idRecebimento AND (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN ($statusEmEnderecamento, $statusEnderecado))
-                    GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PP.COD_NORMA_PALETIZACAO, P.COD_RECEBIMENTO) PLT
-                INNER JOIN (
-                        SELECT COD_PRODUTO, DSC_GRADE, SUM(QTD) AS QTD , COD_NORMA_PALETIZACAO
-                        FROM (
-                            SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE, RV.QTD_CONFERIDA AS QTD, RV.COD_NORMA_PALETIZACAO
-                            FROM RECEBIMENTO_VOLUME RV 
-                            INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
-                            WHERE RV.COD_OS = $idOrdemServico
-                            UNION
-                            SELECT DISTINCT PE.COD_PRODUTO, PE.DSC_GRADE, RE.QTD_CONFERIDA * RE.QTD_EMBALAGEM AS QTD, RE.COD_NORMA_PALETIZACAO
-                            FROM RECEBIMENTO_EMBALAGEM RE
-                            INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
-                            WHERE RE.COD_OS = $idOrdemServico
-                        ) GROUP BY COD_PRODUTO, DSC_GRADE, COD_NORMA_PALETIZACAO
-                      )RC ON RC.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE
-                WHERE PLT.QTD_TOTAL > RC.QTD";
+        $sql = "SELECT DISTINCT PLT.COD_PRODUTO, 
+                       PLT.DSC_GRADE, 
+                       RC.QTD AS QTD_RECEBIDA, 
+                       PLT.QTD_TOTAL AS QTD_PALETIZADA
+                  FROM (SELECT DISTINCT (SUM(PP.QTD) / COUNT(DISTINCT NVL(PP.COD_PRODUTO_VOLUME, 1))) QTD_TOTAL, 
+                               PP.COD_PRODUTO, 
+                               PP.DSC_GRADE, 
+                               P.COD_RECEBIMENTO
+                          FROM PALETE_PRODUTO PP
+                         INNER JOIN PALETE P ON P.UMA = PP.UMA
+                         WHERE P.COD_RECEBIMENTO = $idRecebimento 
+                           AND (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN ($statusEmEnderecamento, $statusEnderecado))
+                         GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PP.COD_NORMA_PALETIZACAO, P.COD_RECEBIMENTO) PLT
+                 INNER JOIN (SELECT COD_PRODUTO, 
+                                    DSC_GRADE, 
+                                    QTD, 
+                                    COD_NORMA_PALETIZACAO 
+                               FROM V_QTD_RECEBIMENTO_DETALHADA 
+                              WHERE COD_OS = $idOrdemServico
+                                AND COD_RECEBIMENTO = $idRecebimento)RC 
+                    ON RC.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE
+                 WHERE PLT.QTD_TOTAL > RC.QTD ";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -1850,4 +1861,112 @@ class RecebimentoRepository extends EntityRepository {
 
         return (!empty($result));
     }
+
+    public function getProdutosRecebidosComSenha($values) {
+
+        $andWhere = "";
+        if (isset($values['dataInicial1']) && ($values['dataInicial1'] != null)) {
+            $dataInicial1 = str_replace("/", "-", $values['dataInicial1']);
+            $andWhere .= $andWhere . " AND R.DTH_INICIO_RECEB >= TO_DATE('" . $dataInicial1 . " 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+        if (isset($values['dataInicial2']) && ($values['dataInicial2'] != null)) {
+            $dataInicial2 = str_replace("/", "-", $values['dataInicial2']);
+            $andWhere .= $andWhere . " AND R.DTH_INICIO_RECEB <= TO_DATE('" . $dataInicial2 . " 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+        if (isset($values['dataFinal1']) && ($values['dataFinal1'] != null)) {
+            $dataFinal1 = str_replace("/", "-", $values['dataFinal1']);
+            $andWhere .= $andWhere . " AND R.DTH_FINAL_RECEB >= TO_DATE('" . $dataFinal1 . " 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+        if (isset($values['dataFinal2']) && ($values['dataFinal2'] != null)) {
+            $dataFinal2 = str_replace("/", "-", $values['dataFinal2']);
+            $andWhere .= $andWhere . " AND R.DTH_FINAL_RECEB <= TO_DATE('" . $dataFinal2 . " 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($values['idRecebimento']) && ($values['idRecebimento'] != null)) {
+            $idRecebimento = $values['idRecebimento'];
+            $andWhere .= $andWhere . " AND R.COD_RECEBIMENTO = '" & $idRecebimento & "'";
+        }
+
+        $sql = "SELECT V.COD_RECEBIMENTO,
+                       F.COD_EXTERNO,
+                       PJ.PJ.NOM_FANTASIA as FORNECEDOR,     
+                       NF.NUM_NOTA_FISCAL as NF,
+                       NF.COD_SERIE_NOTA_FISCAL as SERIE,
+                       V.COD_PRODUTO, 
+                       V.DSC_GRADE,
+                       PROD.DSC_PRODUTO,
+                       V.DIAS_VIDA_UTIL AS SHELFLIFE_MIN,
+                       V.DIAS_VIDA_UTIL_MAX as SHELFLIFE_MAX,
+                       V.COD_OS,
+                       V.QTD as QTD_CONFERIDA,
+                       V.DTH_VALIDADE,
+                       V.SHELFLIFE,
+                       TO_CHAR(V.DTH_CONFERENCIA,'DD/MM/YYYY HH24:MI:SS') as DTH_CONFERENCIA,
+                       CONF.NOM_PESSOA as CONFERENTE,
+                       TO_CHAR(RA.DTH_ANDAMENTO,'DD/MM/YYYY HH24:MI:SS') AS DTH_FINALIZACAO,
+                       U.NOM_PESSOA as USUARIO_FINALIZACAO,
+                       RA.DSC_OBSERVACAO as OBSERVACAO_RECEBIMENTO
+                  FROM (SELECT SUM(RE.QTD_CONFERIDA * RE.QTD_EMBALAGEM) AS QTD,
+                               RE.COD_RECEBIMENTO,
+                               PE.COD_PRODUTO,
+                               PE.DSC_GRADE,
+                               OS.COD_OS,
+                               RE.COD_NORMA_PALETIZACAO,
+                               MAX(RE.DTH_VALIDADE) as DTH_VALIDADE,
+                               MAX(RE.DTH_CONFERENCIA) as DTH_CONFERENCIA,
+                               TRUNC(MAX(RE.DTH_VALIDADE)- MAX(RE.DTH_CONFERENCIA)) as SHELFLIFE,
+                               P.DIAS_VIDA_UTIL,
+                               P.DIAS_VIDA_UTIL_MAX,
+                               SUM(RE.NUM_PESO) AS NUM_PESO
+                          FROM RECEBIMENTO_EMBALAGEM RE
+                         INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
+                          LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
+                         INNER JOIN (SELECT DISTINCT DTH_FINAL_ATIVIDADE,
+                                            COD_OS,
+                                            COD_RECEBIMENTO,
+                                            COD_PRODUTO,
+                                            DSC_GRADE,
+                                            RANK() OVER(PARTITION BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE ORDER BY DTH_FINAL_ATIVIDADE DESC) RANK
+                                        FROM (SELECT DISTINCT
+                                                     NVL(OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999', 'dd/mm/yyyy')) AS DTH_FINAL_ATIVIDADE,
+                                                     MAX(OS.COD_OS) COD_OS,
+                                                     OS.COD_RECEBIMENTO,
+                                                     PE.COD_PRODUTO,
+                                                     PE.DSC_GRADE
+                                                FROM RECEBIMENTO_EMBALAGEM RE
+                                               INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
+                                                LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = RE.COD_OS
+                                               GROUP BY OS.COD_RECEBIMENTO, PE.COD_PRODUTO, PE.DSC_GRADE, NVL(OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999', 'dd/mm/yyyy')))) OS
+                            ON OS.COD_OS = RE.COD_OS
+                           AND OS.RANK <= 1
+                           AND OS.COD_RECEBIMENTO = RE.COD_RECEBIMENTO
+                           AND OS.COD_PRODUTO = PE.COD_PRODUTO
+                           AND OS.DSC_GRADE = PE.DSC_GRADE
+                         WHERE RE.DTH_VALIDADE IS NOT NULL
+                           AND P.POSSUI_VALIDADE = 'S'
+                         GROUP BY RE.COD_RECEBIMENTO, PE.COD_PRODUTO, PE.DSC_GRADE, OS.COD_OS,  RE.COD_NORMA_PALETIZACAO,       P.DIAS_VIDA_UTIL,
+                               P.DIAS_VIDA_UTIL_MAX) V
+                 INNER JOIN RECEBIMENTO_ANDAMENTO RA ON RA.COD_RECEBIMENTO = V.COD_RECEBIMENTO AND RA.COD_TIPO_ANDAMENTO = 457
+                  LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = V.COD_OS
+                  LEFT JOIN PESSOA CONF ON CONF.COD_PESSOA = OS.COD_PESSOA
+                  LEFT JOIN PESSOA U ON U.COD_PESSOA = RA.COD_USUARIO
+                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = V.COD_PRODUTO AND PROD.DSC_GRADE = V.DSC_GRADE
+                  LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = V.COD_RECEBIMENTO
+                  LEFT JOIN (SELECT NF.COD_RECEBIMENTO, NFI.COD_PRODUTO, NFI.DSC_GRADE, NF.COD_FORNECEDOR, NF.NUM_NOTA_FISCAL, NF.COD_SERIE_NOTA_FISCAL
+                               FROM NOTA_FISCAL NF
+                               LEFT JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL) NF
+                    ON NF.COD_RECEBIMENTO = V.COD_RECEBIMENTO
+                   AND NF.COD_PRODUTO = V.COD_PRODUTO
+                   AND NF.DSC_GRADE = V.DSC_GRADE
+                  LEFT JOIN PESSOA_JURIDICA PJ ON NF.COD_FORNECEDOR = PJ.COD_PESSOA
+                  LEFT JOIN FORNECEDOR F ON F.COD_FORNECEDOR = NF.COD_FORNECEDOR
+                 WHERE NOT( V.SHELFLIFE > V.DIAS_VIDA_UTIL AND V.SHELFLIFE < V.DIAS_VIDA_UTIL_MAX) AND R.COD_STATUS = 457
+                       $andWhere          
+                 ORDER BY RA.DTH_ANDAMENTO DESC";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        return $result;
+    }
+
 }

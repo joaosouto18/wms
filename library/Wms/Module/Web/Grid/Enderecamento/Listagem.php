@@ -51,14 +51,17 @@ class Listagem extends Grid
                 ->addColumn(array(
                     'label' => 'Qtd.Total',
                     'index' => 'QTD_RECEBIDA',
+                    'render' => 'N2'
                 ))
                 ->addColumn(array(
                     'label' => 'Qtd.Endereçada',
                     'index' => 'QTD_ENDERECADA',
+                    'render' => 'N2'
                 ))
                 ->addColumn(array(
                     'label' => '% Endereçamento',
-                    'index' => 'PERCENTUAL'
+                    'index' => 'PERCENTUAL',
+                    'render' => 'N2'
                 ))
 
                 ->addAction(array(

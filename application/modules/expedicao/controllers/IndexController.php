@@ -156,7 +156,6 @@ class Expedicao_IndexController extends Action {
         } else {
             $dataI1 = new \DateTime;
             $dataI2 = new \DateTime;
-//            $dataI1->sub(new DateInterval('P01D'));
 
             $params = array(
                 'dataInicial1' => $dataI1->format('d/m/Y'),
@@ -328,6 +327,7 @@ class Expedicao_IndexController extends Action {
                 $this->redirect("index", 'index', 'expedicao');
             } catch (\Exception $e) {
                 $this->_helper->messenger('error', $e->getMessage());
+                $this->redirect("index", 'index', 'expedicao');
             }
 
         } elseif (isset($params['salvar']) && empty($params['placa'])) {
@@ -1008,8 +1008,8 @@ class Expedicao_IndexController extends Action {
                     $dscVolume = $volumePatrimonioEn->getId() . ' - ' . $volumePatrimonioEn->getDescricao();
             }
 
-            $idModeloSeparacao = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
-            $modeloSeparacaoEn = $modeloSeparacaoRepo->find($idModeloSeparacao);
+            //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+            $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
 
             /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
             $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $idMapa));

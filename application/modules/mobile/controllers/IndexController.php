@@ -74,6 +74,7 @@ class Mobile_IndexController  extends Action
         $expRepository = $this->getEntityManager()->getRepository('wms:Expedicao');
         $enderecos = $expRepository->getEtiquetasPd($this->_getParam('expedicao'));
         if(empty($enderecos)){
+            $this->addFlashMessage('info','Todas as etiquetas de pulmão doca da expedição '. $this->_getParam('expedicao') . ' já foram separadas');
             $this->_redirect('/mobile/index/separacao-pulmao-doca-ajax');
         }
         $this->view->enderecos = $enderecos;
@@ -117,7 +118,7 @@ class Mobile_IndexController  extends Action
         $expedicao = $this->_getParam('expedicao');
         $codEndereco = $this->_getParam('endereco');
         $etiquetaSeparacaoRepo = $this->em->getRepository("wms:Expedicao\EtiquetaSeparacao");
-        $etiquetas = $etiquetaSeparacaoRepo->getProdutoByEtiquetaConfir($codEndereco, $expedicao);
+        $etiquetas = $etiquetaSeparacaoRepo->getProdutoByEtiqueta($codEndereco, $expedicao);
         foreach ($etiquetas as $etiqueta) {
             $etiquetaEn = $etiquetaSeparacaoRepo->find($etiqueta['COD_ETIQUETA_SEPARACAO']);
             $etiquetaEn->setDthSeparacao(new \DateTime());

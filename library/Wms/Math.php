@@ -50,10 +50,13 @@ Class Math
 
     public static function resto($x, $y)
     {
+        if ($x == 0) return 0;
+
         $x = strval($x);
         $y = strval($y);
 
         $quantidade = self::maiorPrecisao($x, $y);
+        if ($quantidade == 0) return 0;
 
         $x = $x * $quantidade;
         $y = $y * $quantidade;

@@ -76,6 +76,11 @@ class Carga
      */
     protected $pedido;
 
+    /**
+     * @Column(name="NOM_MOTORISTA", type="string", nullable=true)
+     */
+    protected $motorista;
+
 	public function setPedido($pedido)
     {
         $this->pedido = $pedido;
@@ -193,6 +198,22 @@ class Carga
     public function setSequencia($sequencia)
     {
         $this->sequencia = $sequencia;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMotorista()
+    {
+        return $this->motorista;
+    }
+
+    /**
+     * @param mixed $motorista
+     */
+    public function setMotorista($motorista)
+    {
+        $this->motorista = $motorista;
     }
 
 }

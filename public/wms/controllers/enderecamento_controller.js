@@ -103,7 +103,9 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
             $('#volumes').parent().hide();
             $('#embalagens').parent().hide();
             $('#validade').parent().hide();
-
+            if($('#controle-proprietario').val() != 'S') {
+                $('#codPessoa').parent().hide();
+            }
             $("#buscarestoque").click(function(){
 
                 if ($('#rua').val() != '' || $('#uma').val() != '') {

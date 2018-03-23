@@ -127,13 +127,14 @@ class PaleteRepository extends EntityRepository {
                                $whereCodRecebimento
                               GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE)
                       GROUP BY COD_RECEBIMENTO) QTD_TOTAL ON QTD_TOTAL.COD_RECEBIMENTO = R.COD_RECEBIMENTO AND QTD_TOTAL.QTD_TOTAL > 0
-          LEFT JOIN (SELECT TRUNC(SUM(QTD)) as QTD, COD_RECEBIMENTO
-                     FROM (SELECT DISTINCT (SUM(PP.QTD) / COUNT(DISTINCT NVL(PP.COD_PRODUTO_VOLUME, 1))) QTD, PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO
-                            FROM PALETE_PRODUTO PP
-                            INNER JOIN PALETE R ON R.UMA = PP.UMA
-                            $whereCodRecebimento
-                            AND R.COD_STATUS = $stsPaleteEnderecado
-                            GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO)
+          LEFT JOIN (SELECT SUM(QTD) as QTD, COD_RECEBIMENTO
+                     FROM (SELECT DISTINCT (SUM(PP.QTD) / NVL(PV.QTD_VOLUMES, 1)) QTD, PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO
+                           FROM PALETE_PRODUTO PP
+                           INNER JOIN PALETE R ON R.UMA = PP.UMA
+                           LEFT JOIN (SELECT COUNT(DISTINCT COD_PRODUTO_VOLUME) QTD_VOLUMES, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV 
+                           GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = PP.COD_PRODUTO AND PV.DSC_GRADE = PP.DSC_GRADE
+                           $whereCodRecebimento AND R.COD_STATUS = $stsPaleteEnderecado
+                           GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO, PV.QTD_VOLUMES)
                      GROUP BY COD_RECEBIMENTO) QTD_END ON QTD_END.COD_RECEBIMENTO = R.COD_RECEBIMENTO";
         $query = $query . $whereCodRecebimento;
 
@@ -537,6 +538,8 @@ class PaleteRepository extends EntityRepository {
 
     public function deletaPaletesRecebidos($idRecebimento, $idProduto, $grade) {
         $ppRepository = $this->_em->getRepository("wms:Enderecamento\PaleteProduto");
+        /** @var ReservaEstoqueEnderecamentoRepository $reservaEstoqueEndRepository */
+        $reservaEstoqueEndRepository = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
 
         $statusRecebimento = Palete::STATUS_RECEBIDO;
         $query = $this->getEntityManager()->createQueryBuilder()
@@ -552,10 +555,14 @@ class PaleteRepository extends EntityRepository {
                 ->andWhere("(pv.codProduto = '$idProduto' AND pv.grade = '$grade') OR (pe.codProduto = '$idProduto' AND pe.grade = '$grade')");
         $paletes = $query->getQuery()->getResult();
         foreach ($paletes as $key => $palete) {
+
             $produtos = $ppRepository->findBy(array('uma' => $palete->getId()));
             foreach ($produtos as $produto) {
                 $this->getEntityManager()->remove($produto);
             }
+
+            $reservaEstoqueEndRepository->removerReservaUMA($palete);
+
             $this->getEntityManager()->remove($palete);
         }
         $this->_em->flush();
@@ -639,8 +646,22 @@ class PaleteRepository extends EntityRepository {
         $qtdTotalConferido = 0;
         $pesoTotalConferido = 0;
         foreach ($qtdRecebida as $recebido) {
-            $qtdTotalConferido = $qtdTotalConferido + $recebido['QTD'];
-            $pesoTotalConferido += $recebido['PESO'];
+            if ($tipo == "E") {
+                $qtdTotalConferido = $qtdTotalConferido + $recebido['QTD'];
+                $pesoTotalConferido += $recebido['PESO'];
+            } else {
+                if ($qtdTotalConferido == 0) {
+                    $qtdTotalConferido = $recebido['QTD'];
+                } else if ($recebido['QTD'] < $qtdTotalConferido) {
+                    $qtdTotalConferido = $recebido['QTD'];
+                }
+
+                if ($pesoTotalConferido == 0) {
+                    $pesoTotalConferido = $recebido['PESO'];
+                } else if ($recebido['PESO'] < $pesoTotalConferido) {
+                    $pesoTotalConferido = $recebido['PESO'];
+                }
+            }
         }
 
         foreach ($qtdEnderecada as $enderecado) {
@@ -1176,19 +1197,8 @@ class PaleteRepository extends EntityRepository {
                     /** @var ReservaEstoqueEnderecamentoRepository $reservaEstoqueEnderecamentoRepo */
                     $reservaEstoqueEnderecamentoRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
 
-                    /** @var ReservaEstoqueEnderecamento $reservaEnderecamento */
-                    $reservasEnderecamento = $reservaEstoqueEnderecamentoRepo->findBy(['palete' => $paleteEn->getId()]);
-                    foreach ($reservasEnderecamento as $reservaEnderecamento) {
-                        $reserva = $reservaEnderecamento->getReservaEstoque();
-                        $produtosReserva = $reserva->getProdutos()->toArray();
+                    $reservaEstoqueEnderecamentoRepo->removerReservaUMA($paleteEn);
 
-                        foreach ($produtosReserva as $produtoReserva) {
-                            $this->_em->remove($produtoReserva);
-                        }
-
-                        $this->_em->remove($reservaEnderecamento);
-                        $this->_em->remove($reserva);
-                    }
                     $this->_em->remove($paleteEn);
                     break;
                 case Palete::STATUS_EM_RECEBIMENTO:

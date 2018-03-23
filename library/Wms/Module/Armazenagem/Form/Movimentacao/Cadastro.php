@@ -8,10 +8,11 @@ use Wms\Util\Endereco;
 class Cadastro extends Form
 {
 
-    public function init($utilizaGrade = "S")
+    public function init($utilizaGrade = "S", $controleProprietario = "N")
     {
 
         $normasPaletizacao = $this->getEm()->getRepository('wms:Armazenagem\Unitizador')->getIdValue(true);
+        $proprietario = $this->getEm()->getRepository('wms:Filial')->getIdValue(true);
         $placeholder = Endereco::mascara();
 
         $this
@@ -85,8 +86,15 @@ class Cadastro extends Form
                 'label' => 'Unitizador',
                 'mostrarSelecione' => true,
                 'multiOptions' => $normasPaletizacao,
-            ))
-            ->addElement('submit', 'submit', array(
+            ));
+        if($controleProprietario == 'S') {
+            $this->addElement('select', 'codPessoa', array(
+                'label' => 'Proprietário',
+                'mostrarSelecione' => true,
+                'multiOptions' => $proprietario,
+            ));
+        }
+        $this->addElement('submit', 'submit', array(
                 'label' => 'Movimentar',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
@@ -129,9 +137,13 @@ class Cadastro extends Form
                 'label' => 'Transferir',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
-            ))
-            ->addDisplayGroup(array('idProduto', 'grade', 'volumes','embalagens','validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade','idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'))
-            ->addDisplayGroup(array('endereco_origem','ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
+            ));
+        if($controleProprietario == 'S') {
+            $this->addDisplayGroup(array('idProduto', 'grade', 'volumes', 'embalagens', 'validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade', 'idNormaPaletizacao', 'codPessoa', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'));
+        }else{
+            $this->addDisplayGroup(array('idProduto', 'grade', 'volumes', 'embalagens', 'validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade', 'idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'));
+        }
+        $this->addDisplayGroup(array('endereco_origem','ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
 
     }
 

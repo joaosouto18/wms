@@ -19,7 +19,7 @@ class NotaFiscalSaidaPedido
     protected $id;
 
     /**
-     * @Column(name="COD_PEDIDO", type="integer",nullable=false)
+     * @Column(name="COD_PEDIDO", type="string",nullable=false)
      */
     protected $codPedido;
 

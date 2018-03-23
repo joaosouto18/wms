@@ -44,7 +44,10 @@ class EtiquetaEndereco extends Pdf
                 case 1:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras,false,false,false);
 
-                    if ((($key) % $quantidadeByPage) == 0 && $key != 0) $this->AddPage();
+                    if ($quantidadeByPage != null) {
+                        if ((($key) % $quantidadeByPage) == 0 && $key != 0) $this->AddPage();
+                    }
+
 
                     if (count($produtos) <= 0){
                         $this->layoutModelo1(null,$codBarras);
