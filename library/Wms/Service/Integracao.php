@@ -484,7 +484,7 @@ class Integracao {
 
                 $cargaCancelada = $triggerRepository->find($row['CARGA']);
                 if ($cargaCancelada) {
-                    $observação = "Carga $row[CARGA] já cancelada";
+                    $observação = "Carga $row[CARGA] ja cancelada";
                     $query = "UPDATE TR_PEDIDO SET DSC_OBSERVACAO_INTEGRACAO = '$observação' WHERE ID = $row[ID]";
                     $update = true;
                     $conexaoEn = $acaoIntegracaoEntity->getConexao();
