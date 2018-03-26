@@ -53,7 +53,7 @@ class NotaFiscalRepository extends EntityRepository {
                 ->where('nf.recebimento IS NULL')
                 ->andWhere('nf.status = ?1')
                 ->setParameter(1, NotaFiscalEntity::STATUS_INTEGRADA)
-                ->orderBy('nf.placa, nf.dataEmissao');
+                ->orderBy('nf.placa, nf.dataEmissao, nf.numero');
 
         if ($idFornecedor)
             $dql->andWhere("nf.fornecedor = '" . $idFornecedor . "'");
