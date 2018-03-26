@@ -1392,8 +1392,8 @@ class PaleteRepository extends EntityRepository {
 
         /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaPaletizacaoRepo */
         $normaPaletizacaoRepo = $repositorios['normaPaletizacaoRepo'];
-
         $produtosPalete = $paleteEn->getProdutos();
+        $possuiValidade = $produtosPalete[0]->getProduto()->getValidade();
         $codProduto = $produtosPalete[0]->getCodProduto();
         $grade = $produtosPalete[0]->getGrade();
         $qtdPaleteProduto = $produtosPalete[0]->getQtd();
@@ -1404,7 +1404,7 @@ class PaleteRepository extends EntityRepository {
         $sugestaoEndereco = null;
 
         //SE FOR UM PALETE DE SOBRA, ENTÃO TENTO ALOCAR PRIMEIRO NO PICKING
-        if ($normaPaletizacaoEn->getNumNorma() > $qtdPaleteProduto) {
+        if ($normaPaletizacaoEn->getNumNorma() > $qtdPaleteProduto && $possuiValidade == 'N') {
             $sugestaoEndereco = $this->getSugestaoEnderecoPicking($codProduto, $grade, $produtosPalete, $repositorios);
         }
 
