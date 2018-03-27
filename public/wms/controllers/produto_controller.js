@@ -521,12 +521,13 @@ $.Controller.extend('Wms.Controllers.Produto',
                     this.dialogAlert("Este produto tem embalagem de unidade fracionável. <br /> Remova ela antes de alterar esta opção");
                     $("#produto-idTipoComercializacao").prop('selectedIndex', 0);
                     return false;
-                } else {
-                    this.validarEmbalagens();
-                    this.validarVolumes();
-                    this.pesoTotal();
                 }
             }
+
+            this.validarEmbalagens();
+            this.validarVolumes();
+            this.pesoTotal();
+
         },
 
         /**
@@ -567,7 +568,7 @@ $.Controller.extend('Wms.Controllers.Produto',
                     var pesoTotal = 0;
                     var pesoVolume = 0
                     inputsPeso.each(function(i, v) {
-                        pesoVolume = parseFloat(this.value.replace('.','').replace(',','.'))
+                        pesoVolume = parseFloat(this.value.replace('.','').replace(',','.'));
                         pesoTotal = pesoTotal + pesoVolume;
                     });
 
