@@ -2205,6 +2205,7 @@ class ExpedicaoRepository extends EntityRepository {
                                         C.COD_CARGA_EXTERNO 
                                     FROM CARGA C
                                     INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+									INNER JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                                     WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . ' 
                                     GROUP BY E.COD_EXPEDICAO, C.NOM_MOTORISTA, C.COD_CARGA_EXTERNO) MOTORISTA ON MOTORISTA.COD_EXPEDICAO = E.COD_EXPEDICAO
                               WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
