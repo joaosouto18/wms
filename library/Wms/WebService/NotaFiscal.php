@@ -413,14 +413,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
-     * @param string $cnpjDestinatario CNPJ da filial dona da nota
      * @param string $itens Itens da Nota {Json}
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
+     * @param string $cnpjDestinatario CNPJ da filial dona da nota
      * @return boolean
      * @throws Exception
      */
-    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $cnpjDestinatario, $itens, $bonificacao, $observacao){
+    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $cnpjDestinatario){
         /*
         $jsonMockSample ='{"produtos": [';
         $jsonMockSample .='     {"idProduto": "999", ';
