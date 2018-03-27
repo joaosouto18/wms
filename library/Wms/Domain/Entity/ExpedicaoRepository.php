@@ -2200,6 +2200,7 @@ class ExpedicaoRepository extends EntityRepository {
                                     LISTAGG (MOTORISTA.NOM_MOTORISTA,\', \') WITHIN GROUP (ORDER BY MOTORISTA.NOM_MOTORISTA) NOM_MOTORISTA,
                                     MOTORISTA.COD_CARGA_EXTERNO 
                               FROM EXPEDICAO E
+							  INNER JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                               LEFT JOIN (SELECT DISTINCT E.COD_EXPEDICAO,
                                         C.NOM_MOTORISTA,
                                         C.COD_CARGA_EXTERNO 
