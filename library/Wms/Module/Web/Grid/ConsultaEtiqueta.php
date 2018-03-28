@@ -56,7 +56,7 @@ class ConsultaEtiqueta extends Grid
                 'index' => 'descricao',
             ))
             ->addColumn(array(
-                'label' => 'Embalagem',
+                'label' => 'Embalagem | Volume',
                 'index' => 'embalagem',
             ))
             ->addColumn(array(
