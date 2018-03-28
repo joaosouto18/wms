@@ -66,7 +66,7 @@ class notaFiscal {
     /** @var string */
     public $placa;
     /** @var string */
-    public $cnpjDestinatario;
+    //public $cnpjDestinatario;
     /** @var string */
     public $status;
     /** @var string */

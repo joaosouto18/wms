@@ -43,7 +43,7 @@ class HistoricoEstoqueRepository extends EntityRepository {
                         usu.login,
                         un.id,
                         vol.descricao,
-                        e.validade,
+                        NVL(hist.validade,e.validade),
                         un.descricao");
 
         if (isset($parametros['idProduto']) && !empty($parametros['idProduto'])) {
