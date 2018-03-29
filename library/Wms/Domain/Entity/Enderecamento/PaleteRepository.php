@@ -1399,13 +1399,6 @@ class PaleteRepository extends EntityRepository {
         $grade = $produtosPalete[0]->getGrade();
         $dthMinPulmao = $estoqueRepo->getMenorValidadePulmao($codProduto, $grade);
         $validadeProduto = $produtosPalete[0]->getValidade()->format('Y-m-d');
-//        if(strtotime($validadeProduto) <= strtotime($dthMinPulmao['DATA'])){
-//            var_dump('entrei');
-//        }
-//        var_dump($produtosPalete[0]->getProduto()->getId());
-//        var_dump('Produto: '.$validadeProduto);
-//        var_dump('Pulmão: '.$dthMinPulmao['DATA']);
-//        die;
         $qtdPaleteProduto = $produtosPalete[0]->getQtd();
         $codNormaPaletizacao = $produtosPalete[0]->getCodNormaPaletizacao();
         $normaPaletizacaoEn = $normaPaletizacaoRepo->findOneBy(array('id' => $codNormaPaletizacao));
@@ -1420,8 +1413,8 @@ class PaleteRepository extends EntityRepository {
             }else{
                 if(empty($dthMinPulmao) || (strtotime($validadeProduto) <= strtotime($dthMinPulmao['DATA']))){
                     var_dump($produtosPalete[0]->getProduto()->getId());
-                    var_dump('oiii');
                     $sugestaoEndereco = $this->getSugestaoEnderecoPicking($codProduto, $grade, $produtosPalete, $repositorios);
+var_dump($sugestaoEndereco);
                 }
             }
         }
@@ -1430,7 +1423,7 @@ class PaleteRepository extends EntityRepository {
         if ($sugestaoEndereco == null) {
             $sugestaoEndereco = $this->getSugestaoEnderecoPulmao($codProduto, $grade, $paleteEn->getRecebimento()->getId(), $larguraPalete, $repositorios);
         }
-var_dump($sugestaoEndereco);
+        if(!empty($sugestaoEndereco))
         return $sugestaoEndereco;
     }
 
