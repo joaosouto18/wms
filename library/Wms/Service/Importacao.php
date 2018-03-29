@@ -632,8 +632,7 @@ class Importacao
             $entityPedidoProduto = $pedidoProdutoRepo->findOneBy($arrCriterio);
 
             if (!empty($entityPedidoProduto)) {
-                $qtd = Math::adicionar($entityPedidoProduto->getQuantidade(), $pedido['quantidade']);
-                $entityPedidoProduto->setQuantidade($qtd);
+                $entityPedidoProduto->setQuantidade($pedido['quantidade']);
                 $em->persist($entityPedidoProduto);
             } else {
 
