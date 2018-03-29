@@ -1397,8 +1397,6 @@ class PaleteRepository extends EntityRepository {
         $possuiValidade = $produtosPalete[0]->getProduto()->getValidade();
         $codProduto = $produtosPalete[0]->getCodProduto();
         $grade = $produtosPalete[0]->getGrade();
-        $dthMinPulmao = $estoqueRepo->getMenorValidadePulmao($codProduto, $grade);
-        $validadeProduto = $produtosPalete[0]->getValidade()->format('Y-m-d');
         $qtdPaleteProduto = $produtosPalete[0]->getQtd();
         $codNormaPaletizacao = $produtosPalete[0]->getCodNormaPaletizacao();
         $normaPaletizacaoEn = $normaPaletizacaoRepo->findOneBy(array('id' => $codNormaPaletizacao));
@@ -1411,10 +1409,10 @@ class PaleteRepository extends EntityRepository {
             if($possuiValidade == 'N') {
                 $sugestaoEndereco = $this->getSugestaoEnderecoPicking($codProduto, $grade, $produtosPalete, $repositorios);
             }else{
+                $validadeProduto = $produtosPalete[0]->getValidade()->format('Y-m-d');
+                $dthMinPulmao = $estoqueRepo->getMenorValidadePulmao($codProduto, $grade);
                 if(empty($dthMinPulmao) || (strtotime($validadeProduto) <= strtotime($dthMinPulmao['DATA']))){
-                    var_dump($produtosPalete[0]->getProduto()->getId());
                     $sugestaoEndereco = $this->getSugestaoEnderecoPicking($codProduto, $grade, $produtosPalete, $repositorios);
-var_dump($sugestaoEndereco);
                 }
             }
         }
@@ -1423,7 +1421,6 @@ var_dump($sugestaoEndereco);
         if ($sugestaoEndereco == null) {
             $sugestaoEndereco = $this->getSugestaoEnderecoPulmao($codProduto, $grade, $paleteEn->getRecebimento()->getId(), $larguraPalete, $repositorios);
         }
-        if(!empty($sugestaoEndereco))
         return $sugestaoEndereco;
     }
 
