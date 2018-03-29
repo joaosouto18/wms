@@ -1267,4 +1267,14 @@ class EstoqueRepository extends EntityRepository
         return $result;
     }
 
+    public function getMenorValidadePulmao($codProduto, $grade){
+        $tipoPulmao = EnderecoEntity::ENDERECO_PULMAO;
+        $SQL = "SELECT MIN(DTH_VALIDADE) AS DATA 
+                FROM ESTOQUE  E 
+                INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                WHERE COD_PRODUTO = '$codProduto'
+                AND DSC_GRADE = '$grade'
+                AND DE.COD_CARACTERISTICA_ENDERECO = $tipoPulmao";
+        return $this->getEntityManager()->getConnection()->query($SQL)->fetch(\PDO::FETCH_ASSOC);
+    }
 }
