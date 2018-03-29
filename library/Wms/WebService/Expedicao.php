@@ -838,7 +838,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $entityCliente          = $this->findClienteByCodigoExterno($repositorios,$cliente);
         $entityItinerario       = $this->findItinerarioById($repositorios, $pedido['itinerario']);
 
-
+        $pedido['codProprietario'] = isset($pedido['codProprietario']) ? $pedido['codProprietario'] : null;
         $arrayPedido = array (
             'codPedido' => $pedido['codPedido'],
             'tipoPedido' => $pedido['tipoPedido'],
