@@ -630,6 +630,8 @@ class Importacao
             );
             /** @var Expedicao\PedidoProduto $entityPedidoProduto */
             $entityPedidoProduto = $pedidoProdutoRepo->findOneBy($arrCriterio);
+            $itensInserting = $em->getUnitOfWork()->getScheduledEntityInsertions();
+            $itensUpdating = $em->getUnitOfWork()->getScheduledEntityUpdates();
 
             if (!empty($entityPedidoProduto)) {
                 $entityPedidoProduto->setQuantidade($pedido['quantidade']);
