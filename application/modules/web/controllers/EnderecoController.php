@@ -20,11 +20,26 @@ class Web_EnderecoController extends Crud
         $form = new Wms\Module\Web\Form\Deposito\Endereco\Filtro;
         $form->setAttrib('class', 'filtro')
             ->setAttrib('method', 'post');
-
         if ($values = $form->getParams()) {
 
-            extract($values['identificacao']);
-
+            extract($values);
+            $WhereruaI = $WhereruaF = $WherePredioI = $WherePredioF = $WhereNivelI = $WhereNivelF = $WhereAptoI = $WhereAptoI = ' 1 = 1';
+            if(!empty($inicialRua))
+               $WhereruaI = "e.rua >= :inicilaRua";
+            if(!empty($finalRua))
+                $WhereruaF = "e.rua <= :finalRua";
+            if(!empty($inicialPredio))
+                $WherePredioI = "e.predio >= :inicilaPredio";
+            if(!empty($finalPredio))
+                $WherePredioF = "e.predio <= :finalPredio";
+            if(!empty($inicialNivel))
+                $WhereNivelI = "e.nivel >= :inicilaNivel";
+            if(!empty($finalNivel))
+                $WhereNivelF = "e.nivel <= ::finalNivel";
+            if(!empty($inicialApartamento))
+                $WhereAptoI = "e.apartamento >= :inicilaApartamento";
+            if(!empty($finalApartamento))
+                $WhereAptoI = "e.apartamento <= :finalApartamento";
             $source = $this->em->createQueryBuilder()
                 ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco, e.inventarioBloqueado")
                 ->from('wms:Deposito\Endereco', 'e')
@@ -33,20 +48,28 @@ class Web_EnderecoController extends Crud
                 ->innerJoin('e.estruturaArmazenagem', 'ea')
                 ->innerJoin('e.tipoEndereco', 'te')
                 ->where("e.deposito = :idDeposito
-                        AND (e.rua BETWEEN :inicilaRua AND :finalRua) 
-                        AND (e.predio BETWEEN :inicilaPredio AND :finalPredio) 
-                        AND (e.nivel BETWEEN :inicilaNivel AND :finalNivel) 
-                        AND (e.apartamento BETWEEN :inicilaApartamento AND :finalApartamento)")
+                        AND ($WhereruaI AND $WhereruaF) 
+                        AND ($WherePredioI AND $WherePredioF) 
+                        AND ($WhereNivelI AND $WhereNivelF) 
+                        AND ($WhereAptoI AND $WhereAptoI)")
                 ->orderBy('e.descricao')
-                ->setParameter('idDeposito', $this->view->idDepositoLogado)
-                ->setParameter('inicilaRua', $inicialRua)
-                ->setParameter('finalRua', $finalRua)
-                ->setParameter('inicilaPredio', $inicialPredio)
-                ->setParameter('finalPredio', $finalPredio)
-                ->setParameter('inicilaNivel', $inicialNivel)
-                ->setParameter('finalNivel', $finalNivel)
-                ->setParameter('inicilaApartamento', $inicialApartamento)
-                ->setParameter('finalApartamento', $finalApartamento);
+                ->setParameter('idDeposito', $this->view->idDepositoLogado);
+            if(!empty($inicialRua))
+                $source->setParameter('inicilaRua', $inicialRua);
+            if(!empty($finalRua))
+                $source ->setParameter('finalRua', $finalRua);
+            if(!empty($inicialPredio))
+                $source->setParameter('inicilaPredio', $inicialPredio);
+            if(!empty($finalPredio))
+                $source->setParameter('finalPredio', $finalPredio);
+            if(!empty($inicialNivel))
+                $source->setParameter('inicilaNivel', $inicialNivel);
+            if(!empty($finalNivel))
+                $source->setParameter('finalNivel', $finalNivel);
+            if(!empty($inicialApartamento))
+                $source->setParameter('inicilaApartamento', $inicialApartamento);
+            if(!empty($finalApartamento))
+                $source->setParameter('finalApartamento', $finalApartamento);
 
             if (!empty($lado)) {
                 if ($lado == "P")
