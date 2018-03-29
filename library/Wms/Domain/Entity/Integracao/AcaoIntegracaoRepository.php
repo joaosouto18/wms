@@ -259,13 +259,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 } else {
                     //pegar os ID's das tabelas temporárias das triggers
                     if (count($result) && !is_null($acaoEn->getTabelaReferencia())) {
-                        $dadosFiltrar = array();
-                        foreach ($result as $row) {
-                            if(isset($row['ID'])) {
-                                $dadosFiltrar[] = $row['ID'];
-                            }
-                        }
-                        $idTabelaTemp = implode(",", $dadosFiltrar);
+                        $idTabelaTemp = $result;
                     }
 
                     $integracaoService = new Integracao($this->getEntityManager(),
@@ -364,14 +358,20 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
                 if ($sucess == 'S') {
+                    $query = '';
                     if(!empty($idTabelaTemp)) {
-                        $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($idTabelaTemp) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                        foreach ($idTabelaTemp as $row) {
+                            if(isset($row['ID'])) {
+                                $query .= "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID = $row[ID] AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N');";
+                            }
+                        }
                     }else{
                         $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
                     }
-                    $update = true;
-                    $conexaoEn = $acaoEn->getConexao();
-                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
+                    $this->_em->getConnection()->query($query)->execute();
+//                    $update = true;
+//                    $conexaoEn = $acaoEn->getConexao();
+//                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
                 }
             }
 
