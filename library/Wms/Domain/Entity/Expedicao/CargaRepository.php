@@ -26,7 +26,7 @@ class CargaRepository extends EntityRepository
             $enCarga->setPlacaCarga($carga['placaCarga']);
             $enCarga->setTipoCarga($tipoCarga);
             $enCarga->setSequencia($numeroDeCargas);
-            $enCarga->setMotorista($carga['motorista']);
+            $enCarga->setMotorista((isset($carga['motorista'])) ? $carga['motorista'] : null);
 
             if ($this->getSystemParameterValue('VALIDA_FECHAMENTO_CARGA') == 'N') {
                 $enCarga->setDataFechamento(new \DateTime());

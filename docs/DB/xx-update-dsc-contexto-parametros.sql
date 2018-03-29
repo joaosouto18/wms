@@ -15,11 +15,31 @@ BEGIN
 /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
-    Select TRANSLATE ('Testando a Função Translate - Retira Acentuação',
-                      'ŠŽšžŸÁÇÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕËÜÏÖÑÝåáçéíóúàèìòùâêîôûãõëüïöñýÿ',
-                      'SZszYACEIOUAEIOUAEIOUAOEUIONYaaceiouaeiouaeiouaoeuionyy')
-      As TRANSLATE FROM DUAL;
 
+    UPDATE CONTEXTO_PARAMETRO SET DSC_CONTEXTO_PARAMETRO = 'PARÂMETROS DE INTEGRAÇÃO' WHERE
+      TRANSLATE (DSC_CONTEXTO_PARAMETRO,
+                 'ŠŽšžŸÁÇÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕËÜÏÖÑÝåáçéíóúàèìòùâêîôûãõëüïöñýÿ',
+                 'SZszYACEIOUAEIOUAEIOUAOEUIONYaaceiouaeiouaeiouaoeuionyy') = 'PARAMETROS DE INTEGRACAO';
+
+    UPDATE CONTEXTO_PARAMETRO SET DSC_CONTEXTO_PARAMETRO = 'PARÂMETROS DO SISTEMA' WHERE
+      TRANSLATE (DSC_CONTEXTO_PARAMETRO,
+                 'ŠŽšžŸÁÇÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕËÜÏÖÑÝåáçéíóúàèìòùâêîôûãõëüïöñýÿ',
+                 'SZszYACEIOUAEIOUAEIOUAOEUIONYaaceiouaeiouaeiouaoeuionyy') = 'PARAMETROS DO SISTEMA';
+
+    UPDATE CONTEXTO_PARAMETRO SET DSC_CONTEXTO_PARAMETRO = 'ENDEREÇAMENTO' WHERE
+      TRANSLATE (DSC_CONTEXTO_PARAMETRO,
+                 'ŠŽšžŸÁÇÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕËÜÏÖÑÝåáçéíóúàèìòùâêîôûãõëüïöñýÿ',
+                 'SZszYACEIOUAEIOUAEIOUAOEUIONYaaceiouaeiouaeiouaoeuionyy') = 'ENDERECAMENTO';
+
+    UPDATE CONTEXTO_PARAMETRO SET DSC_CONTEXTO_PARAMETRO = 'RELATÓRIOS E IMPRESSÃO' WHERE
+      TRANSLATE (DSC_CONTEXTO_PARAMETRO,
+                 'ŠŽšžŸÁÇÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕËÜÏÖÑÝåáçéíóúàèìòùâêîôûãõëüïöñýÿ',
+                 'SZszYACEIOUAEIOUAEIOUAOEUIONYaaceiouaeiouaeiouaoeuionyy') = 'RELATORIO E IMPRESSAO';
+
+    UPDATE CONTEXTO_PARAMETRO SET DSC_CONTEXTO_PARAMETRO = 'INVENTÁRIO' WHERE
+      TRANSLATE (DSC_CONTEXTO_PARAMETRO,
+                 'ŠŽšžŸÁÇÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕËÜÏÖÑÝåáçéíóúàèìòùâêîôûãõëüïöñýÿ',
+                 'SZszYACEIOUAEIOUAEIOUAOEUIONYaaceiouaeiouaeiouaoeuionyy') = 'INVENTARIO';
 
 
 
