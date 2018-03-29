@@ -85,7 +85,8 @@ class MovimentacaoProduto extends Pdf {
             $this->Cell(18, 5, $tipomovim, 1, 0);
             $this->Cell(20, 5, $produto['descricao'], 1, 0);
             $this->Cell(20, 5, self::SetStringByMaxWidth(utf8_decode($produto['nomePessoa']), 20), 1, 0);
-            $validade = (!is_null($produto['validade'])) ? $produto['validade']->format('d/m/Y') : "-";
+            $validade = new \DateTime($produto['validade']);
+            $validade = (!is_null($produto['validade'])) ? $validade->format('d/m/Y') : "-";
             $this->Cell(17, 5, $validade, 1, 0);
             $this->Cell(68, 5, self::SetStringByMaxWidth(utf8_decode($produto['observacao']), 64), 1, 0);
             $this->Cell(11, 5, $produto['qtd'], 1, 0, "C");

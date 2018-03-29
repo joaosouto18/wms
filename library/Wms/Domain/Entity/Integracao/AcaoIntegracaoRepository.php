@@ -358,20 +358,29 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
                 if ($sucess == 'S') {
-                    $query = '';
                     if(!empty($idTabelaTemp)) {
-                        foreach ($idTabelaTemp as $row) {
-                            if(isset($row['ID'])) {
-                                $query .= "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID = $row[ID] AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N');";
+
+                        $max = 900;
+                        $ids = array();
+                        foreach ($idTabelaTemp as $key => $value){
+                            $ids[] = $value['ID'];
+                            if(count($ids) == $max){
+                                $ids = implode(',',$ids);
+                                $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                                $this->_em->getConnection()->query($query)->execute();
+                                unset($ids);
                             }
+                        }
+                        if(count($ids) < $max){
+                            $ids = implode(',',$ids);
+                            $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                            $this->_em->getConnection()->query($query)->execute();
+                            unset($ids);
                         }
                     }else{
                         $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
+                        $this->_em->getConnection()->query($query)->execute();
                     }
-                    $this->_em->getConnection()->query($query)->execute();
-//                    $update = true;
-//                    $conexaoEn = $acaoEn->getConexao();
-//                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
                 }
             }
 
