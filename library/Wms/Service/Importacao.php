@@ -665,8 +665,10 @@ class Importacao
                 $entityPedidoProduto = $pedidoProdutoRepo->findOneBy($arrCriterio);
 
                 if (!empty($entityPedidoProduto)) {
+
                     $entityPedidoProduto->setQuantidade($pedido['quantidade']);
                     $em->persist($entityPedidoProduto);
+
                 } else {
 
                     $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('id' => $pedido['codPedido']));

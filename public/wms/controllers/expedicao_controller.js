@@ -9,6 +9,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
     },
     /* @Prototype */
     {
+
         '{window} load' : function() {
 
             var este = this;
@@ -40,17 +41,13 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                 este.gerarRessuprimento();
             });
 
-            $("#modelo-separacao").live('click', function() {
+            $('#modelo-separacao').live('click', function () {
                 $('#gerar').attr('style','display:none');
                 $('#modelo-separacao').attr('style','display:none');
-            });
-
-            $('#modelo-separacao').live('click', function () {
                 if ($("input[name*='expedicao[]']:checked").length > 0){
                     $.ajax({
                         url: URL_BASE + '/expedicao/onda-ressuprimento/modelo-separacao-expedicao-ajax',
                         type: 'post',
-                        async: false,
                         dataType: 'html',
                         data: $('#relatorio-picking-listar').serialize()
                     }).success(function (data) {
@@ -110,53 +107,40 @@ $.Controller.extend('Wms.Controllers.Expedicao',
         gerarRessuprimento: function () {
             var este = this;
             if ($("input[name*='expedicao[]']:checked").length > 0){
-                var liberado = true;
                 $.ajax({
                     url: URL_BASE + '/expedicao/onda-ressuprimento/verificar-expedicoes-processando-ajax',
                     type: 'post',
-                    async: false,
                     dataType: 'json',
                     data: $('#relatorio-picking-listar').serialize()
                 }).success(function (data) {
                     if (data.status === "Ok") {
-                        liberado = true;
+                        var msgs = null;
+                        var expedicoes = null;
+                        $.ajax({
+                            url: URL_BASE + "/expedicao/onda-ressuprimento/gerar",
+                            type: 'post',
+                            dataType: 'json',
+                            data: $('#relatorio-picking-listar').serialize()
+                        }).success(function (data) {
+                            if (data.status === "Ok") {
+                                expedicoes = data.expedicoes;
+                                msgs = data.response;
+                            } else if (data.status === "Error") {
+                                msgs = data.response;
+                            }
+                            if (expedicoes !== null) {
+                                este.selectExpToPrint(expedicoes);
+                            }
+
+                            este.dispararMultiMsgs(msgs);
+                        });
                     } else if (data.status === "Error") {
                         este.dialogAlert(data.msg, function(){
                             window.location = URL_BASE + "/expedicao/onda-ressuprimento";
                         });
-                        liberado = false;
                         este.clearCheckBox();
                     }
                 });
-                if (liberado) {
-                    var msgs = null;
-                    var expedicoes = null;
-                    $.ajax({
-                        url: URL_BASE + "/expedicao/onda-ressuprimento/gerar",
-                        type: 'post',
-                        async: false,
-                        timeout: 900,
-                        dataType: 'json',
-                        data: $('#relatorio-picking-listar').serialize()
-                    }).success(function (data) {
-                        if (data.status === "Ok") {
-                            expedicoes = data.expedicoes;
-                            msgs = data.response;
-                        } else if (data.status === "Error") {
-                            msgs = data.response;
-                        }
-                    });
-
-                    if (expedicoes !== null) {
-                        este.dialogConfirm(
-                            "Deseja já gerar e imprimir os mapas e etiquetas destas expedições ressupridas?",
-                            expedicoes,
-                            este.callback("selectExpToPrint")
-                        )
-                    }
-
-                    este.dispararMultiMsgs(msgs);
-                }
             } else {
                 alert('Selecione pelo menos uma expedição');
             }
@@ -165,17 +149,17 @@ $.Controller.extend('Wms.Controllers.Expedicao',
         alterarModelo: function () {
             var este = this;
             var params = {"expedicoes" : $("input[name*='id-expedicao[]']").map(function(){return $(this).val()}).get(), "id-modelo" : $("#id-modelo").val()};
+            $("#wms-dialog-modal").remove();
             $.ajax({
                 url: URL_BASE + "/expedicao/onda-ressuprimento/alterar-modelo-separacao-ajax",
                 type: 'post',
-                async: false,
                 dataType: 'json',
                 data: params
             }).success(function (data) {
-                $("#wms-dialog-modal").remove();
                 if (data.status === "Ok") {
                     este.gerarRessuprimento();
                 } else if (data.status === "Error") {
+                    $("#processing").hide();
                     este.dialogAlert(data.msg)
                 }
             });
