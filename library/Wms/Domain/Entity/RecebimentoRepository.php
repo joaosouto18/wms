@@ -1852,9 +1852,10 @@ class RecebimentoRepository extends EntityRepository {
                              SUM(QTD_CONFERIDA) QTD_CONFERIDA, 
                              COD_RECEBIMENTO
                         FROM RECEBIMENTO_VOLUME 
+                        WHERE COD_RECEBIMENTO = $idRecebimento AND COD_OS = $idOrdemServico
                        GROUP BY COD_RECEBIMENTO, COD_OS, COD_PRODUTO_VOLUME) RV 
                 INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
-                WHERE PV.COD_PRODUTO = '$idProduto' AND PV.DSC_GRADE = '$dscGrade' AND RV.COD_RECEBIMENTO = $idRecebimento AND RV.COD_OS = $idOrdemServico
+                WHERE PV.COD_PRODUTO = '$idProduto' AND PV.DSC_GRADE = '$dscGrade'
                 GROUP BY PV.COD_PRODUTO, PV.DSC_GRADE HAVING COUNT(DISTINCT RV.QTD_CONFERIDA) > 1";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);

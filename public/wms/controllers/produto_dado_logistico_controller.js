@@ -436,6 +436,13 @@ $.Controller.extend('Wms.Controllers.ProdutoDadoLogistico',
                                     pesoNormaPaletizacao = Wms.Controllers.CalculoMedida.prototype.formatMoney(parseFloat(pesoNormaPaletizacao.toString().replace(',', '.')).toFixed(3), 3, ',', '.');
                                     $(this).find('#normaPaletizacao-numPeso').val(pesoNormaPaletizacao);
                                 });
+                            },
+
+                            dialogConfirm: function (msg, callback, params, returnFunction) {
+                                return $.wmsDialogConfirm({
+                                    title: '---  Sistema  ---',
+                                    msg: msg
+                                }, callback, params, returnFunction);
                             }
 
                         });
