@@ -265,9 +265,9 @@ class Web_ProdutoController extends Crud {
 
                     foreach ($paramsSave['embalagens'] as $key => $value) {
                         if (isset($paramsSave['embalagens'][$key]['acao']) && $paramsSave['embalagens'][$key]['acao'] != 'excluir') {
-                            $altura = $alturaReal * $value['quantidade'];
-                            $peso = $pesoReal * $value['quantidade'];
-                            $cubagem = $altura * $largura * $profundidade;
+                            $altura = \Wms\Math::multiplicar($alturaReal, $value['quantidade']);
+                            $peso = \Wms\Math::multiplicar($pesoReal, $value['quantidade']);
+                            $cubagem = \Wms\Math::multiplicar($altura, \Wms\Math::multiplicar($largura, $profundidade));
                             $paramsSave['embalagens'][$key]['capacidadePicking'] = $fator * $paramsSave['embalagem']['capacidadePicking'];
                             $paramsSave['embalagens'][$key]['pontoReposicao'] = $fator * $paramsSave['embalagem']['pontoReposicao'];
                             $paramsSave['embalagens'][$key]['endereco'] = $paramsSave['embalagem']['endereco'];
