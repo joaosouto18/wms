@@ -40,9 +40,11 @@ class RelatorioEtiquetaEmbalados extends eFPDF
                 $align = 'R';
                 $xor = false;
                 $this->setY($getY);
+                $x = 145;
             } else {
                 $align = 'L';
                 $xor = true;
+                $x = 15;
             }
 
             //monta o restante dos dados da etiqueta
@@ -68,13 +70,11 @@ class RelatorioEtiquetaEmbalados extends eFPDF
             $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
             $this->MultiCell(170, 3.9, $impressao, 0, $align);
 
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), $x, $y, 33, 9.5);
 
-
-
-            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 15, $y, 33, 9.5);
-
-            if ($xor)
+            if (!$xor == true) {
                 $y = $y + 40;
+            }
 
             $this->MultiCell(110, 20, '', 0, $align);
         }
