@@ -12,12 +12,12 @@ class Inventario {
 
     protected $_em;
 
-    public function getSystemParameterValue($parametro) {
+    public function getSystemParameterValue($param) {
         $parametroRepo = $this->getEm()->getRepository('wms:Sistema\Parametro');
-        $parametro = $parametroRepo->findOneBy(array('constante' => $parametro));
+        $parametro = $parametroRepo->findOneBy(array('constante' => $param));
 
         if ($parametro == NULL) {
-            return "";
+            throw new \Exception("Parâmetro $param não encontrado no sistema, entre em contato com o suporte!");
         } else {
             return $parametro->getValor();
         }
