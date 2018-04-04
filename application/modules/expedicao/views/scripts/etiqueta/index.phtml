@@ -36,9 +36,9 @@
             <legend>Central <?php echo $central['centralEntrega'] ?></legend>
             <div id="centrais">
                 <b>
-                    <input type="button" class="btn selectCentral" data-id="<?php echo $central['centralEntrega'] ?>" id="central-<?php echo $central['centralEntrega'] ?>" value="Selecionar Mapa/Etiqueta" name="central-<?php echo $central['centralEntrega'] ?>">
-                    <input type="button" class="btn printAll" data-id="<?php echo $central['centralEntrega'] ?>" id="printAll-<?php echo $central['centralEntrega'] ?>" value="Imprimir tudo" name="printAll-<?php echo $central['centralEntrega'] ?>">
-                    <input type="button" class="btn printConf" data-id="<?php echo $central['centralEntrega'] ?>" id="printConf-<?php echo $central['centralEntrega'] ?>" value="Imprimir Mapas Conferência" name="printConf-<?php echo $central['centralEntrega'] ?>">
+                    <input type="button" class="btn btnExp selectCentral" data-id="<?php echo $central['centralEntrega'] ?>" id="central-<?php echo $central['centralEntrega'] ?>" value="Selecionar Mapa/Etiqueta" name="central-<?php echo $central['centralEntrega'] ?>">
+                    <input type="button" class="btn btnExp printAll" data-id="<?php echo $central['centralEntrega'] ?>" id="printAll-<?php echo $central['centralEntrega'] ?>" value="Imprimir todos Mapas/Etiquetas de separação" name="printAll-<?php echo $central['centralEntrega'] ?>">
+                    <input type="button" class="btn btnExp printConf" data-id="<?php echo $central['centralEntrega'] ?>" id="printConf-<?php echo $central['centralEntrega'] ?>" value="Imprimir Mapas Conferência" name="printConf-<?php echo $central['centralEntrega'] ?>">
                 </b>
             </div>
         </fieldset>
@@ -56,16 +56,23 @@
         });
 
         $('.selectCentral').click(function (ev) {
+            lockUnlockBtn(true);
             executeCommand($(this), "userSelect", ev);
         });
 
         $('.printAll').click(function (ev) {
+            lockUnlockBtn(true);
             executeCommand($(this), "printAll", ev);
         });
 
         $('.printConf').click(function (ev) {
+            lockUnlockBtn(true);
             executeCommand($(this), "printConf", ev);
         });
+
+        function lockUnlockBtn(destino){
+            $(".btnExp").prop('disabled', destino);
+        }
 
         function executeCommand(element, option, ev) {
             var arr = [];
@@ -94,21 +101,21 @@
                                 window.open(data.link,'_blank')
                             }
                         }
+                        lockUnlockBtn(false);
                         return
                     }
-                    ev.preventDefault();
-                    if (option === '"userSelect') {
+                    if (option === 'userSelect') {
                         $.wmsDialogAjax({
                             width: 750,
                             height: 450,
                             url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>/return/view',
                             title: 'Mapas/Etiquetas Pendentes de Impressão'
                         });
+                        lockUnlockBtn(false);
                     } else {
                         $.ajax({
                             url: URL_MODULO + '/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>/return/json',
                             type: 'GET',
-                            assync: false,
                             success: function (data) {
                                 if (option === "printAll") {
                                     if (data.mapas.length > 0) {
@@ -130,9 +137,11 @@
                                         });
                                     }
                                 }
+                                lockUnlockBtn(false);
                             }
                         });
                     }
+                    ev.preventDefault();
                 }
             });
         }

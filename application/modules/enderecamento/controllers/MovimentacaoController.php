@@ -68,7 +68,7 @@ class Enderecamento_MovimentacaoController extends Action
                     'apto' => $data['apto'],
                     'validade' => str_replace('/', '-', $data['validade']),
                     'quantidade' => $quantidade,
-                    'codProprietario' => $data['codPessoa'],
+                    'codProprietario' => (isset($data['codPessoa']))? $data['codPessoa'] : null,
                     'idNormaPaletizacao' => $data['idNormaPaletizacao']));
             }
         }
@@ -137,7 +137,7 @@ class Enderecamento_MovimentacaoController extends Action
             $params['observacoes'] = 'Movimentação manual';
             $params['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_MOVIMENTACAO;
             $params['unitizador'] = $unitizadorEn;
-            $params['codProprietario'] = $data['codProprietario'];
+            $params['codProprietario'] = (isset($data['codProprietario'])) ? $data['codProprietario'] : null;
 
             $params['validade'] = null;
             if ($produtoEn->getValidade() == 'S' ) {

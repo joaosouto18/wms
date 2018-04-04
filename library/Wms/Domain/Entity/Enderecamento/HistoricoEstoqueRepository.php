@@ -43,6 +43,7 @@ class HistoricoEstoqueRepository extends EntityRepository {
                         usu.login,
                         un.id,
                         vol.descricao,
+                        hist.validade,
                         e.validade,
                         un.descricao");
 

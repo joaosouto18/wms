@@ -5,9 +5,11 @@ use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Form\Relatorio\Ressuprimento\FiltroDadosOnda,
     Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria;
 
-class Expedicao_OndaRessuprimentoController extends Action {
+class Expedicao_OndaRessuprimentoController extends Action
+{
 
-    public function indexAction() {
+    public function indexAction()
+    {
         $form = new FiltroExpedicaoMercadoria;
         $form->init("/expedicao/onda-ressuprimento");
         $this->view->form = $form;
@@ -27,7 +29,8 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $this->view->expedicoes = $expedicoes;
     }
 
-    public function semDadosAction() {
+    public function semDadosAction()
+    {
         $strExpedicao = $this->_getParam("expedicoes");
 
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
@@ -36,7 +39,8 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $this->exportPDF($produtosSemPicking, 'Produtos-sem-picking', 'Produtos Sem Picking - Expedições: ' . $strExpedicao, 'P');
     }
 
-    public function relatorioSemEstoqueAjaxAction() {
+    public function relatorioSemEstoqueAjaxAction()
+    {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $expedicoes = $this->_getParam("expedicoes");
@@ -57,7 +61,8 @@ class Expedicao_OndaRessuprimentoController extends Action {
 
     }
 
-    public function gerarAction() {
+    public function gerarAction()
+    {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $idsExpedicoes = $this->_getParam("expedicao");
@@ -87,16 +92,16 @@ class Expedicao_OndaRessuprimentoController extends Action {
                 } else {
 
                     $expedicoesComCorte = array();
-                        foreach ($result as $expedcao) {
-                            if (in_array($expedcao['COD_EXPEDICAO'],$idsExpedicoes)) {
+                    foreach ($result as $expedcao) {
+                        if (in_array($expedcao['COD_EXPEDICAO'], $idsExpedicoes)) {
 
-                                $idArray = array_keys($idsExpedicoes, $expedcao['COD_EXPEDICAO']);
-                                unset($idsExpedicoes[$idArray[0]]);
+                            $idArray = array_keys($idsExpedicoes, $expedcao['COD_EXPEDICAO']);
+                            unset($idsExpedicoes[$idArray[0]]);
 
-                                $expedicoesComCorte[] = $expedcao['COD_EXPEDICAO'];
-                            }
+                            $expedicoesComCorte[] = $expedcao['COD_EXPEDICAO'];
                         }
-                    $expedicoesComCorte = implode(',',$expedicoesComCorte);
+                    }
+                    $expedicoesComCorte = implode(',', $expedicoesComCorte);
 
                     $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoesComCorte)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
                     $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
@@ -111,11 +116,11 @@ class Expedicao_OndaRessuprimentoController extends Action {
 
                 $expedicaoDescasada = array();
                 foreach ($produtosDescasados as $expedicao) {
-                    if (!in_array($expedicao['COD_EXPEDICAO'],$expedicaoDescasada)) {
+                    if (!in_array($expedicao['COD_EXPEDICAO'], $expedicaoDescasada)) {
                         $expedicaoDescasada[] = $expedicao['COD_EXPEDICAO'];
                     }
                 }
-                $expedicoes = implode(',',$expedicaoDescasada);
+                $expedicoes = implode(',', $expedicaoDescasada);
 
                 $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'produtos-descasados-ajax', 'expedicoes' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos Descasados</a>';
                 $mensagem = 'Existem Produtos descasados nas Expedições Selecionadas. Clique para exibir ' . $link;
@@ -126,7 +131,7 @@ class Expedicao_OndaRessuprimentoController extends Action {
             ini_set('max_execution_time', 900);
             ini_set('memory_limit', '-1');
 
-            if (count($idsExpedicoes) >0) {
+            if (count($idsExpedicoes) > 0) {
                 $expedicoes = implode(',', $idsExpedicoes);
                 $result = $expedicaoRepo->gerarOnda($expedicoes);
             } else {
@@ -142,9 +147,10 @@ class Expedicao_OndaRessuprimentoController extends Action {
                 $return['response'][] = $result['observacao'];
                 $return['expedicoes'] = $idsExpedicoes;
             }
+            $this->em->flush();
+            $this->em->commit();
         } catch (\Exception $e) {
             $this->em->rollback();
-            $this->addFlashMessage("error", "Falha gerando ressuprimento. " . $e->getMessage());
             $return['status'] = 'Error';
             $return['response'][] = "Falha gerando ressuprimento. " . $e->getMessage();
             $return['expedicoes'] = null;
@@ -153,7 +159,8 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $this->_helper->json($return);
     }
 
-    public function verificarExpedicoesProcessandoAjaxAction() {
+    public function verificarExpedicoesProcessandoAjaxAction()
+    {
 
         $expedicoes = $this->getRequest()->getParam('expedicao');
         $expedicaoRepo = $this->em->getRepository("wms:Expedicao");
@@ -168,13 +175,14 @@ class Expedicao_OndaRessuprimentoController extends Action {
                 $str[] = $expedicao->getId();
             }
             $status = "Error";
-            $msg = "As expedições a seguir já estão sendo processadas: ". implode(", ", $str);
+            $msg = "As expedições a seguir já estão sendo processadas: " . implode(", ", $str);
         }
 
         $this->_helper->json(["status" => $status, "msg" => $msg]);
     }
 
-    public function gerenciarOsAction() {
+    public function gerenciarOsAction()
+    {
         $form = new FiltroDadosOnda;
         $actionParams = $this->_getParam('actionParams', false);
 
@@ -216,7 +224,8 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $this->view->form = $form;
     }
 
-    public function liberarAction() {
+    public function liberarAction()
+    {
         $idOndaOs = $this->_getParam("ID");
         $params = $this->_getAllParams();
 
@@ -240,7 +249,8 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $this->redirect("gerenciar-os", "onda-ressuprimento", "expedicao", $formParams);
     }
 
-    public function cancelarAction() {
+    public function cancelarAction()
+    {
         $idOndaOs = $this->_getParam("ID");
         $params = $this->_getAllParams();
 
@@ -271,7 +281,8 @@ class Expedicao_OndaRessuprimentoController extends Action {
         $this->redirect("gerenciar-os", "onda-ressuprimento", "expedicao", $formParams);
     }
 
-    public function listAction() {
+    public function listAction()
+    {
         $idOndaOs = $this->_getParam("ID");
 
         /** @var \Wms\Domain\Entity\Ressuprimento\AndamentoRepository $andamentoRepo */
@@ -305,79 +316,23 @@ class Expedicao_OndaRessuprimentoController extends Action {
 
     }
 
-    public function alterarModeloSeparacaoAction()
+    public function alterarModeloSeparacaoAjaxAction()
     {
         $params = $this->_getAllParams();
-        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepository */
-        $modeloSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
         $expedicaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao');
 
-        $modeloSeparacaoEntity = $modeloSeparacaoRepository->find($params['id-modelo']);
-
         try {
-            $this->getEntityManager()->beginTransaction();
-
-            if (!is_null($params['id-modelo']) && is_array($params['id-expedicao'])) {
-                foreach ($params['id-expedicao'] as $codExpedicao) {
-                    $expedicaoEntity = $expedicaoRepository->find($codExpedicao);
-                    $modeloSeparacaoRepository->setModeloSeparacaoExpedicao($expedicaoEntity,$modeloSeparacaoEntity);
-                }
-                $this->getEntityManager()->flush();
+            foreach ($params['expedicoes'] as $codExpedicao) {
+                $expedicaoRepository->defineModeloSeparacao($codExpedicao, $params['id-modelo']);
             }
 
-            $expedicoes = implode(',', $params['id-expedicao']);
+            $this->_helper->json(["status" => "Ok"]);
 
-            $result = $expedicaoRepository->verificaDisponibilidadeEstoquePedido($expedicoes, true);
+        } catch (Exception $e) {
 
-            if (count($result) > 0) {
-                $cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
+            $this->_helper->json(["status" => "Error", "msg" => $e->getMessage()]);
 
-                if ($cortarAutomatico == 'S') {
-                    $motivo = "Saldo insuficiente";
-                    $itensPCortar = $expedicaoRepository->diluirCorte($expedicoes, $result);
-                    $expedicaoRepository->executaCortePedido($itensPCortar, $motivo, $cortarAutomatico);
-                    $link = '<a href="' . $this->view->url(array('controller' => 'corte', 'action' => 'relatorio-corte-ajax', 'id' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de cortes automaticos da onda de ressuprimento</a>';
-                    $msgCorte = "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque. Clique para exibir " . $link;
-                    $this->addFlashMessage("warning", $msgCorte);
-                } else {
-                    $expedicoesComCorte = array();
-                    foreach ($result as $expedcao) {
-                        if (in_array($expedcao['COD_EXPEDICAO'],$params['id-expedicao'])) {
-
-                            $idArray = array_keys($params['id-expedicao'],$expedcao['COD_EXPEDICAO']);
-                            unset($params['id-expedicao'][$idArray[0]]);
-
-                            $expedicoesComCorte[] = $expedcao['COD_EXPEDICAO'];
-                        }
-                    }
-                    $expedicoesComCorte = implode(',',$expedicoesComCorte);
-
-                    $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoesComCorte)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
-                    $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
-
-                    $this->addFlashMessage("error", $mensagem);
-                }
-            }
-
-            ini_set('max_execution_time', 300);
-            ini_set('memory_limit', '-1');
-
-            $result = $expedicaoRepository->gerarOnda($expedicoes);
-
-            $this->getEntityManager()->commit();
-
-            if ($result['resultado'] == false) {
-                throw new Exception($result['observacao']);
-            } else {
-                $this->addFlashMessage("success", $result['observacao']);
-            }
-            $this->redirect("index", "onda-ressuprimento", "expedicao");
-        } catch (\Exception $e) {
-            $this->getEntityManager()->rollback();
-            $this->addFlashMessage("error", "Falha ao cadastrar modelo de separação para expedições ");
         }
-
     }
-
 }

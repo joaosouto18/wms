@@ -66,7 +66,7 @@ class notaFiscal {
     /** @var string */
     public $placa;
     /** @var string */
-    public $cnpjDestinatario;
+    //public $cnpjDestinatario;
     /** @var string */
     public $status;
     /** @var string */
@@ -256,15 +256,15 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
-     * @param string $cnpjDestinatario CNPJ da filial
      * @param TypeOfParam::getType(NOTA_FISCAL_SALVAR_ITENS) $itens
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
      * @param string $tipoNota Identifica se é uma nota de Bonificação(B), Compra(C), etc.
+     * @param string $cnpjDestinatario CNPJ da filial
      * @return boolean
      * @throws Exception
      */
-    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $cnpjDestinatario, $itens, $bonificacao, $observacao, $tipoNota)
+    public function salvar($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $tipoNota, $cnpjDestinatario)
     {
         $em = $this->__getDoctrineContainer()->getEntityManager();
         try{
@@ -413,14 +413,14 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * @param string $serie Serie da nota fiscal
      * @param string $dataEmissao Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'22/11/2010'
      * @param string $placa Placa do veiculo vinculado à nota fiscal formato esperado: XXX0000
-     * @param string $cnpjDestinatario CNPJ da filial dona da nota
      * @param string $itens Itens da Nota {Json}
      * @param string $bonificacao Indica se a nota fiscal é ou não do tipo bonificação, Por padrão Não (N).
      * @param string $observacao Observações da Nota Fiscal
+     * @param string $cnpjDestinatario CNPJ da filial dona da nota
      * @return boolean
      * @throws Exception
      */
-    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $cnpjDestinatario, $itens, $bonificacao, $observacao){
+    public function salvarJson($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao, $cnpjDestinatario){
         /*
         $jsonMockSample ='{"produtos": [';
         $jsonMockSample .='     {"idProduto": "999", ';
@@ -433,7 +433,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         try {
             $array = json_decode($itens, true);
             $arrayItens = $array['produtos'];
-            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa,$cnpjDestinatario, $arrayItens,$bonificacao, $observacao, "","");
+            return $this->salvar($idFornecedor,$numero,$serie,$dataEmissao,$placa, $arrayItens,$bonificacao, $observacao, "",$cnpjDestinatario);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

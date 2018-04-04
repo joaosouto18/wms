@@ -1685,7 +1685,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         if (!empty($embExpDefault)) {
                             $embalagemAtual = $embExpDefault;
-                            if (!Math::compare($embalagemAtual->getQuantidade(), $embExpDefault, "<=")) {
+                            if (!Math::compare($embalagemAtual->getQuantidade(), $qtdTemp, "<=")) {
                                 $embalagemAtual = null;
                             }
                         }

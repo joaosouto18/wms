@@ -99,6 +99,7 @@ class EtiquetaSeparacao
     protected $grade;
 
     /**
+     * @var Pedido
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\Pedido")
      * @JoinColumn(name="COD_PEDIDO", referencedColumnName="COD_PEDIDO")
      */
@@ -214,6 +215,9 @@ class EtiquetaSeparacao
         $this->pedido = $pedido;
     }
 
+    /**
+     * @return Pedido
+     */
     public function getPedido()
     {
         return $this->pedido;

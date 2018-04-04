@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity;
+use Wms\Domain\Entity\Expedicao\ModeloSeparacao;
 use Wms\Domain\Entity\Util\Sigla;
 
 /**
@@ -92,6 +93,7 @@ class Expedicao
     protected $indProcessando;
 
     /**
+     * @var ModeloSeparacao
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\ModeloSeparacao")
      * @JoinColumn(name="COD_MODELO_SEPARACAO", referencedColumnName="COD_MODELO_SEPARACAO")
      */
@@ -240,7 +242,7 @@ class Expedicao
     }
 
     /**
-     * @return mixed
+     * @return ModeloSeparacao
      */
     public function getModeloSeparacao()
     {
@@ -248,7 +250,7 @@ class Expedicao
     }
 
     /**
-     * @param mixed $modeloSeparacao
+     * @param ModeloSeparacao $modeloSeparacao
      */
     public function setModeloSeparacao($modeloSeparacao)
     {

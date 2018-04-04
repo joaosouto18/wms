@@ -9,6 +9,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
     },
     /* @Prototype */
     {
+
         '{window} load' : function() {
 
             var este = this;
@@ -37,98 +38,29 @@ $.Controller.extend('Wms.Controllers.Expedicao',
             $("#gerar").live('click', function() {
                 $('#gerar').attr('style','display:none');
                 $('#modelo-separacao').attr('style','display:none');
-                $('#aguarde').attr('style','background-color: lightsteelblue; text-align: center; padding: 5px');
                 este.gerarRessuprimento();
             });
-
-            $("#modelo-separacao").live('click', function() {
-                $('#gerar').attr('style','display:none');
-                $('#modelo-separacao').attr('style','display:none');
-                este.gerarRessuprimento();
-            });
-
-            $('#alterar-modelo').live('click', function () {
-                $('#inserir').html('<center><img src="/img/ajax-loader.gif" width="31" height="31"/>Processando...</center>');
-                $('#inserir').show();
-            });
-
-            function processoCancelado() {
-                $('#aguarde').attr('style','display:none');
-                $("input[name*='expedicao[]']").each(function( index, value ){
-                    if ( $(this).prop('checked') ){
-                        $(this).prop('checked', false);
-                    }
-                });
-            }
 
             $('#modelo-separacao').live('click', function () {
-                clickSelection=false;
-                $("input[name*='expedicao[]']").each(function( index, value ){
-                    if ( $(this).prop('checked') ){
-                        clickSelection=true;
-                    }
-                });
-
-                if (clickSelection){
-                    var liberado = true;
+                $('#gerar').attr('style','display:none');
+                $('#modelo-separacao').attr('style','display:none');
+                if ($("input[name*='expedicao[]']:checked").length > 0){
                     $.ajax({
                         url: URL_BASE + '/expedicao/onda-ressuprimento/modelo-separacao-expedicao-ajax',
                         type: 'post',
-                        async: false,
                         dataType: 'html',
                         data: $('#relatorio-picking-listar').serialize()
                     }).success(function (data) {
-                        console.log(data);
-                        $('#inside-modal-dialog').append(data);
+                        este.dialogModal(data);
                     });
                 } else {
-                    alert('Selecione pelo menos uma expedição');
+                    este.dialogAlert('Selecione pelo menos uma expedição');
                 }
 
             });
 
-            /*
-             * Valida seleção de expedições
-             * @array checkBoxes de expedições
-             * return action submit / alert
-             */
-            $("#gerar").live('click', function() {
-                clickSelection=false;
-                $("input[name*='expedicao[]']").each(function( index, value ){
-                    if ( $(this).prop('checked') ){
-                        clickSelection=true;
-                    }
-                });
-
-                if (clickSelection){
-                    var liberado = true;
-                    $.ajax({
-                        url: URL_BASE + '/expedicao/onda-ressuprimento/verificar-expedicoes-processando-ajax',
-                        type: 'post',
-                        async: false,
-                        dataType: 'json',
-                        data: $('#relatorio-picking-listar').serialize()
-                    }).success(function (data) {
-                        if (data.status === "Ok") {
-                            liberado = true;
-                        } else if (data.status === "Error") {
-                            $.wmsDialogAlert({
-                                title: "Notificação!",
-                                msg: data.msg
-                            }, function(){
-                                window.location = URL_BASE + "/expedicao/onda-ressuprimento";
-                            });
-                            liberado = false;
-                            processoCancelado();
-                        }
-                    });
-                    if (liberado) {
-                        $('#relatorio-picking-listar').submit();
-                    }
-                } else {
-                    alert('Selecione pelo menos uma expedição');
-                }
-
+            $("#alterar-modelo").live('click', function() {
+                este.alterarModelo();
             });
 
             grade = $("#grade");
@@ -174,62 +106,66 @@ $.Controller.extend('Wms.Controllers.Expedicao',
          */
         gerarRessuprimento: function () {
             var este = this;
-
             if ($("input[name*='expedicao[]']:checked").length > 0){
-                var liberado = true;
                 $.ajax({
                     url: URL_BASE + '/expedicao/onda-ressuprimento/verificar-expedicoes-processando-ajax',
                     type: 'post',
-                    async: false,
                     dataType: 'json',
                     data: $('#relatorio-picking-listar').serialize()
                 }).success(function (data) {
                     if (data.status === "Ok") {
-                        liberado = true;
+                        var msgs = null;
+                        var expedicoes = null;
+                        $.ajax({
+                            url: URL_BASE + "/expedicao/onda-ressuprimento/gerar",
+                            type: 'post',
+                            dataType: 'json',
+                            data: $('#relatorio-picking-listar').serialize()
+                        }).success(function (data) {
+                            if (data.status === "Ok") {
+                                expedicoes = data.expedicoes;
+                                msgs = data.response;
+                            } else if (data.status === "Error") {
+                                msgs = data.response;
+                            }
+                            if (expedicoes !== null) {
+                                este.selectExpToPrint(expedicoes);
+                            }
+
+                            este.dispararMultiMsgs(msgs);
+                        });
                     } else if (data.status === "Error") {
                         este.dialogAlert(data.msg, function(){
                             window.location = URL_BASE + "/expedicao/onda-ressuprimento";
                         });
-                        liberado = false;
-                        este.processoCancelado();
+                        este.clearCheckBox();
                     }
                 });
-                if (liberado) {
-                    var msgs = null;
-                    var expedicoes = null;
-                    $.ajax({
-                        url: URL_BASE + "/expedicao/onda-ressuprimento/gerar",
-                        type: 'post',
-                        async: false,
-                        dataType: 'json',
-                        data: $('#relatorio-picking-listar').serialize()
-                    }).success(function (data) {
-                        if (data.status === "Ok") {
-                            expedicoes = data.expedicoes;
-                            msgs = data.response;
-                        } else if (data.status === "Error") {
-                            msgs = data.response;
-                        }
-                    });
-
-                    if (expedicoes !== null) {
-                        este.dialogConfirm(
-                            "Deseja já gerar e imprimir os mapas e etiquetas destas expedições ressupridas?",
-                            expedicoes,
-                            este.callback("selectExpToPrint")
-                        )
-                    }
-
-                    este.dispararMultiMsgs(msgs);
-                    //$('#relatorio-picking-listar').submit();
-                }
             } else {
                 alert('Selecione pelo menos uma expedição');
             }
         },
 
-        processoCancelado: function () {
-            $('#aguarde').attr('style','display:none');
+        alterarModelo: function () {
+            var este = this;
+            var params = {"expedicoes" : $("input[name*='id-expedicao[]']").map(function(){return $(this).val()}).get(), "id-modelo" : $("#id-modelo").val()};
+            $("#wms-dialog-modal").remove();
+            $.ajax({
+                url: URL_BASE + "/expedicao/onda-ressuprimento/alterar-modelo-separacao-ajax",
+                type: 'post',
+                dataType: 'json',
+                data: params
+            }).success(function (data) {
+                if (data.status === "Ok") {
+                    este.gerarRessuprimento();
+                } else if (data.status === "Error") {
+                    $("#processing").hide();
+                    este.dialogAlert(data.msg)
+                }
+            });
+        },
+
+        clearCheckBox: function () {
             $("input[name*='expedicao[]']").each(function( index, value ){
                 if ( $(this).prop('checked') ){
                     $(this).prop('checked', false);
@@ -252,9 +188,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                 '        <div id="div-fieldset-expedicoes">' + divExpedicoes + '</div>' +
                 '    </fieldset>' +
                 '</div>';
-            $.wmsDialogModal({
-                title: "---  Sistema  ---"
-            }, htmlBody)
+            this.dialogModal(htmlBody);
         },
 
         dispararMultiMsgs : function (msgs) {
@@ -276,5 +210,11 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                 title: "---  Sistema  ---",
                 msg: msg
             }, confirmFunction, params)
+        },
+
+        dialogModal: function (htmlBody) {
+            $.wmsDialogModal({
+                title: "---  Sistema  ---"
+            }, htmlBody)
         }
     });

@@ -3,9 +3,8 @@
 namespace Wms\Domain\Entity;
 
 use Doctrine\ORM\EntityRepository,
-    Wms\Domain\Entity\Expedicao as ExpedicaoEntity,
+    Wms\Domain\Entity\Expedicao,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
-    Wms\Util\Coletor as ColetorUtil,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
 use Wms\Domain\Entity\Deposito\Endereco;
@@ -217,6 +216,7 @@ class ExpedicaoRepository extends EntityRepository {
                 throw new \Exception('Não é possível gerar onda de ressuprimento para '.count($countmodeloSeparacao).' modelos distintos');
 
             $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
+            /** @var Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
 
             //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
@@ -458,16 +458,16 @@ class ExpedicaoRepository extends EntityRepository {
      * @return array|mixed
      * @throws \Exception
      */
-    private function prepareArrayRessup($arrItens, $quebraPulmaoDoca = ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA, $dadosProdutos, $repositorios)
+    private function prepareArrayRessup($arrItens, $quebraPulmaoDoca = Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA, $dadosProdutos, $repositorios)
     {
         switch ($quebraPulmaoDoca) {
-            case ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO:
+            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO:
                 return self::getArraysByQuebraPulmaoDocaExpedicao($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
-            case ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CARGA:
+            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CARGA:
                 return self::getArraysByQuebraPulmaoDocaCarga($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
-            case ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA:
+            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA:
                 return self::getArraysByQuebraPulmaoDocaPraca($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
-            case ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE:
+            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE:
                 return self::getArraysByQuebraPulmaoDocaCliente($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
             default:
                 return self::getArraysSaidaPadrao($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
@@ -678,7 +678,7 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $repositorios['estoqueRepo'];
 
-        $naoUsaPD = ExpedicaoEntity\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA;
+        $naoUsaPD = Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA;
 
         $qtdBase = 0;
         foreach ($pedidos as $codPedido => $qtdItem) {
@@ -1512,7 +1512,7 @@ class ExpedicaoRepository extends EntityRepository {
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
 
         $expedicaoEn = $expedicaoRepo->findOneBy(array('id' => $idExpedicao));
-        $status = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => ExpedicaoEntity\NotaFiscalSaida::EXPEDIDO_REENTREGA));
+        $status = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao\NotaFiscalSaida::EXPEDIDO_REENTREGA));
 
         foreach ($notasFiscais as $notaFiscal) {
             $nfEn = $nfSaidaRepo->findOneBy(array('id' => $notaFiscal['COD_NOTA_FISCAL_SAIDA']));
@@ -1520,7 +1520,7 @@ class ExpedicaoRepository extends EntityRepository {
             $nfEn->setStatus($status);
             $this->getEntityManager()->persist($nfEn);
 
-            $andamentoNFRepo->save($nfEn, ExpedicaoEntity\NotaFiscalSaida::EXPEDIDO_REENTREGA, false, $expedicaoEn, $reentregaEn);
+            $andamentoNFRepo->save($nfEn, Expedicao\NotaFiscalSaida::EXPEDIDO_REENTREGA, false, $expedicaoEn, $reentregaEn);
         }
 
         $this->getEntityManager()->flush();
@@ -1861,10 +1861,10 @@ class ExpedicaoRepository extends EntityRepository {
 
         try {
 
-            $enExpedicao = new ExpedicaoEntity;
+            $enExpedicao = new Expedicao;
 
             $enExpedicao->setPlacaExpedicao($placaExpedicao);
-            $statusEntity = $em->getReference('wms:Util\Sigla', ExpedicaoEntity::STATUS_INTEGRADO);
+            $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_INTEGRADO);
             $enExpedicao->setStatus($statusEntity);
             $enExpedicao->setDataInicio(new \DateTime);
             $enExpedicao->setIndProcessando("N");
@@ -2197,14 +2197,17 @@ class ExpedicaoRepository extends EntityRepository {
                                WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
                               GROUP BY C.COD_EXPEDICAO) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT E.COD_EXPEDICAO,
-                                    LISTAGG (MOTORISTA.NOM_MOTORISTA,\', \') WITHIN GROUP (ORDER BY MOTORISTA.NOM_MOTORISTA) NOM_MOTORISTA 
+                                    LISTAGG (MOTORISTA.NOM_MOTORISTA,\', \') WITHIN GROUP (ORDER BY MOTORISTA.NOM_MOTORISTA) NOM_MOTORISTA
                               FROM EXPEDICAO E
+							  INNER JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                               LEFT JOIN (SELECT DISTINCT E.COD_EXPEDICAO,
-                                        C.NOM_MOTORISTA 
+                                        C.NOM_MOTORISTA,
+                                        C.COD_CARGA_EXTERNO 
                                     FROM CARGA C
                                     INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+									INNER JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                                     WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . ' 
-                                    GROUP BY E.COD_EXPEDICAO, C.NOM_MOTORISTA) MOTORISTA ON MOTORISTA.COD_EXPEDICAO = E.COD_EXPEDICAO
+                                    GROUP BY E.COD_EXPEDICAO, C.NOM_MOTORISTA, C.COD_CARGA_EXTERNO) MOTORISTA ON MOTORISTA.COD_EXPEDICAO = E.COD_EXPEDICAO
                               WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
                               GROUP BY E.COD_EXPEDICAO) MOT ON MOT.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT COD_EXPEDICAO,
@@ -2494,7 +2497,7 @@ class ExpedicaoRepository extends EntityRepository {
                 ->orderBy("e.id", "DESC")
                 ->distinct(true);
 
-        $parcialmenteFinalizado = ExpedicaoEntity::STATUS_PARCIALMENTE_FINALIZADO;
+        $parcialmenteFinalizado = Expedicao::STATUS_PARCIALMENTE_FINALIZADO;
         if (is_array($central)) {
             $central = implode(',', $central);
             $source->andWhere("pedido.centralEntrega in ($central) AND e.codStatus != $parcialmenteFinalizado")
@@ -3189,6 +3192,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         if ($tipoEtiqueta == EtiquetaSeparacao::PREFIXO_ETIQUETA_SEPARACAO) {
             //ETIQUETA DE SEPARAÇÃO
+            /** @var Expedicao\EtiquetaSeparacao $etiquetaSeparacao */
             $etiquetaSeparacao = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao')->find($codBarras);
             if ($etiquetaSeparacao == null) {
                 throw new \Exception("Nenhuma Etiqueta de Separação encontrada com o codigo de barras " . $codBarras);
@@ -3662,7 +3666,7 @@ class ExpedicaoRepository extends EntityRepository {
      */
     public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null) {
 
-        /** @var ExpedicaoEntity\AndamentoRepository $expedicaoAndamentoRepo */
+        /** @var Expedicao\AndamentoRepository $expedicaoAndamentoRepo */
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
         $reservaEstoqueProdutoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
         $mapaSeparacaoPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
@@ -3670,9 +3674,9 @@ class ExpedicaoRepository extends EntityRepository {
         $mapaConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
 
         if (empty($pedidoProdutoEn)) {
-            /** @var ExpedicaoEntity\PedidoProdutoRepository $pedidoProdutoRepo */
+            /** @var Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
             $pedidoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
-            /** @var ExpedicaoEntity\PedidoProduto $entidadePedidoProduto */
+            /** @var Expedicao\PedidoProduto $entidadePedidoProduto */
             $pedidoProdutoEn = $pedidoProdutoRepo->findOneBy(array('codPedido' => $codPedido,
                 'codProduto' => $codProduto,
                 'grade' => $grade));
@@ -3732,7 +3736,7 @@ class ExpedicaoRepository extends EntityRepository {
         $this->getEntityManager()->persist($pedidoProdutoEn);
 
         //Seta na mapa_separacao_pedido a quantidade cortada baseada na quantia já cortada mais a nova qtd
-        /** @var ExpedicaoEntity\MapaSeparacaoPedido $mapaSeparacaoPedido */
+        /** @var Expedicao\MapaSeparacaoPedido $mapaSeparacaoPedido */
         $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array("pedidoProduto" => $pedidoProdutoEn));
         if (!empty($mapaSeparacaoPedido)) {
             $mapaSeparacaoPedido->addCorte($qtdCortar);
@@ -3745,7 +3749,7 @@ class ExpedicaoRepository extends EntityRepository {
                 'dscGrade' => $grade));
 
             if (!empty($entidadeMapaProduto)) {
-                /** @var ExpedicaoEntity\MapaSeparacaoProduto $itemMapa */
+                /** @var Expedicao\MapaSeparacaoProduto $itemMapa */
                 foreach ($entidadeMapaProduto as $itemMapa) {
                     $qtdCortadaMapa = $itemMapa->getQtdCortado();
                     $qtdSeparar = Math::multiplicar($itemMapa->getQtdEmbalagem(), $itemMapa->getQtdSeparar());
@@ -4076,6 +4080,30 @@ class ExpedicaoRepository extends EntityRepository {
             ->groupBy('ms.id, e.id');
 
         return $sql->getQuery()->getResult();
+
+    }
+
+    /**
+     * @param $idExpedicao
+     * @param $idModelo
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
+     */
+    public function defineModeloSeparacao($idExpedicao, $idModelo, $flush = true) {
+
+        /** @var Expedicao $expedicaoEn */
+        $expedicaoEn =  $this->find($idExpedicao);
+        /** @var Expedicao\ModeloSeparacao $modeloEn */
+        $modeloEn = $this->_em->find("wms:Expedicao\ModeloSeparacao", $idModelo);
+
+        if (!empty($expedicaoEn) && !empty($modeloEn)) {
+            $expedicaoEn->setModeloSeparacao($modeloEn);
+        }
+
+        $this->_em->persist($expedicaoEn);
+
+        if ($flush) $this->_em->flush();
 
     }
 }

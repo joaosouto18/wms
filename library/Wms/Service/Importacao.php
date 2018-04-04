@@ -628,22 +628,57 @@ class Importacao
                 'codProduto' => $pedido['produto']->getId(),
                 'grade' => $pedido['produto']->getGrade()
             );
-            /** @var Expedicao\PedidoProduto $entityPedidoProduto */
-            $entityPedidoProduto = $pedidoProdutoRepo->findOneBy($arrCriterio);
 
-            if (!empty($entityPedidoProduto)) {
+            $itensInserting = $em->getUnitOfWork()->getScheduledEntityInsertions();
+            $itensUpdating = $em->getUnitOfWork()->getScheduledEntityUpdates();
+
+            $arrItensMemory = array_merge($itensInserting, $itensUpdating);
+
+            $className = "Wms\Domain\Entity\Expedicao\PedidoProduto";
+
+            $found = [];
+            foreach ($arrItensMemory as $entity) {
+                if (is_a($entity, $className)) {
+                    foreach ($arrCriterio as $prop => $value) {
+                        $method = "get" . ucfirst($prop);
+                        if (method_exists($entity, $method) && (call_user_func(array($entity, $method)) != $value))  break;
+
+                        end($arrCriterio);
+                        $key = key($arrCriterio);
+
+                        if ($key == $prop) $found[] = $entity;
+                    }
+                }
+            }
+
+            if (!empty($found)) {
+
+                /** @var Expedicao\PedidoProduto $entityPedidoProduto */
+                $entityPedidoProduto = $found[0];
                 $qtd = Math::adicionar($entityPedidoProduto->getQuantidade(), $pedido['quantidade']);
                 $entityPedidoProduto->setQuantidade($qtd);
                 $em->persist($entityPedidoProduto);
+
             } else {
 
-                $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('id' => $pedido['codPedido']));
-                if (empty($pedido['pedido'])) {
-                    throw new \Exception("Pedido: $pedido[codPedido] não foi encontrado");
-                }
+                /** @var Expedicao\PedidoProduto $entityPedidoProduto */
+                $entityPedidoProduto = $pedidoProdutoRepo->findOneBy($arrCriterio);
 
-                if (!$entityPedidoProduto)
-                    $entityPedidoProduto = $pedidoProdutoRepo->save($pedido);
+                if (!empty($entityPedidoProduto)) {
+
+                    $entityPedidoProduto->setQuantidade($pedido['quantidade']);
+                    $em->persist($entityPedidoProduto);
+
+                } else {
+
+                    $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('id' => $pedido['codPedido']));
+                    if (empty($pedido['pedido'])) {
+                        throw new \Exception("Pedido: $pedido[codPedido] não foi encontrado");
+                    }
+
+                    if (!$entityPedidoProduto)
+                        $entityPedidoProduto = $pedidoProdutoRepo->save($pedido);
+                }
             }
 
             if ($flush)

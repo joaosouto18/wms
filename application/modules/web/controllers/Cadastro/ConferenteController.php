@@ -31,7 +31,7 @@ class Web_Cadastro_ConferenteController extends Crud
             // caso tenha nome e cpf verifico condicoes
             if (!empty($nome)) {
                 $nome = mb_strtoupper($nome, 'UTF-8');
-                $source->andWhere("p.nome LIKE '{$nome}%'");
+                $source->andWhere("p.nome LIKE '%$nome%'");
             }
             if (!empty($cpf)) {
                 $cpf = str_replace(array('.', '-'), '', $cpf);

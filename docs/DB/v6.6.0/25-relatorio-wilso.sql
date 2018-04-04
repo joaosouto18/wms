@@ -1,4 +1,4 @@
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.16.0','xx-relatorioWilso.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.16.0','25-relatorio-wilso.sql');
 
 INSERT INTO RECURSO (COD_RECURSO, DSC_RECURSO, COD_RECURSO_PAI, NOM_RECURSO) VALUES (SQ_RECURSO_01.NEXTVAL, 'Relatório de Produtos Conferidos com Senha', 0, 'relatorio_produtos-conferidos-senha');
 
