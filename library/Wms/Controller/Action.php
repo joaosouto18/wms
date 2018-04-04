@@ -161,7 +161,7 @@ class Action extends \Core\Controller\Action
         $parametro = $parametroRepo->findOneBy(array('constante' => $param));
 
         if ($parametro == NULL) {
-            return "";
+            throw new \Exception("Parâmetro $param não encontrado no sistema, entre em contato com o suporte!");
         } else {
             return $parametro->getValor();
         }

@@ -32,7 +32,12 @@ class ExpedicaoService extends AbstractService
         /** @var Expedicao $expedicaoEn */
         $expedicaoEn = $this->em->getRepository($this->entity)->save($numNFS);
         $tipoCarga = $this->em->getRepository('wms:Util\Sigla')->findOneBy(array('tipo' => 69,'referencia'=> "C"));
-
+        $cargaEntities = $this->em->getRepository('wms:Expedicao\Carga')->findBy(array('codCargaExterno' => trim($numNFS)));
+        $qtd = count($cargaEntities);
+        if ($qtd > 0) {
+            $qtd = $qtd + 1;
+            $numNFS = $numNFS.'-'.$qtd;
+        }
         $enCarga = new Expedicao\Carga();
         $enCarga->setPlacaExpedicao($numNFS);
         $enCarga->setCentralEntrega(1);
