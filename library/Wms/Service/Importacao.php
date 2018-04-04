@@ -757,6 +757,12 @@ class Importacao
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
 
+                    $pesoEmbalagem = null;
+                    $cubagemEmbalagem = null;
+                    $profundidadeEmbalagem = null;
+                    $larguraEmbalagem = null;
+                    $alturaEmbalagem = null;
+
 
                     $fator = $embalagemCadastrada->getQuantidade();
                     foreach ($embalagens as $embalagemWs) {
@@ -765,6 +771,10 @@ class Importacao
                             $descricaoEmbalagem =  $embalagemWs->descricao;
                             $fator = str_replace(',','.',$embalagemWs->qtdEmbalagem);
 
+                            $pesoEmbalagem = str_replace(',','.',$embalagemWs->peso);
+                            $alturaEmbalagem = str_replace(',','.',$embalagemWs->altura);
+                            $profundidadeEmbalagem = str_replace(',','.',$embalagemWs->profundidade);
+                            $larguraEmbalagem = str_replace(',','.',$embalagemWs->largura);
                             continue;
                         }
                     }
@@ -785,6 +795,10 @@ class Importacao
                         'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
                         'descricao' => $descricaoEmbalagem,
                         'isEmbExpDefault' => $embalagemCadastrada->isEmbExpDefault(),
+                        'largura'=> $larguraEmbalagem,
+                        'altura'=> $alturaEmbalagem,
+                        'profundidade'=> $profundidadeEmbalagem,
+                        'peso'=> $pesoEmbalagem,
                         'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
                     );
 
