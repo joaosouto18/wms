@@ -1310,27 +1310,29 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $arrReagrupado = self::regroupMapaProduto($arrMapasEmbPP);
 
-            foreach ($arrReagrupado as $idPedProd => $pedidoProduto) {
-                foreach ($pedidoProduto['enderecos'] as $endereco) {
-                    foreach ($endereco as $element) {
-                        $mapaSeparacaoEn = self::getMapaSeparacao($element['quebras'], $statusEntity, $pedidoProduto['expedicaoEn']);
-                        $qtdMapa = $element['qtd'];
-                        $arrPedProd = $element['arrPedProd'];
-                        $embalagemEn = $element['embalagemEn'];
-                        $pedidoEn = $element['pedidoEn'];
-                        $produtoEn = $element['produtoEn'];
-                        $enderecoEn = $element['enderecoEn'];
-                        $consolidado = $element['consolidado'];
-                        $dadosConsolidado = [];
-                        if ($consolidado == 'S') {
-                            $dadosConsolidado = [
-                                'cubagem' => $element['cubagem'],
-                                'carrinho' => $element['quebras'][MapaSeparacaoQuebra::QUEBRA_CARRINHO]['codQuebra'],
-                                'caixaInicio' => $element['caixaInicio'],
-                                'caixaFim' => $element['caixaFim']
-                            ];
+            foreach($arrReagrupado as $strQuebra => $produtos) {
+                foreach ($produtos as $produtoGrade => $pedidoProduto) {
+                    foreach ($pedidoProduto['enderecos'] as $endereco) {
+                        foreach ($endereco as $element) {
+                            $mapaSeparacaoEn = self::getMapaSeparacao($element['quebras'], $statusEntity, $pedidoProduto['expedicaoEn']);
+                            $qtdMapa = $element['qtd'];
+                            $arrPedProd = $element['arrPedProd'];
+                            $embalagemEn = $element['embalagemEn'];
+                            $pedidoEn = $element['pedidoEn'];
+                            $produtoEn = $element['produtoEn'];
+                            $enderecoEn = $element['enderecoEn'];
+                            $consolidado = $element['consolidado'];
+                            $dadosConsolidado = [];
+                            if ($consolidado == 'S') {
+                                $dadosConsolidado = [
+                                    'cubagem' => $element['cubagem'],
+                                    'carrinho' => $element['quebras'][MapaSeparacaoQuebra::QUEBRA_CARRINHO]['codQuebra'],
+                                    'caixaInicio' => $element['caixaInicio'],
+                                    'caixaFim' => $element['caixaFim']
+                                ];
+                            }
+                            self::salvaMapaSeparacaoProduto($mapaSeparacaoEn, $produtoEn, $qtdMapa, null, $embalagemEn, $arrPedProd, $enderecoEn, $dadosConsolidado, $pedidoEn, $arrayRepositorios, $consolidado);
                         }
-                        self::salvaMapaSeparacaoProduto($mapaSeparacaoEn, $produtoEn, $qtdMapa, null, $embalagemEn, $arrPedProd, $enderecoEn, $dadosConsolidado, $pedidoEn, $arrayRepositorios, $consolidado);
                     }
                 }
             }
@@ -1653,14 +1655,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             foreach ($carrinhos as $idCarrinho => $infoCarrinho) {
                 foreach ($infoCarrinho['clientes'] as $idCliente => $infoCliente) {
                     foreach ($infoCliente['itens'] as $produtoGrade => $dadosPedProd) {
-                        $newArray[$dadosPedProd['firstIdPedProd']] = $dadosPedProd;
+                        $newArray[$strQuebra][$dadosPedProd['firstIdPedProd']] = $dadosPedProd;
                     }
                 }
             }
         }
 
-        foreach ($arrayTemp as $strQuebrasConcat) {
-            foreach ($strQuebrasConcat as $endereco) {
+        foreach ($arrayTemp as $strQuebrasConcat => $itens) {
+            foreach ($itens as $endereco) {
                 foreach ($endereco as $produto) {
                     $qtdTemp = $produto['qtd'];
                     $quebras = $produto['quebras'];
@@ -1722,8 +1724,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                         $enderecoId = (!empty($enderecoEn)) ? $enderecoEn->getId() : null;
                         $produtoGrade = $produtoEn->getId().'#!#'.$produtoEn->getGrade();
-                        $newArray[$produtoGrade]['expedicaoEn'] = $expedicaoEn;
-                        $newArray[$produtoGrade]['enderecos'][$enderecoId][$embalagemAtual->getId()] = array(
+                        $newArray[$strQuebrasConcat][$produtoGrade]['expedicaoEn'] = $expedicaoEn;
+                        $newArray[$strQuebrasConcat][$produtoGrade]['enderecos'][$enderecoId][$embalagemAtual->getId()] = array(
                             'qtd' => $qtdEmbs,
                             'consolidado' => "N",
                             'cubagem' => null,
