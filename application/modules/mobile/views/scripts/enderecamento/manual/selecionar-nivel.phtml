@@ -1,5 +1,5 @@
 ﻿<?php $this->headScript()->appendFile($this->baseUrl('coletor/enderecamento.js')); ?>
-<form id="formulario">
+<form id="formulario"  method="post">
         <dt id="identification-label">&nbsp;</dt>
         <dd id="identification-element">
             <fieldset id="fieldset-identification">
@@ -14,7 +14,7 @@
                 </div>
                 <div id="inserir"></div>
                 <input type="hidden" name="endereco" id="endereco" value="<?php echo $this->idEndereco ?>" />
-                <input class="btn" type="submit" name="submit" id="submit" value="Buscar" />
+                <input class="btn lock-dbl-click" type="submit" name="submit" id="submit" value="Buscar" />
             </fieldset>
         </dd>
 </form>

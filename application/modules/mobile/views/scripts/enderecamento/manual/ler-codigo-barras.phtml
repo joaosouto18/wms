@@ -95,7 +95,7 @@
 </script>
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/enderecamento.js')); ?>
 <div class="row text-center" >
-    <form id="formulario">
+    <form id="formulario" method="post">
         <dt id="identification-label">&nbsp;</dt>
         <dd id="identification-element">
             <fieldset id="fieldset-identification">
@@ -114,7 +114,7 @@
                 </div>
 <!--                <input type="hidden" name="capacidadePicking" id="capacidadePicking" value="--><?php //echo $this->capacidadePicking  ?><!--">-->
                 <div id="inserir"></div>
-                <input class="btn gradientBtn" type="submit" name="submit" id="submit" value="Buscar" />
+                <input class="btn gradientBtn lock-dbl-click" type="submit" name="submit" id="submit" value="Buscar" />
             </fieldset>
 
             <?php if ($this->teste == "S") {?>

@@ -16,7 +16,7 @@ class Mobile_Enderecamento_ManualController extends Action
         $params = $this->_getAllParams();
         $em = $this->getEntityManager();
         try{
-            if (isset($params['submit'])&& $params['submit'] != null) {
+            if ($this->getRequest()->isPost()) {
                 if (isset($params['produto']) && trim($params['produto']) == "") {
                     throw new \Exception("Informe um produto!");
                 }

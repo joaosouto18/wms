@@ -1746,6 +1746,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     /**
      * @param $quebras array
      * @param $pedidoProdutoEn PedidoProduto
+     * @return array
      */
     private function getSetupQuebras($quebras, $pedidoProdutoEn)
     {

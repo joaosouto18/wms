@@ -71,4 +71,12 @@ echo $this->doctype();
 </html>
 <script>
     jQuery('.focus').focus();
+    $(function(){
+        $("form").submit(function () {
+            $(this).find("input.lock-dbl-click").each(function () {
+                $("input.lock-dbl-click").attr("disabled", true);
+            });
+            return true;
+        })
+    });
 </script>
