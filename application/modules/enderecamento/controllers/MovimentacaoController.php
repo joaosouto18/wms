@@ -168,6 +168,9 @@ class Enderecamento_MovimentacaoController extends Action
                 }
                 $params['embalagem'] = $embalagensEn[0];
 
+                $dthEntrada = new \DateTime();
+                $params['dthEntrada'] = $dthEntrada;
+
                 $EstoqueRepository->movimentaEstoque($params, true, true);
             } else {
                 if (isset($data['volumes']) && !empty($data['volumes'] )) {
@@ -176,6 +179,9 @@ class Enderecamento_MovimentacaoController extends Action
                         $this->addFlashMessage('error',"Não foi encontrado nenhum volume para o produto $idProduto - $grade no grupo de volumes selecionado. Nenhuma movimentação foi efetuada");
                         $this->_redirect('/enderecamento/movimentacao');
                     }
+                    $dthEntrada = new \DateTime();
+                    $params['dthEntrada'] = $dthEntrada;
+
                     foreach ($volumes as $volume) {
                         $params['volume'] = $volume;
                         $EstoqueRepository->movimentaEstoque($params, true, true);
@@ -253,6 +259,9 @@ class Enderecamento_MovimentacaoController extends Action
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
             $data['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_TRANSFERENCIA;
 
+            $dthEntrada = new \DateTime();
+            $data['dthEntrada'] = $dthEntrada;
+
             if (isset($data['embalagem']) && !empty($data['embalagem'])) {
                 /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */
                 $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
@@ -310,7 +319,7 @@ class Enderecamento_MovimentacaoController extends Action
                     $estoqueRepo->movimentaEstoque($data);
                     $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
                     $data['qtd'] = $data['quantidade'];
-                    $data['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoEn->getDescricao();
+                    $data['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoEn->getDescricApaao();
                     $estoqueRepo->movimentaEstoque($data);
                 }
             }

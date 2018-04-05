@@ -144,7 +144,7 @@ class EstoqueRepository extends EntityRepository
             $estoqueEn = new Estoque();
             $estoqueEn->setDepositoEndereco($enderecoEn);
             $estoqueEn->setProduto($produtoEn);
-            $estoqueEn->setDtPrimeiraEntrada(new \DateTime());
+            $estoqueEn->setDtPrimeiraEntrada($params['dthEntrada']);
             $estoqueEn->setQtd($qtd);
             $estoqueEn->setUma($idUma);
             $estoqueEn->setUnitizador($unitizadorEn);

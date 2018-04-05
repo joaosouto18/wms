@@ -197,7 +197,8 @@ class Mobile_RessuprimentoController extends Action
             $this->em->beginTransaction();
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
-            $embalagens = $estoqueRepo->findBy(array('depositoEndereco'=>$idEndereco, 'codProduto'=>$idProduto, 'grade'=>$grade));
+            $embalagens = $estoqueRepo->findBy(array('depositoEndereco' => $idEndereco, 'codProduto' => $idProduto, 'grade' => $grade));
+            $dthEntrada = new \DateTime();
 
             /** @var \Wms\Domain\Entity\Enderecamento\Estoque $volEstoque */
             foreach ($embalagens as $volEstoque) {
@@ -252,6 +253,7 @@ class Mobile_RessuprimentoController extends Action
                 $enderecoEn = $this->getEntityManager()->getRepository("wms:Deposito\Endereco")->findOneBy(array('id'=>$idPicking));
                 $params['endereco'] = $enderecoEn;
                 $params['qtd'] = $qtd;
+                $params['dthEntrada'] = $dthEntrada;
                 $estoqueRepo->movimentaEstoque($params);
 
                 $relatorioPickingRepo = $this->em->getRepository('wms:Enderecamento\RelatorioPicking');

@@ -985,6 +985,8 @@ class Mobile_EnderecamentoController extends Action
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
             $params['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_TRANSFERENCIA;
+            $dthEntrada = new \DateTime();
+            $params['dthEntrada'] = $dthEntrada;
 
             if (isset($params['uma']) && !empty($params['uma'])) {
                 $estoqueEn = $estoqueRepo->findBy(array('uma' => $params['uma'], 'depositoEndereco' => $enderecoAntigo));

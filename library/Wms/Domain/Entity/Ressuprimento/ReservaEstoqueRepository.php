@@ -152,6 +152,7 @@ class ReservaEstoqueRepository extends EntityRepository
         $reservaProdutos = $reservaEstoqueEn->getProdutos();
         $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto $reservaProduto */
+        $dthEntrada = new \DateTime();
         foreach ($reservaProdutos as $reservaProduto) {
             $params = array();
             $params['produto'] = $reservaProduto->getProduto();
@@ -161,6 +162,7 @@ class ReservaEstoqueRepository extends EntityRepository
             $params['embalagem'] = $reservaProduto->getProdutoEmbalagem();
             $params['observacoes'] = $observacoes;
             $params['unitizador'] = $unitizadorEn;
+            $params['dthEntrada'] = $dthEntrada;
             $params['os'] = $osEn;
             $params['uma'] = $idUma;
             $params['usuario'] = $usuarioEn;
