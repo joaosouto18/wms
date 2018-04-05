@@ -55,6 +55,7 @@
     }
 
 </style>
+<input type="hidden" id="qtdFuncMapa" value="<?php echo $this->qtdFuncMapa?>" />
 <script>
     $( window ).load(function() {
         // Run code
@@ -240,7 +241,7 @@
                 if ($(this).val() != "") {
                     var inptConferente = $('#mapas-salvarMapa');
                     if (inptConferente) {
-                        inptConferente.focus();
+                        inptConferente.click();
                         if (event.preventDefault) {
                             event.preventDefault();
                         } else {
@@ -289,6 +290,9 @@
                         }
                         result.pessoa = data.pessoa;
                         addRow(result);
+                        if($("#qtdFuncMapa").val() == $("[value='"+result.mapa+"']").size()){
+                            $('.save').click();
+                        }
                     } else if (data.result = 'Error') {
                         alert(data.msg);
                     }
@@ -511,7 +515,9 @@
             tr.append($('<td>').text(pessoa));
             tr.append($('<td class="identifica">').text(cpf));
             if(tipo == 'Mapa') {
-                tr.append($('<td class="mapa">').text(mapa));
+                tr.append($('<td class="mapa">').text(mapa).append(
+                    '<input type="hidden" class="valor-mapa" value="'+mapa+'" />'
+                ));
             }
             tr.append($('<td class="intervalo">').text(intervalo));
             tr.append($('<td>').text(total));

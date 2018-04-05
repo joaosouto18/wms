@@ -407,6 +407,7 @@ class Expedicao_IndexController extends Action {
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
         /** @var \Wms\Domain\Entity\Expedicao\EquipeSeparacaoRepository $equipeSeparacaoRepo */
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        $this->view->qtdFuncMapa = $this->getSystemParameterValue('MAX_PRODUTIVIDADE_MAPA');
         $numFunc = $equipeSeparacaoRepo->findBy(array(),array('id'=>'DESC'));
         if(empty($numFunc)){
             $func = 1;
