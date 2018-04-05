@@ -1437,7 +1437,7 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
-                $result = $this->validaConferenciaERP($expedicaoEn->getId());
+                $result  = $this->validaConferenciaERP($expedicaoEn->getId());
                 if (is_string($result)) {
                     return $result;
                 }

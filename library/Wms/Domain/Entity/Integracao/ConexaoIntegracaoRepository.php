@@ -20,6 +20,8 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 return self::mysqlQuery($query, $conexao);
             case ConexaoIntegracao::PROVEDOR_MSSQL:
                 return self::mssqlQuery($query, $conexao);
+            case ConexaoIntegracao::PROVEDOR_FIREBIRD:
+                return self::firebirdQuery($query, $conexao);
 
             default:
                 throw new \Exception("Provedor não específicado");
@@ -157,6 +159,72 @@ class ConexaoIntegracaoRepository extends EntityRepository {
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
+    }
+
+    private function firebirdQuery($query, $conexao)
+    {
+        try {
+            ini_set('memory_limit', '-1');
+            $usuario = $conexao->getUsuario();
+            $senha = $conexao->getSenha();
+            $servidor = $conexao->getServidor();
+            $porta = $conexao->getPorta();
+            $sid = $conexao->getDbName();
+
+            $connectionString = "$servidor/$porta:$sid";
+            $conexao = \ibase_connect($connectionString,$usuario,$senha);
+
+            var_dump($conexao); exit;
+
+
+            $resultado = ibase_query($conexao, $query);
+
+            ibase_close($conexao);
+
+
+
+
+            if (!$conexao) {
+                $erro = oci_error();
+                throw new \Exception($erro['message']);
+            }
+
+            $res = oci_parse($conexao, $query) or die("erro");
+            if (!$res) {
+                $erro = oci_error($conexao);
+                oci_close($conexao);
+                throw new \Exception($erro['message']);
+            }
+
+            $e = oci_execute($res);
+            if (!$e) {
+                $erro = oci_error($res);
+                oci_free_statement($res);
+                oci_close($conexao);
+                throw new \Exception($erro['message']);
+            }
+
+            $arrayResult = array();
+            if ($update == false) {
+                oci_fetch_all($res, $result);
+
+                foreach ($result[key($result)] as $rowId => $row) {
+                    $newLine = array();
+                    foreach ($result as $columnId => $column) {
+                        $newLine[$columnId] = $result[$columnId][$rowId];
+                    }
+                    $arrayResult[] = $newLine;
+                }
+            }
+
+            //fecha a conexão atual
+            oci_free_statement($res);
+            oci_close($conexao);
+            return $arrayResult;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
     }
 
 }
