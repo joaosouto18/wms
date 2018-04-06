@@ -171,11 +171,11 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $porta = $conexao->getPorta();
             $sid = $conexao->getDbName();
 
-            //$connectionString = "$servidor/$porta:$sid";
-            $connectionString = "Driver={Firebird/InterBase(r) driver};Server=$servidor;Database=$sid";
+            $connectionString = "$servidor:$sid";
+            //$connectionString = "Driver={Firebird/InterBase(r) driver};Server=$servidor;Database=$sid";
 
             //var_dump($connectionString); exit;
-            $coonexao = odbc_connect($connectionString, $usuario, $senha);
+            $coonexao = ibase_connect($connectionString, $usuario, $senha);
             var_dump($coonexao); exit;
 
             if (!($dbh=ibase_connect($connectionString, $usuario, $senha)))
