@@ -176,7 +176,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $pdoConnection = "firebird:dbname=$connectionString";
 
             //var_dump($connectionString); exit;
-            $coonexao = new PDO($pdoConnection, $usuario, $senha);
+            $coonexao = new \PDO($pdoConnection, $usuario, $senha);
             var_dump($coonexao); exit;
 
             if (!($dbh=ibase_connect($connectionString, $usuario, $senha)))
