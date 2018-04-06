@@ -171,7 +171,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $porta = $conexao->getPorta();
             $sid = $conexao->getDbName();
 
-            $connectionString = "$servidor/$porta:/$sid";
+            $connectionString = "$servidor/$porta:$sid";
 
             //var_dump($connectionString); exit;
             $coonexao = ibase_connect($connectionString, $usuario, $senha);
