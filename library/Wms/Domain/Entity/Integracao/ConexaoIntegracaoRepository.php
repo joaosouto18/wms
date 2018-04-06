@@ -173,7 +173,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $connectionString = "$servidor:$porta:/$sid.gdb";
 
-            var_dump($connectionString); exit;
+            //var_dump($connectionString); exit;
             $coonexao = ibase_connect($connectionString, $usuario, $senha);
             var_dump($coonexao); exit;
 
