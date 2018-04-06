@@ -175,7 +175,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             //$connectionString = "Driver={Firebird/InterBase(r) driver};Server=$servidor;Database=$sid";
             $pdoConnection = "firebird:dbname=$connectionString";
 
-            //var_dump($connectionString); exit;
+            var_dump($connectionString); exit;
             $conexao = new \PDO($pdoConnection, $usuario, $senha);
             var_dump($conexao);
             exit;
