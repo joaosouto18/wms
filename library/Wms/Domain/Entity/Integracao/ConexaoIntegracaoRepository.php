@@ -175,7 +175,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
 
 
-            if (!($dbh=ibase_connect($connectionString, 'SYSDBA', 'masterkey')))
+            if (!($dbh=ibase_pconnect($connectionString, 'SYSDBA', 'masterkey')))
                 die('Erro ao conectar: ' . ibase_errmsg());
 
 
