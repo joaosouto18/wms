@@ -174,6 +174,8 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $connectionString = "$servidor/$porta:$sid";
 
 
+            $coonexao = ibase_connect($connectionString, $usuario, $senha);
+            var_dump($coonexao); exit;
 
             if (!($dbh=ibase_connect($connectionString, $usuario, $senha)))
                 die('Erro ao conectar: ' . ibase_errmsg());
