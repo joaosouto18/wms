@@ -173,9 +173,10 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $connectionString = "$servidor:$sid";
             //$connectionString = "Driver={Firebird/InterBase(r) driver};Server=$servidor;Database=$sid";
+            $pdoConnection = "firebird:dbname=$connectionString";
 
             //var_dump($connectionString); exit;
-            $coonexao = ibase_connect($connectionString, $usuario, $senha);
+            $coonexao = new PDO($pdoConnection, $usuario, $senha);
             var_dump($coonexao); exit;
 
             if (!($dbh=ibase_connect($connectionString, $usuario, $senha)))
