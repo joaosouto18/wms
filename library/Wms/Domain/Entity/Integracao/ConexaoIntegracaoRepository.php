@@ -173,8 +173,10 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $connectionString = "hostname:192.168.0.103/3050:lojas";
 
-            if (!($dbh=ibase_connect($connectionString, $usuario, $senha)))
-                die('Erro ao conectar: ' . ibase_errmsg());
+            $abc = ibase_query("CONNECT 192.168.0.103/3050:lojas user 'WMSINTEGRA' password '1MP3R1um'");
+            var_dump($abc); exit;
+//            if (!($dbh=ibase_connect($connectionString, $usuario, $senha)))
+//                die('Erro ao conectar: ' . ibase_errmsg());
 
 
 //
