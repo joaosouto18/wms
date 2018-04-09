@@ -654,7 +654,7 @@ class PedidoRepository extends EntityRepository
             ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
             ->innerJoin('p.carga', 'c')
             ->innerJoin('c.expedicao', 'e')
-            ->where("e.id = $idExpedicao")
+            ->where("e.id = $idExpedicao and pp.quantidade > pp.qtdCortada")
             ->groupBy('p.id, pe.nome, i.descricao')
             ->orderBy('pe.nome', 'asc');
 
