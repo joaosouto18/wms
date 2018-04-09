@@ -171,7 +171,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $porta = $conexao->getPorta();
             $sid = $conexao->getDbName();
 
-            $connectionString = "CONNECT 192.168.0.103/3050:lojas";
+            $connectionString = "//hostname/192.168.0.103/3050:lojas";
 
 //            $abc = ibase_query("CONNECT 192.168.0.103/3050:lojas user 'WMSINTEGRA' password '1MP3R1um'");
 //            var_dump($abc); exit;
