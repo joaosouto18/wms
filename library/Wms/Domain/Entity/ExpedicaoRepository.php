@@ -114,6 +114,7 @@ class ExpedicaoRepository extends EntityRepository {
                       P.COD_PESSOA AS COD_CLIENTE,
                       PESS.NOM_PESSOA,
                       CL.COD_PRACA,
+                      CL.COD_ROTA,
                       PP.COD_PEDIDO_PRODUTO,
                       PP.COD_PRODUTO,
                       PP.DSC_GRADE,
@@ -460,133 +461,35 @@ class ExpedicaoRepository extends EntityRepository {
      */
     private function prepareArrayRessup($arrItens, $quebraPulmaoDoca = Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA, $dadosProdutos, $repositorios)
     {
-        switch ($quebraPulmaoDoca) {
-            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO:
-                return self::getArraysByQuebraPulmaoDocaExpedicao($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
-            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CARGA:
-                return self::getArraysByQuebraPulmaoDocaCarga($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
-            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA:
-                return self::getArraysByQuebraPulmaoDocaPraca($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
-            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE:
-                return self::getArraysByQuebraPulmaoDocaCliente($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
-            default:
-                return self::getArraysSaidaPadrao($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
+        $args = [
+            Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO => "COD_EXPEDICAO",
+            Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CARGA => "COD_CARGA",
+            Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_ROTA => "COD_ROTA",
+            Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA => "COD_PRACA",
+            Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE => "COD_CLIENTE"
+        ];
+
+        if ($quebraPulmaoDoca != Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA) {
+            return self::getArraysByCriterio($quebraPulmaoDoca, $arrItens, $args[$quebraPulmaoDoca], $dadosProdutos, $repositorios);
+        } else {
+            return self::getArraysSaidaPadrao($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
         }
     }
 
-    private function getArraysByQuebraPulmaoDocaExpedicao($quebra, $arrItens, $dadosProdutos, $repositorios)
+    private function getArraysByCriterio($quebra, $arrItens, $strCriterio, $dadosProdutos, $repositorios)
     {
         $sumQtdItemExpedicao = array();
         foreach($arrItens as $itemPedido) {
             $codProduto = $itemPedido['COD_PRODUTO'];
             $grade = $itemPedido['DSC_GRADE'];
             $idExpedicao = $itemPedido['COD_EXPEDICAO'];
-            $codCriterio = $itemPedido['COD_EXPEDICAO'];
-            $idPedido = $itemPedido['COD_PEDIDO'];
-
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
-        }
-
-        $itensReservar = array();
-        $arrEstoqueReservado = array();
-
-        foreach ($sumQtdItemExpedicao as $expedicao => $criterio) {
-            foreach ($criterio as $codCriterio => $produtoArr) {
-                foreach ($produtoArr as $codProduto => $gradeArr) {
-                    foreach ($gradeArr as $grade => $pedidos) {
-                        /** @var Produto $produtoEn */
-                        $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-                        list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $codCriterio, $pedidos, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
-                    }
-                }
-            }
-        }
-
-        return $itensReservar;
-    }
-
-    private function getArraysByQuebraPulmaoDocaCarga($quebra, $arrItens, $dadosProdutos, $repositorios)
-    {
-        $sumQtdItemExpedicao = array();
-        foreach($arrItens as $itemPedido) {
-            $codProduto = $itemPedido['COD_PRODUTO'];
-            $grade = $itemPedido['DSC_GRADE'];
-            $idExpedicao = $itemPedido['COD_EXPEDICAO'];
-            $codCriterio = $itemPedido['COD_CARGA'];
-            $idPedido = $itemPedido['COD_PEDIDO'];
-
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
-        }
-
-        $itensReservar = array();
-        $arrEstoqueReservado = array();
-
-        foreach ($sumQtdItemExpedicao as $expedicao => $criterio) {
-            foreach ($criterio as $codCriterio => $produtoArr) {
-                foreach ($produtoArr as $codProduto => $gradeArr) {
-                    foreach ($gradeArr as $grade => $pedidos) {
-                        /** @var Produto $produtoEn */
-                        $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-                        list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $codCriterio, $pedidos, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
-                    }
-                }
-            }
-        }
-
-        return $itensReservar;
-    }
-
-    /**
-     * @param $quebra
-     * @param $arrItens
-     * @param $dadosProdutos
-     * @param $repositorios
-     * @return array|mixed
-     * @throws \Exception
-     */
-    private function getArraysByQuebraPulmaoDocaPraca($quebra, $arrItens, $dadosProdutos, $repositorios)
-    {
-        $sumQtdItemExpedicao = array();
-        foreach($arrItens as $itemPedido) {
-            $codProduto = $itemPedido['COD_PRODUTO'];
-            $grade = $itemPedido['DSC_GRADE'];
-            $idExpedicao = $itemPedido['COD_EXPEDICAO'];
-            $codCriterio = $itemPedido['COD_PRACA'];
+            $codCriterio = $itemPedido[$strCriterio];
             if (empty($codCriterio)) {
-                throw new \Exception("O cliente $itemPedido[NOM_PESSOA] não tem PRAÇA cadastra, 
-                por isso não pode ser separado nesta quebra de pulmão doca na expedição $idExpedicao");
+                $campo = explode($strCriterio)[1];
+                throw new \Exception("O cliente $itemPedido[NOM_PESSOA] não tem $campo cadastrado(a), 
+                por isso não pode ser agrupado nesta quebra de pulmão doca na expedição $idExpedicao");
             }
-            $idPedido = $itemPedido['COD_PEDIDO'];
 
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
-        }
-
-        $itensReservar = array();
-        $arrEstoqueReservado = array();
-
-        foreach ($sumQtdItemExpedicao as $expedicao => $criterio) {
-            foreach ($criterio as $codCriterio => $produtoArr) {
-                foreach ($produtoArr as $codProduto => $gradeArr) {
-                    foreach ($gradeArr as $grade => $pedidos) {
-                        /** @var Produto $produtoEn */
-                        $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-                        list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $codCriterio, $pedidos, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
-                    }
-                }
-            }
-        }
-
-        return $itensReservar;
-    }
-
-    private function getArraysByQuebraPulmaoDocaCliente($quebra, $arrItens, $dadosProdutos, $repositorios)
-    {
-        $sumQtdItemExpedicao = array();
-        foreach($arrItens as $itemPedido) {
-            $codProduto = $itemPedido['COD_PRODUTO'];
-            $grade = $itemPedido['DSC_GRADE'];
-            $idExpedicao = $itemPedido['COD_EXPEDICAO'];
-            $codCriterio = $itemPedido['COD_CLIENTE'];
             $idPedido = $itemPedido['COD_PEDIDO'];
 
             $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
