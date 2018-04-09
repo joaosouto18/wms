@@ -1650,17 +1650,20 @@ class ExpedicaoRepository extends EntityRepository {
         $statusFinalizado = Expedicao::STATUS_FINALIZADO;
         $statusCancelada = Expedicao::STATUS_CANCELADO;
         $SQLOrder = " ORDER BY E.COD_EXPEDICAO ";
+        $idModeloDefault = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
 
         $Query = "SELECT DISTINCT E.COD_EXPEDICAO,
                                   TO_CHAR(E.DTH_INICIO,'DD/MM/YYYY') as DTH_INICIO,
                                   '' as ITINERARIO,
                                   '' as CARGA,
                                   S.DSC_SIGLA as STATUS,
-                                  E.DSC_PLACA_EXPEDICAO as PLACA
+                                  E.DSC_PLACA_EXPEDICAO as PLACA,
+                                  MS.COD_MODELO_SEPARACAO || ' - ' || MS.DSC_MODELO_SEPARACAO as MODELO
                     FROM PEDIDO P
                     LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                     LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                     LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+                    LEFT JOIN MODELO_SEPARACAO MS ON (MS.COD_MODELO_SEPARACAO = E.COD_MODELO_SEPARACAO) OR (MS.COD_MODELO_SEPARACAO = $idModeloDefault AND E.COD_MODELO_SEPARACAO IS NULL)
                    WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                    AND E.COD_STATUS <> $statusFinalizado
                    AND E.COD_STATUS <> $statusCancelada
