@@ -115,8 +115,6 @@ class EtiquetaSeparacao extends Pdf
 
     public function imprimir(array $params = array(), $modelo)
     {
-        var_dump($modelo);
-        var_dump($params); exit;
         $this->modelo = $modelo;
         $this->total= "";
 
@@ -336,6 +334,7 @@ class EtiquetaSeparacao extends Pdf
         $strReimpressao = "";
         if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
 
+        var_dump($etiqueta);exit;
         $this->AddPage();
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
