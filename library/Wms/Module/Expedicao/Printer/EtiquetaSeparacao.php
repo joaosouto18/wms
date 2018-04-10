@@ -378,7 +378,6 @@ class EtiquetaSeparacao extends Pdf
                     $this->SetFont('Arial', 'B', 20);
                     $this->MultiCell(100, 6.5, "                    REENTREGA", 0, 'L');
                 }
-                var_dump($impressao); exit;
                 break;
         }
     }
