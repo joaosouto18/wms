@@ -340,7 +340,6 @@ class EtiquetaSeparacao extends Pdf
         $this->strReimpressao = $strReimpressao;
         $this->SetFont('Arial', 'B', 11);
 
-        var_dump($etiqueta['tipoCarga']);exit;
         switch ( $etiqueta['tipoCarga'] ) {
 
             case 'TRANSBORDO' :
@@ -370,6 +369,7 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= substr(trim($etiqueta['produto']),0,37)."\n";
                 $impressao .= substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";
                 $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - ". utf8_decode($etiqueta['tipoComercializacao'])."\n";
+                var_dump($impressao); exit;
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
                 if ($reentrega == false) {
                     $impressao = utf8_decode("$etiqueta[endereco]\n");
