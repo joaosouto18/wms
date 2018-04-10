@@ -157,9 +157,9 @@ class EtiquetaSeparacao extends Pdf
             $this->etqMae = false;
             $this->layoutEtiqueta($etiqueta,count($etiquetas),false,$modelo);
         }
+        var_dump('teste');exit;
         $this->Output('Etiquetas-expedicao-'.$idExpedicao.'-'.$centralEntregaPedido.'.pdf','D');
 
-        var_dump('teste');exit;
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo      = $em->getRepository('wms:Expedicao');
         /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
