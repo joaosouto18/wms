@@ -187,6 +187,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
 //
             ibase_close($conexao);
+            return $resultado;
 
 
 
