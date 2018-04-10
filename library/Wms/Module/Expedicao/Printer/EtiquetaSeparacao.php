@@ -334,13 +334,13 @@ class EtiquetaSeparacao extends Pdf
         $strReimpressao = "";
         if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
 
-        var_dump($etiqueta);exit;
         $this->AddPage();
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;
         $this->SetFont('Arial', 'B', 11);
 
+        var_dump($etiqueta);exit;
         switch ( $etiqueta['tipoCarga'] ) {
 
             case 'TRANSBORDO' :
