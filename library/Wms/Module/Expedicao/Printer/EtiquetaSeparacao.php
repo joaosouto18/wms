@@ -159,6 +159,7 @@ class EtiquetaSeparacao extends Pdf
         }
         $this->Output('Etiquetas-expedicao-'.$idExpedicao.'-'.$centralEntregaPedido.'.pdf','D');
 
+        var_dump('teste');exit;
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo      = $em->getRepository('wms:Expedicao');
         /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
@@ -340,7 +341,6 @@ class EtiquetaSeparacao extends Pdf
         $this->strReimpressao = $strReimpressao;
         $this->SetFont('Arial', 'B', 11);
 
-        var_dump($etiqueta);exit;
         switch ( $etiqueta['tipoCarga'] ) {
 
             case 'TRANSBORDO' :
