@@ -115,6 +115,8 @@ class EtiquetaSeparacao extends Pdf
 
     public function imprimir(array $params = array(), $modelo)
     {
+        var_dump($modelo);
+        var_dump($params); exit;
         $this->modelo = $modelo;
         $this->total= "";
 
