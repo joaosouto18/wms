@@ -175,7 +175,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             if (!($conexao = ibase_connect($connectionString, $usuario, $senha))) {
 //                ibase_close($conexao);
-//                throw new \Exception(ibase_errmsg());
+                throw new \Exception(ibase_errmsg());
             }
 
             $resultado = ibase_query($conexao, $query);
