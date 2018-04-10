@@ -157,7 +157,6 @@ class EtiquetaSeparacao extends Pdf
             $this->etqMae = false;
             $this->layoutEtiqueta($etiqueta,count($etiquetas),false,$modelo);
         }
-        var_dump('teste');exit;
         $this->Output('Etiquetas-expedicao-'.$idExpedicao.'-'.$centralEntregaPedido.'.pdf','D');
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
@@ -381,6 +380,7 @@ class EtiquetaSeparacao extends Pdf
                 }
                 break;
         }
+        var_dump('teste');exit;
     }
 
     protected function layoutModelo3($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
