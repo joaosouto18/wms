@@ -180,6 +180,7 @@ class Expedicao_EtiquetaController  extends Action
         }
         $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
 
+        var_dump($tipo); exit;
         if ($tipo == "mapa") {
             if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idMapa) > 0) {
                 $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
