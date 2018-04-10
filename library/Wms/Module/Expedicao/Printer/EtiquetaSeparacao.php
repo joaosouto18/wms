@@ -340,6 +340,7 @@ class EtiquetaSeparacao extends Pdf
         $this->strReimpressao = $strReimpressao;
         $this->SetFont('Arial', 'B', 11);
 
+        var_dump($etiqueta['tipoCarga']);exit;
         switch ( $etiqueta['tipoCarga'] ) {
 
             case 'TRANSBORDO' :
@@ -380,7 +381,6 @@ class EtiquetaSeparacao extends Pdf
                 }
                 break;
         }
-        var_dump('teste');exit;
     }
 
     protected function layoutModelo3($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
