@@ -184,8 +184,10 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
 
             $resultado = ibase_query($conexao, $query);
+
 //
             ibase_close($conexao);
+            var_dump($resultado);
 
 
 
