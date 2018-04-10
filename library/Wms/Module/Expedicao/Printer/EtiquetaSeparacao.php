@@ -370,7 +370,6 @@ class EtiquetaSeparacao extends Pdf
                 $impressao .= substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";
                 $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - ". utf8_decode($etiqueta['tipoComercializacao'])."\n";
                 $this->MultiCell(100, 3.9, $impressao, 0, 'L');
-                var_dump($impressao); exit;
                 if ($reentrega == false) {
                     $impressao = utf8_decode("$etiqueta[endereco]\n");
                     $this->MultiCell(100, 3.9, $impressao, 0, 'L');
@@ -379,6 +378,7 @@ class EtiquetaSeparacao extends Pdf
                     $this->SetFont('Arial', 'B', 20);
                     $this->MultiCell(100, 6.5, "                    REENTREGA", 0, 'L');
                 }
+                var_dump($impressao); exit;
                 break;
         }
     }
