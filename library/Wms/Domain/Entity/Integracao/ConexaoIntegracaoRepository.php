@@ -171,14 +171,12 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $porta = $conexao->getPorta();
             $sid = $conexao->getDbName();
 
-            $connectionString = "192.168.0.103/3050:lojas";
+            $connectionString = "$servidor/$porta:$sid";
 
-            $conexao = ibase_connect($connectionString, 'WMSINTEGRA', '1MP3R1um');
-            var_dump('abc');
-            var_dump($conexao); exit;
+            $conexao = ibase_connect($connectionString, $usuario, $senha);
             if (!($conexao)) {
                 ibase_close($conexao);
-//                throw new \Exception(ibase_errmsg());
+                throw new \Exception(ibase_errmsg());
             }
 
             $resultado = ibase_query($conexao, $query);
