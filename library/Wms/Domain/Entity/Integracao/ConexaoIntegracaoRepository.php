@@ -174,6 +174,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $connectionString = "192.168.0.103/3050:lojas";
 
             $conexao = ibase_connect($connectionString, 'WMSINTEGRA', '1MP3R1um');
+            var_dump('abc');
             var_dump($conexao); exit;
             if (!($conexao)) {
                 ibase_close($conexao);
