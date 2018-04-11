@@ -179,7 +179,6 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 throw new \Exception(ibase_errmsg());
             }
 
-            var_dump($query); exit;
             $resultado = ibase_query($conexao, $query);
 
             ibase_close($conexao);
