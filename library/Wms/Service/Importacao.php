@@ -744,8 +744,11 @@ class Importacao
             $parametroRepo = $repositorios['parametroRepo'];
             /** @var Parametro $parametro */
             $parametro = $parametroRepo->findOneBy(array('constante' => 'INTEGRACAO_CODIGO_BARRAS_BANCO'));
-            if (empty($parametro))
-                throw new \Exception("Parametro 'INTEGRACAO_CODIGO_BARRAS_BANCO' não encontrado no banco!");
+            if (empty($parametro)) throw new \Exception("Parametro 'INTEGRACAO_CODIGO_BARRAS_BANCO' não encontrado no banco!");
+
+            $parametroPeso = $parametroRepo->findOneBy(array('constante' => 'INTEGRA_PESO'));
+            if (empty($parametroPeso)) throw new \Exception("Parametro 'INTEGRA_PESO' não encontrado no banco!");
+
 
             //VERIFICA SE VAI RECEBER AS EMBALAGENS OU NÃO
             if ($parametro->getValor() == 'S') {
@@ -783,24 +786,42 @@ class Importacao
                         $endPicking = $embalagemCadastrada->getEndereco()->getDescricao();
                     }
 
-                    $embalagemArray = array(
-                        'acao'=> 'alterar',
-                        'quantidade' => $fator ,
-                        'id' =>$embalagemCadastrada->getId(),
-                        'endereco' => $endPicking,
-                        'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
-                        'CBInterno' => $embalagemCadastrada->getCBInterno(),
-                        'embalado' => $embalagemCadastrada->getEmbalado(),
-                        'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
-                        'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
-                        'descricao' => $descricaoEmbalagem,
-                        'isEmbExpDefault' => $embalagemCadastrada->isEmbExpDefault(),
-                        'largura'=> $larguraEmbalagem,
-                        'altura'=> $alturaEmbalagem,
-                        'profundidade'=> $profundidadeEmbalagem,
-                        'peso'=> $pesoEmbalagem,
-                        'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
-                    );
+                    if ($parametroPeso->getValor() == 'S') {
+                        $embalagemArray = array(
+                            'acao'=> 'alterar',
+                            'quantidade' => $fator ,
+                            'id' =>$embalagemCadastrada->getId(),
+                            'endereco' => $endPicking,
+                            'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
+                            'CBInterno' => $embalagemCadastrada->getCBInterno(),
+                            'embalado' => $embalagemCadastrada->getEmbalado(),
+                            'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
+                            'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
+                            'descricao' => $descricaoEmbalagem,
+                            'isEmbExpDefault' => $embalagemCadastrada->isEmbExpDefault(),
+                            'largura'=> $larguraEmbalagem,
+                            'altura'=> $alturaEmbalagem,
+                            'profundidade'=> $profundidadeEmbalagem,
+                            'peso'=> $pesoEmbalagem,
+                            'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
+                        );
+                    } else {
+                        $embalagemArray = array(
+                            'acao'=> 'alterar',
+                            'quantidade' => $fator ,
+                            'id' =>$embalagemCadastrada->getId(),
+                            'endereco' => $endPicking,
+                            'codigoBarras' => $embalagemCadastrada->getCodigoBarras(),
+                            'CBInterno' => $embalagemCadastrada->getCBInterno(),
+                            'embalado' => $embalagemCadastrada->getEmbalado(),
+                            'capacidadePicking' =>$embalagemCadastrada->getCapacidadePicking(),
+                            'pontoReposicao' =>$embalagemCadastrada->getPontoReposicao(),
+                            'descricao' => $descricaoEmbalagem,
+                            'isEmbExpDefault' => $embalagemCadastrada->isEmbExpDefault(),
+                            'isEmbFracionavelDefault' => $embalagemCadastrada->isEmbFracionavelDefault()
+                        );
+                    }
+
 
                     if ($encontrouEmbalagem == false) {
                         $parametroEmbalagensInativas = $parametroRepo->findOneBy(array('constante' => 'INATIVA_EMBALAGENS_INEXISTENTES_ERP'));
@@ -833,21 +854,44 @@ class Importacao
 
                     if ($encontrouEmbalagem == false) {
 
-                        $embalagemArray = array (
-                            'acao' => 'incluir',
-                            'descricao' => $embalagemWs->descricao,
-                            'quantidade' => $embalagemWs->qtdEmbalagem,
-                            'isPadrao' => 'N',
-                            'CBInterno' => 'N',
-                            'imprimirCB' => 'N',
-                            'codigoBarras' => $embalagemWs->codBarras,
-                            'embalado' => 'N',
-                            'capacidadePicking' => 0,
-                            'pontoReposicao' => 0,
-                            'endereco' => null,
-                            'isEmbExpDefault' => 'N',
-                            'isEmbFracionavelDefault' => 'N'
-                        );
+                        if ($parametroPeso->getValor() == 'S') {
+                            $embalagemArray = array (
+                                'acao' => 'incluir',
+                                'descricao' => $embalagemWs->descricao,
+                                'quantidade' => $embalagemWs->qtdEmbalagem,
+                                'isPadrao' => 'N',
+                                'CBInterno' => 'N',
+                                'imprimirCB' => 'N',
+                                'codigoBarras' => $embalagemWs->codBarras,
+                                'embalado' => 'N',
+                                'capacidadePicking' => 0,
+                                'pontoReposicao' => 0,
+                                'endereco' => null,
+                                'largura'=> $larguraEmbalagem,
+                                'altura'=> $alturaEmbalagem,
+                                'profundidade'=> $profundidadeEmbalagem,
+                                'peso'=> $pesoEmbalagem,
+                                'isEmbExpDefault' => 'N',
+                                'isEmbFracionavelDefault' => 'N'
+                            );
+                        } else {
+                            $embalagemArray = array (
+                                'acao' => 'incluir',
+                                'descricao' => $embalagemWs->descricao,
+                                'quantidade' => $embalagemWs->qtdEmbalagem,
+                                'isPadrao' => 'N',
+                                'CBInterno' => 'N',
+                                'imprimirCB' => 'N',
+                                'codigoBarras' => $embalagemWs->codBarras,
+                                'embalado' => 'N',
+                                'capacidadePicking' => 0,
+                                'pontoReposicao' => 0,
+                                'endereco' => null,
+                                'isEmbExpDefault' => 'N',
+                                'isEmbFracionavelDefault' => 'N'
+                            );
+
+                        }
                         $embalagensArray[] = $embalagemArray;
                     }
                 }
