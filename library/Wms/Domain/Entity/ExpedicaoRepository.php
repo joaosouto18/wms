@@ -2115,7 +2115,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         $WherePedido = "";
         if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
-            $sql = " SELECT DISTINCT COD_EXPEDICAO FROM CARGA C LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA WHERE P.COD_PEDIDO = '".$parametros['pedido'] . "'";
+            $sql = " SELECT DISTINCT COD_EXPEDICAO FROM CARGA C LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA WHERE P.COD_EXTERNO = '".$parametros['pedido'] . "'";
             $exp = \Wms\Domain\EntityRepository::nativeQuery($sql);
 
             $arr = array();
@@ -3442,7 +3442,7 @@ class ExpedicaoRepository extends EntityRepository {
     public function getPedidosByParams($parametros, $idDepositoLogado = null) {
 
         $where = "";
-        $orderBy = " ORDER BY P.COD_PEDIDO";
+        $orderBy = " ORDER BY P.COD_EXTERNO";
         if (isset($idDepositoLogado)) {
             $where .= ' AND P.CENTRAL_ENTREGA = ' . $idDepositoLogado;
         }
@@ -3480,15 +3480,20 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
-            $where = " AND P.COD_PEDIDO = '" . $parametros['pedido'] . "'";
+            $where = " AND P.COD_EXTERNO = '" . $parametros['pedido'] . "'";
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
             $where = " AND C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
         }
-
         $SQL = "
-        SELECT P.COD_PEDIDO,
+        SELECT
+                CASE WHEN NUM_SEQUENCIAL > 1 
+                  THEN 
+                    P.COD_EXTERNO || ' - ' || NVL(NUM_SEQUENCIAL, '')
+                  ELSE 
+                    P.COD_EXTERNO
+                END as COD_PEDIDO,
                CLI.COD_CLIENTE_EXTERNO as COD_CLIENTE,
                PES.NOM_PESSOA as CLIENTE,
                E.COD_EXPEDICAO,

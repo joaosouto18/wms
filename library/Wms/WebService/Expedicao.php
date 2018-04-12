@@ -478,7 +478,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         try {
             $this->_em->beginTransaction();
-
+            $idPedido = $pedidoRepository->getMaxCodPedidoByCodExterno($idPedido);
             $ppCortados = array();
             foreach ($produtosCortados as $corte) {
                 $grade = ($parametroEntity->getValor() == 'N') ? 'UNICA' : trim($corte->grade);

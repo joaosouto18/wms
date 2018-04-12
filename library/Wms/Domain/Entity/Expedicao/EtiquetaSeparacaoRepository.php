@@ -307,11 +307,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('etq.id, es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
+            ->select('etq.id, p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.linhaSeparacao, ' . $origemEstoque . ' es.codExpedicao,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, etq.codEtiquetaMae,
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia, 
-                    p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao
+                    p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial
                 ')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
@@ -368,8 +368,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             default:
                 $dql->orderBy("es.codBarras");
         }
-
-        return $dql->getQuery()->getResult();
+        $result = $dql->getQuery()->getResult();
+        foreach ($result as $key => $value){
+            if(!empty($value['numSequencial']) && $value['numSequencial'] > 1){
+                $result[$key]['codEntrega'] = $value['codEntrega'].' - '.$value['numSequencial'];
+            }
+        }
+        return $result;
 
     }
 
@@ -451,10 +456,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function getEtiquetaById($id)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select(' es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
+            ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codBarrasProduto, c.sequencia, p.id pedido,
-					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida
+					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, p.numSequencial
                 ')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
@@ -464,7 +469,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->where('es.codBarras = :id')
             ->setParameter('id', $id);
 
-        return $dql->getQuery()->getSingleResult();
+
+        $result = $dql->getQuery()->getSingleResult();
+        if(!empty($result['numSequencial']) && $result['numSequencial'] > 1){
+            $result['codEntrega'] = $result['codEntrega'].' - '.$result['numSequencial'];
+        }
+        return $result;
 
     }
 
@@ -3062,7 +3072,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                PROD.DSC_PRODUTO PRODUTO,
                NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as VOLUME,
                PES.NOM_PESSOA as CLIENTE,
-               P.COD_PEDIDO as PEDIDO,
+               P.COD_EXTERNO as PEDIDO,
                C.COD_CARGA_EXTERNO AS CARGA,
                CA.COD_CARGA_EXTERNO AS CARGA_ANTIGA
          FROM REENTREGA R
@@ -3103,7 +3113,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                    PROD.DSC_GRADE,
                    PE.DSC_EMBALAGEM, PV.DSC_VOLUME,
                    PES.NOM_PESSOA,
-                   P.COD_PEDIDO,
+                   P.COD_EXTERNO,
                    C.COD_CARGA_EXTERNO,
                    ESR.COD_ES_REENTREGA,
                    CA.COD_CARGA_EXTERNO";

@@ -10,10 +10,22 @@ use Wms\Domain\Entity\Pessoa\Papel\Cliente;
 class Pedido
 {
     /**
+     * @GeneratedValue(strategy="SEQUENCE")
+     * @SequenceGenerator(sequenceName="SQ_PEDIDO_01", allocationSize=1, initialValue=10000000000)
      * @Column(name="COD_PEDIDO", type="string", nullable=false)
      * @Id
      */
     protected $id;
+
+    /**
+     * @Column(name="COD_EXTERNO", type="string", nullable=false)
+     */
+    protected $codExterno;
+
+    /**
+     * @Column(name="NUM_SEQUENCIAL", type="integer", nullable=false)
+     */
+    protected $numSequencial;
 
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
@@ -143,6 +155,50 @@ class Pedido
     public function setId($id)
     {
         $this->id = $id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodExterno()
+    {
+        return $this->codExterno;
+    }
+
+    /**
+     * @param mixed $codExterno
+     */
+    public function setCodExterno($codExterno)
+    {
+        $this->codExterno = $codExterno;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNumSequencial()
+    {
+        return $this->numSequencial;
+    }
+
+    /**
+     * @param mixed $numSequencial
+     */
+    public function setNumSequencial($numSequencial)
+    {
+        $this->numSequencial = $numSequencial;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPedido()
+    {
+        if(!empty($this->numSequencial)) {
+            return $this->codExterno . ' - ' . $this->numSequencial;
+        }else{
+            return $this->codExterno;
+        }
     }
 
     public function setItinerario($itinerario)

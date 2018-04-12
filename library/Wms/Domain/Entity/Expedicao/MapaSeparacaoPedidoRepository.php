@@ -11,7 +11,7 @@ class MapaSeparacaoPedidoRepository extends EntityRepository
     public function getPedidosByMapa($idMapa,$codProduto,$grade)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id, pe.nome cliente, NVL(i.descricao,\'PADRAO\') as itinerario')
+            ->select('p.codExterno as id, pe.nome cliente, NVL(i.descricao,\'PADRAO\') as itinerario, p.numSequencial')
             ->from('wms:Expedicao\MapaSeparacaoPedido', 'mps')
             ->innerJoin('mps.pedidoProduto','pp')
             ->innerJoin('wms:Expedicao\Pedido','p', 'WITH','p.id = pp.pedido')
@@ -19,13 +19,19 @@ class MapaSeparacaoPedidoRepository extends EntityRepository
             ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
             ->setParameter('mapa',$idMapa)
             ->where('mps.mapaSeparacao = :mapa')
-            ->groupBy('p.id, pe.nome, i.descricao')
+            ->groupBy('p.codExterno, pe.nome, i.descricao, p.numSequencial')
             ->orderBy('pe.nome', 'asc');
 
         if (isset($codProduto) && !empty($codProduto)) {
             $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
         }
 
+        $result = $sql->getQuery()->getResult();
+        foreach ($result as $key => $value){
+            if(!empty($value['numSequencial']) && $value['numSequencial'] > 1){
+                $result[$key]['id'] = $value['id'].' - '.$value['numSequencial'];
+            }
+        }
         return $sql->getQuery()->getResult();
     }
 

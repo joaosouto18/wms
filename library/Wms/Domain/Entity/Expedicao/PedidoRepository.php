@@ -647,7 +647,7 @@ class PedidoRepository extends EntityRepository
     public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA')
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id, pe.nome cliente, NVL(i.descricao,\'PADRAO\') as itinerario')
+            ->select('p.codExterno as id, pe.nome cliente, NVL(i.descricao,\'PADRAO\') as itinerario, p.numSequencial')
             ->from('wms:Expedicao\Pedido', 'p')
             ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'p.id = pp.codPedido')
             ->innerJoin('wms:Pessoa','pe', 'WITH', 'pe.id = p.pessoa')
@@ -655,14 +655,20 @@ class PedidoRepository extends EntityRepository
             ->innerJoin('p.carga', 'c')
             ->innerJoin('c.expedicao', 'e')
             ->where("e.id = $idExpedicao")
-            ->groupBy('p.id, pe.nome, i.descricao')
+            ->groupBy('p.codExterno, pe.nome, i.descricao, p.numSequencial')
             ->orderBy('pe.nome', 'asc');
 
         if (isset($codProduto) && !empty($codProduto)) {
             $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
         }
 
-        return $sql->getQuery()->getResult();
+        $result = $sql->getQuery()->getResult();
+        foreach ($result as $key => $value){
+            if(!empty($value['numSequencial']) && $value['numSequencial'] > 1){
+                $result[$key]['id'] = $value['id'].' - '.$value['numSequencial'];
+            }
+        }
+        return $result;
     }
 
     public function getSituacaoPedido ($idPedido) {
@@ -698,4 +704,9 @@ class PedidoRepository extends EntityRepository
         return false;
     }
 
+    public function getMaxCodPedidoByCodExterno($idPedido){
+        $sql = "SELECT COD_PEDIDO FROM PEDIDO WHERE COD_EXTERNO = $idPedido ORDER BY NUM_SEQUENCIAL DESC ";
+        $result = $this->_em->getConnection()->query($sql)->fetch();
+        return $result['COD_PEDIDO'];
+    }
 }
