@@ -23,6 +23,18 @@ class embalagem {
     /** @var string */
     public $descricao;
 
+    /** @var double */
+    public $peso;
+
+    /** @var double */
+    public $largura;
+
+    /** @var double */
+    public $altura;
+
+    /** @var double */
+    public $profundidade;
+
 }
 
 class pedidoFaturado {
@@ -863,15 +875,40 @@ class Integracao {
             ini_set('max_execution_time', '-1');
             foreach ($arrayProdutos as $produto) {
                 $embalagensObj = array();
+
+                usort($produto['embalagem'], function ($a,$b){
+                    return $a['qtdEmbalagem'] < $b['qtdEmbalagem'];
+                });
+
+                $pesoUnitário = null;
+                $alturaProduto = null;
+                $larguraProduto = null;
+                $profundidadeUnitario = null;
+
                 foreach ($produto['embalagem'] as $embalagem) {
                     if ($parametroEmbalagemAtiva->getValor() == 'S') {
                         $embalagem['ativa'] = 'S';
                     }
                     if ($embalagem['ativa'] == 'S') {
+
+                        if ($pesoUnitário == null) {
+                            $pesoUnitário = $embalagem['peso'] / $embalagem['qtdEmbalagem'];
+                            $profundidadeUnitario = $embalagem['profundidade'] / $embalagem['qtdEmbalagem'];
+                            $alturaProduto = $embalagem['altura'];
+                            $larguraProduto = $embalagem['largura'];
+                        }
+
+
                         $emb = new embalagem();
                         $emb->codBarras = $embalagem['codBarras'];
                         $emb->qtdEmbalagem = $embalagem['qtdEmbalagem'];
                         $emb->descricao = $embalagem['dscEmbalagem'];
+
+                        $emb->largura = number_format(($embalagem['largura']) /1000,3);
+                        $emb->altura = number_format(($embalagem['altura'])/1000,3);
+                        $emb->peso = number_format(($pesoUnitário * $emb->qtdEmbalagem)/1000,3) ;
+                        $emb->profundidade = number_format(($profundidadeUnitario * $emb->qtdEmbalagem)/1000,3) ;
+
                         $embalagensObj[] = $emb;
                     }
                 }
