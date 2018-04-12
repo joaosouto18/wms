@@ -826,6 +826,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $itinerario = array();
             $itinerario['idItinerario'] = "";
             $itinerario['nomeItinerario'] = "";
+            $itinerario['idPraca'] = "";
+            $itinerario['nomePraca'] = "";
             $pedido['itinerario'] = $itinerario;
         }
 
