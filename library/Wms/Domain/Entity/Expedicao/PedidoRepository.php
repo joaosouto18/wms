@@ -171,9 +171,9 @@ class PedidoRepository extends EntityRepository
                     'produto'             => $em->getRepository('wms:Produto')
                 );
 
-                if  (($pedidoEn->getCarga()->getExpedicao()->getStatus() == Expedicao::STATUS_EM_CONFERENCIA)
-                    || ($pedidoEn->getCarga()->getExpedicao()->getStatus() == Expedicao::STATUS_EM_SEPARACAO)
-                    || ($pedidoEn->getCarga()->getExpedicao()->getStatus() == Expedicao::STATUS_PRIMEIRA_CONFERENCIA)) {
+                $statusExpedicao = $pedidoEn->getCarga()->getExpedicao()->getStatus()->getId();
+
+                if  (in_array($statusExpedicao, [Expedicao::STATUS_EM_CONFERENCIA, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_PRIMEIRA_CONFERENCIA])) {
                     if ($EtiquetaSeparacaoRepo->gerarMapaEtiqueta($pedidoEn->getCarga()->getExpedicao()->getId(), $pedidosProdutos, $status,$idModeloSeparacaoPadrao, $arrayRepositorios) > 0 ) {
                         throw new \Exception ("Existem produtos sem definição de volume");
                     }

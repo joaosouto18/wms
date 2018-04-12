@@ -276,10 +276,18 @@ class MapaSeparacao extends eFPDF {
             $this->Cell(120, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
 
             $this->SetFont('Arial', 'B', 9);
-            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
-            $this->Cell($wPage * 4, 6, utf8_decode("CUBAGEM TOTAL " . $cubagemTotal), 0, 1);
-            $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 1);
+            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
+            $this->Cell(21, 6, utf8_decode("EXPEDIÇÃO: "), 0, 0);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell($wPage * 1, 6, utf8_decode($this->idExpedicao), 0, 0);
+            $this->SetFont('Arial', 'B', 9);
+            $this->Cell(14, 6, utf8_decode("$txtCarga: "), 0, 0);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell($wPage * 4, 6, $stringCargas, 0, 1);
+            $this->SetFont('Arial', 'B', 9);
+            $this->Cell($wPage * 3, 6, utf8_decode("CUBAGEM TOTAL " . $cubagemTotal), 0, 0);
+            $this->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 0);
+            $this->Cell($wPage * 2, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
             $this->InFooter = false;
         }
 
