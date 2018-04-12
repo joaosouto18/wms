@@ -259,13 +259,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 } else {
                     //pegar os ID's das tabelas temporárias das triggers
                     if (count($result) && !is_null($acaoEn->getTabelaReferencia())) {
-                        $dadosFiltrar = array();
-                        foreach ($result as $row) {
-                            if(isset($row['ID'])) {
-                                $dadosFiltrar[] = $row['ID'];
-                            }
-                        }
-                        $idTabelaTemp = implode(",", $dadosFiltrar);
+                        $idTabelaTemp = $result;
                     }
 
                     $integracaoService = new Integracao($this->getEntityManager(),
@@ -365,13 +359,28 @@ class AcaoIntegracaoRepository extends EntityRepository
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
                 if ($sucess == 'S') {
                     if(!empty($idTabelaTemp)) {
-                        $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($idTabelaTemp) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+
+                        $max = 900;
+                        $ids = array();
+                        foreach ($idTabelaTemp as $key => $value){
+                            $ids[] = $value['ID'];
+                            if(count($ids) == $max){
+                                $ids = implode(',',$ids);
+                                $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                                $this->_em->getConnection()->query($query)->execute();
+                                unset($ids);
+                            }
+                        }
+                        if(count($ids) < $max){
+                            $ids = implode(',',$ids);
+                            $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                            $this->_em->getConnection()->query($query)->execute();
+                            unset($ids);
+                        }
                     }else{
                         $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
+                        $this->_em->getConnection()->query($query)->execute();
                     }
-                    $update = true;
-                    $conexaoEn = $acaoEn->getConexao();
-                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
                 }
             }
 
