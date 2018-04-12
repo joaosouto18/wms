@@ -1,0 +1,45 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: tarci
+ * Date: 12/04/2018
+ * Time: 15:06
+ */
+?>
+<h2 style="text-align: center;
+    margin: 5px;
+    margin-bottom: 0px;
+    font-size: 14px;">
+    Selecione a(s) embalagem(ns)
+</h2>
+<div class="padding-top">
+    <?php if (!empty($this->embalagens)) : ?>
+        <form method="post">
+            <fieldset id="fieldset-identification"><br/>
+                <?php /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagem */
+                    foreach($this->embalagens as $embalagem) : ?>
+                <p><b>
+                    <label>
+                        <input
+                                class="checkBoxClass"
+                                style="vertical-align: middle"
+                                type="checkbox"
+                                name="embalagens[]"
+                                value="<?php echo $embalagem->getId();?>"
+                                <?php echo ($embalagem->getIsPadrao() == 'S')? 'checked': '';?>
+                        >
+                        Embalagem: <?php echo $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() .")"; ?>
+                        ---
+                        Padrão de Recebimento: <?php echo ($embalagem->getIsPadrao() == 'S')? 'SIM' : 'NÃO'; ?>
+                        --- Código de Barras: <?php echo $embalagem->getCodigoBarras(); ?>
+                    </label>
+                </b></p><br />
+                <?php endforeach; ?>
+                </table>
+            </fieldset>
+            <input type="submit" value="Imprimir" class="btn">
+        </form>
+    <?php else : ?>
+    <b><p>Produto não tem embalagens/volumes cadastrados</p></b>
+    <?php endif; ?>
+</div>

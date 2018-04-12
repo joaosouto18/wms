@@ -193,75 +193,78 @@ class Expedicao_EtiquetaController  extends Action
             $idExpedicao = $etiquetaMaeEn->getCodExpedicao();
         }
         $modelo = $this->getSystemParameterValue('MODELO_ETIQUETA_SEPARACAO');
+        try {
+            if ($tipo == "mapa") {
+                if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idMapa) > 0) {
+                    $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
+                    if ($conf == 1) {
+                        $modelo = 6;
+                    } else {
+                        $modelo = $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO');
+                    }
 
-        if ($tipo == "mapa") {
-            if ($ExpedicaoRepo->getQtdMapasPendentesImpressao($idMapa) > 0) {
-                $mapa = new \Wms\Module\Expedicao\Printer\MapaSeparacao();
-                if($conf == 1){
-                    $modelo = 6;
+                    $mapa->layoutMapa($idExpedicao, $modelo, $idMapa, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
+                    /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+                    $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
+                    $andamentoRepo->save('Mapas Impressos', $idExpedicao);
                 } else {
-                    $modelo = $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO');
+                    $this->addFlashMessage('info', "Mapas já impressos!");
+                    $this->_redirect('/expedicao');
                 }
-
-                $mapa->layoutMapa($idExpedicao, $modelo, $idMapa, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
-                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-                $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save('Mapas Impressos', $idExpedicao);
-            } else {
-                $this->addFlashMessage('info', "Mapas já impressos!");
-                $this->_redirect('/expedicao');
             }
+            if ($tipo == "etiqueta") {
 
-        }
-        if ($tipo == "etiqueta") {
+                /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+                $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
 
-            /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
-            $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
-
-            if ($modelo == '1') {
-                $Etiqueta = new Etiqueta();
-            } elseif ($modelo == '10') {
-                $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
-            } else {
-                $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
+                if ($modelo == '1') {
+                    $Etiqueta = new Etiqueta();
+                } elseif ($modelo == '10') {
+                    $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
+                } else {
+                    $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
+                }
+                $ExpedicaoEn = $ExpedicaoRepo->findOneBy(array('id' => $idExpedicao));
+                if ($Etiqueta->jaImpressas($ExpedicaoEn) == false) {
+                    $this->addFlashMessage('info', 'Todas as etiquetas já foram impressas');
+                    $this->_redirect('/expedicao');
+                } else {
+                    $Etiqueta->imprimir(array('idExpedicao' => $idExpedicao, 'central' => $central, 'idEtiquetaMae' => $idEtiquetaMae), $modelo);
+                    /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+                    $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
+                    $andamentoRepo->save('Etiquetas Impressas', $idExpedicao);
+                }
             }
-            $ExpedicaoEn = $ExpedicaoRepo->findOneBy(array('id'=>$idExpedicao));
-            if ($Etiqueta->jaImpressas($ExpedicaoEn) == false) {
-                $this->addFlashMessage('info', 'Todas as etiquetas já foram impressas');
-                $this->_redirect('/expedicao');
-            } else {
-                $Etiqueta->imprimir(array('idExpedicao' =>$idExpedicao, 'central' => $central, 'idEtiquetaMae' => $idEtiquetaMae),$modelo);
-                /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-                $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save('Etiquetas Impressas', $idExpedicao);
-            }
-        }
-        if ($tipo == "reentrega") {
-            $idExpedicao = $this->getRequest()->getParam('idExpedicao');
+            if ($tipo == "reentrega") {
+                $idExpedicao = $this->getRequest()->getParam('idExpedicao');
 
-            $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
-            if ($this->getRequest()->getParam('todas') == 'S') $status = null;
+                $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO;
+                if ($this->getRequest()->getParam('todas') == 'S') $status = null;
 
-            if ($modelo == '1') {
-                $Etiqueta = new Etiqueta();
-            } elseif ($modelo == '10') {
-                $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
-            } else {
-                $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
+                if ($modelo == '1') {
+                    $Etiqueta = new Etiqueta();
+                } elseif ($modelo == '10') {
+                    $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
+                } else {
+                    $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
+                }
+                $Etiqueta->imprimirReentrega($idExpedicao, $status, $modelo);
             }
-            $Etiqueta->imprimirReentrega($idExpedicao, $status, $modelo);
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
             $ExpedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
             /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
             $ExpedicaoEntity = $ExpedicaoRepo->find($idExpedicao);
             if ($ExpedicaoEntity->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_INTEGRADO) {
-                $statusEntity = $this->getEntityManager()->getReference('wms:Util\Sigla',\Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO );
+                $statusEntity = $this->getEntityManager()->getReference('wms:Util\Sigla', \Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO);
                 $ExpedicaoEntity->setStatus($statusEntity);
                 $this->getEntityManager()->persist($ExpedicaoEntity);
-                $this->getEntityManager()->flush();
             }
-            exit;
+
+            $this->getEntityManager()->flush();
+        } catch (Exception $e) {
+            $this->addFlashMessage("Error", "Erro na geração do PDF: " . $e->getMessage());
+            $this->_redirect('/expedicao');
         }
     }
 
