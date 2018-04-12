@@ -561,11 +561,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
         $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($expedicaoEntity->getId());
-        $quebras = array(0=>array('tipoQuebra'=>MapaSeparacaoQuebra::QUEBRA_REENTREGA));
+        $quebras = array(0=>array('tipoQuebra'=>MapaSeparacaoQuebra::QUEBRA_REENTREGA, 'dscQuebra' => 'MAPA DE REENTREGAS', 'codQuebra' => ''));
+
         $statusEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
         $codProduto = $produtoEntity->getId();
         $grade = $produtoEntity->getGrade();
-
 
         if ($produtoEntity->getVolumes()->count() > 0) {
             $arrayVolumes = $produtoEntity->getVolumes()->toArray();

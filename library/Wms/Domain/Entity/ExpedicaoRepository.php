@@ -2174,15 +2174,20 @@ class ExpedicaoRepository extends EntityRepository {
                               INNER JOIN PRODUTO_PESO              PESO   ON PESO.COD_PRODUTO = NFPROD.COD_PRODUTO AND PESO.DSC_GRADE = NFPROD.DSC_GRADE
                               WHERE 1 = 1  ' . $FullWhere . $andWhere . ' 
                               GROUP BY C.COD_EXPEDICAO) PESO_REENTREGA ON PESO_REENTREGA.COD_EXPEDICAO = E.COD_EXPEDICAO 
-                  LEFT JOIN (
-                              SELECT PED.COD_EXPEDICAO,
+                  
+                  LEFT JOIN (SELECT PED.COD_EXPEDICAO,
                                   LISTAGG (S.DSC_SIGLA,\',\') WITHIN GROUP (ORDER BY S.DSC_SIGLA) TIPO_PEDIDO
                                   FROM SIGLA S
                                   INNER JOIN (
-                                    SELECT P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
-                                    FROM PEDIDO P
-                                    INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
-                                    GROUP BY P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
+                                    SELECT CASE WHEN REENTREGA.COD_CARGA IS NOT NULL THEN 621 ELSE P.COD_TIPO_PEDIDO END COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
+                                    FROM CARGA C
+                                    LEFT JOIN PEDIDO P ON C.COD_CARGA = P.COD_CARGA 
+                                    LEFT JOIN (
+                                      SELECT R.COD_CARGA, C.COD_EXPEDICAO 
+                                      FROM REENTREGA R
+                                      INNER JOIN CARGA C ON R.COD_CARGA = C.COD_CARGA
+                                    ) REENTREGA ON REENTREGA.COD_EXPEDICAO = C.COD_EXPEDICAO 
+                                    GROUP BY P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO, REENTREGA.COD_CARGA 
                                   ) PED ON PED.COD_TIPO_PEDIDO = S.COD_SIGLA
                                   GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO 
                                                                
