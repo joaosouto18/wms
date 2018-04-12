@@ -14,7 +14,7 @@ class MapaSeparacao extends SubForm
         ))
             ->addElement('cpf', 'pessoa', array(
                 'size' => 15,
-                'label' => utf8_encode('CPF Conferente'),
+                'label' => 'CPF Funcionário',
                 'class' => 'inptText'
             ))
             ->addElement('text', 'codMapaSeparacao', array(

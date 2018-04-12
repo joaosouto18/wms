@@ -2845,7 +2845,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         ini_set('memory_limit', '-1');
         $source = $this->getEntityManager()->createQueryBuilder()
             ->select('es.id, es.codProduto, es.reimpressao, es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao,
-             c.codCargaExterno as tipoCarga, prod.id as produto, prod.descricao, pe.descricao as embalagem')
+             c.codCargaExterno as tipoCarga, prod.id as produto, prod.descricao, 
+             CASE WHEN pe.descricao IS NULL THEN pv.descricao ELSE pe.descricao END as embalagem')
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->leftJoin('es.pedido', 'p')
             ->leftJoin('p.itinerario', 'i')
@@ -2854,6 +2855,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin('c.expedicao', 'e')
             ->leftJoin('es.status', 's')
             ->leftJoin('es.produtoEmbalagem', 'pe')
+            ->leftJoin('es.produtoVolume', 'pv')
             ->leftJoin('p.pessoa', 'cli')
             ->orderBy("es.id" , "DESC")
             ->distinct(true);

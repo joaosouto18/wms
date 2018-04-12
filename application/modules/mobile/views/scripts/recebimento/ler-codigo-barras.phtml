@@ -1,28 +1,44 @@
-﻿
-<?php echo $this->render('recebimento/detalhes.phtml'); ?>
+﻿<?php echo $this->render('recebimento/detalhes.phtml'); ?>
 <?php echo $this->form; ?>
-<script type="text/javascript">
-    $(document).ready(function () {
-        $('#carousel').cycle({
-            fx: 'turnDown',
-            next: '#next',
-            timeout: 0
+    <span id="dummy"></span>
+    <bgsound id="bgSoundId" loop="0" volume="100" />
+    <script type="text/javascript">
+        function playSound(soundfile) {
+//        document.getElementById("bgSoundId").src = soundfile;
+            document.getElementById("dummy").innerHTML=
+                "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+        }
+
+        $(document).ready(function () {
+            $('#carousel').cycle({
+                fx: 'turnDown',
+                next: '#next',
+                timeout: 0
+            });
         });
 
-    });
+    </script>
+    <div id="footer" class="">
+        <a href="<?php echo "/mobile/recebimento/finalizar/id/" . $this->idRecebimento . "/os/" . $this->os ?>" style="   margin-right: 0px; margin-top: 7px; float: left" class="finalizar">
+            Finalizar
+        </a>
 
-</script>
-<div id="footer" class="">
-    <a href="<?php echo "/mobile/recebimento/finalizar/id/" . $this->idRecebimento . "/os/" . $this->os ?>" style="   margin-right: 0px; margin-top: 7px; float: left" class="finalizar">
-        Finalizar
-    </a>
+        <a href="<?php echo "/mobile/enderecamento/listar-paletes/id/" . $this->idRecebimento . "/os/" . $this->os ?>" style="     margin-right: 1px;    margin-top: 7px;float: left" class="finalizarAmarelo">
+            Endereçar
+        </a>
 
-    <a href="<?php echo "/mobile/enderecamento/listar-paletes/id/" . $this->idRecebimento . "/os/" . $this->os ?>" style="     margin-right: 1px;    margin-top: 7px;float: left" class="finalizarAmarelo">
-        Endereçar
-    </a>
-
-    <a href="<?php echo "/mobile/recebimento/observacoes-recebimento/id/" . $this->idRecebimento ?>" style="    margin-top: 7px;float: left" id="btnShowObs">
-        Observações
-    </a>
-
-</div>
+        <a href="<?php echo "/mobile/recebimento/observacoes-recebimento/id/" . $this->idRecebimento ?>" style="    margin-top: 7px;float: left" id="btnShowObs">
+            Observações
+        </a>
+    </div>
+<?php if($this->error == 1){
+    ?>
+    <script>
+        $( window ).load(function() {
+            // Run code
+            alert('Erro - Confira a descrição do erro no topo.');
+            playSound("/alarme.mp3");
+        });
+    </script>
+    <?php
+} ?>

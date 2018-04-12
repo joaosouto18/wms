@@ -396,7 +396,7 @@ class Expedicao_IndexController extends Action {
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
                 ),
                 array(
-                    'label' => 'Salvar',
+                    'label' => 'Efetivar Apontamento ',
                     'cssClass' => 'btn save',
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
                 )
@@ -407,6 +407,7 @@ class Expedicao_IndexController extends Action {
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
         /** @var \Wms\Domain\Entity\Expedicao\EquipeSeparacaoRepository $equipeSeparacaoRepo */
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
+        $this->view->qtdFuncMapa = $this->getSystemParameterValue('MAX_PRODUTIVIDADE_MAPA');
         $numFunc = $equipeSeparacaoRepo->findBy(array(),array('id'=>'DESC'));
         if(empty($numFunc)){
             $func = 1;
