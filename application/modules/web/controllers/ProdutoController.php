@@ -544,7 +544,9 @@ class Web_ProdutoController extends Crud {
 
             $gerarEtiqueta->init(null, array(
                 'codProduto' => $codProduto,
-                'grade' => $grade, 'codProdutoEmbalagem' => implode(",", $idEmbalagens)), $modelo, \Wms\Domain\Entity\Recebimento::TARGET_IMPRESSAO_PRODUTO);
+                'grade' => $grade,
+                'codProdutoEmbalagem' => (!empty($idEmbalagens)? implode(",", $idEmbalagens) : null)),
+                $modelo, \Wms\Domain\Entity\Recebimento::TARGET_IMPRESSAO_PRODUTO);
         } else {
             /** @var Produto\Embalagem[] $embalagens */
             $embalagens =  $this->em->getRepository("wms:Produto\Embalagem")->findBy(['codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null]);

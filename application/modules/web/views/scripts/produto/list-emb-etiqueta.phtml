@@ -14,7 +14,7 @@
 </h2>
 <div class="padding-top">
     <?php if (!empty($this->embalagens)) : ?>
-        <form id="eti-embs-form" action="/produto/gerar-etiqueta-pdf/id/<?php echo $this->embalagens[0]->getCodProduto()."/grade/".$this->embalagens[0]->getGrade(); ?>" method="post">
+        <form id="eti-embs-form" action="/produto/gerar-etiqueta-pdf/id/<?php echo $this->embalagens[0]->getCodProduto()."/grade/".$this->embalagens[0]->getGrade(); ?>">
             <fieldset id="fieldset-identification"><br/>
                 <?php /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagem */
                     foreach($this->embalagens as $embalagem) : ?>
