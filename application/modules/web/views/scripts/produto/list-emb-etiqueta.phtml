@@ -14,7 +14,7 @@
 </h2>
 <div class="padding-top">
     <?php if (!empty($this->embalagens)) : ?>
-        <form method="post">
+        <form id="eti-embs-form" action="/produto/gerar-etiqueta-pdf/id/<?php echo $this->embalagens[0]->getCodProduto()."/grade/".$this->embalagens[0]->getGrade(); ?>" method="post">
             <fieldset id="fieldset-identification"><br/>
                 <?php /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagem */
                     foreach($this->embalagens as $embalagem) : ?>
@@ -37,9 +37,23 @@
                 <?php endforeach; ?>
                 </table>
             </fieldset>
-            <input type="submit" value="Imprimir" class="btn">
+            <input type="submit" name='imprimir' value="Imprimir" class="btn">
         </form>
     <?php else : ?>
-    <b><p>Produto não tem embalagens/volumes cadastrados</p></b>
+    <b><p style="text-align: center;
+        margin: 5px;
+        margin-bottom: 0px;
+        font-size: 14px;">O produto não tem código de barras vinculados em alguma embalagem ou volume</p></b>
     <?php endif; ?>
 </div>
+<script>
+    $(function () {
+        $("#eti-embs-form").submit(function (e) {
+            if ($("input[name*='embalagens[]']:checked").length === 0) {
+                $.wmsDialogAlert({title: 'Alerta', msg: "Selecione ao menos uma embalagem!"});
+                e.preventDefault();
+                return false
+            }
+        })
+    })
+</script>

@@ -514,7 +514,8 @@ class Web_ProdutoController extends Crud {
     public function gerarEtiquetaPdfAction() {
         $codProduto = $this->getRequest()->getParam('id');
         $grade = $this->getRequest()->getParam('grade');
-        $submit = $this->getRequest()->getParam("Imprimir");
+        $idEmbalagens = $this->getRequest()->getParam('embalagens');
+        $submit = $this->getRequest()->getParam("imprimir");
 
         $produtoRepo = $this->em->getRepository('wms:Produto');
         /** @var Produto $produtoEn */
@@ -543,9 +544,18 @@ class Web_ProdutoController extends Crud {
 
             $gerarEtiqueta->init(null, array(
                 'codProduto' => $codProduto,
-                'grade' => $grade), $modelo, \Wms\Domain\Entity\Recebimento::TARGET_IMPRESSAO_PRODUTO);
+                'grade' => $grade, 'codProdutoEmbalagem' => implode(",", $idEmbalagens)), $modelo, \Wms\Domain\Entity\Recebimento::TARGET_IMPRESSAO_PRODUTO);
         } else {
-            $this->view->embalagens = $this->em->getRepository("wms:Produto\Embalagem")->findBy(['codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null]);
+            /** @var Produto\Embalagem[] $embalagens */
+            $embalagens =  $this->em->getRepository("wms:Produto\Embalagem")->findBy(['codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null]);
+            $result = [];
+            foreach ($embalagens as $embalagem) {
+                if (!empty($embalagem->getCodigoBarras())) {
+                    $result[] = $embalagem;
+                }
+            }
+            $this->view->embalagens = $result;
+            $this->render('list-emb-etiqueta');
         }
     }
 
