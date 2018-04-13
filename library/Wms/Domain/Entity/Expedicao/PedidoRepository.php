@@ -30,7 +30,7 @@ class PedidoRepository extends EntityRepository
                 throw new \Exception('O tipo de pedido '.$pedido['tipoPedido'].' não esta cadastrado');
             }
 
-            $enPedido->setId($pedido['codPedido']);
+            $enPedido->setCodExterno($pedido['codPedido']);
             $enPedido->setTipoPedido($entitySigla);
             $enPedido->setLinhaEntrega($pedido['linhaEntrega']);
             $enPedido->setCentralEntrega($pedido['centralEntrega']);

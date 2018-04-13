@@ -907,13 +907,13 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $repositorios['etiquetaRepo'];
-
         foreach ($pedidos as $pedido) {
             /** @var Expedicao\Pedido $PedidoEntity */
-            $PedidoEntity = $PedidoRepo->find($pedido['codPedido']);
 
-            if ($PedidoEntity != null) {
+            $PedidoEntity = $PedidoRepo->findBy(array('codExterno' => $pedido['codPedido']));
 
+            if (!empty($PedidoEntity)) {
+                var_dump($PedidoEntity[0]->getCarga()->getExpedicao()->getStatus());die;
                 $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus();
                 $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
                 $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
@@ -923,7 +923,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                          WHERE PP.COD_PEDIDO = '" . $pedido['codPedido'] . "'
                            AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
                 $countProdutosPendentesCorte = count($this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC));
-
+                var_dump($countProdutosPendentesCorte);die;
                 if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
                     ($resetaExpedicao && $statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
                     ($countProdutosPendentesCorte == 0)) {
