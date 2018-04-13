@@ -2993,7 +2993,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                       c.codCargaExterno as tipoCarga,
                       prod.id as produto,
                       prod.descricao,
-                      pe.descricao as embalagem,
+                      CASE WHEN pe.descricao IS NULL THEN pv.descricao ELSE pe.descricao END as embalagem,
                       i.descricao as itinerario,
                       pess.nome as clienteNome,
                       es.dataConferencia,
@@ -3018,6 +3018,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin('es.status', 's')
             ->leftJoin('wms:Util\Sigla', 'siglaEpx', 'WITH', 'e.status = siglaEpx.id')
             ->leftJoin('es.produtoEmbalagem', 'pe')
+            ->leftJoin('es.produtoVolume','pv')
             ->where('es.id = :idEtiqueta')
             ->setParameter('idEtiqueta', $idEtiqueta)
             ->distinct(true);
