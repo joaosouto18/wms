@@ -77,7 +77,7 @@ class Inventario {
         foreach ($return['enderecos'] as $key => $endereco) {
             if ($params['divergencia'] == 1 && !is_null($endereco['DSC_GRADE']) && !is_null($endereco['COD_PRODUTO'])) {
                 $enderecos[$key]['endereco'] = $endereco['DSC_DEPOSITO_ENDERECO'] . ' - ' . $endereco['DSC_PRODUTO'] . ' - ' . $endereco['DSC_GRADE'] . ' - ' . $endereco['COMERCIALIZACAO'];
-                if ($endereco['QTD_CONTADA'] > 0) {
+                if ($endereco['QTD_CONTADA'] == 0) {
                     $embalagem = $produtoEmbalagemRepo->findOneBy(array('codProduto' => $endereco['COD_PRODUTO'], 'grade' => $endereco['DSC_GRADE']), array('quantidade', 'ASC'));
                     if (isset($embalagem) && !empty($embalagem)) {
                         $enderecos[$key]['zerar'] = $embalagem->getCodigoBarras();
