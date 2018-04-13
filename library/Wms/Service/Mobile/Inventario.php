@@ -51,12 +51,12 @@ class Inventario {
         return $idContagemOs;
     }
 
-    public function getEnderecosDivergencia($idInventario){
-
-        $sql = "SELECT MAX(COD_INVENTARIO_ENDERECO), DE.DSC_DEPOSITO_ENDERECO AS ENDERECO
-                FROM INVENTARIO_ENDERECO IE 
+    public function getEnderecosDivergencia($idInventario, $numContagem){
+        $sql = "SELECT MAX(IE.COD_INVENTARIO_ENDERECO), DE.DSC_DEPOSITO_ENDERECO AS ENDERECO FROM INVENTARIO_ENDERECO IE 
                 INNER JOIN DEPOSITO_ENDERECO DE ON IE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
-                WHERE COD_INVENTARIO = $idInventario AND DIVERGENCIA > 0 GROUP BY DE.DSC_DEPOSITO_ENDERECO";
+                INNER JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON IE.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
+                WHERE IE.COD_INVENTARIO = $idInventario AND IE.DIVERGENCIA > 0 AND ICE.NUM_CONTAGEM = $numContagem 
+                GROUP BY DE.DSC_DEPOSITO_ENDERECO";
         return $this->getEm()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 

@@ -40,7 +40,7 @@ class Mobile_InventarioController extends Action
 
             $codigoBarras = $this->_getParam('codigoBarras');
             if(empty($codigoBarras)) {
-                $enderecos = $inventarioService->getEnderecosDivergencia($idInventario);
+                $enderecos = $inventarioService->getEnderecosDivergencia($idInventario, $numContagem);
                 $this->view->enderecos = $enderecos;
                 $this->view->botoes = false;
             }elseif(!empty($divergencia) && $divergencia > 0) {
