@@ -51,12 +51,22 @@ class Inventario {
         return $idContagemOs;
     }
 
-    public function getEnderecos($idInventario, $numContagem, $divergencia) {
+    public function getEnderecosDivergencia($idInventario){
+
+        $sql = "SELECT MAX(COD_INVENTARIO_ENDERECO), DE.DSC_DEPOSITO_ENDERECO AS ENDERECO
+                FROM INVENTARIO_ENDERECO IE 
+                INNER JOIN DEPOSITO_ENDERECO DE ON IE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                WHERE COD_INVENTARIO = $idInventario AND DIVERGENCIA > 0 GROUP BY DE.DSC_DEPOSITO_ENDERECO";
+        return $this->getEm()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getEnderecos($idInventario, $numContagem, $divergencia, $endereco = '') {
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $invEndRepo */
         $invEndRepo = $this->getEm()->getRepository('wms:Inventario\Endereco');
         $params['idInventario'] = $idInventario;
         $params['divergencia'] = $divergencia;
         $params['numContagem'] = $numContagem;
+        $params['dscEndereco'] = $endereco;
         if ($params['numContagem'] == 1 && $params['divergencia'] != 1) {
             $params['numContagem'] = 0;
         }
@@ -67,7 +77,7 @@ class Inventario {
         foreach ($return['enderecos'] as $key => $endereco) {
             if ($params['divergencia'] == 1 && !is_null($endereco['DSC_GRADE']) && !is_null($endereco['COD_PRODUTO'])) {
                 $enderecos[$key]['endereco'] = $endereco['DSC_DEPOSITO_ENDERECO'] . ' - ' . $endereco['DSC_PRODUTO'] . ' - ' . $endereco['DSC_GRADE'] . ' - ' . $endereco['COMERCIALIZACAO'];
-                if ($endereco['QTD_CONTADA'] == 0) {
+                if ($endereco['QTD_CONTADA'] > 0) {
                     $embalagem = $produtoEmbalagemRepo->findOneBy(array('codProduto' => $endereco['COD_PRODUTO'], 'grade' => $endereco['DSC_GRADE']), array('quantidade', 'ASC'));
                     if (isset($embalagem) && !empty($embalagem)) {
                         $enderecos[$key]['zerar'] = $embalagem->getCodigoBarras();
