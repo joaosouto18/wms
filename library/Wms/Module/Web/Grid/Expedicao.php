@@ -170,19 +170,6 @@ class Expedicao extends Grid
                     },
                 'pkIndex' => 'id'
             ))
-
-        /*
-            ->addAction(array(
-                'label' => 'Reimprimir Etiqueta',
-                'modelName' => 'expedicao',
-                'controllerName' => 'etiqueta',
-                'actionName' => 'reimprimir',
-                'condition' => function ($row) {
-                    return $row['status'] != "FINALIZADO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
-                },
-                'pkIndex' => 'id'
-            ))
-        */
             ->addAction(array(
                 'label' => 'Reimprimir Etiqueta',
                 'modelName' => 'expedicao',
@@ -217,7 +204,21 @@ class Expedicao extends Grid
                 'controllerName' => 'volume-patrimonio',
                 'actionName' => 'imprimir-volume-patrimonio',
                 'pkIndex' => 'id',
-                'cssClass' => 'dialogAjax'
+                'cssClass' => 'dialogAjax',
+                'condition' => function($row) {
+                    return $row['status'] != "EM SEPARACAO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
+                },
+            ))
+            ->addAction(array(
+                'label' => 'Imprimir Volume Embalado',
+                'modelName' => 'expedicao',
+                'controllerName' => 'mapa',
+                'actionName' => 'relatorio-itens-volume-embalado',
+                'pkIndex' => 'id',
+                'cssClass' => 'pdf',
+                'condition' => function($row) {
+                    return $row['status'] != "EM SEPARACAO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
+                },
             ))
             ->addAction(array(
                 'label' => 'Relatório de Reentregas',

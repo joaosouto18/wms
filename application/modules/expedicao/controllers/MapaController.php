@@ -73,4 +73,8 @@ class Expedicao_MapaController  extends Action
         }
     }
 
+    public function relatorioItensVolumeEmbaladoAction()
+    {
+
+    }
 }
