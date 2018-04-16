@@ -1392,6 +1392,7 @@ class PaleteRepository extends EntityRepository {
 
         /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaPaletizacaoRepo */
         $normaPaletizacaoRepo = $repositorios['normaPaletizacaoRepo'];
+        $estoqueRepo = $repositorios['estoqueRepo'];
         $produtosPalete = $paleteEn->getProdutos();
         $possuiValidade = $produtosPalete[0]->getProduto()->getValidade();
         $codProduto = $produtosPalete[0]->getCodProduto();
@@ -1404,15 +1405,22 @@ class PaleteRepository extends EntityRepository {
         $sugestaoEndereco = null;
 
         //SE FOR UM PALETE DE SOBRA, ENTÃO TENTO ALOCAR PRIMEIRO NO PICKING
-        if ($normaPaletizacaoEn->getNumNorma() > $qtdPaleteProduto && $possuiValidade == 'N') {
-            $sugestaoEndereco = $this->getSugestaoEnderecoPicking($codProduto, $grade, $produtosPalete, $repositorios);
+        if ($normaPaletizacaoEn->getNumNorma() > $qtdPaleteProduto) {
+            if($possuiValidade == 'N') {
+                $sugestaoEndereco = $this->getSugestaoEnderecoPicking($codProduto, $grade, $produtosPalete, $repositorios);
+            }else{
+                $validadeProduto = $produtosPalete[0]->getValidade()->format('Y-m-d');
+                $dthMinPulmao = $estoqueRepo->getMenorValidadePulmao($codProduto, $grade);
+                if(empty($dthMinPulmao) || (strtotime($validadeProduto) <= strtotime($dthMinPulmao['DATA']))){
+                    $sugestaoEndereco = $this->getSugestaoEnderecoPicking($codProduto, $grade, $produtosPalete, $repositorios);
+                }
+            }
         }
 
         //SE FOR UM PALETE COMPLETO OU PALETE DE SOBRA QUE NÃO COUBE NO PICKING, VAI BUSCAR UM ENDEREÇO NO PULMÃO
         if ($sugestaoEndereco == null) {
             $sugestaoEndereco = $this->getSugestaoEnderecoPulmao($codProduto, $grade, $paleteEn->getRecebimento()->getId(), $larguraPalete, $repositorios);
         }
-
         return $sugestaoEndereco;
     }
 

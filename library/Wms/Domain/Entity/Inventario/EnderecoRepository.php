@@ -70,8 +70,8 @@ class EnderecoRepository extends EntityRepository
         $idInventario   = isset($params['idInventario']) ? $params['idInventario'] : null;
         $numContagem    = isset($params['numContagem']) ? $params['numContagem'] : null;
         $divergencia    = isset($params['divergencia']) ? $params['divergencia'] : null;
+        $endereco    = isset($params['dscEndereco']) ? $params['dscEndereco'] : null;
         $rua            = isset($params['rua']) ? $params['rua'] : null;
-
         if ($divergencia != null && $divergencia != 'todos') {
             $andDivergencia = " AND IE.DIVERGENCIA = 1 AND MAXCONT.DIVERGENCIA IS NOT NULL";
         } else if ($divergencia == 'todos') {
@@ -87,6 +87,9 @@ class EnderecoRepository extends EntityRepository
         $andRua = null;
         if ($rua != null) {
             $andRua = " AND DE.NUM_RUA = ".$rua." ";
+        }
+        if ($endereco != null) {
+            $andEndereco = " AND DE.DSC_DEPOSITO_ENDERECO = '".$endereco."' ";
         }
         $andContagem = null;
         if (isset($numContagem)) {
@@ -156,6 +159,7 @@ class EnderecoRepository extends EntityRepository
             $andContagem
             $andDivergencia
             $andRua
+            $andEndereco
          ORDER BY 
             DE.DSC_DEPOSITO_ENDERECO";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);

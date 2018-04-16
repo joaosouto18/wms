@@ -23,6 +23,18 @@ class embalagem {
     /** @var string */
     public $descricao;
 
+    /** @var double */
+    public $peso;
+
+    /** @var double */
+    public $largura;
+
+    /** @var double */
+    public $altura;
+
+    /** @var double */
+    public $profundidade;
+
 }
 
 class pedidoFaturado {
@@ -472,10 +484,27 @@ class Integracao {
             $cargas = array();
             $pedidos = array();
             $produtos = array();
-
+            $triggerRepository = $this->_em->getRepository('wms:Expedicao\TriggerCancelamentoCarga');
+            $acaoIntegracaoRepository = $this->_em->getRepository('wms:Integracao\AcaoIntegracao');
+            $parametroRepository = $this->_em->getRepository('wms:Sistema\Parametro');
+            $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
+            $valorParametro = $parametroRepository->findOneBy(array('constante' => 'COD_INTEGRACAO_PEDIDOS_TELA_EXP'))->getValor();
+            $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($valorParametro);
             foreach ($dados as $key => $row) {
                 $idPedido = $row['PEDIDO'];
                 $idCarga = $row['CARGA'];
+
+                $cargaCancelada = $triggerRepository->find($row['CARGA']);
+                if ($cargaCancelada) {
+                    $observação = "Carga $row[CARGA] ja cancelada";
+                    $query = "UPDATE TR_PEDIDO SET DSC_OBSERVACAO_INTEGRACAO = '$observação' WHERE ID = $row[ID]";
+                    $update = true;
+                    $conexaoEn = $acaoIntegracaoEntity->getConexao();
+                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
+                    $this->_em->flush();
+                    continue;
+                }
+
                 $tipoPedido = (isset($row['TIPO_PEDIDO']) && !empty($row['TIPO_PEDIDO'])) ? $row['TIPO_PEDIDO'] : null;
 
                 $produto = array(
@@ -516,7 +545,8 @@ class Integracao {
                         'itinerario' => $itinerario,
                         'produtos' => $produtos,
                         'linhaEntrega' => $row['DSC_ROTA'],
-                        'tipoPedido' => $tipoPedido
+                        'tipoPedido' => $tipoPedido,
+                        'codProprietario' => null
 
                     );
 
@@ -845,15 +875,40 @@ class Integracao {
             ini_set('max_execution_time', '-1');
             foreach ($arrayProdutos as $produto) {
                 $embalagensObj = array();
+
+                usort($produto['embalagem'], function ($a,$b){
+                    return $a['qtdEmbalagem'] < $b['qtdEmbalagem'];
+                });
+
+                $pesoUnitário = null;
+                $alturaProduto = null;
+                $larguraProduto = null;
+                $profundidadeUnitario = null;
+
                 foreach ($produto['embalagem'] as $embalagem) {
                     if ($parametroEmbalagemAtiva->getValor() == 'S') {
                         $embalagem['ativa'] = 'S';
                     }
                     if ($embalagem['ativa'] == 'S') {
+
+                        if ($pesoUnitário == null) {
+                            $pesoUnitário = $embalagem['peso'] / $embalagem['qtdEmbalagem'];
+                            $profundidadeUnitario = $embalagem['profundidade'] / $embalagem['qtdEmbalagem'];
+                            $alturaProduto = $embalagem['altura'];
+                            $larguraProduto = $embalagem['largura'];
+                        }
+
+
                         $emb = new embalagem();
                         $emb->codBarras = $embalagem['codBarras'];
                         $emb->qtdEmbalagem = $embalagem['qtdEmbalagem'];
                         $emb->descricao = $embalagem['dscEmbalagem'];
+
+                        $emb->largura = number_format(($embalagem['largura']) /1000,3);
+                        $emb->altura = number_format(($embalagem['altura'])/1000,3);
+                        $emb->peso = number_format(($pesoUnitário * $emb->qtdEmbalagem)/1000,3) ;
+                        $emb->profundidade = number_format(($profundidadeUnitario * $emb->qtdEmbalagem)/1000,3) ;
+
                         $embalagensObj[] = $emb;
                     }
                 }
