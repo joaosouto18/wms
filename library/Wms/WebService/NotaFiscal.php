@@ -289,6 +289,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             }
             $bonificacao = "N";
 
+            $tipoNota = (isset($tipoNota) && !empty($tipoNota)) ? trim($tipoNota) : 'ENTRADA_FORNECEDOR';
+
             $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
             $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
 
@@ -393,7 +395,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                         throw new \Exception('CNPJ do destinatário não encontrado');
                     }
                 }
-                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao, $codProprietario);
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$codProprietario,$tipoNota);
             }
 
             $em->flush();

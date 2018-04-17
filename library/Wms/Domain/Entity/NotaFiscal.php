@@ -18,6 +18,8 @@ class NotaFiscal
     const STATUS_EM_RECEBIMENTO = 16;
     const STATUS_RECEBIDA = 17;
     const STATUS_CANCELADA = 18;
+    const ENTRADA_FORNECEDOR = 622;
+    const DEVOLUCAO_CLIENTE = 623;
 
     /**
      * Código da nota fiscal
@@ -148,6 +150,14 @@ class NotaFiscal
      * @Column(name="COD_PESSOA_PROPRIETARIO", type="integer", nullable=true)
      */
     protected $codPessoaProprietario;
+
+    /**
+     *
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
+     * @JoinColumn(name="COD_TIPO_NOTA_FISCAL", referencedColumnName="COD_SIGLA")
+     */
+    protected $tipoNotaFiscal;
+
 
     public function __construct()
     {
@@ -358,6 +368,22 @@ class NotaFiscal
     public function getCodPessoaProprietario()
     {
         return $this->codPessoaProprietario;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoNotaFiscal()
+    {
+        return $this->tipoNotaFiscal;
+    }
+
+    /**
+     * @param mixed $tipoNotaFiscal
+     */
+    public function setTipoNotaFiscal($tipoNotaFiscal)
+    {
+        $this->tipoNotaFiscal = $tipoNotaFiscal;
     }
 
 }
