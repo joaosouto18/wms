@@ -210,7 +210,7 @@ class Expedicao extends Grid
                 },
             ))
             ->addAction(array(
-                'label' => 'Imprimir Volume Embalado',
+                'label' => 'Relatório de Volumes Embalados',
                 'modelName' => 'expedicao',
                 'controllerName' => 'mapa',
                 'actionName' => 'relatorio-itens-volume-embalado',

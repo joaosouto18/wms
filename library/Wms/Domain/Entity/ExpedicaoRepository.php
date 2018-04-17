@@ -4016,4 +4016,27 @@ class ExpedicaoRepository extends EntityRepository {
         if ($flush) $this->_em->flush();
 
     }
+
+    public function getItensVolumeEmbalados($idExpedicao) {
+
+        $sql = "SELECT DISTINCT
+                  PS.NOM_PESSOA CLIENTE,
+                  MSEC.NUM_SEQUENCIA AS COD_VOLUME,
+                  S.DSC_SIGLA STATUS,
+                  P.COD_PRODUTO,
+                  P.DSC_PRODUTO,
+                  P.DSC_GRADE,
+                  MSC.QTD_CONFERIDA,
+                  PE.DSC_EMBALAGEM || '(' || MSC.QTD_EMBALAGEM || ')' AS EMBALAGEM
+                FROM MAPA_SEPARACAO_EMB_CLIENTE MSEC
+                INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MSEC.COD_MAPA_SEPARACAO
+                INNER JOIN PRODUTO_EMBALAGEM PE ON MSC.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+                INNER JOIN PRODUTO P ON MSC.COD_PRODUTO = P.COD_PRODUTO AND MSC.DSC_GRADE = P.DSC_GRADE
+                INNER JOIN SIGLA S ON MSEC.COD_STATUS = S.COD_SIGLA
+                INNER JOIN PESSOA PS ON PS.COD_PESSOA = MSEC.COD_PESSOA
+                WHERE MSEC.COD_MAPA_SEPARACAO IN ( SELECT COD_MAPA_SEPARACAO FROM MAPA_SEPARACAO WHERE COD_EXPEDICAO = '$idExpedicao')
+                ORDER BY TO_NUMBER(MSEC.NUM_SEQUENCIA), P.COD_PRODUTO, P.DSC_GRADE";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

@@ -88,7 +88,7 @@ class Cadastro extends Form
                 'multiOptions' => $normasPaletizacao,
             ));
         if($controleProprietario == 'S') {
-            $this->addElement('select', 'codPessoa', array(
+            $this->addElement('select', 'codProprietario', array(
                 'label' => 'Proprietário',
                 'mostrarSelecione' => true,
                 'multiOptions' => $proprietario,
