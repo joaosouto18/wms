@@ -7,7 +7,10 @@
 
     window.onload=function()
     {
-        playSound('/alarme.mp3');
+        //playSound('/alarme.mp3')
+        var audioElement = document.createElement('audio');
+        audioElement.setAttribute('src', '/alarme.mp3');
+        audioElement.play();
     };
 
 </script>
