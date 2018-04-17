@@ -150,7 +150,7 @@ class Mobile_RessuprimentoController extends Action
                     $this->view->grade = $grade = $result[0]['GRADE'];
                     $this->view->descricao = $result[0]['DESCRICAO'];
                     $this->view->endereco = $dscEndereco = $result[0]['ENDERECO'];
-                    $this->view->qtd = number_format($result[0]['QTD'], 2, ',', '.').' '.$result[0]['DSC_EMBALAGEM'];
+                    $this->view->qtd = $result[0]['QTD'];
                 }
 
             }
