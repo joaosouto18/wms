@@ -1261,33 +1261,48 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
-        $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
-        $codCargaExterno = $this->validaCargaFechada($idExpedicao);
-        if (isset($codCargaExterno) && !empty($codCargaExterno)) {
-            return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
-        }
-
-        if ($this->getSystemParameterValue('IMPORTA_CORTES_ERP') == 'S') {
-            $result = $this->importaCortesERP($idExpedicao);
-            if (!($result === true)) {
-                return $result;
-            }
-        }
-        if ($this->validaPedidosImpressos($idExpedicao) == false) {
-            return 'Existem produtos sem etiquetas impressas';
-        }
-
-        if ($this->getExistsPendenciaCorte($expedicaoEn,$central)) {
-            return 'Existem etiquetas pendentes de corte nesta expedição';
-        }
+        $transacao = false;
+        $statusAntigo = null;
 
         ini_set('max_execution_time', 3000);
         Try {
-            $transacao = false;
+            /** @var \Wms\Domain\Entity\Expedicao $expedicaoEn */
+            $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
+
+            if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
+                $statusAntigo = $expedicaoEn->getStatus();
+                $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
+
+                $expedicaoEn->setStatus($statusEmFinalizacao);
+                $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
+
+                $this->getEntityManager()->persist($expedicaoEn);
+                $this->getEntityManager()->flush();
+            }
+
+            $codCargaExterno = $this->validaCargaFechada($idExpedicao);
+            if (isset($codCargaExterno) && !empty($codCargaExterno)) {
+                throw new \Exception('As cargas '.$codCargaExterno.' estão com pendencias de fechamento');
+            }
+
+            if ($this->getSystemParameterValue('IMPORTA_CORTES_ERP') == 'S') {
+                $result = $this->importaCortesERP($idExpedicao);
+                if (!($result === true)) {
+                    throw new \Exception($result);
+                }
+            }
+            if ($this->validaPedidosImpressos($idExpedicao) == false) {
+                throw new \Exception('Existem produtos sem etiquetas impressas');
+            }
+
+            if ($this->getExistsPendenciaCorte($expedicaoEn,$central)) {
+                throw new \Exception('Existem etiquetas pendentes de corte nesta expedição');
+            }
+
             if ($validaStatusEtiqueta == true) {
                 $result = $this->validaStatusEtiquetas($expedicaoEn,$central);
                 if (is_string($result)) {
-                    return $result;
+                    throw new \Exception($result);
                 }
             }
 
@@ -1297,22 +1312,22 @@ class ExpedicaoRepository extends EntityRepository {
             if ($validaStatusEtiqueta == true) {
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
                 if (is_string($result)) {
-                    return $result;
+                    throw new \Exception($result);
                 }
 
                 $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa);
                 if (is_string($result)) {
-                    return $result;
+                    throw new \Exception($result);
                 }
 
                 $result = $mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao);
                 if (is_string($result)) {
-                    return $result;
+                    throw new \Exception($result);
                 }
             } else {
                 $codCargaExterno = $this->validaCargaFechada($idExpedicao);
                 if (isset($codCargaExterno) && !empty($codCargaExterno)) {
-                    return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
+                    throw new \Exception('As cargas '.$codCargaExterno.' estão com pendencias de fechamento');
                 }
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
                 $MapaSeparacaoRepo->forcaConferencia($idExpedicao);
@@ -1327,7 +1342,7 @@ class ExpedicaoRepository extends EntityRepository {
             if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
                 $result = $this->validaConferenciaERP($expedicaoEn->getId());
                 if (is_string($result)) {
-                    return $result;
+                    throw new \Exception($result);
                 }
             }
 
@@ -1361,7 +1376,7 @@ class ExpedicaoRepository extends EntityRepository {
                 } else {
                     $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA, $idExpedicao, $central);
                     if (count($numEtiquetas) > 0) {
-                        return 'Existem etiquetas pendentes de conferência nesta expedição';
+                        throw new \Exception('Existem etiquetas pendentes de conferência nesta expedição');
                     }
                 }
             }
@@ -1398,10 +1413,25 @@ class ExpedicaoRepository extends EntityRepository {
                     throw new \Exception($resultAcao);
                 }
             }
+
+            if (!($result === true)) {
+                throw new \Exception($result);
+            }
             $this->getEntityManager()->commit();
             return $result;
         } catch(\Exception $e) {
             if ($transacao == true) $this->getEntityManager()->rollback();
+
+            if ($statusAntigo != null) {
+
+                $expedicaoEn->setStatus($statusAntigo);
+                $expedicaoEn->setCodStatus($statusAntigo->getId());
+
+                $this->getEntityManager()->persist($expedicaoEn);
+                $this->getEntityManager()->flush();
+
+            }
+
             return $e->getMessage();
         }
     }
