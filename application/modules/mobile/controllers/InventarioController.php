@@ -242,6 +242,10 @@ class Mobile_InventarioController extends Action
         if ((isset($params['itemAitem'])) && ($params['itemAitem'] == 1)) {
             $this->_helper->json(array('status' => 'ok', 'msg' => 'Produto conferido.'));
         }else {
+            if (!empty($divergencia) and $divergencia > 0) {
+                $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
+                $this->view->enderecos = $enderecos;
+            }
             $this->render('form');
         }
     }

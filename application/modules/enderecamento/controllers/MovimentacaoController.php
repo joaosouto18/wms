@@ -319,7 +319,7 @@ class Enderecamento_MovimentacaoController extends Action
                     $estoqueRepo->movimentaEstoque($data);
                     $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
                     $data['qtd'] = $data['quantidade'];
-                    $data['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoEn->getDescricApaao();
+                    $data['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoEn->getDescricao();
                     $estoqueRepo->movimentaEstoque($data);
                 }
             }
