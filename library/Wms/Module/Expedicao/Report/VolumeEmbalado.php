@@ -102,6 +102,11 @@ class VolumeEmbalado extends Pdf
 
     }
 
+    /**
+     * @param $idExpedicao
+     * @throws \Exception
+     * @throws \Zend_Exception
+     */
     public function imprimir($idExpedicao)
     {
         $this->expedicao = $idExpedicao;
@@ -109,6 +114,9 @@ class VolumeEmbalado extends Pdf
         /** @var EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
         $itens = $em->getRepository('wms:Expedicao')->getItensVolumeEmbalados($idExpedicao);
+
+        if (empty($itens))
+            throw new \Exception("Esta expedição não teve itens embalados conferidos ainda!");
 
         $this->prepare($itens);
 
