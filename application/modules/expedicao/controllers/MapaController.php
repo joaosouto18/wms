@@ -76,7 +76,7 @@ class Expedicao_MapaController  extends Action
     public function relatorioItensVolumeEmbaladoAction()
     {
         $idExpedicao = $this->_getParam('id');
-        $reportPDF = new \Wms\Module\Expedicao\Report\VolumeEmbalado();
+        $reportPDF = new \Wms\Module\Expedicao\Report\VolumeEmbalado("L");
 
         $reportPDF->imprimir($idExpedicao);
     }
