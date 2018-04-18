@@ -2113,7 +2113,7 @@ class ExpedicaoRepository extends EntityRepository {
 									INNER JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                                     WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . ' 
                                     GROUP BY E.COD_EXPEDICAO, C.NOM_MOTORISTA) MOTORISTA ON MOTORISTA.COD_EXPEDICAO = E.COD_EXPEDICAO
-                              WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
+                              WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . '
                               GROUP BY E.COD_EXPEDICAO) MOT ON MOT.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT COD_EXPEDICAO,
                                     LISTAGG (DSC_ITINERARIO, \',\') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
