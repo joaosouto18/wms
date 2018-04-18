@@ -41,6 +41,10 @@ class Recebimento extends Grid
                     'index' => 'DATAFINAL',
                 ))
                 ->addColumn(array(
+                    'label' => 'Tipo Nota Fiscal',
+                    'index' => 'SIGLATIPONOTA',
+                ))
+                ->addColumn(array(
                     'label' => 'Status',
                     'index' => 'STATUS',
                 ))

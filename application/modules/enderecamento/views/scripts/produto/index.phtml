@@ -1,17 +1,17 @@
 <?php
 echo $this->render('recebimento/cabecalho.phtml'); ?>
-<div class="left">
-    <a href="<?php echo $this->url(array('module' => 'enderecamento', 'controller' => 'palete', 'action' => 'index', 'id' => $this->recebimento->getId())) ?>" style="float:right" class="btn">Endereçar Todos</a>
-    <a href="<?php echo $this->url(array('module' => 'enderecamento', 'controller' => 'produto', 'action' => 'imprimir-ajax', 'id' => $this->recebimento->getId())) ?>" style="float:right;margin-right: 7px;" class="btn">Imprimir Produtos Não Endereçados</a>
-</div>
 
 <?php
 if (count($this->produtos) > 0):
     ?>
     <form id="formGerarRecebmento" action="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>" method="post">
+        <div class="left">
+            <a href="<?php echo $this->url(array('module' => 'enderecamento', 'controller' => 'palete', 'action' => 'index', 'id' => $this->recebimento->getId())) ?>" style="float:right" class="btn">Endereçar Todos</a>
+            <a href="<?php echo $this->url(array('module' => 'enderecamento', 'controller' => 'produto', 'action' => 'imprimir-ajax', 'id' => $this->recebimento->getId())) ?>" style="float:right;margin-right: 7px;" class="btn">Imprimir Produtos Não Endereçados</a>
+        </div>
         <div class="gControl">
             <div class="gPager" style="width: 100%">
-<!--                <input type="submit" name="submit" class="btn" style="float:right" title="Endereça no picking até o limite" value="Endereçar Todos no Picking" />-->
+                <input type="submit" name="submit" class="btn" style="float:right" title="Endereça no picking até o limite" value="Endereçar Todos no Picking" />
                 <span>Total de <?php echo count($this->produtos) ?> registros encontrados.</span>
                 <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
             </div>

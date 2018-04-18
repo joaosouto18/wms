@@ -1143,4 +1143,19 @@ class NotaFiscalRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getTipoNotaByUma($idUma)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('tp.sigla, tp.id')
+            ->from('wms:Enderecamento\Palete', 'p')
+            ->innerJoin('p.recebimento', 'r')
+            ->innerJoin('wms:NotaFiscal', 'nf', 'WITH', 'nf.recebimento = r.id')
+            ->innerJoin('nf.tipoNotaFiscal', 'tp')
+            ->where("p.id = $idUma")
+            ->andWhere('tp.id = '.NotaFiscal::DEVOLUCAO_CLIENTE)
+            ->groupBy('tp.sigla, tp.id');
+
+        return $sql->getQuery()->getSingleResult();
+    }
+
 }

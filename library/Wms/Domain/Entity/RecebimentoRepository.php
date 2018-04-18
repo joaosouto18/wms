@@ -1725,6 +1725,8 @@ class RecebimentoRepository extends EntityRepository {
                    OS.COD_OS AS idOrdemServicoManual,
                    OS2.COD_OS AS idOrdemServicoColetor,
                    'S' AS indImprimirCB,
+                   ST.DSC_SIGLA AS siglaTipoNota,
+                   
                    (
                         SELECT 
                         LISTAGG(P.NOM_PESSOA, ', ') WITHIN GROUP (ORDER BY NF4.COD_FORNECEDOR) AS fornecedor
@@ -1771,6 +1773,7 @@ class RecebimentoRepository extends EntityRepository {
                    RIGHT JOIN RECEBIMENTO R ON (NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
                    LEFT JOIN BOX B ON (R.COD_BOX = B.COD_BOX)
                    INNER JOIN SIGLA S ON (R.COD_STATUS = S.COD_SIGLA)
+                   LEFT JOIN SIGLA ST ON ST.COD_SIGLA = NF.COD_TIPO_NOTA_FISCAL
                    LEFT JOIN ORDEM_SERVICO OS ON (NF.COD_RECEBIMENTO = OS.COD_RECEBIMENTO AND OS.COD_FORMA_CONFERENCIA = 'M' AND OS.DTH_FINAL_ATIVIDADE IS NULL)
                    LEFT JOIN ORDEM_SERVICO OS2 ON (NF.COD_RECEBIMENTO = OS2.COD_RECEBIMENTO AND OS2.COD_FORMA_CONFERENCIA = 'C' AND OS2.DTH_FINAL_ATIVIDADE IS NULL)
                  WHERE 
