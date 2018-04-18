@@ -907,32 +907,30 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $repositorios['etiquetaRepo'];
+        $PedidoRepo = $repositorios['pedidoRepo'];
         foreach ($pedidos as $pedido) {
+            $idPedido = $PedidoRepo->getMaxCodPedidoByCodExterno($pedido['codPedido']);
             /** @var Expedicao\Pedido $PedidoEntity */
-
-            $PedidoEntity = $PedidoRepo->findBy(array('codExterno' => $pedido['codPedido']));
-
-            if (!empty($PedidoEntity)) {
-                var_dump($PedidoEntity[0]->getCarga()->getExpedicao()->getStatus());die;
+            $PedidoEntity = $PedidoRepo->find($idPedido);
+            if ($PedidoEntity != null) {
                 $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus();
-                $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido']));
-                $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($pedido['codPedido'],EtiquetaSeparacao::STATUS_CORTADO));
+                $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($idPedido));
+                $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($idPedido,EtiquetaSeparacao::STATUS_CORTADO));
 
                 $SQL = "SELECT *
                           FROM PEDIDO_PRODUTO PP
-                         WHERE PP.COD_PEDIDO = '" . $pedido['codPedido'] . "'
+                         WHERE PP.COD_PEDIDO = '" . $idPedido . "'
                            AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
-                $countProdutosPendentesCorte = count($this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC));
-                var_dump($countProdutosPendentesCorte);die;
-                if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
+                $produtosCorte = $this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+                $novoSequencial = $PedidoRepo->comparaPedidos($pedido['produtos'], $produtosCorte);
+                $countProdutosPendentesCorte = count($produtosCorte);
+
+                if ((($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
                     ($resetaExpedicao && $statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
-                    ($countProdutosPendentesCorte == 0)) {
-
-                    $PedidoRepo->removeReservaEstoque($pedido['codPedido'],false);
+                    ($countProdutosPendentesCorte == 0)) && $novoSequencial == true) {
+                    $PedidoRepo->removeReservaEstoque($idPedido,false);
                     $PedidoRepo->remove($PedidoEntity,false);
-
                 } else {
-
                     if ($qtdTotal != $qtdCortadas && ($statusExpedicao->getId() == Expedicao::STATUS_EM_CONFERENCIA || $statusExpedicao->getId() == Expedicao::STATUS_EM_SEPARACAO)) {
                         if (!$isIntegracaoSQL) {
                             throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");

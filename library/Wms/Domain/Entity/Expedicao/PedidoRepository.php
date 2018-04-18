@@ -29,7 +29,7 @@ class PedidoRepository extends EntityRepository
             if ($entitySigla == null) {
                 throw new \Exception('O tipo de pedido '.$pedido['tipoPedido'].' não esta cadastrado');
             }
-
+            $numSequencial = $this->getMaxCodPedidoByCodExterno($pedido['codPedido'], true);
             $enPedido->setCodExterno($pedido['codPedido']);
             $enPedido->setTipoPedido($entitySigla);
             $enPedido->setLinhaEntrega($pedido['linhaEntrega']);
@@ -41,6 +41,7 @@ class PedidoRepository extends EntityRepository
             $enPedido->setEnvioParaLoja($pedido['envioParaLoja']);
             $enPedido->setIndEtiquetaMapaGerado('N');
             $enPedido->setProprietario((isset($pedido['codProprietario'])) ? $pedido['codProprietario'] : null);
+            $enPedido->setNumSequencial((isset($numSequencial)) ? $numSequencial : null);
             $em->persist($enPedido);
  //           $em->flush();
  //           $em->commit();
@@ -704,9 +705,32 @@ class PedidoRepository extends EntityRepository
         return false;
     }
 
-    public function getMaxCodPedidoByCodExterno($idPedido){
-        $sql = "SELECT COD_PEDIDO FROM PEDIDO WHERE COD_EXTERNO = $idPedido ORDER BY NUM_SEQUENCIAL DESC ";
+    public function getMaxCodPedidoByCodExterno($idPedidoExterno, $numSequencial = false){
+        $sql = "SELECT COD_PEDIDO, NUM_SEQUENCIAL FROM PEDIDO WHERE COD_EXTERNO = $idPedidoExterno ORDER BY NUM_SEQUENCIAL DESC ";
         $result = $this->_em->getConnection()->query($sql)->fetch();
-        return $result['COD_PEDIDO'];
+        if($numSequencial == true){
+            if(!empty($result)){
+                if($result['NUM_SEQUENCIAL'] == null){
+                    $numSequencial = 2;
+                }else{
+                    $numSequencial = $result['NUM_SEQUENCIAL'] + 1;
+                }
+            }
+            return $numSequencial;
+        }else {
+            return $result['COD_PEDIDO'];
+        }
     }
+
+    public function comparaPedidos($produtosNovos, $produtosAntigos){
+        foreach ($produtosNovos as $newProd){
+            foreach ($produtosAntigos as $oldProd){
+                if($newProd['codProduto'] == $oldProd['COD_PRODUTO']){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 }
