@@ -1106,7 +1106,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
 
                             if (empty($embalagemAtual)) {
-                                $msg = "O produto $codProduto grade $grade não tem embalgem ativa para atender a quantidade restante de $quantidadeRestantePedido item(ns)";
+                                $msg = "O produto $codProduto grade $grade não tem embalagem ativa para atender a quantidade restante de $quantidadeRestantePedido item(ns)";
                                 throw new WMS_Exception($msg);
                             }
 
