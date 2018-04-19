@@ -18,7 +18,6 @@
         });
         $('.gTdOpcRow').hover(function () {
             if (($('body').height() - (mousey)) <= ($(this).find('.gOpcRow ul li ul').height() + $(window).scrollTop())) {
-                console.log($(this).find('.gOpcRow ul li ul').height());
                 if ($(this).find('.gOpcRow ul li ul').height() > 110 && $(this).find('.gOpcRow ul li ul').height() < 300) {
                     $(this).find('.gOpcRow ul li ul').css('top', '-100px');
                 }
