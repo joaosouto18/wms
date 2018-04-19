@@ -21,205 +21,208 @@ class Web_EnderecoController extends Crud
         $form->setAttrib('class', 'filtro')
             ->setAttrib('method', 'post');
         if ($values = $form->getParams()) {
-
-            extract($values);
-            $WhereruaI = $WhereruaF = $WherePredioI = $WherePredioF = $WhereNivelI = $WhereNivelF = $WhereAptoI = $WhereAptoI = ' 1 = 1';
-            if(!empty($inicialRua))
-               $WhereruaI = "e.rua >= :inicilaRua";
-            if(!empty($finalRua))
-                $WhereruaF = "e.rua <= :finalRua";
-            if(!empty($inicialPredio))
-                $WherePredioI = "e.predio >= :inicilaPredio";
-            if(!empty($finalPredio))
-                $WherePredioF = "e.predio <= :finalPredio";
-            if(!empty($inicialNivel))
-                $WhereNivelI = "e.nivel >= :inicilaNivel";
-            if(!empty($finalNivel))
-                $WhereNivelF = "e.nivel <= ::finalNivel";
-            if(!empty($inicialApartamento))
-                $WhereAptoI = "e.apartamento >= :inicilaApartamento";
-            if(!empty($finalApartamento))
-                $WhereAptoI = "e.apartamento <= :finalApartamento";
-            $source = $this->em->createQueryBuilder()
-                ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco, e.inventarioBloqueado")
-                ->from('wms:Deposito\Endereco', 'e')
-                ->innerJoin('e.caracteristica', 'c')
-                ->innerJoin('e.areaArmazenagem', 'a')
-                ->innerJoin('e.estruturaArmazenagem', 'ea')
-                ->innerJoin('e.tipoEndereco', 'te')
-                ->where("e.deposito = :idDeposito
+            try {
+                extract($values);
+                $WhereruaI = $WhereruaF = $WherePredioI = $WherePredioF = $WhereNivelI = $WhereNivelF = $WhereAptoI = $WhereAptoF = ' 1 = 1';
+                if (!empty($inicialRua))
+                    $WhereruaI = "e.rua >= :inicilaRua";
+                if (!empty($finalRua))
+                    $WhereruaF = "e.rua <= :finalRua";
+                if (!empty($inicialPredio))
+                    $WherePredioI = "e.predio >= :inicilaPredio";
+                if (!empty($finalPredio))
+                    $WherePredioF = "e.predio <= :finalPredio";
+                if (!empty($inicialNivel))
+                    $WhereNivelI = "e.nivel >= :inicilaNivel";
+                if (!empty($finalNivel))
+                    $WhereNivelF = "e.nivel <= :finalNivel";
+                if (!empty($inicialApartamento))
+                    $WhereAptoI = "e.apartamento >= :inicilaApartamento";
+                if (!empty($finalApartamento))
+                    $WhereAptoF = "e.apartamento <= :finalApartamento";
+                $source = $this->em->createQueryBuilder()
+                    ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco, e.inventarioBloqueado")
+                    ->from('wms:Deposito\Endereco', 'e')
+                    ->innerJoin('e.caracteristica', 'c')
+                    ->innerJoin('e.areaArmazenagem', 'a')
+                    ->innerJoin('e.estruturaArmazenagem', 'ea')
+                    ->innerJoin('e.tipoEndereco', 'te')
+                    ->where("e.deposito = :idDeposito
                         AND ($WhereruaI AND $WhereruaF) 
                         AND ($WherePredioI AND $WherePredioF) 
                         AND ($WhereNivelI AND $WhereNivelF) 
-                        AND ($WhereAptoI AND $WhereAptoI)")
-                ->orderBy('e.descricao')
-                ->setParameter('idDeposito', $this->view->idDepositoLogado);
-            if(!empty($inicialRua))
-                $source->setParameter('inicilaRua', $inicialRua);
-            if(!empty($finalRua))
-                $source ->setParameter('finalRua', $finalRua);
-            if(!empty($inicialPredio))
-                $source->setParameter('inicilaPredio', $inicialPredio);
-            if(!empty($finalPredio))
-                $source->setParameter('finalPredio', $finalPredio);
-            if(!empty($inicialNivel))
-                $source->setParameter('inicilaNivel', $inicialNivel);
-            if(!empty($finalNivel))
-                $source->setParameter('finalNivel', $finalNivel);
-            if(!empty($inicialApartamento))
-                $source->setParameter('inicilaApartamento', $inicialApartamento);
-            if(!empty($finalApartamento))
-                $source->setParameter('finalApartamento', $finalApartamento);
+                        AND ($WhereAptoI AND $WhereAptoF)")
+                    ->orderBy('e.descricao')
+                    ->setParameter('idDeposito', $this->view->idDepositoLogado);
+                if (!empty($inicialRua))
+                    $source->setParameter('inicilaRua', $inicialRua);
+                if (!empty($finalRua))
+                    $source->setParameter('finalRua', $finalRua);
+                if (!empty($inicialPredio))
+                    $source->setParameter('inicilaPredio', $inicialPredio);
+                if (!empty($finalPredio))
+                    $source->setParameter('finalPredio', $finalPredio);
+                if (!empty($inicialNivel))
+                    $source->setParameter('inicilaNivel', $inicialNivel);
+                if (!empty($finalNivel))
+                    $source->setParameter('finalNivel', $finalNivel);
+                if (!empty($inicialApartamento))
+                    $source->setParameter('inicilaApartamento', $inicialApartamento);
+                if (!empty($finalApartamento))
+                    $source->setParameter('finalApartamento', $finalApartamento);
 
-            if (!empty($lado)) {
-                if ($lado == "P")
-                    $source->andWhere("MOD(e.predio,2) = 0");
-                if ($lado == "I")
-                    $source->andWhere("MOD(e.predio,2) = 1");
+                if (!empty($lado)) {
+                    if ($lado == "P")
+                        $source->andWhere("MOD(e.predio,2) = 0");
+                    if ($lado == "I")
+                        $source->andWhere("MOD(e.predio,2) = 1");
+                }
+                if (!empty($situacao))
+                    $source->andWhere("e.situacao = :situacao")
+                        ->setParameter('situacao', $situacao);
+                if (!empty($status))
+                    $source->andWhere("e.status = :status")
+                        ->setParameter('status', $status);
+                if (!empty($idCaracteristica))
+                    $source->andWhere("e.idCaracteristica = :caracteristica")
+                        ->setParameter("caracteristica", $idCaracteristica);
+                if (!empty($idEstruturaArmazenagem))
+                    $source->andWhere("e.idEstruturaArmazenagem = :estrutArmaz")
+                        ->setParameter("estrutArmaz", $idEstruturaArmazenagem);
+                if (!empty($idTipoEndereco))
+                    $source->andWhere("e.idTipoEndereco = :tipoEnd")
+                        ->setParameter("tipoEnd", $idTipoEndereco);
+                if (!empty($idAreaArmazenagem))
+                    $source->andWhere("e.idAreaArmazenagem = :areaArm")
+                        ->setParameter("areaArm", $idAreaArmazenagem);
+
+                $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
+                $grid->addMassAction('edit', 'Editar');
+                $grid->addMassAction('mass-delete', 'Remover');
+                $grid->addMassAction('bloquear', 'Bloquear');
+                $grid->addMassAction('desbloquear', 'Desbloquear');
+                $grid->addMassAction('ativar', 'Ativar');
+                $grid->addMassAction('desativar', 'Desativar');
+                $grid->addColumn(array(
+                    'label' => 'Endereço',
+                    'index' => 'descricao'
+                ))
+                    ->addColumn(array(
+                        'label' => 'Área de Armazenagem',
+                        'index' => 'areaArmazenagem'
+                    ))
+                    ->addColumn(array(
+                        'label' => 'Característica',
+                        'index' => 'dscCaracteristica'
+                    ))
+                    ->addColumn(array(
+                        'label' => 'Estrutura Armazenagem',
+                        'index' => 'estruturaArmazenagem'
+                    ))
+                    ->addColumn(array(
+                        'label' => 'Tipo Endereço',
+                        'index' => 'dscTipoEndereco'
+                    ))
+                    ->addColumn(array(
+                        'label' => 'Status',
+                        'index' => 'status',
+                        'render' => 'OcupadoOrDisponivel'
+                    ))
+                    ->addColumn(array(
+                        'label' => 'Situação',
+                        'index' => 'situacao',
+                        'render' => 'BloqueadoOrDesbloqueado'
+                    ))
+                    ->addColumn(array(
+                        'label' => 'Disponibilidade',
+                        'index' => 'ativo',
+                        'render' => 'AtivoOrInativo'
+                    ))
+                    ->addcolumn(array(
+                        'label' => 'En Bloqueado',
+                        'index' => 'inventarioBloqueado',
+                        'render' => 'SimOrNao'
+                    ))
+                    ->addAction(array(
+                        'label' => 'Editar',
+                        'actionName' => 'edit',
+                        'pkIndex' => 'id',
+                    ))
+                    ->addAction(array(
+                        'label' => 'Bloquear',
+                        'actionName' => 'bloquear',
+                        'pkIndex' => 'id',
+                        'condition' => function ($row) {
+                            return $row['situacao'] == 'D';
+                        }
+                    ))
+                    ->addAction(array(
+                        'label' => 'Desbloquear',
+                        'actionName' => 'desbloquear',
+                        'pkIndex' => 'id',
+                        'condition' => function ($row) {
+                            return $row['situacao'] == 'B';
+                        }
+                    ))
+                    ->addAction(array(
+                        'label' => 'Status Ativar',
+                        'actionName' => 'ativar',
+                        'pkIndex' => 'id',
+                        'condition' => function ($row) {
+                            return $row['status'] == 'O';
+                        }
+                    ))
+                    ->addAction(array(
+                        'label' => 'Status Desativar',
+                        'actionName' => 'desativar',
+                        'pkIndex' => 'id',
+                        'condition' => function ($row) {
+                            return $row['status'] == 'D';
+                        }
+                    ))
+                    ->addAction(array(
+                        'label' => 'Disponibilidade Ativar',
+                        'actionName' => 'disponativar',
+                        'pkIndex' => 'id',
+                        'condition' => function ($row) {
+                            return $row['ativo'] == 'N';
+                        }
+                    ))
+                    ->addAction(array(
+                        'label' => 'Disponibilidade Inativar',
+                        'actionName' => 'disponinativar',
+                        'pkIndex' => 'id',
+                        'condition' => function ($row) {
+                            return $row['ativo'] == 'S';
+                        }
+                    ))
+                    ->addAction(array(
+                        'label' => 'Excluir',
+                        'actionName' => 'delete',
+                        'pkIndex' => 'id',
+                        'cssClass' => 'del'
+                    ))
+                    ->addAction(array(
+                        'label' => 'Etiqueta modelo 1',
+                        'actionName' => 'imprimir',
+                        'pkIndex' => 'descricao',
+                        'cssClass' => 'pdf',
+                        'params' => array('modelo' => '1')
+                    ))
+                    ->addAction(array(
+                        'label' => 'Etiqueta modelo 2',
+                        'actionName' => 'imprimir',
+                        'pkIndex' => 'descricao',
+                        'cssClass' => 'pdf',
+                        'params' => array('modelo' => '2')
+                    ));
+
+                $this->view->grid = $grid->build();
+                $form->setSession($values)
+                    ->populate($values);
+            } catch (Exception $e) {
+                $this->addFlashMessage("Error", $e->getMessage());
             }
-            if (!empty($situacao))
-                $source->andWhere("e.situacao = :situacao")
-                    ->setParameter('situacao', $situacao);
-            if (!empty($status))
-                $source->andWhere("e.status = :status")
-                    ->setParameter('status', $status);
-            if (!empty($idCaracteristica))
-                $source->andWhere("e.idCaracteristica = ?1")
-                    ->setParameter(1, $idCaracteristica);
-            if (!empty($idEstruturaArmazenagem))
-                $source->andWhere("e.idEstruturaArmazenagem = ?2")
-                    ->setParameter(2, $idEstruturaArmazenagem);
-            if (!empty($idTipoEndereco))
-                $source->andWhere("e.idTipoEndereco = ?4")
-                    ->setParameter(4, $idTipoEndereco);
-            if (!empty($idAreaArmazenagem))
-                $source->andWhere("e.idAreaArmazenagem = ?3")
-                    ->setParameter(3, $idAreaArmazenagem);
-
-            $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
-            $grid->addMassAction('edit', 'Editar');
-            $grid->addMassAction('mass-delete', 'Remover');
-            $grid->addMassAction('bloquear', 'Bloquear');
-            $grid->addMassAction('desbloquear', 'Desbloquear');
-            $grid->addMassAction('ativar', 'Ativar');
-            $grid->addMassAction('desativar', 'Desativar');
-            $grid->addColumn(array(
-                'label' => 'Endereço',
-                'index' => 'descricao'
-            ))
-                ->addColumn(array(
-                    'label' => 'Área de Armazenagem',
-                    'index' => 'areaArmazenagem'
-                ))
-                ->addColumn(array(
-                    'label' => 'Característica',
-                    'index' => 'dscCaracteristica'
-                ))
-                ->addColumn(array(
-                    'label' => 'Estrutura Armazenagem',
-                    'index' => 'estruturaArmazenagem'
-                ))
-                ->addColumn(array(
-                    'label' => 'Tipo Endereço',
-                    'index' => 'dscTipoEndereco'
-                ))
-                ->addColumn(array(
-                    'label' => 'Status',
-                    'index' => 'status',
-                    'render' => 'OcupadoOrDisponivel'
-                ))
-                ->addColumn(array(
-                    'label' => 'Situação',
-                    'index' => 'situacao',
-                    'render' => 'BloqueadoOrDesbloqueado'
-                ))
-                ->addColumn(array(
-                    'label' => 'Disponibilidade',
-                    'index' => 'ativo',
-                    'render' => 'AtivoOrInativo'
-                ))
-                ->addcolumn(array(
-                    'label' => 'En Bloqueado',
-                    'index' => 'inventarioBloqueado',
-                    'render' => 'SimOrNao'
-                ))
-                ->addAction(array(
-                    'label' => 'Editar',
-                    'actionName' => 'edit',
-                    'pkIndex' => 'id',
-                ))
-                ->addAction(array(
-                    'label' => 'Bloquear',
-                    'actionName' => 'bloquear',
-                    'pkIndex' => 'id',
-                    'condition' => function ($row) {
-                        return $row['situacao'] == 'D';
-                    }
-                ))
-                ->addAction(array(
-                    'label' => 'Desbloquear',
-                    'actionName' => 'desbloquear',
-                    'pkIndex' => 'id',
-                    'condition' => function ($row) {
-                        return $row['situacao'] == 'B';
-                    }
-                ))
-                ->addAction(array(
-                    'label' => 'Status Ativar',
-                    'actionName' => 'ativar',
-                    'pkIndex' => 'id',
-                    'condition' => function ($row) {
-                        return $row['status'] == 'O';
-                    }
-                ))
-                ->addAction(array(
-                    'label' => 'Status Desativar',
-                    'actionName' => 'desativar',
-                    'pkIndex' => 'id',
-                    'condition' => function ($row) {
-                        return $row['status'] == 'D';
-                    }
-                ))
-                ->addAction(array(
-                    'label' => 'Disponibilidade Ativar',
-                    'actionName' => 'disponativar',
-                    'pkIndex' => 'id',
-                    'condition' => function ($row) {
-                        return $row['ativo'] == 'N';
-                    }
-                ))
-                ->addAction(array(
-                    'label' => 'Disponibilidade Inativar',
-                    'actionName' => 'disponinativar',
-                    'pkIndex' => 'id',
-                    'condition' => function ($row) {
-                        return $row['ativo'] == 'S';
-                    }
-                ))
-                ->addAction(array(
-                    'label' => 'Excluir',
-                    'actionName' => 'delete',
-                    'pkIndex' => 'id',
-                    'cssClass' => 'del'
-                ))
-                ->addAction(array(
-                    'label' => 'Etiqueta modelo 1',
-                    'actionName' => 'imprimir',
-                    'pkIndex' => 'descricao',
-                    'cssClass' => 'pdf',
-                    'params' => array('modelo' => '1')
-                ))
-                ->addAction(array(
-                    'label' => 'Etiqueta modelo 2',
-                    'actionName' => 'imprimir',
-                    'pkIndex' => 'descricao',
-                    'cssClass' => 'pdf',
-                    'params' => array('modelo' => '2')
-                ));
-
-            $this->view->grid = $grid->build();
-            $form->setSession($values)
-                ->populate($values);
         }
 
         $this->view->form = $form;
