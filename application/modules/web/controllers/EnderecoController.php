@@ -35,7 +35,7 @@ class Web_EnderecoController extends Crud
             if(!empty($inicialNivel))
                 $WhereNivelI = "e.nivel >= :inicilaNivel";
             if(!empty($finalNivel))
-                $WhereNivelF = "e.nivel <= ::finalNivel";
+                $WhereNivelF = "e.nivel <= :finalNivel";
             if(!empty($inicialApartamento))
                 $WhereAptoI = "e.apartamento >= :inicilaApartamento";
             if(!empty($finalApartamento))
@@ -84,17 +84,17 @@ class Web_EnderecoController extends Crud
                 $source->andWhere("e.status = :status")
                     ->setParameter('status', $status);
             if (!empty($idCaracteristica))
-                $source->andWhere("e.idCaracteristica = ?1")
-                    ->setParameter(1, $idCaracteristica);
+                $source->andWhere("e.idCaracteristica = :caracteristica")
+                    ->setParameter("caracteristica", $idCaracteristica);
             if (!empty($idEstruturaArmazenagem))
-                $source->andWhere("e.idEstruturaArmazenagem = ?2")
-                    ->setParameter(2, $idEstruturaArmazenagem);
+                $source->andWhere("e.idEstruturaArmazenagem = :estrutArmaz")
+                    ->setParameter("estrutArmaz", $idEstruturaArmazenagem);
             if (!empty($idTipoEndereco))
-                $source->andWhere("e.idTipoEndereco = ?4")
-                    ->setParameter(4, $idTipoEndereco);
+                $source->andWhere("e.idTipoEndereco = :tipoEnd")
+                    ->setParameter("tipoEnd", $idTipoEndereco);
             if (!empty($idAreaArmazenagem))
-                $source->andWhere("e.idAreaArmazenagem = ?3")
-                    ->setParameter(3, $idAreaArmazenagem);
+                $source->andWhere("e.idAreaArmazenagem = :areaArm")
+                    ->setParameter("areaArm", $idAreaArmazenagem);
 
             $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
             $grid->addMassAction('edit', 'Editar');
