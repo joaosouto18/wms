@@ -689,6 +689,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
+        $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($idPedido);
         $pedidoEn = $pedidoRepo->find($idPedido);
 
         if ($pedidoEn == null) {
@@ -925,24 +926,29 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $novoSequencial = $PedidoRepo->comparaPedidos($pedido['produtos'], $produtosCorte);
                 $countProdutosPendentesCorte = count($produtosCorte);
 
-                if ((($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
+                if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
                     ($resetaExpedicao && $statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
-                    ($countProdutosPendentesCorte == 0)) && $novoSequencial == true) {
+                    ($countProdutosPendentesCorte == 0)) {
                     $PedidoRepo->removeReservaEstoque($idPedido,false);
                     $PedidoRepo->remove($PedidoEntity,false);
                 } else {
-                    if ($qtdTotal != $qtdCortadas && ($statusExpedicao->getId() == Expedicao::STATUS_EM_CONFERENCIA || $statusExpedicao->getId() == Expedicao::STATUS_EM_SEPARACAO)) {
+                    if($novoSequencial == true &&
+                      ($statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO ||
+                       $statusExpedicao->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO)){
+                        return true;
+                    }else{
+                        if ($qtdTotal != $qtdCortadas && ($statusExpedicao->getId() == Expedicao::STATUS_EM_CONFERENCIA || $statusExpedicao->getId() == Expedicao::STATUS_EM_SEPARACAO)) {
+                            if (!$isIntegracaoSQL) {
+                                throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                            } else {
+                                return false;
+                            }
+                        }
                         if (!$isIntegracaoSQL) {
-                            throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                            throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower($statusExpedicao->getSigla()));
                         } else {
                             return false;
                         }
-                    }
-
-                    if (!$isIntegracaoSQL){
-                        throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower( $statusExpedicao->getSigla()));
-                    } else {
-                        return false;
                     }
                 }
             }
