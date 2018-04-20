@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
     Wms\Domain\Entity\Recebimento;
+use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Produto\EmbalagemRepository;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueEnderecamento;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueEnderecamentoRepository;
@@ -477,6 +478,157 @@ class PaleteRepository extends EntityRepository {
         if ($paletes == NULL) {
             throw new \Exception("Nenhum Palete Selecionado");
         }
+
+        foreach ($paletes as $palete) {
+            /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
+            $paleteEn = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete")->find($palete);
+
+            if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
+                throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
+            }
+
+            $produtos = $paleteEn->getProdutos();
+            if ($produtos) {
+                $embalagem = $produtos[0]->getEmbalagemEn();
+                $pickingEn = $embalagem->getEndereco();
+                $codProduto = $produtos[0]->getCodProduto();
+                $grade = $produtos[0]->getGrade();
+                $capacidadePicking = $embalagem->getCapacidadePicking();
+                $quantidadePalete = $produtos[0]->getQtd();
+
+                if ($pickingEn == Null) {
+                    throw new \Exception("Não existe endereço de picking para o produto " . $embalagem->getCodProduto() . " / " . $embalagem->getGrade());
+                }
+
+                $idVolume = null;
+                $volumes = array();
+                if ($produtos[0]->getCodProdutoVolume() != NULL) {
+                    $idVolume = $produtos[0]->getCodProdutoVolume();
+                    foreach ($produtos as $volume) {
+                        $volumes[] = $volume->getCodProdutoVolume();
+                    }
+                }
+
+                $saldoPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto, $grade, $pickingEn->getId(), $volumes);
+                $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "E");
+                $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "S");
+                $saldoPickingVirtual = Math::adicionar(Math::adicionar($saldoPickingReal, $reservaEntradaPicking), $reservaSaidaPicking);
+
+                if ($completaPicking) {
+                    $quantidadeEnderecarPicking = PaleteProdutoRepository::getQuantidadeEnderecarPicking($capacidadePicking, $saldoPickingVirtual, $quantidadePalete);
+                    if (is_string($quantidadeEnderecarPicking)) {
+                        throw new \Exception($quantidadeEnderecarPicking);
+                    }
+
+                    $paleteProdutoEn = $this->getEntityManager()->getReference('wms:Enderecamento\PaleteProduto', $produtos[0]->getId());
+                    $paleteProdutoEn->setQtd($quantidadeEnderecarPicking);
+                    $this->getEntityManager()->persist($paleteProdutoEn);
+
+                } else {
+                    if (($saldoPickingVirtual + $quantidadePalete) > $capacidadePicking) {
+                        $Resultado = "Quantidade nos paletes superior a capacidade do picking";
+                    }
+                }
+
+                $this->alocaEnderecoPalete($paleteEn->getId(), $embalagem->getEndereco()->getId());
+            }
+            $this->getEntityManager()->flush();
+        }
+        return $Resultado;
+    }
+
+    /**
+     * @param $produtoEn Produto
+     * @param $idRecebimento
+     * @return string
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
+     */
+    public function encherPicking($produtoEn, $idRecebimento) {
+        $Resultado = "";
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
+        $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+
+        /** @var Recebimento $recebimentoEn */
+        $recebimentoEn = $this->_em->find("wms:Recebimento", $idRecebimento);
+
+        if ($recebimentoEn->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
+            throw new \Exception("Só é permitido endereçar no picking quando o recebimento estiver finalizado");
+        }
+
+        if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
+            $embalagensEn = $produtoEn->getEmbalagens()->filter(
+                function ($item) {
+                    return is_null($item->getDataInativacao());
+                }
+            )->toArray();
+
+            usort($embalagensEn, function ($itemA, $itemB) {
+                return $itemA->getQuantidade() < $itemB->getQuantidade();
+            });
+        } else {
+            $idVolume = null;
+            $volumes = array();
+            if ($produtos[0]->getCodProdutoVolume() != NULL) {
+                $idVolume = $produtos[0]->getCodProdutoVolume();
+                foreach ($produtos as $volume) {
+                    $volumes[] = $volume->getCodProdutoVolume();
+                }
+            }
+        }
+
+        $this->deletaPaletesEmRecebimento($recebimentoEn->getId(), $idProduto, $grade);
+        if (count($produtoEn->getVolumes()) == 0) {
+            $tipo = "E";
+            $qtdEnderecada = $this->getQtdEnderecadaByNormaPaletizacao($recebimentoEn->getId(), $idProduto, $grade, $tipo);
+            $idOs = $conferenciaRepo->getLastOsRecebimentoEmbalagem($idRecebimento, $idProduto, $grade);
+            $qtdRecebida = $conferenciaRepo->getQtdByRecebimentoEmbalagemAndNorma($idOs, $idProduto, $grade);
+        } else {
+            $tipo = "V";
+            $qtdEnderecada = $this->getQtdEnderecadaByNormaPaletizacao($recebimentoEn->getId(), $idProduto, $grade, $tipo);
+            $idOs = $conferenciaRepo->getLastOsRecebimentoVolume($idRecebimento, $idProduto, $grade);
+            $qtdRecebida = $conferenciaRepo->getQtdByRecebimentoVolumeAndNorma($idOs, $idProduto, $grade);
+        }
+
+        if (count($qtdRecebida) <= 0) {
+            if ($throwException == true) {
+                throw new Exception("O recebimento do produto $idProduto não possui unitizador ou ainda não foi conferido");
+            }
+        }
+
+        $pickingEn = $embalagem->getEndereco();
+        $codProduto = $produtos[0]->getCodProduto();
+        $grade = $produtos[0]->getGrade();
+        $capacidadePicking = $embalagem->getCapacidadePicking();
+        $quantidadePalete = $produtos[0]->getQtd();
+
+        if ($pickingEn == Null) {
+            throw new \Exception("Não existe endereço de picking para o produto " . $embalagem->getCodProduto() . " / " . $embalagem->getGrade());
+        }
+
+        $idVolume = null;
+        $volumes = array();
+        if ($produtos[0]->getCodProdutoVolume() != NULL) {
+            $idVolume = $produtos[0]->getCodProdutoVolume();
+            foreach ($produtos as $volume) {
+                $volumes[] = $volume->getCodProdutoVolume();
+            }
+        }
+
+        $saldoPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto, $grade, $pickingEn->getId(), $volumes);
+        $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "E");
+        $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "S");
+        $saldoPickingVirtual = Math::adicionar(Math::adicionar($saldoPickingReal, $reservaEntradaPicking), $reservaSaidaPicking);
+
+
+        $saldoPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($codProduto, $grade, $pickingEn->getId(), $volumes);
+        $reservaEntradaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "E");
+        $reservaSaidaPicking = $reservaEstoqueRepo->getQtdReservadaByProduto($codProduto, $grade, $idVolume, $pickingEn->getId(), "S");
+        $saldoPickingVirtual = Math::adicionar(Math::adicionar($saldoPickingReal, $reservaEntradaPicking), $reservaSaidaPicking);
+
 
         foreach ($paletes as $palete) {
             /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
