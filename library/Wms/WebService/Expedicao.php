@@ -911,8 +911,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $PedidoRepo = $repositorios['pedidoRepo'];
         foreach ($pedidos as $pedido) {
             $idPedido = $PedidoRepo->getMaxCodPedidoByCodExterno($pedido['codPedido']);
+            $PedidoEntity = null;
+            if(!empty($idPedido)){
+                $PedidoEntity = $PedidoRepo->find($idPedido);
+            }
             /** @var Expedicao\Pedido $PedidoEntity */
-            $PedidoEntity = $PedidoRepo->find($idPedido);
             if ($PedidoEntity != null) {
                 $statusExpedicao = $PedidoEntity->getCarga()->getExpedicao()->getStatus();
                 $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($idPedido));
