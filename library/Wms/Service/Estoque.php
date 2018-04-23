@@ -297,7 +297,8 @@ class Estoque
             'os' => $this->getOs(),
             'usuario' => $this->getUsuario(),
             'estoqueRepo' => $this->getEstoqueRepo(),
-            'validade' => $this->getValidade()
+            'validade' => $this->getValidade(),
+            'dthEntrada' => new \DateTime()
         );
         if (is_null($array['produto'])) {
             return false;

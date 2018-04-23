@@ -29,6 +29,7 @@ class EstoqueProprietarioRepository extends EntityRepository
     public function buildMovimentacaoEstoque($codProduto, $grade, $qtd, $operacao, $codPessoa, $codOperacao = null, $codOperacaoDetalhe = null, $cnpjGrupoExcluir = array()){
         $saldo = $this->getSaldoProp($codProduto, $grade, $codPessoa);
         $saldoFinal = $saldo + $qtd;
+
         /**
          * Verifica se é uma operação credito ou debito do estoque
          */
@@ -57,7 +58,10 @@ class EstoqueProprietarioRepository extends EntityRepository
                     if($qtd < 0){
                         $this->save($codProduto, $grade, ($nextProp['SALDO_FINAL'] * -1), $operacao, 0, $nextProp['COD_PESSOA'], $codOperacao, $codOperacaoDetalhe);
                     }else{
-                        $this->save($codProduto, $grade, $saldoFinal, $operacao, $qtd, $codPessoa, $codOperacao, $codOperacaoDetalhe);
+                        $this->save($codProduto, $grade, (($nextProp['SALDO_FINAL'] - $qtd) * -1), $operacao, $qtd, $nextProp['COD_PESSOA'], $codOperacao, $codOperacaoDetalhe);
+                        if($qtd > 0){
+                            break;
+                        }
                     }
                 }
                 $cnpjGrupoExcluir[] = $cnpj;
@@ -105,6 +109,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                   NUM_CNPJ  LIKE '$cnpj%' AND
                   EP.COD_PRODUTO = $codProduto AND
                   EP.DSC_GRADE = '$grade' AND
+                  EP.SALDO_FINAL > 0 AND
                   EP.COD_ESTOQUE_PROPRIETARIO IN (
                       SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO 
                       WHERE COD_PESSOA NOT IN (".implode(',',$propExclui).") 
