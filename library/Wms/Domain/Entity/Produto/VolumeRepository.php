@@ -224,4 +224,34 @@ class VolumeRepository extends EntityRepository
 
         return $dql->getQuery()->getResult();
     }
+
+    /**
+     * @param $idProduto
+     * @param $grade
+     * @return array
+     * @throws \Exception
+     */
+    public function getCapacidadeAndPickingVol($idProduto, $grade) {
+
+        $sql = "SELECT DISTINCT COD_DEPOSITO_ENDERECO, CAPACIDADE_PICKING 
+                FROM PRODUTO_VOLUME WHERE COD_PRODUTO = '$idProduto' AND DSC_GRADE = '$grade' AND DTH_INATIVACAO IS NULL";
+
+        $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (empty($result))
+            throw new \Exception("O produto $idProduto grade $grade não tem volume ativo");
+
+        $idPicking = $result[0]['COD_DEPOSITO_ENDERECO'];
+        $capacidade = $result[0]['CAPACIDADE_PICKING'];
+
+        if (empty($idPicking))
+            throw new \Exception("O produto $idProduto grade $grade não tem picking definido");
+
+        if (empty($capacidade))
+            throw new \Exception("O produto $idProduto grade $grade não tem capacidade de picking definida");
+
+        $pickingEn = $this->_em->find("wms:Deposito\Endereco", $idPicking);
+
+        return [$pickingEn, $capacidade];
+    }
 }

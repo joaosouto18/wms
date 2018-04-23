@@ -11,7 +11,7 @@ if (count($this->produtos) > 0):
     <form id="formGerarRecebmento" action="/enderecamento/produto/alimentar-picking-ajax/id/<?php echo $this->recebimento->getId() ?>" method="post">
         <div class="gControl">
             <div class="gPager" style="width: 100%">
-                <input type="submit" name="submit" class="btn" style="float:right" title="Endereça no picking até o limite" value="Endereçar Todos no Picking" />
+                <input type="submit" name="submit" class="btn" style="float:right" title="Endereça no picking até o limite" value="Abastecer Picking" />
                 <span>Total de <?php echo count($this->produtos) ?> registros encontrados.</span>
                 <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
             </div>
@@ -69,7 +69,7 @@ endif;
 ?>
 
 <script>
-    $(document).ready(function(){
+    $(function(){
         $('#todos').live('click',function(){
             var checked_status = this.checked;
             $("input").each(function()
@@ -77,5 +77,16 @@ endif;
                 this.checked = checked_status;
             });
         });
+
+        $("#formGerarRecebmento").submit(function (e) {
+            if ($("input[name*='produtos[]']:checked").length === 0) {
+                $.wmsDialogAlert({
+                    title: "Alerta",
+                    msg: "Selecione ao menos um produto"
+                });
+                e.preventDefault();
+                return false;
+            }
+        })
     });
 </script>

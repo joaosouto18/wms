@@ -197,15 +197,16 @@ class Enderecamento_ProdutoController extends Action
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
 
+        $this->_em->beginTransaction();
         try {
-            $qtdNaoEnderecada = $
-            foreach ($produtos as $prodGrade) {
-                $paleteRepo->encherPicking($produtoEn);
-            }
+            $paleteRepo->encherPicking($produtos, $recebimento);
+            $this->_em->commit();
+            $this->addFlashMessage("success", "Endereçamento reservado com sucesso!");
         } catch (Exception $e) {
-            $this->addFlashMessage("Error", $e->getMessage());
+            $this->_em->rollback();
+            $this->addFlashMessage("error", $e->getMessage());
         }
 
-        $this->redirect("index","produto","enderecamento");
+        $this->redirect("index","produto","enderecamento", ["id" => $recebimento]);
     }
 } 
