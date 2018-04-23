@@ -259,6 +259,17 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
+                'label' => 'Relatório de Volumes Embalados',
+                'modelName' => 'expedicao',
+                'controllerName' => 'index',
+                'actionName' => 'relatorio-volume-embalado-ajax',
+                'condition' => function ($row) {
+                    return $row['status'] == "FINALIZADO";
+                },
+                'pkIndex' => 'id',
+                'cssClass' => 'pdf'
+            ))
+            ->addAction(array(
                 'label' => 'Cancelar Expedição',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'index',

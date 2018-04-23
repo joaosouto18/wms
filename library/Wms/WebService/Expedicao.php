@@ -1373,19 +1373,21 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
     public function findRotaPracaByIdExterno($repositorios, $itinerario)
     {
-        $rotaEntity  = $repositorios['rotaRepo']->findOneBy(array('codRotaExterno' => $itinerario['idItinerario']));
-        $pracaEntity = $repositorios['pracaRepo']->findOneBy(array('codPracaExterno' => $itinerario['idPraca']));
-
-        if (!$rotaEntity) {
-            $rotaEntity = $repositorios['rotaRepo']->save($itinerario['idItinerario'], $itinerario['nomeItinerario']);
-        }
-        if (!$pracaEntity) {
-            $pracaEntity = $repositorios['pracaRepo']->save($itinerario['idPraca'], $itinerario['nomePraca']);
-        }
-
-        $rotaPracaEntity = $repositorios['rotaPracaRepo']->findOneBy(array('rota' => $rotaEntity, 'praca' => $pracaEntity));
-        if (!$rotaPracaEntity) {
-            $rotaPracaEntity = $repositorios['rotaPracaRepo']->save($rotaEntity, $pracaEntity);
+        if(empty($itinerario['idPraca'])){
+            $rotaEntity = $pracaEntity = $rotaPracaEntity = null;
+        }else {
+            $rotaEntity = $repositorios['rotaRepo']->findOneBy(array('codRotaExterno' => $itinerario['idItinerario']));
+            $pracaEntity = $repositorios['pracaRepo']->findOneBy(array('codPracaExterno' => $itinerario['idPraca']));
+            if (!$rotaEntity) {
+                $rotaEntity = $repositorios['rotaRepo']->save($itinerario['idItinerario'], $itinerario['nomeItinerario']);
+            }
+            if (!$pracaEntity) {
+                $pracaEntity = $repositorios['pracaRepo']->save($itinerario['idPraca'], $itinerario['nomePraca']);
+            }
+            $rotaPracaEntity = $repositorios['rotaPracaRepo']->findOneBy(array('rota' => $rotaEntity, 'praca' => $pracaEntity));
+            if (!$rotaPracaEntity) {
+                $rotaPracaEntity = $repositorios['rotaPracaRepo']->save($rotaEntity, $pracaEntity);
+            }
         }
         return $array = array(
             'rotaEntity' => $rotaEntity,

@@ -1559,10 +1559,9 @@ class MapaSeparacao extends eFPDF {
 
                 if ($endereco != null)
                     $dscEndereco = $endereco->getDescricao();
-
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
                     $pesoTotal += Math::multiplicar(str_replace(',', '.', $embalagemEn->getPeso()), str_replace(',', '.', $quantidade));
-                    $cubagemTotal += Math::multiplicar(str_replace(',', '.', $embalagemEn->getCubagem()), str_replace(',', '.', $quantidade));
+                    $cubagemTotal += Math::multiplicar(str_replace(',', '.', str_replace('.', '', $embalagemEn->getCubagem())), str_replace(',', '.', $quantidade));
                 }
 
                 $this->Cell(20, 1, " ", 0, 1);

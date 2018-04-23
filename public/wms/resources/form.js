@@ -18,8 +18,11 @@
         });
         $('.gTdOpcRow').hover(function () {
             if (($('body').height() - (mousey)) <= ($(this).find('.gOpcRow ul li ul').height() + $(window).scrollTop())) {
-                if ($(this).find('.gOpcRow ul li ul').height() > 110) {
-                    $(this).find('.gOpcRow ul li ul').css('top', '-150px');
+                if ($(this).find('.gOpcRow ul li ul').height() > 110 && $(this).find('.gOpcRow ul li ul').height() < 300) {
+                    $(this).find('.gOpcRow ul li ul').css('top', '-100px');
+                }
+                if ($(this).find('.gOpcRow ul li ul').height() > 299) {
+                    $(this).find('.gOpcRow ul li ul').css('top', '-250px');
                 }
             } else {
                 $(this).find('.gOpcRow ul li ul').css('top', '0px');

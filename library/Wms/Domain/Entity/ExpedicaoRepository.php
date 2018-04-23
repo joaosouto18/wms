@@ -114,6 +114,7 @@ class ExpedicaoRepository extends EntityRepository {
                       P.COD_PESSOA AS COD_CLIENTE,
                       PESS.NOM_PESSOA,
                       CL.COD_PRACA,
+                      CL.COD_ROTA,
                       PP.COD_PEDIDO_PRODUTO,
                       PP.COD_PRODUTO,
                       PP.DSC_GRADE,
@@ -460,133 +461,35 @@ class ExpedicaoRepository extends EntityRepository {
      */
     private function prepareArrayRessup($arrItens, $quebraPulmaoDoca = Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA, $dadosProdutos, $repositorios)
     {
-        switch ($quebraPulmaoDoca) {
-            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO:
-                return self::getArraysByQuebraPulmaoDocaExpedicao($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
-            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CARGA:
-                return self::getArraysByQuebraPulmaoDocaCarga($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
-            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA:
-                return self::getArraysByQuebraPulmaoDocaPraca($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
-            case Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE:
-                return self::getArraysByQuebraPulmaoDocaCliente($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
-            default:
-                return self::getArraysSaidaPadrao($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
+        $args = [
+            Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO => "COD_EXPEDICAO",
+            Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CARGA => "COD_CARGA",
+            Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_ROTA => "COD_ROTA",
+            Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA => "COD_PRACA",
+            Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE => "COD_CLIENTE"
+        ];
+
+        if ($quebraPulmaoDoca != Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA) {
+            return self::getArraysByCriterio($quebraPulmaoDoca, $arrItens, $args[$quebraPulmaoDoca], $dadosProdutos, $repositorios);
+        } else {
+            return self::getArraysSaidaPadrao($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
         }
     }
 
-    private function getArraysByQuebraPulmaoDocaExpedicao($quebra, $arrItens, $dadosProdutos, $repositorios)
+    private function getArraysByCriterio($quebra, $arrItens, $strCriterio, $dadosProdutos, $repositorios)
     {
         $sumQtdItemExpedicao = array();
         foreach($arrItens as $itemPedido) {
             $codProduto = $itemPedido['COD_PRODUTO'];
             $grade = $itemPedido['DSC_GRADE'];
             $idExpedicao = $itemPedido['COD_EXPEDICAO'];
-            $codCriterio = $itemPedido['COD_EXPEDICAO'];
-            $idPedido = $itemPedido['COD_PEDIDO'];
-
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
-        }
-
-        $itensReservar = array();
-        $arrEstoqueReservado = array();
-
-        foreach ($sumQtdItemExpedicao as $expedicao => $criterio) {
-            foreach ($criterio as $codCriterio => $produtoArr) {
-                foreach ($produtoArr as $codProduto => $gradeArr) {
-                    foreach ($gradeArr as $grade => $pedidos) {
-                        /** @var Produto $produtoEn */
-                        $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-                        list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $codCriterio, $pedidos, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
-                    }
-                }
-            }
-        }
-
-        return $itensReservar;
-    }
-
-    private function getArraysByQuebraPulmaoDocaCarga($quebra, $arrItens, $dadosProdutos, $repositorios)
-    {
-        $sumQtdItemExpedicao = array();
-        foreach($arrItens as $itemPedido) {
-            $codProduto = $itemPedido['COD_PRODUTO'];
-            $grade = $itemPedido['DSC_GRADE'];
-            $idExpedicao = $itemPedido['COD_EXPEDICAO'];
-            $codCriterio = $itemPedido['COD_CARGA'];
-            $idPedido = $itemPedido['COD_PEDIDO'];
-
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
-        }
-
-        $itensReservar = array();
-        $arrEstoqueReservado = array();
-
-        foreach ($sumQtdItemExpedicao as $expedicao => $criterio) {
-            foreach ($criterio as $codCriterio => $produtoArr) {
-                foreach ($produtoArr as $codProduto => $gradeArr) {
-                    foreach ($gradeArr as $grade => $pedidos) {
-                        /** @var Produto $produtoEn */
-                        $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-                        list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $codCriterio, $pedidos, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
-                    }
-                }
-            }
-        }
-
-        return $itensReservar;
-    }
-
-    /**
-     * @param $quebra
-     * @param $arrItens
-     * @param $dadosProdutos
-     * @param $repositorios
-     * @return array|mixed
-     * @throws \Exception
-     */
-    private function getArraysByQuebraPulmaoDocaPraca($quebra, $arrItens, $dadosProdutos, $repositorios)
-    {
-        $sumQtdItemExpedicao = array();
-        foreach($arrItens as $itemPedido) {
-            $codProduto = $itemPedido['COD_PRODUTO'];
-            $grade = $itemPedido['DSC_GRADE'];
-            $idExpedicao = $itemPedido['COD_EXPEDICAO'];
-            $codCriterio = $itemPedido['COD_PRACA'];
+            $codCriterio = $itemPedido[$strCriterio];
             if (empty($codCriterio)) {
-                throw new \Exception("O cliente $itemPedido[NOM_PESSOA] não tem PRAÇA cadastra, 
-                por isso não pode ser separado nesta quebra de pulmão doca na expedição $idExpedicao");
+                $campo = explode($strCriterio)[1];
+                throw new \Exception("O cliente $itemPedido[NOM_PESSOA] não tem $campo cadastrado(a), 
+                por isso não pode ser agrupado nesta quebra de pulmão doca na expedição $idExpedicao");
             }
-            $idPedido = $itemPedido['COD_PEDIDO'];
 
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
-        }
-
-        $itensReservar = array();
-        $arrEstoqueReservado = array();
-
-        foreach ($sumQtdItemExpedicao as $expedicao => $criterio) {
-            foreach ($criterio as $codCriterio => $produtoArr) {
-                foreach ($produtoArr as $codProduto => $gradeArr) {
-                    foreach ($gradeArr as $grade => $pedidos) {
-                        /** @var Produto $produtoEn */
-                        $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-                        list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $codCriterio, $pedidos, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
-                    }
-                }
-            }
-        }
-
-        return $itensReservar;
-    }
-
-    private function getArraysByQuebraPulmaoDocaCliente($quebra, $arrItens, $dadosProdutos, $repositorios)
-    {
-        $sumQtdItemExpedicao = array();
-        foreach($arrItens as $itemPedido) {
-            $codProduto = $itemPedido['COD_PRODUTO'];
-            $grade = $itemPedido['DSC_GRADE'];
-            $idExpedicao = $itemPedido['COD_EXPEDICAO'];
-            $codCriterio = $itemPedido['COD_CLIENTE'];
             $idPedido = $itemPedido['COD_PEDIDO'];
 
             $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
@@ -1747,17 +1650,20 @@ class ExpedicaoRepository extends EntityRepository {
         $statusFinalizado = Expedicao::STATUS_FINALIZADO;
         $statusCancelada = Expedicao::STATUS_CANCELADO;
         $SQLOrder = " ORDER BY E.COD_EXPEDICAO ";
+        $idModeloDefault = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
 
         $Query = "SELECT DISTINCT E.COD_EXPEDICAO,
                                   TO_CHAR(E.DTH_INICIO,'DD/MM/YYYY') as DTH_INICIO,
                                   '' as ITINERARIO,
                                   '' as CARGA,
                                   S.DSC_SIGLA as STATUS,
-                                  E.DSC_PLACA_EXPEDICAO as PLACA
+                                  E.DSC_PLACA_EXPEDICAO as PLACA,
+                                  MS.COD_MODELO_SEPARACAO || ' - ' || MS.DSC_MODELO_SEPARACAO as MODELO
                     FROM PEDIDO P
                     LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                     LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                     LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+                    LEFT JOIN MODELO_SEPARACAO MS ON (MS.COD_MODELO_SEPARACAO = E.COD_MODELO_SEPARACAO) OR (MS.COD_MODELO_SEPARACAO = $idModeloDefault AND E.COD_MODELO_SEPARACAO IS NULL)
                    WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
                    AND E.COD_STATUS <> $statusFinalizado
                    AND E.COD_STATUS <> $statusCancelada
@@ -2201,14 +2107,13 @@ class ExpedicaoRepository extends EntityRepository {
                               FROM EXPEDICAO E
 							  INNER JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                               LEFT JOIN (SELECT DISTINCT E.COD_EXPEDICAO,
-                                        C.NOM_MOTORISTA,
-                                        C.COD_CARGA_EXTERNO 
+                                        C.NOM_MOTORISTA
                                     FROM CARGA C
                                     INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
 									INNER JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                                     WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . ' 
-                                    GROUP BY E.COD_EXPEDICAO, C.NOM_MOTORISTA, C.COD_CARGA_EXTERNO) MOTORISTA ON MOTORISTA.COD_EXPEDICAO = E.COD_EXPEDICAO
-                              WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
+                                    GROUP BY E.COD_EXPEDICAO, C.NOM_MOTORISTA) MOTORISTA ON MOTORISTA.COD_EXPEDICAO = E.COD_EXPEDICAO
+                              WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . '
                               GROUP BY E.COD_EXPEDICAO) MOT ON MOT.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT COD_EXPEDICAO,
                                     LISTAGG (DSC_ITINERARIO, \',\') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
@@ -2268,15 +2173,20 @@ class ExpedicaoRepository extends EntityRepository {
                               INNER JOIN PRODUTO_PESO              PESO   ON PESO.COD_PRODUTO = NFPROD.COD_PRODUTO AND PESO.DSC_GRADE = NFPROD.DSC_GRADE
                               WHERE 1 = 1  ' . $FullWhere . $andWhere . ' 
                               GROUP BY C.COD_EXPEDICAO) PESO_REENTREGA ON PESO_REENTREGA.COD_EXPEDICAO = E.COD_EXPEDICAO 
-                  LEFT JOIN (
-                              SELECT PED.COD_EXPEDICAO,
+                  
+                  LEFT JOIN (SELECT PED.COD_EXPEDICAO,
                                   LISTAGG (S.DSC_SIGLA,\',\') WITHIN GROUP (ORDER BY S.DSC_SIGLA) TIPO_PEDIDO
                                   FROM SIGLA S
                                   INNER JOIN (
-                                    SELECT P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
-                                    FROM PEDIDO P
-                                    INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
-                                    GROUP BY P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
+                                    SELECT CASE WHEN REENTREGA.COD_CARGA IS NOT NULL THEN 621 ELSE P.COD_TIPO_PEDIDO END COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
+                                    FROM CARGA C
+                                    LEFT JOIN PEDIDO P ON C.COD_CARGA = P.COD_CARGA 
+                                    LEFT JOIN (
+                                      SELECT R.COD_CARGA, C.COD_EXPEDICAO 
+                                      FROM REENTREGA R
+                                      INNER JOIN CARGA C ON R.COD_CARGA = C.COD_CARGA
+                                    ) REENTREGA ON REENTREGA.COD_EXPEDICAO = C.COD_EXPEDICAO 
+                                    GROUP BY P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO, REENTREGA.COD_CARGA 
                                   ) PED ON PED.COD_TIPO_PEDIDO = S.COD_SIGLA
                                   GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO 
                                                                

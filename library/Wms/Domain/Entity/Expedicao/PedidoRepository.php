@@ -60,7 +60,7 @@ class PedidoRepository extends EntityRepository
         if($controleProprietario == 'S'){
             $SQL = "SELECT EP.COD_PESSOA, (EP.QTD * -1) as ATENDIDA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PJ.NUM_CNPJ as CNPJ
                     FROM PEDIDO_PRODUTO PP 
-                    LEFT JOIN ESTOQUE_PROPRIETARIO EP ON (PP.COD_PRODUTO = EP.COD_PRODUTO AND PP.DSC_GRADE = EP.DSC_GRADE AND PP.COD_PEDIDO = EP.COD_OPERACAO_DETALHE)
+                    LEFT JOIN ESTOQUE_PROPRIETARIO EP ON (PP.COD_PRODUTO = EP.COD_PRODUTO AND PP.DSC_GRADE = EP.DSC_GRADE AND PP.COD_PEDIDO = EP.COD_OPERACAO)
                     LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
                     WHERE PP.COD_PEDIDO = $codPedido";
         }else {
@@ -655,7 +655,7 @@ class PedidoRepository extends EntityRepository
             ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
             ->innerJoin('p.carga', 'c')
             ->innerJoin('c.expedicao', 'e')
-            ->where("e.id = $idExpedicao")
+            ->where("e.id = $idExpedicao  and pp.quantidade > pp.qtdCortada")
             ->groupBy('p.codExterno, pe.nome, i.descricao, p.numSequencial')
             ->orderBy('pe.nome', 'asc');
 

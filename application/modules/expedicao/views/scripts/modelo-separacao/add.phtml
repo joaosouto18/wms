@@ -37,7 +37,7 @@
         display: block;
         float: none;
         margin-right: 20px;
-        min-height: 55px;
+        min-height: auto;
     }
 
     form fieldset div.checkbox {
@@ -73,6 +73,10 @@
 
                     <?php echo $this->form->getSubForm('identificacao')->getElement('tipoQuebraVolume'); ?>
                     <?php echo $this->form->getSubForm('identificacao')->getElement('separacaoPc'); ?>
+                    <fieldset id="fieldsetQuebraEmbalados" class="fieldsets">
+                        <legend>Quebras</legend>
+                        <?php echo $this->form->getSubForm('identificacao')->getElement('quebraEmbalados'); ?>
+                    </fieldset>
                     <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoEmbalado'); ?>
                     <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDefaultEmbalado'); ?>
                     <?php echo $this->form->getSubForm('identificacao')->getElement('tipoConferenciaEmbalado'); ?>

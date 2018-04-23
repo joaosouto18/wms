@@ -40,9 +40,15 @@ class Mobile_InventarioController extends Action
 
             $codigoBarras = $this->_getParam('codigoBarras');
             if(empty($codigoBarras)) {
+//                $enderecos = $inventarioService->getEnderecosDivergencia($idInventario, $numContagem, $divergencia);
                 $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
                 $this->view->enderecos = $enderecos;
                 $this->view->botoes = false;
+            }elseif(!empty($divergencia) && $divergencia > 0) {
+                $codigoBarrasSemDigito = \Wms\Util\Coletor::retiraDigitoIdentificador($codigoBarras);
+                $endereco = \Wms\Util\Endereco::formatar($codigoBarrasSemDigito);
+                $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia, $endereco);
+                $this->view->enderecos = $enderecos;
             }
 
             $form = new \Wms\Module\Mobile\Form\Endereco();
@@ -210,7 +216,6 @@ class Mobile_InventarioController extends Action
     public function confirmaContagemAction()
     {
         $params = $this->_getAllParams();
-//        var_dump($params);die;
         $divergencia = $this->_getParam('divergencia', null);
         /** @var \Wms\Service\Mobile\Inventario $inventarioService */
         $inventarioService = $this->_service;
@@ -237,6 +242,10 @@ class Mobile_InventarioController extends Action
         if ((isset($params['itemAitem'])) && ($params['itemAitem'] == 1)) {
             $this->_helper->json(array('status' => 'ok', 'msg' => 'Produto conferido.'));
         }else {
+            if (!empty($divergencia) and $divergencia > 0) {
+                $enderecos = $inventarioService->getEnderecos($idInventario, $numContagem, $divergencia);
+                $this->view->enderecos = $enderecos;
+            }
             $this->render('form');
         }
     }
