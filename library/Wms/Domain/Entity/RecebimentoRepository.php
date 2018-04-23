@@ -322,6 +322,13 @@ class RecebimentoRepository extends EntityRepository {
                 'exception' => null,
                 'concluido' => false);
 
+        $qtdBloqueada = $this->getQuantidadeConferidaBloqueada($idRecebimento);
+        if ($qtdBloqueada['qtdBloqueada'] > 0)
+            return array(
+                        'message' => 'Existem itens bloqueados por validade! Não é possível finalizar',
+                        'exception' => null,
+                        'concluido' => false);
+
         // checo se recebimento ja n tem uma conferencia em andamento
         if ($this->checarConferenciaComDivergencia($idRecebimento))
             return array('message' => "Este recebimento ja possui uma conferencia em andamento",
@@ -1971,6 +1978,20 @@ class RecebimentoRepository extends EntityRepository {
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         return $result;
+    }
+
+    public function getQuantidadeConferidaBloqueada($idRecebimento)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0)) qtdBloqueada')
+            ->from('wms:Recebimento', 'r')
+            ->leftJoin('wms:Recebimento\Embalagem','re','WITH','re.recebimento = r.id')
+            ->leftJoin('wms:Recebimento\Volume','rv','WITH','rv.recebimento = r.id')
+            ->where("r.id = $idRecebimento")
+            ->having('(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0) > 0)');
+
+        return $sql->getQuery()->getOneOrNullResult();
+
     }
 
 }

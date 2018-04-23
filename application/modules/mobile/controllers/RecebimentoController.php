@@ -77,7 +77,7 @@ class Mobile_RecebimentoController extends Action
     public function lerCodigoBarrasAction()
     {
         try {
-            $dataValidadeInvalida = $this->getRequest()->getParam('dataValidadeInvalida',false);
+            $dataValidadeInvalida = $this->getRequest()->getParam('dataValidadeInvalida',0);
             $idRecebimento = $this->getRequest()->getParam('idRecebimento');
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
