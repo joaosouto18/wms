@@ -77,9 +77,11 @@ class Mobile_RecebimentoController extends Action
     public function lerCodigoBarrasAction()
     {
         try {
+            $dataValidadeInvalida = $this->getRequest()->getParam('dataValidadeInvalida',false);
             $idRecebimento = $this->getRequest()->getParam('idRecebimento');
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            $this->view->dataValidadeInvalida = $dataValidadeInvalida;
 
             $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
 
@@ -286,7 +288,6 @@ class Mobile_RecebimentoController extends Action
                     $this->_helper->messenger('error', 'Informe uma data de validade correta');
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                 }
-                $dataValidadeValida = false;
 
                 $shelfLife = $produtoEn->getDiasVidaUtil();
                 $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
@@ -316,6 +317,7 @@ class Mobile_RecebimentoController extends Action
                     }
                     $qtdBloqueada = $qtdConferida;
                     $qtdConferida = 0;
+                    $dataValidadeValida = false;
 
                     $recebimentoEmbalagemEntities = $recebimentoEmbalagemRepository->getEmbalagemByRecebimento($idRecebimento,$produtoEn->getId(),$produtoEn->getGrade(), true);
 
@@ -324,6 +326,7 @@ class Mobile_RecebimentoController extends Action
                         if ($recebimentoEmbalagemEntity->getQtdConferida() > 0 && date_create_from_format('Y-m-d',"$anoComp-$mesComp-$diaComp") == $dateConf) {
                             $qtdConferida = $qtdBloqueada;
                             $qtdBloqueada = 0;
+                            $dataValidadeValida = true;
                             break;
                         }
                     }
@@ -349,10 +352,10 @@ class Mobile_RecebimentoController extends Action
             }
 
             // tudo certo, redireciono para a nova leitura
-            $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+            $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento, 'dataValidadeInvalida' => !$dataValidadeValida));
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
-            $this->redirect('ler-codigo-barras', null, null, array('idRecebimento' => $idRecebimento));
+            $this->redirect('ler-codigo-barras', null, null, array('idRecebimento' => $idRecebimento, 'dataValidadeInvalida' => !$dataValidadeValida));
         }
     }
 
