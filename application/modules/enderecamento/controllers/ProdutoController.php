@@ -194,16 +194,12 @@ class Enderecamento_ProdutoController extends Action
         $produtos = $this->getRequest()->getParam('produtos');
         $recebimento = $this->getRequest()->getParam('id');
 
-
         /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
         $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
-        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
-        $produtoRepo = $this->em->getRepository("wms:Produto");
 
         try {
+            $qtdNaoEnderecada = $
             foreach ($produtos as $prodGrade) {
-                list($codProduto, $grade) = explode('-', $prodGrade);
-                $produtoEn = $produtoRepo->find(['id' => $codProduto, "grade" => $grade]);
                 $paleteRepo->encherPicking($produtoEn);
             }
         } catch (Exception $e) {
