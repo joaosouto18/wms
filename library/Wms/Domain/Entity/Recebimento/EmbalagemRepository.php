@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityRepository;
 
 class EmbalagemRepository extends EntityRepository
 {
-    public function getEmbalagemByRecebimento($recebimento, $codProduto, $grade)
+    public function getEmbalagemByRecebimento($recebimento, $codProduto, $grade, $notArray = false)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
             ->select('re')
@@ -16,7 +16,10 @@ class EmbalagemRepository extends EntityRepository
             ->andWhere("e.codProduto = '$codProduto'")
             ->andWhere("e.grade = '$grade'");
 
-        return $source->getQuery()->getArrayResult();
+        if ($notArray)
+            return $source->getQuery()->getResult();
+        else
+            return $source->getQuery()->getArrayResult();
     }
 
     public function getEmbalagensVolumesByRecebimento($codRecebimento,$codigoBarras)

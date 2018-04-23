@@ -221,10 +221,15 @@ class Mobile_RecebimentoController extends Action
     {
         $params = $this->getRequest()->getParams();
         extract($params);
+        $dataValidadeValida = true;
 
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
         $notaFiscalItemRepo = $this->em->getRepository('wms:NotaFiscal\Item');
+        /** @var \Wms\Domain\Entity\Recebimento\VolumeRepository $recebimentoVolumeRepository */
+        $recebimentoVolumeRepository = $this->em->getRepository('wms:Recebimento\Volume');
+        /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $recebimentoEmbalagemRepository */
+        $recebimentoEmbalagemRepository = $this->em->getRepository('wms:Recebimento\Embalagem');
 
         try {
             // data has been sent
@@ -253,62 +258,6 @@ class Mobile_RecebimentoController extends Action
                 $qtdConferida = (int) $qtdConferida;
             }
 
-            if ($produtoEn->getValidade() == "S") {
-
-                if (!isset($params['dataValidade']) || empty($params['dataValidade'])){
-                    $this->_helper->messenger('error', 'Informe uma data de validade correta');
-                    $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
-                }
-
-                $shelfLife = $produtoEn->getDiasVidaUtil();
-                $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
-                if (is_null($shelfLife) || $shelfLife == '')
-                    throw new Exception("O parametro 'Dias de vencimento' do produto " . $produtoEn->getId() . " está vazio.");
-
-                $data = null;
-                if (strlen($params['dataValidade']) >= 8) {
-                    list ($dia, $mes , $ano) = explode('/', $params['dataValidade']);
-                    $ano = substr(date("Y"),0,2) . $ano;
-                    if (checkdate((int)$mes, (int)$dia, (int)$ano))
-                        $data = $dia . "/" . $mes . "/" . $ano;
-                }
-
-                if (empty($data)) {
-                    $this->_helper->messenger('error', 'Informe uma data de validade correta');
-                    $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
-                }
-                $dateConf = date_create_from_format('Y-m-d',"$ano-$mes-$dia");
-                $PeriodoUtil = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLife day", strtotime(date('Y-m-d')))));
-                $PeriodoUtilMax = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLifeMax day", strtotime(date('Y-m-d')))));
-                $objData = new Zend_Date($data);
-                if ($dateConf < $PeriodoUtil || $dateConf > $PeriodoUtilMax) {
-                    if($dateConf > $PeriodoUtilMax){
-                        throw new \Exception('Data de validade maior que a definida no cadastro.');
-                    }
-                    //autoriza recebimento?
-                    $arrayRedirect = array(
-                        'idRecebimento' => $idRecebimento,
-                        'idOrdemServico' => $idOrdemServico,
-                        'qtdUnidFracionavel' => $qtdUnidFracionavel,
-                        'qtdConferida' => $qtdConferida,
-                        'idNormaPaletizacao' => $idNormaPaletizacao,
-                        'dataValidade' => $objData->toString('dd-MM-YY'),
-                        'idProduto' => $idProduto, 'grade' => $grade);
-
-                    if ($this->_hasParam('idProdutoEmbalagem')) {
-                        $arrayRedirect['idProdutoEmbalagem'] = $idProdutoEmbalagem;
-                    }
-
-                    if ($this->_hasParam('idProdutoVolume')) {
-                        $arrayRedirect['idProdutoVolume'] = $idProdutoVolume;
-                    }
-                    $this->redirect('autoriza-recebimento', 'recebimento', null, $arrayRedirect );
-                }
-                $params['dataValidade'] = $objData->toString('Y-MM-dd');
-            } else {
-                $params['dataValidade'] = null;
-            }
-
             if ($produtoEn->getPossuiPesoVariavel() == 'S'){
                 if (empty($params['numPeso'])) {
                     $this->_helper->messenger('error', 'Informe o peso para conferência');
@@ -331,17 +280,72 @@ class Mobile_RecebimentoController extends Action
                 $params['numPeso'] = null;
             }
 
+            if ($produtoEn->getValidade() == "S") {
+
+                if (!isset($params['dataValidade']) || empty($params['dataValidade'])){
+                    $this->_helper->messenger('error', 'Informe uma data de validade correta');
+                    $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+                }
+                $dataValidadeValida = false;
+
+                $shelfLife = $produtoEn->getDiasVidaUtil();
+                $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
+                if (is_null($shelfLife) || $shelfLife == '')
+                    throw new Exception("O parametro 'Dias de vencimento' do produto " . $produtoEn->getId() . " está vazio.");
+
+                $data = null;
+                if (strlen($params['dataValidade']) >= 8) {
+                    list ($dia, $mes , $ano) = explode('/', $params['dataValidade']);
+                    $ano = substr(date("Y"),0,2) . $ano;
+                    if (checkdate((int)$mes, (int)$dia, (int)$ano))
+                        $data = $dia . "/" . $mes . "/" . $ano;
+                }
+
+                if (empty($data)) {
+                    $this->_helper->messenger('error', 'Informe uma data de validade correta');
+                    $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+                }
+                $dateConf = date_create_from_format('Y-m-d',"$ano-$mes-$dia");
+                $PeriodoUtil = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLife day", strtotime(date('Y-m-d')))));
+                $PeriodoUtilMax = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLifeMax day", strtotime(date('Y-m-d')))));
+                $objData = new Zend_Date($data);
+                $qtdBloqueada = 0;
+                if ($dateConf < $PeriodoUtil || $dateConf > $PeriodoUtilMax) {
+                    if($dateConf > $PeriodoUtilMax){
+                        throw new \Exception('Data de validade maior que a definida no cadastro.');
+                    }
+                    $qtdBloqueada = $qtdConferida;
+                    $qtdConferida = 0;
+
+                    $recebimentoEmbalagemEntities = $recebimentoEmbalagemRepository->getEmbalagemByRecebimento($idRecebimento,$produtoEn->getId(),$produtoEn->getGrade(), true);
+
+                    foreach ($recebimentoEmbalagemEntities as $recebimentoEmbalagemEntity) {
+                        list($diaComp,$mesComp,$anoComp) = explode('/',$recebimentoEmbalagemEntity->getDataValidade()->format('d/m/Y'));
+                        if ($recebimentoEmbalagemEntity->getQtdConferida() > 0 && date_create_from_format('Y-m-d',"$anoComp-$mesComp-$diaComp") == $dateConf) {
+                            $qtdConferida = $qtdBloqueada;
+                            $qtdBloqueada = 0;
+                            break;
+                        }
+                    }
+                }
+                $params['dataValidade'] = $objData->toString('Y-MM-dd');
+            } else {
+                $params['dataValidade'] = null;
+            }
+
             // caso embalagem
             if ($this->_hasParam('idProdutoEmbalagem')) {
                 // gravo conferencia do item
-                $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $qtdUnidFracionavel, $idNormaPaletizacao, $params, $params['numPeso']);
-                $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
+                $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $qtdUnidFracionavel, $idNormaPaletizacao, $params, $params['numPeso'], $qtdBloqueada);
+                if ($dataValidadeValida)
+                    $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
             }
 
             // caso volume
             if ($this->_hasParam('idProdutoVolume')) {
-                $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params, $params['numPeso']);
-                $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
+                $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params, $params['numPeso'], $qtdBloqueada);
+                if ($dataValidadeValida)
+                    $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
             }
 
             // tudo certo, redireciono para a nova leitura
