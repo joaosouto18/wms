@@ -329,7 +329,6 @@ class Expedicao_EtiquetaController  extends Action
         if ($reentrega == 'S') {$complementoUrl = '/reentrega/S';}
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-
         if ($reentrega == 'S') {
             $reentregas = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao);
             $etiquetas = array();
@@ -402,9 +401,7 @@ class Expedicao_EtiquetaController  extends Action
 
                         $arrEtiquetasEn[] = $etiquetaEntity;
                     }
-
                     $Etiqueta->reimprimir($arrEtiquetasEn, $motivo, $modelo);
-
                 } else {
                     $Etiqueta->imprimirReentrega($idExpedicao, null, $modelo,true,$etiqueta);
 

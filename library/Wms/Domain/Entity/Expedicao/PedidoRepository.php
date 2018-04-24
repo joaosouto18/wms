@@ -29,8 +29,8 @@ class PedidoRepository extends EntityRepository
             if ($entitySigla == null) {
                 throw new \Exception('O tipo de pedido '.$pedido['tipoPedido'].' não esta cadastrado');
             }
-
-            $enPedido->setId($pedido['codPedido']);
+            $numSequencial = $this->getMaxCodPedidoByCodExterno($pedido['codPedido'], true);
+            $enPedido->setCodExterno($pedido['codPedido']);
             $enPedido->setTipoPedido($entitySigla);
             $enPedido->setLinhaEntrega($pedido['linhaEntrega']);
             $enPedido->setCentralEntrega($pedido['centralEntrega']);
@@ -41,6 +41,7 @@ class PedidoRepository extends EntityRepository
             $enPedido->setEnvioParaLoja($pedido['envioParaLoja']);
             $enPedido->setIndEtiquetaMapaGerado('N');
             $enPedido->setProprietario((isset($pedido['codProprietario'])) ? $pedido['codProprietario'] : null);
+            $enPedido->setNumSequencial((isset($numSequencial)) ? $numSequencial : null);
             $em->persist($enPedido);
  //           $em->flush();
  //           $em->commit();
@@ -647,22 +648,28 @@ class PedidoRepository extends EntityRepository
     public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA')
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id, pe.nome cliente, NVL(i.descricao,\'PADRAO\') as itinerario')
+            ->select('p.codExterno as id, pe.nome cliente, NVL(i.descricao,\'PADRAO\') as itinerario, p.numSequencial')
             ->from('wms:Expedicao\Pedido', 'p')
             ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'p.id = pp.codPedido')
             ->innerJoin('wms:Pessoa','pe', 'WITH', 'pe.id = p.pessoa')
             ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
             ->innerJoin('p.carga', 'c')
             ->innerJoin('c.expedicao', 'e')
-            ->where("e.id = $idExpedicao and pp.quantidade > pp.qtdCortada")
-            ->groupBy('p.id, pe.nome, i.descricao')
+            ->where("e.id = $idExpedicao  and pp.quantidade > pp.qtdCortada")
+            ->groupBy('p.codExterno, pe.nome, i.descricao, p.numSequencial')
             ->orderBy('pe.nome', 'asc');
 
         if (isset($codProduto) && !empty($codProduto)) {
             $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
         }
 
-        return $sql->getQuery()->getResult();
+        $result = $sql->getQuery()->getResult();
+        foreach ($result as $key => $value){
+            if(!empty($value['numSequencial']) && $value['numSequencial'] > 1){
+                $result[$key]['id'] = $value['id'].' - '.$value['numSequencial'];
+            }
+        }
+        return $result;
     }
 
     public function getSituacaoPedido ($idPedido) {
@@ -696,6 +703,34 @@ class PedidoRepository extends EntityRepository
             return true;
 
         return false;
+    }
+
+    public function getMaxCodPedidoByCodExterno($idPedidoExterno, $numSequencial = false){
+        $sql = "SELECT COD_PEDIDO, NUM_SEQUENCIAL FROM PEDIDO WHERE COD_EXTERNO = $idPedidoExterno ORDER BY NUM_SEQUENCIAL DESC ";
+        $result = $this->_em->getConnection()->query($sql)->fetch();
+        if($numSequencial == true){
+            if(!empty($result)){
+                if($result['NUM_SEQUENCIAL'] == null){
+                    $numSequencial = 2;
+                }else{
+                    $numSequencial = $result['NUM_SEQUENCIAL'] + 1;
+                }
+            }
+            return $numSequencial;
+        }else {
+            return $result['COD_PEDIDO'];
+        }
+    }
+
+    public function comparaPedidos($produtosNovos, $produtosAntigos){
+        foreach ($produtosNovos as $newProd){
+            foreach ($produtosAntigos as $oldProd){
+                if($newProd['codProduto'] == $oldProd['COD_PRODUTO']){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 }
