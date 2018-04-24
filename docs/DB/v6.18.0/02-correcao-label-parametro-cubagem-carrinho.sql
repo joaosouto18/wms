@@ -7,11 +7,11 @@
 DECLARE 
   CHECK_RESULT VARCHAR2(100);
 BEGIN
-  SELECT FUNC_CHECK_SCRIPT('xx-correcao-label-parametro-cubagem-carrinho.sql', '') INTO CHECK_RESULT FROM DUAL ;
+  SELECT FUNC_CHECK_SCRIPT('02-correcao-label-parametro-cubagem-carrinho.sql', '') INTO CHECK_RESULT FROM DUAL ;
   IF (CHECK_RESULT <> 'TRUE') THEN 
     DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
   ELSE 
-        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6','xx-correcao-label-parametro-cubagem-carrinho.sql');
+        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.18.0','02-correcao-label-parametro-cubagem-carrinho.sql');
 /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
