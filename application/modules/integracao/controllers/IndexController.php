@@ -44,4 +44,14 @@ class Integracao_IndexController extends Core\Controller\Action\WebService
         $acaoIntRepo->processaAcao($acaoEn,$options,'E','P',null,$idFiltro);
 
     }
+
+    public function integracaoErrorAjaxAction()
+    {
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoAndamentoRepository $integracaoAndamentoRepository */
+        $integracaoAndamentoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracaoAndamento');
+        $integracaoError = $integracaoAndamentoRepository->getStatusAcaoIntegracao();
+
+        $pdf = new \Wms\Module\Web\Report\Generico('P');
+        $pdf->init($integracaoError, 'integracao-falha', 'Integrações com falha');
+    }
 }

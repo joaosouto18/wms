@@ -1253,6 +1253,34 @@ class ExpedicaoRepository extends EntityRepository {
         return true;
     }
 
+    private function integraCortesERP($idExpedicao)
+    {
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+        $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
+
+        $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
+
+        $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
+        $cargaEntities = $this->getProdutosExpedicaoCorte(null,$idExpedicao);
+
+        foreach ($cargaEntities as $cargaEntity) {
+            $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
+                0 => $cargaEntity['COD_CARGA_EXTERNO'],
+                1 => $cargaEntity['COD_PRODUTO'],
+                2 => $cargaEntity['DSC_GRADE'],
+                3 => $cargaEntity['QTD_CORTADA']), 'E', 'P');
+            if (is_string($result)) {
+                return $result;
+            } else {
+                $andamentoRepo->save('Corte de ' .$cargaEntity['QTD_CORTADA'] . ' unidades do produto ' . $cargaEntity['COD_PRODUTO'] . ' na carga ' . $cargaEntity['COD_CARGA_EXTERNO'] . ' enviado para o ERP', $idExpedicao);
+            }
+        }
+
+        return true;
+    }
+
     public function finalizarExpedicao($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null, $motivo = '') {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -1340,7 +1368,7 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
-                $result = $this->validaConferenciaERP($expedicaoEn->getId());
+                $result  = $this->validaConferenciaERP($expedicaoEn->getId());
                 if (is_string($result)) {
                     throw new \Exception($result);
                 }
@@ -1414,9 +1442,14 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
 
-            if (!($result === true)) {
-                throw new \Exception($result);
+            //Executa Corte ERP
+            if (!is_null($this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP'))) {
+                $resultAcao = $this->integraCortesERP($idExpedicao);
+                if (!$resultAcao === true) {
+                    throw new \Exception($resultAcao);
+                }
             }
+
             $this->getEntityManager()->commit();
             return $result;
         } catch(\Exception $e) {
@@ -3742,19 +3775,26 @@ class ExpedicaoRepository extends EntityRepository {
 
     }
 
-    public function getProdutosExpedicaoCorte($idPedido) {
+    public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null) {
+
+        $where = " AND PP.COD_PEDIDO = '$idPedido' ";
+        if (!is_null($idExpedicao))
+            $where = " AND C.COD_EXPEDICAO = $idExpedicao ";
+
+
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
                        PROD.DSC_PRODUTO,
                        SUM(PP.QUANTIDADE) as QTD,
                        SUM(PP.QTD_CORTADA) as QTD_CORTADA,
-                       PP.COD_PEDIDO
+                       PP.COD_PEDIDO,
+                       C.COD_CARGA_EXTERNO
                   FROM PEDIDO_PRODUTO PP
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
                   LEFT JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                 WHERE PP.COD_PEDIDO = '$idPedido'
-                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO
+                 WHERE 1 = 1 $where
+                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO, C.COD_CARGA_EXTERNO
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

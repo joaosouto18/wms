@@ -84,6 +84,52 @@ class GerarEtiqueta extends eFPDF
         exit;
     }
 
+    public function etiquetaProdutosExpedicao(array $prodParams = null, $modelo, $target = Recebimento::TARGET_IMPRESSAO_ITEM)
+    {
+        extract($prodParams);
+        $tipo = "Produto";
+
+        $produtosEn = null;
+
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        /** @var NotaFiscalRepository $notaFiscalRepo */
+        $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
+        /** @var ProdutoRepository $produtoRepo */
+        $produtoRepo = $em->getRepository('wms:Produto');
+
+        foreach ($produtos as $i => $produto) {
+            $dados = $produtoRepo->buscarProdutosImprimirCodigoBarras($produto['codProduto'], $produto['grade']);
+            foreach($dados as $j => $dado) {
+                $produtosEn[$i][$j] = $dado;
+                $produtosEn[$i][$j]['qtdItem'] = $produto['qtdItem'];
+            }
+        }
+
+        //geracao da etiqueta
+        \Zend_Layout::getMvcInstance()->disableLayout(true);
+        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+//        header('Content-type: application/pdf');
+
+//        var_dump($produtosEn); exit;
+
+        foreach ($produtosEn as $produto) {
+            foreach ($produto as $item) {
+                $item['dataValidade'] = "";
+                if ($item['validade'] == "S") {
+                    $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto(null, $item['codigoBarras'], $item['idProduto'], $item['grade']);
+                    $item['dataValidade'] = $getDataValidadeUltimoProduto['dataValidade'];
+                }
+                for ($i = 0; $i < $item['qtdItem']; $i++) {
+                    self::createEtiqueta($item, $tipo, $modelo);
+                }
+            }
+        }
+
+        $this->Output("Etiqueta-Produtos.pdf","D");
+        exit;
+    }
+
     private function createEtiqueta($produto, $tipo, $modelo)
     {
         switch($modelo) {
@@ -259,7 +305,7 @@ class GerarEtiqueta extends eFPDF
         $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 8,$codigo);
 
     }
-    
+
     public function layout4($produto, $tipo)
     {
         $codigo = $produto['codigoBarras'];

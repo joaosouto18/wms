@@ -87,6 +87,16 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $this->addFlashMessage("info","Existe(m) " . count ($produtosSemCapacidade) . " produtos no estoque sem capacidade de picking definida " . $link);
         }
 
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoAndamentoRepository $integracaoAndamentoRepository */
+        $integracaoAndamentoRepository = $this->em->getRepository('wms:Integracao\AcaoIntegracaoAndamento');
+        $integracaoError = $integracaoAndamentoRepository->getStatusAcaoIntegracao();
+        if (count($integracaoError) > 0) {
+            $link = '<a href="/integracao/index/integracao-error-ajax" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
+            $this->addFlashMessage("info","Existe(m) " . count($integracaoError) . " integrações com erro. " . $link);
+        }
+
+
+
         $params = array(
             'idRecebimento'=>'',
             'classe'=>'',
@@ -99,7 +109,7 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             'estoquePulmao'=>'S',
             'submit'=>'Buscar'
         );
-        
+
         $produtos = $this->getEntityManager()->getRepository('wms:NotaFiscal')->relatorioProdutoDadosLogisticos($params);
         if (count($produtos) >0) {
             $link = '<a href="/relatorio_dados-logisticos-produto?idRecebimento=&classe=&idLinhaSeparacao=&idTipoComercializacao=&indDadosLogisticos=&codigoBarras=&normaPaletizacao=&enderecoPicking=N&estoquePulmao=S&submit=Buscar" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
@@ -191,7 +201,7 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
     private function ordernarByFluxo($arr, $op)
     {
         $arrStatus = null;
-        
+
         /* Exemplo da estrutura do array de status vindo no parametro $arr
          *  array(
                 array('id' => 454, 'status' => 'CRIADO', 'qtty' => '1'),
