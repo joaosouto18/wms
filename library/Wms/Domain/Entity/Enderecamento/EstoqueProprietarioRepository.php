@@ -29,6 +29,7 @@ class EstoqueProprietarioRepository extends EntityRepository
     public function buildMovimentacaoEstoque($codProduto, $grade, $qtd, $operacao, $codPessoa, $codOperacao = null, $codOperacaoDetalhe = null, $cnpjGrupoExcluir = array()){
         $saldo = $this->getSaldoProp($codProduto, $grade, $codPessoa);
         $saldoFinal = $saldo + $qtd;
+
         /**
          * Verifica se é uma operação credito ou debito do estoque
          */
@@ -57,7 +58,10 @@ class EstoqueProprietarioRepository extends EntityRepository
                     if($qtd < 0){
                         $this->save($codProduto, $grade, ($nextProp['SALDO_FINAL'] * -1), $operacao, 0, $nextProp['COD_PESSOA'], $codOperacao, $codOperacaoDetalhe);
                     }else{
-                        $this->save($codProduto, $grade, $saldoFinal, $operacao, $qtd, $codPessoa, $codOperacao, $codOperacaoDetalhe);
+                        $this->save($codProduto, $grade, (($nextProp['SALDO_FINAL'] - $qtd) * -1), $operacao, $qtd, $nextProp['COD_PESSOA'], $codOperacao, $codOperacaoDetalhe);
+                        if($qtd > 0){
+                            break;
+                        }
                     }
                 }
                 $cnpjGrupoExcluir[] = $cnpj;
@@ -105,6 +109,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                   NUM_CNPJ  LIKE '$cnpj%' AND
                   EP.COD_PRODUTO = $codProduto AND
                   EP.DSC_GRADE = '$grade' AND
+                  EP.SALDO_FINAL > 0 AND
                   EP.COD_ESTOQUE_PROPRIETARIO IN (
                       SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO 
                       WHERE COD_PESSOA NOT IN (".implode(',',$propExclui).") 
@@ -161,15 +166,20 @@ class EstoqueProprietarioRepository extends EntityRepository
         if(empty($empresa)){
             return false;
         }else{
-            $entityFilial = $this->getEntityManager()->getRepository('wms:Pessoa\Juridica')->findOneBy(array('cnpj' => $cnpj));
-            if(empty($entityFilial)){
+            $entityPJ = $this->getEntityManager()->getRepository('wms:Pessoa\Juridica')->findOneBy(array('cnpj' => $cnpj));
+            if(empty($entityPJ)){
                 if($inserir == true) {
-                    $entityFilial = $this->insereFilialEmpresa($cnpj, $empresa);
+                    $entityPJ = $this->insereFilialEmpresa($cnpj, $empresa);
                 }else{
                     return false;
                 }
+            }else{
+                $entityFilial = $this->getEntityManager()->getRepository('wms:Filial')->findOneBy(array('juridica' => $entityPJ->getId()));
+                if(empty($entityFilial)){
+                    $this->inserirFilial($entityPJ->getId());
+                }
             }
-            $idPessoa = $entityFilial->getId();
+            $idPessoa = $entityPJ->getId();
         }
         return $idPessoa;
     }
@@ -260,5 +270,18 @@ class EstoqueProprietarioRepository extends EntityRepository
                       PJ.NOM_FANTASIA, EP.COD_PRODUTO, EP.SALDO_FINAL DESC";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
+    }
+
+    public function inserirFilial($idPessoa){
+        $entityFilial  = new Filial();
+        $entityFilial->setId($idPessoa);
+        $entityFilial->setIdExterno(null);
+        $entityFilial->setCodExterno(null);
+        $entityFilial->setIndLeitEtqProdTransbObg('N');
+        $entityFilial->setIndUtilizaRessuprimento('N');
+        $entityFilial->setIndRecTransbObg('N');
+        $entityFilial->setIsAtivo('S');
+        $this->_em->persist($entityFilial);
+        $this->_em->flush();
     }
 }
