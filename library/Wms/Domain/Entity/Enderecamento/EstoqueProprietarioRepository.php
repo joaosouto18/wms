@@ -166,15 +166,20 @@ class EstoqueProprietarioRepository extends EntityRepository
         if(empty($empresa)){
             return false;
         }else{
-            $entityFilial = $this->getEntityManager()->getRepository('wms:Pessoa\Juridica')->findOneBy(array('cnpj' => $cnpj));
-            if(empty($entityFilial)){
+            $entityPJ = $this->getEntityManager()->getRepository('wms:Pessoa\Juridica')->findOneBy(array('cnpj' => $cnpj));
+            if(empty($entityPJ)){
                 if($inserir == true) {
-                    $entityFilial = $this->insereFilialEmpresa($cnpj, $empresa);
+                    $entityPJ = $this->insereFilialEmpresa($cnpj, $empresa);
                 }else{
                     return false;
                 }
+            }else{
+                $entityFilial = $this->getEntityManager()->getRepository('wms:Filial')->findOneBy(array('juridica' => $entityPJ->getId()));
+                if(empty($entityFilial)){
+                    $this->inserirFilial($entityPJ->getId());
+                }
             }
-            $idPessoa = $entityFilial->getId();
+            $idPessoa = $entityPJ->getId();
         }
         return $idPessoa;
     }
@@ -265,5 +270,18 @@ class EstoqueProprietarioRepository extends EntityRepository
                       PJ.NOM_FANTASIA, EP.COD_PRODUTO, EP.SALDO_FINAL DESC";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
+    }
+
+    public function inserirFilial($idPessoa){
+        $entityFilial  = new Filial();
+        $entityFilial->setId($idPessoa);
+        $entityFilial->setIdExterno(null);
+        $entityFilial->setCodExterno(null);
+        $entityFilial->setIndLeitEtqProdTransbObg('N');
+        $entityFilial->setIndUtilizaRessuprimento('N');
+        $entityFilial->setIndRecTransbObg('N');
+        $entityFilial->setIsAtivo('S');
+        $this->_em->persist($entityFilial);
+        $this->_em->flush();
     }
 }
