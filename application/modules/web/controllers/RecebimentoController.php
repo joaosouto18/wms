@@ -1518,4 +1518,17 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->_helper->json(array("result" => $result));
     }
 
+    public function visualizarRecebimentosBloqueadosAction()
+    {
+        $grid = new RecebimentoGrid\RecebimentoBloqueado();
+        $this->view->grid = $grid->init()->render();
+    }
+
+    public function liberarRecebimentosAction()
+    {
+
+    }
+
+
+
 }

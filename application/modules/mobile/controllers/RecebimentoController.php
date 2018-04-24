@@ -359,12 +359,12 @@ class Mobile_RecebimentoController extends Action
         }
     }
 
+
     //modal para autorização de recebimento
     public function autorizaRecebimentoAction()
     {
         $request = $this->getRequest();
         $params = $this->_getAllParams();
-        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
         if (isset($params['conferenciaCega'])) {
             $this->view->idOrdemServico = $params['idOrdemServico'];
@@ -446,4 +446,3 @@ class Mobile_RecebimentoController extends Action
     }
 
 }
-

@@ -323,7 +323,7 @@ class RecebimentoRepository extends EntityRepository {
                 'concluido' => false);
 
         $qtdBloqueada = $this->getQuantidadeConferidaBloqueada($idRecebimento);
-        if ($qtdBloqueada['qtdBloqueada'] > 0)
+        if (count($qtdBloqueada))
             return array(
                         'message' => 'Existem itens bloqueados por validade! Não é possível finalizar',
                         'exception' => null,
@@ -1980,18 +1980,25 @@ class RecebimentoRepository extends EntityRepository {
         return $result;
     }
 
-    public function getQuantidadeConferidaBloqueada($idRecebimento)
+    public function getQuantidadeConferidaBloqueada($idRecebimento = null)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0)) qtdBloqueada')
+            ->select("(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0)) qtdBloqueada, r.id codRecebimento,
+                        NVL(re.id,rv.id) id, p.descricao, p.id codProduto, p.grade,
+                        TO_CHAR(NVL(re.dataValidade, rv.dataValidade),'DD/MM/YYYY') dataValidade")
             ->from('wms:Recebimento', 'r')
             ->leftJoin('wms:Recebimento\Embalagem','re','WITH','re.recebimento = r.id')
             ->leftJoin('wms:Recebimento\Volume','rv','WITH','rv.recebimento = r.id')
-            ->where("r.id = $idRecebimento")
+            ->leftJoin('re.embalagem', 'pe')
+            ->leftJoin('rv.volume', 'pv')
+            ->innerJoin('wms:Produto','p','WITH','(p.id = pe.codProduto AND p.grade = pe.grade) OR (p.id = pv.codProduto AND p.grade = pv.grade)')
+            ->groupBy('r.id, re.id, rv.id, p.descricao, p.id, p.grade, re.dataValidade, rv.dataValidade')
             ->having('(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0) > 0)');
 
-        return $sql->getQuery()->getOneOrNullResult();
+        if ($idRecebimento)
+            $sql->where("r.id = $idRecebimento");
 
+        return $sql->getQuery()->getResult();
     }
 
 }
