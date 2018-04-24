@@ -78,6 +78,11 @@ class Action
     protected $target = '_self';
 
     /**
+     * @var type
+     */
+    protected $cssCondictional;
+
+    /**
      * contructor of the grid
      * @param array $options
      * @return Column 
@@ -255,8 +260,12 @@ class Action
      * returns the css class of the action
      * @return type 
      */
-    public function getCssClass()
+    public function getCssClass($row)
     {
+        if ($this->cssClass == 'conditionFunction') {
+            $this->cssClass = call_user_func($this->cssCondictional, $row);
+        }
+
         return $this->cssClass;
     }
 
@@ -266,6 +275,10 @@ class Action
      */
     public function setCssClass($cssClass)
     {
+        if (!is_string($cssClass)) {
+            $this->cssCondictional = $cssClass;
+            $cssClass = 'conditionFunction';
+        }
         $this->cssClass = (string) $cssClass;
     }
 

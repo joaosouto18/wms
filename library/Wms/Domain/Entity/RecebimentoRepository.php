@@ -626,7 +626,8 @@ class RecebimentoRepository extends EntityRepository {
                     FROM wms:OrdemServico os
                     WHERE os.recebimento = r.id
                         AND os.atividade = ' . AtividadeEntity::CONFERIR_PRODUTO . '
-                )';
+                )
+            ORDER BY r.id ASC';
 
         return $this->getEntityManager()->createQuery($query)
                         ->getResult();

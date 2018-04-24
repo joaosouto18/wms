@@ -110,6 +110,7 @@ class Mobile_RecebimentoController extends Action
             $this->view->os = $retorno['id'];
             $this->view->recebimento = $recebimentoEntity;
             $this->view->idRecebimento = $idRecebimento;
+            $this->view->error = $this->getRequest()->getParam('error');
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
             $this->redirect('conferencia-recebimento', 'ordem-servico');
@@ -348,7 +349,7 @@ class Mobile_RecebimentoController extends Action
             $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
-            $this->redirect('ler-codigo-barras', null, null, array('idRecebimento' => $idRecebimento));
+            $this->redirect('ler-codigo-barras', null, null, array('idRecebimento' => $idRecebimento, 'error' => 1));
         }
     }
 

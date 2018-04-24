@@ -170,19 +170,6 @@ class Expedicao extends Grid
                     },
                 'pkIndex' => 'id'
             ))
-
-        /*
-            ->addAction(array(
-                'label' => 'Reimprimir Etiqueta',
-                'modelName' => 'expedicao',
-                'controllerName' => 'etiqueta',
-                'actionName' => 'reimprimir',
-                'condition' => function ($row) {
-                    return $row['status'] != "FINALIZADO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
-                },
-                'pkIndex' => 'id'
-            ))
-        */
             ->addAction(array(
                 'label' => 'Reimprimir Etiqueta',
                 'modelName' => 'expedicao',
@@ -217,7 +204,21 @@ class Expedicao extends Grid
                 'controllerName' => 'volume-patrimonio',
                 'actionName' => 'imprimir-volume-patrimonio',
                 'pkIndex' => 'id',
-                'cssClass' => 'dialogAjax'
+                'cssClass' => 'dialogAjax',
+                'condition' => function($row) {
+                    return $row['status'] != "EM SEPARACAO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
+                },
+            ))
+            ->addAction(array(
+                'label' => 'Relatório de itens embalados',
+                'modelName' => 'expedicao',
+                'controllerName' => 'mapa',
+                'actionName' => 'relatorio-itens-volume-embalado',
+                'pkIndex' => 'id',
+                'cssClass' => 'pdf',
+                'condition' => function($row) {
+                    return $row['status'] != "EM SEPARACAO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
+                },
             ))
             ->addAction(array(
                 'label' => 'Relatório de Reentregas',
@@ -257,6 +258,17 @@ class Expedicao extends Grid
                 'actionName' => 'relatorios-carregamento-ajax',
                 'cssClass' => 'dialogAjax relatorio-carregamento',
                 'pkIndex' => 'id'
+            ))
+            ->addAction(array(
+                'label' => 'Relatório de Volumes Embalados',
+                'modelName' => 'expedicao',
+                'controllerName' => 'index',
+                'actionName' => 'relatorio-volume-embalado-ajax',
+                'condition' => function ($row) {
+                    return $row['status'] == "FINALIZADO";
+                },
+                'pkIndex' => 'id',
+                'cssClass' => 'pdf'
             ))
             ->addAction(array(
                 'label' => 'Cancelar Expedição',

@@ -59,7 +59,7 @@ class PedidoRepository extends EntityRepository
         if($controleProprietario == 'S'){
             $SQL = "SELECT EP.COD_PESSOA, (EP.QTD * -1) as ATENDIDA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PJ.NUM_CNPJ as CNPJ
                     FROM PEDIDO_PRODUTO PP 
-                    LEFT JOIN ESTOQUE_PROPRIETARIO EP ON (PP.COD_PRODUTO = EP.COD_PRODUTO AND PP.DSC_GRADE = EP.DSC_GRADE AND PP.COD_PEDIDO = EP.COD_OPERACAO_DETALHE)
+                    LEFT JOIN ESTOQUE_PROPRIETARIO EP ON (PP.COD_PRODUTO = EP.COD_PRODUTO AND PP.DSC_GRADE = EP.DSC_GRADE AND PP.COD_PEDIDO = EP.COD_OPERACAO)
                     LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
                     WHERE PP.COD_PEDIDO = $codPedido";
         }else {
@@ -171,9 +171,9 @@ class PedidoRepository extends EntityRepository
                     'produto'             => $em->getRepository('wms:Produto')
                 );
 
-                if  (($pedidoEn->getCarga()->getExpedicao()->getStatus() == Expedicao::STATUS_EM_CONFERENCIA)
-                    || ($pedidoEn->getCarga()->getExpedicao()->getStatus() == Expedicao::STATUS_EM_SEPARACAO)
-                    || ($pedidoEn->getCarga()->getExpedicao()->getStatus() == Expedicao::STATUS_PRIMEIRA_CONFERENCIA)) {
+                $statusExpedicao = $pedidoEn->getCarga()->getExpedicao()->getStatus()->getId();
+
+                if  (in_array($statusExpedicao, [Expedicao::STATUS_EM_CONFERENCIA, Expedicao::STATUS_EM_SEPARACAO, Expedicao::STATUS_PRIMEIRA_CONFERENCIA])) {
                     if ($EtiquetaSeparacaoRepo->gerarMapaEtiqueta($pedidoEn->getCarga()->getExpedicao()->getId(), $pedidosProdutos, $status,$idModeloSeparacaoPadrao, $arrayRepositorios) > 0 ) {
                         throw new \Exception ("Existem produtos sem definição de volume");
                     }

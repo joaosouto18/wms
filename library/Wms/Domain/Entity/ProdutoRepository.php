@@ -1187,7 +1187,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return new \Zend_Soap_Client($conf->soap->$dadosLogisticosUrl->url, array('soapVersion' => SOAP_1_2, 'uri' => $conf->soap->$dadosLogisticosUrl->url)); //,
     }
 
-    public function buscarProdutosImprimirCodigoBarras($codProduto, $grade) {
+    public function buscarProdutosImprimirCodigoBarras($codProduto, $grade, $idEmbalagens = null) {
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('
                       p.id as idProduto,
@@ -1215,13 +1215,15 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.isPadrao = \'S\'');
         }
 
-        $dql
-                ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
+            $dql->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
                 ->where('p.id = :codProduto')
                 ->andWhere("p.grade = :grade")
                 ->setParameter('codProduto', $codProduto)
-                ->setParameter('grade', $grade)
-                ->andWhere('(pe.codigoBarras IS NOT NULL OR pv.codigoBarras IS NOT NULL)')
+                ->setParameter('grade', $grade);
+        if (!empty($idEmbalagens)) {
+            $dql->andWhere("pe.id in ( $idEmbalagens )");
+        }
+            $dql->andWhere('(pe.codigoBarras IS NOT NULL OR pv.codigoBarras IS NOT NULL)')
                 ->orderBy('pe.quantidade', 'desc');
 
         return $dql->getQuery()->getResult();

@@ -276,20 +276,20 @@ class MapaSeparacao extends eFPDF {
             $this->Cell(120, 6, utf8_decode($this->quebrasEtiqueta), 0, 0);
 
             $this->SetFont('Arial', 'B', 9);
-            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
-            $this->Cell($wPage * 4, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
-            $this->Cell($wPage * 4, 6, utf8_decode("CUBAGEM TOTAL " . $cubagemTotal), 0, 1);
-            $this->Cell($wPage * 4, 6, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 1);
+            $this->Cell($wPage * 4, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
+            $this->Cell(21, 6, utf8_decode("EXPEDIÇÃO: "), 0, 0);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell($wPage * 1, 6, utf8_decode($this->idExpedicao), 0, 0);
+            $this->SetFont('Arial', 'B', 9);
+            $this->Cell(14, 6, utf8_decode("$txtCarga: "), 0, 0);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell($wPage * 4, 6, $stringCargas, 0, 1);
+            $this->SetFont('Arial', 'B', 9);
+            $this->Cell($wPage * 3, 6, utf8_decode("CUBAGEM TOTAL " . $cubagemTotal), 0, 0);
+            $this->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 0);
+            $this->Cell($wPage * 2, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
             $this->InFooter = false;
         }
-
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
-        $ExpedicaoRepo = $em->getRepository('wms:Expedicao');
-        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
-        $ExpedicaoEntity = $ExpedicaoRepo->find($idExpedicao);
-        $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
-        $ExpedicaoEntity->setStatus($statusEntity);
-        $em->persist($ExpedicaoEntity);
 
         $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');
 
@@ -494,13 +494,6 @@ class MapaSeparacao extends eFPDF {
             $this->Image($this->imgCodBarras, 143, 280, 50);
             $this->InFooter = false;
         }
-        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
-        $ExpedicaoEntity = $expedicaoRepo->find($idExpedicao);
-        if ($ExpedicaoEntity->getCodStatus() == Expedicao::STATUS_INTEGRADO) {
-            $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
-            $ExpedicaoEntity->setStatus($statusEntity);
-            $em->persist($ExpedicaoEntity);
-        }
 
         $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');
 
@@ -693,13 +686,6 @@ class MapaSeparacao extends eFPDF {
 
             $this->Image($this->imgCodBarras, 143, 280, 50);
             $this->InFooter = false;
-        }
-        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
-        $ExpedicaoEntity = $expedicaoRepo->find($idExpedicao);
-        if ($ExpedicaoEntity->getCodStatus() == EXPEDICAO::STATUS_INTEGRADO) {
-            $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
-            $ExpedicaoEntity->setStatus($statusEntity);
-            $em->persist($ExpedicaoEntity);
         }
 
         $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');
@@ -960,14 +946,6 @@ class MapaSeparacao extends eFPDF {
             }
         }
 
-        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
-        $ExpedicaoEntity = $expedicaoRepo->find($idExpedicao);
-        if ($ExpedicaoEntity->getCodStatus() == EXPEDICAO::STATUS_INTEGRADO) {
-            $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
-            $ExpedicaoEntity->setStatus($statusEntity);
-            $em->persist($ExpedicaoEntity);
-        }
-
         $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');
 
         $em->flush();
@@ -1122,13 +1100,6 @@ class MapaSeparacao extends eFPDF {
                 $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total);
             }
         }
-        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
-        $ExpedicaoEntity = $expedicaoRepo->find($idExpedicao);
-        if ($ExpedicaoEntity->getCodStatus() == Expedicao::STATUS_INTEGRADO) {
-            $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
-            $ExpedicaoEntity->setStatus($statusEntity);
-            $em->persist($ExpedicaoEntity);
-        }
 
         $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');
 
@@ -1226,14 +1197,6 @@ class MapaSeparacao extends eFPDF {
             $this->InFooter = false;
             $count++;
         }
-
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
-        $ExpedicaoRepo = $em->getRepository('wms:Expedicao');
-        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
-        $ExpedicaoEntity = $ExpedicaoRepo->find($idExpedicao);
-        $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
-        $ExpedicaoEntity->setStatus($statusEntity);
-        $em->persist($ExpedicaoEntity);
 
         $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');
 
@@ -1436,14 +1399,6 @@ class MapaSeparacao extends eFPDF {
             $this->InFooter = false;
         }
 
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
-        $ExpedicaoRepo = $em->getRepository('wms:Expedicao');
-        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
-        $ExpedicaoEntity = $ExpedicaoRepo->find($idExpedicao);
-        $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
-        $ExpedicaoEntity->setStatus($statusEntity);
-        $em->persist($ExpedicaoEntity);
-
         $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');
 
         $em->flush();
@@ -1460,7 +1415,6 @@ class MapaSeparacao extends eFPDF {
         }
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
-        $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
 
         $pesoProdutoRepo = $em->getRepository('wms:Produto\Peso');
         $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
@@ -1559,10 +1513,9 @@ class MapaSeparacao extends eFPDF {
 
                 if ($endereco != null)
                     $dscEndereco = $endereco->getDescricao();
-
                 if (isset($pesoProduto) && !empty($pesoProduto)) {
                     $pesoTotal += Math::multiplicar(str_replace(',', '.', $embalagemEn->getPeso()), str_replace(',', '.', $quantidade));
-                    $cubagemTotal += Math::multiplicar(str_replace(',', '.', $embalagemEn->getCubagem()), str_replace(',', '.', $quantidade));
+                    $cubagemTotal += Math::multiplicar(str_replace(',', '.', str_replace('.', '', $embalagemEn->getCubagem())), str_replace(',', '.', $quantidade));
                 }
 
                 $this->Cell(20, 1, " ", 0, 1);
@@ -1596,13 +1549,6 @@ class MapaSeparacao extends eFPDF {
             if ($contadorPg > 0) {
                 $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total);
             }
-        }
-        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
-        $ExpedicaoEntity = $expedicaoRepo->find($idExpedicao);
-        if ($ExpedicaoEntity->getCodStatus() == Expedicao::STATUS_INTEGRADO) {
-            $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
-            $ExpedicaoEntity->setStatus($statusEntity);
-            $em->persist($ExpedicaoEntity);
         }
 
         $this->Output('Mapa Separação-' . $idExpedicao . '.pdf', 'D');

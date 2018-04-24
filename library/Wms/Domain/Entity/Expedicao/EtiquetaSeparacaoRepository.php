@@ -561,11 +561,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
         $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($expedicaoEntity->getId());
-        $quebras = array(0=>array('tipoQuebra'=>MapaSeparacaoQuebra::QUEBRA_REENTREGA));
+        $quebras = array(0=>array('tipoQuebra'=>MapaSeparacaoQuebra::QUEBRA_REENTREGA, 'dscQuebra' => 'MAPA DE REENTREGAS', 'codQuebra' => ''));
+
         $statusEntity = $this->_em->getReference('wms:Util\Sigla', EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
         $codProduto = $produtoEntity->getId();
         $grade = $produtoEntity->getGrade();
-
 
         if ($produtoEntity->getVolumes()->count() > 0) {
             $arrayVolumes = $produtoEntity->getVolumes()->toArray();
@@ -1106,7 +1106,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
 
                             if (empty($embalagemAtual)) {
-                                $msg = "O produto $codProduto grade $grade não tem embalgem ativa para atender a quantidade restante de $quantidadeRestantePedido item(ns)";
+                                $msg = "O produto $codProduto grade $grade não tem embalagem ativa para atender a quantidade restante de $quantidadeRestantePedido item(ns)";
                                 throw new WMS_Exception($msg);
                             }
 
@@ -2845,7 +2845,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         ini_set('memory_limit', '-1');
         $source = $this->getEntityManager()->createQueryBuilder()
             ->select('es.id, es.codProduto, es.reimpressao, es.codStatus, es.dscGrade, s.sigla, e.id as idExpedicao,
-             c.codCargaExterno as tipoCarga, prod.id as produto, prod.descricao, pe.descricao as embalagem')
+             c.codCargaExterno as tipoCarga, prod.id as produto, prod.descricao, 
+             CASE WHEN pe.descricao IS NULL THEN pv.descricao ELSE pe.descricao END as embalagem')
             ->from('wms:Expedicao\EtiquetaSeparacao', 'es')
             ->leftJoin('es.pedido', 'p')
             ->leftJoin('p.itinerario', 'i')
@@ -2854,6 +2855,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin('c.expedicao', 'e')
             ->leftJoin('es.status', 's')
             ->leftJoin('es.produtoEmbalagem', 'pe')
+            ->leftJoin('es.produtoVolume', 'pv')
             ->leftJoin('p.pessoa', 'cli')
             ->orderBy("es.id" , "DESC")
             ->distinct(true);
@@ -2991,7 +2993,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                       c.codCargaExterno as tipoCarga,
                       prod.id as produto,
                       prod.descricao,
-                      pe.descricao as embalagem,
+                      CASE WHEN pe.descricao IS NULL THEN pv.descricao ELSE pe.descricao END as embalagem,
                       i.descricao as itinerario,
                       pess.nome as clienteNome,
                       es.dataConferencia,
@@ -3016,6 +3018,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->leftJoin('es.status', 's')
             ->leftJoin('wms:Util\Sigla', 'siglaEpx', 'WITH', 'e.status = siglaEpx.id')
             ->leftJoin('es.produtoEmbalagem', 'pe')
+            ->leftJoin('es.produtoVolume','pv')
             ->where('es.id = :idEtiqueta')
             ->setParameter('idEtiqueta', $idEtiqueta)
             ->distinct(true);

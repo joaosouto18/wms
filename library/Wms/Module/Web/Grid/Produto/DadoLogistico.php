@@ -129,7 +129,10 @@ class DadoLogistico extends Grid
                     'controllerName' => 'produto',
                     'actionName' => 'gerar-etiqueta-pdf',
                     'pkIndex' => array('id', 'grade'),
-                    'cssClass' => 'pdf',
+                    'cssClass' => function ($row) {
+                        return ($row['idTipoComercializacao'] == \Wms\Domain\Entity\Produto::TIPO_UNITARIO)? 'dialogAjax' : 'pdf';
+                    }
+
                 ))
                 ->addAction(array(
                     'label' => 'Imprimir etiqueta picking',

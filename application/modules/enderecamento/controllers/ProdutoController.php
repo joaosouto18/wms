@@ -189,4 +189,24 @@ class Enderecamento_ProdutoController extends Action
 
     }
 
+    public function alimentarPickingAjaxAction() {
+
+        $produtos = $this->getRequest()->getParam('produtos');
+        $recebimento = $this->getRequest()->getParam('id');
+
+        /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
+        $paleteRepo = $this->em->getRepository("wms:Enderecamento\Palete");
+
+        $this->_em->beginTransaction();
+        try {
+            $paleteRepo->encherPicking($produtos, $recebimento);
+            $this->_em->commit();
+            $this->addFlashMessage("success", "Endereçamento reservado com sucesso!");
+        } catch (Exception $e) {
+            $this->_em->rollback();
+            $this->addFlashMessage("error", $e->getMessage());
+        }
+
+        $this->redirect("index","produto","enderecamento", ["id" => $recebimento]);
+    }
 } 

@@ -512,31 +512,53 @@ class Web_ProdutoController extends Crud {
     }
 
     public function gerarEtiquetaPdfAction() {
-        $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
         $codProduto = $this->getRequest()->getParam('id');
         $grade = $this->getRequest()->getParam('grade');
-        $gerarEtiqueta = null;
-        switch ($modelo) {
-            case 1:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
-                break;
-            case 2:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
-                break;
-            case 3:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
-                break;
-            case 4:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
-                break;
-            case 5:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(60, 60));
-                break;
-        }
+        $idEmbalagens = $this->getRequest()->getParam('embalagens');
+        $submit = $this->getRequest()->getParam("imprimir");
 
-        $gerarEtiqueta->init(null, array(
-            'codProduto' => $codProduto,
-            'grade' => $grade), $modelo, \Wms\Domain\Entity\Recebimento::TARGET_IMPRESSAO_PRODUTO);
+        $produtoRepo = $this->em->getRepository('wms:Produto');
+        /** @var Produto $produtoEn */
+        $produtoEn = $produtoRepo->findOneBy(['id' => $codProduto, 'grade' => $grade]);
+
+        if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO || !empty($submit)) {
+            $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
+            $gerarEtiqueta = null;
+            switch ($modelo) {
+                case 1:
+                    $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
+                    break;
+                case 2:
+                    $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
+                    break;
+                case 3:
+                    $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
+                    break;
+                case 4:
+                    $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
+                    break;
+                case 5:
+                    $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(60, 60));
+                    break;
+            }
+
+            $gerarEtiqueta->init(null, array(
+                'codProduto' => $codProduto,
+                'grade' => $grade,
+                'codProdutoEmbalagem' => (!empty($idEmbalagens)? implode(",", $idEmbalagens) : null)),
+                $modelo, \Wms\Domain\Entity\Recebimento::TARGET_IMPRESSAO_PRODUTO);
+        } else {
+            /** @var Produto\Embalagem[] $embalagens */
+            $embalagens =  $this->em->getRepository("wms:Produto\Embalagem")->findBy(['codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null]);
+            $result = [];
+            foreach ($embalagens as $embalagem) {
+                if (!empty($embalagem->getCodigoBarras())) {
+                    $result[] = $embalagem;
+                }
+            }
+            $this->view->embalagens = $result;
+            $this->render('list-emb-etiqueta');
+        }
     }
 
     public function verificarParametroCodigoBarrasAjaxAction() {

@@ -37,21 +37,21 @@ class Volume
     protected $qtdConferida;
 
     /**
-     * @var Wms\Domain\Entity\OrdemServico $ordemServico
+     * @var \Wms\Domain\Entity\OrdemServico $ordemServico
      * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
      * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS") 
      */
     protected $ordemServico;
 
     /**
-     * @var Wms\Domain\Entity\Recebimento $recebimento
+     * @var \Wms\Domain\Entity\Recebimento $recebimento
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Recebimento")
      * @JoinColumn(name="COD_RECEBIMENTO", referencedColumnName="COD_RECEBIMENTO") 
      */
     protected $recebimento;
 
     /**
- * @var Wms\Domain\Entity\Produto\Volume $volume
+ * @var \Wms\Domain\Entity\Produto\Volume $volume
  * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Volume")
  * @JoinColumn(name="COD_PRODUTO_VOLUME", referencedColumnName="COD_PRODUTO_VOLUME")
  */
@@ -62,7 +62,7 @@ class Volume
      *
      * @OneToOne(targetEntity="Wms\Domain\Entity\Produto\NormaPaletizacao")
      * @JoinColumn(name="COD_NORMA_PALETIZACAO", referencedColumnName="COD_NORMA_PALETIZACAO")
-     * @var Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
+     * @var \Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
      */
     protected $normaPaletizacao;
 
@@ -127,6 +127,9 @@ class Volume
         return $this;
     }
 
+    /**
+     * @return \Wms\Domain\Entity\Produto\Volume
+     */
     public function getVolume()
     {
         return $this->volume;
@@ -139,7 +142,7 @@ class Volume
     }
 
     /**
-     * @param \Wms\Domain\Entity\Recebimento\Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
+     * @param \Wms\Domain\Entity\Produto\NormaPaletizacao $normaPaletizacao
      */
     public function setNormaPaletizacao($normaPaletizacao)
     {
@@ -147,7 +150,7 @@ class Volume
     }
 
     /**
-     * @return \Wms\Domain\Entity\Recebimento\Wms\Domain\Entity\Produto\NormaPaletizacao
+     * @return \Wms\Domain\Entity\Produto\NormaPaletizacao
      */
     public function getNormaPaletizacao()
     {

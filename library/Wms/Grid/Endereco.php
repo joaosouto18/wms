@@ -9,7 +9,7 @@ class Endereco extends Grid
 
     public function init(array $params = array())
     {
-        extract($params['identificacao']);
+        extract($params);
 
         $qb = $this->getEntityManager()->createQueryBuilder();
         $this->setAttrib('title','Endereços');

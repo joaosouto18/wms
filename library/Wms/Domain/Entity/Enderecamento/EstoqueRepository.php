@@ -170,7 +170,7 @@ class EstoqueRepository extends EntityRepository
             }
         }
 
-        if ($novaQtd + $qtdReserva < 0) {
+        if (($qtd < 0) and ($novaQtd + $qtdReserva < 0)) {
             throw new \Exception("Não é permitido estoque negativo para o endereço $dscEndereco com o produto $codProduto / $grade - $dscProduto");
         } else if ($novaQtd > 0) {
             $em->persist($estoqueEn);
@@ -1267,4 +1267,14 @@ class EstoqueRepository extends EntityRepository
         return $result;
     }
 
+    public function getMenorValidadePulmao($codProduto, $grade){
+        $tipoPulmao = EnderecoEntity::ENDERECO_PULMAO;
+        $SQL = "SELECT MIN(DTH_VALIDADE) AS DATA 
+                FROM ESTOQUE  E 
+                INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                WHERE COD_PRODUTO = '$codProduto'
+                AND DSC_GRADE = '$grade'
+                AND DE.COD_CARACTERISTICA_ENDERECO = $tipoPulmao";
+        return $this->getEntityManager()->getConnection()->query($SQL)->fetch(\PDO::FETCH_ASSOC);
+    }
 }

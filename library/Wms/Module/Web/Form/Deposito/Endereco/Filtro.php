@@ -31,132 +31,135 @@ class Filtro extends Form
         $this->setAttribs(array('id' => 'deposito-endereco-filtro-form', 'class' => 'saveForm'))
                 ->setMethod('get');
 
-        $formIdentificacao = new SubForm;
+        $formIdentificacao = $this;
 
         //endereço
         $formIdentificacao->addElement('text', 'inicialRua', array(
                     'size' => 3,
                     'alt' => 'enderecoRua',
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Rua inicial',
                     'title' => 'Obrigatório.',
+
                 ))
                 ->addElement('text', 'finalRua', array(
                     'size' => 3,
                     'alt' => 'enderecoRua',
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Rua Final',
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'inicialPredio', array(
                     'size' => 3,
                     'alt' => 'enderecoPredio',
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Prédio inicial',
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalPredio', array(
                     'size' => 3,
                     'alt' => 'enderecoPredio',
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Prédio final',
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'inicialNivel', array(
                     'size' => 3,
                     'alt' => 'enderecoNivel',
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Nível inicial',
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalNivel', array(
                     'size' => 3,
                     'alt' => 'enderecoNivel',
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Nível final',
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'inicialApartamento', array(
                     'size' => 3,
                     'alt' => 'enderecoApartamento',
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Apto inicial',
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('text', 'finalApartamento', array(
                     'size' => 3,
                     'alt' => 'enderecoApartamento',
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Apto final',
                     'title' => 'Obrigatório.',
                 ))
                 ->addElement('select', 'lado', array(
                     'mostrarSelecione' => false,
                     'multiOptions' => EnderecoEntity::$listaTipoLado,
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Lado',
                     'class' => 'pequeno',
                 ))
                 ->addElement('select', 'situacao', array(
                     'mostrarSelecione' => false,
                     'class' => 'medio',
                     'multiOptions' => array('firstOpt' => 'Todos', 'options' => array('B' => 'Bloqueado', 'D' => 'Desbloqueado')),
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Situação',
                 ))
                 ->addElement('select', 'status', array(
                     'mostrarSelecione' => false,
                     'class' => 'pequeno',
                     'multiOptions' => array('firstOpt' => 'Todos', 'options' => array('D' => 'Disponível', 'O' => 'Ocupado')),
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Status',
                 ))
                 ->addElement('select', 'ativo', array(
                     'mostrarSelecione' => false,
                     'class' => 'medio',
                     'multiOptions' => array('S' => 'Ativo', 'N' => 'Inativo'),
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Ativo',
                 ))
                 ->addElement('select', 'idCaracteristica', array(
                     'mostrarSelecione' => false,
                     'class' => 'medio',
                     'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoCaracteristica->getIdValue()),
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Caractristica',
                 ))
                 ->addElement('select', 'idEstruturaArmazenagem', array(
                     'mostrarSelecione' => false,
                     'class' => 'medio',
                     'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoEstrutura->getIdValue()),
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Estrutura de Armazenagem',
                 ))
                 ->addElement('select', 'idTipoEndereco', array(
                     'mostrarSelecione' => false,
                     'class' => 'medio',
                     'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoTipo->getIdValue()),
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Tipo de Endereço',
                 ))
                 ->addElement('select', 'idAreaArmazenagem', array(
                     'mostrarSelecione' => false,
                     'class' => 'medio',
                     'multiOptions' => array('firstOpt' => 'Todos', 'options' => $area),
-                    'decorators' => array('ViewHelper'),
+                    'label' => 'Área de Armazenagem',
                 ))
-                ->addElement('button', 'btnBuscar', array(
+                ->addElement('submit', 'btnBuscar', array(
+                    'class' =>  'btn',
                     'label' => 'Buscar',
+                    'decorators' => array('ViewHelper'),
                     'attribs' => array('id' => 'btn-buscar-endereco')
-                ));
+                ))
+            ->addDisplayGroup(array('inicialRua', 'finalRua', 'inicialPredio', 'finalPredio', 'inicialNivel', 'finalNivel', 'inicialApartamento', 'finalApartamento'), 'endereco', array('legend' => 'Intervalo de Endereços'))
+            ->addDisplayGroup(array('idCaracteristica', 'idEstruturaArmazenagem', 'idTipoEndereco', 'lado', 'idAreaArmazenagem', 'situacao','status','ativo','btnBuscar'), 'caracteristica', array('legend' => 'Características'));
 
-
-        $formIdentificacao->addDisplayGroup(array(
-            'inicialRua',
-            'finalRua',
-            'inicialPredio',
-            'finalPredio',
-            'inicialNivel',
-            'finalNivel',
-            'inicialApartamento',
-            'finalApartamento',
-            'idCaracteristica',
-            'idEstruturaArmazenagem',
-            'idTipoEndereco',
-            'lado',
-            'idAreaArmazenagem',
-            'situacao',
-            'status',
-            'ativo',
-            'btnBuscar'
-                ), 'endereco', array('legend' => 'Busca'));
-
-        $this->addSubFormTab('Busca', $formIdentificacao, 'identificacao', 'forms/deposito-endereco-filtro.phtml');
+//        $formIdentificacao->addDisplayGroup(array(
+//            'inicialRua',
+//            'finalRua',
+//            'inicialPredio',
+//            'finalPredio',
+//            'inicialNivel',
+//            'finalNivel',
+//            'inicialApartamento',
+//            'finalApartamento',
+//            'idCaracteristica',
+//            'idEstruturaArmazenagem',
+//            'idTipoEndereco',
+//            'lado',
+//            'idAreaArmazenagem',
+//            'situacao',
+//            'status',
+//            'ativo',
+//            'btnBuscar'
+//                ), 'endereco', array('legend' => 'Busca'));
+//        $this->addSubFormTab('Busca', $formIdentificacao, 'identificacao', 'forms/deposito-endereco-filtro.phtml');
     }
 
     /**

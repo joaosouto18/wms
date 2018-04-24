@@ -43,6 +43,7 @@ class EtiquetaSeparacao extends SubForm
             ))->addElement('text','qtdConferentes', array(
                 'label' => 'Qtd. Funcionários',
                 'class' => 'inptText',
+                'alt' => 'number',
                 'id' => 'qtdConferentes',
                 'size' => 4,
             ))

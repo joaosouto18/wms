@@ -649,7 +649,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $pickings[$key]['volumes'] = null;
                 $result[$key]['ID_PICKING'] = $result[$key]['COD_DEPOSITO_ENDERECO'];
                 /*
-                 * CONTROI ARRAY DE DADOS PRODUTO PARA CALCULO DO RESSUPRIMENTO
+                 * CONSTROI ARRAY DE DADOS PRODUTO PARA CALCULO DO RESSUPRIMENTO
                  */
                 if (count($embalagensEn) > 0) {
                     /*
@@ -729,10 +729,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
                     $result[$key]['EMBALAGENS'] = json_encode($vetEmb);
                     $result[$key]['VOLUMES'] = json_encode($vetVol);
                     $result[$key]['PULMOES'] = json_encode($vetPulmoes);
-                    $result[$key]['PULMAO'] = '';
-                    $result[$key]['VALIDADE_ESTOQUE'] = '';
-                    $result[$key]['ID_PIKING'] = null;
-                    $result[$key]['QTD_ONDA'] = 0;
                     $osFirst = reset($os);
                     $result[$key]['VALIDADE_ESTOQUE'] = $osFirst['validadeEstoque'];
                     $result[$key]['PULMAO'] = implode(' <br /> ', $vetExibePulmao);
@@ -754,7 +750,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $SQL = "SELECT DISTINCT P.COD_PRODUTO,
                     P.DSC_GRADE,
                     DE.DSC_DEPOSITO_ENDERECO,
-                    NP.NUM_NORMA,
+                    (NVL(PE.QTD_EMBALAGEM, 1) * NP.NUM_NORMA ) NUM_NORMA,
                     P.DSC_PRODUTO,
                     NVL(PE.COD_DEPOSITO_ENDERECO,PV.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
                     NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING) as CAPACIDADE_PICKING,
@@ -856,7 +852,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $SQLOrderBy = " GROUP BY P.COD_PRODUTO, 
                  P.DSC_GRADE,
                   DE.DSC_DEPOSITO_ENDERECO,
-                  NP.NUM_NORMA,
+                  (NVL(PE.QTD_EMBALAGEM, 1) * NP.NUM_NORMA ),
                   NVL(PV.COD_PRODUTO_VOLUME,0),
                   NVL(PE.COD_DEPOSITO_ENDERECO,PV.COD_DEPOSITO_ENDERECO),
                   NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING),

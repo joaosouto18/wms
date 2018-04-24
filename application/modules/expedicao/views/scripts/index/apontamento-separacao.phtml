@@ -55,11 +55,13 @@
     }
 
 </style>
+<input type="hidden" id="qtdFuncMapa" value="<?php echo $this->qtdFuncMapa?>" />
 <script>
     $( window ).load(function() {
         // Run code
         $('#qtdConferentes').val(<?php echo $this->qtdFunc?>);
         $('#etiquetas-etiquetaInicial').focus();
+        $("#etiquetas-pessoa").attr('readonly', 'readonly');
     });
 
     function gotoFinal(event) {
@@ -130,7 +132,6 @@
                 pessoa = document.getElementById('mapas-pessoa');
                 if (pessoa) {
                     pessoa.focus();
-
                     if (event.preventDefault) {
                         event.preventDefault();
                     } else {
@@ -175,6 +176,11 @@
     });
     $(function () {
         $(document).keydown(function (event) {
+            if(event.keyCode == 17){
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                $('#etiquetas-etiquetaInicial').click();
+            }
              console.log(event.width + " -- " + event.keyCode)
         });
         $('#etiquetas-etiquetaInicial').keyup(function (event) {
@@ -235,7 +241,7 @@
                 if ($(this).val() != "") {
                     var inptConferente = $('#mapas-salvarMapa');
                     if (inptConferente) {
-                        inptConferente.focus();
+                        inptConferente.click();
                         if (event.preventDefault) {
                             event.preventDefault();
                         } else {
@@ -284,6 +290,9 @@
                         }
                         result.pessoa = data.pessoa;
                         addRow(result);
+                        if($("#qtdFuncMapa").val() == $("[value='"+result.mapa+"']").size()){
+                            $('.save').click();
+                        }
                     } else if (data.result = 'Error') {
                         alert(data.msg);
                     }
@@ -295,7 +304,11 @@
         });
 
         addLista = function () {
+            $("#etiquetas-pessoa").removeAttr('readonly');
+            $("#etiquetas-etiquetaInicial").attr('readonly', 'readonly');
+            $("#etiquetas-etiquetaFinal").attr('readonly', 'readonly');
             if($('#input-busca').val() == 1){
+                $("#etiquetas-pessoa").attr('readonly', 'readonly');
                 $('#tbResult tr').remove();
                 $('#input-busca').val(0);
                 $('#title-busca').hide();
@@ -502,7 +515,9 @@
             tr.append($('<td>').text(pessoa));
             tr.append($('<td class="identifica">').text(cpf));
             if(tipo == 'Mapa') {
-                tr.append($('<td class="mapa">').text(mapa));
+                tr.append($('<td class="mapa">').text(mapa).append(
+                    '<input type="hidden" class="valor-mapa" value="'+mapa+'" />'
+                ));
             }
             tr.append($('<td class="intervalo">').text(intervalo));
             tr.append($('<td>').text(total));
@@ -545,8 +560,10 @@
                                 eF = eI;
                                 eI = aux;
                             }
+                            $("#etiquetas-pessoa").attr('readonly', 'readonly');
                             $.get(URL_BASE + "/expedicao/etiqueta/get-intervalo-ajax", {primeira: eI, ultima: eF}, function (data) {
                                 $("#txtIntervalo").val(data.result);
+                                $('#etiquetas-pessoa').removeAttr('readonly');
                             });
                         } else if (data.result = 'Error') {
                             $.wmsDialogAlert({
@@ -617,6 +634,19 @@
             }
         });
 
+        $('#qtdConferentes').focus(function() {
+            prev_val = $(this).val();
+        }).change(function() {
+            $(this).blur() // Firefox fix as suggested by AgDude
+            if($(this).val() == 0 || $(this).val().length == 0){
+                $(this).val(prev_val);
+                $.wmsDialogAlert({
+                    title: 'Alerta',
+                    msg: 'Números de funcionários precisa estar preenchido.'
+                });
+                return false;
+            }
+        });
 
         $('.updateSeparacao').click(function () {
             $.each($('#tbResult').children(), function () {
