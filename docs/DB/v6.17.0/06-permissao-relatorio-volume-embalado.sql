@@ -7,7 +7,7 @@
 DECLARE
   CHECK_RESULT VARCHAR2(100);
 BEGIN
-  SELECT FUNC_CHECK_SCRIPT('xx-permissao-relatorio-volume-embalado.sql', '')
+  SELECT FUNC_CHECK_SCRIPT('06-permissao-relatorio-volume-embalado.sql', '')
   INTO CHECK_RESULT
   FROM DUAL;
   IF (CHECK_RESULT <> 'TRUE')
