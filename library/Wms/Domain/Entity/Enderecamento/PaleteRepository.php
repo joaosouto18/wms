@@ -612,30 +612,52 @@ class PaleteRepository extends EntityRepository {
                 throw new Exception("O recebimento do produto $idProduto não possui unitizador ou ainda não foi conferido!");
             }
 
-            if (empty($qtdRecebida))
-                throw new \Exception("O item $idProduto grade $grade não foi conferido ou já foi totalmente endereçado!");
+            $qtdDisponivelEnderecar = [];
 
-            foreach ($qtdEnderecada as $enderecado) {
-                foreach ($qtdRecebida as $key => $recebido) {
-                    if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']) {
-                        $qtdRecebida[$key]['QTD'] = $recebido['QTD'] - $enderecado['QTD'];
-                        $qtdRecebida[$key]['PESO'] = $recebido['PESO'] - $enderecado['PESO'];
+            if (!empty($qtdEnderecada)) {
+                foreach ($qtdEnderecada as $enderecado) {
+                    foreach ($qtdRecebida as $key => $recebido) {
+                        if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']) {
+                            $qtdRecebida[$key]['QTD'] = $recebido['QTD'] - $enderecado['QTD'];
+                            $qtdRecebida[$key]['PESO'] = $recebido['PESO'] - $enderecado['PESO'];
+                            if ($qtdRecebida[$key]['QTD'] > 0 || $qtdRecebida[$key]['PESO'] > 0) {
+                                $qtdDisponivelEnderecar[$recebido['COD_NORMA_PALETIZACAO']] = [
+                                    'QTD' => $qtdRecebida[$key]['QTD'],
+                                    'PESO' => $qtdRecebida[$key]['PESO'],
+                                    'NUM_NORMA' => $qtdRecebida[$key]['NUM_NORMA'],
+                                    'COD_NORMA_PALETIZACAO' => $qtdRecebida[$key]['COD_NORMA_PALETIZACAO'],
+                                    'COD_UNITIZADOR' => $qtdRecebida[$key]['COD_UNITIZADOR'],
+                                ];
+                            } else {
+                                if (isset($qtdDisponivelEnderecar[$recebido['COD_NORMA_PALETIZACAO']]))
+                                    unset($qtdDisponivelEnderecar[$recebido['COD_NORMA_PALETIZACAO']]);
+                            }
+                        }
                     }
                 }
+            } else {
+                $qtdDisponivelEnderecar = $qtdRecebida;
             }
+
+            if (empty($qtdDisponivelEnderecar))
+                throw new \Exception("O item $idProduto grade $grade já foi totalmente paletizado ou endereçado!");
 
             $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($recebimentoEn->getId(), null, $idProduto, $grade);
 
-            foreach ($qtdRecebida as $item) {
+            foreach ($qtdDisponivelEnderecar as $item) {
 
                 $this->deletaPaletesEmRecebimento($recebimentoEn->getId(), $idProduto, $grade);
 
+                $volumes = [];
+
                 if ($tipo == "V") {
-                    $volumes = $volumesPalete = $this->getVolumesByOsAndNorma($idOs, $idProduto, $grade, $item['COD_NORMA_PALETIZACAO'], $recebimentoEn->getId());
+                    $volumesArr = $volumesPalete = $this->getVolumesByOsAndNorma($idOs, $idProduto, $grade, $item['COD_NORMA_PALETIZACAO'], $recebimentoEn->getId());
+                    foreach ($volumesArr as $vol) {
+                        $volumes[] = $vol['COD_PRODUTO_VOLUME'];
+                    }
                     $idVolume = $volumes[0];
                 } else {
                     $volumesPalete = $this->getEmbalagensByOsAndNorma($idOs, $idProduto, $grade, 0, $recebimentoEn->getId());
-                    $volumes = [];
                 }
 
                 $saldoPickingReal = $estoqueRepo->getQtdProdutoByVolumesOrProduct($idProduto, $grade, $pickingEn->getId(), $volumes);
