@@ -1984,7 +1984,7 @@ class RecebimentoRepository extends EntityRepository {
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select("(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0)) qtdBloqueada, r.id codRecebimento,
-                        NVL(re.id,rv.id) id, p.descricao, p.id codProduto, p.grade,
+                        re.id codRecebEmbalagem, rv.id codRecebVolume, p.descricao, p.id codProduto, p.grade,
                         TO_CHAR(NVL(re.dataValidade, rv.dataValidade),'DD/MM/YYYY') dataValidade")
             ->from('wms:Recebimento', 'r')
             ->leftJoin('wms:Recebimento\Embalagem','re','WITH','re.recebimento = r.id')

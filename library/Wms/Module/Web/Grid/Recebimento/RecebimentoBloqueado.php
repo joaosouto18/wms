@@ -48,16 +48,24 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
             ->addAction(array(
                 'label' => 'ACEITAR data de validade',
                 'controllerName' => 'recebimento',
-                'actionName' => 'index',
-                'params' => array('liberar' => 'true'),
-                'pkIndex' => 'id'
+                'actionName' => 'liberar-recusar-recebimentos',
+                'params' => array(
+                    'liberar' => 'true',
+                    'idRecebEmbalagem' => 'codRecebEmbalagem',
+                    'idRecebVolume' => 'codRecebVolume',
+                    'idRecebimento' => 'codRecebimento',
+                    'observacao' => 'Contagem Liberada'),
             ))
             ->addAction(array(
                 'label' => 'RECUSAR data de validade',
                 'controllerName' => 'recebimento',
-                'actionName' => 'index',
-                'params' => array('liberar' => 'false'),
-                'pkIndex' => 'id'
+                'actionName' => 'liberar-recusar-recebimentos',
+                'params' => array(
+                    'liberar' => 'false',
+                    'idRecebEmbalagem' => 'codRecebEmbalagem',
+                    'idRecebVolume' => 'codRecebVolume',
+                    'idRecebimento' => 'codRecebimento',
+                    'observacao' => 'Contagem Rejeitada'),
             ))
 
             ->setShowExport(false);
