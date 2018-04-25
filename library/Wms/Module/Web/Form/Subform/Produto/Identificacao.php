@@ -186,7 +186,7 @@ class Identificacao extends SubForm
             'idTipoComercializacao' => $produto->getTipoComercializacao()->getId(),
         );
 
-        if (empty($produto->getValidade())) {
+        if ($produto->getValidade() == null) {
             $values['validade'] = 'N';
             $values['diasVidaUtil'] = null;
             $values['diasVidaUtilMaximo'] = null;
@@ -196,7 +196,7 @@ class Identificacao extends SubForm
             $values['diasVidaUtilMaximo'] = $produto->getDiasVidaUtilMax();
         }
 
-        if (empty($produto->getPossuiPesoVariavel())) {
+        if ($produto->getPossuiPesoVariavel() == null) {
             $values['pVariavel'] = 'N';
             $values['percTolerancia'] = null;
             $values['toleranciaNominal'] = null;
@@ -206,7 +206,7 @@ class Identificacao extends SubForm
             $values['toleranciaNominal'] = $produto->getToleranciaNominal();
         }
 
-        if (empty($produto->getIndFracionavel())) {
+        if ($produto->getIndFracionavel() == null) {
             $values['indFracionavel'] = 'N';
             $values['unidFracao'] = null;
         } else {
