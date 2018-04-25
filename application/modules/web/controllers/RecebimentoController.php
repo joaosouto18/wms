@@ -1524,49 +1524,57 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->view->grid = $grid->init()->render();
     }
 
-    public function liberarRecusarRecebimentosAction()
+    public function liberarRecusarRecebimentosAjaxAction()
     {
-        $idRecebEmbalagem = $this->_getParam('idRecebEmbalagem');
-        $idRecebVolume    = $this->_getParam('idRecebVolume');
-        $idRecebimento    = $this->_getParam('idRecebimento');
+        $idRecebEmbalagem = $this->_getParam('codRecebEmbalagem');
+        $idRecebVolume    = $this->_getParam('codRecebVolume');
+        $idRecebimento    = $this->_getParam('codRecebimento');
         $observacao       = $this->_getParam('observacao');
         $liberarRecusar   = $this->_getParam('liberar');
 
-        $recebimentoEntity = $this->getEntityManager()->getReference('wms:Recebimento',$idRecebimento);
-        $recebimentoEntity
-            ->addAndamento(false, false, $observacao);
+        try {
+            $recebimentoEntity = $this->getEntityManager()->getReference('wms:Recebimento',$idRecebimento);
+            $recebimentoEntity
+                ->addAndamento(false, false, $observacao);
 
-        $this->getEntityManager()->persist($recebimentoEntity);
+            $this->getEntityManager()->persist($recebimentoEntity);
 
-        if ($liberarRecusar) {
-            if ($idRecebEmbalagem) {
-                $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idRecebEmbalagem);
-                $recebimentoEmbalagemEntity->setQtdConferida($recebimentoEmbalagemEntity->getQtdBloqueada());
-                $recebimentoEmbalagemEntity->setQtdBloqueada(0);
+            if ($liberarRecusar == true) {
+                if ($idRecebEmbalagem) {
+                    $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idRecebEmbalagem);
+                    $recebimentoEmbalagemEntity->setQtdConferida($recebimentoEmbalagemEntity->getQtdBloqueada());
+                    $recebimentoEmbalagemEntity->setQtdBloqueada(0);
 
-                $this->getEntityManager()->persist($recebimentoEmbalagemEntity);
-            } else if ($idRecebVolume) {
-                $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idRecebVolume);
-                $recebimentoVolumeEntity->setQtdConferida($recebimentoVolumeEntity->getQtdBloqueada());
-                $recebimentoVolumeEntity->setQtdBloqueada(0);
+                    $this->getEntityManager()->persist($recebimentoEmbalagemEntity);
+                } else if ($idRecebVolume) {
+                    $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idRecebVolume);
+                    $recebimentoVolumeEntity->setQtdConferida($recebimentoVolumeEntity->getQtdBloqueada());
+                    $recebimentoVolumeEntity->setQtdBloqueada(0);
 
-                $this->getEntityManager()->persist($recebimentoVolumeEntity);
+                    $this->getEntityManager()->persist($recebimentoVolumeEntity);
+                }
+            } else {
+                if ($idRecebEmbalagem) {
+                    $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idRecebEmbalagem);
+                    $recebimentoEmbalagemEntity->setQtdBloqueada(0);
+
+                    $this->getEntityManager()->persist($recebimentoEmbalagemEntity);
+                } else if ($idRecebVolume) {
+                    $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idRecebVolume);
+                    $recebimentoVolumeEntity->setQtdBloqueada(0);
+
+                    $this->getEntityManager()->persist($recebimentoVolumeEntity);
+                }
             }
-        } else {
-            if ($idRecebEmbalagem) {
-                $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idRecebEmbalagem);
-                $recebimentoEmbalagemEntity->setQtdBloqueada(0);
 
-                $this->getEntityManager()->persist($recebimentoEmbalagemEntity);
-            } else if ($idRecebVolume) {
-                $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idRecebVolume);
-                $recebimentoVolumeEntity->setQtdBloqueada(0);
+            $this->getEntityManager()->flush();
 
-                $this->getEntityManager()->persist($recebimentoVolumeEntity);
-            }
+            $this->addFlashMessage('success', $observacao);
+            $this->_redirect('/recebimento/visualizar-recebimentos-bloqueados');
+
+        } catch (\Exception $e) {
+            $this->_helper->messenger('error', $e->getMessage());
         }
-
-        $this->getEntityManager()->flush();
     }
 
 }
