@@ -84,7 +84,7 @@ class Inventario {
         foreach ($return['enderecos'] as $key => $endereco) {
             if ($params['divergencia'] == 1 && !is_null($endereco['DSC_GRADE']) && !is_null($endereco['COD_PRODUTO'])) {
                 $enderecos[$key]['endereco'] = $endereco['DSC_DEPOSITO_ENDERECO'] . ' - ' . $endereco['DSC_PRODUTO'] . ' - '. $endereco['COD_PRODUTO'] . ' / ' . $endereco['DSC_GRADE'] . ' - ' . $endereco['COMERCIALIZACAO'];
-                if ($endereco['QTD_CONTADA'] == 0) {
+                //if ($endereco['QTD_CONTADA'] == 0) {
                     $idVolume = $endereco['COD_VOLUME'];
 
                     if ($idVolume == null) {
@@ -102,9 +102,9 @@ class Inventario {
                     } else {
                         $enderecos[$key]['zerar'] = 0;
                     }
-                } else {
-                    $enderecos[$key]['zerar'] = 0;
-                }
+                //} else {
+                //    $enderecos[$key]['zerar'] = 0;
+                //}
             } else {
                 $enderecos[]['endereco'] = $endereco['DSC_DEPOSITO_ENDERECO'];
             }
