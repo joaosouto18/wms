@@ -85,7 +85,12 @@ class Inventario {
                 if ($endereco['QTD_CONTADA'] == 0) {
                     $embalagem = $produtoEmbalagemRepo->findOneBy(array('codProduto' => $endereco['COD_PRODUTO'], 'grade' => $endereco['DSC_GRADE']), array('quantidade', 'ASC'));
                     if (isset($embalagem) && !empty($embalagem)) {
-                        $enderecos[$key]['zerar'] = $embalagem->getCodigoBarras();
+                        if ($embalagem->getCodigoBarras() == null) {
+                            $enderecos[$key]['zerar'] = -1;
+                        } else {
+                            $enderecos[$key]['zerar'] = $embalagem->getCodigoBarras();
+                        }
+
                     } else {
                         $enderecos[$key]['zerar'] = 0;
                     }
