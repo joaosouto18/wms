@@ -105,6 +105,7 @@ class EnderecoRepository extends EntityRepository
                             MAXCONT.DSC_GRADE, 
                             MAXCONT.COD_PRODUTO, 
                             MAXCONT.QTD_CONTADA, 
+                            MAXCONT.COD_VOLUME,
                             MAXCONT.COMERCIALIZACAO,
                             CASE WHEN IE.DIVERGENCIA = 1 THEN 'DIVERGENCIA' WHEN IE.INVENTARIADO = 1 THEN 'INVENTARIADO' ELSE 'PENDENTE' END SITUACAO ";
         if (isset($params['campos']) && $params['campos'] != null) {
@@ -120,6 +121,7 @@ class EnderecoRepository extends EntityRepository
                             P.DSC_PRODUTO,
                             P.COD_PRODUTO, 
                             P.DSC_GRADE, 
+                            PV.COD_PRODUTO_VOLUME as COD_VOLUME,
                             NVL(PV.DSC_VOLUME,'EMBALAGEM') COMERCIALIZACAO
                         FROM 
                             INVENTARIO_CONTAGEM_ENDERECO ICE
@@ -150,6 +152,7 @@ class EnderecoRepository extends EntityRepository
                             P.DSC_PRODUTO,
                             P.COD_PRODUTO, 
                             P.DSC_GRADE, 
+                            PV.COD_PRODUTO_VOLUME,
                             PV.DSC_VOLUME,
                             PE.DSC_EMBALAGEM, 
                             ICE.QTD_CONTADA
