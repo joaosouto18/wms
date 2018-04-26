@@ -113,7 +113,7 @@
 <?php if ($this->botoes) : ?>
 
     <div id="footer">
-        <a style="margin-bottom: 10px;" href=<?php echo "/mobile/inventario/mudar-endereco/idInventarioEnd/" . $this->idInventarioEnd . "/idInventario/" . $this->idInventario . "/numContagem/" . $this->numContagem . "/divergencia/" . $this->divergencia ?> class="btn button finalizar mudar">Próximo Endereço</a>
+        <a style="margin-bottom: 10px; background: #739E39!important;" href=<?php echo "/mobile/inventario/mudar-endereco/idInventarioEnd/" . $this->idInventarioEnd . "/idInventario/" . $this->idInventario . "/numContagem/" . $this->numContagem . "/divergencia/" . $this->divergencia ?> class="btn button finalizar mudar">Próximo Endereço</a>
     </div>
 
 <?php endif; ?>
@@ -126,7 +126,7 @@
                 <p>
                 <?php if (isset($endereco['endereco'])) : ?>
                     <?php if (isset($endereco['zerar']) && $endereco['zerar'] > 0 && $this->codigoBarras != null) : ?>
-                        <a class="gradientBtn btnZerar" style="color:#fff; cursor: pointer; border-radius: 4px;border-color: black; width: 50px;height: 40px;margin: 6px;font-weight: bold;padding: 2px; font-size: 12px;" name="btnFinalizar" type="submit" codigo-barras="<?php echo $endereco['zerar'] ?>">&nbsp;Zerar Item </a>
+                        <a class="gradientBtn btnZerar" style="color:#080808!important;background: #fb932e!important; cursor: pointer; border-radius: 4px;border-color: black; width: 50px;height: 40px;margin: 6px;font-weight: bold;padding: 2px; font-size: 12px;" name="btnFinalizar" type="submit" codigo-barras="<?php echo $endereco['zerar'] ?>">&nbsp;Zerar Item </a>
                     <?php endif; ?>
                     <?php echo $endereco['endereco']; ?>
                     <?php if (isset($endereco['zerar']) && $endereco['zerar'] < 0) : ?>
