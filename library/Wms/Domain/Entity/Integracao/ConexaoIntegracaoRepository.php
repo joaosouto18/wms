@@ -181,16 +181,24 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $resultado = ibase_query($conexao, $query);
 
+            if ($resultado === true) {
+                ibase_close($conexao);
+                return true;
+            }
+
+            if ($resultado === false) {
+                $errmsg = ibase_errmsg();
+                ibase_close($conexao);
+                throw new \Exception($errmsg);
+            }
+
             $result = array();
             while ($row = ibase_fetch_assoc ($resultado)) {
                 $result[] = $row;
             }
 
-            var_dump($result);
-
-            exit;
             ibase_close($conexao);
-            return $resultado;
+            return $result;
 
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
