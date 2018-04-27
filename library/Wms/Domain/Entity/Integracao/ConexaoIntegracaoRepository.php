@@ -180,8 +180,26 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
 
             $resultado = ibase_query($conexao, $query);
+
+            $dataArr = array();
+            $coln = ibase_num_fields($rid);
+            $blobFields = array();
+            for ($i=0; $i < $coln; $i++) {
+                $col_info = ibase_field_info($rid, $i);
+                if ($col_info["type"]=="BLOB") $blobFields[$i] = $col_info["name"];
+            }
+            while ($row = ibase_fetch_row ($rid)) {
+                foreach ($blobFields as $field_num=>$field_name) {
+                    $blobid = ibase_blob_open($row[$field_num]);
+                    $row[$field_num] = ibase_blob_get($blobid,102400);
+                    ibase_blob_close($blobid);
+                }
+                $dataArr[] = $row;
+            }
+            
             var_dump($resultado);
             var_dump('teste');exit;
+            var_dump($dataArr);
             ibase_close($conexao);
             return $resultado;
 
