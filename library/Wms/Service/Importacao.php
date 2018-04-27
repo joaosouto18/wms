@@ -671,7 +671,7 @@ class Importacao
 
                 } else {
 
-                    $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('id' => $pedido['codPedido']));
+                    $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('codExterno' => $pedido['codPedido']));
                     if (empty($pedido['pedido'])) {
                         throw new \Exception("Pedido: $pedido[codPedido] não foi encontrado");
                     }
