@@ -192,14 +192,14 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
             */
 
-            var_dump(ibase_fetch_assoc($resultado));
-            
+            //var_dump(ibase_fetch_assoc($resultado));
+
             for ($i=0; $i < $coln; $i++) {
                 $col_info = ibase_field_info($resultado, $i);
                 var_dump($col_info["alias"]);
             }
 
-            while ($row = ibase_fetch_row ($resultado)) {
+            while ($row = ibase_fetch_assoc ($resultado)) {
 
                 /*foreach ($blobFields as $field_num=>$field_name) {
                     $blobid = ibase_blob_open($row[$field_num]);
