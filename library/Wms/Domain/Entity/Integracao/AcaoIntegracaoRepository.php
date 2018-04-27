@@ -234,7 +234,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             } else {
                 $result = $dados;
             }
-            var_dump($result);exit;
+
             if ($acaoEn->getidAcaoRelacionada() != null) {
                 if (count($result) >0) {
 

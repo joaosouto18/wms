@@ -180,7 +180,8 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
 
             $resultado = ibase_query($conexao, $query);
-
+            var_dump($resultado);
+            var_dump('teste');exit;
             ibase_close($conexao);
             return $resultado;
 
