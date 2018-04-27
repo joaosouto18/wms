@@ -709,6 +709,7 @@ class PedidoRepository extends EntityRepository
         $sql = "SELECT COD_PEDIDO, NUM_SEQUENCIAL FROM PEDIDO WHERE COD_EXTERNO = $idPedidoExterno ORDER BY NUM_SEQUENCIAL DESC ";
         $result = $this->_em->getConnection()->query($sql)->fetch();
         if($numSequencial == true){
+            $numSequencial = null;
             if(!empty($result)){
                 if($result['NUM_SEQUENCIAL'] == null){
                     $numSequencial = 2;
