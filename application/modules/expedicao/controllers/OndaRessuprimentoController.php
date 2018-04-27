@@ -87,8 +87,12 @@ class Expedicao_OndaRessuprimentoController extends Action
                     $itensPCortar = $expedicaoRepo->diluirCorte($expedicoes, $result);
                     $expedicaoRepo->executaCortePedido($itensPCortar, $motivo, $cortarAutomatico);
                     $link = '<a href="' . $this->view->url(array('controller' => 'corte', 'action' => 'relatorio-corte-ajax', 'id' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de cortes automaticos da onda de ressuprimento</a>';
-                    $msgCorte = "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque. Clique para exibir " . $link;
-                    $this->addFlashMessage("warning", $msgCorte);
+                    $msgCorte = "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque.";
+
+                    $return['response'][] = [
+                        'msg' => $msgCorte,
+                        'link' => $link
+                    ];
                 } else {
 
                     $expedicoesComCorte = array();
@@ -104,9 +108,12 @@ class Expedicao_OndaRessuprimentoController extends Action
                     $expedicoesComCorte = implode(',', $expedicoesComCorte);
 
                     $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoesComCorte)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
-                    $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas. Clique para exibir ' . $link;
+                    $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas.';
 
-                    $return['response'][] = $mensagem;
+                    $return['response'][] = [
+                        'msg' => $mensagem,
+                        'link' => $link
+                    ];
                 }
             }
 
@@ -123,9 +130,12 @@ class Expedicao_OndaRessuprimentoController extends Action
                 $expedicoes = implode(',', $expedicaoDescasada);
 
                 $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'produtos-descasados-ajax', 'expedicoes' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos Descasados</a>';
-                $mensagem = 'Existem Produtos descasados nas Expedições Selecionadas. Clique para exibir ' . $link;
+                $mensagem = 'Existem Produtos descasados nas Expedições Selecionadas.';
 
-                $return['response'][] = $mensagem;
+                $return['response'][] = [
+                    'msg' => $mensagem,
+                    'link' => $link
+                ];
             }
 
             ini_set('max_execution_time', 900);
@@ -144,7 +154,7 @@ class Expedicao_OndaRessuprimentoController extends Action
                 throw new Exception($result['observacao']);
             } else {
                 $return['status'] = 'Ok';
-                $return['response'][] = $result['observacao'];
+                $return['response'][] = ['msg' => $result['observacao'], 'link' => null];
                 $return['expedicoes'] = $idsExpedicoes;
             }
             $this->em->flush();
@@ -152,7 +162,7 @@ class Expedicao_OndaRessuprimentoController extends Action
         } catch (\Exception $e) {
             $this->em->rollback();
             $return['status'] = 'Error';
-            $return['response'][] = "Falha gerando ressuprimento. " . $e->getMessage();
+            $return['response'][] = ['msg' => "Falha gerando ressuprimento. " . $e->getMessage(), 'link' => null];
             $return['expedicoes'] = null;
         }
         $expedicaoRepo->changeStatusExpedicao($expedicoesSelecionadas, 'N');
