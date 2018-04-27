@@ -199,8 +199,10 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
 
             var_dump($resultado);
-            var_dump('teste');exit;
+            var_dump('teste');
             var_dump($dataArr);
+
+            exit;
             ibase_close($conexao);
             return $resultado;
 
