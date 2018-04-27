@@ -1073,7 +1073,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
         $PedidoRepo     = $repositorios['pedidoRepo'];
         $idPedido = $PedidoRepo->getMaxCodPedidoByCodExterno($pedido['codPedido']);
-        $entityPedido   = $PedidoRepo->find($idPedido);
+        $entityPedido = null;
+        if(!empty($idPedido)){
+            $entityPedido   = $PedidoRepo->find($idPedido);
+        }
         if ($entityPedido == null) {
             $entityPedido = $PedidoRepo->save($pedido);
         }
