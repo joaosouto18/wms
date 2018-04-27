@@ -192,6 +192,11 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
             */
 
+            for ($i=0; $i < $coln; $i++) {
+                $col_info = ibase_field_info($resultado, $i);
+                var_dump($col_info["name"]);
+            }
+
             while ($row = ibase_fetch_row ($resultado)) {
 
                 /*foreach ($blobFields as $field_num=>$field_name) {
@@ -203,8 +208,6 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 $dataArr[] = $row;
             }
 
-            var_dump($resultado);
-            var_dump('teste');
             var_dump($dataArr);
 
             exit;
