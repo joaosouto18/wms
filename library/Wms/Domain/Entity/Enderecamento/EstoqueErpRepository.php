@@ -88,7 +88,7 @@ class EstoqueErpRepository extends EntityRepository
 
         $sql.= " WHERE 1 = 1
                     $where         
-                 ORDER BY P.COD_PRODUTO, P.DSC_GRADE";
+                 ORDER BY P.DSC_PRODUTO, P.COD_PRODUTO, P.DSC_GRADE";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $key => $value) {
