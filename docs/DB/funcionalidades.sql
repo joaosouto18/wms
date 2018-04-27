@@ -343,7 +343,6 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (344, '6.13.4', 'Correção: Telas de endereçamento com links quebrados por descrição de grade com barra', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (345, '6.13.4', 'Correção: Consulta de recebimento na tela de endereçamentos agora desconsidera data quando for passado o recebimento', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (346, '6.13.4', 'Melhoria: Parâmetro para inativar embalagens inexistentes do ERP na integração SQL', '17-parametro-embalagens.sql', SYSDATE);
-<<<<<<< HEAD
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (347, '6.13.5', 'Correção: Falha ao importar um pedido para WMS paralelo a montagem de carga no ERP', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (348, '6.14.0', 'Melhoria: Cadastro de rotas e praças no modelo de separação para mapa de separação', '16-cadastro-rota.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (349, '6.14.0', 'Melhoria: Número de carga em etiqueta de separação de embalados', null, SYSDATE);

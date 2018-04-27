@@ -655,7 +655,7 @@ class PedidoRepository extends EntityRepository
             ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
             ->innerJoin('p.carga', 'c')
             ->innerJoin('c.expedicao', 'e')
-            ->where("e.id = $idExpedicao  and pp.quantidade > pp.qtdCortada")
+            ->where("e.id = $idExpedicao  and pp.quantidade > NVL(pp.qtdCortada,0)")
             ->groupBy('p.codExterno, pe.nome, i.descricao, p.numSequencial')
             ->orderBy('pe.nome', 'asc');
 
@@ -709,6 +709,7 @@ class PedidoRepository extends EntityRepository
         $sql = "SELECT COD_PEDIDO, NUM_SEQUENCIAL FROM PEDIDO WHERE COD_EXTERNO = $idPedidoExterno ORDER BY NUM_SEQUENCIAL DESC ";
         $result = $this->_em->getConnection()->query($sql)->fetch();
         if($numSequencial == true){
+            $numSequencial = null;
             if(!empty($result)){
                 if($result['NUM_SEQUENCIAL'] == null){
                     $numSequencial = 2;

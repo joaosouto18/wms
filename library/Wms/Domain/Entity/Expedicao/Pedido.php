@@ -11,7 +11,7 @@ class Pedido
 {
     /**
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_PEDIDO_01", allocationSize=1, initialValue=10000000000)
+     * @SequenceGenerator(sequenceName="SQ_PEDIDO_01", allocationSize=1, initialValue=1)
      * @Column(name="COD_PEDIDO", type="string", nullable=false)
      * @Id
      */
