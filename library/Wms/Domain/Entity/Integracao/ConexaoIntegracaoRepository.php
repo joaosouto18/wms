@@ -192,14 +192,9 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             while ($row = ibase_fetch_row ($resultado)) {
                 foreach ($blobFields as $field_num=>$field_name) {
                     $blobid = ibase_blob_open($row[$field_num]);
-                    $row[$field_name] = ibase_blob_get($blobid,102400);
-
-                    var_dump($field_name);
-                    var_dump(ibase_blob_get($blobid,102400));
-
+                    $row[$field_num] = ibase_blob_get($blobid,102400);
                     ibase_blob_close($blobid);
                 }
-                exit;
                 $dataArr[] = $row;
             }
 
