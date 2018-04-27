@@ -36,22 +36,22 @@ class ComparativoEstoque extends Grid {
         $this->addColumn(array(
             'label' => 'Divergência',
             'index' => 'DIVERGENCIA',
-//                    'render' => 'N3'
+                    'render' => 'N3'
         ));
         $this->addColumn(array(
             'label' => 'Vlr.WMS',
             'index' => 'VLR_ESTOQUE_WMS',
-            'render' => 'N3'
+            'render' => 'N2'
         ));
         $this->addColumn(array(
             'label' => 'Vlr.ERP',
             'index' => 'VLR_ESTOQUE_ERP',
-            'render' => 'N3'
+            'render' => 'N2'
         ));
         $this->addColumn(array(
             'label' => 'Vlr.Div.',
             'index' => 'VLR_DIVERGENCIA',
-            'render' => 'N3'
+            'render' => 'N2'
         ));
 
         $this->setShowExport(false)
