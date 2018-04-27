@@ -192,6 +192,8 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
             */
 
+            var_dump(ibase_fetch_assoc($resultado));
+            
             for ($i=0; $i < $coln; $i++) {
                 $col_info = ibase_field_info($resultado, $i);
                 var_dump($col_info["alias"]);
