@@ -23,7 +23,7 @@ class N2 extends Render\ARender implements Render\IRender
         $index = $this->getColumn()->getIndex();
 
         if (($row[$index] != null) || (is_numeric($row[$index]))) {
-            return Converter::enToBr($row[$index], 2);
+            return '<div style="float:right;"> ' . Converter::enToBr($row[$index], 2) ."</div>";
         }
     }
 
