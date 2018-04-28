@@ -74,7 +74,8 @@ class EnderecoRepository extends EntityRepository
         $rua            = isset($params['rua']) ? $params['rua'] : null;
         $andEndereco = '';
         if ($divergencia != null && $divergencia != 'todos') {
-            $andDivergencia = " AND IE.DIVERGENCIA = 1 AND MAXCONT.DIVERGENCIA IS NOT NULL";
+            //$andDivergencia = " AND IE.DIVERGENCIA = 1 AND MAXCONT.DIVERGENCIA IS NOT NULL";
+            $andDivergencia = "AND IE.DIVERGENCIA = 1 AND (MAXCONT.DIVERGENCIA IS NOT NULL OR (MAXCONT.DIVERGENCIA IS NULL AND IE.DIVERGENCIA IS NOT NULL AND MAXCONT.COD_PRODUTO IS NULL))";
         } else if ($divergencia == 'todos') {
             $andDivergencia = null;
         } else {
