@@ -47,7 +47,7 @@ class Monitoramento extends Form {
                                                     '545'=>'CANCELADO'),
                 ))
                 ->addElement('text', 'inventario', array(
-                    'label' => 'Invetário',
+                    'label' => 'Inventário',
                     'alt' => 'number',
                     'size' => 15,
                     'class' => 'ctrSize',
