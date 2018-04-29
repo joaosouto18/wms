@@ -21,7 +21,7 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
         if (isset($params['inventario'])&& ($params['inventario'] != null)) {
             $idInventario = $params['inventario'];
         }
-
+        
         if (isset($params['inventario']) && !empty($params['inventario']) || isset($params['divergencia'])
             || isset($params['tipoDivergencia']) || isset($params['linhaSeparacao'])) {
             $result = $estoqueErpRepo->getProdutosDivergentesByInventario($idInventario, $params);
@@ -46,7 +46,10 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
             }
         }
 
-        $this->showTotais($result);
+        if (isset($result)) {
+            $this->showTotais($result);
+        }
+
 
     }
 
