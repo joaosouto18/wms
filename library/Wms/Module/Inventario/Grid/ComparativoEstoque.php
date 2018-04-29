@@ -84,7 +84,7 @@ class ComparativoEstoque extends Grid {
         $qtdTotalFalta = $qtdTotalFalta * -1;
         $vlrTotalFalta = $vlrTotalFalta * -1;
 
-        $qtdProdDivTotal = $qtdProdSobra + $qtdProdSobra;
+        $qtdProdDivTotal = $qtdProdSobra + $qtdProdFalta;
         $qtdDivTotal = $qtdTotalSobra + $qtdTotalFalta;
         $vlrTotal = $vlrTotalSobra + $vlrTotalFalta;
 
