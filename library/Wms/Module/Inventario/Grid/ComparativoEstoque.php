@@ -147,9 +147,9 @@ class ComparativoEstoque extends Grid {
                                     <td>Vlr.Total</td>
                                 </tr>
                                 <tr>
-                                    <td><input type="text" style="text-align:right;" size="10" value="'. $qtdProdFalta . '" disabled=""/></td>
-                                    <td><input type="text" style="text-align:right;" size="15" value="'. $qtdTotalFalta . '" disabled=""/></td>
-                                    <td><input type="text" style="text-align:right;" size="15" value="'. $vlrTotalFalta . '" disabled=""/></td>
+                                    <td><input type="text" style="text-align:right;" size="10" value="'. $qtdProdDivTotal . '" disabled=""/></td>
+                                    <td><input type="text" style="text-align:right;" size="15" value="'. $qtdDivTotal . '" disabled=""/></td>
+                                    <td><input type="text" style="text-align:right;" size="15" value="'. $vlrTotal . '" disabled=""/></td>
                                 </tr>
                             </table>                
                             </fieldset>                        
