@@ -105,7 +105,7 @@ class ComparativoEstoque extends Grid {
                     <tr>
                         <td>
                             <fieldset>
-                            <legend>Sobras</legend>
+                            <legend>Sobras no WMS</legend>
                             <table width="100%">
                                 <tr>
                                     <td>Qtd.Prod.</td>
@@ -122,7 +122,7 @@ class ComparativoEstoque extends Grid {
                         </td>
                         <td>
                             <fieldset>
-                            <legend>Faltas</legend>
+                            <legend>Faltas no WMS</legend>
                             <table width="100%">
                                 <tr>
                                     <td>Qtd.Prod.</td>
