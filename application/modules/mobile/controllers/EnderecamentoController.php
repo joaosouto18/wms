@@ -1029,6 +1029,24 @@ class Mobile_EnderecamentoController extends Action
                     $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
                     $params['volume'] = $volumeEn = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
 
+                    if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                        if (isset($embalagemEn)) {
+                            $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                            foreach ($embalagens as $embalagemEn) {
+                                $embalagemEn->setEndereco($enderecoNovoEn);
+                                $this->getEntityManager()->persist($embalagemEn);
+                            }
+                            $this->getEntityManager()->flush();
+                        } else if (isset($volumeEn)) {
+                            $volumeEn->setEndereco($enderecoNovoEn);
+                            $this->getEntityManager()->persist($volumeEn);
+                            $this->getEntityManager()->flush();
+                        }
+                    }
+
+                    /*
+                     * REGRA NÃO NECESSARIA MAIS POIS O SISTEMA PERMITE RESSUPRIMENTO PICKING / PICKING
+                     *
                     if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
                         $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                         if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking) {
@@ -1085,6 +1103,7 @@ class Mobile_EnderecamentoController extends Action
                             }
                         }
                     }
+                    */
 
                     if ($produtoEn->getValidade() == 'S' ) {
                         $validade = $estoque->getValidade();
