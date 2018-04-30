@@ -91,6 +91,12 @@ class Embalagem
     protected $numPecas;
 
     /**
+     * @Column(name="QTD_CONFERIDA_BLOQUEADA", type="float")
+     * @var float
+     */
+    protected $qtdBloqueada;
+
+    /**
      * @param NormaPaletizacao $normaPaletizacao
      */
     public function setNormaPaletizacao($normaPaletizacao)
@@ -228,6 +234,22 @@ class Embalagem
     public function setNumPecas($numPecas)
     {
         $this->numPecas = $numPecas;
+    }
+
+    /**
+     * @return float
+     */
+    public function getQtdBloqueada()
+    {
+        return $this->qtdBloqueada;
+    }
+
+    /**
+     * @param float $qtdBloqueada
+     */
+    public function setQtdBloqueada($qtdBloqueada)
+    {
+        $this->qtdBloqueada = $qtdBloqueada;
     }
 
 }

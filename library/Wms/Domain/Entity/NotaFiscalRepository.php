@@ -949,7 +949,7 @@ class NotaFiscalRepository extends EntityRepository {
         return $entity;
     }
 
-    public function salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $codProprietario = null) {
+    public function salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $codProprietario = null, $tipoNota = null) {
 
         $em = $this->getEntityManager();
         $em->beginTransaction();
@@ -982,6 +982,7 @@ class NotaFiscalRepository extends EntityRepository {
                 throw new \Exception('Indicação de bonificação inválida. Deve ser N para não ou S para sim.');
 
             $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_INTEGRADA);
+            $tipoNotaEntiy = $em->getRepository('wms:Util\Sigla')->findOneBy(array('sigla' => $tipoNota));
 
             //inserção de nova NF
             $notaFiscalEntity = new NotaFiscalEntity;
@@ -995,6 +996,7 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setObservacao($observacao);
             $notaFiscalEntity->setPlaca($placa);
             $notaFiscalEntity->setCodPessoaProprietario($codProprietario);
+            $notaFiscalEntity->setTipoNotaFiscal($tipoNotaEntiy);
 
             /** @var ReferenciaRepository $fornRefRepo */
             $fornRefRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
@@ -1139,6 +1141,21 @@ class NotaFiscalRepository extends EntityRepository {
                     NFI.QTD_ITEM, 
                     PR.COD_PRODUTO";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getTipoNotaByUma($idUma)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('tp.sigla, tp.id')
+            ->from('wms:Enderecamento\Palete', 'p')
+            ->innerJoin('p.recebimento', 'r')
+            ->innerJoin('wms:NotaFiscal', 'nf', 'WITH', 'nf.recebimento = r.id')
+            ->innerJoin('nf.tipoNotaFiscal', 'tp')
+            ->where("p.id = $idUma")
+            ->andWhere('tp.id = '.NotaFiscal::DEVOLUCAO_CLIENTE)
+            ->groupBy('tp.sigla, tp.id');
+
+        return $sql->getQuery()->getSingleResult();
     }
 
 }

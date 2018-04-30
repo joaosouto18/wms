@@ -77,9 +77,11 @@ class Mobile_RecebimentoController extends Action
     public function lerCodigoBarrasAction()
     {
         try {
+            $dataValidadeInvalida = $this->getRequest()->getParam('dataValidadeInvalida',0);
             $idRecebimento = $this->getRequest()->getParam('idRecebimento');
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            $this->view->dataValidadeInvalida = $dataValidadeInvalida;
 
             $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
 
@@ -222,10 +224,15 @@ class Mobile_RecebimentoController extends Action
     {
         $params = $this->getRequest()->getParams();
         extract($params);
+        $dataValidadeValida = true;
 
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
         $notaFiscalItemRepo = $this->em->getRepository('wms:NotaFiscal\Item');
+        /** @var \Wms\Domain\Entity\Recebimento\VolumeRepository $recebimentoVolumeRepository */
+        $recebimentoVolumeRepository = $this->em->getRepository('wms:Recebimento\Volume');
+        /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $recebimentoEmbalagemRepository */
+        $recebimentoEmbalagemRepository = $this->em->getRepository('wms:Recebimento\Embalagem');
 
         try {
             // data has been sent
@@ -252,6 +259,28 @@ class Mobile_RecebimentoController extends Action
                 $qtdConferida = (float) $qtdConferida;
             } else {
                 $qtdConferida = (int) $qtdConferida;
+            }
+
+            if ($produtoEn->getPossuiPesoVariavel() == 'S'){
+                if (empty($params['numPeso'])) {
+                    $this->_helper->messenger('error', 'Informe o peso para conferência');
+                    $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+                } else {
+                    $params['numPeso'] = str_replace(",",".",$params['numPeso']);
+                    $parametros['COD_PRODUTO'] = $produtoEn->getId();
+                    $parametros['DSC_GRADE'] = $produtoEn->getGrade();
+                    $qtdConferida = (float) str_replace(",",".",$params['numPeso']);
+
+                    $volumes = (int) $this->em->getRepository('wms:Produto\Volume')->findOneBy(array('codProduto' => $parametros['COD_PRODUTO'], 'grade' => $parametros['DSC_GRADE']));
+
+                    if ( !empty($volumes) && count($volumes)!=0 ){
+                        $params['numPeso'] = (float)$params['numPeso'] / count($volumes);
+                    } else {
+                        $params['numPeso'] = (float)$params['numPeso'];
+                    }
+                }
+            } else {
+                $params['numPeso'] = null;
             }
 
             if ($produtoEn->getValidade() == "S") {
@@ -282,83 +311,61 @@ class Mobile_RecebimentoController extends Action
                 $PeriodoUtil = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLife day", strtotime(date('Y-m-d')))));
                 $PeriodoUtilMax = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLifeMax day", strtotime(date('Y-m-d')))));
                 $objData = new Zend_Date($data);
+                $qtdBloqueada = 0;
                 if ($dateConf < $PeriodoUtil || $dateConf > $PeriodoUtilMax) {
                     if($dateConf > $PeriodoUtilMax){
                         throw new \Exception('Data de validade maior que a definida no cadastro.');
                     }
-                    //autoriza recebimento?
-                    $arrayRedirect = array(
-                        'idRecebimento' => $idRecebimento,
-                        'idOrdemServico' => $idOrdemServico,
-                        'qtdUnidFracionavel' => $qtdUnidFracionavel,
-                        'qtdConferida' => $qtdConferida,
-                        'idNormaPaletizacao' => $idNormaPaletizacao,
-                        'dataValidade' => $objData->toString('dd-MM-YY'),
-                        'idProduto' => $idProduto, 'grade' => $grade);
+                    $qtdBloqueada = $qtdConferida;
+                    $qtdConferida = 0;
+                    $dataValidadeValida = false;
 
-                    if ($this->_hasParam('idProdutoEmbalagem')) {
-                        $arrayRedirect['idProdutoEmbalagem'] = $idProdutoEmbalagem;
-                    }
+                    $recebimentoEmbalagemEntities = $recebimentoEmbalagemRepository->getEmbalagemByRecebimento($idRecebimento,$produtoEn->getId(),$produtoEn->getGrade(), true);
 
-                    if ($this->_hasParam('idProdutoVolume')) {
-                        $arrayRedirect['idProdutoVolume'] = $idProdutoVolume;
+                    foreach ($recebimentoEmbalagemEntities as $recebimentoEmbalagemEntity) {
+                        list($diaComp,$mesComp,$anoComp) = explode('/',$recebimentoEmbalagemEntity->getDataValidade()->format('d/m/Y'));
+                        if ($recebimentoEmbalagemEntity->getQtdConferida() > 0 && date_create_from_format('Y-m-d',"$anoComp-$mesComp-$diaComp") == $dateConf) {
+                            $qtdConferida = $qtdBloqueada;
+                            $qtdBloqueada = 0;
+                            $dataValidadeValida = true;
+                            break;
+                        }
                     }
-                    $this->redirect('autoriza-recebimento', 'recebimento', null, $arrayRedirect );
                 }
                 $params['dataValidade'] = $objData->toString('Y-MM-dd');
             } else {
                 $params['dataValidade'] = null;
             }
 
-            if ($produtoEn->getPossuiPesoVariavel() == 'S'){
-                if (empty($params['numPeso'])) {
-                    $this->_helper->messenger('error', 'Informe o peso para conferência');
-                    $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
-                } else {
-                    $params['numPeso'] = str_replace(",",".",$params['numPeso']);
-                    $parametros['COD_PRODUTO'] = $produtoEn->getId();
-                    $parametros['DSC_GRADE'] = $produtoEn->getGrade();
-                    $qtdConferida = (float) str_replace(",",".",$params['numPeso']);
-
-                    $volumes = (int) $this->em->getRepository('wms:Produto\Volume')->findOneBy(array('codProduto' => $parametros['COD_PRODUTO'], 'grade' => $parametros['DSC_GRADE']));
-
-                    if ( !empty($volumes) && count($volumes)!=0 ){
-                        $params['numPeso'] = (float)$params['numPeso'] / count($volumes);
-                    } else {
-                        $params['numPeso'] = (float)$params['numPeso'];
-                    }
-                }
-            } else {
-                $params['numPeso'] = null;
-            }
-
             // caso embalagem
             if ($this->_hasParam('idProdutoEmbalagem')) {
                 // gravo conferencia do item
-                $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $qtdUnidFracionavel, $idNormaPaletizacao, $params, $params['numPeso']);
-                $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
+                $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $qtdUnidFracionavel, $idNormaPaletizacao, $params, $params['numPeso'], $qtdBloqueada);
+                if ($dataValidadeValida)
+                    $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
             }
 
             // caso volume
             if ($this->_hasParam('idProdutoVolume')) {
-                $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params, $params['numPeso']);
-                $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
+                $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params, $params['numPeso'], $qtdBloqueada);
+                if ($dataValidadeValida)
+                    $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
             }
 
             // tudo certo, redireciono para a nova leitura
-            $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
+            $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento, 'dataValidadeInvalida' => !$dataValidadeValida));
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
-            $this->redirect('ler-codigo-barras', null, null, array('idRecebimento' => $idRecebimento, 'error' => 1));
+            $this->redirect('ler-codigo-barras', null, null, array('idRecebimento' => $idRecebimento, 'dataValidadeInvalida' => !$dataValidadeValida));
         }
     }
+
 
     //modal para autorização de recebimento
     public function autorizaRecebimentoAction()
     {
         $request = $this->getRequest();
         $params = $this->_getAllParams();
-        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
         if (isset($params['conferenciaCega'])) {
             $this->view->idOrdemServico = $params['idOrdemServico'];
@@ -440,4 +447,3 @@ class Mobile_RecebimentoController extends Action
     }
 
 }
-
