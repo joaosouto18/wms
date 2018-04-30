@@ -11,6 +11,8 @@ echo $this->form;
             <tr class ="gTTitle">
                 <td>Gerar</td>
                 <td>Expedição</td>
+                <td>Cubagem</td>
+                <td>Peso</td>
                 <td>Modelo Separação</td>
                 <td>Placa</td>
                 <td>Cargas</td>
@@ -31,6 +33,8 @@ echo $this->form;
                                 value="<?php echo $expedicao['COD_EXPEDICAO']?>">
                         </td>
                         <td><?php echo $expedicao['COD_EXPEDICAO'] ?></td>
+                        <td><?php echo number_format($expedicao['CUBAGEM'],3) ?></td>
+                        <td><?php echo number_format($expedicao['PESO'],3) ?></td>
                         <td><?php echo $expedicao['MODELO'] ?></td>
                         <td><?php echo $expedicao['PLACA'] ?></td>
                         <td><?php echo $expedicao['CARGA'] ?></td>

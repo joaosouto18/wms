@@ -1653,6 +1653,8 @@ class ExpedicaoRepository extends EntityRepository {
         $idModeloDefault = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
 
         $Query = "SELECT DISTINCT E.COD_EXPEDICAO,
+                                  PESO.NUM_PESO + NVL(PESO_REENTREGA.NUM_PESO,0) as PESO,
+                                  PESO.NUM_CUBAGEM + NVL(PESO_REENTREGA.NUM_CUBAGEM,0) as CUBAGEM,
                                   TO_CHAR(E.DTH_INICIO,'DD/MM/YYYY') as DTH_INICIO,
                                   '' as ITINERARIO,
                                   '' as CARGA,
@@ -1662,14 +1664,34 @@ class ExpedicaoRepository extends EntityRepository {
                     FROM PEDIDO P
                     LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                     LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                    LEFT JOIN (SELECT C.COD_EXPEDICAO,
+                                      SUM(NVL(PESO.NUM_PESO,0) * (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0))) as NUM_PESO,
+                                      SUM(NVL(PESO.NUM_CUBAGEM,0) * (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0))) as NUM_CUBAGEM
+                                 FROM CARGA C
+                                 LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                                 LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                                 LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO AND PESO.DSC_GRADE = PP.DSC_GRADE
+                                WHERE 1 = 1 AND P.CENTRAL_ENTREGA = $central
+                               GROUP BY C.COD_EXPEDICAO) PESO ON PESO.COD_EXPEDICAO = E.COD_EXPEDICAO
+                    LEFT JOIN (SELECT C.COD_EXPEDICAO,
+                                      SUM(NVL(PESO.NUM_PESO,0) * (NFPROD.QUANTIDADE)) as NUM_PESO,
+                                      SUM(NVL(PESO.NUM_CUBAGEM,0) * (NFPROD.QUANTIDADE)) as NUM_CUBAGEM
+                                 FROM REENTREGA R
+                                INNER JOIN CARGA                     C      ON C.COD_CARGA = R.COD_CARGA
+                                INNER JOIN NOTA_FISCAL_SAIDA_PRODUTO NFPROD ON NFPROD.COD_NOTA_FISCAL_SAIDA = R.COD_NOTA_FISCAL_SAIDA
+                                INNER JOIN NOTA_FISCAL_SAIDA_PEDIDO  NFPED  ON NFPED.COD_NOTA_FISCAL_SAIDA = R.COD_NOTA_FISCAL_SAIDA
+                                INNER JOIN PEDIDO                    P      ON P.COD_PEDIDO = NFPED.COD_PEDIDO 
+                                INNER JOIN PRODUTO_PESO              PESO   ON PESO.COD_PRODUTO = NFPROD.COD_PRODUTO AND PESO.DSC_GRADE = NFPROD.DSC_GRADE
+                                WHERE 1 = 1 AND P.CENTRAL_ENTREGA = $central
+                                GROUP BY C.COD_EXPEDICAO) PESO_REENTREGA ON PESO_REENTREGA.COD_EXPEDICAO = E.COD_EXPEDICAO                     
                     LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                     LEFT JOIN MODELO_SEPARACAO MS ON (MS.COD_MODELO_SEPARACAO = E.COD_MODELO_SEPARACAO) OR (MS.COD_MODELO_SEPARACAO = $idModeloDefault AND E.COD_MODELO_SEPARACAO IS NULL)
                    WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
-                   AND E.COD_STATUS <> $statusFinalizado
-                   AND E.COD_STATUS <> $statusCancelada
-                   AND P.DTH_CANCELAMENTO IS NULL
-                   AND P.CENTRAL_ENTREGA = $central
-                   AND E.IND_PROCESSANDO = 'N'
+                     AND E.COD_STATUS <> $statusFinalizado
+                     AND E.COD_STATUS <> $statusCancelada
+                     AND P.DTH_CANCELAMENTO IS NULL
+                     AND P.CENTRAL_ENTREGA = $central
+                     AND E.IND_PROCESSANDO = 'N'
                    ";
 
         if (isset($parametros['idExpedicao']) && !empty($parametros['idExpedicao'])) {
