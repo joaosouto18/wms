@@ -623,8 +623,10 @@ class Importacao
                 throw new \Exception("Produto: $pedido[codProduto] grade: $pedido[grade] não foi encontrado");
             }
 
+            $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('codExterno' => $pedido['codPedido']));
+
             $arrCriterio = array(
-                'codPedido' => $pedido['codPedido'],
+                'codPedido' => $pedido['pedido']->getId(),
                 'codProduto' => $pedido['produto']->getId(),
                 'grade' => $pedido['produto']->getGrade()
             );
@@ -671,7 +673,7 @@ class Importacao
 
                 } else {
 
-                    $pedido['pedido'] = $em->getRepository('wms:Expedicao\Pedido')->findOneBy(array('codExterno' => $pedido['codPedido']));
+
                     if (empty($pedido['pedido'])) {
                         throw new \Exception("Pedido: $pedido[codPedido] não foi encontrado");
                     }
