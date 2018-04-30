@@ -74,9 +74,8 @@ class Expedicao_IndexController extends Action {
                     $conexaoRepo->runQuery($query, $conexaoEn, $update);
                     $em->flush();
                 }
-                $pedidoEntities = $cargaRepository->getPedidos($cargaEntity->getId());
-                foreach ($pedidoEntities as $pedidoEntity) {
-                    $pedidoEntity = $pedidoRepository->find($pedidoEntity->getId());
+                $pedidosEn = $pedidoRepository->findBy(['codCarga' => $cargaEntity->getId()]);
+                foreach ($pedidosEn as $pedidoEntity) {
                     $pedidoRepository->removeReservaEstoque($pedidoEntity->getId(), false);
                     $pedidoRepository->remove($pedidoEntity, false);
                 }
