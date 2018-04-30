@@ -118,7 +118,7 @@ class EstoqueRepository extends EntityRepository
 
         $idUma = null;
         $notaFiscalDevolucao = null;
-        if (isset($params['uma']) and !is_null($params['uma'])) {
+        if (isset($params['uma']) and !empty($params['uma'])) {
             $idUma = $params['uma'];
             $notaFiscalDevolucao = $notaFiscalRepository->getTipoNotaByUma($idUma);
         }
