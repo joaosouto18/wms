@@ -677,6 +677,7 @@ class Integracao {
                     'serie' => $notaFiscal['COD_SERIE_NOTA_FISCAL'],
                     'dtEmissao' => $notaFiscal['DAT_EMISSAO'],
                     'placaVeiculo' => $notaFiscal['DSC_PLACA_VEICULO'],
+                    'tipoNota' => isset($notaFiscal['COD_TIPO_NOTA_FISCAL']) && !empty($notaFiscal['COD_TIPO_NOTA_FISCAL']) ? $notaFiscal['COD_TIPO_NOTA_FISCAL'] : 'ENTRADA_FORNECEDOR',
                     'itens' => $itens
                 );
                 unset($itens);
@@ -741,7 +742,7 @@ class Integracao {
 
         $count = 0;
         foreach ($notasFiscais as $nf) {
-            $status = $importacaoService->saveNotaFiscal($em, $nf['codFornecedor'], $nf['numNota'], $nf['serie'], $nf['dtEmissao'], $nf['placaVeiculo'], $nf['itens'], 'N', null, false);
+            $status = $importacaoService->saveNotaFiscal($em, $nf['codFornecedor'], $nf['numNota'], $nf['serie'], $nf['dtEmissao'], $nf['placaVeiculo'], $nf['itens'], 'N', null, false, $nf['tipoNota']);
             if ($count == 50) {
                 $count = 0;
                 $em->flush();

@@ -489,7 +489,8 @@ class ReservaEstoqueRepository extends EntityRepository
                        END AS TIPO,
                        REP.QTD_RESERVADA,
                        REEXP.COD_PEDIDO,
-                       DE.DSC_DEPOSITO_ENDERECO
+                       DE.DSC_DEPOSITO_ENDERECO,
+                       P.NUM_SEQUENCIAL
                   FROM RESERVA_ESTOQUE RE
                   INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                   LEFT JOIN RESERVA_ESTOQUE_ENDERECAMENTO REEND ON REEND.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
@@ -498,6 +499,7 @@ class ReservaEstoqueRepository extends EntityRepository
 				  LEFT JOIN ONDA_RESSUPRIMENTO_OS OOS ON OOS.COD_ONDA_RESSuPRIMENTO_OS = REOND.COD_ONDA_RESSUPRIMENTO_OS
                   LEFT JOIN RESERVA_ESTOQUE_EXPEDICAO REEXP ON REEXP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                   LEFT JOIN DEPOSITO_ENDERECO DE ON RE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                  LEFT JOIN PEDIDO P ON P.COD_PEDIDO = REEXP.COD_PEDIDO
                  WHERE RE.IND_ATENDIDA = 'N'";
 
         $idVolume = $params['idVolume'];
@@ -514,6 +516,11 @@ class ReservaEstoqueRepository extends EntityRepository
             $SQL .= " AND RE.COD_DEPOSITO_ENDERECO = '" . $params['idEndereco']. "' ";
         }
         $result = $this->getEntityManager()->getConnection()->query($SQL . " ORDER BY RE.DTH_RESERVA ")->fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($result as $key => $value){
+            if(!empty($value['NUM_SEQUENCIAL']) && $value['NUM_SEQUENCIAL'] > 1){
+                $result[$key]['ORIGEM'] = $value['ORIGEM'].' - '.$value['NUM_SEQUENCIAL'];
+            }
+        }
         return $result;
 
     }

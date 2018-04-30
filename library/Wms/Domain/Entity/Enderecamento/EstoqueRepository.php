@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity,
     Wms\Domain\Entity\Enderecamento\EstoqueProprietario as EstoqueProprietarioEntity,
     Wms\Util\Endereco as EnderecoUtil;
+use Wms\Domain\Entity\Deposito\Endereco;
 
 class EstoqueRepository extends EntityRepository
 {
@@ -28,6 +29,9 @@ class EstoqueRepository extends EntityRepository
     public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false, $dataValidade = null)
     {
         $em = $this->getEntityManager();
+
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
+        $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
 
         if (!isset($params['produto']) or is_null($params['produto']))
             throw new \Exception("Produto não informado");
@@ -113,8 +117,10 @@ class EstoqueRepository extends EntityRepository
         }
 
         $idUma = null;
+        $notaFiscalDevolucao = null;
         if (isset($params['uma']) and !is_null($params['uma'])) {
             $idUma = $params['uma'];
+            $notaFiscalDevolucao = $notaFiscalRepository->getTipoNotaByUma($idUma);
         }
 
         $validade = null;
@@ -131,10 +137,18 @@ class EstoqueRepository extends EntityRepository
             $validadeParam = (is_string($dataValidade['dataValidade'])) ? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
         }
 
-        if (isset($validadeParam) && !empty($validadeParam)) {
-            $validade = $validadeParam;
-        } elseif (isset($validadeEsttoque) && !empty($validadeEsttoque)) {
-            $validade = $validadeEsttoque;
+        if (!empty($notaFiscalDevolucao) && $enderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING && $this->getSystemParameterValue('ATUALIZAR_DATA_PICKING') == 'S') {
+            if (isset($validadeParam) && !empty($validadeParam)) {
+                $validade = $validadeParam;
+            } elseif (isset($validadeEsttoque) && !empty($validadeEsttoque)) {
+                $validade = $validadeEsttoque;
+            }
+        } else {
+            if (isset($validadeEsttoque) && !empty($validadeEsttoque)) {
+                $validade = $validadeEsttoque;
+            } elseif (isset($validadeParam) && !empty($validadeParam)) {
+                $validade = $validadeParam;
+            }
         }
 
         //ATUALIZA A TABELA ESTOQUE COM O SALDO DE ESTOQUE

@@ -62,6 +62,10 @@ class Coletor
             return substr($codigoBarras, 3, 13);
         }
 
+        if (substr($codigoBarras, 0, 3) == '856') {
+            return substr($codigoBarras, 0, 14);
+        }
+
 
         // retorna o codigo todo caso nenhuma situacao anterior adequar
         return $codigoBarras;

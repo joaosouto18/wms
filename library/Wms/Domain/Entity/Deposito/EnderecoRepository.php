@@ -342,8 +342,8 @@ class EnderecoRepository extends EntityRepository {
             ->select($select)
             ->distinct(true)
             ->from("wms:Deposito\Endereco", "de")
-            ->leftJoin("wms:Produto\Volume", "pv", "WITH", "pv.endereco = de")
-            ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "pe.endereco = de")
+            ->leftJoin("wms:Produto\Volume", "pv", "WITH", "pv.endereco = de and pv.dataInativacao is null")
+            ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "pe.endereco = de and pe.dataInativacao is null")
             ->innerJoin("wms:Produto", "p", "WITH", "(p.id = pv.codProduto and p.grade = pv.grade) or (p.id = pe.codProduto and p.grade = pe.grade)")
             ->leftJoin('p.fabricante', 'f')
             ->where("de.descricao = '$endereco'");

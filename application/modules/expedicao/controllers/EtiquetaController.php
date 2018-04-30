@@ -329,7 +329,6 @@ class Expedicao_EtiquetaController  extends Action
         if ($reentrega == 'S') {$complementoUrl = '/reentrega/S';}
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-
         if ($reentrega == 'S') {
             $reentregas = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao);
             $etiquetas = array();
@@ -402,9 +401,7 @@ class Expedicao_EtiquetaController  extends Action
 
                         $arrEtiquetasEn[] = $etiquetaEntity;
                     }
-
                     $Etiqueta->reimprimir($arrEtiquetasEn, $motivo, $modelo);
-
                 } else {
                     $Etiqueta->imprimirReentrega($idExpedicao, null, $modelo,true,$etiqueta);
 
@@ -610,6 +607,46 @@ class Expedicao_EtiquetaController  extends Action
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
+
+    }
+
+    public function gerarEtiquetaProdutoAjaxAction()
+    {
+        $idExpedicao = $this->_getParam('id');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
+        $pedidoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
+        $pedidoProdutos = $pedidoProdutoRepository->getPedidoProdutoByExpedicao($idExpedicao);
+
+        $arrayProduto = array();
+        foreach ($pedidoProdutos as $key => $pedidoProduto) {
+            $arrayProduto[$key]['codProduto'] = $pedidoProduto['COD_PRODUTO'];
+            $arrayProduto[$key]['grade']      = $pedidoProduto['DSC_GRADE'];
+            $arrayProduto[$key]['qtdItem']    = $pedidoProduto['QUANTIDADE'];
+
+
+        }
+
+        $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
+        $gerarEtiqueta = null;
+        switch ($modelo) {
+            case 1:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
+                break;
+            case 2:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
+                break;
+            case 3:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
+                break;
+            case 4:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
+                break;
+            case 5:
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(60, 60));
+                break;
+        }
+
+        $gerarEtiqueta->etiquetaProdutosExpedicao(array( 'produtos' => $arrayProduto), $modelo,\Wms\Domain\Entity\Recebimento::TARGET_IMPRESSAO_PRODUTO);
 
     }
 }

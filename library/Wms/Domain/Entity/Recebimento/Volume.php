@@ -78,6 +78,12 @@ class Volume
      */
     protected $numPeso;
 
+    /**
+     * @Column(name="QTD_CONFERIDA_BLOQUEADA", type="float")
+     * @var float
+     */
+    protected $qtdBloqueada;
+
     public function getId()
     {
         return $this->id;
@@ -187,6 +193,22 @@ class Volume
     public function setNumPeso($numPeso)
     {
         $this->numPeso = $numPeso;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdBloqueada()
+    {
+        return $this->qtdBloqueada;
+    }
+
+    /**
+     * @param mixed $qtdBloqueada
+     */
+    public function setQtdBloqueada($qtdBloqueada)
+    {
+        $this->qtdBloqueada = $qtdBloqueada;
     }
 
 }

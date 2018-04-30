@@ -5,6 +5,24 @@ namespace Wms\Domain\Entity\Integracao;
 use Doctrine\ORM\EntityRepository;
 
 class AcaoIntegracaoAndamentoRepository extends EntityRepository
-{   
+{
+    public function getStatusAcaoIntegracao()
+    {
+        $sql = "SELECT TO_CHAR(AIA.DTH_ANDAMENTO,'DD/MM/YYYY HH24:MI:SS') as DTH_ANDAMENTO,
+                      AIA.COD_ACAO_INTEGRACAO,
+                      AIA.IND_SUCESSO,
+                      AIA.DSC_OBSERVACAO,
+                      AI.DSC_ACAO_INTEGRACAO
+                 FROM ACAO_INTEGRACAO_ANDAMENTO AIA
+                 INNER JOIN (SELECT MAX(COD_ACAO_INTEGRACAO_ANDAMENTO) as COD_ACAO_INTEGRACAO_ANDAMENTO,
+                                    COD_ACAO_INTEGRACAO
+                               FROM ACAO_INTEGRACAO_ANDAMENTO
+                              GROUP BY COD_ACAO_INTEGRACAO) MAIA ON MAIA.COD_ACAO_INTEGRACAO_ANDAMENTO = AIA.COD_ACAO_INTEGRACAO_ANDAMENTO
+                 INNER JOIN ACAO_INTEGRACAO AI ON AIA.COD_ACAO_INTEGRACAO = AI.COD_ACAO_INTEGRACAO
+                 WHERE AIA.IND_SUCESSO = 'N'
+                 ORDER BY AIA.COD_ACAO_INTEGRACAO";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 
 }

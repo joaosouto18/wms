@@ -322,6 +322,13 @@ class RecebimentoRepository extends EntityRepository {
                 'exception' => null,
                 'concluido' => false);
 
+        $qtdBloqueada = $this->getQuantidadeConferidaBloqueada($idRecebimento);
+        if (count($qtdBloqueada))
+            return array(
+                        'message' => 'Existem itens bloqueados por validade! Não é possível finalizar',
+                        'exception' => null,
+                        'concluido' => false);
+
         // checo se recebimento ja n tem uma conferencia em andamento
         if ($this->checarConferenciaComDivergencia($idRecebimento))
             return array('message' => "Este recebimento ja possui uma conferencia em andamento",
@@ -749,7 +756,7 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $idProdutoEmbalagem Codigo do Produto Embalagem
      * @param integer $qtdConferida Quantidade conferida do produto
      */
-    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = NULL, $params, $numPeso = null) {
+    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = NULL, $params, $numPeso = null, $qtdBloqueada = null) {
         $em = $this->getEntityManager();
 
         $recebimentoEmbalagemEntity = new RecebimentoEmbalagemEntity;
@@ -763,7 +770,6 @@ class RecebimentoRepository extends EntityRepository {
         } else {
             $validade = null;
         }
-
         $qtdEmbalagem = $peEntity->getQuantidade();
 
         $recebimentoEmbalagemEntity->setRecebimento($recebimentoEntity);
@@ -774,6 +780,7 @@ class RecebimentoRepository extends EntityRepository {
         $recebimentoEmbalagemEntity->setDataConferencia(new \DateTime);
         $recebimentoEmbalagemEntity->setDataValidade($validade);
         $recebimentoEmbalagemEntity->setNumPecas($numPecas);
+        $recebimentoEmbalagemEntity->setQtdBloqueada($qtdBloqueada);
 
         $recebimentoEmbalagemEntity->setNumPeso($numPeso);
         if ($idNormaPaletizacao != null) {
@@ -795,7 +802,7 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $idProdutoVolume Codigo do Produto Volume
      * @param integer $qtdConferida Quantidade conferida do produto
      */
-    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null) {
+    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null) {
         $em = $this->getEntityManager();
 
         $recebimentoVolumeEntity = new RecebimentoVolumeEntity;
@@ -815,8 +822,8 @@ class RecebimentoRepository extends EntityRepository {
                 ->setQtdConferida($qtdConferida)
                 ->setDataConferencia(new \DateTime)
                 ->setDataValidade($validade);
-
         $recebimentoVolumeEntity->setNumPeso($numPeso);
+        $recebimentoVolumeEntity->setQtdBloqueada($qtdBloqueada);
         if ($idNormaPaletizacao != null) {
             $normaPaletizacaoEntity = $this->getEntityManager()->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
             $recebimentoVolumeEntity->setNormaPaletizacao($normaPaletizacaoEntity);
@@ -1726,6 +1733,8 @@ class RecebimentoRepository extends EntityRepository {
                    OS.COD_OS AS idOrdemServicoManual,
                    OS2.COD_OS AS idOrdemServicoColetor,
                    'S' AS indImprimirCB,
+                   ST.DSC_SIGLA AS siglaTipoNota,
+                   
                    (
                         SELECT 
                         LISTAGG(P.NOM_PESSOA, ', ') WITHIN GROUP (ORDER BY NF4.COD_FORNECEDOR) AS fornecedor
@@ -1772,6 +1781,7 @@ class RecebimentoRepository extends EntityRepository {
                    RIGHT JOIN RECEBIMENTO R ON (NF.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
                    LEFT JOIN BOX B ON (R.COD_BOX = B.COD_BOX)
                    INNER JOIN SIGLA S ON (R.COD_STATUS = S.COD_SIGLA)
+                   LEFT JOIN SIGLA ST ON ST.COD_SIGLA = NF.COD_TIPO_NOTA_FISCAL
                    LEFT JOIN ORDEM_SERVICO OS ON (NF.COD_RECEBIMENTO = OS.COD_RECEBIMENTO AND OS.COD_FORMA_CONFERENCIA = 'M' AND OS.DTH_FINAL_ATIVIDADE IS NULL)
                    LEFT JOIN ORDEM_SERVICO OS2 ON (NF.COD_RECEBIMENTO = OS2.COD_RECEBIMENTO AND OS2.COD_FORMA_CONFERENCIA = 'C' AND OS2.DTH_FINAL_ATIVIDADE IS NULL)
                  WHERE 
@@ -1969,6 +1979,27 @@ class RecebimentoRepository extends EntityRepository {
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         return $result;
+    }
+
+    public function getQuantidadeConferidaBloqueada($idRecebimento = null)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select("(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0)) qtdBloqueada, r.id codRecebimento,
+                        re.id codRecebEmbalagem, rv.id codRecebVolume, p.descricao, p.id codProduto, p.grade,
+                        TO_CHAR(NVL(re.dataValidade, rv.dataValidade),'DD/MM/YYYY') dataValidade")
+            ->from('wms:Recebimento', 'r')
+            ->leftJoin('wms:Recebimento\Embalagem','re','WITH','re.recebimento = r.id')
+            ->leftJoin('wms:Recebimento\Volume','rv','WITH','rv.recebimento = r.id')
+            ->leftJoin('re.embalagem', 'pe')
+            ->leftJoin('rv.volume', 'pv')
+            ->innerJoin('wms:Produto','p','WITH','(p.id = pe.codProduto AND p.grade = pe.grade) OR (p.id = pv.codProduto AND p.grade = pv.grade)')
+            ->groupBy('r.id, re.id, rv.id, p.descricao, p.id, p.grade, re.dataValidade, rv.dataValidade')
+            ->having('(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0) > 0)');
+
+        if ($idRecebimento)
+            $sql->where("r.id = $idRecebimento");
+
+        return $sql->getQuery()->getResult();
     }
 
 }

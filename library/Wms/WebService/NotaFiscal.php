@@ -289,6 +289,8 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             }
             $bonificacao = "N";
 
+            $tipoNota = (isset($tipoNota) && !empty($tipoNota)) ? trim($tipoNota) : 'ENTRADA_FORNECEDOR';
+
             $notaItensRepo = $em->getRepository('wms:NotaFiscal\Item');
             $recebimentoConferenciaRepo = $em->getRepository('wms:Recebimento\Conferencia');
 
@@ -393,7 +395,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                         throw new \Exception('CNPJ do destinatário não encontrado');
                     }
                 }
-                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao, $codProprietario);
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$codProprietario,$tipoNota);
             }
 
             $em->flush();
@@ -546,7 +548,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function desfazer($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
-        $idFornecedor = trim($idFornecedor);
+        $idFornecedor = $codFornecedor = trim ($idFornecedor);
         $numero = trim($numero);
         $serieTrim = trim($serie);
         $serie = (!empty($serieTrim))? $serieTrim : "0";
@@ -567,8 +569,9 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         $notaFiscalEntity = $em->getRepository('wms:NotaFiscal')
             ->getAtiva($fornecedorEntity->getId(), $numero, $serie, $dataEmissao);
 
-        if (!$notaFiscalEntity)
-            throw new \Exception('Não há Nota Fiscal válida para ser cancelada');
+        if (empty($notaFiscalEntity)){
+            throw new \Exception("Nota fiscal $numero do fornecedor de código $codFornecedor e série $serie não encontrada");
+        }
 
         $em->getRepository('wms:NotaFiscal')->desfazer($notaFiscalEntity->getId(), $observacao);
 

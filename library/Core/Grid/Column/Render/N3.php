@@ -23,7 +23,7 @@ class N3 extends Render\ARender implements Render\IRender
         $index = $this->getColumn()->getIndex();
 
         if ($row[$index] != null) {
-            return Converter::enToBr($row[$index], 3);
+            return '<div style="float:right;"> ' . Converter::enToBr($row[$index], 3) ."</div>";
         }
     }
 

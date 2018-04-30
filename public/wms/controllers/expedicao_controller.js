@@ -194,14 +194,15 @@ $.Controller.extend('Wms.Controllers.Expedicao',
         dispararMultiMsgs : function (msgs) {
             var este = this;
             $.each(msgs, function (k,v) {
-                este.dialogAlert(v)
+                este.dialogAlert(v.msg, null, v.link)
             });
         },
 
-        dialogAlert: function (msg, funct) {
+        dialogAlert: function (msg, funct, link) {
             $.wmsDialogAlert({
                 title: 'Alerta',
-                msg: msg
+                msg: msg,
+                link: link
             }, funct);
         },
 
