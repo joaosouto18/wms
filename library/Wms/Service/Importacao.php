@@ -595,7 +595,7 @@ class Importacao
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
             $pedidoRepo = $em->getRepository('wms:Expedicao\Pedido');
-            $entityPedido = $pedidoRepo->findOneBy(array('id' => $pedido['codPedido']));
+            $entityPedido = $pedidoRepo->findOneBy(array('codExterno' => $pedido['codPedido']));
             if (empty($entityPedido)) {
                 $entityPedido = $pedidoRepo->save($pedido);
             }
