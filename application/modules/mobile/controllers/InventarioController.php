@@ -252,6 +252,9 @@ class Mobile_InventarioController extends Action
 
     public function mudarEnderecoAction()
     {
+        ini_set('memory_limit', '-1');
+        ini_set('max_execution_time', 3000);
+
         $params = $this->_getAllParams();
         $paramsSystem['validaEstoqueAtual'] = $this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL');
         $paramsSystem['regraContagemParam'] = $this->getSystemParameterValue('REGRA_CONTAGEM');

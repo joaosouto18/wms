@@ -20,6 +20,8 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 return self::mysqlQuery($query, $conexao);
             case ConexaoIntegracao::PROVEDOR_MSSQL:
                 return self::mssqlQuery($query, $conexao);
+            case ConexaoIntegracao::PROVEDOR_FIREBIRD:
+                return self::firebirdQuery($query, $conexao);
 
             default:
                 throw new \Exception("Provedor não específicado");
@@ -157,6 +159,51 @@ class ConexaoIntegracaoRepository extends EntityRepository {
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
+    }
+
+    private function firebirdQuery($query, $conexao)
+    {
+        try {
+            ini_set('memory_limit', '-1');
+            $usuario = $conexao->getUsuario();
+            $senha = $conexao->getSenha();
+            $servidor = $conexao->getServidor();
+            $porta = $conexao->getPorta();
+            $sid = $conexao->getDbName();
+
+            $connectionString = "$servidor/$porta:$sid";
+
+            $conexao = ibase_connect($connectionString, $usuario, $senha);
+            if (!($conexao)) {
+                ibase_close($conexao);
+                throw new \Exception(ibase_errmsg());
+            }
+
+            $resultado = ibase_query($conexao, $query);
+
+            if ($resultado === true) {
+                ibase_close($conexao);
+                return true;
+            }
+
+            if ($resultado === false) {
+                $errmsg = ibase_errmsg();
+                ibase_close($conexao);
+                throw new \Exception($errmsg);
+            }
+
+            $result = array();
+            while ($row = ibase_fetch_assoc ($resultado)) {
+                $result[] = $row;
+            }
+
+            ibase_close($conexao);
+            return $result;
+
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
     }
 
 }
