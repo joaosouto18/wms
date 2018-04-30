@@ -2852,7 +2852,7 @@ class ExpedicaoRepository extends EntityRepository {
                          C.DSC_PLACA_CARGA \"PLACA CARGA\",
                          (SELECT COUNT (PP.COD_PEDIDO_PRODUTO) FROM PEDIDO PED
                              INNER JOIN ETIQUETA_SEPARACAO ETI ON PED.COD_PEDIDO = ETI.COD_PEDIDO WHERE PED.COD_CARGA = C.COD_CARGA) \"QTD. ETIQUETAS CARGA\",
-                         P.COD_PEDIDO \"PEDIDO\",
+                         P.COD_EXTERNO \"PEDIDO\",
                          S2.DSC_SIGLA AS \"TIPO PEDIDO\",
                          I.DSC_ITINERARIO \"ITINERARIO\",
                          P.DSC_LINHA_ENTREGA \"LINHA DE ENTREGA\",
