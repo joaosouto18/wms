@@ -31,6 +31,14 @@
 
         // show a spinner or something via css
         var dialog = $('<div id="wms-dialog-msg" style="display:none; font-size: 12px;">' + config.msg + '</div>').appendTo('body');
+
+        if (settings.hasOwnProperty("link") && settings.link !== null && settings.link !== undefined) {
+            $("#wms-dialog-msg").append(
+                "<hr style='margin-top: 36px'>" +
+                "<h3 style='margin-bottom: 12px'>Relatório:</h3>" + settings.link
+
+            )
+        }
         
         // open the dialog
         dialog.dialog({

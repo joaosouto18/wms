@@ -21,7 +21,7 @@ class Expedicao
     const STATUS_PARCIALMENTE_FINALIZADO = 530;
     const STATUS_PRIMEIRA_CONFERENCIA = 551;
     const STATUS_SEGUNDA_CONFERENCIA = 552;
-
+    const STATUS_EM_FINALIZACAO = 622;
     /**
      * @Column(name="COD_EXPEDICAO", type="integer", nullable=false)
      * @Id

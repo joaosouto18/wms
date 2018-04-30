@@ -1253,6 +1253,34 @@ class ExpedicaoRepository extends EntityRepository {
         return true;
     }
 
+    private function integraCortesERP($idExpedicao)
+    {
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+        $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
+
+        $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
+
+        $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
+        $cargaEntities = $this->getProdutosExpedicaoCorte(null,$idExpedicao);
+
+        foreach ($cargaEntities as $cargaEntity) {
+            $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
+                0 => $cargaEntity['COD_CARGA_EXTERNO'],
+                1 => $cargaEntity['COD_PRODUTO'],
+                2 => $cargaEntity['DSC_GRADE'],
+                3 => $cargaEntity['QTD_CORTADA']), 'E', 'P');
+            if (is_string($result)) {
+                return $result;
+            } else {
+                $andamentoRepo->save('Corte de ' .$cargaEntity['QTD_CORTADA'] . ' unidades do produto ' . $cargaEntity['COD_PRODUTO'] . ' na carga ' . $cargaEntity['COD_CARGA_EXTERNO'] . ' enviado para o ERP', $idExpedicao);
+            }
+        }
+
+        return true;
+    }
+
     public function finalizarExpedicao($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null, $motivo = '') {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -1261,33 +1289,48 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
 
-        $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
-        $codCargaExterno = $this->validaCargaFechada($idExpedicao);
-        if (isset($codCargaExterno) && !empty($codCargaExterno)) {
-            return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
-        }
-
-        if ($this->getSystemParameterValue('IMPORTA_CORTES_ERP') == 'S') {
-            $result = $this->importaCortesERP($idExpedicao);
-            if (!($result === true)) {
-                return $result;
-            }
-        }
-        if ($this->validaPedidosImpressos($idExpedicao) == false) {
-            return 'Existem produtos sem etiquetas impressas';
-        }
-
-        if ($this->getExistsPendenciaCorte($expedicaoEn,$central)) {
-            return 'Existem etiquetas pendentes de corte nesta expedição';
-        }
+        $transacao = false;
+        $statusAntigo = null;
 
         ini_set('max_execution_time', 3000);
         Try {
-            $transacao = false;
+            /** @var \Wms\Domain\Entity\Expedicao $expedicaoEn */
+            $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
+
+            if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
+                $statusAntigo = $expedicaoEn->getStatus();
+                $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
+
+                $expedicaoEn->setStatus($statusEmFinalizacao);
+                $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
+
+                $this->getEntityManager()->persist($expedicaoEn);
+                $this->getEntityManager()->flush();
+            }
+
+            $codCargaExterno = $this->validaCargaFechada($idExpedicao);
+            if (isset($codCargaExterno) && !empty($codCargaExterno)) {
+                throw new \Exception('As cargas '.$codCargaExterno.' estão com pendencias de fechamento');
+            }
+
+            if ($this->getSystemParameterValue('IMPORTA_CORTES_ERP') == 'S') {
+                $result = $this->importaCortesERP($idExpedicao);
+                if (!($result === true)) {
+                    throw new \Exception($result);
+                }
+            }
+            if ($this->validaPedidosImpressos($idExpedicao) == false) {
+                throw new \Exception('Existem produtos sem etiquetas impressas');
+            }
+
+            if ($this->getExistsPendenciaCorte($expedicaoEn,$central)) {
+                throw new \Exception('Existem etiquetas pendentes de corte nesta expedição');
+            }
+
             if ($validaStatusEtiqueta == true) {
                 $result = $this->validaStatusEtiquetas($expedicaoEn,$central);
                 if (is_string($result)) {
-                    return $result;
+                    throw new \Exception($result);
                 }
             }
 
@@ -1297,22 +1340,22 @@ class ExpedicaoRepository extends EntityRepository {
             if ($validaStatusEtiqueta == true) {
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
                 if (is_string($result)) {
-                    return $result;
+                    throw new \Exception($result);
                 }
 
                 $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa);
                 if (is_string($result)) {
-                    return $result;
+                    throw new \Exception($result);
                 }
 
                 $result = $mapaSeparacaoEmbaladoRepo->validaVolumesEmbaladoConferidos($idExpedicao);
                 if (is_string($result)) {
-                    return $result;
+                    throw new \Exception($result);
                 }
             } else {
                 $codCargaExterno = $this->validaCargaFechada($idExpedicao);
                 if (isset($codCargaExterno) && !empty($codCargaExterno)) {
-                    return 'As cargas '.$codCargaExterno.' estão com pendencias de fechamento';
+                    throw new \Exception('As cargas '.$codCargaExterno.' estão com pendencias de fechamento');
                 }
                 $EtiquetaRepo->finalizaEtiquetasSemConferencia($idExpedicao, $central);
                 $MapaSeparacaoRepo->forcaConferencia($idExpedicao);
@@ -1325,9 +1368,9 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
-                $result = $this->validaConferenciaERP($expedicaoEn->getId());
+                $result  = $this->validaConferenciaERP($expedicaoEn->getId());
                 if (is_string($result)) {
-                    return $result;
+                    throw new \Exception($result);
                 }
             }
 
@@ -1361,7 +1404,7 @@ class ExpedicaoRepository extends EntityRepository {
                 } else {
                     $numEtiquetas=$EtiquetaConfRepo->getEtiquetasByStatus(EtiquetaSeparacao::STATUS_PRIMEIRA_CONFERENCIA, $idExpedicao, $central);
                     if (count($numEtiquetas) > 0) {
-                        return 'Existem etiquetas pendentes de conferência nesta expedição';
+                        throw new \Exception('Existem etiquetas pendentes de conferência nesta expedição');
                     }
                 }
             }
@@ -1398,10 +1441,30 @@ class ExpedicaoRepository extends EntityRepository {
                     throw new \Exception($resultAcao);
                 }
             }
+
+            //Executa Corte ERP
+            if (!is_null($this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP'))) {
+                $resultAcao = $this->integraCortesERP($idExpedicao);
+                if (!$resultAcao === true) {
+                    throw new \Exception($resultAcao);
+                }
+            }
+
             $this->getEntityManager()->commit();
             return $result;
         } catch(\Exception $e) {
             if ($transacao == true) $this->getEntityManager()->rollback();
+
+            if ($statusAntigo != null) {
+
+                $expedicaoEn->setStatus($statusAntigo);
+                $expedicaoEn->setCodStatus($statusAntigo->getId());
+
+                $this->getEntityManager()->persist($expedicaoEn);
+                $this->getEntityManager()->flush();
+
+            }
+
             return $e->getMessage();
         }
     }
@@ -2043,7 +2106,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         $WherePedido = "";
         if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
-            $sql = " SELECT DISTINCT COD_EXPEDICAO FROM CARGA C LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA WHERE P.COD_PEDIDO = '".$parametros['pedido'] . "'";
+            $sql = " SELECT DISTINCT COD_EXPEDICAO FROM CARGA C LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA WHERE P.COD_EXTERNO = '".$parametros['pedido'] . "'";
             $exp = \Wms\Domain\EntityRepository::nativeQuery($sql);
 
             $arr = array();
@@ -3406,7 +3469,7 @@ class ExpedicaoRepository extends EntityRepository {
     public function getPedidosByParams($parametros, $idDepositoLogado = null) {
 
         $where = "";
-        $orderBy = " ORDER BY P.COD_PEDIDO";
+        $orderBy = " ORDER BY P.COD_EXTERNO";
         if (isset($idDepositoLogado)) {
             $where .= ' AND P.CENTRAL_ENTREGA = ' . $idDepositoLogado;
         }
@@ -3444,15 +3507,20 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
-            $where = " AND P.COD_PEDIDO = '" . $parametros['pedido'] . "'";
+            $where = " AND P.COD_EXTERNO = '" . $parametros['pedido'] . "'";
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
             $where = " AND C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
         }
-
         $SQL = "
-        SELECT P.COD_PEDIDO,
+        SELECT
+                CASE WHEN NUM_SEQUENCIAL > 1 
+                  THEN 
+                    P.COD_EXTERNO || ' - ' || NVL(NUM_SEQUENCIAL, '')
+                  ELSE 
+                    P.COD_EXTERNO
+                END as COD_PEDIDO,
                CLI.COD_CLIENTE_EXTERNO as COD_CLIENTE,
                PES.NOM_PESSOA as CLIENTE,
                E.COD_EXPEDICAO,
@@ -3761,19 +3829,26 @@ class ExpedicaoRepository extends EntityRepository {
 
     }
 
-    public function getProdutosExpedicaoCorte($idPedido) {
+    public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null) {
+
+        $where = " AND PP.COD_PEDIDO = '$idPedido' ";
+        if (!is_null($idExpedicao))
+            $where = " AND C.COD_EXPEDICAO = $idExpedicao ";
+
+
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
                        PROD.DSC_PRODUTO,
                        SUM(PP.QUANTIDADE) as QTD,
                        SUM(PP.QTD_CORTADA) as QTD_CORTADA,
-                       PP.COD_PEDIDO
+                       PP.COD_PEDIDO,
+                       C.COD_CARGA_EXTERNO
                   FROM PEDIDO_PRODUTO PP
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
                   LEFT JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                 WHERE PP.COD_PEDIDO = '$idPedido'
-                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO
+                 WHERE 1 = 1 $where
+                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO, C.COD_CARGA_EXTERNO
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

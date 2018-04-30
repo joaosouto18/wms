@@ -269,4 +269,28 @@ class PedidoProdutoRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
+    public function getPedidoProdutoByExpedicao($idExpedicao)
+    {
+        $sql = "SELECT P.COD_PRODUTO, P.DSC_PRODUTO, P.DSC_GRADE, SUM(DISTINCT QUANTIDADE) QUANTIDADE 
+                    FROM PEDIDO_PRODUTO PP 
+                    INNER JOIN PRODUTO P ON PP.COD_PRODUTO = P.COD_PRODUTO 
+                    LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO 
+                    LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO 
+                    INNER JOIN PEDIDO P ON PP.COD_PEDIDO = P.COD_PEDIDO 
+                    INNER JOIN CLIENTE C ON P.COD_PESSOA = C.COD_PESSOA 
+                WHERE P.COD_PEDIDO IN (
+                                          SELECT COD_PEDIDO 
+                                            FROM PEDIDO 
+                                          WHERE COD_CARGA IN (
+                                                SELECT COD_CARGA 
+                                                  FROM CARGA 
+                                                WHERE COD_EXPEDICAO = $idExpedicao
+                                          )
+                                      ) 
+                    AND (PE.IND_IMPRIMIR_CB = 'S' OR PV.IND_IMPRIMIR_CB = 'S') 
+                GROUP BY P.COD_PRODUTO, P.DSC_PRODUTO, P.DSC_GRADE";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }

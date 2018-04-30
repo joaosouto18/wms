@@ -171,6 +171,13 @@ class Expedicao extends Grid
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
+                'label' => 'Imprimir Produtos sem cod. barras',
+                'controllerName' => 'etiqueta',
+                'actionName' => 'gerar-etiqueta-produto-ajax',
+                'cssClass' => 'pdf',
+                'pkIndex' => 'id'
+            ))
+            ->addAction(array(
                 'label' => 'Reimprimir Etiqueta',
                 'modelName' => 'expedicao',
                 'controllerName' => 'etiqueta',
