@@ -407,10 +407,16 @@ class Wms_WebService_Expedicao extends Wms_WebService
         try {
             $this->_em->beginTransaction();
 
-            $idPedido = trim($idPedido);
+            $codExterno = trim($idPedido);
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
             $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
+
+            $idPedido = $pedidoRepository->getMaxCodPedidoByCodExterno($codExterno);
+
+            if (empty($idPedido)) {
+                throw new \Exception("Pedido $codExterno não encontrado no WMS");
+            }
 
             /** @var \Wms\Domain\Entity\Expedicao\Pedido $EntPedido */
             $EntPedido = $pedidoRepository->find($idPedido);
@@ -419,7 +425,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
 
             if ($mapaSeparacaoRepo->validaMapasCortados($idPedido) == false) {
-                throw new \Exception("Pedido $idPedido precisa ser cortado no WMS");
+                throw new \Exception("Pedido $codExterno precisa ser cortado no WMS");
             }
 
             $pedidoRepository->cancelar($idPedido);
@@ -685,17 +691,18 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function consultarPedido($idPedido)
     {
-        $idPedido = trim($idPedido);
+        $codExterno = trim($idPedido);
 
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
-        $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($idPedido);
+        $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($codExterno);
+
+        if (empty($idPedido)) {
+            throw new \Exception("Pedido $codExterno não encontrado");
+        }
+
         /** @var Expedicao\Pedido $pedidoEn */
         $pedidoEn = $pedidoRepo->find($idPedido);
-
-        if ($pedidoEn == null) {
-            throw new \Exception("Pedido $idPedido não encontrado");
-        }
 
         $itinerario = new itinerario();
         if ($pedidoEn->getItinerario() == null) {
