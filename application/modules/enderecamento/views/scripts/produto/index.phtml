@@ -11,7 +11,7 @@ if (count($this->produtos) > 0):
         </div>
         <div class="gControl">
             <div class="gPager" style="width: 100%">
-                <input type="submit" name="submit" class="btn" style="float:right" title="Endereça no picking até o limite" value="Endereçar no Picking" />
+                <input type="submit" name="submit" class="btn lock-dbl-click" style="float:right" title="Endereça no picking até o limite" value="Endereçar no Picking" />
                 <span>Total de <?php echo count($this->produtos) ?> registros encontrados.</span>
                 <p><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></p>
             </div>
@@ -86,7 +86,12 @@ endif;
                 });
                 e.preventDefault();
                 return false;
+            } else {
+                $(this).find("input.lock-dbl-click").each(function () {
+                    $("input.lock-dbl-click").attr("disabled", true);
+                });
+                return true;
             }
-        })
+        });
     });
 </script>
