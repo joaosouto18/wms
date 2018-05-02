@@ -1155,7 +1155,13 @@ class NotaFiscalRepository extends EntityRepository {
             ->andWhere('tp.id = '.NotaFiscal::DEVOLUCAO_CLIENTE)
             ->groupBy('tp.sigla, tp.id');
 
-        return $sql->getQuery()->getSingleResult();
+        $result = $sql->getQuery()->getResult();
+
+        if (!empty($result)) {
+            return $result[0];
+        } else {
+            return null;
+        }
     }
 
 }
