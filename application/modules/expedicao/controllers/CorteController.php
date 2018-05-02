@@ -148,6 +148,8 @@ class Expedicao_CorteController extends Action {
                 if ($senha != $senhaSistema)
                     throw new \Exception("Senha Informada Inválida");
 
+                $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+                $pedido = $pedidoRepo->getMaxCodPedidoByCodExterno($pedido);
                 /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
                 $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
                 $pedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
