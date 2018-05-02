@@ -647,7 +647,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
 
             $pedido = new pedido();
-            $pedido->codPedido = $pedidoEn->getId();
+            $pedido->codPedido = $pedidoEn->getCodExterno();
             $pedido->produtos = array();
             $pedido->linhaEntrega = $pedidoEn->getLinhaEntrega();
             $pedido->itinerario = $itinerario;
@@ -690,6 +690,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->_em->getRepository('wms:Expedicao\Pedido');
         $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($idPedido);
+        /** @var Expedicao\Pedido $pedidoEn */
         $pedidoEn = $pedidoRepo->find($idPedido);
 
         if ($pedidoEn == null) {
@@ -729,7 +730,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         }
 
         $result = new pedido();
-        $result->codPedido = $idPedido;
+        $result->codPedido = $pedidoEn->getCodExterno();
         $result->cliente = $cliente;
         $result->itinerario = $itinerario;
         $result->linhaEntrega = $pedidoEn->getLinhaEntrega();
