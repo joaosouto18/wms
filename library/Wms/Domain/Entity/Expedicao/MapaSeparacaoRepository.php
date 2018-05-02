@@ -207,7 +207,6 @@ class MapaSeparacaoRepository extends EntityRepository {
         $this->getEntityManager()->flush();
 
         if (count($divergencias) > 0) {
-            $this->getEntityManager()->commit();
             if ($idMapa == null) {
                 return 'Existem produtos para serem Conferidos nesta Expedição';
             } else {
