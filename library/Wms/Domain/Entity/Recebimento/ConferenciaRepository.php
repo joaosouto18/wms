@@ -211,7 +211,7 @@ class ConferenciaRepository extends EntityRepository
             $possuiPesoVariavel = $line['IND_POSSUI_PESO_VARIAVEL'];
             $divergenciaVolumes = $line['IND_DIVERG_VOLUMES'];
 
-            if ($qtdDivergencia == 0) {
+            if ($qtdDivergencia == 0 && $pesoRecebimento > 0) {
                 $qtdConferida = $pesoRecebimento . " Kg";
                 if ($pesoRecebimento > $pesoNf - $toleranciaNominal) {
                     $qtdDivergencia = $pesoRecebimento - $pesoNf - $toleranciaNominal;
