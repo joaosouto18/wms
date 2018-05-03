@@ -456,7 +456,11 @@ class Expedicao_EtiquetaController  extends Action
         $mapa = new MapaSeparacao;
 
         if (isset($reimprimirTodos) && $reimprimirTodos != null) {
-            $mapa->layoutMapa($idExpedicao, $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), null, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
+            $arrStatus = [
+                \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA,
+                \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CONFERIDO
+            ];
+            $mapa->layoutMapa($idExpedicao, $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), null, $arrStatus);
         } elseif (isset($reimprimirByCodBarras) && $reimprimirByCodBarras != null) {
             $codBarra    = $request->getParam('codBarra');
             if (!$codBarra) {
@@ -577,7 +581,7 @@ class Expedicao_EtiquetaController  extends Action
 
         try {
             $etiqueta = $mapaSeparacaoEmbaladoRepo->getDadosEmbalado(null,$idExpedicao);
-            if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
+            if (empty($etiqueta)) {
                 $this->addFlashMessage('error', 'Não existe volume embalado para ser reimpresso!');
                 $this->_redirect('/expedicao/index');
             }
