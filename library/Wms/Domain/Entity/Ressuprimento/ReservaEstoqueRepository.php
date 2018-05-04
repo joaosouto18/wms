@@ -479,7 +479,7 @@ class ReservaEstoqueRepository extends EntityRepository
     }
 
     public function getResumoReservasNaoAtendidasByParams($params) {
-        $SQL = "SELECT CASE WHEN REEXP.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Expedição: ' || REEXP.COD_EXPEDICAO || ' Pedido: ' || REEXP.COD_PEDIDO
+        $SQL = "SELECT CASE WHEN REEXP.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Expedição: ' || REEXP.COD_EXPEDICAO || ' Pedido: ' || P.COD_EXTERNO
                             WHEN REOND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Ressuprimento: '  || OOS.COD_ONDA_RESSUPRIMENTO
                             WHEN REEND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Endereçamento do Palete: '  || REEND.UMA || ' Recebimento: ' || P.COD_RECEBIMENTO
                        END AS ORIGEM,
@@ -488,7 +488,7 @@ class ReservaEstoqueRepository extends EntityRepository
                             ELSE 'SAÍDA'
                        END AS TIPO,
                        REP.QTD_RESERVADA,
-                       REEXP.COD_PEDIDO,
+                       P.COD_EXTERNO,
                        DE.DSC_DEPOSITO_ENDERECO,
                        P.NUM_SEQUENCIAL
                   FROM RESERVA_ESTOQUE RE
