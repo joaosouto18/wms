@@ -3768,8 +3768,8 @@ class ExpedicaoRepository extends EntityRepository {
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
                        PROD.DSC_PRODUTO,
-                       SUM(PP.QUANTIDADE) as QTD,
-                       SUM(PP.QTD_CORTADA) as QTD_CORTADA,
+                       NVL(SUM(PP.QUANTIDADE),0) as QTD,
+                       NVL(SUM(PP.QTD_CORTADA),0) as QTD_CORTADA,
                        PP.COD_PEDIDO,
                        C.COD_CARGA_EXTERNO
                   FROM PEDIDO_PRODUTO PP
@@ -3778,6 +3778,7 @@ class ExpedicaoRepository extends EntityRepository {
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                  WHERE 1 = 1 $where
                  GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO, C.COD_CARGA_EXTERNO
+                 HAVING (SUM(PP.QTD_CORTADA) > 0)
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
