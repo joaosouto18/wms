@@ -1002,7 +1002,9 @@ class NotaFiscalRepository extends EntityRepository {
             $fornRefRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
 
             $pesoTotal = 0;
-            if (count($itens) > 0) {                //itera nos itens das notas
+            if (count($itens) > 0) {
+                //itera nos itens das notas
+                $loteRepository = $em->getRepository('wms:Produto\Lote');
                 foreach ($itens as $item) {
                     $idProduto = trim($item['idProduto']);
                     $idProduto = ProdutoUtil::formatar($idProduto);
@@ -1037,6 +1039,10 @@ class NotaFiscalRepository extends EntityRepository {
                     $itemEntity->setQuantidade($qtd);
 
                     $notaFiscalEntity->getItens()->add($itemEntity);
+
+                    if(isset($item['lote']) && !empty($item['lote'])){
+                        $loteRepository->save($produtoEntity, trim($item['grade']), trim($item['lote']));
+                    }
                 }
             } else {
                 throw new \Exception("Nenhum item informado na nota");

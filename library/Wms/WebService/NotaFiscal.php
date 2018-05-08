@@ -28,6 +28,8 @@ class Item {
     public $quantidade;
     /** @var double */
     public $peso;
+    /** @var string */
+    public $lote;
 }
 
 class Itens {
@@ -311,6 +313,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
                     $itemWs['grade'] = (empty($itemNf->grade) || $itemNf->grade === "?") ? "UNICA" : trim($itemNf->grade);
                     $itemWs['quantidade'] = str_replace(',','.',trim($itemNf->quantidade));
+                    $itemWs['lote'] = trim($itemNf->lote);
 
                     if (isset($itemNf->peso)) {
                         if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0)) {
@@ -332,6 +335,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                         $itemWs['idProduto'] = trim($itemNf->idProduto);
                         $itemWs['grade'] = (empty($itemNf->grade) || $itemNf->grade === "?") ? "UNICA" : trim($itemNf->grade);
                         $itemWs['quantidade'] = str_replace(',', '.', trim($itemNf->quantidade));
+                        $itemWs['lote'] = trim($itemNf->lote);
 
                         if (isset($itemNf->peso)) {
                             if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0)) {
@@ -349,6 +353,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                         $itemWs['peso'] =  $itemNf['quantidade'];
                         $itemWs['grade'] = $itemNf['grade'];
                         $itemWs['quantidade']= $itemNf['quantidade'];
+                        $itemWs['lote']= $itemNf['lote'];
                         $itensNf[] = $itemWs;
                     }
                 }
