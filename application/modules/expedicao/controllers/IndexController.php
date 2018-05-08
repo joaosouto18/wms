@@ -832,9 +832,8 @@ class Expedicao_IndexController extends Action {
             }
             $pedidoEntities = $cargaRepository->getPedidos($cargaEntity->getId());
             foreach ($pedidoEntities as $rowPedido) {
-                $pedidoEntity = $pedidoRepository->find($rowPedido->getId());
                 $pedidoRepository->removeReservaEstoque($rowPedido->getId());
-                $pedidoRepository->remove($pedidoEntity, true);
+                $pedidoRepository->remove($rowPedido, true);
             }
             $ReentregaRepository->removeReentrega($cargaEntity->getId());
             $NotaFiscalSaidaRepository->atualizaStatusNota($cargaEntity->getCodCargaExterno());
