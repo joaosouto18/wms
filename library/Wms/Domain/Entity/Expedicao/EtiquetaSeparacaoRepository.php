@@ -45,7 +45,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     }
 
     /**
-     * @param $idPedido
+     * @param $idPedido Código interno do pedido
      * @param int $status
      * @return array
      */
@@ -2756,7 +2756,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $SQL = " SELECT C.COD_CARGA_EXTERNO as idCarga,
                         TC.DSC_SIGLA as tipoCarga,
                         TP.DSC_SIGLA as tipoPedido,
-                        ES.COD_PEDIDO as codPedido,
+                        P.COD_EXTERNO as codPedido,
                         ES.COD_ETIQUETA_SEPARACAO AS codEtiqueta,
                         ES.COD_PRODUTO as codProduto,
                         ES.DSC_GRADE as grade,

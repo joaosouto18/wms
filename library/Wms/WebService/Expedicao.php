@@ -753,7 +753,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
             if (is_null($item['ATENDIDA'])) {
                 $produto->quantidadeAtendida = 0;
             } else {
-                if ($pedidoEn->getCarga()->getExpedicao()->getStatus()->getId() == EXPEDICAO::STATUS_FINALIZADO) {
+                $idStatus = $pedidoEn->getCarga()->getExpedicao()->getStatus()->getId();
+                $args = [EXPEDICAO::STATUS_SEGUNDA_CONFERENCIA, EXPEDICAO::STATUS_FINALIZADO];
+                if (in_array($idStatus, $args)) {
                     $produto->quantidadeAtendida = $item['ATENDIDA'];
                 } else {
                     $produto->quantidadeAtendida = 0;

@@ -110,7 +110,7 @@ class PedidoRepository extends EntityRepository
     }
 
     /**
-     * @param $idPedido
+     * @param $idPedido Código interno do pedido
      * @return array
      */
     public function findPedidosProdutosSemEtiquetaById($idPedido)
@@ -134,7 +134,7 @@ class PedidoRepository extends EntityRepository
     }
 
     /**
-     * @param $idPedido
+     * @param $idPedido Código interno do pedido
      * @param $status
      * @return bool
      * @throws \Exception
@@ -204,7 +204,7 @@ class PedidoRepository extends EntityRepository
     }
 
     /**
-     * @param $idPedido
+     * @param $idPedido Código interno do pedido
      */
     public function cancelar($idPedido, $webService = true)
     {
@@ -239,7 +239,7 @@ class PedidoRepository extends EntityRepository
     }
 
     /**
-     * @param $idPedido
+     * @param $idPedido Código interno do pedido
      */
     protected function cancelaPedido($idPedido, $webService = true)
     {
@@ -261,7 +261,9 @@ class PedidoRepository extends EntityRepository
                  WHERE PP.COD_PEDIDO = '" . $idPedido . "'";
         $countEtiquetas = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
+        /** @var Pedido $EntPedido */
         $EntPedido = $this->find($idPedido);
+        $codExternoPedido = $EntPedido->getCodExterno();
         $idExpedicao = $EntPedido->getCarga()->getExpedicao()->getId();
         $idCarga = $EntPedido->getCarga()->getId();
         $EntPedido->setDataCancelamento(new \DateTime());
@@ -280,10 +282,10 @@ class PedidoRepository extends EntityRepository
 
         if ($webService == true) {
             $idUsuario = $this->getSystemParameterValue('ID_USER_ERP');
-            $expedicaoAndamentoRepo->save("Pedido " . $idPedido . " cancelado da Expedição:" . $idExpedicao . ", Carga:" . $idCarga. " via integração", $idExpedicao, $idUsuario);
+            $expedicaoAndamentoRepo->save("Pedido $codExternoPedido cancelado da Expedição: $idExpedicao, Carga: $idCarga via integração", $idExpedicao, $idUsuario);
         } else {
             $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
-            $expedicaoAndamentoRepo->save("Pedido " . $idPedido . " cancelado da Expedição:" . $idExpedicao . ", Carga:" . $idCarga. " manualmente ", $idExpedicao, $idUsuario);
+            $expedicaoAndamentoRepo->save("Pedido $codExternoPedido cancelado da Expedição: $idExpedicao, Carga: $idCarga manualmente ", $idExpedicao, $idUsuario);
         }
 
         $this->_em->flush();
@@ -484,10 +486,9 @@ class PedidoRepository extends EntityRepository
         foreach($pedidos as $chave => $sequencia)
         {
             $result = $this->getPedidosByClienteExpedicao($chave,$codExpedicao);
-            foreach ($result as $item) {
-                $entityPedido = $this->find($item->getId());
-                $entityPedido->setSequencia($sequencia);
-                $this->_em->persist($entityPedido);
+            foreach ($result as $pedido) {
+                $pedido->setSequencia($sequencia);
+                $this->_em->persist($pedido);
             }
         }
        if ($this->_em->flush()) {
@@ -495,6 +496,11 @@ class PedidoRepository extends EntityRepository
        }
     }
 
+    /**
+     * @param $codClientes
+     * @param $codExpedicao
+     * @return Pedido[]
+     */
     private function getPedidosByClienteExpedicao($codClientes,$codExpedicao)
     {
 //        $clienteExternoArr = array();
@@ -602,7 +608,7 @@ class PedidoRepository extends EntityRepository
                   LEFT JOIN ITINERARIO I ON I.COD_ITINERARIO = P.COD_ITINERARIO
                   LEFT JOIN PESSOA_ENDERECO ENDERECO ON ENDERECO.COD_PESSOA = PES.COD_PESSOA AND ENDERECO.COD_TIPO_ENDERECO = 22
                   LEFT JOIN SIGLA UF ON UF.COD_SIGLA = ENDERECO.COD_UF
-                  WHERE P.COD_PEDIDO = '" . $codPedido . "'";
+                  WHERE P.COD_EXTERNO = '" . $codPedido . "'";
 
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -619,9 +625,10 @@ class PedidoRepository extends EntityRepository
                (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) * NVL(PESO.NUM_PESO,0) as NUM_PESO,
                (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) * NVL(PESO.NUM_CUBAGEM,0) as NUM_CUBAGEM
           FROM PEDIDO_PRODUTO PP
+          INNER JOIN PEDIDO PED ON PED.COD_PEDIDO = PP.COD_PEDIDO
           LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
           LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO AND PESO.DSC_GRADE = PP.DSC_GRADE
-         WHERE PP.COD_PEDIDO = '$codPedido' ORDER BY COD_PRODUTO, DSC_GRADE";
+         WHERE PED.COD_EXTERNO = '$codPedido' ORDER BY COD_PRODUTO, DSC_GRADE";
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
@@ -635,11 +642,12 @@ class PedidoRepository extends EntityRepository
                NVL(PE.DSC_EMBALAGEM, PV.DSC_VOLUME) as EMBALAGEM,
                S.DSC_SIGLA as SITUACAO
           FROM ETIQUETA_SEPARACAO ES
+          INNER JOIN PEDIDO PED ON PED.COD_PEDIDO = ES.COD_PEDIDO
           LEFT JOIN PRODUTO P ON P.COD_PRODUTO = ES.COD_PRODUTO AND P.DSC_GRADE = ES.DSC_GRADE
           LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ES.COD_PRODUTO_VOLUME
           LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
           LEFT JOIN SIGLA S ON S.COD_SIGLA = ES.COD_STATUS
-         WHERE ES.COD_PEDIDO = '$codPedido' ORDER BY ES.COD_ETIQUETA_SEPARACAO";
+         WHERE PED.COD_EXTERNO = '$codPedido' ORDER BY ES.COD_ETIQUETA_SEPARACAO";
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
 

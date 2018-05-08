@@ -3708,11 +3708,13 @@ class ExpedicaoRepository extends EntityRepository {
         if (empty($pedidoProdutoEn)) {
             /** @var Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
             $pedidoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
-            /** @var Expedicao\PedidoProduto $entidadePedidoProduto */
+            /** @var Expedicao\PedidoProduto $pedidoProdutoEn */
             $pedidoProdutoEn = $pedidoProdutoRepo->findOneBy(array('codPedido' => $codPedido,
                 'codProduto' => $codProduto,
                 'grade' => $grade));
         }
+
+        $pedidoEn = $pedidoProdutoEn->getPedido();
 
         $qtdCortada = $pedidoProdutoEn->getQtdCortada();
         $qtdPedido = $pedidoProdutoEn->getQuantidade();
@@ -3811,7 +3813,8 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
-        $observacao = "Item $codProduto - $grade do pedido $codPedido teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
+        $codExterno = $pedidoEn->getCodExterno();
+        $observacao = "Item $codProduto - $grade do pedido $codExterno teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
         $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
 
         $this->getEntityManager()->flush();
@@ -3829,6 +3832,12 @@ class ExpedicaoRepository extends EntityRepository {
 
     }
 
+    /**
+     * @param $idPedido Código interno do pedido
+     * @param null $idExpedicao
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null) {
 
         $where = " AND PP.COD_PEDIDO = '$idPedido' ";
