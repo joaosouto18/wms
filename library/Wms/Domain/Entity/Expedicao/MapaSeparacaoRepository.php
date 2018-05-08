@@ -883,7 +883,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                        AND MSC.COD_PRODUTO = MSP.COD_PRODUTO
                        AND MSC.DSC_GRADE = MSP.DSC_GRADE
                        AND MSC.COD_PESSOA = P.COD_PESSOA
-                 WHERE MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0)
+                 LEFT JOIN MAPA_SEPARACAO_EMB_CLIENTE MSEC ON MSEC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                 WHERE MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0) OR MSEC.COD_STATUS = $statusEmbalado
                  GROUP BY P.NOM_PESSOA, P.COD_PESSOA
                  ORDER BY MIN(MSP.NUM_CAIXA_PC_INI)";
 

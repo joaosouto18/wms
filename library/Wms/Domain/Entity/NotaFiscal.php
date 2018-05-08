@@ -18,8 +18,8 @@ class NotaFiscal
     const STATUS_EM_RECEBIMENTO = 16;
     const STATUS_RECEBIDA = 17;
     const STATUS_CANCELADA = 18;
-    const ENTRADA_FORNECEDOR = 622;
-    const DEVOLUCAO_CLIENTE = 623;
+    const ENTRADA_FORNECEDOR = 624;
+    const DEVOLUCAO_CLIENTE = 625;
 
     /**
      * Código da nota fiscal

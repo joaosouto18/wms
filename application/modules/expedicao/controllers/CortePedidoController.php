@@ -62,7 +62,7 @@ class Expedicao_CortePedidoController  extends Action
 
     public function cortarPedidoAction()
     {
-        $this->view->pedido = $pedido = $this->_getParam('id',0);
+        $this->view->pedido = $codExterno = $this->_getParam('id',0);
         $this->view->expedicao = $idExpedicao = $this->_getParam('expedicao');
 
         $senha    = $this->_getParam('senha');
@@ -82,20 +82,26 @@ class Expedicao_CortePedidoController  extends Action
                 $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+
+                /** @var \Wms\Domain\Entity\Expedicao\Pedido $pedidoRepo */
+                $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+
+                $pedido = $pedidoRepo->getMaxCodPedidoByCodExterno($codExterno);
+
                 $pedidoProdutos = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
                     ->findBy(array('codPedido' => $pedido));
 
                 if (!isset($pedidoProdutos) || empty($pedidoProdutos))
-                    throw new \Exception("Produtos nao encontrados para o Pedido $pedido");
+                    throw new \Exception("Produtos nao encontrados para o Pedido $codExterno");
 
                 foreach ($pedidoProdutos as $pedidoProduto) {
                     $expedicaoRepo->cortaPedido($pedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $pedidoProduto->getQuantidade(), $this->_getParam('motivoCorte',null));
                 }
 
-                $andamentoRepo->save("Pedido $pedido cortado - motivo: ".$this->_getParam('motivoCorte',null), $idExpedicao, false, true, null, null, false);
+                $andamentoRepo->save("Pedido $codExterno cortado - motivo: ".$this->_getParam('motivoCorte',null), $idExpedicao, false, true, null, null, false);
 
                 $this->getEntityManager()->commit();
-                $this->addFlashMessage('success','Pedido '.$pedido.' Cortado com Sucesso');
+                $this->addFlashMessage('success','Pedido '.$codExterno.' Cortado com Sucesso');
                 $this->_redirect('/expedicao');
             } catch (\Exception $e) {
                 $this->getEntityManager()->rollback();

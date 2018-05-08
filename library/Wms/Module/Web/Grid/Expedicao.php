@@ -194,7 +194,7 @@ class Expedicao extends Grid
                 'controllerName' => 'etiqueta',
                 'actionName' => 'reimprimir-mapa',
                 'condition' => function($row) {
-                    return $row['status'] != "FINALIZADO" AND $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
+                    return $row['status'] != "INTEGRADO" AND $row['status'] != "CANCELADO";
                 },
                 'pkIndex' => 'id'
             ))
