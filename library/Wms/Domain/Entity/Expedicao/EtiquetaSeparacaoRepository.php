@@ -831,6 +831,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         try {
 
+            if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
+                $result  = $expedicaoRepo->validaConferenciaERP($expedicaoEn->getId());
+                if (is_string($result)) {
+                    throw new \Exception($result);
+                }
+            }
+
             $this->iniciaMapaSeparacao($idExpedicao, EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
 
             if (empty($status)) {
