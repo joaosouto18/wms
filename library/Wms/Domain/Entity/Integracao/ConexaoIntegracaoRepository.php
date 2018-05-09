@@ -163,7 +163,6 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
     private function postgreQuery($query, $conexao)
     {
-        phpinfo(); exit;
         try {
             ini_set('memory_limit', '-1');
             $usuario = $conexao->getUsuario();
@@ -173,7 +172,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $sid = $conexao->getDbName();
 
 
-            $dados_conexao = "host=192.168.0.220 dbname=sabium port=22 user=consulta.wms password=quebec@2018";
+            $dados_conexao = "host=192.168.0.220 dbname=sabium port=5433 user=consulta.wms password=quebec@2018";
             $conexao = pg_connect($dados_conexao);
             var_dump($conexao); exit;
             if(!($conexao = pg_connect($dados_conexao))) {
