@@ -430,7 +430,8 @@ class Integracao {
          * Insiro o novo estoque retornado pela query
          */
         $qtdIteracoes = 0;
-        foreach ($dados as $valorEstoque) {
+        foreach ($dados as $key => $valorEstoque) {
+            $valorEstoque = array_change_key_case($valorEstoque, CASE_UPPER);
             var_dump($valorEstoque);
             $qtdIteracoes = $qtdIteracoes + 1;
 
