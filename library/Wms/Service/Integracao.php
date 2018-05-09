@@ -431,7 +431,7 @@ class Integracao {
          */
         $qtdIteracoes = 0;
         foreach ($dados as $valorEstoque) {
-            var_dump($valorEstoque); exit;
+            var_dump($valorEstoque);
             $qtdIteracoes = $qtdIteracoes + 1;
 
             $codProduto = $valorEstoque['COD_PRODUTO'];
