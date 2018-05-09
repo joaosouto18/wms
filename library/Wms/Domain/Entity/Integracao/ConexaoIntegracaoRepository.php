@@ -184,6 +184,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
 
             $arr = pg_fetch_all($result);
+            var_dump($arr); exit;
 
             if (!$arr) {
                 oci_close($conexao);
