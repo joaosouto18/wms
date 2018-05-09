@@ -430,7 +430,6 @@ class Integracao {
          * Insiro o novo estoque retornado pela query
          */
         $qtdIteracoes = 0;
-        var_dump($dados);
         foreach ($dados as $valorEstoque) {
             var_dump($valorEstoque); exit;
             $qtdIteracoes = $qtdIteracoes + 1;
@@ -441,6 +440,9 @@ class Integracao {
             if (isset($valorEstoque['GRADE'])) {
                 $grade = $valorEstoque['GRADE'];
             }
+            var_dump($codProduto);
+            var_dump($grade);
+            exit;
             $produtoEn = $produtoRepo->findOneBy(array('id' => $codProduto, 'grade' => $grade));
             if ($produtoEn != null) {
                 $estoqueErp = new EstoqueErp();
