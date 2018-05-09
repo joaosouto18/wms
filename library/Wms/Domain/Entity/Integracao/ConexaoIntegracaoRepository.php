@@ -183,7 +183,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 throw new \Exception(pg_result_error($result));
             }
 
-            $arr = pg_fetch_array($result);
+            $arr = pg_fetch_all($result);
             var_dump($arr); exit;
 
 
