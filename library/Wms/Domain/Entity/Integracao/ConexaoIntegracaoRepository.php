@@ -172,10 +172,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $sid = $conexao->getDbName();
 
 
-            $dados_conexao = "host=192.168.0.220 dbname=sabium port=5433 user=consulta.wms password=quebec@2018";
-            $conexao = pg_connect($dados_conexao);
-            var_dump($conexao); exit;
-            if(!($conexao = pg_connect($dados_conexao))) {
+            if(!($conexao = pg_connect("host=$servidor dbname=$sid port=$porta user=$usuario password=$senha"))) {
                 print "Não foi possível estabelecer uma conexão com o banco de dados.";
             } else {
                 pg_close ($conexao);
