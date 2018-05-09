@@ -173,61 +173,31 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
 
             if(!($conexao = pg_connect("host=$servidor dbname=$sid port=$porta user=$usuario password=$senha"))) {
-                print "Não foi possível estabelecer uma conexão com o banco de dados.";
-            } else {
-                pg_close ($conexao);
-                print "Conexão OK!";
-            }
-            exit;
-
-
-
-
-
-
-
-
-
-            $connectionString = "$servidor:$porta/$sid";
-            $conexao = oci_connect($usuario, $senha, $connectionString);
-
-            if (!$conexao) {
-                $erro = oci_error();
-                throw new \Exception($erro['message']);
+                throw new \Exception(pg_result_error($conexao));
             }
 
-            $res = oci_parse($conexao, $query) or die("erro");
-            if (!$res) {
-                $erro = oci_error($conexao);
-                oci_close($conexao);
-                throw new \Exception($erro['message']);
+            $result = pg_query($conexao,$query);
+
+            if (!$result) {
+                pg_close($conexao);
+                throw new \Exception(pg_result_error($result));
             }
 
-            $e = oci_execute($res);
-            if (!$e) {
-                $erro = oci_error($res);
-                oci_free_statement($res);
-                oci_close($conexao);
-                throw new \Exception($erro['message']);
-            }
+            var_dump($result); exit;
+            return $result;
 
-            $arrayResult = array();
-            if ($update == false) {
-                oci_fetch_all($res, $result);
 
-                foreach ($result[key($result)] as $rowId => $row) {
-                    $newLine = array();
-                    foreach ($result as $columnId => $column) {
-                        $newLine[$columnId] = $result[$columnId][$rowId];
-                    }
-                    $arrayResult[] = $newLine;
-                }
-            }
 
-            //fecha a conexão atual
-            oci_free_statement($res);
-            oci_close($conexao);
-            return $arrayResult;
+
+
+
+
+
+
+
+
+
+
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
