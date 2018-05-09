@@ -7,10 +7,10 @@ use Wms\Module\Web\Grid;
 
 class ComparativoEstoque extends Grid {
 
-    public function init($restult) {
+    public function init($result) {
 
         $this->setAttrib('title', 'comparativo-estoque');
-        $this->setSource(new \Core\Grid\Source\ArraySource($restult));
+        $this->setSource(new \Core\Grid\Source\ArraySource($result));
         $this->addColumn(array(
             'label' => 'Cod. Produto',
             'index' => 'COD_PRODUTO',
@@ -36,12 +36,29 @@ class ComparativoEstoque extends Grid {
         $this->addColumn(array(
             'label' => 'Divergência',
             'index' => 'DIVERGENCIA',
-//                    'render' => 'N3'
+                    'render' => 'N3'
         ));
+        $this->addColumn(array(
+            'label' => 'Vlr.WMS',
+            'index' => 'VLR_ESTOQUE_WMS',
+            'render' => 'N2'
+        ));
+        $this->addColumn(array(
+            'label' => 'Vlr.ERP',
+            'index' => 'VLR_ESTOQUE_ERP',
+            'render' => 'N2'
+        ));
+        $this->addColumn(array(
+            'label' => 'Vlr.Div.',
+            'index' => 'VLR_DIVERGENCIA',
+            'render' => 'N2'
+        ));
+
         $this->setShowExport(false)
                 ->addMassAction('mass-select', 'Selecionar');
-        $pg = new Pager(count($restult), 0, count($restult));
+        $pg = new Pager(count($result), 0, count($result));
         $this->setPager($pg);
+
         return $this;
     }
 

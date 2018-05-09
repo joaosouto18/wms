@@ -2185,6 +2185,39 @@ class ExpedicaoRepository extends EntityRepository {
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
 
+        $sqlEtiquetas = "
+                SELECT COUNT(DISTINCT E.COD_EXPEDICAO) as QTD_EXPEDICAO,
+                       COUNT(DISTINCT ES.COD_ETIQUETA_SEPARACAO) as QTD_ETIQUETA,
+                       COUNT(DISTINCT ESR.COD_ES_REENTREGA) as QTD_REENTREGA
+                  FROM EXPEDICAO E
+                  LEFT JOIN CARGA C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                  LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+                  LEFT JOIN ETIQUETA_SEPARACAO ES ON ES.COD_PEDIDO = P.COD_PEDIDO AND ES.COD_STATUS NOT IN (522,524,525)
+                  LEFT JOIN REENTREGA R ON R.COD_CARGA = C.COD_CARGA 
+                  LEFT JOIN ETIQUETA_SEPARACAO_REENTREGA ESR ON ESR.COD_REENTREGA = R.COD_REENTREGA AND ESR.COD_STATUS NOT IN (522,524,525)
+                  WHERE 1 = 1
+                  $FullWhereFinal ";
+
+        $result = \Wms\Domain\EntityRepository::nativeQuery($sqlEtiquetas);
+        echo '</br> </br>
+            <fieldset>
+                <legend>Resumo</legend>
+                <table width="62%">
+                    <tr>
+                        <td>Expedições</td>
+                        <td>Qtd. Etq. Válidas</td>
+                        <td>Qtd. Etq. Reentrega</td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" size="30" value="'. $result[0]['QTD_EXPEDICAO'] . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. $result[0]['QTD_ETIQUETA'] . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. $result[0]['QTD_REENTREGA'] . '" disabled=""/></td>
+                    </tr>
+                </table>                
+            </fieldset>';
+
+
         return \Wms\Domain\EntityRepository::nativeQuery($sql);
     }
 

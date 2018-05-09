@@ -51,7 +51,10 @@ class EstoqueErpRepository extends EntityRepository
                $fieldEstoqueERP as ESTOQUE_ERP,
                NVL(WMS.QTD,0) as ESTOQUE_WMS,
                NVL(ERP.ESTOQUE_AVARIA,0) as ESTOQUE_AVARIA,
-               NVL(WMS.QTD,0) - $fieldEstoqueERP DIVERGENCIA
+               NVL(WMS.QTD,0) - $fieldEstoqueERP DIVERGENCIA,
+               NVL($fieldEstoqueERP * ERP.VLR_ESTOQUE_UNIT,0) as VLR_ESTOQUE_ERP,
+               NVL(NVL(WMS.QTD,0) * ERP.VLR_ESTOQUE_UNIT,0) as VLR_ESTOQUE_WMS,
+               NVL((NVL(WMS.QTD,0) - $fieldEstoqueERP) * ERP.VLR_ESTOQUE_UNIT,0) as VLR_DIVERGENCIA
           FROM ESTOQUE_ERP ERP
           FULL OUTER JOIN (SELECT E.COD_PRODUTO,
                                   E.DSC_GRADE, 
@@ -85,7 +88,7 @@ class EstoqueErpRepository extends EntityRepository
 
         $sql.= " WHERE 1 = 1
                     $where         
-                 ORDER BY P.COD_PRODUTO, P.DSC_GRADE";
+                 ORDER BY P.DSC_PRODUTO, P.COD_PRODUTO, P.DSC_GRADE";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)-> fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $key => $value) {
