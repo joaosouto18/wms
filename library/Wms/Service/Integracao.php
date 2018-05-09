@@ -440,10 +440,7 @@ class Integracao {
             if (isset($valorEstoque['GRADE'])) {
                 $grade = $valorEstoque['GRADE'];
             }
-            var_dump($codProduto);
-            var_dump($grade);
             $produtoEn = $produtoRepo->findOneBy(array('id' => $codProduto, 'grade' => $grade));
-            var_dump($produtoEn); exit;
             if ($produtoEn != null) {
                 $estoqueErp = new EstoqueErp();
                 $estoqueErp->setProduto($produtoEn);
