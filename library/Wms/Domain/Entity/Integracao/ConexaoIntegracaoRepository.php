@@ -178,11 +178,13 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $result = pg_query($conexao,$query);
 
-            var_dump($result); exit;
             if (!$result) {
                 pg_close($conexao);
                 throw new \Exception(pg_result_error($result));
             }
+
+            $arr = pg_fetch_array($result);
+            var_dump($arr); exit;
 
 
             return $result;
