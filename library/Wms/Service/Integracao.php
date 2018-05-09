@@ -430,7 +430,9 @@ class Integracao {
          * Insiro o novo estoque retornado pela query
          */
         $qtdIteracoes = 0;
+        var_dump($dados);
         foreach ($dados as $valorEstoque) {
+            var_dump($valorEstoque); exit;
             $qtdIteracoes = $qtdIteracoes + 1;
 
             $codProduto = $valorEstoque['COD_PRODUTO'];
