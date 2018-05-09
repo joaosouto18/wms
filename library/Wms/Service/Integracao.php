@@ -432,7 +432,6 @@ class Integracao {
         $qtdIteracoes = 0;
         foreach ($dados as $key => $valorEstoque) {
             $valorEstoque = array_change_key_case($valorEstoque, CASE_UPPER);
-            var_dump($valorEstoque);
             $qtdIteracoes = $qtdIteracoes + 1;
 
             $codProduto = $valorEstoque['COD_PRODUTO'];
@@ -441,9 +440,6 @@ class Integracao {
             if (isset($valorEstoque['GRADE'])) {
                 $grade = $valorEstoque['GRADE'];
             }
-            var_dump($codProduto);
-            var_dump($grade);
-            exit;
             $produtoEn = $produtoRepo->findOneBy(array('id' => $codProduto, 'grade' => $grade));
             if ($produtoEn != null) {
                 $estoqueErp = new EstoqueErp();
