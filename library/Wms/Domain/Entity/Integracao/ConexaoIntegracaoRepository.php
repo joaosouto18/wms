@@ -163,6 +163,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
     private function postgreQuery($query, $conexao)
     {
+        phpinfo(); exit;
         try {
             ini_set('memory_limit', '-1');
             $usuario = $conexao->getUsuario();
