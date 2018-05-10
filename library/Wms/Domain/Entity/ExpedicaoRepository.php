@@ -1418,27 +1418,35 @@ class ExpedicaoRepository extends EntityRepository {
             //Finaliza Expedição ERP
             if ($this->getSystemParameterValue('IND_FINALIZA_CONFERENCIA_ERP_INTEGRACAO') == 'S') {
                 $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_FINALIZA_CONFERENCIA_ERP');
-
                 /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
                 $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
                 $acaoEn = $acaoIntRepo->find($idIntegracao);
                 $options = array();
 
                 $cargasEn = $expedicaoEn->getCarga();
-                $cargas = array();
+                $pedidoRepo     = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+
                 foreach ($cargasEn as $cargaEn) {
-                    $cargas[] = $cargaEn->getCodCargaExterno();
-                }
-
-                if (!is_null($cargas) && is_array($cargas)) {
-                    $options[] = implode(',', $cargas);
-                } else if (!is_null($cargas)) {
-                    $options = $cargas;
-                }
-
-                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 612);
-                if (!$resultAcao === true) {
-                    throw new \Exception($resultAcao);
+                    $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
+                    foreach ($pedidosEn as $pedidoEn) {
+                        $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
+                        foreach ($produtos as $key => $item) {
+                            $options[$pedidoEn->getId().'-'.$key][] = $cargaEn->getCodCargaExterno();
+                            $options[$pedidoEn->getId().'-'.$key][] = $pedidoEn->getCodExterno();
+                            $options[$pedidoEn->getId().'-'.$key][] = $item['COD_PRODUTO'];
+                            $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_PEDIDO'];
+                            if (is_null($item['ATENDIDA'])) {
+                                $options[$pedidoEn->getId().'-'.$key][] = 0;
+                            }else{
+                                $options[$pedidoEn->getId().'-'.$key][] = $item['ATENDIDA'];
+                            }
+                        }
+                    }
+                    $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
+                    if (!$resultAcao === true) {
+                        throw new \Exception($resultAcao);
+                    }
+                    unset($options);
                 }
             }
 
