@@ -502,7 +502,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      */
     public function descartar($idFornecedor, $numero, $serie, $dataEmissao, $observacao)
     {
-        $idFornecedor = trim ($idFornecedor);
+        $idFornecedor = $codFornecedor = trim ($idFornecedor);
         $numero = trim($numero);
         $serieTrim = trim($serie);
         $serie = (!empty($serieTrim))? $serieTrim : "0";
@@ -528,6 +528,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             'serie' => $serie,
             //'dataEmissao' => $dataEmissao,
         ));
+
+        if (empty($notaFiscalEntity)){
+            throw new \Exception("Nota fiscal $numero do fornecedor de código $codFornecedor e série $serie não encontrada");
+        }
 
         $em->getRepository('wms:NotaFiscal')->descartar($notaFiscalEntity->getId(), $observacao);
 
