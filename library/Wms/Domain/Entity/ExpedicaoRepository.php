@@ -3793,8 +3793,8 @@ class ExpedicaoRepository extends EntityRepository {
                             $itemMapa->setQtdCortado(Math::adicionar($qtdCortar, $qtdCortadaMapa));
                             $qtdCortar = 0;
                         } else {
-                            $itemMapa->setQtdCortado($itemMapa->getQtdSeparar());
-                            $qtdCortar = Math::subtrair($qtdCortar, $itemMapa->getQtdSeparar());
+                            $itemMapa->setQtdCortado($qtdSeparar);
+                            $qtdCortar = Math::subtrair($qtdCortar, $qtdSeparar);
                         }
                         $result = Math::subtrair($qtdSeparar, $itemMapa->getQtdCortado());
                         if (empty($result)) {
