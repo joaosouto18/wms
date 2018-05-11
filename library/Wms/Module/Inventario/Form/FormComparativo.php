@@ -15,6 +15,15 @@ class FormComparativo extends Form
         foreach ($result as $linha){
             $linhaSeparacaoArray[$linha->getId()] = $linha->getDescricao();
         }
+        /** @var \Wms\Domain\Entity\FabricanteRepository $fabricanteRepository */
+        $fabricanteRepository = $this->getEm()->getRepository('wms:Fabricante');
+        $fabricantes = $fabricanteRepository->findBy(array(), array('nome' => 'ASC'));
+        $fabricanteArray = array('' => 'Todos');
+        /** @var \Wms\Domain\Entity\Fabricante $fabricante */
+        foreach ($fabricantes as $fabricante) {
+            $fabricanteArray[$fabricante->getId()] = $fabricante->getNome();
+        }
+
         $divergenciaArray = array(
             '' => 'Todos',
             'S' => 'SIM',
@@ -80,6 +89,10 @@ class FormComparativo extends Form
                 'label' => 'Estoque ERP',
                 'multiOptions' => $estoqueERP
             ))
+            ->addElement('select', 'fabricante', array(
+                'label' => 'Fabricante',
+                'multiOptions' => $fabricanteArray
+            ))
             ->addElement('submit', 'submit', array(
                 'label' => 'Buscar',
                 'class' => 'btn',
@@ -90,7 +103,7 @@ class FormComparativo extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'deduzirAvaria', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
+            ->addDisplayGroup(array('inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'deduzirAvaria', 'fabricante', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
         );
     }
 }

@@ -44,6 +44,10 @@ class EstoqueErpRepository extends EntityRepository
             $where .= " AND P.COD_LINHA_SEPARACAO = $params[linhaSeparacao] ";
         }
 
+        if (isset($params['fabricante']) && !empty($params['fabricante'])) {
+            $where .= " AND F.COD_FABRICANTE = $params[fabricante] ";
+        }
+
         $sql = "
         SELECT P.COD_PRODUTO,
                P.DSC_GRADE,
@@ -70,7 +74,9 @@ class EstoqueErpRepository extends EntityRepository
            AND ERP.DSC_GRADE = WMS.DSC_GRADE
           LEFT JOIN PRODUTO P 
               ON (P.COD_PRODUTO = ERP.COD_PRODUTO AND P.DSC_GRADE = ERP.DSC_GRADE)
-              OR (P.COD_PRODUTO = WMS.COD_PRODUTO AND P.DSC_GRADE = WMS.DSC_GRADE)";
+              OR (P.COD_PRODUTO = WMS.COD_PRODUTO AND P.DSC_GRADE = WMS.DSC_GRADE)
+          INNER JOIN FABRICANTE F 
+              ON F.COD_FABRICANTE = P.COD_FABRICANTE";
 
 
         if ($idInventario != null) {
