@@ -126,7 +126,7 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                                 expedicoes = data.expedicoes;
                                 msgs = data.response;
                             } else if (data.status === "Error") {
-                                msgs = data.response;
+                                msgs = data.response.msg+' '+data.response.link;
                             }
                             if (expedicoes !== null) {
                                 este.selectExpToPrint(expedicoes);
