@@ -1025,9 +1025,9 @@ class Mobile_EnderecamentoController extends Action
 
 
                     /** @var \Wms\Domain\Entity\Produto $produtoEn */
-                    $produtoEn = $params['produto'] = $produtoRepo->findOneBy(array('id' => $estoque->getCodProduto(), 'grade' => $estoque->getGrade()));
-                    $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('id' => $estoque->getProdutoEmbalagem()));
-                    $params['volume'] = $volumeEn = $volumeRepo->findOneBy(array('id' => $estoque->getProdutoVolume()));
+                    $produtoEn = $params['produto'] = $estoque->getProduto();
+                    $params['embalagem'] = $embalagemEn = $estoque->getProdutoEmbalagem();
+                    $params['volume'] = $volumeEn = $estoque->getProdutoVolume();
 
                     if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                         if (isset($embalagemEn)) {
@@ -1081,12 +1081,13 @@ class Mobile_EnderecamentoController extends Action
             else if (isset($params['etiquetaProduto']) && !empty($params['etiquetaProduto'])) {
                 $params['etiquetaProduto'] = ColetorUtil::adequaCodigoBarras($params['etiquetaProduto']);
 
-                $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
+                /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
+                $params['embalagem'] = $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto'], 'dataInativacao' => null));
                 $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['etiquetaProduto']));
 
-                if (isset($params['embalagem']) && !empty($params['embalagem'])) {
+                if ( !empty($embalagemEn)) {
                     /** @var Wms\Domain\Entity\Produto $produtoEn */
-                    $produtoEn = $params['produto'] = $produtoRepo->findOneBy(array('id' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                    $produtoEn = $params['produto'] = $embalagemEn->getProduto();
                     $params['qtd'] = $qtd;
 
                     $enderecoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, $nivelNovo);
@@ -1148,9 +1149,11 @@ class Mobile_EnderecamentoController extends Action
 
                 if (isset($volumeEn) && !empty($volumeEn)) {
                     $norma = $volumeEn->getNormaPaletizacao()->getId();
+                    $params['produto'] = $volumeEn->getProduto();
                     $codProduto = $volumeEn->getCodProduto();
                     $grade = $volumeEn->getGrade();
-                    $volumes = $volumeRepo->findBy(array('normaPaletizacao' => $norma, 'codProduto' => $codProduto, 'grade' => $grade));
+                    $volumes = $volumeRepo->findBy(array('normaPaletizacao' => $norma, 'codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null));
+                    /** @var \Wms\Domain\Entity\Produto\Volume $volume */
                     foreach ($volumes as $volume) {
                         $params['qtd'] = $qtd;
 
@@ -1163,7 +1166,6 @@ class Mobile_EnderecamentoController extends Action
 
                         $params['endereco'] = $endereco;
                         $params['volume'] = $volume;
-                        $params['produto'] = $produtoRepo->findOneBy(array('id' => $volume->getProduto(), 'grade' => $grade));
 
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                             if (isset($volume) && is_null($volume->getEndereco())) {
