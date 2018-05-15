@@ -41,6 +41,8 @@ class produtoCortado {
     public $codProduto;
     /** @var string */
     public $grade;
+    /** @var string */
+    public $lote;
     /** @var double */
     public $quantidadeCortada;
     /** @var string */
@@ -52,6 +54,8 @@ class produto {
     public $codProduto;
     /** @var string */
     public $grade;
+    /** @var string */
+    public $lote;
     /** @var string */
     public $quantidade;
     /** @var string */
@@ -140,6 +144,8 @@ class notaFiscalProduto {
     public $codProduto;
     /** @var string */
     public $grade;
+    /** @var string */
+    public $lote;
     /** @var integer */
     public $qtd;
     /** @var double */
@@ -248,6 +254,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $produto['codProduto'] = $produtoWs->codProduto;
                 $produto['grade'] = (empty($produtoWs->grade) || $produtoWs->grade === "?") ? "UNICA" : trim($produtoWs->grade);
                 $produto['quantidade'] = $produtoWs->quantidade;
+                $produto['lote'] = $produtoWs->lote;
                 $produtos[] = $produto;
             }
 
