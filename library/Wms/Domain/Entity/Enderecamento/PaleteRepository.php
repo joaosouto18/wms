@@ -11,6 +11,8 @@ use Doctrine\ORM\EntityRepository,
 use Wms\Domain\Entity\Armazenagem\UnitizadorRepository;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Produto\EmbalagemRepository;
+use Wms\Domain\Entity\Ressuprimento\ReservaEstoque;
+use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueEnderecamento;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueEnderecamentoRepository;
 use Wms\Math;
 
@@ -1258,12 +1260,11 @@ class PaleteRepository extends EntityRepository {
         return $relatorio_uma;
     }
 
-    public function cancelaPalete($idUma) {
-        /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
-        $paleteEn = $this->findOneBy(array('id' => $idUma));
-
-        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-        $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+    /**
+     * @param $paleteEn Palete
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function cancelaPalete($paleteEn) {
 
         if ($paleteEn == NULL) {
             throw new \Exception("Palete não encontrado");
@@ -1279,6 +1280,10 @@ class PaleteRepository extends EntityRepository {
 
                 $params = array();
                 $params['tipo'] = HistoricoEstoque::TIPO_ENDERECAMENTO;
+
+                /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+                $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+
                 foreach ($paleteEn->getProdutos() as $produto) {
                     $params['produto'] = $produto->getProduto();
                     $params['endereco'] = $enderecoEn;
@@ -1296,6 +1301,12 @@ class PaleteRepository extends EntityRepository {
                     }
                 }
             }
+
+            /** @var ReservaEstoqueEnderecamentoRepository $reservaEndRepo */
+            $reservaEndRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoqueEnderecamento");
+
+            /** @var ReservaEstoqueEnderecamento $reservaEnd */
+            $reservaEnd = $reservaEndRepo->removerReservaUMA($paleteEn);
 
             $paleteEn->setCodStatus(Palete::STATUS_CANCELADO);
 
