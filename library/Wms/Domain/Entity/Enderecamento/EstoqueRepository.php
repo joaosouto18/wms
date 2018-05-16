@@ -389,25 +389,20 @@ class EstoqueRepository extends EntityRepository
         return $result;
     }
 
-    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null, $showPicking = true, $orderBy = null, $returnQuery = false, $mobile = false)
+    public function getEstoqueAndVolumeByParams($parametros, $maxResult = null, $showPicking = true, $orderBy = null, $returnQuery = false)
     {
-        $campos = 'E.NORMA,
-                   E.COD_VOLUME,
-                   E.VOLUME,
-                   TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,\'dd/mm/yyyy hh:mi:ss\') AS DTH_PRIMEIRA_MOVIMENTACAO,
-                   E.RESERVA_ENTRADA,
-                   E.RESERVA_SAIDA,
-                   E.UNITIZADOR,';
-        if($mobile == true){
-            $campos = '';
-        }
-
-        $SQL = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
+        $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
                        DE.COD_DEPOSITO_ENDERECO as COD_ENDERECO,
                        C.DSC_CARACTERISTICA_ENDERECO as TIPO,
                        E.COD_PRODUTO,
                        E.DSC_GRADE,
-                       $campos
+                       E.NORMA,
+                       E.COD_VOLUME,
+                       E.VOLUME,
+                       TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy hh:mi:ss') AS DTH_PRIMEIRA_MOVIMENTACAO,
+                       E.RESERVA_ENTRADA,
+                       E.RESERVA_SAIDA,
+                       E.UNITIZADOR,
                        E.QTD,
                        P.DSC_PRODUTO,
                        E.UMA,
