@@ -262,12 +262,13 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 if ($recebimento == null)
                     throw new \Exception('Recebimento não encontrado');
 
-                $cancelarPaletesParam = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CANCELA_PALETES_DESFAZER_RECEBIMENTO'));
-                if ($cancelarPaletesParam->getValor() == "S") {
+                $cancelarPaletesParam = $this->getSystemParameterValue('CANCELA_PALETES_DESFAZER_RECEBIMENTO');
+                if ($cancelarPaletesParam == "S") {
+                    /** @var \Wms\Domain\Entity\Enderecamento\PaleteRepository $paleteRepo */
                     $paleteRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Palete");
                     $paletesEn = $paleteRepo->findBy(array('recebimento' => $idRecebimento));
                     foreach ($paletesEn as $paleteEn) {
-                        $paleteRepo->cancelaPalete($paleteEn->getId());
+                        $paleteRepo->cancelaPalete($paleteEn);
                     }
                 }
 

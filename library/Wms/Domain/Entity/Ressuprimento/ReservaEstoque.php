@@ -11,6 +11,10 @@ use Wms\Domain\Entity\Deposito\Endereco;
 class ReservaEstoque
 {
 
+    const RESERVA_ATENDIDA = "S";
+    const RESERVA_NAO_ATENDIDA = "N";
+    const RESERVA_CANCELADA = "C";
+
     /**
      * @Id
      * @Column(name="COD_RESERVA_ESTOQUE", type="integer", nullable=false)
@@ -32,7 +36,7 @@ class ReservaEstoque
     protected $tipoReserva;
 
     /**
-     * Indicativo para falar se já foi efetivada ou não (S - Sim, N - Não)
+     * Indicativo para falar se já foi efetivada ou não (S - Sim, N - Não, C - Cancelada)
      * @Column(name="IND_ATENDIDA", type="string", nullable=false)
      */
     protected $atendida;
