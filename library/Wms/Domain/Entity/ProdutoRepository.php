@@ -736,7 +736,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 $arrayD[$itemDadoLogistico['idNormaPaletizacao']] = 1;
             }
         }
-        
+
         foreach ($dadosLogisticos as $id => $itemDadoLogistico) {
             extract($itemDadoLogistico);
 
@@ -762,7 +762,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                     }
                     break;
                 case 'alterar':
-                    var_dump($itemDadoLogistico);die;
                     $dadoLogisticoRepo->save($itemDadoLogistico);
                     break;
                 case 'excluir':
