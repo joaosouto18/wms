@@ -729,6 +729,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         }
 
         $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
+        foreach ($dadosLogisticos as $id => $itemDadoLogistico) {
+            if(isset($arrayD[$itemDadoLogistico['idNormaPaletizacao']])){
+                unset($dadosLogisticos[$id]);
+            }else{
+                $arrayD[$itemDadoLogistico['idNormaPaletizacao']] = 1;
+            }
+        }
 
         foreach ($dadosLogisticos as $id => $itemDadoLogistico) {
             extract($itemDadoLogistico);
@@ -750,7 +757,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
             switch ($acao) {
                 case 'incluir':
-                    $dadoLogisticoRepo->save($itemDadoLogistico);
+                    if($dadoLogisticoRepo->verificaDadoLogistico($itemDadoLogistico)) {
+                        $dadoLogisticoRepo->save($itemDadoLogistico);
+                    }
                     break;
                 case 'alterar':
                     $dadoLogisticoRepo->save($itemDadoLogistico);

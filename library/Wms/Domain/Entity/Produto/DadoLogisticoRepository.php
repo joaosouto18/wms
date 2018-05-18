@@ -47,6 +47,15 @@ class DadoLogisticoRepository extends EntityRepository
         return $dadoLogisticoEntity;
     }
 
+    public function verificaDadoLogistico($itemDadoLogistico){
+        $dadoLogistico = $this->findBy(array('normaPaletizacao' => $itemDadoLogistico['idNormaPaletizacao']));
+        $ret = false;
+        if(empty($dadoLogistico)){
+            $ret = true;
+        }
+        return $ret;
+    }
+
     /**
      *
      * @param int $id 
