@@ -562,7 +562,7 @@ class Integracao {
                         'placaExpedicao' => $row['PLACA'],
                         'placa' => $row['PLACA'],
                         'pedidos' => $pedidos,
-                        'motorista' => $row['NOM_MOTORISTA']
+                        'motorista' => (!isset($row['NOM_MOTORISTA']) and !empty($row['NOM_MOTORISTA']))? $row['NOM_MOTORISTA'] : ''
                     );
                     $cargas[] = $carga;
 
