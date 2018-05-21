@@ -405,6 +405,7 @@ class Mobile_RecebimentoController extends Action
                 $idNormaPaletizacao = $params['idNormaPaletizacao'];
                 $params['dataValidade'] = new Zend_Date($params['dataValidade']);
                 $params['dataValidade'] = $params['dataValidade']->toString('Y-MM-dd');
+                $qtdUnidFracionavel = (isset($params['qtdUnidFracionavel']) and !empty($params['qtdUnidFracionavel'])) ? $params['qtdUnidFracionavel'] : null;
                 $idProduto = $params['idProduto'];
                 $grade = $params['grade'];
             }
