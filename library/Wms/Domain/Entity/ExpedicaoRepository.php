@@ -1332,6 +1332,11 @@ class ExpedicaoRepository extends EntityRepository {
                 if (is_string($result)) {
                     throw new \Exception($result);
                 }
+
+                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa);
+                if (is_string($result)) {
+                    throw new \Exception($result);
+                }
             }
 
             $transacao = true;
@@ -1339,11 +1344,6 @@ class ExpedicaoRepository extends EntityRepository {
 
             if ($validaStatusEtiqueta == true) {
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
-                if (is_string($result)) {
-                    throw new \Exception($result);
-                }
-
-                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa);
                 if (is_string($result)) {
                     throw new \Exception($result);
                 }

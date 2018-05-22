@@ -174,7 +174,6 @@ class MapaSeparacaoRepository extends EntityRepository {
         $mapas = $this->findBy(array('codExpedicao' => $expedicaoEn->getid()));
         foreach ($mapas as $mapaEn) {
             if ($mapaEn->getCodStatus() != Etiqueta::STATUS_CONFERIDO) {
-                $this->getEntityManager()->commit();
                 return 'Existem Mapas para conferir nesta Expedição';
             }
         }
