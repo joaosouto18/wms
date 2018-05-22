@@ -5,6 +5,7 @@ namespace Wms\Service\Mobile;
 use Core\Grid\Column\Filter\Render\Date;
 use Doctrine\Common\Persistence\Mapping\Driver\AnnotationDriver;
 use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Domain\Entity\Produto;
 use Wms\Module\Web\Form\Deposito\Endereco\Caracteristica;
 use Wms\Util\Coletor;
 
@@ -286,16 +287,14 @@ class Inventario {
         if (isset($params['idEndereco']))
             $idEndereco = $params['idEndereco'];
 
+        /** @var Produto $produtoEn */
         $produtoEn = $this->getEm()->getRepository('wms:Produto')
                 ->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
         $possuiValidade = null;
 
-        $hoje = new \Zend_Date();
-        if (isset($produtoEn) && !empty($produtoEn)) {
+        if (!empty($produtoEn)) {
             $possuiValidade = $produtoEn->getValidade();
-            $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
-            $PeriodoUtilMax = $hoje->addDay($shelfLifeMax);
         }
 
         $controleValidade = $this->getSystemParameterValue('CONTROLE_VALIDADE');
@@ -304,6 +303,11 @@ class Inventario {
         $validade = null;
 
         if ($possuiValidade == 'S' && $controleValidade == 'S') {
+
+            $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
+            $hoje = new \Zend_Date();
+            $PeriodoUtilMax = $hoje->addDay($shelfLifeMax);
+
             if (strlen($params['validade']) < 8) {
                 $dataValida = false;
             } else {

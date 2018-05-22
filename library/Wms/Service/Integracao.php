@@ -489,20 +489,26 @@ class Integracao {
             $parametroRepository = $this->_em->getRepository('wms:Sistema\Parametro');
             $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
             $valorParametro = $parametroRepository->findOneBy(array('constante' => 'COD_INTEGRACAO_PEDIDOS_TELA_EXP'))->getValor();
-            $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($valorParametro);
+
+            if ($valorParametro != null) {
+                $acaoIntegracaoEntity = $acaoIntegracaoRepository->find(explode(",",$valorParametro)[0]);
+            }
+            
             foreach ($dados as $key => $row) {
                 $idPedido = $row['PEDIDO'];
                 $idCarga = $row['CARGA'];
 
-                $cargaCancelada = $triggerRepository->find($row['CARGA']);
-                if ($cargaCancelada) {
-                    $observação = "Carga $row[CARGA] ja cancelada";
-                    $query = "UPDATE TR_PEDIDO SET DSC_OBSERVACAO_INTEGRACAO = '$observação' WHERE ID = $row[ID]";
-                    $update = true;
-                    $conexaoEn = $acaoIntegracaoEntity->getConexao();
-                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
-                    $this->_em->flush();
-                    continue;
+                if ($valorParametro != null) {
+                    $cargaCancelada = $triggerRepository->find($row['CARGA']);
+                    if ($cargaCancelada) {
+                        $observação = "Carga $row[CARGA] ja cancelada";
+                        $query = "UPDATE TR_PEDIDO SET DSC_OBSERVACAO_INTEGRACAO = '$observação' WHERE ID = $row[ID]";
+                        $update = true;
+                        $conexaoEn = $acaoIntegracaoEntity->getConexao();
+                        $conexaoRepo->runQuery($query, $conexaoEn, $update);
+                        $this->_em->flush();
+                        continue;
+                    }
                 }
 
                 $tipoPedido = (isset($row['TIPO_PEDIDO']) && !empty($row['TIPO_PEDIDO'])) ? $row['TIPO_PEDIDO'] : null;
@@ -562,7 +568,7 @@ class Integracao {
                         'placaExpedicao' => $row['PLACA'],
                         'placa' => $row['PLACA'],
                         'pedidos' => $pedidos,
-                        'motorista' => $row['NOM_MOTORISTA']
+                        'motorista' => (isset($row['NOM_MOTORISTA']) and !empty($row['NOM_MOTORISTA']))? $row['NOM_MOTORISTA'] : ''
                     );
                     $cargas[] = $carga;
 
