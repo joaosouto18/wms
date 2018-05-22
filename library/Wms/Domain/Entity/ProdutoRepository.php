@@ -682,21 +682,27 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
     public function persistirDadosLogisticos(array &$values, $produtoEntity) {
         $em = $this->getEntityManager();
         extract($values);
-
         // dadosLogisticos
         if (!isset($dadosLogisticos))
             return false;
 
         $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
-
+        $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
+        $normasExistentes = $dadoLogisticoRepo->getDadoNorma($values['id']);
         // normas de paletizacao
         if (isset($normasPaletizacao)) {
 
-
+            if(!empty($normasExistentes) && isset($normasPaletizacao)){
+                foreach ($normasExistentes as $key => $value){
+                    if(!isset($normasPaletizacao[$value['COD_NORMA_PALETIZACAO']])){
+                    $dadoLogisticoRepo->remove($value['COD_PRODUTO_DADO_LOGISTICO']);
+                    $normaPaletizacaoRepo->remove($value['COD_NORMA_PALETIZACAO']);
+                    }
+                }
+            }
             $andamentoRepo = $this->_em->getRepository('wms:Produto\Andamento');
             $idProduto = $produtoEntity->getID();
             $grade = $produtoEntity->getGrade();
-
             foreach ($normasPaletizacao as $key => $normaPaletizacao) {
                 extract($normaPaletizacao);
 
@@ -728,15 +734,24 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             }
         }
 
-        $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
         foreach ($dadosLogisticos as $id => $itemDadoLogistico) {
+            if(isset($arrayE[number_format($itemDadoLogistico['qtdEmbalagem'], 3, '.', '')]) && ($normasPaletizacao[$itemDadoLogistico['idNormaPaletizacao']]['idUnitizador'] == $arrayE[number_format($itemDadoLogistico['qtdEmbalagem'], 3, '.', '')])){
+                if($itemDadoLogistico['acao'] == 'alterar'){
+                    $dadoLogisticoRepo->remove($id);
+                }
+                if($itemDadoLogistico['acao'] != 'excluir'){
+                    unset($dadosLogisticos[$id]);
+                }
+            }
             if(isset($arrayD[$itemDadoLogistico['idNormaPaletizacao']])){
-                unset($dadosLogisticos[$id]);
+                if($itemDadoLogistico['acao'] != 'excluir'){
+                    unset($dadosLogisticos[$id]);
+                }
             }else{
                 $arrayD[$itemDadoLogistico['idNormaPaletizacao']] = 1;
+                $arrayE[number_format($itemDadoLogistico['qtdEmbalagem'], 3, '.', '')] = $normasPaletizacao[$itemDadoLogistico['idNormaPaletizacao']]['idUnitizador'];
             }
         }
-
         foreach ($dadosLogisticos as $id => $itemDadoLogistico) {
             extract($itemDadoLogistico);
 
@@ -769,24 +784,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                     break;
             }
         }
-
-        // normas de paletizacao
-        if (isset($normasPaletizacao)) {
-
-            foreach ($normasPaletizacao as $key => $normaPaletizacao) {
-                extract($normaPaletizacao);
-
-                if (!isset($acao))
-                    continue;
-
-                switch ($acao) {
-                    case 'excluir':
-                        $normaPaletizacaoEntity = $normaPaletizacaoRepo->remove($id);
-                        break;
-                }
-            }
-        }
-
         return true;
     }
 
