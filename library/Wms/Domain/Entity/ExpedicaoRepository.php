@@ -1332,6 +1332,11 @@ class ExpedicaoRepository extends EntityRepository {
                 if (is_string($result)) {
                     throw new \Exception($result);
                 }
+
+                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa);
+                if (is_string($result)) {
+                    throw new \Exception($result);
+                }
             }
 
             $transacao = true;
@@ -1339,11 +1344,6 @@ class ExpedicaoRepository extends EntityRepository {
 
             if ($validaStatusEtiqueta == true) {
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
-                if (is_string($result)) {
-                    throw new \Exception($result);
-                }
-
-                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa);
                 if (is_string($result)) {
                     throw new \Exception($result);
                 }
@@ -2268,7 +2268,7 @@ class ExpedicaoRepository extends EntityRepository {
                               GROUP BY C.COD_EXPEDICAO) PESO_REENTREGA ON PESO_REENTREGA.COD_EXPEDICAO = E.COD_EXPEDICAO 
                   
                   LEFT JOIN (SELECT PED.COD_EXPEDICAO,
-                                  LISTAGG (S.DSC_SIGLA,\',\') WITHIN GROUP (ORDER BY S.DSC_SIGLA) TIPO_PEDIDO
+                                  LISTAGG (S.DSC_SIGLA,\', \') WITHIN GROUP (ORDER BY S.DSC_SIGLA) TIPO_PEDIDO
                                   FROM SIGLA S
                                   INNER JOIN (
                                     SELECT CASE WHEN REENTREGA.COD_CARGA IS NOT NULL THEN 621 ELSE P.COD_TIPO_PEDIDO END COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
@@ -2278,7 +2278,7 @@ class ExpedicaoRepository extends EntityRepository {
                                       SELECT R.COD_CARGA, C.COD_EXPEDICAO 
                                       FROM REENTREGA R
                                       INNER JOIN CARGA C ON R.COD_CARGA = C.COD_CARGA
-                                    ) REENTREGA ON REENTREGA.COD_EXPEDICAO = C.COD_EXPEDICAO 
+                                    ) REENTREGA ON REENTREGA.COD_EXPEDICAO = C.COD_EXPEDICAO AND REENTREGA.COD_CARGA = C.COD_CARGA
                                     GROUP BY P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO, REENTREGA.COD_CARGA 
                                   ) PED ON PED.COD_TIPO_PEDIDO = S.COD_SIGLA
                                   GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO 
@@ -3801,8 +3801,8 @@ class ExpedicaoRepository extends EntityRepository {
                             $itemMapa->setQtdCortado(Math::adicionar($qtdCortar, $qtdCortadaMapa));
                             $qtdCortar = 0;
                         } else {
-                            $itemMapa->setQtdCortado($itemMapa->getQtdSeparar());
-                            $qtdCortar = Math::subtrair($qtdCortar, $itemMapa->getQtdSeparar());
+                            $itemMapa->setQtdCortado($qtdSeparar);
+                            $qtdCortar = Math::subtrair($qtdCortar, $qtdSeparar);
                         }
                         $result = Math::subtrair($qtdSeparar, $itemMapa->getQtdCortado());
                         if (empty($result)) {

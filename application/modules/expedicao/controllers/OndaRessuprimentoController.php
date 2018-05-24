@@ -221,6 +221,9 @@ class Expedicao_OndaRessuprimentoController extends Action
             /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRessuprimentoRepo */
             $ondaRessuprimentoRepo = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
             $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, true, $idProduto, $idExpedicao, $operador);
+            foreach ($values as $key => $arg) {
+                if (empty($arg)) unset($values[$key]);
+            }
             $Grid = new OsGrid();
             $Grid->init($result, $values)->render();
 
@@ -228,6 +231,7 @@ class Expedicao_OndaRessuprimentoController extends Action
             $pager->setMaxPerPage(30000);
             $Grid->setPager($pager);
 
+            $form->setDefaults($values);
             $this->view->grid = $Grid->render();
         }
 

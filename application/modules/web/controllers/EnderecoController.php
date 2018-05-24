@@ -525,13 +525,16 @@ class Web_EnderecoController extends Crud
 
         if (empty($depositoEnderecoEn)) {
             $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco não encontrado!");
-        } elseif ($this->getSystemParameterValue('PERMITE_NPRODUTO_PICKING') == 'N') {
+        } else{
             if ($depositoEnderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING) {
-                $produto = $depositoEnderecoRepo->getProdutoByEndereco($enderecoFormatado, true, true);
-
-                if (!empty($produto) && ($codProduto != $produto[0]['codProduto'] || $grade != $produto[0]['grade'])) {
-                    $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco já está vinculado ao produto: " . $produto[0]['codProduto'] . "<br />" . $produto[0]['descricao'] . "<br />Grade: " . $produto[0]['grade']);
+                if ($this->getSystemParameterValue('PERMITE_NPRODUTO_PICKING') == 'N') {
+                    $produto = $depositoEnderecoRepo->getProdutoByEndereco($enderecoFormatado, true, true);
+                    if (!empty($produto) && ($codProduto != $produto[0]['codProduto'] || $grade != $produto[0]['grade'])) {
+                        $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco já está vinculado ao produto: " . $produto[0]['codProduto'] . "<br />" . $produto[0]['descricao'] . "<br />Grade: " . $produto[0]['grade']);
+                    }
                 }
+            }else{
+                $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco não é um endereço de picking.");
             }
         }
 

@@ -284,7 +284,7 @@ class Estoque
 
     public function movimentaEstoque()
     {
-        /** @var  $estoqueRepo */
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo    = $this->getEstoqueRepo();
         $array = array(
             'produto' =>  $this->getProduto(),

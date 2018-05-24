@@ -15,7 +15,7 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
   ELSE
     INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT)
-    VALUES (SYSDATE, '6.17', 'xx-permissao-relatorio-volume-embalado.sql');
+    VALUES (SYSDATE, '6.17', '06-permissao-relatorio-volume-embalado.sql');
     /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/

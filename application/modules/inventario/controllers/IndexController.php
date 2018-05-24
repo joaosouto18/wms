@@ -87,12 +87,12 @@ class Inventario_IndexController  extends Action
                     $inventarioRepo->atualizarEstoque($inventarioEn);
                     $inventarioRepo->desbloqueiaEnderecos($id);
                     $this->em->commit();
+                    $this->_helper->messenger('success', 'Estoque atualizado com sucesso');
                 }catch(\Exception $e) {
                     $this->em->rollback();
-                    throw new \Exception($e->getMessage());
+                    $this->_helper->messenger('success', $e->getMessage());
                 }
 
-                $this->_helper->messenger('success', 'Estoque atualizado com sucesso');
                 return $this->redirect('index');
             }
         }
