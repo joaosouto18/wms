@@ -688,7 +688,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
         $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
-        $normasExistentes = $dadoLogisticoRepo->getDadoNorma($values['id']);
+        $normasExistentes = $dadoLogisticoRepo->getDadoNorma($values['id'], $values['grade']);
         // normas de paletizacao
         if (isset($normasPaletizacao)) {
             foreach ($normasPaletizacao as $id => $normaPaletizacao) {
@@ -779,7 +779,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             }
             switch ($acao) {
                 case 'incluir':
-                    if($dadoLogisticoRepo->verificaDadoLogistico($itemDadoLogistico)) {
+                    if($normasPaletizacao[$itemDadoLogistico['idNormaPaletizacao']]['acao'] == 'incluir' xor
+                        $dadoLogisticoRepo->verificaDadoLogistico($itemDadoLogistico)) {
                         $dadoLogisticoRepo->save($itemDadoLogistico);
                     }
                     break;
@@ -787,7 +788,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                     $dadoLogisticoRepo->save($itemDadoLogistico);
                     break;
                 case 'excluir':
-                    $dadoLogisticoRepo->remove($id);
+                    if (!strpos($id, "-new"))
+                        $dadoLogisticoRepo->remove($id);
                     break;
             }
         }
