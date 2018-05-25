@@ -80,7 +80,6 @@ class Mobile_Enderecamento_ManualController extends Action
 
                 $qtdEndTotalFator = \Wms\Math::multiplicar($params['qtd'], $params['qtdEmbalagem']);
                 $enderecadoMaisEnderecar = \Wms\Math::adicionar($qtdEndTotalFator, $paleteProdutoEn[0]['qtd']);
-
                 if (\Wms\Math::compare($sumQtdRecebimento, $enderecadoMaisEnderecar, '<')) {
                     if (isset($params['paleteGerado'])) unset($params['paleteGerado']);
                     throw new \Exception("Não é possível armazenar mais itens do que a quantidade recebida!");
@@ -265,14 +264,6 @@ class Mobile_Enderecamento_ManualController extends Action
             }
 
             foreach ($embalagens as $embalagemEn) {
-                if (!isset($arrDL[$embalagemEn->getId()]) && !empty($novaCapacidadePicking)){
-                    $dadoLogisticoEn = $normaRepo->gravarNormaPaletizacao($embalagemEn, $novaCapacidadePicking);
-                    if (empty($normaRelativa))
-                        $normaRelativa = $dadoLogisticoEn->getNormaPaletizacao();
-                } elseif (!isset($arrDL[$embalagemEn->getId()]) && empty($novaCapacidadePicking) && !empty($normaRelativa)) {
-                    $normaRepo->gravarNormaPaletizacao($embalagemEn, $novaCapacidadePicking, $normaRelativa);
-                }
-
                 $endereco = null;
                 if (!is_null($embalagemEn->getEndereco()))
                     $endereco = $embalagemEn->getEndereco()->getId();
