@@ -58,7 +58,7 @@ class DadoLogisticoRepository extends EntityRepository
 
     public function getDadoNorma($idProduto, $dscGrade = 'UNICA'){
         $SQL = "SELECT COD_PRODUTO_DADO_LOGISTICO, COD_NORMA_PALETIZACAO FROM PRODUTO_DADO_LOGISTICO WHERE COD_PRODUTO_EMBALAGEM IN 
-                (SELECT COD_PRODUTO_EMBALAGEM FROM PRODUTO_EMBALAGEM WHERE COD_PRODUTO = $idProduto AND DSC_GRADE = $dscGrade)";
+                (SELECT COD_PRODUTO_EMBALAGEM FROM PRODUTO_EMBALAGEM WHERE COD_PRODUTO = '$idProduto' AND DSC_GRADE = '$dscGrade')";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
