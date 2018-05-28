@@ -58,7 +58,9 @@ class EstoqueErpRepository extends EntityRepository
                NVL(WMS.QTD,0) - $fieldEstoqueERP DIVERGENCIA,
                NVL($fieldEstoqueERP * ERP.VLR_ESTOQUE_UNIT,0) as VLR_ESTOQUE_ERP,
                NVL(NVL(WMS.QTD,0) * ERP.VLR_ESTOQUE_UNIT,0) as VLR_ESTOQUE_WMS,
-               NVL((NVL(WMS.QTD,0) - $fieldEstoqueERP) * ERP.VLR_ESTOQUE_UNIT,0) as VLR_DIVERGENCIA
+               NVL((NVL(WMS.QTD,0) - $fieldEstoqueERP) * ERP.VLR_ESTOQUE_UNIT,0) as VLR_DIVERGENCIA,
+               F.COD_FABRICANTE,
+               F.NOM_FABRICANTE as FABRICANTE 
           FROM ESTOQUE_ERP ERP
           FULL OUTER JOIN (SELECT E.COD_PRODUTO,
                                   E.DSC_GRADE, 
