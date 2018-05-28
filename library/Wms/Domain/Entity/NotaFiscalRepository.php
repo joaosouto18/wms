@@ -1000,7 +1000,7 @@ class NotaFiscalRepository extends EntityRepository {
 
             /** @var ReferenciaRepository $fornRefRepo */
             $fornRefRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
-
+            $itens = $this->unificarItens($itens);
             $pesoTotal = 0;
             if (count($itens) > 0) {
                 //itera nos itens das notas
@@ -1058,6 +1058,11 @@ class NotaFiscalRepository extends EntityRepository {
             throw new \Exception($e->getMessage());
         }
     }
+
+    public function unificarItens($itens){
+        return $itens;
+    }
+
 
     public function getObservacoesNotasByProduto($codRecebimento, $codProduto, $grade) {
         $SQL = "SELECT DISTINCT DSC_OBSERVACAO
