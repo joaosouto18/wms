@@ -1,7 +1,68 @@
-﻿<script>
-    function nextInput(event, id) {
+﻿<?php $this->headScript()->appendFile($this->baseUrl('coletor/enderecamento.js')); ?>
+<div class="row text-center" >
+    <form id="formulario" method="post">
+        <dt id="identification-label">&nbsp;</dt>
+        <dd id="identification-element">
+            <fieldset id="fieldset-identification">
+                <legend>Endereçamento Manual</legend>
+                <input type="hidden" id="reservas" name="reservas">
+                <div class="field">
+                    <label>Produto:</label>
+                    <input style="width: 99%" maxlength="100" class="focus form-control" size="40" type="text" name="produto" id="produto" value="" onkeydown="nextInput(this, event)" />
+                </div>
+                <div class="field">
+                    <label>Endereço:</label>
+                    <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="endereco" id="endereco" value="" onkeydown="nextInput(this, event)"/>
+                </div>
+                <div class="field">
+                    <label>Qtd:</label>
+                    <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="qtd" id="qtd" value="" />
+                </div>
+                <div id="inserir"></div>
+                <input class="btn gradientBtn lock-dbl-click" type="submit" name="submit" id="submit-buscar" value="Buscar" />
+                <button class="btn gradientBtn lock-dbl-click" type="button" name="submit-confirmar" id="submit-confirmar" style="display: none">Confirmar</button>
+            </fieldset>
+
+            <?php if ($this->teste == "S") {?>
+                <fieldset id="Produto">
+                    <legend>Endereços do Produto</legend>
+                    <legend><?php echo $this->teste; ?></legend>
+                </fieldset>
+            <?php }?>
+
+            <div id="lista-endereco"></div>
+
+        </dd>
+    </form>
+</div>
+<script>
+    $(function () {
+        $("#efetivaEndPicking").live("click", function () {
+            var reservas = $(this).data('reservas');
+            var qtdReservada = $(this).data('qtd');
+            alterButtonShow('submit-confirmar');
+            $("#qtd").val(qtdReservada).prop('readonly', true);
+            $("#reservas").val(reservas);
+            $("#endereco").focus();
+        })
+    });
+
+    function alterButtonShow(button) {
+        if (button === 'submit-buscar') {
+            $("#submit-buscar").show();
+            $("#submit-confirmar").hide();
+        } else {
+            $("#submit-buscar").hide();
+            $("#submit-confirmar").show();
+        }
+    }
+
+    function nextInput(input, event, id) {
+        var inputReservas= $("#reservas");
+        var inputEndereco = $("#endereco");
+        var inputQtd = $("#qtd");
         if (event.which == 13 || event.keyCode == 13) {
-            if (document.getElementById('produto').value != "") {
+            if (input.value !== "" && input.id === 'produto' && (inputEndereco.val() === "" || inputEndereco.val() === null) {
                 endereco = document.getElementById('endereco');
                 if (endereco) {
                     consultar();
@@ -13,8 +74,7 @@
                         event.returnValue = false;
                     }
                 }
-            }
-            if (document.getElementById('endereco').value != "") {
+            } else if (input.value !== "" && input.id === 'endereco' && (inputQtd.val() === "" || inputQtd.val() === null) {
                 qtd = document.getElementById('qtd');
                 if (qtd) {
                     qtd.focus();
@@ -24,6 +84,10 @@
                         event.returnValue = false;
                     }
                 }
+            } else if (input.value !== "" && input.id === 'endereco'
+                && (inputQtd.val() !== "" || inputQtd.val() !== null
+                && inputReservas.val() !== "" || inputReservas.val() !== null)) {
+                
             }
         }
         return true;
@@ -49,6 +113,8 @@
                             '            <td><b>Endereço</b></td>' +
                             '            <td><b>Tipo</b></td>' +
                             '            <td><b>Qtd.</b></td>' +
+                            '            <td><b>End. Pendente</b></td>' +
+                            '            <td><b>Ação</b></td>' +
                             '        </tr>'
 
                         var color = true;
@@ -62,10 +128,21 @@
                                     txt += '<tr>'
                                 }
 
-                                txt += '   <td>' + value.ENDERECO + '</td>'
-                                txt += '   <td>' + value.TIPO + '</td>'
-                                txt += '   <td>' + value.QTD + '</td>'
-                                txt += '</tr>'
+                                if (value.RESERVAS !== null) {
+                                    txt += '   <td>' + value.PICKING_PRODUTO + '</td>';
+                                    txt += '   <td>' + value.TIPO + '</td>';
+                                    txt += '   <td>' + value.QTD + '</td>';
+                                    txt += '   <td>' + value.QTD_RESERVADA +'</td>';
+                                    txt += '   <td><button type="button" id="efetivaEndPicking" data-reservas="'+value.RESERVAS+'" data-qtd="'+ value.QTD_RESERVADA +'" class="btn gradientBtn lock-dbl-click">Efetivar</button></td>';
+                                    txt += '</tr>'
+                                } else {
+                                    txt += '   <td>' + value.ENDERECO + '</td>';
+                                    txt += '   <td>' + value.TIPO + '</td>';
+                                    txt += '   <td>' + value.QTD + '</td>';
+                                    txt += '   <td>-----</td>';
+                                    txt += '   <td>-----</td>';
+                                    txt += '</tr>'
+                                }
 
                             });
                         } else {
@@ -73,7 +150,7 @@
                         }
 
                         txt += '</tbody>' +
-                               '</table>'
+                            '</table>'
                         txt += '</fieldset>'
                         $('#lista-endereco').html(txt);
                     } else {
@@ -93,39 +170,3 @@
 
 
 </script>
-<?php $this->headScript()->appendFile($this->baseUrl('coletor/enderecamento.js')); ?>
-<div class="row text-center" >
-    <form id="formulario" method="post">
-        <dt id="identification-label">&nbsp;</dt>
-        <dd id="identification-element">
-            <fieldset id="fieldset-identification">
-                <legend>Endereçamento Manual</legend>
-                <div class="field">
-                    <label>Produto:</label>
-                    <input style="width: 99%" maxlength="100" class="focus form-control" size="40" type="text" name="produto" id="produto" value="" onkeydown="nextInput(event)" />
-                </div>
-                <div class="field">
-                    <label>Endereço:</label>
-                    <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="endereco" id="endereco" value="" onkeydown="nextInput(event)"/>
-                </div>
-                <div class="field">
-                    <label>Qtd:</label>
-                    <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="qtd" id="qtd" value="" />
-                </div>
-<!--                <input type="hidden" name="capacidadePicking" id="capacidadePicking" value="--><?php //echo $this->capacidadePicking  ?><!--">-->
-                <div id="inserir"></div>
-                <input class="btn gradientBtn lock-dbl-click" type="submit" name="submit" id="submit" value="Buscar" />
-            </fieldset>
-
-            <?php if ($this->teste == "S") {?>
-                <fieldset id="Produto">
-                    <legend>Endereços do Produto</legend>
-                    <legend><?php echo $this->teste; ?></legend>
-                </fieldset>
-            <?php }?>
-
-            <div id="lista-endereco"></div>
-
-        </dd>
-    </form>
-</div>

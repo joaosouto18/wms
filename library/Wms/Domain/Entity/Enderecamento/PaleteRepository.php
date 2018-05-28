@@ -649,6 +649,7 @@ class PaleteRepository extends EntityRepository {
             foreach ($qtdDisponivelEnderecar as $item) {
 
                 $this->deletaPaletesEmRecebimento($recebimentoEn->getId(), $idProduto, $grade);
+                $idVolume = null;
 
                 $volumes = [];
 
@@ -672,7 +673,27 @@ class PaleteRepository extends EntityRepository {
                 if ($espacoDisponivel <= 0)
                     throw new \Exception("O picking do produto $idProduto grade $grade não tem espaço disponivel para endereçamento!");
 
-                $qtdEnderecar = (Math::compare($espacoDisponivel, $item['QTD'], ">"))? $item['QTD'] : $espacoDisponivel;
+                $qtdEnderecar = 0;
+
+                if (Math::compare($espacoDisponivel, $item['QTD'], ">")) {
+                    $qtdEnderecar = $item['QTD'];
+                } else {
+                    /** @var Produto\Embalagem $embalagenDefault */
+                    $embalagenDefault = $produtoEn->getEmbalagens()->filter(
+                        function($item) {
+                            return (is_null($item->getDataInativacao()) && $item->getIsPadrao() == 'S');
+                        }
+                    )->first();
+
+                    $resto = Math::resto($item['QTD'], $embalagenDefault->getQuantidade());
+                    if ($resto > 0) {
+                        $qtdEnderecar = $resto;
+                    }
+                    $qtdEnderecar += Math::multiplicar((int) Math::dividir(Math::subtrair($espacoDisponivel, $resto), $embalagenDefault->getQuantidade()), $embalagenDefault->getQuantidade());
+                }
+
+                if ($qtdEnderecar <= 0)
+                    throw new \Exception("O produto $idProduto grade $grade não tem quantidade ou espaço disponível para endereçar!");
 
                 /** @var Produto\NormaPaletizacao $normaEn */
                 $unitizadorEn = $unitizadorRepo->find($item["COD_UNITIZADOR"]);
