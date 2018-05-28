@@ -19,8 +19,7 @@
                     <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="qtd" id="qtd" value="" />
                 </div>
                 <div id="inserir"></div>
-                <input class="btn gradientBtn lock-dbl-click" type="submit" name="submit" id="submit-buscar" value="Buscar" />
-                <button class="btn gradientBtn lock-dbl-click" type="button" name="submit-confirmar" id="submit-confirmar" style="display: none">Confirmar</button>
+                <input class="btn gradientBtn lock-dbl-click" type="submit" name="submit" id="submit" value="Buscar" />
             </fieldset>
 
             <?php if ($this->teste == "S") {?>
@@ -40,30 +39,21 @@
         $("#efetivaEndPicking").live("click", function () {
             var reservas = $(this).data('reservas');
             var qtdReservada = $(this).data('qtd');
-            alterButtonShow('submit-confirmar');
             $("#qtd").val(qtdReservada).prop('readonly', true);
+            $("#submit").val("Confirmar");
             $("#reservas").val(reservas);
-            $("#endereco").focus();
+            $("#endereco").val('').focus();
         })
     });
-
-    function alterButtonShow(button) {
-        if (button === 'submit-buscar') {
-            $("#submit-buscar").show();
-            $("#submit-confirmar").hide();
-        } else {
-            $("#submit-buscar").hide();
-            $("#submit-confirmar").show();
-        }
-    }
 
     function nextInput(input, event, id) {
         var inputReservas= $("#reservas");
         var inputEndereco = $("#endereco");
         var inputQtd = $("#qtd");
         if (event.which == 13 || event.keyCode == 13) {
-            if (input.value !== "" && input.id === 'produto' && (inputEndereco.val() === "" || inputEndereco.val() === null) {
-                endereco = document.getElementById('endereco');
+            if (input.value !== "" && input.id === 'produto' && (inputEndereco.val() === "" || inputEndereco.val() === null)) {
+                console.log("Entrou no primeiro elseif");
+                endereco = inputEndereco;
                 if (endereco) {
                     consultar();
                     endereco.focus();
@@ -74,8 +64,9 @@
                         event.returnValue = false;
                     }
                 }
-            } else if (input.value !== "" && input.id === 'endereco' && (inputQtd.val() === "" || inputQtd.val() === null) {
-                qtd = document.getElementById('qtd');
+            } else if (input.value !== "" && input.id === 'endereco' && (inputQtd.val() === "" || inputQtd.val() === null)) {
+                console.log("Entrou no elseif do meio");
+                qtd = inputQtd;
                 if (qtd) {
                     qtd.focus();
                     if (event.preventDefault) {
@@ -87,7 +78,13 @@
             } else if (input.value !== "" && input.id === 'endereco'
                 && (inputQtd.val() !== "" || inputQtd.val() !== null
                 && inputReservas.val() !== "" || inputReservas.val() !== null)) {
-                
+                console.log("Entrou no ultimo elseif");
+                $("#submit").focus();
+                if (event.preventDefault) {
+                    event.preventDefault();
+                } else {
+                    event.returnValue = false;
+                }
             }
         }
         return true;
@@ -102,6 +99,11 @@
                 url: '/mobile/consulta-endereco/consultar/codigoBarras/' + val,
                 success: function (data) {
                     if (data.status === 'ok') {
+
+                        $("#reservas").val('');
+                        $("#submit").val("Buscar");
+                        $("#qtd").val("").prop('readonly', false);
+                        $("#endereco").val('');
 
                         var txt = '<fieldset id="fieldset-dadosProduto">'
                         txt += '<legend>Endereços do produto</legend>' +
