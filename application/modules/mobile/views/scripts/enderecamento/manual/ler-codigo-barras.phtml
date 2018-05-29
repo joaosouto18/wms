@@ -130,21 +130,20 @@
                                     txt += '<tr>'
                                 }
 
+                                txt += '   <td>' + value.ENDERECO + '</td>';
+                                txt += '   <td>' + value.TIPO + '</td>';
+                                txt += '   <td>' + value.QTD + '</td>';
+
                                 if (value.RESERVAS !== null) {
-                                    txt += '   <td>' + value.PICKING_PRODUTO + '</td>';
-                                    txt += '   <td>' + value.TIPO + '</td>';
-                                    txt += '   <td>' + value.QTD + '</td>';
                                     txt += '   <td>' + value.QTD_RESERVADA +'</td>';
                                     txt += '   <td><button type="button" id="efetivaEndPicking" data-reservas="'+value.RESERVAS+'" data-qtd="'+ value.QTD_RESERVADA +'" class="btn gradientBtn lock-dbl-click">Efetivar</button></td>';
-                                    txt += '</tr>'
                                 } else {
-                                    txt += '   <td>' + value.ENDERECO + '</td>';
-                                    txt += '   <td>' + value.TIPO + '</td>';
-                                    txt += '   <td>' + value.QTD + '</td>';
                                     txt += '   <td>-----</td>';
                                     txt += '   <td>-----</td>';
                                     txt += '</tr>'
                                 }
+
+                                txt += '</tr>'
 
                             });
                         } else {
