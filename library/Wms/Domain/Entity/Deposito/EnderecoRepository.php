@@ -992,22 +992,60 @@ class EnderecoRepository extends EntityRepository {
             throw new \Exception("Nenhum produto encontrado com o código de barras: " . $codbarras);
         }
 
-        $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
-                       CE.DSC_CARACTERISTICA_ENDERECO as TIPO,
-                       E.QTD,
-                       P.COD_PRODUTO,
+        $SQL = "     SELECT P.COD_PRODUTO,
+                            P.DSC_GRADE,
+                            P.DSC_PRODUTO,
+                            NVL(PV.DSC_VOLUME, PE.DSC_EMBALAGEM) as VOLUME,
+                            PK.DSC_DEPOSITO_ENDERECO as ENDERECO,
+                            CE.DSC_CARACTERISTICA_ENDERECO as TIPO,
+                            RES.QTD_RESERVADA as QTD_RESERVADA,
+                            NVL(E.QTD,0) as QTD,
+                            RES.RESERVAS
+                       FROM PRODUTO P
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE
+                 INNER JOIN DEPOSITO_ENDERECO PK ON PK.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO OR PK.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
+                  LEFT JOIN CARACTERISTICA_ENDERECO CE ON CE.COD_CARACTERISTICA_ENDERECO = PK.COD_CARACTERISTICA_ENDERECO
+                  LEFT JOIN (SELECT LISTAGG (RE.COD_RESERVA_ESTOQUE,',') WITHIN GROUP (ORDER BY RE.COD_RESERVA_ESTOQUE) RESERVAS,
+                                    SUM(REP.QTD_RESERVADA) QTD_RESERVADA,
+                                    RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
+                               FROM RESERVA_ESTOQUE RE
+                              INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                              INNER JOIN RESERVA_ESTOQUE_ENDERECAMENTO REE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                              WHERE RE.IND_ATENDIDA = 'N' AND RE.TIPO_RESERVA = 'E'
+                              GROUP BY RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0)) RES
+                         ON RES.COD_DEPOSITO_ENDERECO = PK.COD_DEPOSITO_ENDERECO
+                        AND RES.COD_PRODUTO = P.COD_PRODUTO
+                        AND RES.DSC_GRADE = P.DSC_GRADE
+                        AND RES.VOLUME = NVL(PV.COD_PRODUTO_VOLUME,0)
+                  LEFT JOIN ESTOQUE E
+                         ON E.COD_PRODUTO = P.COD_PRODUTO
+                        AND E.DSC_GRADE = P.DSC_GRADE
+                        AND NVL(E.COD_PRODUTO_VOLUME,0) = NVL(PV.COD_PRODUTO_VOLUME,0)
+                        AND E.COD_DEPOSITO_ENDERECO = PK.COD_DEPOSITO_ENDERECO
+                      WHERE PE.COD_BARRAS = '$codbarras' OR PV.COD_BARRAS = '$codbarras'
+                UNION
+                SELECT P.COD_PRODUTO,
                        P.DSC_GRADE,
                        P.DSC_PRODUTO,
-                       DE2.DSC_DEPOSITO_ENDERECO AS PICKING_PRODUTO,
-                       PE.COD_BARRAS
-                  FROM ESTOQUE E
-                  LEFT JOIN PRODUTO_EMbALAGEM PE ON PE.COD_PRODUTO = E.COD_PRODUTO AND PE.DSC_GRADE = E.DSC_GRADE
-                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = E.COD_PRODUTO_VOLUME
+                       NVL(PV.DSC_VOLUME, PE.DSC_EMBALAGEM) as VOLUME,
+                       DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
+                       CE.DSC_CARACTERISTICA_ENDERECO as TIPO,
+                       0 as QTD_RESERVADA,
+                       E.QTD as QTD,
+                       NULL as RESERVAS
+                       FROM PRODUTO P
+                  LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE
+                  LEFT JOIN ESTOQUE E
+                         ON E.COD_PRODUTO = P.COD_PRODUTO
+                        AND E.DSC_GRADE = P.DSC_GRADE
+                        AND NVL(E.COD_PRODUTO_VOLUME,0) = NVL(PV.COD_PRODUTO_VOLUME,0)
+                        AND E.COD_DEPOSITO_ENDERECO <> NVL(PE.COD_DEPOSITO_ENDERECO,0)
+                        AND E.COD_DEPOSITO_ENDERECO <> NVL(PV.COD_DEPOSITO_ENDERECO,0)
                   LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
                   LEFT JOIN CARACTERISTICA_ENDERECO CE ON CE.COD_CARACTERISTICA_ENDERECO = DE.COD_CARACTERISTICA_ENDERECO
-                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
-                  LEFT JOIN DEPOSITO_ENDERECO DE2 ON DE2.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO OR DE2.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
-                  WHERE PE.COD_BARRAS = '$codbarras' OR PV.COD_BARRAS = '$codbarras'";
+                      WHERE PE.COD_BARRAS = '$codbarras' OR PV.COD_BARRAS = '$codbarras'";
 
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
