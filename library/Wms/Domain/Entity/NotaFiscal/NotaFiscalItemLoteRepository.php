@@ -19,4 +19,12 @@ class NotaFiscalItemLoteRepository extends EntityRepository
         $NFlote->setQuantidade($quantidade);
         $this->_em->persist($NFlote);
     }
+
+    public function removeNFitem($idNFitem){
+        $vetEentity = $this->findBy(array('codNotaFiscalItem' => $idNFitem));
+        foreach ($vetEentity as $entity) {
+            $this->_em->remove($entity);
+        }
+    }
+
 }
