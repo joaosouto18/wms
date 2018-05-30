@@ -999,6 +999,9 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setTipoNotaFiscal($tipoNotaEntiy);
             /** @var ReferenciaRepository $fornRefRepo */
             $fornRefRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
+
+//            $itens[15]['lote'] = 'luis';
+//            var_dump($itens);
             $itens = $this->unificarItens($itens);
             $pesoTotal = 0;
             if (count($itens) > 0) {
@@ -1068,45 +1071,42 @@ class NotaFiscalRepository extends EntityRepository {
     public function unificarItens($itens){
         $array = array();
         foreach ($itens as $key => $item){
+            if(isset($item['lote'])){
+                $itens[$key]['itemLote'][$item['lote']] = $item;
+            }
+            $novoItem = $item;
             if(isset($array[$item['idProduto']])){
                 if($array[$item['idProduto']]['grade'] == $item['grade']) {
                     $itens[$key]['quantidade'] = Math::adicionar($itens[$key]['quantidade'], $array[$item['idProduto']]['quantidade']);
                     $itens[$key]['peso'] = Math::adicionar($itens[$key]['peso'], $array[$item['idProduto']]['peso']);
-
-                    if(isset($item['lote']) && $array[$item['idProduto']]['lote'] != $item['lote']) {
-                        if(isset($array[$item['idProduto']]['ItemLote'])) {
-                            $itens[$key]['ItemLote'] = $array[$item['idProduto']]['ItemLote'];
+                    if(isset($item['lote']) && $item['lote'] != 'null' && !empty($item['lote'])){
+                        if(isset($array[$item['idProduto']]['lote'][$item['lote']])){
+                            $itens[$key]['itemLote'] = $array[$item['idProduto']]['lote'];
+                            $itens[$key]['itemLote'][$item['lote']]['quantidade'] = Math::adicionar($item['quantidade'], $array[$item['idProduto']]['lote'][$item['lote']]['quantidade']);
+                            $itens[$key]['itemLote'][$item['lote']]['peso'] = Math::adicionar($item['peso'], $array[$item['idProduto']]['lote'][$item['lote']]['peso']);
+                            $novoItem = $itens[$key]['itemLote'][$item['lote']];
                         }else{
-                            $itens[$key]['ItemLote']['null'] = $array[$item['idProduto']];
+                            if(isset($array[$item['idProduto']]['lote'])) {
+                                foreach ($array[$item['idProduto']]['lote'] as $key2 => $value) {
+                                    $itens[$key]['itemLote'][$key2] = $value;
+                                }
+                            }
+                            $array[$item['idProduto']]['lote'][$item['lote']] = $item;
                         }
-                        $itens[$key]['ItemLote'][$item['lote']]['quantidade'] = $item['quantidade'];
-                        $itens[$key]['ItemLote'][$item['lote']]['peso'] = $item['peso'];
-                        $itens[$key]['ItemLote'][$item['lote']]['lote'] = $item['lote'];
-                    }elseif(isset($item['lote'])){
-                        $itens[$key]['ItemLote'][$item['lote']]['quantidade'] = $itens[$key]['quantidade'];
-                        $itens[$key]['ItemLote'][$item['lote']]['peso'] = $itens[$key]['peso'];
+                    }else{
+                        $itens[$key]['itemLote'] = $array[$item['idProduto']]['lote'];
                     }
                     unset($itens[$array[$item['idProduto']]['key']]);
                 }
-
             }
-            if(isset($item['lote']) && empty($itens[$key]['ItemLote'])) {
-                $itens[$key]['ItemLote'][$item['lote']]['quantidade'] = $item['quantidade'];
-                $itens[$key]['ItemLote'][$item['lote']]['peso'] = $item['peso'];
-                $itens[$key]['ItemLote'][$item['lote']]['lote'] = $item['lote'];
-                $array[$item['idProduto']]['ItemLote'][$item['lote']]['quantidade'] = $item['quantidade'];
-                $array[$item['idProduto']]['ItemLote'][$item['lote']]['peso'] = $item['peso'];
-                $array[$item['idProduto']]['ItemLote'][$item['lote']]['lote'] = $item['lote'];
+
+            if(isset($item['lote'])) {
+                $array[$item['idProduto']]['lote'][$itens[$key]['lote']] = $novoItem;
             }
             $array[$item['idProduto']]['key'] = $key;
-            $array[$item['idProduto']]['quantidade'] = $item['quantidade'];
+            $array[$item['idProduto']]['quantidade'] = $itens[$key]['quantidade'];
             $array[$item['idProduto']]['grade'] = $item['grade'];
-            $array[$item['idProduto']]['peso'] = $item['peso'];
-            if(isset($item['lote'])){
-                $array[$item['idProduto']]['lote'] = $item['lote'];
-            }else{
-                $array[$item['idProduto']]['lote'] = null;
-            }
+            $array[$item['idProduto']]['peso'] = $itens[$key]['peso'];
         }
         return $itens;
     }
