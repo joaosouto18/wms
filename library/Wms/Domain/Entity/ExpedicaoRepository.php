@@ -4188,4 +4188,74 @@ class ExpedicaoRepository extends EntityRepository {
 
         return $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function getPedidosCortadosByParams($params) {
+
+        $where = " AND 1 = 1 ";
+
+        if (isset($params['dataInicial1']) && (!empty($params['dataInicial1']))) {
+            $where .=  " AND E.DTH_INICIO >= TO_DATE('" . $params['dataInicial1'] . " 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($params['dataInicial2']) && (!empty($params['dataInicial2']))) {
+            $where .= " AND E.DTH_INICIO <= TO_DATE('" . $params['dataInicial2'] . " 23:59', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($params['dataFinal1']) && (!empty($params['dataFinal1']))) {
+            $where .= " AND E.DTH_FINALIZACAO >= TO_DATE('" . $params['dataFinal1'] . " 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($params['dataFinal2']) && (!empty($params['dataFinal2']))) {
+            $where .= " AND E.DTH_FINALIZACAO <= TO_DATE('" . $params['dataFinal2'] . " 23:59', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($params['idExpedicao']) && !empty($params['idExpedicao'])) {
+            $where .= " AND (E.COD_EXPEDICAO = " . $params['idExpedicao'] . ") ";
+        }
+
+        if (isset($params['codCargaExterno']) && !empty($params['codCargaExterno'])) {
+            $where .= " AND (C.COD_CARGA_EXTERNO = " . $params['codCargaExterno'] . ")";
+        }
+
+        if (isset($params['pedido']) && !empty($params['pedido'])) {
+            $where .= " AND (P.COD_EXTERNO = " . $params['pedido'] . ")";
+        }
+
+        if ($where == " AND 1 = 1 ") {
+            throw new \Exception("Informe ao menos um filtro");
+        }
+
+        $sql = "SELECT E.COD_EXPEDICAO, 
+                       C.COD_CARGA_EXTERNO, 
+                       P.COD_EXTERNO as COD_PEDIDO,
+                       C.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+                       PES.NOM_PESSOA as CLIENTE,
+                       PP.COD_PRODUTO, 
+                       PP.DSC_GRADE, 
+                       PROD.DSC_PRODUTO,
+                       PP.QUANTIDADE, 
+                       PP.QTD_CORTADA, 
+                       PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0) as QTD_ATENDIDA,
+                       CASE WHEN PP.QUANTIDADE = NVL(PP.QTD_CORTADA,0) THEN 'TOTAL' ELSE 'PARCIAL' END AS TIPO_CORTE,
+                       TO_CHAR(E.DTH_INICIO,'DD/MM/YYYY HH24:MI:SS')  as DTH_INICIO_EXPEDICAO,
+                       TO_CHAR(E.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI:SS') as DTH_FIM_EXPEDICAO,
+                       S.DSC_SIGLA as STATUS_EXPEDICAO
+                  FROM EXPEDICAO E
+                  LEFT JOIN CARGA C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                  LEFT JOIN CLIENTE C ON C.COD_PESSOA = P.COD_PESSOA
+                  LEFT JOIN PESSOA PES ON PES.COD_PESSOA = C.COD_PESSOA
+                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+                  WHERE NVL(PP.QTD_CORTADA,0) > 0 $where
+                  ORDER BY C.COD_EXPEDICAO, C.COD_CARGA_EXTERNO, P.COD_EXTERNO, PP.COD_PRODUTO
+        ";
+
+        $result = \Wms\Domain\EntityRepository::nativeQuery($sql);
+
+        return $result;
+    }
+
+
 }
