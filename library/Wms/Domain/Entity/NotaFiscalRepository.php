@@ -1109,8 +1109,6 @@ class NotaFiscalRepository extends EntityRepository {
                 $array[$item['idProduto']]['lote'] = null;
             }
         }
-        var_dump($itens[14]);
-        var_dump($itens);
         return $itens;
     }
 
