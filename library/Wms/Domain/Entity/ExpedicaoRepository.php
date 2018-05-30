@@ -2151,6 +2151,9 @@ class ExpedicaoRepository extends EntityRepository {
                        I.ITINERARIOS AS "itinerario",
                        MOT.NOM_MOTORISTA AS "motorista",
                        TIPO_PEDIDO.TIPO_PEDIDO AS "tipopedido",
+                       RESUMO.QTD_PEDIDOS as "qtdPedidos",
+                       RESUMO.QTD_PRODUTOS as "qtdProdutos",
+                       RESUMO.QTD_VOLUMES as "qtdVolumes",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                             ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
                   FROM EXPEDICAO E
@@ -2266,7 +2269,16 @@ class ExpedicaoRepository extends EntityRepository {
                               INNER JOIN PRODUTO_PESO              PESO   ON PESO.COD_PRODUTO = NFPROD.COD_PRODUTO AND PESO.DSC_GRADE = NFPROD.DSC_GRADE
                               WHERE 1 = 1  ' . $FullWhere . $andWhere . ' 
                               GROUP BY C.COD_EXPEDICAO) PESO_REENTREGA ON PESO_REENTREGA.COD_EXPEDICAO = E.COD_EXPEDICAO 
-                  
+                  LEFT JOIN (SELECT C.COD_EXPEDICAO,
+                                    COUNT(DISTINCT P.COD_PEDIDO) as QTD_PEDIDOS,
+                                    COUNT(DISTINCT PP.COD_PRODUTO || \'-\' || PP.DSC_GRADE) as QTD_PRODUTOS,
+                                    SUM(PP.QUANTIDADE) as QTD_VOLUMES
+                               FROM CARGA C
+                               LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                               LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                               WHERE 1 = 1 ' . $andWhere . '
+                               GROUP BY C.COD_EXPEDICAO ) RESUMO
+                        ON RESUMO.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT PED.COD_EXPEDICAO,
                                   LISTAGG (S.DSC_SIGLA,\', \') WITHIN GROUP (ORDER BY S.DSC_SIGLA) TIPO_PEDIDO
                                   FROM SIGLA S
@@ -2301,7 +2313,25 @@ class ExpedicaoRepository extends EntityRepository {
                   WHERE 1 = 1
                   $FullWhereFinal ";
 
-        $result = \Wms\Domain\EntityRepository::nativeQuery($sqlEtiquetas);
+        $resultResumo = \Wms\Domain\EntityRepository::nativeQuery($sqlEtiquetas);
+        $result = \Wms\Domain\EntityRepository::nativeQuery($sql);
+
+        $qtdPedidos = 0;
+        $qtdProdutos = 0;
+        $qtdVolumes = 0;
+
+        foreach ($result as $value) {
+            if ($value['qtdPedidos'] >0) {
+                $qtdPedidos = $qtdPedidos + $value['qtdPedidos'];
+            }
+            if ($value['qtdProdutos'] >0) {
+                $qtdProdutos = $qtdProdutos + $value['qtdProdutos'];
+            }
+            if ($value['qtdVolumes'] >0) {
+                $qtdVolumes = $qtdVolumes + $value['qtdVolumes'];
+            }
+        }
+
         echo '</br> </br>
             <fieldset>
                 <legend>Resumo</legend>
@@ -2312,14 +2342,26 @@ class ExpedicaoRepository extends EntityRepository {
                         <td>Qtd. Etq. Reentrega</td>
                     </tr>
                     <tr>
-                        <td><input type="text" size="30" value="'. $result[0]['QTD_EXPEDICAO'] . '" disabled=""/></td>
-                        <td><input type="text" size="30" value="'. $result[0]['QTD_ETIQUETA'] . '" disabled=""/></td>
-                        <td><input type="text" size="30" value="'. $result[0]['QTD_REENTREGA'] . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. $resultResumo[0]['QTD_EXPEDICAO'] . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. $resultResumo[0]['QTD_ETIQUETA'] . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. $resultResumo[0]['QTD_REENTREGA'] . '" disabled=""/></td>
                     </tr>
+
+                    <tr>
+                        <td>Qtd. Pedidos</td>
+                        <td>Qtd. Produtos</td>
+                        <td>Qtd. Volumes</td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" size="30" value="'. number_format($qtdPedidos,0) . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. number_format($qtdProdutos,0) . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. number_format($qtdVolumes,0) . '" disabled=""/></td>
+                    </tr>
+
                 </table>                
             </fieldset>';
 
-        return \Wms\Domain\EntityRepository::nativeQuery($sql);
+        return $result;
     }
 
     /**
