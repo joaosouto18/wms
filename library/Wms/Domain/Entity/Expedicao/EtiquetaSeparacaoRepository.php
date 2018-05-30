@@ -825,6 +825,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         }
 
+        /** @var $pedidoProdutoRepo $pedidoProdutoRepo */
+        if (isset($arrayRepositorios['pedidoProdutoRepo'])) {
+            $pedidoProdutoRepo = $arrayRepositorios['pedidoProdutoRepo'];
+        } else {
+            $pedidoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProduto");
+        }
         /** @var ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoque");
         $verificaReentrega = $this->getSystemParameterValue('RECONFERENCIA_EXPEDICAO');
@@ -832,9 +838,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         try {
 
             if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
-                $result  = $expedicaoRepo->validaConferenciaERP($expedicaoEn->getId());
+                $idPP = array();
+                foreach ($pedidosProdutos as $pedidoProduto) {
+                    $idPP[] = $pedidoProduto->getId();
+                }
+
+                $result  = $expedicaoRepo->validaConferenciaERP($idExpedicao);
                 if (is_string($result)) {
                     throw new \Exception($result);
+                }
+                $enPP = array();
+                foreach( $idPP as $id) {
+                    $ppEn = $pedidoProdutoRepo->find($id);
+                    $enPP[] = $ppEn;
+                    $pedidosProdutos = $enPP;
                 }
             }
 
