@@ -84,6 +84,15 @@ class Volume
      */
     protected $qtdBloqueada;
 
+    /**
+     * Codigo do lote
+     *
+     * @OneToOne(targetEntity="Wms\Domain\Entity\Produto\Lote")
+     * @JoinColumn(name="COD_LOTE", referencedColumnName="COD_LOTE")
+     * @var \Wms\Domain\Entity\Produto\Lote $codLote
+     */
+    protected $codLote;
+
     public function getId()
     {
         return $this->id;
@@ -209,6 +218,21 @@ class Volume
     public function setQtdBloqueada($qtdBloqueada)
     {
         $this->qtdBloqueada = $qtdBloqueada;
+    }
+    /**
+     * @return mixed
+     */
+    public function getCodLote()
+    {
+        return $this->codLote;
+    }
+
+    /**
+     * @param mixed $codLote
+     */
+    public function setCodLote($codLote)
+    {
+        $this->codLote = $codLote;
     }
 
 }

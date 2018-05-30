@@ -127,6 +127,16 @@ class Conferencia
      * @Column(name="IND_DIVERG_VOLUMES", type="string", length=1, nullable=false)
      */
     protected $indDivergVolumes;
+
+
+    /**
+     * Codigo do lote
+     *
+     * @OneToOne(targetEntity="Wms\Domain\Entity\Produto\Lote")
+     * @JoinColumn(name="COD_LOTE", referencedColumnName="COD_LOTE")
+     * @var \Wms\Domain\Entity\Produto\Lote $codLote
+     */
+    protected $codLote;
     
     public function getId()
     {
@@ -332,5 +342,20 @@ class Conferencia
     {
         $this->indDivergVolumes = $indDivergVolumes;
     }
-    
+
+    /**
+     * @return mixed
+     */
+    public function getCodLote()
+    {
+        return $this->codLote;
+    }
+
+    /**
+     * @param mixed $codLote
+     */
+    public function setCodLote($codLote)
+    {
+        $this->codLote = $codLote;
+    }
 }
