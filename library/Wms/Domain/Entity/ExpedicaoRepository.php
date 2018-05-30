@@ -2340,19 +2340,15 @@ class ExpedicaoRepository extends EntityRepository {
                         <td>Expedições</td>
                         <td>Qtd. Etq. Válidas</td>
                         <td>Qtd. Etq. Reentrega</td>
+                        <td>Qtd. Pedidos</td>
+                        <td>Qtd. Produtos</td>
+                        <td>Qtd. Volumes</td>
+
                     </tr>
                     <tr>
                         <td><input type="text" size="30" value="'. $resultResumo[0]['QTD_EXPEDICAO'] . '" disabled=""/></td>
                         <td><input type="text" size="30" value="'. $resultResumo[0]['QTD_ETIQUETA'] . '" disabled=""/></td>
                         <td><input type="text" size="30" value="'. $resultResumo[0]['QTD_REENTREGA'] . '" disabled=""/></td>
-                    </tr>
-
-                    <tr>
-                        <td>Qtd. Pedidos</td>
-                        <td>Qtd. Produtos</td>
-                        <td>Qtd. Volumes</td>
-                    </tr>
-                    <tr>
                         <td><input type="text" size="30" value="'. number_format($qtdPedidos,0) . '" disabled=""/></td>
                         <td><input type="text" size="30" value="'. number_format($qtdProdutos,0) . '" disabled=""/></td>
                         <td><input type="text" size="30" value="'. number_format($qtdVolumes,0) . '" disabled=""/></td>
