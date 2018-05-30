@@ -1083,7 +1083,6 @@ class NotaFiscalRepository extends EntityRepository {
                         $itens[$key]['ItemLote'][$item['lote']]['peso'] = $item['peso'];
                         $itens[$key]['ItemLote'][$item['lote']]['lote'] = $item['lote'];
                     }elseif(isset($item['lote'])){
-                        var_dump($item);
                         $itens[$key]['ItemLote'][$item['lote']]['quantidade'] = $itens[$key]['quantidade'];
                         $itens[$key]['ItemLote'][$item['lote']]['peso'] = $itens[$key]['peso'];
                     }
