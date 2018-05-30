@@ -683,6 +683,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     if (is_null($itemNf['peso']) || strlen(trim($itemNf['peso'])) == 0) {
                         $itemWs['peso'] = trim(str_replace(',','.',$itemNf['quantidade']));
                     }
+                    if(isset($itemNf['lote'])){
+                        $itemWs['lote'] = trim($itemNf['lote']);
+                    }
+
 
                     $itensNf[] = $itemWs;
                 }

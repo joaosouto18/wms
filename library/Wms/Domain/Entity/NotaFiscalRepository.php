@@ -160,6 +160,7 @@ class NotaFiscalRepository extends EntityRepository {
         try {
             $itensNf = array();
             $pesoTotal = 0;
+//            var_dump('luis');die;
             foreach ($itens as $itemNf) {
                 $pesoTotal = trim((float) $itemNf['peso']) + $pesoTotal;
                 $continueNF = false;
@@ -179,7 +180,9 @@ class NotaFiscalRepository extends EntityRepository {
                     if (is_null($itemNf['peso']) || strlen(trim($itemNf['peso'])) == 0) {
                         $itemWs['peso'] = trim(str_replace(',', '.', $itemNf['quantidade']));
                     }
-
+                    if(isset($itemNf['lote'])){
+                        $itemWs['lote'] = trim($itemNf['lote']);
+                    }
 
                     $itensNf[] = $itemWs;
                 }
@@ -1152,9 +1155,6 @@ class NotaFiscalRepository extends EntityRepository {
     public function salvarItens($itens, $notaFiscalEntity) {
         $em = $this->getEntityManager();
         $em->beginTransaction();
-        $itens[14]['lote'] = 'maria';
-        $itens[13]['lote'] = 'luis1';
-        $itens[15]['lote'] = 'luis';
         $itens = $this->unificarItens($itens);
         try {
             $loteRepository = $em->getRepository('wms:Produto\Lote');
