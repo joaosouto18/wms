@@ -192,8 +192,8 @@ class AcaoIntegracaoRepository extends EntityRepository
         if ($acaoEn->getIndExecucao() == 'S') {
             $existeOutraTransacaoAtiva = "S";
         } else {
-            $iniciouTransacaoAtual = 'S';
-            $acaoEn->setIndExecucao("S");
+//            $iniciouTransacaoAtual = 'S';
+//            $acaoEn->setIndExecucao("S");
             $this->_em->persist($acaoEn);
             $this->_em->flush();
         }

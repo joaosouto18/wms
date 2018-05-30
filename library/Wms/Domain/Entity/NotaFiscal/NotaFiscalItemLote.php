@@ -40,11 +40,6 @@ class NotaFiscalItemLote{
      */
     protected $quantidade;
 
-    /**
-     * @Column(name="IND_ORIGEM_LOTE", type="string", nullable=false)
-     */
-    protected $origem;
-
     public function setQuantidade($quantidade)
     {
         $this->quantidade = $quantidade;
