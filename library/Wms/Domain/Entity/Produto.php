@@ -180,6 +180,12 @@ class Produto {
      */
     protected $unidadeFracao;
 
+    /**
+     * @var
+     * @Column(name="IND_CONTROLA_LOTE", type="string", nullable=false)
+     */
+    protected $indControlaLote;
+
     public function __construct() {
         $this->volumes = new ArrayCollection;
         $this->embalagens = new ArrayCollection;
@@ -555,4 +561,21 @@ class Produto {
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getIndControlaLote()
+    {
+        return $this->indControlaLote;
+    }
+
+    /**
+     * @param mixed $indControlaLote
+     * @return Produto
+     */
+    public function setIndControlaLote($indControlaLote)
+    {
+        $this->indControlaLote = $indControlaLote;
+        return $this;
+    }
 }

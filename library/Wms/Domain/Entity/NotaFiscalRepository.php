@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityRepository,
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\CodigoFornecedor\ReferenciaRepository;
 use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Math;
 
 /**
  * NotaFiscal
@@ -970,7 +971,6 @@ class NotaFiscalRepository extends EntityRepository {
                         throw new \Exception('Produto de código ' . $idProduto . ' e grade ' . $grade . ' não encontrado');
                 }
             }
-
             if ($fornecedorEntity == null)
                 throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
@@ -989,7 +989,7 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setNumero($numero);
             $notaFiscalEntity->setSerie($serie);
             $notaFiscalEntity->setDataEntrada(new \DateTime);
-            $notaFiscalEntity->setDataEmissao(\DateTime::createFromFormat('d/m/Y', $dataEmissao));
+            $notaFiscalEntity->setDataEmissao(new \DateTime($dataEmissao));
             $notaFiscalEntity->setFornecedor($fornecedorEntity);
             $notaFiscalEntity->setBonificacao($bonificacao);
             $notaFiscalEntity->setStatus($statusEntity);
@@ -997,7 +997,6 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setPlaca($placa);
             $notaFiscalEntity->setCodPessoaProprietario($codProprietario);
             $notaFiscalEntity->setTipoNotaFiscal($tipoNotaEntiy);
-
             /** @var ReferenciaRepository $fornRefRepo */
             $fornRefRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
             $itens = $this->unificarItens($itens);
@@ -1005,6 +1004,7 @@ class NotaFiscalRepository extends EntityRepository {
             if (count($itens) > 0) {
                 //itera nos itens das notas
                 $loteRepository = $em->getRepository('wms:Produto\Lote');
+                $notaFiscalItemLoteRepository = $em->getRepository('wms:NotaFiscal\NotaFiscalItemLote');
                 foreach ($itens as $item) {
                     $idProduto = trim($item['idProduto']);
                     $idProduto = ProdutoUtil::formatar($idProduto);
@@ -1037,17 +1037,23 @@ class NotaFiscalRepository extends EntityRepository {
                     $itemEntity->setGrade(trim($item['grade']));
                     $itemEntity->setNumPeso($pesoItem);
                     $itemEntity->setQuantidade($qtd);
-
+                    $em->persist($itemEntity);
                     $notaFiscalEntity->getItens()->add($itemEntity);
+                    if(isset($item['lote']) && !empty($item['lote']) && $produtoEntity->getIndControlaLote() == 'S'){
+                        $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
+                        foreach ($item['ItemLote'] as $lote){
+                            $loteEntity = $loteRepository->verificaLote($lote, $produtoEntity->getId(), $produtoEntity->getGrade());
+                            if(empty($loteEntity)) {
+                                $loteEntity = $loteRepository->save($produtoEntity, trim($item['grade']), trim($lote['lote']), $idPessoa);
+                            }
+                            $notaFiscalItemLoteRepository->save($loteEntity->getId(), $itemEntity->getId(), $lote['quantidade']);
+                        }
 
-                    if(isset($item['lote']) && !empty($item['lote'])){
-                        $loteRepository->save($produtoEntity, trim($item['grade']), trim($item['lote']));
                     }
                 }
             } else {
                 throw new \Exception("Nenhum item informado na nota");
             }
-
             $notaFiscalEntity->setPesoTotal($pesoTotal);
             $em->persist($notaFiscalEntity);
 
@@ -1060,6 +1066,48 @@ class NotaFiscalRepository extends EntityRepository {
     }
 
     public function unificarItens($itens){
+        $array = array();
+        foreach ($itens as $key => $item){
+            if(isset($array[$item['idProduto']])){
+                if($array[$item['idProduto']]['grade'] == $item['grade']) {
+                    $itens[$key]['quantidade'] = Math::adicionar($itens[$key]['quantidade'], $array[$item['idProduto']]['quantidade']);
+                    $itens[$key]['peso'] = Math::adicionar($itens[$key]['peso'], $array[$item['idProduto']]['peso']);
+
+                    if(isset($item['lote']) && $array[$item['idProduto']]['lote'] != $item['lote']) {
+                        if(isset($array[$item['idProduto']]['ItemLote'])) {
+                            $itens[$key]['ItemLote'] = $array[$item['idProduto']]['ItemLote'];
+                        }else{
+                            $itens[$key]['ItemLote']['null'] = $array[$item['idProduto']];
+                        }
+                        $itens[$key]['ItemLote'][$item['lote']]['quantidade'] = $item['quantidade'];
+                        $itens[$key]['ItemLote'][$item['lote']]['peso'] = $item['peso'];
+                        $itens[$key]['ItemLote'][$item['lote']]['lote'] = $item['lote'];
+                    }elseif(isset($item['lote'])){
+                        $itens[$key]['ItemLote'][$item['lote']]['quantidade'] = $itens[$key]['quantidade'];
+                        $itens[$key]['ItemLote'][$item['lote']]['peso'] = $itens[$key]['peso'];
+                    }
+                    unset($itens[$array[$item['idProduto']]['key']]);
+                }
+
+            }
+            if(isset($item['lote']) && empty($itens[$key]['ItemLote'])) {
+                $itens[$key]['ItemLote'][$item['lote']]['quantidade'] = $item['quantidade'];
+                $itens[$key]['ItemLote'][$item['lote']]['peso'] = $item['peso'];
+                $itens[$key]['ItemLote'][$item['lote']]['lote'] = $item['lote'];
+                $array[$item['idProduto']]['ItemLote'][$item['lote']]['quantidade'] = $item['quantidade'];
+                $array[$item['idProduto']]['ItemLote'][$item['lote']]['peso'] = $item['peso'];
+                $array[$item['idProduto']]['ItemLote'][$item['lote']]['lote'] = $item['lote'];
+            }
+            $array[$item['idProduto']]['key'] = $key;
+            $array[$item['idProduto']]['quantidade'] = $item['quantidade'];
+            $array[$item['idProduto']]['grade'] = $item['grade'];
+            $array[$item['idProduto']]['peso'] = $item['peso'];
+            if(isset($item['lote'])){
+                $array[$item['idProduto']]['lote'] = $item['lote'];
+            }else{
+                $array[$item['idProduto']]['lote'] = null;
+            }
+        }
         return $itens;
     }
 

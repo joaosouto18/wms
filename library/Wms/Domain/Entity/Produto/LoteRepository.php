@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityRepository,
 
 class LoteRepository extends EntityRepository
 {
-    public function save($produtoEntity, $grade, $dsc, $codPessoa = null){
+    public function save($produtoEntity, $grade, $dsc, $codPessoa){
 
         $lote = new Lote();
         $lote->setProduto($produtoEntity);
@@ -17,5 +17,10 @@ class LoteRepository extends EntityRepository
         $lote->setCodPessoaCriacao($codPessoa);
         $lote->setDthCriacao(new \DateTime);
         $this->_em->persist($lote);
+        return $lote;
+    }
+
+    public function verificaLote($lote, $idProduto, $grade){
+        return $this->findOneBy(array('descricao' => $lote['lote'], 'codProduto' => $idProduto, 'grade' => $grade));
     }
 }
