@@ -40,7 +40,7 @@ class ProdutividadeDetalhada extends Grid
                 $this->addColumn(array(
                     'label' => 'Peso',
                     'index' => 'QTD_PESO',
-                    'render' => 'N2'
+//                    'render' => 'N2'
                 ));
                 $this->addColumn(array(
                     'label' => 'Volumes',
