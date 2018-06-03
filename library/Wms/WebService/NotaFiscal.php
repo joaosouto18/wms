@@ -599,7 +599,6 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
     {
         //VERIFICA TODOS OS ITENS DO BD
         $notaItensBDEn = $notaItensRepo->findBy(array('notaFiscal' => $notaFiscalEn->getId()));
-
         if (count($itens) <= 0) {
             throw new \Exception("Nenhum item informado na nota");
         }
@@ -609,6 +608,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
         }
 
         try {
+            $notaFiscalItemLoteRepository = $em->getRepository('wms:NotaFiscal\NotaFiscalItemLote');
             foreach ($notaItensBDEn as $itemBD) {
                 $matemItem = false;
                 //VERIFICA TODOS OS ITENS DA NF
@@ -632,6 +632,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                 if ($matemItem == false) {
                     // SE PRODUTO EXISTIR NO BD, NAO EXISTIR NO WS E NAO TIVER CONFERENCIA REMOVE O PRODUTO
                     $em->remove($itemBD);
+                    $notaFiscalItemLoteRepository->removeNFitem($itemBD->getId());
                 }
             }
             $em->flush();
@@ -682,6 +683,10 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     if (is_null($itemNf['peso']) || strlen(trim($itemNf['peso'])) == 0) {
                         $itemWs['peso'] = trim(str_replace(',','.',$itemNf['quantidade']));
                     }
+                    if(isset($itemNf['lote'])){
+                        $itemWs['lote'] = trim($itemNf['lote']);
+                    }
+
 
                     $itensNf[] = $itemWs;
                 }

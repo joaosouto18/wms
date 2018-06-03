@@ -404,7 +404,6 @@ class Importacao
         }
         /** @var NotaFiscal $notaFiscalEn */
         $notaFiscalEn = $notaFiscalRepo->findOneBy(array('numero' => $numero, 'serie' => $serie, 'fornecedor' => $entityFornecedor->getId()));
-
         if (!$notaFiscalEn) {
             $notaFiscalRepo->salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao,null, $tipoNota);
         } else {
@@ -423,7 +422,6 @@ class Importacao
                 $notaFiscalEn->setStatus($statusEntity);
                 $em->persist($notaFiscalEn);
             }
-
             //VERIFICA TODOS OS ITENS DO BANCO DE DADOS E COMPARA COM WS
             $notaFiscalRepo->compareItensBancoComArray($itens, $notaFiscalEn, $showExpt);
 
