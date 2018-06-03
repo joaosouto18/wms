@@ -23,10 +23,23 @@ class PedidoProdutoLote
     protected $id;
 
     /**
+     * @var PedidoProduto
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\PedidoProduto")
+     * @JoinColumn(name="COD_PEDIDO_PRODUTO", referencedColumnName="COD_PEDIDO_PRODUTO")
+     */
+    protected $pedidoProduto;
+
+    /**
      * @Column(name="COD_PEDIDO_PRODUTO", type="integer", nullable=false)
      */
     protected $codPedidoProduto;
 
+    /**
+     * @var Produto\Lote
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Lote")
+     * @JoinColumn(name="COD_LOTE", referencedColumnName="COD_LOTE")
+     */
+    protected $lote;
 
     /**
      * @Column(name="COD_LOTE", type="integer", nullable=false)
@@ -117,6 +130,21 @@ class PedidoProdutoLote
         return $this->codPedidoProduto;
     }
 
+    /**
+     * @return Produto\Lote
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param Produto\Lote $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
+    }
 
     /**
      * @param mixed $codLote
@@ -133,4 +161,21 @@ class PedidoProdutoLote
     {
         return $this->codLote;
     }
+
+    /**
+     * @return PedidoProduto
+     */
+    public function getPedidoProduto()
+    {
+        return $this->pedidoProduto;
+    }
+
+    /**
+     * @param PedidoProduto $pedidoProduto
+     */
+    public function setPedidoProduto($pedidoProduto)
+    {
+        $this->pedidoProduto = $pedidoProduto;
+    }
+
 }

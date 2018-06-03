@@ -181,7 +181,7 @@ class Produto {
     protected $unidadeFracao;
 
     /**
-     * @var
+     * @var string
      * @Column(name="IND_CONTROLA_LOTE", type="string", nullable=false)
      */
     protected $indControlaLote;
@@ -562,7 +562,7 @@ class Produto {
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getIndControlaLote()
     {
@@ -570,7 +570,7 @@ class Produto {
     }
 
     /**
-     * @param mixed $indControlaLote
+     * @param string $indControlaLote
      * @return Produto
      */
     public function setIndControlaLote($indControlaLote)

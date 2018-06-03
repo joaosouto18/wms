@@ -310,6 +310,8 @@ class PedidoRepository extends EntityRepository
         $etiquetaConferenciaRepository = $this->_em->getRepository('wms:Expedicao\EtiquetaConferencia');
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
         $pedidoProdutoRepo = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoLoteRepository $pedidoProdutoLoteRepo */
+        $pedidoProdutoLoteRepo = $this->_em->getRepository('wms:Expedicao\PedidoProdutoLote');
         /** @var \Wms\Domain\Entity\Expedicao\PedidoEnderecoRepository $pedidoEnderecoRepository */
         $pedidoEnderecoRepository = $this->_em->getRepository('wms:Expedicao\PedidoEndereco');
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoPedidoRepository */
@@ -330,7 +332,10 @@ class PedidoRepository extends EntityRepository
             $this->_em->remove($etiquetaEntity);
         }
 
-        //APAGA MAPA_SEPARACAO_CONFERENCIA & MAPA_SEPARACAO_PRODUTO & MAPA_SEPARACAO_PEDIDO & MAPA_SEPARACAO_QUEBRA & MAPA_SEPARACAO_EMB_CLIENTE & MAPA_SEPARACAO CASO EXISTAM
+        /* APAGA CASO EXISTAM
+         * MAPA_SEPARACAO_PEDIDO
+         * PEDIDO_PRODUTO_LOTE
+         * */
         $pedidoProdutoEntities = $pedidoProdutoRepo->findBy(array('pedido' => $pedidoEntity));
         foreach ($pedidoProdutoEntities as $pedidoProdutoEntity) {
             $mapaSeparacaoPedidoEntities = $mapaSeparacaoPedidoRepository->findBy(array('pedidoProduto' => $pedidoProdutoEntity));
@@ -343,8 +348,20 @@ class PedidoRepository extends EntityRepository
                 }
                 $this->_em->remove($mapaSeparacaoPedidoEntity);
             }
+
+            $pedProdLotes = $pedidoProdutoLoteRepo->findBy(['pedidoProduto' => $pedidoProdutoEntity]);
+            foreach ($pedProdLotes as $pedProdLote) {
+                $this->_em->remove($pedProdLote);
+            }
         }
 
+        /* APAGA CASO EXISTAM
+         * MAPA_SEPARACAO_CONFERENCIA
+         * MAPA_SEPARACAO_PRODUTO
+         * MAPA_SEPARACAO_QUEBRA
+         * MAPA_SEPARACAO_EMB_CLIENTE
+         * MAPA_SEPARACAO
+         * */
         foreach ($mapasRemover as $mapaSeparacaoEntity) {
             $mapaSeparacaoConferenciaEntities = $mapaSeparacaoConferenciaRepository->findBy(array('codMapaSeparacao' => $mapaSeparacaoEntity->getId()));
             foreach ($mapaSeparacaoConferenciaEntities as $mapaSeparacaoConferenciaEntity) {
@@ -734,9 +751,10 @@ class PedidoRepository extends EntityRepository
     public function comparaPedidos($produtosNovos, $produtosAntigos){
         foreach ($produtosNovos as $newProd){
             foreach ($produtosAntigos as $oldProd){
-                if($newProd['codProduto'] == $oldProd['COD_PRODUTO']){
-                    return false;
+                if($newProd['codProduto'] == $oldProd['COD_PRODUTO'] && $newProd['grade'] == $oldProd['DSC_GRADE'] && $newProd['lote'] == $oldProd['DSC_LOTE']){
+                    return true;
                 }
+                return false;
             }
         }
         return true;

@@ -7,10 +7,19 @@
  */
 namespace Wms\Domain\Entity\Expedicao;
 
-use Doctrine\ORM\EntityRepository,
-    Wms\Domain\Entity\Expedicao;
+use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Entity\Expedicao;
+use Wms\Domain\Configurator;
 
 class PedidoProdutoLoteRepository extends EntityRepository
 {
+    public function save($data) {
+
+        $entity = new PedidoProdutoLote();
+        Configurator::configure($entity, $data);
+        $this->_em->persist($entity);
+
+        return $entity;
+    }
 
 }

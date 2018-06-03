@@ -200,12 +200,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
         } catch (\Exception $e) {
             $logger->warn($e->getMessage());
             throw new \Exception($e->getMessage() . ' - Trace: ' .$e->getTraceAsString());
-            /*$showTrace = true;
-            if ($showTrace == true) {
-                throw new \Exception($e->getMessage() . ' - Trace: ' . $e->getTraceAsString());
-            } else {
-                throw new \Exception($e->getMessage());
-            }*/
             return false;
         }
     }
@@ -802,7 +796,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
         $entityExpedicao = $this->findExpedicaoByPlacaExpedicao($repositorios, $carga['placaExpedicao']);
 
-        if (isset($expedicaoEntity) && is_object($expedicaoEntity)) {
+        if (!empty($expedicaoEntity) && is_object($expedicaoEntity)) {
             $hoje = new \DateTime("now");
             if ($expedicaoEntity->getDataInicio()->format('Y-m-d') != $hoje->format('Y-m-d')) {
                 throw new \Exception('Existem expedições antigas para a placa ' . $carga['placaExpedicao'] . ' abertas no sistema');
@@ -882,33 +876,82 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
     protected function savePedidoProduto($repositorios, array $produtos, Expedicao\Pedido $enPedido) {
         $ProdutoRepo        = $repositorios['produtoRepo'];
+        /** @var Expedicao\PedidoProdutoRepository $PedidoProdutoRepo */
         $PedidoProdutoRepo  = $repositorios['pedidoProdutoRepo'];
+        /** @var \Wms\Domain\Entity\Produto\LoteRepository $loteRepo */
+        $loteRepo = $this->_em->getRepository('wms:Produto\Lote');
+        /** @var Expedicao\PedidoProdutoLoteRepository $pedProdLoteRepo */
+        $pedProdLoteRepo = $this->_em->getRepository('wms:Expedicao\PedidoProdutoLote');
 
         $prod = array();
         foreach ($produtos as $produto) {
             $idProduto = ProdutoUtil::formatar(trim($produto['codProduto']));
 
-            $enProduto = $ProdutoRepo->find(array('id' => $idProduto, 'grade' => $produto['grade']));
+            /** @var \Wms\Domain\Entity\Produto $produtoEn */
+            $produtoEn = $ProdutoRepo->find(array('id' => $idProduto, 'grade' => $produto['grade']));
             if (isset($produto['qtde'])) {
                 $produto['quantidade'] = $produto['qtde'];
             }
             $qtdCorrigida = str_replace(',','.',$produto['quantidade']);
 
-            if(isset($prod[$idProduto.'--'.$produto['grade']])){
-                $prod[$idProduto.'--'.$produto['grade']]['quantidade'] = \Wms\Math::adicionar($prod[$idProduto.'--'.$produto['grade']]['quantidade'], $qtdCorrigida);
-            }else{
-                $prod[$idProduto.'--'.$produto['grade']] = array(
+            if ($produtoEn->getIndControlaLote() == 'S') {
+                /** @var \Wms\Domain\Entity\Produto\Lote $loteEn */
+                $loteEn = $loteRepo->findOneBy(['descricao' => $produto['lote'], 'codProduto' => $idProduto, 'grade' => $produto['grade']]);
+
+                if (empty($loteEn))
+                    throw new Exception("Não consta no WMS o lote '$produto[lote]' para o produto $idProduto grade $produto[grade].");
+            }
+
+            $strConcat = "$idProduto--$produto[grade]";
+            if (isset($prod[$strConcat])) {
+                $prod[$strConcat]['quantidade'] = \Wms\Math::adicionar($prod[$strConcat]['quantidade'], $qtdCorrigida);
+                if ($produtoEn->getIndControlaLote() == 'S') {
+                    if (isset($prod[$strConcat]['lotes'][$loteEn->getId()])) {
+                        $qtdAtual = $prod[$strConcat]['lotes'][$loteEn->getId()]['quantidade'];
+                        $prod[$strConcat]['lotes'][$loteEn->getId()]['quantidade'] = \Wms\Math::adicionar($qtdAtual, $qtdCorrigida);
+                    } else {
+                        $prod[$strConcat]['lotes'][$loteEn->getId()] = [
+                            'loteEn' => $loteEn,
+                            'quantidade' => $qtdCorrigida
+                        ];
+                    }
+                }
+            } else {
+                $prod[$strConcat] = array(
                     'codPedido' => $enPedido->getId(),
                     'pedido' => $enPedido,
-                    'produto' => $enProduto,
+                    'produto' => $produtoEn,
                     'valorVenda' => (isset($produto['valorVenda'])) ? $produto['valorVenda'] : null,
                     'grade' => $produto['grade'],
                     'quantidade' => $qtdCorrigida
                 );
+                if ($produtoEn->getIndControlaLote() == 'S') {
+                    $prod[$strConcat]['lotes'][$loteEn->getId()] = [
+                        'loteEn' => $loteEn,
+                        'quantidade' => $qtdCorrigida
+                    ];
+                }
             }
         }
         foreach ($prod as $value) {
-            $PedidoProdutoRepo->save($value);
+            $lotes = null;
+            if (isset($value['lotes'])) {
+                $lotes = $value['lotes'];
+                unset($value['lotes']);
+            }
+            $pedidoProdutoEn = $PedidoProdutoRepo->save($value);
+            if (!empty($lotes)) {
+                foreach ($lotes as $idLote => $dados) {
+                    $arr = [
+                        'lote' => $dados['loteEn'],
+                        'codLote' => $dados['loteEn']->getId(),
+                        'pedidoProduto' => $pedidoProdutoEn,
+                        'codPedidoProduto' => $pedidoProdutoEn->getId(),
+                        'quantidade' => $dados['quantidade']
+                    ];
+                    $pedProdLoteRepo->save($arr);
+                }
+            }
         }
     }
 
@@ -940,8 +983,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($idPedido));
                 $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($idPedido,EtiquetaSeparacao::STATUS_CORTADO));
 
-                $SQL = "SELECT *
+                $SQL = "SELECT PP.*, L.DSC_LOTE
                           FROM PEDIDO_PRODUTO PP
+                     LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
+                     LEFT JOIN LOTE L ON L.COD_LOTE = PPL.COD_LOTE
                          WHERE PP.COD_PEDIDO = '" . $idPedido . "'
                            AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
                 $produtosCorte = $this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
