@@ -976,7 +976,7 @@ class Integracao {
                     $pedido->setGrade($row['GRADE']);
                     $pedido->setQtd(str_replace(",", ".", $row['QTD']));
                     $pedido->setVlrVenda(str_replace(",", ".", $row['VLR_VENDA']));
-                    $pedido->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
+                    $pedido->setDth(isset($row['DTH']) && !empty($row['DTH']) ? \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']) : new \DateTime());
                     $this->_em->persist($pedido);
                     break;
             }
