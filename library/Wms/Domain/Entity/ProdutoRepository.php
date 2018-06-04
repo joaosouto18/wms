@@ -31,7 +31,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
      */
     public function atualizaPesoProduto($codProduto, $dscGrade) {
 
-        $procedureSQL = "CALL PROC_ATUALIZA_PESO_PRODUTO($codProduto,'$dscGrade')";
+        $procedureSQL = "CALL PROC_ATUALIZA_PESO_PRODUTO('$codProduto','$dscGrade')";
 
         $procedure = $this->getEntityManager()->getConnection()->prepare($procedureSQL);
         $procedure->execute();

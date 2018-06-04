@@ -52,7 +52,6 @@
         var inputQtd = $("#qtd");
         if (event.which == 13 || event.keyCode == 13) {
             if (input.value !== "" && input.id === 'produto' && (inputEndereco.val() === "" || inputEndereco.val() === null)) {
-                console.log("Entrou no primeiro elseif");
                 endereco = inputEndereco;
                 if (endereco) {
                     consultar();
@@ -65,7 +64,6 @@
                     }
                 }
             } else if (input.value !== "" && input.id === 'endereco' && (inputQtd.val() === "" || inputQtd.val() === null)) {
-                console.log("Entrou no elseif do meio");
                 qtd = inputQtd;
                 if (qtd) {
                     qtd.focus();
@@ -78,7 +76,6 @@
             } else if (input.value !== "" && input.id === 'endereco'
                 && (inputQtd.val() !== "" || inputQtd.val() !== null
                 && inputReservas.val() !== "" || inputReservas.val() !== null)) {
-                console.log("Entrou no ultimo elseif");
                 $("#submit").focus();
                 if (event.preventDefault) {
                     event.preventDefault();
@@ -151,8 +148,8 @@
                         }
 
                         txt += '</tbody>' +
-                            '</table>'
-                        txt += '</fieldset>'
+                            '</table>';
+                        txt += '</fieldset>';
                         $('#lista-endereco').html(txt);
                     } else {
                         showErro(data.msg)
