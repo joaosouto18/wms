@@ -181,4 +181,31 @@ class Expedicao_CorteController extends Action {
         $this->exportPDF($pedidosCortados, 'relatorio-corte', 'Cortes automáticos da onda de ressuprimento', 'P');
     }
 
+    public function relatorioAction() {
+        try {
+            $form = new \Wms\Module\Expedicao\Form\RelatoriosCorte();
+            $this->view->form = $form;
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+            $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+
+            $params = $this->_getAllParams();
+            unset($params['module']);
+            unset($params['controller']);
+            unset($params['action']);
+
+            if (!empty($params)) {
+                $valores = $expedicaoRepo->getPedidosCortadosByParams($params);
+                $grid = new \Wms\Module\Expedicao\Grid\RelatorioCorte();
+
+                $this->view->grid = $grid->init($valores);
+                $form->populate($params);
+            }
+
+
+        } catch (\Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
+        }
+
+    }
 }

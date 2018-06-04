@@ -16,13 +16,11 @@ use Wms\Domain\EntityRepository;
  */
 class AcaoIntegracaoFiltroRepository extends EntityRepository
 {
-
-
     /**
      * @param $acaoEn
      * @param $options
      */
-    public function getQuery($acaoEn, $options, $filtro, $data)
+    public function getQuery($acaoEn, $options, $filtro, $data, $insertAll = false)
     {
         $query = $acaoEn->getQuery();
 
@@ -35,15 +33,34 @@ class AcaoIntegracaoFiltroRepository extends EntityRepository
             }
         }
 
-        if (!is_null($options)) {
-            foreach ($options as $key => $value) {
-                $query = str_replace(':?' . ($key + 1), $value, $query);
+        if($insertAll === 'ORACLE'){
+            foreach ($options as $keyOption => $option){
+                foreach ($option as $key => $value) {
+                    $queryAll[$keyOption] = str_replace(':?' . ($key + 1), $value, str_replace('INSERT','',$query));
+                    $query = $queryAll[$keyOption];
+                }
+                $query = $acaoEn->getQuery();
+            }
+            $query = 'INSERT ALL '.implode(' ', $queryAll).' SELECT * FROM dual';
+        }elseif($insertAll === 'MSSQL'){
+            $vetQuery = explode('VALUES', $query);
+            $query = $vetQuery[1];
+            foreach ($options as $keyOption => $option){
+                foreach ($option as $key => $value) {
+                    $queryAll[$keyOption] = str_replace(':?' . ($key + 1), $value, $query);
+                    $query = $queryAll[$keyOption];
+                }
+                $query = $vetQuery[1];
+            }
+            $query = $vetQuery[0].' VALUES '.implode(', ', $queryAll);
+        }else{
+            if (!is_null($options)) {
+                foreach ($options as $key => $value) {
+                    $query = str_replace(':?' . ($key + 1), $value, $query);
+                }
             }
         }
         $query = str_replace(":codFilial", $this->getSystemParameterValue("WINTHOR_CODFILIAL_INTEGRACAO"), $query);
-
         return $query;
-
     }
-
 }
