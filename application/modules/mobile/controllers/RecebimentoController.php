@@ -109,6 +109,7 @@ class Mobile_RecebimentoController extends Action
             if($recebimentoRepo->checarOsAnteriores($idRecebimento)){
                 $this->view->listaProdutos = $recebimentoRepo->listarProdutosPorOS($idRecebimento);
             }
+
             $this->view->os = $retorno['id'];
             $this->view->recebimento = $recebimentoEntity;
             $this->view->idRecebimento = $idRecebimento;
@@ -209,6 +210,7 @@ class Mobile_RecebimentoController extends Action
 
             $this->view->dscEmbFracDefault = $dscEmbFracionavelDefault;
             $this->view->pesoVariavel = $pesoVariavel;
+            $this->view->controlaLote = $itemNF['controlaLote'];
             $this->view->embFracionavelDefault = $itemNF['embFracDefault'];
             $this->view->indFracionavel = $itemNF['indFracionavel'];
             $this->view->recebimento = $recebimentoEntity;
