@@ -124,7 +124,7 @@ class Expedicao_CorteController extends Action {
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
         $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($this->_getParam('id', 0));
-        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($idPedido);
+        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($idPedido,null, false);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CorteAntecipado();
         $this->view->grid = $grid->init($produtos, $this->_getParam('id', 0), $idExpedicao);
