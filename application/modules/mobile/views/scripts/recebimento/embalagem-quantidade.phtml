@@ -11,11 +11,11 @@
         <div>
             <table class="info  table">
                 <tr class="title">
-                    <td>Descrição Emb.</td>
-                    <td colspan="2">Código de Barras</td>
+                    <td width="20%">Descrição Emb.</td>
+                    <td width="80%">Código de Barras</td>
                 </tr>
                 <tr>
-                    <td>
+                    <td width="25%">
                         <?php if ($this->embFracionavelDefault == 'S'){
                             $txtEmb = \Wms\Domain\Entity\Produto::$listaUnidadeMedida[$this->itemNF['unidFracao']];
                             $dscEmb = $this->itemNF['descricaoEmbalagem']." ($txtEmb)";
@@ -25,16 +25,16 @@
                         }
                         ?>
                     </td>
-                    <td colspan="2"><?php echo $this->itemNF['codigoBarras'] ?></td>
+                    <td width="75%"><?php echo $this->itemNF['codigoBarras'] ?></td>
                 </tr>
 
                 <tr class="title">
-                    <td>Norma:</td>
-                    <td colspan="2"><label class="field required" for="idNormaPaletizacao">Unitizador</label></td>
+                    <td width="25%">Norma:</td>
+                    <td width="75%"><label class="field required" for="idNormaPaletizacao">Unitizador</label></td>
                 </tr>
                 <tr>
-                    <td><?php echo $this->itemNF['numLastro'] . ' x ' . $this->itemNF['numCamadas'] . ' = ' . $this->itemNF['numNorma'] ?></td>
-                    <td colspan="2">
+                    <td width="25%"><?php echo $this->itemNF['numLastro'] . ' x ' . $this->itemNF['numCamadas'] . ' = ' . $this->itemNF['numNorma'] ?></td>
+                    <td width="75%">
                         <select class=" required" mostrarselecione="" id="idNormaPaletizacao" name="idNormaPaletizacao">
                             <?php foreach ($this->normasPaletizacao as $id => $descricao): ?>
                                 <option value="<?php echo $id; ?>" <?php echo $this->itemNF['idNorma'] == $id ? "selected" : ""; ?>><?php echo $descricao; ?></option>
@@ -45,7 +45,7 @@
 
                 <tr class="title">
                     <?php if ($this->indFracionavel != 'S') : ?>
-                        <td>Unidades Por Emb.</td>
+                        <td width="40%">Unid. Por Emb.</td>
                     <?php elseif ($this->indFracionavel == 'S' && !empty($this->dscEmbFracDefault)) : ?>
                         <td><label class="field required" for="qtdUnidFracionavel">Qtd de: <?php echo $this->dscEmbFracDefault ?>'s</label></td>
                     <?php else : ?>
