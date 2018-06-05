@@ -16,8 +16,6 @@ class Lote
     /**
      * @Column(name="COD_LOTE", type="integer", nullable=false)
      * @Id
-     * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_LOTE_01", allocationSize=1, initialValue=1)
      * @var integer
      */
     protected $id;
@@ -62,6 +60,13 @@ class Lote
 
 
     /**
+     * @var string Origem
+     * @Column(name="IND_ORIGEM_LOTE", type="string", length=255, nullable=false)
+     */
+    protected $origem;
+
+
+    /**
      * Retorna o código do lote
      * @return integer
      */
@@ -70,6 +75,11 @@ class Lote
         return $this->id;
     }
 
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
     /**
      * Retorna o produto no qual este lote compõe
      * @return Produto
@@ -130,6 +140,17 @@ class Lote
     public function setDthCriacao($dthCriacao)
     {
         $this->dthCriacao = $dthCriacao;
+        return $this;
+    }
+
+    public function getOrigem()
+    {
+        return $this->origem;
+    }
+
+    public function setOrigem($origem)
+    {
+        $this->origem = $origem;
         return $this;
     }
 }

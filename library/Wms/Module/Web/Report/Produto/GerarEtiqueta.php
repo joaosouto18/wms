@@ -130,6 +130,19 @@ class GerarEtiqueta extends eFPDF
         exit;
     }
 
+    public function etiquetaLote($lotes, $modelo){
+        //geracao da etiqueta
+        \Zend_Layout::getMvcInstance()->disableLayout(true);
+        \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
+        foreach ($lotes as $lote) {
+            $this->SetMargins(6, 4, 0);
+            $this->SetFont('Arial', 'B', 10);
+            $this->layoutLote($lote);
+        }
+        $this->Output("Etiqueta-Produtos.pdf","D");
+        exit;
+    }
+
     private function createEtiqueta($produto, $tipo, $modelo)
     {
         switch($modelo) {
@@ -396,6 +409,22 @@ class GerarEtiqueta extends eFPDF
 
         $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 11,$codigo);
 
+    }
+
+    public function layoutLote($lote)
+    {
+        $codigo = $lote['DSC_LOTE'];
+        $this->AddPage();
+        $this->SetFont('Arial', 'B', 12);
+        $x        = 38;
+        $y        = 20;
+        $height   = 12;
+        $angle    = 0;
+        $type     = 'code128';
+        $black    = '000000';
+        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.5,12);
+        $len = $this->GetStringWidth($data['hri']);
+        $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 12,$codigo);
     }
 
 }

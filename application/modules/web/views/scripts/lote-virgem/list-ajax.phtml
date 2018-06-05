@@ -1,0 +1,43 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Luis Fernando
+ * Date: 04/06/2018
+ * Time: 11:06
+ */
+if (!empty($this->lotes)) : ?>
+    <button id="imprimir" style="width: 190px; margin: 16px;height: 30px;" class="btn">Imprimir Etiquetas de Lote</button>
+<?php endif ?>
+<table class="gTable list">
+    <tbody>
+    <tr class ="gTTitle">
+        <td><b>Cód. Lote</b></td>
+        <td><b>Lote</b></td>
+        <td><b>Data de Criação</b></td>
+        <td><b>Cód. Produto</b></td>
+        <td><b>Produto</b></td>
+        <td><b>Grade</b></td>
+        <td><b>Usuário Criação</b></td>
+    </tr>
+    <?php
+    foreach ($this->lotes as $key => $lote) {
+    ?>
+        <tr>
+            <td><?php echo $lote['COD_LOTE'] ?></td>
+            <td><?php echo $lote['DSC_LOTE'] ?></td>
+            <td><?php echo $lote['CRIACAO'] ?></td>
+            <td><?php echo $lote['COD_PRODUTO'] ?></td>
+            <td><?php echo $lote['DSC_PRODUTO'] ?></td>
+            <td><?php echo $lote['DSC_GRADE'] ?></td>
+            <td><?php echo $lote['NOM_PESSOA'] ?></td>
+        </tr>
+    <?php
+    }
+    ?>
+</table>
+<script>
+    $('.gTable.list tr').click(function () {
+        $(this).toggleClass('tr-select');
+    });
+
+</script>
