@@ -731,7 +731,8 @@ class NotaFiscalRepository extends EntityRepository {
                         NVL(pv.codigoSequencial, '') sequenciaVolume,
                         NVL(pe.isEmbFracionavelDefault, 'N') embFracDefault,
                         NVL(p.indFracionavel, 'N') indFracionavel,
-                        NVL(p.unidadeFracao, 'N') unidFracao
+                        NVL(p.unidadeFracao, 'N') unidFracao,
+                        NVL(p.indControlaLote, 'N') controlaLote
                         ")
                 ->from('wms:NotaFiscal', 'nf')
                 ->innerJoin('nf.itens', 'nfi')

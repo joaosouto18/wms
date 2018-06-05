@@ -16,7 +16,7 @@ class Parametro
      * @Column(name="COD_PARAMETRO", type="smallint", nullable=false)
      * @GeneratedValue(strategy="SEQUENCE")
      * @SequenceGenerator(sequenceName="SQ_PARAMETRO_01", allocationSize=1, initialValue=1)
-     * @var smallint $id
+     * @var int $id
      */
     protected $id;
 
@@ -49,7 +49,7 @@ class Parametro
     protected $titulo;
 
     /**
-     * @var Wms\Domain\Entity\Sistema\Parametro\Contexto $contextoParametro
+     * @var \Wms\Domain\Entity\Sistema\Parametro\Contexto $contextoParametro
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Sistema\Parametro\Contexto")
      * @JoinColumn(name="COD_CONTEXTO_PARAMETRO", referencedColumnName="COD_CONTEXTO_PARAMETRO") 
      */
