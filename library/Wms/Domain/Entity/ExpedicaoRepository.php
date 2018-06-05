@@ -929,7 +929,7 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function compareConferenciaByCarga($dados, $idCargaExterno) {
         $SQL = "SELECT C.COD_CARGA_EXTERNO as CARGA,
-                       P.COD_PEDIDO,
+                       P.COD_EXTERNO as COD_PEDIDO,
                        PP.COD_PRODUTO,
                        PP.DSC_GRADE,
                        SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
