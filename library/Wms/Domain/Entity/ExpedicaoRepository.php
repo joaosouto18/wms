@@ -4296,6 +4296,37 @@ class ExpedicaoRepository extends EntityRepository {
 
         $result = \Wms\Domain\EntityRepository::nativeQuery($sql);
 
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        foreach ($result as $key => $value) {
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QUANTIDADE']);
+            if(is_array($vetEmbalagens)) {
+                $embalagem = implode(' + ', $vetEmbalagens);
+            }else{
+                $embalagem = $vetEmbalagens;
+            }
+            $result[$key]['QUANTIDADE'] = $embalagem;
+
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_CORTADA']);
+            if(is_array($vetEmbalagens)) {
+                $embalagem = implode(' + ', $vetEmbalagens);
+            }else{
+                $embalagem = $vetEmbalagens;
+            }
+            $result[$key]['QTD_CORTADA'] = $embalagem;
+
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_ATENDIDA']);
+            if(is_array($vetEmbalagens)) {
+                $embalagem = implode(' + ', $vetEmbalagens);
+            }else{
+                $embalagem = $vetEmbalagens;
+            }
+
+            $result[$key]['QTD_ATENDIDA'] = $embalagem;
+
+
+
+        }
+
         return $result;
     }
 

@@ -195,11 +195,33 @@ class Expedicao_CorteController extends Action {
             unset($params['action']);
 
             if (!empty($params)) {
-                $valores = $expedicaoRepo->getPedidosCortadosByParams($params);
-                $grid = new \Wms\Module\Expedicao\Grid\RelatorioCorte();
-
-                $this->view->grid = $grid->init($valores);
                 $form->populate($params);
+
+                $valores = $expedicaoRepo->getPedidosCortadosByParams($params);
+
+                if (isset($params['pdf']) && ($params['pdf'] != null)) {
+                    $report = array();
+                    foreach ($valores as $value) {
+                        $report[] = array(
+                            'Carga' => $value['COD_CARGA_EXTERNO'],
+                            'Pedido' => $value['COD_PEDIDO'],
+                            'Cod.Cli.' => $value['COD_CLIENTE'],
+                            'Cliente' => $value['CLIENTE'],
+                            'Cod.Prod.' => $value['COD_PRODUTO'],
+                            'Produto' => $value['DSC_PRODUTO'],
+                            'Qtd.Ped.' => $value['QUANTIDADE'],
+                            'Qtd.Cort.' => $value['QTD_CORTADA'],
+                            'Qtd.At.' => $value['QTD_ATENDIDA']
+                        );
+                    }
+
+                    $this->exportPDF($report,'cortes','Relatório de Cortes', 'L');
+                } else {
+                    $grid = new \Wms\Module\Expedicao\Grid\RelatorioCorte();
+                    $this->view->grid = $grid->init($valores);
+                }
+
+
             }
 
 

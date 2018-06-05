@@ -53,6 +53,12 @@ class RelatoriosCorte extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
+            ->addElement('submit', 'pdf', array(
+                'label' => 'Gerar PDF',
+                'class' => 'btn',
+                'decorators' => array('ViewHelper'),
+            ))
+
             ->addDisplayGroup(array('codExpedicao','codCarga','dataInicial1','dataInicial2', 'submit'), 'identificacao', array('legend' => 'Filtro de Expedições'));
             $this->setDecorators(array(array('ViewScript', array('viewScript' => 'corte/relatorio-filtro.phtml'))));
     }
