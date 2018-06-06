@@ -196,17 +196,15 @@ class Mobile_EnderecamentoController extends Action
 
             $this->validaEnderecoPicking($paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn);
 
-            if ($enderecoEn->getIdEstruturaArmazenagem() == Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO) {
-                $paleteRepo->alocaEnderecoPaleteByBlocado($paleteEn->getId(), $enderecoEn->getId());
-            } else {
-                $enderecoReservado = $paleteEn->getDepositoEndereco();
 
-                if (($enderecoReservado == NULL) || ($enderecoEn->getId() == $enderecoReservado->getId())) {
-                    $this->enderecar($enderecoEn, $paleteEn, $enderecoRepo, $paleteRepo);
-                } else {
-                    $this->createXml('info', 'Confirmar novo endereço', '/mobile/enderecamento/confirmar-novo-endereco/uma/' . $paleteEn->getId() . '/endereco/' . $enderecoEn->getId());
-                }
+            $enderecoReservado = $paleteEn->getDepositoEndereco();
+
+            if (($enderecoReservado == NULL) || ($enderecoEn->getId() == $enderecoReservado->getId())) {
+                $this->enderecar($enderecoEn, $paleteEn, $enderecoRepo, $paleteRepo);
+            } else {
+                $this->createXml('info', 'Confirmar novo endereço', '/mobile/enderecamento/confirmar-novo-endereco/uma/' . $paleteEn->getId() . '/endereco/' . $enderecoEn->getId());
             }
+
         } catch (Exception $e) {
             throw $e;
         }
