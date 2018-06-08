@@ -124,7 +124,7 @@ class Expedicao_CorteController extends Action {
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
         $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($this->_getParam('id', 0));
-        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($idPedido);
+        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($idPedido,null, false);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CorteAntecipado();
         $this->view->grid = $grid->init($produtos, $this->_getParam('id', 0), $idExpedicao);
@@ -181,4 +181,53 @@ class Expedicao_CorteController extends Action {
         $this->exportPDF($pedidosCortados, 'relatorio-corte', 'Cortes automáticos da onda de ressuprimento', 'P');
     }
 
+    public function relatorioAction() {
+        try {
+            $form = new \Wms\Module\Expedicao\Form\RelatoriosCorte();
+            $this->view->form = $form;
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+            $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+
+            $params = $this->_getAllParams();
+            unset($params['module']);
+            unset($params['controller']);
+            unset($params['action']);
+
+            if (!empty($params)) {
+                $form->populate($params);
+
+                $valores = $expedicaoRepo->getPedidosCortadosByParams($params);
+
+                if (isset($params['pdf']) && ($params['pdf'] != null)) {
+                    $report = array();
+                    foreach ($valores as $value) {
+                        $report[] = array(
+                            'Carga' => $value['COD_CARGA_EXTERNO'],
+                            'Pedido' => $value['COD_PEDIDO'],
+                            'Cod.Cli.' => $value['COD_CLIENTE'],
+                            'Cliente' => $value['CLIENTE'],
+                            'Cod.Prod.' => $value['COD_PRODUTO'],
+                            'Produto' => $value['DSC_PRODUTO'],
+                            'Qtd.Ped.' => $value['QUANTIDADE'],
+                            'Qtd.Cort.' => $value['QTD_CORTADA'],
+                            'Qtd.At.' => $value['QTD_ATENDIDA']
+                        );
+                    }
+
+                    $this->exportPDF($report,'cortes','Relatório de Cortes', 'L');
+                } else {
+                    $grid = new \Wms\Module\Expedicao\Grid\RelatorioCorte();
+                    $this->view->grid = $grid->init($valores);
+                }
+
+
+            }
+
+
+        } catch (\Exception $e) {
+            $this->addFlashMessage('error', $e->getMessage());
+        }
+
+    }
 }

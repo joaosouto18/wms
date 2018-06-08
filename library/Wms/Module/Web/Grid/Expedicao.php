@@ -56,6 +56,23 @@ class Expedicao extends Grid
                 'render' => 'N3'
             ))
             ->addColumn(array(
+                'label' => 'Qtd.Ped.',
+                'index' => 'qtdPedidos',
+                'render' => 'N0'
+            ))
+
+            ->addColumn(array(
+                'label' => 'Qtd.Prod.',
+                'index' => 'qtdProdutos',
+                'render' => 'N0'
+            ))
+
+            ->addColumn(array(
+                'label' => 'Qtd.Vol.',
+                'index' => 'qtdVolumes',
+                'render' => 'N0'
+            ))
+            ->addColumn(array(
                 'label' => 'Placa',
                 'index' => 'placaExpedicao'
             ))

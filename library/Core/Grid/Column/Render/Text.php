@@ -19,7 +19,12 @@ class Text extends Render\ARender implements Render\IRender
     {
 	$row = $this->getRow();
 	$index = $this->getColumn()->getIndex();
-	return $row[$index];
+
+        if ($row[$index] == '') {
+            return '<div style="float:right; position:  relative;left: -50%">-</div>';
+        }
+
+        return $row[$index];
     }
 
 }

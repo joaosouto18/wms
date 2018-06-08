@@ -170,7 +170,7 @@ class AcaoIntegracaoRepository extends EntityRepository
      *              R => Resumo do resultado
      * Destino => (P => Produção, T => Tabela temporária)
      */
-    public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null, $filtro = AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
+    public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null, $filtro = AcaoIntegracaoFiltro::DATA_ESPECIFICA, $insertAll = false) {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
         $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
@@ -223,7 +223,10 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             //STRING DA QUERY DE INTEGRAÇÃO
-            $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro, $data);
+            if($insertAll === true){
+                $insertAll = $conexaoEn->getProvedor();
+            }
+            $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro, $data, $insertAll);
             if ($dados == null) {
                 $words = explode(" ",trim($query));
                 $update = true;

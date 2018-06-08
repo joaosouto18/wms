@@ -94,30 +94,9 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             $i = 0;
 
             while( $row = sqlsrv_fetch_array($result,SQLSRV_FETCH_ASSOC) ) {
-                $vetResult[$i]['CODPRO'] = isset($row['CODPRO']) ? $row['CODPRO'] : null;
-                $vetResult[$i]['GRADE'] = isset($row['GRADE']) ? $row['GRADE'] : null;
-                $vetResult[$i]['QTDFAT'] = isset($row['QTDFAT']) ? $row['QTDFAT'] : null;
-                $vetResult[$i]['COD_PRODUTO'] = $row['COD_PRODUTO'];
-                $vetResult[$i]['DSC_GRADE'] = $row['DSC_GRADE'];
-                $vetResult[$i]['DESCRICAO_PRODUTO'] = $row['DESCRICAO_PRODUTO'];
-                $vetResult[$i]['CODIGO_CLASSE_NIVEL_1'] = $row['CODIGO_CLASSE_NIVEL_1'];
-                $vetResult[$i]['DSC_CLASSE_NIVEL_1'] = $row['DSC_CLASSE_NIVEL_1'];
-                $vetResult[$i]['CODIGO_CLASSE_NIVEL_2'] = $row['CODIGO_CLASSE_NIVEL_2'];
-                $vetResult[$i]['DSC_CLASSE_NIVEL_2'] = $row['DSC_CLASSE_NIVEL_2'];
-                $vetResult[$i]['CODIGO_FABRICANTE'] = $row['CODIGO_FABRICANTE'];
-                $vetResult[$i]['DESCRICAO_FABRICANTE'] = $row['DESCRICAO_FABRICANTE'];
-                $vetResult[$i]['DESCRICAO_EMBALAGEM'] = $row['DESCRICAO_EMBALAGEM'];
-                $vetResult[$i]['PESO_VARIAVEL'] = $row['PESO_VARIAVEL'];
-                $vetResult[$i]['QTD_EMBALAGEM'] = $row['QTD_EMBALAGEM'];
-                $vetResult[$i]['COD_BARRAS'] = $row['COD_BARRAS'];
-                $vetResult[$i]['PESO_BRUTO_EMBALAGEM'] = $row['PESO_BRUTO_EMBALAGEM'];
-                $vetResult[$i]['ALTURA_EMBALAGEM'] = $row['ALTURA_EMBALAGEM'];
-                $vetResult[$i]['LARGURA_EMBALAGEM'] = $row['LARGURA_EMBALAGEM'];
-                $vetResult[$i]['PROFUNDIDADE_EMBALAGEM'] = $row['PROFUNDIDADE_EMBALAGEM'];
-                $vetResult[$i]['CUBAGEM_EMBALAGEM'] = isset($row['CUBAGEM_EMBALAGEM']) ? $row['CUBAGEM_EMBALAGEM'] : null;
-                $vetResult[$i]['EMBALAGEM_ATIVA'] = $row['EMBALAGEM_ATIVA'];
-                $vetResult[$i]['DTH'] = $row['DTH'];
-
+                foreach ($row as $indice => $valor) {
+                    $vetResult[$i][$indice] = $valor;
+                }
                 $i++;
             }
 

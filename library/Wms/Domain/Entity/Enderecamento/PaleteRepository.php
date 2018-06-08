@@ -717,9 +717,9 @@ class PaleteRepository extends EntityRepository {
                 $paleteEn = $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumesPalete, $idNorma, $qtdEnderecar, $getDataValidadeUltimoProduto['dataValidade'], "M");
                 $paletes[] = ["palete" => $paleteEn, "picking" => $pickingEn];
             }
-            $this->_em->flush();
-            $this->_em->clear();
         }
+        $this->_em->flush();
+        $this->_em->clear();
 
         foreach ($paletes as $item) {
             $this->alocaEnderecoPalete($item['palete']->getId(), $item['picking']->getId());

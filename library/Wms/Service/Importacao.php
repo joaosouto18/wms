@@ -51,7 +51,7 @@ class Importacao
         try {
             /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
             $classeRepo = $repositorios['classeRepo'];
-            $entityClasse = $classeRepo->save((int)$idClasse, $nome, (int)$idClassePai, false);
+            $entityClasse = $classeRepo->save($idClasse, $nome, (int)$idClassePai, false);
             return $entityClasse;
         }catch (\Exception $e){
             if ($this->_throwsException == true) {

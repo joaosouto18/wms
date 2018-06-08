@@ -929,7 +929,7 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function compareConferenciaByCarga($dados, $idCargaExterno) {
         $SQL = "SELECT C.COD_CARGA_EXTERNO as CARGA,
-                       P.COD_PEDIDO,
+                       P.COD_EXTERNO as COD_PEDIDO,
                        PP.COD_PRODUTO,
                        PP.DSC_GRADE,
                        SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
@@ -1418,27 +1418,35 @@ class ExpedicaoRepository extends EntityRepository {
             //Finaliza Expedição ERP
             if ($this->getSystemParameterValue('IND_FINALIZA_CONFERENCIA_ERP_INTEGRACAO') == 'S') {
                 $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_FINALIZA_CONFERENCIA_ERP');
-
                 /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
                 $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
                 $acaoEn = $acaoIntRepo->find($idIntegracao);
                 $options = array();
 
                 $cargasEn = $expedicaoEn->getCarga();
-                $cargas = array();
+                $pedidoRepo     = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+
                 foreach ($cargasEn as $cargaEn) {
-                    $cargas[] = $cargaEn->getCodCargaExterno();
-                }
-
-                if (!is_null($cargas) && is_array($cargas)) {
-                    $options[] = implode(',', $cargas);
-                } else if (!is_null($cargas)) {
-                    $options = $cargas;
-                }
-
-                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 612);
-                if (!$resultAcao === true) {
-                    throw new \Exception($resultAcao);
+                    $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
+                    foreach ($pedidosEn as $pedidoEn) {
+                        $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
+                        foreach ($produtos as $key => $item) {
+                            $options[$pedidoEn->getId().'-'.$key][] = $cargaEn->getCodCargaExterno();
+                            $options[$pedidoEn->getId().'-'.$key][] = $pedidoEn->getCodExterno();
+                            $options[$pedidoEn->getId().'-'.$key][] = $item['COD_PRODUTO'];
+                            $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_PEDIDO'];
+                            if (is_null($item['ATENDIDA'])) {
+                                $options[$pedidoEn->getId().'-'.$key][] = 0;
+                            }else{
+                                $options[$pedidoEn->getId().'-'.$key][] = $item['ATENDIDA'];
+                            }
+                        }
+                    }
+                    $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
+                    if (!$resultAcao === true) {
+                        throw new \Exception($resultAcao);
+                    }
+                    unset($options);
                 }
             }
 
@@ -2143,6 +2151,9 @@ class ExpedicaoRepository extends EntityRepository {
                        I.ITINERARIOS AS "itinerario",
                        MOT.NOM_MOTORISTA AS "motorista",
                        TIPO_PEDIDO.TIPO_PEDIDO AS "tipopedido",
+                       RESUMO.QTD_PEDIDOS as "qtdPedidos",
+                       RESUMO.QTD_PRODUTOS as "qtdProdutos",
+                       RESUMO.QTD_VOLUMES as "qtdVolumes",
                        (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
                             ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
                   FROM EXPEDICAO E
@@ -2258,7 +2269,16 @@ class ExpedicaoRepository extends EntityRepository {
                               INNER JOIN PRODUTO_PESO              PESO   ON PESO.COD_PRODUTO = NFPROD.COD_PRODUTO AND PESO.DSC_GRADE = NFPROD.DSC_GRADE
                               WHERE 1 = 1  ' . $FullWhere . $andWhere . ' 
                               GROUP BY C.COD_EXPEDICAO) PESO_REENTREGA ON PESO_REENTREGA.COD_EXPEDICAO = E.COD_EXPEDICAO 
-                  
+                  LEFT JOIN (SELECT C.COD_EXPEDICAO,
+                                    COUNT(DISTINCT P.COD_PEDIDO) as QTD_PEDIDOS,
+                                    COUNT(DISTINCT PP.COD_PRODUTO || \'-\' || PP.DSC_GRADE) as QTD_PRODUTOS,
+                                    SUM(PP.QUANTIDADE) as QTD_VOLUMES
+                               FROM CARGA C
+                               LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                               LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                               WHERE 1 = 1 ' . $andWhere . '
+                               GROUP BY C.COD_EXPEDICAO ) RESUMO
+                        ON RESUMO.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT PED.COD_EXPEDICAO,
                                   LISTAGG (S.DSC_SIGLA,\', \') WITHIN GROUP (ORDER BY S.DSC_SIGLA) TIPO_PEDIDO
                                   FROM SIGLA S
@@ -2293,7 +2313,25 @@ class ExpedicaoRepository extends EntityRepository {
                   WHERE 1 = 1
                   $FullWhereFinal ";
 
-        $result = \Wms\Domain\EntityRepository::nativeQuery($sqlEtiquetas);
+        $resultResumo = \Wms\Domain\EntityRepository::nativeQuery($sqlEtiquetas);
+        $result = \Wms\Domain\EntityRepository::nativeQuery($sql);
+
+        $qtdPedidos = 0;
+        $qtdProdutos = 0;
+        $qtdVolumes = 0;
+
+        foreach ($result as $value) {
+            if ($value['qtdPedidos'] >0) {
+                $qtdPedidos = $qtdPedidos + $value['qtdPedidos'];
+            }
+            if ($value['qtdProdutos'] >0) {
+                $qtdProdutos = $qtdProdutos + $value['qtdProdutos'];
+            }
+            if ($value['qtdVolumes'] >0) {
+                $qtdVolumes = $qtdVolumes + $value['qtdVolumes'];
+            }
+        }
+
         echo '</br> </br>
             <fieldset>
                 <legend>Resumo</legend>
@@ -2302,16 +2340,24 @@ class ExpedicaoRepository extends EntityRepository {
                         <td>Expedições</td>
                         <td>Qtd. Etq. Válidas</td>
                         <td>Qtd. Etq. Reentrega</td>
+                        <td>Qtd. Pedidos</td>
+                        <td>Qtd. Produtos</td>
+                        <td>Qtd. Volumes</td>
+
                     </tr>
                     <tr>
-                        <td><input type="text" size="30" value="'. $result[0]['QTD_EXPEDICAO'] . '" disabled=""/></td>
-                        <td><input type="text" size="30" value="'. $result[0]['QTD_ETIQUETA'] . '" disabled=""/></td>
-                        <td><input type="text" size="30" value="'. $result[0]['QTD_REENTREGA'] . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. $resultResumo[0]['QTD_EXPEDICAO'] . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. $resultResumo[0]['QTD_ETIQUETA'] . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. $resultResumo[0]['QTD_REENTREGA'] . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. number_format($qtdPedidos,0) . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. number_format($qtdProdutos,0) . '" disabled=""/></td>
+                        <td><input type="text" size="30" value="'. number_format($qtdVolumes,0) . '" disabled=""/></td>
                     </tr>
+
                 </table>                
             </fieldset>';
 
-        return \Wms\Domain\EntityRepository::nativeQuery($sql);
+        return $result;
     }
 
     /**
@@ -3838,18 +3884,21 @@ class ExpedicaoRepository extends EntityRepository {
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null) {
+    public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null, $apenasProdutosCortados = true) {
 
         $where = " AND PP.COD_PEDIDO = '$idPedido' ";
         if (!is_null($idExpedicao))
             $where = " AND C.COD_EXPEDICAO = $idExpedicao ";
 
+        $having = "";
+        if ($apenasProdutosCortados == true)
+            $having .= " HAVING (SUM(PP.QTD_CORTADA) > 0)";
 
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
                        PROD.DSC_PRODUTO,
-                       SUM(PP.QUANTIDADE) as QTD,
-                       SUM(PP.QTD_CORTADA) as QTD_CORTADA,
+                       NVL(SUM(PP.QUANTIDADE),0) as QTD,
+                       NVL(SUM(PP.QTD_CORTADA),0) as QTD_CORTADA,
                        PP.COD_PEDIDO,
                        C.COD_CARGA_EXTERNO
                   FROM PEDIDO_PRODUTO PP
@@ -3858,6 +3907,7 @@ class ExpedicaoRepository extends EntityRepository {
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                  WHERE 1 = 1 $where
                  GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO, C.COD_CARGA_EXTERNO
+                 $having
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -4180,4 +4230,105 @@ class ExpedicaoRepository extends EntityRepository {
 
         return $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function getPedidosCortadosByParams($params) {
+
+        $where = " AND 1 = 1 ";
+
+        if (isset($params['dataInicial1']) && (!empty($params['dataInicial1']))) {
+            $where .=  " AND E.DTH_INICIO >= TO_DATE('" . $params['dataInicial1'] . " 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($params['dataInicial2']) && (!empty($params['dataInicial2']))) {
+            $where .= " AND E.DTH_INICIO <= TO_DATE('" . $params['dataInicial2'] . " 23:59', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($params['dataFinal1']) && (!empty($params['dataFinal1']))) {
+            $where .= " AND E.DTH_FINALIZACAO >= TO_DATE('" . $params['dataFinal1'] . " 00:00', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($params['dataFinal2']) && (!empty($params['dataFinal2']))) {
+            $where .= " AND E.DTH_FINALIZACAO <= TO_DATE('" . $params['dataFinal2'] . " 23:59', 'DD-MM-YYYY HH24:MI')";
+        }
+
+        if (isset($params['idExpedicao']) && !empty($params['idExpedicao'])) {
+            $where .= " AND (E.COD_EXPEDICAO = " . $params['idExpedicao'] . ") ";
+        }
+
+        if (isset($params['codCargaExterno']) && !empty($params['codCargaExterno'])) {
+            $where .= " AND (C.COD_CARGA_EXTERNO = " . $params['codCargaExterno'] . ")";
+        }
+
+        if (isset($params['pedido']) && !empty($params['pedido'])) {
+            $where .= " AND (P.COD_EXTERNO = " . $params['pedido'] . ")";
+        }
+
+        if ($where == " AND 1 = 1 ") {
+            throw new \Exception("Informe ao menos um filtro");
+        }
+
+        $sql = "SELECT E.COD_EXPEDICAO, 
+                       C.COD_CARGA_EXTERNO, 
+                       P.COD_EXTERNO as COD_PEDIDO,
+                       C.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+                       PES.NOM_PESSOA as CLIENTE,
+                       PP.COD_PRODUTO, 
+                       PP.DSC_GRADE, 
+                       PROD.DSC_PRODUTO,
+                       PP.QUANTIDADE, 
+                       PP.QTD_CORTADA, 
+                       PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0) as QTD_ATENDIDA,
+                       CASE WHEN PP.QUANTIDADE = NVL(PP.QTD_CORTADA,0) THEN 'TOTAL' ELSE 'PARCIAL' END AS TIPO_CORTE,
+                       TO_CHAR(E.DTH_INICIO,'DD/MM/YYYY HH24:MI:SS')  as DTH_INICIO_EXPEDICAO,
+                       TO_CHAR(E.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI:SS') as DTH_FIM_EXPEDICAO,
+                       S.DSC_SIGLA as STATUS_EXPEDICAO
+                  FROM EXPEDICAO E
+                  LEFT JOIN CARGA C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                  LEFT JOIN CLIENTE C ON C.COD_PESSOA = P.COD_PESSOA
+                  LEFT JOIN PESSOA PES ON PES.COD_PESSOA = C.COD_PESSOA
+                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+                  WHERE NVL(PP.QTD_CORTADA,0) > 0 $where
+                  ORDER BY C.COD_EXPEDICAO, C.COD_CARGA_EXTERNO, P.COD_EXTERNO, PP.COD_PRODUTO
+        ";
+
+        $result = \Wms\Domain\EntityRepository::nativeQuery($sql);
+
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        foreach ($result as $key => $value) {
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QUANTIDADE']);
+            if(is_array($vetEmbalagens)) {
+                $embalagem = implode(' + ', $vetEmbalagens);
+            }else{
+                $embalagem = $vetEmbalagens;
+            }
+            $result[$key]['QUANTIDADE'] = $embalagem;
+
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_CORTADA']);
+            if(is_array($vetEmbalagens)) {
+                $embalagem = implode(' + ', $vetEmbalagens);
+            }else{
+                $embalagem = $vetEmbalagens;
+            }
+            $result[$key]['QTD_CORTADA'] = $embalagem;
+
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_ATENDIDA']);
+            if(is_array($vetEmbalagens)) {
+                $embalagem = implode(' + ', $vetEmbalagens);
+            }else{
+                $embalagem = $vetEmbalagens;
+            }
+
+            $result[$key]['QTD_ATENDIDA'] = $embalagem;
+
+
+
+        }
+
+        return $result;
+    }
+
+
 }

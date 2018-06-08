@@ -21,7 +21,7 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
         if (isset($params['inventario'])&& ($params['inventario'] != null)) {
             $idInventario = $params['inventario'];
         }
-        
+
         if (isset($params['inventario']) && !empty($params['inventario']) || isset($params['divergencia'])
             || isset($params['tipoDivergencia']) || isset($params['linhaSeparacao'])) {
             $result = $estoqueErpRepo->getProdutosDivergentesByInventario($idInventario, $params);
@@ -40,7 +40,9 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
                         'Divergência' => $line['DIVERGENCIA'],
                         'Vlr. Estoque WMS' => $line['VLR_ESTOQUE_WMS'],
                         'Vlr. Estoque ERP' => $line['VLR_ESTOQUE_ERP'],
-                        'Vlr. Divergencia' => $line['VLR_DIVERGENCIA'],);
+                        'Vlr. Divergencia' => $line['VLR_DIVERGENCIA'],
+                        'Cod. Fabricante' => $line['COD_FABRICANTE'],
+                        'Fabricante' => $line['FABRICANTE']);
                 }
                     $this->exportCSV($pdf, 'comparativoEstoque');
             }

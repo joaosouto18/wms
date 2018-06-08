@@ -399,13 +399,13 @@ class EstoqueRepository extends EntityRepository
                        E.NORMA,
                        E.COD_VOLUME,
                        E.VOLUME,
+                       TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy hh:mi:ss') AS DTH_PRIMEIRA_MOVIMENTACAO,
                        E.RESERVA_ENTRADA,
                        E.RESERVA_SAIDA,
+                       E.UNITIZADOR,
                        E.QTD,
-                       TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy hh:mi:ss') AS DTH_PRIMEIRA_MOVIMENTACAO,
                        P.DSC_PRODUTO,
                        E.UMA,
-                       E.UNITIZADOR,
                        E.DTH_VALIDADE
                   FROM (SELECT NVL(NVL(RE.COD_DEPOSITO_ENDERECO, RS.COD_DEPOSITO_ENDERECO),ESTQ.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
                                NVL(NVL(RE.COD_PRODUTO, RS.COD_PRODUTO),ESTQ.COD_PRODUTO) as COD_PRODUTO,
@@ -511,6 +511,10 @@ class EstoqueRepository extends EntityRepository
             $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
             foreach ($result as $key => $value) {
                 $result[$key]['QTD_EMBALAGEM'] = $value['QTD'];
+                if(!isset($value['COD_VOLUME'])){
+                    $value['COD_VOLUME'] = 0;
+                }
+
                 if ($value['QTD'] > 0 && ($value['COD_VOLUME'] == 0 || $value['COD_VOLUME'] == null)) {
                     $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
                     $result[$key]['QTD_EMBALAGEM'] = implode('<br />', $vetEstoque);

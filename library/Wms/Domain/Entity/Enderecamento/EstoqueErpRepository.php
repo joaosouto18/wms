@@ -44,6 +44,10 @@ class EstoqueErpRepository extends EntityRepository
             $where .= " AND P.COD_LINHA_SEPARACAO = $params[linhaSeparacao] ";
         }
 
+        if (isset($params['fabricante']) && !empty($params['fabricante'])) {
+            $where .= " AND F.COD_FABRICANTE = $params[fabricante] ";
+        }
+
         $sql = "
         SELECT P.COD_PRODUTO,
                P.DSC_GRADE,
@@ -54,7 +58,9 @@ class EstoqueErpRepository extends EntityRepository
                NVL(WMS.QTD,0) - $fieldEstoqueERP DIVERGENCIA,
                NVL($fieldEstoqueERP * ERP.VLR_ESTOQUE_UNIT,0) as VLR_ESTOQUE_ERP,
                NVL(NVL(WMS.QTD,0) * ERP.VLR_ESTOQUE_UNIT,0) as VLR_ESTOQUE_WMS,
-               NVL((NVL(WMS.QTD,0) - $fieldEstoqueERP) * ERP.VLR_ESTOQUE_UNIT,0) as VLR_DIVERGENCIA
+               NVL((NVL(WMS.QTD,0) - $fieldEstoqueERP) * ERP.VLR_ESTOQUE_UNIT,0) as VLR_DIVERGENCIA,
+               F.COD_FABRICANTE,
+               F.NOM_FABRICANTE as FABRICANTE 
           FROM ESTOQUE_ERP ERP
           FULL OUTER JOIN (SELECT E.COD_PRODUTO,
                                   E.DSC_GRADE, 
@@ -70,7 +76,9 @@ class EstoqueErpRepository extends EntityRepository
            AND ERP.DSC_GRADE = WMS.DSC_GRADE
           LEFT JOIN PRODUTO P 
               ON (P.COD_PRODUTO = ERP.COD_PRODUTO AND P.DSC_GRADE = ERP.DSC_GRADE)
-              OR (P.COD_PRODUTO = WMS.COD_PRODUTO AND P.DSC_GRADE = WMS.DSC_GRADE)";
+              OR (P.COD_PRODUTO = WMS.COD_PRODUTO AND P.DSC_GRADE = WMS.DSC_GRADE)
+          INNER JOIN FABRICANTE F 
+              ON F.COD_FABRICANTE = P.COD_FABRICANTE";
 
 
         if ($idInventario != null) {
