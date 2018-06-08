@@ -1,13 +1,25 @@
 <?php echo $this->render('recebimento/detalhes.phtml'); ?>
 <div class="row" >
-    <table class="info">
-        <h3>Dados do Produto</h3>
-        <tr class="title">
-            <td>Código - Descrição - Grade</td>
-        </tr>
-        <tr rowspan="2">
-            <td><?php echo $this->itemNF['idProduto'] . '-' . $this->itemNF['descricao'] . '-' . $this->itemNF['grade'] ?></td>
-        </tr>
-    </table>
+    <h3>Dados do Produto</h3>
+    <div class="col-md-4 col-xs-6 text-center">
+        <div class="row"><b>Código</b></div>
+        <div class="row"><?php echo $this->itemNF['idProduto']?></div>
+    </div>
+    <div class="col-md-4 col-xs-6 text-center">
+        <div class="row"><b>Grade</b></div>
+        <div class="row"><?php echo $this->itemNF['grade']?></div>
+    </div>
+    <div class="col-md-4 col-xs-12 text-center">
+        <div class="row"><b>Descrição</b></div>
+        <div class="row"><?php echo $this->itemNF['descricao']?></div>
+    </div>
+<!--    <table class="info">-->
+<!--        <tr class="title">-->
+<!--            <td>Código - Descrição - Grade</td>-->
+<!--        </tr>-->
+<!--        <tr rowspan="2">-->
+<!--            <td>--><?php //echo $this->itemNF['idProduto'] . '-' . $this->itemNF['descricao'] . '-' . $this->itemNF['grade'] ?><!--</td>-->
+<!--        </tr>-->
+<!--    </table>-->
 </div>
 

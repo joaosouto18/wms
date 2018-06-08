@@ -125,7 +125,9 @@ class Zend_View_Helper_Doctype extends Zend_View_Helper_Abstract
                 case self::HTML4_LOOSE:
                 case self::HTML4_FRAMESET:
                 case self::HTML5:
-                    $this->setDoctype($doctype);
+                    if ($doctype == self::HTML5) {
+                        $this->setDoctype($doctype);
+                    }
                     break;
                 default:
                     if (substr($doctype, 0, 9) != '<!DOCTYPE') {

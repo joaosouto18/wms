@@ -319,6 +319,10 @@ table tr.title td {
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffac47', endColorstr='#f56d06', GradientType=0 );
 }
 
+.row.margin-row{
+    margin-top: 10px !important;
+}
+
 .row{
     width: 100%!important;
     margin: 0px 0px 0px 0px!important;
