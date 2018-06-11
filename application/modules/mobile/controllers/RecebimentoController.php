@@ -183,10 +183,14 @@ class Mobile_RecebimentoController extends Action
             if ($itemNF['idTipoComercializacao'] == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) {
                 /** @var \Wms\Domain\Entity\Produto\NormaPaletizacaoRepository $normaRepo */
                 $normaRepo = $this->em->getRepository('wms:Produto\NormaPaletizacao');
-                $normasPaletizacao = $normaRepo->getNormasByProduto($itemNF['idProduto'], $itemNF['grade']);
+                $normasPaletizacao = $normaRepo->getNormasByProduto($idProduto, $grade);
             } else {
                 $normasPaletizacao[$itemNF['idNorma']] = $itemNF["dscUnitizador"];
             }
+
+            if (empty($normasPaletizacao))
+                throw new Exception("O produto '$idProduto' grade '$grade' não tem nenhum dado logistico cadastrado");
+
             $this->view->normasPaletizacao = $normasPaletizacao;
 
             $dscEmbFracionavelDefault = null;
