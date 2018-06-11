@@ -1534,11 +1534,12 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $liberarRecusar   = $this->_getParam('liberar');
         $codProduto       = $this->_getParam('codProduto');
         $dscGrade         = $this->_getParam('grade');
+        $dataValidade     = $this->_getParam('dataValidade');
 
         try {
             $recebimentoEntity = $this->getEntityManager()->getReference('wms:Recebimento',$idRecebimento);
             $recebimentoEntity
-                ->addAndamento(false, false, $observacao, $codProduto, $dscGrade);
+                ->addAndamento(false, false, $observacao, $codProduto, $dscGrade, $dataValidade);
 
             $this->getEntityManager()->persist($recebimentoEntity);
 
@@ -1578,6 +1579,20 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
+    }
+
+    public function produtosBloqueadosAjaxAction()
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select("r.id COD_RECEBIMENTO, p.id COD_PRODUTO, p.descricao DESCRICAO_PRODUTO, p.grade DSC_GRADE, TO_CHAR(ra.dataValidade,'DD/MM/YYYY') DATA_VALIDADE, ra.dscObservacao OBSERVACAO")
+            ->from('wms:Recebimento', 'r')
+            ->innerJoin('wms:Recebimento\Andamento', 'ra', 'WITH', 'r.id = ra.recebimento')
+            ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = ra.codProduto AND p.grade = ra.dscGrade')
+            ->where('r.id = ' . $this->_getParam('id',0));
+
+        $result = $sql->getQuery()->getResult();
+
+        $this->exportPDF($result,'Relatório Produtos Liberados/Bloqueados','Produtos Liberados/Bloqueados do recebimento '.$this->_getParam('id',0), 'L');
     }
 
 }

@@ -72,6 +72,11 @@ class Andamento
      */
     protected $dscGrade;
 
+    /**
+     * @Column(name="DTH_VALIDADE", type="datetime", nullable=true)
+     */
+    protected $dataValidade;
+
 
     public function getId()
     {
@@ -174,6 +179,22 @@ class Andamento
     public function setDscGrade($dscGrade)
     {
         $this->dscGrade = $dscGrade;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataValidade()
+    {
+        return $this->dataValidade;
+    }
+
+    /**
+     * @param mixed $dataValidade
+     */
+    public function setDataValidade($dataValidade)
+    {
+        $this->dataValidade = $dataValidade;
     }
 
 }
