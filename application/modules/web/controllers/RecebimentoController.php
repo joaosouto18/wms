@@ -1532,11 +1532,13 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $idRecebimento    = $this->_getParam('codRecebimento');
         $observacao       = $this->_getParam('observacao');
         $liberarRecusar   = $this->_getParam('liberar');
+        $codProduto       = $this->_getParam('codProduto');
+        $dscGrade         = $this->_getParam('grade');
 
         try {
             $recebimentoEntity = $this->getEntityManager()->getReference('wms:Recebimento',$idRecebimento);
             $recebimentoEntity
-                ->addAndamento(false, false, $observacao);
+                ->addAndamento(false, false, $observacao, $codProduto, $dscGrade);
 
             $this->getEntityManager()->persist($recebimentoEntity);
 

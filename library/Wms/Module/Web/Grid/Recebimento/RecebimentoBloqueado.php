@@ -52,7 +52,9 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                 'pkIndex' => array(
                     'codRecebEmbalagem',
                     'codRecebVolume',
-                    'codRecebimento'
+                    'codRecebimento',
+                    'codProduto',
+                    'grade'
                 ),
                 'params' => array(
                     'liberar' => true,
@@ -66,7 +68,9 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                 'pkIndex' => array(
                     'codRecebEmbalagem',
                     'codRecebVolume',
-                    'codRecebimento'
+                    'codRecebimento',
+                    'codProduto',
+                    'grade'
                 ),
                 'params' => array(
                     'liberar' => false,

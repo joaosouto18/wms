@@ -62,6 +62,17 @@ class Andamento
      */
     protected $dscObservacao;
 
+    /**
+     * @Column(name="COD_PRODUTO", type="string", nullable=true)
+     */
+    protected $codProduto;
+
+    /**
+     * @Column(name="DSC_GRADE", type="string", nullable=true)
+     */
+    protected $dscGrade;
+
+
     public function getId()
     {
         return $this->id;
@@ -131,6 +142,38 @@ class Andamento
     {
         $this->dscObservacao = $dscObservacao;
         return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodProduto()
+    {
+        return $this->codProduto;
+    }
+
+    /**
+     * @param mixed $codProduto
+     */
+    public function setCodProduto($codProduto)
+    {
+        $this->codProduto = $codProduto;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDscGrade()
+    {
+        return $this->dscGrade;
+    }
+
+    /**
+     * @param mixed $dscGrade
+     */
+    public function setDscGrade($dscGrade)
+    {
+        $this->dscGrade = $dscGrade;
     }
 
 }
