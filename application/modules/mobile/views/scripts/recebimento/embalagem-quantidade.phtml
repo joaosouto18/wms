@@ -22,7 +22,7 @@
                     ?>
                 </div>
             </div>
-            <div class="col-md-8 col-xs-7 text-center">
+            <div class="col-md-8 col-xs-5 text-center">
                 <div class="row"><b>Código de Barras</b></div>
                 <div class="row"><?php echo $this->itemNF['codigoBarras'] ?></div>
             </div>
@@ -32,7 +32,7 @@
                 <div class="row"><b>Norma:</b></div>
                 <div class="row"><?php echo $this->itemNF['numLastro'] . ' x ' . $this->itemNF['numCamadas'] . ' = ' . $this->itemNF['numNorma'] ?></div>
             </div>
-            <div class="col-md-8 col-xs-7 text-center">
+            <div class="col-md-8 col-xs-5 text-center">
                 <div class="row"><label class="field required" for="idNormaPaletizacao">Unitizador</label></div>
                 <div class="row">
                     <select class="required" id="idNormaPaletizacao" name="idNormaPaletizacao">
@@ -44,7 +44,7 @@
             </div>
         </div>
         <div class="row margin-row">
-            <div class="col-md-4 col-xs-6 text-center">
+            <div class="col-md-4 col-xs-4 text-center">
             <?php if ($this->indFracionavel != 'S') : ?>
                 <div class="row"><b>Unids. Por Emb.</b></div>
                 <div class="row"><b><?php echo $this->itemNF['quantidadeEmbalagem'] ?></b></div>
@@ -93,7 +93,7 @@
                 </div>
             <?php endif; ?>
             </div>
-            <div class="col-md-4 col-xs-6 text-center">
+            <div class="col-md-4 col-xs-4 text-center">
             <?php if ($this->indFracionavel != 'S') : ?>
                 <div class="row"><b>Total Unidades</b></div>
             <?php else : ?>
@@ -185,11 +185,13 @@
 <!--                    <td><span id="totalQuantidade">0</span></td>-->
 <!--                </tr>-->
 <!--            </table>-->
+<!--        </div>-->
+        <div class="row margin-row">
             <?php if ($this->indFracionavel == 'S') : ?>
                 <p>Para a fração utilizar ponto "." ex.: 3.25</p>
             <?php endif; ?>
+            <input type="submit" class="btn gradientBtn" value="Salvar" id="submit" name="submit">
         </div>
-        <input type="submit" class="btn gradientBtn" value="Salvar" id="submit" name="submit">
     </form>
 </div>
 
