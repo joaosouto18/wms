@@ -22,7 +22,7 @@
                     ?>
                 </div>
             </div>
-            <div class="col-md-8 col-xs-8 text-center">
+            <div class="col-md-8 col-xs-7 text-center">
                 <div class="row"><b>Código de Barras</b></div>
                 <div class="row"><?php echo $this->itemNF['codigoBarras'] ?></div>
             </div>
@@ -32,7 +32,7 @@
                 <div class="row"><b>Norma:</b></div>
                 <div class="row"><?php echo $this->itemNF['numLastro'] . ' x ' . $this->itemNF['numCamadas'] . ' = ' . $this->itemNF['numNorma'] ?></div>
             </div>
-            <div class="col-md-8 col-xs-8 text-center">
+            <div class="col-md-8 col-xs-7 text-center">
                 <div class="row"><label class="field required" for="idNormaPaletizacao">Unitizador</label></div>
                 <div class="row">
                     <select class="required" id="idNormaPaletizacao" name="idNormaPaletizacao">
@@ -58,7 +58,7 @@
             <?php endif; ?>
             </div>
             <?php if ($this->itemNF['validade'] == 'S') : ?>
-                <div class="col-md-4 col-xs-6 text-center">
+                <div class="col-md-4 col-xs-5 text-center">
                     <div class="row">
                         <b><label class="field required" for="dataValidade">Data Validade</label></b>
                     </div>
@@ -67,7 +67,7 @@
                     </div>
                 </div>
             <?php endif; ?>
-            <div class="col-md-4 col-xs-6 text-center">
+            <div class="col-md-4 col-xs-5 text-center">
             <?php if ($this->pesoVariavel != 'S') :
                 if ($this->indFracionavel == "S") :?>
                 <div class="row">
