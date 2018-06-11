@@ -1584,10 +1584,11 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
     public function produtosBloqueadosAjaxAction()
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select("r.id COD_RECEBIMENTO, p.id COD_PRODUTO, p.descricao DESCRICAO_PRODUTO, p.grade DSC_GRADE, TO_CHAR(ra.dataValidade,'DD/MM/YYYY') DATA_VALIDADE, ra.dscObservacao OBSERVACAO")
+            ->select("r.id COD_RECEBIMENTO, p.id COD_PRODUTO, p.descricao DESCRICAO_PRODUTO, p.grade DSC_GRADE, TO_CHAR(ra.dataValidade,'DD/MM/YYYY') DATA_VALIDADE, pessoa.nome USUARIO, ra.dscObservacao OBSERVACAO")
             ->from('wms:Recebimento', 'r')
             ->innerJoin('wms:Recebimento\Andamento', 'ra', 'WITH', 'r.id = ra.recebimento')
             ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = ra.codProduto AND p.grade = ra.dscGrade')
+            ->innerJoin('wms:Pessoa', 'pessoa', 'WITH', 'pessoa.id = ra.usuario')
             ->where('r.id = ' . $this->_getParam('id',0));
 
         $result = $sql->getQuery()->getResult();
