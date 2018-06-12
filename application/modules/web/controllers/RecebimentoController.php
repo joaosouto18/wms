@@ -444,7 +444,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $dataValidade = $this->getRequest()->getParam('dataValidade');
                 $numPeso = $this->getRequest()->getParam('numPeso');
                 $normas = $this->getRequest()->getParam('norma');
-
                 // executa os dados da conferencia
                 $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas, $qtdUnidFracionavel, $embalagem, $idConferente, true, $unMedida, $dataValidade, $numPeso);
 

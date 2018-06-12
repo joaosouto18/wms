@@ -74,12 +74,12 @@
                                 'class' => "qtdNF"
                             ));
 
-                            echo $this->formText("qtdConferida[{$produto['codigo']}][{$produto['grade']}]", 0, [
+                            echo $this->formText("qtdConferida[{$produto['codigo']}][{$produto['grade']}][]", 0, [
                                 'size' => 8,
                                 'validators' => array('numeric'),
                                 'alt' => 'number',
                                 'class' => "qtdConferida",
-                                'title' => "[{$produto['codigo']}][{$produto['grade']}]"
+                                'title' => "[{$produto['codigo']}][{$produto['grade']}][]"
                             ]);
                             ?>
                         </td>
@@ -88,12 +88,12 @@
                             <div id="<?php echo "div-$produto[codigo]-$produto[grade]"?>">
                                 <?php
                                 if ($produto['ind_fracionavel'] == 'S') {
-                                echo $this->formText("qtdUnidFracionavel[{$produto['codigo']}][{$produto['grade']}]", 0, [
+                                echo $this->formText("qtdUnidFracionavel[{$produto['codigo']}][{$produto['grade']}][]", 0, [
                                     'size' => 8,
                                     'validators' => array('numeric'),
                                     'alt' => 'centesimal',
                                     'class' => "qtdUnidFracionavel required",
-                                    'title' => "Total unid fracionavel [{$produto['codigo']}][{$produto['grade']}]"
+                                    'title' => "Total unid fracionavel [{$produto['codigo']}][{$produto['grade']}][]"
                                 ]); } ?>
                                 <span id="<?php echo "txtUnid-$produto[codigo]-$produto[grade]"?>"></span>
                             </div>

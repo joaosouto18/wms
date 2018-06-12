@@ -91,6 +91,12 @@ class Volume
      * @JoinColumn(name="COD_LOTE", referencedColumnName="COD_LOTE")
      * @var \Wms\Domain\Entity\Produto\Lote $codLote
      */
+    protected $lote;
+
+    /**
+     * @Column(name="COD_LOTE", type="string")
+     * @var string
+     */
     protected $codLote;
 
     public function getId()
