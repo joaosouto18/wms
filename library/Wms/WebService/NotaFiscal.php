@@ -52,6 +52,8 @@ class itensNf {
     public $quantidadeAvaria;
     /** @var string */
     public $motivoDivergencia;
+    /** @var string */
+    public $lote;
 }
 
 class notaFiscal {
@@ -214,6 +216,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $clsItensNf->quantidadeConferida = $item['QTD_CONFERIDA'];
             $clsItensNf->quantidadeAvaria = $item['QTD_AVARIA'];
             $clsItensNf->motivoDivergencia = $item['DSC_MOTIVO_DIVER_RECEB'];
+            $clsItensNf->lote = $item['COD_LOTE'];
             $clsNf->itens[] = $clsItensNf;
         }
 
