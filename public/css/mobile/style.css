@@ -319,8 +319,10 @@ table tr.title td {
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffac47', endColorstr='#f56d06', GradientType=0 );
 }
 
-.row.margin-row{
-    margin-top: 10px !important;
+.row.margin-row,
+.col-xs-1.margin-row, .col-sm-1.margin-row, .col-md-1.margin-row, .col-lg-1.margin-row, .col-xs-2.margin-row, .col-sm-2.margin-row, .col-md-2.margin-row, .col-lg-2.margin-row, .col-xs-3.margin-row, .col-sm-3.margin-row, .col-md-3.margin-row, .col-lg-3.margin-row, .col-xs-4.margin-row, .col-sm-4.margin-row, .col-md-4.margin-row, .col-lg-4.margin-row, .col-xs-5.margin-row, .col-sm-5.margin-row, .col-md-5.margin-row, .col-lg-5.margin-row, .col-xs-6.margin-row, .col-sm-6.margin-row, .col-md-6.margin-row, .col-lg-6.margin-row, .col-xs-7.margin-row, .col-sm-7.margin-row, .col-md-7.margin-row, .col-lg-7.margin-row, .col-xs-8.margin-row, .col-sm-8.margin-row, .col-md-8.margin-row, .col-lg-8.margin-row, .col-xs-9.margin-row, .col-sm-9.margin-row, .col-md-9.margin-row, .col-lg-9.margin-row, .col-xs-10.margin-row, .col-sm-10.margin-row, .col-md-10.margin-row, .col-lg-10.margin-row, .col-xs-11.margin-row, .col-sm-11.margin-row, .col-md-11.margin-row, .col-lg-11.margin-row, .col-xs-12.margin-row, .col-sm-12.margin-row, .col-md-12.margin-row, .col-lg-12
+{
+    margin-top: 15px !important;
 }
 
 .row{
