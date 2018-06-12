@@ -55,7 +55,8 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                     'codRecebimento',
                     'codProduto',
                     'grade',
-                    'dataValidade'
+                    'dataValidade',
+                    'diasVidaUtil'
                 ),
                 'params' => array(
                     'liberar' => true,
@@ -72,7 +73,8 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                     'codRecebimento',
                     'codProduto',
                     'grade',
-                    'dataValidade'
+                    'dataValidade',
+                    'diasVidaUtil'
                 ),
                 'params' => array(
                     'liberar' => false,

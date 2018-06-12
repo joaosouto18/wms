@@ -1527,44 +1527,39 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
     public function liberarRecusarRecebimentosAjaxAction()
     {
-        $idRecebEmbalagem = $this->_getParam('codRecebEmbalagem');
-        $idRecebVolume    = $this->_getParam('codRecebVolume');
-        $idRecebimento    = $this->_getParam('codRecebimento');
-        $observacao       = $this->_getParam('observacao');
-        $liberarRecusar   = $this->_getParam('liberar');
-        $codProduto       = $this->_getParam('codProduto');
-        $dscGrade         = $this->_getParam('grade');
-        $dataValidade     = $this->_getParam('dataValidade');
+        extract($this->_getAllParams());
 
         try {
-            $recebimentoEntity = $this->getEntityManager()->getReference('wms:Recebimento',$idRecebimento);
+            $hoje = new DateTime();
+            $dataShelflife = $hoje->add(new DateInterval('P'.$diasVidaUtil.'D'));
+            $recebimentoEntity = $this->getEntityManager()->getReference('wms:Recebimento',$codRecebimento);
             $recebimentoEntity
-                ->addAndamento(false, false, $observacao, $codProduto, $dscGrade, $dataValidade);
+                ->addAndamento(false, false, $observacao, $codProduto, $grade, $dataValidade, $dataShelflife);
 
             $this->getEntityManager()->persist($recebimentoEntity);
 
-            if ($liberarRecusar == true) {
-                if ($idRecebEmbalagem) {
-                    $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idRecebEmbalagem);
+            if ($liberar == true) {
+                if ($codRecebEmbalagem) {
+                    $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $codRecebEmbalagem);
                     $recebimentoEmbalagemEntity->setQtdConferida($recebimentoEmbalagemEntity->getQtdBloqueada());
                     $recebimentoEmbalagemEntity->setQtdBloqueada(0);
 
                     $this->getEntityManager()->persist($recebimentoEmbalagemEntity);
-                } else if ($idRecebVolume) {
-                    $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idRecebVolume);
+                } else if ($codRecebVolume) {
+                    $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $codRecebVolume);
                     $recebimentoVolumeEntity->setQtdConferida($recebimentoVolumeEntity->getQtdBloqueada());
                     $recebimentoVolumeEntity->setQtdBloqueada(0);
 
                     $this->getEntityManager()->persist($recebimentoVolumeEntity);
                 }
             } else {
-                if ($idRecebEmbalagem) {
-                    $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idRecebEmbalagem);
+                if ($codRecebEmbalagem) {
+                    $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $codRecebEmbalagem);
                     $recebimentoEmbalagemEntity->setQtdBloqueada(0);
 
                     $this->getEntityManager()->persist($recebimentoEmbalagemEntity);
-                } else if ($idRecebVolume) {
-                    $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idRecebVolume);
+                } else if ($codRecebVolume) {
+                    $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $codRecebVolume);
                     $recebimentoVolumeEntity->setQtdBloqueada(0);
 
                     $this->getEntityManager()->persist($recebimentoVolumeEntity);
@@ -1584,7 +1579,9 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
     public function produtosBloqueadosAjaxAction()
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select("r.id COD_RECEBIMENTO, p.id COD_PRODUTO, p.descricao DESCRICAO_PRODUTO, p.grade DSC_GRADE, TO_CHAR(ra.dataValidade,'DD/MM/YYYY') DATA_VALIDADE, pessoa.nome USUARIO, ra.dscObservacao OBSERVACAO")
+            ->select("r.id COD_RECEBIMENTO, p.id COD_PRODUTO, p.descricao DESCRICAO_PRODUTO, p.grade DSC_GRADE,
+                             TO_CHAR(ra.dataShelflife,'DD/MM/YYYY') DATA_SHELF_LIFE, TO_CHAR(ra.dataValidade,'DD/MM/YYYY') DATA_VALIDADE,
+                             ra.dataShelflife - ra.dataValidade DIAS_DIFERENCA, pessoa.nome USUARIO, ra.dscObservacao OBSERVACAO")
             ->from('wms:Recebimento', 'r')
             ->innerJoin('wms:Recebimento\Andamento', 'ra', 'WITH', 'r.id = ra.recebimento')
             ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = ra.codProduto AND p.grade = ra.dscGrade')

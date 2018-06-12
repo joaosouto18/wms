@@ -252,7 +252,7 @@ class Recebimento
      * @param int $statusId
      * @param int usuarioId
      */
-    public function addAndamento($statusId = false, $usuarioId = false, $observacao = false, $codProduto = null, $dscGrade = null, $dataValidade = null)
+    public function addAndamento($statusId = false, $usuarioId = false, $observacao = false, $codProduto = null, $dscGrade = null, $dataValidade = null, $dataShelflife = null)
     {
         $usuarioId = ($usuarioId) ? $usuarioId : \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuario = $this->getEm()->getReference('wms:Usuario', (int) $usuarioId);
@@ -271,6 +271,7 @@ class Recebimento
         $andamento->setDscGrade($dscGrade);
         $andamento->setCodProduto($codProduto);
         $andamento->setDataValidade($dataValidade);
+        $andamento->setDataShelflife($dataShelflife);
 
         $this->andamentos[] = $andamento;
     }

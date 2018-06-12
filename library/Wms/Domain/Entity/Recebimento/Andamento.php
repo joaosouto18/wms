@@ -77,6 +77,11 @@ class Andamento
      */
     protected $dataValidade;
 
+    /**
+     * @Column(name="DTH_SHELF_LIFE", type="datetime", nullable=true)
+     */
+    protected $dataShelflife;
+
 
     public function getId()
     {
@@ -195,6 +200,22 @@ class Andamento
     public function setDataValidade($dataValidade)
     {
         $this->dataValidade = $dataValidade;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataShelflife()
+    {
+        return $this->dataShelflife;
+    }
+
+    /**
+     * @param mixed $dataShelflife
+     */
+    public function setDataShelflife($dataShelflife)
+    {
+        $this->dataShelflife = $dataShelflife;
     }
 
 }
