@@ -44,15 +44,15 @@ if ($this->itemNF['validade'] == 'S') {
                 <div class="row"><label class="field required" for="idNormaPaletizacao">Unitizador</label></div>
                 <div class="row">
                     <select class="required" id="idNormaPaletizacao" name="idNormaPaletizacao">
-                        <?php foreach ($this->normasPaletizacao as $id => $descricao): ?>
-                            <option value="<?php echo $id; ?>" <?php echo $this->itemNF['idNorma'] == $id ? "selected" : ""; ?>><?php echo $descricao; ?></option>
-                        <?php endforeach; ?>
+                    <?php foreach ($this->normasPaletizacao as $id => $descricao): ?>
+                        <option value="<?php echo $id; ?>" <?php echo $this->itemNF['idNorma'] == $id ? "selected" : ""; ?>><?php echo $descricao; ?></option>
+                    <?php endforeach; ?>
                     </select>
                 </div>
             </div>
         </div>
         <div class="row margin-row">
-            <div class="col-xs-12 text-center">
+            <div class="col-xs-9 text-center">
             <?php if ($this->indFracionavel != 'S') : ?>
                 <b>Unids. Por Emb. : <?php echo $this->itemNF['quantidadeEmbalagem'] ?></b>
             <?php elseif ($this->indFracionavel == 'S' && !empty($this->dscEmbFracDefault)) : ?>
@@ -63,7 +63,7 @@ if ($this->itemNF['validade'] == 'S') {
         </div>
         <div class="row margin-row text-center">
         <?php if ($this->controlaLote == 'S') : ?>
-            <div class="col-xs-12 text-center">
+            <div class="col-xs-9 text-center">
                 <label class="field required" for="lote"><b>Lote: </b></label>
                 <input type="text" class="required" id="lote" name="lote"/>
             </div>
