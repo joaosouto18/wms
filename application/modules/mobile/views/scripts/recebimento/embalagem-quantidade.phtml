@@ -61,19 +61,24 @@ if ($this->itemNF['validade'] == 'S') {
             <?php endif; ?>
             </div>
         </div>
-        <div class="row margin-row text-center">
         <?php if ($this->controlaLote == 'S') : ?>
-            <div class="col-xs-9 text-center">
-                <label class="field required" for="lote"><b>Lote: </b></label>
-                <input type="text" class="required" id="lote" name="lote"/>
+        <div class="row margin-row">
+            <div class="col-xs-10">
+                <label class="field required" for="lote">
+                    <b>Lote: </b>
+                    <input type="text" size="11" class="required" id="lote" name="lote"/>
+                </label>
             </div>
-        <?php endif; ?>
         </div>
+        <?php endif; ?>
         <?php if ($this->itemNF['validade'] == 'S') : ?>
-        <div class="row margin-row text-center">
-            <label class="required" for="dataValidade">Data Validade:
-                <input type="text" placeholder="dd/mm/yy" maxlength="8" size="6" class="required focus" id="dataValidade" name="dataValidade"/>
-            </label>
+        <div class="row margin-row">
+            <div class="col-xs-10">
+                <label class="required" for="dataValidade">
+                    <b>Data Validade: </b>
+                    <input type="text" placeholder="dd/mm/yy" maxlength="8" size="6" class="required focus" id="dataValidade" name="dataValidade"/>
+                </label>
+            </div>
         </div>
         <?php endif; ?>
         <div class="row margin-row">
