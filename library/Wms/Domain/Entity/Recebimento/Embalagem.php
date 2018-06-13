@@ -282,4 +282,21 @@ class Embalagem
     {
         $this->codLote = $codLote;
     }
+
+    /**
+     * @return \Wms\Domain\Entity\Produto\Lote
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param \Wms\Domain\Entity\Produto\Lote $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
+    }
+
 }

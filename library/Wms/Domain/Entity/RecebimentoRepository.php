@@ -764,8 +764,9 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $idOrdemServico
      * @param integer $idProdutoEmbalagem Codigo do Produto Embalagem
      * @param integer $qtdConferida Quantidade conferida do produto
+     * @param $loteEn ProdutoEntity\Lote
      */
-    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = NULL, $params, $numPeso = null, $qtdBloqueada = null, $produtoEmbalagemEntity = null) {
+    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = NULL, $params, $numPeso = null, $qtdBloqueada = null, $produtoEmbalagemEntity = null, $loteEn = null) {
         $em = $this->getEntityManager();
 
         $recebimentoEmbalagemEntity = new RecebimentoEmbalagemEntity;
@@ -773,15 +774,15 @@ class RecebimentoRepository extends EntityRepository {
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
         if($produtoEmbalagemEntity == null) {
-            $produtoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idProdutoEmbalagem);
+            $produtoEmbalagemEntity = $this->getEntityManager()->find('wms:Produto\Embalagem', $idProdutoEmbalagem);
         }
-        $peEntity = $this->getEntityManager()->getReference('wms:Produto\Embalagem', $idProdutoEmbalagem);
+
         if (isset($params['dataValidade']) && !empty($params['dataValidade'])) {
             $validade = new \DateTime($params['dataValidade']);
         } else {
             $validade = null;
         }
-        $qtdEmbalagem = $peEntity->getQuantidade();
+        $qtdEmbalagem = $produtoEmbalagemEntity->getQuantidade();
 
         $recebimentoEmbalagemEntity->setRecebimento($recebimentoEntity);
         $recebimentoEmbalagemEntity->setOrdemServico($ordemServicoEntity);
@@ -792,6 +793,11 @@ class RecebimentoRepository extends EntityRepository {
         $recebimentoEmbalagemEntity->setDataValidade($validade);
         $recebimentoEmbalagemEntity->setNumPecas($numPecas);
         $recebimentoEmbalagemEntity->setQtdBloqueada($qtdBloqueada);
+
+        if (!empty($loteEn)) {
+            $recebimentoEmbalagemEntity->setLote($loteEn);
+            $recebimentoEmbalagemEntity->setCodLote($loteEn->getId());
+        }
 
         $recebimentoEmbalagemEntity->setNumPeso($numPeso);
         if ($idNormaPaletizacao != null) {
@@ -812,8 +818,9 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $idOrdemServico
      * @param integer $idProdutoVolume Codigo do Produto Volume
      * @param integer $qtdConferida Quantidade conferida do produto
+     * @param $loteEn ProdutoEntity\Lote
      */
-    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null) {
+    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null, $lote = null) {
         $em = $this->getEntityManager();
 
         $recebimentoVolumeEntity = new RecebimentoVolumeEntity;
@@ -835,6 +842,12 @@ class RecebimentoRepository extends EntityRepository {
                 ->setDataValidade($validade);
         $recebimentoVolumeEntity->setNumPeso($numPeso);
         $recebimentoVolumeEntity->setQtdBloqueada($qtdBloqueada);
+
+        if (!empty($loteEn)) {
+            $recebimentoVolumeEntity->setLote($loteEn);
+            $recebimentoVolumeEntity->setCodLote($loteEn->getId());
+        }
+
         if ($idNormaPaletizacao != null) {
             $normaPaletizacaoEntity = $this->getEntityManager()->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
             $recebimentoVolumeEntity->setNormaPaletizacao($normaPaletizacaoEntity);
