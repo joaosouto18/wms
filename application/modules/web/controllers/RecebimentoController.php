@@ -565,7 +565,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
             $conferenciaRepo = $this->_em->getRepository('wms:Recebimento\Conferencia');
             $produtosDivergencia = $conferenciaRepo->getProdutoDivergencia($idOrdemServico);
-
+            $this->view->lote = $conferenciaRepo->existeLoteRecebimento($recebimentoEntity->getId());
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo = $this->_em->getRepository('wms:Produto');
             /** @var \Wms\Domain\Entity\Produto\PesoRepository $pesoRepo */

@@ -725,7 +725,6 @@ class RecebimentoRepository extends EntityRepository {
         if($lote != null && $lote != '')
             $loteEn = $this->getEntityManager()->getRepository('wms:Produto\Lote')->find($lote);
 
-//        var_dump('oiii');die;
         $conferenciaEntity = new ConferenciaEntity;
         $conferenciaEntity->setRecebimento($recebimentoEntity);
         $conferenciaEntity->setOrdemServico($ordemServicoEntity);

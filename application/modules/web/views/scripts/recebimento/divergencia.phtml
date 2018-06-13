@@ -17,18 +17,30 @@
 <form id="recebimento-divergencia-form" method="post" class="saveForm">
     <?php
     echo $this->formHidden("acaoFinalizacao", "");
+    $colspan = 2;
+    if($this->lote == true){
+        $colspan = 3;
+    }
+
     ?>
     <div id="quantidade-grid" class="grid">
         <table class="gTable produtoConferencias">
             <thead>
             <tr style="text-align: center; font-weight: bold; border-left: #666; background: #CCC; line-height: 22px">
-                <td colspan="2">Item</td>
+                <td colspan="<?php echo $colspan ?>">Item</td>
                 <td colspan="3">Qtde. Recebida </td>
                 <td colspan="3">Devolução</td>
             </tr>
             <tr class="gTTitle">
                 <td>Cód. - Produto</td>
                 <td>Grade</td>
+                <?php
+                if($this->lote == true){
+                ?>
+                    <td>Lote</td>
+                <?php
+                }
+                ?>
                 <td>Referência</td>
                 <td>Qtde. Conferida </td>
                 <td>Qtde. Avaria</td>
@@ -46,6 +58,13 @@
                 <tr height="35">
                     <td><?php echo $produtoConferencia['idProduto'] . ' - ' . $produtoConferencia['dscProduto'] ?></td>
                     <td><?php echo $produtoConferencia['grade'] ?></td>
+                    <?php
+                    if($this->lote == true){
+                    ?>
+                        <td><?php echo $produtoConferencia['lote'] ?></td>
+                        <?php
+                    }
+                    ?>
                     <td><?php echo $produtoConferencia['referencia'] ?></td>
                     <?php if ($produtoConferencia['possui_peso_variavel'] == 'S') : ?>
                         <td style="text-align: center" ><?php echo $produtoConferencia['qtdConferida'] ?></td>
@@ -89,7 +108,7 @@
                     ?>
                 </td>
                     <?php if (!$temDivergenciaDeVolume) : ?>
-                    <td colspan="3">
+                    <td colspan="<?php echo $colspan+1 ?>">
                         <?php
                         echo '<label>Senha de Divergencia: </label>';
                         echo $this->formPassword("senhaDivergencia", '', array(

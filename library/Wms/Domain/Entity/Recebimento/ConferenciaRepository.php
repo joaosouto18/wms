@@ -170,8 +170,10 @@ class ConferenciaRepository extends EntityRepository
                         NVL(V.NUM_PESO,0) as PES_RECEBIDO,
                         P.TOLERANCIA_NOMINAL,
                         P.IND_POSSUI_PESO_VARIAVEL,
-                        RC.IND_DIVERG_VOLUMES
+                        RC.IND_DIVERG_VOLUMES,
+                        L.DSC_LOTE
                    FROM RECEBIMENTO_CONFERENCIA RC
+                   LEFT JOIN LOTE L ON L.COD_LOTE = RC.COD_LOTE
                   INNER JOIN PRODUTO P ON P.COD_PRODUTO = RC.COD_PRODUTO AND P.DSC_GRADE = RC.DSC_GRADE
                    LEFT JOIN (SELECT * FROM V_QTD_RECEBIMENTO V WHERE COD_OS = $idOrdemServico) V
                           ON V.COD_PRODUTO = RC.COD_PRODUTO
@@ -210,6 +212,7 @@ class ConferenciaRepository extends EntityRepository
             $referencia = $line['DSC_REFERENCIA'];
             $possuiPesoVariavel = $line['IND_POSSUI_PESO_VARIAVEL'];
             $divergenciaVolumes = $line['IND_DIVERG_VOLUMES'];
+            $lote = $line['DSC_LOTE'];
 
             if ($qtdDivergencia == 0 && $pesoRecebimento > 0) {
                 $qtdConferida = $pesoRecebimento . " Kg";
@@ -236,6 +239,7 @@ class ConferenciaRepository extends EntityRepository
                 'id'=>$idRecebimentoConferencia,
                 'idProduto' =>$idProduto,
                 'grade' => $grade,
+                'lote' => $lote,
                 'dscProduto' => $dscProduto,
                 'qtdConferida' => $qtdConferida,
                 'qtdAvaria' => $qtdAvaria,
@@ -246,6 +250,15 @@ class ConferenciaRepository extends EntityRepository
             );
         }
         return $resultArr;
+    }
+
+    public function existeLoteRecebimento($idRecebimento){
+        $SQL = "SELECT * FROM RECEBIMENTO_CONFERENCIA WHERE COD_RECEBIMENTO = $idRecebimento AND COD_LOTE IS NOT NULL";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if(empty($result)){
+            return false;
+        }
+        return true;
     }
 
     public function getSumPesoTotalRecebimentoProduto($recebimento,$codProduto,$grade,$ordemServicoEntity)
