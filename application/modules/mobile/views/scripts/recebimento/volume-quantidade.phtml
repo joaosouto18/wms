@@ -7,55 +7,106 @@
         <input type="hidden" id="idItem" name="idItem" value="<?php echo $this->itemNF['idItem'] ?>" />
         <input type="hidden" id="idProdutoVolume" name="idProdutoVolume" value="<?php echo $this->itemNF['idVolume'] ?>" />
         <input type="hidden" id="unidadePorVolume" value="0" name="quantidadeVolume" />
-        <div>
-            <table class="info">
-                <tr class="title">
-                    <td colspan="2">Código de Barras</td>
-                </tr>
-                <tr>
-                    <td colspan="2"><?php echo $this->itemNF['codigoBarras'] ?></td>
-                </tr>
 
-                <tr class="title">
-                    <td>Norma: <span style="font-weight: normal;"><?php echo $this->itemNF['numNorma'] ?></span></td>
-                    <td>Sequência: <span style="font-weight: normal;"><?php echo $this->itemNF['sequenciaVolume'] ?></span></td>
-                </tr>
-
-                <tr class="title">
-                    <td><label class="field required" for="idNormaPaletizacao">Unitizador</label></td>
-                    <?php if ($this->pesoVariavel == 'N') : ?>
-                        <td><label class="field required" for="qtdConferida">Quantidade</label></td>
-                    <?php endif; ?>
-                    <?php if ($this->itemNF['validade'] == 'S') : ?>
-                        <td><label class="field required" for="dataValidade">Data Validade</label></td>
-                    <?php endif; ?>
-                    <?php if ($this->pesoVariavel == 'S') : ?>
-                        <td><label class="field required" for="numPeso">Peso (Kg)</label></td>
-                    <?php endif; ?>
-                </tr>
-                <tr>
-                    <td>
-                        <select class=" required" mostrarselecione="" id="idNormaPaletizacao" name="idNormaPaletizacao">
-                            <?php foreach ($this->normasPaletizacao as $id => $descricao): ?>
-                                <option value="<?php echo $id; ?>" <?php echo $this->itemNF['idNorma'] == $id ? "selected" : ""; ?>><?php echo $descricao; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </td>
-                    <?php if ($this->pesoVariavel == 'N') : ?>
-                        <td><input type="text" maxlength="15" size="10" class="required focus" id="qtdConferida" name="qtdConferida" value="" /></td>
-                    <?php endif; ?>
-                    <?php if ($this->itemNF['validade'] == 'S') : ?>
-                        <td><input type="text" maxlength="10" size="10" class="required focus date" id="dataValidade" name="dataValidade" /></td>
-                    <?php endif; ?>
-                    <?php if ($this->pesoVariavel == 'S') : ?>
-                        <td>
-                            <input type="text" maxlength="15" value="" size="10" class="required focus" id="numPeso" name="numPeso" value="" />
-                        </td>
-                    <?php endif; ?>
-                </tr>
-
-            </table>
+        <div class="row margin-row">
+            <div class="col-md-8 col-xs-9 text-center">
+                <div class="row"><b>Código de Barras</b></div>
+                <div class="row"><?php echo $this->itemNF['codigoBarras'] ?></div>
+            </div>
         </div>
+        <div class="row margin-row">
+            <div class="col-md-4 col-xs-4 text-center">
+                Norma: <span style="font-weight: normal;"><?php echo $this->itemNF['numNorma'] ?></span>
+            </div>
+            <div class="col-md-8 col-xs-5 text-center">
+                Sequência: <span style="font-weight: normal;"><?php echo $this->itemNF['sequenciaVolume'] ?></span>
+            </div>
+        </div>
+        <?php if ($this->controlaLote == 'S') : ?>
+        <div class="row margin-row">
+            <div class="col-xs-10">
+                <label class="field required" for="lote">
+                    <b>Lote: </b>
+                    <input type="text" size="11" class="required" id="lote" name="lote"/>
+                </label>
+            </div>
+        </div>
+        <?php endif; ?>
+        <?php if ($this->itemNF['validade'] == 'S') : ?>
+        <div class="row margin-row">
+            <div class="col-xs-10">
+                <label class="required" for="dataValidade">
+                    <b>Data Validade: </b>
+                    <input type="text" placeholder="dd/mm/yy" maxlength="8" size="6" class="required focus" id="dataValidade" name="dataValidade"/>
+                </label>
+            </div>
+        </div>
+        <?php endif; ?>
+        <div class="row margin-row">
+            <div class="col-md-4 col-xs-10 text-center">
+                <?php if ($this->pesoVariavel != 'S') :?>
+                <label class="field required" for="qtdConferida">
+                    <b>Quantidade: </b>
+                    <input type="text" maxlength="15" size="6" class="required <?php if ($this->itemNF['validade'] != 'S') : echo " focus "; endif ?>" id="qtdConferida" name="qtdConferida" />
+                </label>
+                <?php else : ?>
+                <label class="field required" for="qtdConferida">
+                    <b>Peso (Kg): </b>
+                    <input type="text" maxlength="15" size="6" class="required focus" id="numPeso" name="numPeso"/>
+                </label>
+                <?php endif; ?>
+            </div>
+        </div>
+
+<!--        <div>-->
+<!--            <table class="info">-->
+<!--                <tr class="title">-->
+<!--                    <td colspan="2">Código de Barras</td>-->
+<!--                </tr>-->
+<!--                <tr>-->
+<!--                    <td colspan="2">--><?php //echo $this->itemNF['codigoBarras'] ?><!--</td>-->
+<!--                </tr>-->
+<!---->
+<!--                <tr class="title">-->
+<!--                    <td>Norma: <span style="font-weight: normal;">--><?php //echo $this->itemNF['numNorma'] ?><!--</span></td>-->
+<!--                    <td>Sequência: <span style="font-weight: normal;">--><?php //echo $this->itemNF['sequenciaVolume'] ?><!--</span></td>-->
+<!--                </tr>-->
+<!---->
+<!--                <tr class="title">-->
+<!--                    <td><label class="field required" for="idNormaPaletizacao">Unitizador</label></td>-->
+<!--                    --><?php //if ($this->pesoVariavel == 'N') : ?>
+<!--                        <td><label class="field required" for="qtdConferida">Quantidade</label></td>-->
+<!--                    --><?php //endif; ?>
+<!--                    --><?php //if ($this->itemNF['validade'] == 'S') : ?>
+<!--                        <td><label class="field required" for="dataValidade">Data Validade</label></td>-->
+<!--                    --><?php //endif; ?>
+<!--                    --><?php //if ($this->pesoVariavel == 'S') : ?>
+<!--                        <td><label class="field required" for="numPeso">Peso (Kg)</label></td>-->
+<!--                    --><?php //endif; ?>
+<!--                </tr>-->
+<!--                <tr>-->
+<!--                    <td>-->
+<!--                        <select class=" required" mostrarselecione="" id="idNormaPaletizacao" name="idNormaPaletizacao">-->
+<!--                            --><?php //foreach ($this->normasPaletizacao as $id => $descricao): ?>
+<!--                                <option value="--><?php //echo $id; ?><!--" --><?php //echo $this->itemNF['idNorma'] == $id ? "selected" : ""; ?><!--><?php //echo $descricao; ?><!--</option>-->
+<!--                            --><?php //endforeach; ?>
+<!--                        </select>-->
+<!--                    </td>-->
+<!--                    --><?php //if ($this->pesoVariavel == 'N') : ?>
+<!--                        <td><input type="text" maxlength="15" size="10" class="required focus" id="qtdConferida" name="qtdConferida" value="" /></td>-->
+<!--                    --><?php //endif; ?>
+<!--                    --><?php //if ($this->itemNF['validade'] == 'S') : ?>
+<!--                        <td><input type="text" maxlength="10" size="10" class="required focus date" id="dataValidade" name="dataValidade" /></td>-->
+<!--                    --><?php //endif; ?>
+<!--                    --><?php //if ($this->pesoVariavel == 'S') : ?>
+<!--                        <td>-->
+<!--                            <input type="text" maxlength="15" value="" size="10" class="required focus" id="numPeso" name="numPeso" value="" />-->
+<!--                        </td>-->
+<!--                    --><?php //endif; ?>
+<!--                </tr>-->
+<!---->
+<!--            </table>-->
+<!--        </div>-->
         <input type="submit" class="btn gradientBtn" value="Salvar" id="submit" name="submit">
     </form>
 </div>

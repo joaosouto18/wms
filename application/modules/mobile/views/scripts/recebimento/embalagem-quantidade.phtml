@@ -247,7 +247,18 @@ if ($this->itemNF['validade'] == 'S') {
 
         });
 
-        $("#recebimento-embalagem-quantidade-form").submit(function () {
+        $("#recebimento-embalagem-quantidade-form").submit(function (event) {
+            <?php if ($this->controlaLote == 'S') : ?>
+            var lote = $("#lote").val();
+            if (lote === '' || lote === null) {
+                alert("O lote do item não foi informado");
+                if (event.preventDefault) {
+                    event.preventDefault();
+                } else {
+                    event.returnValue = false;
+                }
+            }
+            <?php endif; ?>
             return checkValidade();
         });
 
