@@ -820,7 +820,7 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $qtdConferida Quantidade conferida do produto
      * @param $loteEn ProdutoEntity\Lote
      */
-    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null, $lote = null) {
+    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null, $loteEn = null) {
         $em = $this->getEntityManager();
 
         $recebimentoVolumeEntity = new RecebimentoVolumeEntity;
