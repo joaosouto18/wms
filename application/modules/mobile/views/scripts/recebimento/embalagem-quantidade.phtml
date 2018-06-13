@@ -1,4 +1,12 @@
-<?php echo $this->render('recebimento/produto-detalhes.phtml'); ?>
+<?php echo $this->render('recebimento/produto-detalhes.phtml');
+
+$cssQtd = 'col-xs-12';
+
+if ($this->itemNF['validade'] == 'S') {
+    $cssQtd = 'col-lg-3 col-md-4 col-xs-5';
+}
+
+?>
 <div class="row" >
     <form method="post" id="recebimento-embalagem-quantidade-form" action="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'produto-conferencia')); ?>" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
 
@@ -22,13 +30,13 @@
                     ?>
                 </div>
             </div>
-            <div class="col-md-8 col-xs-6 text-center">
+            <div class="col-md-8 col-xs-5 text-center">
                 <div class="row"><b>Código de Barras</b></div>
                 <div class="row"><?php echo $this->itemNF['codigoBarras'] ?></div>
             </div>
         </div>
         <div class="row margin-row">
-            <div class="col-md-4 col-xs-5 text-center">
+            <div class="col-md-4 col-xs-4 text-center">
                 <div class="row"><b>Norma:</b></div>
                 <div class="row"><?php echo $this->itemNF['numLastro'] . ' x ' . $this->itemNF['numCamadas'] . ' = ' . $this->itemNF['numNorma'] ?></div>
             </div>
@@ -36,51 +44,48 @@
                 <div class="row"><label class="field required" for="idNormaPaletizacao">Unitizador</label></div>
                 <div class="row">
                     <select class="required" id="idNormaPaletizacao" name="idNormaPaletizacao">
-                        <?php foreach ($this->normasPaletizacao as $id => $descricao): ?>
-                            <option value="<?php echo $id; ?>" <?php echo $this->itemNF['idNorma'] == $id ? "selected" : ""; ?>><?php echo $descricao; ?></option>
-                        <?php endforeach; ?>
+                    <?php foreach ($this->normasPaletizacao as $id => $descricao): ?>
+                        <option value="<?php echo $id; ?>" <?php echo $this->itemNF['idNorma'] == $id ? "selected" : ""; ?>><?php echo $descricao; ?></option>
+                    <?php endforeach; ?>
                     </select>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-ls-3 col-md-4 col-xs-5 margin-row text-center">
+        <div class="row margin-row">
+            <div class="col-xs-9 text-center">
             <?php if ($this->indFracionavel != 'S') : ?>
-                <div class="row"><b>Unids. Por Emb.</b></div>
-                <div class="row"><b><?php echo $this->itemNF['quantidadeEmbalagem'] ?></b></div>
+                <b>Unids. Por Emb. : <?php echo $this->itemNF['quantidadeEmbalagem'] ?></b>
             <?php elseif ($this->indFracionavel == 'S' && !empty($this->dscEmbFracDefault)) : ?>
-                <div class="row">
-                    <b><label class="field required" for="qtdUnidFracionavel">Qtd de: <?php echo $this->dscEmbFracDefault ?>'s</label></b>
-                </div>
-                <div class="row">
-                    <input type="text" value="1" size="6" name="qtdUnidFracionavel" id="qtdUnidFracionavel" class="required"/>
-                </div>
+                <b><label class="field required" for="qtdUnidFracionavel">Qtd de: <?php echo $this->dscEmbFracDefault ?>'s</label></b>
+                <input type="text" value="1" size="6" name="qtdUnidFracionavel" id="qtdUnidFracionavel" class="required"/>
             <?php endif; ?>
             </div>
-            <?php if ($this->itemNF['validade'] == 'S') : ?>
-                <div class="col-ls-3 col-md-3 col-xs-5 margin-row text-center">
-                    <div class="row">
-                        <b><label class="field required" for="dataValidade">Data Validade</label></b>
-                    </div>
-                    <div class="row">
-                        <input type="text" placeholder="dd/mm/yy" maxlength="8" size="6" class="required focus" id="dataValidade" name="dataValidade"/>
-                    </div>
-                </div>
-            <?php endif; ?>
-            <?php if ($this->controlaLote == 'S') : ?>
-                <div class="col-ls-3 col-md-3 col-xs-5 margin-row text-center">
-                    <div class="row">
-                        <b><label class="field required" for="lote">Lote:</label></b>
-                    </div>
-                    <div class="row">
-                        <input type="text" size="6" class="required" id="lote" name="lote"/>
-                    </div>
-                </div>
-            <?php endif; ?>
-            <div class="col-ls-3 col-md-3 col-xs-5 margin-row text-center">
+        </div>
+        <?php if ($this->controlaLote == 'S') : ?>
+        <div class="row margin-row">
+            <div class="col-xs-10">
+                <label class="field required" for="lote">
+                    <b>Lote: </b>
+                    <input type="text" size="11" class="required" id="lote" name="lote"/>
+                </label>
+            </div>
+        </div>
+        <?php endif; ?>
+        <?php if ($this->itemNF['validade'] == 'S') : ?>
+        <div class="row margin-row">
+            <div class="col-xs-10">
+                <label class="required" for="dataValidade">
+                    <b>Data Validade: </b>
+                    <input type="text" placeholder="dd/mm/yy" maxlength="8" size="6" class="required focus" id="dataValidade" name="dataValidade"/>
+                </label>
+            </div>
+        </div>
+        <?php endif; ?>
+        <div class="row margin-row">
+            <div class="col-md-4 col-xs-5 text-center">
             <?php if ($this->pesoVariavel != 'S') :
                 if ($this->indFracionavel == "S") :?>
-                <div class="row">
+                <div class="row margin-row">
                     <b><label class="field required" for="qtdConferida"><?php echo \Wms\Domain\Entity\Produto::$listaUnidadeMedida[$this->itemNF['unidFracao']] . "S"?></label></b>
                 </div>
                 <div class="row">
@@ -103,7 +108,7 @@
                 </div>
             <?php endif; ?>
             </div>
-            <div class="col-ls-3 col-md-3 col-xs-12 margin-row text-center">
+            <div class="col-ls-3 col-md-3 col-xs-4 margin-row text-center">
             <?php if ($this->indFracionavel != 'S') : ?>
                 <div class="row"><b>Total Unidades</b></div>
             <?php else : ?>
@@ -114,7 +119,6 @@
                 </div>
             </div>
         </div>
-
 <!--        <div>-->
 <!--            <table class="info table">-->
 <!--                <tr class="title">-->
@@ -243,7 +247,18 @@
 
         });
 
-        $("#recebimento-embalagem-quantidade-form").submit(function () {
+        $("#recebimento-embalagem-quantidade-form").submit(function (event) {
+            <?php if ($this->controlaLote == 'S') : ?>
+            var lote = $("#lote").val();
+            if (lote === '' || lote === null) {
+                alert("O lote do item não foi informado");
+                if (event.preventDefault) {
+                    event.preventDefault();
+                } else {
+                    event.returnValue = false;
+                }
+            }
+            <?php endif; ?>
             return checkValidade();
         });
 

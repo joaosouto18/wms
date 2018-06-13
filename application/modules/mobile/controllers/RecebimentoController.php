@@ -235,8 +235,6 @@ class Mobile_RecebimentoController extends Action
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
         $notaFiscalItemRepo = $this->em->getRepository('wms:NotaFiscal\Item');
-        /** @var \Wms\Domain\Entity\Recebimento\VolumeRepository $recebimentoVolumeRepository */
-        $recebimentoVolumeRepository = $this->em->getRepository('wms:Recebimento\Volume');
         /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $recebimentoEmbalagemRepository */
         $recebimentoEmbalagemRepository = $this->em->getRepository('wms:Recebimento\Embalagem');
 
@@ -265,6 +263,15 @@ class Mobile_RecebimentoController extends Action
                 $qtdConferida = (float) $qtdConferida;
             } else {
                 $qtdConferida = (int) $qtdConferida;
+            }
+
+            $loteEn = null;
+            if ($produtoEn->getIndControlaLote() == 'S') {
+                /** @var \Wms\Domain\Entity\Produto\LoteRepository $loteRepo */
+                $loteRepo = $this->em->getRepository("wms:Produto\Lote");
+                $loteEn = $loteRepo->getLoteRecebimento($lote, $idProduto, $grade);
+                if (empty($loteEn))
+                    throw new Exception("O lote $lote não foi encontrado");
             }
 
             if ($produtoEn->getPossuiPesoVariavel() == 'S'){
@@ -346,14 +353,14 @@ class Mobile_RecebimentoController extends Action
             // caso embalagem
             if ($this->_hasParam('idProdutoEmbalagem')) {
                 // gravo conferencia do item
-                $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $qtdUnidFracionavel, $idNormaPaletizacao, $params, $params['numPeso'], $qtdBloqueada);
+                $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $qtdUnidFracionavel, $idNormaPaletizacao, $params, $params['numPeso'], $qtdBloqueada, null, $loteEn);
                 if ($dataValidadeValida)
                     $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
             }
 
             // caso volume
             if ($this->_hasParam('idProdutoVolume')) {
-                $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params, $params['numPeso'], $qtdBloqueada);
+                $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params, $params['numPeso'], $qtdBloqueada, $loteEn);
                 if ($dataValidadeValida)
                     $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
             }

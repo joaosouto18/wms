@@ -74,4 +74,19 @@ class LoteRepository extends EntityRepository
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function getLoteRecebimento($lote, $codProduto, $grade) {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("l")
+            ->from("wms:Produto\Lote", 'l')
+            ->where("1 = 1 AND (l.descricao = '$lote' AND l.codProduto = '$codProduto' AND l.grade = '$grade')
+                    OR (l.descricao = '$lote' AND l.codProduto is null AND l.grade is null)");
+
+        $result = $dql->getQuery()->getResult();
+
+        if (!empty($result)){
+            return $result[0];
+        }
+        return null;
+    }
 }
