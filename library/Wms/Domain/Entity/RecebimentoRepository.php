@@ -691,10 +691,39 @@ class RecebimentoRepository extends EntityRepository {
 
         $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
+        /** @var \Wms\Domain\Entity\NotaFiscal\NotaFiscalItemLoteRepository $notaFiscalItemLoteRepo */
+        $notaFiscalItemLoteRepo = $this->_em->getRepository('wms:NotaFiscal\NotaFiscalItemLote');
+
+
         $ordemServicoEntity = $em->find('wms:OrdemServico', $idOrdemServico);
         $recebimentoEntity = $ordemServicoEntity->getRecebimento();
 
         $temVolumesDivergentes = $this->checkVolumesDivergentes($recebimentoEntity->getId(), $idOrdemServico, $idProduto, $grade);
+
+        $qtdNfPorLote = $notaFiscalItemLoteRepo->getQtdLoteByProdutoAndRecebimento($idProduto,$grade,$recebimentoEntity->getId());
+
+        $validaLote = 'N';
+        $qtdLoteNota = 0;
+        if ($produtoEntity->getIndControlaLote() == 'S') {
+            if ($qtdNfPorLote != null) {
+                $validaLote = 'S';
+
+                foreach ($qtdNfPorLote as $qtdLote) {
+                    if ($qtdLote['COD_LOTE'] == $lote) {
+                        $qtdLoteNota = $qtdLoteNota + $qtdLote['QTD'];
+                    }
+                }
+            }
+        }
+
+        $qtdDivergenciaLote = 0;
+        $indDivergenciaLote = 'N';
+        if ($validaLote = 'S') {
+            if ($qtdLoteNota != $qtdConferida) {
+                $indDivergenciaLote = 'S';
+                $qtdDivergenciaLote = (($qtdConferida + $qtdAvaria) - $qtdLoteNota);
+            }
+        }
 
         /**
          * @ToDo Verificar regra para identificação da data de validade caso o recebimento seja feito em mais de uma embalagem com datas de validades diferentes
@@ -725,7 +754,6 @@ class RecebimentoRepository extends EntityRepository {
         if($lote != null && $lote != '')
             $loteEn = $this->getEntityManager()->getRepository('wms:Produto\Lote')->find($lote);
 
-//        var_dump('oiii');die;
         $conferenciaEntity = new ConferenciaEntity;
         $conferenciaEntity->setRecebimento($recebimentoEntity);
         $conferenciaEntity->setOrdemServico($ordemServicoEntity);
@@ -739,6 +767,7 @@ class RecebimentoRepository extends EntityRepository {
         $conferenciaEntity->setDataValidade($dataValidade);
         $conferenciaEntity->setNumPecas($numPecas);
         $conferenciaEntity->setCodLote($loteEn);
+        $conferenciaEntity->setIndDivergLote($indDivergenciaLote);
 
         if ($temVolumesDivergentes) {
             $conferenciaEntity->setIndDivergVolumes("S");
@@ -749,6 +778,9 @@ class RecebimentoRepository extends EntityRepository {
 
         $em->persist($conferenciaEntity);
         $em->flush();
+
+        if ($indDivergenciaLote == 'S')
+            $qtdDivergencia = $qtdDivergenciaLote;
 
         if ($divergenciaPesoVariavel == 'S' && $produtoEntity->getPossuiPesoVariavel() == 'S')
             $qtdDivergencia = 1;

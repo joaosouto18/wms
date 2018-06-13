@@ -128,6 +128,11 @@ class Conferencia
      */
     protected $indDivergVolumes;
 
+    /**
+     * @var string
+     * @Column(name="IND_DIVERG_LOTE", type="string", length=1, nullable=false)
+     */
+    protected $indDivergLote;
 
     /**
      * Codigo do lote
@@ -137,7 +142,23 @@ class Conferencia
      * @var \Wms\Domain\Entity\Produto\Lote $codLote
      */
     protected $codLote;
-    
+
+    /**
+     * @return string
+     */
+    public function getIndDivergLote()
+    {
+        return $this->indDivergLote;
+    }
+
+    /**
+     * @param string $indDivergLote
+     */
+    public function setIndDivergLote($indDivergLote)
+    {
+        $this->indDivergLote = $indDivergLote;
+    }
+
     public function getId()
     {
         return $this->id;

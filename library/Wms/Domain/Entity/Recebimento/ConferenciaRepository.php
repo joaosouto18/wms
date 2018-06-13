@@ -190,7 +190,10 @@ class ConferenciaRepository extends EntityRepository
                                                                   AND PESONF.COD_PRODUTO = RC.COD_PRODUTO
                                                                   AND PESONF.DSC_GRADE = RC.DSC_GRADE
                   WHERE RC.COD_OS = $idOrdemServico
-                    AND (RC.QTD_DIVERGENCIA <> 0 OR RC.IND_DIVERGENCIA_PESO = 'S' OR RC.IND_DIVERG_VOLUMES = 'S')";
+                    AND (   RC.QTD_DIVERGENCIA <> 0 
+                         OR RC.IND_DIVERGENCIA_PESO = 'S' 
+                         OR RC.IND_DIVERG_VOLUMES = 'S'
+                         OR RC.IND_DIVERG_LOTE =  'S')";
         $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $resultArr = array();
