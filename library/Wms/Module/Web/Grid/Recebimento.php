@@ -167,13 +167,6 @@ class Recebimento extends Grid
                     'target' => '_blank',
                 ))
                 ->addAction(array(
-                    'label' => 'Produtos Bloqueados por Shelf-life',
-                    'actionName' => 'produtos-bloqueados-ajax',
-                    'cssClass' => 'pdf',
-                    'pkIndex' => 'id',
-                    'target' => '_blank'
-                ))
-                ->addAction(array(
                     'label' => 'Desfazer Recebimento',
                     'actionName' => 'desfazer',
                     'pkIndex' => 'id',

@@ -6,5 +6,5 @@ add (cod_produto varchar2(32 byte),
 dsc_grade varchar2(32 byte),
 dth_validade DATE);
 
-ALTER TABLE RECEBIMENTO_ANDAMENTO
-    ADD (DTH_SHELF_LIFE DATE);
+alter table recebimento_andamento add dias_shelf_life number(8,0);
+alter table recebimento_andamento add qtd_conferida number(12,4);

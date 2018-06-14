@@ -78,9 +78,14 @@ class Andamento
     protected $dataValidade;
 
     /**
-     * @Column(name="DTH_SHELF_LIFE", type="datetime", nullable=true)
+     * @Column(name="DIAS_SHELF_LIFE", type="integer", nullable=true)
      */
-    protected $dataShelflife;
+    protected $diasShelflife;
+
+    /**
+     * @Column(name="QTD_CONFERIDA", type="string", nullable=true)
+     */
+    protected $qtdConferida;
 
 
     public function getId()
@@ -205,17 +210,34 @@ class Andamento
     /**
      * @return mixed
      */
-    public function getDataShelflife()
+    public function getDiasShelflife()
     {
-        return $this->dataShelflife;
+        return $this->diasShelflife;
     }
 
     /**
-     * @param mixed $dataShelflife
+     * @param mixed $diasShelflife
      */
-    public function setDataShelflife($dataShelflife)
+    public function setDiasShelflife($diasShelflife)
     {
-        $this->dataShelflife = $dataShelflife;
+        $this->diasShelflife = $diasShelflife;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdConferida()
+    {
+        return $this->qtdConferida;
+    }
+
+    /**
+     * @param mixed $qtdConferida
+     */
+    public function setQtdConferida($qtdConferida)
+    {
+        $this->qtdConferida = $qtdConferida;
+    }
+
 
 }
