@@ -82,6 +82,8 @@ class PedidoProdutoRepository extends EntityRepository
                 $encontrouProdutoERP = false;
                 $codProdutoWMS = $produtoWms['produto'];
                 $codPedidoWMS = $produtoWms['pedido'];
+                $codPedidoExterno = $produtoWms['codPedidoERP'];
+
                 $gradeWMS = $produtoWms['grade'];
                 $qtdWms = str_replace(',','.',$produtoWms['quantidade']);
                 $qtdCortadaWms= 0;
@@ -94,7 +96,7 @@ class PedidoProdutoRepository extends EntityRepository
                     $gradeERP = $produtoERP['GRADE'];
                     $qtdERP = str_replace(',','.',$produtoERP['QTD']);
 
-                    if (($codProdutoWMS == $codProdutoERP) && ($codPedidoWMS == $codPedidoERP) && ($gradeWMS == $gradeERP)) {
+                    if (($codProdutoWMS == $codProdutoERP) && ($codPedidoExterno == $codPedidoERP) && ($gradeWMS == $gradeERP)) {
                         if ($qtdERP > $qtdWms) $qtdERP = $qtdWms;
                         $qtdCortar = $qtdWms - $qtdERP;
 

@@ -1304,8 +1304,8 @@ class ExpedicaoRepository extends EntityRepository {
                 $expedicaoEn->setStatus($statusEmFinalizacao);
                 $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
 
-                $this->getEntityManager()->persist($expedicaoEn);
-                $this->getEntityManager()->flush();
+                //$this->getEntityManager()->persist($expedicaoEn);
+                //$this->getEntityManager()->flush();
             }
 
             $codCargaExterno = $this->validaCargaFechada($idExpedicao);
