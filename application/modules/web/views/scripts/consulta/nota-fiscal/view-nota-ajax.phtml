@@ -9,67 +9,70 @@
         </tr>
         <?php
     else:
-        foreach ($this->notasFiscais as $notaFiscal):
+    foreach ($this->notasFiscais as $notaFiscal):
+    ?>
+    <tr class="title" style="text-align: center;">
+        <td>Número da NF</td>
+        <td>Série</td>
+        <td>Data Emissão</td>
+        <td>Fornecedor</td>
+        <td></td>
+    </tr>
+    <tr style="text-align: center;">
+        <td><?php echo $notaFiscal['numero'] ?></td>
+        <td><?php echo $notaFiscal['serie'] ?></td>
+        <td><?php echo $notaFiscal['dataEmissao']->format('d/m/Y') ?></td>
+        <td><?php echo $notaFiscal['nomeFantasia'] ?></td>
+        <td><?php if ($notaFiscal['idStatus'] == $this->idStatusCancelado) echo '<strong style="color: #f00;">Nota Cancelada</strong>'; ?></td>
+    </tr>
+</table>
+<table class="details">
+    <caption>Produtos</caption>
+    <?php
+    if (count($notaFiscal['itens']) == 0):
+        ?>
+        <tr>
+            <td colspan="5"><img src="<?php echo $this->baseUrl('img/icons/information.png') ?>" style="vertical-align: top" /> Nenhum Item cadastrado para a nota.</td>
+        </tr>
+        <?php
+    else:
+        ?>
+        <tr>
+            <td colspan="5" style="height:10px"></td>
+        </tr>
+        <tr class="title" style="color:#999; text-align: center;">
+            <td>Quantidade</td>
+            <td>Código</td>
+            <td>Grade</td>
+            <td>Lote</td>
+            <td>Descrição</td>
+        </tr>
+        <?php
+        // loop itens
+        foreach ($notaFiscal['itens'] as $item):
             ?>
-            <tr class="title">
-                <td>Número da NF</td>
-                <td>Série</td>
-                <td>Data Emissão</td>
-                <td>Fornecedor</td>
-                <td></td>
+            <tr style="text-align: center;">
+                <td><?php if ($item['possuiPesoVariavel'] == 'S') {
+                        echo $item['peso'] . " Kg";
+                    } else {
+                        echo $item['quantidade'];
+                    }  ?></td>
+                <td><?php echo $item['id'] ?></td>
+                <td><?php echo $item['grade'] ?></td>
+                <td><?php echo $item['lote'] ?></td>
+                <td><?php echo $item['descricao'] ?></td>
             </tr>
-            <tr>
-                <td><?php echo $notaFiscal['numero'] ?></td>
-                <td><?php echo $notaFiscal['serie'] ?></td>
-                <td><?php echo $notaFiscal['dataEmissao']->format('d/m/Y') ?></td>
-                <td><?php echo $notaFiscal['nomeFantasia'] ?></td>
-                <td><?php if ($notaFiscal['idStatus'] == $this->idStatusCancelado) echo '<strong style="color: #f00;">Nota Cancelada</strong>'; ?></td>
-            </tr>
-            <?php
-            if (count($notaFiscal['itens']) == 0):
-                ?>
-                <tr>
-                    <td colspan="5"><img src="<?php echo $this->baseUrl('img/icons/information.png') ?>" style="vertical-align: top" /> Nenhum Item cadastrado para a nota.</td>
-                </tr>
-                <?php
-            else:
-                ?>
-                <tr>
-                    <td colspan="5" style="height:10px"></td>
-                </tr>
-                <tr class="title" style="color:#999">
-                    <td>Produtos:</td>
-                    <td>Quantidade</td>
-                    <td>Código</td>
-                    <td>Grade</td>
-                    <td>Descrição</td>
-                </tr>
-                <?php
-                // loop itens
-                foreach ($notaFiscal['itens'] as $item):
-                    ?>
-                    <tr>
-                        <td></td>
-                        <td><?php if ($item['possuiPesoVariavel'] == 'S') {
-                                echo $item['peso'] . " Kg";
-                            } else {
-                                echo $item['quantidade'];
-                            }  ?></td>
-                        <td><?php echo $item['id'] ?></td>
-                        <td><?php echo $item['grade'] ?></td>
-                        <td><?php echo $item['descricao'] ?></td>
-                    </tr>
-                    <?php
-                endforeach;
-                ?>
-                <tr>
-                    <td colspan="5" style="height:35px">&nbsp;</td>
-                </tr>
-            <?php
-            endif;
-            ?>
             <?php
         endforeach;
+        ?>
+        <tr>
+            <td colspan="5" style="height:35px">&nbsp;</td>
+        </tr>
+        <?php
+    endif;
+    ?>
+    <?php
+    endforeach;
     endif;
     ?>
 

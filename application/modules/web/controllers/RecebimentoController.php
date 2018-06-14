@@ -565,7 +565,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
             $conferenciaRepo = $this->_em->getRepository('wms:Recebimento\Conferencia');
             $produtosDivergencia = $conferenciaRepo->getProdutoDivergencia($idOrdemServico);
-
+            $this->view->lote = $conferenciaRepo->existeLoteRecebimento($recebimentoEntity->getId());
             /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
             $produtoRepo = $this->_em->getRepository('wms:Produto');
             /** @var \Wms\Domain\Entity\Produto\PesoRepository $pesoRepo */
@@ -890,12 +890,14 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             //busco produtos da nota
             $dql = $this->em->createQueryBuilder()
-                ->select('p.id, p.grade, SUM(nfi.quantidade) quantidade, p.descricao, p.possuiPesoVariavel, SUM(nfi.numPeso) as peso')
+                ->select('p.id, p.grade, SUM(nfi.quantidade) quantidade, p.descricao, p.possuiPesoVariavel, SUM(nfi.numPeso) as peso, l.descricao as lote')
                 ->from('wms:NotaFiscal\Item', 'nfi')
+                ->leftJoin('wms:NotaFiscal\NotaFiscalItemLote', 'nfil','WITH','nfi.id = nfil.codNotaFiscalItem')
+                ->leftJoin('wms:Produto\Lote', 'l','WITH','nfil.codLote = l.id')
                 ->innerJoin('nfi.produto', 'p')
                 ->andWhere('nfi.notaFiscal = :idNotafiscal')
                 ->setParameter('idNotafiscal', $notaFiscal['id'])
-                ->groupBy('p.id, p.grade, p.descricao, p.possuiPesoVariavel')
+                ->groupBy('p.id, p.grade, p.descricao, p.possuiPesoVariavel, l.descricao')
                 ->orderBy('p.descricao');
             $itens = $dql->getQuery()->execute();
 
