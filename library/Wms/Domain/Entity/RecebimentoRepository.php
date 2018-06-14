@@ -325,7 +325,7 @@ class RecebimentoRepository extends EntityRepository {
             $conferenciaEntity->setNumPecas(0);
             $conferenciaEntity->setCodLote($loteEn);
             $conferenciaEntity->setIndDivergLote('S');
-
+            $conferenciaEntity->setIndDivergVolumes("N");
             $this->getEntityManager()->persist($conferenciaEntity);
 
         }
@@ -808,6 +808,9 @@ class RecebimentoRepository extends EntityRepository {
         if ($divergenciaPesoVariavel == 'S' || $produtoEntity->getPossuiPesoVariavel() == 'S')
             $qtdDivergencia = 0;
 
+        if ($indDivergenciaLote == 'S')
+            $qtdDivergencia = $qtdDivergenciaLote;
+
         $loteEn = null;
         if($lote != null && $lote != '')
             $loteEn = $this->getEntityManager()->getRepository('wms:Produto\Lote')->find($lote);
@@ -837,8 +840,6 @@ class RecebimentoRepository extends EntityRepository {
         $em->persist($conferenciaEntity);
         $em->flush();
 
-        if ($indDivergenciaLote == 'S')
-            $qtdDivergencia = $qtdDivergenciaLote;
 
         if ($divergenciaPesoVariavel == 'S' && $produtoEntity->getPossuiPesoVariavel() == 'S')
             $qtdDivergencia = 1;

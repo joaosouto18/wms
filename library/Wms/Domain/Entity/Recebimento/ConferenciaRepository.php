@@ -231,6 +231,8 @@ class ConferenciaRepository extends EntityRepository
                 if (is_array($vetSeparar)) {
                     $qtdConferida = implode(' + ', $vetSeparar);
                 }
+            } else {
+                $qtdConferida = "-";
             }
             if ($qtdDivergencia != 0) {
                 $vetSeparar = $embalagemRepo->getQtdEmbalagensProduto($idProduto, $grade, $qtdDivergencia);
