@@ -13,6 +13,9 @@ use Wms\Domain\Entity\Produto as ProdutoEntity,
 class Identificacao extends SubForm
 {
 
+    /**
+     * @throws \Zend_Form_Exception
+     */
     public function init()
     {
         //repositories
@@ -55,9 +58,14 @@ class Identificacao extends SubForm
                     'label' => 'Fabricante',
                     'multiOptions' => $fabricantes,
                     'disabled' => true,
-                ))   
+                ))
+                ->addElement('select', 'indControlaLote', array(
+                    'mostrarSelecione' => false,
+                    'label' => 'Controla lote:',
+                    'multiOptions' => [ 'S' => 'SIM', 'N' => 'NÃO' ]
+                ))
                 ->addDisplayGroup(
-                        array('id', 'grade', 'descricao', 'idClasse', 'idFabricante', 'unitizadores'), 'cadastral', array('legend' => 'Dados Cadastrais')
+                        array('id', 'grade', 'descricao', 'idClasse', 'idFabricante', 'unitizadores', 'indControlaLote'), 'cadastral', array('legend' => 'Dados Cadastrais')
                 )
                 ->addElement('select', 'idLinhaSeparacao', array(
                     'label' => 'Linha de Separação',
@@ -212,6 +220,12 @@ class Identificacao extends SubForm
         } else {
             $values['indFracionavel'] = $produto->getIndFracionavel();
             $values['unidFracao'] = $produto->getUnidadeFracao();
+        }
+
+        if ($produto->getIndControlaLote() == null) {
+            $values['indControlaLote'] = 'N';
+        } else {
+            $values['indControlaLote'] = $produto->getIndControlaLote();
         }
 
         $this->setDefaults($values);
