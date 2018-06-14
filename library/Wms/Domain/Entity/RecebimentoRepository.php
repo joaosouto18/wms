@@ -277,6 +277,62 @@ class RecebimentoRepository extends EntityRepository {
         return $this->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas);
     }
 
+    public function verificaLotesNaoConferidos($idOrdemServico, $idRecebimento) {
+        $sql = "SELECT NFI.COD_PRODUTO,
+                       NFI.DSC_GRADE,
+                       NFIL.COD_LOTE,
+                       NFIL.QUANTIDADE * -1 as QTD
+                  FROM NOTA_FISCAL_ITEM_LOTE NFIL
+                  LEFT JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL_ITEM = NFIL.COD_NOTA_FISCAL_ITEM
+                  LEFT JOIN NOTA_FISCAL NF ON NF.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL
+                  LEFT JOIN (SELECT RC.COD_PRODUTO,
+                                    RC.DSC_GRADE,
+                                    RC.COD_LOTE,
+                                    RC.COD_RECEBIMENTO,
+                                    RC.COD_RECEBIMENTO_CONFERENCIA
+                               FROM RECEBIMENTO_CONFERENCIA RC WHERE COD_OS =  $idOrdemServico) RC
+                    ON RC.COD_PRODUTO = NFI.COD_PRODUTO
+                   AND RC.DSC_GRADE = NFI.DSC_GRADE
+                   AND NFIL.COD_LOTE = RC.COD_LOTE
+                   AND NF.COD_RECEBIMENTO = RC.COD_RECEBIMENTO
+                 WHERE NF.COD_RECEBIMENTO = $idRecebimento
+                   AND RC.COD_RECEBIMENTO_CONFERENCIA IS NULL";
+        $lotesNaoConferidos = \Wms\Domain\EntityRepository::nativeQuery($sql);
+
+        $ordemServicoEntity = $this->getEntityManager()->find('wms:OrdemServico', $idOrdemServico);
+        $recebimentoEntity = $ordemServicoEntity->getRecebimento();
+
+        foreach ($lotesNaoConferidos as $lote) {
+            $idProduto = $lote['COD_PRODUTO'];
+            $grade = $lote['DSC_GRADE'];
+            $codLote = $lote['COD_LOTE'];
+            $qtd = $lote['QTD'];
+
+            $produtoEntity = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+            $loteEn = $this->getEntityManager()->getRepository('wms:Produto\Lote')->find($codLote);
+
+            $conferenciaEntity = new ConferenciaEntity;
+            $conferenciaEntity->setRecebimento($recebimentoEntity);
+            $conferenciaEntity->setOrdemServico($ordemServicoEntity);
+            $conferenciaEntity->setDataConferencia(new \DateTime);
+            $conferenciaEntity->setQtdConferida(str_replace(0));
+            $conferenciaEntity->setProduto($produtoEntity);
+            $conferenciaEntity->setGrade($grade);
+            $conferenciaEntity->setQtdAvaria(0);
+            $conferenciaEntity->setQtdDivergencia($qtd);
+            $conferenciaEntity->setDivergenciaPeso('N');
+            $conferenciaEntity->setDataValidade(null);
+            $conferenciaEntity->setNumPecas(0);
+            $conferenciaEntity->setCodLote($loteEn);
+            $conferenciaEntity->setIndDivergLote('S');
+
+            $this->getEntityManager()->persist($conferenciaEntity);
+
+        }
+
+        $this->getEntityManager()->flush();
+    }
+
     /**
      * Executa todos os calculos de uma conferencia e redireciona conforme o
      * tipo de fechamento
@@ -404,6 +460,8 @@ class RecebimentoRepository extends EntityRepository {
                 }
             }
         }
+
+        $this->verificaLotesNaoConferidos($idOrdemServico, $idRecebimento);
 
         if (isset($idConferente) && is_numeric($idConferente) && $idConferente != 0)
             $ordemServicoRepo->atualizarConferente($idOrdemServico, $idConferente);
