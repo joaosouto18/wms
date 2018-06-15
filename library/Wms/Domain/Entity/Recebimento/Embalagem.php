@@ -97,19 +97,10 @@ class Embalagem
     protected $qtdBloqueada;
 
     /**
-     * Codigo do lote
-     *
-     * @OneToOne(targetEntity="Wms\Domain\Entity\Produto\Lote")
-     * @JoinColumn(name="COD_LOTE", referencedColumnName="COD_LOTE")
-     * @var \Wms\Domain\Entity\Produto\Lote $codLote
-     */
-    protected $lote;
-
-    /**
-     * @Column(name="COD_LOTE", type="string")
+     * @Column(name="DSC_LOTE", type="string")
      * @var string
      */
-    protected $codLote;
+    protected $lote;
 
     /**
      * @param NormaPaletizacao $normaPaletizacao
@@ -268,23 +259,7 @@ class Embalagem
     }
 
     /**
-     * @return mixed
-     */
-    public function getCodLote()
-    {
-        return $this->codLote;
-    }
-
-    /**
-     * @param mixed $codLote
-     */
-    public function setCodLote($codLote)
-    {
-        $this->codLote = $codLote;
-    }
-
-    /**
-     * @return \Wms\Domain\Entity\Produto\Lote
+     * @return string
      */
     public function getLote()
     {
@@ -292,7 +267,7 @@ class Embalagem
     }
 
     /**
-     * @param \Wms\Domain\Entity\Produto\Lote $lote
+     * @param string $lote
      */
     public function setLote($lote)
     {

@@ -68,7 +68,7 @@ class Volume
 
     /**
      * @Column(name="DTH_VALIDADE", type="date")
-     * @var date
+     * @var \DateTime
      */
     protected $dataValidade;
 
@@ -85,19 +85,10 @@ class Volume
     protected $qtdBloqueada;
 
     /**
-     * Codigo do lote
-     *
-     * @OneToOne(targetEntity="Wms\Domain\Entity\Produto\Lote")
-     * @JoinColumn(name="COD_LOTE", referencedColumnName="COD_LOTE")
-     * @var \Wms\Domain\Entity\Produto\Lote $codLote
-     */
-    protected $lote;
-
-    /**
-     * @Column(name="COD_LOTE", type="string")
+     * @Column(name="DSC_LOTE", type="string")
      * @var string
      */
-    protected $codLote;
+    protected $lote;
 
     public function getId()
     {
@@ -179,7 +170,7 @@ class Volume
     }
 
     /**
-     * @return date
+     * @return \DateTime
      */
     public function getDataValidade()
     {
@@ -187,7 +178,7 @@ class Volume
     }
 
     /**
-     * @param date $dataValidade
+     * @param \DateTime $dataValidade
      */
     public function setDataValidade($dataValidade)
     {
@@ -225,24 +216,9 @@ class Volume
     {
         $this->qtdBloqueada = $qtdBloqueada;
     }
-    /**
-     * @return mixed
-     */
-    public function getCodLote()
-    {
-        return $this->codLote;
-    }
 
     /**
-     * @param mixed $codLote
-     */
-    public function setCodLote($codLote)
-    {
-        $this->codLote = $codLote;
-    }
-
-    /**
-     * @return \Wms\Domain\Entity\Produto\Lote
+     * @return string
      */
     public function getLote()
     {
@@ -250,7 +226,7 @@ class Volume
     }
 
     /**
-     * @param \Wms\Domain\Entity\Produto\Lote $lote
+     * @param string $lote
      */
     public function setLote($lote)
     {

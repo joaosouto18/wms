@@ -25,7 +25,7 @@ class Conferencia
     /**
      * Data e hora iniciou ou recebimento
      * 
-     * @var datetime $dataInclusao
+     * @var \DateTime $dataInclusao
      * @Column(name="DTH_CONFERENCIA", type="datetime", nullable=false)
      */
     protected $dataConferencia;
@@ -135,13 +135,10 @@ class Conferencia
     protected $indDivergLote;
 
     /**
-     * Codigo do lote
-     *
-     * @OneToOne(targetEntity="Wms\Domain\Entity\Produto\Lote")
-     * @JoinColumn(name="COD_LOTE", referencedColumnName="COD_LOTE")
-     * @var \Wms\Domain\Entity\Produto\Lote $codLote
+     * @var string
+     * @Column(name="DSC_LOTE", type="string", length=1, nullable=false)
      */
-    protected $codLote;
+    protected $lote;
 
     /**
      * @return string
@@ -164,11 +161,18 @@ class Conferencia
         return $this->id;
     }
 
+    /**
+     * @return \DateTime
+     */
     public function getDataConferencia()
     {
         return $this->dataConferencia;
     }
 
+    /**
+     * @param $dataConferencia
+     * @return $this
+     */
     public function setDataConferencia($dataConferencia)
     {
         $this->dataConferencia = $dataConferencia;
@@ -365,18 +369,19 @@ class Conferencia
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getCodLote()
+    public function getLote()
     {
-        return $this->codLote;
+        return $this->lote;
     }
 
     /**
-     * @param mixed $codLote
+     * @param string $lote
      */
-    public function setCodLote($codLote)
+    public function setLote($lote)
     {
-        $this->codLote = $codLote;
+        $this->lote = $lote;
     }
+
 }

@@ -280,20 +280,21 @@ class RecebimentoRepository extends EntityRepository {
     public function verificaLotesNaoConferidos($idOrdemServico, $idRecebimento) {
         $sql = "SELECT NFI.COD_PRODUTO,
                        NFI.DSC_GRADE,
-                       NFIL.COD_LOTE,
+                       RC.DSC_LOTE,
                        NFIL.QUANTIDADE * -1 as QTD
                   FROM NOTA_FISCAL_ITEM_LOTE NFIL
+                  LEFT JOIN LOTE L ON L.COD_LOTE = NFIL.COD_LOTE
                   LEFT JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL_ITEM = NFIL.COD_NOTA_FISCAL_ITEM
                   LEFT JOIN NOTA_FISCAL NF ON NF.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL
                   LEFT JOIN (SELECT RC.COD_PRODUTO,
                                     RC.DSC_GRADE,
-                                    RC.COD_LOTE,
+                                    RC.DSC_LOTE,
                                     RC.COD_RECEBIMENTO,
                                     RC.COD_RECEBIMENTO_CONFERENCIA
                                FROM RECEBIMENTO_CONFERENCIA RC WHERE COD_OS =  $idOrdemServico) RC
                     ON RC.COD_PRODUTO = NFI.COD_PRODUTO
                    AND RC.DSC_GRADE = NFI.DSC_GRADE
-                   AND NFIL.COD_LOTE = RC.COD_LOTE
+                   AND L.DSC_LOTE = RC.DSC_LOTE
                    AND NF.COD_RECEBIMENTO = RC.COD_RECEBIMENTO
                  WHERE NF.COD_RECEBIMENTO = $idRecebimento
                    AND RC.COD_RECEBIMENTO_CONFERENCIA IS NULL";
@@ -305,17 +306,16 @@ class RecebimentoRepository extends EntityRepository {
         foreach ($lotesNaoConferidos as $lote) {
             $idProduto = $lote['COD_PRODUTO'];
             $grade = $lote['DSC_GRADE'];
-            $codLote = $lote['COD_LOTE'];
+            $lote = $lote['DSC_LOTE'];
             $qtd = $lote['QTD'];
 
             $produtoEntity = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
-            $loteEn = $this->getEntityManager()->getRepository('wms:Produto\Lote')->find($codLote);
 
             $conferenciaEntity = new ConferenciaEntity;
             $conferenciaEntity->setRecebimento($recebimentoEntity);
             $conferenciaEntity->setOrdemServico($ordemServicoEntity);
             $conferenciaEntity->setDataConferencia(new \DateTime);
-            $conferenciaEntity->setQtdConferida(str_replace(0));
+            $conferenciaEntity->setQtdConferida(0);
             $conferenciaEntity->setProduto($produtoEntity);
             $conferenciaEntity->setGrade($grade);
             $conferenciaEntity->setQtdAvaria(0);
@@ -323,7 +323,7 @@ class RecebimentoRepository extends EntityRepository {
             $conferenciaEntity->setDivergenciaPeso('N');
             $conferenciaEntity->setDataValidade(null);
             $conferenciaEntity->setNumPecas(0);
-            $conferenciaEntity->setCodLote($loteEn);
+            $conferenciaEntity->setlote($lote);
             $conferenciaEntity->setIndDivergLote('S');
             $conferenciaEntity->setIndDivergVolumes("N");
             $this->getEntityManager()->persist($conferenciaEntity);
@@ -767,7 +767,7 @@ class RecebimentoRepository extends EntityRepository {
                 $validaLote = 'S';
 
                 foreach ($qtdNfPorLote as $qtdLote) {
-                    if ($qtdLote['COD_LOTE'] == $lote) {
+                    if ($qtdLote['DSC_LOTE'] == $lote) {
                         $qtdLoteNota = $qtdLoteNota + $qtdLote['QTD'];
                     }
                 }
@@ -811,10 +811,6 @@ class RecebimentoRepository extends EntityRepository {
         if ($indDivergenciaLote == 'S')
             $qtdDivergencia = $qtdDivergenciaLote;
 
-        $loteEn = null;
-        if($lote != null && $lote != '')
-            $loteEn = $this->getEntityManager()->getRepository('wms:Produto\Lote')->find($lote);
-
         $conferenciaEntity = new ConferenciaEntity;
         $conferenciaEntity->setRecebimento($recebimentoEntity);
         $conferenciaEntity->setOrdemServico($ordemServicoEntity);
@@ -827,7 +823,7 @@ class RecebimentoRepository extends EntityRepository {
         $conferenciaEntity->setDivergenciaPeso($divergenciaPesoVariavel);
         $conferenciaEntity->setDataValidade($dataValidade);
         $conferenciaEntity->setNumPecas($numPecas);
-        $conferenciaEntity->setCodLote($loteEn);
+        $conferenciaEntity->setLote($lote);
         $conferenciaEntity->setIndDivergLote($indDivergenciaLote);
 
         if ($temVolumesDivergentes) {
@@ -855,9 +851,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $idOrdemServico
      * @param integer $idProdutoEmbalagem Codigo do Produto Embalagem
      * @param integer $qtdConferida Quantidade conferida do produto
-     * @param $loteEn ProdutoEntity\Lote
      */
-    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = NULL, $params, $numPeso = null, $qtdBloqueada = null, $produtoEmbalagemEntity = null, $loteEn = null) {
+    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = NULL, $params, $numPeso = null, $qtdBloqueada = null, $produtoEmbalagemEntity = null, $lote = null) {
         $em = $this->getEntityManager();
 
         $recebimentoEmbalagemEntity = new RecebimentoEmbalagemEntity;
@@ -885,9 +880,8 @@ class RecebimentoRepository extends EntityRepository {
         $recebimentoEmbalagemEntity->setNumPecas($numPecas);
         $recebimentoEmbalagemEntity->setQtdBloqueada($qtdBloqueada);
 
-        if (!empty($loteEn)) {
-            $recebimentoEmbalagemEntity->setLote($loteEn);
-            $recebimentoEmbalagemEntity->setCodLote($loteEn->getId());
+        if (!empty($lote)) {
+            $recebimentoEmbalagemEntity->setLote($lote);
         }
 
         $recebimentoEmbalagemEntity->setNumPeso($numPeso);
@@ -909,9 +903,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $idOrdemServico
      * @param integer $idProdutoVolume Codigo do Produto Volume
      * @param integer $qtdConferida Quantidade conferida do produto
-     * @param $loteEn ProdutoEntity\Lote
      */
-    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null, $loteEn = null) {
+    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null, $lote = null) {
         $em = $this->getEntityManager();
 
         $recebimentoVolumeEntity = new RecebimentoVolumeEntity;
@@ -934,9 +927,8 @@ class RecebimentoRepository extends EntityRepository {
         $recebimentoVolumeEntity->setNumPeso($numPeso);
         $recebimentoVolumeEntity->setQtdBloqueada($qtdBloqueada);
 
-        if (!empty($loteEn)) {
-            $recebimentoVolumeEntity->setLote($loteEn);
-            $recebimentoVolumeEntity->setCodLote($loteEn->getId());
+        if (!empty($lote)) {
+            $recebimentoVolumeEntity->setLote($lote);
         }
 
         if ($idNormaPaletizacao != null) {
@@ -1339,7 +1331,7 @@ class RecebimentoRepository extends EntityRepository {
     public function buscarConferenciaPorVolume($produto, $grade, $produtoVolume, $idOrdemServico) {
         // busca volumes
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('rv.qtdConferida, rv.codLote')
+                ->select('rv.qtdConferida, rv.lote')
                 ->from('wms:Produto\Volume', 'pv')
                 ->innerJoin('pv.recebimentoVolumes', 'rv')
                 ->where('pv.codProduto = :produto AND pv.grade = :grade')
@@ -1355,10 +1347,10 @@ class RecebimentoRepository extends EntityRepository {
         $volumes = $dql->getQuery()->getArrayResult();
         $qtdTotal = array();
         foreach ($volumes as $volume) {
-            if(!isset($qtdTotal[$volume['codLote']])){
-                $qtdTotal[$volume['codLote']] = 0;
+            if(!isset($qtdTotal[$volume['lote']])){
+                $qtdTotal[$volume['lote']] = 0;
             }
-            $qtdTotal[$volume['codLote']] = Math::adicionar($qtdTotal[$volume['codLote']], $volume['qtdConferida']);
+            $qtdTotal[$volume['lote']] = Math::adicionar($qtdTotal[$volume['lote']], $volume['qtdConferida']);
         }
         return $qtdTotal;
     }
@@ -1399,7 +1391,7 @@ class RecebimentoRepository extends EntityRepository {
     public function buscarConferenciaPorEmbalagem($produto, $grade, $idOrdemServico) {
         // busca embalagens
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select("CASE WHEN p.indFracionavel != 'S' THEN pe.quantidade ELSE 1 END AS qtdEmbalagem, re.qtdConferida, re.codLote")
+                ->select("CASE WHEN p.indFracionavel != 'S' THEN pe.quantidade ELSE 1 END AS qtdEmbalagem, re.qtdConferida, re.lote")
                 ->from('wms:Produto\Embalagem', 'pe')
                 ->innerJoin('pe.recebimentoEmbalagens', 're')
                 ->innerJoin("pe.produto", "p")
@@ -1417,10 +1409,10 @@ class RecebimentoRepository extends EntityRepository {
         $qtdTotal = array();
         $norma = null;
         foreach ($embalagens as $embalagem) {
-            if(!isset($qtdTotal[$embalagem['codLote']])){
-                $qtdTotal[$embalagem['codLote']] = 0;
+            if(!isset($qtdTotal[$embalagem['lote']])){
+                $qtdTotal[$embalagem['lote']] = 0;
             }
-            $qtdTotal[$embalagem['codLote']] = Math::adicionar($qtdTotal[$embalagem['codLote']], Math::multiplicar($embalagem['qtdEmbalagem'], $embalagem['qtdConferida']));
+            $qtdTotal[$embalagem['lote']] = Math::adicionar($qtdTotal[$embalagem['lote']], Math::multiplicar($embalagem['qtdEmbalagem'], $embalagem['qtdConferida']));
         }
         return $qtdTotal;
     }
@@ -1979,15 +1971,16 @@ class RecebimentoRepository extends EntityRepository {
 
     private function checkVolumesDivergentes($idRecebimento, $idOrdemServico, $idProduto, $dscGrade) {
         $sql = "SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE
-                FROM (SELECT COD_PRODUTO_VOLUME, 
-                             COD_OS, 
-                             SUM(QTD_CONFERIDA) QTD_CONFERIDA, 
-                             COD_RECEBIMENTO
-                        FROM RECEBIMENTO_VOLUME 
-                        WHERE COD_RECEBIMENTO = $idRecebimento AND COD_OS = $idOrdemServico
-                       GROUP BY COD_RECEBIMENTO, COD_OS, COD_PRODUTO_VOLUME) RV 
-                INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
-                WHERE PV.COD_PRODUTO = '$idProduto' AND PV.DSC_GRADE = '$dscGrade'
+                FROM (SELECT PV1.COD_PRODUTO_VOLUME, 
+                             RV.COD_OS, 
+                             NVL(SUM(RV.QTD_CONFERIDA), 0) QTD_CONFERIDA, 
+                             RV.COD_RECEBIMENTO
+                        FROM PRODUTO_VOLUME PV1
+                        LEFT JOIN RECEBIMENTO_VOLUME RV ON PV1.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
+                          AND RV.COD_RECEBIMENTO = $idRecebimento AND RV.COD_OS = $idOrdemServico AND PV1.DTH_INATIVACAO IS NULL
+                        WHERE (PV1.COD_PRODUTO = '$idProduto' AND PV1.DSC_GRADE = '$dscGrade') 
+                       GROUP BY  PV1.COD_PRODUTO_VOLUME, RV.COD_RECEBIMENTO, RV.COD_OS) RV 
+                LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
                 GROUP BY PV.COD_PRODUTO, PV.DSC_GRADE HAVING COUNT(DISTINCT RV.QTD_CONFERIDA) > 1";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);

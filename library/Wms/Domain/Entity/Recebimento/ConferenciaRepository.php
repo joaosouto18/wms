@@ -173,7 +173,7 @@ class ConferenciaRepository extends EntityRepository
                         RC.IND_DIVERG_VOLUMES,
                         L.DSC_LOTE
                    FROM RECEBIMENTO_CONFERENCIA RC
-                   LEFT JOIN LOTE L ON L.COD_LOTE = RC.COD_LOTE
+                   LEFT JOIN LOTE L ON L.DSC_LOTE = RC.DSC_LOTE AND L.COD_PRODUTO = RC.COD_PRODUTO AND L.DSC_GRADE = RC.DSC_GRADE
                   INNER JOIN PRODUTO P ON P.COD_PRODUTO = RC.COD_PRODUTO AND P.DSC_GRADE = RC.DSC_GRADE
                    LEFT JOIN (SELECT * FROM V_QTD_RECEBIMENTO V WHERE COD_OS = $idOrdemServico) V
                           ON V.COD_PRODUTO = RC.COD_PRODUTO
@@ -258,7 +258,7 @@ class ConferenciaRepository extends EntityRepository
     }
 
     public function existeLoteRecebimento($idRecebimento){
-        $SQL = "SELECT * FROM RECEBIMENTO_CONFERENCIA WHERE COD_RECEBIMENTO = $idRecebimento AND COD_LOTE IS NOT NULL";
+        $SQL = "SELECT * FROM RECEBIMENTO_CONFERENCIA WHERE COD_RECEBIMENTO = $idRecebimento AND DSC_LOTE IS NOT NULL";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         if(empty($result)){
             return false;
