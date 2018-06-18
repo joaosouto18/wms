@@ -1218,7 +1218,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $nfPedidoEntity = new Expedicao\NotaFiscalSaidaPedido();
                     $nfPedidoEntity->setNotaFiscalSaida($nfEntity);
                     $nfPedidoEntity->setCodNotaFiscalSaida($nfEntity->getId());
-                    $pedidoEn = $pedidoRepo->findOneBy(array('id' => $pedidoNf->codPedido));
+                    $codPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($pedidoNf->codPedido);
+                    $pedidoEn = $pedidoRepo->findOneBy(array('id' => $codPedido));
 
                     if ($pedidoEn == null) {
                         throw new \Exception('Pedido '.$pedidoNf->codPedido . ' - ' . $pedidoNf->tipoPedido . ' - ' . ' não encontrado!');
