@@ -232,6 +232,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $cliente['uf'] = $pedidoWs->cliente->uf;
 
             $controleProprietario = $this->_em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+            $codProprietario = null;
             if($controleProprietario == 'S'){
                 $cnpjProprietario = trim($pedidoWs->cliente->cpf_cnpj);
                 $codProprietario = $this->_em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjProprietario, false);
@@ -789,7 +790,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             'centralEntrega' => $carga['centralEntrega'],
             'placaCarga' => $carga['placa'],
             'placaExpedicao' => $carga['placaExpedicao'],
-            'motorista' => $carga['motorista']
+            'motorista' => (isset($carga['motorista'])) ? $carga['motorista'] : null
         );
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
