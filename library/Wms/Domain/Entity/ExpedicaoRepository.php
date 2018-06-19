@@ -1298,8 +1298,8 @@ class ExpedicaoRepository extends EntityRepository {
             $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
 
             if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
-                $statusAntigo = $expedicaoEn->getStatus();
-                $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
+//                $statusAntigo = $expedicaoEn->getStatus();
+//                $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
 
 //                $expedicaoEn->setStatus($statusEmFinalizacao);
 //                $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
@@ -1335,6 +1335,7 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             $transacao = true;
+            var_dump('abc'); exit;
             $this->getEntityManager()->beginTransaction();
 
             if ($validaStatusEtiqueta == true) {
