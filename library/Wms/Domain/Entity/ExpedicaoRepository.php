@@ -3831,10 +3831,11 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null) {
 
-        $where = " AND PP.COD_PEDIDO = '$idPedido' ";
+        $where = '';
+        if (!is_null($idPedido))
+            $where = " AND PP.COD_PEDIDO = '$idPedido' ";
         if (!is_null($idExpedicao))
             $where = " AND C.COD_EXPEDICAO = $idExpedicao ";
-
 
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
@@ -3850,7 +3851,9 @@ class ExpedicaoRepository extends EntityRepository {
                  WHERE 1 = 1 $where
                  GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO, C.COD_CARGA_EXTERNO
                  ORDER BY COD_PRODUTO, DSC_GRADE";
+
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
         return $result;
     }
 
