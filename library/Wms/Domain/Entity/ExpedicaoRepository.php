@@ -1336,7 +1336,6 @@ class ExpedicaoRepository extends EntityRepository {
 
             $transacao = true;
             $this->getEntityManager()->beginTransaction();
-            var_dump('abc'); exit;
 
             if ($validaStatusEtiqueta == true) {
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
@@ -1451,7 +1450,10 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
 
+            var_dump('abc');
             $this->getEntityManager()->commit();
+            var_dump('def');
+            exit;
             return $result;
         } catch(\Exception $e) {
             if ($transacao == true) $this->getEntityManager()->rollback();
