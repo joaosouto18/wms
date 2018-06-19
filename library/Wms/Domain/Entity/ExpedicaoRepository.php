@@ -1301,11 +1301,11 @@ class ExpedicaoRepository extends EntityRepository {
                 $statusAntigo = $expedicaoEn->getStatus();
                 $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
 
-                $expedicaoEn->setStatus($statusEmFinalizacao);
-                $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
+//                $expedicaoEn->setStatus($statusEmFinalizacao);
+//                $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
 
-                $this->getEntityManager()->persist($expedicaoEn);
-                $this->getEntityManager()->flush();
+//                $this->getEntityManager()->persist($expedicaoEn);
+//                $this->getEntityManager()->flush();
             }
 
             $codCargaExterno = $this->validaCargaFechada($idExpedicao);
