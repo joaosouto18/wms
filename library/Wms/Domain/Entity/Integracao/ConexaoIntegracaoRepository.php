@@ -186,7 +186,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 return true;
             }
 
-            if ($resultado === false) {
+            if ($resultado === false || is_string($resultado)) {
                 $errmsg = ibase_errmsg();
                 ibase_close($conexao);
                 throw new \Exception($errmsg);
