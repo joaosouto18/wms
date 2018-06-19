@@ -1450,6 +1450,7 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
 
+            $this->getEntityManager()->commit();
             return $result;
         } catch(\Exception $e) {
             if ($transacao == true) $this->getEntityManager()->rollback();
