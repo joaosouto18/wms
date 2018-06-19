@@ -1860,15 +1860,16 @@ class RecebimentoRepository extends EntityRepository {
 
     private function checkVolumesDivergentes($idRecebimento, $idOrdemServico, $idProduto, $dscGrade) {
         $sql = "SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE
-                FROM (SELECT COD_PRODUTO_VOLUME, 
-                             COD_OS, 
-                             SUM(QTD_CONFERIDA) QTD_CONFERIDA, 
-                             COD_RECEBIMENTO
-                        FROM RECEBIMENTO_VOLUME 
-                        WHERE COD_RECEBIMENTO = $idRecebimento AND COD_OS = $idOrdemServico
-                       GROUP BY COD_RECEBIMENTO, COD_OS, COD_PRODUTO_VOLUME) RV 
-                INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
-                WHERE PV.COD_PRODUTO = '$idProduto' AND PV.DSC_GRADE = '$dscGrade'
+                FROM (SELECT PV1.COD_PRODUTO_VOLUME, 
+                             RV.COD_OS, 
+                             NVL(SUM(RV.QTD_CONFERIDA), 0) QTD_CONFERIDA, 
+                             RV.COD_RECEBIMENTO
+                        FROM PRODUTO_VOLUME PV1
+                        LEFT JOIN RECEBIMENTO_VOLUME RV ON PV1.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
+                          AND RV.COD_RECEBIMENTO = $idRecebimento AND RV.COD_OS = $idOrdemServico AND PV1.DTH_INATIVACAO IS NULL
+                        WHERE (PV1.COD_PRODUTO = '$idProduto' AND PV1.DSC_GRADE = '$dscGrade') 
+                       GROUP BY  PV1.COD_PRODUTO_VOLUME, RV.COD_RECEBIMENTO, RV.COD_OS) RV 
+                LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
                 GROUP BY PV.COD_PRODUTO, PV.DSC_GRADE HAVING COUNT(DISTINCT RV.QTD_CONFERIDA) > 1";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
