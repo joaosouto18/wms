@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity\Recebimento;
 
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Produto\Conferencia as ConferenciaEntity;
+use Wms\Domain\Configurator;
 
 /**
  * Conferencia
@@ -13,6 +14,16 @@ use Doctrine\ORM\EntityRepository,
  */
 class ConferenciaRepository extends EntityRepository
 {
+
+    public function save($data, $flush = true) {
+
+        $entity = Configurator::configure(new ConferenciaEntity, $data);
+        $this->getEntityManager()->persist($entity);
+
+        if ($flush) $this->_em->flush();
+
+        return $entity;
+    }
 
     public function getLastOsConferencia ($idRecebimento, $idProduto, $grade)
     {

@@ -237,6 +237,13 @@ class RecebimentoRepository extends EntityRepository {
                 case ProdutoEntity::TIPO_COMPOSTO:
 
                     $volumes = $produtoVolumeRepo->findBy(array('codProduto' => $item['produto'], 'grade' => $item['grade']));
+
+                    if (empty($volumes)) {
+                        return array('message' => null,
+                            'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
+                            'concluido' => false);
+                    }
+
                     foreach ($volumes as $volume) {
                         //verifica se o volume foi conferido.
                         $qtdConferida = $this->buscarConferenciaPorVolume($item['produto'], $item['grade'], $volume->getId(), $idOrdemServico);
@@ -250,11 +257,6 @@ class RecebimentoRepository extends EntityRepository {
                         }
                     }
 
-                    if (!isset($qtdConferidasVolumes)) {
-                        return array('message' => null,
-                            'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
-                            'concluido' => false);
-                    }
                     foreach ($qtdConferidasVolumes as $lote => $volumes){
                         //Pega a menor quantidade de produtos completos
                         $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
@@ -286,51 +288,91 @@ class RecebimentoRepository extends EntityRepository {
                   LEFT JOIN LOTE L ON L.COD_LOTE = NFIL.COD_LOTE
                   LEFT JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL_ITEM = NFIL.COD_NOTA_FISCAL_ITEM
                   LEFT JOIN NOTA_FISCAL NF ON NF.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL
-                  LEFT JOIN (SELECT RC.COD_PRODUTO,
-                                    RC.DSC_GRADE,
-                                    RC.DSC_LOTE,
-                                    RC.COD_RECEBIMENTO,
-                                    RC.COD_RECEBIMENTO_CONFERENCIA
-                               FROM RECEBIMENTO_CONFERENCIA RC WHERE COD_OS =  $idOrdemServico) RC
+                  LEFT JOIN (SELECT COD_PRODUTO,
+                                    DSC_GRADE,
+                                    DSC_LOTE,
+                                    COD_RECEBIMENTO,
+                                    COD_RECEBIMENTO_CONFERENCIA
+                               FROM RECEBIMENTO_CONFERENCIA WHERE COD_OS =  $idOrdemServico) RC
                     ON RC.COD_PRODUTO = NFI.COD_PRODUTO
                    AND RC.DSC_GRADE = NFI.DSC_GRADE
                    AND L.DSC_LOTE = RC.DSC_LOTE
                    AND NF.COD_RECEBIMENTO = RC.COD_RECEBIMENTO
+                  LEFT JOIN (SELECT COD_PRODUTO,
+                                    DSC_GRADE,
+                                    DSC_LOTE,
+                                    COD_RECEBIMENTO,
+                                    COD_RECEBIMENTO_CONFERENCIA
+                               FROM RECEBIMENTO_CONFERENCIA 
+                               WHERE COD_RECEBIMENTO = $idRecebimento 
+                                 AND IND_DIVERG_LOTE = 'N'
+                                 AND IND_DIVERG_VOLUMES = 'N'
+                                 AND IND_DIVERGENCIA_PESO = 'N'
+                                 AND QTD_DIVERGENCIA = 0) RC2
+                    ON RC2.COD_PRODUTO = NFI.COD_PRODUTO
+                   AND RC2.DSC_GRADE = NFI.DSC_GRADE
+                   AND L.DSC_LOTE = RC2.DSC_LOTE
+                   AND NF.COD_RECEBIMENTO = RC2.COD_RECEBIMENTO
                  WHERE NF.COD_RECEBIMENTO = $idRecebimento
-                   AND RC.COD_RECEBIMENTO_CONFERENCIA IS NULL";
+                   AND RC.COD_RECEBIMENTO_CONFERENCIA IS NULL
+                   AND RC2.COD_RECEBIMENTO_CONFERENCIA IS NULL";
         $lotesNaoConferidos = \Wms\Domain\EntityRepository::nativeQuery($sql);
 
         $ordemServicoEntity = $this->getEntityManager()->find('wms:OrdemServico', $idOrdemServico);
         $recebimentoEntity = $ordemServicoEntity->getRecebimento();
 
+        /** @var RecebimentoEntity\ConferenciaRepository $conferenciaRepo */
+        $conferenciaRepo = $this->_em->getRepository("wms:Recebimento\Conferencia");
+
         foreach ($lotesNaoConferidos as $lote) {
             $idProduto = $lote['COD_PRODUTO'];
             $grade = $lote['DSC_GRADE'];
-            $lote = $lote['DSC_LOTE'];
+            $dscLote = $lote['DSC_LOTE'];
             $qtd = $lote['QTD'];
 
             $produtoEntity = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
-            $conferenciaEntity = new ConferenciaEntity;
-            $conferenciaEntity->setRecebimento($recebimentoEntity);
-            $conferenciaEntity->setOrdemServico($ordemServicoEntity);
-            $conferenciaEntity->setDataConferencia(new \DateTime);
-            $conferenciaEntity->setQtdConferida(0);
-            $conferenciaEntity->setProduto($produtoEntity);
-            $conferenciaEntity->setGrade($grade);
-            $conferenciaEntity->setQtdAvaria(0);
-            $conferenciaEntity->setQtdDivergencia($qtd);
-            $conferenciaEntity->setDivergenciaPeso('N');
-            $conferenciaEntity->setDataValidade(null);
-            $conferenciaEntity->setNumPecas(0);
-            $conferenciaEntity->setlote($lote);
-            $conferenciaEntity->setIndDivergLote('S');
-            $conferenciaEntity->setIndDivergVolumes("N");
-            $this->getEntityManager()->persist($conferenciaEntity);
+            $arrData = [
+                'recebimento' => $recebimentoEntity,
+                'ordemServico' => $ordemServicoEntity,
+                'dataConferencia' => new \DateTime,
+                'qtdConferida' => 0,
+                'produto' => $produtoEntity,
+                'grade' => $grade,
+                'qtdAvaria' => 0,
+                'qtdDivergencia' => $qtd,
+                'divergenciaPeso' => 'N',
+                'dataValidade' => null,
+                'numPecas' => 0,
+                'lote' => $dscLote,
+                'indDivergLote' => 'S',
+                'indDivergVolumes' => 'N',
+            ];
+
+            $conferenciaRepo->save($arrData, false);
+
+//            $conferenciaEntity = new ConferenciaEntity;
+//            $conferenciaEntity->setRecebimento($recebimentoEntity);
+//            $conferenciaEntity->setOrdemServico($ordemServicoEntity);
+//            $conferenciaEntity->setDataConferencia(new \DateTime);
+//            $conferenciaEntity->setQtdConferida(0);
+//            $conferenciaEntity->setProduto($produtoEntity);
+//            $conferenciaEntity->setGrade($grade);
+//            $conferenciaEntity->setQtdAvaria(0);
+//            $conferenciaEntity->setQtdDivergencia($qtd);
+//            $conferenciaEntity->setDivergenciaPeso('N');
+//            $conferenciaEntity->setDataValidade(null);
+//            $conferenciaEntity->setNumPecas(0);
+//            $conferenciaEntity->setLote($dscLote);
+//            $conferenciaEntity->setIndDivergLote('S');
+//            $conferenciaEntity->setIndDivergVolumes("N");
+//            $this->getEntityManager()->persist($conferenciaEntity);
 
         }
 
         $this->getEntityManager()->flush();
+
+        return !empty($lotesNaoConferidos);
     }
 
     /**
@@ -461,12 +503,12 @@ class RecebimentoRepository extends EntityRepository {
             }
         }
 
-        $this->verificaLotesNaoConferidos($idOrdemServico, $idRecebimento);
+        $divergenciaLote = $this->verificaLotesNaoConferidos($idOrdemServico, $idRecebimento);
 
         if (isset($idConferente) && is_numeric($idConferente) && $idConferente != 0)
             $ordemServicoRepo->atualizarConferente($idOrdemServico, $idConferente);
 
-        if ($divergencia) {
+        if ($divergencia || $divergenciaLote) {
             // atualiza observacao da ordem de servico
             $ordemServicoRepo->atualizarObservacao($idOrdemServico, 'Conferencia com Divergencias');
 
