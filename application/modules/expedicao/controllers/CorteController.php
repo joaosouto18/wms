@@ -150,13 +150,16 @@ class Expedicao_CorteController extends Action {
 
                 /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
                 $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+                $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+                $pedidoEntity = $pedidoRepo->findOneBy(array('codExterno' => $pedido));
+
                 $pedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
-                        ->findOneBy(array('codPedido' => $pedido, 'codProduto' => $produto, 'grade' => $grade));
+                        ->findOneBy(array('codPedido' => $pedidoEntity->getId(), 'codProduto' => $produto, 'grade' => $grade));
 
                 if (!isset($pedidoProduto) || empty($pedidoProduto))
                     throw new \Exception("Produto $produto grade $grade não encontrado para o pedido $pedido");
 
-                $expedicaoRepo->cortaPedido($pedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $motivo);
+                $expedicaoRepo->cortaPedido($pedidoEntity->getId(), $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $motivo);
 
                 $this->getEntityManager()->flush();
                 $this->getEntityManager()->commit();
