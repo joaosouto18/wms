@@ -3829,13 +3829,16 @@ class ExpedicaoRepository extends EntityRepository {
 
     }
 
-    public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null) {
+    public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null, $listar = false) {
 
         $where = '';
+        $having = '';
         if (!is_null($idPedido))
-            $where = " AND PP.COD_PEDIDO = '$idPedido' ";
+            $where .= " AND PP.COD_PEDIDO = '$idPedido' ";
         if (!is_null($idExpedicao))
-            $where = " AND C.COD_EXPEDICAO = $idExpedicao ";
+            $where .= " AND C.COD_EXPEDICAO = $idExpedicao ";
+        if (false === $listar)
+            $having .= ' HAVING (NVL(SUM(PP.QTD_CORTADA),0) > 0) ';
 
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
@@ -3850,7 +3853,7 @@ class ExpedicaoRepository extends EntityRepository {
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                  WHERE 1 = 1 $where
                  GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO, C.COD_CARGA_EXTERNO
-                 HAVING (NVL(SUM(PP.QTD_CORTADA),0) > 0)
+                 $having
                  ORDER BY COD_PRODUTO, DSC_GRADE";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
