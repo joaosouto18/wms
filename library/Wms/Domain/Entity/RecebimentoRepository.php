@@ -224,55 +224,70 @@ class RecebimentoRepository extends EntityRepository {
         // buscar todos os itens das nfs do recebimento
         $itens = $notaFiscalRepo->buscarItensPorRecebimento($idRecebimento);
 
+        $qtdConferidas = [];
 
         foreach ($itens as $item) {
             // checando qtdes nf
-            $qtdNFs[$item['produto']][$item['grade']] = $item['quantidade'];
+            $qtdNFs[$item['produto']][$item['grade']][$item['lote']] = $item['quantidade'];
 
             // checando qtdes avarias
-            $qtdAvarias[$item['produto']][$item['grade']] = 0;
+            $qtdAvarias[$item['produto']][$item['grade']][$item['lote']] = 0;
 
-            // checando qtdes conferidas
-            switch ($item['idTipoComercializacao']) {
-                case ProdutoEntity::TIPO_COMPOSTO:
+            $dscLote = null;
+            if (!empty($item['lote'])) {
+                $dscLote = $item['lote'];
+            }
 
-                    $volumes = $produtoVolumeRepo->findBy(array('codProduto' => $item['produto'], 'grade' => $item['grade']));
+            if (!isset($qtdConferidas[$item['produto']][$item['grade']])) {
+                // checando qtdes conferidas
+                switch ($item['idTipoComercializacao']) {
+                    case ProdutoEntity::TIPO_COMPOSTO:
 
-                    if (empty($volumes)) {
-                        return array('message' => null,
-                            'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
-                            'concluido' => false);
-                    }
+                        $volumes = $produtoVolumeRepo->findBy(array('codProduto' => $item['produto'], 'grade' => $item['grade']));
 
-                    foreach ($volumes as $volume) {
-                        //verifica se o volume foi conferido.
-                        $qtdConferida = $this->buscarConferenciaPorVolume($item['produto'], $item['grade'], $volume->getId(), $idOrdemServico);
-
-                        //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
-                        if ($qtdConferida == 0) {
-                            $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $qtdConferida);
+                        if (empty($volumes)) {
+                            return array('message' => null,
+                                'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
+                                'concluido' => false);
                         }
-                        foreach ($qtdConferida as $lote => $value){
-                            $qtdConferidasVolumes[$lote][$item['produto']][$item['grade']][$volume->getId()] = $value;
+
+                        foreach ($volumes as $volume) {
+                            //verifica se o volume foi conferido.
+                            $qtdConferida = $this->buscarConferenciaPorVolume($item['produto'], $item['grade'], $volume->getId(), $idOrdemServico);
+
+                            //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
+
+                            foreach ($qtdConferida as $lote => $value) {
+                                if ($qtdConferida == 0) {
+                                    $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $qtdConferida);
+                                } else {
+                                    $qtdConferidasVolumes[$lote][$item['produto']][$item['grade']][$volume->getId()] = $value;
+                                }
+                            }
                         }
-                    }
 
-                    foreach ($qtdConferidasVolumes as $lote => $volumes){
-                        //Pega a menor quantidade de produtos completos
-                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
-                    }
+                        foreach ($qtdConferidasVolumes as $lote => $volumes) {
+                            //Pega a menor quantidade de produtos completos
+                            $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
+                        }
 
-                    break;
-                case ProdutoEntity::TIPO_UNITARIO:
+                        break;
+                    case ProdutoEntity::TIPO_UNITARIO:
 
-                    $qtdConferida = $this->buscarConferenciaPorEmbalagem($item['produto'], $item['grade'], $idOrdemServico);
-                    foreach ($qtdConferida as $lote => $value){
-                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
-                    }
+                        $qtdConferida = $this->buscarConferenciaPorEmbalagem($item['produto'], $item['grade'], $idOrdemServico);
+                        foreach ($qtdConferida as $lote => $value) {
+                            $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
+                        }
 
-                    break;
-                default:
-                    break;
+                        break;
+                    default:
+                        break;
+
+                }
+            }
+
+            if (!isset($qtdConferidas[$item['produto']][$item['grade']][$item['lote']])) {
+                $qtdConferidas[$item['produto']][$item['grade']][$item['lote']] = 0;
             }
         }
         // executa os dados da conferencia
@@ -285,7 +300,6 @@ class RecebimentoRepository extends EntityRepository {
                        RC.DSC_LOTE,
                        NFIL.QUANTIDADE * -1 as QTD
                   FROM NOTA_FISCAL_ITEM_LOTE NFIL
-                  LEFT JOIN LOTE L ON L.COD_LOTE = NFIL.COD_LOTE
                   LEFT JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL_ITEM = NFIL.COD_NOTA_FISCAL_ITEM
                   LEFT JOIN NOTA_FISCAL NF ON NF.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL
                   LEFT JOIN (SELECT COD_PRODUTO,
@@ -311,7 +325,7 @@ class RecebimentoRepository extends EntityRepository {
                                  AND QTD_DIVERGENCIA = 0) RC2
                     ON RC2.COD_PRODUTO = NFI.COD_PRODUTO
                    AND RC2.DSC_GRADE = NFI.DSC_GRADE
-                   AND L.DSC_LOTE = RC2.DSC_LOTE
+                   AND NFIL.DSC_LOTE = RC2.DSC_LOTE
                    AND NF.COD_RECEBIMENTO = RC2.COD_RECEBIMENTO
                  WHERE NF.COD_RECEBIMENTO = $idRecebimento
                    AND RC.COD_RECEBIMENTO_CONFERENCIA IS NULL
@@ -332,45 +346,34 @@ class RecebimentoRepository extends EntityRepository {
 
             $produtoEntity = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
-            $arrData = [
+            $conferenciaEn = $conferenciaRepo->findOneBy([
                 'recebimento' => $recebimentoEntity,
                 'ordemServico' => $ordemServicoEntity,
-                'dataConferencia' => new \DateTime,
-                'qtdConferida' => 0,
-                'produto' => $produtoEntity,
+                'codProduto' => $idProduto,
                 'grade' => $grade,
-                'qtdAvaria' => 0,
-                'qtdDivergencia' => $qtd,
-                'divergenciaPeso' => 'N',
-                'dataValidade' => null,
-                'numPecas' => 0,
-                'lote' => $dscLote,
-                'indDivergLote' => 'S',
-                'indDivergVolumes' => 'N',
-            ];
+                'lote' => $dscLote
+            ]);
 
-            $conferenciaRepo->save($arrData, false);
-
-//            $conferenciaEntity = new ConferenciaEntity;
-//            $conferenciaEntity->setRecebimento($recebimentoEntity);
-//            $conferenciaEntity->setOrdemServico($ordemServicoEntity);
-//            $conferenciaEntity->setDataConferencia(new \DateTime);
-//            $conferenciaEntity->setQtdConferida(0);
-//            $conferenciaEntity->setProduto($produtoEntity);
-//            $conferenciaEntity->setGrade($grade);
-//            $conferenciaEntity->setQtdAvaria(0);
-//            $conferenciaEntity->setQtdDivergencia($qtd);
-//            $conferenciaEntity->setDivergenciaPeso('N');
-//            $conferenciaEntity->setDataValidade(null);
-//            $conferenciaEntity->setNumPecas(0);
-//            $conferenciaEntity->setLote($dscLote);
-//            $conferenciaEntity->setIndDivergLote('S');
-//            $conferenciaEntity->setIndDivergVolumes("N");
-//            $this->getEntityManager()->persist($conferenciaEntity);
-
+            if (empty($conferenciaEn)) {
+                $arrData = [
+                    'recebimento' => $recebimentoEntity,
+                    'ordemServico' => $ordemServicoEntity,
+                    'dataConferencia' => new \DateTime,
+                    'qtdConferida' => 0,
+                    'produto' => $produtoEntity,
+                    'grade' => $grade,
+                    'qtdAvaria' => 0,
+                    'qtdDivergencia' => $qtd,
+                    'divergenciaPeso' => 'N',
+                    'dataValidade' => null,
+                    'numPecas' => 0,
+                    'lote' => $dscLote,
+                    'indDivergLote' => 'S',
+                    'indDivergVolumes' => 'N',
+                ];
+                $conferenciaRepo->save($arrData, false);
+            }
         }
-
-        $this->getEntityManager()->flush();
 
         return !empty($lotesNaoConferidos);
     }
@@ -438,6 +441,8 @@ class RecebimentoRepository extends EntityRepository {
         $divergencia = false;
         $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
+        $itensPendentes = $qtdNFs;
+
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $lotes) {
                 /** @var Produto $produtoEn */
@@ -446,11 +451,11 @@ class RecebimentoRepository extends EntityRepository {
                     if (isset($numPeso[$idProduto][$grade]) && !empty($numPeso[$idProduto][$grade]))
                         $numPeso = (float)str_replace(',', '.', $numPeso[$idProduto][$grade]);
 
-                    $qtdNF = (float)$qtdNFs[$idProduto][$grade];
+                    $qtdNF = (float)$qtdNFs[$idProduto][$grade][$lote];
                     $qtdConferida = (float)$qtdConferida;
-                    $qtdAvaria = (float)$qtdAvarias[$idProduto][$grade];
+                    $qtdAvaria = (float)$qtdAvarias[$idProduto][$grade][$lote];
 
-                    $numPecas = null;
+                    $numPecas = 0;
                     if ($produtoEn->getIndFracionavel() == "S"
                         && isset($qtdUnidFracionavel[$idProduto][$grade])
                         && !empty($qtdUnidFracionavel[$idProduto][$grade])) {
@@ -503,12 +508,12 @@ class RecebimentoRepository extends EntityRepository {
             }
         }
 
-        $divergenciaLote = $this->verificaLotesNaoConferidos($idOrdemServico, $idRecebimento);
+        //$divergenciaLote = $this->verificaLotesNaoConferidos($idOrdemServico, $idRecebimento);
 
         if (isset($idConferente) && is_numeric($idConferente) && $idConferente != 0)
             $ordemServicoRepo->atualizarConferente($idOrdemServico, $idConferente);
 
-        if ($divergencia || $divergenciaLote) {
+        if ($divergencia /*|| $divergenciaLote*/) {
             // atualiza observacao da ordem de servico
             $ordemServicoRepo->atualizarObservacao($idOrdemServico, 'Conferencia com Divergencias');
 
@@ -789,69 +794,63 @@ class RecebimentoRepository extends EntityRepository {
     public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote = null) {
         $em = $this->getEntityManager();
 
+        /** @var Produto $produtoEntity */
         $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
         /** @var \Wms\Domain\Entity\NotaFiscal\NotaFiscalItemLoteRepository $notaFiscalItemLoteRepo */
         $notaFiscalItemLoteRepo = $this->_em->getRepository('wms:NotaFiscal\NotaFiscalItemLote');
 
-
         $ordemServicoEntity = $em->find('wms:OrdemServico', $idOrdemServico);
         $recebimentoEntity = $ordemServicoEntity->getRecebimento();
 
-        $temVolumesDivergentes = $this->checkVolumesDivergentes($recebimentoEntity->getId(), $idOrdemServico, $idProduto, $grade);
+        $temVolumesDivergentes = false;
+        if ($produtoEntity->getTipoComercializacao() == Produto::TIPO_COMPOSTO)
+            $temVolumesDivergentes = $this->checkVolumesDivergentes($recebimentoEntity->getId(), $idOrdemServico, $idProduto, $grade);
 
-        $qtdNfPorLote = $notaFiscalItemLoteRepo->getQtdLoteByProdutoAndRecebimento($idProduto,$grade,$recebimentoEntity->getId());
-
-        $validaLote = 'N';
-        $qtdLoteNota = 0;
+        $indDivergenciaLote = 'N';
         if ($produtoEntity->getIndControlaLote() == 'S') {
+            $qtdDivergenciaLote = 0;
+            $qtdLoteNota = 0;
+            $qtdNfPorLote = $notaFiscalItemLoteRepo->getQtdLoteByProdutoAndRecebimento($idProduto,$grade,$recebimentoEntity->getId());
             if ($qtdNfPorLote != null) {
-                $validaLote = 'S';
-
                 foreach ($qtdNfPorLote as $qtdLote) {
                     if ($qtdLote['DSC_LOTE'] == $lote) {
                         $qtdLoteNota = $qtdLoteNota + $qtdLote['QTD'];
                     }
                 }
+                if ($qtdLoteNota != $qtdConferida) {
+                    $indDivergenciaLote = 'S';
+                    $qtdDivergenciaLote = (($qtdConferida + $qtdAvaria) - $qtdLoteNota);
+                }
             }
+            $qtdDivergencia = $qtdDivergenciaLote;
+        } elseif ($divergenciaPesoVariavel == 'S' || $produtoEntity->getPossuiPesoVariavel() == 'S') {
+            $qtdDivergencia = 0;
+        } else {
+            $qtdDivergencia = (($qtdConferida + $qtdAvaria) - $qtdNF);
         }
-
-        $qtdDivergenciaLote = 0;
-        $indDivergenciaLote = 'N';
-        if ($validaLote = 'S') {
-            if ($qtdLoteNota != $qtdConferida) {
-                $indDivergenciaLote = 'S';
-                $qtdDivergenciaLote = (($qtdConferida + $qtdAvaria) - $qtdLoteNota);
-            }
-        }
-
-        /**
-         * @ToDo Verificar regra para identificação da data de validade caso o recebimento seja feito em mais de uma embalagem com datas de validades diferentes
-         */
-        $produtoEmbalagemEntity = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
 
         $dataValidade = null;
-        if (!empty($produtoEmbalagemEntity)) {
-            $recebimentoEmbalagemEntity = $em->getRepository('wms:Recebimento\Embalagem')->findOneBy(array('recebimento' => $recebimentoEntity, 'embalagem' => $produtoEmbalagemEntity));
-            if (!empty($recebimentoEmbalagemEntity)) {
-                $dataValidade = $recebimentoEmbalagemEntity->getDataValidade();
-            }
-        } else {
-            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-            $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
-            $buscaDataProdutos = $notaFiscalRepo->buscaRecebimentoProduto($recebimentoEntity->getId(), null, $idProduto, $grade);
+        if ($produtoEntity->getValidade() == 'S') {
+            /**
+             * @ToDo Verificar regra para identificação da data de validade caso o recebimento seja feito em mais de uma embalagem com datas de validades diferentes
+             */
+            $produtoEmbalagemEntity = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('codProduto' => $idProduto, 'grade' => $grade));
+            if (!empty($produtoEmbalagemEntity)) {
+                $recebimentoEmbalagemEntity = $em->getRepository('wms:Recebimento\Embalagem')->findOneBy(array('recebimento' => $recebimentoEntity, 'embalagem' => $produtoEmbalagemEntity));
+                if (!empty($recebimentoEmbalagemEntity)) {
+                    $dataValidade = $recebimentoEmbalagemEntity->getDataValidade();
+                }
+            } else {
+                /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+                $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+                $buscaDataProdutos = $notaFiscalRepo->buscaRecebimentoProduto($recebimentoEntity->getId(), null, $idProduto, $grade);
 
-            if (count($buscaDataProdutos) > 0) {
-                $dataValidade = new \DateTime($buscaDataProdutos['dataValidade']);
+                if (count($buscaDataProdutos) > 0) {
+                    $dataValidade = new \DateTime($buscaDataProdutos['dataValidade']);
+                }
             }
         }
-
-        $qtdDivergencia = (($qtdConferida + $qtdAvaria) - $qtdNF);
-        if ($divergenciaPesoVariavel == 'S' || $produtoEntity->getPossuiPesoVariavel() == 'S')
-            $qtdDivergencia = 0;
-
-        if ($indDivergenciaLote == 'S')
-            $qtdDivergencia = $qtdDivergenciaLote;
 
         $conferenciaEntity = new ConferenciaEntity;
         $conferenciaEntity->setRecebimento($recebimentoEntity);
@@ -865,7 +864,7 @@ class RecebimentoRepository extends EntityRepository {
         $conferenciaEntity->setDivergenciaPeso($divergenciaPesoVariavel);
         $conferenciaEntity->setDataValidade($dataValidade);
         $conferenciaEntity->setNumPecas($numPecas);
-        $conferenciaEntity->setLote($lote);
+        $conferenciaEntity->setLote((!empty($lote))? $lote : null);
         $conferenciaEntity->setIndDivergLote($indDivergenciaLote);
 
         if ($temVolumesDivergentes) {

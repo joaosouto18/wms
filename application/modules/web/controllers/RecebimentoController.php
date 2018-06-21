@@ -453,6 +453,10 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 if ($result['message'] != null) {
                     $this->addFlashMessage('success', $result['message']);
                 }
+
+                $this->em->flush();
+                $this->em->commit();
+
                 if ($result['concluido'] == true) {
                     $this->redirect('index');
                 } else {
@@ -461,6 +465,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             }
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
+            $this->em->rollback();
             $this->redirect('index');
         }
     }
@@ -475,34 +480,44 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         ini_set('memory_limit', '-1');
         ini_set('max_execution_time', 3000);
 
-        $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+        $this->em->beginTransaction();
+        try {
+            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
 
-        $idOrdemServico = $this->getRequest()->getParam('idOrdemServico');
-        $ordemServicoEntity = $ordemServicoRepo->find($idOrdemServico);
-        $idRecebimento = $ordemServicoEntity->getRecebimento()->getId();
+            $idOrdemServico = $this->getRequest()->getParam('idOrdemServico');
+            $ordemServicoEntity = $ordemServicoRepo->find($idOrdemServico);
+            $idRecebimento = $ordemServicoEntity->getRecebimento()->getId();
 
-        /** @var \Wms\Domain\Entity\Recebimento\DescargaRepository $descargaRepo */
-        $descargaRepo = $this->em->getRepository('wms:Recebimento\Descarga');
-        if ($descargaRepo->realizarDescarga($idRecebimento) === true) {
-            $this->redirect('index', 'descarga', 'produtividade', array('recebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico));
+            /** @var \Wms\Domain\Entity\Recebimento\DescargaRepository $descargaRepo */
+            $descargaRepo = $this->em->getRepository('wms:Recebimento\Descarga');
+            if ($descargaRepo->realizarDescarga($idRecebimento) === true) {
+                $this->redirect('index', 'descarga', 'produtividade', array('recebimento' => $idRecebimento, 'idOrdemServico' => $idOrdemServico));
+            }
+
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+            $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+
+            $result = $recebimentoRepo->conferenciaColetor($idRecebimento, $idOrdemServico);
+
+            if ($result['exception'] != null) {
+                throw $result['exception'];
+            }
+
+            if ($result['message'] != null) {
+                $this->addFlashMessage('success', $result['message']);
+            }
+
+            $this->em->commit();
+
+            if (!$result['concluido']) {
+                $this->redirect('divergencia', 'recebimento', null, array('id' => $idOrdemServico));
+            }
+        } catch (Exception $e){
+            $this->em->rollback();
+            $this->addFlashMessage('error', $e->getMessage());
         }
 
-        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
-        $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
-
-        $result = $recebimentoRepo->conferenciaColetor($idRecebimento, $idOrdemServico);
-
-        if ($result['exception'] != null) {
-            throw $result['exception'];
-        }
-        if ($result['message'] != null) {
-            $this->addFlashMessage('success', $result['message']);
-        }
-        if ($result['concluido'] == true) {
-            $this->redirect('index');
-        } else {
-            $this->redirect('divergencia', 'recebimento', null, array('id' => $idOrdemServico));
-        }
+        $this->redirect('index');
     }
 
     /**

@@ -2,8 +2,7 @@
 
 namespace Wms\Domain\Entity\Recebimento;
 
-use Doctrine\ORM\EntityRepository,
-    Wms\Domain\Entity\Produto\Conferencia as ConferenciaEntity;
+use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Configurator;
 
 /**
@@ -17,8 +16,9 @@ class ConferenciaRepository extends EntityRepository
 
     public function save($data, $flush = true) {
 
-        $entity = Configurator::configure(new ConferenciaEntity, $data);
-        $this->getEntityManager()->persist($entity);
+        $entity = new Conferencia();
+        $entity = Configurator::configure($entity, $data);
+        $this->_em->persist($entity);
 
         if ($flush) $this->_em->flush();
 
@@ -206,7 +206,7 @@ class ConferenciaRepository extends EntityRepository
                     AND (   RC.QTD_DIVERGENCIA <> 0 
                          OR RC.IND_DIVERGENCIA_PESO = 'S' 
                          OR RC.IND_DIVERG_VOLUMES = 'S'
-                         OR RC.IND_DIVERG_LOTE =  'S')";
+                         OR RC.IND_DIVERG_LOTE = 'S')";
         $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $resultArr = array();

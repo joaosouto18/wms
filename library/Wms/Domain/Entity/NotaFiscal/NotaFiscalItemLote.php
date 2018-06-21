@@ -31,9 +31,10 @@ class NotaFiscalItemLote{
 
 
     /**
-     * @Column(name="COD_LOTE", type="integer", nullable=false)
+     * @var string
+     * @Column(name="DSC_LOTE", type="string", nullable=false)
      */
-    protected $codLote;
+    protected $lote;
 
     /**
      * @Column(name="QUANTIDADE", type="decimal", nullable=false)
@@ -78,7 +79,7 @@ class NotaFiscalItemLote{
 
 
     /**
-     * @param mixed $codLote
+     * @param string $codLote
      */
     public function setCodLote($codLote)
     {
@@ -86,7 +87,7 @@ class NotaFiscalItemLote{
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getCodLote()
     {

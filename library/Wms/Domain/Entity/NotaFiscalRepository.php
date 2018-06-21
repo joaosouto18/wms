@@ -397,7 +397,7 @@ class NotaFiscalRepository extends EntityRepository {
     public function getConferencia($idFornecedor, $numero, $serie, $dataEmissao, $idStatus) {
 
         $sql = "
-            SELECT DISTINCT NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, NF.DAT_EMISSAO, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, NVL(RC.QTD_AVARIA,0) AS QTD_AVARIA, NVL(MDR.DSC_MOTIVO_DIVER_RECEB,'') AS DSC_MOTIVO_DIVER_RECEB, NFI.NUM_PESO AS PESO_ITEM, NFIL.COD_LOTE
+            SELECT DISTINCT NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, NF.DAT_EMISSAO, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, NVL(RC.QTD_AVARIA,0) AS QTD_AVARIA, NVL(MDR.DSC_MOTIVO_DIVER_RECEB,'') AS DSC_MOTIVO_DIVER_RECEB, NFI.NUM_PESO AS PESO_ITEM, NFIL.DSC_LOTE
             FROM NOTA_FISCAL NF
             INNER JOIN RECEBIMENTO R ON (R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO)
             INNER JOIN ORDEM_SERVICO OS ON (OS.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
@@ -809,11 +809,12 @@ class NotaFiscalRepository extends EntityRepository {
      */
     public function buscarItensPorRecebimento($idRecebimento) {
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('SUM(nfi.quantidade) quantidade, p.id produto, p.grade, p.descricao, tc.id idTipoComercializacao')
+                ->select('SUM(NVL(nfil.quantidade, nfi.quantidade)) quantidade, p.id produto, p.grade, p.descricao, tc.id idTipoComercializacao, NVL(nfil.lote,0) lote')
                 ->from('wms:NotaFiscal', 'nf')
                 ->innerJoin('nf.itens', 'nfi')
                 ->innerJoin('nfi.produto', 'p')
                 ->innerJoin('p.tipoComercializacao', 'tc')
+                ->leftJoin("wms:NotaFiscal\NotaFiscalItemLote", "nfil", "WITH", "nfil.codNotaFiscalItem = nfi.id")
                 ->where('nf.recebimento = :idRecebimento')
                 ->andWhere('NOT EXISTS(
                     SELECT \'x\'
@@ -825,7 +826,8 @@ class NotaFiscalRepository extends EntityRepository {
                         AND (rc.qtdDivergencia = 0 AND rc.divergenciaPeso = \'N\')
                 )')
                 ->setParameter('idRecebimento', $idRecebimento)
-                ->groupBy('p.id, p.grade, p.descricao, tc.id');
+                ->groupBy('p.id, p.grade, p.descricao, tc.id, nfil.lote')
+        ;
 
         return $dql->getQuery()->getResult();
     }

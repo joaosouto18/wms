@@ -46,25 +46,33 @@ class Mobile_RecebimentoController extends Action
         $idOS = $this->_getParam("os");
         $idRecebimento = $this->_getParam("id");
 
-        /** @var \Wms\Domain\Entity\Recebimento\DescargaRepository $descargaRepo */
-        $descargaRepo = $this->em->getRepository('wms:Recebimento\Descarga');
-        if ($descargaRepo->realizarDescarga($idRecebimento) === true) {
-            $this->redirect('descarga','recebimento','mobile',array('recb' => $idRecebimento, 'os' => $idOS));
-        }
+        $this->em->beginTransaction();
+        try {
+            /** @var \Wms\Domain\Entity\Recebimento\DescargaRepository $descargaRepo */
+            $descargaRepo = $this->em->getRepository('wms:Recebimento\Descarga');
+            if ($descargaRepo->realizarDescarga($idRecebimento) === true) {
+                $this->redirect('descarga', 'recebimento', 'mobile', array('recb' => $idRecebimento, 'os' => $idOS));
+            }
 
-        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
-        $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
+            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+            $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
 
-        $result = $recebimentoRepo->conferenciaColetor($idRecebimento, $idOS);
+            $result = $recebimentoRepo->conferenciaColetor($idRecebimento, $idOS);
 
-        if ($result['exception'] != null) {
-            throw $result['exception'];
-        }
+            if ($result['exception'] != null) {
+                throw $result['exception'];
+            }
+            $this->em->flush();
+            $this->em->commit();
 
-        if ($result['concluido'] == true) {
-            $this->addFlashMessage('success', $result['message']);
-        } else {
-            $this->addFlashMessage('error', $result['message']);
+            if ($result['concluido'] == true) {
+                $this->addFlashMessage('success', $result['message']);
+            } else {
+                $this->addFlashMessage('error', $result['message']);
+            }
+        } catch (Exception $e) {
+            $this->em->rollback();
+            $this->addFlashMessage('error', $e->getMessage());
         }
 
         $this->_redirect('/mobile/ordem-servico/conferencia-recebimento');
