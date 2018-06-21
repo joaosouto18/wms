@@ -77,7 +77,7 @@ class Web_ImprimirController extends Action
             $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
         } elseif ($modelo == 1) {
             $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
-            $quantidadeByPage = 9;
+            $quantidadeByPage = 7;
         } elseif($modelo == 12){
             $modelo = 9;
             $unico = true;
