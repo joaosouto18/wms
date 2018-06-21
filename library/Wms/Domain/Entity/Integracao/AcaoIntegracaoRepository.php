@@ -171,6 +171,8 @@ class AcaoIntegracaoRepository extends EntityRepository
      * Destino => (P => Produção, T => Tabela temporária)
      */
     public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null, $filtro = AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
+        ini_set('max_execution_time', '-1');
+        ini_set('memory_limit', '-1');
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
         $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');

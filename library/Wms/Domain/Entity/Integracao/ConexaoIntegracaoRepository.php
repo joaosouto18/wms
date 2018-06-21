@@ -86,16 +86,18 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
             $result = \sqlsrv_query($conexao, $query);
 
+
             if (!$result || $result == false) {
                 $error = \sqlsrv_errors();
                 throw new \Exception($error);
             }
             $vetResult = array();
             $i = 0;
-            while( $row = sqlsrv_fetch_array($result, SQLSRV_FETCH_ASSOC) ) {
-                $vetResult[$i]['CODPRO'] = $row['CODPRO'];
-                $vetResult[$i]['GRADE'] = $row['GRADE'];
-                $vetResult[$i]['QTDFAT'] = $row['QTDFAT'];
+
+            while( $row = sqlsrv_fetch_array($result,SQLSRV_FETCH_ASSOC) ) {
+                foreach ($row as $indice => $valor) {
+                    $vetResult[$i][$indice] = $valor;
+                }
                 $i++;
             }
 
