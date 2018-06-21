@@ -77,20 +77,19 @@ class NotaFiscalItemLote{
         return $this->codNotaFiscalItem;
     }
 
-
-    /**
-     * @param string $codLote
-     */
-    public function setCodLote($codLote)
-    {
-        $this->codLote = $codLote;
-    }
-
     /**
      * @return string
      */
-    public function getCodLote()
+    public function getLote()
     {
-        return $this->codLote;
+        return $this->lote;
+    }
+
+    /**
+     * @param string $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
     }
 }
