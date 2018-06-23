@@ -908,7 +908,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 ->select('p.id, p.grade, SUM(nfi.quantidade) quantidade, p.descricao, p.possuiPesoVariavel, SUM(nfi.numPeso) as peso, l.descricao as lote')
                 ->from('wms:NotaFiscal\Item', 'nfi')
                 ->leftJoin('wms:NotaFiscal\NotaFiscalItemLote', 'nfil','WITH','nfi.id = nfil.codNotaFiscalItem')
-                ->leftJoin('wms:Produto\Lote', 'l','WITH','nfil.codLote = l.id')
+                ->leftJoin('wms:Produto\Lote', 'l','WITH','nfil.lote = l.descricao and (l.codProduto = nfi.codProduto and l.grade = nfi.grade)')
                 ->innerJoin('nfi.produto', 'p')
                 ->andWhere('nfi.notaFiscal = :idNotafiscal')
                 ->setParameter('idNotafiscal', $notaFiscal['id'])

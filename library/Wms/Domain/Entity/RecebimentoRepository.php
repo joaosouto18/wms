@@ -286,7 +286,8 @@ class RecebimentoRepository extends EntityRepository {
                 }
             }
 
-            if (!isset($qtdConferidas[$item['produto']][$item['grade']][$item['lote']])) {
+            if ((!empty($item['lote']) && !isset($qtdConferidas[$item['produto']][$item['grade']][$item['lote']]))
+                || !isset($qtdConferidas[$item['produto']][$item['grade']])) {
                 $qtdConferidas[$item['produto']][$item['grade']][$item['lote']] = 0;
             }
         }
@@ -691,6 +692,16 @@ class RecebimentoRepository extends EntityRepository {
                     $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId(), false, $dataValidade);
                     $em->flush();
                 }
+
+                /** @var RecebimentoEntity\ConferenciaRepository $conferenciaRepo */
+                $conferenciaRepo = $this->_em->getRepository("wms:Recebimento\Conferencia");
+
+                $conferenciasOk = $conferenciaRepo->getProdutosConferidosLoteInterno($idRecebimento);
+
+                /** @var ProdutoEntity\LoteRepository $loteRepo */
+                $loteRepo = $this->_em->getRepository("wms:Produto\Lote");
+
+                $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $conferenciasOk);
 
                 $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
                 if($controleProprietario == 'S') {
@@ -1372,7 +1383,7 @@ class RecebimentoRepository extends EntityRepository {
     public function buscarConferenciaPorVolume($produto, $grade, $produtoVolume, $idOrdemServico) {
         // busca volumes
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('rv.qtdConferida, rv.lote')
+                ->select('rv.qtdConferida, NVL(rv.lote, 0) lote')
                 ->from('wms:Produto\Volume', 'pv')
                 ->innerJoin('pv.recebimentoVolumes', 'rv')
                 ->where('pv.codProduto = :produto AND pv.grade = :grade')
@@ -1388,10 +1399,11 @@ class RecebimentoRepository extends EntityRepository {
         $volumes = $dql->getQuery()->getArrayResult();
         $qtdTotal = array();
         foreach ($volumes as $volume) {
-            if(!isset($qtdTotal[$volume['lote']])){
-                $qtdTotal[$volume['lote']] = 0;
+            $lote = (empty($volume['lote'])) ? 0 : $volume['lote'];
+            if(!isset($qtdTotal[$lote])){
+                $qtdTotal[$lote] = 0;
             }
-            $qtdTotal[$volume['lote']] = Math::adicionar($qtdTotal[$volume['lote']], $volume['qtdConferida']);
+            $qtdTotal[$lote] = Math::adicionar($qtdTotal[$lote], $volume['qtdConferida']);
         }
         return $qtdTotal;
     }
@@ -1432,7 +1444,7 @@ class RecebimentoRepository extends EntityRepository {
     public function buscarConferenciaPorEmbalagem($produto, $grade, $idOrdemServico) {
         // busca embalagens
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select("CASE WHEN p.indFracionavel != 'S' THEN pe.quantidade ELSE 1 END AS qtdEmbalagem, re.qtdConferida, re.lote")
+                ->select("CASE WHEN p.indFracionavel != 'S' THEN pe.quantidade ELSE 1 END AS qtdEmbalagem, re.qtdConferida, NVL(re.lote, 0) lote")
                 ->from('wms:Produto\Embalagem', 'pe')
                 ->innerJoin('pe.recebimentoEmbalagens', 're')
                 ->innerJoin("pe.produto", "p")

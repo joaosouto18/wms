@@ -12,10 +12,15 @@ use Doctrine\ORM\EntityRepository;
 
 class NotaFiscalItemLoteRepository extends EntityRepository
 {
-    public function save($lote, $setCodNotaFiscalItem, $quantidade){
+    /**
+     * @param $lote string DSC_LOTE
+     * @param $codNotaFiscalItem integer ID_NOTA_FISCAL_ITEM
+     * @param $quantidade integer QTD
+     */
+    public function save($lote, $codNotaFiscalItem, $quantidade){
         $NFlote = new NotaFiscalItemLote();
         $NFlote->setLote($lote);
-        $NFlote->setCodNotaFiscalItem($setCodNotaFiscalItem);
+        $NFlote->setCodNotaFiscalItem($codNotaFiscalItem);
         $NFlote->setQuantidade($quantidade);
         $this->_em->persist($NFlote);
     }

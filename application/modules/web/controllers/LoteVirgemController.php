@@ -26,11 +26,12 @@ class Web_LoteVirgemController extends Action{
     }
 
     public function criarLoteAjaxAction(){
+        /** @var \Wms\Domain\Entity\Produto\LoteRepository $loteRepository */
         $loteRepository = $this->_em->getRepository('wms:Produto\Lote');
         $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
         $qtd = $this->_getParam('qtdLote');
         for($i = 0; $i < $qtd; $i++) {
-            $loteRepository->save(null, null, null, $idPessoa, 'I');
+            $loteRepository->save(null, null, null, $idPessoa, \Wms\Domain\Entity\Produto\Lote::INTERNO);
         }
         $this->_em->flush();
         $this->_helper->json(array('success' => 'success'));

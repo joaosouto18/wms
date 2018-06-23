@@ -314,4 +314,16 @@ class ConferenciaRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
+    public function getProdutosConferidosLoteInterno($idRecebimento)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id codProduto, p.grade, rc.qtdConferida, rc.qtdDivergencia, NVL(rc.lote, 0) lote')
+            ->from('wms:Recebimento\Conferencia', 'rc')
+            ->innerJoin('rc.recebimento', 'r')
+            ->innerJoin('wms:Produto','p', 'WITH', 'p.id = rc.codProduto and p.grade = rc.grade')
+            ->where("r.id = $idRecebimento AND rc.lote LIKE 'LI%'")
+            ->andWhere('rc.qtdDivergencia = 0 OR rc.notaFiscal IS NOT NULL');
+
+        return $sql->getQuery()->getResult();
+    }
 }

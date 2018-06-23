@@ -5,20 +5,26 @@ namespace Wms\Domain\Entity\Produto;
 use Doctrine\ORM\EntityRepository,
     Doctrine\ORM\Id\SequenceGenerator,
     Wms\Domain\Entity\Lote as LoteEntity;
+use Wms\Domain\Entity\NotaFiscal\Item;
+use Wms\Domain\Entity\NotaFiscal\NotaFiscalItemLoteRepository;
+use Wms\Domain\Entity\NotaFiscalRepository;
+use Wms\Domain\Entity\Produto;
+use Wms\Domain\Entity\ProdutoRepository;
+use Wms\Math;
 
 
 class LoteRepository extends EntityRepository
 {
-    public function save($produtoEntity, $grade, $dsc, $codPessoa, $origem = 'E'){
+    public function save($produtoEntity, $grade, $dsc, $codPessoa, $origem = Lote::EXTERNO){
 
 
         $lote = new Lote();
         $sqcGenerator = new SequenceGenerator("SQ_LOTE_01", 1);
         $idLote = $sqcGenerator->generate($this->_em, $lote);
         $lote->setId($idLote);
-        if($origem == 'I') {
+        if ($origem == 'I' && empty($dsc)) {
             $dsc = 'LI'.$idLote;
-        }else{
+        } else {
             $lote->setProduto($produtoEntity);
         }
 
@@ -88,5 +94,105 @@ class LoteRepository extends EntityRepository
             return $result[0];
         }
         return null;
+    }
+
+    public function reorderNFItensLoteByRecebimento($idRecebimento, $itensConferidos)
+    {
+
+        /** @var ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->_em->getRepository("wms:Produto");
+
+        $dqlNota = $this->_em->createQueryBuilder()
+            ->select("nfi")
+            ->from("wms:NotaFiscal\Item", "nfi")
+            ->innerJoin("nfi.notaFiscal", "nf")
+            ->where("nf.recebimento = :idRecebimento AND nfi.codProduto = :codProduto AND nfi.grade = :grade");
+
+        $arrProdutos = $arrLotes = [];
+        $strLink = "$#$";
+        foreach ($itensConferidos as $item) {
+            $codGrade = $item['codProduto'].$strLink.$item['grade'];
+            $arr[$codGrade][$item['lote']] = $item['qtdConferida'];
+            $arrLotes[$item['lote']][$codGrade] = true;
+        }
+
+        /*
+         * AQUI É FEITA A REPARTIÇÃO ENTRE LOTES E NOTAS DE CADA PRODUTO, CONTEMPLANDO AS SITUAÇÕES:
+         * Mesmo produto em N Notas conferido em 1 Lote
+         * Mesmo produto em 1 Nota conferido em N Lotes
+         * Mesmo produto em N Notas conferido em N Lotes
+         */
+        $itensVinculados = [];
+        foreach ($arr as $prodGrade => $lotes) {
+            list($codigo, $grade) = explode($strLink, $prodGrade);
+            $produtoEn = $produtoRepo->findOneBy(['id' => $codigo, "grade" => $grade]);
+            /** @var Item[] $itensNf */
+            $itensNf = $dqlNota->setParameters([
+                "idRecebimento" => $idRecebimento,
+                "codProduto" => $codigo,
+                "grade" => $grade])->getQuery()->getResult();
+
+            foreach ($lotes as $lote => $qtdConferida) {
+                /** @var Lote $loteEn */
+                $restante = $qtdConferida;
+                foreach ($itensNf as $item) {
+                    $idItemNF = $item->getId();
+                    $itemLote = $idItemNF.$strLink.$lote;
+                    if (!isset($itensVinculados[$itemLote])) {
+                        $qtdItemNF = $item->getQuantidade();
+                        if (Math::compare($restante, $qtdItemNF, "<=")) {
+                            $qtd = $restante;
+                        } else {
+                            $qtd = $qtdItemNF;
+                        }
+                        $restante = Math::subtrair($restante, $qtd);
+                        $itensVinculados[$itemLote]['qtdVinc'] = $qtd;
+                        $itensVinculados[$itemLote]['qtdLivre'] = Math::subtrair($qtdItemNF, $qtd);
+                        $itensVinculados[$itemLote]['vinculado'] = ($itensVinculados[$itemLote]['qtdLivre'] == 0);
+                    } elseif (!$itensVinculados[$itemLote]['vinculado']) {
+                        if (Math::compare($restante, $itensVinculados[$idItemNF]['qtdPend'], "<=")) {
+                            $qtd = $restante;
+                        } else {
+                            $qtd = $itensVinculados[$idItemNF]['qtdPend'];
+                        }
+                        $restante = Math::subtrair($restante, $qtd);
+                        $itensVinculados[$itemLote]['qtdVinc'] = Math::adicionar($itensVinculados[$itemLote]['qtdVinc'], $qtd);
+                        $itensVinculados[$itemLote]['qtdLivre'] = Math::subtrair($itensVinculados[$itemLote]['qtdLivre'], $qtd);
+                        $itensVinculados[$itemLote]['vinculado'] = ($itensVinculados[$itemLote]['qtdLivre'] == 0);
+                    }
+                    if ($restante == 0) break;
+                }
+                if ($restante > 0) {
+                    $idItemIndex = key(end($itensVinculados));
+                    $itensVinculados[$idItemIndex]['qtdVinc'] = Math::adicionar($itensVinculados[$idItemIndex]['qtdVinc'], $restante);
+                }
+            }
+        }
+
+        /* REPLICA O LOTE INTERNO CASO ESTEJA VINCULADO À MAIS DE 1 PRODUTO */
+        foreach ($arrLotes as $lote => $produtos) {
+            $loteEn = $this->findOneBy(["descricao" => $lote, "codProduto" => null, "grade" => null]);
+            end($produtos);
+            $last = key($produtos);
+            reset($produtos);
+            foreach ($produtos as $prodGrade => $var) {
+                list($codigo, $grade) = explode($strLink, $prodGrade);
+                $produtoEn = $produtoRepo->findOneBy(['id' => $codigo, "grade" => $grade]);
+                if ($prodGrade == $last) {
+                    $loteEn->setProduto($produtoEn)->setGrade($grade);
+                    $this->_em->persist($loteEn);
+                } else {
+                    self::save($produtoEn, $grade, $lote, $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
+                }
+            }
+        }
+
+        /* PERSISTE OS REGISTROS DE ITENS DAS NFS VINCULADOS AOS RESPECTIVOS LOTES RECEBIDOS*/
+        /** @var NotaFiscalItemLoteRepository $notaItemLoteRepo */
+        $notaItemLoteRepo = $this->_em->getRepository("wms:NotaFiscal\NotaFiscalItemLote");
+        foreach ($itensVinculados as $idItemLote => $itemVals) {
+            list($idItemNF, $lote) = explode($strLink, $idItemLote);
+            $notaItemLoteRepo->save($lote, $idItemNF, $itemVals['qtdVinc']);
+        }
     }
 }

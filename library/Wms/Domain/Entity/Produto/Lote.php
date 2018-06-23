@@ -13,6 +13,9 @@ use Wms\Domain\Entity\Produto as ProdutoEntity;
 class Lote
 {
 
+    const INTERNO = "I";
+    const EXTERNO = "E";
+
     /**
      * @Column(name="COD_LOTE", type="integer", nullable=false)
      * @Id
