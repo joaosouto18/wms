@@ -396,29 +396,43 @@ class NotaFiscalRepository extends EntityRepository {
      */
     public function getConferencia($idFornecedor, $numero, $serie, $dataEmissao, $idStatus) {
 
-        $sql = "
-            SELECT DISTINCT NFI.COD_PRODUTO, NFI.DSC_GRADE, NFI.QTD_ITEM, NF.DAT_EMISSAO, (NFI.QTD_ITEM + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, NVL(RC.QTD_AVARIA,0) AS QTD_AVARIA, NVL(MDR.DSC_MOTIVO_DIVER_RECEB,'') AS DSC_MOTIVO_DIVER_RECEB, NFI.NUM_PESO AS PESO_ITEM, NFIL.DSC_LOTE
-            FROM NOTA_FISCAL NF
-            INNER JOIN RECEBIMENTO R ON (R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO)
-            INNER JOIN ORDEM_SERVICO OS ON (OS.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
-            INNER JOIN NOTA_FISCAL_ITEM NFI ON (NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL)
-            LEFT JOIN NOTA_FISCAL_ITEM_LOTE NFIL ON NFIL.COD_NOTA_FISCAL_ITEM = NFI.COD_NOTA_FISCAL_ITEM
-            INNER JOIN RECEBIMENTO_CONFERENCIA RC ON (RC.COD_OS = OS.COD_OS AND RC.COD_PRODUTO = NFI.COD_PRODUTO AND RC.DSC_GRADE = NFI.DSC_GRADE) 
-            LEFT OUTER JOIN MOTIVO_DIVER_RECEB MDR ON (MDR.COD_MOTIVO_DIVER_RECEB = RC.COD_MOTIVO_DIVER_RECEB)
-            LEFT JOIN RECEBIMENTO_CONFERENCIA RC2 ON (RC2.COD_OS = OS.COD_OS AND RC2.COD_PRODUTO = NFI.COD_PRODUTO AND RC2.DSC_GRADE = NFI.DSC_GRADE AND RC2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) 
-            WHERE NF.COD_FORNECEDOR = '$idFornecedor' 
-                AND NF.NUM_NOTA_FISCAL = '$numero' 
-                AND NF.COD_SERIE_NOTA_FISCAL = '$serie'
-                AND NF.COD_STATUS = '$idStatus'
-                AND NOT EXISTS (SELECT 'X' 
-                                FROM RECEBIMENTO_CONFERENCIA RC2
-                                WHERE RC2.COD_OS IN (SELECT OS2.COD_OS 
-                                                        FROM ORDEM_SERVICO OS2
-                                                    WHERE OS2.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
-                                AND RC2.COD_PRODUTO = RC.COD_PRODUTO 
-                                AND RC2.DSC_GRADE = RC.DSC_GRADE
-                                AND RC2.COD_RECEBIMENTO_CONFERENCIA > RC.COD_RECEBIMENTO_CONFERENCIA
-                                )";
+        $sql = "SELECT DISTINCT NFI.COD_PRODUTO, 
+                      NFI.DSC_GRADE, 
+                      NVL(NFIL.QUANTIDADE, NFI.QTD_ITEM) AS QTD_ITEM, 
+                      NF.DAT_EMISSAO, 
+                      (NVL(NFIL.QUANTIDADE, NFI.QTD_ITEM) + NVL(RC2.QTD_DIVERGENCIA, 0)) AS QTD_CONFERIDA, 
+                      NVL(RC.QTD_AVARIA,0) AS QTD_AVARIA, NVL(MDR.DSC_MOTIVO_DIVER_RECEB,'') AS DSC_MOTIVO_DIVER_RECEB, 
+                      NFI.NUM_PESO AS PESO_ITEM, 
+                      RC.DSC_LOTE AS LOTE
+                 FROM NOTA_FISCAL NF
+                INNER JOIN RECEBIMENTO R ON (R.COD_RECEBIMENTO = NF.COD_RECEBIMENTO)
+                INNER JOIN ORDEM_SERVICO OS ON (OS.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
+                INNER JOIN NOTA_FISCAL_ITEM NFI ON (NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL)
+                LEFT JOIN NOTA_FISCAL_ITEM_LOTE NFIL ON NFIL.COD_NOTA_FISCAL_ITEM = NFI.COD_NOTA_FISCAL_ITEM
+                INNER JOIN RECEBIMENTO_CONFERENCIA RC ON (RC.COD_OS = OS.COD_OS 
+                                                          AND RC.COD_PRODUTO = NFI.COD_PRODUTO
+                                                          AND RC.DSC_GRADE = NFI.DSC_GRADE
+                                                          AND RC.DSC_LOTE = NFIL.DSC_LOTE) 
+                 LEFT OUTER JOIN MOTIVO_DIVER_RECEB MDR ON (MDR.COD_MOTIVO_DIVER_RECEB = RC.COD_MOTIVO_DIVER_RECEB)
+                 LEFT JOIN RECEBIMENTO_CONFERENCIA RC2 ON (RC2.COD_OS = OS.COD_OS 
+                                                           AND RC2.COD_PRODUTO = NFI.COD_PRODUTO 
+                                                           AND RC2.DSC_GRADE = NFI.DSC_GRADE 
+                                                           AND RC2.DSC_LOTE = NFIL.DSC_LOTE
+                                                           AND RC2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) 
+                WHERE NF.COD_FORNECEDOR = '$idFornecedor' 
+                                AND NF.NUM_NOTA_FISCAL = '$numero' 
+                                AND NF.COD_SERIE_NOTA_FISCAL = '$serie'
+                                AND NF.COD_STATUS = '$idStatus' 
+                  AND NOT EXISTS (SELECT 'X' 
+                                    FROM RECEBIMENTO_CONFERENCIA RC2
+                                   WHERE RC2.COD_OS IN (SELECT OS2.COD_OS 
+                                                          FROM ORDEM_SERVICO OS2
+                                                         WHERE OS2.COD_RECEBIMENTO = R.COD_RECEBIMENTO)
+                                     AND RC2.COD_PRODUTO = RC.COD_PRODUTO 
+                                     AND RC2.DSC_GRADE = RC.DSC_GRADE
+                                     AND RC2.DSC_LOTE = RC.DSC_LOTE
+                                     AND RC2.COD_RECEBIMENTO_CONFERENCIA > RC.COD_RECEBIMENTO_CONFERENCIA
+                                    ) ORDER BY NFI.COD_PRODUTO";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 

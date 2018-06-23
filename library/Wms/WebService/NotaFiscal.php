@@ -216,7 +216,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
             $clsItensNf->quantidadeConferida = $item['QTD_CONFERIDA'];
             $clsItensNf->quantidadeAvaria = $item['QTD_AVARIA'];
             $clsItensNf->motivoDivergencia = $item['DSC_MOTIVO_DIVER_RECEB'];
-            $clsItensNf->lote = $item['COD_LOTE'];
+            $clsItensNf->lote = $item['LOTE'];
             $clsNf->itens[] = $clsItensNf;
         }
 
