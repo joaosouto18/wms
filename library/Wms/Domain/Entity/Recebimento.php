@@ -160,7 +160,7 @@ class Recebimento
     {
         $data = $this->dataFinal;
         if ($data != null)
-            return $data->format('d/m/Y à\s H:i:s');
+            return utf8_decode($data->format('d/m/Y à\s H:i:s'));
     }
 
     public function setDataFinal(\DateTime $dataFinal)
