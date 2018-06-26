@@ -93,6 +93,12 @@ class Estoque
     protected $numPecas;
 
     /**
+     * @Column(name="DSC_LOTE", type="string")
+     * @var string
+     */
+    protected $lote;
+
+    /**
      * @param mixed $codProduto
      */
     public function setCodProduto($codProduto)
@@ -300,4 +306,19 @@ class Estoque
         $this->numPecas = $numPecas;
     }
 
+    /**
+     * @return string
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param string $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
+    }
 }

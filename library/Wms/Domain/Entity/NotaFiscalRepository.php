@@ -1066,7 +1066,7 @@ class NotaFiscalRepository extends EntityRepository {
                         $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
                         foreach ($item['lote'] as $lote) {
                             if (!empty($lote['lote'])) {
-                                $loteEntity = $loteRepository->verificaLote($lote, $produtoEntity->getId(), $produtoEntity->getGrade());
+                                $loteEntity = $loteRepository->verificaLote($lote['lote'], $produtoEntity->getId(), $produtoEntity->getGrade());
                                 if (empty($loteEntity)) {
                                     $loteRepository->save($produtoEntity, trim($item['grade']), trim($lote['lote']), $idPessoa);
                                 }
@@ -1194,7 +1194,7 @@ class NotaFiscalRepository extends EntityRepository {
                 if(isset($item['lote']) && !empty($item['lote']) && $produtoEntity->getIndControlaLote() == 'S'){
                     $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
                     foreach ($item['itemLote'] as $lote){
-                        $loteEntity = $loteRepository->verificaLote($lote, $produtoEntity->getId(), $produtoEntity->getGrade());
+                        $loteEntity = $loteRepository->verificaLote($lote['lote'], $produtoEntity->getId(), $produtoEntity->getGrade());
                         if(empty($loteEntity)) {
                             $loteEntity = $loteRepository->save($produtoEntity, trim($item['grade']), trim($lote['lote']), $idPessoa);
                         }

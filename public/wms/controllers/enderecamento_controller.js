@@ -102,6 +102,7 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
 
             $('#volumes').parent().hide();
             $('#embalagens').parent().hide();
+            $('#lote').parent().hide();
             $('#validade').parent().hide();
             if($('#controle-proprietario').val() != 'S') {
                 $('#codPessoa').parent().hide();
@@ -201,8 +202,11 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
 
             function getVolumes(idProduto,grade){
                 $.post("/enderecamento/movimentacao/get-validade/", {idproduto:idProduto, grade:grade}, function(data){
-                    if (data == 'S') {
+                    if (data.validade == 'S') {
                         $('#validade').parent().show();
+                    }
+                        $('#lote').parent().show();
+                    if (data.lote == 'S') {
                     }
 
                 });

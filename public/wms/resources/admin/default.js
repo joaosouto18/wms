@@ -305,7 +305,7 @@ $(document).ready(function(){
 
     function getVolumes(idProduto,grade){
         $.post("/enderecamento/movimentacao/get-validade/", {idproduto:idProduto, grade:grade}, function(data){
-            if (data == 'S') {
+            if (data.validade == 'S') {
                 $('#validade').parent().show();
                 $('#validade').attr('validar','S');
             }else{

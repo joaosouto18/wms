@@ -27,7 +27,7 @@ class Enderecamento_MovimentacaoController extends Action
             $this->redirect('transferir', 'movimentacao', 'enderecamento', array('idProduto' => $data['idProduto'], 'grade' => $data['grade'],
                 'embalagem' => $embalagem, 'volumes' => $volumesParam, 'rua' => $data['rua'], 'predio' => $data['predio'],
                 'nivel' => $data['nivel'], 'apto' => $data['apto'], 'ruaDestino' => $data['ruaDestino'], 'predioDestino' => $data['predioDestino'],
-                'nivelDestino' => $data['nivelDestino'], 'aptoDestino' => $data['aptoDestino'], 'validade' => $data['validade'], 'quantidade' => $quantidade));
+                'nivelDestino' => $data['nivelDestino'], 'aptoDestino' => $data['aptoDestino'], 'validade' => $data['validade'], 'quantidade' => $quantidade, 'lote' => (isset($data['lote']))? $data['lote'] : null));
         }
         if (isset($data['return'])) {
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
@@ -69,6 +69,7 @@ class Enderecamento_MovimentacaoController extends Action
                     'validade' => str_replace('/', '-', $data['validade']),
                     'quantidade' => $quantidade,
                     'codProprietario' => (isset($data['codPessoa']))? $data['codPessoa'] : null,
+                    'lote' => (isset($data['lote']))? $data['lote'] : null,
                     'idNormaPaletizacao' => $data['idNormaPaletizacao']));
             }
         }
@@ -138,6 +139,7 @@ class Enderecamento_MovimentacaoController extends Action
             $params['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_MOVIMENTACAO;
             $params['unitizador'] = $unitizadorEn;
             $params['codProprietario'] = (isset($data['codProprietario'])) ? $data['codProprietario'] : null;
+            $params['lote'] = (isset($data['lote'])) ? $data['lote'] : null;
 
             $params['validade'] = null;
             if ($produtoEn->getValidade() == 'S' ) {
@@ -465,12 +467,11 @@ class Enderecamento_MovimentacaoController extends Action
 
         if (isset($produtoEn)) {
             $validade = $produtoEn->getValidade();
-            echo $this->_helper->json($validade);
+            $lote = $produtoEn->getIndControlaLote();
+            echo $this->_helper->json(array('validade' => $validade, 'lote' => $lote));
         } else {
             return $this->_helper->json(false);
         }
-
-
     }
 
 
@@ -489,7 +490,11 @@ class Enderecamento_MovimentacaoController extends Action
         $grade = (isset($params['grade']) && !empty($params['grade'])) ? $params['grade'] : 'UNICA';
         $produtoEn  = $ProdutoRepository->findOneBy(array('id' => $codProduto, 'grade' => $grade));
         $endPicking = $ProdutoRepository->getEnderecoPicking($produtoEn);
-
+        $controlaLote =  'N';
+        if(!empty($produtoEn)) {
+            $controlaLote = $produtoEn->getIndControlaLote();
+        }
+        $this->view->controlaLote = $controlaLote;
         $this->view->endPicking = $endPicking;
         $this->view->enderecos = $enderecos;
     }

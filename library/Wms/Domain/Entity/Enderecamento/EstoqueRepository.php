@@ -51,6 +51,7 @@ class EstoqueRepository extends EntityRepository
         $codProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
         $endereco = $enderecoEn->getId();
+        $controlaLote = $produtoEn->getIndControlaLote();
 
         $qtdReserva = 0;
 
@@ -82,16 +83,32 @@ class EstoqueRepository extends EntityRepository
             $pessoaRepo = $this->getEntityManager()->getRepository("wms:Usuario");
             $usuarioEn = $pessoaRepo->find($usuarioSessao->getId());
         }
-
-        $volumeEn = null;
-
-        if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])){
-            $volumeEn = $params['volume'];
-            $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn));
-        } else {
-            $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
+        if($controlaLote == 'S' && (!isset($params['lote']) || empty($params['lote']))) {
+            throw new \Exception('Informe o Lote.');
+        }else{
+            $loteRepository = $em->getRepository('wms:Produto\Lote');
+            $loteEntity = $loteRepository->verificaLote($params['lote'], $codProduto, $grade);
+            if(empty($loteEntity)){
+                throw new \Exception('O lote '.$params['lote'].' não pertence ao produto '.$codProduto);
+            }
         }
 
+        $volumeEn = null;
+        if($controlaLote == 'S'){
+            if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])) {
+                $volumeEn = $params['volume'];
+                $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn, 'lote' => $params['lote']));
+            } else {
+                $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'lote' => $params['lote']));
+            }
+        }else {
+            if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])) {
+                $volumeEn = $params['volume'];
+                $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn));
+            } else {
+                $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
+            }
+        }
         $embalagemEn = null;
         if (isset($params['embalagem']) and !is_null($params['embalagem']) && !empty($params['embalagem'])) {
             $embalagemEn = $params['embalagem'];
@@ -165,6 +182,7 @@ class EstoqueRepository extends EntityRepository
             $estoqueEn->setProdutoEmbalagem($embalagemEn);
             $estoqueEn->setProdutoVolume($volumeEn);
             $estoqueEn->setValidade($validade);
+            $estoqueEn->setLote($params['lote']);
 
             $dscEndereco = $enderecoEn->getDescricao();
             $dscProduto = $produtoEn->getDescricao();
@@ -406,7 +424,8 @@ class EstoqueRepository extends EntityRepository
                        E.QTD,
                        P.DSC_PRODUTO,
                        E.UMA,
-                       E.DTH_VALIDADE
+                       E.DTH_VALIDADE,
+                       E.LOTE
                   FROM (SELECT NVL(NVL(RE.COD_DEPOSITO_ENDERECO, RS.COD_DEPOSITO_ENDERECO),ESTQ.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
                                NVL(NVL(RE.COD_PRODUTO, RS.COD_PRODUTO),ESTQ.COD_PRODUTO) as COD_PRODUTO,
                                NVL(NVL(RE.DSC_GRADE,RS.DSC_GRADE),ESTQ.DSC_GRADE) as DSC_GRADE,
@@ -421,17 +440,18 @@ class EstoqueRepository extends EntityRepository
                                ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
                                ESTQ.UMA,
                                UN.DSC_UNITIZADOR AS UNITIZADOR,
-                               ESTQ.DTH_VALIDADE
+                               ESTQ.DTH_VALIDADE,
+                               ESTQ.LOTE
                           FROM (SELECT DTH_PRIMEIRA_MOVIMENTACAO, QTD, UMA, COD_UNITIZADOR, DTH_VALIDADE,
-                                       COD_DEPOSITO_ENDERECO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,'0') as VOLUME FROM ESTOQUE) ESTQ
+                                       COD_DEPOSITO_ENDERECO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,'0') as VOLUME, DSC_LOTE AS LOTE FROM ESTOQUE) ESTQ
                           LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = ESTQ.COD_UNITIZADOR
-                          FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME
-                                             FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
+                          FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE
+                                             FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME, REP.DSC_LOTE AS LOTE
                                                      FROM RESERVA_ESTOQUE RE
                                                     INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
                                                     WHERE IND_ATENDIDA = 'N'
                                                       AND TIPO_RESERVA = 'E') R
-                                            GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME) RE
+                                            GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE) RE
                                   ON ESTQ.COD_PRODUTO = RE.COD_PRODUTO
                                  AND ESTQ.DSC_GRADE = RE.DSC_GRADE
                                  AND ESTQ.VOLUME = RE.VOLUME

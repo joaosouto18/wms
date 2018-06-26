@@ -36,7 +36,10 @@
         $qtdReservaEntrada = 0;
         $qtdReservaSaida = 0;
         $count = 0;
-
+        $colspan = 3;
+        if($this->controlaLote == 'S'){
+            $colspan = 4;
+        }
         foreach ($this->enderecos as $key => $endereco) {
             if (($codProdutoAnterior != $endereco['COD_PRODUTO']) || ($gradeAnterior != $endereco['DSC_GRADE']) || ($codVolumeAnterior != $endereco['COD_VOLUME'])) {
 
@@ -61,7 +64,7 @@
                     <td><b><?php echo "GRADE: " . $endereco['DSC_GRADE'] ?></b></td>
                     <td colspan="3"><b><?php echo "PRODUTO: " . $endereco['DSC_PRODUTO'] ?></b></td>
                     <td colspan="2"><b><?php echo "VOLUME: " . $endereco['VOLUME'] ?></b></td>
-                    <td colspan="3">
+                    <td colspan="<?php echo $colspan ?>">
                         <?php if (isset($this->endPicking[$count])) : ?>
                             <b><?php echo "PICKING: " . $this->endPicking[$count]; ?></b>
         <?php endif; ?>
@@ -71,6 +74,13 @@
                 <tr class ="gTTitle">
                     <td><b>Endereço</b></td>
                     <td><b>Tipo</b></td>
+                    <?php
+                    if($this->controlaLote == 'S'){
+                        ?>
+                        <td><b>Lote</b></td>
+                        <?php
+                    }
+                    ?>
                     <td><b>Data de Entrada</b></td>
                     <td><b>U.M.A.</b></td>
                     <td><b>Unitizador</b></td>
@@ -86,6 +96,13 @@
             ?><tr>
                 <td><?php echo $endereco['ENDERECO'] ?></td>
                 <td><?php echo $endereco['TIPO'] ?></td>
+                <?php
+                if($this->controlaLote == 'S'){
+                    ?>
+                    <td><b><?php echo (isset($endereco['LOTE']))? $endereco['LOTE'] : '-' ?></b></td>
+                    <?php
+                }
+                ?>
                 <td><?php echo $endereco['DTH_PRIMEIRA_MOVIMENTACAO'] ?></td>
                 <td><?php echo $endereco['UMA'] ?></td>
                 <td><?php echo $endereco['UNITIZADOR'] ?></td>
@@ -119,7 +136,7 @@
 
             if ($endereco == $this->enderecos[count($this->enderecos) - 1]) {
                 ?><tr>
-                    <td colspan="5" style="text-align: center"><b>Total</b></td>
+                    <td colspan="<?php echo $colspan + 2 ?>" style="text-align: center"><b>Total</b></td>
                     <td><b><?php echo $qtdReservaEntrada ?></b></td>
                     <td><b><?php echo $qtdReservaSaida ?></b></td>
                     <td><b><?php echo $qtdEstoque ?></b></td>

@@ -39,7 +39,7 @@ class LoteRepository extends EntityRepository
     }
 
     public function verificaLote($lote, $idProduto, $grade){
-        return $this->findOneBy(array('descricao' => $lote['lote'], 'codProduto' => $idProduto, 'grade' => $grade));
+        return $this->findOneBy(array('descricao' => $lote, 'codProduto' => $idProduto, 'grade' => $grade));
     }
 
     public function getLotes($parametros){

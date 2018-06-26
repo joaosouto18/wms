@@ -37,6 +37,10 @@ class Cadastro extends Form
                 'value' => 'UNICA'
             ));
         }
+        $this->addElement('text', 'lote', array(
+            'size' => 10,
+            'label' => 'Lote',
+        ));
         $this->addElement('date', 'validade', array(
             'label' => 'Data Validade',
         ));
@@ -139,9 +143,9 @@ class Cadastro extends Form
                 'decorators' => array('ViewHelper')
             ));
         if($controleProprietario == 'S') {
-            $this->addDisplayGroup(array('idProduto', 'grade', 'volumes', 'embalagens', 'validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade', 'idNormaPaletizacao', 'codPessoa', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'));
+            $this->addDisplayGroup(array('idProduto', 'grade', 'volumes', 'embalagens','lote', 'validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade', 'idNormaPaletizacao', 'codPessoa', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'));
         }else{
-            $this->addDisplayGroup(array('idProduto', 'grade', 'volumes', 'embalagens', 'validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade', 'idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'));
+            $this->addDisplayGroup(array('idProduto', 'grade', 'volumes', 'embalagens','lote', 'validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade', 'idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'));
         }
         $this->addDisplayGroup(array('endereco_origem','ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
 
