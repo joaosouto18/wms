@@ -74,29 +74,31 @@ class Expedicao_IndexController extends Action {
                     $conexaoRepo->runQuery($query, $conexaoEn, $update);
                     $em->flush();
                 }
-                $pedidosEn = $pedidoRepository->findBy(['codCarga' => $cargaEntity->getId()]);
-                foreach ($pedidosEn as $pedidoEntity) {
-                    $pedidoRepository->removeReservaEstoque($pedidoEntity->getId(), false);
-                    $pedidoRepository->remove($pedidoEntity, false);
+                if ($cargaEntity != null) {
+                    $pedidosEn = $pedidoRepository->findBy(['codCarga' => $cargaEntity->getId()]);
+                    foreach ($pedidosEn as $pedidoEntity) {
+                        $pedidoRepository->removeReservaEstoque($pedidoEntity->getId(), false);
+                        $pedidoRepository->remove($pedidoEntity, false);
+                    }
+
+                    $ReentregaRepository->removeReentrega($cargaEntity->getId());
+                    $NotaFiscalSaidaRepository->atualizaStatusNota($cargaEntity->getCodCargaExterno());
+                    $cargaRepository->removeCarga($cargaEntity->getId());
+
+                    $cargasByExpedicao = $cargaRepository->findOneBy(array('codExpedicao' => $cargaEntity->getCodExpedicao()));
+                    if (!$cargasByExpedicao)
+                        $expedicaoRepository->alteraStatus($cargaEntity->getExpedicao(), Expedicao::STATUS_CANCELADO);
+
+                    $expedicaoAndamentoRepository->save('carga ' . $cargaEntity->getCodCargaExterno() . ' removida', $cargaEntity->getCodExpedicao(), false, false);
+
+                    if ($cargaCanceladaEntity) {
+                        $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($cargaCanceladaEntity[ID]) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                        $update = true;
+                        $conexaoEn = $acaoEn->getConexao();
+                        $conexaoRepo->runQuery($query, $conexaoEn, $update);
+                    }
+                    $em->flush();
                 }
-
-                $ReentregaRepository->removeReentrega($cargaEntity->getId());
-                $NotaFiscalSaidaRepository->atualizaStatusNota($cargaEntity->getCodCargaExterno());
-                $cargaRepository->removeCarga($cargaEntity->getId());
-
-                $cargasByExpedicao = $cargaRepository->findOneBy(array('codExpedicao' => $cargaEntity->getCodExpedicao()));
-                if (!$cargasByExpedicao)
-                    $expedicaoRepository->alteraStatus($cargaEntity->getExpedicao(), Expedicao::STATUS_CANCELADO);
-
-                $expedicaoAndamentoRepository->save('carga ' . $cargaEntity->getCodCargaExterno() . ' removida', $cargaEntity->getCodExpedicao(), false, false);
-
-                if ($cargaCanceladaEntity) {
-                    $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($cargaCanceladaEntity[ID]) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-                    $update = true;
-                    $conexaoEn = $acaoEn->getConexao();
-                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
-                }
-                $em->flush();
             }
         }
 
