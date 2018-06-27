@@ -108,7 +108,7 @@ class Expedicao_OndaRessuprimentoController extends Action
                     $expedicoesComCorte = implode(',', $expedicoesComCorte);
 
                     $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoesComCorte)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
-                    $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas.';
+                    $mensagem = 'Existem produtos sem estoque entre as expedições selecionadas.';
 
                     $return['response'][] = [
                         'msg' => $mensagem,
@@ -145,7 +145,7 @@ class Expedicao_OndaRessuprimentoController extends Action
                 $expedicoes = implode(',', $idsExpedicoes);
                 $result = $expedicaoRepo->gerarOnda($expedicoes);
             } else {
-                throw new Exception("A(s) expedição(ões) selecionada(s) já foi(ram) ressuprido(s) ou está(ão) em processo de ressupriemnto em outra máquina!");
+                throw new Exception("Todas as expedições selecionadas estão com saldo insuficiente em ao menos 1 item!");
             }
 
             ini_set('max_execution_time', 30);
