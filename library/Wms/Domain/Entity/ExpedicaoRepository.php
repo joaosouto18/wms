@@ -3864,18 +3864,7 @@ class ExpedicaoRepository extends EntityRepository {
         $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
 
         $this->getEntityManager()->flush();
-
-        $SQL = "SELECT * 
-                  FROM PEDIDO_PRODUTO PP
-                 WHERE COD_PEDIDO = '$codPedido' 
-                   AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
-        $ppSemCortes = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        if (count($ppSemCortes) == 0) {
-            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
-            $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
-            $pedidoRepository->cancelar($codPedido,false);
-        }
-
+        
     }
 
     /**
