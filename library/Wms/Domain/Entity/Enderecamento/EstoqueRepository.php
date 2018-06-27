@@ -441,7 +441,7 @@ class EstoqueRepository extends EntityRepository
                                ESTQ.UMA,
                                UN.DSC_UNITIZADOR AS UNITIZADOR,
                                ESTQ.DTH_VALIDADE,
-                               ESTQ.LOTE
+                               NVL(ESTQ.LOTE, NVL(RE.LOTE, RS.LOTE)) AS LOTE
                           FROM (SELECT DTH_PRIMEIRA_MOVIMENTACAO, QTD, UMA, COD_UNITIZADOR, DTH_VALIDADE,
                                        COD_DEPOSITO_ENDERECO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,'0') as VOLUME, DSC_LOTE AS LOTE FROM ESTOQUE) ESTQ
                           LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = ESTQ.COD_UNITIZADOR
@@ -456,13 +456,13 @@ class EstoqueRepository extends EntityRepository
                                  AND ESTQ.DSC_GRADE = RE.DSC_GRADE
                                  AND ESTQ.VOLUME = RE.VOLUME
                                  AND ESTQ.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
-                          FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME
-                                             FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
+                          FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE
+                                             FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME, REP.DSC_LOTE AS LOTE
                                                      FROM RESERVA_ESTOQUE RE
                                                     INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
                                                     WHERE IND_ATENDIDA = 'N'
                                                       AND TIPO_RESERVA = 'S') R
-                                            GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME) RS
+                                            GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE) RS
                                   ON ESTQ.COD_PRODUTO = RS.COD_PRODUTO
                                  AND ESTQ.DSC_GRADE = RS.DSC_GRADE
                                  AND ESTQ.VOLUME = RS.VOLUME
