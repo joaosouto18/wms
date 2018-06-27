@@ -3864,7 +3864,7 @@ class ExpedicaoRepository extends EntityRepository {
         $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
 
         $this->getEntityManager()->flush();
-        
+
     }
 
     /**
