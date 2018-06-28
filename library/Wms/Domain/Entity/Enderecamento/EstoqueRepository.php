@@ -487,6 +487,9 @@ class EstoqueRepository extends EntityRepository
             $caracteristicaPicking = EnderecoEntity::ENDERECO_PICKING;
             $SQLWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO <> " . $caracteristicaPicking;
         }
+        if (isset($parametros['lote']) && !empty($parametros['lote'])) {
+            $SQLWhere .= " AND E.LOTE = '" . $parametros['lote'] ."'";
+        }
         if (isset($parametros['rua']) && !empty($parametros['rua'])) {
             $SQLWhere .= " AND DE.NUM_RUA = " . $parametros['rua'];
         }
