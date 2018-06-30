@@ -1041,7 +1041,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             foreach ($elements['volumes'] as $value) {
                                 $volumeEntity = $value['volumeEn'];
                                 $quantidade = $value['qtd'];
-                                $mapaSeparacao = $this->getMapaSeparacao($quebrasNaoFracionado, $statusEntity, $expedicaoEntity);
+                                list($strQuebrasConcat, $arrQuebras) = self::getSetupQuebras($quebras, $pedidoProduto);
+                                $mapaSeparacao = $this->getMapaSeparacao($arrQuebras, $statusEntity, $expedicaoEntity);
                                 $this->salvaMapaSeparacaoProduto($mapaSeparacao, $produtoEntity, $quantidade, $volumeEntity, null, array($pedidoProduto), $depositoEnderecoEn, null, $pedidoEntity, $arrayRepositorios);
                             }
                         }
@@ -1464,7 +1465,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     'volumeEn' => $volumeEn,
                     'qtd' => $reserva['qtd'],
                     'tipoSaida' => $reserva['tipoSaida'],
-                    'quebraPD' => $reserva['']
+                    'quebraPD' => $reserva['quebraPulmaoDoca']
                 );
             }
         }
