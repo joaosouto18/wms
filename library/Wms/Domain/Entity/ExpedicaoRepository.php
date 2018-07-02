@@ -1422,7 +1422,8 @@ class ExpedicaoRepository extends EntityRepository {
                 $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
                 $ids = explode(',',$idsIntegracao);
-
+                sort($ids);
+                
                 foreach ($ids as $idIntegracao) {
                     $acaoEn = $acaoIntRepo->find($idIntegracao);
                     $options = array();
