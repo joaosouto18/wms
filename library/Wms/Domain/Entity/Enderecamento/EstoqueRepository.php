@@ -154,17 +154,19 @@ class EstoqueRepository extends EntityRepository
             $validadeParam = (is_string($dataValidade['dataValidade'])) ? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
         }
 
-        if (!empty($notaFiscalDevolucao) && $enderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING && $this->getSystemParameterValue('ATUALIZAR_DATA_PICKING') == 'S') {
-            if (isset($validadeParam) && !empty($validadeParam)) {
-                $validade = $validadeParam;
-            } elseif (isset($validadeEsttoque) && !empty($validadeEsttoque)) {
-                $validade = $validadeEsttoque;
-            }
-        } else {
-            if (isset($validadeEsttoque) && !empty($validadeEsttoque)) {
-                $validade = $validadeEsttoque;
-            } elseif (isset($validadeParam) && !empty($validadeParam)) {
-                $validade = $validadeParam;
+
+        if (isset($validadeParam) && !empty($validadeParam)) {
+            $validade = $validadeParam;
+        } elseif (isset($validadeEsttoque) && !empty($validadeEsttoque)) {
+            $validade = $validadeEsttoque;
+        }
+        if (!empty($notaFiscalDevolucao)) {
+            if (($enderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING) && ($this->getSystemParameterValue('ATUALIZAR_DATA_PICKING') != 'S')) {
+                if (isset($validadeEsttoque) && !empty($validadeEsttoque)) {
+                    $validade = $validadeEsttoque;
+                } elseif (isset($validadeParam) && !empty($validadeParam)) {
+                    $validade = $validadeParam;
+                }
             }
         }
 
