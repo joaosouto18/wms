@@ -862,13 +862,17 @@ class Importacao
                         $parametroEmbalagensInativas = $parametroRepo->findOneBy(array('constante' => 'INATIVA_EMBALAGENS_INEXISTENTES_ERP'));
                         if ($parametroEmbalagensInativas->getValor() == 'S') {
                             $embalagemAtiva = false;
+                            $codBarras = null;
                         } else {
                             $embalagemAtiva = false;
+                            $codBarras = null;
                             if ($embalagemCadastrada->getDataInativacao() == null) {
                                 $embalagemAtiva = true;
+                                $codBarras      = $embalagemCadastrada->getCodigoBarras();
                             }
                         }
                         $embalagemArray['ativarDesativar'] = $embalagemAtiva;
+                        $embalagemArray['codigoBarras']    = $codBarras;
                     } else {
                         $embalagemArray['ativarDesativar'] = true;
                     }
