@@ -1423,43 +1423,67 @@ class ExpedicaoRepository extends EntityRepository {
 
                 $ids = explode(',',$idsIntegracao);
                 sort($ids);
-                
+
+                $pedidoRepo     = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+
                 foreach ($ids as $idIntegracao) {
                     $acaoEn = $acaoIntRepo->find($idIntegracao);
                     $options = array();
 
                     if ($acaoEn == null) continue;
 
-                    if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA) {
-                        $cargasEn = $expedicaoEn->getCarga();
-                        $pedidoRepo     = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+                    $params = $acaoEn->getParametros();
+                    $cargasEn = $expedicaoEn->getCarga();
 
-                        foreach ($cargasEn as $cargaEn) {
-                            $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
-                            foreach ($pedidosEn as $pedidoEn) {
-                                $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
-                                foreach ($produtos as $key => $item) {
-                                    $options[$pedidoEn->getId().'-'.$key][] = $cargaEn->getCodCargaExterno();
-                                    $options[$pedidoEn->getId().'-'.$key][] = $pedidoEn->getCodExterno();
-                                    $options[$pedidoEn->getId().'-'.$key][] = $item['COD_PRODUTO'];
-                                    $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_PEDIDO'];
-                                    if (is_null($item['ATENDIDA'])) {
-                                        $options[$pedidoEn->getId().'-'.$key][] = 0;
-                                    }else{
-                                        $options[$pedidoEn->getId().'-'.$key][] = $item['ATENDIDA'];
+                    $encontrouPedido = false;
+                    foreach ($cargasEn as $cargaEn) {
+
+                        $SQL = "SELECT * 
+                                  FROM PEDIDO 
+                                 WHERE COD_CARGA = " .$cargaEn->getId();
+                        if (!empty($params)) {
+                            $SQL = $SQL . " AND COD_TIPO_PEDIDO IN (" . $params . ")";
+                        }
+
+                        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+                        if (count($result) > 0) {
+                            $encontrouPedido = true;
+                            break;
+                        }
+                    }
+
+                    if ($encontrouPedido == true) {
+                        if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA) {
+                            $cargasEn = $expedicaoEn->getCarga();
+
+                            foreach ($cargasEn as $cargaEn) {
+                                $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
+                                foreach ($pedidosEn as $pedidoEn) {
+                                    $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
+                                    foreach ($produtos as $key => $item) {
+                                        $options[$pedidoEn->getId().'-'.$key][] = $cargaEn->getCodCargaExterno();
+                                        $options[$pedidoEn->getId().'-'.$key][] = $pedidoEn->getCodExterno();
+                                        $options[$pedidoEn->getId().'-'.$key][] = $item['COD_PRODUTO'];
+                                        $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_PEDIDO'];
+                                        if (is_null($item['ATENDIDA'])) {
+                                            $options[$pedidoEn->getId().'-'.$key][] = 0;
+                                        }else{
+                                            $options[$pedidoEn->getId().'-'.$key][] = $item['ATENDIDA'];
+                                        }
                                     }
                                 }
+                                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
+                                if (!$resultAcao === true) {
+                                    throw new \Exception($resultAcao);
+                                }
+                                unset($options);
                             }
-                            $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
+                        } else {
+                            $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                             if (!$resultAcao === true) {
                                 throw new \Exception($resultAcao);
                             }
-                            unset($options);
-                        }
-                    } else {
-                        $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                        if (!$resultAcao === true) {
-                            throw new \Exception($resultAcao);
                         }
                     }
                 }

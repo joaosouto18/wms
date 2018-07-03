@@ -85,6 +85,11 @@ class AcaoIntegracao
     protected $idAcaoRelacionada;
 
     /**
+     * @Column(name="PARAMETROS", type="string")
+     */
+    protected $parametros;
+
+    /**
      * @return mixed
      */
     public function getIdAcaoRelacionada()
@@ -235,6 +240,23 @@ class AcaoIntegracao
     {
         return $this->tabelaReferencia;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getParametros()
+    {
+        return $this->parametros;
+    }
+
+    /**
+     * @param mixed $parametros
+     */
+    public function setParametros($parametros)
+    {
+        $this->parametros = $parametros;
+    }
+
 
     /**
      * @param mixed $tabelaReferencia
