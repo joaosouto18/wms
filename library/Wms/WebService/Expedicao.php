@@ -895,18 +895,23 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
             $qtdCorrigida = str_replace(',','.',$produto['quantidade']);
 
-            if ($produtoEn->getIndControlaLote() == 'S') {
+            if ($produtoEn->getIndControlaLote() == 'S' && !empty($produto['lote'])) {
                 /** @var \Wms\Domain\Entity\Produto\Lote $loteEn */
                 $loteEn = $loteRepo->findOneBy(['descricao' => $produto['lote'], 'codProduto' => $idProduto, 'grade' => $produto['grade']]);
 
                 if (empty($loteEn))
                     throw new Exception("Não consta no WMS o lote '$produto[lote]' para o produto $idProduto grade $produto[grade].");
+            } elseif ($produtoEn->getIndControlaLote() == 'N' && !empty($produto['lote'])) {
+                $grade = $produto['grade'];
+                $lote = $produto['lote'];
+                $codPedido = $enPedido->getCodExterno();
+                throw new Exception("No pedido ($codPedido) o produto $idProduto - $grade solicita o lote '$lote', mas no WMS este produto não é controlado por lote!");
             }
 
             $strConcat = "$idProduto--$produto[grade]";
             if (isset($prod[$strConcat])) {
                 $prod[$strConcat]['quantidade'] = \Wms\Math::adicionar($prod[$strConcat]['quantidade'], $qtdCorrigida);
-                if ($produtoEn->getIndControlaLote() == 'S') {
+                if ($produtoEn->getIndControlaLote() == 'S' && !empty($produto['lote'])) {
                     if (isset($prod[$strConcat]['lotes'][$produto['lote']])) {
                         $qtdAtual = $prod[$strConcat]['lotes'][$produto['lote']];
                         $prod[$strConcat]['lotes'][$produto['lote']] = \Wms\Math::adicionar($qtdAtual, $qtdCorrigida);
@@ -923,7 +928,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     'grade' => $produto['grade'],
                     'quantidade' => $qtdCorrigida
                 );
-                if ($produtoEn->getIndControlaLote() == 'S') {
+                if ($produtoEn->getIndControlaLote() == 'S' && !empty($produto['lote'])) {
                     $prod[$strConcat]['lotes'][$produto['lote']] = $qtdCorrigida;
                 }
             }
