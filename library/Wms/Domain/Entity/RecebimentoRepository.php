@@ -1834,12 +1834,11 @@ class RecebimentoRepository extends EntityRepository {
                          INNER JOIN PALETE P ON P.UMA = PP.UMA
                          WHERE P.COD_RECEBIMENTO = $idRecebimento 
                            AND (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN ($statusEmEnderecamento, $statusEnderecado))
-                         GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PP.COD_NORMA_PALETIZACAO, P.COD_RECEBIMENTO) PLT
+                         GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, P.COD_RECEBIMENTO) PLT
                  INNER JOIN (SELECT COD_PRODUTO, 
                                     DSC_GRADE, 
-                                    QTD, 
-                                    COD_NORMA_PALETIZACAO 
-                               FROM V_QTD_RECEBIMENTO_DETALHADA 
+                                    QTD
+                               FROM V_QTD_RECEBIMENTO 
                               WHERE COD_OS = $idOrdemServico
                                 AND COD_RECEBIMENTO = $idRecebimento)RC 
                     ON RC.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE
