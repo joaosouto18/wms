@@ -79,6 +79,13 @@ class PaleteProduto
      * @var integer
      */
     protected $numPecas;
+
+    /**
+     * @Column(name="DSC_LOTE", type="string")
+     * @var string
+     */
+    protected $lote;
+
     /**
      * @param mixed $codNormaPaletizacao
      */
@@ -283,4 +290,19 @@ class PaleteProduto
         $this->numPecas = $numPecas;
     }
 
+    /**
+     * @return string
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param string $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
+    }
 }
