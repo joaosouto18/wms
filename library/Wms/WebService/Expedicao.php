@@ -249,7 +249,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $produto['codProduto'] = $produtoWs->codProduto;
                 $produto['grade'] = (empty($produtoWs->grade) || $produtoWs->grade === "?") ? "UNICA" : trim($produtoWs->grade);
                 $produto['quantidade'] = $produtoWs->quantidade;
-                $produto['lote'] = $produtoWs->lote;
+                $produto['lote'] = (isset($produtoWs->lote) || $produtoWs->lote != "?") ? $produtoWs->lote : null;
                 $produtos[] = $produto;
             }
 
@@ -907,14 +907,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
             if (isset($prod[$strConcat])) {
                 $prod[$strConcat]['quantidade'] = \Wms\Math::adicionar($prod[$strConcat]['quantidade'], $qtdCorrigida);
                 if ($produtoEn->getIndControlaLote() == 'S') {
-                    if (isset($prod[$strConcat]['lotes'][$loteEn->getId()])) {
-                        $qtdAtual = $prod[$strConcat]['lotes'][$loteEn->getId()]['quantidade'];
-                        $prod[$strConcat]['lotes'][$loteEn->getId()]['quantidade'] = \Wms\Math::adicionar($qtdAtual, $qtdCorrigida);
+                    if (isset($prod[$strConcat]['lotes'][$produto['lote']])) {
+                        $qtdAtual = $prod[$strConcat]['lotes'][$produto['lote']];
+                        $prod[$strConcat]['lotes'][$produto['lote']] = \Wms\Math::adicionar($qtdAtual, $qtdCorrigida);
                     } else {
-                        $prod[$strConcat]['lotes'][$loteEn->getId()] = [
-                            'loteEn' => $loteEn,
-                            'quantidade' => $qtdCorrigida
-                        ];
+                        $prod[$strConcat]['lotes'][$produto['lote']] = $qtdCorrigida;
                     }
                 }
             } else {
@@ -927,10 +924,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     'quantidade' => $qtdCorrigida
                 );
                 if ($produtoEn->getIndControlaLote() == 'S') {
-                    $prod[$strConcat]['lotes'][$loteEn->getId()] = [
-                        'loteEn' => $loteEn,
-                        'quantidade' => $qtdCorrigida
-                    ];
+                    $prod[$strConcat]['lotes'][$produto['lote']] = $qtdCorrigida;
                 }
             }
         }
@@ -942,13 +936,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
             $pedidoProdutoEn = $PedidoProdutoRepo->save($value);
             if (!empty($lotes)) {
-                foreach ($lotes as $idLote => $dados) {
+                foreach ($lotes as $lote => $qtd) {
                     $arr = [
-                        'lote' => $dados['loteEn'],
-                        'codLote' => $dados['loteEn']->getId(),
+                        'lote' => $lote,
                         'pedidoProduto' => $pedidoProdutoEn,
                         'codPedidoProduto' => $pedidoProdutoEn->getId(),
-                        'quantidade' => $dados['quantidade']
+                        'quantidade' => $qtd
                     ];
                     $pedProdLoteRepo->save($arr);
                 }
@@ -984,10 +977,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $qtdTotal = count($EtiquetaRepo->getEtiquetasByPedido($idPedido));
                 $qtdCortadas = count($EtiquetaRepo->getEtiquetasByPedido($idPedido,EtiquetaSeparacao::STATUS_CORTADO));
 
-                $SQL = "SELECT PP.*, L.DSC_LOTE
+                $SQL = "SELECT PP.*, PPL.DSC_LOTE
                           FROM PEDIDO_PRODUTO PP
                      LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
-                     LEFT JOIN LOTE L ON L.COD_LOTE = PPL.COD_LOTE
                          WHERE PP.COD_PEDIDO = '" . $idPedido . "'
                            AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
                 $produtosCorte = $this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);

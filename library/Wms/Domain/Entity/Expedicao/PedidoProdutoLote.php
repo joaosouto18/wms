@@ -35,16 +35,10 @@ class PedidoProdutoLote
     protected $codPedidoProduto;
 
     /**
-     * @var Produto\Lote
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Lote")
-     * @JoinColumn(name="COD_LOTE", referencedColumnName="COD_LOTE")
+     * @var string
+     * @Column(name="DSC_LOTE", type="string", nullable=false)
      */
     protected $lote;
-
-    /**
-     * @Column(name="COD_LOTE", type="integer", nullable=false)
-     */
-    protected $codLote;
 
     /**
      * @Column(name="QUANTIDADE", type="decimal", nullable=false)
