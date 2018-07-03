@@ -52,10 +52,27 @@
         return true;
     }
 
-    function checkAll(event) {
-        alert('teste');
-        return true;
+    function check(event) {
+
+
+        if($('#check-all').prop('checked')) {
+            $( ".checkBoxClass" ).prop( "checked", true );
+        } else {
+            $( ".checkBoxClass" ).prop( "checked", false );
+        }
+
+
+        // if ($(this).prop("checked")) {
+        //     $('.checkBoxClass').each(function () {
+        //         $(this).attr('checked', true);
+        //     });
+        // } else {
+        //     $('.checkBoxClass').each(function () {
+        //         $(this).removeAttr('checked');
+        //     });
+        // }
     }
+
 
 </script>
 <form id="" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'etiqueta', 'action' =>'reimprimir' ))?>">
@@ -63,7 +80,7 @@
         <table class="gTable ">
             <thead>
             <tr class="gTTitle">
-                <td><p><input style="vertical-align: middle" value="checkAll" name="checkAll" type="checkbox"  onclick="checkAll(event);"/></p></td>
+                <td><p><input checked="true" class="checkBoxClass" style="vertical-align: middle" value="checkAll" onclick="check(event)" name="check-all" id="check-all" type="checkbox"/></p></td>
                 <td>Cód de barras</td>
                 <td>Cód Produto</td>
                 <td>Produto</td>
@@ -76,7 +93,7 @@
             <?php
             foreach ($this->etiquetas as $etiqueta): ?>
                 <tr height="35">
-                    <td><input name="etiqueta[]" value="<?php echo $etiqueta['codBarras'] ?>" type="checkbox" /></td>
+                    <td><input class="checkBoxClass" name="etiqueta[]" value="<?php echo $etiqueta['codBarras'] ?>" type="checkbox" checked /></td>
                     <td><?php echo $etiqueta['codBarras'] ?></td>
                     <td><?php echo $etiqueta['codProduto'] ?></td>
                     <td ><?php echo $etiqueta['produto'] ?></td>
