@@ -1075,7 +1075,6 @@ class PaleteRepository extends EntityRepository {
     {
         if (!empty($dataValidade))
             $dataValidade = new \DateTime($dataValidade);
-
         $paleteEn = new Palete();
         $paleteEn->setRecebimento($recebimentoEn);
         $paleteEn->setUnitizador($unitizadorEn);
@@ -1086,7 +1085,7 @@ class PaleteRepository extends EntityRepository {
         $paleteEn->setPeso($pesoPorPalete);
         $this->_em->persist($paleteEn);
         foreach ($volumes as $volume) {
-            if (is_array($arrayPaleteLote)) {
+            if (!empty($arrayPaleteLote)) {
                 foreach ($arrayPaleteLote as $key => $lote) {
                     $paleteProduto = new PaleteProduto();
                     $paleteProduto->setUma($paleteEn);
