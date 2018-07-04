@@ -352,15 +352,18 @@ class PaleteRepository extends EntityRepository {
                         PROD.VOLUMES,
                         NVL(QTD_VOL.QTD,1) as QTD_VOL_TOTAL,
                         NVL(QTD_VOL_CONFERIDO.QTD,1) as QTD_VOL_CONFERIDO,
-                        PP.DTH_VALIDADE
+                        PP.DTH_VALIDADE,
+                        PPL.DSC_LOTE AS LOTE
                    FROM PALETE P
                    LEFT JOIN UNITIZADOR U ON P.COD_UNITIZADOR = U.COD_UNITIZADOR
                    LEFT JOIN SIGLA S ON P.COD_STATUS = S.COD_SIGLA
                    LEFT JOIN DEPOSITO_ENDERECO DE ON P.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
-                   LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO
+                   LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO                   
+                   LEFT JOIN (SELECT LISTAGG(DSC_LOTE, ', ') WITHIN GROUP (ORDER BY UMA) DSC_LOTE, UMA                   
+                   FROM PALETE_PRODUTO GROUP BY UMA) PPL ON PPL.UMA = P.UMA                   
                    INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                    INNER JOIN PRODUTO ON PRODUTO.COD_PRODUTO = PP.COD_PRODUTO AND PP.DSC_GRADE = PRODUTO.DSC_GRADE
-                   INNER JOIN (SELECT MIN(PP.QTD) as QTD, UMA FROM PALETE_PRODUTO PP GROUP BY UMA) QTD ON QTD.UMA = P.UMA
+                   INNER JOIN (SELECT SUM(PP.QTD) as QTD, UMA FROM PALETE_PRODUTO PP GROUP BY UMA) QTD ON QTD.UMA = P.UMA
                     LEFT JOIN (SELECT COUNT(COD_PRODUTO_VOLUME) QTD, COD_NORMA_PALETIZACAO
                                  FROM PRODUTO_VOLUME
                                 GROUP BY COD_NORMA_PALETIZACAO) QTD_VOL ON QTD_VOL.COD_NORMA_PALETIZACAO = PP.COD_NORMA_PALETIZACAO
@@ -1060,11 +1063,16 @@ class PaleteRepository extends EntityRepository {
                     //TRAVA PARA GERAR O PALETE COM A QUANTIDADE QUEBRADA SOMENTE SE TIVER FINALIZADO
                     if ($recebimentoFinalizado == true || ($qtdTotalConferido == $qtdNotaFiscal)) {
                         $pesoUltimoPalete = $peso - $pesoTotalPaletes;
-
-                        if(!isset($arrayUltimoPaleteLote)){
-                            $arrayUltimoPaleteLote[$qtdRecebida[0]['LOTE']] = $qtdRecebida[0]['QTD'];
+                        if(!isset($arrayUltimoPaleteLote) && isset($vetLote)){
+                            foreach ($vetLote as $lote){
+                                if($lote['QTD'] > 0){
+                                    $arrayUltimoPaleteLote[$lote['LOTE']] = $lote['QTD'];
+                                }
+                            }
+                            $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $qtdUltimoPalete, $dataValidade, $tipoEnderecamento, $pesoUltimoPalete, $arrayUltimoPaleteLote);
+                        }else {
+                            $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $qtdUltimoPalete, $dataValidade, $tipoEnderecamento, $pesoUltimoPalete);
                         }
-                        $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $qtdUltimoPalete, $dataValidade, $tipoEnderecamento, $pesoUltimoPalete, $arrayUltimoPaleteLote);
                     }
                 }
             }
@@ -1251,7 +1259,6 @@ class PaleteRepository extends EntityRepository {
 
         /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
         $paleteEn = $this->find($idPalete);
-
         if ($paleteEn == NULL) {
             throw new \Exception("Palete $idPalete não encontrado");
         }

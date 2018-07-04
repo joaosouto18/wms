@@ -85,7 +85,7 @@ class EstoqueRepository extends EntityRepository
         }
         if($controlaLote == 'S' && (!isset($params['lote']) || empty($params['lote']))) {
             throw new \Exception('Informe o Lote.');
-        }else{
+        }elseif($controlaLote == 'S'){
             $loteRepository = $em->getRepository('wms:Produto\Lote');
             $loteEntity = $loteRepository->verificaLote($params['lote'], $codProduto, $grade);
             if(empty($loteEntity)){

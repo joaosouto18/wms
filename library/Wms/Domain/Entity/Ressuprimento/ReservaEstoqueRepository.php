@@ -167,6 +167,7 @@ class ReservaEstoqueRepository extends EntityRepository
             $params['uma'] = $idUma;
             $params['usuario'] = $usuarioEn;
             $params['tipo'] = $tipo;
+            $params['lote'] = $reservaProduto->getLote();
             $dataValidade['dataValidade'] = $reservaProduto->getValidade();
             if($controleProprietario == 'S') {
                 $params['codPedido'] = $pedido['codPedido'];
@@ -372,11 +373,13 @@ class ReservaEstoqueRepository extends EntityRepository
                 $dataValidade = date_create_from_format('d/m/Y',$produto['validade']);
                 if ($dataValidade) $reservaEstoqueProduto->setValidade($dataValidade);
             }
+            if (isset($produto['lote']) && !empty($produto['lote'])){
+                $reservaEstoqueProduto->setLote($produto['lote']);
+            }
             $reservaEstoqueProduto->setQtd(str_replace(",",".",$produto['qtd']));
             $reservaEstoqueProduto->setReservaEstoque($reservaEstoque);
             $this->getEntityManager()->persist($reservaEstoqueProduto);
         }
-
         return $reservaEstoque;
     }
 

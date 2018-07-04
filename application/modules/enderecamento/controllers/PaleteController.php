@@ -37,8 +37,12 @@ class Enderecamento_PaleteController extends Action
                 $paletes = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
 
                 $idPaletes = array();
+                $existeLote = false;
                 foreach ($paletes as $palete) {
                     $idPaletes[] = $palete['UMA'];
+                    if($palete['LOTE'] != null){
+                        $existeLote = true;
+                    }
                 }
                 if ($completaPicking) {
                     $paleteRepo->enderecaPicking($idPaletes, $completaPicking);
@@ -54,6 +58,7 @@ class Enderecamento_PaleteController extends Action
             $this->view->codProduto = $codProduto;
             $this->view->grade = $grade;
             $this->view->paletes = $paletes;
+            $this->view->existeLote = $existeLote;
         } else {
             /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
@@ -88,8 +93,12 @@ class Enderecamento_PaleteController extends Action
 
                     $arr['paletes'] = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
                     $paletes = array();
+                    $existeLote = false;
                     foreach ($arr['paletes'] as $palete) {
                         $paletes[] = $palete['UMA'];
+                        if($palete['LOTE'] != null){
+                            $existeLote = true;
+                        }
                     }
                     if ($completaPicking) {
                         $paleteRepo->enderecaPicking($paletes, $completaPicking);
@@ -105,6 +114,7 @@ class Enderecamento_PaleteController extends Action
             $this->view->isIndivudal = false;
             $this->view->utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
             $this->view->itens = $result;
+            $this->view->existeLote = $existeLote;
         }
 
         $this->view->idRecebimento = $idRecebimento;

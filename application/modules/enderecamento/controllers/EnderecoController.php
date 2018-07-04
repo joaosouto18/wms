@@ -60,7 +60,6 @@ class Enderecamento_EnderecoController extends Action
         $isIndividual = $this->_getParam("isIndividual");
         $arrayPaletes = explode(',',$idPaletes);
         unset($arrayPaletes[0]);
-
         $paletes = array();
         foreach ($arrayPaletes as $palete) {
             if (is_numeric($palete)) {

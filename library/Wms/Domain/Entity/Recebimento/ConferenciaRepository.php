@@ -116,7 +116,7 @@ class ConferenciaRepository extends EntityRepository
 
     public function getQtdByRecebimentoVolumeAndNorma ($idOs, $codProduto, $grade){
         $SQL = "SELECT MIN (QTD) as QTD, COD_NORMA_PALETIZACAO, NUM_NORMA, COD_UNITIZADOR, SUM(NUM_PESO) as PESO
-                  FROM (SELECT SUM(QTD_CONFERIDA) as QTD, RV.COD_PRODUTO_VOLUME, RV.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, NP.COD_UNITIZADOR, SUM(RV.NUM_PESO) as NUM_PESO
+                  FROM (SELECT SUM(QTD_CONFERIDA) as QTD, RV.COD_PRODUTO_VOLUME, RV.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, NP.COD_UNITIZADOR, SUM(RV.NUM_PESO) as NUM_PESO, RV.DSC_LOTE AS LOTE
                           FROM RECEBIMENTO_VOLUME RV
                          INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
                          INNER JOIN NORMA_PALETIZACAO NP ON NP.COD_NORMA_PALETIZACAO = RV.COD_NORMA_PALETIZACAO
@@ -124,7 +124,7 @@ class ConferenciaRepository extends EntityRepository
                            AND PV.COD_PRODUTO = '$codProduto'
                            AND PV.DSC_GRADE = '$grade'
                          GROUP BY RV.COD_PRODUTO_VOLUME, RV.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, COD_UNITIZADOR)
-                 GROUP BY COD_NORMA_PALETIZACAO, NUM_NORMA, COD_UNITIZADOR, NUM_PESO";
+                 GROUP BY COD_NORMA_PALETIZACAO, NUM_NORMA, COD_UNITIZADOR, NUM_PESO, RV.DSC_LOTE";
         return $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
     }
 
