@@ -821,11 +821,12 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         $sql = "
-         SELECT DISTINCT
+                  SELECT DISTINCT
                 C.COD_EXPEDICAO,
                 C.COD_CARGA_EXTERNO as CARGA,
                 PP.COD_PRODUTO as CODIGO,
                 PP.DSC_GRADE as GRADE,
+                PROD.DSC_LOTE as LOTE,
                 PROD.PRODUTO,
                 PROD.PICKING,
                 PROD.ESTOQUE,
@@ -836,10 +837,10 @@ class ExpedicaoRepository extends EntityRepository {
                         PEDIDO.DSC_GRADE AS Grade,
                         PROD.DSC_PRODUTO as Produto,
                         DE.DSC_DEPOSITO_ENDERECO as Picking,
-                        
-                        (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) AS Estoque,
+                        PEDIDO.DSC_LOTE,
+                        (NVL(EL.QTD,0) + NVL(REPL.QTD_RESERVADA,0)) AS Estoque,
                         PEDIDO.quantidade_pedido as QTD_SEPARAR_TOTAL,
-                        (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo_Final
+                        (NVL(EL.QTD,0) + NVL(REPL.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo_Final
                    FROM (SELECT CASE WHEN (PPL.DSC_LOTE IS NOT NULL )
                                 THEN SUM(PPL.QUANTIDADE - NVL(PPL.QTD_CORTE,0))
                                 ELSE SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) END AS quantidade_pedido,
@@ -861,21 +862,42 @@ class ExpedicaoRepository extends EntityRepository {
                                   ON E.COD_PRODUTO = P.COD_PRODUTO
                                  AND E.DSC_GRADE = P.DSC_GRADE
                                  AND E.VOLUME = NVL(PV.COD_PRODUTO_VOLUME,0)
-                          GROUP BY P.COD_PRODUTO, P.DSC_GRADE, E.DSC_LOTE) E
-                     ON PEDIDO.COD_PRODUTO = E.COD_PRODUTO AND PEDIDO.DSC_GRADE = E.DSC_GRADE
+                          GROUP BY P.COD_PRODUTO, P.DSC_GRADE, E.DSC_LOTE) EL ON PEDIDO.COD_PRODUTO = EL.COD_PRODUTO AND PEDIDO.DSC_GRADE = EL.DSC_GRADE AND PEDIDO.DSC_LOTE = EL.DSC_LOTE
+              LEFT JOIN (SELECT P.COD_PRODUTO, P.DSC_GRADE, MIN(NVL(E.QTD,0)) as QTD
+                            FROM PRODUTO P
+                            LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
+                            LEFT JOIN (SELECT SUM(E.QTD) AS QTD, E.COD_PRODUTO, E.DSC_GRADE,
+                                              NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME
+                                        FROM ESTOQUE E
+                                       GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0)) E
+                                  ON E.COD_PRODUTO = P.COD_PRODUTO
+                                 AND E.DSC_GRADE = P.DSC_GRADE
+                                 AND E.VOLUME = NVL(PV.COD_PRODUTO_VOLUME,0)
+                          GROUP BY P.COD_PRODUTO, P.DSC_GRADE) E ON PEDIDO.COD_PRODUTO = E.COD_PRODUTO AND PEDIDO.DSC_GRADE = E.DSC_GRADE
               LEFT JOIN (SELECT MAX(QTD_RESERVADA) QTD_RESERVADA, COD_PRODUTO, DSC_GRADE, DSC_LOTE
                            FROM (SELECT SUM(REP.QTD_RESERVADA) AS QTD_RESERVADA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0), REP.DSC_LOTE 
                                    FROM RESERVA_ESTOQUE_EXPEDICAO REE
                                   INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                                   INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                                   WHERE RE.TIPO_RESERVA = 'S' AND RE.IND_ATENDIDA = 'N'
-                                  GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0), REP.DSC_LOTE)) MAX_RES
-                          GROUP BY COD_PRODUTO, DSC_GRADE, DSC_LOTE) REP  ON PEDIDO.COD_PRODUTO = REP.COD_PRODUTO AND PEDIDO.DSC_GRADE = REP.DSC_GRADE
+                                  GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0), REP.DSC_LOTE) MAX_RES
+                          GROUP BY COD_PRODUTO, DSC_GRADE, DSC_LOTE) REPL  ON PEDIDO.COD_PRODUTO = REPL.COD_PRODUTO AND PEDIDO.DSC_GRADE = REPL.DSC_GRADE AND PEDIDO.DSC_LOTE = REPL.DSC_LOTE
+              LEFT JOIN (SELECT MAX(QTD_RESERVADA) QTD_RESERVADA, COD_PRODUTO, DSC_GRADE
+                           FROM (SELECT SUM(REP.QTD_RESERVADA) AS QTD_RESERVADA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0)
+                                   FROM RESERVA_ESTOQUE_EXPEDICAO REE
+                                  INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                                  INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                                  WHERE RE.TIPO_RESERVA = 'S' AND RE.IND_ATENDIDA = 'N'
+                                  GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0)) MAX_RES
+                          GROUP BY COD_PRODUTO, DSC_GRADE) REP ON PEDIDO.COD_PRODUTO = REP.COD_PRODUTO AND PEDIDO.DSC_GRADE = REP.DSC_GRADE
               LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PEDIDO.COD_PRODUTO AND PROD.DSC_GRADE = PEDIDO.DSC_GRADE
               LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PROD.COD_PRODUTO AND PV.DSC_GRADE = PROD.DSC_GRADE
               LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = PROD.COD_PRODUTO AND PE.DSC_GRADE = PROD.DSC_GRADE
               LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO OR DE.COD_DEPOSITO_ENDERECO = PV.COD_DEPOSITO_ENDERECO
-                  WHERE (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido < 0) PROD
+                  WHERE (CASE WHEN PEDIDO.DSC_LOTE IS NOT NULL 
+                    THEN (NVL(EL.QTD,0) + NVL(REPL.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido
+                    ELSE (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido END ) < 0
+                  ) PROD
             INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PRODUTO = PROD.CODIGO AND PP.DSC_GRADE = PROD.GRADE
             INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
              LEFT JOIN ONDA_RESSUPRIMENTO_PEDIDO ORP ON PP.COD_PEDIDO = ORP.COD_PEDIDO AND PP.COD_PRODUTO = ORP.COD_PRODUTO AND PP.DSC_GRADE = ORP.DSC_GRADE
