@@ -29,6 +29,10 @@
                     <td>U.M.A.</td>
                     <td>Unitizador</td>
                     <td>Embalagem/Volume</td>
+                    <?php if($this->existeLote == true){
+                      ?><td>Lote</td><?php
+                    }
+                    ?>
                     <td>Qtd.Unitária</td>
                     <td>Situacao</td>
                     <td>Endereço</td>
@@ -49,6 +53,10 @@
                         <td><?php echo $palete['UMA'] ?></td>
                         <td><?php echo $palete['UNITIZADOR'] ?></td>
                         <td><?php echo $palete['VOLUMES'] ?></td>
+                        <?php if($this->existeLote == true){
+                            ?><td><?php echo $palete['LOTE'] ?></td><?php
+                        }
+                        ?>
                         <td><?php echo $palete['QTD'] ?></td>
                         <td><?php echo $palete['STATUS'] ?></td>
                         <td>
@@ -92,6 +100,10 @@
                     <td>U.M.A.</td>
                     <td>Unitizador</td>
                     <td>Embalagem/Volume</td>
+                    <?php if($this->existeLote == true){
+                        ?><td>Lote</td><?php
+                    }
+                    ?>
                     <td>Qtd.Unitária</td>
                     <td>Situacao</td>
                     <td>Endereço</td>
@@ -120,6 +132,10 @@
                             <td><?php echo $palete['UMA'] ?></td>
                             <td><?php echo $palete['UNITIZADOR'] ?></td>
                             <td><?php echo $palete['VOLUMES'] ?></td>
+                            <?php if($this->existeLote == true){
+                                ?><td><?php echo $palete['LOTE'] ?></td><?php
+                            }
+                            ?>
                             <td><?php echo $palete['QTD'] ?></td>
                             <td><?php echo $palete['STATUS'] ?></td>
                             <td>
