@@ -932,6 +932,7 @@ class ExpedicaoRepository extends EntityRepository {
                        P.COD_PEDIDO,
                        PP.COD_PRODUTO,
                        PP.DSC_GRADE,
+                       P.COD_EXTERNO,
                        SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
                   FROM PEDIDO_PRODUTO PP
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
@@ -940,12 +941,13 @@ class ExpedicaoRepository extends EntityRepository {
                   GROUP BY COD_CARGA_EXTERNO,
                            P.COD_PEDIDO,
                            PP.COD_PRODUTO,
-                           PP.DSC_GRADE
+                           PP.DSC_GRADE,
+                           P.COD_EXTERNO
                   ORDER BY C.COD_CARGA_EXTERNO, P.COD_PEDIDO, PP.COD_PRODUTO";
         $pedidosWMS = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($pedidosWMS as $pedidoProdutoWms) {
-            if (isset($dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']])) {
-                $pedidoERP = $dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']];
+            if (isset($dados[$idCargaExterno][$pedidoProdutoWms['COD_EXTERNO']])) {
+                $pedidoERP = $dados[$idCargaExterno][$pedidoProdutoWms['COD_EXTERNO']];
                 $encontrouProduto = false;
                 foreach ($pedidoERP as $produtoERP) {
                     if (($produtoERP['idProduto'] == $pedidoProdutoWms['COD_PRODUTO']) && ($produtoERP['grade'] == $pedidoProdutoWms['DSC_GRADE'])) {
@@ -953,16 +955,16 @@ class ExpedicaoRepository extends EntityRepository {
                         $qtdERP = str_replace(',', '.', $produtoERP['qtd']);
                         $qtdWms = str_replace(',', '.', $pedidoProdutoWms['QTD']);
                         if ($qtdERP != $qtdWms) {
-                            return "Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_PEDIDO]. Qtd WMS: $qtdWms, Qtd ERP: $qtdERP";
+                            return "Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_EXTERNO]. Qtd WMS: $qtdWms, Qtd ERP: $qtdERP";
                         }
                     }
                 }
 
                 if ($encontrouProduto == false) {
-                    return "Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_PEDIDO]";
+                    return "Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_EXTERNO]";
                 }
             } else {
-                return "Pedido $pedidoProdutoWms[COD_PEDIDO] não encontrado na conferencia com o ERP";
+                return "Pedido $pedidoProdutoWms[COD_EXTERNO] não encontrado na conferencia com o ERP";
             }
         }
 

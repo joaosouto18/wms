@@ -21,7 +21,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             case ConexaoIntegracao::PROVEDOR_MSSQL:
                 return self::mssqlQuery($query, $conexao);
             case ConexaoIntegracao::PROVEDOR_FIREBIRD:
-                return self::firebirdQuery($query, $conexao);
+                return self::firebirdQuery($query, $conexao, $update);
 
             default:
                 throw new \Exception("Provedor não específicado");
@@ -163,7 +163,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
         }
     }
 
-    private function firebirdQuery($query, $conexao)
+    private function firebirdQuery($query, $conexao, $update)
     {
         try {
             ini_set('memory_limit', '-1');
@@ -183,8 +183,21 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $resultado = ibase_query($conexao, $query);
 
+            if (true === $update || true === $resultado) {
+                ibase_close($conexao);
+                return $resultado;
+            } else if (false === $resultado){
+                ibase_close($conexao);
+                throw new \Exception(ibase_errmsg());
+            }
+
+            $result = array();
+            while ($row = ibase_fetch_assoc ($resultado)) {
+                $result[] = $row;
+            }
+
             ibase_close($conexao);
-            return $resultado;
+            return $result;
 
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
