@@ -244,7 +244,7 @@ class RecebimentoRepository extends EntityRepository {
 
                         //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
                         if ($qtdConferida == 0) {
-                            $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $qtdConferida);
+                            $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $qtdConferida, null, null, null, null, $volume);
                         }
                         $qtdConferidas[$item['produto']][$item['grade']][$volume->getId()] = $qtdConferida;
                     }
@@ -804,14 +804,16 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $idProdutoVolume Codigo do Produto Volume
      * @param integer $qtdConferida Quantidade conferida do produto
      */
-    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null) {
+    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null, $produtoVolumeEntity = null) {
         $em = $this->getEntityManager();
 
         $recebimentoVolumeEntity = new RecebimentoVolumeEntity;
 
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
-        $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Produto\Volume', $idProdutoVolume);
+        if (empty($produtoVolumeEntity)) {
+            $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Produto\Volume', $idProdutoVolume);
+        }
         if (isset($params['dataValidade']) && !empty($params['dataValidade'])) {
             $validade = new \DateTime($params['dataValidade']);
         } else {
@@ -1399,6 +1401,7 @@ class RecebimentoRepository extends EntityRepository {
         $produtoEntity = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
         if (!empty($idEmbalagem)) {
+            $embalagem = null;
             if (empty($norma)) {
                 $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
                 $embalagem = $produtoEmbalagemRepo->find($idEmbalagem);
@@ -1416,7 +1419,7 @@ class RecebimentoRepository extends EntityRepository {
             /** @var \Wms\Domain\Entity\Produto\Volume $volume */
             foreach ($volumes as $volume) {
                 $norma = $volume->getNormaPaletizacao()->getId();
-                $this->gravarConferenciaItemVolume($idRecebimento, $idOs, $volume->getId(), $qtd, $norma, $dataValidade, $numPeso);
+                $this->gravarConferenciaItemVolume($idRecebimento, $idOs, $volume->getId(), $qtd, $norma, $dataValidade, $numPeso, null, $volume);
             }
         }
     }
