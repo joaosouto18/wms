@@ -79,11 +79,13 @@ class ModeloSeparacaoRepository extends EntityRepository
             $this->_em->persist($quebraNaoFracionadoEn);
         }
 
-        foreach ($params['quebraEmbalados'] as $quebraEmbalado) {
-            $quebraEmbaladoEn = new Expedicao\ModeloSeparacaoTipoQuebraEmbalado();
-            $quebraEmbaladoEn->setModeloSeparacao($entity);
-            $quebraEmbaladoEn->setTipoQuebra($quebraEmbalado);
-            $this->_em->persist($quebraEmbaladoEn);
+        if (isset($params['quebraEmbalados'])) {
+            foreach ($params['quebraEmbalados'] as $quebraEmbalado) {
+                $quebraEmbaladoEn = new Expedicao\ModeloSeparacaoTipoQuebraEmbalado();
+                $quebraEmbaladoEn->setModeloSeparacao($entity);
+                $quebraEmbaladoEn->setTipoQuebra($quebraEmbalado);
+                $this->_em->persist($quebraEmbaladoEn);
+            }
         }
 
         $this->_em->flush();

@@ -271,6 +271,11 @@ class RecebimentoRepository extends EntityRepository {
                             $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
                         }
 
+                        if (!isset($qtdConferidas)) {
+                            return array('message' => null,
+                                'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
+                                'concluido' => false);
+                        }
                         break;
                     case ProdutoEntity::TIPO_UNITARIO:
 
@@ -282,7 +287,6 @@ class RecebimentoRepository extends EntityRepository {
                         break;
                     default:
                         break;
-
                 }
             }
 
@@ -888,7 +892,6 @@ class RecebimentoRepository extends EntityRepository {
         $em->persist($conferenciaEntity);
         $em->flush();
 
-
         if ($divergenciaPesoVariavel == 'S' && $produtoEntity->getPossuiPesoVariavel() == 'S')
             $qtdDivergencia = 1;
 
@@ -956,14 +959,16 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $idProdutoVolume Codigo do Produto Volume
      * @param integer $qtdConferida Quantidade conferida do produto
      */
-    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null, $lote = null) {
+    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null, $produtoVolumeEntity = null, $lote = null) {
         $em = $this->getEntityManager();
 
         $recebimentoVolumeEntity = new RecebimentoVolumeEntity;
 
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
-        $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Produto\Volume', $idProdutoVolume);
+        if (empty($produtoVolumeEntity)) {
+            $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Produto\Volume', $idProdutoVolume);
+        }
         if (isset($params['dataValidade']) && !empty($params['dataValidade'])) {
             $validade = new \DateTime($params['dataValidade']);
         } else {
@@ -1378,7 +1383,7 @@ class RecebimentoRepository extends EntityRepository {
      * @param int $grade
      * @param int $idOrdemServico
      * @param int $produtoVolume
-     * @return int Quantidade de volumes conferidos
+     * @return array Quantidade de volumes conferidos por lote
      */
     public function buscarConferenciaPorVolume($produto, $grade, $produtoVolume, $idOrdemServico) {
         // busca volumes
@@ -1416,17 +1421,19 @@ class RecebimentoRepository extends EntityRepository {
         foreach ($volumesConferidos as $idProduto => $grades) {
             foreach ($grades as $grade => $qtdConferidas) {
                 foreach ($qtdConferidas as $volume => $lotes) {
-                    foreach ($lotes as $lote => $qtd)
-                    if ($minimo > $qtd) {
-                        $minimo = $qtd;
-                    }
+                    foreach ($lotes as $lote => $qtd) {
+                        if ($minimo > $qtd) {
+                            $minimo = $qtd;
+                        }
 
-                    if ($maximo < $qtd) {
-                        $maximo = $qtd;
+                        if ($maximo < $qtd) {
+                            $maximo = $qtd;
+                        }
                     }
                 }
             }
         }
+
         //Verifica se o valor da divergência está maior que a quantidade informada na nf
         if ($maximo > $qtdNf && $minimo == $qtdNf)
             return $maximo;
@@ -1563,6 +1570,7 @@ class RecebimentoRepository extends EntityRepository {
         $produtoEntity = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
         if (!empty($idEmbalagem)) {
+            $embalagem = null;
             if (empty($norma)) {
                 $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
                 $embalagem = $produtoEmbalagemRepo->find($idEmbalagem);
@@ -1580,7 +1588,7 @@ class RecebimentoRepository extends EntityRepository {
             /** @var \Wms\Domain\Entity\Produto\Volume $volume */
             foreach ($volumes as $volume) {
                 $norma = $volume->getNormaPaletizacao()->getId();
-                $this->gravarConferenciaItemVolume($idRecebimento, $idOs, $volume->getId(), $qtd, $norma, $dataValidade, $numPeso);
+                $this->gravarConferenciaItemVolume($idRecebimento, $idOs, $volume->getId(), $qtd, $norma, $dataValidade, $numPeso, null, $volume);
             }
         }
     }
