@@ -6,6 +6,7 @@
             <fieldset id="fieldset-identification">
                 <legend>Endereçamento Manual</legend>
                 <input type="hidden" id="reservas" name="reservas">
+                <input type="hidden" id="controlaLote" name="controlaLote" value="0">
                 <div class="field">
                     <label>Produto:</label>
                     <input style="width: 99%" maxlength="100" class="focus form-control" size="40" type="text" name="produto" id="produto" value="" onkeydown="nextInput(this, event)" />
@@ -17,6 +18,10 @@
                 <div class="field">
                     <label>Qtd:</label>
                     <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="qtd" id="qtd" value="" />
+                </div>
+                <div class="field div-lote" style="display: none">
+                    <label>Lote:</label>
+                    <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="lote" id="lote" value="" />
                 </div>
                 <div id="inserir"></div>
                 <input class="btn gradientBtn lock-dbl-click" type="submit" name="submit" id="submit" value="Buscar" />
@@ -120,7 +125,10 @@
                         if (data.result.length >0) {
                             $.each(data.result, function (key, value) {
                                 color = !color;
-
+                                if(value.IND_CONTROLA_LOTE == 'S'){
+                                    $('.div-lote').show();
+                                    $('#controlaLote').val(1);
+                                }
                                 if (color == true) {
                                     txt += '<tr style="background-color: #EDEDED">'
                                 } else {

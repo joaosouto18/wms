@@ -8,7 +8,7 @@ use Wms\Math;
 
 class PaleteProdutoRepository extends EntityRepository
 {
-    public function getQtdTotalEnderecadaByRecebimento($idRecebimento, $codProduto, $grade)
+    public function getQtdTotalEnderecadaByRecebimento($idRecebimento, $codProduto, $grade, $lote = null)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('SUM(pp.qtd) qtd')
@@ -18,6 +18,9 @@ class PaleteProdutoRepository extends EntityRepository
                  AND pp.codProduto = '$codProduto' 
                  AND pp.grade = '$grade'
                  AND (p.codStatus in (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_ENDERECAMENTO.",".Palete::STATUS_RECEBIDO.") OR p.impresso = 'S')");
+        if($lote != null) {
+            $sql->andWhere("pp.lote = '$lote'");
+        }
 
         return $sql->getQuery()->getResult();
     }

@@ -1000,7 +1000,8 @@ class EnderecoRepository extends EntityRepository {
                             CE.DSC_CARACTERISTICA_ENDERECO as TIPO,
                             RES.QTD_RESERVADA as QTD_RESERVADA,
                             NVL(E.QTD,0) as QTD,
-                            RES.RESERVAS
+                            RES.RESERVAS,
+                            P.IND_CONTROLA_LOTE
                        FROM PRODUTO P
                   LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE
@@ -1033,7 +1034,8 @@ class EnderecoRepository extends EntityRepository {
                        CE.DSC_CARACTERISTICA_ENDERECO as TIPO,
                        0 as QTD_RESERVADA,
                        E.QTD as QTD,
-                       NULL as RESERVAS
+                       NULL as RESERVAS,
+                       P.IND_CONTROLA_LOTE
                        FROM PRODUTO P
                   LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND PV.DSC_GRADE = P.DSC_GRADE
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = P.COD_PRODUTO AND PE.DSC_GRADE = P.DSC_GRADE

@@ -40,7 +40,13 @@ class VQtdRecebimento
      * @Column(name="NUM_PESO", type="decimal", nullable=false)
      */
     protected $peso;
-    
+
+    /**
+     * @Column(name="LOTE", type="string")
+     * @var string
+     */
+    protected $lote;
+
     /**
      * @param mixed $codOs
      */
@@ -136,5 +142,20 @@ class VQtdRecebimento
     {
         $this->peso = $peso;
     }
-    
+
+    /**
+     * @return string
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param string $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
+    }
 }

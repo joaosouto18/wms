@@ -782,7 +782,7 @@ class NotaFiscalRepository extends EntityRepository {
         return $dql->getQuery()->setMaxResults(1)->getOneOrNullResult();
     }
 
-    public function buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade) {
+    public function buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade, $lote = null) {
         $sql = $this->getEntityManager()->createQueryBuilder()
                 ->select('NVL(rv.dataValidade,re.dataValidade) dataValidade, NVL(rv.id, re.id) id')
                 ->from('wms:Recebimento', 'r')
@@ -797,6 +797,9 @@ class NotaFiscalRepository extends EntityRepository {
         }
         if (isset($codigoBarras) && !empty($codigoBarras)) {
             $sql->orWhere(" pe.codigoBarras = '$codigoBarras'");
+        }
+        if($lote != null){
+            $sql->andWhere("rv.lote = '$lote' or re.lote = '$lote'");
         }
 
         return $sql->getQuery()->setMaxResults(1)->getOneOrNullResult();
