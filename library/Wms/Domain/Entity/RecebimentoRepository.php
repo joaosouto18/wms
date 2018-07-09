@@ -258,8 +258,11 @@ class RecebimentoRepository extends EntityRepository {
                             //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
 
                             foreach ($qtdConferida as $lote => $value) {
-                                if ($qtdConferida == 0) {
-                                    $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $qtdConferida);
+                                if ($value == 0) {
+                                    if ($lote == 0) {
+                                        $lote = null;
+                                    }
+                                    $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null,null,null, $volume, $lote);
                                 } else {
                                     $qtdConferidasVolumes[$lote][$item['produto']][$item['grade']][$volume->getId()] = $value;
                                 }
@@ -1404,7 +1407,7 @@ class RecebimentoRepository extends EntityRepository {
         $volumes = $dql->getQuery()->getArrayResult();
         $qtdTotal = array();
         foreach ($volumes as $volume) {
-            $lote = (empty($volume['lote'])) ? 0 : $volume['lote'];
+            $lote = $volume['lote'];
             if(!isset($qtdTotal[$lote])){
                 $qtdTotal[$lote] = 0;
             }
@@ -1446,7 +1449,7 @@ class RecebimentoRepository extends EntityRepository {
      * @param int $produto
      * @param int $grade
      * @param int $idOrdemServico
-     * @return int Quantidade encontrada de embalagens
+     * @return array Quantidade encontrada de embalagens
      */
     public function buscarConferenciaPorEmbalagem($produto, $grade, $idOrdemServico) {
         // busca embalagens
