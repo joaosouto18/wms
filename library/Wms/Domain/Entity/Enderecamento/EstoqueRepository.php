@@ -299,45 +299,62 @@ class EstoqueRepository extends EntityRepository
     }
 
     /*
-     * $params = array('idProduto' => '32123,
-     *                 'grade' = > 'UNICA',
-     *                 'idVolume' => 32312,
-     *                 'maxResult' => 5, (Optional)
-     *                 'idEnderecoIgnorar' => 321 (Optionoal)
-     *                 'idCaracteristigaIgnorar' => 37 (Optional)
+     * $params = [
+     *  'idProduto' => '32123,
+     *  'grade' = > 'UNICA',
+     *  'idVolume' => 32312,
+     *  'maxResult' => 5, (Optional)
+     *  'idEnderecoIgnorar' => 321 (Optionoal)
+     *  'idCaracteristigaIgnorar' => 37 (Optional)
+     *  'lote' => 'LI32' (Optional)
+     * ]
      */
-    public function getEstoqueByParams ( $params)
+    public function getEstoqueByParams ($params)
     {
+        $subSelect = '';
+        $subWhere = '';
+        $paramJoin = '';
+        $groupByLote = '';
+        if (isset($params['lote']) && !empty($params['lote']) && $params['lote'] != 'LOTE_NAO_DEFINIDO') {
+            $subSelect = ', REP.DSC_LOTE';
+            $subWhere = " AND REP.DSC_LOTE = '$params[lote]'";
+            $paramJoin = ' AND RS.DSC_LOTE = ESTQ.DSC_LOTE';
+            $groupByLote = ', ESTQ.DSC_LOTE';
+        }
+
         $endPicking = EnderecoEntity::ENDERECO_PICKING;
         $Sql = " SELECT
                     ESTQ.COD_DEPOSITO_ENDERECO,
                     DE.DSC_DEPOSITO_ENDERECO, 
-                    ESTQ.QTD, 
-                    NVL(RS.QTD_RESERVA,0) as QTD_RESERVA, 
-                    ESTQ.QTD + NVL(RS.QTD_RESERVA,0) as SALDO, 
+                    SUM(ESTQ.QTD) QTD, 
+                    SUM(NVL(RS.QTD_RESERVA,0)) as QTD_RESERVA, 
+                    SUM(ESTQ.QTD + NVL(RS.QTD_RESERVA,0)) as SALDO, 
                     ESTQ.COD_PRODUTO_VOLUME, 
                     ESTQ.COD_PRODUTO, 
-                    ESTQ.DSC_GRADE, 
+                    ESTQ.DSC_GRADE
+                    $groupByLote, 
                     ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
                     NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')) as DT_MOVIMENTACAO,
                     TO_CHAR(ESTQ.DTH_VALIDADE,'DD/MM/YYYY') as DTH_VALIDADE,
                     CASE WHEN (DE.COD_CARACTERISTICA_ENDERECO = $endPicking) THEN 1
                          ELSE 2 END AS PRIORIDADE_PICKING
                    FROM ESTOQUE ESTQ
-                   LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, SUM(REP.QTD_RESERVADA) QTD_RESERVA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME
+                   LEFT JOIN (SELECT RE.COD_DEPOSITO_ENDERECO, SUM(REP.QTD_RESERVADA) QTD_RESERVA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME $subSelect
                                 FROM RESERVA_ESTOQUE RE
                            LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                                WHERE TIPO_RESERVA = 'S'
                                  AND IND_ATENDIDA = 'N'
-                               GROUP BY RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, REP.COD_PRODUTO_VOLUME) RS
+                                 $subWhere
+                               GROUP BY RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) $subSelect) RS
                      ON RS.COD_PRODUTO = ESTQ.COD_PRODUTO
                     AND RS.DSC_GRADE = ESTQ.DSC_GRADE
+                    $paramJoin
                     AND RS.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
                     AND ((RS.VOLUME = ESTQ.COD_PRODUTO_VOLUME) OR (RS.VOLUME = 0 AND ESTQ.COD_PRODUTO_VOLUME IS NULL))
                    LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO
-                  WHERE ((ESTQ.QTD + NVL(RS.QTD_RESERVA,0)) >0)";
+                  WHERE ((ESTQ.QTD + NVL(RS.QTD_RESERVA,0)) > 0)";
 
-        $SqlOrder = "ORDER BY TO_DATE(ESTQ.DTH_VALIDADE), PRIORIDADE_PICKING, TO_DATE(DT_MOVIMENTACAO), ESTQ.QTD";
+        $SqlOrder = " ORDER BY TO_DATE(ESTQ.DTH_VALIDADE), PRIORIDADE_PICKING, TO_DATE(DT_MOVIMENTACAO), ESTQ.QTD";
         $SqlWhere = "";
 
         if ((isset($params['idProduto'])) && ($params['idProduto'] != null)) {
@@ -346,6 +363,10 @@ class EstoqueRepository extends EntityRepository
 
         if ((isset($params['grade'])) && ($params['grade'] != null)) {
             $SqlWhere .= " AND ESTQ.DSC_GRADE = '" . $params['grade'] . "'";
+        }
+
+        if ((isset($params['lote'])) && ($params['lote'] != null)) {
+            $SqlWhere .= " AND ESTQ.DSC_LOTE = '" . $params['lote'] . "'";
         }
 
         if ((isset($params['idVolume'])) && ($params['idVolume'] != null)) {
@@ -365,7 +386,17 @@ class EstoqueRepository extends EntityRepository
             $SqlWhere .= " AND DE.COD_DEPOSITO_ENDERECO <> '" . $params['idEnderecoIgnorar'] . "'";
         }
 
-        $query = $Sql . $SqlWhere . $SqlOrder;
+        $SqlGroupBy = " GROUP BY ESTQ.COD_DEPOSITO_ENDERECO, DE.DSC_DEPOSITO_ENDERECO, ESTQ.COD_PRODUTO_VOLUME, 
+                    ESTQ.COD_PRODUTO, 
+                    ESTQ.DSC_GRADE, 
+                    ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
+                    NVL(ESTQ.DTH_VALIDADE, TO_DATE(CONCAT(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'DD/MM/YYYY'),' 00:00'),'DD/MM/YYYY HH24:MI')),
+                    TO_CHAR(ESTQ.DTH_VALIDADE,'DD/MM/YYYY'),
+                    CASE WHEN (DE.COD_CARACTERISTICA_ENDERECO = $endPicking) THEN 1 ELSE 2 END
+                    $groupByLote";
+
+        $query = $Sql . $SqlWhere . $SqlGroupBy . $SqlOrder;
+        throw new \Exception("Teste");
         
         if ((isset($params['maxResult'])) && ($params['maxResult'] != null)) {
             $maxResult = $params['maxResult'];

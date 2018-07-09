@@ -304,6 +304,7 @@ class Mobile_RecebimentoController extends Action
                 $params['numPeso'] = null;
             }
 
+            $qtdBloqueada = 0;
             if ($produtoEn->getValidade() == "S") {
 
                 if (!isset($params['dataValidade']) || empty($params['dataValidade'])){
@@ -332,7 +333,6 @@ class Mobile_RecebimentoController extends Action
                 $PeriodoUtil = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLife day", strtotime(date('Y-m-d')))));
                 $PeriodoUtilMax = date_create_from_format('Y-m-d', date('Y-m-d', strtotime("+$shelfLifeMax day", strtotime(date('Y-m-d')))));
                 $objData = new Zend_Date($data);
-                $qtdBloqueada = 0;
                 if ($dateConf < $PeriodoUtil || $dateConf > $PeriodoUtilMax) {
                     if($dateConf > $PeriodoUtilMax){
                         throw new \Exception('Data de validade maior que a definida no cadastro.');

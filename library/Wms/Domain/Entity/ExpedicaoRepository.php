@@ -108,28 +108,36 @@ class ExpedicaoRepository extends EntityRepository {
     public function getPedidoProdutoSemOnda($expedicoes, $filialExterno)
     {
         $Query = "SELECT 
-                      E.COD_EXPEDICAO,
-                      C.COD_CARGA,
-                      P.COD_PEDIDO,
-                      P.COD_PESSOA AS COD_CLIENTE,
-                      PESS.NOM_PESSOA,
-                      CL.COD_PRACA,
-                      CL.COD_ROTA,
-                      PP.COD_PEDIDO_PRODUTO,
-                      PP.COD_PRODUTO,
-                      PP.DSC_GRADE,
-                      (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) as QTD
-                  FROM PEDIDO P
-                  INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                  INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
-                  INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                  INNER JOIN CLIENTE CL ON CL.COD_PESSOA = P.COD_PESSOA
-                  INNER JOIN PESSOA PESS ON PESS.COD_PESSOA = P.COD_PESSOA
-                  WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
-                      AND (NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0)) > 0
-                      AND E.COD_EXPEDICAO IN ($expedicoes)
-                      AND P.CENTRAL_ENTREGA = $filialExterno
-                      AND P.DTH_CANCELAMENTO IS NULL";
+                    E.COD_EXPEDICAO,
+                    C.COD_CARGA,
+                    P.COD_PEDIDO,
+                    P.COD_PESSOA AS COD_CLIENTE,
+                    PESS.NOM_PESSOA,
+                    CL.COD_PRACA,
+                    CL.COD_ROTA,
+                    PP.COD_PEDIDO_PRODUTO,
+                    PP.COD_PRODUTO,
+                    PP.DSC_GRADE,
+                    (CASE WHEN (PPL.DSC_LOTE IS NOT NULL) THEN
+                      NVL(PPL.QUANTIDADE,0) - NVL(PPL.QTD_CORTE,0)
+                     ELSE 
+                      NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0) END) as QTD,
+                    PPL.DSC_LOTE
+                FROM PEDIDO P
+                INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
+                INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                INNER JOIN CLIENTE CL ON CL.COD_PESSOA = P.COD_PESSOA
+                INNER JOIN PESSOA PESS ON PESS.COD_PESSOA = P.COD_PESSOA
+                WHERE P.COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM ONDA_RESSUPRIMENTO_PEDIDO)
+                    AND (CASE WHEN (PPL.DSC_LOTE IS NOT NULL) THEN
+                          NVL(PPL.QUANTIDADE,0) - NVL(PPL.QTD_CORTE,0)
+                         ELSE 
+                          NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0) END) > 0
+                    AND E.COD_EXPEDICAO IN ($expedicoes)
+                    AND P.CENTRAL_ENTREGA = $filialExterno
+                    AND P.DTH_CANCELAMENTO IS NULL";
 
         $result = $this->getEntityManager()->getConnection()->query($Query)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -476,6 +484,15 @@ class ExpedicaoRepository extends EntityRepository {
         }
     }
 
+    /**
+     * @param $quebra
+     * @param $arrItens
+     * @param $strCriterio
+     * @param $dadosProdutos
+     * @param $repositorios
+     * @return array|mixed
+     * @throws \Exception
+     */
     private function getArraysByCriterio($quebra, $arrItens, $strCriterio, $dadosProdutos, $repositorios)
     {
         $sumQtdItemExpedicao = array();
@@ -485,14 +502,14 @@ class ExpedicaoRepository extends EntityRepository {
             $idExpedicao = $itemPedido['COD_EXPEDICAO'];
             $codCriterio = $itemPedido[$strCriterio];
             if (empty($codCriterio)) {
-                $campo = explode($strCriterio)[1];
+                $campo = $strCriterio;
                 throw new \Exception("O cliente $itemPedido[NOM_PESSOA] não tem $campo cadastrado(a), 
                 por isso não pode ser agrupado nesta quebra de pulmão doca na expedição $idExpedicao");
             }
 
-            $idPedido = $itemPedido['COD_PEDIDO'];
+            $lote = (isset($itemPedido['DSC_LOTE']) && !empty($itemPedido['DSC_LOTE'])) ? $itemPedido['DSC_LOTE'] : "LOTE_NAO_DEFINIDO";
 
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$idPedido]['qtd'] = $itemPedido['QTD'];
+            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$lote][$itemPedido['COD_PEDIDO']]['qtd'] = $itemPedido['QTD'];
         }
 
         $itensReservar = array();
@@ -501,10 +518,12 @@ class ExpedicaoRepository extends EntityRepository {
         foreach ($sumQtdItemExpedicao as $expedicao => $criterio) {
             foreach ($criterio as $codCriterio => $produtoArr) {
                 foreach ($produtoArr as $codProduto => $gradeArr) {
-                    foreach ($gradeArr as $grade => $pedidos) {
-                        /** @var Produto $produtoEn */
-                        $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-                        list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $codCriterio, $pedidos, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
+                    foreach ($gradeArr as $grade => $lotesArr) {
+                        foreach ($lotesArr as $lote => $pedidos) {
+                            /** @var Produto $produtoEn */
+                            $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
+                            list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $codCriterio, $pedidos, $lote, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
+                        }
                     }
                 }
             }
@@ -536,24 +555,26 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $produtoEn Produto
      * @param $criterio
      * @param $pedidos
+     * @param $lote
      * @param $dadosProdutos
      * @param $itensReservados
      * @param $arrEstoqueReservado
      * @param $repositorios
      * @return array
+     * @throws \Exception
      */
-    private function setDestinoSeparacao($idExpedicao, $quebra, $produtoEn, $criterio, $pedidos, $dadosProdutos, $itensReservados, $arrEstoqueReservado, $repositorios)
+    private function setDestinoSeparacao($idExpedicao, $quebra, $produtoEn, $criterio, $pedidos, $lote, $dadosProdutos, $itensReservados, $arrEstoqueReservado, $repositorios)
     {
         $codProduto = $produtoEn->getId();
         $dscGrade = $produtoEn->getGrade();
         if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
             /** @var Embalagem $embalagemElem */
             $embalagemElem = $dadosProdutos[$codProduto][$dscGrade]['embalagem'];
-            list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn,'EMBALAGEM', array($embalagemElem), 0, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
+            list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn,'EMBALAGEM', array($embalagemElem), 0, $lote, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
         } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
             $volumes = $dadosProdutos[$codProduto][$dscGrade]['volumes'];
             foreach ($volumes['normas'] as $codNorma => $itens ) {
-                list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn, "VOLUMES", $itens, $codNorma, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
+                list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn, "VOLUMES", $itens, $codNorma, $lote, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
             }
         }
         return array($itensReservados, $arrEstoqueReservado);
@@ -564,6 +585,8 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $produtoEn Produto
      * @param $caracteristica
      * @param $elementosArr
+     * @param $codNorma
+     * @param $lote
      * @param $pedidos
      * @param $quebra
      * @param int $criterio
@@ -571,8 +594,9 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $arrEstoqueReservado
      * @param $repositorios
      * @return array
+     * @throws \Exception
      */
-    private function triagemPorDestino ($idExpedicao, $produtoEn, $caracteristica, $elementosArr, $codNorma, $pedidos, $quebra, $criterio = 0, $itensReservados, $arrEstoqueReservado, $repositorios)
+    private function triagemPorDestino ($idExpedicao, $produtoEn, $caracteristica, $elementosArr, $codNorma, $lote, $pedidos, $quebra, $criterio = 0, $itensReservados, $arrEstoqueReservado, $repositorios)
     {
 
         $codProduto = $produtoEn->getId();
@@ -631,7 +655,8 @@ class ExpedicaoRepository extends EntityRepository {
                 'idProduto' => $codProduto,
                 'grade' => $dscGrade,
                 'idVolume' => (empty($volume)) ? null : $volume->getId(),
-                'idEnderecoIgnorar' => (!empty($enderecoPicking))? $enderecoPicking->getId() : null
+                'idEnderecoIgnorar' => (!empty($enderecoPicking))? $enderecoPicking->getId() : null,
+                'lote' => $lote
             );
             $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
 
