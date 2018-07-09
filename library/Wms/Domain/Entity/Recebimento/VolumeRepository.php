@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityRepository;
 
 class VolumeRepository extends EntityRepository
 {
-    public function getVolumeByRecebimento($recebimento, $codProduto, $grade)
+    public function getVolumeByRecebimento($recebimento, $codProduto, $grade, $lote = null)
     {
         $source = $this->getEntityManager()->createQueryBuilder()
             ->select('rv')
@@ -15,7 +15,9 @@ class VolumeRepository extends EntityRepository
             ->where("rv.recebimento = $recebimento")
             ->andWhere("v.codProduto = '$codProduto'")
             ->andWhere("v.grade = '$grade'");
-
+        if($lote != null) {
+            $source->andWhere("rv.lote = '$lote'");
+        }
         return $source->getQuery()->getArrayResult();
     }
 }
