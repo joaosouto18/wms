@@ -260,7 +260,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 }
             }
 
-            if (empty($arrDL)){
+            if (!empty($embalagens) && empty($arrDL)){
                 throw new Exception("Nenhuma das embalagens deste produto contem dados logisticos ou norma de paletização cadastrada");
             }
 
