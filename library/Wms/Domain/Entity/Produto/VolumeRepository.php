@@ -108,7 +108,7 @@ class VolumeRepository extends EntityRepository
 
     public function getVolumesByNorma($codNormaPaletizacao, $codProduto, $grade, $codDepositoEndereco = null) {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select("v")
+            ->select("v, v.id COD_PRODUTO_VOLUME")
             ->from("wms:Produto\Volume",'v')
             ->innerJoin("v.normaPaletizacao",'np')
             ->where("v.codProduto = '$codProduto'")

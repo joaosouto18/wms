@@ -352,11 +352,44 @@ class Mobile_Enderecamento_ManualController extends Action
     {
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo    = $this->em->getRepository('wms:Produto');
+        $volumeRepository = $this->em->getRepository('wms:Produto\Volume');
 
         $idProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
-        $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, $grade);
-        $idNorma = $result[0]['idNorma'];
+        $tipoComercializacao = $produtoEn->getTipoComercializacao()->getId();
+
+        if ($tipoComercializacao == \Wms\Domain\Entity\Produto::TIPO_COMPOSTO) {
+            $volumeEntity = $volumeRepository->findOneBy(array('codigoBarras' => $codBarras));
+
+            if (!$volumeEntity)
+                throw  new \Exception("Código de Barras  ". $codBarras . " não encontrado!");
+
+            if (is_null($volumeEntity->getNormaPaletizacao()))
+                throw  new \Exception("Volume sem norma de paletização definida");
+
+            $norma = $volumeEntity->getNormaPaletizacao()->getId();
+            $unidadePadrao = $volumeEntity->getDescricao();
+            $qtdNorma = $volumeEntity->getNormaPaletizacao()->getNumNorma();
+            $lastro = $volumeEntity->getNormaPaletizacao()->getNumLastro();
+            $camadas = $volumeEntity->getNormaPaletizacao()->getNumCamadas();
+            $unitizador = $volumeEntity->getNormaPaletizacao()->getUnitizador()->getDescricao();
+            $idUnitizador = $volumeEntity->getNormaPaletizacao()->getUnitizador()->getId();
+            $idNorma = $norma;
+
+            $result[0]['idNorma'] = $idNorma;
+            $result[0]['unidade'] = $unidadePadrao;
+            $result[0]['idUnitizador'] = $idUnitizador;
+            $result[0]['unitizador'] = $unitizador;
+            $result[0]['qtdNorma'] = $qtdNorma;
+            $result[0]['lastro'] = $lastro;
+            $result[0]['camadas'] = $camadas;
+            $result[0]['dscProduto'] = $produtoEn->getDescricao();
+            $volumes = $volumeRepository->getVolumesByNorma($idNorma, $idProduto, $grade);
+        } elseif ($tipoComercializacao == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) {
+            $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, $grade);
+            $idNorma = $result[0]['idNorma'];
+            $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto, $grade);
+        }
 
         if ($idNorma == null) {
             throw  new \Exception("O Produto ". $produtoEn->getDescricao() . " não possui norma de paletização");
@@ -366,7 +399,7 @@ class Mobile_Enderecamento_ManualController extends Action
         $unitizadorEn  = $uniRepo->find($result[0]['idUnitizador']);
         $statusEn      = $this->getEntityManager()->getRepository('wms:Util\Sigla')->find(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO);
 
-        $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto, $grade);
+
 
         if ($produtoEn->getTipoComercializacao()->getId() == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) {
             $tmp[0]['COD_PRODUTO_EMBALAGEM'] = $volumes[0]['COD_PRODUTO_EMBALAGEM'];
