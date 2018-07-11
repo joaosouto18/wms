@@ -22,8 +22,11 @@ class PaleteProdutoRepository extends EntityRepository
 
         if (!is_null($codBarras)) {
             $volumeEntity = $volumeRepository->findOneBy(array('codigoBarras' => $codBarras));
-            $sql->groupBy("pp.codNormaPaletizacao = ".$volumeEntity->getNormaPaletizacao()->getId());
+            $codNormaPaletizacao = $volumeEntity->getNormaPaletizacao()->getId();
+            $sql->andWhere("pp.codNormaPaletizacao = $codNormaPaletizacao")
+                ->groupBy("pp.codNormaPaletizacao");
         }
+
 
         return $sql->getQuery()->getResult();
     }
