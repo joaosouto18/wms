@@ -70,6 +70,7 @@ if(empty($this->error)) {
         <div id="div-busca">
             <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post"
                   id="form-produto">
+                <input type="hidden" id="controlaLote" name="controlaLote" value="0">
                 <input type="hidden" name="codMapaSeparacao" id="codMapaSeparacao" value="<?php echo $this->mapa ?>">
                 <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
                 <input type="hidden" name="codOs" id="codOs" value="<?php echo $this->codOs ?>">
@@ -84,8 +85,13 @@ if(empty($this->error)) {
                             <div class="field" style="text-align: center">
                                 <label for="codigoBarrasProd" class="field required">*Código de Barras Produto</label>
                                 <input type="text" name="codigoBarrasProd" id="codigoBarrasProd" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
+                                <div class="div-lote" style="display:none">
+                                    <label>Lote:</label>
+                                    <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="lote" id="lote" value="" />
+                                </div>
                                 <label for="codigoBarras" class="field required">*Quantidade Separada</label>
                                 <input type="text" name="qtdSeparar" id="qtdSeparar" value="" class="required" size="40" maxlength="100" style="width:70px; text-align: center;">
+
                                 <span id="dsc-embalagem"></span>
                             </div>
                             <div class="field" style="text-align: center">
@@ -215,6 +221,10 @@ if(empty($this->error)) {
             async: false,
             data: $('form').serialize(),
             success: function (data) {
+                if(data.dados.indControlaLote == 'S'){
+                    $('.div-lote').show();
+                    $('#controlaLote').val(1);
+                }
                 var qtdSeparar = $('#'+data.dados.idProduto).val();
                 var qtdEmb = data.dados.quantidadeEmbalagem;
                 var resto = Math.floor(qtdSeparar / qtdEmb);
