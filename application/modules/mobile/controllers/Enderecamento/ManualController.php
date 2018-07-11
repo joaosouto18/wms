@@ -189,12 +189,14 @@ class Mobile_Enderecamento_ManualController extends Action
         $params = $this->_getAllParams();
         try {
             $this->getEntityManager()->beginTransaction();
-            $produto = $params['produto'];
+            $codBarras = $produto = $params['produto'];
             $codProduto = $params['codProduto'];
             $grade = $params['grade'];
             $idEndereco = $params['endereco'];
             $idRecebimento = $params['id'];
             $qtd = $params['qtd'] * $params['qtdEmbalagem'];
+            if ($qtd == 0)
+                $qtd = $params['qtd'];
 
             /** @var \Wms\Domain\Entity\Recebimento\VQtdRecebimentoRepository $qtdRecebimentoRepo */
             $qtdRecebimentoRepo = $this->em->getRepository('wms:Recebimento\VQtdRecebimento');
@@ -323,7 +325,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 $dataValidade['dataValidade'] = null;
             }
 
-            $paleteEn = $this->createPalete($qtd,$produtoEn,$idRecebimento);
+            $paleteEn = $this->createPalete($qtd,$produtoEn,$idRecebimento,$codBarras);
             $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
             $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa, null, $dataValidade);
 
@@ -346,7 +348,7 @@ class Mobile_Enderecamento_ManualController extends Action
      * @throws Exception
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createPalete($qtd, $produtoEn, $idRecebimento)
+    private function createPalete($qtd, $produtoEn, $idRecebimento, $codBarras)
     {
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo    = $this->em->getRepository('wms:Produto');
