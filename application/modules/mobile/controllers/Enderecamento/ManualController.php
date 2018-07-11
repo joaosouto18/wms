@@ -205,7 +205,7 @@ class Mobile_Enderecamento_ManualController extends Action
 
             /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
             $paleteProdutoRepo = $this->em->getRepository('wms:Enderecamento\PaleteProduto');
-            $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($idRecebimento, $codProduto, $grade);
+            $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($idRecebimento, $codProduto, $grade, $codBarras);
 
             $qtdEndTotalFator = \Wms\Math::multiplicar($params['qtd'], $params['qtdEmbalagem']);
             $enderecadoMaisEnderecar = \Wms\Math::adicionar($qtdEndTotalFator, $paleteProdutoEn[0]['qtd']);
