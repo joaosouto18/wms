@@ -1601,11 +1601,12 @@ class Mobile_ExpedicaoController extends Action {
         $endereco = $this->_getParam('endereco');
         $codDepositoEndereco = $this->_getParam('codDepositoEndereco');
         $qtdSeparar = $this->_getParam('qtdSeparar');
+        $lote = $this->_getParam('lote');
         $this->view->idExpedicao = $this->_getParam('idExpedicao');
         $this->view->codMapa = $codMapaSeparacao;
         try{
             $separacaomapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\SeparacaoMapaSeparacao');
-            $separacaomapaSeparacaoRepo->separaProduto($codigoBarras, $codMapaSeparacao, $codOs, $codDepositoEndereco, $qtdSeparar);
+            $separacaomapaSeparacaoRepo->separaProduto($codigoBarras, $codMapaSeparacao, $codOs, $codDepositoEndereco, $qtdSeparar, $lote);
         } catch (\Exception $e) {
             $this->view->error = $e->getMessage();
         }

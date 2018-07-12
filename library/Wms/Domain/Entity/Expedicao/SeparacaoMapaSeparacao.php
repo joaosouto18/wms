@@ -73,6 +73,12 @@ class SeparacaoMapaSeparacao
     protected $dthSeparacao;
 
     /**
+     * @Column(name="DSC_LOTE", type="string")
+     * @var string
+     */
+    protected $lote;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -246,6 +252,22 @@ class SeparacaoMapaSeparacao
     public function setDthSeparacao($dthSeparacao)
     {
         $this->dthSeparacao = $dthSeparacao;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param string $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
     }
 
 }
