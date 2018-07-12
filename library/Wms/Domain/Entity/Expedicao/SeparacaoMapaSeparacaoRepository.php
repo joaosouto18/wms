@@ -19,7 +19,7 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
                 $volume = $volumeRepo->getVolumeByCodigo($codigoBarras);
                 $this->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, null, null, $volume[0]['id'], $lote);
             }else {
-                $this->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $embalagem[0]['id'], $embalagem[0]['quantidade'], $lote);
+                $this->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $embalagem[0]['id'], $embalagem[0]['quantidade'], null, $lote);
             }
         }
     }
@@ -29,7 +29,7 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
         $qtdTotalSeparar = $vetQtd[0]['TOTAL'] * -1;
         $where = '';
         if(!empty($lote)){
-            $where = ' AND MPS.DSC_LOTE = "'.$lote.'"';
+            $where = " AND MPS.DSC_LOTE = '".$lote."'";
         }
 
         $sql = "SELECT
@@ -85,7 +85,7 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
 
     public function getQtdSeparadaProduto($codProduto, $grade, $codMapaSeparacao, $lote = null){
         if(!empty($lote)){
-            $where = ' AND SMS.DSC_LOTE = "'.$lote.'"';
+            $where = " AND SMS.DSC_LOTE = '".$lote."'";
         }
         $sql = "SELECT SUM(QTD_SEPARADA * SMS.QTD_EMBALAGEM) AS TOTAL
                 FROM  SEPARACAO_MAPA_SEPARACAO SMS
