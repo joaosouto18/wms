@@ -790,7 +790,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             'centralEntrega' => $carga['centralEntrega'],
             'placaCarga' => $carga['placa'],
             'placaExpedicao' => $carga['placaExpedicao'],
-            'motorista' => (isset($carga['motorista'])) ? $carga['motorista'] : null
+            'motorista' => (isset($carga['motorista']) && !empty($carga['motorista'])) ? $carga['motorista'] : null
         );
 
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEntity */
