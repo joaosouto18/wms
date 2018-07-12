@@ -133,8 +133,13 @@ class Mobile_Enderecamento_ManualController extends Action
 
         try {
             $this->view->idEndereco = $idEndereco = $params['endereco'];
-            $produtoEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $params['produto']));
-            $this->view->capacidadePicking = $produtoEn->getCapacidadePicking();
+            $produtoEmbalagemEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $params['produto']));
+            $produtoVolumeEn = $this->getEntityManager()->getRepository('wms:Produto\Volume')->findOneBy(array('codigoBarras' => $params['produto']));
+            if (is_object($produtoEmbalagemEn)) {
+                $this->view->capacidadePicking = $produtoEmbalagemEn->getCapacidadePicking();
+            } else if (is_object($produtoVolumeEn)) {
+                $this->view->capacidadePicking = $produtoVolumeEn->getCapacidadePicking();
+            }
 
             $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
 
@@ -384,7 +389,7 @@ class Mobile_Enderecamento_ManualController extends Action
             $result[0]['lastro'] = $lastro;
             $result[0]['camadas'] = $camadas;
             $result[0]['dscProduto'] = $produtoEn->getDescricao();
-            $volumes = $volumeRepository->getVolumesByNorma($idNorma, $idProduto, $grade);
+            $volumes = $volumeRepository->getProdutosVolumesByNorma($idNorma, $idProduto, $grade);
         } elseif ($tipoComercializacao == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) {
             $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, $grade);
             $idNorma = $result[0]['idNorma'];
