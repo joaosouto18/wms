@@ -35,6 +35,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 unset($params['action']);
                 unset($params['submit']);
 
+                $params['produto'] = ColetorUtil::adequaCodigoBarras($params['produto']);
                 /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
                 $produtoEmbalagemRepo = $em->getRepository('wms:Produto\Embalagem');
                 /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */

@@ -10,6 +10,20 @@ class Expedicao_OndaRessuprimentoController extends Action
 
     public function indexAction()
     {
+        $em = $this->getEntityManager();
+        $parametroPedidosTelaExpedicao = $this->getSystemParameterValue('COD_INTEGRACAO_PEDIDOS_TELA_EXP');
+        //INTEGRAR CARGAS NO MOMENTO Q ENTRAR NA TELA DE EXPEDICAO
+        if (isset($parametroPedidosTelaExpedicao) && !empty($parametroPedidosTelaExpedicao)) {
+            $explodeIntegracoes = explode(',', $parametroPedidosTelaExpedicao);
+
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
+            $acaoIntegracaoRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
+            foreach ($explodeIntegracoes as $codIntegracao) {
+                $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
+                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity,null,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::DATA_ESPECIFICA);
+            }
+        }
+
         $form = new FiltroExpedicaoMercadoria;
         $form->init("/expedicao/onda-ressuprimento");
         $this->view->form = $form;
