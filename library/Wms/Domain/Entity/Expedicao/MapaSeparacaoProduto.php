@@ -131,6 +131,12 @@ class MapaSeparacaoProduto
     protected $divergencia;
 
     /**
+     * @Column(name="DSC_LOTE", type="string")
+     * @var string
+     */
+    protected $lote;
+
+    /**
      * @param mixed $codProduto
      */
     public function setCodProduto($codProduto)
@@ -464,6 +470,22 @@ class MapaSeparacaoProduto
     public function setDivergencia($divergencia)
     {
         $this->divergencia = $divergencia;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param string $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
     }
 
 }

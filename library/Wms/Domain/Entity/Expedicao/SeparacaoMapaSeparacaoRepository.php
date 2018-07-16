@@ -5,7 +5,7 @@ use Doctrine\ORM\EntityRepository;
 
 class SeparacaoMapaSeparacaoRepository extends EntityRepository{
 
-    public function separaProduto($codigoBarras, $codMapaSeparacao, $codOs, $codDepositoEndereco, $qtdSeparar){
+    public function separaProduto($codigoBarras, $codMapaSeparacao, $codOs, $codDepositoEndereco, $qtdSeparar, $lote = null){
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
         $produtoEn = $produtoRepo->getProdutoByCodBarrasOrCodProduto($codigoBarras);
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
@@ -13,20 +13,25 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
         if(!empty($embalagem)){
             $qtdSepararVerifica = $embalagem[0]['quantidade'] * $qtdSeparar;
         }
-        if($this->verificaProdutoSeparar($produtoEn->getId(), $produtoEn->getGrade(), $codMapaSeparacao, $codDepositoEndereco, $qtdSepararVerifica)){
+        if($this->verificaProdutoSeparar($produtoEn->getId(), $produtoEn->getGrade(), $codMapaSeparacao, $codDepositoEndereco, $qtdSepararVerifica, $lote)){
             if(empty($embalagem)){
                 $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
                 $volume = $volumeRepo->getVolumeByCodigo($codigoBarras);
-                $this->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, null, null, $volume[0]['id']);
+                $this->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, null, null, $volume[0]['id'], $lote);
             }else {
-                $this->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $embalagem[0]['id'], $embalagem[0]['quantidade']);
+                $this->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $embalagem[0]['id'], $embalagem[0]['quantidade'], null, $lote);
             }
         }
     }
 
-    public function verificaProdutoSeparar($codProduto, $grade, $codMapaSeparacao, $codDepositoEndereco, $qtdSeparar){
-        $vetQtd = $this->getQtdSeparadaProduto($codProduto, $grade, $codMapaSeparacao);
+    public function verificaProdutoSeparar($codProduto, $grade, $codMapaSeparacao, $codDepositoEndereco, $qtdSeparar, $lote = null){
+        $vetQtd = $this->getQtdSeparadaProduto($codProduto, $grade, $codMapaSeparacao, $lote);
         $qtdTotalSeparar = $vetQtd[0]['TOTAL'] * -1;
+        $where = '';
+        if(!empty($lote)){
+            $where = " AND MPS.DSC_LOTE = '".$lote."'";
+        }
+
         $sql = "SELECT
                     (MPS.QTD_SEPARAR - MPS.QTD_CORTADO) AS SEPARAR,
                     P.DSC_PRODUTO,
@@ -40,18 +45,19 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
                   MPS.COD_PRODUTO = $codProduto AND
                   MPS.DSC_GRADE = '$grade' AND
                   MPS.COD_DEPOSITO_ENDERECO = $codDepositoEndereco AND
-                  MPS.COD_MAPA_SEPARACAO = $codMapaSeparacao";
+                  MPS.COD_MAPA_SEPARACAO = $codMapaSeparacao
+                  $where";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         if(!empty($result)){
             foreach ($result as $value){
                 $qtdTotalSeparar += $value['SEPARAR'] * $value['QTD_EMBALAGEM'];
             }
             if($qtdTotalSeparar == 0){
-                $this->finalizaSeparacaoProduto($codProduto, $grade, $codMapaSeparacao, $codDepositoEndereco);
+                $this->finalizaSeparacaoProduto($codProduto, $grade, $codMapaSeparacao, $codDepositoEndereco, $lote);
                 throw new \Exception("Produto totalmente separado.");
             }else {
                 if(($qtdTotalSeparar - $qtdSeparar) === 0){
-                    $this->finalizaSeparacaoProduto($codProduto, $grade, $codMapaSeparacao, $codDepositoEndereco);
+                    $this->finalizaSeparacaoProduto($codProduto, $grade, $codMapaSeparacao, $codDepositoEndereco, $lote);
                 }
                 if ($qtdSeparar <= $qtdTotalSeparar) {
                     return true;
@@ -64,24 +70,32 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
         }
     }
 
-    public function finalizaSeparacaoProduto($codProduto, $grade, $codMapaSeparacao, $codDepositoEndereco){
+    public function finalizaSeparacaoProduto($codProduto, $grade, $codMapaSeparacao, $codDepositoEndereco, $lote){
         $mapaSeparacaoProdRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-        $mapaProd = $mapaSeparacaoProdRepo->findBy(array('codProduto' => $codProduto, 'dscGrade' => $grade, 'mapaSeparacao' => $codMapaSeparacao, 'depositoEndereco' => $codDepositoEndereco));
+        if(!empty($lote)){
+            $mapaProd = $mapaSeparacaoProdRepo->findBy(array('codProduto' => $codProduto, 'dscGrade' => $grade, 'lote' => $lote, 'mapaSeparacao' => $codMapaSeparacao, 'depositoEndereco' => $codDepositoEndereco));
+        }else {
+            $mapaProd = $mapaSeparacaoProdRepo->findBy(array('codProduto' => $codProduto, 'dscGrade' => $grade, 'mapaSeparacao' => $codMapaSeparacao, 'depositoEndereco' => $codDepositoEndereco));
+        }
         foreach ($mapaProd as $mapaEn) {
             $mapaEn->setIndSeparado('S');
             $this->_em->persist($mapaEn);
         }
     }
 
-    public function getQtdSeparadaProduto($codProduto, $grade, $codMapaSeparacao){
+    public function getQtdSeparadaProduto($codProduto, $grade, $codMapaSeparacao, $lote = null){
+        if(!empty($lote)){
+            $where = " AND SMS.DSC_LOTE = '".$lote."'";
+        }
         $sql = "SELECT SUM(QTD_SEPARADA * SMS.QTD_EMBALAGEM) AS TOTAL
                 FROM  SEPARACAO_MAPA_SEPARACAO SMS
                 WHERE SMS.COD_PRODUTO = $codProduto AND
-                SMS.DSC_GRADE = '$grade' AND SMS.COD_MAPA_SEPARACAO = $codMapaSeparacao";
+                SMS.DSC_GRADE = '$grade' AND SMS.COD_MAPA_SEPARACAO = $codMapaSeparacao
+                $where";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $idEmbalagem, $qtdEmb, $idVol = null){
+    public function save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $idEmbalagem, $qtdEmb, $idVol = null, $lote = null){
         $separacao = new SeparacaoMapaSeparacao();
         $separacao->setCodMapaSeparacao($codMapaSeparacao);
         $separacao->setCodOs($codOs);
@@ -93,6 +107,7 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
         $separacao->setCodProdutoVolume($idVol);
         $separacao->setDthSeparacao(new \DateTime());
         $separacao->setQtdSeparada($qtdSeparar);
+        $separacao->setLote($lote);
         $this->_em->persist($separacao);
         $this->_em->flush();
     }
