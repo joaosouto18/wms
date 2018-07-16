@@ -47,6 +47,12 @@ class OndaRessuprimentoOsProduto
     protected $codProdutoVolume;
 
     /**
+     * @Column(name="DSC_LOTE", type="string")
+     * @var string
+     */
+    protected $lote;
+
+    /**
      * @param mixed $codProdutoEmbalagem
      */
     public function setCodProdutoEmbalagem($codProdutoEmbalagem)
@@ -140,6 +146,22 @@ class OndaRessuprimentoOsProduto
     public function getQtd()
     {
         return $this->qtd;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param string $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
     }
 
 

@@ -373,7 +373,7 @@ class ReservaEstoqueRepository extends EntityRepository
                 $dataValidade = date_create_from_format('d/m/Y',$produto['validade']);
                 if ($dataValidade) $reservaEstoqueProduto->setValidade($dataValidade);
             }
-            if (isset($produto['lote']) && !empty($produto['lote'])){
+            if (isset($produto['lote']) && !empty($produto['lote']) && $produto['lote'] != Produto\Lote::LND){
                 $reservaEstoqueProduto->setLote($produto['lote']);
             }
             $reservaEstoqueProduto->setQtd(str_replace(",",".",$produto['qtd']));
@@ -464,7 +464,7 @@ class ReservaEstoqueRepository extends EntityRepository
         return $reservaEstoqueEn;
     }
 
-    public function getQtdReservadaByProduto($codProduto, $grade, $volume, $idEndereco, $tipo = "E")
+    public function getQtdReservadaByProduto($codProduto, $grade, $volume, $idEndereco, $tipo = "E", $lote = Produto\Lote::LND)
     {
         $SQL = "SELECT CASE WHEN SUM(QTD_RESERVADA)IS NULL THEN 0 ELSE SUM(QTD_RESERVADA) END AS QTD
                   FROM RESERVA_ESTOQUE RE
@@ -477,6 +477,11 @@ class ReservaEstoqueRepository extends EntityRepository
         if ($volume != NULL) {
             $SQL .= " AND REP.COD_PRODUTO_VOLUME = '$volume' ";
         }
+
+        if ($lote != Produto\Lote::LND) {
+            $SQL .= "AND REP.DSC_LOTE = '$lote'";
+        }
+
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result[0]['QTD'];
     }

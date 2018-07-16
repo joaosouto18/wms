@@ -15,6 +15,7 @@ class Lote
 
     const INTERNO = "I";
     const EXTERNO = "E";
+    const LND = "LOTE_NAO_DEFINIDO";
 
     /**
      * @Column(name="COD_LOTE", type="integer", nullable=false)

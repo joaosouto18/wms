@@ -1239,7 +1239,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         if (!empty($idEmbalagens)) {
             $dql->andWhere("pe.id in ( $idEmbalagens )");
         }
-            $dql->andWhere('(pe.codigoBarras IS NOT NULL OR pv.codigoBarras IS NOT NULL)')
+            $dql->andWhere('((pe.codigoBarras IS NOT NULL and pe.dataInativacao IS NULL) OR (pv.codigoBarras IS NOT NULL and pv.dataInativacao IS NULL))')
                 ->orderBy('pe.quantidade', 'desc');
 
         return $dql->getQuery()->getResult();
