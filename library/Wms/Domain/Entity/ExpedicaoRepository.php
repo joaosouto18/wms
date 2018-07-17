@@ -2145,8 +2145,8 @@ class ExpedicaoRepository extends EntityRepository {
                        I.ITINERARIOS AS "itinerario",
                        MOT.NOM_MOTORISTA AS "motorista",
                        TIPO_PEDIDO.TIPO_PEDIDO AS "tipopedido",
-                       (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
-                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
+                       (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) = 0 THEN 0
+                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(COUNTETIQUETA.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
@@ -2163,7 +2163,7 @@ class ExpedicaoRepository extends EntityRepository {
                                       WHERE ES.COD_STATUS IN(526, 531, 532) ' . $FullWhere . '
                                       GROUP BY C.COD_EXPEDICAO) C1 ON C1.COD_EXPEDICAO = C.COD_EXPEDICAO
                          WHERE ESEP.COD_STATUS NOT IN(524, 525) ' . $FullWhere . '
-                         GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                         GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) COUNTETIQUETA ON COUNTETIQUETA.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT MS.COD_EXPEDICAO,
                                 NVL(SUM(QTD_CONF.QTD),0) + NVL(SUM(QTD_SEP.QTD_CORTADO),0) as QTD_CONFERIDA,
                                 NVL(SUM(QTD_CONF_M.QTD),0) AS QTD_CONF_MANUAL,
