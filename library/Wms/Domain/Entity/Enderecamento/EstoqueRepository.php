@@ -195,13 +195,16 @@ class EstoqueRepository extends EntityRepository
             $dscEndereco = $estoqueEn->getDepositoEndereco()->getDescricao();
             $dscProduto = $estoqueEn->getProduto()->getDescricao();
             if (!is_null($volumeEn)) {
-                $estoqueEn->setQtd($novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn))->getQtd() + $qtd);
+                $novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn))->getQtd() + $qtd;
             } else {
-                $estoqueEn->setQtd($novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn))->getQtd() + $qtd);
+                $novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn))->getQtd() + $qtd;
             }
-            $estoqueEn->setValidade($validade);
-            if (isset($unitizadorEn)) {
-                $estoqueEn->setUnitizador($unitizadorEn);
+            if ($novaQtd >0) {
+                $estoqueEn->setQtd($novaQtd);
+                $estoqueEn->setValidade($validade);
+                if (isset($unitizadorEn)) {
+                    $estoqueEn->setUnitizador($unitizadorEn);
+                }
             }
         }
 

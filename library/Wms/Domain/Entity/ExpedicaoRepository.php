@@ -4029,6 +4029,17 @@ class ExpedicaoRepository extends EntityRepository {
 
         $this->getEntityManager()->flush();
 
+        $SQL = "SELECT * 
+                  FROM PEDIDO_PRODUTO PP
+                 WHERE COD_PEDIDO = '$codPedido' 
+                   AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
+        $ppSemCortes = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($ppSemCortes) == 0) {
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
+            $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
+            $pedidoRepository->cancelar($codPedido,false);
+        }
+
     }
 
     /**
@@ -4361,25 +4372,33 @@ class ExpedicaoRepository extends EntityRepository {
     public function getItensVolumeEmbalados($idExpedicao) {
 
         $sql = "SELECT CLIENTE, COD_VOLUME, STATUS, COD_PRODUTO, DSC_PRODUTO, DSC_GRADE, SUM(QTD_CONFERIDA) QTD_CONFERIDA, EMBALAGEM 
-                FROM (    
-                    SELECT DISTINCT
+                FROM (SELECT DISTINCT
                       PS.NOM_PESSOA CLIENTE,
                       MSEC.NUM_SEQUENCIA AS COD_VOLUME,
                       MSEC.COD_STATUS STATUS,
                       P.COD_PRODUTO,
                       P.DSC_PRODUTO,
                       P.DSC_GRADE,
-                      MSC.QTD_CONFERIDA,
+                      SUM(MSC.QTD_CONFERIDA) AS QTD_CONFERIDA,
                       CONCAT(CONCAT(CONCAT(PE.DSC_EMBALAGEM , '(' ), MSC.QTD_EMBALAGEM), ')') AS EMBALAGEM
                     FROM MAPA_SEPARACAO_EMB_CLIENTE MSEC
-                    INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MSEC.COD_MAPA_SEPARACAO
+                    INNER JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MSEC.COD_MAPA_SEPARACAO AND 
+                    MSEC.COD_MAPA_SEPARACAO_EMB_CLIENTE = MSC.COD_MAPA_SEPARACAO_EMBALADO
                     INNER JOIN PRODUTO_EMBALAGEM PE ON MSC.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
                     INNER JOIN PRODUTO P ON MSC.COD_PRODUTO = P.COD_PRODUTO AND MSC.DSC_GRADE = P.DSC_GRADE
                     INNER JOIN PESSOA PS ON PS.COD_PESSOA = MSEC.COD_PESSOA
                     WHERE MSEC.COD_MAPA_SEPARACAO IN ( SELECT COD_MAPA_SEPARACAO FROM MAPA_SEPARACAO WHERE COD_EXPEDICAO = '$idExpedicao')
-                    ORDER BY PS.NOM_PESSOA, TO_NUMBER(MSEC.NUM_SEQUENCIA), TO_NUMBER(P.COD_PRODUTO), P.DSC_GRADE) 
+                    GROUP BY 
+                      PS.NOM_PESSOA,
+                      MSEC.NUM_SEQUENCIA,
+                      MSEC.COD_STATUS,
+                      P.COD_PRODUTO,
+                      P.DSC_PRODUTO,
+                      P.DSC_GRADE,
+                      CONCAT(CONCAT(CONCAT(PE.DSC_EMBALAGEM , '(' ), MSC.QTD_EMBALAGEM), ')')
+                      ORDER BY PS.NOM_PESSOA, TO_NUMBER(MSEC.NUM_SEQUENCIA), TO_NUMBER(P.COD_PRODUTO), P.DSC_GRADE) 
                 GROUP BY CLIENTE, COD_VOLUME, STATUS, COD_PRODUTO, DSC_PRODUTO, DSC_GRADE, EMBALAGEM
-                ORDER BY CLIENTE, TO_NUMBER(COD_VOLUME), TO_NUMBER(COD_PRODUTO), DSC_GRADE ";
+                ORDER BY CLIENTE, TO_NUMBER(COD_VOLUME), TO_NUMBER(COD_PRODUTO), DSC_GRADE";
 
         return $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
