@@ -1062,11 +1062,21 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             $entityCliente  = new \Wms\Domain\Entity\Pessoa\Papel\Cliente();
 
+            /** @var \Wms\Domain\Entity\Pessoa\Juridica|\Wms\Domain\Entity\Pessoa\Fisica $entityPessoa*/
             if ($entityPessoa == null) {
                 $entityPessoa = $ClienteRepo->persistirAtor($entityCliente, $cliente, false);
             } else {
-                $entityCliente->setPessoa($entityPessoa);
+                /** @var \Wms\Domain\Entity\Pessoa\Papel\Cliente $pessoaCliente */
+                $pessoaCliente = $ClienteRepo->findOneBy(array('pessoa' => $entityPessoa));
 
+                if (!empty($pessoaCliente)){
+                    $nome = $entityPessoa->getNome();
+                    $cpfCnpj = (is_a($entityPessoa, "\Wms\Domain\Entity\Pessoa\Juridica")) ? $entityPessoa->getCnpj() : $entityPessoa->getCpf();
+                    $codAtual = $pessoaCliente->getCodClienteExterno();
+                    throw new Exception("O CPF/CNPJ: '$cpfCnpj' já está cadastrado no código '$codAtual' para o cliente '$nome'");
+                }
+
+                $entityCliente->setPessoa($entityPessoa);
             }
 
             $entityCliente->setId($entityPessoa->getId());
