@@ -348,9 +348,15 @@ class Integracao {
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepository */
         $mapaSeparacaoProdutoRepository = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
-        $codCargaExterno = implode(',', $cargas);
+
+        $c = array();
+        foreach ($cargas as $carga){
+            $c[] = "'" . $carga . "'";
+        }
+
+        $codCargaExterno = implode(',', $c);
         $sql = $em->createQueryBuilder()
-                ->select('c.codCargaExterno carga, p.id pedido, sigla.id tipoPedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade, pp.qtdCortada')
+                ->select('c.codCargaExterno carga, p.id pedido, p.codExterno as codPedidoERP, sigla.id tipoPedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade, pp.qtdCortada')
                 ->from('wms:Expedicao\PedidoProduto', 'pp')
                 ->innerJoin('pp.pedido', 'p')
                 ->innerJoin('p.carga', 'c')

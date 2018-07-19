@@ -40,12 +40,12 @@ class ExpedicaoService extends AbstractService
         }
         $enCarga = new Expedicao\Carga();
         $enCarga->setPlacaExpedicao($numNFS);
-        $enCarga->setCentralEntrega(1);
+        $enCarga->setCentralEntrega(1.0);
         $enCarga->setCodCargaExterno(trim($numNFS));
         $enCarga->setExpedicao($expedicaoEn);
         $enCarga->setPlacaCarga($numNFS);
         $enCarga->setTipoCarga($tipoCarga);
-        $enCarga->setSequencia(1);
+        $enCarga->setSequencia(1.0);
         $enCarga->setDataFechamento(new \DateTime());
         $this->em->persist($enCarga);
         $this->em->flush($enCarga);

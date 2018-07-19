@@ -137,7 +137,6 @@ class EstoqueRepository extends EntityRepository
             $validadeParam = (is_string($dataValidade['dataValidade'])) ? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
         }
 
-
         if (isset($validadeParam) && !empty($validadeParam)) {
             $validade = $validadeParam;
         } elseif (isset($validadeEsttoque) && !empty($validadeEsttoque)) {
