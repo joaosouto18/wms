@@ -88,7 +88,10 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             if (!$result || $result == false) {
                 $error = \sqlsrv_errors();
-                throw new \Exception($error);
+                foreach( $errors as $error ) {
+                    throw new \Exception($error[ 'message']);
+                }
+
             }
             $vetResult = array();
             $i = 0;
