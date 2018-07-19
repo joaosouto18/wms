@@ -16,6 +16,7 @@ class ConexaoIntegracao
     const PROVEDOR_MYSQL = "MYSQL";
     const PROVEDOR_MSSQL = "MSSQL";
     const PROVEDOR_FIREBIRD = "FIREBIRD";
+    const PROVEDOR_POSTGRE = "POSTGRE";
 
     /**
      * @Id

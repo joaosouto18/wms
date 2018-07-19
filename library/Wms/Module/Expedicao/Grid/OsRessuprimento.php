@@ -68,6 +68,10 @@ class OsRessuprimento extends Grid
                 'label' => 'Status',
                 'index' => 'STATUS',
             ))
+            ->addColumn(array(
+                'label' => 'Cod Barras',
+                'index' => 'COD_BARRAS',
+            ))
             ->addAction(array(
                 'label' => 'Cancelar O.S.',
                 'modelName' => 'expedicao',
