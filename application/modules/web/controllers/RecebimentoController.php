@@ -1242,7 +1242,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $data[$key]['serie'] = $row[0]->getSerie();
                 $data[$key]['placa'] = $row[0]->getPlaca();
                 $data[$key]['dataEntrada'] = $dataEntrada;
-                $data[$key]['fornecedor'] = substr($row['fornecedor'], 0, 20);
+                $data[$key]['fornecedor'] = substr($row['fornecedor'], 0, 45);
                 $data[$key]['status'] = $row[0]->getStatus()->getSigla();
                 $vetEmbalagens = $entityNotaFiscal->getTotalPorEmbalagemNota($row[0]->getId());
                 $data[$key]['qtdProdutoMaior'] = (int) $vetEmbalagens[0]['QTDMAIOR'];

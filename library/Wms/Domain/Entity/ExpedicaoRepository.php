@@ -933,6 +933,7 @@ class ExpedicaoRepository extends EntityRepository {
                        P.COD_EXTERNO as COD_PEDIDO,
                        PP.COD_PRODUTO,
                        PP.DSC_GRADE,
+                       P.COD_EXTERNO,
                        SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
                   FROM PEDIDO_PRODUTO PP
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
@@ -941,12 +942,13 @@ class ExpedicaoRepository extends EntityRepository {
                   GROUP BY COD_CARGA_EXTERNO,
                            P.COD_PEDIDO,
                            PP.COD_PRODUTO,
-                           PP.DSC_GRADE
+                           PP.DSC_GRADE,
+                           P.COD_EXTERNO
                   ORDER BY C.COD_CARGA_EXTERNO, P.COD_PEDIDO, PP.COD_PRODUTO";
         $pedidosWMS = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($pedidosWMS as $pedidoProdutoWms) {
-            if (isset($dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']])) {
-                $pedidoERP = $dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']];
+            if (isset($dados[$idCargaExterno][$pedidoProdutoWms['COD_EXTERNO']])) {
+                $pedidoERP = $dados[$idCargaExterno][$pedidoProdutoWms['COD_EXTERNO']];
                 $encontrouProduto = false;
                 foreach ($pedidoERP as $produtoERP) {
                     if (($produtoERP['idProduto'] == $pedidoProdutoWms['COD_PRODUTO']) && ($produtoERP['grade'] == $pedidoProdutoWms['DSC_GRADE'])) {
@@ -954,16 +956,16 @@ class ExpedicaoRepository extends EntityRepository {
                         $qtdERP = str_replace(',', '.', $produtoERP['qtd']);
                         $qtdWms = str_replace(',', '.', $pedidoProdutoWms['QTD']);
                         if ($qtdERP != $qtdWms) {
-                            return "Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_PEDIDO]. Qtd WMS: $qtdWms, Qtd ERP: $qtdERP";
+                            return "Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_EXTERNO]. Qtd WMS: $qtdWms, Qtd ERP: $qtdERP";
                         }
                     }
                 }
 
                 if ($encontrouProduto == false) {
-                    return "Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_PEDIDO]";
+                    return "Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_EXTERNO]";
                 }
             } else {
-                return "Pedido $pedidoProdutoWms[COD_PEDIDO] não encontrado na conferencia com o ERP";
+                return "Pedido $pedidoProdutoWms[COD_EXTERNO] não encontrado na conferencia com o ERP";
             }
         }
 
@@ -1264,7 +1266,7 @@ class ExpedicaoRepository extends EntityRepository {
         $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
 
         $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
-        $cargaEntities = $this->getProdutosExpedicaoCorte(null,$idExpedicao);
+        $cargaEntities = $this->getProdutosExpedicaoCorte(null,$idExpedicao,false);
 
         foreach ($cargaEntities as $cargaEntity) {
             $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
@@ -1305,8 +1307,8 @@ class ExpedicaoRepository extends EntityRepository {
                 $expedicaoEn->setStatus($statusEmFinalizacao);
                 $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
 
-                //$this->getEntityManager()->persist($expedicaoEn);
-                //$this->getEntityManager()->flush();
+                $this->getEntityManager()->persist($expedicaoEn);
+                $this->getEntityManager()->flush();
             }
 
             $codCargaExterno = $this->validaCargaFechada($idExpedicao);
@@ -2195,8 +2197,8 @@ class ExpedicaoRepository extends EntityRepository {
                        RESUMO.QTD_PEDIDOS as "qtdPedidos",
                        RESUMO.QTD_PRODUTOS as "qtdProdutos",
                        RESUMO.QTD_VOLUMES as "qtdVolumes",
-                       (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
-                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
+                       (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) = 0 THEN 0
+                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(COUNTETIQUETA.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
@@ -2213,7 +2215,7 @@ class ExpedicaoRepository extends EntityRepository {
                                       WHERE ES.COD_STATUS IN(526, 531, 532) ' . $FullWhere . '
                                       GROUP BY C.COD_EXPEDICAO) C1 ON C1.COD_EXPEDICAO = C.COD_EXPEDICAO
                          WHERE ESEP.COD_STATUS NOT IN(524, 525) ' . $FullWhere . '
-                         GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                         GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) COUNTETIQUETA ON COUNTETIQUETA.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT MS.COD_EXPEDICAO,
                                 NVL(SUM(QTD_CONF.QTD),0) + NVL(SUM(QTD_SEP.QTD_CORTADO),0) as QTD_CONFERIDA,
                                 NVL(SUM(QTD_CONF_M.QTD),0) AS QTD_CONF_MANUAL,

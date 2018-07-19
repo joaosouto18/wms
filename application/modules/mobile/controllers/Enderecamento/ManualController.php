@@ -36,10 +36,11 @@ class Mobile_Enderecamento_ManualController extends Action
 
                 if (empty($params['reservas'])) {
 
-                    /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
-                    $produtoEmbalagemRepo = $em->getRepository('wms:Produto\Embalagem');
-                    /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
-                    $embalagemEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $params['produto'], 'dataInativacao' => null));
+                $params['produto'] = ColetorUtil::adequaCodigoBarras($params['produto']);
+                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
+                $produtoEmbalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+                /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
+                $embalagemEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $params['produto'], 'dataInativacao' => null));
 
                     /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
                     $produtoVolumeRepo = $em->getRepository('wms:Produto\Volume');
@@ -75,9 +76,9 @@ class Mobile_Enderecamento_ManualController extends Action
                     $qtdRecebimentoEn = $qtdRecebimentoRepo->getQtdByRecebimento($params['id'], $codProduto, $grade);
                     $sumQtdRecebimento = $qtdRecebimentoEn[0]['qtd'];
 
-                    /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
-                    $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
-                    $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade);
+                /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
+                $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
+                $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade, $params['produto']);
 
                     $qtdEndTotalFator = \Wms\Math::multiplicar($params['qtd'], $params['qtdEmbalagem']);
                     $enderecadoMaisEnderecar = \Wms\Math::adicionar($qtdEndTotalFator, $paleteProdutoEn[0]['qtd']);
@@ -133,8 +134,13 @@ class Mobile_Enderecamento_ManualController extends Action
 
         try {
             $this->view->idEndereco = $idEndereco = $params['endereco'];
-            $produtoEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $params['produto']));
-            $this->view->capacidadePicking = $produtoEn->getCapacidadePicking();
+            $produtoEmbalagemEn = $this->getEntityManager()->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => $params['produto']));
+            $produtoVolumeEn = $this->getEntityManager()->getRepository('wms:Produto\Volume')->findOneBy(array('codigoBarras' => $params['produto']));
+            if (is_object($produtoEmbalagemEn)) {
+                $this->view->capacidadePicking = $produtoEmbalagemEn->getCapacidadePicking();
+            } else if (is_object($produtoVolumeEn)) {
+                $this->view->capacidadePicking = $produtoVolumeEn->getCapacidadePicking();
+            }
 
             $enderecoRepo   = $this->em->getRepository("wms:Deposito\Endereco");
 
@@ -189,12 +195,14 @@ class Mobile_Enderecamento_ManualController extends Action
         $params = $this->_getAllParams();
         try {
             $this->getEntityManager()->beginTransaction();
-            $produto = $params['produto'];
+            $codBarras = $produto = $params['produto'];
             $codProduto = $params['codProduto'];
             $grade = $params['grade'];
             $idEndereco = $params['endereco'];
             $idRecebimento = $params['id'];
             $qtd = $params['qtd'] * $params['qtdEmbalagem'];
+            if ($qtd == 0)
+                $qtd = $params['qtd'];
 
             if (!isset($params['reservas']) || empty($params['reservas'])) {
 
@@ -205,9 +213,9 @@ class Mobile_Enderecamento_ManualController extends Action
                 $qtdRecebimentoEn = $qtdRecebimentoRepo->getQtdByRecebimento($idRecebimento, $codProduto, $grade);
                 $sumQtdRecebimento = $qtdRecebimentoEn[0]['qtd'];
 
-                /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
-                $paleteProdutoRepo = $this->em->getRepository('wms:Enderecamento\PaleteProduto');
-                $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($idRecebimento, $codProduto, $grade);
+            /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
+            $paleteProdutoRepo = $this->em->getRepository('wms:Enderecamento\PaleteProduto');
+            $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($idRecebimento, $codProduto, $grade, $codBarras);
 
                 $qtdEndTotalFator = \Wms\Math::multiplicar($params['qtd'], $params['qtdEmbalagem']);
                 $enderecadoMaisEnderecar = \Wms\Math::adicionar($qtdEndTotalFator, $paleteProdutoEn[0]['qtd']);
@@ -260,9 +268,9 @@ class Mobile_Enderecamento_ManualController extends Action
                     }
                 }
 
-                if (empty($arrDL)) {
-                    throw new Exception("Nenhuma das embalagens deste produto contem dados logisticos ou norma de paletização cadastrada");
-                }
+            if (!empty($embalagens) && empty($arrDL)){
+                throw new Exception("Nenhuma das embalagens deste produto contem dados logisticos ou norma de paletização cadastrada");
+            }
 
                 foreach ($embalagens as $embalagemEn) {
                     $endereco = null;
@@ -315,9 +323,9 @@ class Mobile_Enderecamento_ManualController extends Action
                     $dataValidade['dataValidade'] = null;
                 }
 
-                $paleteEn = $this->createPalete($qtd, $produtoEn, $idRecebimento);
-                $paleteRepo->alocaEnderecoPalete($paleteEn->getId(), $idEndereco);
-                $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa, null, $dataValidade);
+            $paleteEn = $this->createPalete($qtd,$produtoEn,$idRecebimento,$codBarras);
+            $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
+            $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa, null, $dataValidade);
 
                 $this->addFlashMessage('success', 'Palete ' . $paleteEn->getId() . ' criado e endereçado com sucesso');
 
@@ -378,15 +386,48 @@ class Mobile_Enderecamento_ManualController extends Action
      * @throws Exception
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createPalete($qtd, $produtoEn, $idRecebimento)
+    private function createPalete($qtd, $produtoEn, $idRecebimento, $codBarras)
     {
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo    = $this->em->getRepository('wms:Produto');
+        $volumeRepository = $this->em->getRepository('wms:Produto\Volume');
 
         $idProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
-        $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, $grade);
-        $idNorma = $result[0]['idNorma'];
+        $tipoComercializacao = $produtoEn->getTipoComercializacao()->getId();
+
+        if ($tipoComercializacao == \Wms\Domain\Entity\Produto::TIPO_COMPOSTO) {
+            $volumeEntity = $volumeRepository->findOneBy(array('codigoBarras' => $codBarras));
+
+            if (!$volumeEntity)
+                throw  new \Exception("Código de Barras  ". $codBarras . " não encontrado!");
+
+            if (is_null($volumeEntity->getNormaPaletizacao()))
+                throw  new \Exception("Volume sem norma de paletização definida");
+
+            $norma = $volumeEntity->getNormaPaletizacao()->getId();
+            $unidadePadrao = $volumeEntity->getDescricao();
+            $qtdNorma = $volumeEntity->getNormaPaletizacao()->getNumNorma();
+            $lastro = $volumeEntity->getNormaPaletizacao()->getNumLastro();
+            $camadas = $volumeEntity->getNormaPaletizacao()->getNumCamadas();
+            $unitizador = $volumeEntity->getNormaPaletizacao()->getUnitizador()->getDescricao();
+            $idUnitizador = $volumeEntity->getNormaPaletizacao()->getUnitizador()->getId();
+            $idNorma = $norma;
+
+            $result[0]['idNorma'] = $idNorma;
+            $result[0]['unidade'] = $unidadePadrao;
+            $result[0]['idUnitizador'] = $idUnitizador;
+            $result[0]['unitizador'] = $unitizador;
+            $result[0]['qtdNorma'] = $qtdNorma;
+            $result[0]['lastro'] = $lastro;
+            $result[0]['camadas'] = $camadas;
+            $result[0]['dscProduto'] = $produtoEn->getDescricao();
+            $volumes = $volumeRepository->getProdutosVolumesByNorma($idNorma, $idProduto, $grade);
+        } elseif ($tipoComercializacao == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) {
+            $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, $grade);
+            $idNorma = $result[0]['idNorma'];
+            $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto, $grade);
+        }
 
         if ($idNorma == null) {
             throw  new \Exception("O Produto ". $produtoEn->getDescricao() . " não possui norma de paletização");
@@ -396,7 +437,7 @@ class Mobile_Enderecamento_ManualController extends Action
         $unitizadorEn  = $uniRepo->find($result[0]['idUnitizador']);
         $statusEn      = $this->getEntityManager()->getRepository('wms:Util\Sigla')->find(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO);
 
-        $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto, $grade);
+
 
         if ($produtoEn->getTipoComercializacao()->getId() == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) {
             $tmp[0]['COD_PRODUTO_EMBALAGEM'] = $volumes[0]['COD_PRODUTO_EMBALAGEM'];

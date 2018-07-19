@@ -837,7 +837,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         try {
 
-            if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
+            if ($this->getSystemParameterValue("COMPARA_PRODUTOS_EXPEDICAO_ERP") == "S") {
                 $idPP = array();
                 foreach ($pedidosProdutos as $pedidoProduto) {
                     $idPP[] = $pedidoProduto->getId();
@@ -2684,7 +2684,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
-        $EtiquetaRepo->incrementaQtdAtentidaOuCortada($etiquetaEntity->getId(), 'cortada');
+        if ((is_null($etiquetaEntity->getCodReferencia()) && !is_null($etiquetaEntity->getProdutoVolume())) || $etiquetaEntity->getProdutoEmbalagem())
+            $EtiquetaRepo->incrementaQtdAtentidaOuCortada($etiquetaEntity->getId(), 'cortada');
+
         $this->alteraStatus($etiquetaEntity,EtiquetaSeparacao::STATUS_CORTADO);
         $this->_em->flush();
 

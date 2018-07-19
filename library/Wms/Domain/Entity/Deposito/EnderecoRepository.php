@@ -945,7 +945,7 @@ class EnderecoRepository extends EntityRepository {
           SELECT DEP.DSC_DEPOSITO_ENDERECO DESCRICAO
           FROM DEPOSITO_ENDERECO DEP
           WHERE DEP.COD_DEPOSITO_ENDERECO in ($enderecos)
-          ORDER BY DEP.NUM_RUA ASC, DEP.NUM_PREDIO ASC, DEP.NUM_APARTAMENTO ASC, DEP.NUM_NIVEL DESC ";
+          ORDER BY DEP.NUM_RUA ASC, DEP.NUM_PREDIO ASC, DEP.NUM_APARTAMENTO ASC, DEP.NUM_NIVEL ASC ";
 
         $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
