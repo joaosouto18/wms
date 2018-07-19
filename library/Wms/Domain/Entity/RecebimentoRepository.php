@@ -1990,15 +1990,15 @@ class RecebimentoRepository extends EntityRepository {
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select("(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0)) qtdBloqueada, r.id codRecebimento,
-                        re.id codRecebEmbalagem, rv.id codRecebVolume, p.descricao, p.id codProduto, p.grade,
-                        TO_CHAR(NVL(re.dataValidade, rv.dataValidade),'DD/MM/YYYY') dataValidade")
+                        re.id codRecebEmbalagem, rv.id codRecebVolume, p.descricao, p.id codProduto, p.grade, 
+                        TO_CHAR(NVL(re.dataValidade, rv.dataValidade),'DD/MM/YYYY') dataValidade, p.diasVidaUtil")
             ->from('wms:Recebimento', 'r')
             ->leftJoin('wms:Recebimento\Embalagem','re','WITH','re.recebimento = r.id')
             ->leftJoin('wms:Recebimento\Volume','rv','WITH','rv.recebimento = r.id')
             ->leftJoin('re.embalagem', 'pe')
             ->leftJoin('rv.volume', 'pv')
             ->innerJoin('wms:Produto','p','WITH','(p.id = pe.codProduto AND p.grade = pe.grade) OR (p.id = pv.codProduto AND p.grade = pv.grade)')
-            ->groupBy('r.id, re.id, rv.id, p.descricao, p.id, p.grade, re.dataValidade, rv.dataValidade')
+            ->groupBy('r.id, re.id, rv.id, p.descricao, p.id, p.grade, re.dataValidade, rv.dataValidade, p.diasVidaUtil')
             ->having('(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0) > 0)');
 
         if ($idRecebimento)

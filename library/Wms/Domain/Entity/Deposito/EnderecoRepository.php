@@ -1096,16 +1096,19 @@ class EnderecoRepository extends EntityRepository {
                  */
                 foreach ($itens as $key => $item) {
                     $produtoEn = $item->getProduto();
+                    $dataValidade = !is_null($item->getValidade()) ? $item->getValidade()->format('d/m/Y') : null;
                     if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
                         $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $item->getQtd());
                         $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                            'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens));
+                            'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens),
+                            'dataValidade' => $dataValidade);
                         $result[$produtoEn->getId()] = $produto;
                     } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
                         /** @var Produto\Volume $volumeEn */
                         $volumeEn = $item->getProdutoVolume();
                         $result[$produtoEn->getId()."-".$volumeEn->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                            'desc' => $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ")", 'qtd' => $item->getQtd());
+                            'desc' => $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ")", 'qtd' => $item->getQtd(),
+                            'dataValidade' => $dataValidade);
                     }
                 }
             }

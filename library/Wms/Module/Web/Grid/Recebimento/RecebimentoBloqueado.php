@@ -15,8 +15,6 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
         $recebimentoRepository = $this->getEntityManager()->getRepository('wms:Recebimento');
         $result = $recebimentoRepository->getQuantidadeConferidaBloqueada();
 
-//        var_dump($result); exit;
-
         $this->setAttrib('title','Recebimento Bloqueado');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
             ->setId('recebimento-bloqueado-grid')
@@ -52,7 +50,12 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                 'pkIndex' => array(
                     'codRecebEmbalagem',
                     'codRecebVolume',
-                    'codRecebimento'
+                    'codRecebimento',
+                    'codProduto',
+                    'grade',
+                    'dataValidade',
+                    'diasVidaUtil',
+                    'qtdBloqueada'
                 ),
                 'params' => array(
                     'liberar' => true,
@@ -66,11 +69,16 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                 'pkIndex' => array(
                     'codRecebEmbalagem',
                     'codRecebVolume',
-                    'codRecebimento'
+                    'codRecebimento',
+                    'codProduto',
+                    'grade',
+                    'dataValidade',
+                    'diasVidaUtil',
+                    'qtdBloqueada'
                 ),
                 'params' => array(
                     'liberar' => false,
-                    'observacao' => 'Contagem Rejeitada com Sucesso'
+                    'observacao' => 'Contagem Rejeitada'
                 ),
             ))
 
