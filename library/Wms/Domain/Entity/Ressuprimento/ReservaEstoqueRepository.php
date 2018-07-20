@@ -567,35 +567,57 @@ class ReservaEstoqueRepository extends EntityRepository
 
     }
 
-    public function updateReservaExpedicao ($codProduto, $grade, $expedicao, $idPicking, $qtdAtendida, $qtdRessuprida, $lotePrometido, $qtdAtendida) {
+    public function updateReservaExpedicao ($codProduto, $grade, $idPicking, $arrReservas, $qtdRessuprida, $lotePrometido)
+    {
 
-        $dql = $this->_em->createQueryBuilder()
-                    ->select("rep")
-                    ->from("wms:Ressuprimento\ReservaEstoque", "re")
-                    ->innerJoin("wms:Ressuprimento\ReservaEstoqueProduto", "rep", "WITH" , "rep.reservaEstoque = re")
-                    ->innerJoin("wms:Ressuprimento\ReservaEstoqueExpedicao", "ree", "WITH", "ree.reservaEstoque = re")
-                    ->where("re.atendida = 'N' and rep.lote IS NULL and re.endereco = :idPicking and ree.expedicao = :expedicao and rep.codProduto = :codProduto and rep.grade = :grade")
-                    ->setParameter(":expedicao", $expedicao)
-                    ->setParameter(":codProduto", $codProduto)
-                    ->setParameter(":grade", $grade)
-                    ->setParameter(":idPicking", $idPicking);
+        if (empty($arrReservas)) {
+            $dql = $this->_em->createQueryBuilder()
+                ->select("rep")
+                ->from("wms:Ressuprimento\ReservaEstoque", "re")
+                ->innerJoin("wms:Ressuprimento\ReservaEstoqueProduto", "rep", "WITH", "rep.reservaEstoque = re")
+                ->innerJoin("wms:Ressuprimento\ReservaEstoqueExpedicao", "ree", "WITH", "ree.reservaEstoque = re")
+                ->where("re.atendida = 'N' and rep.lote IS NULL and re.endereco = :idPicking and rep.codProduto = :codProduto and rep.grade = :grade")
+                ->setParameter(":codProduto", $codProduto)
+                ->setParameter(":grade", $grade)
+                ->setParameter(":idPicking", $idPicking);
 
-        /** @var ReservaEstoqueProduto[] $reservas */
-        $reservas = $dql->getQuery()->getResult();
+            /** @var ReservaEstoqueProduto[] $reservas */
+            $reservas = $dql->getQuery()->getResult();
 
-        foreach ($reservas as $reserva) {
-            if (!isset($qtdAtendida[$reserva->getId()]) or !$qtdAtendida[$reserva->getId()]['atendida']) {
-                $qtdAtualAtendida = $qtdAtendida[$reserva->getId()]['qtd'];
-                $qtdPendente = (isset($qtdAtendida[$reserva->getId()]))? $qtdAtualAtendida : Math::multiplicar($reserva->getQtd(), -1);
+            foreach ($reservas as $entity) {
+                $arrReservas[$entity->getId()] = [
+                    'qtdTotal' => Math::multiplicar($entity->getQtd(), -1),
+                    'repEnMatriz' => $entity,
+                    'lotes' => [],
+                    'qtdPrometida' => 0,
+                    'atendida' => false
+                ];
+            }
+        }
 
-                if (Math::compare($qtdPendente,  $qtdRessuprida, ">")) {
-                    $qtdPrometer = $qtdRessuprida;
-                    $newReserva = clone $reserva;
+        foreach ($arrReservas as $idReserva => $reserva) {
+            if (!$reserva['atendida']) {
+                $qtdPendente = Math::subtrair($reserva['qtdTotal'], $reserva['qtdPrometida']);
+                if (Math::compare($qtdPendente, $qtdRessuprida, ">")) {
+
                 } else {
-                    $qtdPrometer = $qtdPendente;
+                    $arrReservas[$idReserva]['atendida'] = true;
+                    $arrReservas[$idReserva]['qtdPrometida'] = $reserva['qtdTotal'];
+                    $arrReservas[$idReserva]['lotes'][$lotePrometido] = $qtdPendente;
                 }
+            }
+        }
 
-                $qtdAtribuir = Math::adicionar($qtdAtualAtendida, $qtdPrometer);
+        foreach ($arrReservas as $reserva) {
+            /** @var ReservaEstoqueProduto $repEn */
+            $repEn = $reserva['repEnMatriz'];
+            if (count($reserva['lotes']) > 1) {
+                foreach ($reserva['lotes'] as $lote => $qtd) {
+
+                }
+            } else {
+                $repEn->setLote(key($reserva['lotes']));
+                $this->_em->persist($repEn);
             }
         }
     }

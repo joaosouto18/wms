@@ -404,6 +404,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $volumes = $picking['volumes'];
         $embalagens = $picking['embalagens'];
         $controlaLote = $picking['controlaLote'];
+        $arrReservas = [];
 
         $idVolume = null;
         if (count($volumes) > 0) {
@@ -461,6 +462,9 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
                     $this->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque, true, $lote);
+                    if ($controlaLote == 'S') {
+                        $reservaEstoqueRepo->updateReservaExpedicao($codProduto, $grade, $idPicking, $arrReservas, $qtdOnda, $lote);
+                    }
                     $qtdOsGerada ++;
                 }
 
