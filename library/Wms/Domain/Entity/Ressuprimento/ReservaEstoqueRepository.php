@@ -8,6 +8,7 @@ use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Produto;
+use Wms\Math;
 
 class ReservaEstoqueRepository extends EntityRepository
 {
@@ -547,7 +548,8 @@ class ReservaEstoqueRepository extends EntityRepository
                         ree.codCriterioPD,
                         ree.tipoSaida,
                         rep.codProdutoVolume,
-                        (rep.qtd * -1) as qtd
+                        (rep.qtd * -1) as qtd,
+                        rep.lote
                         ")
             ->from("wms:Ressuprimento\ReservaEstoque", "re")
             ->innerJoin("wms:Ressuprimento\ReservaEstoqueProduto", "rep", "WITH" , "rep.reservaEstoque = re")
@@ -563,5 +565,38 @@ class ReservaEstoqueRepository extends EntityRepository
 
         return $dql->getQuery()->getResult();
 
+    }
+
+    public function updateReservaExpedicao ($codProduto, $grade, $expedicao, $idPicking, $qtdAtendida, $qtdRessuprida, $lotePrometido, $qtdAtendida) {
+
+        $dql = $this->_em->createQueryBuilder()
+                    ->select("rep")
+                    ->from("wms:Ressuprimento\ReservaEstoque", "re")
+                    ->innerJoin("wms:Ressuprimento\ReservaEstoqueProduto", "rep", "WITH" , "rep.reservaEstoque = re")
+                    ->innerJoin("wms:Ressuprimento\ReservaEstoqueExpedicao", "ree", "WITH", "ree.reservaEstoque = re")
+                    ->where("re.atendida = 'N' and rep.lote IS NULL and re.endereco = :idPicking and ree.expedicao = :expedicao and rep.codProduto = :codProduto and rep.grade = :grade")
+                    ->setParameter(":expedicao", $expedicao)
+                    ->setParameter(":codProduto", $codProduto)
+                    ->setParameter(":grade", $grade)
+                    ->setParameter(":idPicking", $idPicking);
+
+        /** @var ReservaEstoqueProduto[] $reservas */
+        $reservas = $dql->getQuery()->getResult();
+
+        foreach ($reservas as $reserva) {
+            if (!isset($qtdAtendida[$reserva->getId()]) or !$qtdAtendida[$reserva->getId()]['atendida']) {
+                $qtdAtualAtendida = $qtdAtendida[$reserva->getId()]['qtd'];
+                $qtdPendente = (isset($qtdAtendida[$reserva->getId()]))? $qtdAtualAtendida : Math::multiplicar($reserva->getQtd(), -1);
+
+                if (Math::compare($qtdPendente,  $qtdRessuprida, ">")) {
+                    $qtdPrometer = $qtdRessuprida;
+                    $newReserva = clone $reserva;
+                } else {
+                    $qtdPrometer = $qtdPendente;
+                }
+
+                $qtdAtribuir = Math::adicionar($qtdAtualAtendida, $qtdPrometer);
+            }
+        }
     }
 }

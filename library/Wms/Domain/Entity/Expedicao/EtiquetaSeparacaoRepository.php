@@ -818,6 +818,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $etiquetaConferenciaRepo = $arrayRepositorios['etiquetaConferencia'];
         /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $arrayRepositorios['mapaSeparacaoProduto'];
+        /** @var PedidoProdutoLoteRepository $pedProdLoteRepo */
+        $pedProdLoteRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProdutoLote");
         /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoRepo */
         if (isset($arrayRepositorios['expedicaoRepo'])) {
             $expedicaoRepo = $arrayRepositorios['expedicaoRepo'];
@@ -917,11 +919,44 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $reservas = [];
                 if ($filial->getIndUtilizaRessuprimento() == "S") {
                     $reservas = $reservaEstoqueRepo->getReservasExpedicao($pedidoProduto);
-                } else {
-                    $reservas[0]['qtd'] = Math::subtrair($pedidoProduto->getQuantidade(), $pedidoProduto->getQtdCortada());
-                    $reservas[0]['idEndereco'] = null;
-                    $reservas[0]['quebraPulmaoDoca'] = 'N';
-                    $reservas[0]['tipoSaida'] = ReservaEstoqueExpedicao::SAIDA_SEM_CONTROLE_ESTOQUE;
+                }
+                else {
+                    if ($produtoEntity->getIndControlaLote() == 'S') {
+                        $qtdMax = Math::subtrair($pedidoProduto->getQuantidade(), $pedidoProduto->getQtdCortada());
+
+                        /** @var PedidoProdutoLote[] $itensBylote */
+                        $itensBylote = $pedProdLoteRepo->findBy(['pedidoProduto' => $pedidoProduto]);
+                        foreach($itensBylote as $key => $item) {
+                            $qtdItemLote = Math::subtrair($item->getQuantidade(), $item->getQtdCorte());
+                            $reservas[] = [
+                                'qtd' => $qtdItemLote,
+                                'idEndereco' => null,
+                                'quebraPulmaoDoca' => 'N',
+                                'tipoSaida' => ReservaEstoqueExpedicao::SAIDA_SEM_CONTROLE_ESTOQUE,
+                                'lote' => $item->getCodLote()
+                            ];
+                            $qtdMax = Math::subtrair($qtdMax, $qtdItemLote);
+                        }
+
+                        if (!empty($qtdMax)) {
+                            $reservas[] = [
+                                'qtd' => $qtdMax,
+                                'idEndereco' => null,
+                                'quebraPulmaoDoca' => 'N',
+                                'tipoSaida' => ReservaEstoqueExpedicao::SAIDA_SEM_CONTROLE_ESTOQUE,
+                                'lote' => Produto\Lote::LND
+                            ];
+                        }
+                    }
+                    else {
+                        $reservas[] = [
+                            'qtd' => Math::subtrair($pedidoProduto->getQuantidade(), $pedidoProduto->getQtdCortada()),
+                            'idEndereco' => null,
+                            'quebraPulmaoDoca' => 'N',
+                            'tipoSaida' => ReservaEstoqueExpedicao::SAIDA_SEM_CONTROLE_ESTOQUE,
+                            'lote' => Produto\Lote::LND
+                        ];
+                    }
                 }
 
                 if ($produtoEntity->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
@@ -1424,13 +1459,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $arrEnderecos[$enderecoEn->getId()] = array(
                                 'qtd' => $reserva['qtd'],
                                 'enderecoEn' => $enderecoEn,
-                                'tipoSaida' => $reserva['tipoSaida']
+                                'tipoSaida' => $reserva['tipoSaida'],
+                                'lote' => $reserva['lote']
                             );
                         } else {
                             $arrEnderecos[] = array(
                                 'qtd' => $reserva['qtd'],
                                 'enderecoEn' => $enderecoEn,
-                                'tipoSaida' => $reserva['tipoSaida']
+                                'tipoSaida' => $reserva['tipoSaida'],
+                                'lote' => $reserva['lote']
                             );
                         }
                     }
@@ -1465,7 +1502,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     'volumeEn' => $volumeEn,
                     'qtd' => $reserva['qtd'],
                     'tipoSaida' => $reserva['tipoSaida'],
-                    'quebraPD' => $reserva['quebraPulmaoDoca']
+                    'quebraPD' => $reserva['quebraPulmaoDoca'],
+                    'lote' => $reserva['lote']
                 );
             }
         }
