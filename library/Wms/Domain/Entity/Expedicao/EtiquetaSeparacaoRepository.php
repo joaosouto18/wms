@@ -837,7 +837,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         try {
 
-            if ($this->getSystemParameterValue("EXECUTA_CONFERENCIA_INTEGRACAO_EXPEDICAO") == "S") {
+            if ($this->getSystemParameterValue("COMPARA_PRODUTOS_EXPEDICAO_ERP") == "S") {
                 $idPP = array();
                 foreach ($pedidosProdutos as $pedidoProduto) {
                     $idPP[] = $pedidoProduto->getId();
