@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityRepository,
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Produto;
+use Wms\Math;
 
 class OndaRessuprimentoRepository extends EntityRepository {
 
@@ -438,11 +439,20 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 'controlaLote' => $controlaLote
             );
             $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
+
+            if ($controlaLote == 'S') {
+                $arrTemp = [];
+                foreach ($estoquePulmao as $value) {
+                    if (isset($arrTemp[$value['COD_DEPOSITO_ENDERECO']])) {
+                        $saldo = Math::
+                    }
+                }
+            }
+
             foreach ($estoquePulmao as $estoque) {
                 $qtdEstoque = $estoque['SALDO'];
                 $validadeEstoque = $estoque['DTH_VALIDADE'];
                 $idPulmao = $estoque['COD_DEPOSITO_ENDERECO'];
-                $lote = (isset($estoque['DSC_LOTE'])) ? $estoque['DSC_LOTE'] : null;
 
                 $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('id' => $idPulmao));
 
