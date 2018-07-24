@@ -302,7 +302,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
         }
     }
 
-    public function saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios = null, $validade = null, $reservaEntrada = true, $lote = null) {
+    public function saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios = null, $validade = null, $reservaEntrada = true, $lotes = [])
+    {
         /** @var \Wms\Domain\Entity\Util\SiglaRepository $siglaRepo */
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
@@ -318,6 +319,13 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
         $statusEn = $siglaRepo->findOneBy(array('id' => \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_ONDA_GERADA));
 
+        if (empty($lotes)) {
+            $lotes[Produto\Lote::LND] = [
+                'QTD' => $qtdOnda,
+                'VALIDADE' => $validade
+            ];
+        }
+
         //CRIA A ORDEM DE SERVICO
         $osEn = $ordemServicoRepo->save(new OrdemServicoEntity, array(
             'identificacao' => array(
@@ -325,7 +333,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 'idAtividade' => AtividadeEntity::RESSUPRIMENTO,
                 'formaConferencia' => OrdemServicoEntity::COLETOR,
             ),
-                ), false, "Object");
+        ), false, "Object");
 
         //RELACIONO A ORDEM DE SERVICO A ONDA DE RESSUPRIMENTO NA TABELA ONDA_RESSUPRIMENTO_OS
         $ondaRessuprimentoOs = new \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs();
@@ -335,64 +343,71 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $ondaRessuprimentoOs->setOs($osEn);
         $this->getEntityManager()->persist($ondaRessuprimentoOs);
 
-        $produtosEntrada = array();
-        $produtosSaida = array();
+        foreach ($lotes as $dscLote => $val) {
 
-        if (!empty($volumes))
-            foreach ($volumes as $volume) {
-                $ondaRessuprimentoOsProduto = new OndaRessuprimentoOsProduto();
-                $ondaRessuprimentoOsProduto->setQtd(str_replace(",", ".", $qtdOnda));
-                $ondaRessuprimentoOsProduto->setOndaRessuprimentoOs($ondaRessuprimentoOs);
-                $ondaRessuprimentoOsProduto->setCodProdutoVolume($volume);
-                $ondaRessuprimentoOsProduto->setCodProdutoEmbalagem(null);
-                $ondaRessuprimentoOsProduto->setProduto($produtoEn);
-                $ondaRessuprimentoOsProduto->setLote($lote);
-                $this->getEntityManager()->persist($ondaRessuprimentoOsProduto);
+            $qtdOnda = $val['QTD'];
+            $validade = $val['VALIDADE'];
+            $lote = ($dscLote != Produto\Lote::LND) ? $dscLote : null;
 
-                $produtoArray = array();
-                $produtoArray['codProduto'] = $produtoEn->getId();
-                $produtoArray['grade'] = $produtoEn->getGrade();
-                $produtoArray['codProdutoVolume'] = $volume;
-                $produtoArray['codProdutoEmbalagem'] = null;
-                $produtoArray['qtd'] = $qtdOnda;
-                $produtoArray['validade'] = $validade;
-                $produtoArray['lote'] = $lote;
-                $produtosEntrada[] = $produtoArray;
+            $produtosEntrada = array();
+            $produtosSaida = array();
 
-                $produtoArray['qtd'] = $qtdOnda * -1;
-                $produtosSaida[] = $produtoArray;
+            if (!empty($volumes))
+                foreach ($volumes as $volume) {
+                    $ondaRessuprimentoOsProduto = new OndaRessuprimentoOsProduto();
+                    $ondaRessuprimentoOsProduto->setQtd(str_replace(",", ".", $qtdOnda));
+                    $ondaRessuprimentoOsProduto->setOndaRessuprimentoOs($ondaRessuprimentoOs);
+                    $ondaRessuprimentoOsProduto->setCodProdutoVolume($volume);
+                    $ondaRessuprimentoOsProduto->setCodProdutoEmbalagem(null);
+                    $ondaRessuprimentoOsProduto->setProduto($produtoEn);
+                    $ondaRessuprimentoOsProduto->setLote($lote);
+                    $this->getEntityManager()->persist($ondaRessuprimentoOsProduto);
+
+                    $produtoArray = array();
+                    $produtoArray['codProduto'] = $produtoEn->getId();
+                    $produtoArray['grade'] = $produtoEn->getGrade();
+                    $produtoArray['codProdutoVolume'] = $volume;
+                    $produtoArray['codProdutoEmbalagem'] = null;
+                    $produtoArray['qtd'] = $qtdOnda;
+                    $produtoArray['validade'] = $validade;
+                    $produtoArray['lote'] = $lote;
+                    $produtosEntrada[] = $produtoArray;
+
+                    $produtoArray['qtd'] = $qtdOnda * -1;
+                    $produtosSaida[] = $produtoArray;
+                }
+
+            if (!empty($embalagens))
+                foreach ($embalagens as $embalagem) {
+                    $ondaRessuprimentoOsProduto = new OndaRessuprimentoOsProduto();
+                    $ondaRessuprimentoOsProduto->setQtd(str_replace(",", ".", $qtdOnda));
+                    $ondaRessuprimentoOsProduto->setOndaRessuprimentoOs($ondaRessuprimentoOs);
+                    $ondaRessuprimentoOsProduto->setCodProdutoVolume(null);
+                    $ondaRessuprimentoOsProduto->setCodProdutoEmbalagem($embalagem);
+                    $ondaRessuprimentoOsProduto->setProduto($produtoEn);
+                    $ondaRessuprimentoOsProduto->setLote($lote);
+                    $this->getEntityManager()->persist($ondaRessuprimentoOsProduto);
+
+                    $produtoArray = array();
+                    $produtoArray['codProduto'] = $produtoEn->getId();
+                    $produtoArray['grade'] = $produtoEn->getGrade();
+                    $produtoArray['codProdutoVolume'] = null;
+                    $produtoArray['codProdutoEmbalagem'] = $embalagem;
+                    $produtoArray['qtd'] = $qtdOnda;
+                    $produtoArray['validade'] = $validade;
+                    $produtoArray['lote'] = $lote;
+                    $produtosEntrada[] = $produtoArray;
+                    $produtoArray['qtd'] = $qtdOnda * -1;
+                    $produtosSaida[] = $produtoArray;
+                }
+
+            //ADICIONA AS RESERVAS DE ESTOQUE
+            if ($reservaEntrada == false) {
+                $produtosEntrada[0]['qtd'] = 0;
             }
-
-        if (!empty($embalagens))
-            foreach ($embalagens as $embalagem) {
-                $ondaRessuprimentoOsProduto = new OndaRessuprimentoOsProduto();
-                $ondaRessuprimentoOsProduto->setQtd(str_replace(",", ".", $qtdOnda));
-                $ondaRessuprimentoOsProduto->setOndaRessuprimentoOs($ondaRessuprimentoOs);
-                $ondaRessuprimentoOsProduto->setCodProdutoVolume(null);
-                $ondaRessuprimentoOsProduto->setCodProdutoEmbalagem($embalagem);
-                $ondaRessuprimentoOsProduto->setProduto($produtoEn);
-                $ondaRessuprimentoOsProduto->setLote($lote);
-                $this->getEntityManager()->persist($ondaRessuprimentoOsProduto);
-
-                $produtoArray = array();
-                $produtoArray['codProduto'] = $produtoEn->getId();
-                $produtoArray['grade'] = $produtoEn->getGrade();
-                $produtoArray['codProdutoVolume'] = null;
-                $produtoArray['codProdutoEmbalagem'] = $embalagem;
-                $produtoArray['qtd'] = $qtdOnda;
-                $produtoArray['validade'] = $validade;
-                $produtoArray['lote'] = $lote;
-                $produtosEntrada[] = $produtoArray;
-                $produtoArray['qtd'] = $qtdOnda * -1;
-                $produtosSaida[] = $produtoArray;
-            }
-
-        //ADICIONA AS RESERVAS DE ESTOQUE
-        if ($reservaEntrada == false) {
-            $produtosEntrada[0]['qtd'] = 0;
+            $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null, $repositorios);
+            $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(), $produtosSaida, "S", "O", $ondaRessuprimentoOs, $osEn, null, null, $repositorios);
         }
-        $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null,  $repositorios);
-        $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(), $produtosSaida, "S", "O", $ondaRessuprimentoOs, $osEn, null, null,  $repositorios);
     }
 
     private function calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios) {
@@ -444,15 +459,21 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $arrTemp = [];
                 foreach ($estoquePulmao as $value) {
                     if (isset($arrTemp[$value['COD_DEPOSITO_ENDERECO']])) {
-                        $saldo = Math::
+                        $arrTemp[$value['COD_DEPOSITO_ENDERECO']]['SALDO'] = Math::adicionar($arrTemp[$value['COD_DEPOSITO_ENDERECO']]['SALDO'], $value['SALDO']);
+                        $arrTemp[$value['COD_DEPOSITO_ENDERECO']]['LOTES'][$value['DSC_LOTE']] = [
+                            'QTD' => $value['SALDO'],
+                            'VALIDADE' => $value['DTH_VALIDADE']
+                        ];
                     }
                 }
+                $estoquePulmao = $arrTemp;
             }
 
             foreach ($estoquePulmao as $estoque) {
                 $qtdEstoque = $estoque['SALDO'];
                 $validadeEstoque = $estoque['DTH_VALIDADE'];
                 $idPulmao = $estoque['COD_DEPOSITO_ENDERECO'];
+                $lotes = (isset($estoque['LOTES']) && !empty($estoque['LOTES'])) ? $estoque['LOTES'] : null;
 
                 $enderecoPulmaoEn = $enderecoRepo->findOneBy(array('id' => $idPulmao));
 
@@ -471,9 +492,9 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
                 //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
-                    $this->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque, true, $lote);
+                    $this->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque, true, $lotes);
                     if ($controlaLote == 'S') {
-                        $reservaEstoqueRepo->updateReservaExpedicao($codProduto, $grade, $idPicking, $arrReservas, $qtdOnda, $lote);
+                        $reservaEstoqueRepo->updateReservaExpedicao($codProduto, $grade, $idPicking, $qtdOnda, $lotes);
                     }
                     $qtdOsGerada ++;
                 }

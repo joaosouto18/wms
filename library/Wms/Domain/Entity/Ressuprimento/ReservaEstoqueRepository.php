@@ -567,43 +567,52 @@ class ReservaEstoqueRepository extends EntityRepository
 
     }
 
-    public function updateReservaExpedicao ($codProduto, $grade, $idPicking, $arrReservas, $qtdRessuprida, $lotePrometido)
+    public function updateReservaExpedicao ($codProduto, $grade, $idPicking, $qtdRessuprida, $lotes)
     {
 
-        if (empty($arrReservas)) {
-            $dql = $this->_em->createQueryBuilder()
-                ->select("rep")
-                ->from("wms:Ressuprimento\ReservaEstoque", "re")
-                ->innerJoin("wms:Ressuprimento\ReservaEstoqueProduto", "rep", "WITH", "rep.reservaEstoque = re")
-                ->innerJoin("wms:Ressuprimento\ReservaEstoqueExpedicao", "ree", "WITH", "ree.reservaEstoque = re")
-                ->where("re.atendida = 'N' and rep.lote IS NULL and re.endereco = :idPicking and rep.codProduto = :codProduto and rep.grade = :grade")
-                ->setParameter(":codProduto", $codProduto)
-                ->setParameter(":grade", $grade)
-                ->setParameter(":idPicking", $idPicking);
+        $dql = $this->_em->createQueryBuilder()
+            ->select("rep")
+            ->from("wms:Ressuprimento\ReservaEstoque", "re")
+            ->innerJoin("wms:Ressuprimento\ReservaEstoqueProduto", "rep", "WITH", "rep.reservaEstoque = re")
+            ->innerJoin("wms:Ressuprimento\ReservaEstoqueExpedicao", "ree", "WITH", "ree.reservaEstoque = re")
+            ->where("re.atendida = 'N' and rep.lote IS NULL and re.endereco = :idPicking and rep.codProduto = :codProduto and rep.grade = :grade")
+            ->setParameter(":codProduto", $codProduto)
+            ->setParameter(":grade", $grade)
+            ->setParameter(":idPicking", $idPicking);
 
-            /** @var ReservaEstoqueProduto[] $reservas */
-            $reservas = $dql->getQuery()->getResult();
+        /** @var ReservaEstoqueProduto[] $reservas */
+        $reservas = $dql->getQuery()->getResult();
 
-            foreach ($reservas as $entity) {
-                $arrReservas[$entity->getId()] = [
-                    'qtdTotal' => Math::multiplicar($entity->getQtd(), -1),
-                    'repEnMatriz' => $entity,
-                    'lotes' => [],
-                    'qtdPrometida' => 0,
-                    'atendida' => false
-                ];
-            }
+        $arrReservas = [];
+        foreach ($reservas as $entity) {
+            $arrReservas[$entity->getId()] = [
+                'qtdTotal' => Math::multiplicar($entity->getQtd(), -1),
+                'repEnMatriz' => $entity,
+                'lotes' => [],
+                'qtdPrometida' => 0,
+                'atendida' => false
+            ];
         }
 
-        foreach ($arrReservas as $idReserva => $reserva) {
-            if (!$reserva['atendida']) {
-                $qtdPendente = Math::subtrair($reserva['qtdTotal'], $reserva['qtdPrometida']);
-                if (Math::compare($qtdPendente, $qtdRessuprida, ">")) {
+        foreach ($lotes as $lotePrometido => $val) {
 
-                } else {
-                    $arrReservas[$idReserva]['atendida'] = true;
-                    $arrReservas[$idReserva]['qtdPrometida'] = $reserva['qtdTotal'];
-                    $arrReservas[$idReserva]['lotes'][$lotePrometido] = $qtdPendente;
+            $qtdLote = $val['QTD'];
+            $dataValidade = $val['VALIDADE'];
+
+            foreach ($arrReservas as $idReserva => $reserva) {
+                if (!$reserva['atendida']) {
+                    $qtdPendente = Math::subtrair($reserva['qtdTotal'], $reserva['qtdPrometida']);
+                    if (Math::compare($qtdPendente, $qtdLote, ">")) {
+
+                    } else {
+                        $arrReservas[$idReserva]['atendida'] = true;
+                        $arrReservas[$idReserva]['qtdPrometida'] = $reserva['qtdTotal'];
+                        $arrReservas[$idReserva]['lotes'][$lotePrometido] = [
+                            'qtdLote' => $qtdPendente,
+                            'validade' => $dataValidade
+                        ];
+
+                    }
                 }
             }
         }
