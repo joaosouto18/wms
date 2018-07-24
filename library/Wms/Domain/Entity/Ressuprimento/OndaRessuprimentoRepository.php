@@ -458,14 +458,16 @@ class OndaRessuprimentoRepository extends EntityRepository {
             if ($controlaLote == 'S') {
                 $arrTemp = [];
                 foreach ($estoquePulmao as $value) {
-                    if (isset($arrTemp[$value['COD_DEPOSITO_ENDERECO']])) {
-                        $arrTemp[$value['COD_DEPOSITO_ENDERECO']]['SALDO'] = Math::adicionar($arrTemp[$value['COD_DEPOSITO_ENDERECO']]['SALDO'], $value['SALDO']);
-                        $arrTemp[$value['COD_DEPOSITO_ENDERECO']]['LOTES'][$value['DSC_LOTE']] = [
-                            'QTD' => $value['SALDO'],
-                            'VALIDADE' => $value['DTH_VALIDADE']
-                        ];
-                    }
+                    $saldo = (isset($arrTemp[$value['COD_DEPOSITO_ENDERECO']]))? Math::adicionar($arrTemp[$value['COD_DEPOSITO_ENDERECO']]['SALDO'], $value['SALDO']) : $value['SALDO'];
+                    $arrTemp[$value['COD_DEPOSITO_ENDERECO']]['SALDO'] = $saldo;
+                    $arrTemp[$value['COD_DEPOSITO_ENDERECO']]['DTH_VALIDADE'] = $value['DTH_VALIDADE'];
+                    $arrTemp[$value['COD_DEPOSITO_ENDERECO']]['COD_DEPOSITO_ENDERECO'] = $value['COD_DEPOSITO_ENDERECO'];
+                    $arrTemp[$value['COD_DEPOSITO_ENDERECO']]['LOTES'][$value['DSC_LOTE']] = [
+                        'QTD' => $value['SALDO'],
+                        'VALIDADE' => $value['DTH_VALIDADE']
+                    ];
                 }
+
                 $estoquePulmao = $arrTemp;
             }
 
@@ -494,7 +496,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 if ($qtdOnda > 0) {
                     $this->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque, true, $lotes);
                     if ($controlaLote == 'S') {
-                        $reservaEstoqueRepo->updateReservaExpedicao($codProduto, $grade, $idPicking, $qtdOnda, $lotes);
+                        $reservaEstoqueRepo->updateReservaExpedicao($codProduto, $grade, $idPicking, $lotes);
                     }
                     $qtdOsGerada ++;
                 }

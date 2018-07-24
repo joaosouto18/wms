@@ -688,14 +688,14 @@ class ExpedicaoRepository extends EntityRepository {
                 $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
 
                 while ($qtdRestante > 0) {
-                    if (empty($estoquePulmao)) {
+                    if (empty($estoquePulmao) || ($controlaLote == 'S' && $lote == Lote::LND)) {
                         $forcarSairDoPicking = true;
                         break;
                     } else {
                         foreach ($estoquePulmao as $estoque) {
                             $qtdEstoque = $estoque['SALDO'];
                             $idEndereco = $estoque['COD_DEPOSITO_ENDERECO'];
-                            $loteReservar = ($lote == Lote::LND) ? $estoque['DSC_LOTE'] : $lote;
+                            $loteReservar = $lote;
                             $zerouEstoque = false;
                             $saiuQtdNorma = false;
                             $nextEndereco = false;

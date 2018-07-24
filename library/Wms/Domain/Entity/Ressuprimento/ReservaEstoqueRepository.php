@@ -567,7 +567,7 @@ class ReservaEstoqueRepository extends EntityRepository
 
     }
 
-    public function updateReservaExpedicao ($codProduto, $grade, $idPicking, $qtdRessuprida, $lotes)
+    public function updateReservaExpedicao ($codProduto, $grade, $idPicking, $lotes)
     {
 
         $dql = $this->_em->createQueryBuilder()
@@ -601,8 +601,19 @@ class ReservaEstoqueRepository extends EntityRepository
 
             foreach ($arrReservas as $idReserva => $reserva) {
                 if (!$reserva['atendida']) {
+
                     $qtdPendente = Math::subtrair($reserva['qtdTotal'], $reserva['qtdPrometida']);
+
                     if (Math::compare($qtdPendente, $qtdLote, ">")) {
+
+                        $qtdPrometida = $arrReservas[$idReserva]['qtdPrometida'];
+                        $arrReservas[$idReserva]['qtdPrometida'] = Math::adicionar($qtdPrometida, $qtdLote);
+                        $arrReservas[$idReserva]['lotes'][$lotePrometido] = [
+                            'qtdLote' => $qtdLote,
+                            'validade' => $dataValidade
+                        ];
+
+                        $qtdLote = 0;
 
                     } else {
                         $arrReservas[$idReserva]['atendida'] = true;
@@ -612,20 +623,26 @@ class ReservaEstoqueRepository extends EntityRepository
                             'validade' => $dataValidade
                         ];
 
+                        $qtdLote = Math::subtrair($qtdLote, $qtdPendente);
                     }
                 }
+
+                if ($qtdLote == 0) break;
             }
         }
 
         foreach ($arrReservas as $reserva) {
             /** @var ReservaEstoqueProduto $repEn */
             $repEn = $reserva['repEnMatriz'];
+            $primeiroLote = key($reserva['lotes']);
             if (count($reserva['lotes']) > 1) {
                 foreach ($reserva['lotes'] as $lote => $qtd) {
 
                 }
             } else {
-                $repEn->setLote(key($reserva['lotes']));
+                $repEn->setLote($primeiroLote);
+                $dthValidade = date_create_from_format('Y-m-d H:i:s',$reserva['lotes'][$primeiroLote]['validade']);
+                $repEn->setValidade($dthValidade);
                 $this->_em->persist($repEn);
             }
         }
