@@ -390,7 +390,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             return $cargaRepository->cancelar($idCargaExterno,$siglaTipoCarga);
         } catch (\Exception $e) {
             $logger->warn($e->getMessage());
-            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
+            throw $e;
         }
 
     }

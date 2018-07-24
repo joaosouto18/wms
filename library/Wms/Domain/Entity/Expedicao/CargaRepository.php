@@ -55,8 +55,10 @@ class CargaRepository extends EntityRepository
         try {
             $cargaEntity = $this->findOneBy(array('codCargaExterno' => $idCargaExterno, 'tipoCarga' => $siglaTipoCarga->getId()));
 
-            if (empty($cargaEntity))
-                throw new \Exception("Carga de codigo $idCargaExterno de tipo $siglaTipoCarga não foi encontrada");
+            if (empty($cargaEntity)) {
+                $tipoCarga = $siglaTipoCarga->getReferencia();
+                throw new \Exception("Carga de codigo $idCargaExterno de tipo $tipoCarga não foi encontrada");
+            }
 
             $idCarga = $cargaEntity->getId();
             $pedidos = $this->getPedidos($idCarga);
