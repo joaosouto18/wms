@@ -4360,5 +4360,30 @@ class ExpedicaoRepository extends EntityRepository {
         return $result;
     }
 
+    public function getProdutosPorExpedicao ($idExpedicao) {
+        $sql = " SELECT PP.COD_PRODUTO, 
+                        PP.DSC_GRADE,
+                        PROD.DSC_PRODUTO,
+                        COUNT(P.COD_PEDIDO) as QTD_PEDIDOS,
+                        SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) as QTD_SEPARAR
+                   FROM CARGA C 
+                   LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                   LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO
+                  WHERE C.COD_EXPEDICAO = $idExpedicao
+                    AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0)
+                  GROUP BY PP.COD_PRODUTO, 
+                           PP.DSC_GRADE,
+                           PROD.DSC_PRODUTO";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        foreach ($result as $key => $r) {
+            $result[$key]['id'] = $r['COD_PRODUTO'];
+        }
+
+        return $result;
+    }
+
 
 }

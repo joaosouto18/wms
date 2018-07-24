@@ -84,6 +84,24 @@ class Expedicao_CorteController extends Action {
         $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
     }
 
+    public function corteTotalAjaxAction() {
+
+        $idExpedicao = $this->_getParam('id');
+
+        $params = $this->_getAllParams();
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+
+        $produtos = $expedicaoRepo->getProdutosPorExpedicao($idExpedicao);
+
+        $grid = new \Wms\Module\Expedicao\Grid\CorteTotal();
+        $this->view->grid = $grid->init($produtos);
+
+
+
+    }
+
     public function corteAntecipadoAjaxAction() {
 
         $this->view->id = $id = $this->_getParam('id');

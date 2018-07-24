@@ -176,6 +176,17 @@ class Expedicao extends Grid
                     }
             ))
             ->addAction(array(
+                'label' => 'Corte',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'corte',
+                'actionName' => 'corte-total-ajax',
+                'pkIndex' => 'id',
+                'cssClass' => 'dialogAjax',
+                'condition' => function ($row) {
+                    return $row['status'] != "FINALIZADO";
+                }
+            ))
+            ->addAction(array(
                 'label' => 'Imprimir',
                 'modelName' => 'expedicao',
                 'controllerName' => 'etiqueta',
