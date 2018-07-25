@@ -16,6 +16,7 @@ class ReservaEstoqueProduto
     protected $id;
 
     /**
+     * @var ReservaEstoque
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Ressuprimento\ReservaEstoque")
      * @JoinColumn(name="COD_RESERVA_ESTOQUE", referencedColumnName="COD_RESERVA_ESTOQUE")
      */
@@ -168,7 +169,7 @@ class ReservaEstoqueProduto
     }
 
     /**
-     * @param mixed $reservaEstoque
+     * @param ReservaEstoque $reservaEstoque
      */
     public function setReservaEstoque($reservaEstoque)
     {
@@ -176,7 +177,7 @@ class ReservaEstoqueProduto
     }
 
     /**
-     * @return mixed
+     * @return ReservaEstoque
      */
     public function getReservaEstoque()
     {

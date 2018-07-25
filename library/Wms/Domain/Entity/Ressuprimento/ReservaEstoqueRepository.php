@@ -104,7 +104,8 @@ class ReservaEstoqueRepository extends EntityRepository
             foreach ($reservaProdutos as $reservaProduto) {
                 foreach ($produtos as $produto) {
                     if (($produto['codProduto'] == $reservaProduto->getProduto()->getId()) &&
-                        ($produto['grade'] == $reservaProduto->getProduto()->getGrade()) ) {
+                        ($produto['grade'] == $reservaProduto->getProduto()->getGrade()) &&
+                        ($produto['lote'] == $reservaProduto->getLote())) {
                         if ($origemReserva == "U") {
                             if (($reservaEstoqueEn->getEndereco()->getId() == $idEndereco) &&
                                 ($reservaProduto->getQtd() == $produto['qtd']) &&
@@ -636,8 +637,38 @@ class ReservaEstoqueRepository extends EntityRepository
             $repEn = $reserva['repEnMatriz'];
             $primeiroLote = key($reserva['lotes']);
             if (count($reserva['lotes']) > 1) {
-                foreach ($reserva['lotes'] as $lote => $qtd) {
 
+                /** @var ReservaEstoqueExpedicao $reeEn */
+                $reeEn = $this->_em->getRepository("wms:Ressuprimento\ReservaEstoqueExpedicao")->findOneBy(['reservaEstoque' => $repEn->getReservaEstoque()]);
+                $criterioReserva = array(
+                    'expedicao' => $reeEn->getExpedicao()->getId(),
+                    'pedido' => $reeEn->getPedido()->getId(),
+                    'tipoSaida' => $reeEn->getTipoSaida(),
+                    'quebraPulmaoDoca' => $reeEn->getQuebraPulmaoDoca(),
+                    'codCriterioPD' => $reeEn->getCodCriterioPD()
+                );
+
+                foreach ($reserva['lotes'] as $lote => $val) {
+                    if ($lote == $primeiroLote) {
+                        $repEn->setQtd($val['qtdLote'] * -1);
+                        $repEn->setLote($primeiroLote);
+                        $dthValidade = date_create_from_format('Y-m-d H:i:s',$reserva['lotes'][$primeiroLote]['validade']);
+                        $repEn->setValidade($dthValidade);
+                        $this->_em->persist($repEn);
+                    } else {
+
+                        $idElemento = (!empty($repEn->getCodProdutoEmbalagem())) ? $repEn->getCodProdutoEmbalagem() : $repEn->getCodProdutoVolume();
+                        $arr[$idElemento] = [
+                           'codProdutoEmbalagem' => $repEn->getCodProdutoEmbalagem(),
+                           'codProdutoVolume' => $repEn->getCodProdutoVolume(),
+                           'codProduto' => $codProduto,
+                           'grade' => $grade,
+                           'qtd' => $val['qtdLote'] * -1,
+                           'lote' => $lote,
+                        ];
+
+                        self::adicionaReservaEstoque($idPicking, $arr, "S", "E", $criterioReserva);
+                    }
                 }
             } else {
                 $repEn->setLote($primeiroLote);
