@@ -363,7 +363,7 @@ class EtiquetaEndereco extends Pdf
         if (strlen(reset($produto)['codProduto']) <= 8)
             $tamanhoCodigo = 35;
         else
-            $tamanhoCodigo = 28;
+            $tamanhoCodigo = 19;
 
         $this->SetFont('Arial', 'B', $tamanhoCodigo);
 //        $this->Cell(30,13,"",0,0, 'C');
