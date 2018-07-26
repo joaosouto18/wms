@@ -154,7 +154,7 @@ class UsuarioRepository extends AtorRepository {
     {
         $em = $this->getEntityManager();
 
-        $usuario->setIsAtivo(false);
+        $usuario->setIsAtivo("N");
 
         $em->persist($usuario);
     }
