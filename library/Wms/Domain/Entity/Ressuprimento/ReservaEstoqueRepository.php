@@ -97,7 +97,7 @@ class ReservaEstoqueRepository extends EntityRepository
             $reservaEstoqueEn = $reserva->getReservaEstoque();
             $reservaProdutos = $reservaEstoqueEn->getProdutos();
 
-            if ($reservaEstoqueEn->getAtendida() == 'C') {
+            if ($reservaEstoqueEn->getAtendida() == 'C' || empty($reservaProdutos)) {
                 continue;
             }
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto $reservaProduto */
@@ -123,6 +123,8 @@ class ReservaEstoqueRepository extends EntityRepository
                 }
             }
         }
+
+        return null;
     }
 
     /** @param \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
