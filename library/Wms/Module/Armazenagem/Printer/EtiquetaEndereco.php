@@ -360,7 +360,7 @@ class EtiquetaEndereco extends Pdf
         $wNivel = 18;
         $wApto = 23;
         $wTotal = $wRua + $wPredio + $wNivel + $wApto;
-        $this->SetFont('Arial', 'B', 20);
+        $this->SetFont('Arial', 'B', 35);
         $this->Cell(30,13,"",0,0);
         $this->Cell(20,13,reset($produto)['codProduto'],0,1);
         $this->Cell(17,13,"",0,0);
@@ -380,9 +380,9 @@ class EtiquetaEndereco extends Pdf
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 14, $this->GetY()+3 , 90);
         $this->Cell(10,0," ",0,1);
         if (substr($arrEndereco['nivel'], -1) == 0 || substr($arrEndereco['nivel'], -1) == 1) {
-            $this->Image(APPLICATION_PATH . '/../data/seta1.png', 3, $this->GetY(),13,20);
+            $this->Image(APPLICATION_PATH . '/../data/seta1.png', 0, $this->GetY(),13,20);
         } else {
-            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 3, $this->GetY(), 13,20);
+            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 0, $this->GetY(), 13,20);
         }
 //        $this->Cell(95,10," ",0,1);
 
