@@ -73,7 +73,8 @@ class EtiquetaEndereco extends Pdf
                     $this->layoutModelo5($codBarras);
                     break;
                 case 6:
-                    $this->layoutModelo6($codBarras);
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
+                    $this->layoutModelo6($produtos,$codBarras);
                     break;
                 case 7:
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
@@ -349,7 +350,7 @@ class EtiquetaEndereco extends Pdf
         $this->Line(0,$this->GetY() + 5,297,$this->GetY() + 5);
     }
 
-    public function layoutModelo6 ($codBarras){
+    public function layoutModelo6 ($produto, $codBarras){
         $this->Cell(5,3,"",0,1);
         $arrEndereco = Endereco::separar($codBarras);
         $codBarras = implode('.',$arrEndereco);
@@ -359,26 +360,29 @@ class EtiquetaEndereco extends Pdf
         $wNivel = 18;
         $wApto = 23;
         $wTotal = $wRua + $wPredio + $wNivel + $wApto;
+        $this->SetFont('Arial', 'B', 20);
+        $this->Cell(30,13,"",0,0);
+        $this->Cell(20,13,reset($produto)['codProduto'],0,1);
+        $this->Cell(17,13,"",0,0);
         $this->SetFont('Arial', 'B', 12);
-        $this->Cell(7,13,"",0,0);
         $this->Cell($wRua,13,utf8_decode("RUA"),0,0);
         $this->Cell($wPredio,13,utf8_decode("PREDIO"),0,0);
         $this->Cell($wNivel,13,utf8_decode("NIVEL"),0,0);
         $this->Cell($wApto,13,utf8_decode("APTO"),0,1);
         $this->SetFont('Arial', 'B', 18);
         $this->Cell(0,0," ",0,1);
-        $this->SetX(7);
+        $this->SetX(17);
         $count = strlen(str_replace('.','',$codBarras));
         $fX = ($wTotal / $count) * 4.12;
         $this->SetFont('Arial', 'B', $fX);
         $this->Cell($wTotal,8,$codBarras,0,1);
 
-        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 4, $this->GetY()+5 , 100);
-        $this->Cell(95,5," ",0,1);
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 14, $this->GetY()+3 , 90);
+        $this->Cell(10,0," ",0,1);
         if (substr($arrEndereco['nivel'], -1) == 0 || substr($arrEndereco['nivel'], -1) == 1) {
-            $this->Image(APPLICATION_PATH . '/../data/seta1.png', 88, $this->GetY()-22 , 13,20);
+            $this->Image(APPLICATION_PATH . '/../data/seta1.png', 3, $this->GetY(),13,20);
         } else {
-            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 88, $this->GetY()-23 , 13,20);
+            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 3, $this->GetY(), 13,20);
         }
         $this->Cell(95,10," ",0,1);
 
