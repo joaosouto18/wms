@@ -612,8 +612,7 @@ class ReservaEstoqueRepository extends EntityRepository
                         $qtdPrometida = $arrReservas[$idReserva]['qtdPrometida'];
                         $arrReservas[$idReserva]['qtdPrometida'] = Math::adicionar($qtdPrometida, $qtdLote);
                         $arrReservas[$idReserva]['lotes'][$lotePrometido] = [
-                            'qtdLote' => $qtdLote,
-                            'validade' => $dataValidade
+                            'qtdLote' => $qtdLote
                         ];
 
                         $qtdLote = 0;
@@ -622,8 +621,7 @@ class ReservaEstoqueRepository extends EntityRepository
                         $arrReservas[$idReserva]['atendida'] = true;
                         $arrReservas[$idReserva]['qtdPrometida'] = $reserva['qtdTotal'];
                         $arrReservas[$idReserva]['lotes'][$lotePrometido] = [
-                            'qtdLote' => $qtdPendente,
-                            'validade' => $dataValidade
+                            'qtdLote' => $qtdPendente
                         ];
 
                         $qtdLote = Math::subtrair($qtdLote, $qtdPendente);
@@ -654,8 +652,6 @@ class ReservaEstoqueRepository extends EntityRepository
                     if ($lote == $primeiroLote) {
                         $repEn->setQtd($val['qtdLote'] * -1);
                         $repEn->setLote($primeiroLote);
-                        $dthValidade = date_create_from_format('Y-m-d H:i:s',$reserva['lotes'][$primeiroLote]['validade']);
-                        $repEn->setValidade($dthValidade);
                         $this->_em->persist($repEn);
                     } else {
 
@@ -674,8 +670,6 @@ class ReservaEstoqueRepository extends EntityRepository
                 }
             } else {
                 $repEn->setLote($primeiroLote);
-                $dthValidade = date_create_from_format('Y-m-d H:i:s',$reserva['lotes'][$primeiroLote]['validade']);
-                $repEn->setValidade($dthValidade);
                 $this->_em->persist($repEn);
             }
         }

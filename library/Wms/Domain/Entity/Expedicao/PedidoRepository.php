@@ -209,6 +209,17 @@ class PedidoRepository extends EntityRepository
     public function cancelar($idPedido, $webService = true)
     {
         try {
+
+            /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo  */
+            $mapaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
+
+            if ($mapaSeparacaoRepo->validaMapasCortados($idPedido) == false) {
+                /** @var Pedido $pedidoEn */
+                $pedidoEn = $this->find($idPedido);
+                $codExterno = $pedidoEn->getCodExterno();
+                throw new \Exception("Pedido $codExterno precisa ser cortado no WMS");
+            }
+
             /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaSeparacaoRepo */
             $EtiquetaSeparacaoRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
             $etiquetas = $EtiquetaSeparacaoRepo->getEtiquetasByPedido($idPedido);
