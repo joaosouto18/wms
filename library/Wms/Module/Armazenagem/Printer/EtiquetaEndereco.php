@@ -360,9 +360,14 @@ class EtiquetaEndereco extends Pdf
         $wNivel = 18;
         $wApto = 23;
         $wTotal = $wRua + $wPredio + $wNivel + $wApto;
-        $this->SetFont('Arial', 'B', 35);
-        $this->Cell(30,13,"",0,0);
-        $this->Cell(20,13,reset($produto)['codProduto'],0,1);
+        if (strlen(reset($produto)['codProduto']) <= 8)
+            $tamanhoCodigo = 35;
+        else
+            $tamanhoCodigo = 23;
+
+        $this->SetFont('Arial', 'B', $tamanhoCodigo);
+//        $this->Cell(30,13,"",0,0, 'C');
+        $this->Cell(0,13,reset($produto)['codProduto'],0,1, 'C');
         $this->Cell(17,13,"",0,0);
         $this->SetFont('Arial', 'B', 12);
         $this->Cell($wRua,13,utf8_decode("RUA"),0,0);
