@@ -18,9 +18,37 @@
 </script>
 <div class="row" >
     <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'validar-endereco')) ?>" method="post">
-        <div>
             <div class="table-responsive">
                 <table class="gTable table-condensed" style="width: 100%">
+                    <?php if ($this->temLote) { ?>
+                        <tbody>
+                        <tr>
+                            <td colspan="2"><b><?php echo $this->dscProduto ?></b></td>
+                        </tr>
+                        <tr>
+                            <td><B>Cod:</B> <div class="row"><?php echo $this->codProduto ?></div></td>
+                            <td><B>Grade:</B> <div class="row"><?php echo $this->grade ?></div></td>
+                        </tr>
+                        <tr>
+                            <td><B>Lote:</B></td>
+                            <td><B>Qtd:</B></td>
+                        </tr>
+                        <?php foreach ($this->qtd as $lote => $grupo) { ?>
+                            <tr style="border-bottom: thin solid">
+                                <td style="font-size: 14px"><?php echo $lote; ?></td>
+                                <td style="font-size: 14px">
+                                    <?php foreach ($grupo as $item) { ?>
+                                        <div class="row"><?php echo $item; ?></div>
+                                    <?php } ?>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                        <tr>
+                            <td style="font-size: 145%"><B>Origem:</B> <?php echo $this->endPulmao ?></td>
+                            <td style="font-size: 145%"><B>Destino:</B> <?php echo $this->endPicking ?></td>
+                        </tr>
+                        </tbody>
+                    <?php } else { ?>
                     <tbody>
                         <tr>
                             <td colspan="3"><b><?php echo $this->dscProduto ?></b></td>
@@ -29,15 +57,11 @@
                             <td><B>Cod:</B> <div class="row"><?php echo $this->codProduto ?></div></td>
                             <td><B>Grade:</B> <div class="row"><?php echo $this->grade ?></div></td>
                             <td style="font-size: 12px"><B>Qtd:</B>
-                                <?php if (is_array($this->qtd)) {
-                                    foreach ($this->qtd as $qtd) {
-                                        ?>
+                                <?php foreach ($this->qtd as $qtds) {
+                                    foreach ($qtds as $qtd) { ?>
                                         <div class="row"><?php echo $qtd; ?></div>
                                     <?php }
-                                } else {
-                                    ?>
-                                    <div class="row"><?php echo $this->qtd; ?></div>
-                            <?php } ?>
+                                } ?>
                                 </td>
                             </tr>
                             <tr>
@@ -45,6 +69,7 @@
                                 <td colspan="2" style="font-size: 145%"><B>Destino:</B> <?php echo $this->endPicking ?></td>
                             </tr>
                         </tbody>
+                    <?php } ?>
                     </table>
 
                 </div>
@@ -105,5 +130,4 @@
 
 
     </form>
-</div>
 </div>

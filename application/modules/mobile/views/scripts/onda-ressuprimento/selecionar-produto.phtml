@@ -1,30 +1,56 @@
 ﻿<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'finalizar')) ?>" method="post">
-    <div>
-        <table class="gTable" STYLE="width: 100%">
-            <tbody>
-            <tr>
-                <td colspan="3"><b><?php echo $this->dscProduto?></b></td>
-            </tr>
-            <tr>
-                <td><B>Cod:</B> <?php echo $this->codProduto?></td>
-                <td><B>Grade:</B> <?php echo $this->grade?></td>
-                <td style="font-size: 175%"><B>Qtd:</B>
-                    <ul>
-                        <?php foreach ($this->qtd as $qtd) {?>
-                            <li style="font-size: 150%">
-                                <?php echo $qtd;?>
-                            </li>
-
-                        <?php }?>
-                    </ul>
-                </td>
-
-            </tr>
-            <tr>
-                <td colspan="1" style="font-size: 145%"><B>Pulmão:</B> <?php echo $this->endPulmao?></td>
-                <td colspan="2" style="font-size: 145%"><B>Picking:</B> <?php echo $this->endPicking?></td>
-            </tr>
-            </tbody>
+    <div class="table-responsive">
+        <table class="gTable table-condensed" style="width: 100%">
+            <?php if ($this->temLote) { ?>
+                <tbody>
+                <tr>
+                    <td colspan="2"><b><?php echo $this->dscProduto ?></b></td>
+                </tr>
+                <tr>
+                    <td><B>Cod:</B> <div class="row"><?php echo $this->codProduto ?></div></td>
+                    <td><B>Grade:</B> <div class="row"><?php echo $this->grade ?></div></td>
+                </tr>
+                <tr>
+                    <td><B>Lote:</B></td>
+                    <td><B>Qtd:</B></td>
+                </tr>
+                <?php foreach ($this->qtd as $lote => $grupo) { ?>
+                    <tr style="border-bottom: thin solid">
+                        <td style="font-size: 14px"><?php echo $lote; ?></td>
+                        <td style="font-size: 14px">
+                            <?php foreach ($grupo as $item) { ?>
+                                <div class="row"><?php echo $item; ?></div>
+                            <?php } ?>
+                        </td>
+                    </tr>
+                <?php } ?>
+                <tr>
+                    <td style="font-size: 145%"><B>Origem:</B> <?php echo $this->endPulmao ?></td>
+                    <td style="font-size: 145%"><B>Destino:</B> <?php echo $this->endPicking ?></td>
+                </tr>
+                </tbody>
+            <?php } else { ?>
+                <tbody>
+                <tr>
+                    <td colspan="3"><b><?php echo $this->dscProduto ?></b></td>
+                </tr>
+                <tr>
+                    <td><B>Cod:</B> <div class="row"><?php echo $this->codProduto ?></div></td>
+                    <td><B>Grade:</B> <div class="row"><?php echo $this->grade ?></div></td>
+                    <td style="font-size: 12px"><B>Qtd:</B>
+                        <?php foreach ($this->qtd as $qtds) {
+                            foreach ($qtds as $qtd) { ?>
+                                <div class="row"><?php echo $qtd; ?></div>
+                            <?php }
+                        } ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="1" style="font-size: 145%"><B>Origem:</B> <?php echo $this->endPulmao ?></td>
+                    <td colspan="2" style="font-size: 145%"><B>Destino:</B> <?php echo $this->endPicking ?></td>
+                </tr>
+                </tbody>
+            <?php } ?>
         </table>
     </div>
     <br>
@@ -32,13 +58,14 @@
 
 <table>
     <tr>
-        <td colspan="2">
-            <b><label style="font-size:17px">Produto</label></b>
-        </td>
-    </tr>
-    <tr>
         <td>
-            <input class="focus" type="text" name="etiquetaProduto" id="etiquetaProduto" value="" />
+            <label style="font-size:17px" for="etiquetaProduto"><b>Produto</b></label>
+            <input class="focus" type="text" name="etiquetaProduto" id="etiquetaProduto" value="" onkeydown="nextInput(event, this)" />
+            <?php if ($this->temLote) { ?>
+            <br>
+            <label style="font-size:17px" for="codLote"><b>Lote</b></label>
+            <input type="text" id="codLote" value="" onkeydown="nextInput(event, this)" />
+            <?php } ?>
         </td>
         <td>
             <a class="finalizar" href="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'selecionar-uma', 'idOnda' => $this->idOnda)); ?>">Alternar para U.M.A.</a>
@@ -46,6 +73,7 @@
     </tr>
 </table>
 
+<br>
 <div>
     <input type="submit" name="submit" id="submit" value="Buscar" />
 </div>
@@ -79,11 +107,52 @@
             <?php endforeach; ?>
             </tbody>
         </table>
-        <div class = "gPager">
+        <div class = "gPager"></div>
     <?php }?>
 
 
 </form>
+<div class = "gPager"></div>
 
+<script>
+    function nextInput(event, elem) {
+        if (event.which === 13 || event.keyCode === 13) {
+            var escaparSubmit = false;
+            if (elem.id === "etiquetaProduto") {
+                if (elem.value === "") {
+                    alert("O código de barras não foi informado");
+                    elem.focus();
+                    escaparSubmit = true;
+                } else {
+                    var campoLote = $("#codLote");
+                    if (campoLote.length) {
+                        campoLote.focus();
+                        escaparSubmit = true;
+                    }
+                }
+            } else if (elem.id === "codLote") {
+                if (elem.value === "") {
+                    alert("O Lote não foi informado");
+                    elem.focus();
+                    escaparSubmit = true;
+                } else {
+                    var codBarra = $("#etiquetaProduto");
+                    if (codBarra.val() === "") {
+                        alert("O código de barras não foi informado");
+                        codBarra.focus();
+                        escaparSubmit = true;
+                    }
+                }
+            }
 
-<div class = "gPager">
+            if (escaparSubmit) {
+                if (event.preventDefault) {
+                    event.preventDefault();
+                } else {
+                    event.returnValue = false;
+                }
+            }
+        }
+        return true;
+    }
+</script>

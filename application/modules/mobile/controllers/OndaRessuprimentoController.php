@@ -104,34 +104,30 @@ class Mobile_OndaRessuprimentoController extends Action
     public function selecionarEnderecoAction(){
         $idOnda = $this->_getParam('idOnda');
 
+        /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $OndaRessuprimentoRepo */
         $OndaRessuprimentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         $valores = $OndaRessuprimentoRepo->getDadosOnda($idOnda);
 
         $ondaOsEn = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs")->findOneBy(array('id'=>$idOnda));
-        $produtos = $ondaOsEn->getProdutos();
 
-        $codProduto = $valores['Codigo'];
-        $grade = $valores['Grade'];
-        $dscProduto = $valores['Produto'];
-        $endPulmao = $valores['Pulmao'];
-        $endPicking = $valores['Picking'];
-        $idEnderecoPulmao = $valores['idPulmao'];
-        $qtd = $valores['Qtde'];
+        $temLote = false;
+        foreach ($valores as $item) {
+            if ($item['Lote'] != \Wms\Domain\Entity\Produto\Lote::LND) $temLote = true;
+            $arrayQtds[$item['Lote']] = $embalagemRepo->getQtdEmbalagensProduto($valores[0]['Codigo'], $valores[0]['Grade'], $item['Qtde']);
+        };
 
-        $arrayQtds = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $grade, $qtd);
-
-        //$this->view->embalagem = $dscEmbalagem;
-        $this->view->produtos = $produtos;
+        $this->view->produtos = $ondaOsEn->getProdutos();
         $this->view->idOnda = $idOnda;
-        $this->view->codProduto = $codProduto;
-        $this->view->grade = $grade;
-        $this->view->endPulmao = $endPulmao;
-        $this->view->dscProduto = $dscProduto;
+        $this->view->codProduto = $valores[0]['Codigo'];
+        $this->view->grade = $valores[0]['Grade'];
+        $this->view->dscProduto = $valores[0]['Produto'];
+        $this->view->endPulmao = $valores[0]['Pulmao'];
+        $this->view->idEnderecoPulmao = $valores[0]['idPulmao'];
+        $this->view->endPicking = $valores[0]['Picking'];
+        $this->view->temLote = $temLote;
         $this->view->qtd = $arrayQtds;
-        $this->view->id = $qtd;
-        $this->view->idEnderecoPulmao = $idEnderecoPulmao;
-        $this->view->endPicking = $endPicking;
     }
 
     public function validarEnderecoAction()
@@ -184,134 +180,68 @@ class Mobile_OndaRessuprimentoController extends Action
     public function selecionarUmaAction()
     {
         $idOnda = $this->_getParam('idOnda');
-        $ondaOsRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs");
 
-        /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs $ondaOsEn */
-        $ondaOsEn  = $ondaOsRepo->findOneBy(array('id'=>$idOnda));
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo  = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
+        /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $OndaRessuprimentoRepo */
+        $OndaRessuprimentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        $valores = $OndaRessuprimentoRepo->getDadosOnda($idOnda);
 
-        $produtosOnda = $ondaOsEn->getProdutos();
-        $produtoOnda  = $produtosOnda[0];
+        $ondaOsEn = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs")->findOneBy(array('id'=>$idOnda));
 
-        $codProduto = $produtoOnda->getProduto()->getId();
-        $grade = $produtoOnda->getProduto()->getGrade();
-        $dscProduto = $produtoOnda->getProduto()->getDescricao();
-        $qtd = $produtoOnda->getQtd();
+        $temLote = false;
+        foreach ($valores as $item) {
+            if ($item['Lote'] != \Wms\Domain\Entity\Produto\Lote::LND) $temLote = true;
+            $arrayQtds[$item['Lote']] = $embalagemRepo->getQtdEmbalagensProduto($valores[0]['Codigo'], $valores[0]['Grade'], $item['Qtde']);
+        };
 
-        $arrayQtds = array();
-        if ($produtoOnda->getCodProdutoEmbalagem() != null) {
-            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
-            $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
-            $qtdRestante = $qtd;
-            foreach ($embalagensEn as $embalagem) {
-                $qtdEmbalagem = $embalagem->getQuantidade();
-                if ($qtdRestante >= $qtdEmbalagem) {
-                    $qtdSeparar = (int) ($qtdRestante/$qtdEmbalagem);
-                    $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
-                    $arrayQtds[] = $qtdSeparar . ' Emb:' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
-                }
-            }
-        } else {
-            $arrayQtds[] = $qtd;
-        }
-
-        $endPulmao = $ondaOsEn->getEndereco()->getDescricao();
-        $idEnderecoPulmao = $ondaOsEn->getEndereco()->getId();
-
-
-        $produtos = array();
-        foreach ($ondaOsEn->getProdutos() as $produto) {
-            $produtoArray = array();
-            $produtoArray['codProdutoEmbalagem'] = $produto->getCodProdutoEmbalagem();
-            $produtoArray['codProdutoVolume'] = $produto->getCodProdutoVolume();
-            $produtoArray['codProduto'] = $produto->getProduto()->getId() ;
-            $produtoArray['grade'] = $produto->getProduto()->getGrade();
-            $produtoArray['qtd'] = $produto->getQtd();
-            $produtos[] = $produtoArray;
-        }
-
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoque $reservaEstoquePicking */
-        $reservaEstoquePicking = $reservaEstoqueRepo->findReservaEstoque(null,$produtos,"E","O",$idOnda,$ondaOsEn->getOs()->getId());
-
-        $this->view->produtos =$ondaOsEn->getProdutos();
+        $this->view->produtos = $ondaOsEn->getProdutos();
         $this->view->idOnda = $idOnda;
-        $this->view->codProduto = $codProduto;
-        $this->view->grade = $grade;
-        $this->view->endPulmao = $endPulmao;
-        $this->view->endPicking = $reservaEstoquePicking->getEndereco()->getDescricao();
-        $this->view->dscProduto = $dscProduto;
+        $this->view->codProduto = $valores[0]['Codigo'];
+        $this->view->grade = $valores[0]['Grade'];
+        $this->view->dscProduto = $valores[0]['Produto'];
+        $this->view->endPulmao = $valores[0]['Pulmao'];
+        $this->view->idEnderecoPulmao = $valores[0]['idPulmao'];
+        $this->view->endPicking = $valores[0]['Picking'];
+        $this->view->temLote = $temLote;
         $this->view->qtd = $arrayQtds;
-        $this->view->id = $qtd;
-        $this->view->idEnderecoPulmao = $idEnderecoPulmao;
     }
 
     public function selecionarProdutoAction()
     {
         $idOnda = $this->_getParam('idOnda');
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
-        $reservaEstoqueRepo  = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
 
-        $ondaOsRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs");
-        /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs $ondaOsEn */
-        $ondaOsEn  = $ondaOsRepo->findOneBy(array('id'=>$idOnda));
+        /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $OndaRessuprimentoRepo */
+        $OndaRessuprimentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        $valores = $OndaRessuprimentoRepo->getDadosOnda($idOnda);
 
-        $produtosOnda = $ondaOsEn->getProdutos();
-        $produtoOnda  = $produtosOnda[0];
+        $ondaOsEn = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs")->findOneBy(array('id'=>$idOnda));
 
-        $codProduto = $produtoOnda->getProduto()->getId();
-        $grade = $produtoOnda->getProduto()->getGrade();
-        $dscProduto = $produtoOnda->getProduto()->getDescricao();
-        $qtd = $produtoOnda->getQtd();
-        if ($produtoOnda->getCodProdutoEmbalagem() != null) {
-            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
-            $embalagensEn = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'DESC'));
-            $qtdRestante = $qtd;
-            foreach ($embalagensEn as $embalagem) {
-                $qtdEmbalagem = $embalagem->getQuantidade();
-                if ($qtdRestante >= $qtdEmbalagem) {
-                    $qtdSeparar = (int) ($qtdRestante/$qtdEmbalagem);
-                    $qtdRestante = $qtdRestante - ($qtdSeparar * $qtdEmbalagem);
-                    $arrayQtds[] = $qtdSeparar . ' Emb:' . $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")";
-                }
-            }
-        } else {
-            $arrayQtds[] = $qtd;
-        }
+        $temLote = false;
+        foreach ($valores as $item) {
+            if ($item['Lote'] != \Wms\Domain\Entity\Produto\Lote::LND) $temLote = true;
+            $arrayQtds[$item['Lote']] = $embalagemRepo->getQtdEmbalagensProduto($valores[0]['Codigo'], $valores[0]['Grade'], $item['Qtde']);
+        };
 
-        $endPulmao = $ondaOsEn->getEndereco()->getDescricao();
-        $idEnderecoPulmao = $ondaOsEn->getEndereco()->getId();
-
-        $produtos = array();
-        foreach ($ondaOsEn->getProdutos() as $produto) {
-            $produtoArray = array();
-            $produtoArray['codProdutoEmbalagem'] = $produto->getCodProdutoEmbalagem();
-            $produtoArray['codProdutoVolume'] = $produto->getCodProdutoVolume();
-            $produtoArray['codProduto'] = $produto->getProduto()->getId() ;
-            $produtoArray['grade'] = $produto->getProduto()->getGrade();
-            $produtoArray['qtd'] = $produto->getQtd();
-            $produtos[] = $produtoArray;
-        }
-
-        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoque $reservaEstoquePicking */
-        $reservaEstoquePicking = $reservaEstoqueRepo->findReservaEstoque(null,$produtos,"E","O",$idOnda,$ondaOsEn->getOs()->getId());
-
-        $this->view->produtos =$ondaOsEn->getProdutos();
+        $this->view->produtos = $ondaOsEn->getProdutos();
         $this->view->idOnda = $idOnda;
-        $this->view->codProduto = $codProduto;
-        $this->view->grade = $grade;
-        $this->view->endPulmao = $endPulmao;
-        $this->view->endPicking = $reservaEstoquePicking->getEndereco()->getDescricao();
-        $this->view->dscProduto = $dscProduto;
+        $this->view->codProduto = $valores[0]['Codigo'];
+        $this->view->grade = $valores[0]['Grade'];
+        $this->view->dscProduto = $valores[0]['Produto'];
+        $this->view->endPulmao = $valores[0]['Pulmao'];
+        $this->view->idEnderecoPulmao = $valores[0]['idPulmao'];
+        $this->view->endPicking = $valores[0]['Picking'];
+        $this->view->temLote = $temLote;
         $this->view->qtd = $arrayQtds;
-        $this->view->id = $qtd;
-        $this->view->idEnderecoPulmao = $idEnderecoPulmao;
     }
 
     public function finalizarAction()
     {
         $codigoBarrasUMA = $this->_getParam('codigoBarrasUma');
         $etiquetaProduto = $this->_getParam('etiquetaProduto');
+        $lotesEsperados = $this->_getParam('lotesEsperados');
         $idOnda = $this->_getParam('idOnda');
         $urlRedirect = '/mobile/onda-ressuprimento/listar-ondas';
         $ondaOsEn = null;

@@ -48,16 +48,16 @@ class OndaRessuprimentoRepository extends EntityRepository {
     public function getDadosOnda($OS) {
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select("
-                    os2.id as Ordem_Servico,
+                    DISTINCT
+                    os.id as Ordem_Servico,
                     ores.dataCriacao as Data_Criacao,
                     p.id as Codigo,
                     p.grade as Grade,
                     p.descricao as Produto,
                     ps.qtd as Qtde,
+                    NVL(ps.lote, '" . Produto\Lote::LND . "') as Lote,
                     e.descricao as Pulmao,
                     e.id as idPulmao,
-                    pe.descricao as dscEmbalagem,
-                    pe.quantidade as fator,
                     pk.descricao as Picking
                 ")
                 ->from("wms:Ressuprimento\OndaRessuprimentoOs", "o")
@@ -66,16 +66,13 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 ->leftJoin("ps.produto", "p")
                 ->leftJoin("o.os", "os")
                 ->leftJoin("o.endereco", "e")
-                ->leftJoin("o.os", "os2")
                 ->leftJoin("wms:Ressuprimento\ReservaEstoqueOnda", 'reo', 'WITH', 'reo.ondaRessuprimentoOs = o.id')
                 ->leftJoin("reo.reservaEstoque", 'res')
                 ->leftJoin("res.endereco", 'pk')
-                ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "pe.id = ps.codProdutoEmbalagem")
                 ->where("o.id = $OS")
                 ->andWhere("res.tipoReserva = 'E'");
 
-        $result = $dql->getQuery()->getArrayResult();
-        return $result[0];
+        return $dql->getQuery()->getArrayResult();
     }
 
     public function getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, $showOsId = false, $idProduto = null, $idExpedicao = null, $operador = null, $exibrCodBarrasProduto = false) {

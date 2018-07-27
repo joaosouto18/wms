@@ -105,7 +105,7 @@ class ReservaEstoqueRepository extends EntityRepository
                 foreach ($produtos as $produto) {
                     if (($produto['codProduto'] == $reservaProduto->getProduto()->getId()) &&
                         ($produto['grade'] == $reservaProduto->getProduto()->getGrade()) &&
-                        ($produto['lote'] == $reservaProduto->getLote())) {
+                        ((isset($produto['lote']) && $produto['lote'] == $reservaProduto->getLote()) || empty($reservaProduto->getLote()))) {
                         if ($origemReserva == "U") {
                             if (($reservaEstoqueEn->getEndereco()->getId() == $idEndereco) &&
                                 ($reservaProduto->getQtd() == $produto['qtd']) &&

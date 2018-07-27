@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Ressuprimento;
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\OrdemServico;
 use Wms\Domain\Entity\Util\Sigla;
 
@@ -62,6 +63,7 @@ class OndaRessuprimentoOs
         $this->endereco = $endereco;
     }
 
+    /** @return Endereco */
     public function getEndereco()
     {
         return $this->endereco;
