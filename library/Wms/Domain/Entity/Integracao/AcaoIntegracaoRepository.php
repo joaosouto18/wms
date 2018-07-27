@@ -226,7 +226,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             //STRING DA QUERY DE INTEGRAÇÃO
             $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro, $data);
-            if ($dados == null) {
+	    if ($dados == null) {
                 $words = explode(" ",trim($query));
                 $update = true;
                 if (strtoupper($words[0]) == "SELECT") {
@@ -236,7 +236,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             } else {
                 $result = $dados;
             }
-
+	    
             if ($acaoEn->getidAcaoRelacionada() != null) {
                 if (count($result) >0) {
 

@@ -133,7 +133,7 @@ class Expedicao_OndaRessuprimentoController extends Action
 
             $produtosDescasados = $expedicaoRepo->getProdutosDescasadosExpedicao($expedicoes);
 
-            if (count($produtosDescasados) > 0) {
+            if (count($produtosDescasados) > 99) {
 
                 $expedicaoDescasada = array();
                 foreach ($produtosDescasados as $expedicao) {
