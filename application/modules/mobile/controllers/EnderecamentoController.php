@@ -1029,6 +1029,10 @@ class Mobile_EnderecamentoController extends Action
                     $params['embalagem'] = $embalagemEn = $estoque->getProdutoEmbalagem();
                     $params['volume'] = $volumeEn = $estoque->getProdutoVolume();
 
+
+                    /*
+                     * COMENTANDO REGRA DE TRANSFERENCIA PICKING -> PICKING
+                     *
                     if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                         if (isset($embalagemEn)) {
                             $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
@@ -1043,6 +1047,65 @@ class Mobile_EnderecamentoController extends Action
                             $this->getEntityManager()->flush();
                         }
                     }
+                    */
+
+                    if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
+                        $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking) {
+                            throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
+                        }
+                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                            if (isset($embalagemEn)) {
+                                $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                                foreach ($embalagens as $embalagemEn) {
+                                    $embalagemEn->setEndereco($enderecoNovoEn);
+                                    $this->getEntityManager()->persist($embalagemEn);
+                                }
+                                $this->getEntityManager()->flush();
+                            } else if (isset($volumeEn)) {
+                                $volumeEn->setEndereco($enderecoNovoEn);
+                                $this->getEntityManager()->persist($volumeEn);
+                                $this->getEntityManager()->flush();
+                            }
+                        }
+                    } else {
+                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E O ENDEREÇO DO PRODUTO ESTÁ VAZIO ... E TRAVA
+                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking) {
+                            if ((isset($embalagemEn) && is_null($embalagemEn->getEndereco())) || isset($volumeEn) && is_null($volumeEn->getEndereco())) {
+                                throw new \Exception("Esse Endereço de Picking não está cadastrado para esse produto!");
+                            }
+                        }
+
+                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
+                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                            if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
+                                $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                                foreach ($embalagens as $embalagemEn) {
+                                    $embalagemEn->setEndereco($enderecoNovoEn);
+                                    $this->getEntityManager()->persist($embalagemEn);
+                                }
+                                $this->getEntityManager()->flush();
+                            } else if (isset($volumeEn) && is_null($volumeEn->getEndereco())) {
+                                $volumeEn->setEndereco($enderecoNovoEn);
+                                $this->getEntityManager()->persist($volumeEn);
+                                $this->getEntityManager()->flush();
+                            }
+                        }
+
+                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
+                        if (($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking || $enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
+                            if (isset($embalagemEn)) {
+                                if ($enderecoNovoEn->getId() !== $embalagemEn->getEndereco()->getId()) {
+                                    throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
+                                }
+                            } else if (isset($volumeEn)) {
+                                if ($enderecoNovoEn->getId() !== $volumeEn->getEndereco()) {
+                                    throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
+                                }
+                            }
+                        }
+                    }
+
 
                     if ($produtoEn->getValidade() == 'S' ) {
                         $validade = $estoque->getValidade();
@@ -1098,6 +1161,9 @@ class Mobile_EnderecamentoController extends Action
                     if (empty($endereco))
                         throw new \Exception("Novo Endereço não encontrado!");
 
+                    /*
+                     * COMENTANDO REGRA DE TRANSFERENCIA PICKING -> PICKING
+                     *
                     if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                         if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
                             $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
@@ -1106,6 +1172,50 @@ class Mobile_EnderecamentoController extends Action
                                 $this->getEntityManager()->persist($embalagemEn);
                             }
                             $this->getEntityManager()->flush();
+                        }
+                    }
+                    */
+
+                    if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
+                        $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
+                            throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
+                        }
+                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                            $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                            foreach ($embalagens as $embalagemEn) {
+                                $embalagemEn->setEndereco($endereco);
+                                $this->getEntityManager()->persist($embalagemEn);
+                            }
+                            $this->getEntityManager()->flush();
+                        }
+                    } else {
+                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E O ENDEREÇO DO PRODUTO ESTÁ VAZIO ... E TRAVA
+                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
+                            if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
+                                throw new \Exception("Esse Endereço de Picking não está cadastrado para esse produto!");
+                            }
+                        }
+
+                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
+                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                            if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
+                                $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
+                                foreach ($embalagens as $embalagemEn) {
+                                    $embalagemEn->setEndereco($endereco);
+                                    $this->getEntityManager()->persist($embalagemEn);
+                                }
+                                $this->getEntityManager()->flush();
+                            }
+                        }
+
+                        //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
+                        if (($endereco->getIdCaracteristica() == $idCaracteristicaPicking || $endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
+                            if (isset($embalagemEn)) {
+                                if ($endereco->getId() !== $embalagemEn->getEndereco()->getId()) {
+                                    throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
+                                }
+                            }
                         }
                     }
 
@@ -1167,11 +1277,52 @@ class Mobile_EnderecamentoController extends Action
                         $params['endereco'] = $endereco;
                         $params['volume'] = $volume;
 
+                        /*
+                         * COMENTANDO REGRA DE TRANSFERENCIA PICKING -> PICKING
+                         *
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                             if (isset($volume) && is_null($volume->getEndereco())) {
                                 $volume->setEndereco($endereco);
                                 $this->getEntityManager()->persist($volume);
                                 $this->getEntityManager()->flush();
+                            }
+                        }
+                        */
+
+                        if ($enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPicking ||
+                            $enderecoAntigo->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                            if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
+                                throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
+                            }
+                            if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                                $volume->setEndereco($endereco);
+                                $this->getEntityManager()->persist($volume);
+                                $this->getEntityManager()->flush();
+                            }
+                        } else {
+                            //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E O ENDEREÇO DO PRODUTO ESTÁ VAZIO ... E TRAVA
+                            if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
+                                if (isset($volume) && is_null($volume->getEndereco())) {
+                                    throw new \Exception("Esse Endereço de Picking não está cadastrado para esse produto!");
+                                }
+                            }
+
+                            //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
+                            if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
+                                if (isset($volume) && is_null($volume->getEndereco())) {
+                                    $volume->setEndereco($endereco);
+                                    $this->getEntityManager()->persist($volume);
+                                    $this->getEntityManager()->flush();
+                                }
+                            }
+
+                            //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING E SE O ENDEREÇO DE DESTINO É DIFERENTE DO ENDEREÇO CADASTRADO NO PRODUTO E EXIBE MENSAGEM DE ERRO
+                            if (($endereco->getIdCaracteristica() == $idCaracteristicaPicking || $endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo)) {
+                                if (isset($volume)) {
+                                    if ($endereco->getId() !== $volume->getEndereco()->getId()) {
+                                        throw new \Exception("Produto ja cadastrado no Picking " . $volume->getEndereco()->getDescricao() . "!");
+                                    }
+                                }
                             }
                         }
 
