@@ -220,11 +220,16 @@ class Mobile_OndaRessuprimentoController extends Action
         $ondaOsEn = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs")->findOneBy(array('id'=>$idOnda));
 
         $temLote = false;
+        $arrLotes = [];
         foreach ($valores as $item) {
-            if ($item['Lote'] != \Wms\Domain\Entity\Produto\Lote::LND) $temLote = true;
+            if ($item['Lote'] != \Wms\Domain\Entity\Produto\Lote::LND) {
+                $temLote = true;
+                $arrLotes[] = $item['Lote'];
+            }
             $arrayQtds[$item['Lote']] = $embalagemRepo->getQtdEmbalagensProduto($valores[0]['Codigo'], $valores[0]['Grade'], $item['Qtde']);
         };
 
+        $this->view->lotes = $arrLotes;
         $this->view->produtos = $ondaOsEn->getProdutos();
         $this->view->idOnda = $idOnda;
         $this->view->codProduto = $valores[0]['Codigo'];

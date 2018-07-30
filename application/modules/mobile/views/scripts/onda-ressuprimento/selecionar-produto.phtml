@@ -113,7 +113,7 @@
 
 </form>
 <div class = "gPager"></div>
-
+<?php if ($this->temLote) { ?>
 <script>
     function nextInput(event, elem) {
         if (event.which === 13 || event.keyCode === 13) {
@@ -155,4 +155,6 @@
         }
         return true;
     }
+    var lotes = [<?php echo implode(", ", $this->lotes)?>]
 </script>
+<?php }?>
