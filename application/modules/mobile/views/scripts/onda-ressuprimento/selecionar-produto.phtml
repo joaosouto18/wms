@@ -7,16 +7,18 @@
                     <td colspan="2"><b><?php echo $this->dscProduto ?></b></td>
                 </tr>
                 <tr>
-                    <td><B>Cod:</B> <div class="row"><?php echo $this->codProduto ?></div></td>
-                    <td><B>Grade:</B> <div class="row"><?php echo $this->grade ?></div></td>
+                    <td><div class="row"><B>Cod:</B></div><div class="row"><?php echo $this->codProduto ?></div></td>
+                    <td><div class="row"><B>Grade:</B></div><div class="row"><?php echo $this->grade ?></div></td>
                 </tr>
                 <tr>
-                    <td><B>Lote:</B></td>
-                    <td><B>Qtd:</B></td>
+                    <td><div class="row"><B>Lote:</B></div></td>
+                    <td><div class="row"><B>Qtd:</B></div></td>
                 </tr>
                 <?php foreach ($this->qtd as $lote => $grupo) { ?>
                     <tr style="border-bottom: thin solid">
-                        <td style="font-size: 14px"><?php echo $lote; ?></td>
+                        <td style="font-size: 14px"><div class="row"><?php echo $lote; ?>
+                                <img style="display: none" id="lote-<?php echo $lote?>" src="/img/icons/accept.png"/></div>
+                        </td>
                         <td style="font-size: 14px">
                             <?php foreach ($grupo as $item) { ?>
                                 <div class="row"><?php echo $item; ?></div>
@@ -75,7 +77,7 @@
 
 <br>
 <div>
-    <input type="submit" name="submit" id="submit" value="Buscar" />
+    <input type="submit" name="submit" id="submit" <?php if ($this->temLote) { ?> onclick="submitClick(event)" <?php } ?>value="Buscar" />
 </div>
 
     <?php if ($this->produtos[0]->getCodProdutoVolume() !=NULL) {?>
@@ -115,6 +117,8 @@
 <div class = "gPager"></div>
 <?php if ($this->temLote) { ?>
 <script>
+    var lotes = <?php echo $this->lotes?>;
+
     function nextInput(event, elem) {
         if (event.which === 13 || event.keyCode === 13) {
             var escaparSubmit = false;
@@ -131,7 +135,8 @@
                     }
                 }
             } else if (elem.id === "codLote") {
-                if (elem.value === "") {
+                var loteBipado = elem.value;
+                if ( loteBipado === "") {
                     alert("O Lote não foi informado");
                     elem.focus();
                     escaparSubmit = true;
@@ -141,6 +146,19 @@
                         alert("O código de barras não foi informado");
                         codBarra.focus();
                         escaparSubmit = true;
+                    } else {
+                        if (loteBipado in lotes) {
+                            lotes[loteBipado] = true;
+                            var idSpan = "lote-" + loteBipado;
+                            $("#" + idSpan).show();
+                            if (!checkLotes()) {
+                                escaparSubmit = true;
+                            }
+                        } else {
+                            alert("Lote inválido para esta OS.");
+                            escaparSubmit = true;
+                        }
+
                     }
                 }
             }
@@ -155,6 +173,30 @@
         }
         return true;
     }
-    var lotes = [<?php echo implode(", ", $this->lotes)?>]
+
+    function checkLotes () {
+        $.each(lotes, function (lote, status) {
+            if (!status) {
+                return false;
+            }
+        });
+        return true;
+    }
+
+    function submitClick (event) {
+        var codBarras = $("#etiquetaProduto").val();
+        if (!checkLotes() || !codBarras) {
+            if (!codBarras) {
+                alert("O código de barras não foi informado");
+            } else {
+                alert("Existem lotes pendentes");
+            }
+            if (event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
+        }
+    }
 </script>
 <?php }?>

@@ -224,12 +224,12 @@ class Mobile_OndaRessuprimentoController extends Action
         foreach ($valores as $item) {
             if ($item['Lote'] != \Wms\Domain\Entity\Produto\Lote::LND) {
                 $temLote = true;
-                $arrLotes[] = $item['Lote'];
+                $arrLotes[$item['Lote']] = false;
             }
             $arrayQtds[$item['Lote']] = $embalagemRepo->getQtdEmbalagensProduto($valores[0]['Codigo'], $valores[0]['Grade'], $item['Qtde']);
         };
 
-        $this->view->lotes = $arrLotes;
+        $this->view->lotes = json_encode($arrLotes);
         $this->view->produtos = $ondaOsEn->getProdutos();
         $this->view->idOnda = $idOnda;
         $this->view->codProduto = $valores[0]['Codigo'];
