@@ -174,11 +174,13 @@ class EstoqueRepository extends EntityRepository
             $idUma = $estoqueEn->getUma();
             $dscEndereco = $estoqueEn->getDepositoEndereco()->getDescricao();
             $dscProduto = $estoqueEn->getProduto()->getDescricao();
+
             if (!is_null($volumeEn)) {
                 $novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn))->getQtd() + $qtd;
             } else {
                 $novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn))->getQtd() + $qtd;
             }
+
             if ($novaQtd >0) {
                 $estoqueEn->setQtd($novaQtd);
                 $estoqueEn->setValidade($validade);
@@ -197,8 +199,10 @@ class EstoqueRepository extends EntityRepository
         }
         $saldoFinal = $novaQtd;
 
-        if ($runFlush == true)
+        if ($runFlush == true) {
             $em->flush();
+            $this->removePickingDinamicoProduto($codProduto,$grade);
+        }
 
         //CRIA UM HISTÓRICO DE MOVIMENTAÇÃO DE ESTOQUE
         $historico = new HistoricoEstoque();
@@ -244,6 +248,7 @@ class EstoqueRepository extends EntityRepository
             $SQL = " SELECT * 
                        FROM RESERVA_ESTOQUE_ENDERECAMENTO REE
                        INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+                       WHERE RE.IND_ATENDIDA = 'N'
                        WHERE RE.IND_ATENDIDA = 'N'
                          AND RE.COD_DEPOSITO_ENDERECO = '$endereco'";
             $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -1299,4 +1304,38 @@ class EstoqueRepository extends EntityRepository
                 AND DE.COD_CARACTERISTICA_ENDERECO = $tipoPulmao";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetch(\PDO::FETCH_ASSOC);
     }
+
+    public function removePickingDinamicoProduto ($codProduto, $grade) {
+        $estoques = $this->findBy(array('codProduto'=>$codProduto, 'grade' =>$grade));
+        if (count($estoques) >0 ) return;
+
+        $caracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
+
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
+
+        $embalagens = $embalagemRepo->findBy(array('codProduto'=>$codProduto, 'grade'=> $grade));
+        $volumes = $volumeRepo->findBy(array('codProduto'=>$codProduto, 'grade'=> $grade));
+
+        foreach ($embalagens as $embalagemEn) {
+            if ($embalagemEn->getEndereco() != null) {
+                $enderecoEn = $embalagemEn->getEndereco();
+                if ($enderecoEn->getIdCaracteristica() == $caracteristicaPickingRotativo) {
+                    $embalagemEn->setEndereco(null);
+                    $this->getEntityManager()->persist($embalagemEn);
+                }
+            }
+        }
+
+        foreach ($volumes as $volumeEn) {
+            if ($volumeEn->getEndereco() != null) {
+                $enderecoEn = $volumeEn->getEndereco();
+                if ($enderecoEn->getIdCaracteristica() == $caracteristicaPickingRotativo) {
+                    $volumeEn->setEndereco(null);
+                    $this->getEntityManager()->persist($volumeEn);
+                }
+            }
+        }
+    }
+
 }
