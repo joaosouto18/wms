@@ -4386,4 +4386,34 @@ class ExpedicaoRepository extends EntityRepository {
     }
 
 
+    public function cortarItemExpedicao ($idProduto, $grade, $expedicao, $motivo) {
+
+        $sql = "SELECT P.COD_PEDIDO, PP.COD_PEDIDO_PRODUTO, P.COD_EXTERNO, PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0) as QTD_PEDIDO
+                  FROM PEDIDO_PRODUTO PP
+                  LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                  LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                 WHERE C.COD_EXPEDICAO = $expedicao
+                   AND PP.COD_PRODUTO = '$idProduto'
+                   AND PP.DSC_GRADE = '$grade'
+                   AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0)";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $pedidoProdutoRepository =  $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
+        foreach ($result as $pedidoProduto) {
+            $codigoPedidoInterno = $pedidoProduto['COD_PEDIDO'];
+            $codigoPedidoExterno = $pedidoProduto['COD_EXTERNO'];
+            $codigoPedidoProduto = $pedidoProduto['COD_PEDIDO_PRODUTO'];
+            $qtdCortar           = $pedidoProduto['QTD_PEDIDO'];
+
+
+            $pedidoProdutoEn = $pedidoProdutoRepository->find($pedidoProduto['COD_PEDIDO_PRODUTO']);
+
+            if (!isset($pedidoProdutoEn) || empty($pedidoProdutoEn))
+                throw new \Exception("Produto $idProduto grade $grade não encontrado para o pedido $codigoPedidoExterno");
+
+            $this->cortaPedido($codigoPedidoInterno, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo);
+        }
+
+    }
+
 }

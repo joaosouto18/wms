@@ -89,16 +89,33 @@ class Expedicao_CorteController extends Action {
         $idExpedicao = $this->_getParam('id');
 
         $params = $this->_getAllParams();
-
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+
+        if (isset($params['massaction-select']) && ($params['massaction-select'] == 'mass-select')) {
+            try {
+                $this->getEntityManager()->beginTransaction();
+
+                $idProdutos = $this->_getParam('mass-id');
+                foreach ($idProdutos as $id) {
+                    $expedicaoRepo->cortarItemExpedicao($id,'UNICA',$idExpedicao, "teste");
+                }
+
+                $this->addFlashMessage('success', 'Cortes efetivados com sucesso');
+
+                $this->getEntityManager()->flush();
+                $this->getEntityManager()->commit();
+            } catch (\Exception $e) {
+                $this->getEntityManager()->rollback();
+                $this->addFlashMessage('error', $e->getMessage());
+            }
+        }
+
 
         $produtos = $expedicaoRepo->getProdutosPorExpedicao($idExpedicao);
 
         $grid = new \Wms\Module\Expedicao\Grid\CorteTotal();
         $this->view->grid = $grid->init($produtos);
-
-
 
     }
 
