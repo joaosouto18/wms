@@ -77,7 +77,7 @@
 
 <br>
 <div>
-    <input type="submit" name="submit" id="submit" <?php if ($this->temLote) { ?> onclick="submitClick(event)" <?php } ?>value="Buscar" />
+    <input type="submit" name="submit" id="submit" value="Buscar" />
 </div>
 
     <?php if ($this->produtos[0]->getCodProdutoVolume() !=NULL) {?>
@@ -118,28 +118,38 @@
 <?php if ($this->temLote) { ?>
 <script>
     var lotes = <?php echo $this->lotes?>;
+    var codBarras = <?php echo $this->codBarras?>;
 
     function nextInput(event, elem) {
         if (event.which === 13 || event.keyCode === 13) {
             var escaparSubmit = false;
             if (elem.id === "etiquetaProduto") {
+                var falhouCodBarras = false;
                 if (elem.value === "") {
                     alert("O código de barras não foi informado");
-                    elem.focus();
-                    escaparSubmit = true;
+                    falhouCodBarras = true;
                 } else {
-                    var campoLote = $("#codLote");
-                    if (campoLote.length) {
+                    if (confereCodBarras(elem.value)) {
+                        var campoLote = $("#codLote");
+                        campoLote.val("");
                         campoLote.focus();
                         escaparSubmit = true;
+                    } else {
+                        falhouCodBarras = true;
                     }
+                }
+
+                if (falhouCodBarras) {
+                    elem.value = "";
+                    elem.focus();
+                    escaparSubmit = true;
                 }
             } else if (elem.id === "codLote") {
                 var loteBipado = elem.value;
+                var falhouLote = false;
                 if ( loteBipado === "") {
                     alert("O Lote não foi informado");
-                    elem.focus();
-                    escaparSubmit = true;
+                    falhouLote = true;
                 } else {
                     var codBarra = $("#etiquetaProduto");
                     if (codBarra.val() === "") {
@@ -147,19 +157,20 @@
                         codBarra.focus();
                         escaparSubmit = true;
                     } else {
-                        if (loteBipado in lotes) {
-                            lotes[loteBipado] = true;
-                            var idSpan = "lote-" + loteBipado;
-                            $("#" + idSpan).show();
+                        if (confereLote(loteBipado)) {
                             if (!checkLotes()) {
-                                escaparSubmit = true;
+                                falhouLote = true;
                             }
                         } else {
-                            alert("Lote inválido para esta OS.");
-                            escaparSubmit = true;
+                            falhouLote = true;
                         }
-
                     }
+                }
+
+                if (falhouLote) {
+                    elem.focus();
+                    elem.value = "";
+                    escaparSubmit = true;
                 }
             }
 
@@ -174,29 +185,89 @@
         return true;
     }
 
-    function checkLotes () {
-        $.each(lotes, function (lote, status) {
-            if (!status) {
-                return false;
-            }
-        });
+    function confereLote(loteBipado) {
+        if (loteBipado in lotes) {
+            lotes[loteBipado] = true;
+            var idSpan = "#lote-" + loteBipado;
+            $(idSpan).show();
+            alert("Lote '" + loteBipado + "' checado!");
+            return true;
+        }
+        alert("Lote '" + loteBipado + "' inválido para esta OS.");
+        return false;
+    }
+
+    function confereCodBarras(codBipado) {
+        if ($.inArray(codBipado, codBarras) < 0) {
+            alert("Código de barras " + codBipado + " não pertence à esta onda");
+            return false;
+        }
         return true;
     }
 
-    function submitClick (event) {
-        var codBarras = $("#etiquetaProduto").val();
-        if (!checkLotes() || !codBarras) {
+    function checkLotes () {
+        var result = true;
+        $.each(lotes, function (lote, status) {
+            if (!status) {
+                result = false;
+            }
+        });
+        return result;
+    }
+
+    $("#formulario").submit( function(event) {
+        var elemCodBarras = $("#etiquetaProduto");
+        var elemLote = $("#codLote");
+        var codBarras = elemCodBarras.val();
+        var loteBipado = elemLote.val();
+        var escaparSubmit = false;
+
+        if (!checkLotes()) {
+            var falhou = false;
+            if (loteBipado) {
+                if (confereLote(loteBipado)) {
+                    if (!checkLotes()) {
+                        alert("Existe lote não checado");
+                        falhou = true;
+                    }
+                } else {
+                    elemLote.focus();
+                    falhou = true;
+                }
+            } else {
+                alert("Existe lote não checado");
+                falhou = true;
+            }
+            if (falhou) {
+                elemLote.focus();
+                elemLote.val("");
+                escaparSubmit = true;
+            }
+        }
+
+        if (!escaparSubmit) {
+            var falhouCodBarras = false;
             if (!codBarras) {
                 alert("O código de barras não foi informado");
-            } else {
-                alert("Existem lotes pendentes");
+                falhouCodBarras = true;
+            } else if (!confereCodBarras(codBarras)) {
+                falhouCodBarras = true;
             }
+            if (falhouCodBarras) {
+                elemCodBarras.val("");
+                elemCodBarras.focus();
+                escaparSubmit = true;
+            }
+        }
+
+        if (escaparSubmit) {
             if (event.preventDefault) {
                 event.preventDefault();
             } else {
                 event.returnValue = false;
             }
+            return false;
         }
-    }
+    });
 </script>
 <?php }?>

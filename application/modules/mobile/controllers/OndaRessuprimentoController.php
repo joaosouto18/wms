@@ -217,6 +217,8 @@ class Mobile_OndaRessuprimentoController extends Action
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         $valores = $OndaRessuprimentoRepo->getDadosOnda($idOnda);
 
+        $codBarras = $OndaRessuprimentoRepo->getCodBarrasItensOnda($idOnda);
+
         $ondaOsEn = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs")->findOneBy(array('id'=>$idOnda));
 
         $temLote = false;
@@ -229,6 +231,7 @@ class Mobile_OndaRessuprimentoController extends Action
             $arrayQtds[$item['Lote']] = $embalagemRepo->getQtdEmbalagensProduto($valores[0]['Codigo'], $valores[0]['Grade'], $item['Qtde']);
         };
 
+        $this->view->codBarras = json_encode($codBarras);
         $this->view->lotes = json_encode($arrLotes);
         $this->view->produtos = $ondaOsEn->getProdutos();
         $this->view->idOnda = $idOnda;
@@ -246,7 +249,6 @@ class Mobile_OndaRessuprimentoController extends Action
     {
         $codigoBarrasUMA = $this->_getParam('codigoBarrasUma');
         $etiquetaProduto = $this->_getParam('etiquetaProduto');
-        $lotesEsperados = $this->_getParam('lotesEsperados');
         $idOnda = $this->_getParam('idOnda');
         $urlRedirect = '/mobile/onda-ressuprimento/listar-ondas';
         $ondaOsEn = null;

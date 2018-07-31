@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\Ressuprimento;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
+use Doctrine\ORM\Query;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Produto;
@@ -215,7 +216,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
     public function finalizaOnda($ondaOs) {
         try {
             $this->getEntityManager()->beginTransaction();
-            $idOnda = $ondaOs->getId();
 
             $this->validaFechamentoOS($ondaOs);
 
@@ -240,10 +240,9 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $produtos[] = $produtoArray;
             }
 
-            $reservaEstoqueRepo->efetivaReservaEstoque(NULL, $produtos, "E", "O", $ondaOs->getId(), $idUsuario, $idOs);
-            $reservaEstoqueRepo->efetivaReservaEstoque(NULL, $produtos, "S", "O", $ondaOs->getId(), $idUsuario, $idOs);
-
-            $ondaOs = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOs")->findOneBy(array('id' => $idOnda));
+            $idOnda = $ondaOs->getId();
+            $reservaEstoqueRepo->efetivaReservaEstoque(NULL, $produtos, "E", "O", $idOnda, $idUsuario, $idOs);
+            $reservaEstoqueRepo->efetivaReservaEstoque(NULL, $produtos, "S", "O", $idOnda, $idUsuario, $idOs);
 
             $statusEn = $this->getEntityManager()->getRepository("wms:Util\Sigla")->findOneBy(array('id' => \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_FINALIZADO));
             $ondaOs->setStatus($statusEn);
@@ -256,7 +255,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
             $this->getEntityManager()->commit();
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
     }
 
@@ -1141,6 +1140,27 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 ->orderBy("e.descricao");
         $result = $sql->getQuery()->getResult();
         return $result;
+    }
+
+    public function getCodBarrasItensOnda($idOnda){
+        $dql = $this->_em->createQueryBuilder()
+            ->select("DISTINCT NVL(e.codigoBarras, v.codigoBarras) codBarras")
+            ->from("wms:Ressuprimento\OndaRessuprimentoOs", "oros")
+            ->innerJoin("oros.produtos", "orp")
+            ->innerJoin("orp.produto", "p")
+            ->leftJoin("p.embalagens", "e", "WITH", "e.codigoBarras IS NOT NULL AND e.dataInativacao IS NULL")
+            ->leftJoin("p.volumes", "v", "WITH", "v.codigoBarras IS NOT NULL AND v.dataInativacao IS NULL")
+            ->where("oros.id = :idOnda")
+            ->setParameter("idOnda", $idOnda);
+
+        $result = $dql->getQuery()->getResult();
+
+        $arr = [];
+        foreach ($result as $item) {
+            $arr[] = $item['codBarras'];
+        }
+
+        return $arr;
     }
 
 }
