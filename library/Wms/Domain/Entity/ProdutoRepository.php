@@ -624,7 +624,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             if (!isset($acao))
                 continue;
 
-            if ($itemEmbalagem['acao'] != 'excluir') {
+            if ($itemVolume['acao'] != 'excluir') {
                 $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_COMPOSTO, $id);
                 if(!empty($check)){
                     $arrItens = [];
