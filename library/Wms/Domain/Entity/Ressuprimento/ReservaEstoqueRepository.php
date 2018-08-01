@@ -544,6 +544,7 @@ class ReservaEstoqueRepository extends EntityRepository
     public function getReservasExpedicao($produtoPedido)
     {
         $produto = $produtoPedido->getProduto();
+        $loteNaoDefinido = Produto\Lote::LND;
         $dql = $this->_em->createQueryBuilder()
             ->select("
                         de.id as idEndereco,
@@ -552,7 +553,7 @@ class ReservaEstoqueRepository extends EntityRepository
                         ree.tipoSaida,
                         rep.codProdutoVolume,
                         (rep.qtd * -1) as qtd,
-                        rep.lote
+                        NVL(rep.lote, $loteNaoDefinido) as lote
                         ")
             ->from("wms:Ressuprimento\ReservaEstoque", "re")
             ->innerJoin("wms:Ressuprimento\ReservaEstoqueProduto", "rep", "WITH" , "rep.reservaEstoque = re")
