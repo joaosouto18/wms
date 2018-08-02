@@ -2257,7 +2257,7 @@ class ExpedicaoRepository extends EntityRepository {
                               WHERE 1 = 1
                                 ' . $WhereExpedicao . '
                               GROUP BY MS.COD_EXPEDICAO) MS ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
-                 INNER JOIN (SELECT C.COD_EXPEDICAO,
+                  LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                     LISTAGG (C.COD_CARGA_EXTERNO,\', \') WITHIN GROUP (ORDER BY C.COD_CARGA_EXTERNO) CARGAS
                                FROM CARGA C ' . $JoinExpedicao . $JoinSigla . '
                                WHERE 1 = 1 ' . $WhereExpedicao . $WhereSigla . $WhereCarga . '
@@ -2359,7 +2359,7 @@ class ExpedicaoRepository extends EntityRepository {
                                   ) PED ON PED.COD_TIPO_PEDIDO = S.COD_SIGLA
                                   GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO 
                                                                
-                 WHERE 1 = 1' . $FullWhereFinal . '
+                 WHERE 1 = 1 AND ((C.CARGAS IS NOT NULL) OR (C.CARGAS IS NULL AND S.COD_SIGLA = 466)) ' . $FullWhereFinal . '
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
 
