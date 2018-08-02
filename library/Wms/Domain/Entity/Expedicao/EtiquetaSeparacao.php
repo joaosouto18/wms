@@ -190,6 +190,12 @@ class EtiquetaSeparacao
      */
     protected $tipoSaida;
 
+    /**
+     * @Column(name="DSC_LOTE", type="string")
+     * @var string
+     */
+    protected $lote;
+
     public function setDataConferencia($dataConferencia)
     {
         $this->dataConferencia = $dataConferencia;
@@ -548,6 +554,22 @@ class EtiquetaSeparacao
     public function setTipoSaida($tipoSaida)
     {
         $this->tipoSaida = $tipoSaida;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param string $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
     }
 
 }

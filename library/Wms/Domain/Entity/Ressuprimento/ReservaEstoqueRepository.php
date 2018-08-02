@@ -553,7 +553,7 @@ class ReservaEstoqueRepository extends EntityRepository
                         ree.tipoSaida,
                         rep.codProdutoVolume,
                         (rep.qtd * -1) as qtd,
-                        NVL(rep.lote, $loteNaoDefinido) as lote
+                        NVL(rep.lote, '$loteNaoDefinido') as lote
                         ")
             ->from("wms:Ressuprimento\ReservaEstoque", "re")
             ->innerJoin("wms:Ressuprimento\ReservaEstoqueProduto", "rep", "WITH" , "rep.reservaEstoque = re")

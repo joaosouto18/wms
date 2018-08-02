@@ -137,6 +137,12 @@ class EtiquetaConferencia
      */
     protected $dataConferenciaTransbordo;
 
+    /**
+     * @Column(name="DSC_LOTE", type="string")
+     * @var string
+     */
+    protected $lote;
+
 
     public function setDataConferencia($dataConferencia)
     {
@@ -344,6 +350,22 @@ class EtiquetaConferencia
     public function setDataReconferencia($dataReconferencia)
     {
         $this->dataReconferencia = $dataReconferencia;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param string $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
     }
 
 }
