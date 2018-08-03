@@ -249,7 +249,6 @@ class EstoqueRepository extends EntityRepository
                        FROM RESERVA_ESTOQUE_ENDERECAMENTO REE
                        INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
                        WHERE RE.IND_ATENDIDA = 'N'
-                       WHERE RE.IND_ATENDIDA = 'N'
                          AND RE.COD_DEPOSITO_ENDERECO = '$endereco'";
             $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
             if (count($result) > 0) {
