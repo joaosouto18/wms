@@ -1438,8 +1438,13 @@ class ExpedicaoRepository extends EntityRepository {
                     $cargasEn = $expedicaoEn->getCarga();
 
                     $encontrouPedido = false;
+
+                    $cargas = array();
+
                     foreach ($cargasEn as $cargaEn) {
 
+
+                        $cargas[] = $cargaEn->getCodCargaExterno();
                         $SQL = "SELECT * 
                                   FROM PEDIDO 
                                  WHERE COD_CARGA = " .$cargaEn->getId();
@@ -1453,6 +1458,12 @@ class ExpedicaoRepository extends EntityRepository {
                             $encontrouPedido = true;
                             break;
                         }
+                    }
+
+                    if (!is_null($cargas) && is_array($cargas)) {
+                        $options[] = implode(',', $cargas);
+                    } else if (!is_null($cargas)) {
+                        $options = $cargas;
                     }
 
                     if ($encontrouPedido == true) {
