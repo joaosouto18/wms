@@ -1651,7 +1651,7 @@ class MapaSeparacao extends eFPDF {
                     $this->Cell(24, 5, utf8_decode("Endereço"), 1, 0);
                     $this->Cell(19, 5, utf8_decode("Código"), 1, 0);
                     $this->Cell(90, 5, utf8_decode("Produto"), 1, 0);
-                    $this->Cell(20, 5, utf8_decode("Emb"), 1, 0);
+                    $this->Cell(20, 5, utf8_decode("Item"), 1, 0);
                     $this->Cell(22, 5, utf8_decode("Lote"), 1, 0);
                     $this->Cell(20, 5, utf8_decode("Qtd."), 1, 1);
                     $this->Cell(20, 1, "", 0, 1);
@@ -1659,21 +1659,23 @@ class MapaSeparacao extends eFPDF {
             } else {
                 if ($tipoQuebra == true) {
                     $this->Cell(24, 5, utf8_decode("Endereço"), 1, 0);
-                    $this->Cell(22, 5, utf8_decode("Cod.Produto"), 1, 0);
-                    $this->Cell(20, 5, utf8_decode("Grade"), 1, 0);
-                    $this->Cell(78, 5, utf8_decode("Produto"), 1, 0); //20
-                    $this->Cell(18, 5, utf8_decode("Emb"), 1, 0); //10
-                    $this->Cell(18, 5, utf8_decode("Qtd."), 1, 0);
+                    $this->Cell(19, 5, utf8_decode("Código"), 1, 0);//3
+                    $this->Cell(19, 5, utf8_decode("Grade"), 1, 0);//1
+                    $this->Cell(73, 5, utf8_decode("Produto"), 1, 0);//5
+                    $this->Cell(15, 5, utf8_decode("Item"), 1, 0);//3
+                    $this->Cell(15, 5, utf8_decode("Lote"), 1, 0);
+                    $this->Cell(15, 5, utf8_decode("Qtd."), 1, 0);//3
                     $this->Cell(15, 5, utf8_decode("Caixas"), 1, 1);
                     $this->Cell(20, 1, "", 0, 1);
 //195
                 } else {
                     $this->Cell(24, 5, utf8_decode("Endereço"), 1, 0);
-                    $this->Cell(22, 5, utf8_decode("Cod.Produto"), 1, 0);
-                    $this->Cell(20, 5, utf8_decode("Grade"), 1, 0);
-                    $this->Cell(93, 5, utf8_decode("Produto"), 1, 0); //10
-                    $this->Cell(18, 5, utf8_decode("Emb"), 1, 0); //15
-                    $this->Cell(18, 5, utf8_decode("Qtd"), 1, 1);
+                    $this->Cell(19, 5, utf8_decode("Código"), 1, 0);//3
+                    $this->Cell(19, 5, utf8_decode("Grade"), 1, 0);//1
+                    $this->Cell(88, 5, utf8_decode("Produto"), 1, 0);//5
+                    $this->Cell(15, 5, utf8_decode("Item"), 1, 0);//3
+                    $this->Cell(15, 5, utf8_decode("lote"), 1, 0);
+                    $this->Cell(15, 5, utf8_decode("Qtd"), 1, 1);//3
                     $this->Cell(20, 1, "", 0, 1);
                 }
             }
@@ -1711,11 +1713,12 @@ class MapaSeparacao extends eFPDF {
                 if ($usaGrade === "S") {
                     if ($tipoQuebra == true) {
                         $this->Cell(24, 6, $dscEndereco, 0, 0);
-                        $this->Cell(22, 6, $codProduto, 0, 0);
-                        $this->Cell(20, 6, $this->SetStringByMaxWidth($grade, 20), 0, 0);
-                        $this->Cell(78, 6, $this->SetStringByMaxWidth($descricao, 80), 0, 0);
-                        $this->Cell(18, 6, $embalagem, 0, 0);
-                        $this->Cell(18, 6, $quantidade, 0, 0);
+                        $this->Cell(19, 6, $codProduto, 0, 0);
+                        $this->Cell(19, 6, $this->SetStringByMaxWidth($grade, 20), 0, 0);
+                        $this->Cell(73, 6, $this->SetStringByMaxWidth($descricao, 80), 0, 0);
+                        $this->Cell(15, 6, $embalagem, 0, 0);
+                        $this->Cell(15, 6, $lote, 0, 0);
+                        $this->Cell(15, 6, $quantidade, 0, 0);
                         $this->Cell(15, 6, $caixas, 0, 1, 'C');
                         if(strlen ( $descricao) > 50) {
                             $this->MultiCell(99, 6, $this->SetStringByMaxWidth(substr($descricao, 50, 300), 99), 3, 0);
@@ -1724,11 +1727,12 @@ class MapaSeparacao extends eFPDF {
                         $this->Cell(20, 1, "", 0, 1);
                     } else {
                         $this->Cell(24, 6, $dscEndereco, 0, 0);
-                        $this->Cell(22, 6, $codProduto, 0, 0);
-                        $this->Cell(20, 6, $this->SetStringByMaxWidth($grade, 20), 0, 0);
-                        $this->Cell(93, 6, $this->SetStringByMaxWidth($descricao, 93), 0, 0);
-                        $this->Cell(18, 6, $embalagem, 0, 0);
-                        $this->Cell(18, 6, $quantidade, 0, 1, 'C');
+                        $this->Cell(19, 6, $codProduto, 0, 0);
+                        $this->Cell(19, 6, $this->SetStringByMaxWidth($grade, 20), 0, 0);
+                        $this->Cell(88, 6, $this->SetStringByMaxWidth($descricao, 93), 0, 0);
+                        $this->Cell(15, 6, $embalagem, 0, 0);
+                        $this->Cell(15, 6, $lote, 0, 0);
+                        $this->Cell(15, 6, $quantidade, 0, 1, 'C');
                         if(strlen ( $descricao) > 50) {
                             $this->MultiCell(99, 6, $this->SetStringByMaxWidth(substr($descricao, 50, 300), 99), 3, 0);
                         }
