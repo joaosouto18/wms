@@ -1016,7 +1016,6 @@ class EtiquetaSeparacao extends Pdf
         $impressao .= substr(utf8_encode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
         $impressao .= "CODIGO:$etiqueta[codProduto] - GRADE:$etiqueta[grade]\n";
         $impressao .= substr(trim($etiqueta['produto']),0,37)."\n";
-        $impressao .= substr(utf8_decode(" "),0,40) . "\n";
         $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - ". utf8_decode($etiqueta['tipoComercializacao'])."\n";
         $this->MultiCell(100, 3.9, $impressao, 0, 'L');
         if ($reentrega == false) {
