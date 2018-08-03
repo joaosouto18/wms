@@ -1051,7 +1051,7 @@ class Integracao {
     public function atualizaRecebimentoERP($idRecebimento) {
         $em = $this->_em;
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
-        $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+        $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepository */
         $acaoIntRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */

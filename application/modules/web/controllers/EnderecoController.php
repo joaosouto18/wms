@@ -526,7 +526,7 @@ class Web_EnderecoController extends Crud
         if (empty($depositoEnderecoEn)) {
             $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco não encontrado!");
         } else{
-            if ($depositoEnderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING) {
+            if ($depositoEnderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING || $depositoEnderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING_DINAMICO) {
                 if ($this->getSystemParameterValue('PERMITE_NPRODUTO_PICKING') == 'N') {
                     $produto = $depositoEnderecoRepo->getProdutoByEndereco($enderecoFormatado, true, true);
                     if (!empty($produto) && ($codProduto != $produto[0]['codProduto'] || $grade != $produto[0]['grade'])) {

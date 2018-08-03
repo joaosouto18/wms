@@ -1400,7 +1400,6 @@ class ExpedicaoRepository extends EntityRepository {
 
                         $this->alteraStatus($expedicaoEntity,Expedicao::STATUS_SEGUNDA_CONFERENCIA);
                         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
-                        $this->getEntityManager()->flush();
                         $this->getEntityManager()->commit();
                         return 0;
                     }
@@ -1661,7 +1660,6 @@ class ExpedicaoRepository extends EntityRepository {
         $this->liberarVolumePatrimonioByExpedicao($expedicaoEntity->getId());
         $this->alteraStatus($expedicaoEntity,$novoStatus);
         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
-        $this->getEntityManager()->flush();
         return true;
     }
 
@@ -1678,14 +1676,37 @@ class ExpedicaoRepository extends EntityRepository {
         $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuarioEn = $usuarioRepo->find($idUsuario);
         $arrayFlush = array();
+
+        $produtosExpedicao = array();
+
         foreach ($reservaEstoqueArray as $re) {
             $pedido['codPedido'] = $re->getPedido()->getId();
             $pedido['codProprietario'] = $re->getPedido()->getProprietario();
             $reservaEstoqueEn = $re->getReservaEstoque();
             if ($reservaEstoqueEn->getAtendida() == 'N') {
                 $arrayFlush = $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, "E", $idExpedicao, $usuarioEn, null, null, null, $pedido, $arrayFlush);
+
+                $reservaProdutos = $reservaEstoqueEn->getProdutos();
+                foreach ($reservaProdutos as $resProd) {
+                    $codProduto = $resProd->getCodProduto();
+                    $grade = $resProd->getGrade();
+                    if (!isset($produtosExpedicao[$codProduto][$grade])) {
+                        $produtosExpedicao[$codProduto][$grade] = 'OK';
+                    }
+                }
             }
         }
+        $this->getEntityManager()->flush();
+
+
+        foreach ($produtosExpedicao as $codProduto => $produto) {
+            foreach ($produto as $grade => $prod) {
+                $estoqueRepo->removePickingDinamicoProduto($codProduto,$grade);
+            }
+        }
+
+        $this->getEntityManager()->flush();
+
     }
 
     public function liberarVolumePatrimonioByExpedicao($idExpedicao) {
@@ -2338,7 +2359,7 @@ class ExpedicaoRepository extends EntityRepository {
                                   ) PED ON PED.COD_TIPO_PEDIDO = S.COD_SIGLA
                                   GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO 
                                                                
-                 WHERE 1 = 1' . $FullWhereFinal . '
+                 WHERE 1 = 1 AND ((C.CARGAS IS NOT NULL) OR (C.CARGAS IS NULL AND S.COD_SIGLA = 466)) ' . $FullWhereFinal . '
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
 
