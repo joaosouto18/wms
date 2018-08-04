@@ -1440,11 +1440,12 @@ class ExpedicaoRepository extends EntityRepository {
                     $encontrouPedido = false;
 
                     $cargas = array();
+                    foreach ($cargasEn as $cargaEn) {
+                        $cargas[] = $cargaEn->getCodCargaExterno();
+                    }
 
                     foreach ($cargasEn as $cargaEn) {
 
-
-                        $cargas[] = $cargaEn->getCodCargaExterno();
                         $SQL = "SELECT * 
                                   FROM PEDIDO 
                                  WHERE COD_CARGA = " .$cargaEn->getId();
