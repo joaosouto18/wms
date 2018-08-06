@@ -1,4 +1,6 @@
-<?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js')); ?>
+<?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js'));
+    $temLote = !empty($this->lotesCodBarras);
+?>
 <span id="dummy"></span>
 <bgsound id="bgSoundId" loop="0" volume="100" />
 
@@ -130,24 +132,33 @@
                     <table>
                         <tr>
                             <?php if ($this->confereQtd) : ?>
-                                <td><label for="qtd" id="label-qtd" class="field required">*Qtd</label></td>
+                                <td align="center"><label for="qtd" id="label-qtd" class="field required">*Qtd</label></td>
                             <?php endif; ?>
-                            <td><label for="codigoBarras" class="field required">*Código de Barras</label></td>
+                            <td align="center"><label for="codigoBarras" class="field required">*Código de Barras</label></td>
                             <?php if (!$this->confereQtd) : ?>
-                                <td><label for="qtd" id="label-qtd" class="field required hidden">*Qtd</label></td>
+                                <td align="center"><label for="qtd" id="label-qtd" class="field required hidden">*Qtd</label></td>
                             <?php endif; ?>
                         </tr>
                         <tr>
                             <?php if ($this->confereQtd) : ?>
                                 <td><input name="qtd" id="qtd" size="7" maxlength="100" value="1" onclick="selecionar()" onkeydown="nextInput(event)" style="width: 80%"></td>
-                                <td><input name="codigoBarras" id="codigoBarras" class="required focus" size="40" maxlength="100" style="width: 99%"></td>
+                                <td><input name="codigoBarras" id="codigoBarras" class="required focus"  size="40" <?php if ($temLote) { ?> onkeydown="goToLote(event)" <?php } ?>  maxlength="100" style="width: 99%"></td>
                             <?php else : ?>
-                                <td><input name="codigoBarras" id="codigoBarras" onkeydown="exibirQtd(event)" class="required focus" size="40" maxlength="100" style="width: 99%"></td>
+                                <td><input name="codigoBarras" id="codigoBarras" <?php if ($temLote) { ?> onkeydown="goToLote(event)" <?php } else { ?> onkeydown="exibirQtd(event)" <?php } ?> class="required focus" size="40" maxlength="100" style="width: 99%"></td>
                                 <td><input name="qtd" id="qtd" size="7" maxlength="100" style="width: 80%" class="hidden"></td>
                             <?php endif; ?>
                         </tr>
+                        <?php if ($temLote) { ?>
+                        <tr>
+                            <td colspan="2" align="center">
+                                <label for="lote" class="field required">*Lote</label>
+                                <input name="lote" id="lote" class="required" onfocus="verificaCodBarras()" onkeydown="redirectTo(event)" size="40" maxlength="100" style="width: 99%">
+                            </td>
+                        </tr>
+                        <?php } ?>
                     </table>
                 </div>
+                <br />
                 <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
             </dl>
             <div id="divBtnFechaVolume" <?php echo ($this->idVolume == "")? 'style="display: none"' : '' ?>>
@@ -170,11 +181,94 @@
 
 <script type="text/javascript">
 
-    $('#submit').on('click', function (e) {
+    <?php if ($temLote) { ?>
+    var loteCodigoBarras = <?php echo $this->lotesCodBarras ?>;
+    
+    function goToLote( event ) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if ($("#codigoBarras").val() !== "") {
+                var lote = $('#lote');
+                if (lote) {
+                    lote.focus();
+                    lote.val("");
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    function verificaCodBarras () {
+        var elemCodBarras = $("#codigoBarras");
+        if (elemCodBarras.val() === "") {
+            elemCodBarras.focus();
+            alert("Informe primeiro o código de barras do produto");
+        }
+    }
+
+    function validaCodBarras(codBarras) {
+        if (codBarras in loteCodigoBarras) {
+            return true;
+        } else {
+            alert("Código de barras não esperado para este mapa");
+            return false;
+        }
+    }
+    
+    function checkLoteByCodBarras(codBarras, loteBipado) {
+        if ($.inArray(loteBipado, loteCodigoBarras[codBarras])){
+            return true;
+        } else {
+            alert("Lote "+ loteBipado +" não esperado para este produto");
+            return false;
+        }
+    }
+
+    function redirectTo(event) {
+        var codBarras = $("#codigoBarras");
+        var lote = $('#lote');
+        if (event.which == 13 || event.keyCode == 13) {
+            if (codBarras.val() !== "") {
+                if (lote) {
+                    lote.focus();
+                    lote.val("");
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+    }
+
+    function checkLotes (codBarras, lote) {
+        var result = true;
+        if (validaCodBarras(codBarras.val())) {
+            var checkLote = checkLoteByCodBarras(codBarras.val(), lote.val());
+            if (!checkLote) {
+                lote.val("").focus();
+            }
+            result = checkLote;
+        } else {
+            codBarras.val("").focus();
+            result = false;
+        }
+        return result;
+    }
+    
+    <?php  } ?>
+
+    $('#submit').on('click', function (ev) {
         var qtd = $("#qtd");
         var inptIdVolume = $("#idVolume");
+        var codBarras = $("#codigoBarras");
 
-        if (qtd !== '') {
+        if (qtd.val() !== '' && codBarras.val() !== "" <?php if ($temLote) { ?> && checkLotes(codBarras, $("#lote")) <?php } ?>) {
             $.ajax({
                 url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
                 data: $('form').serialize(),
@@ -182,7 +276,7 @@
                 type: 'post',
                 success: function (data) {
                     if (data.retorno.resposta.length > 0) {
-                        $("#codigoBarras").val("").focus();
+                        codBarras.val("").focus();
                         var error = "";
                         var success = "";
                         var song = "";
@@ -237,6 +331,12 @@
                 qtd.val(1);
             }
             return false;
+        } else {
+            if (ev.preventDefault) {
+                ev.preventDefault();
+            } else {
+                ev.returnValue = false;
+            }
         }
     });
 

@@ -430,4 +430,24 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
     }
 
+    public function getCodBarrasByLoteMapa($mapa) {
+
+        $dql = $this->_em->createQueryBuilder()
+            ->select("distinct msp.lote, NVL(e.codigoBarras, v.codigoBarras) codigoBarras")
+            ->from("wms:Expedicao\MapaSeparacaoProduto", "msp")
+            ->innerJoin("msp.produto", "p")
+            ->leftJoin("p.embalagens", "e", "WITH", "e.dataInativacao IS NULL and e.codigoBarras IS NOT NULL")
+            ->leftJoin("p.volumes", "v", "WITH", "v.dataInativacao IS NULL and v.codigoBarras IS NOT NULL")
+            ->where("msp.mapaSeparacao = :mapa and msp.lote IS NOT NULL")
+            ->setParameter("mapa", $mapa);
+
+        $result = $dql->getQuery()->getResult();
+
+        $arr = [];
+        foreach ($result as $item) {
+            $arr[$item['codigoBarras']][] = $item['lote'];
+        }
+
+        return $arr;
+    }
 }

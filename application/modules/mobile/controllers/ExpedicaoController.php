@@ -120,6 +120,7 @@ class Mobile_ExpedicaoController extends Action {
 
         $produtosMapa = array();
         $this->view->headScript()->appendFile($this->view->baseUrl() . '/wms/resources/jquery/jquery.cycle.all.latest.js');
+        $confereQtd = false;
         try {
             $idMapa = $this->_getParam("idMapa");
             $idVolume = $this->_getParam("idVolume");
@@ -134,7 +135,12 @@ class Mobile_ExpedicaoController extends Action {
             $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
             /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
             $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
+
+            /** @var Expedicao\MapaSeparacaoProdutoRepository $mapaSepProdRepo */
+            $mapaSepProdRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
             $mapaSeparacaoQuebraRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
+
+
 
             $dscVolume = "";
             $volumePatrimonioEn = null;
@@ -149,7 +155,6 @@ class Mobile_ExpedicaoController extends Action {
 
             /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
             $mapaQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $idMapa));
-            $confereQtd = false;
             $conferenciaNaoEmbalado = $modeloSeparacaoEn->getTipoConferenciaNaoEmbalado();
             $conferenciaEmbalado = $modeloSeparacaoEn->getTipoConferenciaEmbalado();
 
@@ -163,6 +168,7 @@ class Mobile_ExpedicaoController extends Action {
                 }
             }
 
+            $this->view->lotesCodBarras = json_encode($mapaSepProdRepo->getCodBarrasByLoteMapa($idMapa));
             $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
             $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
             $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
