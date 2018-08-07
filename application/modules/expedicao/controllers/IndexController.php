@@ -838,7 +838,7 @@ class Expedicao_IndexController extends Action {
                 $pedidoRepository->remove($rowPedido, true);
             }
             $ReentregaRepository->removeReentrega($cargaEntity->getId());
-            $NotaFiscalSaidaRepository->atualizaStatusNota($cargaEntity->getCodCargaExterno());
+            $NotaFiscalSaidaRepository->atualizaStatusNota(explode("-" , $cargaEntity->getCodCargaExterno() )[0]);
             $cargaRepository->removeCarga($cargaEntity->getId());
         }
 
