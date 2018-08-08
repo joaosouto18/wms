@@ -22,7 +22,7 @@ class Validade_ConsultaController extends Action {
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         foreach ($result as $key => $value) {
             $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['GRADE'], $value['QTD']);
-            if(!empty(reset($vetEmbalagens))){
+            if(reset($vetEmbalagens) != null){
                 $result[$key]['QTD_MAIOR'] = reset($vetEmbalagens);
             }else{
                 $result[$key]['QTD_MAIOR'] = ' - ';

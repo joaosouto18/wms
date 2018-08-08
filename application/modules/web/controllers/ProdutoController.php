@@ -552,7 +552,7 @@ class Web_ProdutoController extends Crud {
             $embalagens =  $this->em->getRepository("wms:Produto\Embalagem")->findBy(['codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null]);
             $result = [];
             foreach ($embalagens as $embalagem) {
-                if (!empty($embalagem->getCodigoBarras())) {
+                if ($embalagem->getCodigoBarras() != null) {
                     $result[] = $embalagem;
                 }
             }
