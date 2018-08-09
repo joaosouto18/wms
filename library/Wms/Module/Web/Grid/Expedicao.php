@@ -181,7 +181,7 @@ class Expedicao extends Grid
                 'controllerName' => 'corte',
                 'actionName' => 'corte-total-ajax',
                 'pkIndex' => 'id',
-                'cssClass' => 'dialogAjax',
+                'cssClass' => 'inside-modal',
                 'condition' => function ($row) {
                     return $row['status'] != "FINALIZADO";
                 }

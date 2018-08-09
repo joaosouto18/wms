@@ -84,33 +84,59 @@ class Expedicao_CorteController extends Action {
         $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
     }
 
+    public function confirmaCorteTotalAjaxAction () {
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+        $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+
+        $this->view->idProduto = $idProduto = $this->_getParam('COD_PRODUTO');
+        $this->view->id = $idExpedicao = $this->_getParam('id');
+        $this->view->grade     = $grade = $this->_getParam('DSC_GRADE');
+
+        $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id'=> $idProduto, 'grade' => $grade));
+
+        $this->view->produto   = $produtoEn->getDescricao();
+        $params = $this->_getAllParams();
+
+        if (isset($params['submit'])) {
+            try {
+                $this->getEntityManager()->beginTransaction();
+
+                $senha = $this->_getParam('senha');
+                $motivo = $this->_getParam('motivoCorte');
+
+                $senhaSistema = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
+                if ($senha != $senhaSistema)
+                    throw new \Exception("Senha Informada Inválida");
+
+                $expedicaoRepo->cortarItemExpedicao($idProduto,$grade,$idExpedicao, $motivo);
+
+                $this->getEntityManager()->flush();
+                $this->getEntityManager()->commit();
+
+                $this->addFlashMessage('success','Cortes efetivados com sucesso');
+            } catch (\Exception $e) {
+                $this->getEntityManager()->rollback();
+
+                $this->addFlashMessage('error',$e->getMessage());
+            }
+
+            $this->redirect('corte-total-ajax','corte','expedicao',array('id'=> $idExpedicao));
+        }
+
+        $pedidos = $expedicaoRepo->getPedidosByProdutoAndExpedicao($idExpedicao, $idProduto, $grade);
+
+        $grid = new \Wms\Module\Expedicao\Grid\PedidosCorteTotal();
+        $this->view->grid = $grid->init($pedidos);
+
+    }
+
     public function corteTotalAjaxAction() {
 
         $idExpedicao = $this->_getParam('id');
 
-        $params = $this->_getAllParams();
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
-
-        if (isset($params['massaction-select']) && ($params['massaction-select'] == 'mass-select')) {
-            try {
-                $this->getEntityManager()->beginTransaction();
-
-                $idProdutos = $this->_getParam('mass-id');
-                foreach ($idProdutos as $id) {
-                    $expedicaoRepo->cortarItemExpedicao($id,'UNICA',$idExpedicao, "teste");
-                }
-
-                $this->addFlashMessage('success', 'Cortes efetivados com sucesso');
-
-                $this->getEntityManager()->flush();
-                $this->getEntityManager()->commit();
-            } catch (\Exception $e) {
-                $this->getEntityManager()->rollback();
-                $this->addFlashMessage('error', $e->getMessage());
-            }
-        }
-
 
         $produtos = $expedicaoRepo->getProdutosPorExpedicao($idExpedicao);
 

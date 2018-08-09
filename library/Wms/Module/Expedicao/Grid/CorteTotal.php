@@ -14,10 +14,6 @@ class CorteTotal extends Grid
         $this->setShowExport(false);
         $this
             ->addColumn(array(
-                'label' => 'Codigo',
-                'index' => 'id',
-            ))
-            ->addColumn(array(
                 'label' => 'Código',
                 'index' => 'COD_PRODUTO',
             ))
@@ -33,13 +29,18 @@ class CorteTotal extends Grid
                 'label' => 'Qtd. Pedidos',
                 'index' => 'QTD_PEDIDOS',
             ))
-
             ->addColumn(array(
                 'label' => 'Qtd. Separar',
                 'index' => 'QTD_SEPARAR',
             ))
-            ->addMassAction('mass-select', 'Cortar');
-
+            ->addAction(array(
+                'label' => 'Cortar',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'corte',
+                'actionName' => 'confirma-corte-total-ajax',
+                'cssClass' => 'dialogAjax',
+                'pkIndex' => array('COD_PRODUTO','DSC_GRADE')
+            ));
         return $this;
     }
 

@@ -4360,6 +4360,30 @@ class ExpedicaoRepository extends EntityRepository {
         return $result;
     }
 
+    public function getPedidosByProdutoAndExpedicao ($idExpedicao, $idProduto, $grade) {
+        $sql = " SELECT P.COD_PEDIDO,
+                        C.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+                        PES.NOM_PESSOA as CLIENTE,
+                        PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0) as QTD,
+                        PP.COD_PRODUTO, 
+                        PP.DSC_GRADE,
+                        PROD.DSC_PRODUTO
+                    FROM CARGA C 
+                    LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                    LEFT JOIN CLIENTE C ON C.COD_PESSOA = P.COD_PESSOA
+                    LEFT JOIN PESSOA PES ON P.COD_PESSOA = PES.COD_PESSOA
+                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                    LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO
+                    WHERE C.COD_EXPEDICAO = $idExpedicao
+                      AND PP.COD_PRODUTO = '$idProduto'
+                      AND PP.DSC_GRADE = '$grade'
+                      AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0)";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+
+    }
+
     public function getProdutosPorExpedicao ($idExpedicao) {
         $sql = " SELECT PP.COD_PRODUTO, 
                         PP.DSC_GRADE,
@@ -4377,11 +4401,6 @@ class ExpedicaoRepository extends EntityRepository {
                            PROD.DSC_PRODUTO";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
-        foreach ($result as $key => $r) {
-            $result[$key]['id'] = $r['COD_PRODUTO'];
-        }
-
         return $result;
     }
 
