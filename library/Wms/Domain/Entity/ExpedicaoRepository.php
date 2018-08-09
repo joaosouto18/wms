@@ -4456,7 +4456,6 @@ class ExpedicaoRepository extends EntityRepository {
         return $result;
     }
 
-
     public function cortarItemExpedicao ($idProduto, $grade, $expedicao, $motivo) {
 
         $sql = "SELECT P.COD_PEDIDO, PP.COD_PEDIDO_PRODUTO, P.COD_EXTERNO, PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0) as QTD_PEDIDO
@@ -4486,5 +4485,26 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
     }
+
+    public function getItinerariosByExpedicao($expedicao) {
+        $sql = "SELECT COD_EXPEDICAO,
+                       LISTAGG (DSC_ITINERARIO, ',') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
+                  FROM ITINERARIO I
+                 INNER JOIN (SELECT DISTINCT C.COD_EXPEDICAO,
+                                    P.COD_ITINERARIO
+                               FROM CARGA C
+                              INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA 
+                              WHERE 1 = 1 AND C.COD_EXPEDICAO = $expedicao
+                              GROUP BY P.COD_ITINERARIO, C.COD_EXPEDICAO) CARGAS ON CARGAS.COD_ITINERARIO = I.COD_ITINERARIO
+                 GROUP BY COD_EXPEDICAO";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($result) == 0) {
+            return "NÃO DEFINIDO";
+        } else {
+            return $result[0]['ITINERARIOS'];
+        }
+    }
+
 
 }
