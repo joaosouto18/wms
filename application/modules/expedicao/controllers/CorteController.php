@@ -126,6 +126,14 @@ class Expedicao_CorteController extends Action {
 
         $pedidos = $expedicaoRepo->getPedidosByProdutoAndExpedicao($idExpedicao, $idProduto, $grade);
 
+        $produtoCortado = true;
+        foreach ($pedidos as $pedido) {
+            if ($pedido['QTD'] > 0) {
+                $produtoCortado = false;
+            }
+        }
+        $this->view->produtoCortado = $produtoCortado;
+
         $grid = new \Wms\Module\Expedicao\Grid\PedidosCorteTotal();
         $this->view->grid = $grid->init($pedidos);
 
@@ -196,6 +204,8 @@ class Expedicao_CorteController extends Action {
         $this->view->produto = $produto = $this->_getParam('COD_PRODUTO', 0);
         $this->view->grade = $grade = $this->_getParam('DSC_GRADE', 0);
         $this->view->expedicao = $expedicao = $this->_getParam('expedicao');
+        $this->view->origin = $origin = $this->_getParam('origin');
+
         $quantidade = $this->_getParam('quantidade');
         $motivo = $this->_getParam('motivoCorte', null);
 
@@ -224,12 +234,17 @@ class Expedicao_CorteController extends Action {
                 $this->getEntityManager()->flush();
                 $this->getEntityManager()->commit();
                 $this->addFlashMessage('success', 'Produto ' . $produto . ' grade ' . $grade . ' pedido ' . $pedido . ' cortado com Sucesso');
-                $this->_redirect('/expedicao');
             } catch (\Exception $e) {
                 $this->getEntityManager()->rollback();
                 $this->addFlashMessage('error', $e->getMessage());
+            }
+
+            if ($origin == 'ressuprimento') {
+                $this->_redirect("/expedicao/corte/corte-antecipado-ajax/id/$expedicao/origin/ressuprimento");
+            } else {
                 $this->_redirect('/expedicao');
             }
+
         }
     }
 

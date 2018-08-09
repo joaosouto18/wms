@@ -3940,6 +3940,28 @@ class ExpedicaoRepository extends EntityRepository {
                  $having
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        foreach ($result as $key => $value) {
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
+            if(is_array($vetEmbalagens)) {
+                $embalagem = implode(' + ', $vetEmbalagens);
+            }else{
+                $embalagem = $vetEmbalagens;
+            }
+            $result[$key]['QTD'] = $embalagem;
+
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_CORTADA']);
+            if(is_array($vetEmbalagens)) {
+                $embalagem = implode(' + ', $vetEmbalagens);
+            }else{
+                $embalagem = $vetEmbalagens;
+            }
+            $result[$key]['QTD_CORTADA'] = $embalagem;
+
+        }
+
+
         return $result;
     }
 
@@ -4376,20 +4398,23 @@ class ExpedicaoRepository extends EntityRepository {
                     LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO
                     WHERE C.COD_EXPEDICAO = $idExpedicao
                       AND PP.COD_PRODUTO = '$idProduto'
-                      AND PP.DSC_GRADE = '$grade'
-                      AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0)";
+                      AND PP.DSC_GRADE = '$grade'";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         foreach ($result as $key => $value) {
-            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
-            if(is_array($vetEmbalagens)) {
-                $embalagem = implode(' + ', $vetEmbalagens);
-            }else{
-                $embalagem = $vetEmbalagens;
+            if ($result[$key]['QTD'] <= 0 ) {
+                $result[$key]['QTD'] = "Cortado";
+            } else {
+                $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
+                if(is_array($vetEmbalagens)) {
+                    $embalagem = implode(' + ', $vetEmbalagens);
+                }else{
+                    $embalagem = $vetEmbalagens;
+                }
+                $result[$key]['QTD'] = $embalagem;
             }
-            $result[$key]['QTD'] = $embalagem;
         }
 
         return $result;
@@ -4406,8 +4431,7 @@ class ExpedicaoRepository extends EntityRepository {
                    LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                    LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO
-                  WHERE C.COD_EXPEDICAO = $idExpedicao
-                    AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0)
+                  WHERE C.COD_EXPEDICAO = $idExpedicao                    
                   GROUP BY PP.COD_PRODUTO, 
                            PP.DSC_GRADE,
                            PROD.DSC_PRODUTO";
@@ -4416,13 +4440,17 @@ class ExpedicaoRepository extends EntityRepository {
 
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         foreach ($result as $key => $value) {
-            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_SEPARAR']);
-            if(is_array($vetEmbalagens)) {
-                $embalagem = implode(' + ', $vetEmbalagens);
-            }else{
-                $embalagem = $vetEmbalagens;
+            if ($result[$key]['QTD_SEPARAR'] <= 0) {
+                $result[$key]['QTD_SEPARAR'] = 'Cortado';
+            } else {
+                $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_SEPARAR']);
+                if(is_array($vetEmbalagens)) {
+                    $embalagem = implode(' + ', $vetEmbalagens);
+                }else{
+                    $embalagem = $vetEmbalagens;
+                }
+                $result[$key]['QTD_SEPARAR'] = $embalagem;
             }
-            $result[$key]['QTD_SEPARAR'] = $embalagem;
         }
 
         return $result;

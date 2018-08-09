@@ -30,7 +30,8 @@ echo $this->form;
                                 <ul>
                                     <li><img src="/img/admin/icon_opc.gif" alt="Op&ccedil;&otilde;es" />
                                         <ul>
-                                            <li><a href="/expedicao/corte/corte-total-ajax/id/<?php echo $expedicao['COD_EXPEDICAO']?>" target="_blank" title="Corte Total">Corte Total</a></li>
+                                            <li><a href="/expedicao/corte/corte-total-ajax/id/<?php echo $expedicao['COD_EXPEDICAO']?>" target="_blank" title="Corte Total">Corte Total de Produtos</a></li>
+                                            <li><a href="/expedicao/corte/corte-antecipado-ajax/id/<?php echo $expedicao['COD_EXPEDICAO']?>/origin/ressuprimento" target="_blank" title="Corte de Pedidos">Corte Parcial de Pedidos</a></li>
                                         </ul>
                                     </li>
                                 </ul>

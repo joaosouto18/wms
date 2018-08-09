@@ -16,6 +16,9 @@
 
 <fieldset>
     <legend>Corte</legend>
+    <?php if ($this->produtoCortado)  {?>
+        <b>Produto já se encontra cortado</b>
+    <?php } else { ?>
     <form action="/expedicao/corte/confirma-corte-total-ajax">
 
         <input type="hidden" name="COD_PRODUTO" id="COD_PRODUTO" value="<?php echo $this->idProduto; ?>">
@@ -28,6 +31,7 @@
         <input type="password" name="senha" id="senha" value="" size="11" title="senha" required style="margin-right: 25px">
         <input type="submit" name="submit" id="btnCortar" value="Confirmar Cortes" class="btn" style="margin-top: 10px; margin-bottom: 15px">
     </form>
+    <?php }?>
 </fieldset>
 <fieldset>
     <legend>Pedidos</legend>
