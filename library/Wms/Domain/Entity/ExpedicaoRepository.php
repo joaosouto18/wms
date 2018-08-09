@@ -4380,6 +4380,18 @@ class ExpedicaoRepository extends EntityRepository {
                       AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0)";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        foreach ($result as $key => $value) {
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
+            if(is_array($vetEmbalagens)) {
+                $embalagem = implode(' + ', $vetEmbalagens);
+            }else{
+                $embalagem = $vetEmbalagens;
+            }
+            $result[$key]['QTD'] = $embalagem;
+        }
+
         return $result;
 
     }
@@ -4401,6 +4413,18 @@ class ExpedicaoRepository extends EntityRepository {
                            PROD.DSC_PRODUTO";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        foreach ($result as $key => $value) {
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_SEPARAR']);
+            if(is_array($vetEmbalagens)) {
+                $embalagem = implode(' + ', $vetEmbalagens);
+            }else{
+                $embalagem = $vetEmbalagens;
+            }
+            $result[$key]['QTD_SEPARAR'] = $embalagem;
+        }
+
         return $result;
     }
 
