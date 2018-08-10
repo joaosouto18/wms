@@ -1011,6 +1011,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                             foreach ($item['enderecos'] as $idEndereco => $endereco) {
                                 $qtd = $endereco['qtd'];
+                                if (empty($endereco['lote'])) {
+                                    $lote = ($produtoEntity->getIndControlaLote() == "S") ? Produto\Lote::LND : Produto\Lote::NCL;
+                                } else {
+                                    $lote = $endereco['lote'];
+                                }
                                 if ($qtd > 0) {
                                     $depositoEnderecoEn = $endereco['enderecoEn'];
 
@@ -1020,7 +1025,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                             'pedidoEntity' => $pedidoEntity,
                                             'quantidade' => 1,
                                             'volumeEntity' => $volumeEntity,
-                                            'lote' => $endereco['lote'],
+                                            'lote' => $lote,
                                             'embalagemEntity' => null,
                                             'etiquetaMae' => $etiquetaMae,
                                             'depositoEnderecoEn' => $depositoEnderecoEn,
@@ -1076,6 +1081,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $depositoEnderecoEn = $elements['enderecoEn'];
 
                             foreach ($elements['volumes'] as $value) {
+                                if (empty($value['lote'])) {
+                                    $lote = ($produtoEntity->getIndControlaLote() == "S") ? Produto\Lote::LND : Produto\Lote::NCL;
+                                } else {
+                                    $lote = $value['lote'];
+                                }
                                 list($strQuebrasConcat, $arrQuebras) = self::getSetupQuebras($quebras, $pedidoProduto);
                                 $mapaSeparacao = $this->getMapaSeparacao($arrQuebras, $statusEntity, $expedicaoEntity);
                                 $this->salvaMapaSeparacaoProduto(
@@ -1090,7 +1100,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                     $pedidoEntity,
                                     $arrayRepositorios,
                                     null,
-                                    $value['lote']);
+                                    $lote);
                             }
                         }
                     }
@@ -1152,7 +1162,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
 
                     foreach( $reservas as $reserva ) {
-                        $lote = $reserva['lote'];
+                        if (empty($reserva['lote'])) {
+                            $lote = ($produtoEntity->getIndControlaLote() == "S") ? Produto\Lote::LND : Produto\Lote::NCL;
+                        } else {
+                            $lote = $reserva['lote'];
+                        }
 
                         $quebraPD = $reserva['quebraPulmaoDoca'];
                         if(!empty($reserva['idEndereco'])) {
@@ -2339,7 +2353,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $arrayEtiqueta['etiquetaMae']          = $etiquetaMae;
         $arrayEtiqueta['codDepositoEndereco']  = $depositoEndereco;
         $arrayEtiqueta['tipoSaida']            = $tipoSeparacao;
-        $arrayEtiqueta['lote']                 = ($lote == Produto\Lote::LND) ? null : $lote;
+        $arrayEtiqueta['lote']                 = (!in_array($lote, [Produto\Lote::NCL, Produto\Lote::LND])) ? $lote : null;
 
         if ($embalagemEntity == null) {
             $arrayEtiqueta['qtdEmbalagem'] = 1;
@@ -2420,7 +2434,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setProdutoVolume($volumeEntity);
             $mapaProduto->setQtdSeparar($quantidadePedido);
             $mapaProduto->setQtdEmbalagem($quantidadeEmbalagem);
-            $mapaProduto->setLote($lote);
+            $mapaProduto->setLote((!in_array($lote, [Produto\Lote::NCL, Produto\Lote::LND])) ? $lote : null);
             if (!empty($arrPedidoProduto)) {
                 $pedidoproduto = reset($arrPedidoProduto);
                 $mapaProduto->setCodPedidoProduto($pedidoproduto->getId());

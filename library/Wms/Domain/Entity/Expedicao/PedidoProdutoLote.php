@@ -14,6 +14,9 @@ use Wms\Domain\Entity\Produto;
 class PedidoProdutoLote
 {
 
+    const DEF_ERP = "E";
+    const DEF_WMS = "W";
+
     /**
      * @Id
      * @Column(name="COD_PEDIDO_PRODUTO_LOTE", type="integer", nullable=false)
@@ -54,6 +57,11 @@ class PedidoProdutoLote
      * @Column(name="QTD_CORTE", type="decimal", nullable=false)
      */
     protected $qtdCorte;
+
+    /**
+     * @Column(name="IND_DEFINICAO", type="string", nullable=false)
+     */
+    protected $definicao;
 
 
     public function setQuantidade($quantidade)
@@ -171,5 +179,22 @@ class PedidoProdutoLote
     {
         $this->pedidoProduto = $pedidoProduto;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getDefinicao()
+    {
+        return $this->definicao;
+    }
+
+    /**
+     * @param mixed $definicao
+     */
+    public function setDefinicao($definicao)
+    {
+        $this->definicao = $definicao;
+    }
+
 
 }

@@ -140,8 +140,6 @@ class Mobile_ExpedicaoController extends Action {
             $mapaSepProdRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
             $mapaSeparacaoQuebraRepo = $this->em->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
 
-
-
             $dscVolume = "";
             $volumePatrimonioEn = null;
             if (!empty($idVolume)) {
@@ -195,6 +193,7 @@ class Mobile_ExpedicaoController extends Action {
         $idMapa = $this->_getParam("idMapa");
         $qtd = $this->_getParam("qtd");
         $codBarras = $this->_getParam("codigoBarras");
+        $lote = $this->_getParam("lote");
         $codPessoa = $this->_getParam('cliente');
         $idExpedicao = $this->_getParam("idExpedicao");
         $idVolume = $this->_getParam("idVolume");
@@ -221,7 +220,7 @@ class Mobile_ExpedicaoController extends Action {
             'utilizaVolumePatrimonio' => $this->_getParam("utilizaVolumePatrimonio")
         );
 
-        if (isset($codBarras) and ( $codBarras != null) and ( $codBarras != "") && isset($idMapa) && !empty($idMapa)) {
+        if (!empty($codBarras) && !empty($idMapa)) {
             try {
                 $codBarrasProcessado = intval($codBarras);
 
@@ -271,7 +270,7 @@ class Mobile_ExpedicaoController extends Action {
                         $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
                         $volume = ['idVolume' => $volumePatrimonioEn->getId(), 'dscVolume' => $volumePatrimonioEn->getDescricao()];
                     }
-                    $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa, null, $chekcout);
+                    $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa, null, $chekcout, $lote);
                     if(isset($result['checkout'])){
                         $msg['msg'] = 'checkout';
                         $msg['produto'] = $result['produto'];

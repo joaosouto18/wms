@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Util\Endereco as EnderecoUtil;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Produto\Lote;
+use Wms\Math;
 
 class EstoqueRepository extends EntityRepository
 {
@@ -94,22 +95,20 @@ class EstoqueRepository extends EntityRepository
             }
         }
 
-        $volumeEn = null;
-        if($controlaLote == 'S'){
-            if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])) {
-                $volumeEn = $params['volume'];
-                $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn, 'lote' => $params['lote']));
-            } else {
-                $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'lote' => $params['lote']));
-            }
-        }else {
-            if (isset($params['volume']) and !is_null($params['volume']) && !empty($params['volume'])) {
-                $volumeEn = $params['volume'];
-                $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn));
-            } else {
-                $estoqueEn = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn));
-            }
-        }
+        $argsConsultaEstoque = [
+            'codProduto' => $codProduto,
+            'grade' => $grade,
+            'depositoEndereco' => $enderecoEn,
+        ];
+        if (!empty($volumeEn))
+            $argsConsultaEstoque['produtoVolume'] = $volumeEn;
+
+        if ($controlaLote == "S")
+            $argsConsultaEstoque['lote'] = $params['lote'];
+
+        /** @var Estoque $estoqueEn */
+        $estoqueEn = $this->findOneBy($argsConsultaEstoque);
+
         $embalagemEn = null;
         if (isset($params['embalagem']) and !is_null($params['embalagem']) && !empty($params['embalagem'])) {
             $embalagemEn = $params['embalagem'];
@@ -194,12 +193,8 @@ class EstoqueRepository extends EntityRepository
             $idUma = $estoqueEn->getUma();
             $dscEndereco = $estoqueEn->getDepositoEndereco()->getDescricao();
             $dscProduto = $estoqueEn->getProduto()->getDescricao();
-            if (!is_null($volumeEn)) {
-                $novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn))->getQtd() + $qtd;
-            } else {
-                $novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn))->getQtd() + $qtd;
-            }
-            if ($novaQtd >0) {
+            $novaQtd = Math::adicionar($estoqueEn->getQtd(), $qtd);
+            if ($novaQtd > 0) {
                 $estoqueEn->setQtd($novaQtd);
                 $estoqueEn->setValidade($validade);
                 if (isset($unitizadorEn)) {

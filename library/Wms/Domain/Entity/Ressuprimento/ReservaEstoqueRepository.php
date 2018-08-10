@@ -377,7 +377,7 @@ class ReservaEstoqueRepository extends EntityRepository
                 $dataValidade = date_create_from_format('d/m/Y',$produto['validade']);
                 if ($dataValidade) $reservaEstoqueProduto->setValidade($dataValidade);
             }
-            if (isset($produto['lote']) && !empty($produto['lote']) && $produto['lote'] != Produto\Lote::LND){
+            if (isset($produto['lote']) && !empty($produto['lote']) && !in_array($produto['lote'], [Produto\Lote::NCL, Produto\Lote::LND])){
                 $reservaEstoqueProduto->setLote($produto['lote']);
             }
             $reservaEstoqueProduto->setQtd(str_replace(",",".",$produto['qtd']));
@@ -553,7 +553,7 @@ class ReservaEstoqueRepository extends EntityRepository
                         ree.tipoSaida,
                         rep.codProdutoVolume,
                         (rep.qtd * -1) as qtd,
-                        NVL(rep.lote, '$loteNaoDefinido') as lote
+                        rep.lote as lote
                         ")
             ->from("wms:Ressuprimento\ReservaEstoque", "re")
             ->innerJoin("wms:Ressuprimento\ReservaEstoqueProduto", "rep", "WITH" , "rep.reservaEstoque = re")

@@ -661,6 +661,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $produto->grade = $item['DSC_GRADE'];
                     $produto->quantidade = $item['QTD_PEDIDO'];
                     $produto->proprietario = $item['CNPJ'];
+                    $produto->lote = (isset($item['DSC_LOTE'])) ? $item['DSC_LOTE'] : null;
                     if (is_null($item['ATENDIDA'])) {
                         $produto->quantidadeAtendida = 0;
                     } else {
@@ -746,6 +747,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $produto->grade = $item['DSC_GRADE'];
             $produto->quantidade = $item['QTD_PEDIDO'];
             $produto->proprietario = $item['CNPJ'];
+            $produto->lote = (isset($item['DSC_LOTE'])) ? $item['DSC_LOTE'] : null;
             if (is_null($item['ATENDIDA'])) {
                 $produto->quantidadeAtendida = 0;
             } else {
@@ -940,7 +942,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         'lote' => $lote,
                         'pedidoProduto' => $pedidoProdutoEn,
                         'codPedidoProduto' => $pedidoProdutoEn->getId(),
-                        'quantidade' => $qtd
+                        'quantidade' => $qtd,
+                        'definicao' => Expedicao\PedidoProdutoLote::DEF_ERP
                     ];
                     $pedProdLoteRepo->save($arr);
                 }

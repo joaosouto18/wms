@@ -152,7 +152,7 @@
                         <tr>
                             <td colspan="2" align="center">
                                 <label for="lote" class="field required">*Lote</label>
-                                <input name="lote" id="lote" class="required" onfocus="verificaCodBarras()" onkeydown="redirectTo(event)" size="40" maxlength="100" style="width: 99%">
+                                <input name="lote" id="lote" class="required"  onkeydown="redirectTo(event)" size="40" maxlength="100" style="width: 99%">
                             </td>
                         </tr>
                         <?php } ?>
@@ -183,77 +183,104 @@
 
     <?php if ($temLote) { ?>
     var loteCodigoBarras = <?php echo $this->lotesCodBarras ?>;
-    
+
+    $("#lote").focus(function () {
+        verificaCodBarras()
+    });
+
     function goToLote( event ) {
+        var result = true;
         if (event.which == 13 || event.keyCode == 13) {
-            if ($("#codigoBarras").val() !== "") {
-                var lote = $('#lote');
-                if (lote) {
-                    lote.focus();
-                    lote.val("");
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
+            if (verificaCodBarras()) {
+                var codBarras = $("#codigoBarras");
+                if (loteCodigoBarras[codBarras.val()] instanceof Array) {
+                    var lote = $('#lote');
+                    if (lote) {
+                        lote.focus();
+                        lote.val("");
                     }
+                } else {
+                    return requestAjax(event, $("#qtd"), codBarras);
                 }
             }
+            if (event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
         }
-        return true;
+        return result;
     }
 
     function verificaCodBarras () {
-        var elemCodBarras = $("#codigoBarras");
-        if (elemCodBarras.val() === "") {
-            elemCodBarras.focus();
+        var elem = $('#codigoBarras');
+        var result = true;
+        if (elem.val() === "") {
+            elem.focus();
             alert("Informe primeiro o código de barras do produto");
+            result = false;
+        } else {
+            var check = validaCodBarras(elem.val());
+            if (!check) {
+                elem.focus();
+                elem.val("");
+                result = false;
+            }
         }
+        return result;
     }
 
     function validaCodBarras(codBarras) {
         if (codBarras in loteCodigoBarras) {
             return true;
         } else {
-            alert("Código de barras não esperado para este mapa");
+            alert("Código de barras " + codBarras + " não esperado para este mapa");
             return false;
         }
     }
     
     function checkLoteByCodBarras(codBarras, loteBipado) {
-        if ($.inArray(loteBipado, loteCodigoBarras[codBarras])){
-            return true;
+        if (loteBipado !== "") {
+            if ($.inArray(loteBipado, loteCodigoBarras[codBarras]) < 0) {
+                alert("Lote " + loteBipado + " não esperado para este produto");
+                return false;
+            } else {
+                return true;
+            }
         } else {
-            alert("Lote "+ loteBipado +" não esperado para este produto");
+            alert("Lote não informado!");
             return false;
         }
     }
 
     function redirectTo(event) {
-        var codBarras = $("#codigoBarras");
-        var lote = $('#lote');
         if (event.which == 13 || event.keyCode == 13) {
-            if (codBarras.val() !== "") {
-                if (lote) {
-                    lote.focus();
-                    lote.val("");
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
-                    }
+            var codBarras = $("#codigoBarras");
+            var lote = $("#lote");
+            var qtd = $("#qtd");
+            var confereQtd = <?php echo ($this->confereQtd) ? "true" : "false" ?>;
+
+            if (confereQtd) {
+                requestAjax(event, qtd, codBarras);
+            } else {
+                if (verificacao(codBarras, lote)) {
+                    exibirQtd(event);
                 }
             }
         }
+        return false;
     }
 
-    function checkLotes (codBarras, lote) {
+    function verificacao (codBarras, lote) {
         var result = true;
         if (validaCodBarras(codBarras.val())) {
-            var checkLote = checkLoteByCodBarras(codBarras.val(), lote.val());
-            if (!checkLote) {
-                lote.val("").focus();
+            if (loteCodigoBarras[codBarras.val()] instanceof Array) {
+                var checkLote = checkLoteByCodBarras(codBarras.val(), lote.val());
+                if (!checkLote) {
+                    lote.val("").focus();
+                }
+                result = checkLote;
             }
-            result = checkLote;
         } else {
             codBarras.val("").focus();
             result = false;
@@ -263,12 +290,9 @@
     
     <?php  } ?>
 
-    $('#submit').on('click', function (ev) {
-        var qtd = $("#qtd");
-        var inptIdVolume = $("#idVolume");
-        var codBarras = $("#codigoBarras");
-
-        if (qtd.val() !== '' && codBarras.val() !== "" <?php if ($temLote) { ?> && checkLotes(codBarras, $("#lote")) <?php } ?>) {
+    function requestAjax(event, inputQtd, inputCodBarras) {
+        var lote = $("#lote");
+        if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
             $.ajax({
                 url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
                 data: $('form').serialize(),
@@ -276,7 +300,9 @@
                 type: 'post',
                 success: function (data) {
                     if (data.retorno.resposta.length > 0) {
-                        codBarras.val("").focus();
+                        var inptIdVolume = $("#idVolume");
+                        inputCodBarras.val("").focus();
+                        lote.val("");
                         var error = "";
                         var success = "";
                         var song = "";
@@ -325,19 +351,23 @@
             $('#dados-produtos').html("");
             var confereQtd = $("#confereQtd").val();
             if (confereQtd === null || confereQtd === '' || confereQtd === false) {
-                qtd.addClass("hidden").val("");
+                inputQtd.addClass("hidden").val("");
                 $("#label-qtd").addClass("hidden");
             } else {
-                qtd.val(1);
+                inputQtd.val(1);
             }
-            return false;
         } else {
-            if (ev.preventDefault) {
-                ev.preventDefault();
+            if (event.preventDefault) {
+                event.preventDefault();
             } else {
-                ev.returnValue = false;
+                event.returnValue = false;
             }
         }
+        return false;
+    }
+
+    $('#submit').on('click', function (ev) {
+        return requestAjax(ev, $("#qtd"), $("#codigoBarras"));
     });
 
     $('#next').click(function (e) {

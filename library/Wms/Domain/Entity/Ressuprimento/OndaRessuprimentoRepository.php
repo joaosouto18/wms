@@ -229,7 +229,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
             $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
             $usuarioEn = $pessoaRepo->find($idUsuario);
 
-            $produtos = array();
+            $lotes = array();
             foreach ($ondaOs->getProdutos() as $produto) {
                 $produtoArray = array();
                 $produtoArray['codProdutoEmbalagem'] = $produto->getCodProdutoEmbalagem();
@@ -237,12 +237,15 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 $produtoArray['codProduto'] = $produto->getProduto()->getId();
                 $produtoArray['grade'] = $produto->getProduto()->getGrade();
                 $produtoArray['qtd'] = $produto->getQtd();
-                $produtos[] = $produtoArray;
+                $produtoArray['lote'] = $produto->getLote();
+                $lotes[$produto->getLote()][] = $produtoArray;
             }
 
             $idOnda = $ondaOs->getId();
-            $reservaEstoqueRepo->efetivaReservaEstoque(NULL, $produtos, "E", "O", $idOnda, $idUsuario, $idOs);
-            $reservaEstoqueRepo->efetivaReservaEstoque(NULL, $produtos, "S", "O", $idOnda, $idUsuario, $idOs);
+            foreach($lotes as $produtos) {
+                $reservaEstoqueRepo->efetivaReservaEstoque(NULL, $produtos, "E", "O", $idOnda, $idUsuario, $idOs, null, true);
+                $reservaEstoqueRepo->efetivaReservaEstoque(NULL, $produtos, "S", "O", $idOnda, $idUsuario, $idOs, null, true);
+            }
 
             $statusEn = $this->getEntityManager()->getRepository("wms:Util\Sigla")->findOneBy(array('id' => \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_FINALIZADO));
             $ondaOs->setStatus($statusEn);

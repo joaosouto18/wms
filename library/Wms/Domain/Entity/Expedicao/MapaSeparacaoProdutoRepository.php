@@ -438,14 +438,17 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->innerJoin("msp.produto", "p")
             ->leftJoin("p.embalagens", "e", "WITH", "e.dataInativacao IS NULL and e.codigoBarras IS NOT NULL")
             ->leftJoin("p.volumes", "v", "WITH", "v.dataInativacao IS NULL and v.codigoBarras IS NOT NULL")
-            ->where("msp.mapaSeparacao = :mapa and msp.lote IS NOT NULL")
+            ->where("msp.mapaSeparacao = :mapa")
             ->setParameter("mapa", $mapa);
 
         $result = $dql->getQuery()->getResult();
 
         $arr = [];
         foreach ($result as $item) {
-            $arr[$item['codigoBarras']][] = $item['lote'];
+            if (!empty($item['lote']))
+                $arr[$item['codigoBarras']][] = $item['lote'];
+            else
+                $arr[$item['codigoBarras']] = null;
         }
 
         return $arr;

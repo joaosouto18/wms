@@ -511,7 +511,15 @@ class ExpedicaoRepository extends EntityRepository {
                 por isso não pode ser agrupado nesta quebra de pulmão doca na expedição $idExpedicao");
             }
 
-            $lote = (isset($itemPedido['DSC_LOTE']) && !empty($itemPedido['DSC_LOTE'])) ? $itemPedido['DSC_LOTE'] : Lote::LND;
+            /** @var Produto $produtoEn */
+            $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
+            if ($produtoEn->getIndControlaLote() == "S" && isset($itemPedido['DSC_LOTE']) && !empty($itemPedido['DSC_LOTE'])) {
+                $lote = $itemPedido['DSC_LOTE'];
+            } elseif ($produtoEn->getIndControlaLote() == "S" && (!isset($itemPedido['DSC_LOTE']) || empty($itemPedido['DSC_LOTE']))) {
+                $lote = Lote::LND;
+            } else {
+                $lote = Lote::NCL;
+            }
 
             $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$lote][$itemPedido['COD_PEDIDO']]['qtd'] = $itemPedido['QTD'];
         }
@@ -555,9 +563,16 @@ class ExpedicaoRepository extends EntityRepository {
             $criterio = $itemPedido['COD_PEDIDO'];
             $pedido = array($itemPedido['COD_PEDIDO'] => array('qtd' => $itemPedido['QTD']));
 
-            $lote = (isset($itemPedido['DSC_LOTE']) && !empty($itemPedido['DSC_LOTE'])) ? $itemPedido['DSC_LOTE'] : Lote::LND;
-
+            /** @var Produto $produtoEn */
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
+            if ($produtoEn->getIndControlaLote() == "S" && isset($itemPedido['DSC_LOTE']) && !empty($itemPedido['DSC_LOTE'])) {
+                $lote = $itemPedido['DSC_LOTE'];
+            } elseif ($produtoEn->getIndControlaLote() == "S" && (!isset($itemPedido['DSC_LOTE']) || empty($itemPedido['DSC_LOTE']))) {
+                $lote = Lote::LND;
+            } else {
+                $lote = Lote::NCL;
+            }
+
             list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $criterio, $pedido, $lote, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
         }
 
@@ -688,7 +703,7 @@ class ExpedicaoRepository extends EntityRepository {
                 $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
 
                 while ($qtdRestante > 0) {
-                    if (empty($estoquePulmao) || ($controlaLote == 'S' && $lote == Lote::LND)) {
+                    if (empty($estoquePulmao) || ($controlaLote == 'S' && $lote == Lote::LND && !empty($enderecoPicking))) {
                         $forcarSairDoPicking = true;
                         break;
                     } else {
@@ -839,7 +854,7 @@ class ExpedicaoRepository extends EntityRepository {
                                         continue;
                                     } else {
                                         $estoquePicking = 0;
-                                        $loteReservar = Lote::LND;
+                                        $loteReservar = $lote;
                                     }
                                 } else {
                                     $estoquePicking = Math::subtrair($estoquePicking, $reserva['qtdReservada']);
@@ -1473,7 +1488,7 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             $codCargaExterno = $this->validaCargaFechada($idExpedicao);
-            if (isset($codCargaExterno) && !empty($codCargaExterno)) {
+            if (!empty($codCargaExterno)) {
                 throw new \Exception('As cargas '.$codCargaExterno.' estão com pendencias de fechamento');
             }
 

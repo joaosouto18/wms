@@ -64,8 +64,15 @@ class PedidoRepository extends EntityRepository
                     LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
                     WHERE PP.COD_PEDIDO = $codPedido";
         }else {
-            $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PP.QUANTIDADE - NVL(PP.qtd_cortada,0) as ATENDIDA, '' AS CNPJ
-                  FROM PEDIDO_PRODUTO PP WHERE PP.COD_PEDIDO = '$codPedido'";
+            $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, 
+                           NVL(PPL.QUANTIDADE, PP.QUANTIDADE) as QTD_PEDIDO, 
+                           CASE WHEN (PPL.DSC_LOTE IS NOT NULL )
+                           THEN PPL.QUANTIDADE - NVL(PPL.QTD_CORTE,0)
+                           ELSE PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0) END as ATENDIDA, '' AS CNPJ,
+                           PPL.DSC_LOTE
+                    FROM PEDIDO_PRODUTO PP
+                    LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
+                    WHERE PP.COD_PEDIDO = '$codPedido'";
         }
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;

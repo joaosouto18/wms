@@ -9,6 +9,7 @@ use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as Etiqueta;
 use Wms\Domain\Entity\Produto\Embalagem;
 use Wms\Domain\Entity\Produto\EmbalagemRepository;
+use Wms\Domain\Entity\Produto\Lote;
 use Wms\Domain\Entity\Produto\Volume;
 use Wms\Domain\Entity\ProdutoRepository;
 use Wms\Math;
@@ -288,6 +289,8 @@ class MapaSeparacaoRepository extends EntityRepository {
             }
         }
 
+        $ncl = Lote::NCL;
+
         $sql = " SELECT M.COD_MAPA_SEPARACAO,
                           M.COD_PRODUTO,
                           M.DSC_GRADE,
@@ -297,24 +300,29 @@ class MapaSeparacaoRepository extends EntityRepository {
                           M.QTD_SEPARAR - NVL(C.QTD_CONFERIDA,0) as QTD_CONFERIR,
                           NVL(MIN(PE.COD_BARRAS), MIN(PV.COD_BARRAS)) as COD_BARRAS,
                           DE.DSC_DEPOSITO_ENDERECO,
-                          MSP.COD_MAPA_SEPARACAO_PRODUTO
-                    FROM (SELECT M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) - SUM(MP.QTD_CORTADO) as QTD_SEPARAR
+                          MSP.COD_MAPA_SEPARACAO_PRODUTO,
+                          MSP.DSC_LOTE
+                    FROM (SELECT M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, 
+                                 NVL(MP.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MP.QTD_EMBALAGEM * MP.QTD_SEPARAR) - SUM(MP.QTD_CORTADO) as QTD_SEPARAR, NVL(MP.DSC_LOTE, 'NAO_CONTROLA_LOTE') DSC_LOTE
                             FROM MAPA_SEPARACAO_PRODUTO MP
-                            LEFT JOIN MAPA_SEPARACAO M ON M.COD_MAPA_SEPARACAO = MP.COD_MAPA_SEPARACAO
-                           WHERE MP.IND_CONFERIDO = 'N'
-                           GROUP BY M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0)) M
-               LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA
-                            FROM MAPA_SEPARACAO_CONFERENCIA
-                           WHERE IND_CONFERENCIA_FECHADA = 'N'  
-                           GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0)) C
+                           INNER JOIN MAPA_SEPARACAO M ON M.COD_MAPA_SEPARACAO = MP.COD_MAPA_SEPARACAO
+                           WHERE M.COD_EXPEDICAO = $expedicao AND MP.IND_CONFERIDO = 'N'
+                           GROUP BY M.COD_EXPEDICAO, MP.COD_MAPA_SEPARACAO, MP.COD_PRODUTO, MP.DSC_GRADE, NVL(MP.COD_PRODUTO_VOLUME,0), NVL(MP.DSC_LOTE, 'NAO_CONTROLA_LOTE')) M
+               LEFT JOIN (SELECT MSC.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO, MSC.DSC_GRADE, NVL(MSC.COD_PRODUTO_VOLUME,0) as VOLUME, SUM(MSC.QTD_EMBALAGEM * MSC.QTD_CONFERIDA) as QTD_CONFERIDA, NVL(MSC.DSC_LOTE, 'NAO_CONTROLA_LOTE') DSC_LOTE
+                            FROM MAPA_SEPARACAO_CONFERENCIA MSC
+                           INNER JOIN MAPA_SEPARACAO M ON M.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO
+                           WHERE M.COD_EXPEDICAO = $expedicao AND MSC.IND_CONFERENCIA_FECHADA = 'N'  
+                           GROUP BY MSC.COD_MAPA_SEPARACAO, MSC.COD_PRODUTO, MSC.DSC_GRADE, NVL(MSC.COD_PRODUTO_VOLUME,0), NVL(MSC.DSC_LOTE, 'NAO_CONTROLA_LOTE')) C
                       ON M.COD_MAPA_SEPARACAO = C.COD_MAPA_SEPARACAO
                      AND M.COD_PRODUTO = C.COD_PRODUTO
                      AND M.DSC_GRADE = C.DSC_GRADE
                      AND M.VOLUME = C.VOLUME
+                     AND M.DSC_LOTE = C.DSC_LOTE
                 LEFT JOIN MAPA_SEPARACAO_PRODUTO MSP
                   ON MSP.COD_MAPA_SEPARACAO = M.COD_MAPA_SEPARACAO
                  AND MSP.COD_PRODUTO = M.COD_PRODUTO
                  AND MSP.DSC_GRADE = M.DSC_GRADE
+                 AND CASE WHEN MSP.DSC_LOTE IS NULL THEN '$ncl' ELSE MSP.DSC_LOTE END = M.DSC_LOTE
                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MSP.COD_PRODUTO_EMBALAGEM
                 LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
                 LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO OR DE.COD_DEPOSITO_ENDERECO = PE.COD_DEPOSITO_ENDERECO
@@ -329,7 +337,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                          M.QTD_SEPARAR,
                          C.QTD_CONFERIDA,
                          DE.DSC_DEPOSITO_ENDERECO,
-                         MSP.COD_MAPA_SEPARACAO_PRODUTO
+                         MSP.COD_MAPA_SEPARACAO_PRODUTO,
+                         MSP.DSC_LOTE
             ORDER BY COD_MAPA_SEPARACAO, M.COD_PRODUTO";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -993,7 +1002,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function confereMapaProduto($paramsModeloSeparaco, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa = null, $ordemServicoId = null, $checkout = false) {
+    public function confereMapaProduto($paramsModeloSeparaco, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa = null, $ordemServicoId = null, $checkout = false, $lote = Lote::NCL) {
 
         try {
             $idVolumePatrimonio = null;
@@ -1007,7 +1016,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                 'qtd' => $qtd,
                 'codBarras' => $codBarras,
                 'idMapa' => $idMapa,
-                'idExpedicao' => $idExpedicao
+                'idExpedicao' => $idExpedicao,
+                'lote' => $lote
             );
 
             $conferencia = $this->validaConferenciaMapaProduto($parametrosConferencia,$paramsModeloSeparaco);
@@ -1054,6 +1064,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $novaConferencia->setMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn);
                 $novaConferencia->setDataConferencia(new \DateTime());
                 $novaConferencia->setCodPessoa($codPessoa);
+                $novaConferencia->setLote($conf['lote']);
                 $this->getEntityManager()->persist($novaConferencia);
             }
         } catch (\Exception $e) {
@@ -1085,7 +1096,9 @@ class MapaSeparacaoRepository extends EntityRepository {
         $codBarras = $dadosConferencia['codBarras'];
         $qtd = $dadosConferencia['qtd'];
         $codPessoa = $dadosConferencia['codPessoa'];
-        $idVolumePatrimonio = $dadosConferencia['idVolumePatrimonio'];
+        $lote = (!empty($dadosConferencia['lote']) && $dadosConferencia['lote'] != Lote::NCL) ? $dadosConferencia['lote'] : null ;
+
+        $ncl = Lote::NCL;
 
         $utilizaQuebra = $paramsModeloSeparacao['utilizaQuebra'];
         $tipoDefaultEmbalado = $paramsModeloSeparacao['tipoDefaultEmbalado'];
@@ -1121,6 +1134,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                        P.DSC_PRODUTO,
                        P.COD_PRODUTO,
                        P.DSC_GRADE,
+                       MSP.DSC_LOTE,
                        P.IND_FRACIONAVEL,
                        PE.COD_PRODUTO_EMBALAGEM,
                        PV.COD_PRODUTO_VOLUME,
@@ -1133,18 +1147,20 @@ class MapaSeparacaoRepository extends EntityRepository {
                   FROM MAPA_SEPARACAO MS
                   INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO
                   INNER JOIN (SELECT COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME,
-                                    SUM((QTD_EMBALAGEM * QTD_SEPARAR) - NVL(QTD_CORTADO,0)) as QTD_SEPARAR
+                                    SUM((QTD_EMBALAGEM * QTD_SEPARAR) - NVL(QTD_CORTADO,0)) as QTD_SEPARAR, NVL(MSP.DSC_LOTE, '$ncl') DSC_LOTE
                                FROM MAPA_SEPARACAO_PRODUTO MSP
                                $whereMSPEmbalado
-                              GROUP BY COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0)) MSP ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
-                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA
+                              GROUP BY COD_MAPA_SEPARACAO, MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0), NVL(MSP.DSC_LOTE, '$ncl')) MSP ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) COD_PRODUTO_VOLUME, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) as QTD_CONFERIDA, 
+                              NVL(DSC_LOTE, '$ncl') DSC_LOTE
                                FROM MAPA_SEPARACAO_CONFERENCIA
                                $whereMSCEmbalado
-                             GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0)) CONF
+                             GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0), NVL(DSC_LOTE, '$ncl')) CONF
                          ON CONF.COD_PRODUTO = MSP.COD_PRODUTO
                         AND CONF.DSC_GRADE = MSP.DSC_GRADE
                         AND CONF.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
                         AND CONF.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                        AND CONF.DSC_LOTE = MSP.DSC_LOTE
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = MSP.COD_PRODUTO AND PE.DSC_GRADE = MSP.DSC_GRADE
                   LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = MSP.COD_PRODUTO AND P.DSC_GRADE = MSP.DSC_GRADE
@@ -1191,6 +1207,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         $dscEmbalagem = $result[0]['DSC_EMBALAGEM'] . "($fatorCodBarrasBipado)";
         $prodFracionavel = $result[0]['IND_FRACIONAVEL'];
         $isEmbExpDefault = $result[0]['IS_EMB_EXP_DEFAULT'];
+        $loteConferido = $result[0]['DSC_LOTE'];
 
         if ($prodFracionavel == 'S') {
             /** @var EmbalagemRepository $embalagemRepo */
@@ -1216,6 +1233,9 @@ class MapaSeparacaoRepository extends EntityRepository {
         foreach ($result as $mapa) {
             //CASO SEJA CONFERÊNCIA DE EMBALADO NÃO SOMA AS QTDS DO MESMO ITEM DE TODOS OS MAPAS
             if (!empty($codPessoa) && $mapa['COD_MAPA_SEPARACAO'] != $idMapa) continue;
+
+            //CASO O PRODUTO CONTROLE LOTE, SÓ CALCULA O LÓTE ESPECÍFICO
+            if (!empty($lote) && $mapa["DSC_LOTE"] != $lote) continue;
 
             $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
             $qtdConferidoTotal = Math::adicionar($qtdConferidoTotal, $mapa['QTD_CONFERIDA']);
@@ -1245,7 +1265,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                     'codPrdutoVolume' => $codProdutoVolume,
                     'qtdEmbalagem' => $fatorCodBarrasBipado,
                     'qtdConferidaTotalEmb' => $qtdConferidoTotalEmb,
-                    'quantidade' => Math::dividir($qtdConferir, $fatorCodBarrasBipado)
+                    'quantidade' => Math::dividir($qtdConferir, $fatorCodBarrasBipado),
+                    'lote' => $lote
                 );
 
                 $qtdRestante = Math::subtrair($qtdRestante, $qtdConferir);
@@ -1253,7 +1274,8 @@ class MapaSeparacaoRepository extends EntityRepository {
         }
 
         if (Math::compare($qtdRestante, 0, ">") && !$checkout) {
-            throw new \Exception("A quantidade de $qtdInformada para o produto $codProduto / $dscGrade excede o solicitado!");
+            $strLote = (!empty($lote)) ? " lote: '$lote'" : "";
+            throw new \Exception("A quantidade de $qtdInformada para o produto $codProduto / $dscGrade$strLote excede o solicitado!");
         }
 
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA
@@ -1295,7 +1317,7 @@ class MapaSeparacaoRepository extends EntityRepository {
 
 
         if ($utilizaVolumePatrimonio == 'S') {
-            if ((!(isset($idVolumePatrimonio)) || ($idVolumePatrimonio == null)) && ($embalado == true)) {
+            if ((!(isset($dadosConferencia['idVolumePatrimonio'])) || ($dadosConferencia['idVolumePatrimonio'] == null)) && ($embalado == true)) {
                 throw new \Exception("O produto $codProduto / $dscGrade - $dscProduto - $dscEmbalagem é embalado");
             }
         }

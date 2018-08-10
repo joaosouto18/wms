@@ -90,6 +90,11 @@ class MapaSeparacaoConferencia
      */
     protected $codMapaSeparacao;
 
+    /**
+     * @var string
+     * @Column(name="DSC_LOTE", type="string", nullable=true)
+     */
+    protected $lote;
 
     /**
      * @param mixed $codOS
@@ -329,6 +334,22 @@ class MapaSeparacaoConferencia
     public function getCodMapaSeparacao()
     {
         return $this->codMapaSeparacao;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
+
+    /**
+     * @param string $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
     }
 
 }
