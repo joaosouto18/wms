@@ -6,6 +6,7 @@ use Core\Pdf,
     Wms\Util\CodigoBarras,
     Wms\Service\Coletor as LeituraColetor,
     Wms\Domain\Entity\Expedicao;
+use Core\Util\Converter;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Sistema\Parametro;
 use Wms\Math;
@@ -168,8 +169,8 @@ class MapaSeparacao extends eFPDF {
                     $this->Cell(20, 1, "", 0, 1);
                 }
             }
-            $pesoTotal = 0;
-            $cubagemTotal = 0;
+            $pesoTotal = 0.0;
+            $cubagemTotal = 0.0;
             /** @var Expedicao\MapaSeparacaoProduto $produto */
             foreach ($produtos as $produto) {
                 $dscEndereco = "";
@@ -193,11 +194,17 @@ class MapaSeparacao extends eFPDF {
                 if ($endereco != null)
                     $dscEndereco = $endereco->getDescricao();
 
-                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
-                if (!empty($pesoProduto)) {
-                    $pesoTotal += ($pesoProduto->getPeso() * $quantidade);
-                    $cubagemTotal += ($pesoProduto->getCubagem() * $quantidade);
+                if ($produto->getProdutoEmbalagem() != null) {
+                    $peso = $produto->getProdutoEmbalagem()->getPeso();
+                    $cubagem = $produto->getProdutoEmbalagem()->getCubagem();
                 }
+                if ($produto->getProdutoVolume() != null) {
+                    $peso = $produto->getProdutoVolume()->getPeso();
+                    $cubagem = $produto->getProdutoVolume()->getCubagem();
+                }
+                $pesoTotal += ($quantidade * str_replace(",",".",$peso));
+                $cubagemTotal += ($quantidade * str_replace(",",".",$cubagem));
+
                 $this->SetFont('Arial', null, 9);
                 if ($usaGrade === "S") {
                     if ($tipoQebra == true) {
@@ -333,8 +340,8 @@ class MapaSeparacao extends eFPDF {
             $this->idMapa = $mapa->getId();
             $this->quebrasEtiqueta = $quebras;
             $this->idExpedicao = $idExpedicao;
-            $pesoTotal = 0;
-            $cubagemTotal = 0;
+            $pesoTotal = 0.0;
+            $cubagemTotal = 0.0;
 
             $this->AddPage();
 
@@ -538,7 +545,7 @@ class MapaSeparacao extends eFPDF {
             $this->idMapa = $mapa->getId();
             $this->quebrasEtiqueta = $quebras;
             $this->idExpedicao = $idExpedicao;
-            $pesoTotal = 0;
+            $pesoTotal = 0.0;
             $cubagemTotal = 0;
 
             $this->AddPage();
@@ -730,7 +737,7 @@ class MapaSeparacao extends eFPDF {
             $this->idMapa = $mapa->getId();
             $this->quebrasEtiqueta = $quebras;
             $this->idExpedicao = $idExpedicao;
-            $pesoTotal = 0;
+            $pesoTotal = 0.0;
             $cubagemTotal = 0;
 
             $this->AddPage();
@@ -988,7 +995,7 @@ class MapaSeparacao extends eFPDF {
             $this->idMapa = $mapa->getId();
             $this->quebrasEtiqueta = $quebras;
             $this->idExpedicao = $idExpedicao;
-            $pesoTotal = 0;
+            $pesoTotal = 0.0;
             $cubagemTotal = 0;
 
             $this->AddPage();
@@ -1312,7 +1319,7 @@ class MapaSeparacao extends eFPDF {
                     $this->Cell(20, 1, "", 0, 1);
                 }
             }
-            $pesoTotal = 0;
+            $pesoTotal = 0.0;
             $cubagemTotal = 0;
             /** @var Expedicao\MapaSeparacaoProduto $produto */
             foreach ($produtos as $produto) {
@@ -1440,7 +1447,7 @@ class MapaSeparacao extends eFPDF {
             $this->idMapa = $mapa->getId();
             $this->quebrasEtiqueta = $quebras;
             $this->idExpedicao = $idExpedicao;
-            $pesoTotal = 0;
+            $pesoTotal = 0.0;
             $cubagemTotal = 0;
 
             $this->AddPage();
