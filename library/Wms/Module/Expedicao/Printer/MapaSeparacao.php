@@ -412,7 +412,6 @@ class MapaSeparacao extends eFPDF {
             foreach ($produtos as $produto) {
                 $this->SetFont('Arial', null, 8);
                 $embalagemEn = $embalagemRepo->findOneBy(array('codProduto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade(), 'isPadrao' => 'S'));
-                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
                 $codigoBarras = '';
                 $embalagem = '';
@@ -440,10 +439,16 @@ class MapaSeparacao extends eFPDF {
                 if ($endereco != null)
                     $dscEndereco = $endereco->getDescricao();
 
-                if (isset($pesoProduto) && !empty($pesoProduto)) {
-                    $pesoTotal += ($pesoProduto->getPeso() * $quantidade);
-                    $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;
+                if ($produto->getProdutoEmbalagem() != null) {
+                    $peso = $produto->getProdutoEmbalagem()->getPeso();
+                    $cubagem = $produto->getProdutoEmbalagem()->getCubagem();
                 }
+                if ($produto->getProdutoVolume() != null) {
+                    $peso = $produto->getProdutoVolume()->getPeso();
+                    $cubagem = $produto->getProdutoVolume()->getCubagem();
+                }
+                $pesoTotal += ($quantidade * str_replace(",",".",$peso));
+                $cubagemTotal += ($quantidade * str_replace(",",".",$cubagem));
 
                 if ($tipoQebra == true) {
                     $this->Cell(16, 4, $dscEndereco, 0, 0);
@@ -619,7 +624,6 @@ class MapaSeparacao extends eFPDF {
                 if (isset($volumeEntity) && !empty($volumeEntity)) {
                     $volumeEn  = $volumeRepo->find($produto->getProdutoVolume()->getId());
                 }
-                $pesoProduto = $pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
                 $endereco = $produto->getDepositoEndereco();
                 $codProduto = $produto->getCodProduto();
@@ -636,10 +640,17 @@ class MapaSeparacao extends eFPDF {
                 } elseif (isset($volumeEn) && !empty($volumeEn)) {
                     $codigoBarras = $volumeEn->getDescricao();
                 }
-                if (isset($pesoProduto) && !empty($pesoProduto)) {
-                    $pesoTotal += ($pesoProduto->getPeso() * $quantidade);
-                    $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;
+
+                if ($produto->getProdutoEmbalagem() != null) {
+                    $peso = $produto->getProdutoEmbalagem()->getPeso();
+                    $cubagem = $produto->getProdutoEmbalagem()->getCubagem();
                 }
+                if ($produto->getProdutoVolume() != null) {
+                    $peso = $produto->getProdutoVolume()->getPeso();
+                    $cubagem = $produto->getProdutoVolume()->getCubagem();
+                }
+                $pesoTotal += ($quantidade * str_replace(",",".",$peso));
+                $cubagemTotal += ($quantidade * str_replace(",",".",$cubagem));
 
                 if ($tipoQebra == true) {
                     $this->Cell(20, 4, $dscEndereco, 0, 0);
@@ -725,7 +736,6 @@ class MapaSeparacao extends eFPDF {
                 $tipoQebra = true;
 
             $produtos = $mapaSeparacaoProdutoRepo->getMapaProduto($mapa->getId());
-
 
             $quebras = $mapa->getDscQuebra();
 
