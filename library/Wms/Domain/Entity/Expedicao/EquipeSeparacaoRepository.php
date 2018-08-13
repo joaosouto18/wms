@@ -89,4 +89,9 @@ class EquipeSeparacaoRepository extends EntityRepository
                 WHERE ES.COD_ETIQUETA_SEPARACAO = $codEtiqueta";
         return $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
     }
+
+    public function getConferentesByEtiquetas()
+    {
+
+    }
 }

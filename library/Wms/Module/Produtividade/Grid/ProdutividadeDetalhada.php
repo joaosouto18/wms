@@ -49,6 +49,7 @@ class ProdutividadeDetalhada extends Grid
                 $this->addColumn(array(
                     'label' => 'Qtd. Produtos',
                     'index' => 'QTD_PRODUTOS',
+                    'render' => 'N2'
                 ));
                 $this->addColumn(array(
                     'label' => 'Qtd. Cubagem',
