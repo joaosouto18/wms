@@ -39,7 +39,8 @@
                             var txt = '___________________________________<br>';
                             $.each(data.result, function (key, value) {
                                 txt += value.produto + ' - ';
-                                txt += value.desc + ' ( ' + value.grade + ' ) - ' + value.qtd + '<br> ___________________________________<br>';
+                                txt += value.desc + ' ( ' + value.grade + ' ) - ' + value.qtd + '<br> ';
+                                txt += value.dataValidade + '<br>___________________________________';
                                 $('#lista-endereco').html(txt);
                             });
                         } else {

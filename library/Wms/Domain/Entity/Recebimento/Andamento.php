@@ -62,6 +62,32 @@ class Andamento
      */
     protected $dscObservacao;
 
+    /**
+     * @Column(name="COD_PRODUTO", type="string", nullable=true)
+     */
+    protected $codProduto;
+
+    /**
+     * @Column(name="DSC_GRADE", type="string", nullable=true)
+     */
+    protected $dscGrade;
+
+    /**
+     * @Column(name="DTH_VALIDADE", type="datetime", nullable=true)
+     */
+    protected $dataValidade;
+
+    /**
+     * @Column(name="DIAS_SHELF_LIFE", type="integer", nullable=true)
+     */
+    protected $diasShelflife;
+
+    /**
+     * @Column(name="QTD_CONFERIDA", type="string", nullable=true)
+     */
+    protected $qtdConferida;
+
+
     public function getId()
     {
         return $this->id;
@@ -132,5 +158,86 @@ class Andamento
         $this->dscObservacao = $dscObservacao;
         return $this;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getCodProduto()
+    {
+        return $this->codProduto;
+    }
+
+    /**
+     * @param mixed $codProduto
+     */
+    public function setCodProduto($codProduto)
+    {
+        $this->codProduto = $codProduto;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDscGrade()
+    {
+        return $this->dscGrade;
+    }
+
+    /**
+     * @param mixed $dscGrade
+     */
+    public function setDscGrade($dscGrade)
+    {
+        $this->dscGrade = $dscGrade;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataValidade()
+    {
+        return $this->dataValidade;
+    }
+
+    /**
+     * @param mixed $dataValidade
+     */
+    public function setDataValidade($dataValidade)
+    {
+        $this->dataValidade = $dataValidade;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDiasShelflife()
+    {
+        return $this->diasShelflife;
+    }
+
+    /**
+     * @param mixed $diasShelflife
+     */
+    public function setDiasShelflife($diasShelflife)
+    {
+        $this->diasShelflife = $diasShelflife;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdConferida()
+    {
+        return $this->qtdConferida;
+    }
+
+    /**
+     * @param mixed $qtdConferida
+     */
+    public function setQtdConferida($qtdConferida)
+    {
+        $this->qtdConferida = $qtdConferida;
+    }
+
 
 }

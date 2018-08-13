@@ -11,10 +11,9 @@
 
         var dataValidadeInvalida = <?php echo $this->dataValidadeInvalida; ?>;
         if (dataValidadeInvalida === 1) {
-            var soundfile = '/alarme.mp3';
+            //var soundfile = '/alarme.mp3';
 
-            document.getElementById("dummy").innerHTML=
-                "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+            //document.getElementById("dummy").innerHTML= "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
 
             alert('Produto conferido com validade menor que a permitida. A autorização será obrigatória para finalização do recebimento');
         }

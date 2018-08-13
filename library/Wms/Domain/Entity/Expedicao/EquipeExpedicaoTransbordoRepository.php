@@ -12,7 +12,7 @@ class EquipeExpedicaoTransbordoRepository extends EntityRepository
         try {
             $expedicaoRepo        = $em->getRepository('wms:Expedicao');
             $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $expedicao));
-            $usuarioRepo            = $em->getRepository('wms:Usuario');
+            $usuarioRepo          = $em->getRepository('wms:Usuario');
 
             $enDescarga = $this->findBy(array('expedicao' => $expedicao, 'placa' => $placa));
             foreach ($enDescarga as $value) {

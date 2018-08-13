@@ -1760,12 +1760,13 @@ class RecebimentoRepository extends EntityRepository {
                        WHERE R.COD_STATUS = 457
                          AND (QTD_DIVERGENCIA = 0 OR COD_NOTA_FISCAL IS NOT NULL)) V
                   ON V.COD_RECEBIMENTO = R.COD_RECEBIMENTO
-           LEFT JOIN (SELECT COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, SUM(QTD) as QTD
-                        FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD
+           LEFT JOIN (SELECT COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, SUM(QTD) / QTD_NORMAS as QTD
+                        FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, NVL(QTD_NORMAS,1) as QTD_NORMAS
                                 FROM PALETE P
                                 LEFT JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
+                                LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = PP.COD_PRODUTO AND PV.DSC_GRADE = PP.DSC_GRADE
                                WHERE P.COD_STATUS IN (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_ENDERECAMENTO.",".Palete::STATUS_RECEBIDO.") OR P.IND_IMPRESSO = 'S')
-                       GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE) P
+                       GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_NORMAS) P
                   ON P.COD_RECEBIMENTO = V.COD_RECEBIMENTO
                  AND P.COD_PRODUTO = V.COD_PRODUTO
                     AND P.DSC_GRADE = V.DSC_GRADE
@@ -2078,15 +2079,15 @@ class RecebimentoRepository extends EntityRepository {
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select("(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0)) qtdBloqueada, r.id codRecebimento,
-                        re.id codRecebEmbalagem, rv.id codRecebVolume, p.descricao, p.id codProduto, p.grade,
-                        TO_CHAR(NVL(re.dataValidade, rv.dataValidade),'DD/MM/YYYY') dataValidade")
+                        re.id codRecebEmbalagem, rv.id codRecebVolume, p.descricao, p.id codProduto, p.grade, 
+                        TO_CHAR(NVL(re.dataValidade, rv.dataValidade),'DD/MM/YYYY') dataValidade, p.diasVidaUtil")
             ->from('wms:Recebimento', 'r')
             ->leftJoin('wms:Recebimento\Embalagem','re','WITH','re.recebimento = r.id')
             ->leftJoin('wms:Recebimento\Volume','rv','WITH','rv.recebimento = r.id')
             ->leftJoin('re.embalagem', 'pe')
             ->leftJoin('rv.volume', 'pv')
             ->innerJoin('wms:Produto','p','WITH','(p.id = pe.codProduto AND p.grade = pe.grade) OR (p.id = pv.codProduto AND p.grade = pv.grade)')
-            ->groupBy('r.id, re.id, rv.id, p.descricao, p.id, p.grade, re.dataValidade, rv.dataValidade')
+            ->groupBy('r.id, re.id, rv.id, p.descricao, p.id, p.grade, re.dataValidade, rv.dataValidade, p.diasVidaUtil')
             ->having('(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0) > 0)');
 
         if ($idRecebimento)

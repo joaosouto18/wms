@@ -154,7 +154,6 @@ class EstoqueRepository extends EntityRepository
             $validadeParam = (is_string($dataValidade['dataValidade'])) ? new \DateTime($dataValidade['dataValidade']) : $dataValidade['dataValidade'];
         }
 
-
         if (isset($validadeParam) && !empty($validadeParam)) {
             $validade = $validadeParam;
         } elseif (isset($validadeEsttoque) && !empty($validadeEsttoque)) {
@@ -212,8 +211,10 @@ class EstoqueRepository extends EntityRepository
         }
         $saldoFinal = $novaQtd;
 
-        if ($runFlush == true)
+        if ($runFlush == true) {
             $em->flush();
+            $this->removePickingDinamicoProduto($codProduto,$grade);
+        }
 
         //CRIA UM HISTÓRICO DE MOVIMENTAÇÃO DE ESTOQUE
         $historico = new HistoricoEstoque();
@@ -1392,4 +1393,38 @@ class EstoqueRepository extends EntityRepository
                 AND DE.COD_CARACTERISTICA_ENDERECO = $tipoPulmao";
         return $this->getEntityManager()->getConnection()->query($SQL)->fetch(\PDO::FETCH_ASSOC);
     }
+
+    public function removePickingDinamicoProduto ($codProduto, $grade) {
+        $estoques = $this->findBy(array('codProduto'=>$codProduto, 'grade' =>$grade));
+        if (count($estoques) >0 ) return;
+
+        $caracteristicaPickingRotativo = $this->getSystemParameterValue('ID_CARACTERISTICA_PICKING_ROTATIVO');
+
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        $volumeRepo = $this->getEntityManager()->getRepository("wms:Produto\Volume");
+
+        $embalagens = $embalagemRepo->findBy(array('codProduto'=>$codProduto, 'grade'=> $grade));
+        $volumes = $volumeRepo->findBy(array('codProduto'=>$codProduto, 'grade'=> $grade));
+
+        foreach ($embalagens as $embalagemEn) {
+            if ($embalagemEn->getEndereco() != null) {
+                $enderecoEn = $embalagemEn->getEndereco();
+                if ($enderecoEn->getIdCaracteristica() == $caracteristicaPickingRotativo) {
+                    $embalagemEn->setEndereco(null);
+                    $this->getEntityManager()->persist($embalagemEn);
+                }
+            }
+        }
+
+        foreach ($volumes as $volumeEn) {
+            if ($volumeEn->getEndereco() != null) {
+                $enderecoEn = $volumeEn->getEndereco();
+                if ($enderecoEn->getIdCaracteristica() == $caracteristicaPickingRotativo) {
+                    $volumeEn->setEndereco(null);
+                    $this->getEntityManager()->persist($volumeEn);
+                }
+            }
+        }
+    }
+
 }

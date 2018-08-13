@@ -749,7 +749,7 @@ class PedidoRepository extends EntityRepository
     }
 
     public function getMaxCodPedidoByCodExterno($idPedidoExterno, $numSequencial = false){
-        $sql = "SELECT COD_PEDIDO, NUM_SEQUENCIAL FROM PEDIDO WHERE COD_EXTERNO = $idPedidoExterno ORDER BY NUM_SEQUENCIAL DESC ";
+        $sql = "SELECT COD_PEDIDO, NUM_SEQUENCIAL FROM PEDIDO WHERE COD_EXTERNO = '$idPedidoExterno' ORDER BY NUM_SEQUENCIAL DESC ";
         $result = $this->_em->getConnection()->query($sql)->fetch();
         if($numSequencial == true){
             $numSequencial = null;

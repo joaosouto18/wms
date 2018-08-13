@@ -89,28 +89,23 @@ class ProdutosConferidos extends Report
         $pdf->addLabel(6, 22, 'Qtd. Avaria', 'B', 0, 'L');
         $pdf->addLabel(6, 2, '', '', 0, 'L');
         $pdf->addLabel(7, 25, 'Qtd. Diverg.', 'B', 0, 'L');
-        $pdf->addLabel(7, 2, '', '', 0, 'L');
-        $pdf->addLabel(8, 60, utf8_decode('Observação'), 'B', 1, 'L');
-
-
 
         $codigoGradeTmp = '';
         $notaFiscalTmp = '';
-        $linhaNF = '';
 
         $itemsRecebimento = $em->getRepository('wms:NotaFiscal')->getConferenciaPorRecebimento($idRecebimento);
 
         foreach ($itemsRecebimento as $item) {
+
+            $divergente = false;
+            if ($item['DSC_MOTIVO_DIVER_RECEB'])
+                $divergente = true;
 
             $dataConf = \DateTime::createFromFormat('Y-m-d H:i:s', $item['DTH_CONFERENCIA']);
             $dataEmissaoNF = \DateTime::createFromFormat('Y-m-d H:i:s', $item['DAT_EMISSAO']);
 
             $notaFiscal = utf8_decode('-----------------------------------   Nota Fiscal Nº: ' . $item['NUM_NOTA_FISCAL'] . ' - Série: ' . $item['COD_SERIE_NOTA_FISCAL'] . ' - Data Emissão: ' . $dataEmissaoNF->format('d/m/Y') . '    -----------------------------------');
             $codigoGrade = $item['COD_PRODUTO'] . $item['DSC_GRADE'];
-
-            $motivoDivergencia = '';
-            if ($item['DSC_MOTIVO_DIVER_RECEB'])
-                $motivoDivergencia = substr($item['DSC_MOTIVO_DIVER_RECEB'], 0, 31) . '...';
 
             $border = 'T';
 
@@ -151,8 +146,11 @@ class ProdutosConferidos extends Report
 
             $pdf->addCol(8, 24, $item['QTD_AVARIA'], $border, 0, 'C');
             $pdf->addCol(9, 27, $item['QTD_DIVERGENCIA'], $border, 0, 'C');
-            $pdf->addCol(10, 2, '', $border, 0, 'L');
-            $pdf->addCol(11, 60, $motivoDivergencia, $border, 1, 'L');
+            $pdf->addCol(10, 2, '', $border, 1, 'L');
+
+            if ($divergente)
+                $pdf->addCol(11, 72, 'OBS.: ' . $item['DSC_MOTIVO_DIVER_RECEB'], 0, 1, 'L');
+
         }
 
         // page

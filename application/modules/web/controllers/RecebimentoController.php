@@ -1258,7 +1258,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $data[$key]['serie'] = $row[0]->getSerie();
                 $data[$key]['placa'] = $row[0]->getPlaca();
                 $data[$key]['dataEntrada'] = $dataEntrada;
-                $data[$key]['fornecedor'] = substr($row['fornecedor'], 0, 20);
+                $data[$key]['fornecedor'] = substr($row['fornecedor'], 0, 45);
                 $data[$key]['status'] = $row[0]->getStatus()->getSigla();
                 $vetEmbalagens = $entityNotaFiscal->getTotalPorEmbalagemNota($row[0]->getId());
                 $data[$key]['qtdProdutoMaior'] = (int) $vetEmbalagens[0]['QTDMAIOR'];
@@ -1537,47 +1537,47 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
     public function visualizarRecebimentosBloqueadosAction()
     {
+        $form = new RecebimentoForm\RecebimentosBloqueados();
+        $this->view->form = $form;
+
+
         $grid = new RecebimentoGrid\RecebimentoBloqueado();
         $this->view->grid = $grid->init()->render();
     }
 
     public function liberarRecusarRecebimentosAjaxAction()
     {
-        $idRecebEmbalagem = $this->_getParam('codRecebEmbalagem');
-        $idRecebVolume    = $this->_getParam('codRecebVolume');
-        $idRecebimento    = $this->_getParam('codRecebimento');
-        $observacao       = $this->_getParam('observacao');
-        $liberarRecusar   = $this->_getParam('liberar');
+        extract($this->_getAllParams());
 
         try {
-            $recebimentoEntity = $this->getEntityManager()->getReference('wms:Recebimento',$idRecebimento);
+            $recebimentoEntity = $this->getEntityManager()->getReference('wms:Recebimento',$codRecebimento);
             $recebimentoEntity
-                ->addAndamento(false, false, $observacao);
+                ->addAndamento(false, false, $observacao, $codProduto, $grade, $dataValidade, (int)$diasVidaUtil, $qtdBloqueada);
 
             $this->getEntityManager()->persist($recebimentoEntity);
 
-            if ($liberarRecusar == true) {
-                if ($idRecebEmbalagem) {
-                    $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idRecebEmbalagem);
+            if ($liberar == true) {
+                if ($codRecebEmbalagem) {
+                    $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $codRecebEmbalagem);
                     $recebimentoEmbalagemEntity->setQtdConferida($recebimentoEmbalagemEntity->getQtdBloqueada());
                     $recebimentoEmbalagemEntity->setQtdBloqueada(0);
 
                     $this->getEntityManager()->persist($recebimentoEmbalagemEntity);
-                } else if ($idRecebVolume) {
-                    $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idRecebVolume);
+                } else if ($codRecebVolume) {
+                    $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $codRecebVolume);
                     $recebimentoVolumeEntity->setQtdConferida($recebimentoVolumeEntity->getQtdBloqueada());
                     $recebimentoVolumeEntity->setQtdBloqueada(0);
 
                     $this->getEntityManager()->persist($recebimentoVolumeEntity);
                 }
             } else {
-                if ($idRecebEmbalagem) {
-                    $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $idRecebEmbalagem);
+                if ($codRecebEmbalagem) {
+                    $recebimentoEmbalagemEntity = $this->getEntityManager()->getReference('wms:Recebimento\Embalagem', $codRecebEmbalagem);
                     $recebimentoEmbalagemEntity->setQtdBloqueada(0);
 
                     $this->getEntityManager()->persist($recebimentoEmbalagemEntity);
-                } else if ($idRecebVolume) {
-                    $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $idRecebVolume);
+                } else if ($codRecebVolume) {
+                    $recebimentoVolumeEntity = $this->getEntityManager()->getReference('wms:Recebimento\Volume', $codRecebVolume);
                     $recebimentoVolumeEntity->setQtdBloqueada(0);
 
                     $this->getEntityManager()->persist($recebimentoVolumeEntity);
@@ -1592,6 +1592,39 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
+    }
+
+    public function produtosBloqueadosAjaxAction()
+    {
+        extract($this->_getAllParams());
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select("r.id COD_RECEBIMENTO, p.id COD_PRODUTO, p.descricao DESCRICAO_PRODUTO, p.grade DSC_GRADE,
+                             TO_CHAR(ra.dataValidade,'DD/MM/YYYY') DATA_VALIDADE_DIGITADA, ra.diasShelflife DIAS_SHELF_LIFE,
+                             (ra.dataAndamento + ra.diasShelflife) - ra.dataValidade DIAS_DIFERENCA, 
+                             (((ra.dataAndamento + ra.diasShelflife) - ra.dataValidade) * 100) / ra.diasShelflife PORCENTAGEM,
+                              ra.qtdConferida QTD_CONFERIDA, conferente.nome USUARIO_CONFERENCIA, 
+                              pessoa.nome USUARIO_LIBERACAO, ra.dscObservacao OBSERVACAO")
+            ->from('wms:Recebimento', 'r')
+            ->innerJoin('wms:Recebimento\Andamento', 'ra', 'WITH', 'r.id = ra.recebimento')
+            ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = ra.codProduto AND p.grade = ra.dscGrade')
+            ->innerJoin('wms:Pessoa', 'pessoa', 'WITH', 'pessoa.id = ra.usuario')
+            ->innerJoin('wms:OrdemServico', 'os', 'WITH', 'os.recebimento = r.id')
+            ->innerJoin('os.pessoa', 'conferente');
+
+        if ($codRecebimento)
+            $sql->andWhere('r.id = ' . $codRecebimento);
+        if ($codProduto)
+            $sql->andWhere("p.id = '$codProduto'");
+        if ($grade)
+            $sql->andWhere("p.grade = '$grade'");
+        if ($dataInicial1)
+            $sql->andWhere("r.dataInicial >= '$dataInicial1'");
+        if ($dataInicial2)
+            $sql->andWhere("r.dataInicial <= '$dataInicial2'");
+
+        $result = $sql->getQuery()->getResult();
+
+        $this->exportCSV($result,'Relatório Produtos Liberados/Bloqueados', true);
     }
 
 }

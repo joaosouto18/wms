@@ -878,7 +878,7 @@ class EnderecoRepository extends EntityRepository {
            FROM DEPOSITO_ENDERECO DEP
            LEFT JOIN PRODUTO_EMBALAGEM PE ON DEP.COD_DEPOSITO_ENDERECO =  PE.COD_DEPOSITO_ENDERECO
            LEFT JOIN PRODUTO_VOLUME PV ON DEP.COD_DEPOSITO_ENDERECO =  PV.COD_DEPOSITO_ENDERECO
-           LEFT JOIN PRODUTO P ON PE.COD_PRODUTO = P.COD_PRODUTO OR PV.COD_PRODUTO = P.COD_PRODUTO
+           --LEFT JOIN PRODUTO P ON PE.COD_PRODUTO = P.COD_PRODUTO OR PV.COD_PRODUTO = P.COD_PRODUTO
            WHERE 1 = 1 AND DEP.COD_CARACTERISTICA_ENDERECO = $params[tipoEndereco]
         ";
 
@@ -945,7 +945,7 @@ class EnderecoRepository extends EntityRepository {
           SELECT DEP.DSC_DEPOSITO_ENDERECO DESCRICAO
           FROM DEPOSITO_ENDERECO DEP
           WHERE DEP.COD_DEPOSITO_ENDERECO in ($enderecos)
-          ORDER BY DEP.NUM_RUA ASC, DEP.NUM_PREDIO ASC, DEP.NUM_APARTAMENTO ASC, DEP.NUM_NIVEL DESC ";
+          ORDER BY DEP.NUM_RUA ASC, DEP.NUM_PREDIO ASC, DEP.NUM_APARTAMENTO ASC, DEP.NUM_NIVEL ASC ";
 
         $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -1098,16 +1098,19 @@ class EnderecoRepository extends EntityRepository {
                  */
                 foreach ($itens as $key => $item) {
                     $produtoEn = $item->getProduto();
+                    $dataValidade = !is_null($item->getValidade()) ? $item->getValidade()->format('d/m/Y') : null;
                     if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
                         $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $item->getQtd());
                         $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                            'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens));
+                            'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens),
+                            'dataValidade' => $dataValidade);
                         $result[$produtoEn->getId()] = $produto;
                     } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
                         /** @var Produto\Volume $volumeEn */
                         $volumeEn = $item->getProdutoVolume();
                         $result[$produtoEn->getId()."-".$volumeEn->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                            'desc' => $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ")", 'qtd' => $item->getQtd());
+                            'desc' => $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ")", 'qtd' => $item->getQtd(),
+                            'dataValidade' => $dataValidade);
                     }
                 }
             }

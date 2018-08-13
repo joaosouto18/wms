@@ -21,7 +21,7 @@ class ProdutosMapa extends Grid
         $array = $mapaRepo->getResumoConferenciaMapaProduto($idMapa);
         $this->setShowExport(false);
         $this->setShowPager(true);
-        $pager = new Pager(count($array), 1, 100);
+        $pager = new Pager(count($array), 1, 200);
         $this->setpager($pager);
 
         $this->setSource(new \Core\Grid\Source\ArraySource($array))

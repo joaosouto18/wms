@@ -27,6 +27,7 @@ class ExpedicaoRepository extends EntityRepository {
              LEFT JOIN MAPA_SEPARACAO MS ON MS.COD_EXPEDICAO = C.COD_EXPEDICAO
                  WHERE (ES.COD_STATUS = 522 OR P.IND_ETIQUETA_MAPA_GERADO = 'N' OR MS.COD_STATUS = 522)
                    AND P.DTH_CANCELAMENTO IS NULL
+                   AND P.COD_PEDIDO IN (SELECT COD_PEDIDO FROM PEDIDO_PRODUTO WHERE QUANTIDADE > NVL(QTD_CORTADA,0))
                    AND C.COD_EXPEDICAO = " . $idExpedicao;
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -1111,6 +1112,7 @@ class ExpedicaoRepository extends EntityRepository {
                        P.COD_EXTERNO as COD_PEDIDO,
                        PP.COD_PRODUTO,
                        PP.DSC_GRADE,
+                       P.COD_EXTERNO,
                        SUM(PP.QUANTIDADE - NVL(pp.QTD_CORTADA,0)) as QTD
                   FROM PEDIDO_PRODUTO PP
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
@@ -1119,12 +1121,13 @@ class ExpedicaoRepository extends EntityRepository {
                   GROUP BY COD_CARGA_EXTERNO,
                            P.COD_PEDIDO,
                            PP.COD_PRODUTO,
-                           PP.DSC_GRADE
+                           PP.DSC_GRADE,
+                           P.COD_EXTERNO
                   ORDER BY C.COD_CARGA_EXTERNO, P.COD_PEDIDO, PP.COD_PRODUTO";
         $pedidosWMS = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($pedidosWMS as $pedidoProdutoWms) {
-            if (isset($dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']])) {
-                $pedidoERP = $dados[$idCargaExterno][$pedidoProdutoWms['COD_PEDIDO']];
+            if (isset($dados[$idCargaExterno][$pedidoProdutoWms['COD_EXTERNO']])) {
+                $pedidoERP = $dados[$idCargaExterno][$pedidoProdutoWms['COD_EXTERNO']];
                 $encontrouProduto = false;
                 foreach ($pedidoERP as $produtoERP) {
                     if (($produtoERP['idProduto'] == $pedidoProdutoWms['COD_PRODUTO']) && ($produtoERP['grade'] == $pedidoProdutoWms['DSC_GRADE'])) {
@@ -1132,16 +1135,16 @@ class ExpedicaoRepository extends EntityRepository {
                         $qtdERP = str_replace(',', '.', $produtoERP['qtd']);
                         $qtdWms = str_replace(',', '.', $pedidoProdutoWms['QTD']);
                         if ($qtdERP != $qtdWms) {
-                            return "Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_PEDIDO]. Qtd WMS: $qtdWms, Qtd ERP: $qtdERP";
+                            return "Divergencia de conferencia no produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE], pedido $pedidoProdutoWms[COD_EXTERNO]. Qtd WMS: $qtdWms, Qtd ERP: $qtdERP";
                         }
                     }
                 }
 
                 if ($encontrouProduto == false) {
-                    return "Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_PEDIDO]";
+                    return "Produto $pedidoProdutoWms[COD_PRODUTO] - $pedidoProdutoWms[DSC_GRADE] não encontrado no ERP no pedido $pedidoProdutoWms[COD_EXTERNO]";
                 }
             } else {
-                return "Pedido $pedidoProdutoWms[COD_PEDIDO] não encontrado na conferencia com o ERP";
+                return "Pedido $pedidoProdutoWms[COD_EXTERNO] não encontrado na conferencia com o ERP";
             }
         }
 
@@ -1442,7 +1445,7 @@ class ExpedicaoRepository extends EntityRepository {
         $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
 
         $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
-        $cargaEntities = $this->getProdutosExpedicaoCorte(null,$idExpedicao);
+        $cargaEntities = $this->getProdutosExpedicaoCorte(null,$idExpedicao,false);
 
         foreach ($cargaEntities as $cargaEntity) {
             $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
@@ -1576,7 +1579,6 @@ class ExpedicaoRepository extends EntityRepository {
 
                         $this->alteraStatus($expedicaoEntity,Expedicao::STATUS_SEGUNDA_CONFERENCIA);
                         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
-                        $this->getEntityManager()->flush();
                         $this->getEntityManager()->commit();
                         return 0;
                     }
@@ -1596,36 +1598,87 @@ class ExpedicaoRepository extends EntityRepository {
 
             //Finaliza Expedição ERP
             if ($this->getSystemParameterValue('IND_FINALIZA_CONFERENCIA_ERP_INTEGRACAO') == 'S') {
-                $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_FINALIZA_CONFERENCIA_ERP');
+                $idsIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_FINALIZA_CONFERENCIA_ERP');
                 /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
                 $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-                $acaoEn = $acaoIntRepo->find($idIntegracao);
-                $options = array();
 
-                $cargasEn = $expedicaoEn->getCarga();
+                $ids = explode(',',$idsIntegracao);
+                sort($ids);
+
                 $pedidoRepo     = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
 
-                foreach ($cargasEn as $cargaEn) {
-                    $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
-                    foreach ($pedidosEn as $pedidoEn) {
-                        $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
-                        foreach ($produtos as $key => $item) {
-                            $options[$pedidoEn->getId().'-'.$key][] = $cargaEn->getCodCargaExterno();
-                            $options[$pedidoEn->getId().'-'.$key][] = $pedidoEn->getCodExterno();
-                            $options[$pedidoEn->getId().'-'.$key][] = $item['COD_PRODUTO'];
-                            $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_PEDIDO'];
-                            if (is_null($item['ATENDIDA'])) {
-                                $options[$pedidoEn->getId().'-'.$key][] = 0;
-                            }else{
-                                $options[$pedidoEn->getId().'-'.$key][] = $item['ATENDIDA'];
+                foreach ($ids as $idIntegracao) {
+                    $acaoEn = $acaoIntRepo->find($idIntegracao);
+                    $options = array();
+
+                    if ($acaoEn == null) continue;
+
+                    $params = $acaoEn->getParametros();
+                    $cargasEn = $expedicaoEn->getCarga();
+
+                    $encontrouPedido = false;
+
+                    $cargas = array();
+                    foreach ($cargasEn as $cargaEn) {
+                        $cargas[] = $cargaEn->getCodCargaExterno();
+                    }
+
+                    foreach ($cargasEn as $cargaEn) {
+
+                        $SQL = "SELECT * 
+                                  FROM PEDIDO 
+                                 WHERE COD_CARGA = " .$cargaEn->getId();
+                        if (!empty($params)) {
+                            $SQL = $SQL . " AND COD_TIPO_PEDIDO IN (" . $params . ")";
+                        }
+
+                        $qtdPedidos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+                        if (count($qtdPedidos) > 0) {
+                            $encontrouPedido = true;
+                            break;
+                        }
+                    }
+
+                    if (!is_null($cargas) && is_array($cargas)) {
+                        $options[] = implode(',', $cargas);
+                    } else if (!is_null($cargas)) {
+                        $options = $cargas;
+                    }
+
+                    if ($encontrouPedido == true) {
+                        if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA) {
+                            $cargasEn = $expedicaoEn->getCarga();
+
+                            foreach ($cargasEn as $cargaEn) {
+                                $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
+                                foreach ($pedidosEn as $pedidoEn) {
+                                    $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
+                                    foreach ($produtos as $key => $item) {
+                                        $options[$pedidoEn->getId().'-'.$key][] = $cargaEn->getCodCargaExterno();
+                                        $options[$pedidoEn->getId().'-'.$key][] = $pedidoEn->getCodExterno();
+                                        $options[$pedidoEn->getId().'-'.$key][] = $item['COD_PRODUTO'];
+                                        $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_PEDIDO'];
+                                        if (is_null($item['ATENDIDA'])) {
+                                            $options[$pedidoEn->getId().'-'.$key][] = 0;
+                                        }else{
+                                            $options[$pedidoEn->getId().'-'.$key][] = $item['ATENDIDA'];
+                                        }
+                                    }
+                                }
+                                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
+                                if (!$resultAcao === true) {
+                                    throw new \Exception($resultAcao);
+                                }
+                                unset($options);
+                            }
+                        } else {
+                            $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                            if (!$resultAcao === true) {
+                                throw new \Exception($resultAcao);
                             }
                         }
                     }
-                    $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
-                    if (!$resultAcao === true) {
-                        throw new \Exception($resultAcao);
-                    }
-                    unset($options);
                 }
             }
 
@@ -1798,7 +1851,6 @@ class ExpedicaoRepository extends EntityRepository {
         $this->liberarVolumePatrimonioByExpedicao($expedicaoEntity->getId());
         $this->alteraStatus($expedicaoEntity,$novoStatus);
         $this->efetivaReservaEstoqueByExpedicao($idExpedicao);
-        $this->getEntityManager()->flush();
         return true;
     }
 
@@ -1815,14 +1867,37 @@ class ExpedicaoRepository extends EntityRepository {
         $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
         $usuarioEn = $usuarioRepo->find($idUsuario);
         $arrayFlush = array();
+
+        $produtosExpedicao = array();
+
         foreach ($reservaEstoqueArray as $re) {
             $pedido['codPedido'] = $re->getPedido()->getId();
             $pedido['codProprietario'] = $re->getPedido()->getProprietario();
             $reservaEstoqueEn = $re->getReservaEstoque();
             if ($reservaEstoqueEn->getAtendida() == 'N') {
                 $arrayFlush = $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, "E", $idExpedicao, $usuarioEn, null, null, null, $pedido, $arrayFlush);
+
+                $reservaProdutos = $reservaEstoqueEn->getProdutos();
+                foreach ($reservaProdutos as $resProd) {
+                    $codProduto = $resProd->getCodProduto();
+                    $grade = $resProd->getGrade();
+                    if (!isset($produtosExpedicao[$codProduto][$grade])) {
+                        $produtosExpedicao[$codProduto][$grade] = 'OK';
+                    }
+                }
             }
         }
+        $this->getEntityManager()->flush();
+
+
+        foreach ($produtosExpedicao as $codProduto => $produto) {
+            foreach ($produto as $grade => $prod) {
+                $estoqueRepo->removePickingDinamicoProduto($codProduto,$grade);
+            }
+        }
+
+        $this->getEntityManager()->flush();
+
     }
 
     public function liberarVolumePatrimonioByExpedicao($idExpedicao) {
@@ -1941,6 +2016,7 @@ class ExpedicaoRepository extends EntityRepository {
                      AND E.COD_STATUS <> $statusCancelada
                      AND P.DTH_CANCELAMENTO IS NULL
                      AND P.CENTRAL_ENTREGA = $central
+                     AND P.COD_PEDIDO IN ( SELECT COD_PEDIDO FROM PEDIDO_PRODUTO WHERE QUANTIDADE > NVL(QTD_CORTADA,0))
                      AND E.IND_PROCESSANDO = 'N'
                    ";
 
@@ -2333,8 +2409,8 @@ class ExpedicaoRepository extends EntityRepository {
                        RESUMO.QTD_PEDIDOS as "qtdPedidos",
                        RESUMO.QTD_PRODUTOS as "qtdProdutos",
                        RESUMO.QTD_VOLUMES as "qtdVolumes",
-                       (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) = 0 THEN 0
-                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(C.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(C.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
+                       (CASE WHEN ((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) = 0 THEN 0
+                            ELSE CAST(((NVL(MS.QTD_CONFERIDA,0) + NVL(COUNTETIQUETA.CONFERIDA,0)) * 100) / (NVL(MS.QTD_MAPA_TOTAL,0) + NVL(COUNTETIQUETA.QTDETIQUETA,0)) AS NUMBER(6,2)) END) AS "PercConferencia"
                   FROM EXPEDICAO E
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
                   LEFT JOIN (SELECT C1.Etiqueta AS CONFERIDA,
@@ -2351,7 +2427,7 @@ class ExpedicaoRepository extends EntityRepository {
                                       WHERE ES.COD_STATUS IN(526, 531, 532) ' . $FullWhere . '
                                       GROUP BY C.COD_EXPEDICAO) C1 ON C1.COD_EXPEDICAO = C.COD_EXPEDICAO
                          WHERE ESEP.COD_STATUS NOT IN(524, 525) ' . $FullWhere . '
-                         GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                         GROUP BY C1.COD_EXPEDICAO, C1.Etiqueta) COUNTETIQUETA ON COUNTETIQUETA.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT MS.COD_EXPEDICAO,
                                 NVL(SUM(QTD_CONF.QTD),0) + NVL(SUM(QTD_SEP.QTD_CORTADO),0) as QTD_CONFERIDA,
                                 NVL(SUM(QTD_CONF_M.QTD),0) AS QTD_CONF_MANUAL,
@@ -2474,7 +2550,7 @@ class ExpedicaoRepository extends EntityRepository {
                                   ) PED ON PED.COD_TIPO_PEDIDO = S.COD_SIGLA
                                   GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO 
                                                                
-                 WHERE 1 = 1' . $FullWhereFinal . '
+                 WHERE 1 = 1 AND ((C.CARGAS IS NOT NULL) OR (C.CARGAS IS NULL AND S.COD_SIGLA = 466)) ' . $FullWhereFinal . '
                  ORDER BY E.COD_EXPEDICAO DESC
     ';
 
@@ -4043,17 +4119,6 @@ class ExpedicaoRepository extends EntityRepository {
         $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
 
         $this->getEntityManager()->flush();
-
-        $SQL = "SELECT * 
-                  FROM PEDIDO_PRODUTO PP
-                 WHERE COD_PEDIDO = '$codPedido' 
-                   AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0) ";
-        $ppSemCortes = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        if (count($ppSemCortes) == 0) {
-            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
-            $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
-            $pedidoRepository->cancelar($codPedido,false);
-        }
 
     }
 

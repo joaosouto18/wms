@@ -348,9 +348,15 @@ class Integracao {
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepository */
         $mapaSeparacaoProdutoRepository = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
-        $codCargaExterno = implode(',', $cargas);
+
+        $c = array();
+        foreach ($cargas as $carga){
+            $c[] = "'" . $carga . "'";
+        }
+
+        $codCargaExterno = implode(',', $c);
         $sql = $em->createQueryBuilder()
-                ->select('c.codCargaExterno carga, p.id pedido, sigla.id tipoPedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade, pp.qtdCortada')
+                ->select('c.codCargaExterno carga, p.id pedido, p.codExterno as codPedidoERP, sigla.id tipoPedido, pp.codProduto produto, pp.grade grade, pp.quantidade quantidade, pp.qtdCortada')
                 ->from('wms:Expedicao\PedidoProduto', 'pp')
                 ->innerJoin('pp.pedido', 'p')
                 ->innerJoin('p.carga', 'c')
@@ -442,7 +448,8 @@ class Integracao {
          * Insiro o novo estoque retornado pela query
          */
         $qtdIteracoes = 0;
-        foreach ($dados as $valorEstoque) {
+        foreach ($dados as $key => $valorEstoque) {
+            $valorEstoque = array_change_key_case($valorEstoque, CASE_UPPER);
             $qtdIteracoes = $qtdIteracoes + 1;
 
             $codProduto = $valorEstoque['COD_PRODUTO'];
@@ -976,7 +983,7 @@ class Integracao {
                     $pedido->setGrade($row['GRADE']);
                     $pedido->setQtd(str_replace(",", ".", $row['QTD']));
                     $pedido->setVlrVenda(str_replace(",", ".", $row['VLR_VENDA']));
-                    $pedido->setDth(\DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']));
+                    $pedido->setDth(isset($row['DTH']) && !empty($row['DTH']) ? \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']): new \DateTime());
                     $this->_em->persist($pedido);
                     break;
             }
@@ -1044,7 +1051,7 @@ class Integracao {
     public function atualizaRecebimentoERP($idRecebimento) {
         $em = $this->_em;
         /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
-        $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+        $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepository */
         $acaoIntRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */

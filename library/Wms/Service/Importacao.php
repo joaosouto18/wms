@@ -51,7 +51,7 @@ class Importacao
         try {
             /** @var \Wms\Domain\Entity\Produto\ClasseRepository $classeRepo */
             $classeRepo = $repositorios['classeRepo'];
-            $entityClasse = $classeRepo->save($idClasse, $nome, (int)$idClassePai, false);
+            $entityClasse = $classeRepo->save($idClasse, $nome, $idClassePai, false);
             return $entityClasse;
         }catch (\Exception $e){
             if ($this->_throwsException == true) {
@@ -862,13 +862,17 @@ class Importacao
                         $parametroEmbalagensInativas = $parametroRepo->findOneBy(array('constante' => 'INATIVA_EMBALAGENS_INEXISTENTES_ERP'));
                         if ($parametroEmbalagensInativas->getValor() == 'S') {
                             $embalagemAtiva = false;
+                            $codBarras = null;
                         } else {
                             $embalagemAtiva = false;
+                            $codBarras = null;
                             if ($embalagemCadastrada->getDataInativacao() == null) {
                                 $embalagemAtiva = true;
+                                $codBarras      = $embalagemCadastrada->getCodigoBarras();
                             }
                         }
                         $embalagemArray['ativarDesativar'] = $embalagemAtiva;
+                        $embalagemArray['codigoBarras']    = $codBarras;
                     } else {
                         $embalagemArray['ativarDesativar'] = true;
                     }

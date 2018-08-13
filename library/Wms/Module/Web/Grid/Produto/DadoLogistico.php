@@ -68,7 +68,7 @@ class DadoLogistico extends Grid
         if (!empty($id))
             $source->andWhere ("p.id = '" . $id . "'");
 
-        $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
+//        $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
         $this->setSource(new \Core\Grid\Source\Doctrine($source))
                 ->setId('dado-logistico-grid')
                 ->setAttrib('caption', 'Dados Logísticos')
@@ -129,10 +129,20 @@ class DadoLogistico extends Grid
                     'controllerName' => 'produto',
                     'actionName' => 'gerar-etiqueta-pdf',
                     'pkIndex' => array('id', 'grade'),
-                    'cssClass' => function ($row) {
-                        return ($row['idTipoComercializacao'] == \Wms\Domain\Entity\Produto::TIPO_UNITARIO)? 'dialogAjax' : 'pdf';
+                    'cssClass' => 'dialogAjax',
+                    'condition' => function ($row) {
+                        return $row['idTipoComercializacao'] == 1;
                     }
-
+                ))
+                ->addAction(array(
+                    'label' => 'Imprimir etiqueta avulsa',
+                    'controllerName' => 'produto',
+                    'actionName' => 'gerar-etiqueta-pdf',
+                    'pkIndex' => array('id', 'grade'),
+                    'cssClass' => 'pdf',
+                    'condition' => function ($row) {
+                        return $row['idTipoComercializacao'] == 2;
+                    }
                 ))
                 ->addAction(array(
                     'label' => 'Imprimir etiqueta picking',

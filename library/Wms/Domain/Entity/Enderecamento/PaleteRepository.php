@@ -2002,7 +2002,7 @@ class PaleteRepository extends EntityRepository {
                 INNER JOIN PALETE P ON R.COD_RECEBIMENTO = P.COD_RECEBIMENTO
                 INNER JOIN ORDEM_SERVICO OS ON R.COD_OS = OS.COD_OS
                 INNER JOIN PESSOA P ON P.COD_PESSOA = OS.COD_PESSOA
-                WHERE UMA = " . $idUma . " AND R.COD_PRODUTO = " . $codProduto . " AND R.DSC_GRADE = '" . $grade . "'";
+                WHERE UMA = " . $idUma . " AND R.COD_PRODUTO = " . "'$codProduto'" . " AND R.DSC_GRADE = '" . $grade . "'";
         return $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
     }
 

@@ -21,7 +21,9 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             case ConexaoIntegracao::PROVEDOR_MSSQL:
                 return self::mssqlQuery($query, $conexao);
             case ConexaoIntegracao::PROVEDOR_FIREBIRD:
-                return self::firebirdQuery($query, $conexao);
+                return self::firebirdQuery($query, $conexao, $update);
+            case ConexaoIntegracao::PROVEDOR_POSTGRE:
+                return self::postgreQuery($query, $conexao);
 
             default:
                 throw new \Exception("Provedor não específicado");
@@ -86,9 +88,13 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
             $result = \sqlsrv_query($conexao, $query);
 
+
             if (!$result || $result == false) {
                 $error = \sqlsrv_errors();
-                throw new \Exception($error);
+                foreach( $errors as $error ) {
+                    throw new \Exception($error[ 'message']);
+                }
+
             }
             $vetResult = array();
             $i = 0;
@@ -162,7 +168,42 @@ class ConexaoIntegracaoRepository extends EntityRepository {
         }
     }
 
-    private function firebirdQuery($query, $conexao)
+    private function postgreQuery($query, $conexao)
+    {
+        try {
+            ini_set('memory_limit', '-1');
+            $usuario = $conexao->getUsuario();
+            $senha = $conexao->getSenha();
+            $servidor = $conexao->getServidor();
+            $porta = $conexao->getPorta();
+            $sid = $conexao->getDbName();
+
+
+            if(!($conexao = pg_connect("host=$servidor dbname=$sid port=$porta user=$usuario password=$senha"))) {
+                throw new \Exception(pg_result_error($conexao));
+            }
+
+            $result = pg_query($conexao,$query);
+            if (!$result) {
+                pg_close($conexao);
+                throw new \Exception(pg_result_error($result));
+            }
+
+            $arr = pg_fetch_all($result);
+            if (!$arr) {
+                oci_close($conexao);
+                throw new \Exception(pg_result_error($arr));
+            }
+
+            return $arr;
+
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+
+    }
+
+    private function firebirdQuery($query, $conexao, $update)
     {
         try {
             ini_set('memory_limit', '-1');
@@ -182,15 +223,12 @@ class ConexaoIntegracaoRepository extends EntityRepository {
 
             $resultado = ibase_query($conexao, $query);
 
-            if ($resultado === true) {
+            if (true === $update || true === $resultado) {
                 ibase_close($conexao);
-                return true;
-            }
-
-            if ($resultado === false) {
-                $errmsg = ibase_errmsg();
+                return $resultado;
+            } else if (false === $resultado){
                 ibase_close($conexao);
-                throw new \Exception($errmsg);
+                throw new \Exception(ibase_errmsg());
             }
 
             $result = array();
