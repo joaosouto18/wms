@@ -291,7 +291,7 @@
     <?php  } ?>
 
     function requestAjax(event, inputQtd, inputCodBarras) {
-        var lote = $("#lote");
+        <?php if ($temLote) { ?> var lote = $("#lote"); <?php } ?>
         if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
             $.ajax({
                 url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
@@ -302,7 +302,7 @@
                     if (data.retorno.resposta.length > 0) {
                         var inptIdVolume = $("#idVolume");
                         inputCodBarras.val("").focus();
-                        lote.val("");
+                        <?php if ($temLote) { ?> lote.val(""); <?php } ?>
                         var error = "";
                         var success = "";
                         var song = "";

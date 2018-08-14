@@ -443,14 +443,7 @@ class Enderecamento_MovimentacaoController extends Action
             'embalagens' => $embalagens
         );
 
-        echo $this->_helper->json($valores);
-        /*
-        if (count($grupos)>0){
-            echo $this->_helper->json($valores);
-        }else {
-            echo $this->_helper->json(false);
-        }
-        */
+        $this->_helper->json($valores);
     }
 
     public function getValidadeAction()
@@ -465,12 +458,12 @@ class Enderecamento_MovimentacaoController extends Action
 
         $produtoEn = $this->getEntityManager()->getRepository("wms:Produto")->findOneBy(array('id' => "$codProduto", 'grade' => "$grade"));
 
-        if (isset($produtoEn)) {
+        if (!empty($produtoEn)) {
             $validade = $produtoEn->getValidade();
             $lote = $produtoEn->getIndControlaLote();
-            echo $this->_helper->json(array('validade' => $validade, 'lote' => $lote));
+            $this->_helper->json(array('validade' => $validade, 'lote' => $lote));
         } else {
-            return $this->_helper->json(false);
+            $this->_helper->json(false);
         }
     }
 

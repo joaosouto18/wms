@@ -1571,8 +1571,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                     $expedicaoEn = $element['expedicaoEn'];
 
-                    $lote = $element['lote'];
-
                     $quebras = $element['quebras'];
                     $strQuebrasConcat = $element['strQuebrasConcat'];
 
@@ -1589,10 +1587,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd] = $pedidoProdutoEn;
                         } else {
                             $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['expedicaoEn'] = $expedicaoEn;
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['firstIdPedProd'] = $idPedProd;
+                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['firstIdPedProdLote'] = "$idPedProd*+*$element[lote]";
                             $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()] = array(
                                 'qtd' => $qtdMapa,
-                                'lote' => $lote,
+                                'lote' => $element['lote'],
                                 'consolidado' => $element['consolidado'],
                                 'cubagem' => $element['cubagem'],
                                 'arrPedProd' => array($idPedProd => $pedidoProdutoEn),
@@ -1614,7 +1612,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     } else {
                         $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote] = array(
                             'qtd' => $qtd,
-                            'lote' => $lote,
+                            'lote' => $element['lote'],
                             'embalagensDisponiveis' => $embalagens,
                             'arrPedProd' => array($pedidoProdutoEn->getId() => $pedidoProdutoEn),
                             'quebras' => $quebras,
@@ -1762,7 +1760,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             foreach ($carrinhos as $idCarrinho => $infoCarrinho) {
                 foreach ($infoCarrinho['clientes'] as $idCliente => $infoCliente) {
                     foreach ($infoCliente['itens'] as $produtoGradeLote => $dadosPedProd) {
-                        $newArray[$strQuebra][$dadosPedProd['firstIdPedProd']] = $dadosPedProd;
+                        $newArray[$strQuebra][$dadosPedProd['firstIdPedProdLote']] = $dadosPedProd;
                     }
                 }
             }
@@ -1772,7 +1770,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             foreach ($itens as $endereco) {
                 foreach ($endereco as $produtoGradeLote => $produto) {
                     $qtdTemp = $produto['qtd'];
-                    $lote = $produto['lote'];
                     $quebras = $produto['quebras'];
                     $enderecoEn = $produto['enderecoEn'];
                     $produtoEn = $produto['produtoEn'];
@@ -1814,7 +1811,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
 
                         if (is_null($embalagemAtual)) {
-                            $strLote = ($lote != Produto\Lote::LND) ? " lote: $lote" : "";
+                            $strLote = (!in_array($produto['lote'], [Produto\Lote::LND, Produto\Lote::NCL]) ) ? " lote: $produto[lote]" : "";
                             throw new \Exception("Erro ao otimizar o produto ".$produtoEn->getId(). "-".$produtoEn->getGrade() ."$strLote<br /> Qtd embalagem " . $embalagemEn->getQuantidade()." - qtd à separar $qtdTemp");
                         }
 
@@ -1835,7 +1832,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $newArray[$strQuebrasConcat][$produtoGradeLote]['expedicaoEn'] = $expedicaoEn;
                         $newArray[$strQuebrasConcat][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemAtual->getId()] = array(
                             'qtd' => $qtdEmbs,
-                            'lote' => $lote,
+                            'lote' => $produto['lote'],
                             'consolidado' => "N",
                             'cubagem' => null,
                             'arrPedProd' => $produto['arrPedProd'],

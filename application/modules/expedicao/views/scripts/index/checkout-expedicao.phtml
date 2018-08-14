@@ -1,9 +1,4 @@
 <?php
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 echo $this->form;
 $recarregar = $this->recarregar;
@@ -60,52 +55,6 @@ function playSound(soundfile) {
                         data: $('#checkout-expedicao').serialize(),
                         success: function (data) {
                             $('#produtos-mapa').html(data);
-                            $('#buscar-sumbit').on('click', function (e) {
-                                var qtd = $("#qtd");
-                                if (qtd !== '') {
-                                    $.ajax({
-                                        url: '<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
-                                        data: $('form').serialize(),
-                                        async: false,
-                                        type: 'post',
-                                        success: function (data) {
-                                            $('#codigoBarras').focus();
-                                            if (data.retorno.resposta.length > 0) {
-                                                $("#codigoBarras").val("").focus();
-                                                var error = "";
-                                                var success = "Quantidade conferida com sucesso";
-                                                if (data.retorno.resposta == 'error') {
-                                                    error = data.retorno.message;
-                                                    try {
-                                                        playSound("/alarme.mp3");
-                                                    } catch (e) {
-                                                        alert(e);
-                                                    }
-                                                    success = "";
-                                                } else {
-
-                                                    playSound("/confirm2.mp3");
-                                                    $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').show();
-                                                    $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"] #qtd').text(data.retorno.produto[0]['qtdConferidaTotalEmb']);
-                                                    if (data.retorno.message == 'checkout') {
-                                                        $('#conferir').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').hide();
-                                                        $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').css('background','#f3f3f3');
-                                                    }else{
-                                                        $('#conferidos').find('p[produto="' + data.retorno.produto[0]['codProduto'] + '-'+data.retorno.produto[0]['dscGrade'] +'"]').css('background','#fad0d0');
-                                                    }
-                                                    error = "";
-                                                }
-                                                $("#error").html(error);
-                                                $("#success").html(success);
-                                            }
-                                            $(".item-lista").remove();
-                                        }
-                                    });
-                                    $('#codigoBarras').focus();
-                                    qtd.val(1);
-                                    return false;
-                                }
-                            });
                         }
                     });
                     return false;
@@ -114,5 +63,4 @@ function playSound(soundfile) {
         });
         return false;
     });
-
 </script>

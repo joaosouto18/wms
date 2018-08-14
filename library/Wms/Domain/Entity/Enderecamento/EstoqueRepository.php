@@ -372,8 +372,8 @@ class EstoqueRepository extends EntityRepository
             $SqlWhere .= " AND ESTQ.DSC_GRADE = '" . $params['grade'] . "'";
         }
 
-        if ((isset($params['controlaLote']) && !empty($params['controlaLote'])) &&
-            ((isset($params['lote'])) && ($params['lote'] != null) && $params['lote'] != Lote::LND)) {
+        if ((isset($params['controlaLote']) && !empty($params['controlaLote']) && $params['controlaLote'] == 'S') &&
+            (isset($params['lote']) && !empty($params['lote']) && $params['lote'] != Lote::LND)) {
             $SqlWhere .= " AND ESTQ.DSC_LOTE = '" . $params['lote'] . "'";
         }
 

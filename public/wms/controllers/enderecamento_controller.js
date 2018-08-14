@@ -205,8 +205,8 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
                     if (data.validade == 'S') {
                         $('#validade').parent().show();
                     }
-                        $('#lote').parent().show();
                     if (data.lote == 'S') {
+                        $('#lote').parent().show();
                     }
 
                 });

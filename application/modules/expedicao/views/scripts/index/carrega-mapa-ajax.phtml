@@ -1,9 +1,6 @@
 <?php
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
+$temLote = !empty($this->lotesCodBarras);
 
 if ($this->erro) {
     echo $this->erro;
@@ -24,27 +21,39 @@ if ($this->erro) {
                 <input type="hidden" name="utilizaVolumePatrimonio" id="utilizaVolumePatrimonio" value="<?php echo $this->utilizaVolumePatrimonio ?>" >
                 <input type="hidden" name="tipoQuebraVolume" id="tipoQuebraVolume" value="<?php echo $this->tipoQuebraVolume ?>" >
                 <input type="hidden" name="chekcout" id="chekcout" value="chekcout" >
-                <?php if ($this->confereQtd) : ?>
             </div>
+            <?php if ($this->confereQtd) : ?>
             <div class="field">
-                <label for="rua" class="field optional">*Qtd</label>
+                <label for="qtd" class="field optional">*Qtd</label>
                 <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" style="width: 80%">
             </div>
             <div class="field">
-                <label for="rua" class="field optional">*Código de Barras</label>
-                <input type="text" name="codigoBarras" id="codigoBarras" class="focus" size="40" maxlength="100" style="width: 99%">
+                <label for="codigoBarras" class="field required">*Código de Barras</label>
+                <input type="text" name="codigoBarras" id="codigoBarras" class="focus" <?php if ($temLote) { ?> onkeydown="goToLote(event)" <?php } ?> size="40" maxlength="100" style="width: 99%">
             </div>
+            <?php if ($temLote) { ?>
+            <div class="field">
+                <label for="lote" class="field required">*Lote</label>
+                <input type="text" name="lote" id="lote" class="required"  onkeydown="redirectTo(event)" size="40" maxlength="100" style="width: 99%">
+            </div>
+            <?php } ?>
             <?php else : ?>
-                <div class="field">
-                    <label for="rua" class="field optional">*Código de Barras</label>
-                    <input type="text" name="codigoBarras" id="codigoBarras" class="focus" size="40" maxlength="100" style="width: 99%">
-                </div>
-                <div class="field">
-                    <label for="rua" class="field optional">*Qtd</label>
-                    <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" style="width: 80%">
-                </div>
+            <div class="field">
+                <label for="codigoBarras" class="field optional">*Código de Barras</label>
+                <input type="text" name="codigoBarras" id="codigoBarras" class="focus" size="40" <?php if ($temLote) { ?> onkeydown="goToLote(event)" <?php } ?> maxlength="100" style="width: 99%">
+            </div>
+            <?php if ($temLote) { ?>
+            <div class="field">
+                <label for="lote" class="field optional">*Lote</label>
+                <input type="text" name="lote" id="lote" class="required"  onkeydown="redirectTo(event)" size="40" maxlength="100" style="width: 99%">
+            </div>
+            <?php } ?>
+            <div class="field">
+                <label for="qtd" class="field optional">*Qtd</label>
+                <input type="text" name="qtd" id="qtd" size="7" maxlength="100" value="1" style="width: 80%">
+            </div>
             <?php endif; ?>
-            <input type="button" name="buscar-sumbit" id="buscar-sumbit" value="Conferir" class="btn gradientBtn">
+            <input type="button" name="buscar-submit" id="buscar-submit" value="Conferir" class="btn gradientBtn">
             <?php if (!$this->separacaoEmbalado) : ?>
                 <input style="width: 300px;" type="button" class="btn gradientBtn" onclick="window.location = '<?php echo '/mobile/expedicao/finalizar/idExpedicao/' . $this->idExpedicao . '/idMapa/' . $this->idMapa . '/mapa/S/checkout/1' ?>'" value="Finalizar">
                 <input type="submit" class="btn gradientBtn" href="<?php echo '/mobile/expedicao/index/idCentral/' . $this->central ?>" value="Alt. Mapa">
@@ -71,9 +80,13 @@ if ($this->erro) {
             if (is_array($this->produtos)) {
                 foreach ($this->produtos as $key => $value) {
                     ?>
-                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>"
-                       style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; margin-top: 10px; text-align: center;">
-                        <?php echo$value['COD_PRODUTO'].' - '. $value['DSC_PRODUTO'] ?> </p>
+                    <p produto="<?php echo "$value[COD_PRODUTO]*+*$value[DSC_GRADE]*+*$value[DSC_LOTE]" ?>" style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; margin-top: 10px; text-align: center;">
+                        <?php
+                        $strLote = (!empty($value['DSC_LOTE']) && $value['DSC_LOTE'] != \Wms\Domain\Entity\Produto\Lote::NCL) ?" Lote: '$value[DSC_LOTE]'" : "";
+                        echo $value['COD_PRODUTO'] . ' - ' . $value['DSC_PRODUTO'] . $strLote;
+
+                        ?>
+                    </p>
                     <?php
                 }
             }
@@ -91,16 +104,20 @@ if ($this->erro) {
                     }else{
                         $quantidade = $value['QUANTIDADE'];
                     }
-                    $conferidos[$value['COD_PRODUTO'] . '-' . $value['DSC_GRADE']] = 1;
+                    $codGradeLote = "$value[COD_PRODUTO]*+*$value[DSC_GRADE]*+*$value[DSC_LOTE]";
+                    $conferidos[$codGradeLote] = 1;
+                    $strLote = (!empty($value['DSC_LOTE']) && $value['DSC_LOTE'] != \Wms\Domain\Entity\Produto\Lote::NCL) ?" Lote: '$value[DSC_LOTE]'" : "";
                     ?>
-                    <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>" style="<?php echo $background;?> color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center;margin-top: 10px; "><?php echo  $value['COD_PRODUTO'].' - '.$value['DSC_PRODUTO'].' - '.$quantidade.' '.$span ?> </p>
+                    <p produto="<?php echo $codGradeLote ?>" style="<?php echo $background;?> color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center;margin-top: 10px; "><?php echo  $value['COD_PRODUTO'].' - '.$value['DSC_PRODUTO'].$strLote.' - '.$quantidade.' '.$span ?> </p>
                     <?php
                 }
                 foreach ($this->produtos as $key => $value) {
-                    if(empty($conferidos[$value['COD_PRODUTO'] . '-' . $value['DSC_GRADE']])) {
+                    $codGradeLote = "$value[COD_PRODUTO]*+*$value[DSC_GRADE]*+*$value[DSC_LOTE]";
+                    $strLote = (!empty($value['DSC_LOTE']) && $value['DSC_LOTE'] != \Wms\Domain\Entity\Produto\Lote::NCL) ?" Lote: '$value[DSC_LOTE]'" : "";
+                    if(empty($conferidos[$codGradeLote])) {
                         ?>
-                        <p produto="<?php echo $value['COD_PRODUTO'] . '-' . $value['DSC_GRADE'] ?>"
-                           style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo $value['COD_PRODUTO'] . ' - ' . $value['DSC_PRODUTO'] . ' - ' ?>
+                        <p produto="<?php echo $codGradeLote ?>"
+                           style="color: rgba(132, 71, 28, 0.63); font-weight: bold; padding: 5px; text-align: center; display: none; margin-top: 10px;"><?php echo $value['COD_PRODUTO'] . ' - ' . $value['DSC_PRODUTO'] . $strLote . ' - ' ?>
                             <span id="qtd"></span></span> </p>
                         <?php
                     }
@@ -114,6 +131,115 @@ if ($this->erro) {
 ?>
 <script>
     $('#codigoBarras').focus();
+
+    <?php if ($temLote) { ?>
+    var loteCodigoBarras = <?php echo $this->lotesCodBarras ?>;
+
+    $("#lote").focus(function () {
+        verificaCodBarras()
+    });
+
+    function goToLote( event ) {
+        var result = true;
+        if (event.which == 13 || event.keyCode == 13) {
+            if (verificaCodBarras()) {
+                var codBarras = $("#codigoBarras");
+                if (loteCodigoBarras[codBarras.val()] instanceof Array) {
+                    var lote = $('#lote');
+                    if (lote) {
+                        lote.focus();
+                        lote.val("");
+                    }
+                } else {
+                    return requestAjax(event, $("#qtd"), codBarras);
+                }
+            }
+            if (event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
+        }
+        return result;
+    }
+
+    function verificaCodBarras () {
+        var elem = $('#codigoBarras');
+        var result = true;
+        if (elem.val() === "") {
+            elem.focus();
+            alert("Informe primeiro o código de barras do produto");
+            result = false;
+        } else {
+            var check = validaCodBarras(elem.val());
+            if (!check) {
+                elem.focus();
+                elem.val("");
+                result = false;
+            }
+        }
+        return result;
+    }
+
+    function validaCodBarras(codBarras) {
+        if (codBarras in loteCodigoBarras) {
+            return true;
+        } else {
+            alert("Código de barras " + codBarras + " não esperado para este mapa");
+            return false;
+        }
+    }
+
+    function checkLoteByCodBarras(codBarras, loteBipado) {
+        if (loteBipado !== "") {
+            if ($.inArray(loteBipado, loteCodigoBarras[codBarras]) < 0) {
+                alert("Lote " + loteBipado + " não esperado para este produto");
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            alert("Lote não informado!");
+            return false;
+        }
+    }
+
+    function redirectTo(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            var codBarras = $("#codigoBarras");
+            var lote = $("#lote");
+            var qtd = $("#qtd");
+            var confereQtd = <?php echo ($this->confereQtd) ? "true" : "false" ?>;
+
+            if (confereQtd) {
+                requestAjax(event, qtd, codBarras);
+            } else {
+                if (verificacao(codBarras, lote)) {
+                    qtd.select().focus();
+                }
+            }
+        }
+        return false;
+    }
+
+    function verificacao (codBarras, lote) {
+        var result = true;
+        if (validaCodBarras(codBarras.val())) {
+            if (loteCodigoBarras[codBarras.val()] instanceof Array) {
+                var checkLote = checkLoteByCodBarras(codBarras.val(), lote.val());
+                if (!checkLote) {
+                    lote.val("").focus();
+                }
+                result = checkLote;
+            }
+        } else {
+            codBarras.val("").focus();
+            result = false;
+        }
+        return result;
+    }
+
+    <?php  } else { ?>
     $("input").keydown(function (e) {
         if (e.which == 113) {
             var qtd = $('#qtd');
@@ -130,7 +256,69 @@ if ($this->erro) {
     });
     $("#codigoBarras").keydown(function (e) {
         if (e.which == 13) {
-            $('#buscar-sumbit').click();
+            $('#buscar-submit').click();
+        }
+    });
+    <?php  } ?>
+
+    function requestAjax(e, inputQtd, inputCodBarras) {
+        <?php if ($temLote) { ?>
+        var lote = $("#lote");
+        <?php } ?>
+        if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
+            $.ajax({
+                url: '<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
+                data: $('form').serialize(),
+                async: false,
+                type: 'post',
+                success: function (data) {
+                    if (data.retorno.resposta.length > 0) {
+                        inputCodBarras.val("").focus();
+                        inputQtd.val(1);
+                        <?php if ($temLote) { ?>
+                        lote.val("");
+                        <?php } ?>
+                        var error = "";
+                        var success = "Quantidade conferida com sucesso";
+                        if (data.retorno.resposta == 'error') {
+                            error = data.retorno.message;
+                            try {
+                                playSound("/alarme.mp3");
+                            } catch (e) {
+                                alert(e);
+                            }
+                            success = "";
+                        } else {
+                            playSound("/confirm2.mp3");
+                            var produto = data.retorno.produto[0];
+                            var codGradeLote = produto['codProduto'] + '*+*' + produto['dscGrade'] + '*+*' + produto['lote'];
+                            var conferidos = $('#conferidos');
+
+                            conferidos.find('p[produto="' + codGradeLote +'"]').show();
+                            conferidos.find('p[produto="' + codGradeLote +'"] #qtd').text(produto['qtdConferidaTotalEmb']);
+                            if (data.retorno.message == 'checkout') {
+                                $('#conferir').find('p[produto="' + codGradeLote +'"]').hide();
+                                conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#f3f3f3');
+                            }else{
+                                conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#fad0d0');
+                            }
+                            error = "";
+                        }
+                        $("#error").html(error);
+                        $("#success").html(success);
+                    }
+                    $(".item-lista").remove();
+                }
+            });
+        }
+    }
+
+    $('#buscar-submit').on('click', function (e) {
+        var qtd = $("#qtd");
+        if (qtd !== '') {
+            var codBarras = $("#codigoBarras");
+            requestAjax(e, qtd, codBarras);
+            return false;
         }
     });
 </script>
