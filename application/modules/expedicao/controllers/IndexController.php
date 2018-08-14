@@ -937,6 +937,10 @@ class Expedicao_IndexController extends Action {
     public function carregaMapaAjaxAction() {
         $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'));
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoRepo */
+        $mapaSepProdRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+
         try {
             $operacao = $expedicaoRepo->getUrlMobileByCodBarras($codBarras);
             $codPessoa = $this->_getParam('cod_pessoa');
@@ -959,6 +963,7 @@ class Expedicao_IndexController extends Action {
             $Expedicao->validacaoExpedicao();
             $Expedicao->osLiberada();
 
+            /** @var Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
             $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
             if (empty($codPessoa)) {
                 /** EXIBE OS PRODUTOS FALTANTES DE CONFERENCIA PARA O MAPA  */
@@ -1034,6 +1039,7 @@ class Expedicao_IndexController extends Action {
                 }
             }
 
+            $this->view->lotesCodBarras = json_encode($mapaSepProdRepo->getCodBarrasByLoteMapa($idMapa));
             $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
             $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
             $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();

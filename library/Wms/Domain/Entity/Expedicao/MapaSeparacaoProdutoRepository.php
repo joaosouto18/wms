@@ -5,6 +5,7 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Symfony\Component\Console\Output\NullOutput;
 use Wms\Domain\Entity\Expedicao;
+use Wms\Domain\Entity\Produto\Lote;
 use Wms\Math;
 
 class MapaSeparacaoProdutoRepository extends EntityRepository
@@ -363,14 +364,6 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
     public function getMapaProdutoByExpedicao($idExpedicao)
     {
-//        $sql = $this->getEntityManager()->createQueryBuilder()
-//            ->select('p.id, p.descricao, pe.codigoBarras codigoBarras, e.descricao endereco')
-//            ->from('wms:Produto\Embalagem', 'pe')
-//            ->innerJoin('pe.endereco', 'e')
-//            ->innerJoin('pe.produto', 'p')
-//            ->where("pe.imprimirCB = 'S'");
-
-
 
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('p.id, p.grade, p.descricao, NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, NVL(pe.descricao, pv.descricao) unidadeMedida')
@@ -407,24 +400,29 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
     public function verificaConsistenciaSeguranca($idExpedicao)
     {
+        $naoControlaLote = Lote::NCL;
         $sql = "SELECT *
-                    FROM (SELECT SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) AS QTD_PEDIDO, PP.COD_PRODUTO, PP.DSC_GRADE
-                      FROM PEDIDO P
-                      INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                      INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
-                      WHERE C.COD_EXPEDICAO = $idExpedicao AND P.IND_ETIQUETA_MAPA_GERADO = 'S'
-                      GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) PP
-                    LEFT JOIN (
-                      SELECT 
-                         (SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) - NVL(QTD_CORTADO,0)) / CASE WHEN COUNT(DISTINCT MSP.COD_PRODUTO_VOLUME) = 0 THEN 1 ELSE COUNT(MSP.COD_PRODUTO_VOLUME) END)
-                          AS QTD_MAPA, 
-                          MSP.COD_PRODUTO, MSP.DSC_GRADE
-                      FROM MAPA_SEPARACAO MS
-                      INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                      WHERE MS.COD_EXPEDICAO = $idExpedicao
-                        AND MS.COD_MAPA_SEPARACAO NOT IN (SELECT COD_MAPA_SEPARACAO FROM MAPA_SEPARACAO_QUEBRA WHERE IND_TIPO_QUEBRA = 'RE')
-                      GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE) MSP ON MSP.COD_PRODUTO = PP.COD_PRODUTO AND MSP.DSC_GRADE = PP.DSC_GRADE
-                    WHERE QTD_PEDIDO <> QTD_MAPA";
+                FROM (SELECT (CASE WHEN PPL.DSC_LOTE IS NULL 
+                             THEN SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) 
+                             ELSE SUM(PPL.QUANTIDADE - NVL(PPL.QTD_CORTE,0)) 
+                             END) AS QTD_PEDIDO, PP.COD_PRODUTO, PP.DSC_GRADE, NVL(PPL.DSC_LOTE, '$naoControlaLote') DSC_LOTE
+                  FROM PEDIDO P
+                  INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                  LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
+                  INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
+                  WHERE C.COD_EXPEDICAO = $idExpedicao AND P.IND_ETIQUETA_MAPA_GERADO = 'S'
+                  GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE,PPL.DSC_LOTE, NVL(PPL.DSC_LOTE, '$naoControlaLote')) PP
+                LEFT JOIN (
+                  SELECT 
+                     (SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) - NVL(QTD_CORTADO,0)) / CASE WHEN COUNT(DISTINCT MSP.COD_PRODUTO_VOLUME) = 0 THEN 1 ELSE COUNT(MSP.COD_PRODUTO_VOLUME) END)
+                      AS QTD_MAPA, 
+                      MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(MSP.DSC_LOTE, '$naoControlaLote') DSC_LOTE
+                  FROM MAPA_SEPARACAO MS
+                  INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                  WHERE MS.COD_EXPEDICAO = $idExpedicao
+                    AND MS.COD_MAPA_SEPARACAO NOT IN (SELECT COD_MAPA_SEPARACAO FROM MAPA_SEPARACAO_QUEBRA WHERE IND_TIPO_QUEBRA = 'RE')
+                  GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(MSP.DSC_LOTE, '$naoControlaLote')) MSP ON MSP.COD_PRODUTO = PP.COD_PRODUTO AND MSP.DSC_GRADE = PP.DSC_GRADE AND MSP.DSC_LOTE = PP.DSC_LOTE
+                WHERE QTD_PEDIDO <> QTD_MAPA";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 

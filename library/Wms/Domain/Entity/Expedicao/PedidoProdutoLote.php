@@ -59,7 +59,7 @@ class PedidoProdutoLote
     protected $qtdCorte;
 
     /**
-     * @Column(name="IND_DEFINICAO", type="string", nullable=false)
+     * @Column(name="IND_DEFINIDO", type="string", nullable=false)
      */
     protected $definicao;
 
