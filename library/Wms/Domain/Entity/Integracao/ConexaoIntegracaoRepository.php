@@ -222,7 +222,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
 
             $resultado = ibase_query($conexao, $query);
-``
+
 	    if (true === $update || true === $resultado) {
                 ibase_close($conexao);
                 return $resultado;
