@@ -1215,7 +1215,6 @@ class MapaSeparacaoRepository extends EntityRepository {
         $dscEmbalagem = $result[0]['DSC_EMBALAGEM'] . "($fatorCodBarrasBipado)";
         $prodFracionavel = $result[0]['IND_FRACIONAVEL'];
         $isEmbExpDefault = $result[0]['IS_EMB_EXP_DEFAULT'];
-        $loteConferido = $result[0]['DSC_LOTE'];
 
         if ($prodFracionavel == 'S') {
             /** @var EmbalagemRepository $embalagemRepo */
@@ -1242,7 +1241,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             //CASO SEJA CONFERÊNCIA DE EMBALADO NÃO SOMA AS QTDS DO MESMO ITEM DE TODOS OS MAPAS
             if (!empty($codPessoa) && $mapa['COD_MAPA_SEPARACAO'] != $idMapa) continue;
 
-            //CASO O PRODUTO CONTROLE LOTE, SÓ CALCULA O LÓTE ESPECÍFICO
+            //CASO O PRODUTO CONTROLE LOTE, SÓ CALCULA O LOTE ESPECÍFICO
             if (!empty($lote) && $mapa["DSC_LOTE"] != $lote) continue;
 
             $qtdMapaTotal = Math::adicionar($qtdMapaTotal, $mapa['QTD_SEPARAR']);
@@ -1274,7 +1273,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                     'qtdEmbalagem' => $fatorCodBarrasBipado,
                     'qtdConferidaTotalEmb' => $qtdConferidoTotalEmb,
                     'quantidade' => Math::dividir($qtdConferir, $fatorCodBarrasBipado),
-                    'lote' => $lote
+                    'lote' => (!empty($lote))? $lote : Lote::NCL
                 );
 
                 $qtdRestante = Math::subtrair($qtdRestante, $qtdConferir);
