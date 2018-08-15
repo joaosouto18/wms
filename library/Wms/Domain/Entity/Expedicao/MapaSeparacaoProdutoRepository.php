@@ -441,14 +441,17 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
         $result = $dql->getQuery()->getResult();
 
+        $temLote = false;
         $arr = [];
         foreach ($result as $item) {
-            if (!empty($item['lote']))
+            if (!empty($item['lote'])) {
+                $temLote = true;
                 $arr[$item['codigoBarras']][] = $item['lote'];
+            }
             else
                 $arr[$item['codigoBarras']] = null;
         }
 
-        return $arr;
+        return [$temLote, $arr];
     }
 }

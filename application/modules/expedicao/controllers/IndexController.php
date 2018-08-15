@@ -938,7 +938,7 @@ class Expedicao_IndexController extends Action {
         $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'));
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
 
-        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoRepo */
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSepProdRepo */
         $mapaSepProdRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
 
         try {
@@ -1039,8 +1039,8 @@ class Expedicao_IndexController extends Action {
                 }
             }
 
-            $lotesCodBarras = $mapaSepProdRepo->getCodBarrasByLoteMapa($idMapa);
-            $this->view->temLote = !empty($lotesCodBarras);
+            list($temLote, $lotesCodBarras) = $mapaSepProdRepo->getCodBarrasByLoteMapa($idMapa);
+            $this->view->temLote = $temLote;
             $this->view->lotesCodBarras = json_encode($lotesCodBarras);
             $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
             $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
