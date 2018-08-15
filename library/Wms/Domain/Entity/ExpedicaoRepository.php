@@ -1298,6 +1298,10 @@ class ExpedicaoRepository extends EntityRepository {
             /** @var \Wms\Domain\Entity\Expedicao $expedicaoEn */
             $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
 
+            if ($expedicaoEn->getCodStatus() == Expedicao::STATUS_FINALIZADO) {
+                throw new \Exception("Expedição ja se encontra finalizada");
+            }
+
             if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
                 $statusAntigo = $expedicaoEn->getStatus();
                 $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
