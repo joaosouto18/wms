@@ -1479,6 +1479,10 @@ class ExpedicaoRepository extends EntityRepository {
             /** @var \Wms\Domain\Entity\Expedicao $expedicaoEn */
             $expedicaoEn  = $this->findOneBy(array('id'=>$idExpedicao));
 
+            if ($expedicaoEn->getCodStatus() == Expedicao::STATUS_FINALIZADO) {
+                throw new \Exception("Expedição ja se encontra finalizada");
+            }
+
             if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
                 $statusAntigo = $expedicaoEn->getStatus();
                 $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
@@ -3714,6 +3718,11 @@ class ExpedicaoRepository extends EntityRepository {
             if (empty($mapaSeparacao))
                 throw new \Exception("Nenhum mapa de separação encontrado com o códgo " . $codBarras);
             $idExpedicao = $mapaSeparacao->getExpedicao()->getId();
+
+            if ($mapaSeparacao->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_FINALIZADO)  {
+                throw new \Exception("Expedição Finalizada");
+            }
+
             $operacao = "Conferencia do Mapa cód. $codBarras";
             $url = "/mobile/expedicao/ler-produto-mapa/idMapa/$codBarras/idExpedicao/$idExpedicao";
             return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao);
@@ -3724,6 +3733,11 @@ class ExpedicaoRepository extends EntityRepository {
                 throw new \Exception("Nenhum volume embalado encontrado com o códgo " . $codBarras);
             $idMapa = $mapaSeparacaoEmbalado->getMapaSeparacao()->getId();
             $idExpedicao = $mapaSeparacaoEmbalado->getMapaSeparacao()->getExpedicao()->getId();
+
+            if ($mapaSeparacaoEmbalado->getMapaSeparacao()->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_FINALIZADO)  {
+                throw new \Exception("Expedição Finalizada");
+            }
+
             $operacao = "Conferencia dos volumes embalados do Mapa cód. $idMapa";
             $url = "/mobile/expedicao/ler-embalados-mapa/idEmbalado/$codBarras/expedicao/$idExpedicao/idMapa/$idMapa";
             return array('operacao' => $operacao, 'url' => $url, 'expedicao' => $idExpedicao);
@@ -3739,6 +3753,11 @@ class ExpedicaoRepository extends EntityRepository {
                 $idExpedicao = $idExpedicao[0]['expedicao'];
             } else {
                 throw new \Exception("Nenhuma expedição com o volume " . $codBarras);
+            }
+
+            $idStatus = $this->findOneBy(array('id'=> $idExpedicao))->getStatus()->getId();
+            if ($idStatus == Expedicao::STATUS_FINALIZADO) {
+                throw new \Exception("Expedição Finalizada");
             }
 
             $operacao = "Conferencia dos volumes no box";
