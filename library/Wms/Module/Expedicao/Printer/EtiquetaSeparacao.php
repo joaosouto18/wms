@@ -362,7 +362,7 @@ class EtiquetaSeparacao extends Pdf
             default:
                 $impressao  = utf8_decode("EXP:$etiqueta[codExpedicao] - PLACA:$etiqueta[placaExpedicao] - $etiqueta[tipoCarga]:$etiqueta[codCargaExterno]\n");
                 $impressao .= substr(utf8_decode("$etiqueta[tipoPedido]:$etiqueta[codEntrega] - $etiqueta[itinerario]"),0,40) . "\n";
-                $impressao .= substr(utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
+                $impressao .= substr(utf8_encode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
                 $impressao .= "CODIGO:$etiqueta[codProduto] - GRADE:$etiqueta[grade]\n";
                 $impressao .= substr(trim($etiqueta['produto']),0,37)."\n";
                 $impressao .= substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";
@@ -642,6 +642,9 @@ class EtiquetaSeparacao extends Pdf
     protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo, $reentrega = false)
     {
         switch ($modelo) {
+            case 11:
+                $this->layoutModelo11($etiqueta,$countEtiquetas,$reimpressao,$modelo,$reentrega);
+                break;
             case 10:
                 $this->layoutModelo10($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
                 break;
@@ -992,6 +995,37 @@ class EtiquetaSeparacao extends Pdf
             $this->MultiCell(100, 6.5, "                    REENTREGA", 0, 'L');
         }
 
+    }
+
+    protected function layoutModelo11($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
+    {
+        $this->SetMargins(3, 1.5, 0);
+        $this->SetFont('Arial', 'B', 11);
+
+        $strReimpressao = "";
+        if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
+
+        $this->AddPage();
+        $this->total=$countEtiquetas;
+        $this->modelo = $modelo;
+        $this->strReimpressao = $strReimpressao;
+        $this->SetFont('Arial', 'B', 11);
+
+        $impressao  = utf8_decode("EXP:$etiqueta[codExpedicao] - PLACA:$etiqueta[placaExpedicao] - $etiqueta[tipoCarga]:$etiqueta[codCargaExterno]\n");
+        $impressao .= substr(utf8_decode("$etiqueta[tipoPedido]:$etiqueta[codEntrega] - $etiqueta[itinerario]"),0,40) . "\n";
+        $impressao .= substr(utf8_encode("$etiqueta[codClienteExterno] - $etiqueta[cliente]"),0,40)."\n";
+        $impressao .= "CODIGO:$etiqueta[codProduto] - GRADE:$etiqueta[grade]\n";
+        $impressao .= substr(trim($etiqueta['produto']),0,37)."\n";
+        $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] - ". utf8_decode($etiqueta['tipoComercializacao'])."\n";
+        $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+        if ($reentrega == false) {
+            $impressao = utf8_decode("$etiqueta[endereco]\n");
+            $this->MultiCell(100, 3.9, $impressao, 0, 'L');
+            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 33, 68,17);
+        } else {
+            $this->SetFont('Arial', 'B', 20);
+            $this->MultiCell(100, 6.5, "                    REENTREGA", 0, 'L');
+        }
     }
 
 }
