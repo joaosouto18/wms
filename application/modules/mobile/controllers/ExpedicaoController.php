@@ -166,7 +166,9 @@ class Mobile_ExpedicaoController extends Action {
                 }
             }
 
-            $this->view->lotesCodBarras = json_encode($mapaSepProdRepo->getCodBarrasByLoteMapa($idMapa));
+            $lotesCodBarras = $mapaSepProdRepo->getCodBarrasByLoteMapa($idMapa);
+            $this->view->temLote = !empty($lotesCodBarras);
+            $this->view->lotesCodBarras = json_encode($lotesCodBarras);
             $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
             $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
             $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();

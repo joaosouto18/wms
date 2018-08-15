@@ -1,5 +1,5 @@
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js'));
-    $temLote = !empty($this->lotesCodBarras);
+    $temLote = $this->temLote;
 ?>
 <span id="dummy"></span>
 <bgsound id="bgSoundId" loop="0" volume="100" />
