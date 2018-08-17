@@ -239,7 +239,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             } else {
                 $result = $dados;
             }
-
+	    
             if ($acaoEn->getidAcaoRelacionada() != null) {
                 if (count($result) >0) {
 
