@@ -331,6 +331,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             ),
         ));
 
+        $temTransacao = false;
         try {
             //Recuperando o id da ordem servico
             $params = $this->getRequest()->getParams();
@@ -383,12 +384,16 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
             $temFracionavel = false;
             $controlaValidade = false;
+            $temLote = false;
 
             /** @var ProdutoEntity\NormaPaletizacaoRepository $normaRepo */
             $normaRepo = $this->em->getRepository('wms:Produto\NormaPaletizacao');
             foreach ($itensConferir as $key => $item) {
                 if ($item['possui_validade'] == 'S') {
                     $controlaValidade = true;
+                }
+                if ($item['ind_controla_lote'] == 'S') {
+                    $temLote = true;
                 }
                 if ($item['cod_tipo_comercializacao'] == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) {
                     /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
@@ -428,14 +433,18 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             }
 
             $this->view->temFracionavel = $temFracionavel;
+            $this->view->temLote = $temLote;
             $this->view->controlaValidade = $controlaValidade;
             $this->view->produtos = $itensConferir;
 
             //salvar produto e quantidade Conferencia
             if ($this->getRequest()->isPost()) {
                 // checando quantidades
+                $this->_em->beginTransaction();
+                $temTransacao = true;
+
                 $idConferente = $this->getRequest()->getParam('idPessoa');
-                $qtdNFs = $this->getRequest()->getParam('qtdNF');
+                //$qtdNFs = $this->getRequest()->getParam('qtdNF');
                 $qtdAvarias = $this->getRequest()->getParam('qtdAvaria');
                 $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
                 $qtdUnidFracionavel = $this->getRequest()->getParam('qtdUnidFracionavel');
@@ -445,6 +454,15 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $numPeso = $this->getRequest()->getParam('numPeso');
                 $normas = $this->getRequest()->getParam('norma');
                 // executa os dados da conferencia
+
+                $itens = $notaFiscalRepo->buscarItensPorRecebimento($idRecebimento);
+                $qtdNFs = [];
+                foreach ($itens as $item) {
+                    // checando qtdes nf
+                    $qtdNFs[$item['produto']][$item['grade']][$item['lote']] = $item['quantidade'];
+
+                }
+
                 $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas, $qtdUnidFracionavel, $embalagem, $idConferente, true, $unMedida, $dataValidade, $numPeso);
 
                 if ($result['exception'] != null) {
@@ -465,7 +483,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             }
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
-            $this->em->rollback();
+            if ($temTransacao) $this->em->rollback();
             $this->redirect('index');
         }
     }

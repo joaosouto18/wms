@@ -233,11 +233,6 @@ class RecebimentoRepository extends EntityRepository {
             // checando qtdes avarias
             $qtdAvarias[$item['produto']][$item['grade']][$item['lote']] = 0;
 
-            $dscLote = null;
-            if (!empty($item['lote'])) {
-                $dscLote = $item['lote'];
-            }
-
             if (!isset($qtdConferidas[$item['produto']][$item['grade']])) {
                 // checando qtdes conferidas
                 switch ($item['idTipoComercializacao']) {

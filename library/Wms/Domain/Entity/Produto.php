@@ -24,7 +24,7 @@ class Produto {
     const UNID_MEDIDA_METRO = 'M';
 
     public static $listaUnidadeMedida = array(
-        self::UNID_MEDIDA_KILOGRAMA => 'KILOGRAMA',
+        self::UNID_MEDIDA_KILOGRAMA => 'QUILO',
         self::UNID_MEDIDA_LITRO => 'LITRO',
         self::UNID_MEDIDA_METRO => 'METRO',
     );

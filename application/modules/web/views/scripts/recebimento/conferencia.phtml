@@ -22,17 +22,22 @@
                 <tr class="gTTitle">
                     <td>Cód. Produto</td>
                     <td>Grade</td>
+                    <?php if ($this->temLote) { ?>
+                        <td>
+                            Lote&emsp;&emsp;
+                            <span id="addLote" style="cursor: pointer ; background: #4cae4c ; padding-left: 10px ;padding-right: 10px"><b>Add lote</b></span>
+                        </td>
+                    <?php } ?>
                     <td>Unidade</td>
                     <td>Qtd Peças</td>
                     <?php if ($this->temFracionavel) { ?>
                         <td>Total em</td>
                     <?php } ?>
-<!--                    <td>Peso</td>-->
                     <?php if ($this->controlaValidade) { ?>
                         <td>Data Validade</td>
                     <?php } ?>
                     <td>Unitizador</td>
-                    <td>Qtde. Avaria</td>
+                    <td>Qtd. Avaria</td>
                 </tr>
             </thead>
             <tbody>
@@ -40,9 +45,21 @@
                     <tr height="35">
                         <td><?php echo $produto['codigo'] . ' - ' . $produto['descricao'] ?></td>
                         <td><?php echo $produto['grade'] ?></td>
+                        <?php if ($this->temLote && $produto['ind_controla_lote'] == "S") { ?>
+                            <td>
+                                <?php
+                                echo $this->formText("lote[{$produto['codigo']}][{$produto['grade']}][0]", null, [
+                                    'data-loteIndex' => 0,
+                                    'size' => 16,
+                                    'id' => "lote--$produto[codigo]--$produto[grade]--0",
+                                    'class' => 'inputLote'
+                                ]);
+                                ?>
+                            </td>
+                        <?php } ?>
                         <td>
                         <?php if (isset($produto['embalagens'])) {
-                                echo "<select class='Embalagem' name='embalagem[$produto[codigo]][$produto[grade]]' title='Embalagem do produto $produto[codigo]-$produto[grade]' id='embalagem-$produto[codigo]-$produto[grade]'>";
+                                echo "<select class='Embalagem' data-loteIndex='1' name='embalagem[$produto[codigo]][$produto[grade]][0]' title='Embalagem do produto $produto[codigo]-$produto[grade]' id='embalagem--$produto[codigo]--$produto[grade]--0'>";
                                 foreach ($produto['embalagens'] as $embalagem) {
                                     echo "<option value='$embalagem[id]' data-fracionavel-default='$embalagem[isFracDefault]'>$embalagem[dsc]</option>";
                                 }
@@ -55,9 +72,11 @@
                                     }
                                 }
                                 if (isset($medida) && $medida != null) {
-                                    echo $this->formSelect("unMedida[{$produto['codigo']}][{$produto['grade']}]", null, array(
+                                    echo $this->formSelect("unMedida[{$produto['codigo']}][{$produto['grade']}][0]", null, array(
                                         'validators' => array('numeric'),
+                                        'data-loteIndex' => 0,
                                         'alt' => 'number',
+                                        'id' => "unMedida--$produto[codigo]--$produto[grade]--0",
                                         'class' => "unMedida",
                                         'title' => "[{$produto['codigo']}][{$produto['grade']}]",
                                     ), $medida);
@@ -69,14 +88,11 @@
                         </td>
                         <td>
                             <?php
-                            echo $this->formHidden("qtdNF[{$produto['codigo']}][{$produto['grade']}]", $produto['quantidade'], array(
-                                'title' => "[{$produto['codigo']}][{$produto['grade']}]",
-                                'class' => "qtdNF"
-                            ));
-
-                            echo $this->formText("qtdConferida[{$produto['codigo']}][{$produto['grade']}][]", 0, [
+                            echo $this->formText("qtdConferida[{$produto['codigo']}][{$produto['grade']}][0]", 0, [
                                 'size' => 8,
+                                'data-loteIndex' => 0,
                                 'validators' => array('numeric'),
+                                'id' => "qtdConferida--$produto[codigo]--$produto[grade]--0",
                                 'alt' => 'number',
                                 'class' => "qtdConferida",
                                 'title' => "[{$produto['codigo']}][{$produto['grade']}][]"
@@ -85,17 +101,18 @@
                         </td>
                         <?php if ($this->temFracionavel) { ?>
                         <td>
-                            <div id="<?php echo "div-$produto[codigo]-$produto[grade]"?>">
+                            <div>
                                 <?php
                                 if ($produto['ind_fracionavel'] == 'S') {
-                                echo $this->formText("qtdUnidFracionavel[{$produto['codigo']}][{$produto['grade']}][]", 0, [
+                                echo $this->formText("qtdUnidFracionavel[{$produto['codigo']}][{$produto['grade']}][0]", 0, [
                                     'size' => 8,
                                     'validators' => array('numeric'),
+                                    'id' => "qtdUnidFracionavel--$produto[codigo]--$produto[grade]--0",
                                     'alt' => 'centesimal',
                                     'class' => "qtdUnidFracionavel required",
                                     'title' => "Total unid fracionavel [{$produto['codigo']}][{$produto['grade']}][]"
                                 ]); } ?>
-                                <span id="<?php echo "txtUnid-$produto[codigo]-$produto[grade]"?>"></span>
+                                <span id="<?php echo "txtUnid*-*$produto[codigo]*-*$produto[grade]*-*0"?>"></span>
                             </div>
                         </td>
                         <?php } ?>
@@ -104,9 +121,10 @@
                                 <?php
                                 if ($produto['possui_validade']) {
                                 $date = new DateTime('now');
-                                echo $this->formText("dataValidade[{$produto['codigo']}][{$produto['grade']}]", $date->format('d/m/Y'), array(
+                                echo $this->formText("dataValidade[{$produto['codigo']}][{$produto['grade']}][0]", $date->format('d/m/Y'), array(
                                     'size' => 11,
                                     'validators' => array('numeric'),
+                                    'id' => "dataValidade--$produto[codigo]--$produto[grade]--0",
                                     'alt' => 'date',
                                     'class' => "date dthValidade",
                                     'title' => "dataValidade[{$produto['codigo']}][{$produto['grade']}]",
@@ -119,9 +137,10 @@
                         <td>
                             <?php
                             if (isset($produto['normas']) && !empty($produto['normas']))
-                                echo $this->formSelect("norma[{$produto['codigo']}][{$produto['grade']}]", key($produto['normas']) ,array(
+                                echo $this->formSelect("norma[{$produto['codigo']}][{$produto['grade']}][0]", key($produto['normas']) ,array(
                                         'required' => true,
                                         'class' => "norma",
+                                        'id' => "norma--$produto[codigo]--$produto[grade]--0",
                                         'title' => "Norma de paletizacao do produto $produto[codigo]-$produto[grade]",
                                         'empty_option' => "Selecione a norma"
                                 ), $produto['normas'])
@@ -129,9 +148,10 @@
                         </td>
                         <td>
                             <?php
-                            echo $this->formText("qtdAvaria[{$produto['codigo']}][{$produto['grade']}]", 0, array(
+                            echo $this->formText("qtdAvaria[{$produto['codigo']}][{$produto['grade']}][0]", 0, array(
                                 'size' => 8,
                                 'validators' => array('numeric'),
+                                'id' => "qtdAvaria--$produto[codigo]--$produto[grade]--0",
                                 'alt' => 'number',
                                 'class' => "qtdAvaria",
                                 'title' => "[{$produto['codigo']}][{$produto['grade']}]",
@@ -179,6 +199,53 @@
 </div>
 
 <script>
+
+    var strConcatId = "--";
+
+    <?php if ($this->temLote) { ?>
+    var inputNames = ["lote", "embalagem", "unMedida", "qtdConferida", "qtdUnidFracionavel", "dataValidade", "norma", "qtdAvaria"];
+    var imgRemove = $("<img src='/img/icons/cross.png' title='Remover'>");
+    var lotesArr = {"2020--UNICA": ["lote1", "lote2"]};
+
+    $(".inputLote").on("change", function (ev) {
+        var inputLote = $(this);
+        var arrId = inputLote.attr("id").toString().split(strConcatId);
+        var cod = arrId[1];
+        var grade = arrId[2];
+        var index = arrId[3];
+        var lote = (inputLote.val())? inputLote.val() : 0 ;
+
+        var codGrade = [cod,grade].join("--");
+        if (codGrade in lotesArr && index in lotesArr[codGrade]) {
+            var loteRepetido = false;
+            var oldLote = lotesArr[codGrade][index];
+            if (oldLote !== lote) {
+                $.each(lotesArr[codGrade], function (k, v) {
+                    console.log("Key: " + k + " val: "+ v);
+                    if (v === lote) {
+                        loteRepetido = true;
+                        alert("Já existe uma linha com o lote: '" + lote + "' nesse produto " + cod + " - " + grade + "!");
+                        inputLote.val(oldLote);
+                    }
+                });
+                if (loteRepetido) return false;
+            }
+        } else {
+            lotesArr[codGrade][index] = lote;
+        }
+
+        $.each(inputNames, function (k, name) {
+            var idConcated = [name,cod,grade,index].join(strConcatId);
+            var inpt = $("#" + idConcated);
+            if (inpt.length) {
+                var strName = name + "[" + [cod,grade,lote].join("][") + "]";
+                inpt.attr("name", strName)
+            }
+        });
+    });
+
+    <?php } ?>
+
     $(function () {
         $(".qtdUnidFracionavel").each(function () {
             getUnidadeFracionavel($(this));
@@ -186,13 +253,15 @@
     });
 
     function getUnidadeFracionavel (elem) {
-        var arrId = elem.attr("id").toString().split('-');
+        var arrId = elem.attr("id").toString().split(strConcatId);
         var cod = arrId[1];
         var grade = arrId[2];
-        var inptSelect = $("#embalagem-" + cod + "-" + grade).children("[data-fracionavel-default='S']").text();
+        var index = arrId[3];
+        var strId = [cod,grade,index].join(strConcatId);
+        var inptSelect = $("#embalagem" + strId).children("[data-fracionavel-default='S']").text();
         var arrUnids = <?php echo json_encode(\Wms\Domain\Entity\Produto::$listaUnidadeMedida)?>;
         var strUnid = arrUnids[inptSelect] + "S";
-        var txtUnidElem = $("#txtUnid-" + cod + "-" + grade);
+        var txtUnidElem = $("#txtUnid" + strId);
         if (txtUnidElem.length) {
             txtUnidElem.text(strUnid);
         }
@@ -202,7 +271,7 @@
         var produtos = [];
         $(".dthValidade").each(function () {
             var input = $(this);
-            var spl = input.attr("id").split("-");
+            var spl = input.attr("id").split(strConcatId);
             var id = spl[1];
             var grade = spl[2];
             var data = input.val();
