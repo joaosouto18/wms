@@ -1328,7 +1328,7 @@ class ExpedicaoRepository extends EntityRepository {
         $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
 
         $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
-        $cargaEntities = $this->getProdutosExpedicaoCorte(null,$idExpedicao,false);
+        $cargaEntities = $this->getProdutosExpedicaoCorte(null,$idExpedicao,true);
 
         foreach ($cargaEntities as $cargaEntity) {
             $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
@@ -4037,7 +4037,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         $having = "";
         if ($apenasProdutosCortados == true)
-            $having .= " HAVING (SUM(PP.QTD_CORTADA) > 0)";
+            $having .= ' HAVING (NVL(SUM(PP.QTD_CORTADA),0) > 0) ';
 
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
