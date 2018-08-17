@@ -1013,114 +1013,39 @@ class EtiquetaSeparacao extends Pdf
 
         $this->SetX(30);
         $this->SetFont('Arial', 'B', 11);
-        $impressao = utf8_decode("473901 - FABI UTILIDADES DOMESTICAS E PRODUTOS EM GERAL \n");
-        $this->MultiCell(78, 4.5, $impressao, 1, 'L');
+        $impressao = utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente] \n");
+        $this->MultiCell(78, 4.3, $impressao, 1, 'L');
         $this->SetX(30);
         $y1 = $this->getY();
-        $impressao = 'EXP: 1380';
-        $this->MultiCell(40, 4.5, $impressao, 1, 'L');
+        $impressao = "EXP: $etiqueta[codExpedicao]";
+        $this->MultiCell(40, 4.2, $impressao, 1, 'L');
         $this->SetY($y1);
-        $impressao = '1/30';
+        $impressao = (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total;
         $this->SetX(70);
-        $this->MultiCell(38, 4.5, $impressao, 1, 'L');
+        $this->MultiCell(38, 4.2, $impressao, 1, 'L');
         $this->SetX(30);
         $y2 = $this->getY();
-        $impressao = 'CARGA: 22323 ';
+        $impressao = "CARGA: $etiqueta[codCargaExterno] ";
         $this->MultiCell(40, 4.5, $impressao, 1, 'L');
         $this->SetY($y2);
-        $impressao = '1/30';
+        $impressao = (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total;
         $this->SetX(70);
         $this->MultiCell(38, 4.5, $impressao, 1, 'L');
-        $impressao = utf8_decode('CÓDIGO: RMI 1020304050');
-        $this->MultiCell(105, 4.5, $impressao, 1, 'L');
-        $impressao = 'DESCRICAO DO PRODUTO PARA TESTE DE MODELO DE ETIQUETA';
-        $this->MultiCell(105, 4.5, $impressao, 1, 'L');
-        $this->SetFont('Arial', 'B', 16);
+        $this->SetFont('Arial', 'B', 17);
+        $impressao = utf8_decode("CODIGO: $etiqueta[codProduto]");
+        $this->MultiCell(105, 6, $impressao, 1, 'L');
+        $this->SetFont('Arial', '', 9);
+        $impressao = "$etiqueta[produto]";
+        $this->MultiCell(105, 4, $impressao, 1, 'L');
+        $this->SetFont('Arial', 'B', 17);
         $y3 = $this->getY();
-        $impressao = str_replace('.','-','01.001.01.01');
-        $this->MultiCell(50, 4.5, $impressao, 1, 'C');
+        $impressao = str_replace('.','-',"$etiqueta[endereco]");
+        $this->MultiCell(50, 6, $impressao, 1, 'C');
         $this->SetY($y3);
-        $impressao = '1/30';
-        $this->SetX(50);
-        $this->MultiCell(58, 4.5, $impressao, 1, 'L');
+        $impressao = '-';
+        $this->SetX(53);
+        $this->MultiCell(55, 6, $impressao, 1, 'L');
         $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 40, 41, 65, 17);
-
-
-
-
-
-
-
-
-/**
-        $this->SetFont('Arial', 'B', 8);
-        if (strlen("$etiqueta[cliente]") <= 30) {
-            $this->SetFont('Arial', 'B', 10);
-        }
-        $this->SetFont('Arial', 'B', 8);
-        $impressao = substr(utf8_decode("$etiqueta[cliente]"),0,40)."\n";
-
-        if (strlen("COD.: $etiqueta[codProduto] - GRD.: $etiqueta[grade]") <= 33) {
-            $this->SetFont('Arial', 'B', 13);
-        } elseif (strlen("COD.: $etiqueta[codProduto] - GRD.: $etiqueta[grade]") <= 40) {
-            $this->SetFont('Arial', 'B', 10);
-        } else {
-            $this->SetFont('Arial', 'B', 8);
-        }
-        $this->SetFont('Arial', 'B', 8);
-        $impressao .= "COD.: $etiqueta[codProduto] - GRD.: $etiqueta[grade]\n";
-        $this->MultiCell(100, 4.5, $impressao, 0, 'L');
-
-        if (strlen(trim($etiqueta['produto'])) <= 33) {
-            $this->SetFont('Arial', 'B', 13);
-        } elseif (strlen(trim($etiqueta['produto'])) <= 40) {
-            $this->SetFont('Arial', 'B', 10);
-        } else {
-            $this->SetFont('Arial', 'B', 8);
-        }
-        $impressao = utf8_decode(substr(trim($etiqueta['produto']),0,70))."\n";
-        $this->MultiCell(100, 4.5, $impressao, 0, 'L');
-        $this->SetFont('Arial', 'B', 8);
-        $impressao = substr(utf8_decode("FORNECEDOR:$etiqueta[fornecedor]"),0,40) . "\n";
-
-        if (!isset($etiqueta['quantidade'])) {
-            $etiqueta['quantidade'] = '';
-        }
-
-        if (strlen("$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] -  $etiqueta[tipoComercializacao] ($etiqueta[quantidade]) - Pedido: $etiqueta[codEntrega]") <= 33) {
-            $this->SetFont('Arial', 'B', 13);
-        } elseif (strlen("$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] -  $etiqueta[tipoComercializacao] ($etiqueta[quantidade]) - Pedido: $etiqueta[codEntrega]") <= 40) {
-            $this->SetFont('Arial', 'B', 10);
-        } else {
-            $this->SetFont('Arial', 'B', 8);
-        }
-
-        $impressao .= "$etiqueta[linhaSeparacao] - ESTOQUE:$etiqueta[codEstoque] -  $etiqueta[tipoComercializacao] ($etiqueta[quantidade]) - Pedido: $etiqueta[codEntrega]"."\n";
-        $this->MultiCell(100, 4.5, $impressao, 0, 'L');
-        $this->SetFont('Arial', 'B', 11);
-        if ($reentrega == false) {
-            $endereco = '';
-            if (!is_null($etiqueta['endereco'])) {
-                $endereco = "$etiqueta[endereco] -";
-            }
-            $impressao = utf8_decode("$endereco Nº Etiqueta: $etiqueta[codBarras]\n");
-            $this->MultiCell(90, 3.9, $impressao, 0, 'L');
-            $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 29, 41, 68, 17);
-
-            if (isset($etiqueta['sequenciaPedido']) && ($etiqueta['sequenciaPedido'] != null)) {
-                $this->SetY(8);
-                $this->SetX(85);
-
-                $this->SetFont('Arial', 'B', 50);
-                $this->Cell(10,5,$etiqueta['sequenciaPedido']);
-            }
-
-        } else {
-            $this->SetFont('Arial', 'B', 20);
-            $this->MultiCell(100, 6.5, "                    REENTREGA", 0, 'L');
-        }
- **/
-
     }
 
 }
