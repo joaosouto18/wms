@@ -23,10 +23,7 @@
                     <td>Cód. Produto</td>
                     <td>Grade</td>
                     <?php if ($this->temLote) { ?>
-                        <td>
-                            Lote&emsp;&emsp;
-                            <span id="addLote" style="cursor: pointer ; background: #4cae4c ; padding-left: 10px ;padding-right: 10px"><b>Add lote</b></span>
-                        </td>
+                        <td>Lote</td>
                     <?php } ?>
                     <td>Unidade</td>
                     <td>Qtd Peças</td>
@@ -45,21 +42,23 @@
                     <tr height="35">
                         <td><?php echo $produto['codigo'] . ' - ' . $produto['descricao'] ?></td>
                         <td><?php echo $produto['grade'] ?></td>
-                        <?php if ($this->temLote && $produto['ind_controla_lote'] == "S") { ?>
+                        <?php if ($this->temLote) { ?>
                             <td>
-                                <?php
-                                echo $this->formText("lote[{$produto['codigo']}][{$produto['grade']}][0]", null, [
-                                    'data-loteIndex' => 0,
-                                    'size' => 16,
-                                    'id' => "lote--$produto[codigo]--$produto[grade]--0",
-                                    'class' => 'inputLote'
-                                ]);
+                                <?php if ($produto['ind_controla_lote'] == "S") {
+                                    echo $this->formText("lote[{$produto['codigo']}][{$produto['grade']}][0]", null, [
+                                        'size' => 16,
+                                        'id' => "lote--$produto[codigo]--$produto[grade]--0",
+                                        'class' => 'inputLote',
+                                        'placeholder' => "Lote..."
+                                    ]);
+                                    echo "<span class='addLote' id='addLote--$produto[codigo]--$produto[grade]' style='cursor: pointer ; background: #4cae4c ; padding: 5px'><b>Add</b></span>";
+                                }
                                 ?>
                             </td>
                         <?php } ?>
                         <td>
                         <?php if (isset($produto['embalagens'])) {
-                                echo "<select class='Embalagem' data-loteIndex='1' name='embalagem[$produto[codigo]][$produto[grade]][0]' title='Embalagem do produto $produto[codigo]-$produto[grade]' id='embalagem--$produto[codigo]--$produto[grade]--0'>";
+                                echo "<select class='Embalagem' name='embalagem[$produto[codigo]][$produto[grade]][0]' title='Embalagem do produto $produto[codigo]-$produto[grade]' id='embalagem--$produto[codigo]--$produto[grade]--0'>";
                                 foreach ($produto['embalagens'] as $embalagem) {
                                     echo "<option value='$embalagem[id]' data-fracionavel-default='$embalagem[isFracDefault]'>$embalagem[dsc]</option>";
                                 }
@@ -74,7 +73,6 @@
                                 if (isset($medida) && $medida != null) {
                                     echo $this->formSelect("unMedida[{$produto['codigo']}][{$produto['grade']}][0]", null, array(
                                         'validators' => array('numeric'),
-                                        'data-loteIndex' => 0,
                                         'alt' => 'number',
                                         'id' => "unMedida--$produto[codigo]--$produto[grade]--0",
                                         'class' => "unMedida",
@@ -90,7 +88,6 @@
                             <?php
                             echo $this->formText("qtdConferida[{$produto['codigo']}][{$produto['grade']}][0]", 0, [
                                 'size' => 8,
-                                'data-loteIndex' => 0,
                                 'validators' => array('numeric'),
                                 'id' => "qtdConferida--$produto[codigo]--$produto[grade]--0",
                                 'alt' => 'number',
@@ -204,10 +201,9 @@
 
     <?php if ($this->temLote) { ?>
     var inputNames = ["lote", "embalagem", "unMedida", "qtdConferida", "qtdUnidFracionavel", "dataValidade", "norma", "qtdAvaria"];
-    var imgRemove = $("<img src='/img/icons/cross.png' title='Remover'>");
-    var lotesArr = {"2020--UNICA": ["lote1", "lote2"]};
+    var lotesArr = {};
 
-    $(".inputLote").on("change", function (ev) {
+    $(".inputLote").live("change", function (ev) {
         var inputLote = $(this);
         var arrId = inputLote.attr("id").toString().split(strConcatId);
         var cod = arrId[1];
@@ -216,12 +212,14 @@
         var lote = (inputLote.val())? inputLote.val() : 0 ;
 
         var codGrade = [cod,grade].join("--");
-        if (codGrade in lotesArr && index in lotesArr[codGrade]) {
+        if (codGrade in lotesArr) {
+            var oldLote = null;
+            if (index in lotesArr[codGrade])
+                oldLote = lotesArr[codGrade][index];
+
             var loteRepetido = false;
-            var oldLote = lotesArr[codGrade][index];
             if (oldLote !== lote) {
                 $.each(lotesArr[codGrade], function (k, v) {
-                    console.log("Key: " + k + " val: "+ v);
                     if (v === lote) {
                         loteRepetido = true;
                         alert("Já existe uma linha com o lote: '" + lote + "' nesse produto " + cod + " - " + grade + "!");
@@ -229,9 +227,15 @@
                     }
                 });
                 if (loteRepetido) return false;
+
+                lotes = lotesArr[codGrade];
+                lotes[index] = lote;
+                lotesArr[codGrade] = lotes;
             }
         } else {
-            lotesArr[codGrade][index] = lote;
+            var lotes = {};
+            lotes[index] = lote;
+            lotesArr[codGrade] = lotes;
         }
 
         $.each(inputNames, function (k, name) {
@@ -243,6 +247,78 @@
             }
         });
     });
+
+    $("span.addLote").click(function () {
+        var btnAdd = $(this);
+        var arrId = btnAdd.attr("id").toString().split(strConcatId);
+        var cod = arrId[1];
+        var grade = arrId[2];
+        var indexMatriz = 0;
+        var tInputs = btnAdd.parent().find("input.inputLote");
+
+        var nextIndex = 1;
+        $.each(tInputs, function (k, input) {
+            if (k === (tInputs.length -1)) {
+                nextIndex = nextIndex + parseInt($(input).attr("id").toString().split(strConcatId)[3]);
+            }
+        });
+
+        $.each(inputNames, function (k, name) {
+            var idConcated = [name,cod,grade,indexMatriz].join(strConcatId);
+            var inpt = $("#" + idConcated);
+            if (inpt.length) {
+                var elemCloned = inpt.clone();
+
+                var strName = name + "[" + [cod,grade,nextIndex].join("][") + "]";
+                elemCloned.attr("name", strName);
+
+                var strId = [name,cod,grade,nextIndex].join(strConcatId);
+                elemCloned.attr("id", strId);
+
+                console.log(name);
+                console.log(name in ["lote", "unMedida", "qtdConferida", "qtdUnidFracionavel", "qtdAvaria"]);
+                if (name in ["lote", "unMedida", "qtdConferida", "qtdUnidFracionavel", "qtdAvaria"]) {
+                    console.log("entrou");
+                    elemCloned.val("");
+                }
+
+                var tdElement = inpt.parent();
+                tdElement.append("<br>");
+                tdElement.append(elemCloned);
+            }
+        });
+
+        var strIdBtn = ["btnRemove",cod,grade,nextIndex].join(strConcatId);
+        btnAdd.parent().append($("<img style='cursor: pointer' src='/img/icons/cross.png' class='btnRemover' title='Remover' id ='" + strIdBtn + "'>"));
+
+    });
+
+    $(".btnRemover").live("click", function () {
+        var element = $(this);
+        return $.wmsDialogConfirm({
+            title: 'Tem certeza?',
+            msg: "Deseja realmente remover esta linha?"
+        }, remover, element);
+    });
+
+    function remover(elem) {
+        var inpt = $(elem);
+        var arrId = inpt.attr("id").toString().split(strConcatId);
+        var cod = arrId[1];
+        var grade = arrId[2];
+        var index = arrId[3];
+
+        $.each(inputNames, function (k, name) {
+            var idConcated = [name,cod,grade,index].join(strConcatId);
+            var inpt = $("#" + idConcated);
+            if (inpt.length) {
+                inpt.remove();
+            }
+        });
+
+        var strIdBtn = ["#btnRemove",cod,grade,index].join(strConcatId);
+        $(strIdBtn).remove();
+    }
 
     <?php } ?>
 
