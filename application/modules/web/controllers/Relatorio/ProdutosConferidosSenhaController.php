@@ -29,22 +29,6 @@ class Web_Relatorio_ProdutosConferidosSenhaController extends \Wms\Controller\Ac
                     'index' => 'COD_RECEBIMENTO',
                 ))
                 ->addColumn(array(
-                    'label' => 'Cód.Fornecedor',
-                    'index' => 'COD_EXTERNO',
-                ))
-                ->addColumn(array(
-                    'label' => 'Fornecedor',
-                    'index' => 'FORNECEDOR',
-                ))
-                ->addColumn(array(
-                    'label' => 'N.F.',
-                    'index' => 'NF',
-                ))
-                ->addColumn(array(
-                    'label' => 'Série',
-                    'index' => 'SERIE',
-                ))
-                ->addColumn(array(
                     'label' => 'Cód.Produto',
                     'index' => 'COD_PRODUTO',
                 ))
@@ -54,47 +38,40 @@ class Web_Relatorio_ProdutosConferidosSenhaController extends \Wms\Controller\Ac
                 ))
                 ->addColumn(array(
                     'label' => 'Produto',
-                    'index' => 'DSC_PRODUTO',
+                    'index' => 'DESCRICAO_PRODUTO',
                 ))
                 ->addColumn(array(
-                    'label' => 'ShelfLife Min',
-                    'index' => 'SHELFLIFE_MIN',
+                    'label' => 'Validade Informada',
+                    'index' => 'DATA_VALIDADE_DIGITADA',
                 ))
                 ->addColumn(array(
-                    'label' => 'ShelfLife Max',
-                    'index' => 'SHELFLIFE_MAX',
+                    'label' => 'ShelfLive',
+                    'index' => 'DIAS_SHELF_LIFE',
                 ))
                 ->addColumn(array(
-                    'label' => 'Qtd. Conf',
+                    'label' => 'Diferença (Dias)',
+                    'index' => 'DIAS_DIFERENCA',
+                ))
+                ->addColumn(array(
+                    'label' => 'Percentual',
+                    'index' => 'PORCENTAGEM',
+                    'render' => 'N3'
+                ))
+                ->addColumn(array(
+                    'label' => 'Qtd. Conferida',
                     'index' => 'QTD_CONFERIDA',
                 ))
                 ->addColumn(array(
-                    'label' => 'Validade',
-                    'index' => 'DTH_VALIDADE',
+                    'label' => 'Usuario Conferencia',
+                    'index' => 'USUARIO_CONFERENCIA',
                 ))
                 ->addColumn(array(
-                    'label' => 'ShelfLife',
-                    'index' => 'SHELFLIFE',
-                ))
-                ->addColumn(array(
-                    'label' => 'Dth. Conferencia',
-                    'index' => 'DTH_CONFERENCIA',
-                ))
-                ->addColumn(array(
-                    'label' => 'Conferente',
-                    'index' => 'CONFERENTE',
-                ))
-                ->addColumn(array(
-                    'label' => 'Dth. Finalização',
-                    'index' => 'DTH_FINALIZACAO',
-                ))
-                ->addColumn(array(
-                    'label' => 'Usuário Finalização',
-                    'index' => 'USUARIO_FINALIZACAO',
+                    'label' => 'Usuario Liberação',
+                    'index' => 'USUARIO_LIBERACAO',
                 ))
                 ->addColumn(array(
                     'label' => 'Observação',
-                    'index' => 'OBSERVACAO_RECEBIMENTO',
+                    'index' => 'OBSERVACAO',
                 ))
                 ->setShowExport(true);
 
