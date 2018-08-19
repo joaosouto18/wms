@@ -499,6 +499,10 @@ class OndaRessuprimentoRepository extends EntityRepository {
         }
         $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null,  $repositorios);
         $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(), $produtosSaida, "S", "O", $ondaRessuprimentoOs, $osEn, null, null,  $repositorios);
+
+        $andamentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\Andamento");
+        $andamentoRepo->save($ondaRessuprimentoOs->getId(), \Wms\Domain\Entity\Ressuprimento\Andamento::STATUS_GERADO);
+
     }
 
     private function calculaRessuprimentoByPicking($picking, $ondaEn, $dadosProdutos, $repositorios) {
