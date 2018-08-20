@@ -314,7 +314,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
                     $itemWs['idProduto'] = trim($itemNf->idProduto);
                     $itemWs['grade'] = (empty($itemNf->grade) || $itemNf->grade === "?") ? "UNICA" : trim($itemNf->grade);
                     $itemWs['quantidade'] = str_replace(',','.',trim($itemNf->quantidade));
-                    $itemWs['lote'] = trim($itemNf->lote);
+                    $itemWs['lote'] = isset($itemNf->lote) && $itemNf->lote != "?" && !empty($itemNf->lote) ? trim($itemNf->lote) : null;
 
                     if (isset($itemNf->peso)) {
                         if (trim(is_null($itemNf->peso) || !isset($itemNf->peso) || empty($itemNf->peso) || $itemNf->peso == 0)) {

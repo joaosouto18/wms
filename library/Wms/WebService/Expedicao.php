@@ -249,7 +249,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $produto['codProduto'] = $produtoWs->codProduto;
                 $produto['grade'] = (empty($produtoWs->grade) || $produtoWs->grade === "?") ? "UNICA" : trim($produtoWs->grade);
                 $produto['quantidade'] = $produtoWs->quantidade;
-                $produto['lote'] = (isset($produtoWs->lote) || $produtoWs->lote != "?") ? $produtoWs->lote : null;
+                $produto['lote'] = (isset($produtoWs->lote) && $produtoWs->lote != "?" && !empty($produtoWs->lote)) ? trim($produtoWs->lote) : null;
                 $produtos[] = $produto;
             }
 

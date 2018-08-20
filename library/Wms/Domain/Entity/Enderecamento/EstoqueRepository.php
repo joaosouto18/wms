@@ -46,6 +46,7 @@ class EstoqueRepository extends EntityRepository
         $produtoEn = $params['produto'];
         $qtd = $params['qtd'];
 
+        $volumeEn = null;
         if (isset($params['volume']) && !empty($params['volume'])) {
             $volumeEn = $params['volume'];
         }
