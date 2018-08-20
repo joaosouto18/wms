@@ -333,6 +333,9 @@
 
         var strIdBtn = ["#btnRemove",cod,grade,index].join(strConcatId);
         $(strIdBtn).remove();
+        var codGrade = [cod,grade].join("--");
+        if (codGrade in lotesArr && index in lotesArr[codGrade])
+            delete lotesArr[codGrade][index];
     }
 
     <?php } ?>

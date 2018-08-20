@@ -786,7 +786,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 var codigoBarras = valores.codigoBarras;
                                 var codigoBarrasAntigo = valores.codigoBarrasAntigo;
                                 var codigosBarras = $('.codigoBarras');
-                                var cbInterno = valores.imprimirCB;
+                                var cbInterno = valores.CBInterno;
                                 var este = this;
 
                                 este.checarCBInterno();

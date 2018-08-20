@@ -216,7 +216,7 @@ class RecebimentoRepository extends EntityRepository {
         }
     }
 
-    public function conferenciaColetor($idRecebimento, $idOrdemServico) {
+    public function conferenciaColetor($idRecebimento, $idOrdemServico, $idConferente = null) {
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
         $produtoVolumeRepo = $this->_em->getRepository('wms:Produto\Volume');
@@ -294,7 +294,7 @@ class RecebimentoRepository extends EntityRepository {
             }
         }
         // executa os dados da conferencia
-        return $this->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas);
+        return $this->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, null, null, null, $idConferente);
     }
 
     /**
@@ -360,8 +360,6 @@ class RecebimentoRepository extends EntityRepository {
         $divergencia = false;
         $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
-        $itensPendentes = $qtdNFs;
-
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $lotes) {
                 /** @var Produto $produtoEn */
@@ -419,13 +417,13 @@ class RecebimentoRepository extends EntityRepository {
                     $qtdConferidaItem = $qtdConferida * $quantidade;
 
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
-                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferidaItem, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote);
+                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEn, $qtdNF, $qtdConferidaItem, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote);
                     if ($qtdDivergencia != 0) {
                         $divergencia = true;
                     }
 
                     if ($gravaRecebimentoVolumeEmbalagem == true) {
-                        $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtdConferida, $numPecas, $idRecebimento, $idOrdemServico, $norma, $idEmbalagem, $dataValidade, $numPeso, $lote);
+                        $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $produtoEn, $qtdConferida, $numPecas, $idRecebimento, $idOrdemServico, $norma, $idEmbalagem, $dataValidade, $numPeso, $lote);
                     }
                 }
             }
@@ -724,12 +722,13 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $qtdAvaria Quantidade avariada do produto
      * @return integer Quantidade de divergencias
      */
-    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote = null) {
+    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEntity = null, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote = null) {
         $em = $this->getEntityManager();
 
-        /** @var Produto $produtoEntity */
-        $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
-
+        if (empty($produtoEntity)) {
+            /** @var Produto $produtoEntity */
+            $produtoEntity = $em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+        }
         /** @var \Wms\Domain\Entity\NotaFiscal\NotaFiscalItemLoteRepository $notaFiscalItemLoteRepo */
         $notaFiscalItemLoteRepo = $this->_em->getRepository('wms:NotaFiscal\NotaFiscalItemLote');
 
@@ -1484,8 +1483,9 @@ class RecebimentoRepository extends EntityRepository {
         return $recebimentoStatus;
     }
 
-    public function gravarRecebimentoEmbalagemVolume($idProduto, $grade, $qtd, $numPecas, $idRecebimento, $idOs, $norma = null, $idEmbalagem = null, $dataValidade = null, $numPeso = null, $lote = null) {
-        $produtoEntity = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+    public function gravarRecebimentoEmbalagemVolume($idProduto, $grade, $produtoEntity = null, $qtd, $numPecas, $idRecebimento, $idOs, $norma = null, $idEmbalagem = null, $dataValidade = null, $numPeso = null, $lote = null) {
+        if (empty($produtoEntity))
+            $produtoEntity = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
         if (!empty($idEmbalagem)) {
             $embalagem = null;
@@ -1507,6 +1507,52 @@ class RecebimentoRepository extends EntityRepository {
             foreach ($volumes as $volume) {
                 $norma = $volume->getNormaPaletizacao()->getId();
                 $this->gravarConferenciaItemVolume($idRecebimento, $idOs, $volume->getId(), $qtd, $norma, $dataValidade, $numPeso, null, $volume, $lote);
+            }
+        }
+    }
+
+    public function saveConferenciaCega($idRecebimento, $idOrdemServico, $qtdConferidas, $normas = null, $qtdUnidFracionavel = null, $embalagem = null, $unMedida = false, $dataValidade = null, $numPeso = null){
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
+        $produtoRepo = $this->_em->getRepository('wms:Produto');
+
+        foreach ($qtdConferidas as $idProduto => $grades) {
+            foreach ($grades as $grade => $lotes) {
+                /** @var Produto $produtoEn */
+                $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+                foreach ($lotes as $lote => $qtdConferida) {
+                    $qtdConferida = (float)$qtdConferida;
+
+                    $numPecas = 0;
+                    if ($produtoEn->getIndFracionavel() == "S"
+                        && isset($qtdUnidFracionavel[$idProduto][$grade][$lote])
+                        && !empty($qtdUnidFracionavel[$idProduto][$grade][$lote])) {
+                        $numPecas = (int)$qtdConferida;
+                        $qtdSemMilhar = str_replace(".", "", $qtdUnidFracionavel[$idProduto][$grade][$lote]);
+                        $qtdConferida = (float)str_replace(',', '.', $qtdSemMilhar);
+                    }
+
+                    if (isset($dataValidade[$idProduto][$grade]) && !empty($dataValidade[$idProduto][$grade][$lote])) {
+                        $dataValidade['dataValidade'] = $dataValidade[$idProduto][$grade][$lote];
+                        $dataValidade['dataValidade'] = new \Zend_Date($dataValidade['dataValidade']);
+                        $dataValidade['dataValidade'] = $dataValidade['dataValidade']->toString('Y-MM-dd');
+                    } else {
+                        $dataValidade['dataValidade'] = null;
+                    }
+
+                    $norma = null;
+                    if (!empty($normas)) {
+                        $norma = $normas[$idProduto][$grade][$lote];
+                    }
+
+                    $idEmbalagem = null;
+                    if (isset($embalagem[$idProduto][$grade])) {
+                        $idEmbalagem = $embalagem[$idProduto][$grade][$lote];
+                    } elseif (isset($unMedida[$idProduto][$grade][$lote])) {
+                        $idEmbalagem = $unMedida[$idProduto][$grade][$lote];
+                    }
+
+                    $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $produtoEn, $qtdConferida, $numPecas, $idRecebimento, $idOrdemServico, $norma, $idEmbalagem, $dataValidade, $numPeso, $lote);
+                }
             }
         }
     }
@@ -1541,7 +1587,7 @@ class RecebimentoRepository extends EntityRepository {
             $qtd = $conferenciaEn->getQtdConferida();
             $numPcs = $conferenciaEn->getNumPecas();
 
-            $this->gravarRecebimentoEmbalagemVolume($codProduto, $grade, $qtd, $numPcs, $codRecebimento, $codOs);
+            $this->gravarRecebimentoEmbalagemVolume($codProduto, $grade, $conferenciaEn->getProduto(), $qtd, $numPcs, $codRecebimento, $codOs);
         } else {
             /** @var \Wms\Domain\Entity\Recebimento\Embalagem $embalagem */
             foreach ($embalagens as $embalagem) {
