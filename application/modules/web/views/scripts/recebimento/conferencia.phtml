@@ -275,11 +275,22 @@
                 var strId = [name,cod,grade,nextIndex].join(strConcatId);
                 elemCloned.attr("id", strId);
 
-                console.log(name);
-                console.log(name in ["lote", "unMedida", "qtdConferida", "qtdUnidFracionavel", "qtdAvaria"]);
-                if (name in ["lote", "unMedida", "qtdConferida", "qtdUnidFracionavel", "qtdAvaria"]) {
-                    console.log("entrou");
-                    elemCloned.val("");
+                switch (name) {
+                    case "lote":
+                        elemCloned.val("");
+                        break;
+                    case "unMedida":
+                        elemCloned.val("");
+                        break;
+                    case "qtdConferida":
+                        elemCloned.val(0);
+                        break;
+                    case "qtdUnidFracionavel":
+                        elemCloned.val("0,000");
+                        break;
+                    case "qtdAvaria":
+                        elemCloned.val(0);
+                        break;
                 }
 
                 var tdElement = inpt.parent();
@@ -287,6 +298,10 @@
                 tdElement.append(elemCloned);
             }
         });
+
+        var codGradeIndex = [cod,grade,nextIndex].join(strConcatId);
+
+        $("input[id*='"+codGradeIndex+"']").setMask();
 
         var strIdBtn = ["btnRemove",cod,grade,nextIndex].join(strConcatId);
         btnAdd.parent().append($("<img style='cursor: pointer' src='/img/icons/cross.png' class='btnRemover' title='Remover' id ='" + strIdBtn + "'>"));

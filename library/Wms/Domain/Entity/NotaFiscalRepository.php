@@ -222,6 +222,7 @@ class NotaFiscalRepository extends EntityRepository {
                     AND rc.cod_produto = nfi.cod_produto 
                     AND rc.dsc_grade = nfi.dsc_grade
                     AND rc.qtd_divergencia = 0
+                    AND rc.ind_diverg_lote = 'N'
                 )
            GROUP BY nfi.cod_produto, nfi.dsc_grade, p.dsc_produto, p.possui_validade, p.dias_vida_util, p.cod_tipo_Comercializacao, p.ind_fracionavel, p.ind_controla_lote
            ORDER BY nfi.cod_produto, nfi.dsc_grade";
@@ -1010,12 +1011,20 @@ class NotaFiscalRepository extends EntityRepository {
             $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_INTEGRADA);
             $tipoNotaEntiy = $em->getRepository('wms:Util\Sigla')->findOneBy(array('sigla' => $tipoNota));
 
+            $objDataEmissao = null;
+            if (strpos($dataEmissao, "/") > -1) {
+                $formatDth = (strlen(explode("/", $dataEmissao)[2]) == 2) ? "d/m/y" : "d/m/Y";
+                $objDataEmissao = \DateTime::createFromFormat($formatDth, $dataEmissao);
+            } else {
+                $objDataEmissao = new \DateTime($dataEmissao);
+            }
+
             //inserção de nova NF
             $notaFiscalEntity = new NotaFiscalEntity;
             $notaFiscalEntity->setNumero($numero);
             $notaFiscalEntity->setSerie($serie);
             $notaFiscalEntity->setDataEntrada(new \DateTime);
-            $notaFiscalEntity->setDataEmissao(new \DateTime($dataEmissao));
+            $notaFiscalEntity->setDataEmissao($objDataEmissao);
             $notaFiscalEntity->setFornecedor($fornecedorEntity);
             $notaFiscalEntity->setBonificacao($bonificacao);
             $notaFiscalEntity->setStatus($statusEntity);
