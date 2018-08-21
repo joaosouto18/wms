@@ -108,7 +108,7 @@ class LoteRepository extends EntityRepository
             ->innerJoin("nfi.notaFiscal", "nf")
             ->where("nf.recebimento = :idRecebimento AND nfi.codProduto = :codProduto AND nfi.grade = :grade");
 
-        $arrProdutos = $arrLotes = [];
+        $arrLotes = $arr = [];
         $strLink = "$#$";
         foreach ($itensConferidos as $item) {
             $codGrade = $item['codProduto'].$strLink.$item['grade'];
@@ -123,9 +123,9 @@ class LoteRepository extends EntityRepository
          * Mesmo produto em N Notas conferido em N Lotes
          */
         $itensVinculados = [];
+
         foreach ($arr as $prodGrade => $lotes) {
             list($codigo, $grade) = explode($strLink, $prodGrade);
-            $produtoEn = $produtoRepo->findOneBy(['id' => $codigo, "grade" => $grade]);
             /** @var Item[] $itensNf */
             $itensNf = $dqlNota->setParameters([
                 "idRecebimento" => $idRecebimento,
@@ -177,6 +177,7 @@ class LoteRepository extends EntityRepository
             reset($produtos);
             foreach ($produtos as $prodGrade => $var) {
                 list($codigo, $grade) = explode($strLink, $prodGrade);
+                /** @var Produto $produtoEn */
                 $produtoEn = $produtoRepo->findOneBy(['id' => $codigo, "grade" => $grade]);
                 if ($prodGrade == $last) {
                     $loteEn->setProduto($produtoEn)->setGrade($grade);

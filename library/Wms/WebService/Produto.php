@@ -256,7 +256,8 @@ class Wms_WebService_Produto extends Wms_WebService {
                 ->setFabricante($fabricante)
                 ->setClasse($classe)
                 ->setReferencia($referencia)
-                ->setPossuiPesoVariavel($possuiPesoVariavel);
+                ->setPossuiPesoVariavel($possuiPesoVariavel)
+                ->setIndControlaLote((isset($indControlaLote) && !empty($indControlaLote)) ? $indControlaLote : 'N');
 
             if ($produtoNovo == true) {
                 $produto

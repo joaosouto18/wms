@@ -221,10 +221,14 @@ class RecebimentoRepository extends EntityRepository {
         $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
         $produtoVolumeRepo = $this->_em->getRepository('wms:Produto\Volume');
 
+        /** @var \Wms\Domain\Entity\ProdutoRepository $notaFiscalRepo */
+        $produtoRepo = $this->_em->getRepository('wms:Produto');
+
         // buscar todos os itens das nfs do recebimento
         $itens = $notaFiscalRepo->buscarItensPorRecebimento($idRecebimento);
 
         $qtdConferidas = [];
+        $loteByWMS = [];
 
         foreach ($itens as $item) {
             // checando qtdes nf
@@ -292,7 +296,20 @@ class RecebimentoRepository extends EntityRepository {
                 || !isset($qtdConferidas[$item['produto']][$item['grade']])) {
                 $qtdConferidas[$item['produto']][$item['grade']][$item['lote']] = 0;
             }
+
+            if (empty($item['lote'])) {
+                /** @var ProdutoEntity $produtoEn */
+                $produtoEn = $produtoRepo->findOneBy(['id' => $item['produto'], "grade" => $item['grade']]);
+                if ($produtoEn->getIndControlaLote() == "S") {
+                    $codGrade = "$item[produto]*-*$item[grade]";
+                    foreach ($qtdConferidas[$item['produto']][$item['grade']] as $loteConferido => $qtd) {
+                        $loteByWMS[$codGrade]['qtdTotal'] = Math::adicionar((isset($loteByWMS[$codGrade])) ? $loteByWMS[$codGrade]['qtdTotal'] : 0, $qtd);
+                    }
+                }
+
+            }
         }
+
         // executa os dados da conferencia
         return $this->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, null, null, null, $idConferente);
     }
@@ -319,7 +336,7 @@ class RecebimentoRepository extends EntityRepository {
      *  )
      * @param int $idConferente
      */
-    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas = null, $qtdUnidFracionavel = null, $embalagem = null, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null, $numPeso = null) {
+    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas = null, $qtdUnidFracionavel = null, $embalagem = null, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null, $numPeso = null, $loteByWMS = []) {
         $em = $this->_em;
         $ordemServicoRepo = $em->getRepository('wms:OrdemServico');
         $vQtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
@@ -364,6 +381,7 @@ class RecebimentoRepository extends EntityRepository {
             foreach ($grades as $grade => $lotes) {
                 /** @var Produto $produtoEn */
                 $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+                $qtdJaConferido = 0;
                 foreach ($lotes as $lote => $qtdConferida) {
                     if (isset($numPeso[$idProduto][$grade][$lote]) && !empty($numPeso[$idProduto][$grade][$lote]))
                         $numPeso = (float)str_replace(',', '.', $numPeso[$idProduto][$grade][$lote]);
@@ -371,7 +389,8 @@ class RecebimentoRepository extends EntityRepository {
                     if (isset($qtdNFs[$idProduto][$grade][$lote])) {
                         $qtdNF = (float)$qtdNFs[$idProduto][$grade][$lote];
                     } else {
-                        $qtdNF = (float)$qtdNFs[$idProduto][$grade][0];
+                        $qtdNF = (float)Math::subtrair($qtdNFs[$idProduto][$grade][0], $qtdJaConferido);
+                        $qtdNF = ($qtdNF > 0) ? $qtdNF : 0;
                     }
                     $qtdConferida = (float)$qtdConferida;
                     $qtdAvaria = (float)$qtdAvarias[$idProduto][$grade][$lote];
@@ -393,11 +412,6 @@ class RecebimentoRepository extends EntityRepository {
                         $dataValidade['dataValidade'] = null;
                     }
 
-                    $norma = null;
-                    if (!empty($normas)) {
-                        $norma = $normas[$idProduto][$grade][$lote];
-                    }
-
                     $idEmbalagem = null;
                     $quantidade = 1;
 
@@ -416,14 +430,12 @@ class RecebimentoRepository extends EntityRepository {
                     }
                     $qtdConferidaItem = $qtdConferida * $quantidade;
 
+                    $qtdJaConferido += $qtdConferidaItem;
+
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
-                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEn, $qtdNF, $qtdConferidaItem, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote);
+                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEn, $qtdNF, $qtdConferidaItem, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote, $loteByWMS);
                     if ($qtdDivergencia != 0) {
                         $divergencia = true;
-                    }
-
-                    if ($gravaRecebimentoVolumeEmbalagem == true) {
-                        $this->gravarRecebimentoEmbalagemVolume($idProduto, $grade, $produtoEn, $qtdConferida, $numPecas, $idRecebimento, $idOrdemServico, $norma, $idEmbalagem, $dataValidade, $numPeso, $lote);
                     }
                 }
             }
@@ -722,7 +734,7 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $qtdAvaria Quantidade avariada do produto
      * @return integer Quantidade de divergencias
      */
-    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEntity = null, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote = null) {
+    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEntity = null, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote = null, $loteByWMS = []) {
         $em = $this->getEntityManager();
 
         if (empty($produtoEntity)) {
@@ -741,10 +753,9 @@ class RecebimentoRepository extends EntityRepository {
 
         $indDivergenciaLote = 'N';
         if ($produtoEntity->getIndControlaLote() == 'S') {
-            $qtdDivergenciaLote = 0;
             $qtdLoteNota = 0;
             $qtdNfPorLote = $notaFiscalItemLoteRepo->getQtdLoteByProdutoAndRecebimento($idProduto,$grade,$recebimentoEntity->getId());
-            if ($qtdNfPorLote != null) {
+            if (!empty($qtdNfPorLote)) {
                 foreach ($qtdNfPorLote as $qtdLote) {
                     if ($qtdLote['DSC_LOTE'] == $lote) {
                         $qtdLoteNota = $qtdLoteNota + $qtdLote['QTD'];
@@ -752,10 +763,11 @@ class RecebimentoRepository extends EntityRepository {
                 }
                 if ($qtdLoteNota != $qtdConferida) {
                     $indDivergenciaLote = 'S';
-                    $qtdDivergenciaLote = (($qtdConferida + $qtdAvaria) - $qtdLoteNota);
                 }
+            } else {
+                $qtdLoteNota = $qtdNF;
             }
-            $qtdDivergencia = $qtdDivergenciaLote;
+            $qtdDivergencia = (($qtdConferida + $qtdAvaria) - $qtdLoteNota);
         } elseif ($divergenciaPesoVariavel == 'S' || $produtoEntity->getPossuiPesoVariavel() == 'S') {
             $qtdDivergencia = 0;
         } else {

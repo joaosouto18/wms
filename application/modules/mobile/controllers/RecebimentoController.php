@@ -274,6 +274,7 @@ class Mobile_RecebimentoController extends Action
             }
 
             $loteEn = null;
+            $lote = (isset($params['lote'])) ? $params['lote'] : null;
             if ($produtoEn->getIndControlaLote() == 'S') {
                 /** @var \Wms\Domain\Entity\Produto\LoteRepository $loteRepo */
                 $loteRepo = $this->em->getRepository("wms:Produto\Lote");
