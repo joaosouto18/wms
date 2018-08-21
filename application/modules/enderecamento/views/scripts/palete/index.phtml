@@ -20,7 +20,6 @@
             <caption>Recebimento <?php echo $this->idRecebimento ?> - <?php echo "Paletes do Produto $this->codProduto - $this->produto / $this->grade"?></caption>
             <p>Endereço de picking:
                 <?php if (is_array($this->endPicking)) echo reset($this->endPicking); ?>
-                - Saldo: <?php if (is_array($this->qtdTotal)) echo $this->qtdTotal[0]['QUANTIDADE'].' ('.$this->qtdTotal[0]['QUANTIDADE_TOTAL'].')' ?>
             </p>
             <p><label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></label></p>
             <tbody>

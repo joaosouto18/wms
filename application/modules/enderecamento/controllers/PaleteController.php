@@ -30,8 +30,6 @@ class Enderecamento_PaleteController extends Action
             $this->view->endPicking = $ProdutoRepository->getEnderecoPicking($produtoEn);
             $produtoEspecifico = true;
 
-            $this->view->qtdTotal = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
-
             try {
                 $completaPicking = ($produtos) ? true : false;
                 $paletes = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
@@ -84,7 +82,6 @@ class Enderecamento_PaleteController extends Action
                     $arr['grade'] = $grade;
                     $arr['descricao'] = $produtoEn->getDescricao();
                     $arr['endPicking'] = $ProdutoRepository->getEnderecoPicking($produtoEn);
-                    $arr['qtdTotal'] = $paleteRepo->getQtdTotalByPicking($codProduto, $grade);
 
                     $arr['paletes'] = $paleteRepo->getPaletes($idRecebimento, $codProduto, $grade, true, $tipoEnderecamento = 'M');
                     $paletes = array();
