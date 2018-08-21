@@ -539,7 +539,7 @@ class InventarioRepository extends EntityRepository {
         $params['validade'] = $contagemEndEn->getValidade();
         $params['tipo'] = HistoricoEstoque::TIPO_INVENTARIO;
         ;
-        $params['observacoes'] = 'Mov. correção inventário';
+        $params['observacoes'] = 'Mov. correção inventário ' . $invEnderecoEn->getInventario()->getId();
         $params['os'] = $osEn;
         $params['usuario'] = $usuarioEn;
         $params['estoqueRepo'] = $estoqueRepo;
@@ -556,7 +556,7 @@ class InventarioRepository extends EntityRepository {
         $params['embalagem'] = 0;
         $params['validade'] = null;
         $params['tipo'] = HistoricoEstoque::TIPO_INVENTARIO;
-        $params['observacoes'] = 'Mov. correção inventário';
+        $params['observacoes'] = 'Mov. correção inventário ' . $invEnderecoEn->getInventario()->getId();
         $params['os'] = $osEn;
         $params['usuario'] = $usuarioEn;
         $params['estoqueRepo'] = $estoqueRepo;
@@ -665,9 +665,22 @@ class InventarioRepository extends EntityRepository {
 
         $inventarioEndsEn = $inventarioEndRepo->findBy(array('inventario' => $id));
         foreach ($inventarioEndsEn as $invEndEn) {
-            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getId(), 'N');
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getId(), 'N', false);
         }
-//        $this->_em->flush();
+        $this->_em->flush();
+
+        $sql = "UPDATE DEPOSITO_ENDERECO SET IND_DISPONIVEL = 'S'
+                 WHERE COD_DEPOSITO_ENDERECO IN (
+                SELECT COD_DEPOSITO_ENDERECO 
+                  FROM INVENTARIO_ENDERECO 
+                 WHERE COD_INVENTARIO = 120
+                   AND COD_DEPOSITO_ENDERECO NOT IN (SELECT COD_DEPOSITO_ENDERECO 
+                                                       FROM ESTOQUE))";
+
+        $procedure = $this->_em->getConnection()->prepare($sql);
+        $procedure->execute();
+        $this->_em->flush();
+
     }
 
     public function impressaoInventarioByEndereco($params, $idInventario) {
