@@ -413,13 +413,13 @@ class NotaFiscalRepository extends EntityRepository {
                 INNER JOIN RECEBIMENTO_CONFERENCIA RC ON (RC.COD_OS = OS.COD_OS 
                                                           AND RC.COD_PRODUTO = NFI.COD_PRODUTO
                                                           AND RC.DSC_GRADE = NFI.DSC_GRADE
-                                                          AND RC.DSC_LOTE = NFIL.DSC_LOTE) 
+                                                          AND NVL(RC.DSC_LOTE, 0) = NVL(NFIL.DSC_LOTE, 0)) 
                  LEFT OUTER JOIN MOTIVO_DIVER_RECEB MDR ON (MDR.COD_MOTIVO_DIVER_RECEB = RC.COD_MOTIVO_DIVER_RECEB)
                  LEFT JOIN RECEBIMENTO_CONFERENCIA RC2 ON (RC2.COD_OS = OS.COD_OS 
                                                            AND RC2.COD_PRODUTO = NFI.COD_PRODUTO 
                                                            AND RC2.DSC_GRADE = NFI.DSC_GRADE 
                                                            AND RC2.DSC_LOTE = NFIL.DSC_LOTE
-                                                           AND RC2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) 
+                                                           AND NVL(RC2.COD_NOTA_FISCAL, 0) = NVL(NFI.COD_NOTA_FISCAL, 0))
                 WHERE NF.COD_FORNECEDOR = '$idFornecedor' 
                                 AND NF.NUM_NOTA_FISCAL = '$numero' 
                                 AND NF.COD_SERIE_NOTA_FISCAL = '$serie'
