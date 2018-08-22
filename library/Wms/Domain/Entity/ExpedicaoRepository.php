@@ -3441,7 +3441,7 @@ class ExpedicaoRepository extends EntityRepository {
                   FROM CLIENTE C
                 INNER JOIN PESSOA_ENDERECO PE ON C.COD_PESSOA = PE.COD_PESSOA
                 LEFT JOIN PRACA_FAIXA PF ON PE.NUM_CEP BETWEEN PF.FAIXA_CEP1 AND PF.FAIXA_CEP2
-                  WHERE C.COD_CLIENTE_EXTERNO = $idCliente
+                  WHERE C.COD_CLIENTE_EXTERNO = '$idCliente'
       ";
 
         $result = $this->getEntityManager()->getConnection()->query($dql)->fetch(\PDO::FETCH_ASSOC);
@@ -3896,7 +3896,11 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($params['clientes']) && ($params['clientes'] != null)) {
-            $clientes = implode(',', $params['clientes']);
+            $clienteExternoArr = array();
+            foreach ($params['clientes'] as $codCliente) {
+                $clienteExternoArr[] = "'$codCliente'";
+            }
+            $clientes = implode(',',$clienteExternoArr);
             $SQL .= " AND CLI.COD_CLIENTE_EXTERNO IN ($clientes) ";
         }
 

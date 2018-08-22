@@ -45,7 +45,9 @@ class NotaFiscalItemLoteRepository extends EntityRepository
                    AND NFI.COD_PRODUTO = '$codProduto'
                    AND NFI.DSC_GRADE = '$grade'
                  GROUP BY NFI.COD_PRODUTO, NFI.DSC_GRADE, NFIL.DSC_LOTE";
-        $result = \Wms\Domain\EntityRepository::nativeQuery($sql);
+
+        $result = $this->_em->getConnection()->query($sql)->fetchAll();
+        //$result = \Wms\Domain\EntityRepository::nativeQuery($sql);
 
         return $result;
 

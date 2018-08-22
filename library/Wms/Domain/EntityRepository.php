@@ -49,8 +49,9 @@ class EntityRepository extends EntityRepositoryDoctrine
 
     static function nativeQuery($query, $fetch = 'all', $conexao = null)
     {
-        $config = \Zend_Registry::get('config');
+
         if ($conexao == null) {
+            $config = \Zend_Registry::get('config');
             $conexao = oci_connect($config->resources->doctrine->dbal->connections->default->parameters->user,
                 $config->resources->doctrine->dbal->connections->default->parameters->password,
                 $config->resources->doctrine->dbal->connections->default->parameters->dbname,

@@ -203,15 +203,16 @@
     var inputNames = ["lote", "embalagem", "unMedida", "qtdConferida", "qtdUnidFracionavel", "dataValidade", "norma", "qtdAvaria"];
     var lotesArr = {};
 
-    $(".inputLote").live("change", function (ev) {
+    $(".inputLote").live("change", function () {
         var inputLote = $(this);
         var arrId = inputLote.attr("id").toString().split(strConcatId);
         var cod = arrId[1];
         var grade = arrId[2];
         var index = arrId[3];
         var lote = (inputLote.val())? inputLote.val() : 0 ;
+        var lotes = {};
 
-        var codGrade = [cod,grade].join("--");
+        var codGrade = [cod,grade].join(strConcatId);
         if (codGrade in lotesArr) {
             var oldLote = null;
             if (index in lotesArr[codGrade])
@@ -233,17 +234,15 @@
                 lotesArr[codGrade] = lotes;
             }
         } else {
-            var lotes = {};
             lotes[index] = lote;
             lotesArr[codGrade] = lotes;
         }
 
+        var codGradeIndex = ["",cod,grade,index].join(strConcatId);
         $.each(inputNames, function (k, name) {
-            var idConcated = [name,cod,grade,index].join(strConcatId);
-            var inpt = $("#" + idConcated);
+            var inpt = $("#" + name + codGradeIndex);
             if (inpt.length) {
-                var strName = name + "[" + [cod,grade,lote].join("][") + "]";
-                inpt.attr("name", strName)
+                inpt.attr("name", name + "[" + [cod,grade,lote].join("][") + "]")
             }
         });
     });
@@ -263,17 +262,16 @@
             }
         });
 
+        var codGradeIndex = ["",cod,grade,nextIndex].join(strConcatId);
+
         $.each(inputNames, function (k, name) {
-            var idConcated = [name,cod,grade,indexMatriz].join(strConcatId);
-            var inpt = $("#" + idConcated);
+            var inpt = $("#" + [name,cod,grade,indexMatriz].join(strConcatId));
             if (inpt.length) {
                 var elemCloned = inpt.clone();
 
-                var strName = name + "[" + [cod,grade,nextIndex].join("][") + "]";
-                elemCloned.attr("name", strName);
-
-                var strId = [name,cod,grade,nextIndex].join(strConcatId);
-                elemCloned.attr("id", strId);
+                elemCloned.attr("name", name + "[" + [cod,grade,nextIndex].join("][") + "]");
+                elemCloned.attr("id", name + codGradeIndex);
+                elemCloned.addClass("Prod" + codGradeIndex);
 
                 switch (name) {
                     case "lote":
@@ -294,17 +292,15 @@
                 }
 
                 var tdElement = inpt.parent();
-                tdElement.append("<br>");
+                tdElement.append("<br class='"+codGradeIndex+"'>");
                 tdElement.append(elemCloned);
             }
         });
 
-        var codGradeIndex = [cod,grade,nextIndex].join(strConcatId);
 
-        $("input[id*='"+codGradeIndex+"']").setMask();
+        $("input.Prod"+codGradeIndex).setMask();
 
-        var strIdBtn = ["btnRemove",cod,grade,nextIndex].join(strConcatId);
-        btnAdd.parent().append($("<img style='cursor: pointer' src='/img/icons/cross.png' class='btnRemover' title='Remover' id ='" + strIdBtn + "'>"));
+        btnAdd.parent().append($("<img style='cursor: pointer' src='/img/icons/cross.png' class='btnRemover "+codGradeIndex+"' title='Remover' id ='btnRemove" + codGradeIndex + "'>"));
 
     });
 
@@ -323,17 +319,9 @@
         var grade = arrId[2];
         var index = arrId[3];
 
-        $.each(inputNames, function (k, name) {
-            var idConcated = [name,cod,grade,index].join(strConcatId);
-            var inpt = $("#" + idConcated);
-            if (inpt.length) {
-                inpt.remove();
-            }
-        });
+        $("." + ["Prod",cod,grade,index].join(strConcatId)).remove();
 
-        var strIdBtn = ["#btnRemove",cod,grade,index].join(strConcatId);
-        $(strIdBtn).remove();
-        var codGrade = [cod,grade].join("--");
+        var codGrade = [cod,grade].join(strConcatId);
         if (codGrade in lotesArr && index in lotesArr[codGrade])
             delete lotesArr[codGrade][index];
     }

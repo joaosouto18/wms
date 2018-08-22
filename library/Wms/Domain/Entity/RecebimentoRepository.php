@@ -228,7 +228,6 @@ class RecebimentoRepository extends EntityRepository {
         $itens = $notaFiscalRepo->buscarItensPorRecebimento($idRecebimento);
 
         $qtdConferidas = [];
-        $loteByWMS = [];
 
         foreach ($itens as $item) {
             // checando qtdes nf
@@ -296,18 +295,6 @@ class RecebimentoRepository extends EntityRepository {
                 || !isset($qtdConferidas[$item['produto']][$item['grade']])) {
                 $qtdConferidas[$item['produto']][$item['grade']][$item['lote']] = 0;
             }
-
-            if (empty($item['lote'])) {
-                /** @var ProdutoEntity $produtoEn */
-                $produtoEn = $produtoRepo->findOneBy(['id' => $item['produto'], "grade" => $item['grade']]);
-                if ($produtoEn->getIndControlaLote() == "S") {
-                    $codGrade = "$item[produto]*-*$item[grade]";
-                    foreach ($qtdConferidas[$item['produto']][$item['grade']] as $loteConferido => $qtd) {
-                        $loteByWMS[$codGrade]['qtdTotal'] = Math::adicionar((isset($loteByWMS[$codGrade])) ? $loteByWMS[$codGrade]['qtdTotal'] : 0, $qtd);
-                    }
-                }
-
-            }
         }
 
         // executa os dados da conferencia
@@ -336,7 +323,7 @@ class RecebimentoRepository extends EntityRepository {
      *  )
      * @param int $idConferente
      */
-    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas = null, $qtdUnidFracionavel = null, $embalagem = null, $idConferente = false, $gravaRecebimentoVolumeEmbalagem = false, $unMedida = false, $dataValidade = null, $numPeso = null, $loteByWMS = []) {
+    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas = null, $qtdUnidFracionavel = null, $embalagem = null, $idConferente = false, $unMedida = false, $dataValidade = null, $numPeso = null) {
         $em = $this->_em;
         $ordemServicoRepo = $em->getRepository('wms:OrdemServico');
         $vQtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
@@ -377,6 +364,7 @@ class RecebimentoRepository extends EntityRepository {
         $divergencia = false;
         $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
+        $arrDivergLoteInterno = [];
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $lotes) {
                 /** @var Produto $produtoEn */
@@ -390,7 +378,12 @@ class RecebimentoRepository extends EntityRepository {
                         $qtdNF = (float)$qtdNFs[$idProduto][$grade][$lote];
                     } else {
                         $qtdNF = (float)Math::subtrair($qtdNFs[$idProduto][$grade][0], $qtdJaConferido);
-                        $qtdNF = ($qtdNF > 0) ? $qtdNF : 0;
+                        if ($qtdNF < 0) {
+                            $qtdNF = 0;
+                            if (!in_array("$idProduto--$grade",$arrDivergLoteInterno)) {
+                                $arrDivergLoteInterno[] = "$idProduto--$grade";
+                            }
+                        }
                     }
                     $qtdConferida = (float)$qtdConferida;
                     $qtdAvaria = (float)$qtdAvarias[$idProduto][$grade][$lote];
@@ -433,7 +426,7 @@ class RecebimentoRepository extends EntityRepository {
                     $qtdJaConferido += $qtdConferidaItem;
 
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
-                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEn, $qtdNF, $qtdConferidaItem, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote, $loteByWMS);
+                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEn, $qtdNF, $qtdConferidaItem, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote);
                     if ($qtdDivergencia != 0) {
                         $divergencia = true;
                     }
@@ -734,7 +727,7 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $qtdAvaria Quantidade avariada do produto
      * @return integer Quantidade de divergencias
      */
-    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEntity = null, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote = null, $loteByWMS = []) {
+    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEntity = null, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote = null) {
         $em = $this->getEntityManager();
 
         if (empty($produtoEntity)) {
@@ -753,21 +746,19 @@ class RecebimentoRepository extends EntityRepository {
 
         $indDivergenciaLote = 'N';
         if ($produtoEntity->getIndControlaLote() == 'S') {
-            $qtdLoteNota = 0;
+            $qtdLoteNota = $qtdNF;
             $qtdNfPorLote = $notaFiscalItemLoteRepo->getQtdLoteByProdutoAndRecebimento($idProduto,$grade,$recebimentoEntity->getId());
-            if (!empty($qtdNfPorLote)) {
-                foreach ($qtdNfPorLote as $qtdLote) {
-                    if ($qtdLote['DSC_LOTE'] == $lote) {
-                        $qtdLoteNota = $qtdLoteNota + $qtdLote['QTD'];
-                    }
+
+            foreach ($qtdNfPorLote as $qtdLote) {
+                if ($qtdLote['DSC_LOTE'] == $lote) {
+                    $qtdLoteNota = $qtdLote['QTD'];
                 }
-                if ($qtdLoteNota != $qtdConferida) {
-                    $indDivergenciaLote = 'S';
-                }
-            } else {
-                $qtdLoteNota = $qtdNF;
             }
             $qtdDivergencia = (($qtdConferida + $qtdAvaria) - $qtdLoteNota);
+
+            if ($qtdDivergencia !== 0) {
+                $indDivergenciaLote = 'S';
+            }
         } elseif ($divergenciaPesoVariavel == 'S' || $produtoEntity->getPossuiPesoVariavel() == 'S') {
             $qtdDivergencia = 0;
         } else {

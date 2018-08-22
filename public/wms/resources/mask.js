@@ -62,6 +62,8 @@
 		setTimeout(function(){ $.event.handle.call(self, e); }, 1);
 	};
 
+	var globalClientConfig = null;
+
 	$.extend({
 		mask : {
 			
@@ -109,8 +111,6 @@
 				'+' : '',
 				'-' : '-'
 			},
-
-			clientEnderecoConfig: null,
 
 			// default settings for the plugin
 			options : {
@@ -198,9 +198,13 @@
 			
 			set: function(el,options){
 
-				var maskObj = this.getClientConfig(this),
+				var maskObj = globalClientConfig,
 					$el = $(el),
 					mlStr = 'maxLength';
+
+				if (maskObj === null) {
+					maskObj = globalClientConfig = this.getClientConfig(this);
+				}
 				
 				options = options || {};
 				this.init();

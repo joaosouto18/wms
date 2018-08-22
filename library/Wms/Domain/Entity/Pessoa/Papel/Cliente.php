@@ -27,7 +27,7 @@ class Cliente implements Ator {
     protected $pessoa;
 
     /**
-     * @Column(name="COD_CLIENTE_EXTERNO", type="integer", nullable=false)
+     * @Column(name="COD_CLIENTE_EXTERNO", type="string", nullable=false)
      */
     protected $codClienteExterno;
 

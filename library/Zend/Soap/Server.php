@@ -972,11 +972,19 @@ class Zend_Soap_Server implements Zend_Server_Interface
 
         $parametro = $parametroRepo->findOneBy(array('constante' => 'LOG_WS_FUNCTION_EXCLUSIVA'));
         if (!empty($parametro)) {
-            $functionVal = $parametro->getValor();
-            $classe = explode("_", $this->_class)[2];
-            if (!empty($functionVal)) {
-                list($classeTarget, $functionTarget) = explode(":", $parametro->getValor());
-                if ($classe !== $classeTarget) return;
+            $strTargets = $parametro->getValor();
+            $class = explode("_", $this->_class)[2];
+            $functionTargets = [];
+            if (!empty($strTargets)) {
+                $targets = explode(",", $strTargets);
+                $classTargets = [];
+                foreach ($targets as $target) {
+                    list($classTarget, $functionTarget) = explode(":", $target);
+                    $classTargets[] = trim($classTarget);
+                    $functionTargets[] = trim($functionTarget);
+                }
+
+                if (!in_array($class, $classTargets)) return;
             }
             $myXML = new XMLReader();
             $myXML->XML($this->_request);
@@ -990,7 +998,7 @@ class Zend_Soap_Server implements Zend_Server_Interface
                     }
                     $element = explode(":", $tag)[1];
                     if ($inXmlBody) {
-                        if (!empty($functionTarget) && $element != $functionTarget) {
+                        if (!in_array($element, $functionTargets)) {
                             return;
                         } else {
                             self::saveLogFile();

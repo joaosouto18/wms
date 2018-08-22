@@ -449,7 +449,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
                 $idConferente = $this->getRequest()->getParam('idPessoa');
                 //$qtdNFs = $this->getRequest()->getParam('qtdNF');
-                $qtdAvarias = $this->getRequest()->getParam('qtdAvaria');
+                //$qtdAvarias = $this->getRequest()->getParam('qtdAvaria');
                 $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
                 $qtdUnidFracionavel = $this->getRequest()->getParam('qtdUnidFracionavel');
                 $embalagem = $this->getRequest()->getParam('embalagem');

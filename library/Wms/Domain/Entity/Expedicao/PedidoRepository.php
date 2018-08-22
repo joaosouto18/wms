@@ -538,11 +538,12 @@ class PedidoRepository extends EntityRepository
      */
     private function getPedidosByClienteExpedicao($codClientes,$codExpedicao)
     {
-//        $clienteExternoArr = array();
-//        foreach ($codClientes as $key => $codCliente) {
-//            $clienteExternoArr[] = $key;
-//        }
-//        $codClienteExterno = implode(',',$clienteExternoArr);
+        $clienteExternoArr = array();
+        $arr = explode(",", $codClientes);
+        foreach ($arr as $codCliente) {
+            $clienteExternoArr[] = "'$codCliente'";
+        }
+        $codClienteExterno = implode(',',$clienteExternoArr);
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('ped')
             ->from('wms:Expedicao\Pedido', 'ped')
