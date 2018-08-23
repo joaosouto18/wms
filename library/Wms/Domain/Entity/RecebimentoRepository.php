@@ -301,6 +301,46 @@ class RecebimentoRepository extends EntityRepository {
         return $this->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, null, null, null, $idConferente);
     }
 
+    public function getDivergenciaByProduto ($qtdConferidas, $qtdAvarias, $qtdNfs) {
+
+        $arrayQtdByProdConf = array();
+        $arrayQtdByProdNF = array();
+
+        foreach ($qtdConferidas as $idProduto => $grades) {
+            foreach ($grades as $grade => $lotes) {
+                foreach ($lotes as $lote => $qtd) {
+                    if (!isset($arrayQtdByProd[$idProduto][$grade])) {
+                        $arrayQtdByProd[$idProduto][$grade] = ($qtd + $qtdAvarias[$idProduto][$grade][$lote]);
+                    } else {
+                        $arrayQtdByProd[$idProduto][$grade] += ($qtd + $qtdAvarias[$idProduto][$grade][$lote]);;
+                    }
+                }
+            }
+        }
+
+        foreach ($qtdNFs as $idProduto => $grades) {
+            foreach ($grades as $grade => $lotes) {
+                foreach ($lotes as $qtd) {
+                    if (!isset($arrayQtdByProd[$idProduto][$grade])) {
+                        $arrayQtdByProdNF[$idProduto][$grade] = $qtd;
+                    } else {
+                        $arrayQtdByProdNF[$idProduto][$grade] += $qtd;
+                    }
+                }
+            }
+        }
+
+        $arrayDiv = array();
+        foreach ($arrayQtdByProdConf  as $idProduto => $grades) {
+            foreach ($grades as $grade => $qtd) {
+                $qtdDivergencia = $qtd - $arrayQtdByProdNF[$idProduto][$grade];
+                 $arrayDiv[$idProduto][$grade] = $qtdDivergencia;
+            }
+        }
+        
+        return $arrayDiv;
+    }
+
     /**
      * Executa todos os calculos de uma conferencia e redireciona conforme o
      * tipo de fechamento
@@ -363,6 +403,7 @@ class RecebimentoRepository extends EntityRepository {
 
         $divergencia = false;
         $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
+        $arrayDivergencia = $this->getDivergenciaByProduto($qtdConferidas, $qtdNFs);
 
         $arrDivergLoteInterno = [];
         foreach ($qtdConferidas as $idProduto => $grades) {
