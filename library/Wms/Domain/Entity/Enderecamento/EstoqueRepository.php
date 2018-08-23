@@ -184,7 +184,7 @@ class EstoqueRepository extends EntityRepository
             $estoqueEn->setProdutoEmbalagem($embalagemEn);
             $estoqueEn->setProdutoVolume($volumeEn);
             $estoqueEn->setValidade($validade);
-            $estoqueEn->setLote($params['lote']);
+            $estoqueEn->setLote((isset($params['lote']) && !empty($params['lote'])) ? $params['lote'] : null);
 
             $dscEndereco = $enderecoEn->getDescricao();
             $dscProduto = $produtoEn->getDescricao();
