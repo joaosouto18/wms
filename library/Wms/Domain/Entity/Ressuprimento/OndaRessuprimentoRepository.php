@@ -290,7 +290,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
         return $ondaEn;
     }
 
-    /** @ToDo getArrayProdutosPorTipoSaida removido */
     public function relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
 
         $pedidoRepo = $repositorios['pedidoRepo'];
