@@ -15,8 +15,7 @@ use Wms\Math;
 
 class LoteRepository extends EntityRepository
 {
-    public function save($produtoEntity, $grade, $dsc, $codPessoa, $origem = Lote::EXTERNO){
-
+    public function save($codProduto, $grade, $dsc, $codPessoa, $origem = Lote::EXTERNO) {
 
         $lote = new Lote();
         $sqcGenerator = new SequenceGenerator("SQ_LOTE_01", 1);
@@ -25,7 +24,7 @@ class LoteRepository extends EntityRepository
         if ($origem == 'I' && empty($dsc)) {
             $dsc = 'LI'.$idLote;
         } else {
-            $lote->setProduto($produtoEntity);
+            $lote->setCodProduto($codProduto);
         }
 
         $lote->setGrade($grade);
@@ -39,7 +38,21 @@ class LoteRepository extends EntityRepository
     }
 
     public function verificaLote($lote, $idProduto, $grade){
-        return $this->findOneBy(array('descricao' => $lote, 'codProduto' => $idProduto, 'grade' => $grade));
+        /** @var Lote $loteEn */
+        $loteEn = $this->findOneBy(['descricao' => $lote]);
+        if (!empty($loteEn)) {
+            if ($loteEn->getOrigem() == Lote::EXTERNO && $loteEn->getCodProduto() == $idProduto && $loteEn->getGrade() == $grade) {
+                return $loteEn;
+            } elseif ($loteEn->getOrigem() == Lote::INTERNO && empty($loteEn->getCodProduto()) && empty($loteEn->getGrade())) {
+                $loteEn->setCodProduto($idProduto)->setGrade($grade);
+                $this->_em->persist($loteEn);
+                return $loteEn;
+            } elseif ($loteEn->getOrigem() == Lote::INTERNO && ($loteEn->getCodProduto() != $idProduto || $loteEn->getGrade() != $grade)) {
+                return self::save($idProduto, $grade, $lote, $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
+            }
+        }
+
+        return null;
     }
 
     public function getLotes($parametros){
@@ -98,9 +111,6 @@ class LoteRepository extends EntityRepository
 
     public function reorderNFItensLoteByRecebimento($idRecebimento, $itensConferidos)
     {
-
-        /** @var ProdutoRepository $produtoRepo */
-        $produtoRepo = $this->_em->getRepository("wms:Produto");
 
         $dqlNota = $this->_em->createQueryBuilder()
             ->select("nfi")
@@ -177,13 +187,11 @@ class LoteRepository extends EntityRepository
             reset($produtos);
             foreach ($produtos as $prodGrade => $var) {
                 list($codigo, $grade) = explode($strLink, $prodGrade);
-                /** @var Produto $produtoEn */
-                $produtoEn = $produtoRepo->findOneBy(['id' => $codigo, "grade" => $grade]);
                 if ($prodGrade == $last) {
-                    $loteEn->setProduto($produtoEn)->setGrade($grade);
+                    $loteEn->setCodProduto($codigo)->setGrade($grade);
                     $this->_em->persist($loteEn);
                 } else {
-                    self::save($produtoEn, $grade, $lote, $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
+                    self::save($codigo, $grade, $lote, $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
                 }
             }
         }

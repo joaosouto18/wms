@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Util\Endereco as EnderecoUtil;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Produto\Lote;
+use Wms\Domain\Entity\Produto\LoteRepository;
 use Wms\Math;
 
 class EstoqueRepository extends EntityRepository
@@ -89,6 +90,7 @@ class EstoqueRepository extends EntityRepository
         if($controlaLote == 'S' && (!isset($params['lote']) || empty($params['lote']))) {
             throw new \Exception('Informe o Lote.');
         }elseif($controlaLote == 'S'){
+            /** @var LoteRepository $loteRepository */
             $loteRepository = $em->getRepository('wms:Produto\Lote');
             $loteEntity = $loteRepository->verificaLote($params['lote'], $codProduto, $grade);
             if(empty($loteEntity)){

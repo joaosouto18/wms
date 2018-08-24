@@ -104,6 +104,23 @@ class Lote
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getCodProduto()
+    {
+        return $this->codProduto;
+    }
+
+    /**
+     * @param string $codProduto
+     */
+    public function setCodProduto($codProduto)
+    {
+        $this->codProduto = $codProduto;
+        return $this;
+    }
+
     public function getGrade()
     {
         return $this->grade;
