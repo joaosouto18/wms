@@ -301,18 +301,18 @@ class RecebimentoRepository extends EntityRepository {
         return $this->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, null, null, null, $idConferente);
     }
 
-    public function getDivergenciaByProduto ($qtdConferidas, $qtdAvarias, $qtdNfs) {
+    public function getDivergenciaByProduto ($qtdConferidas, $qtdAvarias, $qtdNFs) {
 
-        $arrayQtdByProdConf = array();
         $arrayQtdByProdNF = array();
 
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $lotes) {
                 foreach ($lotes as $lote => $qtd) {
+                    $qtdAvaria = (isset($qtdAvarias[$idProduto][$grade][$lote])) ? $qtdAvarias[$idProduto][$grade][$lote] : 0;
                     if (!isset($arrayQtdByProd[$idProduto][$grade])) {
-                        $arrayQtdByProd[$idProduto][$grade] = ($qtd + $qtdAvarias[$idProduto][$grade][$lote]);
+                        $arrayQtdByProd[$idProduto][$grade] = ($qtd + $qtdAvaria);
                     } else {
-                        $arrayQtdByProd[$idProduto][$grade] += ($qtd + $qtdAvarias[$idProduto][$grade][$lote]);;
+                        $arrayQtdByProd[$idProduto][$grade] += ($qtd + $qtdAvaria);;
                     }
                 }
             }
@@ -320,8 +320,8 @@ class RecebimentoRepository extends EntityRepository {
 
         foreach ($qtdNFs as $idProduto => $grades) {
             foreach ($grades as $grade => $lotes) {
-                foreach ($lotes as $qtd) {
-                    if (!isset($arrayQtdByProd[$idProduto][$grade])) {
+                foreach ($lotes as $lote => $qtd) {
+                    if (!isset($arrayQtdByProdNF[$idProduto][$grade])) {
                         $arrayQtdByProdNF[$idProduto][$grade] = $qtd;
                     } else {
                         $arrayQtdByProdNF[$idProduto][$grade] += $qtd;
@@ -331,10 +331,10 @@ class RecebimentoRepository extends EntityRepository {
         }
 
         $arrayDiv = array();
-        foreach ($arrayQtdByProdConf  as $idProduto => $grades) {
+        foreach ($arrayQtdByProd  as $idProduto => $grades) {
             foreach ($grades as $grade => $qtd) {
                 $qtdDivergencia = $qtd - $arrayQtdByProdNF[$idProduto][$grade];
-                 $arrayDiv[$idProduto][$grade] = $qtdDivergencia;
+                $arrayDiv[$idProduto][$grade] = ['qtd' => $qtdDivergencia, 'temDivergencia' => ($qtdDivergencia != 0) ];
             }
         }
         
@@ -403,7 +403,7 @@ class RecebimentoRepository extends EntityRepository {
 
         $divergencia = false;
         $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
-        $arrayDivergencia = $this->getDivergenciaByProduto($qtdConferidas, $qtdNFs);
+        $arrayDivergencia = $this->getDivergenciaByProduto($qtdConferidas, $qtdAvarias, $qtdNFs);
 
         $arrDivergLoteInterno = [];
         foreach ($qtdConferidas as $idProduto => $grades) {
@@ -418,14 +418,9 @@ class RecebimentoRepository extends EntityRepository {
                     if (isset($qtdNFs[$idProduto][$grade][$lote])) {
                         $qtdNF = (float)$qtdNFs[$idProduto][$grade][$lote];
                     } else {
-                        $qtdNF = (float)Math::subtrair($qtdNFs[$idProduto][$grade][0], $qtdJaConferido);
-                        if ($qtdNF < 0) {
-                            $qtdNF = 0;
-                            if (!in_array("$idProduto--$grade",$arrDivergLoteInterno)) {
-                                $arrDivergLoteInterno[] = "$idProduto--$grade";
-                            }
-                        }
+                        $qtdNF = (float)$qtdNFs[$idProduto][$grade][0];
                     }
+
                     $qtdConferida = (float)$qtdConferida;
                     $qtdAvaria = (float)$qtdAvarias[$idProduto][$grade][$lote];
 
@@ -463,14 +458,15 @@ class RecebimentoRepository extends EntityRepository {
                         }
                     }
                     $qtdConferidaItem = $qtdConferida * $quantidade;
-
-                    $qtdJaConferido += $qtdConferidaItem;
+                    $qtdDivergente = $arrayDivergencia[$idProduto][$grade];
 
                     $divergenciaPesoVariavel = $this->getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios);
-                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEn, $qtdNF, $qtdConferidaItem, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote);
+                    $qtdDivergencia = $this->gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEn, $qtdNF, $qtdConferidaItem, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote, $qtdDivergente);
                     if ($qtdDivergencia != 0) {
                         $divergencia = true;
                     }
+
+                    $arrayDivergencia[$idProduto][$grade]['qtd'] -= $qtdDivergencia;
                 }
             }
         }
@@ -768,7 +764,7 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $qtdAvaria Quantidade avariada do produto
      * @return integer Quantidade de divergencias
      */
-    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEntity = null, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote = null) {
+    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEntity = null, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote = null, $arrPreConferencia = []) {
         $em = $this->getEntityManager();
 
         if (empty($produtoEntity)) {
@@ -786,24 +782,32 @@ class RecebimentoRepository extends EntityRepository {
             $temVolumesDivergentes = $this->checkVolumesDivergentes($recebimentoEntity->getId(), $idOrdemServico, $idProduto, $grade);
 
         $indDivergenciaLote = 'N';
+
+        $qtdConferidaTotal = ($qtdConferida + $qtdAvaria);
+
         if ($produtoEntity->getIndControlaLote() == 'S') {
-            $qtdLoteNota = $qtdNF;
-            $qtdNfPorLote = $notaFiscalItemLoteRepo->getQtdLoteByProdutoAndRecebimento($idProduto,$grade,$recebimentoEntity->getId());
-
-            foreach ($qtdNfPorLote as $qtdLote) {
-                if ($qtdLote['DSC_LOTE'] == $lote) {
-                    $qtdLoteNota = $qtdLote['QTD'];
+            $qtdNfPorLote = $notaFiscalItemLoteRepo->getQtdLoteByProdutoAndRecebimento($idProduto, $grade, $recebimentoEntity->getId());
+            if (!empty($qtdNfPorLote)) {
+                $qtdLoteNota = 0;
+                foreach ($qtdNfPorLote as $qtdLote) {
+                    if ($qtdLote['DSC_LOTE'] == $lote) {
+                        $qtdLoteNota = $qtdLote['QTD'];
+                    }
                 }
-            }
-            $qtdDivergencia = (($qtdConferida + $qtdAvaria) - $qtdLoteNota);
+                $qtdDivergencia = ($qtdConferidaTotal - $qtdLoteNota);
 
-            if ($qtdDivergencia !== 0) {
-                $indDivergenciaLote = 'S';
+                if ($qtdDivergencia !== 0) {
+                    $indDivergenciaLote = 'S';
+                }
+            } else {
+                $qtdDivergente = $arrPreConferencia['qtd'];
+                $qtdDivergencia = ($qtdDivergente > $qtdConferidaTotal) ? $qtdConferidaTotal : $qtdDivergente;
+                $indDivergenciaLote = ($arrPreConferencia['temDivergencia']) ? 'S' : 'N';
             }
         } elseif ($divergenciaPesoVariavel == 'S' || $produtoEntity->getPossuiPesoVariavel() == 'S') {
             $qtdDivergencia = 0;
         } else {
-            $qtdDivergencia = (($qtdConferida + $qtdAvaria) - $qtdNF);
+            $qtdDivergencia = ($qtdConferidaTotal - $qtdNF);
         }
 
         $dataValidade = null;

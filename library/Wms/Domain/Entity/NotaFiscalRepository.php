@@ -834,15 +834,15 @@ class NotaFiscalRepository extends EntityRepository {
                 ->innerJoin('p.tipoComercializacao', 'tc')
                 ->leftJoin("wms:NotaFiscal\NotaFiscalItemLote", "nfil", "WITH", "nfil.codNotaFiscalItem = nfi.id")
                 ->where('nf.recebimento = :idRecebimento')
-                ->andWhere('NOT EXISTS(
-                    SELECT \'x\'
+                ->andWhere("NOT EXISTS(
+                    SELECT 'x'
                     FROM wms:OrdemServico os
                     INNER JOIN os.conferencias rc
                     WHERE os.recebimento = nf.recebimento
                         AND rc.codProduto = nfi.codProduto
                         AND rc.grade = nfi.grade
-                        AND (rc.qtdDivergencia = 0 AND rc.divergenciaPeso = \'N\')
-                )')
+                        AND (rc.qtdDivergencia = 0 AND rc.divergenciaPeso = 'N' AND rc.indDivergLote = 'N')
+                )")
                 ->setParameter('idRecebimento', $idRecebimento)
                 ->groupBy('p.id, p.grade, p.descricao, tc.id, nfil.lote')
         ;

@@ -432,10 +432,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 }
             }
 
-//            if ($temLote) {
-//                throw new Exception("A conferência cega ainda não contempla controle de lote, esta conferência deverá ser feita no coletor");
-//            }
-
             $this->view->temFracionavel = $temFracionavel;
             $this->view->temLote = $temLote;
             $this->view->controlaValidade = $controlaValidade;
@@ -461,15 +457,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
                 $recebimentoRepo->saveConferenciaCega($idRecebimento,$idOrdemServico,$qtdConferidas,$normas, $qtdUnidFracionavel,$embalagem, $unMedida, $dataValidade, $numPeso);
                 $result = $recebimentoRepo->conferenciaColetor($idRecebimento, $idOrdemServico, $idConferente);
-
-//                $itens = $notaFiscalRepo->buscarItensPorRecebimento($idRecebimento);
-//                $qtdNFs = [];
-//                foreach ($itens as $item) {
-//                    // checando qtdes nf
-//                    $qtdNFs[$item['produto']][$item['grade']][$item['lote']] = $item['quantidade'];
-//                }
-//
-//                $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas, $qtdUnidFracionavel, $embalagem, $idConferente, true, $unMedida, $dataValidade, $numPeso);
 
                 if ($result['exception'] != null) {
                     throw $result['exception'];

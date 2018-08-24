@@ -292,15 +292,14 @@
                 }
 
                 var tdElement = inpt.parent();
-                tdElement.append("<br class='"+codGradeIndex+"'>");
+                tdElement.append("<br class='Prod"+codGradeIndex+"'>");
                 tdElement.append(elemCloned);
             }
         });
 
-
         $("input.Prod"+codGradeIndex).setMask();
 
-        btnAdd.parent().append($("<img style='cursor: pointer' src='/img/icons/cross.png' class='btnRemover "+codGradeIndex+"' title='Remover' id ='btnRemove" + codGradeIndex + "'>"));
+        btnAdd.parent().append($("<img style='cursor: pointer' src='/img/icons/cross.png' class='btnRemover Prod"+codGradeIndex+"' title='Remover' id ='btnRemove" + codGradeIndex + "'>"));
 
     });
 
