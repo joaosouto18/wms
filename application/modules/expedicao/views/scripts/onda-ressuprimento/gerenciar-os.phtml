@@ -2,3 +2,29 @@
     echo $this->form;
     echo $this->grid;
 ?>
+<script>
+    $('.gAction').hide();
+    $('.gMassAction').append('<input style="margin: 5px 15px 5px 10px; width: 200px;" type="submit" name="finalizar" id="finalizar" value="Efetivar Ressuprimento" class="btn">');
+
+    $("#finalizar").click(function () {
+        var ids = '';
+
+        $(".gTable input:checked").each(function (e) {
+            if ($(this).val() != 'on') {
+                if (ids == '') {
+                    ids = $(this).val();
+                } else {
+                    ids += ',' + $(this).val();
+                }
+            }
+        });
+
+        if (ids == '') {
+            alert('Nenhum ressuprimento selecionado');
+            return false;
+        }
+
+        top.location = "/expedicao/onda-ressuprimento/finalizar?resetaFiltros=1&ID=" + ids;
+        return false;
+    });
+</script>

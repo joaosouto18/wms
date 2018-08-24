@@ -213,7 +213,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
 
     /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs $ondaOs */
-    public function finalizaOnda($ondaOs) {
+    public function finalizaOnda($ondaOs, $tipoFinalizacao = "C") {
         try {
             $this->getEntityManager()->beginTransaction();
 
@@ -249,10 +249,22 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
             $statusEn = $this->getEntityManager()->getRepository("wms:Util\Sigla")->findOneBy(array('id' => \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_FINALIZADO));
             $ondaOs->setStatus($statusEn);
+            $ondaOs->setTipoFinalizacao($tipoFinalizacao);
+
             $this->getEntityManager()->persist($ondaOs);
 
             $osEn->setDataFinal(new \DateTime());
             $osEn->setPessoa($usuarioEn);
+            $osEn->setFormaConferencia($tipoFinalizacao);
+
+            if ($tipoFinalizacao == "C") {
+                $observacaoFinalizacao = "Finalizado pelo Coletor";
+            } else {
+                $observacaoFinalizacao = "Finalizado pelo Desktop";
+            }
+            /** @var \Wms\Domain\Entity\Ressuprimento\AndamentoRepository $andamentoRepo */
+            $andamentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\Andamento");
+            $andamentoRepo->save($ondaOs->getId(), \Wms\Domain\Entity\Ressuprimento\Andamento::STATUS_FINALIZADO, $observacaoFinalizacao);
 
             $this->getEntityManager()->flush();
             $this->getEntityManager()->commit();
@@ -278,6 +290,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         return $ondaEn;
     }
 
+    /** @ToDo getArrayProdutosPorTipoSaida removido */
     public function relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn, $dadosProdutos, $repositorios) {
 
         $pedidoRepo = $repositorios['pedidoRepo'];
@@ -406,6 +419,9 @@ class OndaRessuprimentoRepository extends EntityRepository {
             }
             $reservaEstoqueRepo->adicionaReservaEstoque($idPicking, $produtosEntrada, "E", "O", $ondaRessuprimentoOs, $osEn, null, null, $repositorios);
             $reservaEstoqueRepo->adicionaReservaEstoque($enderecoPulmaoEn->getId(), $produtosSaida, "S", "O", $ondaRessuprimentoOs, $osEn, null, null, $repositorios);
+
+            $andamentoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\Andamento");
+            $andamentoRepo->save($ondaRessuprimentoOs->getId(), \Wms\Domain\Entity\Ressuprimento\Andamento::STATUS_GERADO);
         }
     }
 

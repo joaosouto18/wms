@@ -133,7 +133,7 @@ class Expedicao_OndaRessuprimentoController extends Action
 
             $produtosDescasados = $expedicaoRepo->getProdutosDescasadosExpedicao($expedicoes);
 
-            if (count($produtosDescasados) > 0) {
+            if (count($produtosDescasados) > 99) {
 
                 $expedicaoDescasada = array();
                 foreach ($produtosDescasados as $expedicao) {
@@ -365,4 +365,71 @@ class Expedicao_OndaRessuprimentoController extends Action
 
         }
     }
+
+    public function finalizarAction() {
+        $ids = $this->_getParam("ID");
+        $arrayIds = explode(",", $ids);
+
+        $params = $this->_getAllParams();
+
+        $formParams = array();
+        if (!isset($params['resetaFiltros'])) {
+            $formParams = array('status' => $params['status'],
+                'dataInicial' => $params['dataInicial'],
+                'actionParams' => true,
+                'dataFinal' => $params['dataFinal']);
+        }
+
+        try {
+            $this->getEntityManager()->beginTransaction();
+
+            if (count($ids) == 0) {
+                throw new \Exception("Nenhum ressuprimento selecionado");
+            }
+
+            $sql = "SELECT * FROM ONDA_RESSUPRIMENTO_OS WHERE COD_ONDA_RESSUPRIMENTO_OS IN ($ids) AND COD_STATUS <> 540";
+            $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+            if (count($result) >0) {
+                throw new \Exception("Apenas ressuprimentos com o status 'ONDA GERADA' devem ser selecionados");
+            }
+
+            foreach ($arrayIds as $idOndaOs) {
+                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
+                $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+
+                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs $ondaOsEn */
+                $ondaOsEn = $this->getEntityManager()->getReference("wms:Ressuprimento\OndaRessuprimentoOs", $idOndaOs);
+
+                if ($ondaOsEn == null)
+                    throw new \Exception("Onda de ressuprimento $idOndaOs não encontrada");
+
+                if ($ondaOsEn->getStatus()->getId() == \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_FINALIZADO)
+                    throw new \Exception("Onda de ressuprimento $idOndaOs já atendida");
+
+                if ($ondaOsEn->getStatus()->getId() == \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_CANCELADO)
+                    throw new \Exception("Onda de ressuprimento $idOndaOs cancelada");
+
+                if ($ondaOsEn->getStatus()->getId() == \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs::STATUS_DIVERGENTE)
+                    throw new \Exception("Onda de ressuprimento $idOndaOs marcada como divergente");
+
+                $ondaRepo->finalizaOnda($ondaOsEn, "M");
+
+            }
+
+            $this->getEntityManager()->commit();
+            if (count($arrayIds) == 1) {
+                $this->addFlashMessage("success", "Onda de ressuprimento $idOndaOs finalizada com sucesso");
+            } else {
+                $this->addFlashMessage("success", "Ondas de ressuprimento finalizadas com sucesso");
+            }
+
+        } catch (Exception $e) {
+            $this->addFlashMessage("error", $e->getMessage());
+            $this->getEntityManager()->rollback();
+        }
+
+        $this->redirect("gerenciar-os", "onda-ressuprimento", "expedicao", $formParams);
+    }
+
 }

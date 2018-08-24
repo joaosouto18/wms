@@ -2063,107 +2063,58 @@ class RecebimentoRepository extends EntityRepository {
 
     public function getProdutosRecebidosComSenha($values) {
 
-        $andWhere = "";
-        if (isset($values['dataInicial1']) && ($values['dataInicial1'] != null)) {
-            $dataInicial1 = str_replace("/", "-", $values['dataInicial1']);
-            $andWhere .= $andWhere . " AND R.DTH_INICIO_RECEB >= TO_DATE('" . $dataInicial1 . " 00:00', 'DD-MM-YYYY HH24:MI')";
-        }
-        if (isset($values['dataInicial2']) && ($values['dataInicial2'] != null)) {
-            $dataInicial2 = str_replace("/", "-", $values['dataInicial2']);
-            $andWhere .= $andWhere . " AND R.DTH_INICIO_RECEB <= TO_DATE('" . $dataInicial2 . " 00:00', 'DD-MM-YYYY HH24:MI')";
-        }
-        if (isset($values['dataFinal1']) && ($values['dataFinal1'] != null)) {
-            $dataFinal1 = str_replace("/", "-", $values['dataFinal1']);
-            $andWhere .= $andWhere . " AND R.DTH_FINAL_RECEB >= TO_DATE('" . $dataFinal1 . " 00:00', 'DD-MM-YYYY HH24:MI')";
-        }
-        if (isset($values['dataFinal2']) && ($values['dataFinal2'] != null)) {
-            $dataFinal2 = str_replace("/", "-", $values['dataFinal2']);
-            $andWhere .= $andWhere . " AND R.DTH_FINAL_RECEB <= TO_DATE('" . $dataFinal2 . " 00:00', 'DD-MM-YYYY HH24:MI')";
-        }
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select("r.id COD_RECEBIMENTO, p.id COD_PRODUTO, p.descricao DESCRICAO_PRODUTO, p.grade DSC_GRADE,
+                             TO_CHAR(ra.dataValidade,'DD/MM/YYYY') DATA_VALIDADE_DIGITADA, ra.diasShelflife DIAS_SHELF_LIFE,
+                             (ra.dataAndamento + ra.diasShelflife) - ra.dataValidade DIAS_DIFERENCA, 
+                             (((ra.dataAndamento + ra.diasShelflife) - ra.dataValidade) * 100) / ra.diasShelflife PORCENTAGEM,
+                              ra.qtdConferida QTD_CONFERIDA, conferente.nome USUARIO_CONFERENCIA, 
+                              pessoa.nome USUARIO_LIBERACAO, ra.dscObservacao OBSERVACAO")
+            ->from('wms:Recebimento', 'r')
+            ->innerJoin('wms:Recebimento\Andamento', 'ra', 'WITH', 'r.id = ra.recebimento')
+            ->innerJoin('wms:Produto', 'p', 'WITH', 'p.id = ra.codProduto AND p.grade = ra.dscGrade')
+            ->innerJoin('wms:Pessoa', 'pessoa', 'WITH', 'pessoa.id = ra.usuario')
+            ->innerJoin('wms:OrdemServico', 'os', 'WITH', 'os.recebimento = r.id')
+            ->innerJoin('os.pessoa', 'conferente');
 
         if (isset($values['idRecebimento']) && ($values['idRecebimento'] != null)) {
-            $idRecebimento = $values['idRecebimento'];
-            $andWhere .= $andWhere . " AND R.COD_RECEBIMENTO = '" & $idRecebimento & "'";
+            $sql->andWhere("r.id = '$values[idRecebimento]'");
         }
 
-        $sql = "SELECT V.COD_RECEBIMENTO,
-                       F.COD_EXTERNO,
-                       PJ.PJ.NOM_FANTASIA as FORNECEDOR,     
-                       NF.NUM_NOTA_FISCAL as NF,
-                       NF.COD_SERIE_NOTA_FISCAL as SERIE,
-                       V.COD_PRODUTO, 
-                       V.DSC_GRADE,
-                       PROD.DSC_PRODUTO,
-                       V.DIAS_VIDA_UTIL AS SHELFLIFE_MIN,
-                       V.DIAS_VIDA_UTIL_MAX as SHELFLIFE_MAX,
-                       V.COD_OS,
-                       V.QTD as QTD_CONFERIDA,
-                       V.DTH_VALIDADE,
-                       V.SHELFLIFE,
-                       TO_CHAR(V.DTH_CONFERENCIA,'DD/MM/YYYY HH24:MI:SS') as DTH_CONFERENCIA,
-                       CONF.NOM_PESSOA as CONFERENTE,
-                       TO_CHAR(RA.DTH_ANDAMENTO,'DD/MM/YYYY HH24:MI:SS') AS DTH_FINALIZACAO,
-                       U.NOM_PESSOA as USUARIO_FINALIZACAO,
-                       RA.DSC_OBSERVACAO as OBSERVACAO_RECEBIMENTO
-                  FROM (SELECT SUM(RE.QTD_CONFERIDA * RE.QTD_EMBALAGEM) AS QTD,
-                               RE.COD_RECEBIMENTO,
-                               PE.COD_PRODUTO,
-                               PE.DSC_GRADE,
-                               OS.COD_OS,
-                               RE.COD_NORMA_PALETIZACAO,
-                               MAX(RE.DTH_VALIDADE) as DTH_VALIDADE,
-                               MAX(RE.DTH_CONFERENCIA) as DTH_CONFERENCIA,
-                               TRUNC(MAX(RE.DTH_VALIDADE)- MAX(RE.DTH_CONFERENCIA)) as SHELFLIFE,
-                               P.DIAS_VIDA_UTIL,
-                               P.DIAS_VIDA_UTIL_MAX,
-                               SUM(RE.NUM_PESO) AS NUM_PESO
-                          FROM RECEBIMENTO_EMBALAGEM RE
-                         INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
-                          LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PE.COD_PRODUTO AND P.DSC_GRADE = PE.DSC_GRADE
-                         INNER JOIN (SELECT DISTINCT DTH_FINAL_ATIVIDADE,
-                                            COD_OS,
-                                            COD_RECEBIMENTO,
-                                            COD_PRODUTO,
-                                            DSC_GRADE,
-                                            RANK() OVER(PARTITION BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE ORDER BY DTH_FINAL_ATIVIDADE DESC) RANK
-                                        FROM (SELECT DISTINCT
-                                                     NVL(OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999', 'dd/mm/yyyy')) AS DTH_FINAL_ATIVIDADE,
-                                                     MAX(OS.COD_OS) COD_OS,
-                                                     OS.COD_RECEBIMENTO,
-                                                     PE.COD_PRODUTO,
-                                                     PE.DSC_GRADE
-                                                FROM RECEBIMENTO_EMBALAGEM RE
-                                               INNER JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = RE.COD_PRODUTO_EMBALAGEM
-                                                LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = RE.COD_OS
-                                               GROUP BY OS.COD_RECEBIMENTO, PE.COD_PRODUTO, PE.DSC_GRADE, NVL(OS.DTH_FINAL_ATIVIDADE, TO_DATE('31/12/9999', 'dd/mm/yyyy')))) OS
-                            ON OS.COD_OS = RE.COD_OS
-                           AND OS.RANK <= 1
-                           AND OS.COD_RECEBIMENTO = RE.COD_RECEBIMENTO
-                           AND OS.COD_PRODUTO = PE.COD_PRODUTO
-                           AND OS.DSC_GRADE = PE.DSC_GRADE
-                         WHERE RE.DTH_VALIDADE IS NOT NULL
-                           AND P.POSSUI_VALIDADE = 'S'
-                         GROUP BY RE.COD_RECEBIMENTO, PE.COD_PRODUTO, PE.DSC_GRADE, OS.COD_OS,  RE.COD_NORMA_PALETIZACAO,       P.DIAS_VIDA_UTIL,
-                               P.DIAS_VIDA_UTIL_MAX) V
-                 INNER JOIN RECEBIMENTO_ANDAMENTO RA ON RA.COD_RECEBIMENTO = V.COD_RECEBIMENTO AND RA.COD_TIPO_ANDAMENTO = 457
-                  LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = V.COD_OS
-                  LEFT JOIN PESSOA CONF ON CONF.COD_PESSOA = OS.COD_PESSOA
-                  LEFT JOIN PESSOA U ON U.COD_PESSOA = RA.COD_USUARIO
-                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = V.COD_PRODUTO AND PROD.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN RECEBIMENTO R ON R.COD_RECEBIMENTO = V.COD_RECEBIMENTO
-                  LEFT JOIN (SELECT NF.COD_RECEBIMENTO, NFI.COD_PRODUTO, NFI.DSC_GRADE, NF.COD_FORNECEDOR, NF.NUM_NOTA_FISCAL, NF.COD_SERIE_NOTA_FISCAL
-                               FROM NOTA_FISCAL NF
-                               LEFT JOIN NOTA_FISCAL_ITEM NFI ON NFI.COD_NOTA_FISCAL = NF.COD_NOTA_FISCAL) NF
-                    ON NF.COD_RECEBIMENTO = V.COD_RECEBIMENTO
-                   AND NF.COD_PRODUTO = V.COD_PRODUTO
-                   AND NF.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN PESSOA_JURIDICA PJ ON NF.COD_FORNECEDOR = PJ.COD_PESSOA
-                  LEFT JOIN FORNECEDOR F ON F.COD_FORNECEDOR = NF.COD_FORNECEDOR
-                 WHERE NOT( V.SHELFLIFE > V.DIAS_VIDA_UTIL AND V.SHELFLIFE < V.DIAS_VIDA_UTIL_MAX) AND R.COD_STATUS = 457
-                       $andWhere          
-                 ORDER BY RA.DTH_ANDAMENTO DESC";
+        if (isset($values['codProduto']) && ($values['codProduto'] != null)) {
+            $sql->andWhere("p.id = '$values[codProduto]'");
+        }
 
-        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        if (isset($values['grade']) && ($values['grade'] != null)) {
+            $sql->andWhere("p.grade = '$values[grade]'");
+        }
+
+        if (isset($values['dataInicial1']) && ($values['dataInicial1'] != null)) {
+            $data = new \DateTime(str_replace("/", "-", $values['dataInicial1']));
+            $sql->andWhere("TRUNC(r.dataInicial) >= ?2")
+                ->setParameter(2, $data);
+
+        }
+
+        if (isset($values['dataInicial2']) && ($values['dataInicial2'] != null)) {
+            $data = new \DateTime(str_replace("/", "-", $values['dataInicial2']));
+            $sql->andWhere("TRUNC(r.dataInicial) <= ?3")
+                ->setParameter(3, $data);
+        }
+
+        if (isset($values['dataFinal1']) && ($values['dataFinal1'] != null)) {
+            $data = new \DateTime(str_replace("/", "-", $values['dataFinal1']));
+            $sql->andWhere("TRUNC(r.dataFinal) >= ?3")
+                ->setParameter(3, $data);
+        }
+
+        if (isset($values['dataFinal2']) && ($values['dataFinal2'] != null)) {
+            $data = new \DateTime(str_replace("/", "-", $values['dataFinal2']));
+            $sql->andWhere("TRUNC(r.dataFinal) <= ?4")
+                ->setParameter(4, $data);
+        }
+
+        $result = $sql->getQuery()->getResult();
 
         return $result;
     }

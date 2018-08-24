@@ -284,7 +284,13 @@ class Estoque
 
     public function movimentaEstoque()
     {
-        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+        $idInventario = null;
+        $contagemEndEn = $this->getContagemEndEn();
+        if ($contagemEndEn == null) {
+            $idInventario = $contagemEndEn->getInventarioEndereco()->getInventario()->getId();
+        }
+
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo    = $this->getEstoqueRepo();
         $array = array(
             'produto' =>  $this->getProduto(),
@@ -298,12 +304,13 @@ class Estoque
             'usuario' => $this->getUsuario(),
             'estoqueRepo' => $this->getEstoqueRepo(),
             'validade' => $this->getValidade(),
+            'idInventario' => $idInventario,
             'dthEntrada' => new \DateTime()
         );
         if (is_null($array['produto'])) {
             return false;
         }
-        return $estoqueRepo->movimentaEstoque($array);
+        return $estoqueRepo->movimentaEstoque($array,false);
     }
 
 }

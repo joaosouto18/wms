@@ -1097,8 +1097,8 @@ class Mobile_EnderecamentoController extends Action
                                     throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
                                 }
                             } else if (isset($volumeEn)) {
-                                if ($enderecoNovoEn->getId() !== $volumeEn->getEndereco()) {
-                                    throw new \Exception("Produto ja cadastrado no Picking " . $embalagemEn->getEndereco()->getDescricao() . "!");
+                                if ($enderecoNovoEn->getId() !== $volumeEn->getEndereco()->getId()) {
+                                    throw new \Exception("Produto ja cadastrado no Picking " . $volumeEn->getEndereco()->getDescricao() . "!");
                                 }
                             }
                         }

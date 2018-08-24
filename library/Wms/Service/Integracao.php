@@ -350,6 +350,7 @@ class Integracao {
         /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
 
         $c = array();
+        $cargas = explode(",", $cargas[0]);
         foreach ($cargas as $carga){
             $c[] = "'" . $carga . "'";
         }

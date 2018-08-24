@@ -53,6 +53,11 @@ class OndaRessuprimentoOs
     protected $sequencia;
 
     /**
+     * @Column(name="IND_TIPO_FINALIZACAO", type="string", nullable=false)
+     */
+    protected $tipoFinalizacao;
+
+    /**
      * @OneToMany(targetEntity="Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOsProduto", mappedBy="ondaRessuprimentoOs", cascade={"persist", "remove"})
      * @var ArrayCollection volumes que compoem este produto
      */
@@ -156,5 +161,22 @@ class OndaRessuprimentoOs
         return $resultado[0]['NEXTVAL'];
 
     }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoFinalizacao()
+    {
+        return $this->tipoFinalizacao;
+    }
+
+    /**
+     * @param mixed $tipoFinalizacao
+     */
+    public function setTipoFinalizacao($tipoFinalizacao)
+    {
+        $this->tipoFinalizacao = $tipoFinalizacao;
+    }
+
 
 }

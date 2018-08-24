@@ -354,7 +354,7 @@ class Mobile_RecebimentoController extends Action
                         }
                     }
                 }
-                $params['dataValidade'] = $objData->toString('Y-MM-dd');
+                $params['dataValidade'] = $objData->toString('yyyy-MM-dd');
             } else {
                 $params['dataValidade'] = null;
             }
