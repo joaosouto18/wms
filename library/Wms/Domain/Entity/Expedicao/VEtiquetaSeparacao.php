@@ -155,6 +155,11 @@ class VEtiquetaSeparacao
     protected $codBarrasProduto;
 
     /**
+     * @Column(name="LOTE", type="string", nullable=false)
+     */
+    protected $lote;
+
+    /**
      * @param mixed $cliente
      */
     public function setCliente($cliente)
@@ -602,6 +607,20 @@ class VEtiquetaSeparacao
         return $this->tipoPedido;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getLote()
+    {
+        return $this->lote;
+    }
 
+    /**
+     * @param mixed $lote
+     */
+    public function setLote($lote)
+    {
+        $this->lote = $lote;
+    }
 
 }
