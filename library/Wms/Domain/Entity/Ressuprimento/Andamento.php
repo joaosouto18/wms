@@ -10,7 +10,8 @@ class Andamento
     const STATUS_DIVERGENTE = 548;
     const STATUS_CANCELADO = 549;
     const STATUS_LIBERADO = 550;
-
+    const STATUS_GERADO = 626;
+    const STATUS_FINALIZADO = 627;
     /**
      * @Id
      * @Column(name="NUM_SEQUENCIA", type="integer", nullable=false)

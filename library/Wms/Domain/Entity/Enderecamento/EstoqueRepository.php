@@ -29,6 +29,7 @@ class EstoqueRepository extends EntityRepository
     public function movimentaEstoque($params, $runFlush = true, $saidaProduto = false, $dataValidade = null)
     {
         $em = $this->getEntityManager();
+        $idInventario = null;
 
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
         $notaFiscalRepository = $em->getRepository('wms:NotaFiscal');
@@ -46,6 +47,9 @@ class EstoqueRepository extends EntityRepository
 
         if (isset($params['volume']) && !empty($params['volume'])) {
             $volumeEn = $params['volume'];
+        }
+        if (isset($params['idInventario']) && !empty($params['idInventario'])) {
+            $idInventario = $params['idInventario'];
         }
 
         $codProduto = $produtoEn->getId();
@@ -174,14 +178,8 @@ class EstoqueRepository extends EntityRepository
             $idUma = $estoqueEn->getUma();
             $dscEndereco = $estoqueEn->getDepositoEndereco()->getDescricao();
             $dscProduto = $estoqueEn->getProduto()->getDescricao();
-
-            if (!is_null($volumeEn)) {
-                $novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn, 'produtoVolume' => $volumeEn))->getQtd() + $qtd;
-            } else {
-                $novaQtd = $this->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade, 'depositoEndereco' => $enderecoEn))->getQtd() + $qtd;
-            }
-
-            if ($novaQtd >0) {
+            $novaQtd = Math::adicionar($estoqueEn->getQtd(), $qtd);
+            if ($novaQtd > 0) {
                 $estoqueEn->setQtd($novaQtd);
                 $estoqueEn->setValidade($validade);
                 if (isset($unitizadorEn)) {
@@ -241,33 +239,34 @@ class EstoqueRepository extends EntityRepository
                 $em->persist($enderecoEn);
             }
         } else {
+            if ($idInventario != null) {
+                $existeReservaEntradaPendente = false;
+                $existeOutroEstoque = false;
 
-            $existeReservaEntradaPendente = false;
-            $existeOutroEstoque = false;
+                $SQL = " SELECT * 
+                           FROM RESERVA_ESTOQUE_ENDERECAMENTO REE
+                           INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+                           WHERE RE.IND_ATENDIDA = 'N'
+                             AND RE.COD_DEPOSITO_ENDERECO = '$endereco'";
+                $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+                if (count($result) > 0) {
+                    $existeReservaEntradaPendente = true;
+                }
 
-            $SQL = " SELECT * 
-                       FROM RESERVA_ESTOQUE_ENDERECAMENTO REE
-                       INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
-                       WHERE RE.IND_ATENDIDA = 'N'
-                         AND RE.COD_DEPOSITO_ENDERECO = '$endereco'";
-            $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-            if (count($result) > 0) {
-                $existeReservaEntradaPendente = true;
-            }
+                $SQL = " SELECT *
+                           FROM ESTOQUE E 
+                          WHERE E.COD_DEPOSITO_ENDERECO = '$endereco'
+                            AND NOT(E.COD_PRODUTO = '$codProduto' AND E.DSC_GRADE = '$grade')";
+                $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+                if (count($result) > 0) {
+                    $existeOutroEstoque = true;
+                }
 
-            $SQL = " SELECT *
-                       FROM ESTOQUE E 
-                      WHERE E.COD_DEPOSITO_ENDERECO = '$endereco'
-                        AND NOT(E.COD_PRODUTO = '$codProduto' AND E.DSC_GRADE = '$grade')";
-            $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-            if (count($result) > 0) {
-                $existeOutroEstoque = true;
-            }
-
-            if (($existeOutroEstoque == false) && ($existeReservaEntradaPendente == false)) {
-                if ($enderecoEn->getDisponivel() == "N") {
-                    $enderecoEn->setDisponivel("S");
-                    $em->persist($enderecoEn);
+                if (($existeOutroEstoque == false) && ($existeReservaEntradaPendente == false)) {
+                    if ($enderecoEn->getDisponivel() == "N") {
+                        $enderecoEn->setDisponivel("S");
+                        $em->persist($enderecoEn);
+                    }
                 }
             }
 

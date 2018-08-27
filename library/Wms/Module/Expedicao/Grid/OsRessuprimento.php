@@ -19,6 +19,9 @@ class OsRessuprimento extends Grid
      */
     public function init(array $gridValues = array(), array $formParamas = array())
     {
+        foreach ($gridValues as $row => $value) {
+            $gridValues[$row]['id'] = $value['ID'];
+        }
         $this->setAttrib('title','OS de Ressuprimento');
         $this->setSource(new \Core\Grid\Source\ArraySource($gridValues))
             ->setId('expedicao-os-grid')
@@ -97,6 +100,19 @@ class OsRessuprimento extends Grid
                 }
             ))
             ->addAction(array(
+                'label' => 'Efetivar Ressuprimento',
+                'modelName' => 'expedicao',
+                'controllerName' => 'onda-ressuprimento',
+                'actionName' => 'finalizar',
+                'pkIndex' => 'ID',
+                'params'=>$formParamas,
+                'cssClass' => 'edit confirm',
+                'title' => 'Confirma efetivação desta Ordem de Serviço?',
+                'condition' => function ($row) {
+                    return $row['COD_STATUS'] == OndaRessuprimentoOs::STATUS_ONDA_GERADA;
+                }
+            ))
+            ->addAction(array(
                 'label' => 'Andamento Ressuprimento',
                 'controllerName' => 'onda-ressuprimento',
                 'actionName' => 'list',
@@ -104,7 +120,7 @@ class OsRessuprimento extends Grid
                 'cssClass' => 'dialogAjax',
                 'title' => 'Visualizar Andamento'
             ))
-
+            ->addMassAction('finalizar', 'Efetivar Ressuprimento')
             ->setShowExport(true);
 
         return $this;

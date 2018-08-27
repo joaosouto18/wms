@@ -21,6 +21,17 @@ class FiltroProdutosConferidos extends Form
                     'class' => 'focus',
                     'decorators' => array('ViewHelper'),
                 ))
+                ->addElement('text', 'codProduto', array(
+                    'size' => 15,
+                    'label' => 'Produto',
+                    'decorators' => array('ViewHelper'),
+                ))
+                ->addElement('text', 'grade', array(
+                    'size' => 20,
+                    'label' => 'Grade',
+                    'decorators' => array('ViewHelper'),
+                ))
+
                 ->addElement('date', 'dataInicial1', array(
                     'size' => 20,
                     'label' => 'Data Inicio do Recebimento',
@@ -44,7 +55,7 @@ class FiltroProdutosConferidos extends Form
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
                 ))
-                ->addDisplayGroup(array('idRecebimento', 'dataInicial1', 'dataInicial2', 'dataFinal1', 'dataFinal2', 'submit'), 'identificacao', array('legend' => 'Busca')
+                ->addDisplayGroup(array('idRecebimento', 'codProduto','grade','dataInicial1', 'dataInicial2', 'dataFinal1', 'dataFinal2', 'submit'), 'identificacao', array('legend' => 'Busca')
         );
 
         $this->setDecorators(array(array('ViewScript', array('viewScript' => 'relatorio/produtos-conferidos/filtro.phtml'))));
