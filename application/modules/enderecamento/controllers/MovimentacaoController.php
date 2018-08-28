@@ -160,6 +160,8 @@ class Enderecamento_MovimentacaoController extends Action
                 }
             }
 
+            $EstoqueRepository->validaMovimentaçãoExpedicaoFinalizada($enderecoEn->getId(),$idProduto,$grade);
+
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {
                 $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$idProduto,'grade'=>$grade),array('quantidade'=>'ASC'));
                 if (count($embalagensEn) == 0) {
@@ -257,6 +259,10 @@ class Enderecamento_MovimentacaoController extends Action
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository("wms:Enderecamento\Estoque");
+
+            $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($enderecoDestinoEn->getId(),$idProduto,$grade);
+            $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($enderecoEn->getId(),$idProduto,$grade);
+
             $data['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_TRANSFERENCIA;
 
             $dthEntrada = new \DateTime();

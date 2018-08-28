@@ -1336,4 +1336,43 @@ class EstoqueRepository extends EntityRepository
         }
     }
 
+    public function validaMovimentaçãoExpedicaoFinalizada ($codDepositoEndereco, $codProduto, $grade) {
+
+        $idStatusEmFinalizacao = Expedicao::STATUS_EM_FINALIZACAO;
+
+        $sql = "SELECT REP.COD_PRODUTO, 
+                       REP.DSC_GRADE, 
+                       P.DSC_PRODUTO,
+                       DE.DSC_DEPOSITO_ENDERECO,
+                       LISTAGG(E.COD_EXPEDICAO,',') WITHIN GROUP (ORDER BY E.COD_EXPEDICAO) EXPEDICAO
+                  FROM EXPEDICAO E
+                  LEFT JOIN RESERVA_ESTOQUE_EXPEDICAO REE ON REE.COD_EXPEDICAO = E.COD_EXPEDICAO
+                  LEFT JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+                  LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = REP.COD_PRODUTO AND P.DSC_GRADE = REP.DSC_GRADE
+                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
+                 WHERE E.COD_STATUS = $idStatusEmFinalizacao
+                   AND RE.IND_ATENDIDA = 'N'
+                   AND COD_DEPOSITO_ENDERECO = $codDepositoEndereco
+                   AND COD_PRODUTO = '$codProduto'
+                   AND DSC_GRADE = '$grade'
+                 GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($result) >0) {
+            $endereco = $result[0]['DSC_DEPOSITO_ENDERECO'];
+            $expedicao = $result[0]['EXPEDICAO'];
+            $dscProduto = $result[0]['DSC_PRODUTO'];
+            $codProduto = $result[0]['COD_PRODUTO'];
+            $dscGrade = $result[0]['DSC_GRADE'];
+
+            $msg = "O Endereço $endereco com o produto $codProduto/$dscGrade - $dscProduto, está em uso por um processo de finalização das expedições $expedicao. Aguarde alguns seguntos e tente novamente";
+
+            throw new \Exception($msg);
+        }
+
+        return true;
+    }
+
 }

@@ -1408,6 +1408,8 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
 
+            $this->validaExpedicaoEmFinalizacao($idExpedicao);
+
             $transacao = true;
             $this->getEntityManager()->beginTransaction();
 
@@ -4483,5 +4485,57 @@ class ExpedicaoRepository extends EntityRepository {
         return $result;
     }
 
+    public function validaExpedicaoEmFinalizacao ($idExpedicao) {
+
+        $idStatusEmFinalizacao = Expedicao::STATUS_EM_FINALIZACAO;
+
+        $sql = "
+        SELECT DISTINCT
+               REP.COD_PRODUTO, 
+               REP.DSC_GRADE, 
+               P.DSC_PRODUTO,
+               DE.DSC_DEPOSITO_ENDERECO,
+               R.EXPEDICAO
+          FROM RESERVA_ESTOQUE_EXPEDICAO REE
+          LEFT JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+          LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+          LEFT JOIN PRODUTO P ON P.COD_PRODUTO = REP.COD_PRODUTO AND P.DSC_GRADE = REP.DSC_GRADE
+          LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
+         INNER JOIN (SELECT REP.COD_PRODUTO, 
+                            REP.DSC_GRADE, 
+                            RE.COD_DEPOSITO_ENDERECO,
+                            LISTAGG(E.COD_EXPEDICAO,',') WITHIN GROUP (ORDER BY E.COD_EXPEDICAO) EXPEDICAO
+                       FROM EXPEDICAO E
+                       LEFT JOIN RESERVA_ESTOQUE_EXPEDICAO REE ON REE.COD_EXPEDICAO = E.COD_EXPEDICAO
+                       LEFT JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+                       LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                      WHERE E.COD_STATUS = $statatusEmFinalizacao
+                        AND RE.IND_ATENDIDA = 'N'
+                        AND E.COD_EXPEDICAO <> $idExpedicao
+                      GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO) R
+            ON R.COD_PRODUTO = REP.COD_PRODUTO
+           AND R.DSC_GRADE = REP.DSC_GRADE
+           AND R.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
+         WHERE RE.IND_ATENDIDA = 'N'
+           AND REE.COD_EXPEDICAO = $idExpedicao";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($result) >0) {
+            $endereco = $result[0]['DSC_DEPOSITO_ENDERECO'];
+            $expedicao = $result[0]['EXPEDICAO'];
+            $dscProduto = $result[0]['DSC_PRODUTO'];
+            $codProduto = $result[0]['COD_PRODUTO'];
+            $dscGrade = $result[0]['DSC_GRADE'];
+
+            $msg = "O Endereço $endereco com o produto $codProduto/$dscGrade - $dscProduto, está em uso por um processo de finalização das expedições $expedicao. Aguarde alguns seguntos e tente novamente";
+
+            throw new \Exception($msg);
+        }
+
+        return true;
+
+
+    }
 
 }

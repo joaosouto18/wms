@@ -1123,6 +1123,9 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
+                    $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($enderecoAntigo->getId(), $produtoEn->getId(),$produtoEn->getGrade());
+                    $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($enderecoNovo->getId(), $produtoEn->getId(),$produtoEn->getGrade());
+
                     $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
@@ -1240,6 +1243,10 @@ class Mobile_EnderecamentoController extends Action
                         }
                     }
 
+                    $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($enderecoAntigo->getId(), $produtoEn->getId(),$produtoEn->getGrade());
+                    $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($endereco->getId(), $produtoEn->getId(),$produtoEn->getGrade());
+
+
                     $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);
                     //RETIRA ESTOQUE
@@ -1327,6 +1334,9 @@ class Mobile_EnderecamentoController extends Action
                         $estoqueEn = $estoqueRepo->findOneBy(array('depositoEndereco' => $enderecoAntigo, 'codProduto' => $volume->getProduto(), 'grade' => $volume->getGrade()));
                         if (!$estoqueEn)
                             throw new \Exception("Estoque não Encontrado!");
+
+                        $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($enderecoAntigo->getId(), $produtoEn->getId(),$produtoEn->getGrade());
+                        $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($endereco->getId(), $produtoEn->getId(),$produtoEn->getGrade());
 
                         $params['unitizador'] = $estoqueEn->getUnitizador();
                         $params['validade'] = null;
