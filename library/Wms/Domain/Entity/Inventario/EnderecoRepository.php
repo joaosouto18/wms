@@ -221,4 +221,131 @@ class EnderecoRepository extends EntityRepository
         return $query->getQuery()->getResult();
     }
 
+/**
+ * @return array
+ * @throws \Exception
+ */
+public function getEnderecosColetor($params)
+{
+    $idInventario   = isset($params['idInventario']) ? $params['idInventario'] : null;
+    $numContagem    = isset($params['numContagem']) ? $params['numContagem'] : null;
+    $divergencia    = isset($params['divergencia']) ? $params['divergencia'] : null;
+    $endereco    = isset($params['dscEndereco']) ? $params['dscEndereco'] : null;
+    $andEndereco = '';
+
+    $sqlWhereEndereco = '';
+    if ($divergencia != null && $divergencia != 'todos') {
+        $sqlWhereEndereco .= " AND IE.DIVERGENCIA = 1 
+                               AND (ICE.DIVERGENCIA = 1 OR ICE.CONTAGEM_INVENTARIADA IS NULL)";
+        $andDivergencia = "AND IE.DIVERGENCIA = 1 AND (MAXCONT.DIVERGENCIA IS NOT NULL OR (MAXCONT.DIVERGENCIA IS NULL AND IE.DIVERGENCIA IS NOT NULL AND MAXCONT.COD_PRODUTO IS NULL))";
+    } else if ($divergencia == 'todos') {
+        $andDivergencia = null;
+    } else {
+        $sqlWhereEndereco .= " AND IE.DIVERGENCIA IS NULL ";
+        $andDivergencia = " AND IE.DIVERGENCIA IS NULL ";
+    }
+
+    $sqlWhereSubQuery = "";
+    $left = " LEFT ";
+    if ($numContagem == 0) {
+        $left = " INNER ";
+        $sqlWhereSubQuery = "WHERE (CONTAGEM_INVENTARIADA IS NOT NULL OR DIVERGENCIA IS NOT NULL)";
+    }
+
+    if ($endereco != null) {
+        $andEndereco = " AND DE.DSC_DEPOSITO_ENDERECO = '".$endereco."' ";
+    }
+
+    $andContagem = null;
+    $sqlHavingEndereco = "";
+    if (isset($numContagem)) {
+        $sqlHavingEndereco = " HAVING MAX(NVL(ICE.NUM_CONTAGEM,0)) = $numContagem ";
+        $andContagem = " AND NVL(MAXCONT.ULTCONT,0) = ".$numContagem." AND IE.INVENTARIADO IS NULL ";
+    }
+
+    $sql = "
+        SELECT NVL(E.DSC_DEPOSITO_ENDERECO,P.DSC_DEPOSITO_ENDERECO) as DSC_DEPOSITO_ENDERECO,
+               P.DSC_GRADE,
+               P.COD_PRODUTO,
+               P.DSC_PRODUTO,
+               P.COMERCIALIZACAO,
+               P.COD_VOLUME
+               FROM (                       
+                   SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO, IE.COD_INVENTARIO_ENDERECO
+                     FROM INVENTARIO_CONTAGEM_ENDERECO ICE
+                     LEFT JOIN INVENTARIO_ENDERECO IE ON IE.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
+                     LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
+                     WHERE 1 = 1
+                      AND IE.COD_INVENTARIO = $idInventario
+                      $sqlWhereEndereco
+                      $andEndereco
+                    GROUP BY DE.DSC_DEPOSITO_ENDERECO, IE.COD_INVENTARIO_ENDERECO, COD_PRODUTO, DSC_GRADE
+                      $sqlHavingEndereco) E
+    $left JOIN (SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO, 
+                       NVL(MAXCONT.ULTCONT,0) as ULTIMACONTAGEM, 
+                       IE.DIVERGENCIA, 
+                       IE.COD_INVENTARIO_ENDERECO AS codInvEndereco,
+                       MAXCONT.DSC_PRODUTO, 
+                       MAXCONT.DSC_GRADE, 
+                       MAXCONT.COD_PRODUTO, 
+                       MAXCONT.QTD_CONTADA, 
+                       MAXCONT.COD_VOLUME,
+                       MAXCONT.COMERCIALIZACAO,
+                       CASE WHEN IE.DIVERGENCIA = 1 THEN 'DIVERGENCIA' WHEN IE.INVENTARIADO = 1 THEN 'INVENTARIADO' ELSE 'PENDENTE' END SITUACAO 
+                  FROM INVENTARIO_ENDERECO IE
+                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
+                  LEFT JOIN (   SELECT ICE.QTD_CONTADA, 
+                                    ICE.DIVERGENCIA, 
+                                    MAX(NUM_CONTAGEM) as ULTCONT, 
+                                    ICE.COD_INVENTARIO_ENDERECO, 
+                                    P.DSC_PRODUTO,
+                                    P.COD_PRODUTO, 
+                                    P.DSC_GRADE, 
+                                    PV.COD_PRODUTO_VOLUME as COD_VOLUME,
+                                    NVL(PV.DSC_VOLUME,'EMBALAGEM') COMERCIALIZACAO
+                                FROM 
+                                    INVENTARIO_CONTAGEM_ENDERECO ICE
+                                    LEFT JOIN PRODUTO P ON ICE.COD_PRODUTO = P.COD_PRODUTO AND ICE.DSC_GRADE = P.DSC_GRADE
+                                    LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ICE.COD_PRODUTO_EMBALAGEM
+                                    LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ICE.COD_PRODUTO_VOLUME
+                                INNER JOIN 
+                                    (  SELECT 
+                                        MAX(NUM_CONTAGEM) MAXC, 
+                                        COD_PRODUTO,
+                                        DSC_GRADE,
+                                        COD_PRODUTO_VOLUME,
+                                        COD_INVENTARIO_ENDERECO 
+                                      FROM 
+                                        INVENTARIO_CONTAGEM_ENDERECO
+                                        $sqlWhereSubQuery
+                                      GROUP BY COD_INVENTARIO_ENDERECO,
+                                      COD_PRODUTO,
+                                        DSC_GRADE,
+                                        COD_PRODUTO_VOLUME,
+                                        COD_INVENTARIO_ENDERECO
+                                    ) M ON M.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO AND M.MAXC = ICE.NUM_CONTAGEM
+                                    AND ((M.COD_PRODUTO = ICE.COD_PRODUTO AND M.DSC_GRADE = ICE.DSC_GRADE) OR (ICE.COD_PRODUTO IS NULL AND ICE.DSC_GRADE IS NULL))
+                                    AND NVL(M.COD_PRODUTO_VOLUME,0) = NVL(ICE.COD_PRODUTO_VOLUME,0)
+                                GROUP BY 
+                                    ICE.DIVERGENCIA, 
+                                    ICE.COD_INVENTARIO_ENDERECO, 
+                                    P.DSC_PRODUTO,
+                                    P.COD_PRODUTO, 
+                                    P.DSC_GRADE, 
+                                    PV.COD_PRODUTO_VOLUME,
+                                    PV.DSC_VOLUME,
+                                    PE.DSC_EMBALAGEM, 
+                                    ICE.QTD_CONTADA
+                            ) MAXCONT
+                    ON MAXCONT.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+                 WHERE 
+                    IE.COD_INVENTARIO = ".$idInventario."
+                    $andContagem
+                    $andDivergencia
+                    $andEndereco
+                 ORDER BY 
+                    DE.DSC_DEPOSITO_ENDERECO ) P ON E.COD_INVENTARIO_ENDERECO = P.codInvEndereco";
+    return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+}
+
 }

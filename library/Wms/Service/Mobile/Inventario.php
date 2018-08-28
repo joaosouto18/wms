@@ -77,7 +77,11 @@ class Inventario {
             $params['numContagem'] = 0;
         }
 
-        $return['enderecos'] = $invEndRepo->getByInventario($params);
+        if ($divergencia == null) {
+            $return['enderecos'] = $invEndRepo->getByInventario($params);
+        } else {
+            $return['enderecos'] = $invEndRepo->getEnderecosColetor($params);
+        }
         $enderecos = array();
         $produtoEmbalagemRepo = $this->getEm()->getRepository('wms:Produto\Embalagem');
         $produtoVolumeRepo = $this->getEm()->getRepository('wms:Produto\Volume');
