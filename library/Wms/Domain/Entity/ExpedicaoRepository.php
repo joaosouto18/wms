@@ -4509,7 +4509,7 @@ class ExpedicaoRepository extends EntityRepository {
                        LEFT JOIN RESERVA_ESTOQUE_EXPEDICAO REE ON REE.COD_EXPEDICAO = E.COD_EXPEDICAO
                        LEFT JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
                        LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
-                      WHERE E.COD_STATUS = $statatusEmFinalizacao
+                      WHERE E.COD_STATUS = $idStatusEmFinalizacao
                         AND RE.IND_ATENDIDA = 'N'
                         AND E.COD_EXPEDICAO <> $idExpedicao
                       GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO) R

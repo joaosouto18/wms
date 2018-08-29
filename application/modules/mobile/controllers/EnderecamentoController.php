@@ -1124,7 +1124,7 @@ class Mobile_EnderecamentoController extends Action
                     }
 
                     $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($enderecoAntigo->getId(), $produtoEn->getId(),$produtoEn->getGrade());
-                    $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($enderecoNovo->getId(), $produtoEn->getId(),$produtoEn->getGrade());
+                    $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($enderecoNovoEn->getId(), $produtoEn->getId(),$produtoEn->getGrade());
 
                     $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                     $estoqueRepo->movimentaEstoque($params);

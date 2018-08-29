@@ -8,6 +8,8 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Enderecamento\EstoqueProprietario as EstoqueProprietarioEntity,
     Wms\Util\Endereco as EnderecoUtil;
 use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Domain\Entity\Expedicao;
+use Wms\Math;
 
 class EstoqueRepository extends EntityRepository
 {
@@ -1353,10 +1355,10 @@ class EstoqueRepository extends EntityRepository
                   LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
                  WHERE E.COD_STATUS = $idStatusEmFinalizacao
                    AND RE.IND_ATENDIDA = 'N'
-                   AND COD_DEPOSITO_ENDERECO = $codDepositoEndereco
-                   AND COD_PRODUTO = '$codProduto'
-                   AND DSC_GRADE = '$grade'
-                 GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO";
+                   AND RE.COD_DEPOSITO_ENDERECO = $codDepositoEndereco
+                   AND REP.COD_PRODUTO = '$codProduto'
+                   AND REP.DSC_GRADE = '$grade'
+                 GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, P.DSC_PRODUTO, DE.DSC_DEPOSITO_ENDERECO";
 
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
