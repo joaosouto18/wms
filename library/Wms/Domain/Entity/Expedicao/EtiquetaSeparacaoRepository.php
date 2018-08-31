@@ -313,6 +313,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia, 
                     p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial
                 ')
+            ->addSelect("
+                        (
+                            SELECT COUNT(et.id)
+                            FROM wms:Expedicao\EtiquetaSeparacao et
+                            WHERE et.pedido = p.id AND et.codProduto = es.codProduto AND et.dscGrade = es.grade
+                        )
+                         AS qtdProdDist
+                        ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
@@ -455,12 +463,21 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      */
     public function getEtiquetaById($id)
     {
+
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codBarrasProduto, c.sequencia, p.id pedido,
 					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, p.numSequencial
                 ')
+            ->addSelect("
+                        (
+                            SELECT COUNT(et.id)
+                            FROM wms:Expedicao\EtiquetaSeparacao et
+                            WHERE et.pedido = p.id AND et.codProduto = es.codProduto AND et.dscGrade = es.grade
+                        )
+                         AS qtdProdDist
+                        ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')

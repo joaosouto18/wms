@@ -145,6 +145,10 @@ class EtiquetaSeparacao extends Pdf
         //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
         $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
 
+        $codProdutoAnterior = null;
+        $dscGradeAnterior = null;
+        $countEtiquetasByProdutos = 1;
+
         foreach($etiquetas as $etiqueta) {
             if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == 'S') {
                 if ($etiquetaMaeAnterior != $etiqueta['codEtiquetaMae']) {
@@ -154,7 +158,15 @@ class EtiquetaSeparacao extends Pdf
                 }
             }
             $this->etqMae = false;
-            $this->layoutEtiqueta($etiqueta,count($etiquetas),false,$modelo);
+            if ($etiqueta['codProduto'] == $codProdutoAnterior && $dscGradeAnterior == $etiqueta['grade']) {
+                $countEtiquetasByProdutos = $countEtiquetasByProdutos + 1;
+            } else {
+                $countEtiquetasByProdutos = 1;
+            }
+            $this->layoutEtiqueta($etiqueta,count($etiquetas),false,$modelo, false, $countEtiquetasByProdutos);
+
+            $codProdutoAnterior = $etiqueta['codProduto'];
+            $dscGradeAnterior = $etiqueta['grade'];
         }
         $this->Output('Etiquetas-expedicao-'.$idExpedicao.'-'.$centralEntregaPedido.'.pdf','D');
 
@@ -229,12 +241,22 @@ class EtiquetaSeparacao extends Pdf
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
-
+        $codProdutoAnterior = null;
+        $dscGradeAnterior = null;
+        $countEtiquetasByProdutos = 1;
         foreach($etiquetas as $etiquetaEntity) {
             $etiqueta      = $EtiquetaRepo->getEtiquetaById($etiquetaEntity->getId());
-            $this->layoutEtiqueta($etiqueta,1,true, $modelo);
+
+            if ($etiqueta['codProduto'] == $codProdutoAnterior && $dscGradeAnterior == $etiqueta['grade']) {
+                $countEtiquetasByProdutos = $countEtiquetasByProdutos + 1;
+            } else {
+                $countEtiquetasByProdutos = 1;
+            }
+            $this->layoutEtiqueta($etiqueta,1,true, $modelo, false, $countEtiquetasByProdutos);
             $etiquetaEntity->setReimpressao($motivo);
             $em->persist($etiquetaEntity);
+            $codProdutoAnterior = $etiqueta['codProduto'];
+            $dscGradeAnterior = $etiqueta['grade'];
 
         }
 
@@ -640,14 +662,14 @@ class EtiquetaSeparacao extends Pdf
         //$this->Cell(20, 3,  $etiqueta['sequencia'], 0, 1, "L");
     }
     
-    protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo, $reentrega = false)
+    protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo, $reentrega = false, $countEtiquetasByProdutos)
     {
         switch ($modelo) {
             case 11:
                 $this->layoutModelo11($etiqueta,$countEtiquetas,$reimpressao,$modelo,$reentrega);
                 break;
             case 12:
-                $this->layoutModelo12($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
+                $this->layoutModelo12($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega, $countEtiquetasByProdutos);
                 break;
             case 10:
                 $this->layoutModelo10($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
@@ -1032,7 +1054,7 @@ class EtiquetaSeparacao extends Pdf
         }
     }
 
-    protected function layoutModelo12($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
+    protected function layoutModelo12($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false, $countEtiquetasByProdutos)
     {
         $this->SetMargins(3, 1.5, 0);
 
@@ -1075,7 +1097,7 @@ class EtiquetaSeparacao extends Pdf
         $impressao = str_replace('.','-',"$etiqueta[endereco]");
         $this->MultiCell(50, 6, $impressao, 1, 'C');
         $this->SetY($y3);
-        $impressao = '-';
+        $impressao = "$countEtiquetasByProdutos / $etiqueta[qtdProdDist]";
         $this->SetX(53);
         $this->MultiCell(55, 6, $impressao, 1, 'L');
         $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 40, 41, 65, 17);
