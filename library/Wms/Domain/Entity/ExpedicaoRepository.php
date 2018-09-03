@@ -1918,7 +1918,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
-            $Query = $Query . " AND C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'];
+            $Query = $Query . " AND C.COD_CARGA_EXTERNO LIKE '%" . $parametros['codCargaExterno'] . "%' ";
             unset($parametros['dataInicial1']);
             unset($parametros['dataInicial2']);
             unset($parametros['dataFinal1']);
@@ -2234,12 +2234,12 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
-            $where = " AND CA.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
-            $whereSubQuery = " C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
+            $where = " AND CA.COD_CARGA_EXTERNO LIKE '%" . $parametros['codCargaExterno'] . "%'";
+            $whereSubQuery = " C.COD_CARGA_EXTERNO LIKE '%" . $parametros['codCargaExterno'] . "%'";
             $and = " and ";
             $andSub = " and ";
-            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "))";
-            $WhereCarga .= " AND  (COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . ")";
+            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO LIKE '%" . $parametros['codCargaExterno'] . "%'))";
+            $WhereCarga .= " AND  (COD_CARGA_EXTERNO = LIKE '%" . $parametros['codCargaExterno'] . "%')";
         }
 
         $JoinExpedicao = "";
