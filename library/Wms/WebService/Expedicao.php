@@ -887,6 +887,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
             }
             $qtdCorrigida = str_replace(',','.',$produto['quantidade']);
 
+            $fatorEmbalagemVenda = (isset($produto['fatorEmbalagemVenda']) && !empty($produto['fatorEmbalagemVenda'])) ? $produto['fatorEmbalagemVenda'] : 1;
+            $qtdEmbalagemVenda = (isset($produto['qtdEmbalagemVenda']) && !empty($produto['qtdEmbalagemVenda'])) ? $produto['qtdEmbalagemVenda'] : ($qtdCorrigida / $fatorEmbalagemVenda);
+
             if(isset($prod[$idProduto.'--'.$produto['grade']])){
                 $prod[$idProduto.'--'.$produto['grade']]['quantidade'] = \Wms\Math::adicionar($prod[$idProduto.'--'.$produto['grade']]['quantidade'], $qtdCorrigida);
             }else{
@@ -896,7 +899,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     'produto' => $enProduto,
                     'valorVenda' => (isset($produto['valorVenda'])) ? $produto['valorVenda'] : null,
                     'grade' => $produto['grade'],
-                    'quantidade' => $qtdCorrigida
+                    'quantidade' => $qtdCorrigida,
+                    'fatorEmbalagemVenda' => $fatorEmbalagemVenda,
+                    'qtdEmbalagemVenda' => $qtdEmbalagemVenda
                 );
             }
         }
