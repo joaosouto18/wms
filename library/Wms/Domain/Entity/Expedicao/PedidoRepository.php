@@ -58,13 +58,27 @@ class PedidoRepository extends EntityRepository
             //regexp_replace(LPAD(PJ.NUM_CNPJ, 15, '0'),'([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{4})([0-9]{2})','\1.\2.\3/\4-\5') as CNPJ
         $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         if($controleProprietario == 'S'){
-            $SQL = "SELECT EP.COD_PESSOA, (EP.QTD * -1) as ATENDIDA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PJ.NUM_CNPJ as CNPJ
+            $SQL = "SELECT EP.COD_PESSOA, 
+                           NVL((EP.QTD * -1),0) as ATENDIDA, 
+                           PP.COD_PRODUTO, 
+                           PP.DSC_GRADE, 
+                           PP.QUANTIDADE as QTD_PEDIDO, 
+                           PJ.NUM_CNPJ as CNPJ,
+                           NVL((EP.QTD * -1),0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) as QTD_ATENDIDA_EMB_VENDA,
+                           NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA
                     FROM PEDIDO_PRODUTO PP 
                     LEFT JOIN ESTOQUE_PROPRIETARIO EP ON (PP.COD_PRODUTO = EP.COD_PRODUTO AND PP.DSC_GRADE = EP.DSC_GRADE AND PP.COD_PEDIDO = EP.COD_OPERACAO)
                     LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
                     WHERE PP.COD_PEDIDO = $codPedido";
         }else {
-            $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PP.QUANTIDADE - NVL(PP.qtd_cortada,0) as ATENDIDA, '' AS CNPJ
+            $SQL = "SELECT '' as COD_PESSOA,
+                           PP.QUANTIDADE - NVL(PP.qtd_cortada,0) as ATENDIDA,
+                           PP.COD_PRODUTO, 
+                           PP.DSC_GRADE, 
+                           PP.QUANTIDADE as QTD_PEDIDO, 
+                           '' AS CNPJ,
+                           (PP.QUANTIDADE - NVL(PP.qtd_cortada,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) as QTD_ATENDIDA_EMB_VENDA,
+                           NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA                           
                   FROM PEDIDO_PRODUTO PP WHERE PP.COD_PEDIDO = '$codPedido'";
         }
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
