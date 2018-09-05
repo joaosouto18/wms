@@ -44,6 +44,7 @@ class EtiquetaSeparacao extends Pdf
                     break;
                 case 6:
                 case 10:
+                case 11:
                 case 12:
                     // font
                     $this->SetFont('Arial','B',7);
