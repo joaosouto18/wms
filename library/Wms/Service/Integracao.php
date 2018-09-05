@@ -203,7 +203,10 @@ class Integracao {
                 case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
                 case AcaoIntegracao::INTEGRACAO_CANCELAMENTO_CARGA:
                     return $this->_dados;
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA:
+                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PEDIDO:
+                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGA:
+                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGAS:
+                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PRODUTO:
                 case AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
                     return true;
                 case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:

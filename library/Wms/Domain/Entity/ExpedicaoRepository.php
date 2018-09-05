@@ -145,6 +145,163 @@ class ExpedicaoRepository extends EntityRepository {
         return $result;
     }
 
+    /**
+     * @param $expedicaoEn
+     * @return array|bool|null|string|void
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Exception
+     */
+    public function executaIntegracaoBDFinalizacaoConferencia($expedicaoEn)
+    {
+        $idsIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_FINALIZA_CONFERENCIA_ERP');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+        $ids = explode(',', $idsIntegracao);
+        sort($ids);
+
+        $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+
+        foreach ($ids as $idIntegracao) {
+            $acaoEn = $acaoIntRepo->find($idIntegracao);
+            $options = array();
+
+            if ($acaoEn == null) continue;
+
+            $params = $acaoEn->getParametros();
+            $cargasEn = $expedicaoEn->getCarga();
+
+            $encontrouPedido = false;
+
+            $cargas = array();
+            foreach ($cargasEn as $cargaEn) {
+                $cargas[] = $cargaEn->getCodCargaExterno();
+            }
+
+            foreach ($cargasEn as $cargaEn) {
+
+                $SQL = "SELECT * 
+                                  FROM PEDIDO 
+                                 WHERE COD_CARGA = " . $cargaEn->getId();
+                if (!empty($params)) {
+                    $SQL = $SQL . " AND COD_TIPO_PEDIDO IN (" . $params . ")";
+                }
+
+                $qtdPedidos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+                if (count($qtdPedidos) > 0) {
+                    $encontrouPedido = true;
+                    break;
+                }
+            }
+
+            /*
+             */
+
+            if ($encontrouPedido == true) {
+
+                /*
+                 * Devolve o Retorno a integração a nível de conferencia do PedidoProduto
+                 * ?1 - Código da Carga
+                 * ?2 - Código do Pedido
+                 * ?3 - Código do Item
+                 * ?4 - Quantidade Pedida (Fator 1)
+                 * ?5 - Quantidade Atendida (Fator 1)
+                 * ?6 - Quantidade Atendida (Em função da embalagem vendida)
+                 * ?7 - Fator da Embalagem de Venda
+                 */
+                if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PRODUTO) {
+                    $cargasEn = $expedicaoEn->getCarga();
+                    foreach ($cargasEn as $cargaEn) {
+                        $pedidosEn = $pedidoRepo->findBy(array('codCarga' => $cargaEn->getId()));
+                        foreach ($pedidosEn as $pedidoEn) {
+                            $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
+                            foreach ($produtos as $key => $item) {
+                                $options[$pedidoEn->getId() . '-' . $key][] = $cargaEn->getCodCargaExterno();
+                                $options[$pedidoEn->getId() . '-' . $key][] = $pedidoEn->getCodExterno();
+                                $options[$pedidoEn->getId() . '-' . $key][] = $item['COD_PRODUTO'];
+                                $options[$pedidoEn->getId() . '-' . $key][] = $item['QTD_PEDIDO'];
+                                if (is_null($item['ATENDIDA'])) {
+                                    $options[$pedidoEn->getId() . '-' . $key][] = 0;
+                                } else {
+                                    $options[$pedidoEn->getId() . '-' . $key][] = $item['ATENDIDA'];
+                                }
+                            }
+                        }
+                        $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
+                        if (!$resultAcao === true) {
+                            throw new \Exception($resultAcao);
+                        }
+                        unset($options);
+                    }
+                }
+
+                /*
+                 * Devolve o Retorno a integração com todas as cargas agrupadas
+                 *
+                 * ?1 - Código das Cargas presentes na Expedição
+                 */
+                if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGAS) {
+
+                    if (!is_null($cargas) && is_array($cargas)) {
+                        $options[] = implode(',', $cargas);
+                    } else if (!is_null($cargas)) {
+                        $options = $cargas;
+                    }
+
+                    $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                    if (!$resultAcao === true) {
+                        throw new \Exception($resultAcao);
+                    }
+                }
+
+                /*
+                 * Devolve o Retorno a integração por carga
+                 *
+                 * ?1 - Código da Carga
+                 */
+                if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGA) {
+                    foreach ($cargasEn as $cargaEn) {
+                        $options = array();
+                        $options[] = $cargaEn->getCodCargaExterno();
+
+                        $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                        if (!$resultAcao === true) {
+                            throw new \Exception($resultAcao);
+                        }
+
+                    }
+                }
+
+                /*
+                 * Devolve o Retorno a integração por pedido
+                 *
+                 * ?1 - Código da Carga presentes na Expedição
+                 * ?2 - Código do Pedido
+                 * ?3 - Tipo de Pedido
+                 *
+                 */
+                if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PEDIDO) {
+                    foreach ($cargasEn as $cargaEn) {
+                        $pedidos = $cargaEn->getPedido();
+                        foreach ($pedidos as $pedidoEn) {
+                            $options = array();
+                            $options[] = $cargaEn->getCodCargaExterno();
+                            $options[] = $pedidoEn->getCodExterno();
+                            $options[] = $pedidoEn->getTipoPedido()->getSigla();
+
+                            $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                            if (!$resultAcao === true) {
+                                throw new \Exception($resultAcao);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $resultAcao;
+    }
+
     private function validaPickingProdutosByExpedicao($produtosRessuprir) {
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
@@ -1664,88 +1821,7 @@ class ExpedicaoRepository extends EntityRepository {
 
             //Finaliza Expedição ERP
             if ($this->getSystemParameterValue('IND_FINALIZA_CONFERENCIA_ERP_INTEGRACAO') == 'S') {
-                $idsIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_FINALIZA_CONFERENCIA_ERP');
-                /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-                $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-
-                $ids = explode(',',$idsIntegracao);
-                sort($ids);
-
-                $pedidoRepo     = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-
-                foreach ($ids as $idIntegracao) {
-                    $acaoEn = $acaoIntRepo->find($idIntegracao);
-                    $options = array();
-
-                    if ($acaoEn == null) continue;
-
-                    $params = $acaoEn->getParametros();
-                    $cargasEn = $expedicaoEn->getCarga();
-
-                    $encontrouPedido = false;
-
-                    $cargas = array();
-                    foreach ($cargasEn as $cargaEn) {
-                        $cargas[] = $cargaEn->getCodCargaExterno();
-                    }
-
-                    foreach ($cargasEn as $cargaEn) {
-
-                        $SQL = "SELECT * 
-                                  FROM PEDIDO 
-                                 WHERE COD_CARGA = " .$cargaEn->getId();
-                        if (!empty($params)) {
-                            $SQL = $SQL . " AND COD_TIPO_PEDIDO IN (" . $params . ")";
-                        }
-
-                        $qtdPedidos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-
-                        if (count($qtdPedidos) > 0) {
-                            $encontrouPedido = true;
-                            break;
-                        }
-                    }
-
-                    if (!is_null($cargas) && is_array($cargas)) {
-                        $options[] = implode(',', $cargas);
-                    } else if (!is_null($cargas)) {
-                        $options = $cargas;
-                    }
-
-                    if ($encontrouPedido == true) {
-                        if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA) {
-                            $cargasEn = $expedicaoEn->getCarga();
-
-                            foreach ($cargasEn as $cargaEn) {
-                                $pedidosEn = $pedidoRepo->findBy(array('codCarga'=>$cargaEn->getId()));
-                                foreach ($pedidosEn as $pedidoEn) {
-                                    $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
-                                    foreach ($produtos as $key => $item) {
-                                        $options[$pedidoEn->getId().'-'.$key][] = $cargaEn->getCodCargaExterno();
-                                        $options[$pedidoEn->getId().'-'.$key][] = $pedidoEn->getCodExterno();
-                                        $options[$pedidoEn->getId().'-'.$key][] = $item['COD_PRODUTO'];
-                                        $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_PEDIDO'];
-                                        if (is_null($item['ATENDIDA'])) {
-                                            $options[$pedidoEn->getId().'-'.$key][] = 0;
-                                        }else{
-                                            $options[$pedidoEn->getId().'-'.$key][] = $item['ATENDIDA'];
-                                        }
-                                    }
-                                }
-                                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
-                                if (!$resultAcao === true) {
-                                    throw new \Exception($resultAcao);
-                                }
-                                unset($options);
-                            }
-                        } else {
-                            $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                            if (!$resultAcao === true) {
-                                throw new \Exception($resultAcao);
-                            }
-                        }
-                    }
-                }
+                $resultAcao = $this->executaIntegracaoBDFinalizacaoConferencia($expedicaoEn);
             }
 
             //Executa Corte ERP
