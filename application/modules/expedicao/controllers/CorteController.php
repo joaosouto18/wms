@@ -146,7 +146,12 @@ class Expedicao_CorteController extends Action {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
 
-        $produtos = $expedicaoRepo->getProdutosPorExpedicao($idExpedicao);
+        if ($this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO') == 'S') {
+            $produtos = $expedicaoRepo->getProdutosPorExpedicaoEmbVend($idExpedicao);
+        } else {
+            $produtos = $expedicaoRepo->getProdutosPorExpedicao($idExpedicao);
+        }
+
 
         $grid = new \Wms\Module\Expedicao\Grid\CorteTotal();
         $this->view->grid = $grid->init($produtos);
