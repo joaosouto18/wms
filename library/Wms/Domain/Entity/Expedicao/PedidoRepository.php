@@ -630,18 +630,37 @@ class PedidoRepository extends EntityRepository
     }
 
     public function getProdutosByPedido($codPedido){
+
+        $sqlCampoQuantidadePedido = " PP.QUANTIDADE , ";
+        $sqlCampoQuantidadeCortada = " NVL(PP.QTD_CORTADA,0) as QTD_CORTADA, ";
+        if ($this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO') == 'S') {
+            $sqlCampoQuantidadePedido = "CASE WHEN (P.COD_TIPO_COMERCIALIZACAO = 1) THEN PP.QTD_EMBALAGEM_VENDA ||' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE PP.QUANTIDADE || '' END as QUANTIDADE , ";
+            $sqlCampoQuantidadeCortada = "CASE WHEN (P.COD_TIPO_COMERCIALIZACAO = 1) AND (NVL(PP.QTD_CORTADA,0) > 0) THEN (NVL(PP.QTD_CORTADA,0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE NVL(PP.QTD_CORTADA,0) || '' END as QTD_CORTADA , ";
+        }
+
         $SQL = "
         SELECT P.COD_PRODUTO,
                P.DSC_GRADE,
                P.DSC_PRODUTO,
-               PP.QUANTIDADE,
-               NVL(PP.QTD_CORTADA,0) as QTD_CORTADA,
+               $sqlCampoQuantidadePedido
+               $sqlCampoQuantidadeCortada
                (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) * NVL(PESO.NUM_PESO,0) as NUM_PESO,
                (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) * NVL(PESO.NUM_CUBAGEM,0) as NUM_CUBAGEM
           FROM PEDIDO_PRODUTO PP
-          INNER JOIN PEDIDO PED ON PED.COD_PEDIDO = PP.COD_PEDIDO
+         INNER JOIN PEDIDO PED ON PED.COD_PEDIDO = PP.COD_PEDIDO
           LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
           LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO AND PESO.DSC_GRADE = PP.DSC_GRADE
+          LEFT JOIN (SELECT QTD_EMBALAGEM, 
+                            COD_PRODUTO,
+                            DSC_GRADE,
+                            MAX(COD_PRODUTO_EMBALAGEM) as COD_PRODUTO_EMBALAGEM
+                       FROM PRODUTO_EMBALAGEM 
+                      WHERE DTH_INATIVACAO IS NULL
+                      GROUP BY QTD_EMBALAGEM, COD_PRODUTO, DSC_GRADE) MP
+                 ON MP.COD_PRODUTO = P.COD_PRODUTO
+                AND MP.DSC_GRADE = P.DSC_GRADE
+                AND MP.QTD_EMBALAGEM = PP.FATOR_EMBALAGEM_VENDA
+          LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MP.COD_PRODUTO_EMBALAGEM
          WHERE PED.COD_EXTERNO = '$codPedido' ORDER BY COD_PRODUTO, DSC_GRADE";
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;

@@ -28,6 +28,9 @@ class PedidosCorteTotal extends Grid
             ->addColumn(array(
                 'label' => 'Qtd.',
                 'index' => 'QTD',
+            ))->addColumn(array(
+                'label' => 'Qtd. Cortada',
+                'index' => 'QTD_CORTADA',
             ));
         return $this;
     }
