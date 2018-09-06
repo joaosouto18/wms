@@ -83,18 +83,19 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             //mssql_select_db($dbName, $conexao) or die(mssql_get_last_message());
 
             if ($conexao == false) {
-                $error = $conexao->connect_error;
-                throw new \Exception("Não foi possível conectar: $error");
+                $errors = \sqlsrv_errors();
+                foreach( $errors as $error ) {
+                    throw new \Exception($error[ 'message']);
+                }
             }
             $result = \sqlsrv_query($conexao, $query);
 
 
             if (!$result || $result == false) {
-                $error = \sqlsrv_errors();
+                $errors = \sqlsrv_errors();
                 foreach( $errors as $error ) {
                     throw new \Exception($error[ 'message']);
                 }
-
             }
             $vetResult = array();
             $i = 0;
