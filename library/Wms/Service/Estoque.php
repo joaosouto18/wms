@@ -286,7 +286,7 @@ class Estoque
     {
         $idInventario = null;
         $contagemEndEn = $this->getContagemEndEn();
-        if ($contagemEndEn == null) {
+        if ($contagemEndEn != null) {
             $idInventario = $contagemEndEn->getInventarioEndereco()->getInventario()->getId();
         }
 
