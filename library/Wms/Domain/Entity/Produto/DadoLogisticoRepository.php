@@ -16,35 +16,39 @@ class DadoLogisticoRepository extends EntityRepository
      */
     public function save(array $values)
     {
-        $em = $this->getEntityManager();
+        try {
+            $em = $this->getEntityManager();
 
-        extract($values);
+            extract($values);
 
-        $dadoLogisticoEntity = (isset($id) && is_numeric($id)) ? $this->find($id) : new DadoLogisticoEntity;
+            $dadoLogisticoEntity = (isset($id) && is_numeric($id)) ? $this->find($id) : new DadoLogisticoEntity;
 
-        if (!$dadoLogisticoEntity)
-            throw new \Exception('Id de dado logistico inválido');
-        
-        $embalagemEntity = $em->getReference('wms:Produto\Embalagem', $idEmbalagem);
-        
-        if (!$embalagemEntity)
-            throw new \Exception('Id de embalagem inválido');
+            if (!$dadoLogisticoEntity)
+                $dadoLogisticoEntity = new DadoLogisticoEntity;
 
-        $dadoLogisticoEntity->setEmbalagem($embalagemEntity)
+            $embalagemEntity = $em->getReference('wms:Produto\Embalagem', $idEmbalagem);
+
+            if (!$embalagemEntity)
+                throw new \Exception('Id de embalagem inválido');
+
+            $dadoLogisticoEntity->setEmbalagem($embalagemEntity)
                 ->setLargura($largura)
                 ->setProfundidade($profundidade)
                 ->setCubagem($cubagem)
                 ->setPeso($peso)
                 ->setAltura($altura);
 
-        if(!empty($idNormaPaletizacao)) {
-            $normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
-            $dadoLogisticoEntity->setNormaPaletizacao($normaPaletizacaoEntity);
+            if(!empty($idNormaPaletizacao)) {
+                $normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $idNormaPaletizacao);
+                $dadoLogisticoEntity->setNormaPaletizacao($normaPaletizacaoEntity);
+            }
+
+            $em->persist($dadoLogisticoEntity);
+            $em->flush($dadoLogisticoEntity);
+            return $dadoLogisticoEntity;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage() . ' - ' . $e->getTraceAsString());
         }
-        
-        $em->persist($dadoLogisticoEntity);
-        $em->flush($dadoLogisticoEntity);
-        return $dadoLogisticoEntity;
     }
 
     public function verificaDadoLogistico($itemDadoLogistico){
