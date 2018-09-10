@@ -191,7 +191,27 @@ class ProxyFactory
 
         $tmpFileName = $fileName . '.' . uniqid("", true);
         file_put_contents($tmpFileName, $file);
-        rename($tmpFileName, $fileName);
+        try {
+            rename($tmpFileName, $fileName);
+        } catch (\Exception $e) {
+            $dthAtual = date('Y-m-d H-i-s');
+            $dtAtual = date('Y-m-d');
+
+            $diretorio = APPLICATION_PATH . '/../data/log/' . $dtAtual;
+
+            if (!is_dir($diretorio)) {
+                mkdir($diretorio, 777);
+            }
+
+            $nomeArquivo = "Proxys_Nao_Encontradas.txt";
+            $nomeArquivo = $diretorio."/".$nomeArquivo;
+
+            $texto = "$dthAtual - Nome do arquivo proxy: '$proxyClassName'.\n";
+
+            $file = fopen($nomeArquivo, "a");
+            fwrite($file, $texto);
+            fclose($file);
+        }
     }
 
     /**
