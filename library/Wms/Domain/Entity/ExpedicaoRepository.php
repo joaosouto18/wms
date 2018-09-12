@@ -210,7 +210,8 @@ class ExpedicaoRepository extends EntityRepository {
                  * ?6 - Quantidade Atendida (Em função da embalagem vendida)
                  * ?7 - Fator da Embalagem de Venda
                  */
-                if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PRODUTO) {
+                $idTipoAcao = $acaoEn->getTipoAcao()->getId();
+                if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PRODUTO) {
                     $cargasEn = $expedicaoEn->getCarga();
                     foreach ($cargasEn as $cargaEn) {
                         $pedidosEn = $pedidoRepo->findBy(array('codCarga' => $cargaEn->getId()));
@@ -241,7 +242,7 @@ class ExpedicaoRepository extends EntityRepository {
                  *
                  * ?1 - Código das Cargas presentes na Expedição
                  */
-                if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGAS) {
+                else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGAS) {
 
                     if (!is_null($cargas) && is_array($cargas)) {
                         $options[] = implode(',', $cargas);
@@ -260,7 +261,7 @@ class ExpedicaoRepository extends EntityRepository {
                  *
                  * ?1 - Código da Carga
                  */
-                if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGA) {
+                else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGA) {
                     foreach ($cargasEn as $cargaEn) {
                         $options = array();
                         $options[] = $cargaEn->getCodCargaExterno();
@@ -281,7 +282,7 @@ class ExpedicaoRepository extends EntityRepository {
                  * ?3 - Tipo de Pedido
                  *
                  */
-                if ($acaoEn->getTipoAcao()->getId() == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PEDIDO) {
+                else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PEDIDO) {
                     foreach ($cargasEn as $cargaEn) {
                         $pedidos = $cargaEn->getPedido();
                         foreach ($pedidos as $pedidoEn) {
