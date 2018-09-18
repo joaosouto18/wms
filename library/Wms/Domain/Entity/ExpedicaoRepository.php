@@ -3988,17 +3988,18 @@ class ExpedicaoRepository extends EntityRepository {
 
             if (!empty($entidadeMapaProduto)) {
                 /** @var Expedicao\MapaSeparacaoProduto $itemMapa */
+                $qtd = $qtdCortar;
                 foreach ($entidadeMapaProduto as $itemMapa) {
                     $qtdCortadaMapa = $itemMapa->getQtdCortado();
                     $qtdSeparar = Math::multiplicar($itemMapa->getQtdEmbalagem(), $itemMapa->getQtdSeparar());
                     if (Math::compare($qtdCortadaMapa, $qtdSeparar, '<')) {
                         $qtdDisponivelDeCorte = Math::subtrair($qtdSeparar, $qtdCortadaMapa);
-                        if (Math::compare($qtdDisponivelDeCorte, $qtdCortar, '>=')) {
-                            $itemMapa->setQtdCortado(Math::adicionar($qtdCortar, $qtdCortadaMapa));
-                            $qtdCortar = 0;
+                        if (Math::compare($qtdDisponivelDeCorte, $qtd, '>=')) {
+                            $itemMapa->setQtdCortado(Math::adicionar($qtd, $qtdCortadaMapa));
+                            $qtd = 0;
                         } else {
                             $itemMapa->setQtdCortado($qtdSeparar);
-                            $qtdCortar = Math::subtrair($qtdCortar, $qtdSeparar);
+                            $qtd = Math::subtrair($qtd, $qtdSeparar);
                         }
                         $result = Math::subtrair($qtdSeparar, $itemMapa->getQtdCortado());
                         if (empty($result)) {
@@ -4009,7 +4010,7 @@ class ExpedicaoRepository extends EntityRepository {
                         }
                         $this->getEntityManager()->persist($itemMapa);
                     }
-                    if (empty($qtdCortar)) {
+                    if (empty($qtd)) {
                         break;
                     }
                 }
