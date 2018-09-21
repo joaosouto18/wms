@@ -3857,14 +3857,13 @@ class ExpedicaoRepository extends EntityRepository {
         $arrItensACortar = [];
 
         foreach ($itensSemEstoque as $item) {
-            $codGrade = $item['CODIGO'].$strConcat.$item['GRADE'];
+            $codGrade = $item['CODIGO'] . $strConcat . $item['GRADE'];
             if (!isset($arrItensACortar[$codGrade]))
                 $arrItensACortar[$codGrade] = [
                     'somatorio' => $item['QTD_SEPARAR_TOTAL'],
                     'qtdCortar' => $item['SALDO_FINAL'] * -1
                 ];
         }
-
 
         foreach ($arrItensACortar as $codGrade => $dados) {
 
@@ -3877,18 +3876,24 @@ class ExpedicaoRepository extends EntityRepository {
                 inner join pedido p on p.cod_carga = c.cod_carga
                 inner join pedido_produto pp on pp.cod_pedido = p.cod_pedido
                 where e.cod_expedicao in ($expedicoes) and (pp.cod_produto = '$codProduto' and dsc_grade = '$grade')
-                group by p.cod_pedido, pp.cod_produto, pp.dsc_grade";
+                group by p.cod_pedido, pp.cod_produto, pp.dsc_grade
+                order by sum(pp.quantidade)";
 
             $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
             $resto = 0;
             foreach ($result as $pedProd) {
+                //Identifica a proporção à ser cortada de cada pedido que tem o item.
                 $proporcao = Math::multiplicar(Math::dividir($pedProd['QUANTIDADE'], $dados['somatorio']), ($dados['qtdCortar']));
                 if ((end($result) == $pedProd)) {
+                    //Soma à proporção do maior pedido, o somatório de frações dos outros pedidos
                     $qtdCortar =  round(Math::adicionar($proporcao, $resto));
                 } else {
+                    //Recupera a fração da proporção
                     $fracao = Math::subtrair($proporcao, (int)$proporcao);
+                    //Para cortar apenas o valor inteiro dos pedidos menores
                     $qtdCortar =  Math::subtrair($proporcao, $fracao);
+                    //Incrementa as frações para somar ao ultimo pedido
                     $resto = Math::adicionar($fracao, $resto);
                 }
                 $arrResult[$pedProd['COD_PEDIDO']][$pedProd['COD_PRODUTO']][$pedProd['DSC_GRADE']] = $qtdCortar;
