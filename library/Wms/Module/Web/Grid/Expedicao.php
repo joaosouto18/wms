@@ -168,7 +168,7 @@ class Expedicao extends Grid
                 'label' => 'Cortar Pedido',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'corte',
-                'actionName' => 'corte-antecipado-ajax',
+                'actionName' => 'corte-produto-ajax',
                 'pkIndex' => 'id',
                 'params' => array('origin' => 'expedicao'),
                 'cssClass' => 'dialogAjax',

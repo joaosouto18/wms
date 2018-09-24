@@ -1,0 +1,89 @@
+<?php
+if ($this->permiteCortes == 'S') {
+    echo $this->form;
+} else {
+    echo "Corte Desabilitado no WMS";
+    echo "<script>alert('Os cortes foram desabilitados no WMS'); </script>";
+}
+
+?>
+<div id="motivoCorte">
+    <?php
+    if ($this->permiteCortes == 'S') {
+        echo $this->formMotivo;
+    }
+    ?>
+</div>
+
+<div id="gridCorte">
+    <?php
+    if ($this->permiteCortes == 'S') {
+        echo $this->grid;
+    }
+    ?>
+</div>
+
+<input type="hidden" name="id" id="id" value="<?php echo $this->id ?>">
+
+<script>
+    $('#total').click(function () {
+        $.ajax({
+            url:  URL_MODULO + '/corte/corte-produto-ajax/',
+            type: 'post',
+            data: {
+                id: $('#id').val(),
+                codProduto: $('#codProduto').val(),
+                grade: $('#grade').val(),
+                COD_MAPA_SEPARACAO: $('#COD_MAPA_SEPARACAO').val(),
+                acao: 'buscar'
+            },
+            success: function (data) {
+                if (data.error) {
+                    $("#gridCorte").html("");
+                    $("#motivoCorte").html("");
+                    alert(data.error);
+                } else {
+                    $("#gridCorte").html(
+                        "<form style='margin-bottom: -15px'> " +
+                        "   <div align='right' class='gMassAction'>\n" +
+                        "       <input style='margin: 5px 15px 5px 10px; width: 130px;' type='submit' name='total' id='total' value='Corte Total' class='btn'>" +
+                        "   </div>\n" +
+                        "</form>"
+                        + data.resultGrid);
+                    $("#motivoCorte").html(data.resultForm);
+                }
+            }
+        });
+    });
+
+
+    $('#btnSubmit').click(function () {
+        $.ajax({
+            url:  URL_MODULO + '/corte/corte-produto-ajax/',
+            type: 'post',
+            data: {
+                id: $('#id').val(),
+                codProduto: $('#codProduto').val(),
+                grade: $('#grade').val(),
+                COD_MAPA_SEPARACAO: $('#COD_MAPA_SEPARACAO').val(),
+                acao: 'buscar'
+            },
+            success: function (data) {
+                if (data.error) {
+                    $("#gridCorte").html("");
+                    $("#motivoCorte").html("");
+                    alert(data.error);
+                } else {
+                    $("#gridCorte").html(
+                        "<form style='margin-bottom: -15px'> " +
+                        "   <div align='right' class='gMassAction'>\n" +
+                        "       <input style='margin: 5px 15px 5px 10px; width: 130px;' type='submit' name='total' id='total' value='Corte Total' class='btn'>" +
+                        "   </div>\n" +
+                        "</form>"
+                        + data.resultGrid);
+                    $("#motivoCorte").html(data.resultForm);
+                }
+            }
+        });
+    });
+</script>

@@ -158,6 +158,61 @@ class Expedicao_CorteController extends Action {
 
     }
 
+    public function corteProdutoAjaxAction() {
+        $this->view->id = $id = $this->_getParam('id');
+        $grade = $this->_getParam('grade');
+        $codProduto = $this->_getParam('codProduto');
+        $actionAjax = $this->_getParam('acao');
+
+        try {
+            $permiteCortes = $this->getSystemParameterValue('PERMITE_REALIZAR_CORTES_WMS');
+            $this->view->permiteCortes = $permiteCortes;
+
+            $corteEmbalagemVenda = $this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO');
+
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+            $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+
+            if (($codProduto != null) && ($grade != null)) {
+                $pedidos = $pedidoRepo->getPedidoByExpedicao($id, $codProduto, $grade);
+
+                $grid = new \Wms\Module\Web\Grid\Expedicao\CorteProduto();
+                $grid = $grid->init($pedidos, $id, $codProduto, $grade, $corteEmbalagemVenda);
+                $this->view->grid = $grid;
+
+                $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id'=> $codProduto, 'grade' => $grade));
+
+                if ($produtoEn == null) {
+                    throw new \Exception("Produto não encontrado");
+                }
+
+                $formMotivo = new \Wms\Module\Expedicao\Form\CorteProduto();
+                $formMotivo->init();
+                $formMotivo->setProduto($produtoEn);
+                $this->view->formMotivo = $formMotivo;
+
+            }
+
+            $form = new \Wms\Module\Web\Form\CortePedido();
+            $this->view->form = $form;
+
+        } catch (\Exception $e) {
+            if (!empty($actionAjax)) {
+                $this->_helper->json(array(
+                    'error' => $e->getMessage()
+                ));
+            }
+            return;
+        }
+
+        if (!empty($actionAjax)) {
+            $this->_helper->json(array(
+                'resultGrid' => $grid->render(),
+                'resultForm' => $formMotivo->render()
+            ));
+        }
+    }
+
     public function corteAntecipadoAjaxAction() {
 
         $this->view->id = $id = $this->_getParam('id');
