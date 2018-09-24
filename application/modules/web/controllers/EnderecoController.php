@@ -83,6 +83,9 @@ class Web_EnderecoController extends Crud
                 if (!empty($status))
                     $source->andWhere("e.status = :status")
                         ->setParameter('status', $status);
+                if (!empty($ativo))
+                    $source->andWhere("e.ativo = :ativo")
+                        ->setParameter('ativo', $ativo);
                 if (!empty($idCaracteristica))
                     $source->andWhere("e.idCaracteristica = :caracteristica")
                         ->setParameter("caracteristica", $idCaracteristica);
