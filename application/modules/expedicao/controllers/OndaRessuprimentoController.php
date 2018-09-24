@@ -284,6 +284,9 @@ class Expedicao_OndaRessuprimentoController extends Action
         $idOndaOs = $this->_getParam("ID");
         $params = $this->_getAllParams();
 
+        ini_set('max_execution_time', -1);
+        ini_set('memory_limit', '-1');
+
         $ondaOsEn = $this->getEntityManager()->getReference("wms:Ressuprimento\OndaRessuprimentoOs", $idOndaOs);
         $reservasOnda = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoqueOnda")->findBy(array('ondaRessuprimentoOs' => $ondaOsEn));
         foreach ($reservasOnda as $reservaOnda) {
