@@ -27,8 +27,6 @@ class EstoqueProprietarioRepository extends EntityRepository
     }
 
     public function buildMovimentacaoEstoque($codProduto, $grade, $qtd, $operacao, $codPessoa, $codOperacao = null, $codOperacaoDetalhe = null, $cnpjGrupoExcluir = array()){
-        $saldo = $this->getSaldoProp($codProduto, $grade, $codPessoa);
-        $saldoFinal = $saldo + $qtd;
 
         /**
          * Verifica se é uma operação credito ou debito do estoque
@@ -36,6 +34,10 @@ class EstoqueProprietarioRepository extends EntityRepository
         if($qtd > 0){
             $this->save($codProduto, $grade, $qtd, $operacao, $saldoFinal, $codPessoa, $codOperacao, $codOperacaoDetalhe);
         }else{
+
+            $saldo = $this->getSaldoProp($codProduto, $grade, $codPessoa);
+            $saldoFinal = $saldo + $qtd;
+
             /**
              * Verifica se esse proprietario tem saldo suficiente para atender o solicitado
              */
