@@ -45,25 +45,25 @@ class EstoqueProprietarioRepository extends EntityRepository
                 $this->save($codProduto, $grade, $qtd, $operacao, $saldoFinal, $codPessoa, $codOperacao, $codOperacaoDetalhe);
             }else{
                 /*
-                 * Dibita o saldo completo do proprietario e parte para o proximo
+                 * Debita o saldo completo do proprietario e parte para o proximo
                  */
-                $this->save($codProduto, $grade, ($saldo * -1), $operacao, 0, $codPessoa, $codOperacao, $codOperacaoDetalhe);
+                if (!empty($saldo)) {
+                    $this->save($codProduto, $grade, ($saldo * -1), $operacao, 0, $codPessoa, $codOperacao, $codOperacaoDetalhe);
+                    $qtd = $qtd + $saldo;
+                }
                 $propExclui[] = $codPessoa;
                 $cnpj = $this->getCnpjProp($codPessoa);
                 /*
                  * Busca o grupo desse proprietario excluindo o proprietario que ja foi debitado
                  */
                 $vetProprietario = $this->getSaldoGrupo($cnpj, $propExclui, $codProduto, $grade);
-                $qtd = $qtd + $saldo;
                 foreach ($vetProprietario as $nextProp){
-                    $qtd = $nextProp['SALDO_FINAL'] + $qtd;
+                    $qtd = $qtd + $nextProp['SALDO_FINAL'];
                     if($qtd < 0){
                         $this->save($codProduto, $grade, ($nextProp['SALDO_FINAL'] * -1), $operacao, 0, $nextProp['COD_PESSOA'], $codOperacao, $codOperacaoDetalhe);
                     }else{
                         $this->save($codProduto, $grade, (($nextProp['SALDO_FINAL'] - $qtd) * -1), $operacao, $qtd, $nextProp['COD_PESSOA'], $codOperacao, $codOperacaoDetalhe);
-                        if($qtd > 0){
-                            break;
-                        }
+                        break;
                     }
                 }
                 $cnpjGrupoExcluir[] = $cnpj;
@@ -113,8 +113,10 @@ class EstoqueProprietarioRepository extends EntityRepository
                   EP.DSC_GRADE = '$grade' AND
                   EP.SALDO_FINAL > 0 AND
                   EP.COD_ESTOQUE_PROPRIETARIO IN (
-                      SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO 
-                      WHERE COD_PESSOA NOT IN (".implode(',',$propExclui).") 
+                      SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO
+                      WHERE COD_PESSOA NOT IN (".implode(',',$propExclui).") AND
+                            COD_PRODUTO = $codProduto AND
+                            DSC_GRADE = '$grade'
                       GROUP BY COD_PESSOA)
                   GROUP BY 
                     EP.COD_PESSOA, EP.SALDO_FINAL 
