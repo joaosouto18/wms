@@ -1325,12 +1325,8 @@ class ExpedicaoRepository extends EntityRepository {
                         INNER JOIN pp.produto p
                          LEFT JOIN p.linhaSeparacao ls
                         INNER JOIN pp.pedido ped
+                        INNER JOIN wms:Expedicao\VProdutoEndereco e WITH p.id = e.codProduto AND p.grade = e.grade
                         INNER JOIN ped.carga c
-                        INNER JOIN c.expedicao ex
-                        INNER JOIN wms:Ressuprimento\ReservaEstoqueExpedicao ree WITH ree.expedicao = ex.id AND ree.pedido = ped.id
-                        INNER JOIN wms:Ressuprimento\ReservaEstoqueProduto rep WITH rep.reservaEstoque = ree.reservaEstoque AND rep.codProduto = pp.codProduto AND rep.grade = pp.grade
-                        INNER JOIN ree.reservaEstoque re
-                        INNER JOIN wms:Deposito\Endereco e WITH e.id = re.endereco
                         WHERE ped.indEtiquetaMapaGerado != 'S'
                           $whereCargas
                           AND ped.centralEntrega = '$central'
@@ -1366,64 +1362,6 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         $result = $this->getEntityManager()->createQuery($query . $order)->getResult();
-
-//        $whereCargas = null;
-//        if (!is_null($cargas) && is_array($cargas)) {
-//            $cargas = "'".implode("','", $cargas)."'";
-//            $whereCargas = " AND C.COD_CARGA_EXTERNO in ($cargas) ";
-//        } else if (!is_null($cargas)) {
-//            $whereCargas = " AND C.COD_CARGA_EXTERNO = '$cargas' ";
-//        }
-//
-//        $query = "SELECT PP.*
-//                    FROM PEDIDO_PRODUTO PP
-//                    INNER JOIN PRODUTO P ON PP.COD_PRODUTO = P.COD_PRODUTO AND PP.DSC_GRADE = P.DSC_GRADE
-//                    LEFT JOIN LINHA_SEPARACAO LS ON p.cod_linha_separacao = LS.COD_LINHA_SEPARACAO
-//                    INNER JOIN PEDIDO PED ON PED.COD_PEDIDO = PP.COD_PEDIDO
-//                    INNER JOIN CARGA C ON PED.COD_CARGA = C.COD_CARGA
-//                    INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-//                    LEFT JOIN (
-//                        SELECT MAX(RE.COD_DEPOSITO_ENDERECO) COD_DEPOSITO_ENDERECO, REE.COD_PEDIDO, REE.COD_EXPEDICAO, REP.COD_PRODUTO, REP.DSC_GRADE
-//                        FROM RESERVA_ESTOQUE_EXPEDICAO REE
-//                        INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
-//                        INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
-//                        GROUP BY REE.COD_PEDIDO, REE.COD_EXPEDICAO, REP.COD_PRODUTO, REP.DSC_GRADE
-//                        ) RE ON RE.COD_PEDIDO = PED.COD_PEDIDO AND RE.COD_EXPEDICAO = E.COD_EXPEDICAO AND RE.COD_PRODUTO = P.COD_PRODUTO AND RE.DSC_GRADE = P.DSC_GRADE
-//                    INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
-//                    WHERE PED.IND_ETIQUETA_MAPA_GERADO <> 'S'
-//                    $whereCargas
-//                    AND PED.CENTRAL_ENTREGA = '$central'
-//                    AND PED.DTH_CANCELAMENTO IS NULL";
-//
-//        switch ($sequencia) {
-//            case 3:
-//                $order = " ORDER BY C.DSC_PLACA_EXPEDICAO,
-//                                    LS.DSC_LINHA_SEPARACAO,
-//                                    DE.NUM_RUA,
-//                                    DE.NUM_PREDIO,
-//                                    DE.NUM_NIVEL,
-//                                    DE.NUM_APARTAMENTO,
-//                                    PED.COD_PEDIDO,
-//                                    P.DSC_PRODUTO";
-//                break;
-//            case 2:
-//                $order = " ORDER BY DE.NUM_NIVEL,
-//                                    LS.DSC_LINHA_SEPARACAO,
-//                                    DE.NUM_RUA,
-//                                    DE.NUM_PREDIO,
-//                                    DE.NUM_APARTAMENTO,
-//                                    P.DSC_PRODUTO";
-//                break;
-//            default;
-//                $order = " ORDER BY C.DSC_PLACA_EXPEDICAO,
-//                                    DE.NUM_RUA,
-//                                    DE.NUM_PREDIO,
-//                                    DE.NUM_NIVEL,
-//                                    DE.NUM_APARTAMENTO,
-//                                    P.COD_PRODUTO";
-//        }
-//
-//        $result = $this->getEntityManager()->getConnection()->query($query . $order)->fetchAll(\PDO::FETCH_ASSOC);
 
         return array_filter($result, function($item) {
             return ($item->getQuantidade() > $item->getQtdCortada());
@@ -1744,6 +1682,8 @@ class ExpedicaoRepository extends EntityRepository {
                     throw new \Exception($result);
                 }
             }
+
+            $this->validaExpedicaoEmFinalizacao($idExpedicao);
 
             $transacao = true;
             $this->getEntityManager()->beginTransaction();
@@ -2172,7 +2112,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
-            $Query = $Query . " AND C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'];
+            $Query = $Query . " AND C.COD_CARGA_EXTERNO LIKE '%" . $parametros['codCargaExterno'] . "%' ";
             unset($parametros['dataInicial1']);
             unset($parametros['dataInicial2']);
             unset($parametros['dataFinal1']);
@@ -2488,12 +2428,12 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
-            $where = " AND CA.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
-            $whereSubQuery = " C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
+            $where = " AND CA.COD_CARGA_EXTERNO LIKE '%" . $parametros['codCargaExterno'] . "%'";
+            $whereSubQuery = " C.COD_CARGA_EXTERNO LIKE '%" . $parametros['codCargaExterno'] . "%'";
             $and = " and ";
             $andSub = " and ";
-            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "))";
-            $WhereCarga .= " AND  (COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . ")";
+            $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO LIKE '%" . $parametros['codCargaExterno'] . "%'))";
+            $WhereCarga .= " AND  (COD_CARGA_EXTERNO LIKE '%" . $parametros['codCargaExterno'] . "%')";
         }
 
         $JoinExpedicao = "";
@@ -4246,17 +4186,18 @@ class ExpedicaoRepository extends EntityRepository {
 
             if (!empty($entidadeMapaProduto)) {
                 /** @var Expedicao\MapaSeparacaoProduto $itemMapa */
+                $qtd = $qtdCortar;
                 foreach ($entidadeMapaProduto as $itemMapa) {
                     $qtdCortadaMapa = $itemMapa->getQtdCortado();
                     $qtdSeparar = Math::multiplicar($itemMapa->getQtdEmbalagem(), $itemMapa->getQtdSeparar());
                     if (Math::compare($qtdCortadaMapa, $qtdSeparar, '<')) {
                         $qtdDisponivelDeCorte = Math::subtrair($qtdSeparar, $qtdCortadaMapa);
-                        if (Math::compare($qtdDisponivelDeCorte, $qtdCortar, '>=')) {
-                            $itemMapa->setQtdCortado(Math::adicionar($qtdCortar, $qtdCortadaMapa));
-                            $qtdCortar = 0;
+                        if (Math::compare($qtdDisponivelDeCorte, $qtd, '>=')) {
+                            $itemMapa->setQtdCortado(Math::adicionar($qtd, $qtdCortadaMapa));
+                            $qtd = 0;
                         } else {
                             $itemMapa->setQtdCortado($qtdSeparar);
-                            $qtdCortar = Math::subtrair($qtdCortar, $qtdSeparar);
+                            $qtd = Math::subtrair($qtd, $qtdSeparar);
                         }
                         $result = Math::subtrair($qtdSeparar, $itemMapa->getQtdCortado());
                         if (empty($result)) {
@@ -4267,7 +4208,7 @@ class ExpedicaoRepository extends EntityRepository {
                         }
                         $this->getEntityManager()->persist($itemMapa);
                     }
-                    if (empty($qtdCortar)) {
+                    if (empty($qtd)) {
                         break;
                     }
                 }
@@ -4743,5 +4684,57 @@ class ExpedicaoRepository extends EntityRepository {
         return $result;
     }
 
+    public function validaExpedicaoEmFinalizacao ($idExpedicao) {
+
+        $idStatusEmFinalizacao = Expedicao::STATUS_EM_FINALIZACAO;
+
+        $sql = "
+        SELECT DISTINCT
+               REP.COD_PRODUTO, 
+               REP.DSC_GRADE, 
+               P.DSC_PRODUTO,
+               DE.DSC_DEPOSITO_ENDERECO,
+               R.EXPEDICAO
+          FROM RESERVA_ESTOQUE_EXPEDICAO REE
+          LEFT JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+          LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+          LEFT JOIN PRODUTO P ON P.COD_PRODUTO = REP.COD_PRODUTO AND P.DSC_GRADE = REP.DSC_GRADE
+          LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
+         INNER JOIN (SELECT REP.COD_PRODUTO, 
+                            REP.DSC_GRADE, 
+                            RE.COD_DEPOSITO_ENDERECO,
+                            LISTAGG(E.COD_EXPEDICAO,',') WITHIN GROUP (ORDER BY E.COD_EXPEDICAO) EXPEDICAO
+                       FROM EXPEDICAO E
+                       LEFT JOIN RESERVA_ESTOQUE_EXPEDICAO REE ON REE.COD_EXPEDICAO = E.COD_EXPEDICAO
+                       LEFT JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
+                       LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                      WHERE E.COD_STATUS = $idStatusEmFinalizacao
+                        AND RE.IND_ATENDIDA = 'N'
+                        AND E.COD_EXPEDICAO <> $idExpedicao
+                      GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO) R
+            ON R.COD_PRODUTO = REP.COD_PRODUTO
+           AND R.DSC_GRADE = REP.DSC_GRADE
+           AND R.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
+         WHERE RE.IND_ATENDIDA = 'N'
+           AND REE.COD_EXPEDICAO = $idExpedicao";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($result) >0) {
+            $endereco = $result[0]['DSC_DEPOSITO_ENDERECO'];
+            $expedicao = $result[0]['EXPEDICAO'];
+            $dscProduto = $result[0]['DSC_PRODUTO'];
+            $codProduto = $result[0]['COD_PRODUTO'];
+            $dscGrade = $result[0]['DSC_GRADE'];
+
+            $msg = "O Endereço $endereco com o produto $codProduto/$dscGrade - $dscProduto, está em uso por um processo de finalização das expedições $expedicao. Aguarde alguns seguntos e tente novamente";
+
+            throw new \Exception($msg);
+        }
+
+        return true;
+
+
+    }
 
 }

@@ -159,6 +159,7 @@ class Mobile_InventarioController extends Action
                 $params = $this->_getAllParams();
                 $paramsSystem['validaEstoqueAtual'] = $this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL');
                 $paramsSystem['regraContagemParam'] = $this->getSystemParameterValue('REGRA_CONTAGEM');
+                $paramsSystem['controlaValidade'] = $this->getSystemParameterValue('CONTROLE_VALIDADE');
 
                 $this->checkErrors($inventarioService->checaSeInventariado($params));
                 $inventarioService->contagemEndereco($params);
@@ -258,6 +259,7 @@ class Mobile_InventarioController extends Action
         $params = $this->_getAllParams();
         $paramsSystem['validaEstoqueAtual'] = $this->getSystemParameterValue('VALIDA_ESTOQUE_ATUAL');
         $paramsSystem['regraContagemParam'] = $this->getSystemParameterValue('REGRA_CONTAGEM');
+        $paramsSystem['controlaValidade'] = $this->getSystemParameterValue('CONTROLE_VALIDADE');
         /** @var \Wms\Service\Mobile\Inventario $inventarioService */
         $inventarioService = $this->_service;
 
