@@ -66,7 +66,8 @@ class EstoqueProprietarioRepository extends EntityRepository
                         break;
                     }
                 }
-                $cnpjGrupoExcluir[] = $cnpj;
+                if (!in_array($cnpj, $cnpjGrupoExcluir))
+                    $cnpjGrupoExcluir[] = $cnpj;
                 /*
                  * Caso o grupo nao tenha atendido por completo o solicitado
                  * passa para o proximo grupo seguindo a ordem de prioridade
@@ -90,10 +91,9 @@ class EstoqueProprietarioRepository extends EntityRepository
 
     public function getProprietarioProximoGrupo($cnpj){
         foreach ($cnpj as $value){
-            $empresa = $this->findEmpresaProprietario($value);
-            $vetEmpresas[] = $empresa['COD_EMPRESA'];
+            $vetWhere[] = "IDENTIFICACAO NOT LIKE '$value%'";
         }
-        $sql = "SELECT IDENTIFICACAO FROM EMPRESA WHERE COD_EMPRESA NOT IN (".implode(',', $vetEmpresas).") ORDER BY PRIORIDADE_ESTOQUE";
+        $sql = "SELECT IDENTIFICACAO FROM EMPRESA WHERE ".implode(' AND ', $vetWhere)." ORDER BY PRIORIDADE_ESTOQUE";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
         return substr($result['IDENTIFICACAO'], 0, 8);
 
