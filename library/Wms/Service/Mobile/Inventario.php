@@ -462,7 +462,7 @@ class Inventario {
         return $return[0]['DTH'];
     }
 
-    public function validaEstoqueAtual($params, $parametroSistema) {
+    public function validaEstoqueAtual($params, $parametroSistema, $controlaValidade) {
         if ($parametroSistema == 'S') {
 
             if (empty($params['contagemEndId'])) {
@@ -495,8 +495,7 @@ class Inventario {
                 $validadeEstoque = $estoqueEn->getValidade();
                 //Houve divergência?
                 $quantidadeEstoque = $estoqueEn->getQtd();
-                if ($quantidadeEstoque != $quantidadeTotal || ($this->compareProduto($estoqueEn, $contagemEndEn) == false) ||
-                    ($validade != $validadeEstoque)) {
+                if ($quantidadeEstoque != $quantidadeTotal || ($this->compareProduto($estoqueEn, $contagemEndEn) == false) || ($controlaValidade == 'S' && ($validade != $validadeEstoque))) {
                     $inventarioEndEn->setInventariado(null);
                     $inventarioEndEn->setDivergencia(1);
                     $contagemEndEn->setQtdDivergencia($quantidadeContada - $quantidadeEstoque);
@@ -1020,6 +1019,7 @@ class Inventario {
 
         $validaEstoqueAtual = $paramsSystem['validaEstoqueAtual'];
         $regraContagemParam = $paramsSystem['regraContagemParam'];
+        $controlaValidade = $paramsSystem['controlaValidade'];
 
         if ($this->getSystemParameterValue('CONTAR_TODOS_PRODUTOS') == 'S') {
             $teveAlteracao = $this->acertaContagensProdutosNaoConferidos($contagemEndEntities, $validaEstoqueAtual);
@@ -1037,7 +1037,7 @@ class Inventario {
             $params['codProdutoEmbalagem'] = $contagemEndEn->getCodProdutoEmbalagem();
             $params['codProdutoVolume'] = $contagemEndEn->getCodProdutoVolume();
             $params['validade'] = $contagemEndEn->getValidade();
-            $estoqueValidado = $this->validaEstoqueAtual($params, $validaEstoqueAtual);
+            $estoqueValidado = $this->validaEstoqueAtual($params, $validaEstoqueAtual, $controlaValidade);
 
             $regraContagem = $this->regraContagem($params, $regraContagemParam, $estoqueValidado);
             $contagemEndComDivergencia = $this->contagemEndComDivergencia($params);
