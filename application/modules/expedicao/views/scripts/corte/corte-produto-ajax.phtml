@@ -33,6 +33,39 @@ if ($this->permiteCortes == 'S') {
 <input type="hidden" name="id" id="id" value="<?php echo $this->id ?>">
 
 <script>
+
+    function confirmaCorte() {
+        var rows = document.getElementsByClassName("gTResultSet");
+        for(var i = 0 ; i < rows.length ; i++) {
+            var columns = rows[i].getElementsByTagName('td');
+            var codPedido = columns[0].innerHTML;
+            var idEmbalagem = columns[5].children.item(0).value;
+            var qtdCortar = columns[6].children.item(0).value;
+
+            $.ajax({
+                url:  URL_MODULO + '/corte/confirma-corte-produto-ajax/',
+                type: 'post',
+                data: {
+                    codProduto: $('#codProduto').val(),
+                    grade: $('#grade').val(),
+                    pedido: codPedido,
+                    idEmbalagem: idEmbalagem,
+                    qtdCortar: qtdCortar,
+
+                },
+                success: function (data) {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        $("#motivoCorte").html(data.resultForm);
+                    }
+                }
+            });
+        }
+
+        event.preventDefault();
+    }
+
     function corteTotal() {
 
         var rows = document.getElementsByClassName("gTResultSet");
@@ -41,8 +74,6 @@ if ($this->permiteCortes == 'S') {
 
         for(var i = 0 ; i < rows.length ; i++) {
             var columns = rows[i].getElementsByTagName('td');
-
-            //var codPedido = columns[0].innerHTML;
 
             var fatorCorte     = rowsCorte[i].getElementsByTagName('td').item(9).innerHTML;
             var qtdPedidoUnit  = rowsCorte[i].getElementsByTagName('td').item(10).innerHTML;

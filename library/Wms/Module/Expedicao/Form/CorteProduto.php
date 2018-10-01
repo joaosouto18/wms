@@ -26,6 +26,7 @@ class CorteProduto extends Form
             ))
             ->addElement('submit', 'cortar', array(
                 'label' => 'Cortar',
+                'onClick' => 'confirmaCorte()',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
