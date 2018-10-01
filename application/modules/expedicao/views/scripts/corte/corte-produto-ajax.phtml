@@ -41,14 +41,15 @@ if ($this->permiteCortes == 'S') {
 
         var table = document.getElementsByClassName("expedicao-corte-produtos-grid");
         var rows = table[0].getElementsByClassName("gTResultSet");
+        var rowsCorte = document.getElementsByClassName("grid-corte-resumo");
 
         var cortes = [];
 
         for(var i = 0 ; i < rows.length ; i++) {
             var columns = rows[i].getElementsByTagName('td');
-            var codPedido = columns[0].innerHTML;
+            var codPedido   = rowsCorte[i].getElementsByTagName('td').item(0).innerHTML;
             var idEmbalagem = columns[5].children.item(0).value;
-            var qtdCortar = columns[6].children.item(0).value;
+            var qtdCortar   = columns[6].children.item(0).value;
 
             if (qtdCortar >0) {
                 var corte = [];
@@ -102,7 +103,7 @@ if ($this->permiteCortes == 'S') {
 
         var table = document.getElementsByClassName("expedicao-corte-produtos-grid");
         var rows = table[0].getElementsByClassName("gTResultSet");
-        var rowsCorte = document.getElementsByClassName("teste");
+        var rowsCorte = document.getElementsByClassName("grid-corte-resumo");
 
         for(var i = 0 ; i < rows.length ; i++) {
             var columns = rows[i].getElementsByTagName('td');

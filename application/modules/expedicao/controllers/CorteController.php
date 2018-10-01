@@ -164,6 +164,28 @@ class Expedicao_CorteController extends Action {
         $idMotivo = $this->_getParam('motivo');
         $cortes = $this->_getParam('cortes');
 
+        try {
+
+            if (count($cortes) == 0) {
+                throw new \Exception("Nenhum pedido informado para cortar");
+            }
+
+            foreach ($cortes as $corte) {
+                $codPedido = $corte[0];
+                $idEmbalagem = $corte[1];
+                $quantidadeCortada = $corte[2];
+            }
+
+        } catch (\Exception $e) {
+            $this->_helper->json(array(
+                'error' => $e->getMessage()
+            ));
+            return;
+        }
+
+        $this->_helper->json(array(
+            'result' => true,
+        ));
 
     }
 
@@ -233,7 +255,7 @@ class Expedicao_CorteController extends Action {
             foreach ($row as $cell) {
                 $cells[] = "<td>{$cell}</td>";
             }
-            $rows[] = "<tr class='teste' style='display:none'>" . implode('', $cells) . "</tr>";
+            $rows[] = "<tr class='grid-corte-resumo' style='display:none' >" . implode('', $cells) . "</tr>";
         }
         return "<table class='hci-table'>" . implode('', $rows) . "</table>";
     }
