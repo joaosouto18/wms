@@ -2934,7 +2934,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         if (!empty($parametros['pedido'])) {
             $source
                 ->setParameter('codPedido', $parametros['pedido'])
-                ->andWhere('es.pedido = :codPedido');
+                ->andWhere('p.codExterno = :codPedido');
         }
 
         if (!empty($parametros['situacao'])) {
