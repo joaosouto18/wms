@@ -37,7 +37,7 @@ class CorteProduto extends Grid
         $this->showPager = false;
         $this->showExport = false;
         $this->setSource(new \Core\Grid\Source\ArraySource($pedidos))
-                ->setId('expedicao-mapas-grid')
+                ->setId('expedicao-corte-grid')
                 ->setAttrib('class', 'grid-expedicao-pendencias')
                 ->addColumn(array(
                     'label' => 'Pedido',

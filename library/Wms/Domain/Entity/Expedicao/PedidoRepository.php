@@ -705,7 +705,7 @@ class PedidoRepository extends EntityRepository
             ->innerJoin('p.carga', 'c')
             ->innerJoin('c.expedicao', 'e')
             ->where("e.id = $idExpedicao  and pp.quantidade > NVL(pp.qtdCortada,0)")
-            ->orderBy('pe.nome', 'asc');
+            ->orderBy('p.codExterno', 'asc');
 
         if (isset($codProduto) && !empty($codProduto)) {
             $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
@@ -725,6 +725,9 @@ class PedidoRepository extends EntityRepository
                 }
 
                 foreach ($result as $key => $value) {
+                    $result[$key]['quantidadeUnitaria'] = $value['quantidade'];
+                    $result[$key]['qtdCortadaUnitaria'] = $value['qtdCortada'];
+                    $result[$key]['fatorEmbalagemVenda'] = $embalagemEn->getQuantidade();
 
                     $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $grade, $value['quantidade']);
                     if(is_array($vetEmbalagens)) {
@@ -751,6 +754,9 @@ class PedidoRepository extends EntityRepository
                 }
             } else {
                 foreach ($result as $key => $value) {
+                    $result[$key]['quantidadeUnitaria'] = $value['quantidade'];
+                    $result[$key]['qtdCortadaUnitaria'] = $value['qtdCortada'];
+
                     $fatorEmbalagem = $result[$key]['fatorEmbalagemVenda'];
                     $embalagemEn = $embalagemRepo->findOneBy(array('codProduto'=> $codProduto,'grade'=> $grade, 'dataInativacao' => null, 'quantidade'=>$fatorEmbalagem));
 

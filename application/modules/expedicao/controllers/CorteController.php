@@ -178,6 +178,8 @@ class Expedicao_CorteController extends Action {
 
                 $grid = new \Wms\Module\Web\Grid\Expedicao\CorteProduto();
                 $grid = $grid->init($pedidos, $id, $codProduto, $grade, $corteEmbalagemVenda);
+
+                $this->arrCortes = $pedidos;
                 $this->view->grid = $grid;
 
                 $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id'=> $codProduto, 'grade' => $grade));
@@ -208,9 +210,23 @@ class Expedicao_CorteController extends Action {
         if (!empty($actionAjax)) {
             $this->_helper->json(array(
                 'resultGrid' => $grid->render(),
-                'resultForm' => $formMotivo->render()
+                'resultForm' => $formMotivo->render(),
+                'pedidos' => $this->html_table($pedidos)
             ));
         }
+    }
+
+    function html_table($data = array())
+    {
+        $rows = array();
+        foreach ($data as $row) {
+            $cells = array();
+            foreach ($row as $cell) {
+                $cells[] = "<td>{$cell}</td>";
+            }
+            $rows[] = "<tr class='teste' style='display:none'>" . implode('', $cells) . "</tr>";
+        }
+        return "<table class='hci-table'>" . implode('', $rows) . "</table>";
     }
 
     public function corteAntecipadoAjaxAction() {
