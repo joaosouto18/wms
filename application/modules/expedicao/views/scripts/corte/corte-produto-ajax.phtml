@@ -35,42 +35,70 @@ if ($this->permiteCortes == 'S') {
 <script>
 
     function confirmaCorte() {
+        event.preventDefault();
+
         var rows = document.getElementsByClassName("gTResultSet");
+        var cortes = [];
+
         for(var i = 0 ; i < rows.length ; i++) {
             var columns = rows[i].getElementsByTagName('td');
             var codPedido = columns[0].innerHTML;
             var idEmbalagem = columns[5].children.item(0).value;
             var qtdCortar = columns[6].children.item(0).value;
 
-            $.ajax({
-                url:  URL_MODULO + '/corte/confirma-corte-produto-ajax/',
-                type: 'post',
-                data: {
-                    codProduto: $('#codProduto').val(),
-                    grade: $('#grade').val(),
-                    pedido: codPedido,
-                    idEmbalagem: idEmbalagem,
-                    qtdCortar: qtdCortar,
+            if (qtdCortar >0) {
+                var corte = [];
+                corte[0] = codPedido;
+                corte[1] = idEmbalagem;
+                corte[2] = qtdCortar;
 
-                },
-                success: function (data) {
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        $("#motivoCorte").html(data.resultForm);
-                    }
-                }
-            });
+                cortes[cortes.length] = corte;
+            }
         }
 
-        event.preventDefault();
+        if (cortes.length <= 0) {
+            alert("Selecione ao menos um pedido para cortar");
+            return;
+        }
+
+        if ($('#motivo').val() == "") {
+            alert("Selecione um motivo de corte");
+            return;
+        }
+
+        $.ajax({
+            url:  URL_MODULO + '/corte/confirma-corte-produto-ajax/',
+            type: 'post',
+            data: {
+                codProduto: $('#codProduto').val(),
+                grade: $('#grade').val(),
+                motivo: $('#motivo').val(),
+                cortes: cortes
+            },
+            success: function (data) {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert("Produtos cortados com sucesso");
+                    $("#gridCorte").html("");
+                    $("#motivoCorte").html("");
+                    $("#arrCortes").html("");
+                }
+            }
+        });
+
     }
 
     function corteTotal() {
+        event.preventDefault();
+
 
         var rows = document.getElementsByClassName("gTResultSet");
         //var rows = document.getElementsByTagName("tr");
         var rowsCorte = document.getElementsByClassName("teste");
+        alert(rows.length);
+
+        alert(rows[0].parentElement.id);
 
         for(var i = 0 ; i < rows.length ; i++) {
             var columns = rows[i].getElementsByTagName('td');
@@ -86,7 +114,6 @@ if ($this->permiteCortes == 'S') {
             columns[6].children.item(0).value = qtdCortar;
         }
 
-        event.preventDefault();
     }
 
     $('#btnSubmit').click(function () {
@@ -104,6 +131,7 @@ if ($this->permiteCortes == 'S') {
                 if (data.error) {
                     $("#gridCorte").html("");
                     $("#motivoCorte").html("");
+                    $("#arrCortes").html("");
                     alert(data.error);
                 } else {
                     $("#gridCorte").html(
