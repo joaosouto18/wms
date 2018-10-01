@@ -7,13 +7,6 @@ if ($this->permiteCortes == 'S') {
 }
 
 ?>
-<div id="motivoCorte">
-    <?php
-    if ($this->permiteCortes == 'S') {
-        echo $this->formMotivo;
-    }
-    ?>
-</div>
 
 <div id="gridCorte">
     <?php
@@ -22,6 +15,15 @@ if ($this->permiteCortes == 'S') {
     }
     ?>
 </div>
+
+<div id="motivoCorte">
+    <?php
+    if ($this->permiteCortes == 'S') {
+        echo $this->formMotivo;
+    }
+    ?>
+</div>
+
 
 <div id="arrCortes">
     <?php
@@ -37,7 +39,9 @@ if ($this->permiteCortes == 'S') {
     function confirmaCorte() {
         event.preventDefault();
 
-        var rows = document.getElementsByClassName("gTResultSet");
+        var table = document.getElementsByClassName("expedicao-corte-produtos-grid");
+        var rows = table[0].getElementsByClassName("gTResultSet");
+
         var cortes = [];
 
         for(var i = 0 ; i < rows.length ; i++) {
@@ -93,12 +97,12 @@ if ($this->permiteCortes == 'S') {
         event.preventDefault();
 
 
-        var rows = document.getElementsByClassName("gTResultSet");
+        //var rows = document.getElementsByClassName("gTResultSet");
         //var rows = document.getElementsByTagName("tr");
-        var rowsCorte = document.getElementsByClassName("teste");
-        alert(rows.length);
 
-        alert(rows[0].parentElement.id);
+        var table = document.getElementsByClassName("expedicao-corte-produtos-grid");
+        var rows = table[0].getElementsByClassName("gTResultSet");
+        var rowsCorte = document.getElementsByClassName("teste");
 
         for(var i = 0 ; i < rows.length ; i++) {
             var columns = rows[i].getElementsByTagName('td');
@@ -135,12 +139,15 @@ if ($this->permiteCortes == 'S') {
                     alert(data.error);
                 } else {
                     $("#gridCorte").html(
+                        "<fieldset>" +
+                        "<legend>Pedidos</legend>" +
                         "<form style='margin-bottom: -15px'> " +
                         "   <div align='right' class='gMassAction'>\n" +
                         "       <input onclick='corteTotal()' style='margin: 5px 15px 5px 10px; width: 130px;' type='submit' name='total' id='total' value='Corte Total' class='btn'>" +
                         "   </div>\n" +
                         "</form>"
-                        + data.resultGrid);
+                        + data.resultGrid +
+                        "</legend>");
                     $("#motivoCorte").html(data.resultForm);
                     $("#arrCortes").html(data.pedidos);
                 }
