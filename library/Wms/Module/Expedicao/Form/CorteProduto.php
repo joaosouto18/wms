@@ -10,8 +10,8 @@ class CorteProduto extends Form
 
         $em = $this->getEm();
 
-        /** @var \Wms\Domain\Entity\Util\SiglaRepository $repoSigla */
-        $repoSigla = $em->getRepository('wms:Util\Sigla');
+
+        $repoMotivos = $em->getRepository('wms:Expedicao\MotivoCorte');
 
         $this
             ->addElement('text', 'produto', array(
@@ -22,7 +22,7 @@ class CorteProduto extends Form
             ))
             ->addElement('select', 'motivo', array(
                 'label' => 'Motivo de Corte',
-                'multiOptions' => $repoSigla->getEstados(),
+                'multiOptions' => $repoMotivos->getMotivos(),
             ))
             ->addElement('submit', 'cortar', array(
                 'label' => 'Cortar',
