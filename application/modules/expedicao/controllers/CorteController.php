@@ -159,7 +159,12 @@ class Expedicao_CorteController extends Action {
     }
 
     public function confirmaCorteProdutoAjaxAction(){
-        $params = $this->_getAllParams();
+        $codProduto = $this->_getParam('codProduto');
+        $grade = $this->_getParam('grade');
+        $idMotivo = $this->_getParam('motivo');
+        $cortes = $this->_getParam('cortes');
+
+
     }
 
     public function corteProdutoAjaxAction() {
