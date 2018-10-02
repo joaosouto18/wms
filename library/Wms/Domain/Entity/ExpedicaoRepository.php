@@ -988,12 +988,8 @@ class ExpedicaoRepository extends EntityRepository {
                         INNER JOIN pp.produto p
                          LEFT JOIN p.linhaSeparacao ls
                         INNER JOIN pp.pedido ped
+                        INNER JOIN wms:Expedicao\VProdutoEndereco e WITH p.id = e.codProduto AND p.grade = e.grade
                         INNER JOIN ped.carga c
-                        INNER JOIN c.expedicao ex
-                        INNER JOIN wms:Ressuprimento\ReservaEstoqueExpedicao ree WITH ree.expedicao = ex.id AND ree.pedido = ped.id
-                        INNER JOIN wms:Ressuprimento\ReservaEstoqueProduto rep WITH rep.reservaEstoque = ree.reservaEstoque AND rep.codProduto = pp.codProduto AND rep.grade = pp.grade
-                        INNER JOIN ree.reservaEstoque re
-                        INNER JOIN wms:Deposito\Endereco e WITH e.id = re.endereco
                         WHERE ped.indEtiquetaMapaGerado != 'S'
                           $whereCargas
                           AND ped.centralEntrega = '$central'

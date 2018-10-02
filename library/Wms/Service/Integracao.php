@@ -453,11 +453,11 @@ class Integracao {
             $valorEstoque = array_change_key_case($valorEstoque, CASE_UPPER);
             $qtdIteracoes = $qtdIteracoes + 1;
 
-            $codProduto = $valorEstoque['COD_PRODUTO'];
+            $codProduto = utf8_encode($valorEstoque['COD_PRODUTO']);
             $grade = "UNICA";
 
             if (isset($valorEstoque['GRADE'])) {
-                $grade = $valorEstoque['GRADE'];
+                $grade = utf8_encode($valorEstoque['GRADE']);
             }
             $produtoEn = $produtoRepo->findOneBy(array('id' => $codProduto, 'grade' => $grade));
             if ($produtoEn != null) {
