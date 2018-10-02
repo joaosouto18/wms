@@ -121,7 +121,7 @@ class Expedicao_CorteController extends Action {
                 $this->addFlashMessage('error',$e->getMessage());
             }
 
-            $this->redirect('corte-total-ajax','corte','expedicao',array('id'=> $idExpedicao));
+            $this->redirect('corte-total','corte','expedicao',array('id'=> $idExpedicao));
         }
 
         $pedidos = $expedicaoRepo->getPedidosByProdutoAndExpedicao($idExpedicao, $idProduto, $grade);
@@ -139,7 +139,7 @@ class Expedicao_CorteController extends Action {
 
     }
 
-    public function corteTotalAjaxAction() {
+    public function corteTotalAction() {
 
         $idExpedicao = $this->_getParam('id');
 
@@ -151,7 +151,6 @@ class Expedicao_CorteController extends Action {
         } else {
             $produtos = $expedicaoRepo->getProdutosPorExpedicao($idExpedicao);
         }
-
 
         $grid = new \Wms\Module\Expedicao\Grid\CorteTotal();
         $this->view->grid = $grid->init($produtos);
@@ -236,7 +235,7 @@ class Expedicao_CorteController extends Action {
 
     }
 
-    public function corteProdutoAjaxAction() {
+    public function corteProdutoAction() {
         $this->view->id = $id = $this->_getParam('id');
         $grade = $this->_getParam('grade');
         $codProduto = $this->_getParam('codProduto');
@@ -308,7 +307,7 @@ class Expedicao_CorteController extends Action {
         return "<table class='hci-table'>" . implode('', $rows) . "</table>";
     }
 
-    public function corteAntecipadoAjaxAction() {
+    public function cortePedidoAction() {
 
         $this->view->id = $id = $this->_getParam('id');
         $grade = $this->_getParam('grade');
@@ -395,7 +394,7 @@ class Expedicao_CorteController extends Action {
             }
 
             if ($origin == 'ressuprimento') {
-                $this->_redirect("/expedicao/corte/corte-antecipado-ajax/id/$expedicao/origin/ressuprimento");
+                $this->_redirect("/expedicao/corte/corte-pedido/id/$expedicao/origin/ressuprimento");
             } else {
                 $this->_redirect('/expedicao');
             }

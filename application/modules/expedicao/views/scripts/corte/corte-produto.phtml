@@ -125,7 +125,7 @@ if ($this->permiteCortes == 'S') {
 
     $('#btnSubmit').click(function () {
         $.ajax({
-            url:  URL_MODULO + '/corte/corte-produto-ajax/',
+            url:  URL_MODULO + '/corte/corte-produto/',
             type: 'post',
             data: {
                 id: $('#id').val(),
