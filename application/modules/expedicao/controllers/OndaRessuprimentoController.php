@@ -108,6 +108,8 @@ class Expedicao_OndaRessuprimentoController extends Action
                     $expedicoesComCorte = implode(',', $expedicoesComCorte);
 
                     $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoesComCorte)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
+                    $link .= '<br><br> <a href="/expedicao/corte/corte-produto-ajax/id/' . $expedicoesSelecionadas  .'"  target="_self" class="dialogAjax btn"  >Cortar Produtos</a> ';
+
                     $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas.';
 
                     $return['response'][] = [
