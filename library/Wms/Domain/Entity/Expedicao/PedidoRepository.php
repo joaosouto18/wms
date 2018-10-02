@@ -691,7 +691,7 @@ class PedidoRepository extends EntityRepository
 
         $sqlCampos = "p.codExterno as id, cli.codClienteExterno codcli, pe.nome cliente, NVL(i.descricao,'PADRAO') as itinerario, p.numSequencial";
         if (isset($codProduto) && !empty($codProduto)) {
-            $sqlCampos = "p.id as ID, '' as VALUE, p.codExterno as id, cli.codClienteExterno codcli, pe.nome cliente, NVL(i.descricao,'PADRAO') as itinerario, p.numSequencial, pp.quantidade, NVL(pp.qtdCortada,0) as qtdCortada, pp.fatorEmbalagemVenda, CASE WHEN pp.quantidade > NVL(pp.qtdCortada,0) THEN 'S' ELSE 'N' AS permiteCorte";
+            $sqlCampos = "p.id as ID, '' as VALUE, p.codExterno as id, cli.codClienteExterno codcli, pe.nome cliente, NVL(i.descricao,'PADRAO') as itinerario, p.numSequencial, pp.quantidade, NVL(pp.qtdCortada,0) as qtdCortada, pp.fatorEmbalagemVenda, CASE WHEN pp.quantidade > NVL(pp.qtdCortada,0) THEN 'S' ELSE 'N' AS permiteCorte, e.id as idExpedicao, c.codCargaExterno as carga ";
         }
 
 

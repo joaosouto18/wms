@@ -40,6 +40,14 @@ class CorteProduto extends Grid
                 ->setId('expedicao-corte-produtos-grid')
                 ->setAttrib('class', 'expedicao-corte-produtos-grid')
                 ->addColumn(array(
+                    'label' => 'Expedicao',
+                    'index' => 'idExpedicao',
+                ))
+                ->addColumn(array(
+                    'label' => 'Carga',
+                    'index' => 'carga',
+                ))
+                ->addColumn(array(
                     'label' => 'Pedido',
                     'index' => 'id',
                 ))
