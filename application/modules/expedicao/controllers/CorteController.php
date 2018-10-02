@@ -159,12 +159,22 @@ class Expedicao_CorteController extends Action {
     }
 
     public function confirmaCorteProdutoAjaxAction(){
-        $codProduto = $this->_getParam('codProduto');
+        $idProduto = $this->_getParam('codProduto');
         $grade = $this->_getParam('grade');
         $idMotivo = $this->_getParam('motivo');
         $cortes = $this->_getParam('cortes');
 
         try {
+            $this->getEntityManager()->beginTransaction();
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+            $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
+            $pedidoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProduto");
+            /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepoRepo */
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            /** @var \Wms\Domain\Entity\Expedicao\MotivoCorteRepository $motivoRepo */
+            $motivoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MotivoCorte");
 
             if (count($cortes) == 0) {
                 throw new \Exception("Nenhum pedido informado para cortar");
@@ -174,9 +184,46 @@ class Expedicao_CorteController extends Action {
                 $codPedido = $corte[0];
                 $idEmbalagem = $corte[1];
                 $quantidadeCortada = $corte[2];
+
+                $motivoEn = $motivoRepo->find($idMotivo);
+
+                $pedidoProdutoEn = $pedidoProdutoRepo->findOneBy(array(
+                    'codPedido' => $codPedido,
+                    'codProduto' => $idProduto,
+                    'grade' => $grade
+
+                ));
+
+                $embalagemEn = null;
+                if ($idEmbalagem >0 ) {
+                    $embalagemEn = $embalagemRepo->find($idEmbalagem);
+                }
+
+                if (($idEmbalagem >0) && ($embalagemEn == null)) {
+                    throw new \Exception("Embalagem id $idEmbalagem não encontrada");
+                }
+
+                if ($motivoEn == null) {
+                    throw new \Exception("Motivo de corte id $idMotivo não encontrado");
+                }
+
+                if ($pedidoProdutoEn == null) {
+                    throw new \Exception("PedidoProduto não encontrado para o produto $idProduto, $grade referente ao pedido interno $codPedido");
+                }
+
+                $qtdCortar = $quantidadeCortada * $embalagemEn->getQuantidade();
+                $motivo = $motivoEn->getDscMotivo();
+
+                $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo);
+
             }
 
+            $this->getEntityManager()->flush();
+            $this->getEntityManager()->commit();
+
         } catch (\Exception $e) {
+            $this->getEntityManager()->rollback();
+
             $this->_helper->json(array(
                 'error' => $e->getMessage()
             ));
@@ -205,7 +252,7 @@ class Expedicao_CorteController extends Action {
             $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
 
             if (($codProduto != null) && ($grade != null)) {
-                $pedidos = $pedidoRepo->getPedidoByExpedicao($id, $codProduto, $grade);
+                $pedidos = $pedidoRepo->getPedidoByExpedicao($id, $codProduto, $grade, true);
 
                 $grid = new \Wms\Module\Web\Grid\Expedicao\CorteProduto();
                 $grid = $grid->init($pedidos, $id, $codProduto, $grade, $corteEmbalagemVenda);
@@ -256,6 +303,7 @@ class Expedicao_CorteController extends Action {
                 $cells[] = "<td>{$cell}</td>";
             }
             $rows[] = "<tr class='grid-corte-resumo' style='display:none' >" . implode('', $cells) . "</tr>";
+
         }
         return "<table class='hci-table'>" . implode('', $rows) . "</table>";
     }

@@ -84,7 +84,7 @@ if ($this->permiteCortes == 'S') {
                 if (data.error) {
                     alert(data.error);
                 } else {
-                    alert("Produtos cortados com sucesso");
+                    alert("Produto cortado com sucesso");
                     $("#gridCorte").html("");
                     $("#motivoCorte").html("");
                     $("#arrCortes").html("");
@@ -109,9 +109,9 @@ if ($this->permiteCortes == 'S') {
             var columns = rows[i].getElementsByTagName('td');
 
             var fatorCorte     = rowsCorte[i].getElementsByTagName('td').item(9).innerHTML;
-            var qtdPedidoUnit  = rowsCorte[i].getElementsByTagName('td').item(10).innerHTML;
-            var qtdCortadaUnit = rowsCorte[i].getElementsByTagName('td').item(11).innerHTML;
-            var idEmbalagem    = rowsCorte[i].getElementsByTagName('td').item(12).innerHTML;
+            var qtdPedidoUnit  = rowsCorte[i].getElementsByTagName('td').item(11).innerHTML;
+            var qtdCortadaUnit = rowsCorte[i].getElementsByTagName('td').item(12).innerHTML;
+            var idEmbalagem    = rowsCorte[i].getElementsByTagName('td').item(13).innerHTML;
 
             var qtdCortar = (qtdPedidoUnit - qtdCortadaUnit) / fatorCorte;
 

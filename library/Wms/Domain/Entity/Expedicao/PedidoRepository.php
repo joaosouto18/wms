@@ -686,12 +686,12 @@ class PedidoRepository extends EntityRepository
 
     }
 
-    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA')
+    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA', $todosProdutos = false)
     {
 
         $sqlCampos = "p.codExterno as id, cli.codClienteExterno codcli, pe.nome cliente, NVL(i.descricao,'PADRAO') as itinerario, p.numSequencial";
         if (isset($codProduto) && !empty($codProduto)) {
-            $sqlCampos = "p.id as ID, '' as VALUE, p.codExterno as id, cli.codClienteExterno codcli, pe.nome cliente, NVL(i.descricao,'PADRAO') as itinerario, p.numSequencial, pp.quantidade, NVL(pp.qtdCortada,0) as qtdCortada, pp.fatorEmbalagemVenda";
+            $sqlCampos = "p.id as ID, '' as VALUE, p.codExterno as id, cli.codClienteExterno codcli, pe.nome cliente, NVL(i.descricao,'PADRAO') as itinerario, p.numSequencial, pp.quantidade, NVL(pp.qtdCortada,0) as qtdCortada, pp.fatorEmbalagemVenda, CASE WHEN pp.quantidade > NVL(pp.qtdCortada,0) THEN 'S' ELSE 'N' AS permiteCorte";
         }
 
 
@@ -704,8 +704,12 @@ class PedidoRepository extends EntityRepository
             ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
             ->innerJoin('p.carga', 'c')
             ->innerJoin('c.expedicao', 'e')
-            ->where("e.id = $idExpedicao  and pp.quantidade > NVL(pp.qtdCortada,0)")
+            ->where("e.id = $idExpedicao ")
             ->orderBy('p.codExterno', 'asc');
+
+        if ($todosProdutos == false) {
+            $sql->andWhere("pp.quantidade > NVL(pp.qtdCortada,0)");
+        }
 
         if (isset($codProduto) && !empty($codProduto)) {
             $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'");

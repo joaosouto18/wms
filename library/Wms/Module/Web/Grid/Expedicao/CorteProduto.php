@@ -65,14 +65,12 @@ class CorteProduto extends Grid
                     'enabled' => $enabled
                 ))->addColumn(array(
                     'label' => 'Qtd.Cortar',
-                    'index' => 'qtdCortada',
+                    'index' => 'permiteCorte',
                     'render' => 'inputText',
                 ))->addColumn(array(
                     'label' => 'Qtd.Cortada',
                     'index' => 'qtdCortada',
                 ));
-
-        //$this->addMassAction('corte-total','Corte Total');
 
         $this->setShowPager(true);
         $pager = new \Core\Grid\Pager(count($pedidos),1,2000);
