@@ -3804,7 +3804,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null) {
+    public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null, $idMotivo = null) {
 
         /** @var Expedicao\AndamentoRepository $expedicaoAndamentoRepo */
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
@@ -4590,7 +4590,7 @@ class ExpedicaoRepository extends EntityRepository {
         return $result;
     }
 
-    public function cortarItemExpedicao ($idProduto, $grade, $expedicao, $motivo) {
+    public function cortarItemExpedicao ($idProduto, $grade, $expedicao, $motivo, $idMotivo) {
 
         $sql = "SELECT P.COD_PEDIDO, PP.COD_PEDIDO_PRODUTO, P.COD_EXTERNO, PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0) as QTD_PEDIDO
                   FROM PEDIDO_PRODUTO PP
@@ -4615,7 +4615,7 @@ class ExpedicaoRepository extends EntityRepository {
             if (!isset($pedidoProdutoEn) || empty($pedidoProdutoEn))
                 throw new \Exception("Produto $idProduto grade $grade não encontrado para o pedido $codigoPedidoExterno");
 
-            $this->cortaPedido($codigoPedidoInterno, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo);
+            $this->cortaPedido($codigoPedidoInterno, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, null, $idMotivo);
         }
 
     }

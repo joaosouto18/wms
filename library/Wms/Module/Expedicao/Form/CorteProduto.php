@@ -22,6 +22,7 @@ class CorteProduto extends Form
             ))
             ->addElement('select', 'motivo', array(
                 'label' => 'Motivo de Corte',
+                'required',
                 'multiOptions' => $repoMotivos->getMotivos(),
             ))
             ->addElement('submit', 'cortar', array(
