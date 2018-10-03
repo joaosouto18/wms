@@ -3780,13 +3780,13 @@ class ExpedicaoRepository extends EntityRepository {
         return $arrResult;
     }
 
-    public function executaCortePedido($cortes, $motivo, $corteAutomatico = null) {
+    public function executaCortePedido($cortes, $motivo, $corteAutomatico = null, $idMotivo) {
         foreach ($cortes as $codPedido => $produtos) {
             foreach ($produtos as $codProduto => $grades) {
                 foreach ($grades as $grade => $quantidade) {
                     if (!($quantidade > 0))
                         continue;
-                    $this->cortaPedido($codPedido,null, $codProduto, $grade, $quantidade, $motivo, $corteAutomatico);
+                    $this->cortaPedido($codPedido,null, $codProduto, $grade, $quantidade, $motivo, $corteAutomatico, $idMotivo);
                 }
             }
         }
