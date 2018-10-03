@@ -87,6 +87,17 @@ class PedidoProduto
      */
     protected $qtdEmbalagemVenda;
 
+    /**
+     * @Column(name="COD_MOTIVO_CORTE", type="integer", nullable=true)
+     */
+    protected $codMotivoCorte;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\MotivoCorte")
+     * @JoinColumn(name="COD_MOTIVO_CORTE", referencedColumnName="COD_MOTIVO_CORTE")
+     */
+    protected $motivoCorte;
+
     public function setGrade($grade)
     {
         $this->grade = $grade;
@@ -258,6 +269,38 @@ class PedidoProduto
     public function setQtdEmbalagemVenda($qtdEmbalagemVenda)
     {
         $this->qtdEmbalagemVenda = $qtdEmbalagemVenda;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodMotivoCorte()
+    {
+        return $this->codMotivoCorte;
+    }
+
+    /**
+     * @param mixed $codMotivoCorte
+     */
+    public function setCodMotivoCorte($codMotivoCorte)
+    {
+        $this->codMotivoCorte = $codMotivoCorte;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMotivoCorte()
+    {
+        return $this->motivoCorte;
+    }
+
+    /**
+     * @param mixed $motivoCorte
+     */
+    public function setMotivoCorte($motivoCorte)
+    {
+        $this->motivoCorte = $motivoCorte;
     }
 
 }

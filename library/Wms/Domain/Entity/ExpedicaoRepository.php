@@ -3875,6 +3875,15 @@ class ExpedicaoRepository extends EntityRepository {
         if ($corteAutomatico == 'S') {
             $pedidoProdutoEn->setQtdCortadoAutomatico($pedidoProdutoEn->getQtdCortadoAutomatico() + $qtdCortar);
         }
+
+        if ($idMotivo != null) {
+            $repoMotivos = $this->getEntityManager()->getRepository('wms:Expedicao\MotivoCorte');
+            $motivoEn = $repoMotivos->find($idMotivo);
+
+            $pedidoProdutoEn->setCodMotivoCorte($idMotivo);
+            $pedidoProdutoEn->setMotivoCorte($motivoEn);
+        }
+
         $this->getEntityManager()->persist($pedidoProdutoEn);
 
         //Seta na mapa_separacao_pedido a quantidade cortada baseada na quantia já cortada mais a nova qtd
