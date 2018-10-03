@@ -480,15 +480,25 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $parametroEntity = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
         $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
-
+        $repoMotivos = $this->getEntityManager()->getRepository('wms:Expedicao\MotivoCorte');
 
         try {
             $this->_em->beginTransaction();
             $idPedido = $pedidoRepository->getMaxCodPedidoByCodExterno($idPedido);
             $ppCortados = array();
+
+            $parametroRepo = $this->getEntityManager()->getRepository('wms:Sistema\Parametro');
+            $parametro = $parametroRepo->findOneBy(array('constante' => "COD_MOTIVO_CORTE_INTEGRACAO"));
+
+            if ($parametro == NULL) {
+                throw new \Exception("Parâmetro COD_MOTIVO_CORTE_INTEGRACAO não encontrado no sistema, entre em contato com o suporte!");
+            }
+            $idMotivoCorte = $parametro->getValor();
+            $motivoEn = $repoMotivos->find($idMotivoCorte);
+
             foreach ($produtosCortados as $corte) {
                 $grade = ($parametroEntity->getValor() == 'N') ? 'UNICA' : trim($corte->grade);
-                $ppRepo->cortaItem($idPedido, $corte->codProduto, $grade, $corte->quantidadeCortada, $corte->motivoCorte);
+                $ppRepo->cortaItem($idPedido, $corte->codProduto, $grade, $corte->quantidadeCortada, $corte->motivoCorte, $motivoEn);
                 $ppCortados[$corte->codProduto][$grade] = $corte->quantidadeCortada;
             }
             $ppExistentes = $ppRepo->findBy(array('pedido' => $idPedido));

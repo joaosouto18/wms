@@ -7,6 +7,9 @@ class Expedicao_CorteController extends Action {
 
     public function indexAction() {
         $id = $this->_getParam('id');
+        $repoMotivos = $this->getEntityManager()->getRepository('wms:Expedicao\MotivoCorte');
+
+        $this->view->motivos = $repoMotivos->getMotivos();
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $etiquetaRepo */
         $etiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         $codEtiqueta = $etiquetaRepo->getEtiquetasByExpedicao($id, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_CORTE, null);
@@ -24,12 +27,16 @@ class Expedicao_CorteController extends Action {
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $EtiquetaReentregaRepo */
         $EtiquetaReentregaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
+        $repoMotivos = $this->getEntityManager()->getRepository('wms:Expedicao\MotivoCorte');
 
         if ($request->isPost()) {
             $senhaDigitada = $request->getParam('senhaConfirmacao');
 
             if ($EtiquetaRepo->checkAutorizacao($senhaDigitada)) {
                 $codBarra = $request->getParam('codBarra');
+
+                $motivo = $this->_getParam('motivoCorte');
+                $motivoEn = $repoMotivos->find($motivo);
 
                 if (!$codBarra) {
                     $this->addFlashMessage('error', 'É necessário preencher todos os campos');
@@ -64,7 +71,7 @@ class Expedicao_CorteController extends Action {
                     $this->_redirect('/expedicao');
                 }
 
-                $EtiquetaRepo->cortar($etiquetaEntity);
+                $EtiquetaRepo->cortar($etiquetaEntity, null, $motivoEn);
 
                 if ($etiquetaEntity->getProdutoEmbalagem() != NULL) {
                     $codBarrasProdutos = $etiquetaEntity->getProdutoEmbalagem()->getCodigoBarras();
@@ -74,7 +81,7 @@ class Expedicao_CorteController extends Action {
 
                 /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                 $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
-                $andamentoRepo->save("Etiqueta $codBarraFormatado cortada", $idExpedicao, false, true, $codBarraFormatado, $codBarrasProdutos);
+                $andamentoRepo->save("Etiqueta $codBarraFormatado cortada - Motivo: " . $motivoEn->getDscMotivo(), $idExpedicao, false, true, $codBarraFormatado, $codBarrasProdutos);
                 $this->addFlashMessage('success', 'Etiqueta cortada com sucesso');
             } else {
                 $this->addFlashMessage('error', 'Senha informada não é válida');
