@@ -47,9 +47,15 @@ if ($this->permiteCortes == 'S') {
 
         for(var i = 0 ; i < rows.length ; i++) {
             var columns = rows[i].getElementsByTagName('td');
+            var idEmbalagem;
             var codPedido   = rowsCorte[i].getElementsByTagName('td').item(0).innerHTML;
-            var idEmbalagem = columns[7].children.item(0).value;
             var qtdCortar   = columns[8].children.item(0).value;
+
+            if (columns[7].children.item(0).tagName == "SELECT") {
+                idEmbalagem = columns[7].children.item(0).value;
+            } else {
+                idEmbalagem = "-1"
+            }
 
             if (qtdCortar >0) {
                 var corte = [];

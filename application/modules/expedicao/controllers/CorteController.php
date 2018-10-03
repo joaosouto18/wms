@@ -210,10 +210,14 @@ class Expedicao_CorteController extends Action {
                 $embalagemEn = null;
                 if ($idEmbalagem >0 ) {
                     $embalagemEn = $embalagemRepo->find($idEmbalagem);
-                }
+                    if ($embalagemEn == null) {
+                        throw new \Exception("Embalagem id $idEmbalagem não encontrada");
+                    }
 
-                if (($idEmbalagem >0) && ($embalagemEn == null)) {
-                    throw new \Exception("Embalagem id $idEmbalagem não encontrada");
+                    $qtdCortar = $quantidadeCortada * $embalagemEn->getQuantidade();
+
+                } else {
+                    $qtdCortar = $quantidadeCortada;
                 }
 
                 if ($motivoEn == null) {
@@ -224,7 +228,7 @@ class Expedicao_CorteController extends Action {
                     throw new \Exception("PedidoProduto não encontrado para o produto $idProduto, $grade referente ao pedido interno $codPedido");
                 }
 
-                $qtdCortar = $quantidadeCortada * $embalagemEn->getQuantidade();
+
                 $motivo = $motivoEn->getDscMotivo();
 
                 $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo);

@@ -731,7 +731,12 @@ class PedidoRepository extends EntityRepository
                 foreach ($result as $key => $value) {
                     $result[$key]['quantidadeUnitaria'] = $value['quantidade'];
                     $result[$key]['qtdCortadaUnitaria'] = $value['qtdCortada'];
-                    $result[$key]['fatorEmbalagemVenda'] = $embalagemEn->getQuantidade();
+
+                    if ($embalagemEn == null) {
+                        $result[$key]['fatorEmbalagemVenda'] = 1;
+                    } else {
+                        $result[$key]['fatorEmbalagemVenda'] = $embalagemEn->getQuantidade();
+                    }
 
                     $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $grade, $value['quantidade']);
                     if(is_array($vetEmbalagens)) {
@@ -750,11 +755,10 @@ class PedidoRepository extends EntityRepository
                     $result[$key]['qtdCortada'] = $embalagem;
 
                     if ($embalagemEn == null) {
-                        $result[$key]['idEmbalagem'] = "-";
+                        $result[$key]['idEmbalagem'] = "";
                     } else {
                         $result[$key]['idEmbalagem'] = $embalagemEn->getId();
                     }
-
                 }
             } else {
                 foreach ($result as $key => $value) {
@@ -765,7 +769,7 @@ class PedidoRepository extends EntityRepository
                     $embalagemEn = $embalagemRepo->findOneBy(array('codProduto'=> $codProduto,'grade'=> $grade, 'dataInativacao' => null, 'quantidade'=>$fatorEmbalagem));
 
                     if ($embalagemEn == null) {
-                        $result[$key]['idEmbalagem'] = "-";
+                        $result[$key]['idEmbalagem'] = "";
                     } else {
                         $result[$key]['idEmbalagem'] = $embalagemEn->getId();
                     }
@@ -773,9 +777,8 @@ class PedidoRepository extends EntityRepository
                     $dscEmbalagem = " ";
                     if ($embalagemEn != null) {
                         $dscEmbalagem = $embalagemEn->getDescricao();
+                        $dscEmbalagem = " $dscEmbalagem($fatorEmbalagem)";
                     }
-
-                    $dscEmbalagem = " $dscEmbalagem($fatorEmbalagem)";
 
                     $result[$key]['quantidade'] = ($result[$key]['quantidade'] / $fatorEmbalagem) . $dscEmbalagem ;
                     if ($result[$key]['qtdCortada'] <> 0) {
