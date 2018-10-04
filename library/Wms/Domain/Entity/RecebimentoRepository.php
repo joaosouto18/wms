@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
 use Wms\Domain\Entity\Enderecamento\Palete as PaleteEntity;
 use Wms\Domain\Entity\Enderecamento\Palete;
+use Wms\Domain\Entity\Integracao\AcaoIntegracao;
 use Wms\Math;
 use Wms\Service\Integracao;
 
@@ -521,6 +522,22 @@ class RecebimentoRepository extends EntityRepository {
                 'tipoExecucao' => 'E'
             ));
             $serviceIntegracao->atualizaEstoqueErp($idRecebimento, $this->getSystemParameterValue('WINTHOR_CODFILIAL_INTEGRACAO'));
+        }
+
+        //DISPARA ALERTA AO ERP LIBERANDO FATURAMENTO DE NF VIA INTEGRAÇÃO VIA WS
+        if ($result['exception'] == null && $this->getSystemParameterValue('IND_LIBERA_FATURAMENTO_NF_RECEBIMENTO_ERP') == 'S') {
+
+            $checkRecebimento = true;
+            if ($this->getSystemParameterValue('STATUS_RECEBIMENTO_ENDERECADO') == 'S') {
+                $enderecado = $this->checkRecebimentoEnderecado($idRecebimento);
+                $checkRecebimento = (empty($enderecado));
+            }
+
+            if ($checkRecebimento) {
+                /** @var \Wms\Domain\Entity\NotaFiscal[] $arrNotasEn */
+                $arrNotasEn = $this->_em->getRepository("wms:NotaFiscal")->findBy(['recebimento' => $idRecebimento]);
+                $this->liberaFaturamentoNotaErp($arrNotasEn);
+            }
         }
 
         if ($result['exception'] == null) {
@@ -1792,14 +1809,14 @@ class RecebimentoRepository extends EntityRepository {
                           UNION
                           SELECT RC.COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_CONFERIDA as QTD
                           FROM RECEBIMENTO_CONFERENCIA RC
-                          LEFT JOIN RECEBIMENTO R ON RC.COD_RECEBIMENTO = R.COD_RECEBIMENTO
+                          INNER JOIN RECEBIMENTO R ON RC.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                           WHERE R.COD_STATUS = 457 AND R.COD_RECEBIMENTO = $idRecebimento 
                                   AND (QTD_DIVERGENCIA = 0 OR COD_NOTA_FISCAL IS NOT NULL)
                              ) V ON V.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                 LEFT JOIN (SELECT COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, SUM(QTD) as QTD
                             FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD
                                   FROM PALETE P
-                                  LEFT JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
+                                  INNER JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
                                   WHERE P.COD_RECEBIMENTO = $idRecebimento AND P.COD_STATUS = 536)
                             GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE
                           ) P ON P.COD_RECEBIMENTO = V.COD_RECEBIMENTO AND P.COD_PRODUTO = V.COD_PRODUTO AND P.DSC_GRADE = V.DSC_GRADE
@@ -2140,4 +2157,33 @@ class RecebimentoRepository extends EntityRepository {
         return $sql->getQuery()->getResult();
     }
 
+    /**
+     * @param NotaFiscalEntity[] $arrNotas
+     * @throws \Exception
+     */
+    public function liberaFaturamentoNotaErp($arrNotas)
+    {
+        $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_LIBERA_FATURAMENTO_NF_RECEBIMENTO_ERP');
+
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+        /** @var AcaoIntegracao $acaoEn */
+        $acaoEn = $acaoIntRepo->find($idIntegracao);
+        if (!empty($acaoEn)) {
+            foreach ($arrNotas as $nota) {
+                $options = [];
+                $options[] = $nota->getSerie();
+                $options[] = $nota->getNumero();
+                $options[] = $nota->getSerie();
+                $options[] = $nota->getFornecedor()->getIdExterno();
+                $options[] = date_format($nota->getDataEmissao(), 'Y-m-d');
+
+                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                if (!$resultAcao === true) {
+                    throw new \Exception($resultAcao);
+                }
+            }
+        }
+    }
 }

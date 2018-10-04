@@ -229,6 +229,21 @@ class Enderecamento_PaleteController extends Action
                     $this->em->commit();
                     $this->addFlashMessage('success', 'Endereçamento finalizado com sucesso');
 
+                    if ($this->getSystemParameterValue('IND_LIBERA_FATURAMENTO_NF_RECEBIMENTO_ERP') == 'S') {
+                        if ($this->getSystemParameterValue('STATUS_RECEBIMENTO_ENDERECADO') == 'S') {
+                            /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+                            $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
+
+                            $idRecebimento = $paleteRepo->findOneBy($paletes[0])->getRecebimento()->getId();
+
+                            if (empty($recebimentoRepo->checkRecebimentoEnderecado($idRecebimento))) {
+                                /** @var \Wms\Domain\Entity\NotaFiscal[] $arrNotasEn */
+                                $arrNotasEn = $this->_em->getRepository("wms:NotaFiscal")->findBy(['recebimento' => $idRecebimento]);
+                                $recebimentoRepo->liberaFaturamentoNotaErp($arrNotasEn);
+                            }
+                        }
+                    }
+
                     if (!empty($codigo) && !empty($grade)) {
                         $this->_redirect('enderecamento/palete/index/id/' . $id . '/codigo/' . $codigo . '/grade/' . urlencode($grade));
                     } else {

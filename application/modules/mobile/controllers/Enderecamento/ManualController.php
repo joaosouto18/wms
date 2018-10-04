@@ -283,9 +283,9 @@ class Mobile_Enderecamento_ManualController extends Action
                     }
                 }
 
-            if (!empty($embalagens) && empty($arrDL)){
-                throw new Exception("Nenhuma das embalagens deste produto contem dados logisticos ou norma de paletização cadastrada");
-            }
+                if (!empty($embalagens) && empty($arrDL)){
+                    throw new Exception("Nenhuma das embalagens deste produto contem dados logisticos ou norma de paletização cadastrada");
+                }
 
                 foreach ($embalagens as $embalagemEn) {
                     $endereco = null;
@@ -383,6 +383,20 @@ class Mobile_Enderecamento_ManualController extends Action
                 $this->em->flush();
                 $this->addFlashMessage('success', 'Palete(s) ' . implode(", ", $paletes) . ' endereçado(s) com sucesso');
             }
+
+            if ($this->getSystemParameterValue('IND_LIBERA_FATURAMENTO_NF_RECEBIMENTO_ERP') == 'S') {
+                if ($this->getSystemParameterValue('STATUS_RECEBIMENTO_ENDERECADO') == 'S') {
+                    /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+                    $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
+
+                    if (empty($recebimentoRepo->checkRecebimentoEnderecado($idRecebimento))) {
+                        /** @var \Wms\Domain\Entity\NotaFiscal[] $arrNotasEn */
+                        $arrNotasEn = $this->_em->getRepository("wms:NotaFiscal")->findBy(['recebimento' => $idRecebimento]);
+                        $recebimentoRepo->liberaFaturamentoNotaErp($arrNotasEn);
+                    }
+                }
+            }
+
             $this->getEntityManager()->commit();
             $this->_redirect('/mobile/enderecamento_manual/ler-codigo-barras/id/'.$params['id']);
 

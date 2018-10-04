@@ -1179,10 +1179,7 @@ class PaleteRepository extends EntityRepository {
 
         if (!empty($arrPaletesResult)) {
             if (count($arrPaletesResult) > 1) {
-                $strPaletes = '';
-                foreach ($arrPaletesResult as $palete) {
-                    $strPaletes .= $palete . ',';
-                }
+                $strPaletes = implode(", ", $arrPaletesResult);
                 return "Os paletes $strPaletes não tiveram as reservas de estoque atendidas";
             } else {
                 return "O palete $arrPaletesResult[0] não teve a reserva de estoque atendida";

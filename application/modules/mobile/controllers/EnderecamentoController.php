@@ -476,6 +476,21 @@ class Mobile_EnderecamentoController extends Action
         $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
         $paleteRepo->finalizar(array($idPalete),$idPessoa, OrdemServicoEntity::COLETOR, $dataValidade);
 
+        if ($this->getSystemParameterValue('IND_LIBERA_FATURAMENTO_NF_RECEBIMENTO_ERP') == 'S') {
+            if ($this->getSystemParameterValue('STATUS_RECEBIMENTO_ENDERECADO') == 'S') {
+                /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
+                $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
+
+                $idRecebimento= $paleteRepo->findOneBy($idPalete)->getRecebimento()->getId();
+
+                if (empty($recebimentoRepo->checkRecebimentoEnderecado($idRecebimento))) {
+                    /** @var \Wms\Domain\Entity\NotaFiscal[] $arrNotasEn */
+                    $arrNotasEn = $this->_em->getRepository("wms:NotaFiscal")->findBy(['recebimento' => $idRecebimento]);
+                    $recebimentoRepo->liberaFaturamentoNotaErp($arrNotasEn);
+                }
+            }
+        }
+
         $this->addFlashMessage('success','Palete Endereçado com sucesso');
         $this->_redirect('/mobile/enderecamento/ler-codigo-barras');
     }

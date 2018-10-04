@@ -2,6 +2,8 @@
 
 namespace Wms\Domain\Entity\Enderecamento;
 
+use Wms\Domain\Entity\Recebimento;
+
 
 /**
  * Palete
@@ -141,7 +143,7 @@ class Palete
     }
 
     /**
-     * @return mixed
+     * @return Recebimento
      */
     public function getRecebimento()
     {
