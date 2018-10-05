@@ -1,4 +1,4 @@
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.21.0','x-integracaoSqlSrv.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.21.0','04-integracaoSqlSrv.sql');
 
 /*
  * Só não pode rodar na DM

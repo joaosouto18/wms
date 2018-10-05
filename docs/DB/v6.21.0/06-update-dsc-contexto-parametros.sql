@@ -11,7 +11,7 @@ BEGIN
   IF (CHECK_RESULT <> 'TRUE') THEN 
     DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
   ELSE 
-        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6','xx-update-dsc-contexto-parametros.sql');
+        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '6.21.0','06-update-dsc-contexto-parametros.sql');
 /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
