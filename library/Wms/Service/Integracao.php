@@ -520,12 +520,16 @@ class Integracao {
                 }
 
                 $tipoPedido = (isset($row['TIPO_PEDIDO']) && !empty($row['TIPO_PEDIDO'])) ? $row['TIPO_PEDIDO'] : null;
+                $fatorEmbalagemVenda = (isset($row['FATOR_EMBALAGEM_VENDA']) && !empty($row['FATOR_EMBALAGEM_VENDA'])) ? $row['FATOR_EMBALAGEM_VENDA'] : null;
+                $qtdEmbalagemVenda = (isset($row['QTD_EMBALAGEM_VENDA']) && !empty($row['QTD_EMBALAGEM_VENDA'])) ? $row['QTD_EMBALAGEM_VENDA'] : null;
 
                 $produto = array(
                     'codProduto' => $row['PRODUTO'],
                     'grade' => $row['GRADE'],
                     'quantidade' => $row['QTD'],
-                    'valorVenda' => $row['VLR_VENDA']
+                    'valorVenda' => $row['VLR_VENDA'],
+                    'fatorEmbalagemVenda' => $fatorEmbalagemVenda,
+                    'qtdEmbalagemVenda' => $qtdEmbalagemVenda,
                 );
                 $produtos[] = $produto;
 

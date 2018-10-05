@@ -53,7 +53,11 @@ class CorteAntecipado extends Grid
                     'actionName' => 'cortar-item',
                     'cssClass' => 'inside-modal',
                     'params' => array('expedicao' => $idExpedicao),
-                    'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE','COD_PEDIDO')
+                    'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE','COD_PEDIDO'),
+                    'condition' => function ($row) {
+                        return $row['QTD_CORTADA'] != $row['QTD'];
+                    }
+
                 ));
         $this->setShowPager(true);
         $pager = new \Core\Grid\Pager(count($produtos),1,2000);

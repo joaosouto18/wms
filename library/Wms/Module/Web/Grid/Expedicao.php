@@ -168,12 +168,25 @@ class Expedicao extends Grid
                 'label' => 'Cortar Pedido',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'corte',
-                'actionName' => 'corte-antecipado-ajax',
+                'actionName' => 'corte-pedido',
                 'pkIndex' => 'id',
+                'params' => array('origin' => 'expedicao'),
                 'cssClass' => 'dialogAjax',
                 'condition' => function ($row) {
                         return $row['status'] != "FINALIZADO";
                     }
+            ))
+            ->addAction(array(
+                'label' => 'Cortar Produto',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'corte',
+                'actionName' => 'corte-produto',
+                'pkIndex' => 'id',
+                'params' => array('origin' => 'expedicao'),
+                'cssClass' => 'dialogAjax',
+                'condition' => function ($row) {
+                    return $row['status'] != "FINALIZADO";
+                }
             ))
             ->addAction(array(
                 'label' => 'Imprimir',

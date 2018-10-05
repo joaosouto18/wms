@@ -1,7 +1,17 @@
 <form action="/expedicao/corte/cortar-item">
     <b>Motivo do Corte:</b>
-    <input type="text" name="motivoCorte" id="motivoCorte" value="" size="35" title="motivoCorte" required style="margin-right: 15px">
+
+    <select name="motivoCorte" id="motivoCorte" required mostrarselecione="1">
+        <option value="" label="Selecione...">Selecione...</option>
+        <?php
+            foreach ($this->motivos as $key => $motivo) {
+                echo '<option value="' . $key . '" label="' .$motivo. '">' . $motivo. '</option>';
+            }
+        ?>
+    </select>
+
     <input type="hidden" name="id" id="id" value="<?php echo $this->pedido; ?>">
+    <input type="hidden" name="origin" id="origin" value="<?php echo $this->origin; ?>">
     <input type="hidden" name="COD_PRODUTO" id="COD_PRODUTO" value="<?php echo $this->produto; ?>">
     <input type="hidden" name="DSC_GRADE" id="DSC_GRADE" value="<?php echo $this->grade; ?>">
     <input type="hidden" name="expedicao" id="expedicao" value="<?php echo $this->expedicao; ?>">

@@ -58,13 +58,27 @@ class PedidoRepository extends EntityRepository
             //regexp_replace(LPAD(PJ.NUM_CNPJ, 15, '0'),'([0-9]{3})([0-9]{3})([0-9]{3})([0-9]{4})([0-9]{2})','\1.\2.\3/\4-\5') as CNPJ
         $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         if($controleProprietario == 'S'){
-            $SQL = "SELECT EP.COD_PESSOA, (EP.QTD * -1) as ATENDIDA, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PJ.NUM_CNPJ as CNPJ
+            $SQL = "SELECT EP.COD_PESSOA, 
+                           NVL((EP.QTD * -1),0) as ATENDIDA, 
+                           PP.COD_PRODUTO, 
+                           PP.DSC_GRADE, 
+                           PP.QUANTIDADE as QTD_PEDIDO, 
+                           PJ.NUM_CNPJ as CNPJ,
+                           NVL((EP.QTD * -1),0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) as QTD_ATENDIDA_EMB_VENDA,
+                           NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA
                     FROM PEDIDO_PRODUTO PP 
                     LEFT JOIN ESTOQUE_PROPRIETARIO EP ON (PP.COD_PRODUTO = EP.COD_PRODUTO AND PP.DSC_GRADE = EP.DSC_GRADE AND PP.COD_PEDIDO = EP.COD_OPERACAO)
                     LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
                     WHERE PP.COD_PEDIDO = $codPedido";
         }else {
-            $SQL = "SELECT PP.COD_PRODUTO, PP.DSC_GRADE, PP.QUANTIDADE as QTD_PEDIDO, PP.QUANTIDADE - NVL(PP.qtd_cortada,0) as ATENDIDA, '' AS CNPJ
+            $SQL = "SELECT '' as COD_PESSOA,
+                           PP.QUANTIDADE - NVL(PP.qtd_cortada,0) as ATENDIDA,
+                           PP.COD_PRODUTO, 
+                           PP.DSC_GRADE, 
+                           PP.QUANTIDADE as QTD_PEDIDO, 
+                           '' AS CNPJ,
+                           (PP.QUANTIDADE - NVL(PP.qtd_cortada,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) as QTD_ATENDIDA_EMB_VENDA,
+                           NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA                           
                   FROM PEDIDO_PRODUTO PP WHERE PP.COD_PEDIDO = '$codPedido'";
         }
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -627,18 +641,37 @@ class PedidoRepository extends EntityRepository
     }
 
     public function getProdutosByPedido($codPedido){
+
+        $sqlCampoQuantidadePedido = " PP.QUANTIDADE , ";
+        $sqlCampoQuantidadeCortada = " NVL(PP.QTD_CORTADA,0) as QTD_CORTADA, ";
+        if ($this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO') == 'S') {
+            $sqlCampoQuantidadePedido = "CASE WHEN (P.COD_TIPO_COMERCIALIZACAO = 1) THEN PP.QTD_EMBALAGEM_VENDA ||' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE PP.QUANTIDADE || '' END as QUANTIDADE , ";
+            $sqlCampoQuantidadeCortada = "CASE WHEN (P.COD_TIPO_COMERCIALIZACAO = 1) AND (NVL(PP.QTD_CORTADA,0) > 0) THEN (NVL(PP.QTD_CORTADA,0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE NVL(PP.QTD_CORTADA,0) || '' END as QTD_CORTADA , ";
+        }
+
         $SQL = "
         SELECT P.COD_PRODUTO,
                P.DSC_GRADE,
                P.DSC_PRODUTO,
-               PP.QUANTIDADE,
-               NVL(PP.QTD_CORTADA,0) as QTD_CORTADA,
+               $sqlCampoQuantidadePedido
+               $sqlCampoQuantidadeCortada
                (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) * NVL(PESO.NUM_PESO,0) as NUM_PESO,
                (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) * NVL(PESO.NUM_CUBAGEM,0) as NUM_CUBAGEM
           FROM PEDIDO_PRODUTO PP
-          INNER JOIN PEDIDO PED ON PED.COD_PEDIDO = PP.COD_PEDIDO
+         INNER JOIN PEDIDO PED ON PED.COD_PEDIDO = PP.COD_PEDIDO
           LEFT JOIN PRODUTO P ON P.COD_PRODUTO = PP.COD_PRODUTO AND P.DSC_GRADE = PP.DSC_GRADE
           LEFT JOIN PRODUTO_PESO PESO ON PESO.COD_PRODUTO = PP.COD_PRODUTO AND PESO.DSC_GRADE = PP.DSC_GRADE
+          LEFT JOIN (SELECT QTD_EMBALAGEM, 
+                            COD_PRODUTO,
+                            DSC_GRADE,
+                            MAX(COD_PRODUTO_EMBALAGEM) as COD_PRODUTO_EMBALAGEM
+                       FROM PRODUTO_EMBALAGEM 
+                      WHERE DTH_INATIVACAO IS NULL
+                      GROUP BY QTD_EMBALAGEM, COD_PRODUTO, DSC_GRADE) MP
+                 ON MP.COD_PRODUTO = P.COD_PRODUTO
+                AND MP.DSC_GRADE = P.DSC_GRADE
+                AND MP.QTD_EMBALAGEM = PP.FATOR_EMBALAGEM_VENDA
+          LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MP.COD_PRODUTO_EMBALAGEM
          WHERE PED.COD_EXTERNO = '$codPedido' ORDER BY COD_PRODUTO, DSC_GRADE";
         $result=$this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
@@ -664,25 +697,112 @@ class PedidoRepository extends EntityRepository
 
     }
 
-    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA')
+    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA', $todosProdutos = false)
     {
+
+        $sqlCampos = "p.codExterno as id, cli.codClienteExterno codcli, pe.nome cliente, NVL(i.descricao,'PADRAO') as itinerario, p.numSequencial";
+        if (isset($codProduto) && !empty($codProduto)) {
+            $sqlCampos = "p.id as ID, '' as VALUE, p.codExterno as id, cli.codClienteExterno codcli, pe.nome cliente, NVL(i.descricao,'PADRAO') as itinerario, p.numSequencial, pp.quantidade, NVL(pp.qtdCortada,0) as qtdCortada, pp.fatorEmbalagemVenda, CASE WHEN pp.quantidade > NVL(pp.qtdCortada,0) THEN 'S' ELSE 'N' AS permiteCorte, e.id as idExpedicao, c.codCargaExterno as carga ";
+        }
+
+
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.codExterno as id, pe.nome cliente, NVL(i.descricao,\'PADRAO\') as itinerario, p.numSequencial')
+            ->select($sqlCampos)
             ->from('wms:Expedicao\Pedido', 'p')
+            ->innerJoin('p.pessoa', 'cli')
             ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'p.id = pp.codPedido')
             ->innerJoin('wms:Pessoa','pe', 'WITH', 'pe.id = p.pessoa')
             ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
             ->innerJoin('p.carga', 'c')
             ->innerJoin('c.expedicao', 'e')
-            ->where("e.id = $idExpedicao  and pp.quantidade > NVL(pp.qtdCortada,0)")
-            ->groupBy('p.codExterno, pe.nome, i.descricao, p.numSequencial')
-            ->orderBy('pe.nome', 'asc');
+            ->where("e.id IN ($idExpedicao) ")
+            ->orderBy('p.codExterno', 'asc');
+
+        if ($todosProdutos == false) {
+            $sql->andWhere("pp.quantidade > NVL(pp.qtdCortada,0)");
+        }
 
         if (isset($codProduto) && !empty($codProduto)) {
             $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
+        } else {
+            $sql->groupBy('p.codExterno, pe.nome, i.descricao, p.numSequencial, cli.codClienteExterno');
         }
 
         $result = $sql->getQuery()->getResult();
+
+        if (isset($codProduto) && !empty($codProduto)) {
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            if ($this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO') != 'S') {
+                $embalagemEn = null;
+                $embalagens = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'ASC'));
+                if ($embalagens != null) {
+                    $embalagemEn = $embalagens[0];
+                }
+
+                foreach ($result as $key => $value) {
+                    $result[$key]['quantidadeUnitaria'] = $value['quantidade'];
+                    $result[$key]['qtdCortadaUnitaria'] = $value['qtdCortada'];
+
+                    if ($embalagemEn == null) {
+                        $result[$key]['fatorEmbalagemVenda'] = 1;
+                    } else {
+                        $result[$key]['fatorEmbalagemVenda'] = $embalagemEn->getQuantidade();
+                    }
+
+                    $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $grade, $value['quantidade']);
+                    if(is_array($vetEmbalagens)) {
+                        $embalagem = implode(' + ', $vetEmbalagens);
+                    }else{
+                        $embalagem = $vetEmbalagens;
+                    }
+                    $result[$key]['quantidade'] = $embalagem;
+
+                    $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $grade, $value['qtdCortada']);
+                    if(is_array($vetEmbalagens)) {
+                        $embalagem = implode(' + ', $vetEmbalagens);
+                    }else{
+                        $embalagem = $vetEmbalagens;
+                    }
+                    $result[$key]['qtdCortada'] = $embalagem;
+
+                    if ($embalagemEn == null) {
+                        $result[$key]['idEmbalagem'] = "";
+                    } else {
+                        $result[$key]['idEmbalagem'] = $embalagemEn->getId();
+                    }
+                }
+            } else {
+                foreach ($result as $key => $value) {
+                    $result[$key]['quantidadeUnitaria'] = $value['quantidade'];
+                    $result[$key]['qtdCortadaUnitaria'] = $value['qtdCortada'];
+
+                    $fatorEmbalagem = $result[$key]['fatorEmbalagemVenda'];
+                    $embalagemEn = $embalagemRepo->findOneBy(array('codProduto'=> $codProduto,'grade'=> $grade, 'dataInativacao' => null, 'quantidade'=>$fatorEmbalagem));
+
+                    if ($embalagemEn == null) {
+                        $result[$key]['idEmbalagem'] = "";
+                    } else {
+                        $result[$key]['idEmbalagem'] = $embalagemEn->getId();
+                    }
+
+                    $dscEmbalagem = " ";
+                    if ($embalagemEn != null) {
+                        $dscEmbalagem = $embalagemEn->getDescricao();
+                        $dscEmbalagem = " $dscEmbalagem($fatorEmbalagem)";
+                    }
+
+                    $result[$key]['quantidade'] = ($result[$key]['quantidade'] / $fatorEmbalagem) . $dscEmbalagem ;
+                    if ($result[$key]['qtdCortada'] <> 0) {
+                        $result[$key]['qtdCortada'] = ($result[$key]['qtdCortada'] / $fatorEmbalagem) . $dscEmbalagem;
+                    } else {
+                        $result[$key]['qtdCortada'] = "";
+                    }
+
+                }
+
+            }
+        }
+
         foreach ($result as $key => $value){
             if(!empty($value['numSequencial']) && $value['numSequencial'] > 1){
                 $result[$key]['id'] = $value['id'].' - '.$value['numSequencial'];

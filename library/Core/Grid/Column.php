@@ -8,6 +8,11 @@ namespace Core\Grid;
  */
 class Column
 {
+    /**
+     * indica que o element esta habilitado para edição ou não
+     * @var boolean
+     */
+    protected $enabled = true;
 
     protected $visible = true;
     /**
@@ -435,5 +440,22 @@ class Column
         $this->isReportColumn = (boolean) $isReportColumn;
         return $this;
     }
+
+    public function getEnabled()
+    {
+        return $this->enabled;
+    }
+
+    /**
+     *
+     * @param boolean $hasTotal
+     * @return \Core\Grid\Column
+     */
+    public function setEnabled($value)
+    {
+        $this->enabled = (boolean) $value;
+        return $this;
+    }
+
 
 }

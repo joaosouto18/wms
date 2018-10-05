@@ -2647,7 +2647,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     /**
      * @param $etiquetaEntity
      */
-    public function cortar($etiquetaEntity, $corteTodosVolumes = false)
+    public function cortar($etiquetaEntity, $corteTodosVolumes = false, $motivoEn = null)
     {
 
         if ($this->cortaEtiquetaReentrega($etiquetaEntity)) {
@@ -2684,8 +2684,26 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
-        if ((is_null($etiquetaEntity->getCodReferencia()) && !is_null($etiquetaEntity->getProdutoVolume())) || $etiquetaEntity->getProdutoEmbalagem())
+        if ((is_null($etiquetaEntity->getCodReferencia()) && !is_null($etiquetaEntity->getProdutoVolume())) || $etiquetaEntity->getProdutoEmbalagem()) {
+            if ($motivoEn != null) {
+                $idPedido = $etiquetaEntity->getPedido()->getId();
+                $codProduto = $etiquetaEntity->getCodProduto();
+                $grade = $etiquetaEntity->getGrade();
+
+                $pedidoProdutoRepo   = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+                $pedidoProdutoEn = $pedidoProdutoRepo->findOneBy(array(
+                    'codPedido' => $idPedido,
+                    'codProduto' => $codProduto,
+                    'grade' => $grade
+                ));
+
+                $pedidoProdutoEn->setMotivoCorte($motivoEn);
+                $pedidoProdutoEn->setCodMotivoCorte($motivoEn->getId());
+                $this->getEntityManager()->persist($pedidoProdutoEn);
+            }
             $EtiquetaRepo->incrementaQtdAtentidaOuCortada($etiquetaEntity->getId(), 'cortada');
+
+        }
 
         $this->alteraStatus($etiquetaEntity,EtiquetaSeparacao::STATUS_CORTADO);
         $this->_em->flush();

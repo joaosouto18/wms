@@ -9,6 +9,7 @@ echo $this->form;
         <caption>Selecione as Expedições</caption>
         <tbody>
             <tr class ="gTTitle">
+                <td></td>
                 <td>Gerar</td>
                 <td>Expedição</td>
                 <td>Cubagem</td>
@@ -24,6 +25,19 @@ echo $this->form;
                 <?php
                 foreach ($this->expedicoes as $expedicao): $this->color = !($this->color);?>
                     <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                        <td class="gTdOpcRow">
+                            <div class="gOpcRow">
+                                <ul>
+                                    <li><img src="/img/admin/icon_opc.gif" alt="Op&ccedil;&otilde;es" />
+                                        <ul>
+                                            <li><a href="/expedicao/corte/corte-total/id/<?php echo $expedicao['COD_EXPEDICAO']?>" target="_blank" title="Corte Total">Corte Total de Produtos</a></li>
+                                            <li><a href="/expedicao/corte/corte-pedido/id/<?php echo $expedicao['COD_EXPEDICAO']?>/origin/ressuprimento" target="_blank" title="Corte de Pedidos">Corte de Pedidos</a></li>
+                                            <li><a href="/expedicao/corte/corte-produto/id/<?php echo $expedicao['COD_EXPEDICAO']?>" target="_self"  class="dialogAjax" title="Corte de Produtos">Corte de Produtos</a></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
                         <td>
                             <input
                                 class="checkBoxClass"

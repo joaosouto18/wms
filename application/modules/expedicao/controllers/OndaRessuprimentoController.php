@@ -79,6 +79,8 @@ class Expedicao_OndaRessuprimentoController extends Action
     {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+        $repoMotivos = $this->getEntityManager()->getRepository('wms:Expedicao\MotivoCorte');
+
         $idsExpedicoes = $this->_getParam("expedicao");
         $expedicoes = null;
         $return = [];
@@ -97,9 +99,16 @@ class Expedicao_OndaRessuprimentoController extends Action
                 $cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
 
                 if ($cortarAutomatico == 'S') {
-                    $motivo = "Saldo insuficiente";
+
+                    $idMotivoCorte = $this->getEntityManager('COD_MOTIVO_CORTE_AUTOMATICO');
+                    if ($idMotivoCorte == null) throw new \Exception("Parametro COD_MOTIVO_CORTE_AUTOMATICO Não encontrado");
+
+                    $motivoEn = $repoMotivos->find($idMotivoCorte);
+                    if ($motivoEn == null) throw new \Exception("Código do Motivo de Corte para Cortes automáticos não encontrado");
+
+                    $motivo = $motivoEn->getDscMotivo();
                     $itensPCortar = $expedicaoRepo->diluirCorte($expedicoes, $result);
-                    $expedicaoRepo->executaCortePedido($itensPCortar, $motivo, $cortarAutomatico);
+                    $expedicaoRepo->executaCortePedido($itensPCortar, $motivo, $cortarAutomatico, $idMotivoCorte);
                     $link = '<a href="' . $this->view->url(array('controller' => 'corte', 'action' => 'relatorio-corte-ajax', 'id' => $expedicoes)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de cortes automaticos da onda de ressuprimento</a>';
                     $msgCorte = "Nessa onda de ressuprimento e reserva alguns itens foram cortados automaticamente por falta de estoque.";
 
@@ -122,7 +131,9 @@ class Expedicao_OndaRessuprimentoController extends Action
                     $expedicoesComCorte = implode(',', $expedicoesComCorte);
 
                     $link = '<a href="' . $this->view->url(array('controller' => 'onda-ressuprimento', 'action' => 'relatorio-sem-estoque-ajax', 'expedicoes' => $expedicoesComCorte)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Relatório de Produtos sem Estoque</a>';
-                    $mensagem = 'Existem produtos sem estoque entre as expedições selecionadas.';
+                    $link .= '<br><br> <a href="/expedicao/corte/corte-produto/id/' . $expedicoesComCorte  .'"  target="_self" class="dialogAjax btn"  >Cortar Produtos</a> ';
+
+                    $mensagem = 'Existem Produtos sem Estoque nas Expedições Selecionadas.';
 
                     $return['response'][] = [
                         'msg' => $mensagem,

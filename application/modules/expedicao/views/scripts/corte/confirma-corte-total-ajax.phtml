@@ -1,0 +1,47 @@
+<fieldset>
+    <legend>Produto a Cortar</legend>
+    <table class="gTable">
+        <tr>
+            <td><b>Código</b></td>
+            <td><b>Grade</b></td>
+            <td><b>Produto</b></td>
+        </tr>
+        <tr>
+            <td><?php echo $this->idProduto; ?></td>
+            <td><?php echo $this->grade; ?></td>
+            <td><?php echo $this->produto; ?></td>
+        </tr>
+    </table>
+</fieldset>
+
+<fieldset>
+    <legend>Corte</legend>
+    <?php if ($this->produtoCortado)  {?>
+        <b>Produto já se encontra cortado</b>
+    <?php } else { ?>
+    <form action="/expedicao/corte/confirma-corte-total-ajax">
+
+        <input type="hidden" name="COD_PRODUTO" id="COD_PRODUTO" value="<?php echo $this->idProduto; ?>">
+        <input type="hidden" name="DSC_GRADE" id="DSC_GRADE" value="<?php echo $this->grade; ?>">
+        <input type="hidden" name="id" id="expedicao" value="<?php echo $this->id; ?>">
+
+        <b>Motivo do Corte:</b>
+        <select name="motivoCorte" id="motivoCorte" required mostrarselecione="1">
+            <option value="" label="Selecione...">Selecione...</option>
+            <?php
+            foreach ($this->motivos as $key => $motivo) {
+                echo '<option value="' . $key . '" label="' .$motivo. '">' . $motivo. '</option>';
+            }
+            ?>
+        </select>
+
+        <b>Senha:</b>
+        <input type="password" name="senha" id="senha" value="" size="11" title="senha" required style="margin-right: 25px">
+        <input type="submit" name="submit" id="btnCortar" value="Confirmar Cortes" class="btn" style="margin-top: 10px; margin-bottom: 15px">
+    </form>
+    <?php }?>
+</fieldset>
+<fieldset>
+    <legend>Pedidos</legend>
+    <?php echo $this->grid; ?>
+</fieldset>

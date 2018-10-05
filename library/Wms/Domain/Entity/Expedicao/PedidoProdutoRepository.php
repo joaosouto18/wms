@@ -8,7 +8,7 @@ use Wms\Domain\Entity\Expedicao;
 class PedidoProdutoRepository extends EntityRepository
 {
 
-        public function cortaItem($codPedido,$codProduto,$grade,$qtd,$motivo) {
+        public function cortaItem($codPedido,$codProduto,$grade,$qtd,$motivo, $motivoEn = null) {
 
             /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
             $andamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
@@ -47,7 +47,7 @@ class PedidoProdutoRepository extends EntityRepository
 
                 $qtdPendente = $qtdPendente - $etiquetaEn->getQtdEmbalagem();
 
-                $etiquetaRepo->cortar($etiquetaEn);
+                $etiquetaRepo->cortar($etiquetaEn, false, $motivoEn);
 
                 $codBarrasEtiqueta = $etiquetaEn->getId();
                 if ($etiquetaEn->getProdutoEmbalagem() != NULL) {

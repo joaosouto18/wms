@@ -18,6 +18,11 @@ class Expedicao_CortePedidoController  extends Action
     public function listAction()
     {
         $this->view->em = $this->getEntityManager();
+
+        $repoMotivos = $this->getEntityManager()->getRepository('wms:Expedicao\MotivoCorte');
+
+        $this->view->motivos = $repoMotivos->getMotivos();
+
         $params = array();
         if ($this->_getParam('COD_MAPA_SEPARACAO')!= null) {
             $idMapa = $this->_getParam('COD_MAPA_SEPARACAO');
@@ -62,6 +67,9 @@ class Expedicao_CortePedidoController  extends Action
 
     public function cortarPedidoAction()
     {
+        $repoMotivos = $this->getEntityManager()->getRepository('wms:Expedicao\MotivoCorte');
+
+        $this->view->motivos = $repoMotivos->getMotivos();
         $this->view->pedido = $codExterno = $this->_getParam('id',0);
         $this->view->expedicao = $idExpedicao = $this->_getParam('expedicao');
 
@@ -72,6 +80,11 @@ class Expedicao_CortePedidoController  extends Action
 
             try {
                 $this->getEntityManager()->beginTransaction();
+                $motivo = $this->_getParam('motivoCorte');
+
+                $motivoEn = $repoMotivos->find($motivo);
+                $motivo = $motivoEn->getDscMotivo();
+                $idMotivo = $motivoEn->getId();
 
                 if ($senha != $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA')) {
                     $this->addFlashMessage('error','Senha Informada Inválida');
@@ -95,7 +108,7 @@ class Expedicao_CortePedidoController  extends Action
                     throw new \Exception("Produtos nao encontrados para o Pedido $codExterno");
 
                 foreach ($pedidoProdutos as $pedidoProduto) {
-                    $expedicaoRepo->cortaPedido($pedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $pedidoProduto->getQuantidade(), $this->_getParam('motivoCorte',null));
+                    $expedicaoRepo->cortaPedido($pedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $pedidoProduto->getQuantidade(), $motivo, null, $idMotivo);
                 }
 
                 $andamentoRepo->save("Pedido $codExterno cortado - motivo: ".$this->_getParam('motivoCorte',null), $idExpedicao, false, true, null, null, false);
@@ -112,6 +125,8 @@ class Expedicao_CortePedidoController  extends Action
 
     //exemplo: $qtdCorte['codPedido']['codProduto']['grade'];
     public function cortarAjaxAction(){
+        $repoMotivos = $this->getEntityManager()->getRepository('wms:Expedicao\MotivoCorte');
+
         $qtdCorte = $this->_getParam('qtdCorte');
         $motivo   = $this->_getParam('motivoCorte');
         $senha    = $this->_getParam('senha');
@@ -122,9 +137,15 @@ class Expedicao_CortePedidoController  extends Action
 
         try {
             $this->getEntityManager()->beginTransaction();
+
+            $motivoEn = $repoMotivos->find($motivo);
+
+            $motivo = $motivoEn->getDscMotivo();
+            $idMotivo = $motivoEn->getId();
+
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
             $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
-            $expedicaoRepo->executaCortePedido($qtdCorte,$motivo);
+            $expedicaoRepo->executaCortePedido($qtdCorte,$motivo, null, $idMotivo);
             $this->getEntityManager()->commit();
             $this->addFlashMessage('success','Pedidos Cortados com Sucesso');
         } catch (\Exception $e) {
