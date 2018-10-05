@@ -481,7 +481,7 @@ class Mobile_EnderecamentoController extends Action
                 /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
                 $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
 
-                $idRecebimento= $paleteRepo->findOneBy($idPalete)->getRecebimento()->getId();
+                $idRecebimento = $paleteEn->getRecebimento()->getId();
 
                 if (empty($recebimentoRepo->checkRecebimentoEnderecado($idRecebimento))) {
                     /** @var \Wms\Domain\Entity\NotaFiscal[] $arrNotasEn */

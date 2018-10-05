@@ -23,9 +23,12 @@ BEGIN
     INSERT INTO PARAMETRO (COD_PARAMETRO,COD_CONTEXTO_PARAMETRO,DSC_PARAMETRO,DSC_TITULO_PARAMETRO,IND_PARAMETRO_SISTEMA,COD_TIPO_ATRIBUTO,DSC_VALOR_PARAMETRO)
       VALUES (SQ_PARAMETRO_01.NEXTVAL,(SELECT COD_CONTEXTO_PARAMETRO FROM CONTEXTO_PARAMETRO WHERE DSC_CONTEXTO_PARAMETRO = 'PARÂMETROS DE INTEGRAÇÃO'),'IND_LIBERA_FATURAMENTO_NF_RECEBIMENTO_ERP','Integração de liberação de faturamento de NF (recebimento) no ERP (S/N)','S','A','N');
 
-/************************************************************************
-**                 NÃO ALTERAR ABAIXO DESTA REGIÃO                     **
-************************************************************************/
+    INSERT INTO PARAMETRO (COD_PARAMETRO,COD_CONTEXTO_PARAMETRO,DSC_PARAMETRO,DSC_TITULO_PARAMETRO,IND_PARAMETRO_SISTEMA,COD_TIPO_ATRIBUTO,DSC_VALOR_PARAMETRO)
+      VALUES (SQ_PARAMETRO_01.NEXTVAL,(SELECT COD_CONTEXTO_PARAMETRO FROM CONTEXTO_PARAMETRO WHERE DSC_CONTEXTO_PARAMETRO = 'PARÂMETROS DE INTEGRAÇÃO'),'FORMATO_DATA_ERP','Padrão de formato para DATA no ERP','S','A',null);
+
+    /************************************************************************
+    **                 NÃO ALTERAR ABAIXO DESTA REGIÃO                     **
+    ************************************************************************/
     DBMS_OUTPUT.PUT_LINE('Script executado com sucesso');
   END IF;
 END;

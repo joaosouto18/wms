@@ -2164,6 +2164,7 @@ class RecebimentoRepository extends EntityRepository {
     public function liberaFaturamentoNotaErp($arrNotas)
     {
         $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_LIBERA_FATURAMENTO_NF_RECEBIMENTO_ERP');
+        $formatoData = $this->getSystemParameterValue('FORMATO_DATA_ERP');
 
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
@@ -2175,12 +2176,11 @@ class RecebimentoRepository extends EntityRepository {
                 $options = [];
                 $options[] = $nota->getSerie();
                 $options[] = $nota->getNumero();
-                $options[] = $nota->getSerie();
                 $options[] = $nota->getFornecedor()->getIdExterno();
-                $options[] = date_format($nota->getDataEmissao(), 'Y-m-d');
+                $options[] = date_format($nota->getDataEmissao(), $formatoData);
 
                 $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
-                if (!$resultAcao === true) {
+                if (!empty($resultAcao)) {
                     throw new \Exception($resultAcao);
                 }
             }

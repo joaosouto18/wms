@@ -234,11 +234,9 @@ class Enderecamento_PaleteController extends Action
                             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
                             $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
 
-                            $idRecebimento = $paleteRepo->findOneBy($paletes[0])->getRecebimento()->getId();
-
-                            if (empty($recebimentoRepo->checkRecebimentoEnderecado($idRecebimento))) {
+                            if (empty($recebimentoRepo->checkRecebimentoEnderecado($id))) {
                                 /** @var \Wms\Domain\Entity\NotaFiscal[] $arrNotasEn */
-                                $arrNotasEn = $this->_em->getRepository("wms:NotaFiscal")->findBy(['recebimento' => $idRecebimento]);
+                                $arrNotasEn = $this->_em->getRepository("wms:NotaFiscal")->findBy(['recebimento' => $id]);
                                 $recebimentoRepo->liberaFaturamentoNotaErp($arrNotasEn);
                             }
                         }
