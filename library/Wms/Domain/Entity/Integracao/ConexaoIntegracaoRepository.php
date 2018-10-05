@@ -126,6 +126,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             }
             $result = \sqlsrv_query($conexao, $query);
 
+
             if (!$result || $result == false) {
                 $errors = \sqlsrv_errors();
                 foreach( $errors as $error ) {
