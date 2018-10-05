@@ -8,6 +8,10 @@ class Expedicao_CorteFaixaController  extends Action
     {
         ini_set('max_execution_time', 3000);
 
+        $repoMotivos = $this->getEntityManager()->getRepository('wms:Expedicao\MotivoCorte');
+
+        $this->view->motivos = $repoMotivos->getMotivos();
+
         $codBarrasInicial = $this->getRequest()->getParam('codBarrasInicial');
         $codBarrasFinal = $this->getRequest()->getParam('codBarrasFinal');
         $senha = $this->view->codBarras = $this->getRequest()->getParam('senha');
@@ -22,6 +26,10 @@ class Expedicao_CorteFaixaController  extends Action
         $this->view->codBarrasFinal = $codBarrasFinal;
 
         if (($codBarrasInicial != NULL) && ($codBarrasFinal != NULL)) {
+
+            $motivo = $this->_getParam('motivoCorte');
+            $motivoEn = $repoMotivos->find($motivo);
+
             if ($EtiquetaRepo->checkAutorizacao($senha)) {
                 $etiquetas = $EtiquetaRepo->getEtiquetasByFaixa($codBarrasInicial,$codBarrasFinal);
                 if (count($etiquetas) >0) {
@@ -30,13 +38,14 @@ class Expedicao_CorteFaixaController  extends Action
                     $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
                     /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao $etiquetaEn */
                     try {
+
                         foreach ($etiquetas as $etiquetaEn) {
                             if ($etiquetaEn->getCodStatus() == \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CORTADO) {
                                 $this->addFlashMessage('error',"Etiqueta já cortada!");
                                 $this->redirect('index','corte-faixa','expedicao');
                             }
 
-                            $EtiquetaRepo->cortar($etiquetaEn, true);
+                            $EtiquetaRepo->cortar($etiquetaEn, true, $motivoEn);
 
                             if ($etiquetaEn->getProdutoEmbalagem() != NULL) {
                                 $codBarrasProdutos = $etiquetaEn->getProdutoEmbalagem()->getCodigoBarras();
@@ -47,7 +56,7 @@ class Expedicao_CorteFaixaController  extends Action
                             if ($etiquetaInicial == "") $etiquetaInicial = $etiquetaEn->getId();
                             $etiquetaFinal = $etiquetaEn->getId();
                             $expedicaoId = $etiquetaEn->getPedido()->getCarga()->getExpedicao()->getId();
-                            $andamentoRepo->save('Etiqueta '. $etiquetaEn->getId() .' cortada', $expedicaoId, false, true, $etiquetaEn->getId(),$codBarrasProdutos);
+                            $andamentoRepo->save('Etiqueta '. $etiquetaEn->getId() .' cortada - Motivo:' . $motivoEn->getDscMotivo(), $expedicaoId, false, true, $etiquetaEn->getId(),$codBarrasProdutos);
                         }
                         $this->addFlashMessage('success',"Etiquetas cortadas com sucesso");
                         $this->redirect('index','corte-faixa','expedicao');

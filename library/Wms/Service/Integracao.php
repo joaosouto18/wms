@@ -456,11 +456,11 @@ class Integracao {
             $valorEstoque = array_change_key_case($valorEstoque, CASE_UPPER);
             $qtdIteracoes = $qtdIteracoes + 1;
 
-            $codProduto = $valorEstoque['COD_PRODUTO'];
+            $codProduto = utf8_encode($valorEstoque['COD_PRODUTO']);
             $grade = "UNICA";
 
             if (isset($valorEstoque['GRADE'])) {
-                $grade = $valorEstoque['GRADE'];
+                $grade = utf8_encode($valorEstoque['GRADE']);
             }
             $produtoEn = $produtoRepo->findOneBy(array('id' => $codProduto, 'grade' => $grade));
             if ($produtoEn != null) {
@@ -523,12 +523,16 @@ class Integracao {
                 }
 
                 $tipoPedido = (isset($row['TIPO_PEDIDO']) && !empty($row['TIPO_PEDIDO'])) ? $row['TIPO_PEDIDO'] : null;
+                $fatorEmbalagemVenda = (isset($row['FATOR_EMBALAGEM_VENDA']) && !empty($row['FATOR_EMBALAGEM_VENDA'])) ? $row['FATOR_EMBALAGEM_VENDA'] : null;
+                $qtdEmbalagemVenda = (isset($row['QTD_EMBALAGEM_VENDA']) && !empty($row['QTD_EMBALAGEM_VENDA'])) ? $row['QTD_EMBALAGEM_VENDA'] : null;
 
                 $produto = array(
                     'codProduto' => $row['PRODUTO'],
                     'grade' => $row['GRADE'],
                     'quantidade' => $row['QTD'],
-                    'valorVenda' => $row['VLR_VENDA']
+                    'valorVenda' => $row['VLR_VENDA'],
+                    'fatorEmbalagemVenda' => $fatorEmbalagemVenda,
+                    'qtdEmbalagemVenda' => $qtdEmbalagemVenda,
                 );
                 $produtos[] = $produto;
 

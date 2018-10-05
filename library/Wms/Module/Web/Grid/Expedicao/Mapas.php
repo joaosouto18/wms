@@ -68,7 +68,7 @@ class Mapas extends Grid
                     'label' => 'Visualizar pedidos',
                     'moduleName' => 'expedicao',
                     'controllerName' => 'corte',
-                    'actionName' => 'corte-antecipado-ajax',
+                    'actionName' => 'corte-pedido',
                     'cssClass' => 'dialogAjax',
                     'pkIndex' => 'COD_MAPA_SEPARACAO'
                 ))

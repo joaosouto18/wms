@@ -22,13 +22,15 @@ class InputText extends Render\ARender implements Render\IRender
         $value = $row['VALUE'];
         $index = $this->getColumn()->getIndex();
 
-        if ($row[$index] != null) {
-            return "<input style='width:40px;' type='text' name=".$index."[".$id."] value='$value' />";
+        if ($row[$index] == "N") {
+            return '<div style="float:right; position:  relative;left: -50%">-</div>';
         } else {
-            return "<input style='width:40px;' type='text' name=".$index."[".$id."] value='' />";
+            if ($row[$index] != null) {
+                return "<input style='width:40px;' type='text' name=".$index."[".$id."] value='$value' />";
+            } else {
+                return "<input style='width:40px;' type='text' name=".$index."[".$id."] value='' />";
+            }
         }
-
-	
     }
 
 }

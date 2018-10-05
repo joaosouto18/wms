@@ -1,6 +1,14 @@
 <form action="/expedicao/corte-pedido/cortar-ajax">
     <b>Motivo do Corte:</b>
-    <input type="text" name="motivoCorte" id="motivoCorte" value="" size="40%" title="motivoCorte" style="margin-right: 15px">
+    <select name="motivoCorte" id="motivoCorte" required mostrarselecione="1">
+        <option value="" label="Selecione...">Selecione...</option>
+        <?php
+        foreach ($this->motivos as $key => $motivo) {
+            echo '<option value="' . $key . '" label="' .$motivo. '">' . $motivo. '</option>';
+        }
+        ?>
+    </select>
+
     <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao; ?>">
     <b>Senha:</b>
     <input type="password" name="senha" id="senha" value="" size="0%" title="senha" style="margin-right: 25px">

@@ -5,7 +5,7 @@ use Doctrine\ORM\EntityRepository;
 
 class EquipeCarregamentoRepository extends EntityRepository
 {
-    public function vinculaOperadores($expedicao, array $operadores)
+    public function vinculaOperadores($expedicao, array $operadores, $placa, $dthFinal = false)
     {
         $em = $this->_em;
         $em->beginTransaction();
@@ -14,19 +14,49 @@ class EquipeCarregamentoRepository extends EntityRepository
             $entityExpedicao      = $expedicaoRepo->findOneBy(array('id' => $expedicao));
             $usuarioRepo            = $em->getRepository('wms:Usuario');
 
-            $enDescarga = $this->findBy(array('expedicao' => $expedicao));
-            foreach ($enDescarga as $value) {
-                $em->remove($value);
+            $equipeCarregamentoEntities = $this->findBy(array('expedicao' => $expedicao));
+
+            foreach ($operadores as $key => $operador) {
+                $entityUsuario = $usuarioRepo->findOneBy(array('pessoa' => $operador));
+                $existeCadastro = false;
+                foreach ($equipeCarregamentoEntities as $keyOperador => $equipeCarregamentoEntity) {
+                    if ($equipeCarregamentoEntity->getUsuario() == $entityUsuario) {
+                        $usuarioFechamentoProdutividade = $equipeCarregamentoEntity;
+                        $existeCadastro = true;
+                        break;
+                    }
+                }
+                if (!$dthFinal && !$existeCadastro) {
+                    $entityCarregamento = new EquipeCarregamento();
+                    $entityCarregamento->setDataVinculo(new \DateTime());
+                    $entityCarregamento->setExpedicao($entityExpedicao);
+                    $entityCarregamento->setUsuario($entityUsuario);
+                    $em->persist($entityCarregamento);
+                }
+
+                if ($dthFinal && $existeCadastro) {
+                    $usuarioFechamentoProdutividade->setDataFim(new \DateTime());
+                }
+
+                if ($dthFinal && !$existeCadastro) {
+                    throw new \Exception($entityUsuario->getPessoa()->getNome() . ' não foi vinculado(a) no inicio do carregamento.');
+                }
             }
 
-            foreach($operadores as $idOperador) {
-                $entityUsuario          = $usuarioRepo->findOneBy(array('pessoa' => $idOperador));
-                $enCarregamento = new EquipeCarregamento();
-                $enCarregamento->setDataVinculo(new \DateTime());
-                $enCarregamento->setExpedicao($entityExpedicao);
-                $enCarregamento->setUsuario($entityUsuario);
-                $em->persist($enCarregamento);
+            foreach ($equipeCarregamentoEntities as $equipeCarregamentoEntity) {
+                $mantemCadastrado = false;
+                foreach ($operadores as $operador) {
+                    $entityUsuario = $usuarioRepo->findOneBy(array('pessoa' => $operador));
+                    if ($equipeCarregamentoEntity->getUsuario() == $entityUsuario) {
+                        $mantemCadastrado = true;
+                        break;
+                    }
+                }
+                if (!$mantemCadastrado) {
+                    $em->remove($equipeCarregamentoEntity);
+                }
             }
+
             $em->flush();
             $em->commit();
 

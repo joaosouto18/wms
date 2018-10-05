@@ -22,6 +22,18 @@
             <tbody>
             <tr>
                 <td>
+                    <label>Motivo de Corte:</label>
+                    <select name="motivoCorte" id="motivoCorte" required mostrarselecione="1">
+                        <option value="" label="Selecione...">Selecione...</option>
+                        <?php
+                        foreach ($this->motivos as $key => $motivo) {
+                            echo '<option value="' . $key . '" label="' .$motivo. '">' . $motivo. '</option>';
+                        }
+                        ?>
+                    </select>
+                </td>
+
+                <td>
                     <label>Código de barras etiqueta:</label>
                     <input class="focus" type="text" name="codBarra" id="codBarra" value="<?php echo $this->codBarras; ?>" onkeydown="nextInput(event)" />
                 </td>

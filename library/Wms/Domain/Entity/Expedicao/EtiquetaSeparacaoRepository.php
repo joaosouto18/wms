@@ -313,6 +313,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia, 
                     p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial
                 ')
+            ->addSelect("
+                        (
+                            SELECT COUNT(et.id)
+                            FROM wms:Expedicao\EtiquetaSeparacao et
+                            WHERE et.pedido = p.id AND et.codProduto = es.codProduto AND et.dscGrade = es.grade
+                        )
+                         AS qtdProdDist
+                        ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
@@ -455,12 +463,21 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      */
     public function getEtiquetaById($id)
     {
+
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codBarrasProduto, c.sequencia, p.id pedido,
 					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, p.numSequencial
                 ')
+            ->addSelect("
+                        (
+                            SELECT COUNT(et.id)
+                            FROM wms:Expedicao\EtiquetaSeparacao et
+                            WHERE et.pedido = p.id AND et.codProduto = es.codProduto AND et.dscGrade = es.grade
+                        )
+                         AS qtdProdDist
+                        ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
@@ -724,6 +741,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             while ($quantidadeRestantePedido > 0) {
 
                 $count++;
+                /** @var Produto\Embalagem $embalagemAtual */
                 $embalagemAtual = null;
                 $quantidadeAtender = $quantidadeRestantePedido;
 
@@ -763,19 +781,23 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
 
                 if ($embalado === true) {
-                    $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
-                    if (!empty($dadoLogisticoEn)) {
-                        $numAltura       = $this->tofloat($dadoLogisticoEn->getAltura());
-                        $numLargura      = $this->tofloat($dadoLogisticoEn->getLargura());
-                        $numProfundidade = $this->tofloat($dadoLogisticoEn->getProfundidade());
-                        $cubagemProduto  = $numAltura * $numLargura * $numProfundidade;
+                    $cubagemProduto = $embalagemAtual->getCubagem();
+                    if (empty($cubagemProduto)) {
+                        $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
+                        if (!empty($dadoLogisticoEn)) {
+                            $numAltura       = $this->tofloat($dadoLogisticoEn->getAltura());
+                            $numLargura      = $this->tofloat($dadoLogisticoEn->getLargura());
+                            $numProfundidade = $this->tofloat($dadoLogisticoEn->getProfundidade());
+                            $cubagemProduto  = $numAltura * $numLargura * $numProfundidade;
+                        } else {
+                            $cubagemProduto = $this->tofloat('0.001');
+                        }
                     }
-                    if (!isset($cubagemProduto) || is_null($cubagemProduto) || $cubagemProduto <= 0) {
-                        $cubagemProduto = $this->tofloat('0.001');
-                    }
+
                     if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
                         continue;
                     }
+
                     $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = number_format($cubagemProduto * ((float)$quantidadeAtender / number_format($embalagemAtual->getQuantidade(),3,'.','')),8);
                 }
             }
@@ -2593,7 +2615,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     /**
      * @param $etiquetaEntity
      */
-    public function cortar($etiquetaEntity, $corteTodosVolumes = false)
+    public function cortar($etiquetaEntity, $corteTodosVolumes = false, $motivoEn = null)
     {
 
         if ($this->cortaEtiquetaReentrega($etiquetaEntity)) {
@@ -2630,8 +2652,26 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
         }
 
-        if ((is_null($etiquetaEntity->getCodReferencia()) && !is_null($etiquetaEntity->getProdutoVolume())) || $etiquetaEntity->getProdutoEmbalagem())
+        if ((is_null($etiquetaEntity->getCodReferencia()) && !is_null($etiquetaEntity->getProdutoVolume())) || $etiquetaEntity->getProdutoEmbalagem()) {
+            if ($motivoEn != null) {
+                $idPedido = $etiquetaEntity->getPedido()->getId();
+                $codProduto = $etiquetaEntity->getCodProduto();
+                $grade = $etiquetaEntity->getGrade();
+
+                $pedidoProdutoRepo   = $this->_em->getRepository('wms:Expedicao\PedidoProduto');
+                $pedidoProdutoEn = $pedidoProdutoRepo->findOneBy(array(
+                    'codPedido' => $idPedido,
+                    'codProduto' => $codProduto,
+                    'grade' => $grade
+                ));
+
+                $pedidoProdutoEn->setMotivoCorte($motivoEn);
+                $pedidoProdutoEn->setCodMotivoCorte($motivoEn->getId());
+                $this->getEntityManager()->persist($pedidoProdutoEn);
+            }
             $EtiquetaRepo->incrementaQtdAtentidaOuCortada($etiquetaEntity->getId(), 'cortada');
+
+        }
 
         $this->alteraStatus($etiquetaEntity,EtiquetaSeparacao::STATUS_CORTADO);
         $this->_em->flush();
@@ -2880,7 +2920,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         if (!empty($parametros['pedido'])) {
             $source
                 ->setParameter('codPedido', $parametros['pedido'])
-                ->andWhere('es.pedido = :codPedido');
+                ->andWhere('p.codExterno = :codPedido');
         }
 
         if (!empty($parametros['situacao'])) {

@@ -76,7 +76,28 @@ class PedidoProduto
      * @Column(name="QTD_CORTADO_AUTOMATICO", type="decimal")
      */
     protected $qtdCortadoAutomatico;
-        
+
+    /**
+     * @Column(name="FATOR_EMBALAGEM_VENDA", type="decimal", nullable=false)
+     */
+    protected $fatorEmbalagemVenda;
+
+    /**
+     * @Column(name="QTD_EMBALAGEM_VENDA", type="decimal", nullable=false)
+     */
+    protected $qtdEmbalagemVenda;
+
+    /**
+     * @Column(name="COD_MOTIVO_CORTE", type="integer", nullable=true)
+     */
+    protected $codMotivoCorte;
+
+    /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\MotivoCorte")
+     * @JoinColumn(name="COD_MOTIVO_CORTE", referencedColumnName="COD_MOTIVO_CORTE")
+     */
+    protected $motivoCorte;
+
     public function setGrade($grade)
     {
         $this->grade = $grade;
@@ -216,6 +237,70 @@ class PedidoProduto
     public function getQtdCortadoAutomatico()
     {
         return $this->qtdCortadoAutomatico;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFatorEmbalagemVenda()
+    {
+        return $this->fatorEmbalagemVenda;
+    }
+
+    /**
+     * @param mixed $fatorEmbalagemVenda
+     */
+    public function setFatorEmbalagemVenda($fatorEmbalagemVenda)
+    {
+        $this->fatorEmbalagemVenda = $fatorEmbalagemVenda;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQtdEmbalagemVenda()
+    {
+        return $this->qtdEmbalagemVenda;
+    }
+
+    /**
+     * @param mixed $qtdEmbalagemVenda
+     */
+    public function setQtdEmbalagemVenda($qtdEmbalagemVenda)
+    {
+        $this->qtdEmbalagemVenda = $qtdEmbalagemVenda;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCodMotivoCorte()
+    {
+        return $this->codMotivoCorte;
+    }
+
+    /**
+     * @param mixed $codMotivoCorte
+     */
+    public function setCodMotivoCorte($codMotivoCorte)
+    {
+        $this->codMotivoCorte = $codMotivoCorte;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMotivoCorte()
+    {
+        return $this->motivoCorte;
+    }
+
+    /**
+     * @param mixed $motivoCorte
+     */
+    public function setMotivoCorte($motivoCorte)
+    {
+        $this->motivoCorte = $motivoCorte;
     }
 
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 apt-get update
-apt-get install -y php5 php-apc php5-intl php5-cli php5-dev build-essential php-pear libaio1 php5-gd php5-xdebug php-soap
+apt-get install -y php5 php-apc php5-intl php5-cli php5-dev build-essential php-pear libaio1 php5-gd php5-xdebug php-soap php-mbstring
 rm -rf /var/www
 ln -fs /vagrant /var/www
 sed -i 's/www-data/vagrant/g' /etc/apache2/envvars 

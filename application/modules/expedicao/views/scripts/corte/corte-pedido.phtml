@@ -20,7 +20,7 @@ if ($this->permiteCortes == 'S') {
 <script>
     $('#btnSubmit').click(function () {
         $.ajax({
-            url:  URL_MODULO + '/corte/corte-antecipado-ajax/',
+            url:  URL_MODULO + '/corte/corte-pedido/',
             type: 'post',
             data: {
                 id: $('#id').val(),

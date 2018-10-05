@@ -19,12 +19,23 @@ class MapaSeparacao extends eFPDF {
     private $idExpedicao;
     private $quebrasEtiqueta;
     private $pesoTotal, $cubagemTotal, $mapa, $imgCodBarras, $total;
+    private $itinerarios;
     protected $chaveCargas;
     protected $cargasSelecionadas;
     protected $math;
 
+
 //($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null)
     public function layoutMapa($expedicao, $modelo, $codBarras = null, $status) {
+
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+        $expedicaoRepo = $em->getRepository('wms:Expedicao');
+
+        $this->itinerarios = $expedicaoRepo->getItinerariosByExpedicao($expedicao);
+
         switch ($modelo) {
             case 2:
                 $this->layoutModelo2($expedicao, $status, $codBarras);
@@ -1953,7 +1964,12 @@ class MapaSeparacao extends eFPDF {
         $pageSizeA4 = $object->_getpagesize();
         $wPage = $pageSizeA4[0] / 12;
 
-        $object->SetY(-23);
+        $object->SetY(-28);
+        $object->SetFont('Arial', 'B', 10);
+        $object->Cell(23, 6, utf8_decode("ITINERARIO: "), 0, 0);
+        $object->SetFont('Arial', null, 10);
+        $object->Cell(120, 6, self::SetStringByMaxWidth(utf8_decode($this->itinerarios), 120), 0, 1);
+
         $object->SetFont('Arial', 'B', 10);
         $object->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
         $object->SetFont('Arial', null, 10);

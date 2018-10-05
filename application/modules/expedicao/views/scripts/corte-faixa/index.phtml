@@ -38,16 +38,28 @@
             <tbody>
             <tr>
                 <td>
-                    <label>Código de barras inicial:</label>
+                    <label>Motivo de Corte:</label>
+                    <select name="motivoCorte" id="motivoCorte" required mostrarselecione="1">
+                        <option value="" label="Selecione...">Selecione...</option>
+                        <?php
+                        foreach ($this->motivos as $key => $motivo) {
+                            echo '<option value="' . $key . '" label="' .$motivo. '">' . $motivo. '</option>';
+                        }
+                        ?>
+                    </select>
+                </td>
+
+                <td>
+                    <label>Etiqueta inicial:</label>
                     <input class="focus" type="text" name="codBarrasInicial" id="codBarrasInicial" onkeydown="gotoFinal(event)" />
                 </td>
                 <td>
-                    <label>Código de barras final:</label>
+                    <label>Etiqueta final:</label>
                     <input class="focus" type="text" name="codBarrasFinal" id="codBarrasFinal" onkeydown="gotoSenha(event)" />
                 </td>
                 <td >
                     <?php
-                    echo '<label>Senha para confirmação: </label>';
+                    echo '<label>Senha: </label>';
                     echo $this->formPassword("senha", '', array(
                         'size' => '10',
                         'maxlength' => '20',

@@ -20,14 +20,24 @@ class Select extends Render\ARender implements Render\IRender
         $index = $this->getColumn()->getIndex();
         $values = $this->getColumn()->getValues();
         $name = strtolower($index);
+        $enabled = $this->getColumn()->getEnabled();
+
+        $disabled = "";
+        if ($enabled == false) {
+            $disabled = 'disabled="disabled"';
+        }
 
         $pracas = array(
-            0 => "<select name='" . $name . "' id='" . $name . "'>"
+            0 => "<select name='" . $name . "' " . $disabled . " id='" . $name . "'>"
         );
 
         foreach ($values as $key => $praca) {
             $option = null;
-            $option = "<option value='$key'>$praca</option>";
+            if ($row[$index] == $key) {
+                $option = "<option selected='selected' value='$key'>$praca</option>";
+            } else {
+                $option = "<option value='$key'>$praca</option>";
+            }
             array_push($pracas, $option);
         }
 

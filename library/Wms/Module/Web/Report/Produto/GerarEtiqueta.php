@@ -170,6 +170,12 @@ class GerarEtiqueta extends eFPDF
 
                 $this->layout5($produto, $tipo);
                 break;
+            case 6:
+                $this->SetMargins(4, 5);
+                $this->SetFont('Arial', 'B', 8);
+
+                $this->layout6($produto, $tipo);
+                break;
             default:
                 $this->SetMargins(7, 5, 0);
                 $this->SetFont('Arial', 'B', 8);
@@ -425,6 +431,39 @@ class GerarEtiqueta extends eFPDF
         $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.5,12);
         $len = $this->GetStringWidth($data['hri']);
         $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 12,$codigo);
+    }
+
+    public function layout6($produto)
+    {
+        $codigo = $produto['codigoBarras'];
+        $this->AddPage();
+        $this->MultiCell(100,2.7,utf8_decode($produto['idProduto']) . ' - ' . substr(utf8_decode($produto['dscProduto']), 0, 30),0,"L");
+        $this->Ln(1.5);
+        $this->MultiCell(100,2.7, substr(utf8_decode($produto['dscProduto']), 30, 200),0,"L");
+        $this->Ln(5);
+
+        if ($produto['idEmbalagem'] != null) {
+            $this->Ln(3);
+            $this->Cell(100, 0, 'Embalagem: ' . utf8_decode($produto['dscEmbalagem'])  . " (".$produto['quantidade'].") ", 0, 0);
+        }
+
+        if ($produto['idVolume'] != null) {
+            $this->Ln(3);
+            $this->Cell(100, 0, 'Volume: ' . utf8_decode($produto['dscVolume']) . " - " . utf8_decode($produto['dscLinhaSeparacao']), 0, 0);
+        }
+
+
+        $x        = 33;
+        $y        = 35;
+        $height   = 8;
+        $angle    = 0;
+        $type     = 'code128';
+        $black    = '000000';
+        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.45,15);
+        $len = $this->GetStringWidth($data['hri']);
+
+        $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 11,$codigo);
+
     }
 
 }

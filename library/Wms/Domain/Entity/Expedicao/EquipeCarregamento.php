@@ -19,9 +19,14 @@ class EquipeCarregamento
     protected $id;
 
     /**
-     * @Column(name="DTH_VINCULO", type="datetime", nullable=false)
+     * @Column(name="DTH_INICIO", type="datetime", nullable=false)
      */
     protected $dataVinculo;
+
+    /**
+     * @Column(name="DTH_FINAL", type="datetime", nullable=false)
+     */
+    protected $dataFim;
 
     /**
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao")
@@ -97,6 +102,22 @@ class EquipeCarregamento
     public function getUsuario()
     {
         return $this->usuario;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDataFim()
+    {
+        return $this->dataFim;
+    }
+
+    /**
+     * @param mixed $dataFim
+     */
+    public function setDataFim($dataFim)
+    {
+        $this->dataFim = $dataFim;
     }
 
 }

@@ -227,6 +227,8 @@ class ExpedicaoRepository extends EntityRepository {
                                 } else {
                                     $options[$pedidoEn->getId() . '-' . $key][] = $item['ATENDIDA'];
                                 }
+                                $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_ATENDIDA_EMB_VENDA'];
+                                $options[$pedidoEn->getId().'-'.$key][] = $item['FATOR_EMBALAGEM_VENDA'];
                             }
                         }
                         $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
@@ -1763,6 +1765,7 @@ class ExpedicaoRepository extends EntityRepository {
             //Finaliza Expedição ERP
             if ($this->getSystemParameterValue('IND_FINALIZA_CONFERENCIA_ERP_INTEGRACAO') == 'S') {
                 $resultAcao = $this->executaIntegracaoBDFinalizacaoConferencia($expedicaoEn);
+
             }
 
             //Executa Corte ERP
@@ -3076,7 +3079,7 @@ class ExpedicaoRepository extends EntityRepository {
     public function getRelatorioSaidaProdutos($codProduto, $grade, $dataInicial = null, $dataFinal = null, $filial = null) {
         $source = $this->_em->createQueryBuilder()
                 ->select("es.dataConferencia, i.descricao as itinerario, i.id as idItinerario, c.codCargaExterno, e.id as idExpedicao, cliente.codClienteExterno, es.codProduto, es.dscGrade,
-             e.dataInicio, e.dataFinalizacao, p.id as idPedido")
+             e.dataInicio, e.dataFinalizacao, p.codExterno as idPedido")
                 ->from("wms:Expedicao\EtiquetaSeparacao", "es")
                 ->innerJoin('es.pedido', 'p')
                 ->innerJoin('p.itinerario', 'i')
@@ -4048,39 +4051,66 @@ class ExpedicaoRepository extends EntityRepository {
     }
 
     public function diluirCorte($expedicoes, $itensSemEstoque) {
+
+        $strConcat = "-*-";
+
         $arrResult = array();
+        $arrItensACortar = [];
 
         foreach ($itensSemEstoque as $item) {
-            $sql = "select p.cod_pedido, pp.cod_produto, pp.dsc_grade, pp.quantidade, pp.qtd_cortada 
+            $codGrade = $item['CODIGO'] . $strConcat . $item['GRADE'];
+            if (!isset($arrItensACortar[$codGrade]))
+                $arrItensACortar[$codGrade] = [
+                    'somatorio' => $item['QTD_SEPARAR_TOTAL'],
+                    'qtdCortar' => $item['SALDO_FINAL'] * -1
+                ];
+        }
+
+        foreach ($arrItensACortar as $codGrade => $dados) {
+
+            list($codProduto, $grade) = explode($strConcat, $codGrade);
+
+            $sql =
+                "select p.cod_pedido, pp.cod_produto, pp.dsc_grade, sum(pp.quantidade) quantidade, sum(pp.qtd_cortada) qtd_cortada 
                 from expedicao e
                 inner join carga c on c.cod_expedicao = e.cod_expedicao
                 inner join pedido p on p.cod_carga = c.cod_carga
                 inner join pedido_produto pp on pp.cod_pedido = p.cod_pedido
-                where e.cod_expedicao in ($expedicoes) and (pp.cod_produto = '$item[CODIGO]' and dsc_grade = '$item[GRADE]')";
+                where e.cod_expedicao in ($expedicoes) and (pp.cod_produto = '$codProduto' and dsc_grade = '$grade')
+                group by p.cod_pedido, pp.cod_produto, pp.dsc_grade
+                order by sum(pp.quantidade)";
 
             $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-            $divisor = count($result);
-            $resto = $item['SALDO_FINAL'] % $divisor;
-            $qtdCortar = ($item['SALDO_FINAL'] - $resto) / $divisor;
 
-            foreach ($result as $pedido) {
-                if ($pedido === end($result)) {
-                    $qtdCortar += $resto;
+            $resto = 0;
+            foreach ($result as $pedProd) {
+                //Identifica a proporção à ser cortada de cada pedido que tem o item.
+                $proporcao = Math::multiplicar(Math::dividir($pedProd['QUANTIDADE'], $dados['somatorio']), ($dados['qtdCortar']));
+                if ((end($result) == $pedProd)) {
+                    //Soma à proporção do maior pedido, o somatório de frações dos outros pedidos
+                    $qtdCortar =  round(Math::adicionar($proporcao, $resto));
+                } else {
+                    //Recupera a fração da proporção
+                    $fracao = Math::subtrair($proporcao, (int)$proporcao);
+                    //Para cortar apenas o valor inteiro dos pedidos menores
+                    $qtdCortar =  Math::subtrair($proporcao, $fracao);
+                    //Incrementa as frações para somar ao ultimo pedido
+                    $resto = Math::adicionar($fracao, $resto);
                 }
-                $arrResult[$pedido['COD_PEDIDO']][$pedido['COD_PRODUTO']][$pedido['DSC_GRADE']] = ($qtdCortar * -1);
+                $arrResult[$pedProd['COD_PEDIDO']][$pedProd['COD_PRODUTO']][$pedProd['DSC_GRADE']] = $qtdCortar;
             }
         }
 
         return $arrResult;
     }
 
-    public function executaCortePedido($cortes, $motivo, $corteAutomatico = null) {
+    public function executaCortePedido($cortes, $motivo, $corteAutomatico = null, $idMotivo) {
         foreach ($cortes as $codPedido => $produtos) {
             foreach ($produtos as $codProduto => $grades) {
                 foreach ($grades as $grade => $quantidade) {
                     if (!($quantidade > 0))
                         continue;
-                    $this->cortaPedido($codPedido,null, $codProduto, $grade, $quantidade, $motivo, $corteAutomatico);
+                    $this->cortaPedido($codPedido,null, $codProduto, $grade, $quantidade, $motivo, $corteAutomatico, $idMotivo);
                 }
             }
         }
@@ -4088,7 +4118,7 @@ class ExpedicaoRepository extends EntityRepository {
 
     /**
      * @param $codPedido
-     * @param $pedidoProdutoEn ExpedicaoEntity\PedidoProduto
+     * @param $pedidoProdutoEn Expedicao\PedidoProduto
      * @param $codProduto
      * @param $grade
      * @param $qtdCortar
@@ -4098,7 +4128,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null) {
+    public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null, $idMotivo = null) {
 
         /** @var Expedicao\AndamentoRepository $expedicaoAndamentoRepo */
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
@@ -4169,6 +4199,15 @@ class ExpedicaoRepository extends EntityRepository {
         if ($corteAutomatico == 'S') {
             $pedidoProdutoEn->setQtdCortadoAutomatico($pedidoProdutoEn->getQtdCortadoAutomatico() + $qtdCortar);
         }
+
+        if ($idMotivo != null) {
+            $repoMotivos = $this->getEntityManager()->getRepository('wms:Expedicao\MotivoCorte');
+            $motivoEn = $repoMotivos->find($idMotivo);
+
+            $pedidoProdutoEn->setCodMotivoCorte($idMotivo);
+            $pedidoProdutoEn->setMotivoCorte($motivoEn);
+        }
+
         $this->getEntityManager()->persist($pedidoProdutoEn);
 
         //Seta na mapa_separacao_pedido a quantidade cortada baseada na quantia já cortada mais a nova qtd
@@ -4236,26 +4275,63 @@ class ExpedicaoRepository extends EntityRepository {
         if (!is_null($idExpedicao))
             $where = " AND C.COD_EXPEDICAO = $idExpedicao ";
 
-        $having = "";
         if ($apenasProdutosCortados == true)
-            $having .= ' HAVING (NVL(SUM(PP.QTD_CORTADA),0) > 0) ';
+            $where .= " HAVING (SUM(NVL(PP.QTD_CORTADA,0)) > 0)";
+
+        $sqlCampoQuantidadePedido = " NVL((PP.QUANTIDADE),0) as QTD, ";
+        $sqlCampoQuantidadeCortada = " NVL((PP.QTD_CORTADA),0) as QTD_CORTADA,";
+        if ($this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO') == 'S') {
+            $sqlCampoQuantidadePedido = "CASE WHEN (PROD.COD_TIPO_COMERCIALIZACAO = 1) THEN PP.QTD_EMBALAGEM_VENDA ||' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE PP.QUANTIDADE || '' END as QTD , ";
+            $sqlCampoQuantidadeCortada = "CASE WHEN (PROD.COD_TIPO_COMERCIALIZACAO = 1) AND (NVL(PP.QTD_CORTADA,0) > 0) THEN (NVL(PP.QTD_CORTADA,0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE NVL(PP.QTD_CORTADA,0) || '' END as QTD_CORTADA , ";
+        }
 
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
                        PROD.DSC_PRODUTO,
-                       NVL(SUM(PP.QUANTIDADE),0) as QTD,
-                       NVL(SUM(PP.QTD_CORTADA),0) as QTD_CORTADA,
+                       $sqlCampoQuantidadePedido
+                       $sqlCampoQuantidadeCortada
                        PP.COD_PEDIDO,
                        C.COD_CARGA_EXTERNO
                   FROM PEDIDO_PRODUTO PP
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
                   LEFT JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN (SELECT QTD_EMBALAGEM, 
+                                    COD_PRODUTO,
+                                    DSC_GRADE,
+                                    MAX(COD_PRODUTO_EMBALAGEM) as COD_PRODUTO_EMBALAGEM
+                               FROM PRODUTO_EMBALAGEM 
+                              WHERE DTH_INATIVACAO IS NULL
+                              GROUP BY QTD_EMBALAGEM, COD_PRODUTO, DSC_GRADE) MP
+                         ON MP.COD_PRODUTO = PP.COD_PRODUTO
+                        AND MP.DSC_GRADE = PP.DSC_GRADE
+                        AND MP.QTD_EMBALAGEM = PP.FATOR_EMBALAGEM_VENDA
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MP.COD_PRODUTO_EMBALAGEM
                  WHERE 1 = 1 $where
-                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO, C.COD_CARGA_EXTERNO
-                 $having
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO') != 'S') {
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            foreach ($result as $key => $value) {
+                $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
+                if(is_array($vetEmbalagens)) {
+                    $embalagem = implode(' + ', $vetEmbalagens);
+                }else{
+                    $embalagem = $vetEmbalagens;
+                }
+                $result[$key]['QTD'] = $embalagem;
+
+                $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_CORTADA']);
+                if(is_array($vetEmbalagens)) {
+                    $embalagem = implode(' + ', $vetEmbalagens);
+                }else{
+                    $embalagem = $vetEmbalagens;
+                }
+                $result[$key]['QTD_CORTADA'] = $embalagem;
+            }
+        }
+
         return $result;
     }
 
@@ -4735,6 +4811,228 @@ class ExpedicaoRepository extends EntityRepository {
         return true;
 
 
+    }
+
+    public function getPedidosByProdutoAndExpedicao ($idExpedicao, $idProduto, $grade) {
+
+        $sqlCampoQuantidadePedido = " PP.QUANTIDADE as QTD , ";
+        $sqlCampoQuantidadeCortada = " NVL(PP.QTD_CORTADA,0) as QTD_CORTADA, ";
+        if ($this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO') == 'S') {
+            $sqlCampoQuantidadePedido = "CASE WHEN (PROD.COD_TIPO_COMERCIALIZACAO = 1) THEN PP.QTD_EMBALAGEM_VENDA ||' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE PP.QUANTIDADE || '' END as QTD , ";
+            $sqlCampoQuantidadeCortada = "CASE WHEN (PROD.COD_TIPO_COMERCIALIZACAO = 1) AND (NVL(PP.QTD_CORTADA,0) > 0) THEN (NVL(PP.QTD_CORTADA,0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE NVL(PP.QTD_CORTADA,0) || '' END as QTD_CORTADA , ";
+        }
+
+        $sql = " SELECT P.COD_PEDIDO,
+                        C.COD_CLIENTE_EXTERNO as COD_CLIENTE,
+                        PES.NOM_PESSOA as CLIENTE,
+                        $sqlCampoQuantidadePedido
+                        $sqlCampoQuantidadeCortada
+                        PP.COD_PRODUTO, 
+                        PP.DSC_GRADE,
+                        PROD.DSC_PRODUTO
+                    FROM CARGA C 
+                    LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                    LEFT JOIN CLIENTE C ON C.COD_PESSOA = P.COD_PESSOA
+                    LEFT JOIN PESSOA PES ON P.COD_PESSOA = PES.COD_PESSOA
+                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                    LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO
+                    LEFT JOIN (SELECT QTD_EMBALAGEM, 
+                                      COD_PRODUTO,
+                                      DSC_GRADE,
+                                      MAX(COD_PRODUTO_EMBALAGEM) as COD_PRODUTO_EMBALAGEM
+                                 FROM PRODUTO_EMBALAGEM 
+                                 WHERE DTH_INATIVACAO IS NULL
+                                 GROUP BY QTD_EMBALAGEM, COD_PRODUTO, DSC_GRADE) MP
+                           ON MP.COD_PRODUTO = PP.COD_PRODUTO
+                          AND MP.DSC_GRADE = PP.DSC_GRADE
+                          AND MP.QTD_EMBALAGEM = PP.FATOR_EMBALAGEM_VENDA
+                    LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MP.COD_PRODUTO_EMBALAGEM
+                    WHERE C.COD_EXPEDICAO = $idExpedicao
+                      AND PP.COD_PRODUTO = '$idProduto'
+                      AND PP.DSC_GRADE = '$grade'";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO') != 'S') {
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            foreach ($result as $key => $value) {
+                if ($result[$key]['QTD'] <= 0 ) {
+                    $result[$key]['QTD'] = "Cortado";
+                } else {
+                    $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
+                    if(is_array($vetEmbalagens)) {
+                        $embalagem = implode(' + ', $vetEmbalagens);
+                    }else{
+                        $embalagem = $vetEmbalagens;
+                    }
+                    $result[$key]['QTD'] = $embalagem;
+                }
+            }
+        }
+
+        return $result;
+
+    }
+
+    public function getProdutosPorExpedicaoEmbVend ($idExpedicao) {
+        $sql = "  SELECT PP.COD_PRODUTO, 
+                         PP.DSC_GRADE,
+                         PROD.DSC_PRODUTO,
+                         PED.QTD_PED as QTD_PEDIDOS,
+                         CASE WHEN PROD.COD_TIPO_COMERCIALIZACAO = 1 THEN
+                               SUM((PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || PE.DSC_EMBALAGEM || '('|| PP.FATOR_EMBALAGEM_VENDA || ')'
+                              ELSE SUM (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) || ''
+                         END as QTD_SEPARAR
+                    FROM CARGA C 
+                    LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                    LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO
+                    LEFT JOIN (SELECT QTD_EMBALAGEM, 
+                                      COD_PRODUTO,
+                                      DSC_GRADE,
+                                      MAX(COD_PRODUTO_EMBALAGEM) as COD_PRODUTO_EMBALAGEM
+                                 FROM PRODUTO_EMBALAGEM 
+                                WHERE DTH_INATIVACAO IS NULL
+                                GROUP BY QTD_EMBALAGEM, COD_PRODUTO, DSC_GRADE) MP
+                           ON MP.COD_PRODUTO = PP.COD_PRODUTO
+                          AND MP.DSC_GRADE = PP.DSC_GRADE
+                          AND MP.QTD_EMBALAGEM = PP.FATOR_EMBALAGEM_VENDA
+                    LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MP.COD_PRODUTO_EMBALAGEM
+                    LEFT JOIN (SELECT PP.COD_PRODUTO,
+                                      PP.DSC_GRADE,
+                                      COUNT(P.COD_PEDIDO) QTD_PED
+                                 FROM PEDIDO_PRODUTO PP
+                                 LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                                 LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                                WHERE C.COD_EXPEDICAO = $idExpedicao
+                                GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE) PED 
+                           ON PED.COD_PRODUTO = PP.COD_PRODUTO
+                          AND PED.DSC_GRADE = PP.DSC_GRADE
+                   WHERE C.COD_EXPEDICAO = $idExpedicao
+                   GROUP BY PP.COD_PRODUTO, 
+                            PP.DSC_GRADE,
+                            PROD.DSC_PRODUTO,
+                            PROD.COD_TIPO_COMERCIALIZACAO,
+                            PE.DSC_EMBALAGEM,
+                            PP.FATOR_EMBALAGEM_VENDA,
+                            PED.QTD_PED
+                   ORDER BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.FATOR_EMBALAGEM_VENDA DESC";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $arProdutos = array();
+        foreach ($result as $row) {
+            if (isset($arProdutos[$row['COD_PRODUTO']][$row['DSC_GRADE']])) {
+                $arProdutos[$row['COD_PRODUTO']][$row['DSC_GRADE']]['QTD_SEPARAR'] .= " + " . $row['QTD_SEPARAR'];
+            } else {
+                $arProdutos[$row['COD_PRODUTO']][$row['DSC_GRADE']] = array (
+                    'COD_PRODUTO' => $row['COD_PRODUTO'],
+                    'DSC_GRADE' => $row['DSC_GRADE'],
+                    'DSC_PRODUTO' => $row['DSC_PRODUTO'],
+                    'QTD_PEDIDOS' => $row['QTD_PEDIDOS'],
+                    'QTD_SEPARAR' => $row['QTD_SEPARAR']
+                );
+            }
+        }
+
+        $result = array();
+        foreach ($arProdutos as $grade) {
+            foreach ($grade as $row) {
+                $result[] = array(
+                    'COD_PRODUTO' => $row['COD_PRODUTO'],
+                    'DSC_GRADE' => $row['DSC_GRADE'],
+                    'DSC_PRODUTO' => $row['DSC_PRODUTO'],
+                    'QTD_PEDIDOS' => $row['QTD_PEDIDOS'],
+                    'QTD_SEPARAR' => $row['QTD_SEPARAR']
+                );
+            }
+        }
+        return $result;
+    }
+
+    public function getProdutosPorExpedicao ($idExpedicao) {
+        $sql = " SELECT PP.COD_PRODUTO, 
+                        PP.DSC_GRADE,
+                        PROD.DSC_PRODUTO,
+                        COUNT(P.COD_PEDIDO) as QTD_PEDIDOS,
+                        SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) as QTD_SEPARAR
+                   FROM CARGA C 
+                   LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                   LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO
+                  WHERE C.COD_EXPEDICAO = $idExpedicao                    
+                  GROUP BY PP.COD_PRODUTO, 
+                           PP.DSC_GRADE,
+                           PROD.DSC_PRODUTO
+                  ORDER BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        foreach ($result as $key => $value) {
+            if ($result[$key]['QTD_SEPARAR'] <= 0) {
+                $result[$key]['QTD_SEPARAR'] = 'Cortado';
+            } else {
+                $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_SEPARAR']);
+                if(is_array($vetEmbalagens)) {
+                    $embalagem = implode(' + ', $vetEmbalagens);
+                }else{
+                    $embalagem = $vetEmbalagens;
+                }
+                $result[$key]['QTD_SEPARAR'] = $embalagem;
+            }
+        }
+
+        return $result;
+    }
+
+    public function cortarItemExpedicao ($idProduto, $grade, $expedicao, $motivo, $idMotivo) {
+
+        $sql = "SELECT P.COD_PEDIDO, PP.COD_PEDIDO_PRODUTO, P.COD_EXTERNO, PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0) as QTD_PEDIDO
+                  FROM PEDIDO_PRODUTO PP
+                  LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                  LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                 WHERE C.COD_EXPEDICAO = $expedicao
+                   AND PP.COD_PRODUTO = '$idProduto'
+                   AND PP.DSC_GRADE = '$grade'
+                   AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA,0)";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $pedidoProdutoRepository =  $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
+        foreach ($result as $pedidoProduto) {
+            $codigoPedidoInterno = $pedidoProduto['COD_PEDIDO'];
+            $codigoPedidoExterno = $pedidoProduto['COD_EXTERNO'];
+            $codigoPedidoProduto = $pedidoProduto['COD_PEDIDO_PRODUTO'];
+            $qtdCortar           = $pedidoProduto['QTD_PEDIDO'];
+
+
+            $pedidoProdutoEn = $pedidoProdutoRepository->find($pedidoProduto['COD_PEDIDO_PRODUTO']);
+
+            if (!isset($pedidoProdutoEn) || empty($pedidoProdutoEn))
+                throw new \Exception("Produto $idProduto grade $grade não encontrado para o pedido $codigoPedidoExterno");
+
+            $this->cortaPedido($codigoPedidoInterno, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, null, $idMotivo);
+        }
+
+    }
+
+    public function getItinerariosByExpedicao($expedicao) {
+        $sql = "SELECT COD_EXPEDICAO,
+                       LISTAGG (DSC_ITINERARIO, ',') WITHIN GROUP (ORDER BY DSC_ITINERARIO) ITINERARIOS
+                  FROM ITINERARIO I
+                 INNER JOIN (SELECT DISTINCT C.COD_EXPEDICAO,
+                                    P.COD_ITINERARIO
+                               FROM CARGA C
+                              INNER JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA 
+                              WHERE 1 = 1 AND C.COD_EXPEDICAO = $expedicao
+                              GROUP BY P.COD_ITINERARIO, C.COD_EXPEDICAO) CARGAS ON CARGAS.COD_ITINERARIO = I.COD_ITINERARIO
+                 GROUP BY COD_EXPEDICAO";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($result) == 0) {
+            return "NÃO DEFINIDO";
+        } else {
+            return $result[0]['ITINERARIOS'];
+        }
     }
 
 }
