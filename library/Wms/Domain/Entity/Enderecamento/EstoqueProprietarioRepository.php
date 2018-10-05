@@ -108,7 +108,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                   ESTOQUE_PROPRIETARIO EP 
                   INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
                 WHERE 
-                  NUM_CNPJ  LIKE '$cnpj%' AND
+//                  NUM_CNPJ  LIKE '$cnpj%' AND
                   EP.COD_PRODUTO = $codProduto AND
                   EP.DSC_GRADE = '$grade' AND
                   EP.SALDO_FINAL > 0 AND

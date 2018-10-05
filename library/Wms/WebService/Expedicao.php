@@ -952,7 +952,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
                     ($resetaExpedicao && $statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
-                    ($countProdutosPendentesCorte == 0)) {
+                    ($countProdutosPendentesCorte == 0)
+                    || ($statusExpedicao->getId() == Expedicao::STATUS_CANCELADO)) {
                     $PedidoRepo->removeReservaEstoque($idPedido,false);
                     $PedidoRepo->remove($PedidoEntity,false);
                 } else {

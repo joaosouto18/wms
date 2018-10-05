@@ -1424,6 +1424,9 @@ class Mobile_ExpedicaoController extends Action {
         $operadores = $this->_getParam('mass-id');
         $this->view->idExpedicao = $idExpedicao = $this->_getParam('idExpedicao');
         $this->view->operacao = $this->_getParam('operacao');
+        $finalizar = $this->_getParam('finalizar');
+
+        $dthFinal = (isset($finalizar)) ? true : false;
 
         //OBTER OS REPOSITORIOS
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
@@ -1447,6 +1450,11 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->operadores = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_CARREGAMENTO"));
             /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
             $this->view->equipe = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
+            $equipeCarregamentoEntitty = $equipe->findOneBy(array('expedicao' => $idExpedicao));
+            if (!is_null($equipeCarregamentoEntitty->getDataFim())) {
+                $this->_helper->messenger('error', 'Expedição já possui equipe de carregamento vinculada');
+                $this->_redirect('mobile');
+            }
         } else {
             //VERIFICA QUAL O STATUS DA ETIQUETA E EXIBE A EQUIPE CORRETA
             switch ($etiquetaEn->getStatus()->getId()) {
@@ -1465,6 +1473,11 @@ class Mobile_ExpedicaoController extends Action {
                     $this->view->operadores = $UsuarioRepo->getUsuarioByPerfil(0, $this->getSystemParameterValue("PERFIL_EQUIPE_CARREGAMENTO"));
                     /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
                     $this->view->equipe = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
+                    $equipeCarregamentoEntitty = $equipe->findOneBy(array('expedicao' => $idExpedicao, 'dataFim' => !null));
+                    if (!is_null($equipeCarregamentoEntitty->getDataFim())) {
+                        $this->_helper->messenger('error', 'Expedição já possui equipe de carregamento vinculada');
+                        $this->_redirect('mobile');
+                    }
                     break;
             }
         }
@@ -1472,7 +1485,7 @@ class Mobile_ExpedicaoController extends Action {
         if ($operadores && $idExpedicao) {
 
             try {
-                $equipe->vinculaOperadores($idExpedicao, $operadores, $placa);
+                $equipe->vinculaOperadores($idExpedicao, $operadores, $placa, $dthFinal);
                 $this->_helper->messenger('success', 'Operadores vinculados a expedicao com sucesso');
                 $this->_redirect('mobile');
             } catch (Exception $e) {

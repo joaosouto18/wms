@@ -90,7 +90,7 @@ class ContagemEnderecoRepository extends EntityRepository
                        MIN(NVL(MAXCONT.ULTCONT,1)) as CONTAGEM
                   FROM INVENTARIO_ENDERECO IE
                   LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IE.COD_DEPOSITO_ENDERECO
-                  LEFT JOIN (SELECT MIN (ULTCONT) AS ULTCONT, 
+                  LEFT JOIN (SELECT MAX (ULTCONT) AS ULTCONT, 
                                     COD_INVENTARIO_ENDERECO 
                                FROM (SELECT MAX(ICE.NUM_CONTAGEM) as ULTCONT, 
                                             ICE.COD_PRODUTO,
