@@ -154,7 +154,7 @@ class Recebimento extends Grid
                     'label' => 'Imprimir Etiquetas dos Produtos',
                     'title' => 'Imprimir Etiquetas dos Produtos com Código de Barras Automático',
                     'actionName' => 'gerar-etiqueta-pdf',
-                    'cssClass' => 'pdf',
+                    'cssClass' => 'pdf dialogAjax',
                     'pkIndex' => 'id',
                     'target' => '_blank',
                 ))

@@ -1,0 +1,69 @@
+<script>
+    $(document).ready(function(){
+        $('#todos').live('click',function(){
+            var checked_status = this.checked;
+            $("input").each(function()
+            {
+                $(this).attr('checked',checked_status);
+            });
+        });
+    });
+
+    $('#btnEtqProduto').click(function () {
+        event.preventDefault();
+
+        alert('a');
+        $.ajax({
+            url:  URL_MODULO + '/recebimento/imprimir-produto-ajax/',
+            type: 'post',
+            data: {
+                produtos: 'teste'
+            },
+            success: function (data) {
+                if (data.error) {
+                    alert(data.error);
+                }
+            }
+        });
+    });
+
+</script>
+
+<form id="produtos-form" method="post" class="saveForm" action="">
+    <button id="btnEtqProduto" class="btn">Imprimir Etiqueta de Produto</button>
+    <button id="btnEtqRecebimento" class="btn">Imprimir Dados do Recebimento</button>
+    <br>
+    <br>
+    <div id="imprimir-grid" class="grid">
+        <table class="gTable ">
+            <caption>Produtos para Imprimir</caption>
+            <p><label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></label></p>
+            <tbody>
+            <tr class ="gTTitle">
+                <td>Check</td>
+                <td>Código</td>
+                <td>Grade</td>
+                <td>Produto</td>
+                <td>Quantidade</td>
+            </tr>
+            <?php
+            foreach ($this->produtos as $produto):
+                $fontColor = "black";
+                $liberado = true;
+                $checked = '';
+                if ($produto['IMPRIMIR'] == 'S') {
+                    $checked = 'checked="true"';
+                }
+                $this->color = !($this->color);?>
+                <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                    <td><input name="produto[]" value="<?php echo $produto['COD_PRODUTO'] ?>" type="checkbox" <?php echo $checked?> /></td>
+                    <td><?php echo $produto['COD_PRODUTO'] ?></td>
+                    <td><?php echo $produto['DSC_GRADE'] ?></td>
+                    <td><?php echo $produto['DSC_PRODUTO'] ?></td>
+                    <td><?php echo $produto['QTD_ITEM'] ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</form>
