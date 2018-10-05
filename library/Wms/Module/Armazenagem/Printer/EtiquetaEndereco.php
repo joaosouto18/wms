@@ -384,7 +384,7 @@ class EtiquetaEndereco extends Pdf
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 14, $this->GetY()+3 , 90);
         $this->Cell(10,0," ",0,1);
-        if (substr($arrEndereco['nivel'], -1) == 0 || substr($arrEndereco['nivel'], -1) == 1) {
+        if (substr($arrEndereco['nivel'], -1) == 0) {
             $this->Image(APPLICATION_PATH . '/../data/seta1.png', 0, $this->GetY(),13,20);
         } else {
             $this->Image(APPLICATION_PATH . '/../data/seta2.png', 0, $this->GetY(), 13,20);
