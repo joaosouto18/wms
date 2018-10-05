@@ -20,6 +20,8 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 return self::mysqlQuery($query, $conexao);
             case ConexaoIntegracao::PROVEDOR_MSSQL:
                 return self::mssqlQuery($query, $conexao);
+            case ConexaoIntegracao::PROVEDOR_SQLSRV:
+                return self::sqlSrvQuery($query, $conexao);
             case ConexaoIntegracao::PROVEDOR_FIREBIRD:
                 return self::firebirdQuery($query, $conexao, $update);
             case ConexaoIntegracao::PROVEDOR_POSTGRE:
@@ -78,16 +80,51 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 "UID" => $usuario,
                 "PWD" => $senha
             );
-            $conexao = \sqlsrv_connect($servidor, $connInfo);
+            $conexao = mssql_connect("$servidor", $usuario, $senha);
+            mssql_select_db($dbName);
 
-            //mssql_select_db($dbName, $conexao) or die(mssql_get_last_message());
+            $result = mssql_query($query);
+
+            $vetResult = array();
+            $i = 0;
+
+            while($row = mssql_fetch_array($result) ) {
+                foreach ($row as $indice => $valor) {
+                    $vetResult[$i][$indice] = $valor;
+                }
+                $i++;
+            }
+
+            mssql_close();
+            return $vetResult;
+
+        } catch (\PDOException $e) {
+            throw new \Exception($e->getMessage());
+        } catch (\Exception $e2) {
+            throw new \Exception($e2->getMessage());
+        }
+    }
+
+    private function sqlSrvQuery($query, $conexao) {
+        try {
+            ini_set('memory_limit', '-1');
+            $usuario = $conexao->getUsuario();
+            $senha = trim($conexao->getSenha());
+            $servidor = $conexao->getServidor();
+            $porta = $conexao->getPorta();
+            $dbName = $conexao->getDbName();
+            $connInfo = array(
+                "Database" => $dbName,
+                "UID" => $usuario,
+                "PWD" => $senha
+            );
+            $conexao = \sqlsrv_connect($servidor, $connInfo);
 
             if ($conexao == false) {
                 $error = $conexao->connect_error;
                 throw new \Exception("Não foi possível conectar: $error");
             }
             $result = \sqlsrv_query($conexao, $query);
-
 
             if (!$result || $result == false) {
                 $errors = \sqlsrv_errors();
