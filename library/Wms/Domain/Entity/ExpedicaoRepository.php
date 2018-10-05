@@ -3790,26 +3790,53 @@ class ExpedicaoRepository extends EntityRepository {
     }
 
     public function diluirCorte($expedicoes, $itensSemEstoque) {
+
+        $strConcat = "-*-";
+
         $arrResult = array();
+        $arrItensACortar = [];
 
         foreach ($itensSemEstoque as $item) {
-            $sql = "select p.cod_pedido, pp.cod_produto, pp.dsc_grade, pp.quantidade, pp.qtd_cortada 
+            $codGrade = $item['CODIGO'] . $strConcat . $item['GRADE'];
+            if (!isset($arrItensACortar[$codGrade]))
+                $arrItensACortar[$codGrade] = [
+                    'somatorio' => $item['QTD_SEPARAR_TOTAL'],
+                    'qtdCortar' => $item['SALDO_FINAL'] * -1
+                ];
+        }
+
+        foreach ($arrItensACortar as $codGrade => $dados) {
+
+            list($codProduto, $grade) = explode($strConcat, $codGrade);
+
+            $sql =
+                "select p.cod_pedido, pp.cod_produto, pp.dsc_grade, sum(pp.quantidade) quantidade, sum(pp.qtd_cortada) qtd_cortada 
                 from expedicao e
                 inner join carga c on c.cod_expedicao = e.cod_expedicao
                 inner join pedido p on p.cod_carga = c.cod_carga
                 inner join pedido_produto pp on pp.cod_pedido = p.cod_pedido
-                where e.cod_expedicao in ($expedicoes) and (pp.cod_produto = '$item[CODIGO]' and dsc_grade = '$item[GRADE]')";
+                where e.cod_expedicao in ($expedicoes) and (pp.cod_produto = '$codProduto' and dsc_grade = '$grade')
+                group by p.cod_pedido, pp.cod_produto, pp.dsc_grade
+                order by sum(pp.quantidade)";
 
             $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-            $divisor = count($result);
-            $resto = $item['SALDO_FINAL'] % $divisor;
-            $qtdCortar = ($item['SALDO_FINAL'] - $resto) / $divisor;
 
-            foreach ($result as $pedido) {
-                if ($pedido === end($result)) {
-                    $qtdCortar += $resto;
+            $resto = 0;
+            foreach ($result as $pedProd) {
+                //Identifica a proporção à ser cortada de cada pedido que tem o item.
+                $proporcao = Math::multiplicar(Math::dividir($pedProd['QUANTIDADE'], $dados['somatorio']), ($dados['qtdCortar']));
+                if ((end($result) == $pedProd)) {
+                    //Soma à proporção do maior pedido, o somatório de frações dos outros pedidos
+                    $qtdCortar =  round(Math::adicionar($proporcao, $resto));
+                } else {
+                    //Recupera a fração da proporção
+                    $fracao = Math::subtrair($proporcao, (int)$proporcao);
+                    //Para cortar apenas o valor inteiro dos pedidos menores
+                    $qtdCortar =  Math::subtrair($proporcao, $fracao);
+                    //Incrementa as frações para somar ao ultimo pedido
+                    $resto = Math::adicionar($fracao, $resto);
                 }
-                $arrResult[$pedido['COD_PEDIDO']][$pedido['COD_PRODUTO']][$pedido['DSC_GRADE']] = ($qtdCortar * -1);
+                $arrResult[$pedProd['COD_PEDIDO']][$pedProd['COD_PRODUTO']][$pedProd['DSC_GRADE']] = $qtdCortar;
             }
         }
 
@@ -3830,7 +3857,7 @@ class ExpedicaoRepository extends EntityRepository {
 
     /**
      * @param $codPedido
-     * @param $pedidoProdutoEn ExpedicaoEntity\PedidoProduto
+     * @param $pedidoProdutoEn Expedicao\PedidoProduto
      * @param $codProduto
      * @param $grade
      * @param $qtdCortar

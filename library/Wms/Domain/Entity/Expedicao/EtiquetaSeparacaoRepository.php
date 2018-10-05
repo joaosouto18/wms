@@ -724,6 +724,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             while ($quantidadeRestantePedido > 0) {
 
                 $count++;
+                /** @var Produto\Embalagem $embalagemAtual */
                 $embalagemAtual = null;
                 $quantidadeAtender = $quantidadeRestantePedido;
 
@@ -763,19 +764,23 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
 
                 if ($embalado === true) {
-                    $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
-                    if (!empty($dadoLogisticoEn)) {
-                        $numAltura       = $this->tofloat($dadoLogisticoEn->getAltura());
-                        $numLargura      = $this->tofloat($dadoLogisticoEn->getLargura());
-                        $numProfundidade = $this->tofloat($dadoLogisticoEn->getProfundidade());
-                        $cubagemProduto  = $numAltura * $numLargura * $numProfundidade;
+                    $cubagemProduto = $embalagemAtual->getCubagem();
+                    if (empty($cubagemProduto)) {
+                        $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
+                        if (!empty($dadoLogisticoEn)) {
+                            $numAltura       = $this->tofloat($dadoLogisticoEn->getAltura());
+                            $numLargura      = $this->tofloat($dadoLogisticoEn->getLargura());
+                            $numProfundidade = $this->tofloat($dadoLogisticoEn->getProfundidade());
+                            $cubagemProduto  = $numAltura * $numLargura * $numProfundidade;
+                        } else {
+                            $cubagemProduto = $this->tofloat('0.001');
+                        }
                     }
-                    if (!isset($cubagemProduto) || is_null($cubagemProduto) || $cubagemProduto <= 0) {
-                        $cubagemProduto = $this->tofloat('0.001');
-                    }
+
                     if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
                         continue;
                     }
+
                     $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = number_format($cubagemProduto * ((float)$quantidadeAtender / number_format($embalagemAtual->getQuantidade(),3,'.','')),8);
                 }
             }
