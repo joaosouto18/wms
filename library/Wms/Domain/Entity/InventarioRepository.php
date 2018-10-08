@@ -673,7 +673,7 @@ class InventarioRepository extends EntityRepository {
                  WHERE COD_DEPOSITO_ENDERECO IN (
                 SELECT COD_DEPOSITO_ENDERECO 
                   FROM INVENTARIO_ENDERECO 
-                 WHERE COD_INVENTARIO = 120
+                 WHERE COD_INVENTARIO = $id
                    AND COD_DEPOSITO_ENDERECO NOT IN (SELECT COD_DEPOSITO_ENDERECO 
                                                        FROM ESTOQUE))";
 
