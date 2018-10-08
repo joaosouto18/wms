@@ -1290,6 +1290,13 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $grades = $this->getRequest()->getParam('grades');
         $tipoEtiqueta = $this->getRequest()->getParam('tipo');
 
+        $arrProdutos = array();
+        foreach ($produtos as $key => $produto) {
+            $arrProdutos[] = array(
+                'codProduto' => $produto,
+                'grade' => $grades[$key]
+            );
+        }
 
         $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
         $target = $this->getSystemParameterValue("IMPRESSAO_PRODUTO_RECEBIMENTO");
