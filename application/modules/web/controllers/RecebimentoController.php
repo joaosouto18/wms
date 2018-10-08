@@ -1329,9 +1329,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
         $gerarEtiqueta->init(array('idRecebimento' => $idRecebimento), null, $modelo, $target, false, $arrProdutos);
 
-        $this->_helper->json(array(
-            'result' => true,
-        ));
     }
 
     /*

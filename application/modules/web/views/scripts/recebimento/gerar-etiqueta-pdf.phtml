@@ -22,6 +22,7 @@
         document.body.appendChild(form);
         form.method = 'post';
         form.action = redirect;
+        form.target = "_blank";
 
         for(var i = 0 ; i < rows.length ; i++) {
             var columns = rows[i].getElementsByTagName('td');
