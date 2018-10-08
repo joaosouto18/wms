@@ -1298,7 +1298,12 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             );
         }
 
-        $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
+        if ($tipoEtiqueta == 'recebimento') {
+            $modelo = "recebimento";
+        } else {
+            $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
+        }
+
         $target = $this->getSystemParameterValue("IMPRESSAO_PRODUTO_RECEBIMENTO");
 
         switch ($modelo) {
@@ -1314,12 +1319,15 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             case 5:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(120, 70));
                 break;
+            case "recebimento":
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(60, 50));
+                break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
                 break;
         }
 
-        $gerarEtiqueta->init(array('idRecebimento' => $idRecebimento), null, $modelo, $target);
+        $gerarEtiqueta->init(array('idRecebimento' => $idRecebimento), null, $modelo, $target, false, $arrProdutos);
 
         $this->_helper->json(array(
             'result' => true,

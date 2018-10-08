@@ -17,7 +17,7 @@ use Wms\Util\Barcode\eFPDF,
 class GerarEtiqueta extends eFPDF
 {
 
-    public function init(array $nfParams = null,array $prodParams = null, $modelo, $target = Recebimento::TARGET_IMPRESSAO_ITEM, $importedFile = false)
+    public function init(array $nfParams = null,array $prodParams = null, $modelo, $target = Recebimento::TARGET_IMPRESSAO_ITEM, $importedFile = false, array $produtosRecebimento = null)
     {
         $tipo = "";
         /*  PARA IMPRIMIR ETIQUETAS DE UM PRODUTO
@@ -44,7 +44,19 @@ class GerarEtiqueta extends eFPDF
         /** @var NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
         if ($tipo == "NF") {
-            $produtosEn = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento);
+
+            if (count($produtosRecebimento) >0) {
+                $produtosEn = array();
+                foreach ($produtosRecebimento as $produto) {
+                    $codProduto = $produto['codProduto'];
+                    $grade = $produto['grade'];
+                    $result = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento, $codProduto, $grade);
+                    $produtosEn[] = $result[0];
+                }
+            } else {
+                $produtosEn = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento);
+            }
+
         } else if ($tipo == "Produto") {
             /** @var ProdutoRepository $produtoRepo */
             $produtoRepo = $em->getRepository('wms:Produto');
@@ -156,6 +168,12 @@ class GerarEtiqueta extends eFPDF
                 $this->SetFont('Arial', 'B', 8);
 
                 $this->layout5($produto, $tipo);
+                break;
+            case "recebimento":
+                $this->SetMargins(4, 5);
+                $this->SetFont('Arial', 'B', 8);
+
+                $this->layoutEtiquetaRecebimento($produto, $tipo);
                 break;
             default:
                 $this->SetMargins(7, 5, 0);
@@ -395,6 +413,34 @@ class GerarEtiqueta extends eFPDF
         $len = $this->GetStringWidth($data['hri']);
 
         $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 11,$codigo);
+
+    }
+
+    public function layoutEtiquetaRecebimento($produto, $tipo)
+    {
+
+        $codProduto = "(" . $produto['idProduto'] . ")";
+        $notaFiscal = $produto['numNota'];
+        $dscProduto = $produto['dscProduto'];
+        $fornecedor = $produto['fornecedor'];
+        $dataRecebimento = $produto['dataRecebimento']->format('d/m/Y');
+        $this->AddPage();
+
+        $codigo = $produto['codigoBarras'];
+
+        $this->SetFont('Arial', 'B', 8);
+        $this->MultiCell(50,3,utf8_decode($dscProduto),0,"C");
+        $this->Ln(3);
+
+        $this->SetFont('Arial', 'B', 24);
+        $this->Cell(50,2.7,utf8_decode($codProduto),0,1,"C");
+        $this->Ln(3);
+
+        $this->SetFont('Arial', 'B', 8);
+        $this->Cell(50,5,"DATA: " . utf8_decode($dataRecebimento),0,1,"C");
+
+        $this->Cell(50,2.7,"NF: " . utf8_decode($notaFiscal) .  "/" .  substr(utf8_decode($fornecedor),0,15) ,0,1,"C");
+
 
     }
 
