@@ -1,80 +1,8 @@
-<script>
-    $(document).ready(function(){
-        $('#todos').live('click',function(){
-            var checked_status = this.checked;
-            $("input").each(function()
-            {
-                $(this).attr('checked',checked_status);
-            });
-        });
-    });
-
-    function clk(tipo) {
-        event.preventDefault();
-        var redirect =  URL_MODULO + '/recebimento/imprimir-produto-ajax/';
-
-        var table = document.getElementsByClassName("recebimento-imprimir-pdf");
-        var rows = table[0].getElementsByClassName("gTResultSet");
-        var form = document.createElement('form');
-        var selecionado = false;
-        var idRecebimento = document.getElementById('idRecebimento').value;
-
-        document.body.appendChild(form);
-        form.method = 'post';
-        form.action = redirect;
-        form.target = "_blank";
-
-        for(var i = 0 ; i < rows.length ; i++) {
-            var columns = rows[i].getElementsByTagName('td');
-            var check   = columns[0].children.item(0).checked;
-            var countSelecionadas = 0;
-
-            if (check == true) {
-                var codProduto = columns[1].innerHTML;
-                var grade = columns[2].innerHTML;
-
-                selecionado = true;
-
-                var inputProduto = document.createElement('input');
-                inputProduto.type = 'hidden';
-                inputProduto.name = 'produtos[]';
-                inputProduto.value = codProduto;
-                form.appendChild(inputProduto);
-
-                var inputGrade = document.createElement('input');
-                inputGrade.type = 'hidden';
-                inputGrade.name = 'grades[]';
-                inputGrade.value = grade;
-                form.appendChild(inputGrade);
-            }
-        }
-
-        if (selecionado == false ) {
-            alert("Selecione ao menos um produto para imprimir");
-            return;
-        }
-
-        var inputRecebimento = document.createElement('input');
-        inputRecebimento.type = 'hidden';
-        inputRecebimento.name = 'id';
-        inputRecebimento.value = idRecebimento;
-        form.appendChild(inputRecebimento);
-
-        var inputTipo = document.createElement('input');
-        inputTipo.type = 'hidden';
-        inputTipo.name = 'tipo';
-        inputTipo.value = tipo;
-        form.appendChild(inputTipo);
-
-        form.submit();
-    }
-
-</script>
-
-<form id="produtos-form" method="post" class="saveForm" action="">
-    <button id="btnEtqProduto"     onclick="clk('produto')" class="btn">Imprimir Etiqueta de Produto</button>
-    <button id="btnEtqRecebimento" onclick="clk('recebimento')" class="btn">Imprimir Dados do Recebimento</button>
-    <input type="hidden" id="idRecebimento" value="<?php echo $this->idRecebimento?>" name="<?php echo $this->idRecebimento?>">
+<form id="etiquetas-prod-receb" method="post" class="saveForm" action="" target="_blank">
+    <button id="btnEtqProduto" class="btn btnProduto">Imprimir Etiqueta de Produto</button>
+    <button id="btnEtqRecebimento" class="btn btnRecebimento">Imprimir Dados do Recebimento</button>
+    <input type="hidden" id="id" value="<?php echo $this->idRecebimento?>" name="id">
+    <input type="hidden" id="tipo" name="tipo">
     <br>
     <br>
     <div id="imprimir-grid" class="grid">
@@ -99,7 +27,7 @@
                 }
                 $this->color = !($this->color);?>
                 <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
-                    <td><input name="produto[]" value="<?php echo $produto['COD_PRODUTO'] ?>" type="checkbox" <?php echo $checked?> /></td>
+                    <td><input name="produtos[]" value="<?php echo $produto['COD_PRODUTO'] . '*-*' . $produto['DSC_GRADE'] ?>" type="checkbox" <?php echo $checked?> /></td>
                     <td><?php echo $produto['COD_PRODUTO'] ?></td>
                     <td><?php echo $produto['DSC_GRADE'] ?></td>
                     <td><?php echo $produto['DSC_PRODUTO'] ?></td>
@@ -110,3 +38,40 @@
         </table>
     </div>
 </form>
+
+<script>
+    $(function() {
+
+        $('#todos').live('click',function(){
+            var checked_status = this.checked;
+            $('input[name="produtos[]"]').each(function()
+            {
+                $(this).attr('checked',checked_status);
+            });
+        });
+
+        $(".btnProduto").click(function () {
+            requestAjax("produto")
+        });
+
+        $(".btnRecebimento").click(function () {
+            requestAjax("recebimento")
+        });
+
+        function requestAjax( tipo ) {
+            var inputsSelecionados = $('input[name="produtos[]"]:checked');
+
+            if(inputsSelecionados.length === 0){
+                $.wmsDialogAlert({
+                    title: 'Erro',
+                    msg: 'Selecione ao menos um produto para imprimir.'
+                });
+            } else {
+                $("#tipo").val(tipo);
+                $("#etiquetas-prod-receb")
+                    .attr("action", URL_MODULO + '/recebimento/imprimir-produto-ajax/')
+                    .submit();
+            }
+        }
+    })
+</script>

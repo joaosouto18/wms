@@ -1285,20 +1285,16 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
     }
 
     public function imprimirProdutoAjaxAction () {
-        $idRecebimento = $this->getRequest()->getParam('id');
-        $produtos = $this->getRequest()->getParam('produtos');
-        $grades = $this->getRequest()->getParam('grades');
-        $tipoEtiqueta = $this->getRequest()->getParam('tipo');
+
+        $params = $this->getRequest()->getParams();
 
         $arrProdutos = array();
-        foreach ($produtos as $key => $produto) {
-            $arrProdutos[] = array(
-                'codProduto' => $produto,
-                'grade' => $grades[$key]
-            );
+        foreach ($params['produtos'] as $key => $prodGrade) {
+            list($codProduto, $grade) = explode('*-*', $prodGrade);
+            $arrProdutos[] = ['codProduto' => $codProduto, 'grade' => $grade ];
         }
 
-        if ($tipoEtiqueta == 'recebimento') {
+        if ($params['tipo'] == 'recebimento') {
             $modelo = "recebimento";
         } else {
             $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
@@ -1327,7 +1323,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 break;
         }
 
-        $gerarEtiqueta->init(array('idRecebimento' => $idRecebimento), null, $modelo, $target, false, $arrProdutos);
+        $gerarEtiqueta->init(array('idRecebimento' => $params['id']), null, $modelo, $target, false, $arrProdutos);
 
     }
 
