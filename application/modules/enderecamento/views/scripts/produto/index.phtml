@@ -29,7 +29,11 @@ if (count($this->produtos) > 0):
                 <td width=""><a title=""><span>Qtd. Endereçada</span></a></td>
                 <td width=""><a title=""><span>Qtd. Total</span></a></td>
             </tr>
-            <?php foreach ($this->produtos as $key => $produto) : ?>
+            <?php foreach ($this->produtos as $key => $produto) :
+            $produtoRepo = $this->repository;
+            $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['id'], 'grade' => $produto['grade']))
+
+            ?>
             <?php $gRowColor = !($key % 2) ? '' : 'gRowColor'; ?>
             <tr class="gTResultSet <?php echo $gRowColor ?> ">
                 <td class="gRowCheck"><input type="checkbox" name="produtos[]" value="<?php echo $produto['id'].'-'.$produto['grade'] ?>" /></td>
@@ -41,7 +45,11 @@ if (count($this->produtos) > 0):
                                     <?php $grade = urlencode($produto['grade']) ?>
                                     <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>">Endereçar Paletes</a></li>
                                     <li><a href="/enderecamento/produto/list/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>" class="inside-modal">Andamento</a></li>
-                                    <li><a href="/enderecamento/produto/alterar-norma/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>" class="inside-modal">Alterar Norma de Paletização</a></li>
+                                    <?php if ($produtoEntity->getTipoComercializacao()->getId() == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) : ?>
+                                        <li><a href="/enderecamento/produto/alterar-norma/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>" class="inside-modal">Alterar Norma de Paletização</a></li>
+                                    <?php else : ?>
+                                        <li><a href="/enderecamento/produto/confirmar-alteracao/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>/norma/0" >Alterar Norma de Paletização</a></li>
+                                    <?php endif; ?>
                                     <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>/produtos/true">Endereçar Paletes no Picking</a></li>
                                     <?php if ($this->recebimento->getStatus()->getSigla() == 'DESFEITO' || $this->recebimento->getStatus()->getSigla() == 'CANCELADO') : ?>
                                         <li><a href="/enderecamento/palete/trocar/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>">Trocar U.M.As</a></li>

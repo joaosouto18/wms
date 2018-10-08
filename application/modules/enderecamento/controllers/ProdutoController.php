@@ -37,7 +37,7 @@ class Enderecamento_ProdutoController extends Action
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo      = $this->getEntityManager()->getRepository('wms:Recebimento');
         $this->view->produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
-
+        $this->view->repository = $this->getEntityManager()->getRepository('wms:Produto');
     }
 
     public function enderecamentoPickingAction(){
@@ -144,7 +144,7 @@ class Enderecamento_ProdutoController extends Action
         $conferenciaRepo = $this->getEntityManager()->getRepository("wms:Recebimento\Conferencia");
 
         if ($idNorma == NULL) {
-            $this->addFlashMessage('error',"O Produto $codProduto, grade $grade não possuí norma de paletização");
+            $this->addFlashMessage('error',"O Produto $codProduto, grade $grade não possui norma de paletização");
             $this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
         }
 
