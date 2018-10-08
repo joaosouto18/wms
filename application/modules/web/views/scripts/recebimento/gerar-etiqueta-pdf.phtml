@@ -9,33 +9,75 @@
         });
     });
 
-    $('#btnEtqProduto').click(function () {
+    function clk(tipo) {
         event.preventDefault();
+        var redirect =  URL_MODULO + '/recebimento/imprimir-produto-ajax/';
 
-        alert('a');
-        $.ajax({
-            url:  URL_MODULO + '/recebimento/imprimir-produto-ajax/',
-            type: 'post',
-            data: {
-                produtos: 'teste'
-            },
-            success: function (data) {
-                if (data.error) {
-                    alert(data.error);
-                }
+        var table = document.getElementsByClassName("recebimento-imprimir-pdf");
+        var rows = table[0].getElementsByClassName("gTResultSet");
+        var form = document.createElement('form');
+        var selecionado = false;
+        var idRecebimento = document.getElementById('idRecebimento').value;
+
+        document.body.appendChild(form);
+        form.method = 'post';
+        form.action = redirect;
+
+        for(var i = 0 ; i < rows.length ; i++) {
+            var columns = rows[i].getElementsByTagName('td');
+            var check   = columns[0].children.item(0).checked;
+            var countSelecionadas = 0;
+
+            if (check == true) {
+                var codProduto = columns[1].innerHTML;
+                var grade = columns[2].innerHTML;
+
+                selecionado = true;
+
+                var inputProduto = document.createElement('input');
+                inputProduto.type = 'hidden';
+                inputProduto.name = 'produtos[]';
+                inputProduto.value = codProduto;
+                form.appendChild(inputProduto);
+
+                var inputGrade = document.createElement('input');
+                inputGrade.type = 'hidden';
+                inputGrade.name = 'grades[]';
+                inputGrade.value = grade;
+                form.appendChild(inputGrade);
             }
-        });
-    });
+        }
+
+        if (selecionado == false ) {
+            alert("Selecione ao menos um produto para imprimir");
+            return;
+        }
+
+        var inputRecebimento = document.createElement('input');
+        inputRecebimento.type = 'hidden';
+        inputRecebimento.name = 'id';
+        inputRecebimento.value = idRecebimento;
+        form.appendChild(inputRecebimento);
+
+        var inputTipo = document.createElement('input');
+        inputTipo.type = 'hidden';
+        inputTipo.name = 'tipo';
+        inputTipo.value = tipo;
+        form.appendChild(inputTipo);
+
+        form.submit();
+    }
 
 </script>
 
 <form id="produtos-form" method="post" class="saveForm" action="">
-    <button id="btnEtqProduto" class="btn">Imprimir Etiqueta de Produto</button>
-    <button id="btnEtqRecebimento" class="btn">Imprimir Dados do Recebimento</button>
+    <button id="btnEtqProduto"     onclick="clk('produto')" class="btn">Imprimir Etiqueta de Produto</button>
+    <button id="btnEtqRecebimento" onclick="clk('recebimento')" class="btn">Imprimir Dados do Recebimento</button>
+    <input type="hidden" id="idRecebimento" value="<?php echo $this->idRecebimento?>" name="<?php echo $this->idRecebimento?>">
     <br>
     <br>
     <div id="imprimir-grid" class="grid">
-        <table class="gTable ">
+        <table class="gTable recebimento-imprimir-pdf">
             <caption>Produtos para Imprimir</caption>
             <p><label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></label></p>
             <tbody>

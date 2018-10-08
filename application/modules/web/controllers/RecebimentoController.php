@@ -1279,13 +1279,18 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $recebimentoRepo = $this->getEntityManager()->getRepository('wms:Recebimento');
 
         $produtos = $recebimentoRepo->getProdutosImprimirByRecebimento($idRecebimento);
+
+        $this->view->idRecebimento = $idRecebimento;
         $this->view->produtos = $produtos;
     }
 
     public function imprimirProdutoAjaxAction () {
-        $idRecebimento = $this->getRequest()->getParam('produtos');
+        $idRecebimento = $this->getRequest()->getParam('id');
+        $produtos = $this->getRequest()->getParam('produtos');
+        $grades = $this->getRequest()->getParam('grades');
+        $tipoEtiqueta = $this->getRequest()->getParam('tipo');
 
-        $idRecebimento = 602;
+
         $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
         $target = $this->getSystemParameterValue("IMPRESSAO_PRODUTO_RECEBIMENTO");
 
@@ -1312,8 +1317,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $this->_helper->json(array(
             'result' => true,
         ));
-
-
     }
 
     /*
