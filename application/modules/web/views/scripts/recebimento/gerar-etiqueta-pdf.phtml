@@ -1,0 +1,77 @@
+<form id="etiquetas-prod-receb" method="post" class="saveForm" action="" target="_blank">
+    <button id="btnEtqProduto" class="btn btnProduto">Imprimir Etiqueta de Produto</button>
+    <button id="btnEtqRecebimento" class="btn btnRecebimento">Imprimir Dados do Recebimento</button>
+    <input type="hidden" id="id" value="<?php echo $this->idRecebimento?>" name="id">
+    <input type="hidden" id="tipo" name="tipo">
+    <br>
+    <br>
+    <div id="imprimir-grid" class="grid">
+        <table class="gTable recebimento-imprimir-pdf">
+            <caption>Produtos para Imprimir</caption>
+            <p><label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecionar Todos<br></label></p>
+            <tbody>
+            <tr class ="gTTitle">
+                <td>Check</td>
+                <td>Código</td>
+                <td>Grade</td>
+                <td>Produto</td>
+                <td>Quantidade</td>
+            </tr>
+            <?php
+            foreach ($this->produtos as $produto):
+                $fontColor = "black";
+                $liberado = true;
+                $checked = '';
+                if ($produto['IMPRIMIR'] == 'S') {
+                    $checked = 'checked="true"';
+                }
+                $this->color = !($this->color);?>
+                <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                    <td><input name="produtos[]" value="<?php echo $produto['COD_PRODUTO'] . '*-*' . $produto['DSC_GRADE'] ?>" type="checkbox" <?php echo $checked?> /></td>
+                    <td><?php echo $produto['COD_PRODUTO'] ?></td>
+                    <td><?php echo $produto['DSC_GRADE'] ?></td>
+                    <td><?php echo $produto['DSC_PRODUTO'] ?></td>
+                    <td><?php echo $produto['QTD'] ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</form>
+
+<script>
+    $(function() {
+
+        $('#todos').live('click',function(){
+            var checked_status = this.checked;
+            $('input[name="produtos[]"]').each(function()
+            {
+                $(this).attr('checked',checked_status);
+            });
+        });
+
+        $(".btnProduto").click(function () {
+            requestAjax("produto")
+        });
+
+        $(".btnRecebimento").click(function () {
+            requestAjax("recebimento")
+        });
+
+        function requestAjax( tipo ) {
+            var inputsSelecionados = $('input[name="produtos[]"]:checked');
+
+            if(inputsSelecionados.length === 0){
+                $.wmsDialogAlert({
+                    title: 'Erro',
+                    msg: 'Selecione ao menos um produto para imprimir.'
+                });
+            } else {
+                $("#tipo").val(tipo);
+                $("#etiquetas-prod-receb")
+                    .attr("action", URL_MODULO + '/recebimento/imprimir-produto-ajax/')
+                    .submit();
+            }
+        }
+    })
+</script>

@@ -1959,4 +1959,41 @@ class RecebimentoRepository extends EntityRepository {
         return $sql->getQuery()->getResult();
     }
 
+    public function getProdutosImprimirByRecebimento ($idRecebimento) {
+        $sql = "SELECT P.COD_PRODUTO,
+                       P.DSC_GRADE,
+                       P.DSC_PRODUTO,
+                       SUM(NFI.QTD_ITEM) as QTD_ITEM,
+                       SUM(NFI.QTD_ITEM) as QTD,
+                       CASE WHEN I.COD_PRODUTO IS NOT NULL THEN 'S' ELSE 'N' END as IMPRIMIR
+                  FROM NOTA_FISCAL NF
+                  LEFT JOIN NOTA_FISCAL_ITEM NFI ON NF.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = NFI.COD_PRODUTO 
+                                     AND P.DSC_GRADE = NFI.DSC_GRADE
+                  LEFT JOIN (SELECT DISTINCT COD_PRODUTO, DSC_GRADE FROM PRODUTO_EMBALAGEM WHERE IND_IMPRIMIR_CB = 'S'
+                              UNION 
+                             SELECT DISTINCT COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME WHERE IND_IMPRIMIR_CB = 'S') I
+                    ON I.COD_PRODUTO = P.COD_PRODUTO
+                   AND I.DSC_GRADE = P.DSC_GRADE
+                 WHERE NF.COD_RECEBIMENTO = $idRecebimento
+                 GROUP BY P.COD_PRODUTO,
+                       P.DSC_GRADE,
+                       P.DSC_PRODUTO,
+                       I.COD_PRODUTO
+                 ORDER BY P.COD_PRODUTO, P.DSC_GRADE";
+        $produtos = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+
+        foreach ($produtos as $key => $produto) {
+            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($produto['COD_PRODUTO'], $produto['DSC_GRADE'], $produto['QTD']);
+            if (is_array($vetEmbalagens)) {
+                $embalagem = implode(' + ',$vetEmbalagens);
+            }
+            $produtos[$key]['QTD'] = $embalagem;
+        }
+
+        return $produtos;
+    }
+
+
 }
