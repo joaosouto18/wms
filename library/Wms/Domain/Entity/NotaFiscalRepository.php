@@ -855,7 +855,7 @@ class NotaFiscalRepository extends EntityRepository {
      * Busca os produtos com impressão automática do código de barras
      * @param int $idRecebimento
      */
-    public function buscarProdutosImprimirCodigoBarras($idRecebimento) {
+    public function buscarProdutosImprimirCodigoBarras($idRecebimento, $codProduto = null, $grade = null) {
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('nf.numero as numNota, nf.serie,
                           nfi.id as idNotaFiscalItem, nfi.quantidade as qtdItem,
@@ -864,10 +864,12 @@ class NotaFiscalRepository extends EntityRepository {
                           ls.descricao as dscLinhaSeparacao,
                           fb.nome as fabricante,
                           tc.descricao as dscTipoComercializacao,
+                          r.dataInicial as dataRecebimento,
                           pe.id as idEmbalagem, pe.descricao as dscEmbalagem, pe.quantidade,
                           pv.id as idVolume, pv.codigoSequencial as codSequencialVolume, pv.descricao as dscVolume,
                           NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras')
                 ->from('wms:NotaFiscal', 'nf')
+                ->leftJoin('nf.recebimento', 'r')
                 ->innerJoin('nf.itens', 'nfi')
                 ->innerJoin('nf.fornecedor', 'f')
                 ->innerJoin('f.pessoa', 'pj')
@@ -878,8 +880,17 @@ class NotaFiscalRepository extends EntityRepository {
                 ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.isPadrao = \'S\'')
                 ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
                 ->where('nf.recebimento = :idRecebimento')
-                ->setParameter('idRecebimento', $idRecebimento)
-                ->andWhere('(pe.imprimirCB = \'S\' OR pv.imprimirCB = \'S\')');
+                ->setParameter('idRecebimento', $idRecebimento);
+
+
+        if ($codProduto == null) {
+            $dql->andWhere('(pe.imprimirCB = \'S\' OR pv.imprimirCB = \'S\')');
+        } else {
+            $dql->andWhere('p.id = :codProduto')
+                ->andWhere('p.grade = :grade')
+                ->setParameter('codProduto', $codProduto)
+                ->setParameter('grade', $grade);
+        }
 
         return $dql->getQuery()->getResult();
     }
