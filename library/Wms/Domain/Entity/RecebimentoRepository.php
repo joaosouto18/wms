@@ -1464,7 +1464,8 @@ class RecebimentoRepository extends EntityRepository {
 
             /** @var \Wms\Domain\Entity\Recebimento\Volume $volume */
             foreach ($volumes as $volume) {
-                $volume->setNormaPaletizacao($normaEn);
+                $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Produto\Volume',$volume->getVolume()->getId());
+                $volume->setNormaPaletizacao($produtoVolumeEntity->getNormaPaletizacao());
                 $this->getEntityManager()->persist($volume);
             }
         }

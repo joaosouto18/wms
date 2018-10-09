@@ -241,7 +241,7 @@ class EstoqueRepository extends EntityRepository
                 $em->persist($enderecoEn);
             }
         } else {
-            if ($idInventario != null) {
+            if (is_null($idInventario)) {
                 $existeReservaEntradaPendente = false;
                 $existeOutroEstoque = false;
 
