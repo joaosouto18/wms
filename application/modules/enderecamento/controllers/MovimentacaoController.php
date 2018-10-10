@@ -492,6 +492,13 @@ class Enderecamento_MovimentacaoController extends Action
         $controlaLote =  'N';
         if(!empty($produtoEn)) {
             $controlaLote = $produtoEn->getIndControlaLote();
+        } else {
+            foreach ($enderecos as $item) {
+                if (!empty($item['LOTE'])) {
+                    $controlaLote = 'S';
+                    break;
+                }
+            }
         }
         $this->view->controlaLote = $controlaLote;
         $this->view->endPicking = $endPicking;

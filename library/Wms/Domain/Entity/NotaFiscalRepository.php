@@ -773,6 +773,7 @@ class NotaFiscalRepository extends EntityRepository {
                         AND rc.grade = p.grade
                         AND rc.qtdDivergencia = 0
                         AND (rc.divergenciaPeso = \'N\')
+                        AND (rc.indDivergLote = \'N\')
                 )')
                 ->setParameters(
                 array(

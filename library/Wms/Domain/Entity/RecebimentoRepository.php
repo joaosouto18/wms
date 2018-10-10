@@ -334,7 +334,7 @@ class RecebimentoRepository extends EntityRepository {
         $arrayDiv = array();
         foreach ($arrayQtdByProd  as $idProduto => $grades) {
             foreach ($grades as $grade => $qtd) {
-                $qtdDivergencia = $qtd - $arrayQtdByProdNF[$idProduto][$grade];
+                $qtdDivergencia = Math::subtrair($qtd, $arrayQtdByProdNF[$idProduto][$grade]);
                 $arrayDiv[$idProduto][$grade] = ['qtd' => $qtdDivergencia, 'temDivergencia' => ($qtdDivergencia != 0) ];
             }
         }

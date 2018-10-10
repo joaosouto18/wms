@@ -190,7 +190,7 @@ class ConferenciaRepository extends EntityRepository
                          AND V.DSC_GRADE = RC.DSC_GRADE
                          AND V.COD_OS = RC.COD_OS
                          AND V.COD_RECEBIMENTO = RC.COD_RECEBIMENTO
-                         AND NVL(V.LOTE, 0) = NVL(RC.DSC_LOTE, 0)
+                         AND NVL(V.DSC_LOTE, 0) = NVL(RC.DSC_LOTE, 0)
                   INNER JOIN (SELECT SUM(NUM_PESO) PESO,
                                     NFI.COD_PRODUTO,
                                     NFI.DSC_GRADE,

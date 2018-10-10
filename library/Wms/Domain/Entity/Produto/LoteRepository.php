@@ -41,7 +41,7 @@ class LoteRepository extends EntityRepository
         /** @var Lote $loteEn */
         $loteEn = $this->findOneBy(['descricao' => $lote]);
         if (!empty($loteEn)) {
-            if ($loteEn->getOrigem() == Lote::EXTERNO && $loteEn->getCodProduto() == $idProduto && $loteEn->getGrade() == $grade) {
+            if ($loteEn->getCodProduto() == $idProduto && $loteEn->getGrade() == $grade) {
                 return $loteEn;
             } elseif ($loteEn->getOrigem() == Lote::INTERNO && empty($loteEn->getCodProduto()) && empty($loteEn->getGrade())) {
                 $loteEn->setCodProduto($idProduto)->setGrade($grade);
