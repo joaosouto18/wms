@@ -36,11 +36,11 @@ class Mobile_Enderecamento_ManualController extends Action
 
                 if (empty($params['reservas'])) {
 
-                $params['produto'] = ColetorUtil::adequaCodigoBarras($params['produto']);
-                /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
-                $produtoEmbalagemRepo = $em->getRepository('wms:Produto\Embalagem');
-                /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
-                $embalagemEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $params['produto'], 'dataInativacao' => null));
+                    $params['produto'] = ColetorUtil::adequaCodigoBarras($params['produto']);
+                    /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $produtoEmbalagemRepo */
+                    $produtoEmbalagemRepo = $em->getRepository('wms:Produto\Embalagem');
+                    /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
+                    $embalagemEn = $produtoEmbalagemRepo->findOneBy(array('codigoBarras' => $params['produto'], 'dataInativacao' => null));
 
                     /** @var \Wms\Domain\Entity\Produto\VolumeRepository $produtoVolumeRepo */
                     $produtoVolumeRepo = $em->getRepository('wms:Produto\Volume');
@@ -58,6 +58,7 @@ class Mobile_Enderecamento_ManualController extends Action
                         $params['codProduto'] = $codProduto = $volumeEn->getCodProduto();
                         $params['grade'] = $grade = $volumeEn->getGrade();
                         $this->view->capacidadePicking = $volumeEn->getCapacidadePicking();
+                        $params['qtdEmbalagem'] = 1;
                     }
 
                     /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $recebimentoEmbalagemRepo */
@@ -76,9 +77,9 @@ class Mobile_Enderecamento_ManualController extends Action
                     $qtdRecebimentoEn = $qtdRecebimentoRepo->getQtdByRecebimento($params['id'], $codProduto, $grade);
                     $sumQtdRecebimento = $qtdRecebimentoEn[0]['qtd'];
 
-                /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
-                $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
-                $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade, $params['produto']);
+                    /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
+                    $paleteProdutoRepo = $em->getRepository('wms:Enderecamento\PaleteProduto');
+                    $paleteProdutoEn = $paleteProdutoRepo->getQtdTotalEnderecadaByRecebimento($params['id'], $codProduto, $grade, $params['produto']);
 
                     $qtdEndTotalFator = \Wms\Math::multiplicar($params['qtd'], $params['qtdEmbalagem']);
                     $enderecadoMaisEnderecar = \Wms\Math::adicionar($qtdEndTotalFator, $paleteProdutoEn[0]['qtd']);
