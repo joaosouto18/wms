@@ -76,7 +76,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         return $dql->getQuery()->getArrayResult();
     }
 
-    public function getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, $showOsId = false, $idProduto = null, $idExpedicao = null, $operador = null, $exibrCodBarrasProduto = false) {
+    public function getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, $showOsId = false, $idProduto = null, $idExpedicao = null, $operador = null, $exibrCodBarrasProduto = false, $grade = null) {
         $SqlWhere = "  WHERE RES.TIPO_RESERVA = 'E'";
         $osId = "";
         $siglaId = "";
@@ -97,6 +97,10 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
         if (!empty($idProduto)) {
             $SqlWhere .= " AND P.COD_PRODUTO = '$idProduto'";
+        }
+
+        if (!empty($grade)) {
+            $SqlWhere .= " AND P.DSC_GRADE = '$grade'";
         }
 
         if (!empty($idExpedicao)) {
