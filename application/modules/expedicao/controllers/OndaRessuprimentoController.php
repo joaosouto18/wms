@@ -219,48 +219,48 @@ class Expedicao_OndaRessuprimentoController extends Action
     public function gerenciarOsAction()
     {
         $form = new FiltroDadosOnda;
-        $actionParams = $this->_getParam('actionParams', false);
+        $values = $form->getParams();
 
-        if ($form->getParams() or $actionParams) {
-            if ($actionParams) {
-                $dataInicial = $this->_getParam('dataInicial', null);
-                $dataFinal = $this->_getParam('dataFinal', null);
-                $status = $this->_getParam('status', null);
-                $idExpedicao = $this->_getParam('expedicao', null);
-                $operador = $this->_getParam('operador', null);
-                $idProduto = $this->_getParam('idProduto', null);
-                $values = array('status' => $status,
-                    'dataInicial' => $dataInicial,
-                    'dataFinal' => $dataFinal);
-            }
-
-            if ($form->getParams()) {
-                $values = $form->getParams();
-                $dataInicial = $values['dataInicial'];
-                $dataFinal = $values['dataFinal'];
-                $status = $values['status'];
-                $idExpedicao = $values['expedicao'];
-                $operador = $values['operador'];
-                $idProduto = $values['idProduto'];
-            }
-            /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRessuprimentoRepo */
-            $ondaRessuprimentoRepo = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
-            $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, true, $idProduto, $idExpedicao, $operador, true);
-
+        $filtravel = false;
+        if (empty($values)) {
+            $values['dataInicial'] = date('d/m/Y');
+            $values['dataFinal'] = date('d/m/Y');
+            $filtravel = true;
+        } else {
             foreach ($values as $key => $arg) {
                 if (empty($arg)) unset($values[$key]);
             }
-
-            $Grid = new OsGrid();
-            $Grid->init($result, $values)->render();
-
-            $pager = $Grid->getPager();
-            $pager->setMaxPerPage(30000);
-            $Grid->setPager($pager);
-
-            $form->setDefaults($values);
-            $this->view->grid = $Grid->render();
+            foreach ($values as $param => $value) {
+                $filtravel = ($param != 'submit' && !empty($value)) ;
+            }
         }
+
+        if (!$filtravel) {
+            ini_set('max_execution_time', -1);
+            ini_set('memory_limit', '-1');
+        }
+
+        $dataInicial = (isset($values['dataInicial'])) ? $values['dataInicial'] : null;
+        $dataFinal =   (isset($values['dataFinal'])) ? $values['dataFinal'] : null;
+        $status =      (isset($values['status'])) ? $values['status'] : null;
+        $idExpedicao = (isset($values['expedicao'])) ? $values['expedicao'] : null;
+        $operador =    (isset($values['operador'])) ? $values['operador'] : null;
+        $idProduto =   (isset($values['idProduto'])) ? $values['idProduto'] : null;
+        $grade =       (isset($values['grade'])) ? $values['grade'] : null;
+
+        /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRessuprimentoRepo */
+        $ondaRessuprimentoRepo = $this->em->getRepository("wms:Ressuprimento\OndaRessuprimento");
+        $result = $ondaRessuprimentoRepo->getOndasEmAbertoCompleto($dataInicial, $dataFinal, $status, true, $idProduto, $idExpedicao, $operador, true, $grade);
+
+        $Grid = new OsGrid();
+        $Grid->init($result, $values)->render();
+
+        $pager = $Grid->getPager();
+        $pager->setMaxPerPage(30000);
+        $Grid->setPager($pager);
+
+        $form->setDefaults($values);
+        $this->view->grid = $Grid->render();
 
         $this->view->form = $form;
     }
@@ -316,13 +316,14 @@ class Expedicao_OndaRessuprimentoController extends Action
 
         $this->getEntityManager()->flush();
 
-        $formParams = array('status' => $params['status'],
-            'dataInicial' => $params['dataInicial'],
-            'actionParams' => true,
-            'dataFinal' => $params['dataFinal']);
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
+        unset($params['ID']);
+        unset($params['submit']);
 
         $this->addFlashMessage("success", "OS  $idOndaOs cancelada com sucesso");
-        $this->redirect("gerenciar-os", "onda-ressuprimento", "expedicao", $formParams);
+        $this->redirect("gerenciar-os", "onda-ressuprimento", "expedicao", $params);
     }
 
     public function listAction()
