@@ -781,7 +781,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
 
                 if ($embalado === true) {
-                    $cubagemProduto = $embalagemAtual->getCubagem();
+                    $cubagemProduto = $this->tofloat($embalagemAtual->getCubagem());
                     if (empty($cubagemProduto)) {
                         $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
                         if (!empty($dadoLogisticoEn)) {
@@ -798,7 +798,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         continue;
                     }
 
-                    $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = number_format($cubagemProduto * ((float)$quantidadeAtender / number_format($embalagemAtual->getQuantidade(),3,'.','')),8);
+                    $cubg = number_format(Math::multiplicar($cubagemProduto, Math::dividir($quantidadeAtender, number_format($embalagemAtual->getQuantidade(),3,'.',''))),8);
+                    $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = (!empty($cubg)) ? $cubg : $this->tofloat('0.001');
                 }
             }
         }
