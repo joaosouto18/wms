@@ -64,6 +64,7 @@ class PedidoRepository extends EntityRepository
                            PP.DSC_GRADE, 
                            PP.QUANTIDADE as QTD_PEDIDO, 
                            PJ.NUM_CNPJ as CNPJ,
+                           PP.QTD_EMBALAGEM_VENDA as QTD_PEDIDO_EMBALAGEM_VENDA,
                            NVL((EP.QTD * -1),0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) as QTD_ATENDIDA_EMB_VENDA,
                            NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA
                     FROM PEDIDO_PRODUTO PP 
@@ -77,6 +78,7 @@ class PedidoRepository extends EntityRepository
                            PP.DSC_GRADE, 
                            PP.QUANTIDADE as QTD_PEDIDO, 
                            '' AS CNPJ,
+                           PP.QTD_EMBALAGEM_VENDA as QTD_PEDIDO_EMBALAGEM_VENDA,
                            (PP.QUANTIDADE - NVL(PP.qtd_cortada,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) as QTD_ATENDIDA_EMB_VENDA,
                            NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA                           
                   FROM PEDIDO_PRODUTO PP WHERE PP.COD_PEDIDO = '$codPedido'";
