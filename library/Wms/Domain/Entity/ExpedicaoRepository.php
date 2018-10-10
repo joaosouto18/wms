@@ -207,8 +207,9 @@ class ExpedicaoRepository extends EntityRepository {
                  * ?3 - Código do Item
                  * ?4 - Quantidade Pedida (Fator 1)
                  * ?5 - Quantidade Atendida (Fator 1)
-                 * ?6 - Quantidade Atendida (Em função da embalagem vendida)
-                 * ?7 - Fator da Embalagem de Venda
+                 * ?6 - Quantidade Pedida (Em função da embalagem vendida)
+                 * ?7 - Quantidade Atendida (Em função da embalagem vendida)
+                 * ?8 - Fator da Embalagem de Venda
                  */
                 $idTipoAcao = $acaoEn->getTipoAcao()->getId();
                 if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PRODUTO) {
@@ -227,6 +228,7 @@ class ExpedicaoRepository extends EntityRepository {
                                 } else {
                                     $options[$pedidoEn->getId() . '-' . $key][] = $item['ATENDIDA'];
                                 }
+                                $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_PEDIDO_EMBALAGEM_VENDA'];
                                 $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_ATENDIDA_EMB_VENDA'];
                                 $options[$pedidoEn->getId().'-'.$key][] = $item['FATOR_EMBALAGEM_VENDA'];
                             }
@@ -1782,7 +1784,6 @@ class ExpedicaoRepository extends EntityRepository {
             //Finaliza Expedição ERP
             if ($this->getSystemParameterValue('IND_FINALIZA_CONFERENCIA_ERP_INTEGRACAO') == 'S') {
                 $resultAcao = $this->executaIntegracaoBDFinalizacaoConferencia($expedicaoEn);
-
             }
 
             //Executa Corte ERP
