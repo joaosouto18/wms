@@ -42,7 +42,7 @@ class VQtdRecebimento
     protected $peso;
 
     /**
-     * @Column(name="LOTE", type="string")
+     * @Column(name="DSC_LOTE", type="string")
      * @var string
      */
     protected $lote;
