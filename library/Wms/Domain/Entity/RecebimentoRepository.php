@@ -1115,6 +1115,7 @@ class RecebimentoRepository extends EntityRepository {
     }
 
     public function getProdutosByRecebimento($idRecebimento) {
+        $loteND = ProdutoEntity\Lote::LND;
 
         $SQL = "SELECT V.COD_PRODUTO,
                        V.DSC_GRADE,
@@ -1157,7 +1158,8 @@ class RecebimentoRepository extends EntityRepository {
                                                      PP.DSC_GRADE, 
                                                      P.COD_RECEBIMENTO, 
                                                      P.COD_STATUS,
-                                                     PP.COD_NORMA_PALETIZACAO
+                                                     PP.COD_NORMA_PALETIZACAO,
+                                                     NVL(PP.DSC_LOTE, '$loteND') DSC_LOTE
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
@@ -1178,7 +1180,8 @@ class RecebimentoRepository extends EntityRepository {
                                                      PP.DSC_GRADE, 
                                                      P.COD_RECEBIMENTO, 
                                                      P.COD_STATUS,
-                                                     PP.COD_NORMA_PALETIZACAO
+                                                     PP.COD_NORMA_PALETIZACAO,
+                                                     NVL(PP.DSC_LOTE, '$loteND') DSC_LOTE
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
@@ -1199,7 +1202,8 @@ class RecebimentoRepository extends EntityRepository {
                                                      PP.DSC_GRADE, 
                                                      P.COD_RECEBIMENTO, 
                                                      P.COD_STATUS,
-                                                     PP.COD_NORMA_PALETIZACAO
+                                                     PP.COD_NORMA_PALETIZACAO,
+                                                     NVL(PP.DSC_LOTE, '$loteND') DSC_LOTE
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
@@ -1220,7 +1224,8 @@ class RecebimentoRepository extends EntityRepository {
                                                      PP.DSC_GRADE, 
                                                      P.COD_RECEBIMENTO, 
                                                      P.COD_STATUS,
-                                                     PP.COD_NORMA_PALETIZACAO
+                                                     PP.COD_NORMA_PALETIZACAO,
+                                                     NVL(PP.DSC_LOTE, '$loteND') DSC_LOTE
                                        FROM PALETE P
                                       INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                                        LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PROD.DSC_GRADE
