@@ -751,10 +751,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $embalagemAtual = $embalagem;
                             break;
                         }
-//                        if (number_format($embalagem->getQuantidade(),3,'.','') <= number_format($quantidadeAtender,3,'.','')) {
-//                            $embalagemAtual = $embalagem;
-//                            break;
-//                        }
                     }
                     if ($embalagemAtual == null) {
                         $msg = "Não existe embalagem para Atender o PRODUTO $codProduto GRADE $grade com a quantidade restante de $quantidadeAtender produtos";
@@ -762,6 +758,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
                 } else {
                     $embalagemAtual = $menorEmbalagem;
+                }
+                
+                if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
+                    continue;
                 }
 
                 if (!is_null($embalagemAtual->getDataInativacao()))
@@ -789,17 +789,20 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $numLargura      = $this->tofloat($dadoLogisticoEn->getLargura());
                             $numProfundidade = $this->tofloat($dadoLogisticoEn->getProfundidade());
                             $cubagemProduto  = $numAltura * $numLargura * $numProfundidade;
-                        } else {
-                            $cubagemProduto = $this->tofloat('0.001');
                         }
                     }
 
-                    if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
-                        continue;
-                    }
+                    $cubagemProduto = $this->tofloat($cubagemProduto);
+                    $cubagemProduto = (!empty($cubagemProduto)) ? $cubagemProduto : $this->tofloat('0.001');
 
-                    $cubg = number_format(Math::multiplicar($cubagemProduto, Math::dividir($quantidadeAtender, number_format($embalagemAtual->getQuantidade(),3,'.',''))),8);
-                    $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = (!empty($cubg)) ? $cubg : $this->tofloat('0.001');
+                    $cubg = number_format(
+                        Math::multiplicar(
+                            $cubagemProduto, Math::dividir(
+                                $quantidadeAtender, number_format(
+                                    $embalagemAtual->getQuantidade(),3,'.','')
+                            )
+                        ),8);
+                    $cubagemPedido[$pedidoId][$embalagemAtual->getId()] = $cubg;
                 }
             }
         }
