@@ -904,7 +904,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     'valorVenda' => (isset($produto['valorVenda'])) ? $produto['valorVenda'] : null,
                     'grade' => $produto['grade'],
                     'quantidade' => $qtdCorrigida,
-                    'fatorEmbalagemVenda' => $fatorEmbalagemVenda,
+                    'fatorEmbalagemVenda' => str_replace(',','.',$fatorEmbalagemVenda),
                     'qtdEmbalagemVenda' => $qtdEmbalagemVenda
                 );
             }
