@@ -201,16 +201,29 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
 
     public function configurePage()
     {
-        $buttons[] = array(
-            'label' => 'Consultar Saldo do ERP',
-            'cssClass' => 'button atualizarEstoque',
-            'urlParams' => array(
-                'module' => 'inventario',
-                'controller' => 'comparativo',
-                'action' => 'saldo',
-            ),
-            'tag' => 'a'
-        );
+        if ($this->getSystemParameterValue("TIPO_INTEGRACAO_ESTOQUE_ERP") == "WebService") {
+            $buttons[] = array(
+                'label' => 'Consultar Saldo do ERP',
+                'cssClass' => 'button atualizarEstoque',
+                'urlParams' => array(
+                    'module' => 'inventario',
+                    'controller' => 'comparativo',
+                    'action' => 'saldo',
+                ),
+                'tag' => 'a'
+            );
+        } else {
+            $buttons[] = array(
+                'label' => 'Consultar Saldo do ERP',
+                'cssClass' => 'button dialogAjax',
+                'urlParams' => array(
+                    'module' => 'importacao',
+                    'controller' => 'index',
+                    'action' => 'index',
+                ),
+                'tag' => 'a'
+            );
+        }
         Page::configure(array('buttons' => $buttons));
     }
 
