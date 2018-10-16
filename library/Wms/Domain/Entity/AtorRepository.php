@@ -257,4 +257,25 @@ class AtorRepository extends EntityRepository {
         return $this->getSystemParameterValue('PERMITE_CLIENTES_CNPJ_IGUAIS');
     }
 
+    /**
+     * @param $pessoaEn Fisica|Juridica
+     * @param $arrData
+     * @return Juridica|Fisica
+     */
+    public function tryUpdate( $pessoaEn, $arrData)
+    {
+        if (isset($arrData['nome']) && !empty($arrData['nome']) && $pessoaEn->getNome() != $arrData['nome']) {
+
+            $pessoaEn->setNome($arrData['nome']);
+
+            if (is_a($pessoaEn, "\Wms\Domain\Entity\Pessoa\Juridica")) {
+                $pessoaEn->setNomeFantasia($arrData['nome']);
+            }
+        }
+
+        $this->_em->persist($pessoaEn);
+
+        return $pessoaEn;
+    }
+
 }
