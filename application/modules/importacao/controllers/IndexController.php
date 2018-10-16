@@ -558,7 +558,42 @@ class Importacao_IndexController extends Action
                         $countFlush++;
                     }
                     break;
+                case 'estoqueErp':
 
+                    $result = array(
+                        'COD_PRODUTO' => $arrRegistro['COD_PRODUTO'],
+                        'GRADE' => $arrRegistro['GRADE'],
+                        'ESTOQUE_DISPONIVEL' => $arrRegistro['ESTOQUE_DISPONIVEL'],
+                        'ESTOQUE_AVARIA' => $arrRegistro['ESTOQUE_AVARIA'],
+                        'ESTOQUE_GERENCIAL' => $arrRegistro['ESTOQUE_GERENCIAL'],
+                        'FATOR_UNIDADE_VENDA' => $arrRegistro['FATOR_UNIDADE_VENDA'],
+                        'DSC_UNIDADE' => $arrRegistro['DSC_UNIDADE'],
+                        'VALOR_ESTOQUE' => $arrRegistro['VALOR_ESTOQUE'],
+                        'CUSTO_UNITARIO' => $arrRegistro['CUSTO_UNITARIO']
+                    );
+                    array_push($checkArray, $result);
+
+                    if ($linha == ($this->statusProgress["tLinha"] + 1)) {
+                        try {
+                            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+                            $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+                            $idAcao = $this->getSystemParameterValue('COD_ACAO_INTEGRACAO_ESTOQUE');
+                            $acaoEn = $acaoIntRepo->find($idAcao);
+
+                            $integracaoService = new \Wms\Service\Integracao($this->getEntityManager(),
+                                array('acao'=>$acaoEn,
+                                      'dados'=>$checkArray));
+
+                            $integracaoService->processaAcao();
+                        }catch (Exception $e){
+                            $arrErroRows['exception'] = $result;
+                        }
+                    }
+
+                    $countFlush++;
+
+                    break;
                 default:
                     break;
             }
@@ -791,7 +826,7 @@ class Importacao_IndexController extends Action
 //                            $em->clear();
                         }
                     }
-                } elseif ($extencao == "csv") {
+                } else {
 
                     $handle = fopen($archive, "r");
 
