@@ -258,9 +258,9 @@ class AtorRepository extends EntityRepository {
     }
 
     /**
-     * @param $pessoaEn Fisica|Juridica
+     * @param $pessoaEn Pessoa
      * @param $arrData
-     * @return Juridica|Fisica
+     * @return Pessoa
      */
     public function tryUpdate( $pessoaEn, $arrData)
     {
