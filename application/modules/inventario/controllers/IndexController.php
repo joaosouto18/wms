@@ -133,86 +133,27 @@ class Inventario_IndexController  extends Action
 
     public function exportInventarioAjaxAction()
     {
-        $id = $this->_getParam('id');
+        $idInventario = $this->_getParam('id');
 
         try {
-            /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
-            $inventarioEn = $this->em->find('wms:Inventario', $id);
-
-            /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
-            $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
-            /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
-            $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
-
+            /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
             $inventarioRepo = $this->_em->getRepository('wms:Inventario');
 
-            $codInvErp = $inventarioEn->getCodInventarioERP();
-            if (empty($codInvErp)){
-                throw new Exception("Este inventário não tem o código do inventário respectivo no ERP");
+            $modelo = $this->getSystemParameterValue("MODELO_EXPORTACAO_INVENTARIO");
+
+            if ($modelo == 1) {
+                $inventarioRepo->exportaInventarioModelo01($idInventario);
+            } else {
+                $inventarioRepo->exportaInventarioModelo02($idInventario);
             }
-            $inventariosByErp = $inventarioRepo->findBy(array('codInventarioERP' => $codInvErp));
-            foreach ($inventariosByErp as $inventarios) {
-                $inventario[] = $inventarios->getId();
-            }
-            $codInventarios = implode(',', $inventario);
-
-            $filename = "Exp_Inventario($codInvErp).txt";
-            $file = fopen($filename, 'w');
-
-            $invEnderecosEn = $enderecoRepo->getComContagem($codInventarios);
-            $qtdTotal = 0;
-            $produtoAnterior = null;
-            $inventario = array();
-            foreach ($invEnderecosEn as $invEnderecoEn) {
-                $codInventarioEnderecos[] = $invEnderecoEn->getId();
-            }
-            $codInventarioEndereco = implode(',',$codInventarioEnderecos);
-
-            $contagemEndEnds = $enderecoRepo->getUltimaContagem($codInventarioEndereco);
-            foreach ($contagemEndEnds as $contagemEndEn) {
-                $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()), array('quantidade' => 'ASC'));
-                if (!$embalagemEntity) continue;
-                if ($produtoAnterior != $contagemEndEn->getCodProduto()) $qtdTotal = 0;
-
-                $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
-                $qtdTotal = $qtdTotal + $qtdContagem;
-                $inventario[$contagemEndEn->getCodProduto()]['QUANTIDADE'] = $qtdTotal;
-                $inventario[$contagemEndEn->getCodProduto()]['NUM_CONTAGEM'] = $contagemEndEn->getNumContagem();
-                $inventario[$contagemEndEn->getCodProduto()]['COD_BARRAS'] = reset($embalagemEntity)->getCodigoBarras();
-                $inventario[$contagemEndEn->getCodProduto()]['FATOR'] = reset($embalagemEntity)->getQuantidade();
-                $produtoAnterior = $contagemEndEn->getCodProduto();
-            }
-
-            foreach ($inventario as $key => $produto) {
-                $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
-                $txtContagem = '001';
-                $txtLocal = '001';
-                $txtCodBarras = str_pad($produto['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
-                $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 10, '0', STR_PAD_LEFT);
-                $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
-                $linha = "$txtCodInventario"."$txtContagem"."$txtLocal"."$txtCodBarras"."$txtQtd"."$txtCodProduto"."\r\n";
-                fwrite($file, $linha, strlen($linha));
-            }
-
-            fclose($file);
-
-            header("Content-Type: application/force-download");
-            header("Content-type: application/octet-stream;");
-            header("Content-disposition: attachment; filename=" . $filename);
-            header("Expires: 0");
-            header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
-            header("Pragma: no-cache");
-
-            readfile($filename);
-            flush();
-
-            unlink($filename);
-            exit;
+            $this->addFlashMessage('success', "Inventário $idInventario exportado com sucesso");
 
         } catch (Exception $e){
             $this->addFlashMessage('error', $e->getMessage());
-            $this->redirect('index');
         }
+
+        $this->redirect('index');
+
     }
 
     public function viewVincularCodErpAjaxAction()
