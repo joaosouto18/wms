@@ -181,6 +181,22 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
 
     }
 
+    public function exportarAjaxAction(){
+        try {
+            /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
+            $inventarioRepo = $this->_em->getRepository('wms:Inventario');
+
+            $inventarioRepo->exportaInventarioModelo02(null);
+            $this->addFlashMessage('success', "Saldo de estoque exportado com sucesso");
+
+        } catch (Exception $e){
+            $this->addFlashMessage('error', $e->getMessage());
+        }
+
+        $this->redirect('index');
+
+    }
+
     public function saldoAction(){
         ini_set('max_execution_time', 3000);
         ini_set('memory_limit', '-1');
@@ -224,6 +240,18 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
                 'tag' => 'a'
             );
         }
+
+        $buttons[] = array(
+            'label' => 'Exportar Saldo',
+            'cssClass' => 'button exportarSaldo',
+            'urlParams' => array(
+                'module' => 'inventario',
+                'controller' => 'comparativo',
+                'action' => 'exportar-ajax',
+            ),
+            'tag' => 'a'
+        );
+
         Page::configure(array('buttons' => $buttons));
     }
 

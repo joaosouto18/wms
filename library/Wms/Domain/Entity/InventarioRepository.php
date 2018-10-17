@@ -870,7 +870,7 @@ class InventarioRepository extends EntityRepository {
     /*
      * Layout de exportação definido para a SonosShow
      */
-    public function exportaInventarioModelo02($idInventario) {
+    public function exportaInventarioModelo02($idInventario = null) {
         /*
          * Nome do arquivo solicitado pela sonoshow como aammddhh.min
          */
@@ -890,8 +890,10 @@ class InventarioRepository extends EntityRepository {
                                             GROUP BY E.COD_PRODUTO, E.DSC_GRADE,NVL(E.COD_PRODUTO_VOLUME,0)) E
                               GROUP BY COD_PRODUTO, DSC_GRADE) ESTQ
                     ON ESTQ.COD_PRODUTO = P.COD_PRODUTO
-                   AND ESTQ.DSC_GRADE = P.DSC_GRADE
-                 INNER JOIN (SELECT ICE.COD_PRODUTO,
+                   AND ESTQ.DSC_GRADE = P.DSC_GRADE " ;
+
+        if ($idInventario != null) {
+            $SQL .= " INNER JOIN (SELECT ICE.COD_PRODUTO,
                                     ICE.DSC_GRADE
                                FROM INVENTARIO_ENDERECO IE
                                LEFT JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
@@ -900,6 +902,8 @@ class InventarioRepository extends EntityRepository {
                                        ICE.DSC_GRADE) I
                     ON (I.COD_PRODUTO = P.COD_PRODUTO)
                    AND (I.DSC_GRADE = P.DSC_GRADE)";
+        }
+;
         $produtos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
         $file = fopen($arquivo, "w");
