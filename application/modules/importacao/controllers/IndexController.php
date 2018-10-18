@@ -561,7 +561,7 @@ class Importacao_IndexController extends Action
                 case 'estoqueErp':
 
                     $result = array(
-                        'COD_PRODUTO' => $arrRegistro['COD_PRODUTO'],
+                        'COD_PRODUTO' => (int) $arrRegistro['COD_PRODUTO'],
                         'GRADE' => $arrRegistro['GRADE'],
                         'ESTOQUE_DISPONIVEL' => $arrRegistro['ESTOQUE_DISPONIVEL'],
                         'ESTOQUE_AVARIA' => $arrRegistro['ESTOQUE_AVARIA'],
@@ -587,7 +587,7 @@ class Importacao_IndexController extends Action
 
                             $integracaoService->processaAcao();
                         }catch (Exception $e){
-                            $arrErroRows['exception'] = $result;
+                            $arrErroRows['exception'] = $e->getMessage();
                         }
                     }
 
