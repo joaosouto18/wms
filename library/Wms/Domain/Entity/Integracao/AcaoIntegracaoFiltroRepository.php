@@ -53,6 +53,17 @@ class AcaoIntegracaoFiltroRepository extends EntityRepository
                 $query = $vetQuery[1];
             }
             $query = $vetQuery[0].' VALUES '.implode(', ', $queryAll);
+        }elseif($insertAll === 'SQLSRV'){
+            $vetQuery = explode('VALUES', $query);
+            $query = $vetQuery[1];
+            foreach ($options as $keyOption => $option){
+                foreach ($option as $key => $value) {
+                    $queryAll[$keyOption] = str_replace(':?' . ($key + 1), $value, $query);
+                    $query = $queryAll[$keyOption];
+                }
+                $query = $vetQuery[1];
+            }
+            $query = $vetQuery[0].' VALUES '.implode(', ', $queryAll);
         }else{
             if (!is_null($options)) {
                 foreach ($options as $key => $value) {
