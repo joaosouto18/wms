@@ -1120,7 +1120,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
             $produtoEntity = $produtoRepo->verificarProdutosImprimirCodigoBarras($idRecebimento);
 
             if ($produtoEntity == "S") {
-                $link = '<a href="' . $this->view->url(array('controller' => 'recebimento', 'action' => 'gerar-etiqueta-pdf', 'id' => $idRecebimento)) . '" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Etiquetas</a>';
+                $link = '<a href="' . $this->view->url(array('controller' => 'recebimento', 'action' => 'gerar-etiqueta-pdf', 'id' => $idRecebimento)) . '" target="_blank" class="pdf dialogAjax"><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Etiquetas</a>';
                 $this->addFlashMessage('success', 'Clique para imprimir etiquetas de Embalagem/Volumes dos Produtos ' . $link);
             }
 

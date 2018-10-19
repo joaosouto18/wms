@@ -120,9 +120,4 @@ class ClienteRepository extends AtorRepository
         }
         return $codPraca;
     }
-
-    public function getDadosByCliente($idCliente)
-    {
-
-    }
 }

@@ -747,6 +747,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
+                        if (isset($cubagemPedido[$pedidoId][$embalagem->getId()])) {
+                            continue;
+                        }
                         if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                             $embalagemAtual = $embalagem;
                             break;
@@ -758,10 +761,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     }
                 } else {
                     $embalagemAtual = $menorEmbalagem;
-                }
-                
-                if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
-                    continue;
                 }
 
                 if (!is_null($embalagemAtual->getDataInativacao()))
