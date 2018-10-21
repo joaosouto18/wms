@@ -756,6 +756,7 @@ class Importacao
                     ->setClasse($classe)
                     ->setReferencia($referencia)
                     ->setIndFracionavel("N")
+                    ->setForcarEmbVenda("N")
                     ->setPossuiPesoVariavel($indPesoVariavel);
 
             if (is_null($possuiValidade)) {

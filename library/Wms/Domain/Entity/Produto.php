@@ -186,6 +186,12 @@ class Produto {
      */
     protected $indControlaLote;
 
+    /**
+     * @var string
+     * @Column(name="IND_FORCA_EMB_VENDA", type="string", nullable=false)
+     */
+    protected $forcarEmbVenda;
+
     public function __construct() {
         $this->volumes = new ArrayCollection;
         $this->embalagens = new ArrayCollection;
@@ -576,6 +582,24 @@ class Produto {
     public function setIndControlaLote($indControlaLote)
     {
         $this->indControlaLote = $indControlaLote;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getForcarEmbVenda()
+    {
+        return $this->forcarEmbVenda;
+    }
+
+    /**
+     * @param string $forcarEmbVenda
+     * @return Produto
+     */
+    public function setForcarEmbVenda($forcarEmbVenda)
+    {
+        $this->forcarEmbVenda = $forcarEmbVenda;
         return $this;
     }
 }

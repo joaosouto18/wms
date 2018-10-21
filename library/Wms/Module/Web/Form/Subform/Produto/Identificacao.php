@@ -64,6 +64,11 @@ class Identificacao extends SubForm
                     'label' => 'Controla lote:',
                     'multiOptions' => [ 'S' => 'SIM', 'N' => 'NÃO' ]
                 ))
+                ->addElement('select', 'forcarEmbVenda', array(
+                    'mostrarSelecione' => false,
+                    'label' => 'Considerar Emb. Venda:',
+                    'multiOptions' => [ 'S' => 'SIM', 'N' => 'NÃO' ]
+                ))
                 ->addDisplayGroup(
                         array('id', 'grade', 'descricao', 'idClasse', 'idFabricante', 'unitizadores', 'indControlaLote'), 'cadastral', array('legend' => 'Dados Cadastrais')
                 )
@@ -192,6 +197,7 @@ class Identificacao extends SubForm
             'codigoBarrasBase' => $produto->getCodigoBarrasBase(),
             'grade' => $produto->getGrade(),
             'idTipoComercializacao' => $produto->getTipoComercializacao()->getId(),
+            'forcarEmbVenda' => $produto->getForcarEmbVenda()
         );
 
         if ($produto->getValidade() == null) {

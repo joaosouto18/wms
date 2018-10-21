@@ -802,9 +802,9 @@ class ExpedicaoRepository extends EntityRepository {
 
         $naoUsaPD = Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA;
 
-        $qtdBase = 0;
+        $qtdRestante = 0;
         foreach ($pedidos as $codPedido => $qtdItem) {
-            $qtdBase = Math::adicionar($qtdBase, $qtdItem['qtd']);
+            $qtdRestante = Math::adicionar($qtdRestante, $qtdItem['qtd']);
         }
 
         $estoquePulmao = null;
@@ -822,7 +822,6 @@ class ExpedicaoRepository extends EntityRepository {
         //  e o saldo disponível no picking não for suficiente
         $forcarSeparacaoAerea = false;
 
-        $qtdRestante = $qtdBase;
         /** @var Endereco $enderecoPicking */
         $enderecoPicking = $elemento['pickingEn'];
         $normaPD = $elemento['normaPD'];

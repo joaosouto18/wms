@@ -175,6 +175,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $produtoEntity->setPossuiPesoVariavel((isset($possuiPesoVariavel) && !empty($possuiPesoVariavel)) ? $possuiPesoVariavel : "N");
             $produtoEntity->setIndFracionavel((isset($indFracionavel) && !empty($indFracionavel))? $indFracionavel : 'N');
             $produtoEntity->setIndControlaLote((isset($indControlaLote) && !empty($indControlaLote))? $indControlaLote : 'N');
+            $produtoEntity->setForcarEmbVenda((isset($forcarEmbVenda) && !empty($forcarEmbVenda))? $forcarEmbVenda : 'N');
 
             if ($produtoEntity->getId() == null) {
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01", 1);
