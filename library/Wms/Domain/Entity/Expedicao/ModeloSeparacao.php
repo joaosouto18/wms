@@ -138,6 +138,11 @@ class ModeloSeparacao
     protected $utilizaVolumePatrimonio;
 
     /**
+     * @Column(name="IND_FORCA_EMB_VENDA", type="string", nullable=true)
+     */
+    protected $forcarEmbVenda;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -455,6 +460,22 @@ class ModeloSeparacao
     public function getTipoSeparacaoNaoFracionadoEmbalado()
     {
         return $this->tipoSeparacaoNaoFracionadoEmbalado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getForcarEmbVenda()
+    {
+        return $this->forcarEmbVenda;
+    }
+
+    /**
+     * @param mixed $forcarEmbVenda
+     */
+    public function setForcarEmbVenda($forcarEmbVenda)
+    {
+        $this->forcarEmbVenda = $forcarEmbVenda;
     }
 
 }

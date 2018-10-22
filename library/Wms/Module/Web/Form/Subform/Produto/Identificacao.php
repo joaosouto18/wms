@@ -67,7 +67,7 @@ class Identificacao extends SubForm
                 ->addElement('select', 'forcarEmbVenda', array(
                     'mostrarSelecione' => false,
                     'label' => 'Considerar Emb. Venda:',
-                    'multiOptions' => [ 'S' => 'SIM', 'N' => 'NÃO' ]
+                    'multiOptions' => [ '' => 'Padrão', 'S' => 'SIM', 'N' => 'NÃO' ]
                 ))
                 ->addDisplayGroup(
                         array('id', 'grade', 'descricao', 'idClasse', 'idFabricante', 'unitizadores', 'indControlaLote'), 'cadastral', array('legend' => 'Dados Cadastrais')

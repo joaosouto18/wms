@@ -124,7 +124,8 @@ class ExpedicaoRepository extends EntityRepository {
                       NVL(PPL.QUANTIDADE,0) - NVL(PPL.QTD_CORTE,0)
                      ELSE 
                       NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0) END) as QTD,
-                    PPL.DSC_LOTE
+                    PPL.DSC_LOTE,
+                    PP.FATOR_EMBALAGEM_VENDA as FATOR_EMB_VEND
                 FROM PEDIDO P
                 INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                 LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
@@ -456,7 +457,7 @@ class ExpedicaoRepository extends EntityRepository {
             $ondaRepo->relacionaOndaPedidosExpedicao($pedidosProdutosRessuprir, $ondaEn, $dadosProdutos, $repositorios);
 
             /* Prepara os itens para picking ou pulmão de acordo com a quebra do pulmão-doca, caso utilize */
-            $itensReservar = self::prepareArrayRessup($pedidosProdutosRessuprir, $quebraPulmaoDoca, $dadosProdutos, $repositorios);
+            $itensReservar = self::prepareArrayRessup($pedidosProdutosRessuprir, $modeloSeparacaoEn, $dadosProdutos, $repositorios);
 
             $reservaEstoqueExpedicaoRepo->gerarReservaSaida($itensReservar, $repositorios);
             $this->getEntityManager()->flush();
@@ -628,13 +629,13 @@ class ExpedicaoRepository extends EntityRepository {
 
     /**
      * @param $arrItens
-     * @param string $quebraPulmaoDoca
+     * @param Expedicao\ModeloSeparacao $modeloSeparacao
      * @param $dadosProdutos
      * @param $repositorios
      * @return array|mixed
      * @throws \Exception
      */
-    private function prepareArrayRessup($arrItens, $quebraPulmaoDoca = Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA, $dadosProdutos, $repositorios)
+    private function prepareArrayRessup($arrItens, $modeloSeparacao, $dadosProdutos, $repositorios)
     {
         $args = [
             Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO => "COD_EXPEDICAO",
@@ -644,10 +645,13 @@ class ExpedicaoRepository extends EntityRepository {
             Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE => "COD_CLIENTE"
         ];
 
+        $quebraPulmaoDoca = (!empty($modeloSeparacao->getQuebraPulmaDoca())) ? $modeloSeparacao->getQuebraPulmaDoca() : Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA;
+        $forcarEmbVendaDefault = $modeloSeparacao->getForcarEmbVenda();
+
         if ($quebraPulmaoDoca != Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA) {
-            return self::getArraysByCriterio($quebraPulmaoDoca, $arrItens, $args[$quebraPulmaoDoca], $dadosProdutos, $repositorios);
+            return self::getArraysByCriterio($quebraPulmaoDoca, $arrItens, $args[$quebraPulmaoDoca], $forcarEmbVendaDefault, $dadosProdutos, $repositorios);
         } else {
-            return self::getArraysSaidaPadrao($quebraPulmaoDoca, $arrItens, $dadosProdutos, $repositorios);
+            return self::getArraysSaidaPadrao($quebraPulmaoDoca, $arrItens, $forcarEmbVendaDefault, $dadosProdutos, $repositorios);
         }
     }
 
@@ -660,7 +664,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @return array|mixed
      * @throws \Exception
      */
-    private function getArraysByCriterio($quebra, $arrItens, $strCriterio, $dadosProdutos, $repositorios)
+    private function getArraysByCriterio($quebra, $arrItens, $strCriterio, $forcarEmbVendaDefault, $dadosProdutos, $repositorios)
     {
         $sumQtdItemExpedicao = array();
         foreach($arrItens as $itemPedido) {
@@ -684,7 +688,10 @@ class ExpedicaoRepository extends EntityRepository {
                 $lote = Lote::NCL;
             }
 
-            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$lote][$itemPedido['COD_PEDIDO']]['qtd'] = $itemPedido['QTD'];
+            $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$lote][$itemPedido['COD_PEDIDO']] = [
+                'qtd' => $itemPedido['QTD'],
+                'fatorEmb' => $itemPedido['FATOR_EMB_VEND']
+            ];
         }
 
         $itensReservar = array();
@@ -697,7 +704,7 @@ class ExpedicaoRepository extends EntityRepository {
                         foreach ($lotesArr as $lote => $pedidos) {
                             /** @var Produto $produtoEn */
                             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
-                            list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $codCriterio, $pedidos, $lote, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
+                            list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $codCriterio, $pedidos, $lote, $forcarEmbVendaDefault, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
                         }
                     }
                 }
@@ -710,12 +717,13 @@ class ExpedicaoRepository extends EntityRepository {
     /**
      * @param $quebra
      * @param $arrItens
+     * @param $forcarEmbVendaDefault
      * @param $dadosProdutos
      * @param $repositorios
      * @return array
      * @throws \Exception
      */
-    private function getArraysSaidaPadrao($quebra, $arrItens, $dadosProdutos, $repositorios)
+    private function getArraysSaidaPadrao($quebra, $arrItens, $forcarEmbVendaDefault, $dadosProdutos, $repositorios)
     {
         $itensReservar = array();
         $arrEstoqueReservado = array();
@@ -724,7 +732,10 @@ class ExpedicaoRepository extends EntityRepository {
             $grade = $itemPedido['DSC_GRADE'];
             $expedicao = $itemPedido['COD_EXPEDICAO'];
             $criterio = $itemPedido['COD_PEDIDO'];
-            $pedido = array($itemPedido['COD_PEDIDO'] => array('qtd' => $itemPedido['QTD']));
+            $pedido = [ $itemPedido['COD_PEDIDO'] => [
+                'qtd' => $itemPedido['QTD'],
+                'fatorEmb' => $itemPedido['FATOR_EMB_VEND']
+            ]];
 
             /** @var Produto $produtoEn */
             $produtoEn = $dadosProdutos[$codProduto][$grade]['entidade'];
@@ -736,7 +747,7 @@ class ExpedicaoRepository extends EntityRepository {
                 $lote = Lote::NCL;
             }
 
-            list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $criterio, $pedido, $lote, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
+            list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $criterio, $pedido, $lote, $forcarEmbVendaDefault, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
         }
 
         return $itensReservar;
@@ -756,18 +767,18 @@ class ExpedicaoRepository extends EntityRepository {
      * @return array
      * @throws \Exception
      */
-    private function setDestinoSeparacao($idExpedicao, $quebra, $produtoEn, $criterio, $pedidos, $lote, $dadosProdutos, $itensReservados, $arrEstoqueReservado, $repositorios)
+    private function setDestinoSeparacao($idExpedicao, $quebra, $produtoEn, $criterio, $pedidos, $lote, $forcarEmbVendaDefault, $dadosProdutos, $itensReservados, $arrEstoqueReservado, $repositorios)
     {
         $codProduto = $produtoEn->getId();
         $dscGrade = $produtoEn->getGrade();
         if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
             /** @var Embalagem $embalagemElem */
             $embalagemElem = $dadosProdutos[$codProduto][$dscGrade]['embalagem'];
-            list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn,'EMBALAGEM', array($embalagemElem), 0, $lote, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
+            list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn,'EMBALAGEM', $forcarEmbVendaDefault, array($embalagemElem), 0, $lote, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
         } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
             $volumes = $dadosProdutos[$codProduto][$dscGrade]['volumes'];
             foreach ($volumes['normas'] as $codNorma => $itens ) {
-                list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn, "VOLUMES", $itens, $codNorma, $lote, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
+                list($itensReservados, $arrEstoqueReservado) = self::triagemPorDestino($idExpedicao, $produtoEn, "VOLUMES", null, $itens, $codNorma, $lote, $pedidos, $quebra, $criterio, $itensReservados, $arrEstoqueReservado, $repositorios);
             }
         }
         return array($itensReservados, $arrEstoqueReservado);
@@ -777,6 +788,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $idExpedicao
      * @param $produtoEn Produto
      * @param $caracteristica
+     * @param $forcarEmbVendaDefault
      * @param $elementosArr
      * @param $codNorma
      * @param $lote
@@ -789,7 +801,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @return array
      * @throws \Exception
      */
-    private function triagemPorDestino ($idExpedicao, $produtoEn, $caracteristica, $elementosArr, $codNorma, $lote, $pedidos, $quebra, $criterio = 0, $itensReservados, $arrEstoqueReservado, $repositorios)
+    private function triagemPorDestino ($idExpedicao, $produtoEn, $caracteristica, $forcarEmbVendaDefault, $elementosArr, $codNorma, $lote, $pedidos, $quebra, $criterio = 0, $itensReservados, $arrEstoqueReservado, $repositorios)
     {
 
         $codProduto = $produtoEn->getId();
@@ -944,7 +956,12 @@ class ExpedicaoRepository extends EntityRepository {
                                     if (Math::compare($qtdReservar, $qtdPendente, ">=")) {
                                         $qtdReservada = $qtdPendente;
                                     } else {
-                                        $qtdReservada = $qtdReservar;
+                                        if ($produtoEn->getForcarEmbVenda() == 'S' ||
+                                            empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S') {
+                                            $fatorEmbVenda = $qtdItenPedido['fatorEmb'];
+                                        } else {
+                                            $qtdReservada = $qtdReservar;
+                                        }
                                     }
 
                                     foreach ($idsElementos as $id) {

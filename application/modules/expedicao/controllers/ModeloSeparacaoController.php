@@ -128,6 +128,7 @@ class Expedicao_ModeloSeparacaoController  extends  Crud
                 $dados['utilizaVolumePatrimonio'] = $entity->getUtilizaVolumePatrimonio();
                 $dados['imprimeEtiquetaPatrimonio'] = $entity->getImprimeEtiquetaVolume();
                 $dados['quebraPulmaDoca'] = $entity->getQuebraPulmaDoca();
+                $dados['forcarEmbVenda'] = $entity->getForcarEmbVenda();
                 $dados['tipoQuebraVolume'] = $entity->getTipoQuebraVolume();
                 $dados['separacaoPc'] = $entity->getSeparacaoPC();
                 $dados['tipoDefaultEmbalado'] = $entity->getTipoDefaultEmbalado();

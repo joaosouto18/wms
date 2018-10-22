@@ -33,6 +33,9 @@ class ModeloSeparacao extends Form
         ))->addElement('checkbox', 'imprimeEtiquetaPatrimonio', array(
             'label' => 'Imprime Etiqueta Volume Patrimonio',
             'checkedValue' => 'S',
+        ))->addElement('checkbox', 'forcarEmbVenda', array(
+            'label' => 'Utilizar embalagem de venda por padrão',
+            'checkedValue' => 'S',
         ))->addElement('select', 'quebraPulmaDoca', array(
             'label' => 'Quebra no processo Pulmão-Doca',
             'multiOptions' => array(
@@ -116,6 +119,7 @@ class ModeloSeparacao extends Form
             'utilizaQuebraColetor',
             'utilizaEtiquetaMae',
             'utilizaVolumePatrimonio',
+            'forcarEmbVenda',
             'imprimeEtiquetaPatrimonio',
             'quebraPulmaDoca',
             'tipoQuebraVolume',
