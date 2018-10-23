@@ -184,7 +184,7 @@ class Expedicao_VolumePatrimonioController  extends  Crud
             if (empty($produtos)){
                 //unset($volumePatrimonio[$key]);
                 //continue;
-                $volumePatrimonio[$key]['produtos'] = null;
+                $volumePatrimonio[$key]['produtos'] = array();
                 $volumePatrimonio[$key]['sequencia'] = 0;
             } else {
                 $volumePatrimonio[$key]['produtos'] = $produtos;
