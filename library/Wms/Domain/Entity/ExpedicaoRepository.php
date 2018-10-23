@@ -1508,9 +1508,9 @@ class ExpedicaoRepository extends EntityRepository {
                                         }else{
                                             $options[$pedidoEn->getId().'-'.$key][] = $item['ATENDIDA'];
                                         }
-                                        $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_PEDIDO_EMBALAGEM_VENDA'];
-                                        $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_ATENDIDA_EMB_VENDA'];
-                                        $options[$pedidoEn->getId().'-'.$key][] = $item['FATOR_EMBALAGEM_VENDA'];
+                                        $options[$pedidoEn->getId().'-'.$key][] = str_replace(',', '.', $item['QTD_PEDIDO_EMBALAGEM_VENDA']);
+                                        $options[$pedidoEn->getId().'-'.$key][] = str_replace(',', '.', $item['QTD_ATENDIDA_EMB_VENDA']);
+                                        $options[$pedidoEn->getId().'-'.$key][] = str_replace(',', '.', $item['FATOR_EMBALAGEM_VENDA']);
                                     }
                                 }
                                 $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
