@@ -180,6 +180,7 @@ class Expedicao_VolumePatrimonioController  extends  Crud
 
         var_dump($volumePatrimonio);
 
+        /*
         foreach ($volumePatrimonio as $key => $volume) {
             $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volumePatrimonio[$key]['volume']);
             if (empty($produtos)){
@@ -189,11 +190,11 @@ class Expedicao_VolumePatrimonioController  extends  Crud
             $volumePatrimonio[$key]['produtos'] = $produtos;
             $volumePatrimonio[$key]['sequencia'] = $produtos[0]['sequencia'];
         }
-
-        var_dump($volumePatrimonio);
+        */
+        //var_dump($volumePatrimonio);
 
         if (isset($params['btnImprimir'])) {
-            exit;
+            //exit;
             switch ($parametroEtiquetaVolume) {
                 case 1:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
