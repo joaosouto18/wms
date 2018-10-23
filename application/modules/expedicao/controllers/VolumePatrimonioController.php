@@ -194,7 +194,6 @@ class Expedicao_VolumePatrimonioController  extends  Crud
         }
 
         if (isset($params['btnImprimir'])) {
-            //exit;
             switch ($parametroEtiquetaVolume) {
                 case 1:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaVolume("P", 'mm', array(110, 50));
