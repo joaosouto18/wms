@@ -181,7 +181,7 @@ class Expedicao_VolumePatrimonioController  extends  Crud
         foreach ($volumePatrimonio as $key => $volume) {
             $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volumePatrimonio[$key]['volume']);
             if (empty($produtos)){
-                unset($volumePatrimonio[$key]);
+//                unset($volumePatrimonio[$key]);
                 continue;
             }
             $volumePatrimonio[$key]['produtos'] = $produtos;
