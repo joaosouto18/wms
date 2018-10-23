@@ -182,7 +182,7 @@ class Expedicao_VolumePatrimonioController  extends  Crud
             $produtos = $expVolumePatrimonioRepo->getProdutosVolumeByMapa($idExpedicao, $volumePatrimonio[$key]['volume']);
             if (empty($produtos)){
 //                unset($volumePatrimonio[$key]);
-                continue;
+//                continue;
             }
             $volumePatrimonio[$key]['produtos'] = $produtos;
             $volumePatrimonio[$key]['sequencia'] = $produtos[0]['sequencia'];
