@@ -663,7 +663,7 @@ class EtiquetaSeparacao extends Pdf
         //$this->Cell(20, 3,  $etiqueta['sequencia'], 0, 1, "L");
     }
     
-    protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo, $reentrega = false, $countEtiquetasByProdutos)
+    protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo, $reentrega = false, $countEtiquetasByProdutos = 0)
     {
         switch ($modelo) {
             case 11:
