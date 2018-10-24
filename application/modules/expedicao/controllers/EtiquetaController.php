@@ -248,7 +248,7 @@ class Expedicao_EtiquetaController  extends Action
                 } else {
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
                 }
-                $Etiqueta->imprimirReentrega($idExpedicao, $status, $modelo,false,'1070486432');
+                $Etiqueta->imprimirReentrega($idExpedicao, $status, $modelo);
             }
 
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
