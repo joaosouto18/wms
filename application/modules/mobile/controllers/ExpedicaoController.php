@@ -1451,7 +1451,7 @@ class Mobile_ExpedicaoController extends Action {
             /** @var \Wms\Domain\Entity\Expedicao\EquipeCarregamentoRepository $carregamentoRepo */
             $this->view->equipe = $equipe = $this->em->getRepository('wms:Expedicao\EquipeCarregamento');
             $equipeCarregamentoEntitty = $equipe->findOneBy(array('expedicao' => $idExpedicao));
-            if (!is_null($equipeCarregamentoEntitty->getDataFim())) {
+            if (($equipeCarregamentoEntitty != null) && (!is_null($equipeCarregamentoEntitty->getDataFim()))) {
                 $this->_helper->messenger('error', 'Expedição já possui equipe de carregamento vinculada');
                 $this->_redirect('mobile');
             }
