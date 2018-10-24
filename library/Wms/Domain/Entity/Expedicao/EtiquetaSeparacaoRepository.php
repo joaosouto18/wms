@@ -1249,16 +1249,18 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
 
                             if ($embalagemAtual->isEmbFracionavelDefault() != "S") {
-                                $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
+                                /*$qtdEmbalagemAtual = ;
                                 // Identifico o resto possivel da embalagem atual em relação a qtdBase
                                 $restoByFator = Math::resto($quantidadeRestantePedido, $qtdEmbalagemAtual);
                                 // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
                                 $qtdSepararEmbalagemAtual = Math::dividir(Math::subtrair($quantidadeRestantePedido, $restoByFator), $qtdEmbalagemAtual);
 
                                 $qtdVincular = Math::multiplicar($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
-
                                 // Decrementa a quantidade à vinculada sobre a qtdPendente do pedido
-                                $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido, $qtdVincular);
+                                $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido, $qtdVincular);*/
+
+                                list($qtdSepararEmbalagemAtual, $quantidadeRestantePedido) = Math::getFatorMultiploResto($quantidadeRestantePedido, $embalagemAtual->getQuantidade());
+
                             } else {
                                 $qtdSepararEmbalagemAtual = $quantidadeRestantePedido;
                                 $quantidadeRestantePedido = 0;
@@ -1841,13 +1843,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         }
 
                         if ($embalagemAtual->isEmbFracionavelDefault() != "S") {
-                            $qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
+                            /*$qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
                             // Identifico o resto possivel da embalagem atual em relação a qtdBase
                             $restoByFator = Math::resto($qtdTemp, $qtdEmbalagemAtual);
                             // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
                             $qtdEmbs = Math::dividir(Math::subtrair($qtdTemp, $restoByFator), $qtdEmbalagemAtual);
                             // A partir disso o restante do pedido é igual ao resto da divisão do fator atual
-                            $qtdTemp = $restoByFator;
+                            $qtdTemp = $restoByFator;*/
+                            list($qtdEmbs, $qtdTemp) = Math::getFatorMultiploResto($qtdTemp, $embalagemAtual->getQuantidade());
                         } else {
                             $qtdEmbs = $qtdTemp;
                             $qtdTemp = 0;

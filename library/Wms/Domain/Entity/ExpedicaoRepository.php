@@ -943,6 +943,7 @@ class ExpedicaoRepository extends EntityRepository {
                             }
 
                             $qtdRestante = Math::subtrair($qtdRestante, $qtdReservar);
+                            $qtdReservarBkp = $qtdReservar;
 
                             foreach ($pedidos as $codPedido => $qtdItenPedido) {
                                 if ($qtdReservar > 0) {
@@ -956,9 +957,12 @@ class ExpedicaoRepository extends EntityRepository {
                                     if (Math::compare($qtdReservar, $qtdPendente, ">=")) {
                                         $qtdReservada = $qtdPendente;
                                     } else {
-                                        if ($produtoEn->getForcarEmbVenda() == 'S' ||
-                                            empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S') {
-                                            $fatorEmbVenda = $qtdItenPedido['fatorEmb'];
+                                        if ($produtoEn->getForcarEmbVenda() == 'S' || empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S') {
+                                            if (Math::compare($qtdReservar, $qtdItenPedido['fatorEmb'], ">=")) {
+                                                $qtdReservada = Math::subtrair($qtdReservar, Math::resto($qtdReservar, $qtdItenPedido['fatorEmb']));
+                                            } else {
+                                                continue;
+                                            }
                                         } else {
                                             $qtdReservada = $qtdReservar;
                                         }
@@ -981,6 +985,37 @@ class ExpedicaoRepository extends EntityRepository {
                                     break;
                                 }
                             }
+
+                            /* Se entrar nesse if é pq a quantidade disponivel do endereço não atendeu integralmente os pedidos nas embalagens de venda */
+                            if ($qtdReservar > 0) {
+                                /*  se for pulmão-doca mas tem picking*/
+                                if ($tipoSaida = ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA && !empty($enderecoPicking)) {
+                                    /* estorna o $qtdReservarBkp para a $qtdRestante,
+                                       remove todos os registros criados dessa tentativa de pulmão-doca e redireciona a reserva*/
+                                    $forcarSairDoPicking = true;
+                                    foreach ($pedidos as $codPedido => $qtdItenPedido) {
+                                        foreach ($idsElementos as $id) {
+                                            unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id]);
+                                            unset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]);
+                                        }
+                                    }
+                                    $qtdRestante = Math::adicionar($qtdRestante, $qtdReservarBkp);
+                                } else {
+                                    /* se for separação aérea: registra o endereço para desconsidera-lo na próxima interação e
+                                    deve estornar para a $qtdRestante e $arrEstoqueReservado o saldo não reservado */
+                                    if ($tipoSaida = ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA) {
+                                        foreach ($pedidos as $codPedido => $qtdItenPedido) {
+                                            foreach ($idsElementos as $id) {
+                                                $arrTemp = $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id];
+                                                unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id]);
+                                                $enderecos[ReservaEstoqueExpedicao::SAIDA_SEPARACAO_AEREA]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id] = $arrTemp;
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+
                             if ($qtdRestante == 0) break;
                         }
                         if ($forcarSairDoPicking) break;

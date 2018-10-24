@@ -144,4 +144,19 @@ Class Math
     {
         return self::adicionar($x,$x);
     }
+
+    /**
+     * @param $qtdBase
+     * @param $qtdFator
+     * @return array($qtdMultipla, $resto)
+     */
+    public static function getFatorMultiploResto ($qtdBase, $qtdFator) {
+
+        $return = [];
+        $return[1] = self::resto($qtdBase, $qtdFator);
+        // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
+        $return[0] = self::dividir(self::subtrair($qtdBase, $return[1]), $qtdFator);
+
+        return $return;
+    }
 }
