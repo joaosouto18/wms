@@ -74,7 +74,7 @@ class EtiquetaSeparacao extends Pdf
         $this->chaveCargas = $chaveCarga;
     }
 
-    public function imprimirReentrega($idExpedicao, $status, $modelo, $reimpressao = false, $IdEtiquetas = null){
+    public function imprimirReentrega($idExpedicao, $status, $modelo, $reimpressao = true, $IdEtiquetas = null){
 
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
