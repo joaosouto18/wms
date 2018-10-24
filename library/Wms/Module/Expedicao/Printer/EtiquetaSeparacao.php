@@ -84,7 +84,7 @@ class EtiquetaSeparacao extends Pdf
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoReentregaRepository $etiquetaSeparacaoReentregaRepo */
         $etiquetaSeparacaoReentregaRepo = $em->getRepository('wms:Expedicao\EtiquetaSeparacaoReentrega');
 
-        $pendencias = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, null, null, $IdEtiquetas);
+        $pendencias = $EtiquetaRepo->getEtiquetasReentrega($idExpedicao, $status, null, $IdEtiquetas);
 
         if (count($pendencias) <= 0) {
             throw new \Exception('Não Existe Etiquetas de Reentrega com pendência de impressão!');
