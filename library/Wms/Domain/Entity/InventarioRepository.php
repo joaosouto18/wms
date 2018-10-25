@@ -920,6 +920,8 @@ class InventarioRepository extends EntityRepository {
             }
 
         }
+
+        $result = fwrite($file,"\r\n");
         fclose($file);
     }
 
