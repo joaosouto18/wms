@@ -544,7 +544,6 @@ class ReservaEstoqueRepository extends EntityRepository
     public function getReservasExpedicao($produtoPedido)
     {
         $produto = $produtoPedido->getProduto();
-        $loteNaoDefinido = Produto\Lote::LND;
         $dql = $this->_em->createQueryBuilder()
             ->select("
                         de.id as idEndereco,

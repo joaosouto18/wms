@@ -83,11 +83,6 @@ class PedidoProduto
     protected $fatorEmbalagemVenda;
 
     /**
-     * @Column(name="QTD_EMBALAGEM_VENDA", type="decimal", nullable=false)
-     */
-    protected $qtdEmbalagemVenda;
-
-    /**
      * @Column(name="COD_MOTIVO_CORTE", type="integer", nullable=true)
      */
     protected $codMotivoCorte;
@@ -253,22 +248,6 @@ class PedidoProduto
     public function setFatorEmbalagemVenda($fatorEmbalagemVenda)
     {
         $this->fatorEmbalagemVenda = $fatorEmbalagemVenda;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getQtdEmbalagemVenda()
-    {
-        return $this->qtdEmbalagemVenda;
-    }
-
-    /**
-     * @param mixed $qtdEmbalagemVenda
-     */
-    public function setQtdEmbalagemVenda($qtdEmbalagemVenda)
-    {
-        $this->qtdEmbalagemVenda = $qtdEmbalagemVenda;
     }
 
     /**

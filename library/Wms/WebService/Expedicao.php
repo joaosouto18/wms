@@ -61,6 +61,8 @@ class produto {
     /** @var string */
     public $quantidadeAtendida;
     /** @var string */
+    public $fatorEmbalagemVenda;
+    /** @var string */
     public $proprietario;
 }
 
@@ -250,6 +252,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $produto['grade'] = (empty($produtoWs->grade) || $produtoWs->grade === "?") ? "UNICA" : trim($produtoWs->grade);
                 $produto['quantidade'] = $produtoWs->quantidade;
                 $produto['lote'] = (isset($produtoWs->lote) && $produtoWs->lote != "?" && !empty($produtoWs->lote)) ? trim($produtoWs->lote) : null;
+                $produto['fatorEmbalagemVenda'] = (isset($produtoWs->fatorEmbalagemVenda) && $produtoWs->fatorEmbalagemVenda != "?" && !empty($produtoWs->fatorEmbalagemVenda)) ? trim($produtoWs->fatorEmbalagemVenda) : null;
                 $produtos[] = $produto;
             }
 
@@ -903,7 +906,6 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
 
             $fatorEmbalagemVenda = (isset($produto['fatorEmbalagemVenda']) && !empty($produto['fatorEmbalagemVenda'])) ? $produto['fatorEmbalagemVenda'] : 1;
-            $qtdEmbalagemVenda = (isset($produto['qtdEmbalagemVenda']) && !empty($produto['qtdEmbalagemVenda'])) ? $produto['qtdEmbalagemVenda'] : ($qtdCorrigida / $fatorEmbalagemVenda);
 
             if ($produtoEn->getIndControlaLote() == 'S' && !empty($produto['lote'])) {
                 /** @var \Wms\Domain\Entity\Produto\Lote $loteEn */
@@ -937,8 +939,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     'valorVenda' => (isset($produto['valorVenda'])) ? $produto['valorVenda'] : null,
                     'grade' => $produto['grade'],
                     'quantidade' => $qtdCorrigida,
-                    'fatorEmbalagemVenda' => str_replace(',','.',$fatorEmbalagemVenda),
-                    'qtdEmbalagemVenda' => $qtdEmbalagemVenda
+                    'fatorEmbalagemVenda' => str_replace(',','.',$fatorEmbalagemVenda)
                 );
 
                 if ($produtoEn->getIndControlaLote() == 'S' && !empty($produto['lote'])) {

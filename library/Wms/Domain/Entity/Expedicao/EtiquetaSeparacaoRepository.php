@@ -747,9 +747,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
-                        if (isset($cubagemPedido[$pedidoId][$embalagem->getId()])) {
-                            continue;
-                        }
+
                         if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
                             $embalagemAtual = $embalagem;
                             break;
@@ -767,6 +765,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     continue;
 
                 $quantidadeRestantePedido = number_format($quantidadeRestantePedido,3,'.','') - number_format($embalagemAtual->getQuantidade(),3,'.','');
+
+                if (isset($cubagemPedido[$pedidoId][$embalagem->getId()])) {
+                    continue;
+                }
 
                 $embalado = false;
                 if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == ModeloSeparacao::DEFAULT_EMBALADO_PRODUTO) {
@@ -845,6 +847,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $mapaSeparacaoRepo = $arrayRepositorios['mapaSeparacaoProduto'];
         /** @var PedidoProdutoLoteRepository $pedProdLoteRepo */
         $pedProdLoteRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProdutoLote");
+        /** @var Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+
         /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoRepo */
         if (isset($arrayRepositorios['expedicaoRepo'])) {
             $expedicaoRepo = $arrayRepositorios['expedicaoRepo'];
@@ -905,6 +910,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $quebrasFracionado = $modeloSeparacaoRepo->getQuebraFracionado($idModeloSeparacao);
             $quebrasNaoFracionado = $modeloSeparacaoRepo->getQuebraNaoFracionado($idModeloSeparacao);
             $quebrasEmbalado = $modeloSeparacaoRepo->getQuebraEmbalado($idModeloSeparacao);
+            $forcarEmbVendaDefault = $modeloSeparacaoEn->getForcarEmbVenda();
 
             $cubagemPedidos = 0;
             if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
@@ -926,6 +932,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $expedicaoEntity = null;
             $quebras = array();
 
+            /** @var PedidoProduto $pedidoProduto */
             foreach ($pedidosProdutos as $pedidoProduto) {
                 $expedicaoEntity = $pedidoProduto->getPedido()->getCarga()->getExpedicao();
 
@@ -934,6 +941,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 /** @var Produto $produtoEntity */
                 $produtoEntity = $pedidoProduto->getProduto();
+
+                $forcarEmbVenda = ($produtoEntity->getForcarEmbVenda() == 'S' || empty($produtoEntity->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S');
 
                 /** @var Filial $filial */
                 $filial = $filialRepository->findOneBy(array('codExterno' => $pedidoEntity->getCentralEntrega()));
@@ -1134,56 +1143,70 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $codProduto = $produtoEntity->getId();
                     $grade = $produtoEntity->getGrade();
 
-                    $embalagensEn = $produtoEntity->getEmbalagens()->filter(
-                        function($item) {
-                            return is_null($item->getDataInativacao());
-                        }
-                    )->toArray();
-
-                    if (empty($embalagensEn)) {
-                        throw new WMS_Exception("O produto $codProduto grade $grade não possui embalagens ativas!");
-                    }
-
-                    usort($embalagensEn,function ($itemA, $itemB) {
-                        return $itemA->getQuantidade() < $itemB->getQuantidade();
-                    });
-
                     $qtdEmbalagemPadraoRecebimento = 1;
 
                     $depositoEnderecoEn = null;
                     $idEndereco = 0;
+                    /** @var Produto\Embalagem $menorEmbalagem */
                     $menorEmbalagem = null;
-
-                    /** @var Produto\Embalagem $embExpDefault */
-                    $embsFiltered1 = array_filter($embalagensEn, function ($emb){
-                        /** @var Produto\Embalagem $emb */
-                        return ($emb->isEmbExpDefault() == "S");
-                    });
-                    $embExpDefault = reset($embsFiltered1);
-
                     /** @var Produto\Embalagem $embFracDefault */
                     $embFracDefault = null;
+                    /** @var Produto\Embalagem $embExpDefault */
+                    $embExpDefault = null;
+                    /** @var Produto\Embalagem $embVenda */
+                    $embVenda = null;
+                    /** @var Produto\Embalagem[] $embalagensEn */
+                    $embalagensEn = null;
 
-                    if ($produtoEntity->getIndFracionavel() == 'S') {
-                        $embsFiltered2 = array_filter($embalagensEn, function ($emb){
-                            /** @var Produto\Embalagem $emb */
-                            return ($emb->isEmbFracionavelDefault() == "S");
-                        });
-                        $embFracDefault = reset($embsFiltered2);
-                        $depositoEnderecoEn = $embFracDefault->getEndereco();
-                        $menorEmbalagem = $embFracDefault;
+                    if ($forcarEmbVenda) {
+                        $embVenda = $embalagemRepo->findOneBy(['codProduto' => $codProduto, 'grade' => $grade, 'quantidade' => $pedidoProduto->getFatorEmbalagemVenda(), 'dataInativacao' => null]);
+                        if (empty($embVenda))
+                            throw new \Exception("O item $codProduto grade $grade no pedido ".$pedidoEntity->getCodExterno().", exige fator de venda de '".$pedidoProduto->getFatorEmbalagemVenda()."', mas não foi encontrada embalagem ativa com esse fator!");
 
+                        $depositoEnderecoEn = $embVenda->getEndereco();
                     } else {
-                        foreach ($embalagensEn as $embalagem) {
-                            $endereco = $embalagem->getEndereco();
-                            if (!empty($endereco)) {
-                                $depositoEnderecoEn = $endereco;
+                        $embalagensEn = $produtoEntity->getEmbalagens()->filter(
+                            function($item) {
+                                return is_null($item->getDataInativacao());
                             }
-                            if ($embalagem->getIsPadrao() == "S") {
-                                $qtdEmbalagemPadraoRecebimento = $embalagem->getQuantidade();
-                            }
+                        )->toArray();
+
+                        if (empty($embalagensEn)) {
+                            throw new WMS_Exception("O produto $codProduto grade $grade não possui embalagens ativas!");
                         }
-                        $menorEmbalagem = end($embalagensEn);
+
+                        usort($embalagensEn,function ($itemA, $itemB) {
+                            return $itemA->getQuantidade() < $itemB->getQuantidade();
+                        });
+
+                        /** @var Produto\Embalagem $embExpDefault */
+                        $embsFiltered1 = array_filter($embalagensEn, function ($emb){
+                            /** @var Produto\Embalagem $emb */
+                            return ($emb->isEmbExpDefault() == "S");
+                        });
+                        $embExpDefault = reset($embsFiltered1);
+
+                        if ($produtoEntity->getIndFracionavel() == 'S') {
+                            $embsFiltered2 = array_filter($embalagensEn, function ($emb){
+                                /** @var Produto\Embalagem $emb */
+                                return ($emb->isEmbFracionavelDefault() == "S");
+                            });
+                            $embFracDefault = reset($embsFiltered2);
+                            $depositoEnderecoEn = $embFracDefault->getEndereco();
+                            $menorEmbalagem = $embFracDefault;
+
+                        } else {
+                            foreach ($embalagensEn as $embalagem) {
+                                $endereco = $embalagem->getEndereco();
+                                if (!empty($endereco)) {
+                                    $depositoEnderecoEn = $endereco;
+                                }
+                                if ($embalagem->getIsPadrao() == "S") {
+                                    $qtdEmbalagemPadraoRecebimento = $embalagem->getQuantidade();
+                                }
+                            }
+                            $menorEmbalagem = end($embalagensEn);
+                        }
                     }
 
                     foreach( $reservas as $reserva ) {
@@ -1205,26 +1228,30 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $idDepositoEndereco = null;
                             $embalagemAtual = null;
 
-                            if (!empty($embExpDefault)) {
-                                $embalagemAtual = $embExpDefault;
-                                if (!Math::compare($embalagemAtual->getQuantidade(), $quantidadeRestantePedido, "<=")) {
-                                    $embalagemAtual = null;
-                                }
-                            }
-                            if (empty($embalagemAtual)) {
-                                if (!empty($embFracDefault)) {
-                                    $embalagemAtual = $embFracDefault;
-                                } elseif ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
-                                    foreach ($embalagensEn as $embalagem) {
-                                        if (Math::compare($embalagem->getQuantidade(), $quantidadeRestantePedido, "<=")) {
-                                            $embalagemAtual = $embalagem;
-                                            break;
-                                        }
-                                    }
-                                } else {
-                                    $embalagemAtual = $menorEmbalagem;
+                            if ($forcarEmbVenda) {
+                                $embalagemAtual = $embVenda;
+                            } else {
+                                if (!empty($embExpDefault)) {
+                                    $embalagemAtual = $embExpDefault;
                                     if (!Math::compare($embalagemAtual->getQuantidade(), $quantidadeRestantePedido, "<=")) {
                                         $embalagemAtual = null;
+                                    }
+                                }
+                                if (empty($embalagemAtual)) {
+                                    if (!empty($embFracDefault)) {
+                                        $embalagemAtual = $embFracDefault;
+                                    } elseif ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
+                                        foreach ($embalagensEn as $embalagem) {
+                                            if (Math::compare($embalagem->getQuantidade(), $quantidadeRestantePedido, "<=")) {
+                                                $embalagemAtual = $embalagem;
+                                                break;
+                                            }
+                                        }
+                                    } else {
+                                        $embalagemAtual = $menorEmbalagem;
+                                        if (!Math::compare($embalagemAtual->getQuantidade(), $quantidadeRestantePedido, "<=")) {
+                                            $embalagemAtual = null;
+                                        }
                                     }
                                 }
                             }
@@ -1249,18 +1276,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             }
 
                             if ($embalagemAtual->isEmbFracionavelDefault() != "S") {
-                                /*$qtdEmbalagemAtual = ;
-                                // Identifico o resto possivel da embalagem atual em relação a qtdBase
-                                $restoByFator = Math::resto($quantidadeRestantePedido, $qtdEmbalagemAtual);
-                                // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
-                                $qtdSepararEmbalagemAtual = Math::dividir(Math::subtrair($quantidadeRestantePedido, $restoByFator), $qtdEmbalagemAtual);
-
-                                $qtdVincular = Math::multiplicar($qtdSepararEmbalagemAtual, $qtdEmbalagemAtual);
-                                // Decrementa a quantidade à vinculada sobre a qtdPendente do pedido
-                                $quantidadeRestantePedido = Math::subtrair($quantidadeRestantePedido, $qtdVincular);*/
-
                                 list($qtdSepararEmbalagemAtual, $quantidadeRestantePedido) = Math::getFatorMultiploResto($quantidadeRestantePedido, $embalagemAtual->getQuantidade());
-
                             } else {
                                 $qtdSepararEmbalagemAtual = $quantidadeRestantePedido;
                                 $quantidadeRestantePedido = 0;
@@ -1359,6 +1375,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 } else {
                                     list($strQuebrasConcat, $arrQuebras) = self::getSetupQuebras($quebras, $pedidoProduto);
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco] = array(
+                                        'forcarEmbVenda' => $forcarEmbVenda,
                                         'qtd' => $qtdSepararEmbalagemAtual,
                                         'consolidado' => $consolidado,
                                         'strQuebrasConcat' => $strQuebrasConcat,
@@ -1578,6 +1595,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $arrConsolidado = $arrItensCaixas = $newArray = $arrayTemp = array();
         $cubagemCaixa = (float)$this->getSystemParameterValue('CUBAGEM_CAIXA_CARRINHO');
         $maxCaixasCarrinho = (int)$this->getSystemParameterValue('IND_QTD_CAIXA_PC');
+        $i = 0;
 
         // Passa por todos os possíveis registros de mapaProduto e soma as quantidades por mapa->endereco->produto
         foreach ($arrItens as $pedidoProduto) {
@@ -1614,7 +1632,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd] = $pedidoProdutoEn;
                         } else {
                             $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['expedicaoEn'] = $expedicaoEn;
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['firstIdPedProdLote'] = "$idPedProd*+*$element[lote]";
+                            //$arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['firstIdPedProdLote'] = "$idPedProd*+*$element[lote]";
                             $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()] = array(
                                 'qtd' => $qtdMapa,
                                 'lote' => $element['lote'],
@@ -1632,20 +1650,30 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                     $qtd = Math::multiplicar($qtdMapa, $embalagemEn->getQuantidade());
 
-                    if (isset($arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote])){
+                    if (isset($arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['AGRUPADO'][0])){
                         $qtdAtual = $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['qtd'];
                         $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['qtd'] = Math::adicionar($qtdAtual, $qtd);
                         $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['arrPedProd'][$pedidoProdutoEn->getId()] = $pedidoProdutoEn;
                     } else {
-                        $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote] = array(
+                        $arr = [
                             'qtd' => $qtd,
                             'lote' => $element['lote'],
                             'embalagensDisponiveis' => $embalagens,
                             'arrPedProd' => array($pedidoProdutoEn->getId() => $pedidoProdutoEn),
                             'quebras' => $quebras,
+                            'embalagemPreset' => $embalagemEn,
                             'expedicaoEn' => $expedicaoEn,
                             'enderecoEn' => $enderecoEn,
-                            'produtoEn' => $produtoEn);
+                            'produtoEn' => $produtoEn,
+                            'forcarEmbVenda' => $element['forcarEmbVenda']
+                        ];
+
+                        if ($element['forcarEmbVenda']) {
+                            $i++;
+                            $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['EMB_VENDA'][$i] = $arr;
+                        } else {
+                            $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['AGRUPADO'][0] = $arr;
+                        }
                     }
                 }
             }
@@ -1787,7 +1815,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             foreach ($carrinhos as $idCarrinho => $infoCarrinho) {
                 foreach ($infoCarrinho['clientes'] as $idCliente => $infoCliente) {
                     foreach ($infoCliente['itens'] as $produtoGradeLote => $dadosPedProd) {
-                        $newArray[$strQuebra][$dadosPedProd['firstIdPedProdLote']] = $dadosPedProd;
+                        //$newArray[$strQuebra][$dadosPedProd['firstIdPedProdLote']] = $dadosPedProd;
+                        $newArray[$strQuebra][$produtoGradeLote] = $dadosPedProd;
                     }
                 }
             }
@@ -1795,80 +1824,76 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         foreach ($arrayTemp as $strQuebrasConcat => $itens) {
             foreach ($itens as $endereco) {
-                foreach ($endereco as $produtoGradeLote => $produto) {
-                    $qtdTemp = $produto['qtd'];
-                    $quebras = $produto['quebras'];
-                    $enderecoEn = $produto['enderecoEn'];
-                    $produtoEn = $produto['produtoEn'];
-                    $expedicaoEn = $produto['expedicaoEn'];
+                foreach ($endereco as $produtoGradeLote => $qualificacao) {
+                    foreach ($qualificacao as $index => $produto) {
+                        $qtdTemp = $produto['qtd'];
 
-                    $embsFiltered1 = array_filter($produto['embalagensDisponiveis'], function($emb){
-                        /** @var Produto\Embalagem $emb */
-                        return ($emb->isEmbExpDefault() == "S");
-                    });
-                    $embExpDefault = reset($embsFiltered1);
+                        if (!$produto['forcarEmbVenda']) {
+                            $embsFiltered1 = array_filter($produto['embalagensDisponiveis'], function ($emb) {
+                                /** @var Produto\Embalagem $emb */
+                                return ($emb->isEmbExpDefault() == "S");
+                            });
+                            $embExpDefault = reset($embsFiltered1);
 
-                    $embsFiltered2 = array_filter($produto['embalagensDisponiveis'], function($emb){
-                        /** @var Produto\Embalagem $emb */
-                        return ($emb->isEmbFracionavelDefault() == "S");
-                    });
-                    $embFracDefault = reset($embsFiltered2);
-
-                    while ($qtdTemp !== 0) {
-                        $embalagemAtual = null;
-
-                        if (!empty($embExpDefault)) {
-                            $embalagemAtual = $embExpDefault;
-                            if (!Math::compare($embalagemAtual->getQuantidade(), $qtdTemp, "<=")) {
-                                $embalagemAtual = null;
-                            }
+                            $embsFiltered2 = array_filter($produto['embalagensDisponiveis'], function ($emb) {
+                                /** @var Produto\Embalagem $emb */
+                                return ($emb->isEmbFracionavelDefault() == "S");
+                            });
+                            $embFracDefault = reset($embsFiltered2);
                         }
-                        if (empty($embalagemAtual)) {
-                            if ($produtoEn->getIndFracionavel() == 'S') {
-                                $embalagemAtual = $embFracDefault;
-                            } else {
-                                /** @var Produto\Embalagem $embalagemEn */
-                                foreach ($produto['embalagensDisponiveis'] as $embalagemEn) {
-                                    if (Math::compare($embalagemEn->getQuantidade(), $qtdTemp, '<=')) {
-                                        $embalagemAtual = $embalagemEn;
-                                        break;
+
+                        while ($qtdTemp !== 0) {
+                            $embalagemAtual = null;
+                            if (!$produto['forcarEmbVenda']) {
+                                if (!empty($embExpDefault)) {
+                                    $embalagemAtual = $embExpDefault;
+                                    if (!Math::compare($embalagemAtual->getQuantidade(), $qtdTemp, "<=")) {
+                                        $embalagemAtual = null;
                                     }
                                 }
+                                if (empty($embalagemAtual)) {
+                                    if ($produto['produtoEn']->getIndFracionavel() == 'S') {
+                                        $embalagemAtual = $embFracDefault;
+                                    } else {
+                                        /** @var Produto\Embalagem $embalagemEn */
+                                        foreach ($produto['embalagensDisponiveis'] as $embalagemEn) {
+                                            if (Math::compare($embalagemEn->getQuantidade(), $qtdTemp, '<=')) {
+                                                $embalagemAtual = $embalagemEn;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                $embalagemAtual = $produto['embalagemPreset'];
                             }
-                        }
 
-                        if (is_null($embalagemAtual)) {
-                            $strLote = (!in_array($produto['lote'], [Produto\Lote::LND, Produto\Lote::NCL]) ) ? " lote: $produto[lote]" : "";
-                            throw new \Exception("Erro ao otimizar o produto ".$produtoEn->getId(). "-".$produtoEn->getGrade() ."$strLote<br /> Qtd embalagem " . $embalagemEn->getQuantidade()." - qtd à separar $qtdTemp");
-                        }
+                            if (is_null($embalagemAtual)) {
+                                $strLote = (!in_array($produto['lote'], [Produto\Lote::LND, Produto\Lote::NCL])) ? " lote: $produto[lote]" : "";
+                                throw new \Exception("Erro ao otimizar o produto " . $produtoEn->getId() . "-" . $produtoEn->getGrade() . "$strLote<br /> Qtd embalagem " . $embalagemEn->getQuantidade() . " - qtd à separar $qtdTemp");
+                            }
 
-                        if ($embalagemAtual->isEmbFracionavelDefault() != "S") {
-                            /*$qtdEmbalagemAtual = $embalagemAtual->getQuantidade();
-                            // Identifico o resto possivel da embalagem atual em relação a qtdBase
-                            $restoByFator = Math::resto($qtdTemp, $qtdEmbalagemAtual);
-                            // Com isso identifico quanto de cada embalagem será possível e necessária para separar o item
-                            $qtdEmbs = Math::dividir(Math::subtrair($qtdTemp, $restoByFator), $qtdEmbalagemAtual);
-                            // A partir disso o restante do pedido é igual ao resto da divisão do fator atual
-                            $qtdTemp = $restoByFator;*/
-                            list($qtdEmbs, $qtdTemp) = Math::getFatorMultiploResto($qtdTemp, $embalagemAtual->getQuantidade());
-                        } else {
-                            $qtdEmbs = $qtdTemp;
-                            $qtdTemp = 0;
-                        }
+                            if ($embalagemAtual->isEmbFracionavelDefault() != "S") {
+                                list($qtdEmbs, $qtdTemp) = Math::getFatorMultiploResto($qtdTemp, $embalagemAtual->getQuantidade());
+                            } else {
+                                $qtdEmbs = $qtdTemp;
+                                $qtdTemp = 0;
+                            }
 
-                        $enderecoId = (!empty($enderecoEn)) ? $enderecoEn->getId() : null;
-                        $newArray[$strQuebrasConcat][$produtoGradeLote]['expedicaoEn'] = $expedicaoEn;
-                        $newArray[$strQuebrasConcat][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemAtual->getId()] = array(
-                            'qtd' => $qtdEmbs,
-                            'lote' => $produto['lote'],
-                            'consolidado' => "N",
-                            'cubagem' => null,
-                            'arrPedProd' => $produto['arrPedProd'],
-                            'embalagemEn' => $embalagemAtual,
-                            'produtoEn' => $produtoEn,
-                            'pedidoEn' => null,
-                            'quebras' => $quebras,
-                            'enderecoEn' => $enderecoEn);
+                            $enderecoId = (!empty($produto['enderecoEn'])) ? $produto['enderecoEn']->getId() : null;
+                            $newArray[$strQuebrasConcat][$produtoGradeLote]['expedicaoEn'] = $produto['expedicaoEn'];
+                            $newArray[$strQuebrasConcat][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemAtual->getId()][$index] = array(
+                                'qtd' => $qtdEmbs,
+                                'lote' => $produto['lote'],
+                                'consolidado' => "N",
+                                'cubagem' => null,
+                                'arrPedProd' => $produto['arrPedProd'],
+                                'embalagemEn' => $embalagemAtual,
+                                'produtoEn' => $produto['produtoEn'],
+                                'pedidoEn' => null,
+                                'quebras' => $produto['quebras'],
+                                'enderecoEn' => $produto['enderecoEn']);
+                        }
                     }
                 }
             }
