@@ -558,7 +558,40 @@ class Importacao_IndexController extends Action
                         $countFlush++;
                     }
                     break;
+                case 'estoqueErp':
+                    try {
+                        if ($arrRegistro['ESTOQUE_DISPONIVEL'] > 0) {
 
+                            $valorEstoque = array_change_key_case($arrRegistro, CASE_UPPER);
+                            $codProduto = (int) $arrRegistro['COD_PRODUTO'];
+                            $grade = $arrRegistro['GRADE'];
+
+                            if (isset($valorEstoque['GRADE'])) {
+                                $grade = utf8_encode($valorEstoque['GRADE']);
+                            }
+
+                            $produtoEn = $produtoRepo->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+                            if ($produtoEn != null) {
+                                $estoqueErp = new \Wms\Domain\Entity\Enderecamento\EstoqueErp();
+                                $estoqueErp->setProduto($produtoEn);
+                                $estoqueErp->setCodProduto($codProduto);
+                                $estoqueErp->setGrade($grade);
+                                $estoqueErp->setEstoqueDisponivel(str_replace(',', '.', $arrRegistro['ESTOQUE_DISPONIVEL']));
+                                $estoqueErp->setEstoqueAvaria(str_replace(',', '.', $arrRegistro['ESTOQUE_AVARIA']));
+                                $estoqueErp->setEstoqueGerencial(str_replace(',', '.', $arrRegistro['ESTOQUE_GERENCIAL']));
+                                $estoqueErp->setFatorUnVenda(str_replace(',', '.', $arrRegistro['FATOR_UNIDADE_VENDA']));
+                                $estoqueErp->setUnVenda($arrRegistro['DSC_UNIDADE']);
+                                $estoqueErp->setVlrEstoqueTotal(str_replace(',', '.', $arrRegistro['VALOR_ESTOQUE']));
+                                $estoqueErp->setVlrEstoqueUnitario(str_replace(',', '.', $arrRegistro['CUSTO_UNITARIO']));
+                                $this->_em->persist($estoqueErp);
+                            }
+                            $countFlush++;
+                        }
+                    }catch (Exception $e){
+                        $arrErroRows['exception'] = $e->getMessage();
+                    }
+
+                    break;
                 default:
                     break;
             }
@@ -679,6 +712,11 @@ class Importacao_IndexController extends Action
                     $inventarioEn = $inventarioRepo->save();
                 }
 
+                if ($tabelaDestino === 'estoqueErp') {
+                    $query = $this->_em->createQuery("DELETE FROM wms:Enderecamento\EstoqueErp");
+                    $query->execute();
+                }
+
                 $arrErroRows = array();
                 $numPedido = null;
                 $checkArray = array();
@@ -791,7 +829,7 @@ class Importacao_IndexController extends Action
 //                            $em->clear();
                         }
                     }
-                } elseif ($extencao == "csv") {
+                } else {
 
                     $handle = fopen($archive, "r");
 
