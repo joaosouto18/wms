@@ -260,10 +260,10 @@ class ExpedicaoVolumePatrimonioRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('msc.codProduto, msc.dscGrade, (msc.qtdEmbalagem * SUM(msc.qtdConferida)) quantidade, p.descricao, evp.sequencia, pe.descricao descricaoEmbalagem')
             ->from('wms:Expedicao\MapaSeparacao', 'ms')
-            ->innerJoin('wms:Expedicao\MapaSeparacaoConferencia', 'msc', 'WITH', 'msc.mapaSeparacao = ms.id')
+            ->innerJoin('wms:Expedicao\MapaSeparacaoConferencia', 'msc', 'WITH', 'msc.codMapaSeparacao = ms.id')
             ->innerJoin('wms:Expedicao\ExpedicaoVolumePatrimonio', 'evp', 'WITH', 'evp.volumePatrimonio = msc.volumePatrimonio AND evp.expedicao = ms.expedicao')
             ->innerJoin("wms:Produto", 'p', 'WITH', 'p.id = msc.codProduto AND p.grade = msc.dscGrade')
-            ->leftJoin("wms:Produto\Embalagem", 'pe', 'WITH', 'pe.id = msc.produtoEmbalagem')
+            ->leftJoin("wms:Produto\Embalagem", 'pe', 'WITH', 'pe.id = msc.codProdutoEmbalagem')
             ->where("ms.expedicao = $idExpedicao")
             ->andWhere("msc.volumePatrimonio = $volumePatrimonio")
             ->groupBy("msc.codProduto, msc.dscGrade, p.descricao, evp.sequencia, msc.qtdEmbalagem,  pe.descricao");

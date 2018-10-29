@@ -262,6 +262,9 @@ class Expedicao_EtiquetaController  extends Action
             }
 
             $this->getEntityManager()->flush();
+            if ($tipo == "reentrega") {
+                exit;
+            }
         } catch (Exception $e) {
             $this->addFlashMessage("Error", "Erro na geração do PDF: " . $e->getMessage());
             $this->_redirect('/expedicao');

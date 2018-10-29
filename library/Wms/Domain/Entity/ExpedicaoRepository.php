@@ -228,9 +228,9 @@ class ExpedicaoRepository extends EntityRepository {
                                 } else {
                                     $options[$pedidoEn->getId() . '-' . $key][] = $item['ATENDIDA'];
                                 }
-                                $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_PEDIDO_EMBALAGEM_VENDA'];
-                                $options[$pedidoEn->getId().'-'.$key][] = $item['QTD_ATENDIDA_EMB_VENDA'];
-                                $options[$pedidoEn->getId().'-'.$key][] = $item['FATOR_EMBALAGEM_VENDA'];
+                                $options[$pedidoEn->getId().'-'.$key][] = str_replace(',', '.', $item['QTD_PEDIDO_EMBALAGEM_VENDA']);
+                                $options[$pedidoEn->getId().'-'.$key][] = str_replace(',', '.', $item['QTD_ATENDIDA_EMB_VENDA']);
+                                $options[$pedidoEn->getId().'-'.$key][] = str_replace(',', '.', $item['FATOR_EMBALAGEM_VENDA']);
                             }
                         }
                         $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612, true);
@@ -1324,35 +1324,35 @@ class ExpedicaoRepository extends EntityRepository {
             $whereCargas = " AND c.codCargaExterno = '$cargas' ";
         }
 
-        $query = "SELECT pp
-                      FROM wms:Expedicao\PedidoProduto pp
-                      INNER JOIN pp.produto p
-                        LEFT JOIN p.linhaSeparacao ls
-                        INNER JOIN pp.pedido ped
-                        INNER JOIN ped.carga c
-                        INNER JOIN c.expedicao exp
-                        LEFT JOIN wms:Ressuprimento\ReservaEstoqueExpedicao ree WITH ree.expedicao = exp.id AND ree.pedido = ped.id
-                        LEFT JOIN wms:Ressuprimento\ReservaEstoqueProduto rep WITH rep.reservaEstoque = ree.reservaEstoque AND rep.codProduto = p.id AND rep.grade = p.grade
-                        LEFT JOIN wms:Ressuprimento\ReservaEstoque re WITH re.id = ree.reservaEstoque
-                        LEFT JOIN wms:Expedicao\VProdutoEndereco endereco WITH p.id = endereco.codProduto AND p.grade = endereco.grade
-                        LEFT JOIN wms:Deposito\Endereco e WITH e.id = NVL(re.endereco, endereco.codDepositoEndereco)
-                        WHERE ped.indEtiquetaMapaGerado != 'S'
-                          $whereCargas
-                          AND ped.centralEntrega = '$central'
-                          AND ped.dataCancelamento is null";
-
 //        $query = "SELECT pp
-//                        FROM wms:Expedicao\PedidoProduto pp
-//                        INNER JOIN pp.produto p
-//                         LEFT JOIN p.linhaSeparacao ls
+//                      FROM wms:Expedicao\PedidoProduto pp
+//                      INNER JOIN pp.produto p
+//                        LEFT JOIN p.linhaSeparacao ls
 //                        INNER JOIN pp.pedido ped
-//                        INNER JOIN wms:Expedicao\VProdutoEndereco e WITH p.id = e.codProduto AND p.grade = e.grade
 //                        INNER JOIN ped.carga c
+//                        INNER JOIN c.expedicao exp
+//                        LEFT JOIN wms:Ressuprimento\ReservaEstoqueExpedicao ree WITH ree.expedicao = exp.id AND ree.pedido = ped.id
+//                        LEFT JOIN wms:Ressuprimento\ReservaEstoqueProduto rep WITH rep.reservaEstoque = ree.reservaEstoque AND rep.codProduto = p.id AND rep.grade = p.grade
+//                        LEFT JOIN wms:Ressuprimento\ReservaEstoque re WITH re.id = ree.reservaEstoque
+//                        LEFT JOIN wms:Expedicao\VProdutoEndereco endereco WITH p.id = endereco.codProduto AND p.grade = endereco.grade
+//                        LEFT JOIN wms:Deposito\Endereco e WITH e.id = NVL(re.endereco, endereco.codDepositoEndereco)
 //                        WHERE ped.indEtiquetaMapaGerado != 'S'
 //                          $whereCargas
 //                          AND ped.centralEntrega = '$central'
-//                          AND ped.dataCancelamento is null
-//                        ";
+//                          AND ped.dataCancelamento is null";
+
+        $query = "SELECT pp
+                        FROM wms:Expedicao\PedidoProduto pp
+                        INNER JOIN pp.produto p
+                         LEFT JOIN p.linhaSeparacao ls
+                        INNER JOIN pp.pedido ped
+                        INNER JOIN wms:Expedicao\VProdutoEndereco e WITH p.id = e.codProduto AND p.grade = e.grade
+                        INNER JOIN ped.carga c
+                        WHERE ped.indEtiquetaMapaGerado != 'S'
+                          $whereCargas
+                          AND ped.centralEntrega = '$central'
+                          AND ped.dataCancelamento is null
+                        ";
 
         switch ($sequencia) {
             case 3:

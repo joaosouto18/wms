@@ -242,7 +242,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                       es.codEstoque,
                       de.descricao as endereco,
                       es.pontoTransbordo,
-                      ped.id pedido,
+                      ped.codExterno pedido,
                       CASE WHEN es.codStatus = 522 THEN 'PENDENTE DE IMPRESSÃO'
                            WHEN es.codStatus = 523 THEN 'PENDENTE DE CONFERENCIA'
                            ELSE 'Consulte o administrador do sistema'
@@ -389,7 +389,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     public function getEtiquetasReimpressaoByFaixa($codigoInicial, $codigoFinal)
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select(' es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
+            ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, p.id pedido, IDENTITY(etq.produtoEmbalagem) AS codProdutoEmbalagem, etq.qtdProduto')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
@@ -468,7 +468,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codBarrasProduto, c.sequencia, p.id pedido,
-					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, p.numSequencial
+					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, p.numSequencial,
+					de.descricao endereco
                 ')
             ->addSelect("
                         (
@@ -483,6 +484,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->innerJoin('wms:Expedicao\Carga', 'c' , 'WITH', 'c.id = es.codCarga')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
             ->leftJoin('wms:Produto\Embalagem','pe','WITH','pe.id = etq.produtoEmbalagem')
+            ->leftJoin('etq.codDepositoEndereco', 'de')
             ->where('es.codBarras = :id')
             ->setParameter('id', $id);
 

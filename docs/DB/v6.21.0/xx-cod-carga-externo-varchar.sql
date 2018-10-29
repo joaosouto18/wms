@@ -20,6 +20,7 @@ BEGIN
         EXECUTE IMMEDIATE 'update carga set TEMP_COD_CARGA_EXTERNO = cod_carga_externo';
         EXECUTE IMMEDIATE 'alter table carga drop column cod_carga_externo';
         EXECUTE IMMEDIATE 'alter table carga add cod_carga_externo varchar(20)';
+        EXECUTE IMMEDIATE 'update carga SET cod_carga_externo = temp_cod_carga_externo';
         EXECUTE IMMEDIATE 'alter table carga drop column temp_cod_carga_externo';
   
 /************************************************************************

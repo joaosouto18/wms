@@ -141,7 +141,7 @@
 
 <?php if (isset($this->idExpedicao)) : ?>
 
-    <p style="font-size: 50px"><?php echo $this->acao . " " . $this->idExpedicao ?>
+    <p><?php echo $this->acao . " " . $this->idExpedicao ?>
         <?php if ($this->acao == "Expedição de Transbordo:") : ?>
             <br>Placa: <?php echo $this->placa ?><br>
         <?php endif; ?>
@@ -168,40 +168,40 @@
 
         <?php if ((isset($this->placa)) && ($this->placa != "")) : ?>
             <input name="placa" placeholder="Placa" type="hidden" value="<?php echo $this->placa ?>" />
-            <input type="text" placeholder="Cod.Barras da etiqueta" style="height: 60px; width: 35%; font-size: 50px" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+            <input type="text" placeholder="Cod.Barras da etiqueta" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
         <?php else : ?>
-            <input type="text" placeholder="Cod.Barras da etiqueta" style="height: 60px; width: 35%; font-size: 50px" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
+            <input type="text" placeholder="Cod.Barras da etiqueta" name="etiquetaSeparacao" id="etiquetaSeparacao" value="" onkeydown="nextInput(event)" />
             <?php if ($this->segundaConferencia != "S") { ?>
-                <input type="text" placeholder="Cod.Barras do produto" style="height: 60px; width: 35%; font-size: 50px" name="etiquetaProduto" id="etiquetaProduto" value="" />
+                <input type="text" placeholder="Cod.Barras do produto" name="etiquetaProduto" id="etiquetaProduto" value="" />
             <?php } ?>
 
         <?php endif; ?>
 
-        <input type="submit" name="submit" style="height: 60px; width: 15%; font-size: 20px" id="submit" value="Conferir" />
+        <input type="submit" name="submit" id="submit" value="Conferir" />
     </form>
 
     <?php if (isset($this->placa) && !is_null($this->placa) && ($this->placa != "")) : ?>
 
         <div id="footer">
             <!--<a onclick="finalizar(event, this)" class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizado')); ?>">Verificar</a> |-->
-            <a class="finalizar" style="font-size: 50px" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
+            <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
         </div>
 
     <?php elseif (isset($this->volume)) : ?>
 
         <div id="footer">
-            <a class="finalizar" style="font-size: 50px" href="<?php echo $this->url(array('controller' => 'volume-patrimonio', 'action' => 'fechar-caixa', 'idExpedicao' => $this->idExpedicao, 'volume' => $this->volume)); ?>">Fechar Caixa</a>
+            <a class="finalizar" href="<?php echo $this->url(array('controller' => 'volume-patrimonio', 'action' => 'fechar-caixa', 'idExpedicao' => $this->idExpedicao, 'volume' => $this->volume)); ?>">Fechar Caixa</a>
             |
-            <a class="finalizar" style="font-size: 50px" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
+            <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
         </div>
 
     <?php else : ?>
         <div id="footer">
-            <a class="finalizar" style="font-size: 50px" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
+            <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'finalizar')); ?>">Finalizar</a>
         </div>
     <?php endif; ?>
-    <a class="finalizarAmarelo" style="font-size: 50px" href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'carregamento', 'idExpedicao' => $this->idExpedicao)) ?>" >Equipe</a>
+    <a class="finalizarAmarelo" href="<?php echo $this->url(array('module' => 'mobile', 'controller' => 'expedicao', 'action' => 'carregamento', 'idExpedicao' => $this->idExpedicao)) ?>" >Equipe</a>
 
 <?php } else { ?>
-    <a class="finalizar" style="font-size: 50px" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-codigo-barras')); ?>">Confirmar</a>
+    <a class="finalizar" href="<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'ler-codigo-barras')); ?>">Confirmar</a>
 <?php } ?>

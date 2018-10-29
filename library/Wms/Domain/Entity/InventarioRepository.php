@@ -789,4 +789,140 @@ class InventarioRepository extends EntityRepository {
         }
     }
 
+    /*
+     * Layout de exportação definido para o Winthor
+     */
+    public function exportaInventarioModelo01($id) {
+        /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
+        $inventarioEn = $this->_em->find('wms:Inventario', $id);
+
+        /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
+        $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
+
+        $inventarioRepo = $this->_em->getRepository('wms:Inventario');
+
+        $codInvErp = $inventarioEn->getCodInventarioERP();
+        if (empty($codInvErp)){
+            throw new \Exception("Este inventário não tem o código do inventário respectivo no ERP");
+        }
+        $inventariosByErp = $inventarioRepo->findBy(array('codInventarioERP' => $codInvErp));
+        foreach ($inventariosByErp as $inventarios) {
+            $inventario[] = $inventarios->getId();
+        }
+        $codInventarios = implode(',', $inventario);
+
+        $filename = "Exp_Inventario($codInvErp).txt";
+        $file = fopen($filename, 'w');
+
+        $invEnderecosEn = $enderecoRepo->getComContagem($codInventarios);
+        $qtdTotal = 0;
+        $produtoAnterior = null;
+        $inventario = array();
+        foreach ($invEnderecosEn as $invEnderecoEn) {
+            $codInventarioEnderecos[] = $invEnderecoEn->getId();
+        }
+        $codInventarioEndereco = implode(',',$codInventarioEnderecos);
+
+        $contagemEndEnds = $enderecoRepo->getUltimaContagem($codInventarioEndereco);
+        foreach ($contagemEndEnds as $contagemEndEn) {
+            $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()), array('quantidade' => 'ASC'));
+            if (!$embalagemEntity) continue;
+            if ($produtoAnterior != $contagemEndEn->getCodProduto()) $qtdTotal = 0;
+
+            $qtdContagem = ($contagemEndEn->getQtdContada() + $contagemEndEn->getQtdAvaria());
+            $qtdTotal = $qtdTotal + $qtdContagem;
+            $inventario[$contagemEndEn->getCodProduto()]['QUANTIDADE'] = $qtdTotal;
+            $inventario[$contagemEndEn->getCodProduto()]['NUM_CONTAGEM'] = $contagemEndEn->getNumContagem();
+            $inventario[$contagemEndEn->getCodProduto()]['COD_BARRAS'] = reset($embalagemEntity)->getCodigoBarras();
+            $inventario[$contagemEndEn->getCodProduto()]['FATOR'] = reset($embalagemEntity)->getQuantidade();
+            $produtoAnterior = $contagemEndEn->getCodProduto();
+        }
+
+        foreach ($inventario as $key => $produto) {
+            $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
+            $txtContagem = '001';
+            $txtLocal = '001';
+            $txtCodBarras = str_pad($produto['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
+            $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 10, '0', STR_PAD_LEFT);
+            $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
+            $linha = "$txtCodInventario"."$txtContagem"."$txtLocal"."$txtCodBarras"."$txtQtd"."$txtCodProduto"."\r\n";
+            fwrite($file, $linha, strlen($linha));
+        }
+
+        fclose($file);
+
+        header("Content-Type: application/force-download");
+        header("Content-type: application/octet-stream;");
+        header("Content-disposition: attachment; filename=" . $filename);
+        header("Expires: 0");
+        header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+        header("Pragma: no-cache");
+
+        readfile($filename);
+        flush();
+
+        unlink($filename);
+        exit;
+    }
+
+    /*
+     * Layout de exportação definido para a SonosShow
+     */
+    public function exportaInventarioModelo02($idInventario = null) {
+        /*
+         * Nome do arquivo solicitado pela sonoshow como aammddhh.min
+         */
+        $nomeArquivo = date("ymdH.0i");
+        $arquivo = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO") . DIRECTORY_SEPARATOR. $nomeArquivo;
+
+        $SQL = "SELECT P.COD_PRODUTO, NVL(ESTQ.QTD,0) as QTD
+                  FROM PRODUTO P
+                  LEFT JOIN (SELECT E.COD_PRODUTO,
+                                    E.DSC_GRADE, 
+                                    MIN(QTD) as QTD
+                               FROM (SELECT E.COD_PRODUTO,
+                                            E.DSC_GRADE,
+                                            SUM(E.QTD) as QTD,
+                                            NVL(E.COD_PRODUTO_VOLUME,0) as ID_VOLUME
+                                       FROM ESTOQUE E
+                                            GROUP BY E.COD_PRODUTO, E.DSC_GRADE,NVL(E.COD_PRODUTO_VOLUME,0)) E
+                              GROUP BY COD_PRODUTO, DSC_GRADE) ESTQ
+                    ON ESTQ.COD_PRODUTO = P.COD_PRODUTO
+                   AND ESTQ.DSC_GRADE = P.DSC_GRADE " ;
+
+        if ($idInventario != null) {
+            $SQL .= " INNER JOIN (SELECT ICE.COD_PRODUTO,
+                                    ICE.DSC_GRADE
+                               FROM INVENTARIO_ENDERECO IE
+                               LEFT JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+                              WHERE COD_INVENTARIO = $idInventario AND ICE.CONTAGEM_INVENTARIADA = 1 AND ICE.DIVERGENCIA IS NULL
+                              GROUP BY ICE.COD_PRODUTO,
+                                       ICE.DSC_GRADE) I
+                    ON (I.COD_PRODUTO = P.COD_PRODUTO)
+                   AND (I.DSC_GRADE = P.DSC_GRADE)";
+        }
+;
+        $produtos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $file = fopen($arquivo, "w");
+
+        $i = 0;
+        foreach ($produtos  as $produto) {
+            $i ++;
+
+            $result = fwrite($file,$produto['COD_PRODUTO'] . ";");
+            $result = fwrite($file,$produto['QTD'] . ";");
+
+            if (count($produtos) != $i) {
+                $result = fwrite($file,"\r\n");
+            }
+
+        }
+
+        $result = fwrite($file,"\r\n");
+        fclose($file);
+    }
+
 }
