@@ -702,6 +702,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\Produto\DadoLogisticoRepository $dadoLogisticoRepo */
         $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
 
+        /** @var Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+
         $cubagemPedido = array();
         /** @var PedidoProduto $pedidoProduto */
         foreach ($pedidosProdutos as $pedidoProduto) {
@@ -710,44 +713,63 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $quantidade         = number_format($pedidoProduto->getQuantidade(),3,'.','') - number_format($pedidoProduto->getQtdCortada(),3,'.','');
             $codProduto         = $pedidoProduto->getProduto()->getId();
             $grade              = $pedidoProduto->getProduto()->getGrade();
+            $quantidadeRestantePedido = $quantidade;
 
             $produtoEntity = $pedidoProduto->getProduto();
+
+            $forcarEmbVenda = ($produtoEntity->getForcarEmbVenda() == 'S' || empty($produtoEntity->getForcarEmbVenda()) && $modeloSeparacaoEn->getForcarEmbVenda() == 'S');
+
             if($produtoEntity->getVolumes()->count() > 0) {
                 continue;
             }
-            $embalagensEn = $produtoEntity->getEmbalagens()->filter(
-                function($item) {
-                    return is_null($item->getDataInativacao());
-                }
-            )->toArray();
 
-            usort($embalagensEn,function ($itemA, $itemB) {
-                return $itemA->getQuantidade() < $itemB->getQuantidade();
-            });
-
-            $quantidadeRestantePedido      = $quantidade;
+            $embVenda = null;
+            $embalagensEn = null;
+            $menorEmbalagem = null;
             $qtdEmbalagemPadraoRecebimento = 1;
-            foreach ($embalagensEn as $embalagem) {
-                if ($embalagem->getIsPadrao() == "S") {
-                    $qtdEmbalagemPadraoRecebimento = $embalagem->getQuantidade();
-                    break;
-                }
-            }
-            if (!isset($embalagensEn[count($embalagensEn) -1]) || empty($embalagensEn[count($embalagensEn) -1])) {
-                $msg = "O produto $codProduto GRADE $grade não possui embalagens ativas!";
-                throw new WMS_Exception($msg);
-            }
-            $menorEmbalagem = $embalagensEn[count($embalagensEn) -1];
 
+            if ($forcarEmbVenda) {
+                $embVenda = $embalagemRepo->findOneBy(['codProduto' => $codProduto, 'grade' => $grade, 'quantidade' => $pedidoProduto->getFatorEmbalagemVenda(), 'dataInativacao' => null]);
+                if (empty($embVenda))
+                    throw new \Exception("O item $codProduto grade $grade no pedido ".$pedidoEntity->getCodExterno().", exige fator de venda de '".$pedidoProduto->getFatorEmbalagemVenda()."', mas não foi encontrada embalagem ativa com esse fator!");
+
+            } else {
+                $embalagensEn = $produtoEntity->getEmbalagens()->filter(
+                    function ($item) {
+                        return is_null($item->getDataInativacao());
+                    }
+                )->toArray();
+
+                usort($embalagensEn, function ($itemA, $itemB) {
+                    return $itemA->getQuantidade() < $itemB->getQuantidade();
+                });
+
+
+                foreach ($embalagensEn as $embalagem) {
+                    if ($embalagem->getIsPadrao() == "S") {
+                        $qtdEmbalagemPadraoRecebimento = $embalagem->getQuantidade();
+                        break;
+                    }
+                }
+                if (!isset($embalagensEn[count($embalagensEn) - 1]) || empty($embalagensEn[count($embalagensEn) - 1])) {
+                    $msg = "O produto $codProduto GRADE $grade não possui embalagens ativas!";
+                    throw new WMS_Exception($msg);
+                }
+                $menorEmbalagem = $embalagensEn[count($embalagensEn) - 1];
+            }
             $count = 0;
             while ($quantidadeRestantePedido > 0) {
 
                 $count++;
-                /** @var Produto\Embalagem $embalagemAtual */
-                $embalagemAtual = null;
                 $quantidadeAtender = $quantidadeRestantePedido;
 
-                if ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
+                /** @var Produto\Embalagem $embalagemAtual */
+                $embalagemAtual = null;
+
+                if ($forcarEmbVenda) {
+                    $embalagemAtual = $embVenda;
+                }
+                elseif ($modeloSeparacaoEn->getUtilizaCaixaMaster() == "S") {
                     foreach ($embalagensEn as $embalagem) {
 
                         if (Math::compare($embalagem->getQuantidade(), $quantidadeAtender,"<=")) {
@@ -768,7 +790,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
                 $quantidadeRestantePedido = number_format($quantidadeRestantePedido,3,'.','') - number_format($embalagemAtual->getQuantidade(),3,'.','');
 
-                if (isset($cubagemPedido[$pedidoId][$embalagem->getId()])) {
+                if (isset($cubagemPedido[$pedidoId][$embalagemAtual->getId()])) {
                     continue;
                 }
 
@@ -1631,13 +1653,13 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $idPedProd = $pedidoProdutoEn->getId();
 
                         if (isset($arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()])) {
-                            $qtdAtual = $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'];
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'] = Math::adicionar($qtdAtual, $qtdMapa);
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd] = $pedidoProdutoEn;
+                            $qtdAtual = $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()][0]['qtd'];
+                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()][0]['qtd'] = Math::adicionar($qtdAtual, $qtdMapa);
+                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()][0]['arrPedProd'][$idPedProd] = $pedidoProdutoEn;
                         } else {
                             $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['expedicaoEn'] = $expedicaoEn;
                             //$arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['firstIdPedProdLote'] = "$idPedProd*+*$element[lote]";
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()] = array(
+                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()][0] = array(
                                 'qtd' => $qtdMapa,
                                 'lote' => $element['lote'],
                                 'consolidado' => $element['consolidado'],
@@ -1690,7 +1712,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $idCaixa = 0;
                 foreach($dadosCliente['itens'] as $produtoGradeLote => $item) {
                     foreach ($item['enderecos'] as $idEndereco => $embs) {
-                        foreach ($embs as $idEmb => $emb) {
+                        foreach ($embs as $idEmb => $first) {
+                            $emb = $first[0];
                             $cubagemRestante = $emb['cubagem'];
                             while ($cubagemRestante > 0) {
                                 $caixa = [];
@@ -1715,17 +1738,17 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if (Math::compare($cubagemRestante, $caixa['cubagemDisponivel'], '<=')) {
                                     $caixa['cubagemDisponivel'] = Math::subtrair($caixa['cubagemDisponivel'], $cubagemRestante);
                                     $caixa['itens'][] = "$produtoGradeLote*+*$idEndereco*+*$idEmb";
-                                    if (!isset($arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaInicio'])) {
-                                        $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaInicio'] = $idCaixa;
+                                    if (!isset($arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaInicio'])) {
+                                        $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaInicio'] = $idCaixa;
                                     }
-                                    $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaFim'] = $idCaixa;
+                                    $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaFim'] = $idCaixa;
                                     $cubagemRestante = 0;
                                 } else {
                                     $cubagemRestante = Math::subtrair($cubagemRestante, $caixa['cubagemDisponivel']);
                                     $caixa['cubagemDisponivel'] = 0;
                                     $caixa['itens'][] = "$produtoGradeLote*+*$idEndereco*+*$idEmb";
-                                    if (!isset($arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaInicio'])) {
-                                        $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaInicio'] = $idCaixa;
+                                    if (!isset($arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaInicio'])) {
+                                        $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaInicio'] = $idCaixa;
                                     }
                                 }
 
@@ -1789,7 +1812,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             if (!in_array($item, $arrCheck)) {
                                 $arrCheck[] = $item;
                                 list($produtoGradeLote, $idEndereco, $idEmb) = explode("*+*", $item);
-                                $arrValues = $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb];
+                                $arrValues = $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0];
                                 $intervalo = $arrValues['caixaFim'] - $arrValues['caixaInicio'];
                                 $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaInicio'] = $proximaCaixaLivre + $idCaixa;
                                 $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaFim'] = $proximaCaixaLivre + $idCaixa + $intervalo;
