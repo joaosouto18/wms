@@ -624,7 +624,15 @@ class EstoqueRepository extends EntityRepository
 
                 if ($value['QTD'] > 0 && ($value['COD_VOLUME'] == 0 || $value['COD_VOLUME'] == null)) {
                     $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
-                    $result[$key]['QTD_EMBALAGEM'] = implode('<br />', $vetEstoque);
+
+                    if(is_array($vetEstoque)) {
+                        $result[$key]['QTD_EMBALAGEM'] = implode('<br />', $vetEstoque);
+                    }else{
+                        $result[$key]['QTD_EMBALAGEM'] = $vetEstoque;
+                    }
+
+
+                    //$result[$key]['QTD_EMBALAGEM'] = implode('<br />', $vetEstoque);
                 }
             }
         }
