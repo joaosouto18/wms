@@ -133,8 +133,6 @@ class ConexaoIntegracaoRepository extends EntityRepository {
             if (!$result || $result == false) {
                 $errors = \sqlsrv_errors();
                 foreach( $errors as $error ) {
-                    var_dump($error[ 'message']);exit;
-
                     throw new \Exception($error[ 'message']);
                 }
             }

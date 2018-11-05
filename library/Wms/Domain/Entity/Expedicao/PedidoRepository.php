@@ -80,7 +80,7 @@ class PedidoRepository extends EntityRepository
                                 ELSE PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0) END as ATENDIDA, 
                            '' AS CNPJ,
                            PPL.DSC_LOTE,
-                           PP.QTD_EMBALAGEM_VENDA as QTD_PEDIDO_EMBALAGEM_VENDA,
+                           NVL(PPL.QUANTIDADE, PP.QUANTIDADE) / NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as QTD_PEDIDO_EMBALAGEM_VENDA,
                            CASE WHEN (PPL.DSC_LOTE IS NOT NULL ) THEN (PPL.QUANTIDADE - NVL(PPL.QTD_CORTE,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)
                                 ELSE (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) END as QTD_ATENDIDA_EMB_VENDA,
                            NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA                           
