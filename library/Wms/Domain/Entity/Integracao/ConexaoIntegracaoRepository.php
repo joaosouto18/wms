@@ -127,14 +127,14 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 }
             }
 
-            var_dump($query);exit;
 
             $result = \sqlsrv_query($conexao, $query);
-
 
             if (!$result || $result == false) {
                 $errors = \sqlsrv_errors();
                 foreach( $errors as $error ) {
+                    var_dump($error[ 'message']);exit;
+
                     throw new \Exception($error[ 'message']);
                 }
             }
