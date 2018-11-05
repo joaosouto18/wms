@@ -731,7 +731,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             if ($forcarEmbVenda) {
                 $embVenda = $embalagemRepo->findOneBy(['codProduto' => $codProduto, 'grade' => $grade, 'quantidade' => $pedidoProduto->getFatorEmbalagemVenda(), 'dataInativacao' => null]);
                 if (empty($embVenda))
-                    throw new \Exception("O item $codProduto grade $grade no pedido ".$pedidoEntity->getCodExterno().", exige fator de venda de '".$pedidoProduto->getFatorEmbalagemVenda()."', mas não foi encontrada embalagem ativa com esse fator!");
+                    throw new \Exception("O item $codProduto grade $grade no pedido ". $pedidoProduto->getPedido()->getCodExterno().", exige fator de venda de '".$pedidoProduto->getFatorEmbalagemVenda()."', mas não foi encontrada embalagem ativa com esse fator!");
 
             } else {
                 $embalagensEn = $produtoEntity->getEmbalagens()->filter(
