@@ -310,18 +310,18 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $iniciouBeginTransaction = false;
             if ($this->_em->isOpen() == false) {
-                $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
+                //$this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
             }
 
             $acaoEn = $this->_em->find("wms:Integracao\AcaoIntegracao",$idAcao);
 
             if ($iniciouTransacaoAtual == "S") {
-                $acaoEn->setIndExecucao("N");
-                $this->_em->persist($acaoEn);
-                $this->_em->flush();
+                //$acaoEn->setIndExecucao("N");
+                //$this->_em->persist($acaoEn);
+                //$this->_em->flush();
             }
 
-            $this->_em->beginTransaction();
+            //$this->_em->beginTransaction();
             $iniciouBeginTransaction = true;
 
             if (($tipoExecucao == "E") || ($dados == null)) {
@@ -345,7 +345,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     if ($sucess != "S") {
                         $andamentoEn->setQuery($query);
                     }
-                    $this->_em->persist($andamentoEn);
+                    //$this->_em->persist($andamentoEn);
                 }
             }
 
