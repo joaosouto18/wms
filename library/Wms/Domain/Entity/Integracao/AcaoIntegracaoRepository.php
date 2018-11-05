@@ -204,7 +204,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $this->_em->beginTransaction();
 
-            throw new \Exception('teste');
+return "teste";
 
 
             if ($existeOutraTransacaoAtiva == 'S') {
