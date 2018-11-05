@@ -302,8 +302,8 @@ class AcaoIntegracaoRepository extends EntityRepository
             $errNumber = $e->getCode();
             $result = $e->getMessage();
 
-            $this->_em->rollback();
-            $this->_em->clear();
+            //$this->_em->rollback();
+            //$this->_em->clear();
         }
 
         try {
