@@ -204,6 +204,9 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $this->_em->beginTransaction();
 
+            throw new \Exception('teste');
+
+
             if ($existeOutraTransacaoAtiva == 'S') {
                 throw new \Exception("Integração em andamento em outro processo");
             }
@@ -277,8 +280,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
 
             }
-
-            throw new \Exception('teste');
 
             $this->_em->flush();
             $this->_em->commit();
