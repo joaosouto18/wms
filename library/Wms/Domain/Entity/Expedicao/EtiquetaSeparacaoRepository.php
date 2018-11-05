@@ -1677,9 +1677,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $qtd = Math::multiplicar($qtdMapa, $embalagemEn->getQuantidade());
 
                     if (isset($arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['AGRUPADO'][0])){
-                        $qtdAtual = $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['qtd'];
-                        $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['qtd'] = Math::adicionar($qtdAtual, $qtd);
-                        $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['arrPedProd'][$pedidoProdutoEn->getId()] = $pedidoProdutoEn;
+                        $qtdAtual = $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['AGRUPADO'][0]['qtd'];
+                        $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['AGRUPADO'][0]['qtd'] = Math::adicionar($qtdAtual, $qtd);
+                        $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote]['AGRUPADO'][0]['arrPedProd'][$pedidoProdutoEn->getId()] = $pedidoProdutoEn;
                     } else {
                         $arr = [
                             'qtd' => $qtd,
