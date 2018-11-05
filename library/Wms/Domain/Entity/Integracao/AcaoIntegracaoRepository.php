@@ -278,6 +278,8 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             }
 
+            throw new \Exception('teste');
+
             $this->_em->flush();
             $this->_em->commit();
             $this->_em->clear();
@@ -301,7 +303,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $errNumber = $e->getCode();
             $result = $e->getMessage();
-            
+
             $this->_em->rollback();
             $this->_em->clear();
         }
