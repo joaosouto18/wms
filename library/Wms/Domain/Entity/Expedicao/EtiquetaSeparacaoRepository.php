@@ -1939,14 +1939,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $cliente = $pedidoProdutoEn->getPedido()->getPessoa();
                         $nomCliente = $cliente->getPessoa()->getNome();
                         $codQuebra = $cliente->getCodClienteExterno();
-                        $dscQuebra = "CLIENTE: $codQuebra - $nomCliente";
-                        $dscPD = "CLIENTE";
-                        break;
-                    default:
-                        $dscQuebra = "PULMÃO-DOCA";
+                        $dscPD = "CLIENTE: $codQuebra - $nomCliente";
                         break;
                 }
-                $dscQuebra = "PULMÃO-DOCA POR $dscPD";
+                $dscQuebra = "PULMÃO-DOCA $dscPD";
                 $codQuebra = 2;
             }
 
