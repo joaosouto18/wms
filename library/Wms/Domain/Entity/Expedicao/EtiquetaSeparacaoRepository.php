@@ -281,7 +281,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         }
 
         $dql->setParameter('idExpedicao', $idExpedicao)
-            ->orderBy('ped.id, es.codCargaExterno, es.codBarras, p.descricao, es.codProduto, es.grade');
+            ->orderBy('ped.codExterno, es.codCargaExterno, es.codBarras, p.descricao, es.codProduto, es.grade');
 
         $expedicaoEn = $this->getEntityManager()->getRepository("wms:Expedicao")->findOneBy(array('id'=>$idExpedicao));
         if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_SEGUNDA_CONFERENCIA) {
@@ -1058,7 +1058,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 next($arrVolumesReservas);
                             }
                         }
-                    } else {
+                    }
+                    else {
                         foreach ($arrVolumesReservas as $elements) {
                             $depositoEnderecoEn = $elements['enderecoEn'];
 
@@ -1289,7 +1290,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if (isset($arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco])) {
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco]['qtd'] += $qtdSepararEmbalagemAtual;
                                 } else {
-                                    list($strQuebrasConcat, $arrQuebras) = self::getSetupQuebras($quebras, $pedidoProduto);
+                                    list($strQuebrasConcat, $arrQuebras) = self::getSetupQuebras($quebras, $pedidoProduto, $reserva);
                                     $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco] = array(
                                         'qtd' => $qtdSepararEmbalagemAtual,
                                         'consolidado' => $consolidado,
@@ -1807,7 +1808,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
      * @param $pedidoProdutoEn PedidoProduto
      * @return array
      */
-    private function getSetupQuebras($quebras, $pedidoProdutoEn)
+    private function getSetupQuebras($quebras, $pedidoProdutoEn, $reserva = [])
     {
 
         $arrQuebras = [];
@@ -1898,7 +1899,50 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             //PULMAO-DOCA
             elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_PULMAO_DOCA) {
-                $dscQuebra = "PULMÃO-DOCA";
+                $dscPD = '';
+                switch ($reserva['quebraPulmaoDoca']) {
+                    case ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO:
+                        $dscPD = "EXPEDIÇÃO: '$reserva[codCriterioPD]'";
+                        break;
+                    case ModeloSeparacao::QUEBRA_PULMAO_DOCA_CARGA:
+                        /** @var Carga $cargaEn */
+                        $cargaEn = $this->getEntityManager()->find('wms:Expedicao\Carga', $reserva['codCriterioPD']);
+                        $dscPD = "CARGA: '" . $cargaEn->getCodCargaExterno() . "'";
+                        break;
+                    case ModeloSeparacao::QUEBRA_PULMAO_DOCA_ROTA:
+                        $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
+                        $clienteEn = $clienteRepo->findOneBy(array('codClienteExterno' => $pedidoProdutoEn->getPedido()->getPessoa()->getCodClienteExterno()));
+                        $rota = $clienteEn->getRota();
+                        if ($rota != null) $codQuebra = $rota->getId();
+
+
+                        if ($codQuebra == 0){
+                            $nomRota = "(SEM ROTA DEFINIDA)";
+                        } else {
+                            $rotaEn = $this->getEntityManager()->getRepository('wms:MapaSeparacao\Rota')->find($codQuebra);
+                            $nomRota = $rotaEn->getNomeRota();
+                        }
+                        $dscPD = "ROTA: $codQuebra - $nomRota";
+                        break;
+                    case ModeloSeparacao::QUEBRA_PULMAO_DOCA_PRACA:
+                        $clienteRepo = $this->getEntityManager()->getRepository("wms:Pessoa\Papel\Cliente");
+                        $codQuebra = $clienteRepo->getCodPracaByClienteId($pedidoProdutoEn->getPedido()->getPessoa()->getCodClienteExterno());
+                        if ($codQuebra == 0){
+                            $nomPraca = "(SEM PRAÇA DEFINIDA)";
+                        } else {
+                            $pracaEn = $this->getEntityManager()->getRepository("wms:MapaSeparacao\Praca")->find($codQuebra);
+                            $nomPraca = $pracaEn->getNomePraca();
+                        }
+                        $dscPD = "PRACA: $codQuebra - $nomPraca";
+                        break;
+                    case ModeloSeparacao::QUEBRA_PULMAO_DOCA_CLIENTE:
+                        $cliente = $pedidoProdutoEn->getPedido()->getPessoa();
+                        $nomCliente = $cliente->getPessoa()->getNome();
+                        $codQuebra = $cliente->getCodClienteExterno();
+                        $dscPD = "CLIENTE: $codQuebra - $nomCliente";
+                        break;
+                }
+                $dscQuebra = "PULMÃO-DOCA $dscPD";
                 $codQuebra = 2;
             }
 
