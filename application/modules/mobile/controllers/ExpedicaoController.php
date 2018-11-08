@@ -1426,7 +1426,7 @@ class Mobile_ExpedicaoController extends Action {
         $this->view->operacao = $this->_getParam('operacao');
         $finalizar = $this->_getParam('finalizar');
 
-        $dthFinal = (isset($finalizar)) ? true : false;
+        $dthFinal = (!empty($finalizar)) ? true : false;
 
         //OBTER OS REPOSITORIOS
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
