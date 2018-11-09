@@ -1651,13 +1651,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         $idPedProd = $pedidoProdutoEn->getId();
 
                         if (isset($arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()])) {
-                            $qtdAtual = $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()][0]['qtd'];
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()][0]['qtd'] = Math::adicionar($qtdAtual, $qtdMapa);
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()][0]['arrPedProd'][$idPedProd] = $pedidoProdutoEn;
+                            $qtdAtual = $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'];
+                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'] = Math::adicionar($qtdAtual, $qtdMapa);
+                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd] = $pedidoProdutoEn;
                         } else {
                             $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['expedicaoEn'] = $expedicaoEn;
-                            //$arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['firstIdPedProdLote'] = "$idPedProd*+*$element[lote]";
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()][0] = array(
+                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()] = array(
                                 'qtd' => $qtdMapa,
                                 'lote' => $element['lote'],
                                 'consolidado' => $element['consolidado'],
@@ -1707,8 +1706,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $idCaixa = 0;
                 foreach($dadosCliente['itens'] as $produtoGradeLote => $item) {
                     foreach ($item['enderecos'] as $idEndereco => $embs) {
-                        foreach ($embs as $idEmb => $first) {
-                            $emb = $first[0];
+                        foreach ($embs as $idEmb => $emb) {
                             $cubagemRestante = $emb['cubagem'];
                             while ($cubagemRestante > 0) {
                                 $caixa = [];
@@ -1733,17 +1731,17 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 if (Math::compare($cubagemRestante, $caixa['cubagemDisponivel'], '<=')) {
                                     $caixa['cubagemDisponivel'] = Math::subtrair($caixa['cubagemDisponivel'], $cubagemRestante);
                                     $caixa['itens'][] = "$produtoGradeLote*+*$idEndereco*+*$idEmb";
-                                    if (!isset($arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaInicio'])) {
-                                        $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaInicio'] = $idCaixa;
+                                    if (!isset($arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaInicio'])) {
+                                        $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaInicio'] = $idCaixa;
                                     }
-                                    $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaFim'] = $idCaixa;
+                                    $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaFim'] = $idCaixa;
                                     $cubagemRestante = 0;
                                 } else {
                                     $cubagemRestante = Math::subtrair($cubagemRestante, $caixa['cubagemDisponivel']);
                                     $caixa['cubagemDisponivel'] = 0;
                                     $caixa['itens'][] = "$produtoGradeLote*+*$idEndereco*+*$idEmb";
-                                    if (!isset($arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaInicio'])) {
-                                        $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaInicio'] = $idCaixa;
+                                    if (!isset($arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaInicio'])) {
+                                        $arrConsolidado[$strQuebra][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaInicio'] = $idCaixa;
                                     }
                                 }
 
@@ -1807,10 +1805,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             if (!in_array($item, $arrCheck)) {
                                 $arrCheck[] = $item;
                                 list($produtoGradeLote, $idEndereco, $idEmb) = explode("*+*", $item);
-                                $arrValues = $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0];
+                                $arrValues = $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb];
                                 $intervalo = $arrValues['caixaFim'] - $arrValues['caixaInicio'];
-                                $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaInicio'] = $proximaCaixaLivre + $idCaixa;
-                                $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['caixaFim'] = $proximaCaixaLivre + $idCaixa + $intervalo;
+                                $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaInicio'] = $proximaCaixaLivre + $idCaixa;
+                                $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['caixaFim'] = $proximaCaixaLivre + $idCaixa + $intervalo;
                             }
                         }
                     }
@@ -1822,7 +1820,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     foreach ($dadosCliente['itens'] as $produtoGradeLote => $dados) {
                         foreach ($dados['enderecos'] as $idEndereco => $embArr)
                             foreach ($embArr as $idEmb => $emb)
-                                $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb][0]['quebras'][MapaSeparacaoQuebra::QUEBRA_CARRINHO]['codQuebra'] = $numCarrinho;
+                                $dadosCliente['itens'][$produtoGradeLote]['enderecos'][$idEndereco][$idEmb]['quebras'][MapaSeparacaoQuebra::QUEBRA_CARRINHO]['codQuebra'] = $numCarrinho;
                     }
 
                     // SALVA AS ALTERAÇÕES NA MATRIZ TEMPORÁRIA
