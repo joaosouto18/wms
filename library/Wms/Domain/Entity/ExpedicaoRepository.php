@@ -486,7 +486,7 @@ class ExpedicaoRepository extends EntityRepository {
             $idExpedicao = $itemPedido['COD_EXPEDICAO'];
             $codCriterio = $itemPedido[$strCriterio];
             if (empty($codCriterio)) {
-                $campo = explode($strCriterio)[1];
+                $campo = explode("_", $strCriterio)[1];
                 throw new \Exception("O cliente $itemPedido[NOM_PESSOA] não tem $campo cadastrado(a), 
                 por isso não pode ser agrupado nesta quebra de pulmão doca na expedição $idExpedicao");
             }
