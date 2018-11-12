@@ -853,6 +853,8 @@ class ExpedicaoRepository extends EntityRepository {
                            LEFT JOIN (SELECT SUM(E.QTD) AS QTD, E.COD_PRODUTO, E.DSC_GRADE,
                                              NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME
                                         FROM ESTOQUE E
+                                       INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                                       WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . "
                                        GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0)) E
                                   ON E.COD_PRODUTO = P.COD_PRODUTO
                                  AND E.DSC_GRADE = P.DSC_GRADE

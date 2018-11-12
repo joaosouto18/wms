@@ -48,7 +48,7 @@ if (count($this->produtos) > 0):
                                     <?php if ($produtoEntity->getTipoComercializacao()->getId() == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) : ?>
                                         <li><a href="/enderecamento/produto/alterar-norma/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>" class="inside-modal">Alterar Norma de Paletização</a></li>
                                     <?php else : ?>
-                                        <li><a href="/enderecamento/produto/confirmar-alteracao/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>/norma/0" >Alterar Norma de Paletização</a></li>
+                                        <li><a href="/enderecamento/produto/confirmar-alteracao/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>/norma/0" >Atualizar Norma de Paletização</a></li>
                                     <?php endif; ?>
                                     <li><a href="/enderecamento/palete/index/id/<?php echo $this->recebimento->getId() ?>/codigo/<?php echo $produto['id'] ?>/grade/<?php echo $grade ?>/produtos/true">Endereçar Paletes no Picking</a></li>
                                     <?php if ($this->recebimento->getStatus()->getSigla() == 'DESFEITO' || $this->recebimento->getStatus()->getSigla() == 'CANCELADO') : ?>
