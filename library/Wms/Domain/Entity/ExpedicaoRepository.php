@@ -1283,7 +1283,7 @@ class ExpedicaoRepository extends EntityRepository {
         $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
 
         $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
-        $cargaEntities = $this->getProdutosExpedicaoCorte(null,$idExpedicao,true);
+        $cargaEntities = $this->getProdutosExpedicaoCorteToIntegracao(null,$idExpedicao,true);
 
         foreach ($cargaEntities as $cargaEntity) {
             $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
@@ -4026,7 +4026,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null, $apenasProdutosCortados = true) {
+    public function getProdutosExpedicaoCorteToIntegracao($idPedido, $idExpedicao = null, $apenasProdutosCortados = true) {
 
         $where = " AND PP.COD_PEDIDO = '$idPedido' ";
         if (!is_null($idExpedicao))
@@ -4052,6 +4052,72 @@ class ExpedicaoRepository extends EntityRepository {
                  $having
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
+    public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null, $apenasProdutosCortados = true) {
+
+        $where = " AND PP.COD_PEDIDO = '$idPedido' ";
+        if (!is_null($idExpedicao))
+            $where = " AND C.COD_EXPEDICAO = $idExpedicao ";
+
+        if ($apenasProdutosCortados == true)
+            $where .= " HAVING (SUM(NVL(PP.QTD_CORTADA,0)) > 0)";
+
+        $sqlCampoQuantidadePedido = " NVL((PP.QUANTIDADE),0) as QTD, ";
+        $sqlCampoQuantidadeCortada = " NVL((PP.QTD_CORTADA),0) as QTD_CORTADA,";
+        if ($this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO') == 'S') {
+            $sqlCampoQuantidadePedido = "CASE WHEN (PROD.COD_TIPO_COMERCIALIZACAO = 1) THEN PP.QTD_EMBALAGEM_VENDA ||' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE PP.QUANTIDADE || '' END as QTD , ";
+            $sqlCampoQuantidadeCortada = "CASE WHEN (PROD.COD_TIPO_COMERCIALIZACAO = 1) AND (NVL(PP.QTD_CORTADA,0) > 0) THEN (NVL(PP.QTD_CORTADA,0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE NVL(PP.QTD_CORTADA,0) || '' END as QTD_CORTADA , ";
+        }
+
+        $SQL = "SELECT PP.COD_PRODUTO,
+                       PP.DSC_GRADE,
+                       PROD.DSC_PRODUTO,
+                       $sqlCampoQuantidadePedido
+                       $sqlCampoQuantidadeCortada
+                       PP.COD_PEDIDO,
+                       C.COD_CARGA_EXTERNO
+                  FROM PEDIDO_PRODUTO PP
+                  LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                  LEFT JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
+                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN (SELECT QTD_EMBALAGEM, 
+                                    COD_PRODUTO,
+                                    DSC_GRADE,
+                                    MAX(COD_PRODUTO_EMBALAGEM) as COD_PRODUTO_EMBALAGEM
+                               FROM PRODUTO_EMBALAGEM 
+                              WHERE DTH_INATIVACAO IS NULL
+                              GROUP BY QTD_EMBALAGEM, COD_PRODUTO, DSC_GRADE) MP
+                         ON MP.COD_PRODUTO = PP.COD_PRODUTO
+                        AND MP.DSC_GRADE = PP.DSC_GRADE
+                        AND MP.QTD_EMBALAGEM = PP.FATOR_EMBALAGEM_VENDA
+                  LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MP.COD_PRODUTO_EMBALAGEM
+                 WHERE 1 = 1 $where
+                 ORDER BY COD_PRODUTO, DSC_GRADE";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if ($this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO') != 'S') {
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+            foreach ($result as $key => $value) {
+                $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD']);
+                if(is_array($vetEmbalagens)) {
+                    $embalagem = implode(' + ', $vetEmbalagens);
+                }else{
+                    $embalagem = $vetEmbalagens;
+                }
+                $result[$key]['QTD'] = $embalagem;
+
+                $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['QTD_CORTADA']);
+                if(is_array($vetEmbalagens)) {
+                    $embalagem = implode(' + ', $vetEmbalagens);
+                }else{
+                    $embalagem = $vetEmbalagens;
+                }
+                $result[$key]['QTD_CORTADA'] = $embalagem;
+            }
+        }
+
         return $result;
     }
 
