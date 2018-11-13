@@ -88,6 +88,7 @@ class PaleteRepository extends EntityRepository {
         $recebimentosSQL = " SELECT COD_RECEBIMENTO FROM RECEBIMENTO R";
         if ($filter == true) {
             $recebimentosSQL .= $queryWhere;
+            $recebimentosSQL .= " AND ROWNUM <= 1000 ORDER BY COD_RECEBIMENTO DESC";
         }
         $resultRecebimentos = $this->getEntityManager()->getConnection()->query($recebimentosSQL)->fetchAll(\PDO::FETCH_ASSOC);
 
