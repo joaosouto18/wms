@@ -17,8 +17,10 @@ class OsRessuprimento extends Grid
      *
      * @param array $params
      */
-    public function init(array $gridValues = array(), array $formParamas = array())
+    public function init(array $gridValues = array(), array $formParamas = array(), $utilizaGrade = 'N')
     {
+
+
         foreach ($gridValues as $row => $value) {
             $gridValues[$row]['id'] = $value['ID'];
         }
@@ -41,19 +43,21 @@ class OsRessuprimento extends Grid
             ->addColumn(array(
                 'label' => 'Cod.',
                 'index' => 'COD.',
-            ))
-            ->addColumn(array(
+            ));
+        if ($utilizaGrade == 'S') {
+            $this->addColumn(array(
                 'label' => 'Grade',
                 'index' => 'GRADE',
-            ))
-            ->addColumn(array(
+            ));
+        }
+            $this->addColumn(array(
                 'label' => 'Produto',
                 'index' => 'PRODUTO',
             ))
             ->addColumn(array(
                 'label' => 'Volumes',
                 'index' => 'VOLUMES',
-                'width' => 10
+//                'width' => 10
             ))
             ->addColumn(array(
                 'label' => 'Qtd.',
@@ -70,6 +74,10 @@ class OsRessuprimento extends Grid
             ->addColumn(array(
                 'label' => 'Status',
                 'index' => 'STATUS',
+            ))
+            ->addColumn(array(
+                'label' => 'Conferente',
+                'index' => 'NOM_PESSOA'
             ))
             ->addColumn(array(
                 'label' => 'Cod Barras',
