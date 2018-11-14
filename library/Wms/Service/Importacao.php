@@ -744,6 +744,7 @@ class Importacao
 
                 $produto = new Produto();
                 $produto->setId($idProduto);
+                $produto->setIndControlaLote("N");
                 $produto->setGrade($grade);
                 $produto->setTipoComercializacao($tipoComercializacaoEntity);
                 $produto->setNumVolumes(1);
