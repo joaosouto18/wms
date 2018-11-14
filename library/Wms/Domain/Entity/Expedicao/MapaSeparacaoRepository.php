@@ -621,6 +621,8 @@ class MapaSeparacaoRepository extends EntityRepository {
 
     public function forcaConferencia($idExpedicao) {
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
+        $mapaSeparacaoEmbClienteRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoEmbalado");
+        $statusEn = $this->_em->find("wms:Util\Sigla", MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO);
 
         $mapas = $this->findBy(array('expedicao' => $idExpedicao));
         foreach ($mapas as $mapa) {
@@ -629,6 +631,12 @@ class MapaSeparacaoRepository extends EntityRepository {
             foreach ($mapaProduto as $produtoEn) {
                 $produtoEn->setIndConferido('S');
                 $this->getEntityManager()->persist($produtoEn);
+            }
+
+            $embalados = $mapaSeparacaoEmbClienteRepo->findBy(['mapaSeparacao' => $mapa]);
+            foreach ($embalados as $embalado) {
+                $embalado->setStatus($statusEn);
+                $this->_em->persist($embalado);
             }
 
             $mapa->setCodStatus(Etiqueta::STATUS_CONFERIDO);

@@ -1,37 +1,46 @@
-<?php
-echo $this->msg;
-?>
+<style>
+    tr.tablerow>td {
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+</style>
+<h1><?php echo $this->msg; ?></h1>
 
 <br>
 <br>
 
 <?php if ($this->tabela == true) {?>
     <legend><?php echo $this->norma[0]['dscProduto'] ?></legend>
-    <table >
+    <br>
+    <table>
     <?php foreach ($this->norma as $norma) : ?>
-        <tr>
-            <td>Unidade: </td>
-            <td>&nbsp;</td>
-            <td><?php echo $norma['unidade']?></td>
+        <tr class="tablerow">
+            <td>
+            <table>
+                <tr>
+                    <td>Unidade: </td>
+                    <td>&nbsp;</td>
+                    <td><?php echo $norma['unidade']?></td>
+                    <?php if ($this->botaoConfirma == true) {?>
+                        <td rowspan="3">
+                            <a class="btn reader"
+                               href="<?php echo "/enderecamento/produto/confirmar-alteracao/id/" . $this->idRecebimento . "/codigo/" . $this->codProduto . "/grade/" . urlencode($this->grade) . '/norma/' . $norma['idNorma']?>">Confirmar</a>
+                        </td>
+                    <?php }?>
+                </tr>
+                <tr>
+                    <td>Unitizador: </td>
+                    <td>&nbsp;</td>
+                    <td><?php echo $norma['unitizador']?></td>
+                </tr>
+                <tr>
+                    <td>Norma: </td>
+                    <td>&nbsp;</td>
+                    <td><?php echo $norma['lastro']. " x " . $norma['camadas'] . " = " . $norma['qtdNorma']?></td>
+                </tr>
+            </table>
+            </td>
         </tr>
-        <tr>
-            <td>Unitizador: </td>
-            <td>&nbsp;</td>
-            <td><?php echo $norma['unitizador']?></td>
-        </tr>
-        <tr>
-            <td>Norma: </td>
-            <td>&nbsp;</td>
-            <td><?php echo $norma['lastro']. " x " . $norma['camadas'] . " = " . $norma['qtdNorma']?></td>
-        </tr>
-        <br>
-        <tr>
-            <?php if ($this->botaoConfirma == true) {?>
-                <td><a class="btn reader dialogAjax"
-                   href="<?php echo "/enderecamento/produto/confirmar-alteracao/id/" . $this->idRecebimento . "/codigo/" . $this->codProduto . "/grade/" . urlencode($this->grade) . '/norma/' . $norma['idNorma']?>">Confirmar</a></td>
-            <?php }?>
-        </tr>
-        <tr><td><br></td></tr>
     <?php endforeach; ?>
 </table>
 <?php }?>

@@ -93,7 +93,7 @@ class Enderecamento_ProdutoController extends Action
 
         $this->view->norma = $results = $this->getEntityManager()->getRepository("wms:Produto")->getNormaPaletizacaoPadrao($codProduto, $grade, null);
 
-        $msg = "Confirma a troca da norma de paletização usada no recebimento deste produto para a norma da unidade abaixo?";
+        $msg = "Selecione entre as normas abaixo a nova norma de paletização desse produto:";
         $botaoConfirma = true;
         $tabela = true;
 
@@ -140,7 +140,9 @@ class Enderecamento_ProdutoController extends Action
         $grade         = urldecode($this->_getParam("grade"));
         $idNorma       = $this->_getParam("norma");
 
+        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->getEntityManager()->getRepository("wms:Recebimento");
+        /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepo */
         $conferenciaRepo = $this->getEntityManager()->getRepository("wms:Recebimento\Conferencia");
 
         if ($idNorma == NULL) {
@@ -152,7 +154,7 @@ class Enderecamento_ProdutoController extends Action
         $recebimentoEn = $this->getEntityManager()->getRepository("wms:Recebimento\VQtdRecebimento")->findOneBy(array('codRecebimento' => $idRecebimento, 'codProduto'=>$codProduto, 'grade'=>$grade));
         $conferenciaEn = $conferenciaRepo->findOneBy(array('recebimento'=> $idRecebimento,'codProduto'=>$codProduto,'grade'=>$grade));
 
-        if (($recebimentoEn == NULL) && ($conferenciaEn == NULL)){
+        if (($recebimentoEn == NULL) || ($conferenciaEn == NULL)){
             $this->addFlashMessage('error',"Nenhuma quantidade conferida para o produto $codProduto, grade $grade");
             $this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
         }

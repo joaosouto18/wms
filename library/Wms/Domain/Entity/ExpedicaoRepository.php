@@ -516,7 +516,6 @@ class ExpedicaoRepository extends EntityRepository {
                                         $arrRegroup[$codProduto][$dscGrade] = true;
                                     }
                                 }
-
                             }
                         }
                     }
@@ -663,7 +662,7 @@ class ExpedicaoRepository extends EntityRepository {
             $idExpedicao = $itemPedido['COD_EXPEDICAO'];
             $codCriterio = $itemPedido[$strCriterio];
             if (empty($codCriterio)) {
-                $campo = $strCriterio;
+                $campo = explode("_", $strCriterio)[1];
                 throw new \Exception("O cliente $itemPedido[NOM_PESSOA] não tem $campo cadastrado(a), 
                 por isso não pode ser agrupado nesta quebra de pulmão doca na expedição $idExpedicao");
             }
@@ -1213,7 +1212,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         $sql = "
-                  SELECT DISTINCT
+          SELECT DISTINCT
                 C.COD_EXPEDICAO,
                 C.COD_CARGA_EXTERNO as CARGA,
                 PP.COD_PRODUTO as CODIGO,
@@ -1261,6 +1260,8 @@ class ExpedicaoRepository extends EntityRepository {
                             LEFT JOIN (SELECT SUM(E.QTD) AS QTD, E.COD_PRODUTO, E.DSC_GRADE,
                                               NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME
                                         FROM ESTOQUE E
+                                       INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                                       WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . "
                                        GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0)) E
                                   ON E.COD_PRODUTO = P.COD_PRODUTO
                                  AND E.DSC_GRADE = P.DSC_GRADE
@@ -4549,7 +4550,7 @@ class ExpedicaoRepository extends EntityRepository {
                        AND R.COD_PEDIDO = PP.COD_PEDIDO
                        AND R.COD_PRODUTO = PP.COD_PRODUTO
                   WHERE 1 = 1
-                       l AND P.CENTRAL_ENTREGA = $central
+                        AND P.CENTRAL_ENTREGA = $central
                         $whereFinal
                   ORDER BY COD_EXPEDICAO, INICIO_EXPEDICAO, FIM_EXPEDICAO, C.COD_CARGA_EXTERNO, COD_CLIENTE_EXTERNO, COD_PEDIDO, COD_PRODUTO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
