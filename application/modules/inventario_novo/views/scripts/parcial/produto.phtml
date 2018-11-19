@@ -1,0 +1,70 @@
+<?php echo $this->form; ?>
+
+<?php if (!empty($this->IdInventario)) : ?>
+    <h3 class="padding-top" style="font-size:30px">Inventário: <?php echo $this->IdInventario ?> </h3>
+<?php endif; ?>
+
+<?php echo $this->grid;
+?>
+<script>
+    $('#id').parent().find('label').append('<a href="#" class="info">\n\
+            <img style="width: 20px; margin-top: -7px;" src="/img/question.png" alt="Home">\n\
+            <span style="margin-top:60px"> <b>Buscar vários produtos. <br /><br />Ex: 99999,99999,99999,...<b></span></a>');
+    var idAtual = $("#id").val();
+    $('#produto-regra-form').append('<input type="hidden" name="incluir-lista" id="incluir-lista" value="0" />');
+
+    $("#incluir").click(function () {
+        $('#incluir-lista').val(1);
+        $.ajax({
+            url: URL_MODULO + '/parcial/produto',
+            type: 'post',
+            dataType: 'json',
+            data: $('form').serialize(),
+            success: function (data) {
+                $.each(data.success, function (key, data) {
+                    console.log(data);
+                    if ($("input[value*='"+data.id+"']").length == 0) {
+                        var linha = "<tr class='gTResultSet '>" +
+                            "<td class='gRowCheck'>" +
+                            "<input type='checkbox' name='mass-id[]' class='massaction-check-opt' value='" + data.id + "'>" +
+                            "</td>" +
+                            "<td>" + data.codProduto + "</td>" +
+                            "<td>" + data.grade + "</td>" +
+                            "<td>" + data.descricao + "</td>" +
+                            "<td>" + data.descricaoEnd + "</td>" +
+                            "</tr>";
+                        $('.gTable tbody').append(linha);
+                    }
+                })
+            }
+        });
+        $('#incluir-lista').val(0);
+        return false;
+    });
+
+    //    $(".incluir").click(function () {
+    //        var id = $("#id").val();
+    //        $('#limpar-lista').val(0);
+    //        if($("#incluirinput").val() == '' && idAtual != id){
+    //            $("#incluirinput").val(idAtual);
+    //        }
+    //
+    //        if (id != '' && $("#incluirinput").val() != '') {
+    //            $("#incluirinput").val($("#incluirinput").val() + ',' + id);
+    //        }else{
+    //            $("#incluirinput").val(id);
+    //        }
+    //        return true;
+    //    });
+    $("#limpar").click(function () {
+        $('#produto-regra-form').append('<input type="hidden" name="limpar-lista" id="limpar-lista" value="1" />');
+        $("#incluirinput").val(0);
+        return true;
+    });
+    $("#submit").click(function () {
+        $('#limpar-lista').val(0);
+        $("#incluirinput").val('');
+        return true;
+    });
+
+</script>

@@ -21,9 +21,9 @@ abstract class AbstractService
     protected $em;
     protected $entity;
 
-    public function __construct(EntityManager $em)
+    public function __construct()
     {
-        $this->em = $em;
+        $this->em = \Zend_Registry::get('doctrine');
     }
 
     /**

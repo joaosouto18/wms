@@ -1,0 +1,118 @@
+<span ng-app="app">
+<script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
+<script src="<?php echo $this->baseUrl('angularJS/app.js') ?>"></script>
+<script src="<?php echo $this->baseUrl('angularJS/inventario/inventarioCtrl.js') ?>"></script>
+<?php
+echo $this->form;
+?>
+    <form ng-controller="InventarioCtrl">
+        <div id="monitoramento-inventario" class="grid">
+            <div class="gControl">
+                <div class="gPager">
+                    <span>Página</span>
+                    <button ng-click="changePage(-1)"> <<< </button>
+                    <select title="Página atual" name="page" ng-model="paginator.actPage" style="text-align: center;" ng-options="pagina.label for pagina in paginator.pages"></select>
+                    <button ng-click="changePage(1)"> >>> </button>
+                    <span>de {{paginator.size}} página(s) </span>
+                    <span>por página</span>
+                    <span>|</span>
+                    <span>Total de {{inventarios.length}} registros encontrados.</span>
+                </div>
+            </div>
+
+            <!--  MASS ACTION -->
+            <div class="gMassAction">
+                <div class="gSelect">
+                    <label for="checkAllGrid" id="checkAllGridLbl">
+                        <input name="checkAllGrid" id="checkAllGrid" type="checkbox" ng-model="selectedAll" ng-change="selectAllPage()" style="float: left; margin-right: 2px;">Marcar/Desmarcar</label>
+                    <span class="massDelimiter">|</span>
+                    <span><span class="check-selected-counter">{{ (inventarios | filter:{checked: true }).length }}</span> selecionados</span>
+                </div>
+                <div class="gAction">
+                    <span>Mass Action: </span>
+                    <select name="massaction-select">
+                        <option value=""></option>
+                        <option value="index/relatorio">Movimentações no Estoque (xls)</option>
+                    </select>
+                    <button type="button" class="massaction-button"><span>Executar</span></button>
+                    <input type="hidden" value="" name="hiddenId">
+                </div>
+                <input type="hidden" value="" class="massaction-values">
+            </div>
+
+            <table class="gTable ">
+                <tbody><tr class="gTTitle">
+                    <td colspan="2"></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('id')"><span>Inventário</span></a></td>
+                    <?php if($this->showCodInvErp):?>
+                    <td width=""><a href="" title="" class="sort" ng-click="ordenarPor('qtdEndereco')"><span>Código no ERP</span></a></td>
+                    <?php endif;?>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('qtdEndereco')"><span>Qtd Endereços</span></a></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('qtdDivergente')"><span>Qtd Divergência</span></a></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('qtdInventariado')"><span>Qtd Inventariado</span></a></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('dthInicio')"><span>Dt. Início</span></a></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('dthFinalizacao')"><span>Dt. Finalização</span></a></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('andamento')"><span>Andamento (%)</span></a></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('status')"><span>Status</span></a></td>
+                </tr>
+                <tr class="gTResultSet " ng-repeat="(key, inventario) in inventarios | interval:{start: paginator.actPage.indexStart, end:paginator.actPage.indexEnd} | orderBy:tbOrderBy:direction:typeSensitiveComparator">
+                    <td class="gRowCheck"><input type="checkbox" name="mass-id[]" ng-checked="inventario.checked" ng-model="inventarios[key].checked" value="{{inventario.id}}"></td>
+                    <td class="gTdOpcRow">
+                        <div class="gOpcRow">
+                            <ul>
+                                <li><img src="/img/admin/icon_opc.gif" alt="Opções">
+                                    <ul>
+                                        <li ng-show="{{inventario.status == 'GERADO'}}"><a href="/inventario/index/index/id/{{inventario.id}}" class="" title="" target="_self">Liberar</a></li>
+                                        <li ng-show="{{inventario.status == 'CONCLUIDO'}}"><a href="/inventario/index/atualizar/id/{{inventario.id}}" class="" title="" target="_self">Atualizar Estoque</a></li>
+                                        <li ng-show="{{['CANCELADO', 'FINALIZADO'].indexOf(inventario.status) < 0}}"><a href="/inventario/index/cancelar/id/{{inventario.id}}" class="confirm" title="Cancelar inventário?." target="_self">Cancelar</a></li>
+                                        <li ng-show="{{inventario.status != 'GERADO'}}"><a href="/inventario/relatorio_avaria/index/id/{{inventario.id}}" class="pdf" title="" target="_self">Relatório Avariados</a></li>
+                                        <li ng-show="{{inventario.status != 'GERADO'}}"><a href="/inventario/relatorio_divergencia/index/id/{{inventario.id}}" class="pdf" title="" target="_self">Relatório Divergências</a></li>
+                                        <li ng-show="{{['CANCELADO', 'FINALIZADO'].indexOf(inventario.status) < 0}}"><a href="/inventario/parcial/endereco/id/{{inventario.id}}" class="view-andamento dialogAjax" title="Andamento do Inventário" target="_self">Adicionar endereços</a></li>
+                                        <li ><a href="/inventario/index/view-andamento-ajax/id/{{inventario.id}}" class="view-andamento dialogAjax" title="Andamento do Inventário" target="_self">Visualizar Andamento</a></li>
+                                        <li ng-show="{{inventario.status == 'FINALIZADO'}}"><a href="/inventario/index/view-movimentacoes-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações por Produto" target="_self">Movimentações no Estoque</a></li>
+                                        <li ng-show="{{inventario.status == 'LIBERADO'}}"><a href="/inventario/index/imprimir-enderecos-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações por Produto" target="_self">Imprimir Endereços</a></li>
+                                        <?php if($this->showCodInvErp):?>
+                                        <li ng-show="{{['FINALIZADO'].indexOf(inventario.status) == 0}}"><a href="/inventario/index/export-inventario-ajax/id/{{inventario.id}}" class="" title="" target="_self">Exportar Inventario</a></li>
+                                        <li ><a href="/inventario/index/view-vincular-cod-erp-ajax/id/{{inventario.id}}" class="view-andamento dialogAjax" title="" target="_self">Vincular inventário do ERP</a></li>
+                                        <?php endif;?>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td>{{inventario.id}}</td>
+                    <?php if($this->showCodInvErp):?>
+                    <td>{{inventario.codInvERP}}</td>
+                    <?php endif;?>
+                    <td>{{inventario.qtdEndereco}}</td>
+                    <td>{{inventario.qtdDivergencia}}</td>
+                    <td>{{inventario.qtdInventariado}}</td>
+                    <td>{{inventario.dataInicio}}</td>
+                    <td>{{inventario.dataFinalizacao}}</td>
+                    <td><div style="float:right;">{{inventario.andamento}}</div></td>
+                    <td>{{inventario.status}}</td>
+                </tr>
+
+                </tbody>
+            </table>
+            <div class="gPager">
+                <span>Página</span>
+                <button ng-click="changePage(-1)"> <<< </button>
+                <select title="Página atual" name="page" ng-model="paginator.actPage" style="text-align: center;" ng-options="pagina.label for pagina in paginator.pages"></select>
+                <button ng-click="changePage(1)"> >>> </button>
+                <span>de {{paginator.size}} página(s) </span>
+                <span>por página</span>
+                <span>|</span>
+                <span>Total de {{inventarios.length}} registros encontrados.</span>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        $(window).load(function () {
+            $('#ruaFinal').parent().css('clear', 'both');
+            $("#dataInicial1").parent().append('<span> a </span>').append($('#dataInicial2'));
+            $("#dataFinal1").parent().append('<span> a </span>').append($('#dataFinal2'));
+        });
+    </script>
+</span>

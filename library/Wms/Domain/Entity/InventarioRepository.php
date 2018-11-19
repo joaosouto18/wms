@@ -166,8 +166,8 @@ class InventarioRepository extends EntityRepository {
                                 NVL(QTD_IE.QTD,0) as QTD_END_TOTAL,
                                 NVL(QTD_DIV.QTD,0) as QTD_DIV_TOTAL,
                                 NVL(QTD_INV.QTD,0) as QTD_INV_TOTAL,
-                                TO_CHAR(I.DTH_INICIO,'DD-MM-YYYY-HH24-MI') as DTH_INICIO ,
-                                TO_CHAR(I.DTH_FINALIZACAO,'DD-MM-YYYY-HH24-MI') as DTH_FINALIZACAO,
+                                TO_CHAR(I.DTH_INICIO,'DD/MM/YYYY HH24:MI') as DTH_INICIO ,
+                                TO_CHAR(I.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI') as DTH_FINALIZACAO,
                                 I.COD_INVENTARIO_ERP
                             FROM 
                                 INVENTARIO I
@@ -223,28 +223,28 @@ class InventarioRepository extends EntityRepository {
             }
             if ($row['STATUS'] == 'FINALIZADO')
                 $andamento = 1;
-            $dataInicioBanco = explode('-', $row['DTH_INICIO']);
-            $dataInicio = new \DateTime();
-            $dataInicio->setDate($dataInicioBanco[2], $dataInicioBanco[1], $dataInicioBanco[0]);
-            $dataInicio->setTime($dataInicioBanco[3], $dataInicioBanco[4]);
-
-            $dataFinal = null;
-            if ($row['DTH_FINALIZACAO'] != "") {
-                $dataFinalBanco = explode('-', $row['DTH_FINALIZACAO']);
-                $dataFinal = new \DateTime();
-                $dataFinal->setDate($dataFinalBanco[2], $dataFinalBanco[1], $dataFinalBanco[0]);
-                $dataFinal->setTime($dataFinalBanco[3], $dataFinalBanco[4]);
-            }
+//            $dataInicioBanco = explode('-', $row['DTH_INICIO']);
+//            $dataInicio = new \DateTime();
+//            $dataInicio->setDate($dataInicioBanco[2], $dataInicioBanco[1], $dataInicioBanco[0]);
+//            $dataInicio->setTime($dataInicioBanco[3], $dataInicioBanco[4]);
+//
+//            $dataFinal = null;
+//            if ($row['DTH_FINALIZACAO'] != "") {
+//                $dataFinalBanco = explode('-', $row['DTH_FINALIZACAO']);
+//                $dataFinal = new \DateTime();
+//                $dataFinal->setDate($dataFinalBanco[2], $dataFinalBanco[1], $dataFinalBanco[0]);
+//                $dataFinal->setTime($dataFinalBanco[3], $dataFinalBanco[4]);
+//            }
 
             $andamento = number_format($andamento, 2) * 100;
             $values = array(
                 'id' => $row['COD_INVENTARIO'],
                 'qtdEndereco' => $row['QTD_END_TOTAL'],
                 'qtdDivergencia' => $row['QTD_DIV_TOTAL'],
-                'qtdInvetariado' => $row['QTD_INV_TOTAL'],
+                'qtdInventariado' => $row['QTD_INV_TOTAL'],
                 'andamento' => $andamento,
-                'dataInicio' => $dataInicio,
-                'dataFinalizacao' => $dataFinal,
+                'dataInicio' => $row['DTH_INICIO'],
+                'dataFinalizacao' => $row['DTH_FINALIZACAO'],
                 'status' => $row['STATUS'],
                 'codInvERP' => $row['COD_INVENTARIO_ERP']);
             $result[] = $values;
