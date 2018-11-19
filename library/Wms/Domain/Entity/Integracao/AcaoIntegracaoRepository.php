@@ -383,9 +383,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                             $this->_em->getConnection()->query($query)->execute();
                             unset($ids);
                         }
-                    }else{
-                        $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
-                        $this->_em->getConnection()->query($query)->execute();
                     }
                 }
             }
