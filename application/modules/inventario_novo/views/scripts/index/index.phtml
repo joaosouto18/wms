@@ -24,7 +24,7 @@ echo $this->form;
             <div class="gMassAction">
                 <div class="gSelect">
                     <label for="checkAllGrid" id="checkAllGridLbl">
-                        <input name="checkAllGrid" id="checkAllGrid" type="checkbox" ng-model="selectedAll" ng-change="selectAllPage()" style="float: left; margin-right: 2px;">Marcar/Desmarcar</label>
+                        <input name="checkAllGrid" id="checkAllGrid" type="checkbox"  ng-model="paginator.actPage.selectedAll" ng-change="selectAllPage()" style="float: left; margin-right: 2px;">Marcar/Desmarcar</label>
                     <span class="massDelimiter">|</span>
                     <span><span class="check-selected-counter">{{ (inventarios | filter:{checked: true }).length }}</span> selecionados</span>
                 </div>
@@ -55,8 +55,8 @@ echo $this->form;
                     <td><a href="" title="" class="sort" ng-click="ordenarPor('andamento')"><span>Andamento (%)</span></a></td>
                     <td><a href="" title="" class="sort" ng-click="ordenarPor('status')"><span>Status</span></a></td>
                 </tr>
-                <tr class="gTResultSet " ng-repeat="(key, inventario) in inventarios | interval:{start: paginator.actPage.indexStart, end:paginator.actPage.indexEnd} | orderBy:tbOrderBy:direction:typeSensitiveComparator">
-                    <td class="gRowCheck"><input type="checkbox" name="mass-id[]" ng-checked="inventario.checked" ng-model="inventarios[key].checked" value="{{inventario.id}}"></td>
+                <tr class="gTResultSet " ng-repeat="inventario in inventarios | interval:{start: paginator.actPage.indexStart, end:paginator.actPage.indexEnd} | orderBy:tbOrderBy:direction:typeSensitiveComparator">
+                    <td class="gRowCheck"><input type="checkbox" name="mass-id[]" ng-checked="inventario.checked" ng-click="checkSelected(inventario)" value="{{inventario.id}}"></td>
                     <td class="gTdOpcRow">
                         <div class="gOpcRow">
                             <ul>

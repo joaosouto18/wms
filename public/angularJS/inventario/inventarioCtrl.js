@@ -35,7 +35,7 @@ angular.module("app").controller("InventarioCtrl", function($scope, $http){
         for (var i = 0; i < nPages; i++) {
 
             var start = ( i * $scope.maxPerPage );
-            var end = ( ( i + 1 ) * $scope.maxPerPage );
+            var end = ( ( i + 1 ) * $scope.maxPerPage ) - 1 ;
 
             if (i === nPages) {
                 end = $scope.inventarios.length - 1;
@@ -64,9 +64,20 @@ angular.module("app").controller("InventarioCtrl", function($scope, $http){
         // Compare strings alphabetically, taking locale into account
         return v1.value.localeCompare(v2.value);
     };
+
+    $scope.checkSelected = function (inventario) {
+        $scope.inventarios[$scope.inventarios.findIndex(function (el) {
+            return (el === inventario)
+        })].checked = !inventario.checked;
+    };
     
     $scope.selectAllPage = function() {
-
+        var page = $scope.paginator.actPage;
+        angular.forEach($scope.inventarios, function (inv, k) {
+            if ( k >= page.indexStart && k <= page.indexEnd){
+                $scope.inventarios[k].checked = $scope.selectedAll;
+            }
+        })
     };
 
     getInventarios([]);
@@ -79,11 +90,11 @@ angular.module("app").controller("InventarioCtrl", function($scope, $http){
             var start = Number(interval.start);
             var end = Number(interval.end);
             $.each( input, function (k, v) {
-                var key = Number(v.id);
-                if ((key > start && key < end) || (key === start || key === end)) {
+                if (k >= start && k <= end) {
                     output.push(v);
                 }
             });
+
             return output;
         }
     }

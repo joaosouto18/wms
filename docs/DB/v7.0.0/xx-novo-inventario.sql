@@ -18,11 +18,11 @@ BEGIN
 ************************************************************************/
 
     INSERT INTO RECURSO (COD_RECURSO, DSC_RECURSO, COD_RECURSO_PAI, NOM_RECURSO)
-    VALUES (SQ_RECURSO_01.NEXTVAL, 'Novo Inventário', 0, 'inventarioNovo:index');
+    VALUES (SQ_RECURSO_01.NEXTVAL, 'Novo Inventário', 0, 'inventario_novo:index');
 
     INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
     VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
-             (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventarioNovo:index'),
+             (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
              (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'index'),
              'Novo Inventário'
                );
@@ -35,7 +35,7 @@ BEGIN
     INSERT INTO MENU_ITEM (COD_MENU_ITEM, COD_RECURSO_ACAO, COD_PAI, DSC_MENU_ITEM, NUM_PESO, DSC_URL, DSC_TARGET, SHOW)
     VALUES (SQ_MENU_ITEM_01.NEXTVAL,
             (SELECT COD_RECURSO_ACAO FROM RECURSO_ACAO
-             WHERE COD_RECURSO = (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventarioNovo:index')
+             WHERE COD_RECURSO = (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index')
                AND COD_ACAO = (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'index')),
             (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Novo Inventário'),
             'Inventário',
