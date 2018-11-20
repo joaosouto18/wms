@@ -37,6 +37,6 @@ class Web_Consulta_CorteController extends Action
         $form->populate($params);
 
         $Grid = new CorteGrid();
-        $this->view->grid = $Grid->init($params)->render();
+        $this->view->grid = $Grid->init($params, $utilizaGrade)->render();
     }
 }
