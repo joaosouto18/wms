@@ -1,4 +1,4 @@
-angular.module("app").controller("InventarioCtrl", function($scope, $http){
+angular.module("app").controller("InventarioCtrl", function($scope, $http, $filter){
     $scope.maxPerPage = 15;
     $scope.paginator = {
         pages: [],
@@ -69,13 +69,17 @@ angular.module("app").controller("InventarioCtrl", function($scope, $http){
         $scope.inventarios[$scope.inventarios.findIndex(function (el) {
             return (el === inventario)
         })].checked = !inventario.checked;
+        var actPag = $scope.paginator.actPage;
+        $scope.paginator.actPage.selectedAll = ($filter("filter")(
+            $scope.inventarios.slice(actPag.indexStart, actPag.indexEnd ),
+            {checked: true }).length === (actPag.indexEnd - actPag.indexStart)) ;
     };
     
     $scope.selectAllPage = function() {
         var page = $scope.paginator.actPage;
         angular.forEach($scope.inventarios, function (inv, k) {
             if ( k >= page.indexStart && k <= page.indexEnd){
-                $scope.inventarios[k].checked = $scope.selectedAll;
+                $scope.inventarios[k].checked = page.selectedAll;
             }
         })
     };

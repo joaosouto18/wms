@@ -24,7 +24,7 @@ echo $this->form;
             <div class="gMassAction">
                 <div class="gSelect">
                     <label for="checkAllGrid" id="checkAllGridLbl">
-                        <input name="checkAllGrid" id="checkAllGrid" type="checkbox"  ng-model="paginator.actPage.selectedAll" ng-change="selectAllPage()" style="float: left; margin-right: 2px;">Marcar/Desmarcar</label>
+                        <input name="checkAllGrid" id="checkAllGrid" type="checkbox" ng-model="paginator.actPage.selectedAll" ng-change="selectAllPage()" style="float: left; margin-right: 2px;">Todos da página</label>
                     <span class="massDelimiter">|</span>
                     <span><span class="check-selected-counter">{{ (inventarios | filter:{checked: true }).length }}</span> selecionados</span>
                 </div>
