@@ -1003,6 +1003,8 @@ class Mobile_EnderecamentoController extends Action
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
             $params['tipo'] = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_TRANSFERENCIA;
+
+
             $dthEntrada = new \DateTime();
             $params['dthEntrada'] = $dthEntrada;
 
@@ -1013,6 +1015,7 @@ class Mobile_EnderecamentoController extends Action
                     //INSERE NOVO ESTOQUE
                     $params['qtd'] = $qtd;
                     $params['unitizador'] = $estoque->getUnitizador();
+                    $params['dthEntrada'] = $estoque->getDtPrimeiraEntrada();
 
                     $enderecoNovoFrmt = EnderecoUtil::formatar($enderecoNovo, null, null, $nivelNovo);
 
@@ -1225,6 +1228,7 @@ class Mobile_EnderecamentoController extends Action
                         throw new \Exception("Estoque não Encontrado!");
 
                     $params['unitizador'] = $estoqueEn->getUnitizador();
+                    $params['dthEntrada'] = $estoqueEn->getDtPrimeiraEntrada();
 
                     if ($produtoEn->getValidade() == 'S' ) {
                         $validade = $estoqueEn->getValidade();
@@ -1335,10 +1339,12 @@ class Mobile_EnderecamentoController extends Action
                         if (!$estoqueEn)
                             throw new \Exception("Estoque não Encontrado!");
 
-                        $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($enderecoAntigo->getId(), $produtoEn->getId(),$produtoEn->getGrade());
-                        $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($endereco->getId(), $produtoEn->getId(),$produtoEn->getGrade());
+                        $params['dthEntrada'] = $estoqueEn->getDtPrimeiraEntrada();
+                        $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($enderecoAntigo->getId(),$codProduto,$grade);
+                        $estoqueRepo->validaMovimentaçãoExpedicaoFinalizada($endereco->getId(),$codProduto,$grade);
 
                         $params['unitizador'] = $estoqueEn->getUnitizador();
+                        $estoqueEn->getDtPrimeiraEntrada();
                         $params['validade'] = null;
                         $params['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoAntigo->getDescricao();
                         $estoqueRepo->movimentaEstoque($params);
