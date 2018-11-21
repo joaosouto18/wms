@@ -289,14 +289,11 @@ class RecebimentoRepository extends EntityRepository {
                     default:
                         break;
                 }
-            }
-
             if ((!empty($item['lote']) && !isset($qtdConferidas[$item['produto']][$item['grade']][$item['lote']]))
                 || !isset($qtdConferidas[$item['produto']][$item['grade']])) {
                 $qtdConferidas[$item['produto']][$item['grade']][$item['lote']] = 0;
             }
         }
-
         // executa os dados da conferencia
         return $this->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, null, null, null, $idConferente);
     }
@@ -1670,18 +1667,6 @@ class RecebimentoRepository extends EntityRepository {
                 $numPcs = $conferenciaEn->getNumPecas();
 
             $this->gravarRecebimentoEmbalagemVolume($codProduto, $grade, $conferenciaEn->getProduto(), $qtd, $numPcs, $codRecebimento, $codOs);
-        } else {
-            /** @var \Wms\Domain\Entity\Recebimento\Embalagem $embalagem */
-            foreach ($embalagens as $embalagem) {
-                $embalagem->setNormaPaletizacao($normaEn);
-                $this->getEntityManager()->persist($embalagem);
-            }
-
-            /** @var \Wms\Domain\Entity\Recebimento\Volume $volume */
-            foreach ($volumes as $volume) {
-                $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Produto\Volume',$volume->getVolume()->getId());
-                $volume->setNormaPaletizacao($produtoVolumeEntity->getNormaPaletizacao());
-                $this->getEntityManager()->persist($volume);
             }
         }
 
