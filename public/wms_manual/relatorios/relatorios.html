@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WMS - Manual de uso</title>
+  <meta charset="UTF-8">
+  <!-- <meta charset="iso-8859-1"> -->
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="../layout/styles/main.css" rel="stylesheet" type="text/css" media="all">
+<link href="../layout/styles/mediaqueries.css" rel="stylesheet" type="text/css" media="all">
+<!--[if lt IE 9]>
+<link href="../layout/styles/ie/ie8.css" rel="stylesheet" type="text/css" media="all">
+<script src="../layout/scripts/ie/css3-mediaqueries.min.js"></script>
+<script src="../layout/scripts/ie/html5shiv.min.js"></script>
+<![endif]-->
+
+  <script src="../layout/scripts/jquery-3.1.1.min.js"></script>
+
+  <script type = "text/javascript">
+      function carregar(pagina)
+      {
+          $("#conteudo").load(pagina);
+      }
+  </script>
+
+</head>
+<body class="">
+<div class="wrapper row1">
+  <header id="header" class="full_width clear">
+    <div id="hgroup">
+      <h1><a href="../index.html"><img src="../images/logo.png" alt="Logo WMS"></a></h1>
+      <!--<h2>Imperium Sistemas</h2> -->
+    </div>
+    <div id="header-contact">
+      <ul class="list none">
+        <!-- <li><span class="icon-envelope"></span> <a href="#">info@domain.com</a></li>-->
+        <!-- <li><span class="icon-phone"></span> +xx xxx xxxxxxxxxx </li>-->
+      </ul>
+    </div>
+  </header>
+</div>
+<!-- ################################################################################################ -->
+<div class="wrapper row2">
+  <nav id="topnav">
+    <ul class="clear">
+      <li><a href="../index.html" title="Homepage">Início</a></li>
+      <li><a href="../glossario/glossario.html" title="Link Text">Glossário</a></li>
+      <li><a href="../ti/ti.html" title="Link Text">TI</a></li>
+      <li><a href="../sistemas/sistemas.html" title="Link Text">Sistemas</a></li>
+      <li><a href="../cadastros/cadastros.html" title="Link Text">Cadastros</a></li>
+      <li><a href="../consultas/consultas.html" title="Link Text">Consultas</a></li>
+      <li><a href="../recebimento/recebimento.html" title="Link Text">Recebimento</a></li>
+      <li><a href="../expedicao/expedicao.html" title="Link Text">Expedição</a></li>
+      <li><a href="../armazenagem/armazenagem.html" title="Link Text">Armazenagem</a></li>
+      <li><a href="../inventario/inventario.html" title="Link Text">Inventário</a></li>
+      <li><a href="../importacao/importacao.html" title="Link Text">Importação</a></li>
+      <li><a href="../mobile/coletor.html" title="Link Text">Coletor</a></li>
+      <li class="active"><a href="relatorios.html" title="Link Text">Relatórios</a></li>
+    </ul>
+  </nav>
+</div>
+<!-- content -->
+<div class="wrapper row3">
+  <div id="container">
+    <!-- ################################################################################################ -->
+    <div id="sidebar_1" class="sidebar one_quarter first">
+      <aside>
+        <!-- ########################################################################################## -->
+        <h2>Relatórios</h2>
+        <nav>
+          <ul>
+            <li><a>Armazenagem</a></li>
+              <ul>
+                <li><a onclick="carregar('ocupacao_cd_produto.html');" href="#">Relatório de ocupação de CD por produto</a></li>
+                <li><a onclick="carregar('movimentacao_produto.html');" href="#">Movimentação por produto</a></li>
+                <li><a onclick="carregar('estoque_produto_consolidado.html');" href="#">Estoque por produto (consolidado)  </a></li>
+                <li><a onclick="carregar('enderecos_vazios.html');" href="#">Endereços vazios</a></li>
+                <li><a onclick="carregar('estoque_proprietario.html');" href="#">Relatório de estoque proprietário</a></li>
+                <li><a onclick="carregar('disponibilidade_picking.html');" href="#">Disponibilidade de picking</a></li>
+                <li><a onclick="carregar('inventario_rua.html');" href="#">Inventário por rua</a></li>
+                <li><a onclick="carregar('produtos_estoque_pickings_errados.html');" href="#">Produtos com estoque em pickings errados</a></li>
+                <li><a onclick="carregar('abastecimento_picking_manual.html');" href="#">Abastecimento de picking manual</a></li>
+                <li><a onclick="carregar('acompanhamento_ocupacao_cd.html');" href="#">Acompanhamento ocupação CD</a></li>
+                <li><a onclick="carregar('estoque.html');" href="#">Relatório de estoque</a></li>
+                <li><a onclick="carregar('acompanhamento_ocupacao_cd_periodo.html');" href="#">Acompanhamento ocupação CD por período</a></li>
+                <li><a onclick="carregar('produto_sem_picking.html');" href="#">Relatório de produtos sem picking</a></li>
+                <li><a onclick="carregar('pickings_multiplos_produtos.html');" href="#">Relatório de pickings com múltiplos produtos</a></li>
+                <li><a onclick="carregar('umas.html');" href="#">Relatório de UMAs</a></li>
+                
+              </ul>
+            <li><a>Expedição</a></li>
+              <ul>
+                <li><a onclick="carregar('saida_produtos.html');" href="#">Saída de produtos</a></li>
+                <li><a onclick="carregar('cortes.html');" href="#">Relatório de cortes</a></li>
+              </ul>            
+            <li><a>Dados para exportação</a></li>
+              <ul>
+                <li><a onclick="carregar('produtos.html');" href="#">Produtos</a></li>
+                <li><a onclick="carregar('movimentacao_de_produtos.html');" href="#">Movimentação de produtos</a></li>
+                <li><a onclick="carregar('recebimento.html');" href="#">Recebimento</a></li>
+                <li><a onclick="carregar('expedicao.html');" href="#">Expedição</a></li>
+              </ul>
+            <li><a>Planilhas</a></li>
+              <ul>
+                <li><a onclick="carregar('entrada_saida.html');" href="#">Cont. Mov. entrada/saída</a></li>               
+              </ul>
+            <li><a>Produtividade</a></li>
+                <ul>
+                  <li><a onclick="carregar('apontamento_produtividade.html');" href="#">Apontamento de produtividade</a></li>
+                  <li><a onclick="carregar('produtividade_detalhada.html');" href="#">Produtividade detalhada</a></li>
+                </ul>
+            <li><a>Produtos</a></li>
+                <ul>
+                  <li><a onclick="carregar('produto_sem_giro_estoque.html');" href="#">Produto sem giro de estoque</a></li>                  
+                </ul>
+            <li><a>Recebimento</a></li>
+                <ul>
+                  <li><a onclick="carregar('descarga_recebimento.html');" href="#">Descarga recebimento</a></li>
+                  <li><a onclick="carregar('produtos_conferidos_com_senha.html');" href="#">Produtos conferidos com senha    </a></li>
+                  <li><a onclick="carregar('listagem_produtos_sinteticos.html');" href="#">Listagem produtos sintético</a></li>
+                  <li><a onclick="carregar('dados_logisticos_produtos.html');" href="#">Dados logísticos dos produtos</a></li>
+                  <li><a onclick="carregar('produtos_recebidos.html');" href="#">Produtos recebidos</a></li>
+                  <li><a onclick="carregar('produtos_conferidos.html');" href="#">Produtos conferidos</a></li>
+                </ul>
+           <li><a>Ressuprimeto</a></li>
+                <ul>
+                  <li><a onclick="carregar('pedidos_expedicao.html');" href="#">Relatório de pedidos da expedição</a></li>
+                  <li><a onclick="carregar('reservas_estoque_inativas.html');" href="#">Relatório de reservas de estoque inativas</a></li>
+                  <li><a onclick="carregar('ondas.html');" href="#">Relatório de ondas</a></li>                  
+                </ul>
+           <li><a onclick="carregar('produtos_expedicao.html');" href="#">Produtos da expedição</a></li>
+           <li><a onclick="carregar('importar_xml.html');" href="#">Importar XML</a></li>
+             
+          </ul>
+        </nav>
+
+        <!-- ########################################################################################## -->
+      </aside>
+    </div>
+    <!-- ################################################################################################ -->
+    <div class="three_quarter">
+
+      <!--  as paginas sao carregas aqui -->
+      <div id="conteudo">       
+
+            <strong> Use o menu à esquerda para navegar na documentação. </strong>
+            
+      </div>
+
+    </div>
+    <!-- ################################################################################################ -->
+    <div class="clear"></div>
+  </div>
+</div>
+<!-- Footer -->
+
+<div class="wrapper row4">
+  <div id="copyright" class="clear">
+    <p class="fl_left">WMS Imperium &copy; Todos os direitos reservados </p>
+    
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="../layout/scripts/jquery-latest.min.js"></script>
+<script src="../layout/scripts/jquery-ui.min.js"></script>
+<script>window.jQuery || document.write('<script src="../layout/scripts/jquery-latest.min.js"><\/script>\
+<script src="../layout/scripts/jquery-ui.min.js"><\/script>')</script>
+<script>jQuery(document).ready(function($){ $('img').removeAttr('width height'); });</script>
+<script src="../layout/scripts/responsiveslides.js-v1.53/responsiveslides.min.js"></script>
+<script src="../layout/scripts/jquery-mobilemenu.min.js"></script>
+<script src="../layout/scripts/custom.js"></script>
+</body>
+</html>
