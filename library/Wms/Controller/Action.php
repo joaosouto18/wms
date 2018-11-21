@@ -71,7 +71,13 @@ class Action extends \Core\Controller\Action
         $dom->formatOutput = true;
         $root = $dom->createElement("retorno");
         $resposta = $dom->createElement("resposta", $resposta);
-        $message = $dom->createElement("message", $message);
+        if (strpos($message, "&")) {
+            $child = $dom->createTextNode($message);
+            $message = $dom->createElement("message");
+            $message->appendChild($child);
+        } else {
+            $message = $dom->createElement("message", $message);
+        }
 
         if ($redirectUrl) {
             $redirect = $dom->createElement('redirect', $redirectUrl);

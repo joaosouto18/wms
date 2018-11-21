@@ -1431,9 +1431,12 @@ class Mobile_ExpedicaoController extends Action {
         $operadores = $this->_getParam('mass-id');
         $this->view->idExpedicao = $idExpedicao = $this->_getParam('idExpedicao');
         $this->view->operacao = $this->_getParam('operacao');
-        $finalizar = $this->_getParam('finalizar');
 
-        $dthFinal = (isset($finalizar)) ? true : false;
+        $btnPressionado = $this->_getParam('submit');
+        $dthFinal = false;
+        if ($btnPressionado == 'Finalizar') {
+            $dthFinal = true;
+        }
 
         //OBTER OS REPOSITORIOS
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */

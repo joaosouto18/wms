@@ -1629,8 +1629,6 @@ class RecebimentoRepository extends EntityRepository {
 
     public function alteraNormaPaletizacaoRecebimento($codRecebimento, $codProduto, $grade, $codOs, $idNorma) {
 
-        $normaEn = $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao")->findOneBy(array('id' => $idNorma));
-
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select("re")
                 ->from("wms:Recebimento\Embalagem", "re")
@@ -1641,7 +1639,18 @@ class RecebimentoRepository extends EntityRepository {
                 ->andWhere("re.recebimento = '$codRecebimento'");
         $embalagens = $dql->getQuery()->getResult();
 
-        $dql = $this->getEntityManager()->createQueryBuilder()
+        if (!empty($embalagens)) {
+            /** @var ProdutoEntity\NormaPaletizacao $normaEn */
+            $normaEn = $this->getEntityManager()->getRepository("wms:Produto\NormaPaletizacao")->findOneBy(array('id' => $idNorma));
+
+            /** @var \Wms\Domain\Entity\Recebimento\Embalagem $embalagem */
+            foreach ($embalagens as $embalagem) {
+                $embalagem->setNormaPaletizacao($normaEn);
+                $this->getEntityManager()->persist($embalagem);
+            }
+        } else {
+
+            $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select("rv")
                 ->from("wms:Recebimento\Volume", "rv")
                 ->leftJoin("rv.volume", "pv")
@@ -1649,27 +1658,21 @@ class RecebimentoRepository extends EntityRepository {
                 ->andWhere("pv.codProduto = '$codProduto'")
                 ->andWhere("pv.grade = '$grade'")
                 ->andWhere("rv.recebimento = '$codRecebimento'");
-        $volumes = $dql->getQuery()->getResult();
+            $volumes = $dql->getQuery()->getResult();
 
-        if (($embalagens == NULL) && ($volumes == NULL)) {
-            $conferenciaRepo = $this->getEntityManager()->getRepository("wms:Recebimento\Conferencia");
-            $conferenciaEn = $conferenciaRepo->findOneBy(array('recebimento' => $codRecebimento, 'codProduto' => $codProduto, 'grade' => $grade, 'ordemServico' => $codOs));
-            $qtd = $conferenciaEn->getQtdConferida();
-            $numPcs = $conferenciaEn->getNumPecas();
 
-            $this->gravarRecebimentoEmbalagemVolume($codProduto, $grade, $conferenciaEn->getProduto(), $qtd, $numPcs, $codRecebimento, $codOs);
-        } else {
-            /** @var \Wms\Domain\Entity\Recebimento\Embalagem $embalagem */
-            foreach ($embalagens as $embalagem) {
-                $embalagem->setNormaPaletizacao($normaEn);
-                $this->getEntityManager()->persist($embalagem);
-            }
-
-            /** @var \Wms\Domain\Entity\Recebimento\Volume $volume */
-            foreach ($volumes as $volume) {
-                $produtoVolumeEntity = $this->getEntityManager()->getReference('wms:Produto\Volume',$volume->getVolume()->getId());
-                $volume->setNormaPaletizacao($produtoVolumeEntity->getNormaPaletizacao());
-                $this->getEntityManager()->persist($volume);
+            if (!empty($volumes)) {
+                /** @var \Wms\Domain\Entity\Recebimento\Volume $volume */
+                foreach ($volumes as $volume) {
+                    $volume->setNormaPaletizacao($volume->getVolume()->getNormaPaletizacao());
+                    $this->getEntityManager()->persist($volume);
+                }
+            } else {
+                $conferenciaRepo = $this->getEntityManager()->getRepository("wms:Recebimento\Conferencia");
+                $conferenciaEn = $conferenciaRepo->findOneBy(array('recebimento' => $codRecebimento, 'codProduto' => $codProduto, 'grade' => $grade, 'ordemServico' => $codOs));
+                $qtd = $conferenciaEn->getQtdConferida();
+                $numPcs = $conferenciaEn->getNumPecas();
+                $this->gravarRecebimentoEmbalagemVolume($codProduto, $grade, $qtd, $numPcs, $codRecebimento, $codOs);
             }
         }
 
