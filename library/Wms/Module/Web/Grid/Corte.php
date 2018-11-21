@@ -16,7 +16,7 @@ class Corte extends Grid
     /**
      * @param array $params
      */
-    public function init(array $params = array())
+    public function init(array $params = array(), $utilizaGrade)
     {
         /** @var ProdutoRepository $produtoRepo */
         $produtoRepo =  $this->getEntityManager()->getRepository("wms:Produto");
@@ -41,12 +41,14 @@ class Corte extends Grid
             ->addColumn(array(
                 'label' => 'Cód.Produto',
                 'index' => 'COD_PRODUTO',
-            ))
-            ->addColumn(array(
+            ));
+        if ($utilizaGrade == 'S') {
+            $this->addColumn(array(
                 'label' => 'Grade',
                 'index' => 'DSC_GRADE',
-            ))
-            ->addColumn(array(
+            ));
+        }
+        $this->addColumn(array(
                 'label' => 'Produto',
                 'index' => 'DSC_PRODUTO',
             ))
@@ -61,6 +63,10 @@ class Corte extends Grid
             ->addColumn(array(
                 'label' => 'Qtd.Atendida',
                 'index' => 'QTD_ATENDIDA',
+            ))
+            ->addColumn(array(
+                'label' => 'Mot.Corte',
+                'index' => 'DSC_MOTIVO_CORTE',
             ))
             ->addColumn(array(
                 'label' => 'Tipo Corte',

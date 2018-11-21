@@ -1000,7 +1000,7 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setNumero($numero);
             $notaFiscalEntity->setSerie($serie);
             $notaFiscalEntity->setDataEntrada(new \DateTime);
-            $notaFiscalEntity->setDataEmissao(\DateTime::createFromFormat('d/m/Y', $dataEmissao));
+            $notaFiscalEntity->setDataEmissao(new \DateTime);
             $notaFiscalEntity->setFornecedor($fornecedorEntity);
             $notaFiscalEntity->setBonificacao($bonificacao);
             $notaFiscalEntity->setStatus($statusEntity);

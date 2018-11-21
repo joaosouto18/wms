@@ -985,22 +985,24 @@ class ExpedicaoRepository extends EntityRepository {
             $whereCargas = " AND c.codCargaExterno = '$cargas' ";
         }
 
-//        $query = "SELECT pp
-//                      FROM wms:Expedicao\PedidoProduto pp
-//                      INNER JOIN pp.produto p
-//                        LEFT JOIN p.linhaSeparacao ls
-//                        INNER JOIN pp.pedido ped
-//                        INNER JOIN ped.carga c
-//                        INNER JOIN c.expedicao exp
-//                        LEFT JOIN wms:Ressuprimento\ReservaEstoqueExpedicao ree WITH ree.expedicao = exp.id AND ree.pedido = ped.id
-//                        LEFT JOIN wms:Ressuprimento\ReservaEstoqueProduto rep WITH rep.reservaEstoque = ree.reservaEstoque AND rep.codProduto = p.id AND rep.grade = p.grade
-//                        LEFT JOIN wms:Ressuprimento\ReservaEstoque re WITH re.id = ree.reservaEstoque
-//                        LEFT JOIN wms:Expedicao\VProdutoEndereco endereco WITH p.id = endereco.codProduto AND p.grade = endereco.grade
-//                        LEFT JOIN wms:Deposito\Endereco e WITH e.id = NVL(re.endereco, endereco.codDepositoEndereco)
-//                        WHERE ped.indEtiquetaMapaGerado != 'S'
-//                          $whereCargas
-//                          AND ped.centralEntrega = '$central'
-//                          AND ped.dataCancelamento is null";
+        /*
+        $query = "SELECT pp
+                        FROM wms:Expedicao\PedidoProduto pp
+                        INNER JOIN pp.produto p
+                         LEFT JOIN p.linhaSeparacao ls
+                        INNER JOIN pp.pedido ped
+                        INNER JOIN ped.carga c
+                        INNER JOIN c.expedicao ex
+                        INNER JOIN wms:Ressuprimento\ReservaEstoqueExpedicao ree WITH ree.expedicao = ex.id AND ree.pedido = ped.id
+                        INNER JOIN wms:Ressuprimento\ReservaEstoqueProduto rep WITH rep.reservaEstoque = ree.reservaEstoque AND rep.codProduto = pp.codProduto AND rep.grade = pp.grade
+                        INNER JOIN ree.reservaEstoque re
+                        INNER JOIN wms:Deposito\Endereco e WITH e.id = re.endereco
+                        WHERE ped.indEtiquetaMapaGerado != 'S'
+                          $whereCargas
+                          AND ped.centralEntrega = '$central'
+                          AND ped.dataCancelamento is null
+                        ";
+          */
 
         $query = "SELECT pp
                         FROM wms:Expedicao\PedidoProduto pp
@@ -1285,7 +1287,7 @@ class ExpedicaoRepository extends EntityRepository {
         $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
 
         $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
-        $cargaEntities = $this->getProdutosExpedicaoCorte(null,$idExpedicao,true);
+        $cargaEntities = $this->getProdutosExpedicaoCorteToIntegracao(null,$idExpedicao,true);
 
         foreach ($cargaEntities as $cargaEntity) {
             $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
@@ -4028,6 +4030,35 @@ class ExpedicaoRepository extends EntityRepository {
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
+    public function getProdutosExpedicaoCorteToIntegracao($idPedido, $idExpedicao = null, $apenasProdutosCortados = true) {
+
+        $where = " AND PP.COD_PEDIDO = '$idPedido' ";
+        if (!is_null($idExpedicao))
+            $where = " AND C.COD_EXPEDICAO = $idExpedicao ";
+
+        $having = "";
+        if ($apenasProdutosCortados == true)
+            $having .= ' HAVING (NVL(SUM(PP.QTD_CORTADA),0) > 0) ';
+
+        $SQL = "SELECT PP.COD_PRODUTO,
+                       PP.DSC_GRADE,
+                       PROD.DSC_PRODUTO,
+                       NVL(SUM(PP.QUANTIDADE),0) as QTD,
+                       NVL(SUM(PP.QTD_CORTADA),0) as QTD_CORTADA,
+                       PP.COD_PEDIDO,
+                       C.COD_CARGA_EXTERNO
+                  FROM PEDIDO_PRODUTO PP
+                  LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                  LEFT JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
+                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                 WHERE 1 = 1 $where
+                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO, C.COD_CARGA_EXTERNO
+                 $having
+                 ORDER BY COD_PRODUTO, DSC_GRADE";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
     public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null, $apenasProdutosCortados = true) {
 
         $where = " AND PP.COD_PEDIDO = '$idPedido' ";
