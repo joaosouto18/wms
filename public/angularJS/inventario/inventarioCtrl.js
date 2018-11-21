@@ -1,31 +1,38 @@
 angular.module("app").controller("InventarioCtrl", function($scope, $http, $filter, $document){
     $scope.maxPerPage = 15;
-    $scope.showLoading = false;
+    $scope.inventarios = [];
+    $scope.showLoading = true ;
+    $scope.showList = !$scope.showLoading;
     $scope.massActionRoute = null;
+
     $scope.statusArr = [
         {id: 542, label: "GERADO"},
         {id: 543, label: "LIBERADO"},
         {id: 544, label: "FINALIZADO / CONCLUIDO"},
         {id: 545, label: "CANCELADO"}
     ];
-    $scope.criterioForm = {
-        rua:undefined,
-        ruaFinal:undefined,
-        predio:undefined,
-        predioFinal:undefined,
-        nivel:undefined,
-        nivelFinal:undefined,
-        apto:undefined,
-        aptoFinal:undefined,
-        dataInicial1:undefined,
-        dataInicial2:undefined,
-        dataFinal1:undefined,
-        dataFinal2:undefined,
-        status:undefined,
-        produto:undefined,
-        grade:undefined,
-        inventario:undefined
+
+    $scope.clearForm = function() {
+        $scope.criterioForm = {
+            rua: undefined,
+            ruaFinal: undefined,
+            predio: undefined,
+            predioFinal: undefined,
+            nivel: undefined,
+            nivelFinal: undefined,
+            apto: undefined,
+            aptoFinal: undefined,
+            dataInicial1: undefined,
+            dataInicial2: undefined,
+            dataFinal1: undefined,
+            dataFinal2: undefined,
+            status: undefined,
+            produto: undefined,
+            grade: undefined,
+            inventario: undefined
+        };
     };
+    $scope.clearForm();
 
     $scope.paginator = {
         pages: [],
@@ -33,8 +40,7 @@ angular.module("app").controller("InventarioCtrl", function($scope, $http, $filt
         size: 0
     };
 
-    $scope.inventarios = [];
-    $scope.inventShowed = [];
+
     $scope.ordenarPor = function (campo) {
         $scope.direction = (campo !== null && $scope.tbOrderBy === campo) ? !$scope.direction : true;
         $scope.tbOrderBy = campo;
@@ -49,6 +55,8 @@ angular.module("app").controller("InventarioCtrl", function($scope, $http, $filt
     };
 
     $scope.requestForm = function () {
+        $scope.showLoading = true ;
+        $scope.showList = !$scope.showLoading;
         var params = {};
         for (var x in $scope.criterioForm){
             var val = $scope.criterioForm[x];
@@ -61,6 +69,9 @@ angular.module("app").controller("InventarioCtrl", function($scope, $http, $filt
         $http.post(URL_MODULO + "/index/get-inventarios-ajax", params).then(function (response){
             $scope.inventarios = response.data;
             preparePaginator();
+        }).then(function () {
+            $scope.showLoading = ($scope.inventarios.length === 0) ;
+            $scope.showList = !$scope.showLoading;
         });
     };
 

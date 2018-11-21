@@ -41,6 +41,20 @@ BEGIN
             'Inventário',
             1, '#', '_self', 'S');
 
+    /* CRIAÇÃO DE ACTION DE CRIAÇÃO DE INVENTARIO */
+
+    INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO)
+    VALUES (SQ_ACAO_01.NEXTVAL, 'Criar novo inventário', 'criar-inventario');
+
+    INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
+    VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
+             (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
+             (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'criar-inventario'),
+             'Novo Inventário'
+    );
+
+
+
     /************************************************************************
 **                 NÃO ALTERAR ABAIXO DESTA REGIÃO                     **
 ************************************************************************/

@@ -48,6 +48,9 @@
                     <div class="field">
                         <input type="button" ng-click="requestForm()" value="Buscar" class="btn">
                     </div>
+                    <div class="field">
+                        <input type="button" ng-click="clearForm()" value="Limpar campos" class="btn">
+                    </div>
                 </dl>
             </fieldset>
         </dd>
@@ -89,7 +92,8 @@
             </div>
 
             <table class="gTable ">
-                <tbody><tr class="gTTitle">
+                <tbody >
+                <tr class="gTTitle">
                     <td colspan="2"></td>
                     <td><a href="" title="" class="sort" ng-click="ordenarPor('id')"><span>Inventário</span></a></td>
                     <?php if($this->showCodInvErp):?>
@@ -103,7 +107,12 @@
                     <td><a href="" title="" class="sort" ng-click="ordenarPor('andamento')"><span>Andamento (%)</span></a></td>
                     <td><a href="" title="" class="sort" ng-click="ordenarPor('status')"><span>Status</span></a></td>
                 </tr>
-                <tr class="gTResultSet " ng-repeat="inventario in inventarios | interval:{start: paginator.actPage.indexStart, end:paginator.actPage.indexEnd} | orderBy:tbOrderBy:direction:typeSensitiveComparator">
+                <tr ng-show="showLoading">
+                    <td colspan="100%" align="center">
+                        <img height="150%" src="/img/ajax-bar-loader.gif" width="50%">
+                    </td>
+                </tr>
+                <tr ng-show="showList" class="gTResultSet " ng-repeat="inventario in inventarios | interval:{start: paginator.actPage.indexStart, end:paginator.actPage.indexEnd} | orderBy:tbOrderBy:direction:typeSensitiveComparator">
                     <td class="gRowCheck"><input type="checkbox" name="mass-id[]" ng-checked="inventario.checked" ng-click="checkSelected(inventario)" value="{{inventario.id}}"></td>
                     <td class="gTdOpcRow">
                         <div class="gOpcRow">

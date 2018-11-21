@@ -13,6 +13,19 @@ class Inventario_Novo_IndexController  extends Action
         $this->view->form = $form;
         $importaInventario = $this->getSystemParameterValue("IMPORTA_INVENTARIO");
         $this->view->showCodInvErp = ($importaInventario == 'S');
+
+        $buttons[] = array(
+            'label' => 'Criar Inventário',
+            'cssClass' => 'button',
+            'urlParams' => array(
+                'module' => 'inventario_novo',
+                'controller' => 'index',
+                'action' => 'criarInventario'
+            ),
+            'tag' => 'a'
+        );
+
+        $this->configurePage($buttons);
     }
 
     public function getInventariosAjaxAction()
@@ -20,6 +33,15 @@ class Inventario_Novo_IndexController  extends Action
         $data = json_decode($this->getRequest()->getRawBody(),true);
         $source = $this->_em->getRepository('wms:Inventario')->getInventarios(null, $data);
         $this->_helper->json($source);
+    }
+
+    public function criarInventarioAction() {
+
+    }
+
+    public function configurePage($buttons = [])
+    {
+        \Wms\Module\Web\Page::configure(array('buttons' => $buttons));
     }
 
     public function atualizarAction()
