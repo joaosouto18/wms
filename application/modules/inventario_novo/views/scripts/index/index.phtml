@@ -1,11 +1,58 @@
-<span ng-app="app">
-<script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
-<script src="<?php echo $this->baseUrl('angularJS/app.js') ?>"></script>
-<script src="<?php echo $this->baseUrl('angularJS/inventario/inventarioCtrl.js') ?>"></script>
-<?php
-echo $this->form;
-?>
-    <form ng-controller="InventarioCtrl">
+<span ng-app="app" ng-controller="InventarioCtrl">
+    <script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
+    <script src="<?php echo $this->baseUrl('angularJS/app.js') ?>"></script>
+    <script src="<?php echo $this->baseUrl('angularJS/inventario/inventarioCtrl.js') ?>"></script>
+    <form id="cadastro-movimentacao" class="filtro">
+        <dt id="identificacao-label">&nbsp;</dt>
+        <dd id="identificacao-element" >
+            <fieldset id="fieldset-identificacao"><legend>Filtros</legend>
+                <dl rowspan="2">
+                    <div class="field"><label for="rua" class="field optional">Rua Inicio</label>
+                        <input type="text" ng-model="criterioForm.rua" id="rua" size="3" alt="enderecoRua" class=" ctrSize"></div>
+                    <div class="field"><label for="predio" class="field optional">Predio Inicio</label>
+                        <input type="text" ng-model="criterioForm.predio" id="predio" size="3" alt="enderecoPredio" class=" ctrSize"></div>
+                    <div class="field"><label for="nivel" class="field optional">Nivel Inicio</label>
+                        <input type="text" ng-model="criterioForm.nivel" id="nivel" size="3" alt="enderecoNivel" class=" ctrSize"></div>
+                    <div class="field"><label for="apto" class="field optional">Apto Inicio</label>
+                        <input type="text" ng-model="criterioForm.apto" id="apto" size="3" alt="enderecoApartamento" class=" ctrSize"></div>
+                    <div class="field"><label for="dataInicial1" class="field optional">Data Inicio</label>
+                        <input type="text" ng-model="criterioForm.dataInicial1" size="11" alt="date" class="date hasDatepicker">
+                        <span> a </span>
+                        <input type="text" ng-model="criterioForm.dataInicial2" size="11" alt="date" class="date hasDatepicker">
+                    </div>
+                    <div class="field">
+                    </div>
+                    <div class="field"><label for="dataFinal1" class="field optional">Data Finalização</label>
+                        <input type="text" ng-model="criterioForm.dataFinal1" name="dataFinal1" id="dataFinal1" size="11" alt="date" class="date hasDatepicker">
+                        <span> a </span>
+                        <input type="text" ng-model="criterioForm.dataFinal2" id="dataFinal2" size="11" alt="date" class="date  hasDatepicker">
+                    </div>
+                    <div class="field">
+                    </div>
+                    <div class="field"><label for="status" class="field optional">Status</label>
+                        <select ng-model="criterioForm.status" id="status" ng-options="status.id as status.label for status in statusArr">
+                            <option value="" label="Selecione...">Selecione...</option>
+                        </select></div>
+                    <div class="field" style="clear: both;"><label for="ruaFinal" class="field optional">Rua Final</label>
+                        <input type="text" ng-model="criterioForm.ruaFinal" id="ruaFinal" value="" size="3" alt="enderecoRua" class=" ctrSize"></div>
+                    <div class="field"><label for="predioFinal" class="field optional">Predio Final</label>
+                        <input type="text" ng-model="criterioForm.predioFinal" id="predioFinal" value="" size="3" alt="enderecoPredio" class=" ctrSize"></div>
+                    <div class="field"><label for="nivelFinal" class="field optional">Nivel Final</label>
+                        <input type="text" ng-model="criterioForm.nivelFinal" id="nivelFinal" value="" size="3" alt="enderecoNivel" class=" ctrSize"></div>
+                    <div class="field"><label for="aptoFinal" class="field optional">Apto Final</label>
+                        <input type="text" ng-model="criterioForm.aptoFinal" id="aptoFinal" value="" size="3" alt="enderecoApartamento" class=" ctrSize"></div>
+                    <div class="field"><label for="produto" class="field optional">Cod. Prouto</label>
+                        <input type="text" ng-model="criterioForm.produto" id="produto" value="" alt="number" size="15" class=" ctrSize"></div>
+                    <div class="field"><label for="inventario" class="field optional">Inventário</label>
+                        <input type="text" ng-model="criterioForm.inventario" id="inventario" value="" alt="number" size="15" class=" ctrSize"></div>
+                    <div class="field">
+                        <input type="button" ng-click="requestForm()" value="Buscar" class="btn">
+                    </div>
+                </dl>
+            </fieldset>
+        </dd>
+    </form>
+    <form>
         <div id="monitoramento-inventario" class="grid">
             <div class="gControl">
                 <div class="gPager">
@@ -22,19 +69,20 @@ echo $this->form;
 
             <!--  MASS ACTION -->
             <div class="gMassAction">
+                <form id="invetGridForm" method="post"></form>
                 <div class="gSelect">
                     <label for="checkAllGrid" id="checkAllGridLbl">
                         <input name="checkAllGrid" id="checkAllGrid" type="checkbox" ng-model="paginator.actPage.selectedAll" ng-change="selectAllPage()" style="float: left; margin-right: 2px;">Todos da página</label>
                     <span class="massDelimiter">|</span>
-                    <span><span class="check-selected-counter">{{ (inventarios | filter:{checked: true }).length }}</span> selecionados</span>
+                    <span><span class="check-selected-counter">{{ (inventarios | filter:{checked: true }).length }}</span>selecionados</span>
                 </div>
                 <div class="gAction">
                     <span>Mass Action: </span>
-                    <select name="massaction-select">
+                    <select name="massaction-select" ng-model="massActionRoute" >
                         <option value=""></option>
                         <option value="index/relatorio">Movimentações no Estoque (xls)</option>
                     </select>
-                    <button type="button" class="massaction-button"><span>Executar</span></button>
+                    <button type="button" ng-click="massActionRequest()"><span>Executar</span></button>
                     <input type="hidden" value="" name="hiddenId">
                 </div>
                 <input type="hidden" value="" class="massaction-values">
@@ -107,12 +155,4 @@ echo $this->form;
             </div>
         </div>
     </form>
-
-    <script>
-        $(window).load(function () {
-            $('#ruaFinal').parent().css('clear', 'both');
-            $("#dataInicial1").parent().append('<span> a </span>').append($('#dataInicial2'));
-            $("#dataFinal1").parent().append('<span> a </span>').append($('#dataFinal2'));
-        });
-    </script>
 </span>

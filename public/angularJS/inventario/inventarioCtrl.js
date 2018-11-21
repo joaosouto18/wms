@@ -1,5 +1,32 @@
-angular.module("app").controller("InventarioCtrl", function($scope, $http, $filter){
+angular.module("app").controller("InventarioCtrl", function($scope, $http, $filter, $document){
     $scope.maxPerPage = 15;
+    $scope.showLoading = false;
+    $scope.massActionRoute = null;
+    $scope.statusArr = [
+        {id: 542, label: "GERADO"},
+        {id: 543, label: "LIBERADO"},
+        {id: 544, label: "FINALIZADO / CONCLUIDO"},
+        {id: 545, label: "CANCELADO"}
+    ];
+    $scope.criterioForm = {
+        rua:undefined,
+        ruaFinal:undefined,
+        predio:undefined,
+        predioFinal:undefined,
+        nivel:undefined,
+        nivelFinal:undefined,
+        apto:undefined,
+        aptoFinal:undefined,
+        dataInicial1:undefined,
+        dataInicial2:undefined,
+        dataFinal1:undefined,
+        dataFinal2:undefined,
+        status:undefined,
+        produto:undefined,
+        grade:undefined,
+        inventario:undefined
+    };
+
     $scope.paginator = {
         pages: [],
         actPage: {},
@@ -21,13 +48,43 @@ angular.module("app").controller("InventarioCtrl", function($scope, $http, $filt
         $scope.paginator.actPage = $scope.paginator.pages[ page.idPage + destination ];
     };
 
+    $scope.requestForm = function () {
+        var params = {};
+        for (var x in $scope.criterioForm){
+            var val = $scope.criterioForm[x];
+            if (val) params[x] = val;
+        }
+        getInventarios(params);
+    };
+
     var getInventarios = function (params) {
-        $http.get(URL_MODULO + "/index/get-inventarios-ajax").then(function (response){
+        $http.post(URL_MODULO + "/index/get-inventarios-ajax", params).then(function (response){
             $scope.inventarios = response.data;
             preparePaginator();
-        },function (error){
-
         });
+    };
+
+    $scope.massActionRequest = function () {
+        var invs = $filter("filter")( $scope.inventarios, {checked: true } );
+        if (!invs.length) {
+            $.wmsDialogAlert({title: "Alerta!", msg:"Nenhum inventário foi selecionado!"});
+            return
+        }
+
+        if (!$scope.massActionRoute) {
+            $.wmsDialogAlert({title: "Alerta!", msg:"Nenhuma ação foi selecionada!"});
+            return
+        }
+        var params = {"mass-id": []};
+        angular.forEach(invs, function (el) {
+            params["mass-id"].push(el.id);
+        });
+
+        $("#invetGridForm")
+            .attr('action', "http://wms.local/inventario/" + $scope.massActionRoute + "?" + $.param(params))
+            .attr('target', '_self')
+            .submit();
+
     };
 
     var preparePaginator = function () {

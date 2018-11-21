@@ -17,7 +17,7 @@ class Inventario_Novo_IndexController  extends Action
 
     public function getInventariosAjaxAction()
     {
-        $data = $this->getRequest()->getParams();
+        $data = json_decode($this->getRequest()->getRawBody(),true);
         $source = $this->_em->getRepository('wms:Inventario')->getInventarios(null, $data);
         $this->_helper->json($source);
     }
