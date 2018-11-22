@@ -11,7 +11,7 @@ BEGIN
   IF (CHECK_RESULT <> 'TRUE') THEN 
     DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
   ELSE 
-        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7','xx-integracao-recebimento-enderecamento-finalizado.sql');
+        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7','02-integracao-recebimento-enderecamento-finalizado.sql');
 /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
