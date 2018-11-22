@@ -9,7 +9,17 @@ use Core\Form\SubForm;
  * Time: 16:25
  */
 
-class TabEnderecoForm extends SubForm
+class TabProdutoForm extends SubForm
 {
-
+    public function init()
+    {
+        $this->addElement('text', 'id', array(
+            'label' => 'produto',
+            'size' => 10,
+            'readonly' => 'readonly',
+            'class' => 'focus',
+            'required' => true
+                )
+        );
+    }
 }

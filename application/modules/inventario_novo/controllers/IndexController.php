@@ -1,5 +1,8 @@
 <?php
+
+
 use Wms\Module\Web\Controller\Action;
+use Wms\Module\Web\Page;
 use Wms\Module\Inventario\Form\FiltroImpressao as FiltroEnderecoForm;
 
 class Inventario_Novo_IndexController  extends Action
@@ -7,10 +10,6 @@ class Inventario_Novo_IndexController  extends Action
 
     public function indexAction()
     {
-        $form = new \Wms\Module\InventarioNovo\Form\IndexForm();
-        $form->init();
-        $form->populate($this->_getAllParams());
-        $this->view->form = $form;
         $importaInventario = $this->getSystemParameterValue("IMPORTA_INVENTARIO");
         $this->view->showCodInvErp = ($importaInventario == 'S');
 
@@ -20,7 +19,7 @@ class Inventario_Novo_IndexController  extends Action
             'urlParams' => array(
                 'module' => 'inventario_novo',
                 'controller' => 'index',
-                'action' => 'criarInventario'
+                'action' => 'criar-inventario'
             ),
             'tag' => 'a'
         );
@@ -36,12 +35,13 @@ class Inventario_Novo_IndexController  extends Action
     }
 
     public function criarInventarioAction() {
-
+        $this->view->form = new \Wms\Module\InventarioNovo\Form\AddInventarioForm();
+        $this->configurePage();
     }
 
     public function configurePage($buttons = [])
     {
-        \Wms\Module\Web\Page::configure(array('buttons' => $buttons));
+        Page::configure(array('buttons' => $buttons));
     }
 
     public function atualizarAction()

@@ -50,9 +50,8 @@ BEGIN
     VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
              (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
              (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'criar-inventario'),
-             'Novo Inventário'
+             'Criar novo inventário'
     );
-
 
 
     /************************************************************************

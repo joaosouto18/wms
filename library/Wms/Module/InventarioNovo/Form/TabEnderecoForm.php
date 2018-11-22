@@ -11,5 +11,15 @@ use Core\Form\SubForm;
 
 class TabEnderecoForm extends SubForm
 {
-
+    public function init()
+    {
+        $this->addElement('text', 'id', array(
+                'label' => 'Endereco',
+                'size' => 10,
+                'readonly' => 'readonly',
+                'class' => 'focus',
+                'required' => true
+            )
+        );
+    }
 }

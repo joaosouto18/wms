@@ -1,9 +1,11 @@
-angular.module("app").controller("InventarioCtrl", function($scope, $http, $filter, $document){
+angular.module("app").controller("cadastroInventarioCtrl", function($scope, $http, $filter, $document){
     $scope.maxPerPage = 15;
     $scope.inventarios = [];
     $scope.showLoading = true ;
     $scope.showList = !$scope.showLoading;
     $scope.massActionRoute = null;
+    $scope.porProduto = false;
+    $scope.porEndereco = true;
 
     $scope.statusArr = [
         {id: 542, label: "GERADO"},
