@@ -34,7 +34,11 @@ class Inventario_Novo_IndexController  extends Action
         $this->_helper->json($source);
     }
 
-    public function criarInventarioAction() {
+    public function criarInventarioAction()
+    {
+        /** @var \Wms\Service\InventarioService $inventarioService */
+        $inventarioService = $this->getServiceLocator()->getService("Inventario");
+        $inventarioService->teste();
         $this->view->form = new \Wms\Module\InventarioNovo\Form\AddInventarioForm();
         $this->configurePage();
     }

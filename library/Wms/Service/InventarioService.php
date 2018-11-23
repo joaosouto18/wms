@@ -9,7 +9,9 @@
 namespace Wms\Service;
 
 
-class InventarioService
+use Bisna\Base\Domain\Entity\EntityService;
+
+class InventarioService extends EntityService
 {
 
 }
