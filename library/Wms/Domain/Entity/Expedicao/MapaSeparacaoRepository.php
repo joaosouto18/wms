@@ -161,9 +161,9 @@ class MapaSeparacaoRepository extends EntityRepository {
       }
      */
 
-    public function verificaMapaSeparacao($expedicaoEn, $idMapa, $statusAntigo) {
+    public function verificaMapaSeparacao($expedicaoEn, $idMapa) {
 
-        $result = $this->alteraStatusMapaAndMapaProdutos($expedicaoEn, $idMapa, $statusAntigo);
+        $result = $this->alteraStatusMapaAndMapaProdutos($expedicaoEn, $idMapa);
         if (is_string($result))
             return $result;
 
@@ -181,7 +181,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         return true;
     }
 
-    private function alteraStatusMapaAndMapaProdutos($expedicaoEn, $idMapa, $statusAntigo) {
+    private function alteraStatusMapaAndMapaProdutos($expedicaoEn, $idMapa) {
 
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
 

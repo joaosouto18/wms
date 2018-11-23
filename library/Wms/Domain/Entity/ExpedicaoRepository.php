@@ -1327,7 +1327,7 @@ class ExpedicaoRepository extends EntityRepository {
 
             if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
                 $statusAntigo = $expedicaoEn->getStatus();
-                $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
+                $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_SEPARACAO));
 
                 $expedicaoEn->setStatus($statusEmFinalizacao);
                 $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
@@ -1361,7 +1361,7 @@ class ExpedicaoRepository extends EntityRepository {
                     throw new \Exception($result);
                 }
 
-                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa, $statusAntigo);
+                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa);
                 if (is_string($result)) {
                     throw new \Exception($result);
                 }
@@ -1546,7 +1546,7 @@ class ExpedicaoRepository extends EntityRepository {
         } catch(\Exception $e) {
             if ($transacao == true) $this->getEntityManager()->rollback();
 
-//            if ($statusAntigo != null) {
+            if ($statusAntigo != null) {
 
                 $expedicaoEn->setStatus($statusAntigo);
                 $expedicaoEn->setCodStatus($statusAntigo->getId());
@@ -1554,7 +1554,7 @@ class ExpedicaoRepository extends EntityRepository {
                 $this->getEntityManager()->persist($expedicaoEn);
                 $this->getEntityManager()->flush();
 
-//            }
+            }
 
             return $e->getMessage();
         }
