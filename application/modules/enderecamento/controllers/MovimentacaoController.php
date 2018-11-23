@@ -10,7 +10,7 @@ class Enderecamento_MovimentacaoController extends Action
     {
         $this->configurePage();
         $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
-        $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+        $controleProprietario = $this->getSystemParameterValue("CONTROLE_PROPRIETARIO");
         $form = new \Wms\Module\Armazenagem\Form\Movimentacao\Cadastro();
         $form->init($utilizaGrade, $controleProprietario);
         $request = $this->getRequest();

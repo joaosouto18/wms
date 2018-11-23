@@ -25,16 +25,13 @@ class Filtro extends Form
         $repoEstrutura = $em->getRepository('wms:Armazenagem\Estrutura\Tipo');
         $repoTipo = $em->getRepository('wms:Deposito\Endereco\Tipo');
         $repoArea = $em->getRepository('wms:Deposito\AreaArmazenagem');
-        $area = $repoArea->getIdValue(array('idDeposito' => $sessao->idDepositoLogado));
 
         //form's attr
         $this->setAttribs(array('id' => 'deposito-endereco-filtro-form', 'class' => 'saveForm'))
                 ->setMethod('get');
 
-        $formIdentificacao = $this;
-
         //endereço
-        $formIdentificacao->addElement('text', 'inicialRua', array(
+        $this->addElement('text', 'inicialRua', array(
                     'size' => 3,
                     'alt' => 'enderecoRua',
                     'label' => 'Rua inicial',
@@ -128,7 +125,7 @@ class Filtro extends Form
                 ->addElement('select', 'idAreaArmazenagem', array(
                     'mostrarSelecione' => false,
                     'class' => 'medio',
-                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => $area),
+                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoArea->getIdValue(array('idDeposito' => $sessao->idDepositoLogado))),
                     'label' => 'Área de Armazenagem',
                 ))
                 ->addElement('submit', 'btnBuscar', array(

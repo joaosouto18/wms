@@ -17,8 +17,8 @@ class AddInventarioForm extends Form
         //form's attr
         $this->setAttribs(array('id' => 'inventario-tabs', 'class' => 'saveForm', 'ng-app' => 'app', 'ng-controller' => 'cadastroInventarioCtrl'));
 
-        $this->addSubFormTab('Por Endereço', new TabEnderecoForm(), "tabEndereco");
-        $this->addSubFormTab('Por Produto', new TabProdutoForm(), "tabProduto");
+        $this->addSubFormTab('Por Endereço', new InventarioEnderecoForm(), "tabEndereco");
+        $this->addSubFormTab('Por Produto', new InventarioProdutoForm(), "tabProduto");
 
     }
 }

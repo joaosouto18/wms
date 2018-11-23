@@ -132,6 +132,12 @@ button {
     line-height: 28.5px;
 }
 
+button.btn.btn-form {
+    margin-top: 20px;
+    height: 28px;
+    line-height: 28.5px;
+}
+
 input[type="radio"] {
     margin: 5px 3px 0 10px;
     height: 10px;

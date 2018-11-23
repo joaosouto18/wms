@@ -14,12 +14,24 @@ class Inventario_Novo_IndexController  extends Action
         $this->view->showCodInvErp = ($importaInventario == 'S');
 
         $buttons[] = array(
-            'label' => 'Criar Inventário',
+            'label' => 'Novo Inventário por Endereço',
             'cssClass' => 'button',
             'urlParams' => array(
                 'module' => 'inventario_novo',
                 'controller' => 'index',
-                'action' => 'criar-inventario'
+                'action' => 'criar-inventario',
+                'criterio' => 'endereco'
+            ),
+            'tag' => 'a'
+        );
+        $buttons[] = array(
+            'label' => 'Novo Inventário por Produto',
+            'cssClass' => 'button',
+            'urlParams' => array(
+                'module' => 'inventario_novo',
+                'controller' => 'index',
+                'action' => 'criar-inventario',
+                'criterio' => 'produto'
             ),
             'tag' => 'a'
         );
@@ -36,9 +48,16 @@ class Inventario_Novo_IndexController  extends Action
 
     public function criarInventarioAction()
     {
-        /** @var \Wms\Service\InventarioService $inventarioService */
-        $inventarioService = $this->getServiceLocator()->getService("Inventario");
-        $this->view->form = new \Wms\Module\InventarioNovo\Form\AddInventarioForm();
+        $criterio = $this->getRequest()->getParam("criterio");
+        if ($criterio == 'produto') {
+            $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
+            $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioProdutoForm();
+            $this->view->form->init($utilizaGrade);
+        }
+        else {
+            $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioEnderecoForm();
+
+        }
         $this->configurePage();
     }
 
