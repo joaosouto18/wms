@@ -22,6 +22,7 @@ class NotaFiscalRepository extends EntityRepository {
             ->distinct(true)
             ->from('wms:NotaFiscal\Item', 'nfi')
             ->innerJoin('nfi.notaFiscal', 'nf')
+            ->innerJoin('wms:Recebimento\VQtdRecebimento', 'vr', 'WITH', 'vr.codRecebimento = nf.recebimento and nfi.codProduto = vr.codProduto and nfi.grade = vr.grade')
             ->where('nf.recebimento = :recebimento')
             ->setParameter(':recebimento', $idRecebimento);
 
