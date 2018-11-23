@@ -1370,7 +1370,7 @@ class ExpedicaoRepository extends EntityRepository {
             $this->validaExpedicaoEmFinalizacao($idExpedicao);
 
             $transacao = true;
-//            $this->getEntityManager()->beginTransaction();
+            $this->getEntityManager()->beginTransaction();
 
             if ($validaStatusEtiqueta == true) {
                 $result = $this->validaVolumesPatrimonio($idExpedicao);
@@ -1541,10 +1541,10 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
 
-//            $this->getEntityManager()->commit();
+            $this->getEntityManager()->commit();
             return $result;
         } catch(\Exception $e) {
-//            if ($transacao == true) $this->getEntityManager()->rollback();
+            if ($transacao == true) $this->getEntityManager()->rollback();
 
             if ($statusAntigo != null) {
 
