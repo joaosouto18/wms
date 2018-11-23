@@ -1327,7 +1327,7 @@ class ExpedicaoRepository extends EntityRepository {
 
             if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
                 $statusAntigo = $expedicaoEn->getStatus();
-                $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_SEPARACAO));
+                $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
 
                 $expedicaoEn->setStatus($statusEmFinalizacao);
                 $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
