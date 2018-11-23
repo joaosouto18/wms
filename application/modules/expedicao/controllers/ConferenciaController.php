@@ -97,7 +97,6 @@ class Expedicao_ConferenciaController extends Action
             } else {
                 $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M', null, null,  $motivo);
 
-
                 /** @var \Wms\Domain\Entity\Expedicao $expedicaoEn */
                 $expedicaoEn  = $this->getEntityManager()->getRepository('wms:Expedicao')->findOneBy(array('id'=>$idExpedicao));
                 if ($expedicaoEn->getCodStatus() == \Wms\Domain\Entity\Expedicao::STATUS_EM_FINALIZACAO) {
