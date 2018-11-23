@@ -1362,11 +1362,6 @@ class ExpedicaoRepository extends EntityRepository {
                 }
 
                 $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa);
-                $expedicaoEn->setStatus($statusAntigo);
-                $expedicaoEn->setCodStatus($statusAntigo->getId());
-
-                $this->getEntityManager()->persist($expedicaoEn);
-                $this->getEntityManager()->flush();
                 if (is_string($result)) {
                     throw new \Exception($result);
                 }
