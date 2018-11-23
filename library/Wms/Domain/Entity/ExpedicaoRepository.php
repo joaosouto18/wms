@@ -1546,7 +1546,7 @@ class ExpedicaoRepository extends EntityRepository {
         } catch(\Exception $e) {
             if ($transacao == true) $this->getEntityManager()->rollback();
 
-            if ($statusAntigo != null) {
+//            if ($statusAntigo != null) {
 
                 $expedicaoEn->setStatus($statusAntigo);
                 $expedicaoEn->setCodStatus($statusAntigo->getId());
@@ -1554,7 +1554,7 @@ class ExpedicaoRepository extends EntityRepository {
                 $this->getEntityManager()->persist($expedicaoEn);
                 $this->getEntityManager()->flush();
 
-            }
+//            }
 
             return $e->getMessage();
         }
