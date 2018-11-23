@@ -1362,12 +1362,12 @@ class ExpedicaoRepository extends EntityRepository {
                 }
 
                 $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa);
-                if (is_string($result)) {
-//                    $expedicaoEn->setStatus($statusAntigo);
-                    $expedicaoEn->setCodStatus(Expedicao::STATUS_EM_CONFERENCIA);
+                $expedicaoEn->setStatus($statusAntigo);
+                $expedicaoEn->setCodStatus(Expedicao::STATUS_EM_CONFERENCIA);
 
-                    $this->getEntityManager()->persist($expedicaoEn);
-                    $this->getEntityManager()->flush();
+                $this->getEntityManager()->persist($expedicaoEn);
+                $this->getEntityManager()->flush();
+                if (is_string($result)) {
                     throw new \Exception($result);
                 }
             }
