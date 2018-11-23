@@ -1553,6 +1553,7 @@ class ExpedicaoRepository extends EntityRepository {
 
                 $this->getEntityManager()->persist($expedicaoEn);
                 $this->getEntityManager()->flush();
+                $this->getEntityManager()->commit();
 
             }
 
