@@ -161,9 +161,9 @@ class MapaSeparacaoRepository extends EntityRepository {
       }
      */
 
-    public function verificaMapaSeparacao($expedicaoEn, $idMapa) {
+    public function verificaMapaSeparacao($expedicaoEn, $idMapa, $statusAntigo) {
 
-        $result = $this->alteraStatusMapaAndMapaProdutos($expedicaoEn, $idMapa);
+        $result = $this->alteraStatusMapaAndMapaProdutos($expedicaoEn, $idMapa, $statusAntigo);
         if (is_string($result))
             return $result;
 
@@ -181,7 +181,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         return true;
     }
 
-    private function alteraStatusMapaAndMapaProdutos($expedicaoEn, $idMapa) {
+    private function alteraStatusMapaAndMapaProdutos($expedicaoEn, $idMapa, $statusAntigo) {
 
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\MapaSeparacaoProduto");
 
@@ -206,6 +206,10 @@ class MapaSeparacaoRepository extends EntityRepository {
         $this->getEntityManager()->flush();
 
         if (count($divergencias) > 0) {
+            $expedicaoEn->setStatus($statusAntigo);
+            $expedicaoEn->setCodStatus($statusAntigo->getId());
+            $this->getEntityManager()->persist($expedicaoEn);
+            $this->getEntityManager()->flush();
             if ($idMapa == null) {
                 return 'Existem produtos para serem Conferidos nesta Expedição';
             } else {

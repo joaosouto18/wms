@@ -1361,7 +1361,7 @@ class ExpedicaoRepository extends EntityRepository {
                     throw new \Exception($result);
                 }
 
-                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa);
+                $result = $MapaSeparacaoRepo->verificaMapaSeparacao($expedicaoEn, $idMapa, $statusAntigo);
                 if (is_string($result)) {
                     throw new \Exception($result);
                 }
