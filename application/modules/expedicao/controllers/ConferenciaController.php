@@ -97,19 +97,12 @@ class Expedicao_ConferenciaController extends Action
             } else {
                 $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M', null, null,  $motivo);
 
-
-
-
-
                 /** @var \Wms\Domain\Entity\Expedicao $expedicaoEn */
                 $expedicaoEn  = $this->getEntityManager()->getRepository('wms:Expedicao')->findOneBy(array('id'=>$idExpedicao));
                 $expedicaoEn->setCodStatus(\Wms\Domain\Entity\Expedicao::STATUS_EM_CONFERENCIA);
 
                 $this->getEntityManager()->persist($expedicaoEn);
                 $this->getEntityManager()->flush();
-
-
-
 
                 if ($origin == 'coletor') {
                     if ($result === true) {
@@ -120,6 +113,11 @@ class Expedicao_ConferenciaController extends Action
                     }
                     $this->addFlashMessage('success', $result);
                     $this->_redirect('/mobile/expedicao/index/idCentral/'.$centrais);
+                }
+                if ($origin != 'coletor') {
+                    if (is_string($result)) {
+                        $this->addFlashMessage('success', $result);
+                    }
                 }
                 if ($result == 'true') {
                     if ($this->getSystemParameterValue('VINCULA_EQUIPE_CARREGAMENTO') == 'S') {
