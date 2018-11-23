@@ -116,7 +116,7 @@ class Expedicao_ConferenciaController extends Action
                 }
                 if ($origin != 'coletor') {
                     if (is_string($result)) {
-                        $this->addFlashMessage('success', $result);
+                        $result = 'Existem produtos para serem Conferidos nesta Expedição';
                     }
                 }
                 if ($result == 'true') {
