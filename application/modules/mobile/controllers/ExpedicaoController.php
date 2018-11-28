@@ -669,11 +669,13 @@ class Mobile_ExpedicaoController extends Action {
         /** @var \Wms\Domain\Entity\Expedicao $expedicaoEn */
         $expedicaoEn  = $this->getEntityManager()->getRepository('wms:Expedicao')->findOneBy(array('id'=>$idExpedicao));
         if ($expedicaoEn->getCodStatus() == \Wms\Domain\Entity\Expedicao::STATUS_EM_FINALIZACAO) {
+            $statusConferencia = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_CONFERENCIA));
+            $expedicaoEn->setStatus($statusConferencia);
             $expedicaoEn->setCodStatus(\Wms\Domain\Entity\Expedicao::STATUS_EM_CONFERENCIA);
             $this->getEntityManager()->persist($expedicaoEn);
             $this->getEntityManager()->flush();
         }
-        
+
         if (is_string($result)) {
 
             if (substr($result, 0, 46) == "Existem produtos para serem Conferidos no mapa") {
