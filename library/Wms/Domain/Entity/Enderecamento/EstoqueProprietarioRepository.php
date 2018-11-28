@@ -108,7 +108,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                   ESTOQUE_PROPRIETARIO EP 
                   INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
                 WHERE 
-//                  NUM_CNPJ  LIKE '$cnpj%' AND
+                  NUM_CNPJ  LIKE '$cnpj%' AND
                   EP.COD_PRODUTO = $codProduto AND
                   EP.DSC_GRADE = '$grade' AND
                   EP.SALDO_FINAL > 0 AND
@@ -232,7 +232,9 @@ class EstoqueProprietarioRepository extends EntityRepository
                   EP.DSC_GRADE = '$grade' AND
                   EP.COD_ESTOQUE_PROPRIETARIO IN (
                       SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO 
-                      WHERE COD_PESSOA = $idProprietario
+                      WHERE COD_PESSOA = $idProprietario  AND
+                            COD_PRODUTO = $codProduto AND
+                            DSC_GRADE = '$grade'
                       GROUP BY COD_PESSOA)
                   GROUP BY 
                     EP.COD_PESSOA, EP.SALDO_FINAL 

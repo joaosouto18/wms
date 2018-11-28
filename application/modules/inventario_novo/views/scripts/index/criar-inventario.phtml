@@ -1,3 +1,133 @@
-<?php
+<style>
 
-echo $this->form;
+    .btn-grid{
+        margin-top: 5px;
+    }
+
+    select {
+        min-width: 50px;
+    }
+
+</style>
+
+<div ng-app="app" ng-controller="cadastroInventarioCtrl">
+    <script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
+    <script src="<?php echo $this->baseUrl('angularJS/app.js') ?>"></script>
+    <script src="<?php echo $this->baseUrl('angularJS/inventario/cadastroCtrl.js') ?>"></script>
+    <?php echo $this->form; ?>
+    <table width="100%">
+        <tr >
+            <td>
+                <fieldset id="fs-grid-result">
+                    <legend>Resultado da busca</legend>
+                    <div id="monitoramento-inventario" class="grid">
+                        <div class="gControl" ng-show="{{resultFormRequest.length > 0}}">
+                            <div class="gPager">
+                                <button ng-click="changePage(-1)"> <<< </button>
+                                <select title="Página atual" name="page" ng-model="paginator.actPage" style="text-align: center;" ng-options="pagina.label for pagina in paginator.pages"></select>
+                                <button ng-click="changePage(1)"> >>> </button>
+                                <span>de {{paginator.size}} página(s) </span>
+                                <span>por página</span>
+                                <span>|</span>
+                                <span>Total de {{resultFormRequest.length}} registros encontrados.</span>
+                            </div>
+                        </div>
+                        <div class="gMassAction">
+                            <div class="gSelect">
+                                <span>{{(resultFormRequest | filter:{checked: true }).length }} selecionados</span>
+                            </div>
+                            <div class="gAction">
+                                <button type="button" class="btn-grid" ng-click="incluirSelecionados()"><span>Selecionar</span></button>
+                            </div>
+                        </div>
+                        <table class="gTable">
+                            <tbody >
+                                <tr class="gTTitle">
+                                    <td>
+                                        <label for="checkAllGrid" id="checkAllGridLbl"></label>
+                                        <input name="checkAllGrid" id="checkAllGrid" type="checkbox" ng-model="paginator.actPage.selectedAll" ng-change="selectAllPage()" style="float: left; margin-right: 2px;">
+                                    </td>
+                                    <td><a href="" title="" class="sort" ng-click="ordenarPor('dscEndDesnormatizado')"><span>Endereco</span></a></td>
+                                    <td><a href="" title="" class="sort" ng-click="ordenarPor('codProduto')"><span>Produto</span></a></td>
+                                    <td><a href="" title="" class="sort" ng-click="ordenarPor('dscProduto')"><span>Descrição</span></a></td>
+                                    <?php if($this->showGrade):?>
+                                        <td width=""><a href="" title="" class="sort" ng-click="ordenarPor('grade')"><span>Grade</span></a></td>
+                                    <?php endif;?>
+                                    <td><a href="" title="" class="sort" ng-click="ordenarPor('caracEnd')"><span>Caract. End.</span></a></td>
+                                </tr>
+                                <tr ng-show="showLoading">
+                                    <td colspan="100%" align="center">
+                                        <img height="150%" src="/img/ajax-bar-loader.gif" width="50%">
+                                    </td>
+                                </tr>
+                                <tr ng-show="showList">
+                                    <tr class="gTResultSet " ng-repeat="result in resultFormRequest | interval:{start: resultPaginator.actPage.indexStart, end:resultPaginator.actPage.indexEnd} | orderBy:resultsOrderBy:directionResults:typeSensitiveComparator">
+                                        <td class="gRowCheck"><input type="checkbox" name="mass-id[]" ng-checked="result.checked" ng-click="checkSelected(result)" value="{{result.id}}"></td>
+                                        <td>{{result.dscEndereco}}</td>
+                                        <td>{{result.codProduto}}</td>
+                                        <td>{{result.dscProduto}}</td>
+                                        <?php if($this->showGrade):?>
+                                            <td>{{result.grade}}</td>
+                                        <?php endif;?>
+                                        <td>{{inventario.caracEnd}}</td>
+                                    </tr>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </fieldset>
+            </td>
+            <td>
+                <fieldset id="fs-grid-selected">
+                    <legend>Selecionados</legend>
+                    <div id="monitoramento-inventario" class="grid" >
+                        <div class="gControl" ng-show="{{elementosSelecionados.length > 0}}">
+                            <div class="gPager">
+                                <button ng-click="changePage(-1)"> <<< </button>
+                                <select title="Página atual" name="page" ng-model="elementosSelecionados.actPage" style="text-align: center;" ng-options="pagina.label for pagina in elementosSelecionados.pages"></select>
+                                <button ng-click="changePage(1)"> >>> </button>
+                                <span>de {{elementosSelecionados.size}} página(s) </span>
+                                <span>por página</span>
+                            </div>
+                        </div>
+                        <div class="gMassAction">
+                            <div class="gSelect">
+                                <span>Total de {{elementosSelecionados.length}} incluídos</span>
+                            </div>
+                            <div class="gAction">
+                                <button type="button" class="btn-grid" ng-click="criarInventario()"><span>Criar Inventario</span></button>
+                            </div>
+                        </div>
+                        <table class="gTable">
+                            <tbody >
+                            <tr class="gTTitle">
+                                <td>
+                                    <label for="checkAllGrid" id="checkAllGridLbl"></label>
+                                    <input name="checkAllGrid" id="checkAllGrid" type="checkbox" ng-model="elementsPaginator.actPage.selectedAll" ng-change="selectAllPage()" style="float: left; margin-right: 2px;">
+                                </td>
+                                <td><a href="" title="" class="sort" ng-click="ordenarPor('dscEndDesnormatizado', 'elements')"><span>Endereco</span></a></td>
+                                <td><a href="" title="" class="sort" ng-click="ordenarPor('codProduto', 'elements')"><span>Produto</span></a></td>
+                                <?php if($this->showGrade):?>
+                                    <td width=""><a href="" title="" class="sort" ng-click="ordenarPor('grade', 'elements')"><span>Grade</span></a></td>
+                                <?php endif;?>
+                                <td><a href="" title="" class="sort" ng-click="ordenarPor('caracEnd', 'elements')"><span>Caract. End.</span></a></td>
+                                <td align="center"><span>Ação</span></td>
+                            </tr>
+                            <tr ng-show="showList" class="gTResultSet " ng-repeat="elemento in elementosSelecionados | interval:{start: elementsPaginator.actPage.indexStart, end:elementsPaginator.actPage.indexEnd} | orderBy:elementsOrderBy:directionElements:typeSensitiveComparator">
+                                <td class="gRowCheck"><input type="checkbox" name="mass-id[]" ng-checked="elemento.checked" ng-click="checkSelected(elemento)" value="{{elemento.id}}"></td>
+                                <td>{{elemento.dscEndereco}}</td>
+                                <td>{{elemento.codProduto}}</td>
+                                <?php if($this->showGrade):?>
+                                    <td>{{elemento.grade}}</td>
+                                <?php endif;?>
+                                <td>{{elemento.caracEnd}}</td>
+                                <td><a href="" ng-click="removeSelecionado(elemento)"><img src="/img/icons/cross.png"></a></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </fieldset>
+            </td>
+        </tr>
+    </table>
+</div>

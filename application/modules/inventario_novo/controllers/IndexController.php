@@ -56,9 +56,15 @@ class Inventario_Novo_IndexController  extends Action
         }
         else {
             $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioEnderecoForm();
-
         }
         $this->configurePage();
+    }
+
+    public function getElementsInventarioAjaxAction()
+    {
+        $data = json_decode($this->getRequest()->getRawBody(),true);
+        $source = $this->_em->getRepository('wms:Inventario')->getInventarios(null, $data);
+        $this->_helper->json($source);
     }
 
     public function configurePage($buttons = [])

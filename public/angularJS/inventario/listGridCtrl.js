@@ -1,4 +1,4 @@
-angular.module("app").controller("listGridInventarioCtrl", function($scope, $http, $filter, $document){
+angular.module("app").controller("listGridInventarioCtrl", function($scope, $http, $filter){
     $scope.maxPerPage = 15;
     $scope.inventarios = [];
     $scope.showLoading = true ;
