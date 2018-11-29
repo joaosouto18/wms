@@ -21,53 +21,53 @@ class InventarioEnderecoForm extends SubForm
 
         //endereço
         try {
-            $this->addElement('text', 'inicialRua', array(
+            $this->addElement('text', 'ruaInicial', array(
                 'size' => 3,
                 'alt' => 'enderecoRua',
                 'label' => 'Rua inicial',
-                'ng-model' => "criterioForm.inicialRua"
+                'ng-model' => "criterioForm.ruaInicial"
             ))
-            ->addElement('text', 'finalRua', array(
+            ->addElement('text', 'ruaFinal', array(
                 'size' => 3,
                 'alt' => 'enderecoRua',
                 'label' => 'Rua Final',
-                'ng-model' => "criterioForm.finalRua"
+                'ng-model' => "criterioForm.ruaFinal"
             ))
-            ->addElement('text', 'inicialPredio', array(
+            ->addElement('text', 'predioInicial', array(
                 'size' => 3,
                 'alt' => 'enderecoPredio',
                 'label' => 'Prédio inicial',
-                'ng-model' => "criterioForm.inicialPredio"
+                'ng-model' => "criterioForm.predioInicial"
             ))
-            ->addElement('text', 'finalPredio', array(
+            ->addElement('text', 'predioFinal', array(
                 'size' => 3,
                 'alt' => 'enderecoPredio',
                 'label' => 'Prédio final',
-                'ng-model' => "criterioForm.finalPredio"
+                'ng-model' => "criterioForm.predioFinal"
             ))
-            ->addElement('text', 'inicialNivel', array(
+            ->addElement('text', 'nivelInicial', array(
                 'size' => 3,
                 'alt' => 'enderecoNivel',
                 'label' => 'Nível inicial',
-                'ng-model' => "criterioForm.inicialNivel"
+                'ng-model' => "criterioForm.nivelInicial"
             ))
-            ->addElement('text', 'finalNivel', array(
+            ->addElement('text', 'nivelFinal', array(
                 'size' => 3,
                 'alt' => 'enderecoNivel',
                 'label' => 'Nível final',
-                'ng-model' => "criterioForm.finalNivel"
+                'ng-model' => "criterioForm.nivelFinal"
             ))
-            ->addElement('text', 'inicialApartamento', array(
+            ->addElement('text', 'aptoInicial', array(
                 'size' => 3,
                 'alt' => 'enderecoApartamento',
                 'label' => 'Apto inicial',
-                'ng-model' => "criterioForm.inicialApartamento"
+                'ng-model' => "criterioForm.aptoInicial"
             ))
-            ->addElement('text', 'finalApartamento', array(
+            ->addElement('text', 'aptoFinal', array(
                 'size' => 3,
                 'alt' => 'enderecoApartamento',
                 'label' => 'Apto final',
-                'ng-model' => "criterioForm.finalApartamento"
+                'ng-model' => "criterioForm.aptoFinal"
             ))
             ->addElement('select', 'lado', array(
                 'mostrarSelecione' => false,
@@ -97,28 +97,28 @@ class InventarioEnderecoForm extends SubForm
                 'label' => 'Ativo',
                 'ng-model' => "criterioForm.ativo"
             ))
-            ->addElement('select', 'idCaracteristica', array(
+            ->addElement('select', 'idCarac', array(
                 'mostrarSelecione' => false,
                 'class' => 'medio',
                 'multiOptions' => array('firstOpt' => 'Todos', 'options' => $this->getEm()->getRepository('wms:Deposito\Endereco\Caracteristica')->getIdValue()),
                 'label' => 'Caractristica',
-                'ng-model' => "criterioForm.caracteristica"
+                'ng-model' => "criterioForm.idCarac"
             ))
-            ->addElement('select', 'idEstruturaArmazenagem', array(
+            ->addElement('select', 'estrutArmaz', array(
                 'mostrarSelecione' => false,
                 'class' => 'medio',
                 'multiOptions' => array('firstOpt' => 'Todos', 'options' => $this->getEm()->getRepository('wms:Armazenagem\Estrutura\Tipo')->getIdValue()),
                 'label' => 'Estrutura de Armazenagem',
                 'ng-model' => "criterioForm.estrutArmaz"
             ))
-            ->addElement('select', 'idTipoEndereco', array(
+            ->addElement('select', 'tipoEnd', array(
                 'mostrarSelecione' => false,
                 'class' => 'medio',
                 'multiOptions' => array('firstOpt' => 'Todos', 'options' => $this->getEm()->getRepository('wms:Deposito\Endereco\Tipo')->getIdValue()),
                 'label' => 'Tipo de Endereço',
                 'ng-model' => "criterioForm.tipoEnd"
             ))
-            ->addElement('select', 'idAreaArmazenagem', array(
+            ->addElement('select', 'areaArmaz', array(
                 'mostrarSelecione' => false,
                 'class' => 'medio',
                 'multiOptions' => array('firstOpt' => 'Todos', 'options' => $this->getEm()->getRepository('wms:Deposito\AreaArmazenagem')->getIdValue(array('idDeposito' => $sessao->idDepositoLogado))),
@@ -139,8 +139,8 @@ class InventarioEnderecoForm extends SubForm
                 'attribs' => array('id' => 'btn-clear'),
                 'ng-click' => "clearForm()"
             ))
-            ->addDisplayGroup(array('inicialRua', 'finalRua', 'inicialPredio', 'finalPredio', 'inicialNivel', 'finalNivel', 'inicialApartamento', 'finalApartamento'), 'endereco', array('legend' => 'Intervalo de Endereços'))
-            ->addDisplayGroup(array('idCaracteristica', 'idEstruturaArmazenagem', 'idTipoEndereco', 'lado', 'idAreaArmazenagem', 'situacao', 'status', 'ativo', 'btnBuscar', 'clearForm'), 'caracteristica', array('legend' => 'Características'));
+            ->addDisplayGroup(array('ruaInicial', 'ruaFinal', 'predioInicial', 'predioFinal', 'nivelInicial', 'nivelFinal', 'aptoInicial', 'aptoFinal'), 'endereco', array('legend' => 'Intervalo de Endereços'))
+            ->addDisplayGroup(array('idCarac', 'estrutArmaz', 'tipoEnd', 'lado', 'areaArmaz', 'situacao', 'status', 'ativo', 'btnBuscar', 'clearForm'), 'caracteristica', array('legend' => 'Características'));
         } catch (\Zend_Form_Exception $e) {
         }
     }

@@ -2,7 +2,8 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
     $scope.maxPerPage = 15;
     $scope.inventarios = [];
     $scope.showLoading = true ;
-    $scope.showList = !$scope.showLoading;
+    $scope.showNoResults = false ;
+    $scope.showList = false;
     $scope.massActionRoute = null;
 
     $scope.statusArr = [
@@ -56,7 +57,8 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
 
     $scope.requestForm = function () {
         $scope.showLoading = true ;
-        $scope.showList = !$scope.showLoading;
+        $scope.showNoResults = false ;
+        $scope.showList = false;
         var params = {};
         for (var x in $scope.criterioForm){
             var val = $scope.criterioForm[x];
@@ -70,8 +72,9 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
             $scope.inventarios = response.data;
             preparePaginator();
         }).then(function () {
-            $scope.showLoading = ($scope.inventarios.length === 0) ;
-            $scope.showList = !$scope.showLoading;
+            $scope.showLoading = false ;
+            $scope.showList = ($scope.resultFormRequest.length > 0);
+            $scope.showNoResults = ($scope.resultFormRequest.length === 0);
         });
     };
 

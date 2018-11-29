@@ -38,18 +38,25 @@ class InventarioProdutoForm extends Form
                     'multiOptions' => $this->getEm()->getRepository("wms:Fabricante")->getIdValue(),
                     'ng-model' => 'criterioForm.fabricante'
                 ))
-                ->addElement('select', 'idLinhaSeparacao', array(
+                ->addElement('select', 'linhaSep', array(
                     'mostrarSelecione' => true,
                     'label' => 'Linha de Separação',
-                    'ng-model' => 'criterioForm.idLinhaSeparacao',
+                    'ng-model' => 'criterioForm.linhaSep',
                     'multiOptions' => $this->getEm()->getRepository('wms:Armazenagem\LinhaSeparacao')->getIdValue(),
                 ))
-                ->addElement('select', 'idCaracteristica', array(
+                ->addElement('select', 'idCarac', array(
                     'mostrarSelecione' => false,
                     'class' => 'medio',
                     'multiOptions' => array('firstOpt' => 'Todos', 'options' => $this->getEm()->getRepository('wms:Deposito\Endereco\Caracteristica')->getIdValue()),
-                    'label' => 'Caractristica',
-                    'ng-model' => "criterioForm.caracteristica"
+                    'label' => 'Caract. End',
+                    'ng-model' => "criterioForm.idCarac"
+                ))
+                ->addElement('select', 'classe', array(
+                    'mostrarSelecione' => false,
+                    'class' => 'medio',
+                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => $this->getEm()->getRepository('wms:Produto\Classe')->getIdValue()),
+                    'label' => 'Classe',
+                    'ng-model' => "criterioForm.classe"
                 ))
                 ->addElement('button', 'btnBuscar', array(
                     'class' => 'btn btn-form',
@@ -65,7 +72,7 @@ class InventarioProdutoForm extends Form
                     'attribs' => array('id' => 'btn-clear'),
                     'ng-click' => "clearForm()"
                 ))
-                ->addDisplayGroup(array('codProduto', 'grade', 'descricao', 'fabricante', 'classe', 'idLinhaSeparacao', 'idCaracteristica', 'btnBuscar', 'clearForm'), 'identificacao', array('legend' => 'Filtros de Busca'));
+                ->addDisplayGroup(array('codProduto', 'grade', 'descricao', 'fabricante', 'classe', 'linhaSep', 'idCarac', 'btnBuscar', 'clearForm'), 'identificacao', array('legend' => 'Filtros de Busca'));
         }
         catch (\Zend_Form_Exception $e) {
 

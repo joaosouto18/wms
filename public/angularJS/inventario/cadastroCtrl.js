@@ -1,33 +1,36 @@
 angular.module("app").controller("cadastroInventarioCtrl", function($scope, $http, $filter){
     $scope.maxPerPage = 15;
-    $scope.showLoading = false ;
+    $scope.showLoading = false;
     $scope.showList = false;
+    $scope.showNoResults = false;
+    $scope.showPaginatorResult = false;
     $scope.resultFormRequest = [];
     $scope.elementosSelecionados = [];
 
     $scope.clearForm = function() {
-        console.log("chamou");
         $scope.criterioForm = {
             codProduto: undefined,
             grade: undefined,
             descricao: undefined,
             fabricante: undefined,
-            inicialRua: undefined,
-            finalRua: undefined,
-            inicialPredio: undefined,
-            finalPredio: undefined,
-            inicialNivel: undefined,
-            finalNivel: undefined,
-            inicialApartamento: undefined,
-            finalApartamento: undefined,
+            linhaSep: undefined,
+            classe: undefined,
+            ruaInicial: undefined,
+            ruaFinal: undefined,
+            predioInicial: undefined,
+            predioFinal: undefined,
+            nivelInicial: undefined,
+            nivelFinal: undefined,
+            aptoInicial: undefined,
+            aptoFinal: undefined,
             lado: undefined,
             situacao: undefined,
             status: undefined,
             ativo: undefined,
-            idCaracteristica: undefined,
-            idEstruturaArmazenagem: undefined,
-            idTipoEndereco: undefined,
-            idAreaArmazenagem: undefined
+            idCarac: undefined,
+            estrutArmaz: undefined,
+            tipoEnd: undefined,
+            areaArmaz: undefined
         };
     };
 
@@ -37,7 +40,13 @@ angular.module("app").controller("cadastroInventarioCtrl", function($scope, $htt
         console.log(elemento);
     };
 
-    $scope.resultPaginator = $scope.elementsPaginator= {
+    $scope.resultPaginator = {
+        pages: [],
+        actPage: {},
+        size: 0
+    };
+
+    $scope.elementsPaginator = {
         pages: [],
         actPage: {},
         size: 0
@@ -69,7 +78,9 @@ angular.module("app").controller("cadastroInventarioCtrl", function($scope, $htt
 
     $scope.requestForm = function () {
         $scope.showLoading = true ;
-        $scope.showList = !$scope.showLoading;
+        $scope.showNoResults = false ;
+        $scope.showList = false;
+        $scope.resultFormRequest = [];
         var params = {};
         for (var x in $scope.criterioForm){
             var val = $scope.criterioForm[x];
@@ -79,12 +90,16 @@ angular.module("app").controller("cadastroInventarioCtrl", function($scope, $htt
     };
 
     var ajaxRequestByFormParams = function (params) {
+
+        console.log(params);
         $http.post(URL_MODULO + "/index/get-elements-inventario-ajax", params).then(function (response){
             $scope.resultFormRequest = response.data;
             preparePaginator();
+            $scope.ordenarPor("dscEndereco","result");
         }).then(function () {
-            $scope.showLoading = ($scope.resultFormRequest.length === 0) ;
-            $scope.showList = !$scope.resultFormRequest;
+            $scope.showLoading = false;
+            $scope.showList = ($scope.resultFormRequest.length > 0);
+            $scope.showNoResults = ($scope.resultFormRequest.length === 0);
         });
     };
 
@@ -109,6 +124,7 @@ angular.module("app").controller("cadastroInventarioCtrl", function($scope, $htt
             if (i === 0 ) $scope.resultPaginator.actPage = page;
         }
         $scope.resultPaginator.size = nPages;
+        $scope.showPaginatorResult = (nPages > 0);
     };
 
     $scope.typeSensitiveComparator = function(v1, v2) {
@@ -123,27 +139,32 @@ angular.module("app").controller("cadastroInventarioCtrl", function($scope, $htt
         return v1.value.localeCompare(v2.value);
     };
 
-    $scope.checkSelected = function (inventario) {
+    $scope.checkSelected = function (obj, grid) {
         $scope.resultPaginator[$scope.resultPaginator.findIndex(function (el) {
-            return (el === inventario)
-        })].checked = !inventario.checked;
+            return (el === obj)
+        })].checked = !obj.checked;
         var actPag = $scope.resultPaginator.actPage;
         $scope.resultPaginator.actPage.selectedAll = ($filter("filter")(
             $scope.resultFormRequest.slice(actPag.indexStart, actPag.indexEnd ),
             {checked: true }).length === (actPag.indexEnd - actPag.indexStart)) ;
     };
     
-    $scope.selectAllPage = function() {
-        var page = $scope.resultPaginator.actPage;
-        angular.forEach($scope.resultFormRequest, function (inv, k) {
-            if ( k >= page.indexStart && k <= page.indexEnd){
-                $scope.resultFormRequest[k].checked = page.selectedAll;
-            }
-        })
+    $scope.selectAllPage = function(grid) {
+        if (grid === 'results') {
+            angular.forEach($scope.resultFormRequest, function (obj, k) {
+                if (k >= $scope.resultPaginator.actPage.indexStart && k <= $scope.resultPaginator.actPage.indexEnd) {
+                    $scope.resultFormRequest[k].checked = $scope.resultPaginator.actPage.selectedAll;
+                }
+            })
+        } else if (grid === 'elements') {
+            angular.forEach($scope.elementosSelecionados, function (obj, k) {
+                if (k >= $scope.elementsPaginator.actPage.indexStart && k <= $scope.elementsPaginator.actPage.indexEnd) {
+                    $scope.elementosSelecionados[k].checked = $scope.elementsPaginator.actPage.selectedAll;
+                }
+            })
+        }
     };
 
-    $scope.ordenarPor("id","elements");
-    
 }).filter("interval", function () {
     return function (input, interval) {
         if (input.length > 0) {

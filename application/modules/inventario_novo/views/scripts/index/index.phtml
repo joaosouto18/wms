@@ -112,6 +112,11 @@
                         <img height="150%" src="/img/ajax-bar-loader.gif" width="50%">
                     </td>
                 </tr>
+                <tr ng-show="showNoResults">
+                    <td colspan="100%" align="center">
+                        <span>Nenhum registro foi encontrado</span>
+                    </td>
+                </tr>
                 <tr ng-show="showList" class="gTResultSet " ng-repeat="inventario in inventarios | interval:{start: paginator.actPage.indexStart, end:paginator.actPage.indexEnd} | orderBy:tbOrderBy:direction:typeSensitiveComparator">
                     <td class="gRowCheck"><input type="checkbox" name="mass-id[]" ng-checked="inventario.checked" ng-click="checkSelected(inventario)" value="{{inventario.id}}"></td>
                     <td class="gTdOpcRow">
