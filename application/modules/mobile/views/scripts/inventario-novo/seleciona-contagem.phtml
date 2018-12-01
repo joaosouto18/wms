@@ -1,7 +1,7 @@
-﻿<?php if (count($this->numContagens) > 0) : ?>
-<div id="userInfo" class="row">
-    <h4>Inv. 73 - inventario rua c lado esquerdo</h4>
-    <h3>Contagens</h3>
+<?php if (count($this->numContagens) > 0) : ?>
+    <div id="userInfo" class="row">
+        <h4> <?php echo $inventario['id']. " - " .$inventario['descricao']; ?></h4>
+        <h3>Contagens</h3>
         <?php foreach ($this->numContagens as $numContagem) : ?>
             <?php if ($numContagem['DIVERGENCIA'] != 1) : ?>
                 <div class="row">
