@@ -6,11 +6,11 @@
  * Time: 14:49
  */
 
-namespace Wms\Domain\Entity\InventarioNovo;
+namespace Wms\Domain\Entity;
 
 /**
  * @Table(name="INVENTARIO_NOVO")
- * @Entity(repositoryClass="Wms\Domain\Entity\InventarioNovo\InventarioNovoRepository")
+ * @Entity(repositoryClass="Wms\Domain\Entity\InventarioNovoRepository")
  */
 class InventarioNovo
 {

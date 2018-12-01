@@ -14,133 +14,133 @@ class InventarioEnderecoForm extends SubForm
 {
     public function init()
     {
-        $em = $this->getEm();
         $sessao = new \Zend_Session_Namespace('deposito');
 
-        $repoCaracteristica = $em->getRepository('wms:Deposito\Endereco\Caracteristica');
-        $repoEstrutura = $em->getRepository('wms:Armazenagem\Estrutura\Tipo');
-        $repoTipo = $em->getRepository('wms:Deposito\Endereco\Tipo');
-        $repoArea = $em->getRepository('wms:Deposito\AreaArmazenagem');
-
         //form's attr
-        $this->setAttribs(array('id' => 'tab-endereco-inventario-form', 'class' => 'filtro'));
+        $this->setAttribs(array('id' => 'criterio-inventario-form', 'class' => 'filtro'));
 
         //endereço
         try {
-            $this->addElement('text', 'inicialRua', array(
+            $this->addElement('text', 'ruaInicial', array(
                 'size' => 3,
                 'alt' => 'enderecoRua',
                 'label' => 'Rua inicial',
-                'ng-model' => "formEndereco.ruaIni"
-
+                'ng-model' => "criterioForm.ruaInicial"
             ))
-            ->addElement('text', 'finalRua', array(
+            ->addElement('text', 'ruaFinal', array(
                 'size' => 3,
                 'alt' => 'enderecoRua',
                 'label' => 'Rua Final',
-                'ng-model' => "formEndereco.ruaFin"
+                'ng-model' => "criterioForm.ruaFinal"
             ))
-            ->addElement('text', 'inicialPredio', array(
+            ->addElement('text', 'predioInicial', array(
                 'size' => 3,
                 'alt' => 'enderecoPredio',
                 'label' => 'Prédio inicial',
-                'ng-model' => "formEndereco.predioIni"
+                'ng-model' => "criterioForm.predioInicial"
             ))
-            ->addElement('text', 'finalPredio', array(
+            ->addElement('text', 'predioFinal', array(
                 'size' => 3,
                 'alt' => 'enderecoPredio',
                 'label' => 'Prédio final',
-                'ng-model' => "formEndereco.predioFin"
+                'ng-model' => "criterioForm.predioFinal"
             ))
-            ->addElement('text', 'inicialNivel', array(
+            ->addElement('text', 'nivelInicial', array(
                 'size' => 3,
                 'alt' => 'enderecoNivel',
                 'label' => 'Nível inicial',
-                'ng-model' => "formEndereco.nivelIni"
+                'ng-model' => "criterioForm.nivelInicial"
             ))
-            ->addElement('text', 'finalNivel', array(
+            ->addElement('text', 'nivelFinal', array(
                 'size' => 3,
                 'alt' => 'enderecoNivel',
                 'label' => 'Nível final',
-                'ng-model' => "formEndereco.nivelFin"
+                'ng-model' => "criterioForm.nivelFinal"
             ))
-            ->addElement('text', 'inicialApartamento', array(
+            ->addElement('text', 'aptoInicial', array(
                 'size' => 3,
                 'alt' => 'enderecoApartamento',
                 'label' => 'Apto inicial',
-                'ng-model' => "formEndereco.aptoIni"
+                'ng-model' => "criterioForm.aptoInicial"
             ))
-            ->addElement('text', 'finalApartamento', array(
+            ->addElement('text', 'aptoFinal', array(
                 'size' => 3,
                 'alt' => 'enderecoApartamento',
                 'label' => 'Apto final',
-                'ng-model' => "formEndereco.aptoFin"
+                'ng-model' => "criterioForm.aptoFinal"
             ))
             ->addElement('select', 'lado', array(
                 'mostrarSelecione' => false,
-                'multiOptions' => Endereco::$listaTipoLado,
+                'multiOptions' => array('firstOpt' => 'Todos', 'options' => ['I' => 'Impar', 'P' => 'Par']),
                 'label' => 'Lado',
                 'class' => 'pequeno',
-                'ng-model' => "formEndereco.lado"
+                'ng-model' => "criterioForm.lado"
             ))
             ->addElement('select', 'situacao', array(
                 'mostrarSelecione' => false,
                 'class' => 'medio',
-                'multiOptions' => array('firstOpt' => 'Todos', 'options' => array('B' => 'Bloqueado', 'D' => 'Desbloqueado')),
+                'multiOptions' => array('firstOpt' => 'Todos', 'options' => ['B' => 'Bloqueado', 'D' => 'Desbloqueado']),
                 'label' => 'Situação',
-                'ng-model' => "formEndereco.situacao"
+                'ng-model' => "criterioForm.situacao"
             ))
             ->addElement('select', 'status', array(
                 'mostrarSelecione' => false,
                 'class' => 'pequeno',
-                'multiOptions' => array('firstOpt' => 'Todos', 'options' => array('D' => 'Disponível', 'O' => 'Ocupado')),
+                'multiOptions' => array('firstOpt' => 'Todos', 'options' => ['D' => 'Disponível', 'O' => 'Ocupado']),
                 'label' => 'Status',
-                'ng-model' => "formEndereco.status"
+                'ng-model' => "criterioForm.status"
             ))
             ->addElement('select', 'ativo', array(
                 'mostrarSelecione' => false,
                 'class' => 'medio',
-                'multiOptions' => array('S' => 'Ativo', 'N' => 'Inativo'),
+                'multiOptions' => array('firstOpt' => 'Todos', 'options' => ['S' => 'Ativo', 'N' => 'Inativo']),
                 'label' => 'Ativo',
-                'ng-model' => "formEndereco.ativo"
+                'ng-model' => "criterioForm.ativo"
             ))
-            ->addElement('select', 'idCaracteristica', array(
+            ->addElement('select', 'idCarac', array(
                 'mostrarSelecione' => false,
                 'class' => 'medio',
-                'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoCaracteristica->getIdValue()),
+                'multiOptions' => array('firstOpt' => 'Todos', 'options' => $this->getEm()->getRepository('wms:Deposito\Endereco\Caracteristica')->getIdValue()),
                 'label' => 'Caractristica',
-                'ng-model' => "formEndereco.caracteristica"
+                'ng-model' => "criterioForm.idCarac"
             ))
-            ->addElement('select', 'idEstruturaArmazenagem', array(
+            ->addElement('select', 'estrutArmaz', array(
                 'mostrarSelecione' => false,
                 'class' => 'medio',
-                'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoEstrutura->getIdValue()),
+                'multiOptions' => array('firstOpt' => 'Todos', 'options' => $this->getEm()->getRepository('wms:Armazenagem\Estrutura\Tipo')->getIdValue()),
                 'label' => 'Estrutura de Armazenagem',
-                'ng-model' => "formEndereco.estrutArmaz"
+                'ng-model' => "criterioForm.estrutArmaz"
             ))
-            ->addElement('select', 'idTipoEndereco', array(
+            ->addElement('select', 'tipoEnd', array(
                 'mostrarSelecione' => false,
                 'class' => 'medio',
-                'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoTipo->getIdValue()),
+                'multiOptions' => array('firstOpt' => 'Todos', 'options' => $this->getEm()->getRepository('wms:Deposito\Endereco\Tipo')->getIdValue()),
                 'label' => 'Tipo de Endereço',
-                'ng-model' => "formEndereco.tipoEnd"
+                'ng-model' => "criterioForm.tipoEnd"
             ))
-            ->addElement('select', 'idAreaArmazenagem', array(
+            ->addElement('select', 'areaArmaz', array(
                 'mostrarSelecione' => false,
                 'class' => 'medio',
-                'multiOptions' => array('firstOpt' => 'Todos', 'options' => $repoArea->getIdValue(array('idDeposito' => $sessao->idDepositoLogado))),
+                'multiOptions' => array('firstOpt' => 'Todos', 'options' => $this->getEm()->getRepository('wms:Deposito\AreaArmazenagem')->getIdValue(array('idDeposito' => $sessao->idDepositoLogado))),
                 'label' => 'Área de Armazenagem',
-                'ng-model' => "formEndereco.areaArmaz"
+                'ng-model' => "criterioForm.areaArmaz"
             ))
             ->addElement('button', 'btnBuscar', array(
                 'class' => 'btn btn-form',
                 'label' => 'Buscar',
                 'decorators' => array('ViewHelper'),
                 'attribs' => array('id' => 'btn-buscar-endereco'),
-                'ng-click' => "findEnderecos()"
+                'ng-click' => "requestForm()"
             ))
-            ->addDisplayGroup(array('inicialRua', 'finalRua', 'inicialPredio', 'finalPredio', 'inicialNivel', 'finalNivel', 'inicialApartamento', 'finalApartamento'), 'endereco', array('legend' => 'Intervalo de Endereços'))
-            ->addDisplayGroup(array('idCaracteristica', 'idEstruturaArmazenagem', 'idTipoEndereco', 'lado', 'idAreaArmazenagem', 'situacao', 'status', 'ativo', 'btnBuscar'), 'caracteristica', array('legend' => 'Características'));
+            ->addElement('button', 'clearForm', array(
+                'class' => 'btn btn-form',
+                'label' => 'Limpar',
+                'decorators' => array('ViewHelper'),
+                'attribs' => array('id' => 'btn-clear'),
+                'ng-click' => "clearForm()"
+            ))
+            ->addDisplayGroup(array('ruaInicial', 'ruaFinal', 'predioInicial', 'predioFinal', 'nivelInicial', 'nivelFinal', 'aptoInicial', 'aptoFinal'), 'endereco', array('legend' => 'Intervalo de Endereços'))
+            ->addDisplayGroup(array('idCarac', 'estrutArmaz', 'tipoEnd', 'lado', 'areaArmaz', 'situacao', 'status', 'ativo', 'btnBuscar', 'clearForm'), 'caracteristica', array('legend' => 'Características'));
         } catch (\Zend_Form_Exception $e) {
         }
     }

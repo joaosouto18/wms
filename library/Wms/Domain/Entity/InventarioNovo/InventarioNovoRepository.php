@@ -15,23 +15,7 @@ class InventarioNovoRepository extends EntityRepository
      * @return InventarioNovo
      * @throws \Exception
      */
-
-
-    public function getInventarios($criterio = null, $dados = array())
-    {
-        // se nao receber a clausula WHERE como parametro, informo where 1=1 somente pra nao dar pau
-        $where = "WHERE 1=1 ";
-        if($criterio != null )
-            $where = $criterio;
-
-        $SQL = "SELECT * from InventarioNovo;
-        $records = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-
-        $result = array();
-    }
-
-    public function save($params)
-    {
+    public function save($params) {
         $em = $this->getEntityManager();
 
         $em->beginTransaction();

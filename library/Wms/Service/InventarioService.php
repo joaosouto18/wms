@@ -11,7 +11,11 @@ namespace Wms\Service;
 
 use Bisna\Base\Domain\Entity\EntityService;
 
-class InventarioService extends EntityService
+class InventarioService extends AbstractService
 {
+    public function teste()
+    {
+        $teste = $this->findAll();
+    }
 
 }

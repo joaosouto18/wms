@@ -223,18 +223,6 @@ class InventarioRepository extends EntityRepository {
             }
             if ($row['STATUS'] == 'FINALIZADO')
                 $andamento = 1;
-//            $dataInicioBanco = explode('-', $row['DTH_INICIO']);
-//            $dataInicio = new \DateTime();
-//            $dataInicio->setDate($dataInicioBanco[2], $dataInicioBanco[1], $dataInicioBanco[0]);
-//            $dataInicio->setTime($dataInicioBanco[3], $dataInicioBanco[4]);
-//
-//            $dataFinal = null;
-//            if ($row['DTH_FINALIZACAO'] != "") {
-//                $dataFinalBanco = explode('-', $row['DTH_FINALIZACAO']);
-//                $dataFinal = new \DateTime();
-//                $dataFinal->setDate($dataFinalBanco[2], $dataFinalBanco[1], $dataFinalBanco[0]);
-//                $dataFinal->setTime($dataFinalBanco[3], $dataFinalBanco[4]);
-//            }
 
             $andamento = number_format($andamento, 2) * 100;
             $values = array(

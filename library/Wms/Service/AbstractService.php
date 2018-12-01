@@ -9,87 +9,92 @@
 namespace Wms\Service;
 
 
+use Bisna\Base\Domain\Entity\EntityService;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\Entity;
 use Wms\Domain\Configurator;
 
-abstract class AbstractService
+abstract class AbstractService extends EntityService
 {
 
     /**
      * @var EntityManager $em
      */
     protected $em;
-    protected $entity;
+    protected $entityName;
 
-    public function __construct()
+    protected function initializeService()
     {
-        $this->em = \Zend_Registry::get('doctrine');
+        $this->em = $this->getEntityManager();
+        $this->entityName = $this->options['entityClassName'];
     }
 
     /**
      * @param object|array $data
+     * @param boolean $executeFlush
      * @return null | object
      * @throws \Exception
      */
-    public function insert($data)
+    public function save($data, $executeFlush = true)
     {
-        $entity = null;
-        if (is_array($data)) {
-            $entity = new $this->entity();
+        try {
+            $entity = null;
+            if (is_array($data)) {
+                $entity = new $this->entityName();
+                Configurator::configure($entity, $data);
+            } else if (is_object($data)){
+                $entity = $data;
+            }
+
+            $this->em->persist($entity);
+            if ($executeFlush) $this->em->flush();
+
+            return $entity;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @param array $data
+     * @param bool $executeFlush
+     * @return object
+     * @throws \Exception
+     */
+    public function update(array $data, $executeFlush = true)
+    {
+        try {
+            $entity = $this->get($data['id']);
+            if (empty($entity))
+                throw new \Exception("Nenhum registro para '$this->entityName' foi encontrado pelo ID '$data[id]'", 404);
+
             Configurator::configure($entity, $data);
-        } else if (is_object($data)){
-            $entity = $data;
-        }
 
-        $this->em->persist($entity);
-        $this->em->flush();
-        return $entity;
-    }
+            $this->em->persist($entity);
+            if ($executeFlush) $this->em->flush();
 
-    public function update(array $data)
-    {
-        $entity = $this->em->getReference($this->entity, $data['id']);
-        Configurator::configure($entity, $data);
-
-        $this->em->persist($entity);
-        $this->em->flush();
-
-        return $entity;
-    }
-
-    public function delete($id)
-    {
-        $entity = $this->em->getReference($this->entity, $id);
-        if($entity) {
-            $this->em->remove($entity);
-            $this->em->flush();
-            return $id;
+            return $entity;
+        } catch (\Exception $e) {
+            throw $e;
         }
     }
 
-    public function getEntity($id)
+    /**
+     * @param $id string|int
+     * @return object
+     * @throws \Doctrine\ORM\ORMException
+     */
+    public function getReference($id)
     {
-        $entity = $this->em->getReference($this->entity, $id);
+        $entity = $this->em->getReference($this->entityName, $id);
         return $entity;
     }
 
-    public function get($id)
-    {
-        return $this->em->getRepository($this->entity)->find($id);
-    }
-
-    public function findBy(array $criteria)
-    {
-        return $this->em->getRepository($this->entity)->findBy($criteria);
-    }
-
-    public function findOneBy(array $criteria)
-    {
-        return $this->em->getRepository($this->entity)->findOneBy($criteria);
-    }
-
+    /**
+     * @return object[]
+     */
     public function findAll()
     {
-        return $this->em->getRepository($this->entity)->findAll();
+        return $this->em->getRepository($this->entityName)->findAll();
     }
 }

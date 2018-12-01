@@ -1,114 +1,117 @@
-angular.module("app").controller("cadastroInventarioCtrl", function($scope, $http, $filter, $document){
+angular.module("app").controller("cadastroInventarioCtrl", function($scope, $http, $filter){
     $scope.maxPerPage = 15;
-    $scope.inventarios = [];
-    $scope.showLoading = true ;
-    $scope.showList = !$scope.showLoading;
-    $scope.massActionRoute = null;
-    $scope.porProduto = false;
-    $scope.porEndereco = true;
-
-    $scope.statusArr = [
-        {id: 542, label: "GERADO"},
-        {id: 543, label: "LIBERADO"},
-        {id: 544, label: "FINALIZADO / CONCLUIDO"},
-        {id: 545, label: "CANCELADO"}
-    ];
+    $scope.showLoading = false;
+    $scope.showList = false;
+    $scope.showNoResults = false;
+    $scope.showPaginatorResult = false;
+    $scope.resultFormRequest = [];
+    $scope.elementosSelecionados = [];
 
     $scope.clearForm = function() {
         $scope.criterioForm = {
-            rua: undefined,
-            ruaFinal: undefined,
-            predio: undefined,
-            predioFinal: undefined,
-            nivel: undefined,
-            nivelFinal: undefined,
-            apto: undefined,
-            aptoFinal: undefined,
-            dataInicial1: undefined,
-            dataInicial2: undefined,
-            dataFinal1: undefined,
-            dataFinal2: undefined,
-            status: undefined,
-            produto: undefined,
+            codProduto: undefined,
             grade: undefined,
-            inventario: undefined
+            descricao: undefined,
+            fabricante: undefined,
+            linhaSep: undefined,
+            classe: undefined,
+            ruaInicial: undefined,
+            ruaFinal: undefined,
+            predioInicial: undefined,
+            predioFinal: undefined,
+            nivelInicial: undefined,
+            nivelFinal: undefined,
+            aptoInicial: undefined,
+            aptoFinal: undefined,
+            lado: undefined,
+            situacao: undefined,
+            status: undefined,
+            ativo: undefined,
+            idCarac: undefined,
+            estrutArmaz: undefined,
+            tipoEnd: undefined,
+            areaArmaz: undefined
         };
     };
+
     $scope.clearForm();
 
-    $scope.paginator = {
+    $scope.removeSelecionado = function(elemento) {
+        console.log(elemento);
+    };
+
+    $scope.resultPaginator = {
         pages: [],
         actPage: {},
         size: 0
     };
 
-
-    $scope.ordenarPor = function (campo) {
-        $scope.direction = (campo !== null && $scope.tbOrderBy === campo) ? !$scope.direction : true;
-        $scope.tbOrderBy = campo;
+    $scope.elementsPaginator = {
+        pages: [],
+        actPage: {},
+        size: 0
     };
 
-    $scope.changePage = function (destination) {
-        if ((destination > 0  && ($scope.paginator.actPage.idPage + 1 ) === $scope.paginator.size )
-            || (destination < 0 && $scope.paginator.actPage.idPage === 0)) return;
+    $scope.ordenarPor = function (campo, grid) {
+        if (grid === 'elements') {
+            $scope.directionElements = (campo !== null && $scope.elementsOrderBy === campo) ? !$scope.directionElements : true;
+            $scope.elementsOrderBy = campo;
+        } else if (grid === 'results') {
+            $scope.directionResults = (campo !== null && $scope.resultsOrderBy === campo) ? !$scope.directionResults : true;
+            $scope.resultsOrderBy = campo;
+        }
+    };
 
-        var page = $scope.paginator.actPage;
-        $scope.paginator.actPage = $scope.paginator.pages[ page.idPage + destination ];
+    $scope.changePage = function (destination, grid) {
+        if (grid === 'elements') {
+            if ((destination > 0  && ($scope.elementsPaginator.actPage.idPage + 1 ) === $scope.elementsPaginator.size )
+                || (destination < 0 && $scope.elementsPaginator.actPage.idPage === 0)) return;
+
+            $scope.elementsPaginator.actPage = $scope.elementsPaginator.pages[ $scope.elementsPaginator.actPage.idPage + destination ];
+        } else if (grid === 'results') {
+            if ((destination > 0  && ($scope.resultPaginator.actPage.idPage + 1 ) === $scope.resultPaginator.size )
+                || (destination < 0 && $scope.resultPaginator.actPage.idPage === 0)) return;
+
+            $scope.resultPaginator.actPage = $scope.resultPaginator.pages[ $scope.resultPaginator.actPage.idPage + destination ];
+        }
     };
 
     $scope.requestForm = function () {
         $scope.showLoading = true ;
-        $scope.showList = !$scope.showLoading;
+        $scope.showNoResults = false ;
+        $scope.showList = false;
+        $scope.resultFormRequest = [];
         var params = {};
         for (var x in $scope.criterioForm){
             var val = $scope.criterioForm[x];
             if (val) params[x] = val;
         }
-        getInventarios(params);
+        ajaxRequestByFormParams(params);
     };
 
-    var getInventarios = function (params) {
-        $http.post(URL_MODULO + "/index/get-inventarios-ajax", params).then(function (response){
-            $scope.inventarios = response.data;
+    var ajaxRequestByFormParams = function (params) {
+
+        console.log(params);
+        $http.post(URL_MODULO + "/index/get-elements-inventario-ajax", params).then(function (response){
+            $scope.resultFormRequest = response.data;
             preparePaginator();
+            $scope.ordenarPor("dscEndereco","result");
         }).then(function () {
-            $scope.showLoading = ($scope.inventarios.length === 0) ;
-            $scope.showList = !$scope.showLoading;
+            $scope.showLoading = false;
+            $scope.showList = ($scope.resultFormRequest.length > 0);
+            $scope.showNoResults = ($scope.resultFormRequest.length === 0);
         });
-    };
-
-    $scope.massActionRequest = function () {
-        var invs = $filter("filter")( $scope.inventarios, {checked: true } );
-        if (!invs.length) {
-            $.wmsDialogAlert({title: "Alerta!", msg:"Nenhum inventário foi selecionado!"});
-            return
-        }
-
-        if (!$scope.massActionRoute) {
-            $.wmsDialogAlert({title: "Alerta!", msg:"Nenhuma ação foi selecionada!"});
-            return
-        }
-        var params = {"mass-id": []};
-        angular.forEach(invs, function (el) {
-            params["mass-id"].push(el.id);
-        });
-
-        $("#invetGridForm")
-            .attr('action', "http://wms.local/inventario/" + $scope.massActionRoute + "?" + $.param(params))
-            .attr('target', '_self')
-            .submit();
-
     };
 
     var preparePaginator = function () {
-        var nPages = Math.ceil($scope.inventarios.length / $scope.maxPerPage);
+        var nPages = Math.ceil($scope.resultFormRequest.length / $scope.maxPerPage);
         for (var i = 0; i < nPages; i++) {
 
             var start = ( i * $scope.maxPerPage );
             var end = ( ( i + 1 ) * $scope.maxPerPage ) - 1 ;
 
             if (i === nPages) {
-                end = $scope.inventarios.length - 1;
+                end = $scope.resultFormRequest.length - 1;
             }
 
             var page = {
@@ -117,10 +120,11 @@ angular.module("app").controller("cadastroInventarioCtrl", function($scope, $htt
                 indexStart: start,
                 indexEnd: end
             };
-            $scope.paginator.pages.push(page);
-            if (i === 0 ) $scope.paginator.actPage = page;
+            $scope.resultPaginator.pages.push(page);
+            if (i === 0 ) $scope.resultPaginator.actPage = page;
         }
-        $scope.paginator.size = nPages;
+        $scope.resultPaginator.size = nPages;
+        $scope.showPaginatorResult = (nPages > 0);
     };
 
     $scope.typeSensitiveComparator = function(v1, v2) {
@@ -135,28 +139,32 @@ angular.module("app").controller("cadastroInventarioCtrl", function($scope, $htt
         return v1.value.localeCompare(v2.value);
     };
 
-    $scope.checkSelected = function (inventario) {
-        $scope.inventarios[$scope.inventarios.findIndex(function (el) {
-            return (el === inventario)
-        })].checked = !inventario.checked;
-        var actPag = $scope.paginator.actPage;
-        $scope.paginator.actPage.selectedAll = ($filter("filter")(
-            $scope.inventarios.slice(actPag.indexStart, actPag.indexEnd ),
+    $scope.checkSelected = function (obj, grid) {
+        $scope.resultPaginator[$scope.resultPaginator.findIndex(function (el) {
+            return (el === obj)
+        })].checked = !obj.checked;
+        var actPag = $scope.resultPaginator.actPage;
+        $scope.resultPaginator.actPage.selectedAll = ($filter("filter")(
+            $scope.resultFormRequest.slice(actPag.indexStart, actPag.indexEnd ),
             {checked: true }).length === (actPag.indexEnd - actPag.indexStart)) ;
     };
     
-    $scope.selectAllPage = function() {
-        var page = $scope.paginator.actPage;
-        angular.forEach($scope.inventarios, function (inv, k) {
-            if ( k >= page.indexStart && k <= page.indexEnd){
-                $scope.inventarios[k].checked = page.selectedAll;
-            }
-        })
+    $scope.selectAllPage = function(grid) {
+        if (grid === 'results') {
+            angular.forEach($scope.resultFormRequest, function (obj, k) {
+                if (k >= $scope.resultPaginator.actPage.indexStart && k <= $scope.resultPaginator.actPage.indexEnd) {
+                    $scope.resultFormRequest[k].checked = $scope.resultPaginator.actPage.selectedAll;
+                }
+            })
+        } else if (grid === 'elements') {
+            angular.forEach($scope.elementosSelecionados, function (obj, k) {
+                if (k >= $scope.elementsPaginator.actPage.indexStart && k <= $scope.elementsPaginator.actPage.indexEnd) {
+                    $scope.elementosSelecionados[k].checked = $scope.elementsPaginator.actPage.selectedAll;
+                }
+            })
+        }
     };
 
-    getInventarios([]);
-    $scope.ordenarPor("id");
-    
 }).filter("interval", function () {
     return function (input, interval) {
         if (input.length > 0) {
