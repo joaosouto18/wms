@@ -42,17 +42,119 @@ class InventarioNovoRepository extends EntityRepository
         return $enInventario;
     }
 
-    public function getEndProdInventario($params)
+    public function getEnderecosCriarNovoInventario($params)
     {
-        extract($params);
-
         $query = $this->_em->createQueryBuilder()
-            ->select("de.id,
+            ->select("
+                de.id,
+                de.descricao as dscEndereco, 
+                c.descricao as caracEnd,
+                aa.descricao as dscArea,
+                ea.descricao as dscEstrutura,
+                de.rua, de.predio, de.nivel, de.apartamento")
+            ->from('wms:Deposito\Endereco', 'de')
+            ->innerJoin('de.caracteristica', 'c')
+            ->innerJoin('de.estruturaArmazenagem', 'ea')
+            ->innerJoin('de.areaArmazenagem', 'aa')
+        ;
+
+        $query->distinct(true);
+
+        if (!empty($params['ruaInicial']) || !empty($params['ruaFinal'])) {
+            $condition = [];
+            if (!empty($params['ruaInicial'])) {
+                $condition[] = "de.rua >= $params[ruaInicial]";
+            }
+            if (!empty($params['ruaFinal'])) {
+                $condition[] = "de.rua <= $params[ruaFinal]";
+            }
+            $query->andWhere(implode(" AND ", $condition));
+        }
+
+        if (!empty($params['predioInicial']) || !empty($params['predioFinal'])) {
+            $condition = [];
+            if (!empty($params['predioInicial'])) {
+                $condition[] = "de.predio >= $params[predioInicial]";
+            }
+            if (!empty($params['predioFinal'])) {
+                $condition[] = "de.predio <= $params[predioFinal]";
+            }
+            $query->andWhere(implode(" AND ", $condition));
+        }
+
+        if (!empty($params['nivelInicial']) || !empty($params['nivelFinal'])) {
+            $condition = [];
+            if (!empty($params['nivelInicial'])) {
+                $condition[] = "de.nivel >= $params[nivelInicial]";
+            }
+            if (!empty($params['nivelFinal'])) {
+                $condition[] = "de.nivel <= $params[nivelFinal]";
+            }
+            $query->andWhere(implode(" AND ", $condition));
+        }
+
+        if (!empty($params['aptoInicial']) || !empty($params['aptoFinal'])) {
+            $condition = [];
+            if (!empty($params['aptoInicial'])) {
+                $condition[] = "de.apartamento >= $params[aptoInicial]";
+            }
+            if (!empty($params['aptoFinal'])) {
+                $condition[] = "de.apartamento <= $params[aptoFinal]";
+            }
+            $query->andWhere(implode(" AND ", $condition));
+        }
+
+        if (!empty($params['lado'])) {
+            if ($params['lado'] == "P")
+                $query->andWhere("MOD(de.predio,2) = 0");
+            if ($params['lado'] == "I")
+                $query->andWhere("MOD(de.predio,2) = 1");
+        }
+
+        if (!empty($params['situacao']))
+            $query->andWhere("de.situacao = :situacao")
+                ->setParameter('situacao', $params['situacao']);
+
+        if (!empty($params['status']))
+            $query->andWhere("de.status = :status")
+                ->setParameter('status', $params['status']);
+
+        if (!empty($params['idCarac']))
+            $query->andWhere("de.idCaracteristica = ?1")
+                ->setParameter(1, $params['idCarac']);
+
+        if (!empty($params['estrutArmaz']))
+            $query->andWhere("de.idEstruturaArmazenagem = ?2")
+                ->setParameter(2, $params['estrutArmaz']);
+
+        if (!empty($params['areaArmaz']))
+            $query->andWhere("de.idAreaArmazenagem = ?3")
+                ->setParameter(3, $params['areaArmaz']);
+
+        if (!empty($params['tipoEnd']))
+            $query->andWhere("de.idTipoEndereco = ?4")
+                ->setParameter(4, $params['tipoEnd']);
+
+        if (!empty($params['ativo']))
+            $query->andWhere("de.ativo = ?5")
+                ->setParameter(5, $params['ativo']);
+
+        $query->orderBy('de.rua, de.predio, de.nivel, de.apartamento');
+
+        return $query->getQuery()->getResult();
+    }
+
+    public function getProdutosCriarNovoInventario($params)
+    {
+        $query = $this->_em->createQueryBuilder()
+            ->select("
+                de.id,
                 de.descricao as dscEndereco, 
                 c.descricao as caracEnd,
                 p.id as codProduto,
                 p.grade,
-                p.descricao as dscProduto ")
+                p.descricao as dscProduto,
+                de.rua, de.predio, de.nivel, de.apartamento")
             ->from('wms:Deposito\Endereco', 'de')
             ->innerJoin('de.caracteristica', 'c')
             ->leftJoin('wms:Enderecamento\Estoque', 'e', 'WITH', 'e.depositoEndereco = de')
@@ -62,108 +164,110 @@ class InventarioNovoRepository extends EntityRepository
             ->leftJoin('p.linhaSeparacao', 'ls')
         ;
 
-        if (!empty($ruaInicial) || !empty($ruaFinal)) {
+        $query->distinct(true);
+
+        if (!empty($params['ruaInicial']) || !empty($params['ruaFinal'])) {
             $condition = [];
-            if (!empty($ruaInicial)) {
-                $condition[] = "de.rua >= $ruaInicial";
+            if (!empty($params['ruaInicial'])) {
+                $condition[] = "de.rua >= $params[ruaInicial]";
             }
-            if (!empty($ruaFinal)) {
-                $condition[] = "de.rua <= $ruaFinal";
+            if (!empty($params['ruaFinal'])) {
+                $condition[] = "de.rua <= $params[ruaFinal]";
             }
             $query->andWhere(implode(" AND ", $condition));
         }
 
-        if (!empty($predioInicial) || !empty($predioFinal)) {
+        if (!empty($params['predioInicial']) || !empty($params['predioFinal'])) {
             $condition = [];
-            if (!empty($predioInicial)) {
-                $condition[] = "de.predio >= $predioInicial";
+            if (!empty($params['predioInicial'])) {
+                $condition[] = "de.predio >= $params[predioInicial]";
             }
-            if (!empty($predioFinal)) {
-                $condition[] = "de.predio <= $predioFinal";
+            if (!empty($params['predioFinal'])) {
+                $condition[] = "de.predio <= $params[predioFinal]";
             }
             $query->andWhere(implode(" AND ", $condition));
         }
 
-        if (!empty($nivelInicial) || !empty($nivelFinal)) {
+        if (!empty($params['nivelInicial']) || !empty($params['nivelFinal'])) {
             $condition = [];
-            if (!empty($nivelInicial)) {
-                $condition[] = "de.nivel >= $nivelInicial";
+            if (!empty($params['nivelInicial'])) {
+                $condition[] = "de.nivel >= $params[nivelInicial]";
             }
-            if (!empty($nivelFinal)) {
-                $condition[] = "de.nivel <= $nivelFinal";
+            if (!empty($params['nivelFinal'])) {
+                $condition[] = "de.nivel <= $params[nivelFinal]";
             }
             $query->andWhere(implode(" AND ", $condition));
         }
 
-        if (!empty($aptoInicial) || !empty($aptoFinal)) {
+        if (!empty($params['aptoInicial']) || !empty($params['aptoFinal'])) {
             $condition = [];
-            if (!empty($aptoInicial)) {
-                $condition[] = "de.apartamento >= $aptoInicial";
+            if (!empty($params['aptoInicial'])) {
+                $condition[] = "de.apartamento >= $params[aptoInicial]";
             }
-            if (!empty($aptoFinal)) {
-                $condition[] = "de.apartamento <= $aptoFinal";
+            if (!empty($params['aptoFinal'])) {
+                $condition[] = "de.apartamento <= $params[aptoFinal]";
             }
             $query->andWhere(implode(" AND ", $condition));
         }
 
-        if (!empty($lado)) {
-            if ($lado == "P")
+        if (!empty($params['lado'])) {
+            if ($params['lado'] == "P")
                 $query->andWhere("MOD(de.predio,2) = 0");
-            if ($lado == "I")
+            if ($params['lado'] == "I")
                 $query->andWhere("MOD(de.predio,2) = 1");
         }
 
-        if (!empty($situacao))
+        if (!empty($params['situacao']))
             $query->andWhere("de.situacao = :situacao")
-                ->setParameter('situacao', $situacao);
+                ->setParameter('situacao', $params['situacao']);
 
-        if (!empty($status))
+        if (!empty($params['status']))
             $query->andWhere("de.status = :status")
-                ->setParameter('status', $status);
+                ->setParameter('status', $params['status']);
 
-        if (!empty($idCarac))
+        if (!empty($params['idCarac']))
             $query->andWhere("de.idCaracteristica = ?1")
-                ->setParameter(1, $idCarac);
+                ->setParameter(1, $params['idCarac']);
 
-        if (!empty($estrutArmaz))
+        if (!empty($params['estrutArmaz']))
             $query->andWhere("de.idEstruturaArmazenagem = ?2")
-                ->setParameter(2, $estrutArmaz);
+                ->setParameter(2, $params['estrutArmaz']);
 
-        if (!empty($areaArmaz))
+        if (!empty($params['areaArmaz']))
             $query->andWhere("de.idAreaArmazenagem = ?3")
-                ->setParameter(3, $areaArmaz);
+                ->setParameter(3, $params['areaArmaz']);
 
-        if (!empty($tipoEnd))
+        if (!empty($params['tipoEnd']))
             $query->andWhere("de.idTipoEndereco = ?4")
-                ->setParameter(4, $tipoEnd);
+                ->setParameter(4, $params['tipoEnd']);
 
-        if (!empty($ativo))
+        if (!empty($params['ativo']))
             $query->andWhere("de.ativo = ?5")
-                ->setParameter(5, $ativo);
+                ->setParameter(5, $params['ativo']);
 
-        if (!empty($fabricante))
+        if (!empty($params['fabricante']))
             $query->andWhere("f.id = ?6")
-                ->setParameter(6, $fabricante);
+                ->setParameter(6, $params['fabricante']);
 
-        if (!empty($descricao))
-            $query->andWhere("p.descricao like '%?7%'")
-                ->setParameter(7, $descricao);
+        if (!empty($params['descricao']))
+            $query->andWhere("p.descricao like ?7")
+                ->setParameter(7, "%$params[descricao]%");
 
-        if (!empty($codProduto))
-            $query->andWhere("p.id = '?8'")
-                ->setParameter(8, $codProduto);
+        if (!empty($params['codProduto']))
+            $query->andWhere("p.id = ?8")
+                ->setParameter(8, $params['codProduto']);
 
-        if (!empty($grade))
-            $query->andWhere("p.grade = '?9'")
-                ->setParameter(9, $grade);
+        if (!empty($params['grade']))
+            $query->andWhere("p.grade = ?9")
+                ->setParameter(9, $params['grade']);
 
-        if (!empty($classe))
+        if (!empty($params['classe']))
             $query->andWhere("cl.id = ?10")
-                ->setParameter(10, $classe);
+                ->setParameter(10, $params['classe']);
 
-        if (!empty($linhaSep))
+        if (!empty($params['linhaSep']))
             $query->andWhere("ls.id = ?11")
-                ->setParameter(11, $linhaSep);
+                ->setParameter(11, $params['linhaSep']);
 
         $query->orderBy('de.rua, de.predio, de.nivel, de.apartamento');
 

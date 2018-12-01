@@ -1,0 +1,126 @@
+<div ng-app="app" ng-controller="inventarioCtrl">
+    <style>
+        tr.gTResultSet:nth-child(even) {
+            background-color: #ededed
+        }
+        .grid .gTable {
+            background-color: white;
+        }
+
+        .remove {
+            cursor: pointer;
+            background-color: red;
+        }
+    </style>
+    <script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
+    <script src="<?php echo $this->baseUrl('angularJS/app.js') ?>"></script>
+    <script src="<?php echo $this->baseUrl('angularJS/inventario/cadastroCtrl.js') ?>"></script>
+    <?php echo $this->form; ?>
+    <table width="100%">
+        <tr >
+            <td width="50%" valign="top">
+                <fieldset id="fs-grid-result">
+                    <legend>Resultado da busca</legend>
+                    <div class="grid">
+                        <div class="gControl" ng-show="showPaginatorResult">
+                            <div class="gPager">
+                                <a href=""><img src="/img/admin/pager_arrow_left.gif" alt="<" width="15px" height="15px" ng-click="changePage(-1, 'results')"></a>
+                                <select title="Página atual" name="page" ng-model="resultPaginator.actPage" style="text-align: center;" ng-options="pagina.label for pagina in resultPaginator.pages"></select>
+                                <a href=""><img src="/img/admin/pager_arrow_right.gif" alt="<" width="15px" height="15px" ng-click="changePage(1, 'results')"></a>
+                                <span>de {{resultPaginator.pages.length}} página(s) </span>
+                                <span>|</span>
+                                <span>Total de {{resultFormRequest.length}} registros encontrados.</span>
+                            </div>
+                        </div>
+                        <div class="gMassAction">
+                            <div class="gSelect">
+                                <span>{{(resultFormRequest | filter:{checked: true }).length }} selecionados</span>
+                            </div>
+                            <div class="gAction">
+                                <button type="button" class="btn-grid" ng-click="incluirSelecionados()"><span>Selecionar</span></button>
+                            </div>
+                        </div>
+                        <table class="gTable">
+                            <tbody >
+                                <tr class="gTTitle">
+                                    <td align="center">
+                                        <label for="checkAllGridResult" id="checkAllGridResultLbl"></label>
+                                        <input name="checkAllGridResult" id="checkAllGridResult" type="checkbox" ng-model="resultPaginator.actPage.selectedAll" ng-change="selectAllPage('results')">
+                                    </td>
+                                    <td><a href="" title="" class="sort" ng-click="ordenarPor('dscEndereco','results')"><span>Endereco</span></a></td>
+                                    <td><a href="" title="" class="sort" ng-click="ordenarPor('caracEnd','results')"><span>Característica</span></a></td>
+                                    <td><a href="" title="" class="sort" ng-click="ordenarPor('dscArea','results')"><span>Área</span></a></td>
+                                    <td><a href="" title="" class="sort" ng-click="ordenarPor('dscEstrutura','results')"><span>Estrutura</span></a></td>
+                                </tr>
+                                <tr ng-show="showLoading">
+                                    <td colspan="100%" align="center">
+                                        <img height="150%" src="/img/ajax-bar-loader.gif" width="50%">
+                                    </td>
+                                </tr>
+                                <tr ng-show="showNoResults">
+                                    <td colspan="100%" align="center">
+                                        <span>Nenhum registro foi encontrado</span>
+                                    </td>
+                                </tr>
+                                <tr ng-show="showList" class="gTResultSet " ng-repeat="result in resultFormRequest | interval:{start: resultPaginator.actPage.indexStart, end:resultPaginator.actPage.indexEnd} | orderBy:resultsOrderBy:directionResults:typeSensitiveComparator">
+                                    <td class="gRowCheck"><input type="checkbox" ng-model="result.checked" ng-checked="result.checked" ng-change="checkSelected('results')" value="{{result.id}}"></td>
+                                    <td>{{result.dscEndereco}}</td>
+                                    <td>{{result.caracEnd}}</td>
+                                    <td>{{result.dscArea}}</td>
+                                    <td>{{result.dscEstrutura}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </fieldset>
+            </td>
+            <td width="50%" valign="top">
+                <fieldset id="fs-grid-selected">
+                    <legend>Selecionados</legend>
+                    <div class="grid" >
+                        <div class="gControl" ng-show="showPaginatorElements">
+                            <div class="gPager">
+                                <a href=""><img src="/img/admin/pager_arrow_left.gif" alt="<" width="15px" height="15px" ng-click="changePage(-1, 'elements')"></a>
+                                <select title="Página atual" name="page" ng-model="elementsPaginator.actPage" style="text-align: center;" ng-options="pagina.label for pagina in elementsPaginator.pages"></select>
+                                <a href=""><img src="/img/admin/pager_arrow_right.gif" alt=">" width="15px" height="15px" ng-click="changePage(1, 'elements')"></a>
+                                <span>de {{elementsPaginator.pages.length}} página(s) </span>
+                                <span>por página</span>
+                            </div>
+                        </div>
+                        <div class="gMassAction">
+                            <div class="gSelect">
+                                <span>Total de {{elementosSelecionados.length}} incluídos</span>
+                            </div>
+                            <div class="gAction">
+                                <button type="button" class="btn-grid" ng-click="criarInventario('endereco')"><span>Criar Inventario</span></button>
+                            </div>
+                        </div>
+                        <table class="gTable" >
+                            <tbody >
+                            <tr class="gTTitle">
+                                <td align="center">
+                                    <label for="checkAllGridElements" id="checkAllGridElementsLbl"></label>
+                                    <input name="checkAllGridElements" id="checkAllGridElements" type="checkbox" ng-model="elementsPaginator.actPage.selectedAll" ng-change="selectAllPage('elements')">
+                                </td>
+                                <td><a href="" title="" class="sort" ng-click="ordenarPor('dscEndereco','elements')"><span>Endereco</span></a></td>
+                                <td><a href="" title="" class="sort" ng-click="ordenarPor('caracEnd','elements')"><span>Característica</span></a></td>
+                                <td><a href="" title="" class="sort" ng-click="ordenarPor('dscArea','elements')"><span>Área</span></a></td>
+                                <td><a href="" title="" class="sort" ng-click="ordenarPor('dscEstrutura','elements')"><span>Estrutura</span></a></td>
+                                <td align="center"><span>Ação</span></td>
+                            </tr>
+                            <tr ng-show="showList" class="gTResultSet " ng-repeat="elemento in elementosSelecionados | interval:{start: elementsPaginator.actPage.indexStart, end:elementsPaginator.actPage.indexEnd} | orderBy:elementsOrderBy:directionElements:typeSensitiveComparator">
+                                <td class="gRowCheck"><input type="checkbox" ng-model="elemento.checked" ng-checked="elemento.checked" ng-change="checkSelected('elements')" value="{{elemento.id}}"></td>
+                                <td>{{elemento.dscEndereco}}</td>
+                                <td>{{elemento.caracEnd}}</td>
+                                <td>{{elemento.dscArea}}</td>
+                                <td>{{elemento.dscEstrutura}}</td>
+                                <td valign="center" align="center" ng-click="removeSelecionado(elemento)" class="remove" title="Remover item" ><b> X </b></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </fieldset>
+            </td>
+        </tr>
+    </table>
+</div>

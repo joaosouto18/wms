@@ -1,11 +1,16 @@
-angular.module("app").controller("cadastroInventarioCtrl", function($scope, $http, $filter){
+angular.module("app").controller("inventarioCtrl", function($scope, $http, $filter){
     $scope.maxPerPage = 15;
     $scope.showLoading = false;
     $scope.showList = false;
     $scope.showNoResults = false;
     $scope.showPaginatorResult = false;
+    $scope.showPaginatorElements = false;
     $scope.resultFormRequest = [];
     $scope.elementosSelecionados = [];
+    var rotasRequest = {
+        endereco:  "/index/get-enderecos-criar-ajax",
+        produto: "/index/get-produtos-criar-ajax"
+    };
 
     $scope.clearForm = function() {
         $scope.criterioForm = {
@@ -36,21 +41,25 @@ angular.module("app").controller("cadastroInventarioCtrl", function($scope, $htt
 
     $scope.clearForm();
 
-    $scope.removeSelecionado = function(elemento) {
-        console.log(elemento);
+    var newPaginator = function() {
+        return {
+            pages: [],
+            actPage: {}
+        };
     };
 
-    $scope.resultPaginator = {
-        pages: [],
-        actPage: {},
-        size: 0
+    var newPage = function(idPage, indexStart, indexEnd, itensPerpage ){
+        return {
+            idPage: idPage,
+            label: "Página - " + (idPage + 1),
+            indexStart: indexStart,
+            indexEnd: indexEnd,
+            itensPerPage: itensPerpage
+        }
     };
 
-    $scope.elementsPaginator = {
-        pages: [],
-        actPage: {},
-        size: 0
-    };
+    $scope.elementsPaginator = newPaginator();
+    $scope.resultPaginator = newPaginator();
 
     $scope.ordenarPor = function (campo, grid) {
         if (grid === 'elements') {
@@ -76,55 +85,56 @@ angular.module("app").controller("cadastroInventarioCtrl", function($scope, $htt
         }
     };
 
-    $scope.requestForm = function () {
+    $scope.requestForm = function (criterio) {
         $scope.showLoading = true ;
         $scope.showNoResults = false ;
         $scope.showList = false;
         $scope.resultFormRequest = [];
-        var params = {};
-        for (var x in $scope.criterioForm){
+        var params = {criterio: criterio};
+        for (var x in $scope.criterioForm) {
             var val = $scope.criterioForm[x];
             if (val) params[x] = val;
         }
-        ajaxRequestByFormParams(params);
+        ajaxRequestByFormParams(params, rotasRequest[criterio]);
     };
 
-    var ajaxRequestByFormParams = function (params) {
-
-        console.log(params);
-        $http.post(URL_MODULO + "/index/get-elements-inventario-ajax", params).then(function (response){
+    var ajaxRequestByFormParams = function (params, rota) {
+        $http.post(URL_MODULO + rota, params).then(function (response){
             $scope.resultFormRequest = response.data;
-            preparePaginator();
-            $scope.ordenarPor("dscEndereco","result");
+            $scope.ordenarPor("id","result");
         }).then(function () {
-            $scope.showLoading = false;
-            $scope.showList = ($scope.resultFormRequest.length > 0);
-            $scope.showNoResults = ($scope.resultFormRequest.length === 0);
+            preparePaginator('results', $scope.resultFormRequest.length);
         });
     };
 
-    var preparePaginator = function () {
-        var nPages = Math.ceil($scope.resultFormRequest.length / $scope.maxPerPage);
+    var preparePaginator = function (grid, countItens) {
+        var paginator = newPaginator();
+        var nPages = Math.ceil(countItens / $scope.maxPerPage);
         for (var i = 0; i < nPages; i++) {
 
-            var start = ( i * $scope.maxPerPage );
-            var end = ( ( i + 1 ) * $scope.maxPerPage ) - 1 ;
+            var start = (i * $scope.maxPerPage);
+            var end = ((i + 1) * $scope.maxPerPage);
 
-            if (i === nPages) {
-                end = $scope.resultFormRequest.length - 1;
+            if (i === (nPages - 1)) {
+                end = countItens;
             }
 
-            var page = {
-                idPage: i,
-                label: "Página - " + (i + 1),
-                indexStart: start,
-                indexEnd: end
-            };
-            $scope.resultPaginator.pages.push(page);
-            if (i === 0 ) $scope.resultPaginator.actPage = page;
+            var page = newPage(i, start, ( end - 1 ), (end - start));
+
+            paginator.pages.push(page);
+            if (i === 0) paginator.actPage = page;
         }
-        $scope.resultPaginator.size = nPages;
-        $scope.showPaginatorResult = (nPages > 0);
+        if (grid === 'results') {
+            $scope.showNoResults = (countItens === 0);
+            $scope.showPaginatorResult = (nPages > 0);
+            $scope.showLoading = false;
+            $scope.showList = (countItens > 0);
+            $scope.resultPaginator = paginator;
+        } else if (grid === 'elements') {
+            $scope.showPaginatorElements = (nPages > 0);
+            console.log(paginator);
+            $scope.elementsPaginator = paginator;
+        }
     };
 
     $scope.typeSensitiveComparator = function(v1, v2) {
@@ -139,14 +149,20 @@ angular.module("app").controller("cadastroInventarioCtrl", function($scope, $htt
         return v1.value.localeCompare(v2.value);
     };
 
-    $scope.checkSelected = function (obj, grid) {
-        $scope.resultPaginator[$scope.resultPaginator.findIndex(function (el) {
-            return (el === obj)
-        })].checked = !obj.checked;
-        var actPag = $scope.resultPaginator.actPage;
-        $scope.resultPaginator.actPage.selectedAll = ($filter("filter")(
-            $scope.resultFormRequest.slice(actPag.indexStart, actPag.indexEnd ),
-            {checked: true }).length === (actPag.indexEnd - actPag.indexStart)) ;
+    $scope.checkSelected = function (grid) {
+        var actPag = {};
+        if (grid === 'results') {
+            actPag = $scope.resultPaginator.actPage;
+            $scope.resultPaginator.actPage.selectedAll = (
+                $filter("filter")(
+                    $scope.resultFormRequest.slice(actPag.indexStart, actPag.indexEnd + 1),
+                    {checked: true}).length === actPag.itensPerPage);
+        } else if (grid === 'elements') {
+            actPag = $scope.elementsPaginator.actPage;
+            $scope.elementsPaginator.actPage.selectedAll = ($filter("filter")(
+                $scope.elementosSelecionados.slice(actPag.indexStart, actPag.indexEnd + 1),
+                {checked: true}).length === actPag.itensPerPage);
+        }
     };
     
     $scope.selectAllPage = function(grid) {
@@ -165,19 +181,30 @@ angular.module("app").controller("cadastroInventarioCtrl", function($scope, $htt
         }
     };
 
+    $scope.removeSelecionado = function(elemento) {
+        // var key = $scope.elementosSelecionados.findIndex(function (el) { return (el === elemento) });
+        // $scope.elementosSelecionados = $scope.elementosSelecionados.slice( key, 1 );
+        // preparePaginator('elements', $scope.elementosSelecionados.length);
+    };
+    
+    $scope.incluirSelecionados = function () {
+        var count = 0;
+        angular.forEach($filter("filter")( $scope.resultFormRequest, {checked: true} ), function (obj) {
+            if (!$filter("filter")($scope.elementosSelecionados, {id: obj.id}).length) {
+                obj.checked = false;
+                $scope.elementosSelecionados.unshift(obj);
+                ++count;
+            }
+        });
+        if (count > 0) preparePaginator('elements', $scope.elementosSelecionados.length);
+    }
+
 }).filter("interval", function () {
     return function (input, interval) {
         if (input.length > 0) {
-            var output = [];
             var start = Number(interval.start);
             var end = Number(interval.end);
-            $.each( input, function (k, v) {
-                if (k >= start && k <= end) {
-                    output.push(v);
-                }
-            });
-
-            return output;
+            return input.slice(start, (end+1));
         }
     }
 });

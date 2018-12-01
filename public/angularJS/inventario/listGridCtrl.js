@@ -35,11 +35,15 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
     };
     $scope.clearForm();
 
-    $scope.paginator = {
-        pages: [],
-        actPage: {},
-        size: 0
+    var newPaginator = function() {
+        return {
+            pages: [],
+            actPage: {},
+            size: 0
+        };
     };
+
+    $scope.paginator = newPaginator();
 
 
     $scope.ordenarPor = function (campo) {
@@ -73,8 +77,8 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
             preparePaginator();
         }).then(function () {
             $scope.showLoading = false ;
-            $scope.showList = ($scope.resultFormRequest.length > 0);
-            $scope.showNoResults = ($scope.resultFormRequest.length === 0);
+            $scope.showList = ($scope.inventarios.length > 0);
+            $scope.showNoResults = ($scope.inventarios.length === 0);
         });
     };
 
@@ -102,6 +106,7 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
     };
 
     var preparePaginator = function () {
+        $scope.paginator = newPaginator();
         var nPages = Math.ceil($scope.inventarios.length / $scope.maxPerPage);
         for (var i = 0; i < nPages; i++) {
 

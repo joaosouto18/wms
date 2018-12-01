@@ -41,7 +41,7 @@
                         <input type="text" ng-model="criterioForm.nivelFinal" id="nivelFinal" value="" size="3" alt="enderecoNivel" class=" ctrSize"></div>
                     <div class="field"><label for="aptoFinal" class="field optional">Apto Final</label>
                         <input type="text" ng-model="criterioForm.aptoFinal" id="aptoFinal" value="" size="3" alt="enderecoApartamento" class=" ctrSize"></div>
-                    <div class="field"><label for="produto" class="field optional">Cod. Prouto</label>
+                    <div class="field"><label for="produto" class="field optional">Cod. Produto</label>
                         <input type="text" ng-model="criterioForm.produto" id="produto" value="" alt="number" size="15" class=" ctrSize"></div>
                     <div class="field"><label for="inventario" class="field optional">Inventário</label>
                         <input type="text" ng-model="criterioForm.inventario" id="inventario" value="" alt="number" size="15" class=" ctrSize"></div>
@@ -59,10 +59,9 @@
         <div id="monitoramento-inventario" class="grid">
             <div class="gControl">
                 <div class="gPager">
-                    <span>Página</span>
-                    <button ng-click="changePage(-1)"> <<< </button>
+                    <a href=""><img src="/img/admin/pager_arrow_left.gif" alt="<" width="15px" height="15px" ng-click="changePage(-1)"></a>
                     <select title="Página atual" name="page" ng-model="paginator.actPage" style="text-align: center;" ng-options="pagina.label for pagina in paginator.pages"></select>
-                    <button ng-click="changePage(1)"> >>> </button>
+                    <a href=""><img src="/img/admin/pager_arrow_right.gif" alt="<" width="15px" height="15px" ng-click="changePage(1)"></a>
                     <span>de {{paginator.size}} página(s) </span>
                     <span>por página</span>
                     <span>|</span>
@@ -158,10 +157,9 @@
                 </tbody>
             </table>
             <div class="gPager">
-                <span>Página</span>
-                <button ng-click="changePage(-1)"> <<< </button>
+                <a href=""><img src="/img/admin/pager_arrow_left.gif" alt="<" width="15px" height="15px" ng-click="changePage(-1)"></a>
                 <select title="Página atual" name="page" ng-model="paginator.actPage" style="text-align: center;" ng-options="pagina.label for pagina in paginator.pages"></select>
-                <button ng-click="changePage(1)"> >>> </button>
+                <a href=""><img src="/img/admin/pager_arrow_right.gif" alt="<" width="15px" height="15px" ng-click="changePage(1)"></a>
                 <span>de {{paginator.size}} página(s) </span>
                 <span>por página</span>
                 <span>|</span>

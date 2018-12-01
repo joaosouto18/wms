@@ -48,22 +48,58 @@ class Inventario_Novo_IndexController  extends Action
 
     public function criarInventarioAction()
     {
-        $criterio = $this->getRequest()->getParam("criterio");
-        if ($criterio == 'produto') {
-            $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
-            $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioProdutoForm();
-            $this->view->form->init($utilizaGrade);
+        if ($this->getRequest()->isGet()) {
+            $buttons[] = array(
+                'label' => 'Novo Inventário por Endereço',
+                'cssClass' => 'button',
+                'urlParams' => array(
+                    'module' => 'inventario_novo',
+                    'controller' => 'index',
+                    'action' => 'criar-inventario',
+                    'criterio' => 'endereco'
+                ),
+                'tag' => 'a'
+            );
+            $buttons[] = array(
+                'label' => 'Novo Inventário por Produto',
+                'cssClass' => 'button',
+                'urlParams' => array(
+                    'module' => 'inventario_novo',
+                    'controller' => 'index',
+                    'action' => 'criar-inventario',
+                    'criterio' => 'produto'
+                ),
+                'tag' => 'a'
+            );
+
+            $this->configurePage($buttons);
+
+            $this->view->criterio = $this->getRequest()->getParam("criterio");
+            if ($this->view->criterio == 'produto') {
+                $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
+                $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioProdutoForm();
+                $this->view->form->init($utilizaGrade);
+                $this->renderScript('index\criar-by-produto.phtml');
+            } else {
+                $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioEnderecoForm();
+                $this->renderScript('index\criar-by-endereco.phtml');
+            }
+
+
         }
-        else {
-            $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioEnderecoForm();
-        }
-        $this->configurePage();
     }
 
-    public function getElementsInventarioAjaxAction()
+    public function getEnderecosCriarAjaxAction()
     {
         $data = json_decode($this->getRequest()->getRawBody(),true);
-        $source = $this->_em->getRepository('wms:InventarioNovo')->getEndProdInventario($data);
+        $source = $this->_em->getRepository('wms:InventarioNovo')->getEnderecosCriarNovoInventario($data);
+        $this->_helper->json($source);
+    }
+
+    public function getProdutosCriarAjaxAction()
+    {
+        $data = json_decode($this->getRequest()->getRawBody(),true);
+        $source = $this->_em->getRepository('wms:InventarioNovo')->getProdutosCriarNovoInventario($data);
         $this->_helper->json($source);
     }
 

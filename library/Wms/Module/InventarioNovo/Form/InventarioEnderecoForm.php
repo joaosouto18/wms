@@ -130,7 +130,7 @@ class InventarioEnderecoForm extends SubForm
                 'label' => 'Buscar',
                 'decorators' => array('ViewHelper'),
                 'attribs' => array('id' => 'btn-buscar-endereco'),
-                'ng-click' => "requestForm()"
+                'ng-click' => "requestForm('endereco')"
             ))
             ->addElement('button', 'clearForm', array(
                 'class' => 'btn btn-form',
@@ -139,7 +139,7 @@ class InventarioEnderecoForm extends SubForm
                 'attribs' => array('id' => 'btn-clear'),
                 'ng-click' => "clearForm()"
             ))
-            ->addDisplayGroup(array('ruaInicial', 'ruaFinal', 'predioInicial', 'predioFinal', 'nivelInicial', 'nivelFinal', 'aptoInicial', 'aptoFinal'), 'endereco', array('legend' => 'Intervalo de Endereços'))
+            ->addDisplayGroup(array('criterio', 'ruaInicial', 'ruaFinal', 'predioInicial', 'predioFinal', 'nivelInicial', 'nivelFinal', 'aptoInicial', 'aptoFinal'), 'endereco', array('legend' => 'Intervalo de Endereços'))
             ->addDisplayGroup(array('idCarac', 'estrutArmaz', 'tipoEnd', 'lado', 'areaArmaz', 'situacao', 'status', 'ativo', 'btnBuscar', 'clearForm'), 'caracteristica', array('legend' => 'Características'));
         } catch (\Zend_Form_Exception $e) {
         }
