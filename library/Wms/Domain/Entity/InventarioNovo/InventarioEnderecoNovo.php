@@ -23,13 +23,15 @@ class InventarioEnderecoNovo
     protected $id;
 
     /**
+     * @var Wms\Domain\Entity\InventarioNovo $codInventario
      * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioNovo")
      * @JoinColumn(name="COD_INVENTARIO", referencedColumnName="COD_INVENTARIO")
      */
     protected $codInventario;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Inventario\Deposito")
+     * @var Wms\Domain\Entity\Deposito\Endereco $depositoEndereco
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco")
      * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
      */
     protected $depositoEndereco;
@@ -40,7 +42,7 @@ class InventarioEnderecoNovo
     protected $contagem;
 
     /**
-     * @Column(name="IND_FINALIZADO", type="varchar" )
+     * @Column(name="IND_FINALIZADO", type="string" )
      */
     protected $finalizado;
 

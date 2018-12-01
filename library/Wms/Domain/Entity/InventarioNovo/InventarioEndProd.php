@@ -23,18 +23,21 @@ class InventarioEndProd
     protected $id;
 
     /**
+     * @var Wms\Domain\Entity\InventarioNovo $inventarioEndereco
      * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovo")
      * @JoinColumn(name="COD_INVENTARIO_ENDERECO", referencedColumnName="COD_INVENTARIO_ENDERECO")
      */
     protected $inventarioEndereco;
 
     /**
+     * @var Wms\Domain\Entity\Produto $produto
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
      * @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO")
      */
     protected $produto;
 
     /**
+     * @var Wms\Domain\Entity\Produto $grade
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
      * @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
      */

@@ -23,6 +23,7 @@ class InventarioContEnd
     protected $id;
 
     /**
+     * @var Wms\Domain\Entity\InventarioNovo $inventarioEndereco
      * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovo")
      * @JoinColumn(name="COD_INVENTARIO_ENDERECO", referencedColumnName="COD_INVENTARIO_ENDERECO")
      */
@@ -34,7 +35,7 @@ class InventarioContEnd
     protected $sequencia;
 
     /**
-     * @Column(name="IND_CONTAGEM_DIVERGENCIA", type="char" )
+     * @Column(name="IND_CONTAGEM_DIVERGENCIA", type="string" )
      */
     protected $contagemDivergencia;
 

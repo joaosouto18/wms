@@ -23,25 +23,28 @@ class InventarioContEndProd
     protected $id;
 
     /**
+     * @var Wms\Domain\Entity\InventarioNovo $inventarioContEnd
      * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioContEnd")
      * @JoinColumn(name="COD_INV_CONT_END", referencedColumnName="COD_INV_CONT_END")
      */
     protected $inventarioContEnd;
 
     /**
+     * @var Wms\Domain\Entity\Produto $produto
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
      * @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO")
      */
     protected $produto;
 
     /**
+     * @var Wms\Domain\Entity\Produto $grade
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
      * @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
      */
     protected $grade;
 
     /**
-     * @Column(name="DSC_LOTE", type="varchar" )
+     * @Column(name="DSC_LOTE", type="string" )
      */
     protected $lote;
 
@@ -51,6 +54,7 @@ class InventarioContEndProd
     protected $qtdContada;
 
     /**
+     * @var Wms\Domain\Entity\Produto $produtoEmbalagem
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Embalagem")
      * @JoinColumn(name="COD_PRODUTO_EMBALAGEM", referencedColumnName="COD_PRODUTO_EMBALAGEM")
      */
@@ -62,18 +66,19 @@ class InventarioContEndProd
     protected $qtdEmbalagem;
 
     /**
-     * @Column(name="COD_BARRAS", type="varchar" )
+     * @Column(name="COD_BARRAS", type="string" )
      */
     protected $codBarras;
 
     /**
+     * @var Wms\Domain\Entity\Produto $produtoVolume
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Volume")
      * @JoinColumn(name="COD_PRODUTO_VOLUME", referencedColumnName="COD_PRODUTO_VOLUME")
      */
     protected $produtoVolume;
 
     /**
-     * @Column(name="IND_DIVERGENTE", type="char" )
+     * @Column(name="IND_DIVERGENTE", type="string" )
      */
     protected $divergente;
 

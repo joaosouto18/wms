@@ -14,6 +14,22 @@ namespace Wms\Domain\Entity;
  */
 class InventarioNovo
 {
+    const STATUS_GERADO       = 0;
+    const STATUS_LIBERADO     = 1;
+    const STATUS_CONCLUIDO    = 2;
+    const STATUS_FINALIZADO   = 3;
+    const STATUS_INTERROMPIDO = 4;
+    const STATUS_CANCELADO    = 5;
+
+    public static $tipoStatus = array(
+        self::STATUS_GERADO => "GERADO",
+        self::STATUS_LIBERADO => "LIBERADO",
+        self::STATUS_CONCLUIDO => "CONCLUIDO",
+        self::STATUS_FINALIZADO => "FINALIZADO",
+        self::STATUS_INTERROMPIDO => "INTERROMPIDO",
+        self::STATUS_CANCELADO => "CANCELADO"
+    );
+
     /**
      * @Column(name="COD_INVENTARIO", type="integer", length=8, nullable=false)
      * @Id
@@ -38,7 +54,7 @@ class InventarioNovo
     protected $finalizacao;
 
     /**
-     * @Column(name="COD_STATUS", type="integer", length=4 )
+     * @Column(name="COD_STATUS", type="integer" )
      */
     protected $status;
 

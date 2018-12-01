@@ -23,12 +23,14 @@ class InventarioContEndOs
     protected $id;
 
     /**
+     * @var Wms\Domain\Entity\InventarioNovo $invContEnd
      * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioContEnd")
      * @JoinColumn(name="COD_INV_CONT_END", referencedColumnName="COD_INV_CONT_END")
      */
     protected $invContEnd;
 
     /**
+     * @var Wms\Domain\Entity\OrdemServico $codOs
      * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
      * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS")
      */
