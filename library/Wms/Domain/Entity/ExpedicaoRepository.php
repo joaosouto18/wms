@@ -148,6 +148,66 @@ class ExpedicaoRepository extends EntityRepository {
         return $result;
     }
 
+    public function verificaViabilidadeIntegracaoExpedicao($expedicaoEn, $acaoEn ) {
+
+            if ($acaoEn == null) return false;
+
+            $params = $acaoEn->getParametros();
+
+            foreach ($cargasEn as $cargaEn) {
+
+                $SQL = "SELECT * 
+                                  FROM PEDIDO 
+                                 WHERE COD_CARGA = " . $cargaEn->getId();
+                if (!empty($params)) {
+                    $SQL = $SQL . " AND COD_TIPO_PEDIDO IN (" . $params . ")";
+                }
+
+                $qtdPedidos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+                if (count($qtdPedidos) > 0) {
+                    return true;
+                }
+            }
+
+            return false;
+    }
+
+
+    public function executaIntegracaoBDCancelamentoCarga($expedicaoEn) {
+        $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_CANCELA_CARGA_ERP');
+
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+        $ids = explode(',', $idsIntegracao);
+        sort($ids);
+
+        $cargasEn = $expedicaoEn->getCarga();
+
+        $cargas = array();
+        foreach ($cargasEn as $cargaEn) {
+            $cargas[] = $cargaEn->getCodCargaExterno();
+        }
+
+        if (!is_null($cargas) && is_array($cargas)) {
+            $options[] = implode(',', $cargas);
+        } else if (!is_null($cargas)) {
+            $options = $cargas;
+        }
+
+        foreach ($ids as $idIntegracao) {
+            $acaoEn = $acaoIntRepo->find($idIntegracao);
+
+            if ($this->verificaViabilidadeIntegracaoExpedicao($expedicaoEn, $acaoEn)) {
+                $result = $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 612);
+                if (!$result === true) {
+                    throw new \Wms\Util\WMS_Exception($result);
+                }
+            }
+        }
+    }
+
     /**
      * @param $expedicaoEn
      * @return array|bool|null|string|void
@@ -169,39 +229,7 @@ class ExpedicaoRepository extends EntityRepository {
             $acaoEn = $acaoIntRepo->find($idIntegracao);
             $options = array();
 
-            if ($acaoEn == null) continue;
-
-            $params = $acaoEn->getParametros();
-            $cargasEn = $expedicaoEn->getCarga();
-
-            $encontrouPedido = false;
-
-            $cargas = array();
-            foreach ($cargasEn as $cargaEn) {
-                $cargas[] = $cargaEn->getCodCargaExterno();
-            }
-
-            foreach ($cargasEn as $cargaEn) {
-
-                $SQL = "SELECT * 
-                                  FROM PEDIDO 
-                                 WHERE COD_CARGA = " . $cargaEn->getId();
-                if (!empty($params)) {
-                    $SQL = $SQL . " AND COD_TIPO_PEDIDO IN (" . $params . ")";
-                }
-
-                $qtdPedidos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-
-                if (count($qtdPedidos) > 0) {
-                    $encontrouPedido = true;
-                    break;
-                }
-            }
-
-            /*
-             */
-
-            if ($encontrouPedido == true) {
+            if ($this->verificaViabilidadeIntegracaoExpedicao($expedicaoEn, $acaoEn) == true) {
 
                 /*
                  * Devolve o Retorno a integração a nível de conferencia do PedidoProduto
@@ -250,6 +278,12 @@ class ExpedicaoRepository extends EntityRepository {
                  * ?1 - Código das Cargas presentes na Expedição
                  */
                 else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGAS) {
+                    $cargasEn = $expedicaoEn->getCarga();
+
+                    $cargas = array();
+                    foreach ($cargasEn as $cargaEn) {
+                        $cargas[] = $cargaEn->getCodCargaExterno();
+                    }
 
                     if (!is_null($cargas) && is_array($cargas)) {
                         $options[] = implode(',', $cargas);
@@ -269,6 +303,8 @@ class ExpedicaoRepository extends EntityRepository {
                  * ?1 - Código da Carga
                  */
                 else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGA) {
+                    $cargasEn = $expedicaoEn->getCarga();
+
                     foreach ($cargasEn as $cargaEn) {
                         $options = array();
                         $options[] = $cargaEn->getCodCargaExterno();
@@ -290,6 +326,8 @@ class ExpedicaoRepository extends EntityRepository {
                  *
                  */
                 else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PEDIDO) {
+                    $cargasEn = $expedicaoEn->getCarga();
+
                     foreach ($cargasEn as $cargaEn) {
                         $pedidos = $cargaEn->getPedido();
                         foreach ($pedidos as $pedidoEn) {
