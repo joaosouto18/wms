@@ -13,8 +13,9 @@ class Mobile_InventarioNovoController extends Action
     public function listagemInventariosAction()
     {
         /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
-        $inventarioRepo = $this->em->getRepository('wms:inventario_novo');
-        $this->view->inventarios = $inventarioRepo->getInventarios("WHERE I.STATUS = " . \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO);
+        $inventarioRepo = $this->em->getRepository('wms:InventarioNovo');
+        $inventarios    = $inventarioRepo->findBy(['status' => \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO]);
+        $this->view->inventarios = $inventarios;
     }
 
     public function selecionaContagemAction()
@@ -26,8 +27,16 @@ class Mobile_InventarioNovoController extends Action
 
         // retornar as contagens pra view
 
+        /** @var \Wms\Service\Mobile\InventarioNovo $inventarioService */
+        $inventarioService               = $this->_service;
+        $idInventario                    = $this->_getParam('idInventario');
+        $descricaoInventario             = $this->_getParam('descricaoInventario');
+        $numContagensRegra               = $this->getSystemParameterValue('REGRA_CONTAGEM');
+        $numContagens                    = $inventarioService->getContagens(array('idInventario' => $idInventario, 'regraContagem' => $numContagensRegra));
+        $this->view->numContagens        = $numContagens;
+        $this->view->idInventario        = $idInventario;
+        $this->view->descricaoInventario = $descricaoInventario;
 
     }
-
 
 }
