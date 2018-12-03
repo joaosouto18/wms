@@ -99,7 +99,7 @@ CREATE TABLE inventario_cont_end_prod (
   dsc_grade               VARCHAR2(100) NOT NULL,
   dsc_lote                VARCHAR2(200),
   --  Quantidade inventariada na menor unidade do produto
-  qtd_contada             NUMBER(13,3),
+  qtd_contada             NUMBER(13,3) NOT NULL,
   cod_produto_embalagem   NUMBER(8),
   --  Fator da embalagem no momento da contagem
   qtd_embalagem           NUMBER(13,3),
@@ -166,7 +166,7 @@ CREATE TABLE inventario_endereco_novo (
   cod_deposito_endereco     NUMBER(8) NOT NULL,
   num_contagem              NUMBER(3) NOT NULL,
   --  Flag (S/N) para indicar  se o inventário no endereço foi finalizado
-  ind_finalizado            CHAR(1)
+  ind_finalizado            CHAR(1) NOT NULL
 );
 
 COMMENT ON COLUMN inventario_endereco_novo.ind_finalizado IS
@@ -187,7 +187,7 @@ CREATE TABLE inventario_novo (
   cod_inventario       NUMBER(8) NOT NULL,
   dsc_inventario       VARCHAR2(100),
   dth_inicio           DATE NOT NULL,
-  dth_finalizacao      DATE NOT NULL,
+  dth_finalizacao      DATE,
   cod_status           NUMBER(4) NOT NULL,
   cod_inventario_erp   NUMBER(8)
 );

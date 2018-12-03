@@ -49,56 +49,70 @@ class Inventario_Novo_IndexController  extends Action
     public function criarInventarioAction()
     {
         if ($this->getRequest()->isGet()) {
-            $buttons[] = array(
-                'label' => 'Novo Inventário por Endereço',
-                'cssClass' => 'button',
-                'urlParams' => array(
-                    'module' => 'inventario_novo',
-                    'controller' => 'index',
-                    'action' => 'criar-inventario',
-                    'criterio' => 'endereco'
-                ),
-                'tag' => 'a'
-            );
-            $buttons[] = array(
-                'label' => 'Novo Inventário por Produto',
-                'cssClass' => 'button',
-                'urlParams' => array(
-                    'module' => 'inventario_novo',
-                    'controller' => 'index',
-                    'action' => 'criar-inventario',
-                    'criterio' => 'produto'
-                ),
-                'tag' => 'a'
-            );
-
-            $this->configurePage($buttons);
-
             $this->view->criterio = $this->getRequest()->getParam("criterio");
-            if ($this->view->criterio == 'produto') {
+            if ($this->view->criterio === \Wms\Domain\Entity\InventarioNovo::CRITERIO_PRODUTO) {
                 $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
                 $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioProdutoForm();
                 $this->view->form->init($utilizaGrade);
+                $buttons[] = array(
+                    'label' => 'Novo Inventário por Endereço',
+                    'cssClass' => 'button',
+                    'urlParams' => array(
+                        'module' => 'inventario_novo',
+                        'controller' => 'index',
+                        'action' => 'criar-inventario',
+                        'criterio' => 'endereco'
+                    ),
+                    'tag' => 'a'
+                );
+                $this->configurePage($buttons);
                 $this->renderScript('index\criar-by-produto.phtml');
+
             } else {
                 $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioEnderecoForm();
+                $buttons[] = array(
+                    'label' => 'Novo Inventário por Produto',
+                    'cssClass' => 'button',
+                    'urlParams' => array(
+                        'module' => 'inventario_novo',
+                        'controller' => 'index',
+                        'action' => 'criar-inventario',
+                        'criterio' => 'produto'
+                    ),
+                    'tag' => 'a'
+                );
+                $this->configurePage($buttons);
                 $this->renderScript('index\criar-by-endereco.phtml');
             }
-
-
+        } elseif ($this->getRequest()->isPost()) {
+            $data = json_decode($this->getRequest()->getRawBody(),true);
+            try{
+                /** @var \Wms\Service\InventarioService $invServc */
+                $invServc = $this->getServiceLocator()->getService("Inventario");
+                $novoInventario = $invServc->registrarNovoInventario($data);
+                $dsc = $novoInventario->getDescricao() . " número: " . $novoInventario->getId();
+                $this->addFlashMessage('success', "Inventário $dsc criado com sucesso");
+            } catch (Exception $e) {
+                $this->addFlashMessage('error', $e->getMessage());
+            }
         }
+    }
+
+    public function getModelosInventariosAjaxAction()
+    {
+        $this->_helper->json($this->_em->getRepository('wms:ModeloInventario')->findBy(['isAtivo' => true]));
     }
 
     public function getEnderecosCriarAjaxAction()
     {
-        $data = json_decode($this->getRequest()->getRawBody(),true);
+        $data = $this->getRequest()->getParams();
         $source = $this->_em->getRepository('wms:InventarioNovo')->getEnderecosCriarNovoInventario($data);
         $this->_helper->json($source);
     }
 
     public function getProdutosCriarAjaxAction()
     {
-        $data = json_decode($this->getRequest()->getRawBody(),true);
+        $data = $this->getRequest()->getParams();
         $source = $this->_em->getRepository('wms:InventarioNovo')->getProdutosCriarNovoInventario($data);
         $this->_helper->json($source);
     }

@@ -30,11 +30,14 @@ class InventarioNovo
         self::STATUS_CANCELADO => "CANCELADO"
     );
 
+    const CRITERIO_PRODUTO = 'produto';
+    const CRITERIO_ENDERECO = 'endereco';
+
     /**
      * @Column(name="COD_INVENTARIO", type="integer", length=8, nullable=false)
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_INVENTARIO_NOVO_01", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_N_INV_01", allocationSize=1, initialValue=1)
      */
     protected $id;
 
@@ -44,14 +47,16 @@ class InventarioNovo
     protected $descricao;
 
     /**
+     * @var \DateTime $dthIicio
      * @Column(name="DTH_INICIO", type="datetime")
      */
-    protected $inicio;
+    protected $dthIicio;
 
     /**
+     * @var \DateTime $finalizacao
      * @Column(name="DTH_FINALIZACAO", type="datetime")
      */
-    protected $finalizacao;
+    protected $dthFinalizacao;
 
     /**
      * @Column(name="COD_STATUS", type="integer" )
@@ -63,6 +68,21 @@ class InventarioNovo
      */
     protected $codErp;
 
+    /**
+     * @return array
+     */
+    public static function getTipoStatus()
+    {
+        return self::$tipoStatus;
+    }
+
+    /**
+     * @param array $tipoStatus
+     */
+    public static function setTipoStatus($tipoStatus)
+    {
+        self::$tipoStatus = $tipoStatus;
+    }
 
     /**
      * @return mixed
@@ -97,35 +117,35 @@ class InventarioNovo
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
-    public function getInicio()
+    public function getDthIicio()
     {
-        return $this->inicio;
+        return $this->dthIicio;
     }
 
     /**
-     * @param mixed $inicio
+     * @param \DateTime $dthIicio
      */
-    public function setInicio($inicio)
+    public function setDthIicio($dthIicio)
     {
-        $this->inicio = $inicio;
+        $this->dthIicio = $dthIicio;
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
-    public function getFinalizacao()
+    public function getDthFinalizacao()
     {
-        return $this->finalizacao;
+        return $this->dthFinalizacao;
     }
 
     /**
-     * @param mixed $finalizacao
+     * @param \DateTime $dthFinalizacao
      */
-    public function setFinalizacao($finalizacao)
+    public function setDthFinalizacao($dthFinalizacao)
     {
-        $this->finalizacao = $finalizacao;
+        $this->dthFinalizacao = $dthFinalizacao;
     }
 
     /**

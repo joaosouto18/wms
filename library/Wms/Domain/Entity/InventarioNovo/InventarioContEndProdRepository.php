@@ -18,18 +18,17 @@ class InventarioContEndProdRepository extends EntityRepository
      * @throws \Exception
      */
     public function save() {
-        $em = $this->getEntityManager();
 
-        $em->beginTransaction();
+        $this->_em->beginTransaction();
         try {
 
             $enInventarioContEndProd = new InventarioContEndProd();
 
-            $codInventarioContEnd = $em->getReference('wms:InventarioNovo\InventarioContEnd',$params['idInventarioContEnd']);
-            $codProduto           = $em->getReference('wms:Produto',$params['idProduto']);
-            $codGrade             = $em->getReference('wms:Produto',$params['idGrade']);
-            $codProdutoEmbalagem  = $em->getReference('wms:Produto\Embalagem',$params['idProdutoEmbalagem']);
-            $codProdutoVolume     = $em->getReference('wms:Produto\Volume',$params['idProdutoVolume']);
+            $codInventarioContEnd = $this->_em->getReference('wms:InventarioNovo\InventarioContEnd',$params['idInventarioContEnd']);
+            $codProduto           = $this->_em->getReference('wms:Produto',$params['idProduto']);
+            $codGrade             = $this->_em->getReference('wms:Produto',$params['idGrade']);
+            $codProdutoEmbalagem  = $this->_em->getReference('wms:Produto\Embalagem',$params['idProdutoEmbalagem']);
+            $codProdutoVolume     = $this->_em->getReference('wms:Produto\Volume',$params['idProdutoVolume']);
 
             $enInventarioContEndProd->setInventarioContEnd($codInventarioContEnd);
             $enInventarioContEndProd->setProduto($codProduto);
@@ -38,11 +37,11 @@ class InventarioContEndProdRepository extends EntityRepository
             $enInventarioContEndProd->setProdutoVolume($codProdutoVolume);
 
 
-            $em->persist($enInventarioContEndProd);
-            $em->flush();
-            $em->commit();
+            $this->_em->persist($enInventarioContEndProd);
+            $this->_em->flush();
+            $this->_em->commit();
         } catch (\Exception $e) {
-            $em->rollback();
+            $this->_em->rollback();
             throw new \Exception($e->getMessage());
         }
 

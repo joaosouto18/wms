@@ -14,33 +14,21 @@ use Wms\Domain\Entity\InventarioNovo;
 class InventarioEndProdRepository extends EntityRepository
 {
     /**
-     * @return InventarioEndProd
+     * @return InventarioEnderecoNovo
      * @throws \Exception
      */
-    public function save() {
-        $em = $this->getEntityManager();
-
-        $em->beginTransaction();
+    public function save($params, $executeFlush = true)
+    {
         try {
+            $entity = Configurator::configure(new $this->_entityName, $params);
 
-            $enInventarioEndProd = new InventarioEndProd();
+            $this->_em->persist($entity);
+            if ($executeFlush) $this->_em->flush();
 
-            $codEndereco = $em->getReference('wms:InventarioNovo\InventarioEndereco',$params['idInventarioEndereco']);
-            $codProduto  = $em->getReference('wms:Produto',$params['idProduto']);
-            $codGrade    = $em->getReference('wms:Produto',$params['idGrade']);
+            return $entity;
 
-            $enInventarioEndProd->setInventarioEndereco($codEndereco);
-            $enInventarioEndProd->setProduto($codProduto);
-            $enInventarioEndProd->setGrade($codGrade);
-
-            $em->persist($enInventarioEndProd);
-            $em->flush();
-            $em->commit();
         } catch (\Exception $e) {
-            $em->rollback();
             throw new \Exception($e->getMessage());
         }
-
-        return $enInventarioEndereco;
     }
 }

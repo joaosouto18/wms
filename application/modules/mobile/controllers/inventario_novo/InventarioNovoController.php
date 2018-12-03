@@ -12,9 +12,9 @@ class Mobile_InventarioNovoController extends Action
 {
     public function listagemInventariosAction()
     {
-        /** @var \Wms\Domain\Entity\InventarioNovo\InventarioNovoRepository $inventarioRepo */
+        /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
         $inventarioRepo = $this->em->getRepository('wms:inventario_novo');
-        $this->view->inventarios = $inventarioRepo->getInventarios("WHERE I.STATUS = " . \Wms\Domain\Entity\InventarioNovo\InventarioNovo::STATUS_LIBERADO);
+        $this->view->inventarios = $inventarioRepo->getInventarios("WHERE I.STATUS = " . \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO);
     }
 
     public function selecionaContagemAction()

@@ -2,6 +2,7 @@
 
 namespace Bisna\Base\Domain\Entity;
 
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr,
     Doctrine\ORM\Mapping\MappingException,
     Bisna\Base\Service as BaseService;
@@ -203,7 +204,7 @@ class EntityService extends BaseService\Service
      *
      * @param string $emName
      *
-     * @return Bisna\Base\Domain\Entity\EntityRepository
+     * @return EntityRepository
      */
     protected function getRepository($emName = null)
     {

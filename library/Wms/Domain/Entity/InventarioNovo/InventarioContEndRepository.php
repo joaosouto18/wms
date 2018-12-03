@@ -18,23 +18,22 @@ class InventarioContEndRepository extends EntityRepository
      * @throws \Exception
      */
     public function save() {
-        $em = $this->getEntityManager();
 
-        $em->beginTransaction();
+        $this->_em->beginTransaction();
         try {
 
             $enInventarioContEnd = new InventarioContEnd();
 
-            $codEndereco = $em->getReference('wms:InventarioNovo\InventarioEndereco',$params['idInventarioEndereco']);
+            $codEndereco = $this->_em->getReference('wms:InventarioNovo\InventarioEndereco',$params['idInventarioEndereco']);
 
             $enInventarioContEnd->setInventarioEndereco($codEndereco);
             $enInventarioContEnd->setContagem(1);
 
-            $em->persist($enInventarioContEnd);
-            $em->flush();
-            $em->commit();
+            $this->_em->persist($enInventarioContEnd);
+            $this->_em->flush();
+            $this->_em->commit();
         } catch (\Exception $e) {
-            $em->rollback();
+            $this->_em->rollback();
             throw new \Exception($e->getMessage());
         }
 

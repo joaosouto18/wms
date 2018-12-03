@@ -8,6 +8,8 @@
 
 namespace Wms\Domain\Entity\InventarioNovo;
 
+use Wms\Domain\Entity\Produto;
+
 /**
  * @Table(name="INVENTARIO_CONT_END_PROD")
  * @Entity(repositoryClass="Wms\Domain\Entity\InventarioNovo\InventarioContEndProdRepository")
@@ -18,28 +20,36 @@ class InventarioContEndProd
      * @Column(name="COD_INV_CONT_END_PROD", type="integer", length=8, nullable=false)
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_COD_INV_CONT_END_PROD_01", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_N_INV_CONT_END_PROD_01", allocationSize=1, initialValue=1)
      */
     protected $id;
 
     /**
-     * @var Wms\Domain\Entity\InventarioNovo $inventarioContEnd
+     * @var InventarioContEnd $inventarioContEnd
      * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioContEnd")
      * @JoinColumn(name="COD_INV_CONT_END", referencedColumnName="COD_INV_CONT_END")
      */
     protected $inventarioContEnd;
 
     /**
-     * @var Wms\Domain\Entity\Produto $produto
+     * @var Produto
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
-     * @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO")
+     * @JoinColumns({
+     *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
+     *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
+     * })
      */
     protected $produto;
 
     /**
-     * @var Wms\Domain\Entity\Produto $grade
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
-     * @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
+     * @var string
+     * @Column(name="COD_PRODUTO", type="string")
+     */
+    protected $codProduto;
+
+    /**
+     * @var string
+     * @Column(name="DSC_GRADE", type="string")
      */
     protected $grade;
 
@@ -54,7 +64,7 @@ class InventarioContEndProd
     protected $qtdContada;
 
     /**
-     * @var Wms\Domain\Entity\Produto $produtoEmbalagem
+     * @var Produto\Embalagem $produtoEmbalagem
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Embalagem")
      * @JoinColumn(name="COD_PRODUTO_EMBALAGEM", referencedColumnName="COD_PRODUTO_EMBALAGEM")
      */
@@ -71,7 +81,7 @@ class InventarioContEndProd
     protected $codBarras;
 
     /**
-     * @var Wms\Domain\Entity\Produto $produtoVolume
+     * @var Produto\Volume $produtoVolume
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto\Volume")
      * @JoinColumn(name="COD_PRODUTO_VOLUME", referencedColumnName="COD_PRODUTO_VOLUME")
      */
@@ -92,7 +102,6 @@ class InventarioContEndProd
      */
     protected $contagem;
 
-
     /**
      * @return mixed
      */
@@ -110,7 +119,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return InventarioContEnd
      */
     public function getInventarioContEnd()
     {
@@ -118,7 +127,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @param mixed $inventarioContEnd
+     * @param InventarioContEnd $inventarioContEnd
      */
     public function setInventarioContEnd($inventarioContEnd)
     {
@@ -126,7 +135,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return Produto
      */
     public function getProduto()
     {
@@ -134,7 +143,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @param mixed $produto
+     * @param Produto $produto
      */
     public function setProduto($produto)
     {
@@ -142,7 +151,23 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return string
+     */
+    public function getCodProduto()
+    {
+        return $this->codProduto;
+    }
+
+    /**
+     * @param string $codProduto
+     */
+    public function setCodProduto($codProduto)
+    {
+        $this->codProduto = $codProduto;
+    }
+
+    /**
+     * @return string
      */
     public function getGrade()
     {
@@ -150,7 +175,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @param mixed $grade
+     * @param string $grade
      */
     public function setGrade($grade)
     {
@@ -190,7 +215,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return Produto\Embalagem
      */
     public function getProdutoEmbalagem()
     {
@@ -198,7 +223,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @param mixed $produtoEmbalagem
+     * @param Produto\Embalagem $produtoEmbalagem
      */
     public function setProdutoEmbalagem($produtoEmbalagem)
     {
@@ -238,7 +263,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return Produto\Volume
      */
     public function getProdutoVolume()
     {
@@ -246,7 +271,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @param mixed $produtoVolume
+     * @param Produto\Volume $produtoVolume
      */
     public function setProdutoVolume($produtoVolume)
     {

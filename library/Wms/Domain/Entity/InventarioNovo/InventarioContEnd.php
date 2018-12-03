@@ -18,12 +18,12 @@ class InventarioContEnd
      * @Column(name="COD_INV_CONT_END", type="integer", length=8, nullable=false)
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_COD_INV_CONT_END_01", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_N_INV_CONT_END_01", allocationSize=1, initialValue=1)
      */
     protected $id;
 
     /**
-     * @var Wms\Domain\Entity\InventarioNovo $inventarioEndereco
+     * @var InventarioEnderecoNovo $inventarioEndereco
      * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovo")
      * @JoinColumn(name="COD_INVENTARIO_ENDERECO", referencedColumnName="COD_INVENTARIO_ENDERECO")
      */
@@ -62,7 +62,7 @@ class InventarioContEnd
     }
 
     /**
-     * @return mixed
+     * @return InventarioEnderecoNovo
      */
     public function getInventarioEndereco()
     {
@@ -70,7 +70,7 @@ class InventarioContEnd
     }
 
     /**
-     * @param mixed $inventarioEndereco
+     * @param InventarioEnderecoNovo $inventarioEndereco
      */
     public function setInventarioEndereco($inventarioEndereco)
     {

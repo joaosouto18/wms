@@ -8,6 +8,9 @@
 
 namespace Wms\Domain\Entity\InventarioNovo;
 
+use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Domain\Entity\InventarioNovo;
+
 /**
  * @Table(name="INVENTARIO_ENDERECO_NOVO")
  * @Entity(repositoryClass="Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository")
@@ -18,19 +21,19 @@ class InventarioEnderecoNovo
      * @Column(name="COD_INVENTARIO_ENDERECO", type="integer", length=8, nullable=false)
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_INVENTARIO_ENDERECO_NOVO_01", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_N_INV_END_01", allocationSize=1, initialValue=1)
      */
     protected $id;
 
     /**
-     * @var Wms\Domain\Entity\InventarioNovo $codInventario
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioNovo")
+     * @var InventarioNovo $codInventario
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo")
      * @JoinColumn(name="COD_INVENTARIO", referencedColumnName="COD_INVENTARIO")
      */
-    protected $codInventario;
+    protected $inventario;
 
     /**
-     * @var Wms\Domain\Entity\Deposito\Endereco $depositoEndereco
+     * @var Endereco $depositoEndereco
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco")
      * @JoinColumn(name="COD_DEPOSITO_ENDERECO", referencedColumnName="COD_DEPOSITO_ENDERECO")
      */
@@ -65,23 +68,23 @@ class InventarioEnderecoNovo
     }
 
     /**
-     * @return mixed
+     * @return InventarioNovo
      */
-    public function getCodInventario()
+    public function getInventario()
     {
-        return $this->codInventario;
+        return $this->inventario;
     }
 
     /**
-     * @param mixed $codInventario
+     * @param InventarioNovo $inventario
      */
-    public function setCodInventario($codInventario)
+    public function setInventario($inventario)
     {
-        $this->codInventario = $codInventario;
+        $this->inventario = $inventario;
     }
 
     /**
-     * @return mixed
+     * @return Endereco
      */
     public function getDepositoEndereco()
     {
@@ -89,7 +92,7 @@ class InventarioEnderecoNovo
     }
 
     /**
-     * @param mixed $depositoEndereco
+     * @param Endereco $depositoEndereco
      */
     public function setDepositoEndereco($depositoEndereco)
     {

@@ -18,31 +18,38 @@ class InventarioEndProd
      * @Column(name="COD_INV_END_PROD", type="integer", length=8, nullable=false)
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_COD_INV_END_PROD_01", allocationSize=1, initialValue=1)
+     * @SequenceGenerator(sequenceName="SQ_N_INV_END_PROD_01", allocationSize=1, initialValue=1)
      */
     protected $id;
 
     /**
-     * @var Wms\Domain\Entity\InventarioNovo $inventarioEndereco
+     * @var InventarioEnderecoNovo $inventarioEndereco
      * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovo")
      * @JoinColumn(name="COD_INVENTARIO_ENDERECO", referencedColumnName="COD_INVENTARIO_ENDERECO")
      */
     protected $inventarioEndereco;
 
     /**
-     * @var Wms\Domain\Entity\Produto $produto
+     * @var Produto
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
-     * @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO")
+     * @JoinColumns({
+     *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
+     *  @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
+     * })
      */
     protected $produto;
 
     /**
-     * @var Wms\Domain\Entity\Produto $grade
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
-     * @JoinColumn(name="DSC_GRADE", referencedColumnName="DSC_GRADE")
+     * @var string
+     * @Column(name="COD_PRODUTO", type="string")
+     */
+    protected $codProduto;
+
+    /**
+     * @var string
+     * @Column(name="DSC_GRADE", type="string")
      */
     protected $grade;
-
 
     /**
      * @return mixed
@@ -61,7 +68,7 @@ class InventarioEndProd
     }
 
     /**
-     * @return mixed
+     * @return InventarioEnderecoNovo
      */
     public function getInventarioEndereco()
     {
@@ -69,7 +76,7 @@ class InventarioEndProd
     }
 
     /**
-     * @param mixed $inventarioEndereco
+     * @param InventarioEnderecoNovo $inventarioEndereco
      */
     public function setInventarioEndereco($inventarioEndereco)
     {
@@ -77,7 +84,7 @@ class InventarioEndProd
     }
 
     /**
-     * @return mixed
+     * @return Produto
      */
     public function getProduto()
     {
@@ -85,7 +92,7 @@ class InventarioEndProd
     }
 
     /**
-     * @param mixed $produto
+     * @param Produto $produto
      */
     public function setProduto($produto)
     {
@@ -93,7 +100,23 @@ class InventarioEndProd
     }
 
     /**
-     * @return mixed
+     * @return string
+     */
+    public function getCodProduto()
+    {
+        return $this->codProduto;
+    }
+
+    /**
+     * @param string $codProduto
+     */
+    public function setCodProduto($codProduto)
+    {
+        $this->codProduto = $codProduto;
+    }
+
+    /**
+     * @return string
      */
     public function getGrade()
     {
@@ -101,7 +124,7 @@ class InventarioEndProd
     }
 
     /**
-     * @param mixed $grade
+     * @param string $grade
      */
     public function setGrade($grade)
     {

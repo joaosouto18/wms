@@ -9,6 +9,7 @@
 namespace Wms\Domain\Entity\InventarioNovo;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Configurator;
 use Wms\Domain\Entity\InventarioNovo;
 
 class InventarioEnderecoNovoRepository extends EntityRepository
@@ -17,30 +18,18 @@ class InventarioEnderecoNovoRepository extends EntityRepository
      * @return InventarioEnderecoNovo
      * @throws \Exception
      */
-    public function save() {
-        $em = $this->getEntityManager();
-
-        $em->beginTransaction();
+    public function save($params, $executeFlush = true)
+    {
         try {
+            $entity = Configurator::configure(new $this->_entityName, $params);
 
-            $enInventarioEndereco = new InventarioEnderecoNovo();
+            $this->_em->persist($entity);
+            if ($executeFlush) $this->_em->flush();
 
-            $codInventario = $em->getReference('wms:InventarioNovo\InventarioNovo',$params['idCodInventario']);
-            $codDeposito   = $em->getReference('wms:Inventario',$params['idDepositoEndereco']);
+            return $entity;
 
-            $enInventarioEndereco->setCodInventario($codInventario);
-            $enInventarioEndereco->setDepositoEndereco($codDeposito);
-            $enInventarioEndereco->setContagem(1);
-            $enInventarioEndereco->setFinalizado('N');
-
-            $em->persist($enInventarioEndereco);
-            $em->flush();
-            $em->commit();
         } catch (\Exception $e) {
-            $em->rollback();
             throw new \Exception($e->getMessage());
         }
-
-        return $enInventarioEndereco;
     }
 }
