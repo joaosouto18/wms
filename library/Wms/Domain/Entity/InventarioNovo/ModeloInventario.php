@@ -14,6 +14,17 @@ namespace Wms\Domain\Entity\InventarioNovo;
  */
 class ModeloInventario
 {
+
+    const VALIDADE_NAO_CONTROLA = 'N';
+    const VALIDADE_RECEBE = 'R';
+    const VALIDADE_VALIDA = 'V';
+
+    public static $statusValidade = [
+        self::VALIDADE_NAO_CONTROLA => 'Não Controla',
+        self::VALIDADE_RECEBE => 'Apenas confere',
+        self::VALIDADE_VALIDA => 'Confere e Valida'
+    ];
+
     /**
      * @Column(name="COD_MODELO_INVENTARIO", type="integer", length=8, nullable=false)
      * @Id

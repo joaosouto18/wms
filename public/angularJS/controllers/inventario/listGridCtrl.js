@@ -1,4 +1,4 @@
-angular.module("app").controller("listGridInventarioCtrl", function($scope, $http, $filter){
+angular.module("wms").controller("listGridInventarioCtrl", function($scope, $http, $filter){
     $scope.maxPerPage = 15;
     $scope.inventarios = [];
     $scope.showLoading = true ;
@@ -35,7 +35,7 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
     };
     $scope.clearForm();
 
-    var newPaginator = function() {
+    let newPaginator = function() {
         return {
             pages: [],
             actPage: {},
@@ -55,7 +55,7 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
         if ((destination > 0  && ($scope.paginator.actPage.idPage + 1 ) === $scope.paginator.size )
             || (destination < 0 && $scope.paginator.actPage.idPage === 0)) return;
 
-        var page = $scope.paginator.actPage;
+        let page = $scope.paginator.actPage;
         $scope.paginator.actPage = $scope.paginator.pages[ page.idPage + destination ];
     };
 
@@ -63,15 +63,15 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
         $scope.showLoading = true ;
         $scope.showNoResults = false ;
         $scope.showList = false;
-        var params = {};
-        for (var x in $scope.criterioForm){
-            var val = $scope.criterioForm[x];
+        let params = {};
+        for (let x in $scope.criterioForm){
+            let val = $scope.criterioForm[x];
             if (val) params[x] = val;
         }
         getInventarios(params);
     };
 
-    var getInventarios = function (params) {
+    let getInventarios = function (params) {
         $http.post(URL_MODULO + "/index/get-inventarios-ajax", params).then(function (response){
             $scope.inventarios = response.data;
             preparePaginator();
@@ -83,7 +83,7 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
     };
 
     $scope.massActionRequest = function () {
-        var invs = $filter("filter")( $scope.inventarios, {checked: true } );
+        let invs = $filter("filter")( $scope.inventarios, {checked: true } );
         if (!invs.length) {
             $.wmsDialogAlert({title: "Alerta!", msg:"Nenhum inventário foi selecionado!"});
             return
@@ -93,7 +93,7 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
             $.wmsDialogAlert({title: "Alerta!", msg:"Nenhuma ação foi selecionada!"});
             return
         }
-        var params = {"mass-id": []};
+        let params = {"mass-id": []};
         angular.forEach(invs, function (el) {
             params["mass-id"].push(el.id);
         });
@@ -105,19 +105,19 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
 
     };
 
-    var preparePaginator = function () {
+    let preparePaginator = function () {
         $scope.paginator = newPaginator();
-        var nPages = Math.ceil($scope.inventarios.length / $scope.maxPerPage);
-        for (var i = 0; i < nPages; i++) {
+        let nPages = Math.ceil($scope.inventarios.length / $scope.maxPerPage);
+        for (let i = 0; i < nPages; i++) {
 
-            var start = ( i * $scope.maxPerPage );
-            var end = ( ( i + 1 ) * $scope.maxPerPage ) - 1 ;
+            let start = ( i * $scope.maxPerPage );
+            let end = ( ( i + 1 ) * $scope.maxPerPage ) - 1 ;
 
             if (i === nPages) {
                 end = $scope.inventarios.length - 1;
             }
 
-            var page = {
+            let page = {
                 idPage: i,
                 label: "Página - " + (i + 1),
                 indexStart: start,
@@ -145,14 +145,14 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
         $scope.inventarios[$scope.inventarios.findIndex(function (el) {
             return (el === inventario)
         })].checked = !inventario.checked;
-        var actPag = $scope.paginator.actPage;
+        let actPag = $scope.paginator.actPage;
         $scope.paginator.actPage.selectedAll = ($filter("filter")(
             $scope.inventarios.slice(actPag.indexStart, actPag.indexEnd ),
             {checked: true }).length === (actPag.indexEnd - actPag.indexStart)) ;
     };
     
     $scope.selectAllPage = function() {
-        var page = $scope.paginator.actPage;
+        let page = $scope.paginator.actPage;
         angular.forEach($scope.inventarios, function (inv, k) {
             if ( k >= page.indexStart && k <= page.indexEnd){
                 $scope.inventarios[k].checked = page.selectedAll;
@@ -163,19 +163,4 @@ angular.module("app").controller("listGridInventarioCtrl", function($scope, $htt
     getInventarios([]);
     $scope.ordenarPor("id");
     
-}).filter("interval", function () {
-    return function (input, interval) {
-        if (input.length > 0) {
-            var output = [];
-            var start = Number(interval.start);
-            var end = Number(interval.end);
-            $.each( input, function (k, v) {
-                if (k >= start && k <= end) {
-                    output.push(v);
-                }
-            });
-
-            return output;
-        }
-    }
 });

@@ -69,20 +69,9 @@ class InventarioNovo
     protected $codErp;
 
     /**
-     * @return array
+     * @var string
      */
-    public static function getTipoStatus()
-    {
-        return self::$tipoStatus;
-    }
-
-    /**
-     * @param array $tipoStatus
-     */
-    public static function setTipoStatus($tipoStatus)
-    {
-        self::$tipoStatus = $tipoStatus;
-    }
+    protected $dscStatus;
 
     /**
      * @return mixed
@@ -178,6 +167,22 @@ class InventarioNovo
     public function setCodErp($codErp)
     {
         $this->codErp = $codErp;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDscStatus()
+    {
+        return $this->dscStatus;
+    }
+
+    /**
+     * @param string $dscStatus
+     */
+    public function setDscStatus($dscStatus)
+    {
+        $this->dscStatus = self::$tipoStatus[$this->getStatus()];
     }
 
 }

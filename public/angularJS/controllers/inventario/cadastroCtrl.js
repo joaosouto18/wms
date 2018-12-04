@@ -1,4 +1,4 @@
-angular.module("app").controller("inventarioCtrl", function($scope, $http, $filter, $window){
+angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filter, $window){
     $scope.maxPerPage = 15;
     $scope.showLoading = false;
     $scope.showList = false;
@@ -7,7 +7,7 @@ angular.module("app").controller("inventarioCtrl", function($scope, $http, $filt
     $scope.showPaginatorElements = false;
     $scope.resultForm = [];
     $scope.elements = [];
-    var rotasRequest = {
+    let rotasRequest = {
         endereco:  "/index/get-enderecos-criar-ajax",
         produto: "/index/get-produtos-criar-ajax"
     };
@@ -47,7 +47,7 @@ angular.module("app").controller("inventarioCtrl", function($scope, $http, $filt
 
     $scope.clearForm();
 
-    var newPaginator = function() {
+    let newPaginator = function() {
         return {
             pages: [],
             actPage: {},
@@ -55,7 +55,7 @@ angular.module("app").controller("inventarioCtrl", function($scope, $http, $filt
         };
     };
 
-    var newPage = function(idPage, indexStart, indexEnd, itensPerpage ){
+    let newPage = function(idPage, indexStart, indexEnd, itensPerpage ){
         return {
             idPage: idPage,
             label: "Página - " + (idPage + 1),
@@ -82,9 +82,9 @@ angular.module("app").controller("inventarioCtrl", function($scope, $http, $filt
     };
 
     $scope.requestForm = function (criterio, grid) {
-        var params = {criterio: criterio};
-        for (var x in $scope.criterioForm) {
-            var val = $scope.criterioForm[x];
+        let params = {criterio: criterio};
+        for (let x in $scope.criterioForm) {
+            let val = $scope.criterioForm[x];
             if (val) params[x] = val;
         }
         $scope[grid] = [];
@@ -94,7 +94,7 @@ angular.module("app").controller("inventarioCtrl", function($scope, $http, $filt
         ajaxRequestByFormParams(params, rotasRequest[criterio], grid);
     };
 
-    var ajaxRequestByFormParams = function (params, rota, grid) {
+    let ajaxRequestByFormParams = function (params, rota, grid) {
         $http.get(URL_MODULO + rota, {params: params}).then(function (response){
             $scope[grid] = response.data;
             $scope.ordenarPor("id","result");
@@ -105,22 +105,22 @@ angular.module("app").controller("inventarioCtrl", function($scope, $http, $filt
         });
     };
 
-    var preparePaginator = function (grid, countItens, actPageId) {
-        
-        var paginator = newPaginator();
+    let preparePaginator = function (grid, countItens, actPageId) {
+
+        let paginator = newPaginator();
 
         if (countItens) {
-            var nPages = Math.ceil(countItens / $scope.maxPerPage);
-            for (var i = 0; i < nPages; i++) {
+            let nPages = Math.ceil(countItens / $scope.maxPerPage);
+            for (let i = 0; i < nPages; i++) {
 
-                var start = (i * $scope.maxPerPage);
-                var end = ((i + 1) * $scope.maxPerPage);
+                let start = (i * $scope.maxPerPage);
+                let end = ((i + 1) * $scope.maxPerPage);
 
                 if (i === (nPages - 1)) {
                     end = countItens;
                 }
 
-                var page = newPage(i, start, (end - 1), (end - start));
+                let page = newPage(i, start, (end - 1), (end - start));
 
                 paginator.pages.push(page);
             }
@@ -154,7 +154,7 @@ angular.module("app").controller("inventarioCtrl", function($scope, $http, $filt
     };
     
     $scope.incluirSelecionados = function () {
-        var count = 0;
+        let count = 0;
         angular.forEach($filter("filter")( $scope.resultForm, {checked: true} ), function (obj) {
             obj.checked = false;
             if (!$filter("filter")($scope.elements, {id: obj.id}, true).length) {
@@ -183,23 +183,30 @@ angular.module("app").controller("inventarioCtrl", function($scope, $http, $filt
         return v1.value.localeCompare(v2.value);
     };
 
-    $scope.criarInventario = function (criterio) {
-        $http.post(URL_MODULO + '/index/criar-inventario', {
-            criterio: criterio,
-            descricao: 'Teste',
-            selecionados: $scope.elements,
-            modelo: 1
-        }).then(function () {
-            $window.location.href = URL_MODULO
-        })
-    }
+    $scope.showPreviewer = function() {
+        $.wmsDialogModal({
+            title: 'Teste',
+            width: 'auto'
+        }, '<div>teste</div>');
+    };
 
-}).filter("interval", function () {
-    return function (input, interval) {
-        if (input.length > 0) {
-            var start = Number(interval.start);
-            var end = Number(interval.end);
-            return input.slice(start, (end+1));
+
+    $scope.criarInventario = function (criterio) {
+        if ($scope.elements) {
+            $http.post(URL_MODULO + '/index/criar-inventario', {
+                criterio: criterio,
+                descricao: 'Teste',
+                selecionados: $scope.elements,
+                modelo: 1
+            }).then(function () {
+                $window.location.href = URL_MODULO
+            })
+        } else {
+            $.wmsDialogAlert({
+                title: "Atenção!",
+                msg: "Nenhum elemento foi adicionado na lista"
+            })
         }
     }
+
 });

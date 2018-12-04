@@ -23,6 +23,9 @@ class InventarioService extends AbstractService
         $this->em->beginTransaction();
 
         try {
+            /** @var InventarioNovo\ModeloInventario $modeloEn */
+            $modeloEn = $this->em->find('wms:InventarioNovo\ModeloInventario', $params['modelo']);
+
             $inventarioEn = self::save([
                 'descricao' => $params['descricao'],
                 'dthIicio' => new \DateTime(),

@@ -100,7 +100,7 @@ class Inventario_Novo_IndexController  extends Action
 
     public function getModelosInventariosAjaxAction()
     {
-        $this->_helper->json($this->_em->getRepository('wms:ModeloInventario')->findBy(['isAtivo' => true]));
+        $this->_helper->json($this->_em->getRepository('wms:ModeloInventario')->findBy(['ativo' => 'S']));
     }
 
     public function getEnderecosCriarAjaxAction()

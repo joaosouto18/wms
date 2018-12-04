@@ -1,4 +1,4 @@
-<div ng-app="app" ng-controller="inventarioCtrl">
+<div ng-app="wms" ng-controller="inventarioCtrl">
     <style>
         tr.gTResultSet:nth-child(even) {
             background-color: #ededed
@@ -13,8 +13,9 @@
         }
     </style>
     <script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
-    <script src="<?php echo $this->baseUrl('angularJS/app.js') ?>"></script>
-    <script src="<?php echo $this->baseUrl('angularJS/inventario/cadastroCtrl.js') ?>"></script>
+    <script src="<?php echo $this->baseUrl('angularJS/wmsAngular.js') ?>"></script>
+    <script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/cadastroCtrl.js') ?>"></script>
+    <script src="<?php echo $this->baseUrl('angularJS/diretivas/uiPreviewer.js') ?>"></script>
     <?php echo $this->form; ?>
     <table width="100%">
         <tr >
@@ -94,7 +95,7 @@
                                 <span>Total de {{elements.length}} incluídos</span>
                             </div>
                             <div class="gAction">
-                                <button type="button" class="btn-grid" ng-click="criarInventario('endereco')"><span>Criar Inventario</span></button>
+                                <button type="button" class="btn-grid" ng-click="showPreviewer('endereco')"><span>Criar Inventario</span></button>
                             </div>
                         </div>
                         <table class="gTable" >
