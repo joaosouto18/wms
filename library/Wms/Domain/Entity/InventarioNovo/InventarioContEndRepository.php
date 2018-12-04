@@ -37,6 +37,6 @@ class InventarioContEndRepository extends EntityRepository
             throw new \Exception($e->getMessage());
         }
 
-        return $enInventarioEndereco;
+        return $enInventarioContEnd;
     }
 }

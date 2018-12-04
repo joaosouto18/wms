@@ -38,6 +38,6 @@ class InventarioContEndOsRepository extends EntityRepository
             throw new \Exception($e->getMessage());
         }
 
-        return $enInventarioEndereco;
+        return $enInventarioContEndOs;
     }
 }

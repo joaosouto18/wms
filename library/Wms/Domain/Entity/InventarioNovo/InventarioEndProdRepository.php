@@ -6,15 +6,15 @@
  * Time: 13:30
  */
 
-namespace Wms\Domain\Entity\InventarioEndProd;
+namespace Wms\Domain\Entity\InventarioNovo;
 
 use Doctrine\ORM\EntityRepository;
-use Wms\Domain\Entity\InventarioNovo;
+use Wms\Domain\Configurator;
 
 class InventarioEndProdRepository extends EntityRepository
 {
     /**
-     * @return InventarioEnderecoNovo
+     * @return InventarioEndProd
      * @throws \Exception
      */
     public function save($params, $executeFlush = true)

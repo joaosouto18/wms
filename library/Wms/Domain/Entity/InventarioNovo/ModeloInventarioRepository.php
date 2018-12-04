@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: Joaby
  * Date: 26/11/2018
- * Time: 11:41
+ * Time: 13:30
  */
 
 namespace Wms\Domain\Entity\InventarioNovo;
@@ -11,10 +11,10 @@ namespace Wms\Domain\Entity\InventarioNovo;
 use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Configurator;
 
-class InventarioEnderecoNovoRepository extends EntityRepository
+class ModeloInventarioRepository extends EntityRepository
 {
     /**
-     * @return InventarioEnderecoNovo
+     * @return ModeloInventario
      * @throws \Exception
      */
     public function save($params, $executeFlush = true)
