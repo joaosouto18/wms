@@ -72,15 +72,18 @@ class EstoqueProprietarioRepository extends EntityRepository
                  * Caso o grupo nao tenha atendido por completo o solicitado
                  * passa para o proximo grupo seguindo a ordem de prioridade
                  */
-                if($qtd < 0) {
+                while($qtd < 0) {
                     $proximoCnpj = $this->getProprietarioProximoGrupo($cnpjGrupoExcluir);
                     if (!empty($proximoCnpj)) {
                         $cnpjGrupoExcluir[] = $proximoCnpj;
                         $vetProprietario = $this->getSaldoGrupo($proximoCnpj, $propExclui, $codProduto, $grade);
+                        if (empty($vetProprietario))
+                            continue;
                         /*
                          * Chama a função de forma recursiva
                          */
                         $this->buildMovimentacaoEstoque($codProduto, $grade, $qtd, $operacao, $vetProprietario[0]['COD_PESSOA'], $codOperacao, $codOperacaoDetalhe, $cnpjGrupoExcluir);
+                        break;
                     }else{
                         throw new \Exception('Estoque Proprietario insuficiente.');
                     }
@@ -108,7 +111,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                   ESTOQUE_PROPRIETARIO EP 
                   INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
                 WHERE 
-//                  NUM_CNPJ  LIKE '$cnpj%' AND
+                  NUM_CNPJ  LIKE '$cnpj%' AND
                   EP.COD_PRODUTO = $codProduto AND
                   EP.DSC_GRADE = '$grade' AND
                   EP.SALDO_FINAL > 0 AND
