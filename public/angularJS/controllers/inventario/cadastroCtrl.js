@@ -184,10 +184,7 @@ angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filt
     };
 
     $scope.showPreviewer = function() {
-        $.wmsDialogModal({
-            title: 'Teste',
-            width: 'auto'
-        }, '<div>teste</div>');
+        $scope.showPr = true;
     };
 
 
