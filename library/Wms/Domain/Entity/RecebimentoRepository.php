@@ -295,7 +295,6 @@ class RecebimentoRepository extends EntityRepository {
                 $qtdConferidas[$item['produto']][$item['grade']][$item['lote']] = 0;
             }
         }
-
         // executa os dados da conferencia
         return $this->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, null, null, null, $idConferente);
     }

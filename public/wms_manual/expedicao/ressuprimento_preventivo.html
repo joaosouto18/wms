@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>WMS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../layout/styles/main.css" rel="stylesheet" type="text/css" media="all">
+    <link href="../layout/styles/mediaqueries.css" rel="stylesheet" type="text/css" media="all">
+    <!--[if lt IE 9]>
+    <link href="../layout/styles/ie/ie8.css" rel="stylesheet" type="text/css" media="all">
+    <script src="../layout/scripts/ie/css3-mediaqueries.min.js"></script>
+    <script src="../layout/scripts/ie/html5shiv.min.js"></script>
+    <![endif]-->
+</head>
+<body class="">
+
+<div class="wrapper row3">
+    <div id="container">
+
+        <!-- ################################################################################################ -->
+
+        <section class="clear">
+
+            <h1>Expedição -> Ressuprimento -> Ressuprimento preventivo</h1>
+
+            <p> Clique no menu <strong>EXPEDIÇÃO</strong>, posicione o mouse em <strong>RESSUPRIMENTO</strong>, 
+            em seguida clique em  <strong>RESSUPRIMENTO PREVENTIVO </strong>.  </p>
+
+            <div class="figure"><img src="images/img15.jpg"></div>
+
+        </section>
+        
+        <section class="clear">
+            
+            <p>Na tela seguinte, preencha os campos de filtro, em seguida defina os seguintes parâmetros:
+            
+            <ul>
+                <li><strong>Ocupação máxima de picking %: </strong>  informe a porcentagem de ocupação máxima 
+                do picking para ressuprimento. O sistema irá incluir na listagem de abastecimento todos os itens 
+                que estiverem abaixo deste percentual de ocupação. <br>
+               <strong>Exemplo: </strong> Se o usuário definir 30% o sistema irá filtrar todos os endereços de 
+               picking que atendam aos filtros selecionados e que estejam com quantidade em estoque no picking 
+               abaixo de 30% da capacidade do picking. </li>
+               <li><strong>Tipo de ressuprimento: </strong> </li>
+                   <ul>
+                       <li><strong>Apenas pulmão completo:</strong> o sistema deverá fazer o abastecimento para o 
+                       picking apenas se todo o estoque no endereço de pulmão for descer ou se atingir a quantidade 
+                       definida como norma de paletização.</li>
+                       <li><strong>Completar picking: </strong>o sistema irá buscar a quantidade 
+                       complementar em outro endereço. </li>
+                   </ul> 
+            </ul>
+            
+            Após preencher os parâmetros, clique em <strong>GERAR RESSUPRIMENTO</strong>.
+            
+            </p>
+
+            <div class="figure"><img src="images/img16.jpg"></div>
+
+        </section>
+        
+        <section class="clear">
+
+            <p>Na listagem exibida, selecione os produtos que deseja e clique em 
+            <strong>EXECUTAR RESSUPRIMENTO PREVENTIVO</strong>. </p>
+
+            <div class="figure"><img src="images/img17.jpg"></div>
+
+        </section>
+
+       
+    </div>
+</div>
+
+</body>

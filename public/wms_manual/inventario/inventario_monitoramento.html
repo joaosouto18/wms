@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WMS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../layout/styles/main.css" rel="stylesheet" type="text/css" media="all">
+    <link href="../layout/styles/mediaqueries.css" rel="stylesheet" type="text/css" media="all">
+    <!--[if lt IE 9]>
+    <link href="../layout/styles/ie/ie8.css" rel="stylesheet" type="text/css" media="all">
+    <script src="../layout/scripts/ie/css3-mediaqueries.min.js"></script>
+    <script src="../layout/scripts/ie/html5shiv.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="">
+
+<!-- content -->
+<div class="wrapper row3">
+    <div id="container">
+
+            <section class="clear">
+
+                <h1>Inventário -> Monitoramento</h1>
+
+                <p>Para gerenciar os inventários, clique em <strong>INVENTÁRIO</strong>, em seguida clique em <strong>MONITORAMENTO</strong></p>
+
+                <div class="figure"><img src="images/img9.jpg"></div>
+
+            </section>
+
+            <section class="clear">
+
+                <p>Os status de um inventário são:
+                <ul>
+                    <li> <strong>Gerado:     </strong>o inventário foi criado.</li>
+                    <li> <strong>Liberado:   </strong>o inventário está liberado para a contagem.</li>
+                    <li> <strong>Concluído:  </strong>a contagem do inventário foi concluída.</li>
+                    <li> <strong>Finalizado: </strong>o estoque já foi movimentado após o inventário.</li>
+                    <li> <strong>Cancelado:  </strong>o inventário foi cancelado.</li>
+                </ul>
+                </p>
+                <br>
+                <p> Se o inventário possuir status <strong>GERADO</strong>, passe o mouse sob a seta ao lado do número do inventário
+                    para realizar as seguintes ações: </p>
+                   <ul>
+                       <li>	<strong>Liberar:</strong> libera o inventário para a contagem.</li>
+                       <li>	<strong>Cancelar:</strong> cancela o inventário.</li>
+                       <li>	<strong>Adicionar endereços:</strong> adiciona mais endereços para serem contados.</li>
+                       <li>	<strong>Visualizar andamento:</strong> visualiza o andamento das contagens, apresentando
+                                    os detalhes, como por exemplo: o usuário que está fazendo a contagem, itens com divergência, etc.</li>
+                   </ul>
+                </p>
+
+                <div class="figure"><img src="images/img8.jpg"></div>
+
+            </section>
+
+            <section class="clear">
+
+                <p> Se o inventário possuir status <strong>LIBERADO</strong>, passe o mouse sob a seta ao lado do número do inventário
+                    para realizar as seguintes ações: </p>
+
+                <ul>
+                    <li>	<strong>Cancelar:</strong> cancela o inventário.</li>
+                    <li>	<strong>Relatório de avariados:</strong> gera o relatório com items avariados.</li>
+                    <li>	<strong>Relatório de divergências:</strong> gera o relatório com as divergências na contagem.</li>
+                    <li>	<strong>Adicionar endereços:</strong> adiciona mais endereços para serem contados.</li>
+                    <li>	<strong>Visualizar andamento:</strong> visualiza o andamento das contagens.</li>
+                    <li>	<strong>Imprimir andamento:</strong> imprime os endereços do inventário para caso a contagem seja manual(papel).</li>
+
+                </ul>
+
+                <div class="figure"><img src="images/img10.jpg"></div>
+
+            </section>
+
+            <section class="clear">
+
+                <p> Se o inventário possuir status <strong>CONCLUÍDO</strong>, passe o mouse sob a seta ao lado do número do inventário
+                    para realizar as seguintes ações: </p>
+
+                <ul>
+                    <li>	<strong>Atualizar estoque:</strong> ao usar esta opção as divergências contadas serão ajustadas e o estoque
+                        será movimentado (entradas/saídas) e o status do inventário mudará para <strong>FINALIZADO</strong>.</li>
+                    <li>	<strong>Cancelar:</strong> cancela o inventário.</li>
+                    <li>	<strong>Relatório de avariados:</strong> gera o relatório com items avariados.</li>
+                    <li>	<strong>Relatório de divergências:</strong> gera o relatório com as divergências na contagem.</li>
+                    <li>	<strong>Adicionar endereços:</strong> adiciona mais endereços para serem contados.</li>
+                    <li>	<strong>Visualizar andamento:</strong> visualiza o andamento das contagens.</li>
+                </ul>
+
+                <div class="figure"><img src="images/img13.jpg"></div>
+
+            </section>
+
+            <section class="clear">
+
+                <p> Se o inventário possuir status <strong>FINALIZADO</strong>, passe o mouse sob a seta ao lado do número do inventário
+                    para realizar as seguintes ações: </p>
+
+                <ul>
+                    <li>	<strong>Relatório de avariados:</strong> gera o relatório com items avariados.</li>
+                    <li>	<strong>Relatório de divergências:</strong> gera o relatório com as divergências na contagem.</li>
+                    <li>	<strong>Visualizar andamento:</strong> visualiza o andamento das contagens.</li>
+                    <li>	<strong>Movimentações no estoque:</strong> gera o relatório dos produtos e endereços que tiveram
+                                    ajuste no estoque (entrada/saída);.</li>
+                    <li>	<strong>Exportar inventário:</strong> exporta os dados do inventário.</li>
+                </ul>
+
+                <div class="figure"><img src="images/img12.jpg"></div>
+
+            </section>
+
+            <section class="clear">
+
+                <p> Se o inventário possuir status <strong>CANCELADO</strong>, passe o mouse sob a seta ao lado do número do inventário
+                    para realizar as seguintes ações: </p>
+                <ul>
+                    <li>	<strong>Relatório de avariados:</strong> gera o relatório com items avariados.</li>
+                    <li>	<strong>Relatório de divergências:</strong> gera o relatório com as divergências na contagem.</li>
+                    <li>	<strong>Visualizar andamento:</strong> visualiza o andamento das contagens.</li>
+                </ul>
+                </p>
+
+                <div class="figure"><img src="images/img11.jpg"></div>
+
+            </section>
+
+            <section class="clear">
+
+                <p> Para visualizar o andamento do inventário, posicione o mouse no começo da linha do inventário,
+                    em seguida clique em <strong>VISUALIZAR ANDAMENTO. </strong>
+                </p>
+
+                <div class="figure"><img src="images/img22.jpg"></div>
+            </section>
+
+            <section class="clear">
+
+                <p> Ao visualizar o andamento, primeiramente é apresentado a quantidade de endereços e o status
+                    (pendente, divergente, inventariado, entre outros).
+                </p>
+
+                <div class="figure"><img src="images/img23.jpg"></div>
+            </section>
+
+            <section class="clear">
+
+                <p> Para visualizar o andamento da conferência, posicione o mouse no começo da linha e clique em
+                    <strong> VISUALIZAR CONFERÊNCIA. </strong>
+                </p>
+
+                <div class="figure"><img src="images/img24.jpg"></div>
+            </section>
+
+            <section class="clear">
+
+                <p> Para visualizar o detalhe das contagens, posicione o mouse no começo da linha e clique em
+                    <strong> VISUALIZAR DETALHE CONTAGEM.</strong>
+                </p>
+
+                <div class="figure"><img src="images/img25.jpg"></div>
+            </section>
+
+            <section class="clear">
+
+                <p> Relatório final - Na guia suspensa ao lado do número do inventário, pode-se imprimir o relatório
+                    ou baixar em PDF na opção <strong>MOVIMENTAÇÕES DO ESTOQUE</strong>. <br> 
+                    Pode-se ainda selecionar vários
+                    inventários e na opção acima da listagem dos inventários em <strong> MASS ACTION </strong> selecionar
+                    <strong>MOVIMENTAÇÕES NO ESTOQUE (XLS) </strong> e exportar os ajustes realizados para uma planilha Excel.
+
+                </p>
+
+                <div class="figure"><img src="images/img26.jpg"></div>
+            </section>
+
+    </div>
+</div>
+
+<!-- Scripts
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script src="http://code.jquery.com/ui/1.10.1/jquery-ui.min.js"></script>
+<script>window.jQuery || document.write('<script src="layout/scripts/jquery-latest.min.js"><\/script>\
+<script src="layout/scripts/jquery-ui.min.js"><\/script>')</script>
+<script>jQuery(document).ready(function($){ $('img').removeAttr('width height'); });</script>
+<script src="layout/scripts/responsiveslides.js-v1.53/responsiveslides.min.js"></script>
+<script src="layout/scripts/jquery-mobilemenu.min.js"></script>
+<script src="layout/scripts/custom.js"></script> -->
+</body>

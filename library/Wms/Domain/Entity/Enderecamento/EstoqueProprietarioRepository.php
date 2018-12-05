@@ -180,7 +180,7 @@ class EstoqueProprietarioRepository extends EntityRepository
             }else{
                 $entityFilial = $this->getEntityManager()->getRepository('wms:Filial')->findOneBy(array('juridica' => $entityPJ->getId()));
                 if(empty($entityFilial)){
-                    $this->inserirFilial($entityPJ->getId());
+                    $this->inserirFilial($entityPJ);
                 }
             }
             $idPessoa = $entityPJ->getId();
@@ -280,11 +280,12 @@ class EstoqueProprietarioRepository extends EntityRepository
         return $result;
     }
 
-    public function inserirFilial($idPessoa){
+    public function inserirFilial($pj){
         $entityFilial  = new Filial();
-        $entityFilial->setId($idPessoa);
-        $entityFilial->setIdExterno(null);
-        $entityFilial->setCodExterno(null);
+        $entityFilial->setId($pj->getId());
+        $entityFilial->setJuridica($pj);
+        $entityFilial->setIdExterno($pj->getId());
+        $entityFilial->setCodExterno($pj->getId());
         $entityFilial->setIndLeitEtqProdTransbObg('N');
         $entityFilial->setIndUtilizaRessuprimento('N');
         $entityFilial->setIndRecTransbObg('N');
