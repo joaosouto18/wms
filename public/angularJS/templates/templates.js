@@ -1,9 +1,3 @@
-angular.module('wms').run(function ($templateCache) {
-    angular.forEach(templates, function (obj) {
-        $templateCache.put(obj.name, obj.template)
-    });
-});
-
 let templates = [];
 
 templates.push({

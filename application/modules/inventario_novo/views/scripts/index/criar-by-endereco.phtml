@@ -1,3 +1,8 @@
+<script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
+<script src="<?php echo $this->baseUrl('angularJS/wmsAngular.js') ?>"></script>
+<script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/cadastroCtrl.js') ?>"></script>
+<!--<script src="--><?php //echo $this->baseUrl('angularJS/directives/uiPreviewer.js') ?><!--"></script>-->
+<!--<script src="--><?php //echo $this->baseUrl('angularJS/templates/templates.js') ?><!--"></script>-->
 <div ng-app="wms" ng-controller="inventarioCtrl">
     <style>
         tr.gTResultSet:nth-child(even) {
@@ -12,10 +17,6 @@
             background-color: red;
         }
     </style>
-    <script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
-    <script src="<?php echo $this->baseUrl('angularJS/wmsAngular.js') ?>"></script>
-    <script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/cadastroCtrl.js') ?>"></script>
-    <script src="<?php echo $this->baseUrl('angularJS/directives/uiPreviewer.js') ?>"></script>
     <?php echo $this->form; ?>
     <table width="100%">
         <tr >

@@ -1,6 +1,6 @@
 angular.module('wms').directive("uiPreviewer", function () {
     return {
-        templateUrl: 'uiPreviewer-inventario.html',
+        //templateUrl: 'uiPreviewer-inventario.html',
         scope: {
             title: "@"
         }

@@ -183,11 +183,6 @@ angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filt
         return v1.value.localeCompare(v2.value);
     };
 
-    $scope.showPreviewer = function() {
-        $scope.showPr = true;
-    };
-
-
     $scope.criarInventario = function (criterio) {
         if ($scope.elements) {
             $http.post(URL_MODULO + '/index/criar-inventario', {
