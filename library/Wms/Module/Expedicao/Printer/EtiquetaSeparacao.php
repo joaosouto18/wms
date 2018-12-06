@@ -115,7 +115,7 @@ class EtiquetaSeparacao extends Pdf
     }
 
 
-    public function imprimir(array $params = array(), $modelo)
+    public function imprimir(array $params = array(), $modelo, $idBox = null)
     {
         $this->modelo = $modelo;
         $this->total= "";
@@ -175,11 +175,16 @@ class EtiquetaSeparacao extends Pdf
         $ExpedicaoRepo      = $em->getRepository('wms:Expedicao');
         /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
         $ExpedicaoEntity    = $ExpedicaoRepo->find($idExpedicao);
-        $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
-//        $boxEntity = $em->getReference('wms:Deposito\Box', '2');
-        $ExpedicaoEntity->setStatus($statusEntity);
-//        $ExpedicaoEntity->setBox($boxEntity);
-        $em->persist($ExpedicaoEntity);
+
+        if ($ExpedicaoEntity->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_INTEGRADO) {
+            $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
+            $ExpedicaoEntity->setStatus($statusEntity);
+
+            $boxEntity = $em->getReference('wms:Deposito\Box', $idBox);
+            $ExpedicaoEntity->setBox($boxEntity);
+
+            $em->persist($ExpedicaoEntity);
+        }
 
         foreach($etiquetas as $etiqueta) {
             try {

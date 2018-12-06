@@ -11,7 +11,7 @@
             <div class="field" style="padding: 12px;">
                 <b><label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecione Todas</label></b>
 
-                <select>
+                <select name="id-box" id="id-box">
                     <option value="">Selecione</option>
                     <?php foreach ($this->boxes as $box) : ?>
                         <option value="<?php echo $box->getId() ?>"><?php echo $box->getDescricao() ?></option>
@@ -118,28 +118,28 @@
                         $.wmsDialogAjax({
                             width: 750,
                             height: 450,
-                            url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>/return/view',
+                            url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>/return/view/box/'+document.getElementById('id-box').value,
                             title: 'Mapas/Etiquetas Pendentes de Impressão'
                         });
                         lockUnlockBtn(false);
                     } else {
                         $.ajax({
-                            url: URL_MODULO + '/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>/return/json',
+                            url: URL_MODULO + '/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>/return/json/box/'+document.getElementById('id-box').value,
                             type: 'GET',
                             success: function (data) {
                                 if (option === "printAll") {
                                     if (data.mapas.length > 0) {
-                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+ data.mapas , '_blank');
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+ data.mapas + '/box/' + document.getElementById('id-box').value, '_blank');
                                     }
                                     if (data.etiquetas.length > 0) {
-                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+ data.etiquetas, '_blank');
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+ data.etiquetas + '/box/' + document.getElementById('id-box').value, '_blank');
                                     }
                                     if (data.temReentrega === "S") {
-                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/reentrega/idExpedicao/<?php echo $this->idExpedicao; ?>/todas/N/', '_blank');
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/reentrega/idExpedicao/<?php echo $this->idExpedicao; ?>/todas/N/box/' + document.getElementById('id-box').value, '_blank');
                                     }
                                 } else {
                                     if (data.mapas.length > 0) {
-                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/conf/1/idMapa/' + data.mapas, '_blank');
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/conf/1/idMapa/' + data.mapas + '/box/' + document.getElementById('id-box').value, '_blank');
                                     } else {
                                         $.wmsDialogAlert({
                                             title: 'Falha no procedimento',
