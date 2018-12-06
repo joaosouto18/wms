@@ -40,7 +40,10 @@
                             $.each(data.result, function (key, value) {
                                 txt += value.produto + ' - ';
                                 txt += value.desc + ' ( ' + value.grade + ' ) - ' + value.qtd + '<br> ';
-                                txt += value.dataValidade + '<br>___________________________________';
+                                if (value.dataValidade !== null && value.dataValidade !== undefined) {
+                                    txt += value.dataValidade + '<br>';
+                                }
+                                txt += '___________________________________<br>';
                                 $('#lista-endereco').html(txt);
                             });
                         } else {
