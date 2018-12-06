@@ -1054,7 +1054,8 @@ class EnderecoRepository extends EntityRepository {
 
     }
 
-        public function getProdutoPorEndereco($endereco) {
+    public function getProdutoPorEndereco($endereco)
+    {
 
         $enderecoEn = $this->findOneBy(array('descricao' => $endereco));
         if (!isset($enderecoEn) || empty($enderecoEn)) {
@@ -1076,7 +1077,7 @@ class EnderecoRepository extends EntityRepository {
                     $produtoEn = $itemPinckingEmb->getProduto();
                     $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
                         'desc' => $produtoEn->getDescricao(), 'qtd' => 0);
-                    $result[$produtoEn->getId()] = $produto;
+                    $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()] = $produto;
                 }
             }
             if (!empty($itensPickingVol)) {
@@ -1086,7 +1087,7 @@ class EnderecoRepository extends EntityRepository {
                  */
                 foreach ($itensPickingVol as $key => $itemPinckingVol) {
                     $produtoEn = $itemPinckingVol->getProduto();
-                    $result[$produtoEn->getId()."-".$itemPinckingVol->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
+                    $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()."-".$itemPinckingVol->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
                         'desc' => $produtoEn->getDescricao() . " - (" . $itemPinckingVol->getDescricao() . ")", 'qtd' => 0);
                 }
             }
@@ -1104,11 +1105,11 @@ class EnderecoRepository extends EntityRepository {
                         $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
                             'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens),
                             'dataValidade' => $dataValidade);
-                        $result[$produtoEn->getId()] = $produto;
+                        $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()] = $produto;
                     } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
                         /** @var Produto\Volume $volumeEn */
                         $volumeEn = $item->getProdutoVolume();
-                        $result[$produtoEn->getId()."-".$volumeEn->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
+                        $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()."-".$volumeEn->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
                             'desc' => $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ")", 'qtd' => $item->getQtd(),
                             'dataValidade' => $dataValidade);
                     }
