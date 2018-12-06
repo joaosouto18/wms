@@ -176,7 +176,9 @@ class EtiquetaSeparacao extends Pdf
         /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
         $ExpedicaoEntity    = $ExpedicaoRepo->find($idExpedicao);
         $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
+//        $boxEntity = $em->getReference('wms:Deposito\Box', '2');
         $ExpedicaoEntity->setStatus($statusEntity);
+//        $ExpedicaoEntity->setBox($boxEntity);
         $em->persist($ExpedicaoEntity);
 
         foreach($etiquetas as $etiqueta) {

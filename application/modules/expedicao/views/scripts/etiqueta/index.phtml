@@ -10,6 +10,14 @@
             <legend>Selecione as cargas</legend>
             <div class="field" style="padding: 12px;">
                 <b><label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecione Todas</label></b>
+
+                <select>
+                    <option value="">Selecione</option>
+                    <?php foreach ($this->boxes as $box) : ?>
+                        <option value="<?php echo $box->getId() ?>"><?php echo $box->getDescricao() ?></option>
+                    <?php endforeach; ?>
+                </select>
+
             </div>
             <div id="cargas">
                 <b>
@@ -27,7 +35,9 @@
                             </label>
                         </div>
                     <?php endforeach ?>
-                </b>
+
+
+
             </div>
         </fieldset>
     <?php endif; ?>
