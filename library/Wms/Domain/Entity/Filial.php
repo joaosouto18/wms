@@ -174,4 +174,19 @@ class Filial implements AtorInterface
         return $this->indUtilizaRessuprimento;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getJuridica()
+    {
+        return $this->juridica;
+    }
+
+    /**
+     * @param mixed $juridica
+     */
+    public function setJuridica($juridica)
+    {
+        $this->juridica = $juridica;
+    }
 }

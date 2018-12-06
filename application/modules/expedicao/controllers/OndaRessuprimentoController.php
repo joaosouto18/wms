@@ -100,7 +100,7 @@ class Expedicao_OndaRessuprimentoController extends Action
 
                 if ($cortarAutomatico == 'S') {
 
-                    $idMotivoCorte = $this->getEntityManager('COD_MOTIVO_CORTE_AUTOMATICO');
+                    $idMotivoCorte = $this->getSystemParameterValue('COD_MOTIVO_CORTE_AUTOMATICO');
                     if ($idMotivoCorte == null) throw new \Exception("Parametro COD_MOTIVO_CORTE_AUTOMATICO Não encontrado");
 
                     $motivoEn = $repoMotivos->find($idMotivoCorte);
