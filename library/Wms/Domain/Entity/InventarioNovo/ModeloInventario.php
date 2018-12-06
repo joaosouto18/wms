@@ -179,11 +179,12 @@ class ModeloInventario
     }
 
     /**
+     * @param $toString boolean Converter para String a data
      * @return \DateTime
      */
-    public function getDthCriacao()
+    public function getDthCriacao($toString = false)
     {
-        return $this->dthCriacao;
+        return (!$toString) ? $this->dthCriacao : $this->dthCriacao->format('d/m/Y H:i:s') ;
     }
 
     private function setDthCriacao()

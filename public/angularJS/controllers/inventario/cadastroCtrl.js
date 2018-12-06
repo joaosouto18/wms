@@ -183,6 +183,17 @@ angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filt
         return v1.value.localeCompare(v2.value);
     };
 
+    $scope.showPreviewer = function() {
+        if ($scope.elements.length) {
+            $scope.displayPreviewer = true;
+        } else {
+            $.wmsDialogAlert({
+                title: "Atenção!",
+                msg: "Nenhum elemento foi adicionado na lista"
+            })
+        }
+    };
+
     $scope.criarInventario = function (criterio) {
         if ($scope.elements) {
             $http.post(URL_MODULO + '/index/criar-inventario', {

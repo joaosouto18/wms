@@ -4,7 +4,7 @@ angular.module("wms", [])
         if (input.length > 0) {
             let start = Number(interval.start);
             let end = Number(interval.end);
-            return input.slice(start, (end+1));
+            return input.slice(start, (end + 1));
         }
     }
 });

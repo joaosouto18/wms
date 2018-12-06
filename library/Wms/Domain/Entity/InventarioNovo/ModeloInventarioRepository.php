@@ -31,4 +31,40 @@ class ModeloInventarioRepository extends EntityRepository
             throw new \Exception($e->getMessage());
         }
     }
+
+    public function getModelosAtivos($returnType = 'entity', $findBy = [])
+    {
+        $return = [];
+        /** @var ModeloInventario[] $modelos */
+        if (!empty($whereExclusive)) {
+            $modelos = $this->findBy($findBy);
+        }
+        else {
+            $modelos = $this->findAll();
+        }
+        if ($returnType === 'json') {
+            $obj = new \stdClass;
+            foreach ($modelos as $modelo) {
+                $obj->id                    = $modelo->getId();
+                $obj->dscModelo             = $modelo->getDescricao();
+                $obj->ativo                 = $modelo->isAtivo();
+                $obj->isDefault             = $modelo->isDefault();
+                $obj->itemAItem             = $modelo->confereItemAItem();
+                $obj->controlaValidade      = $modelo->controlaValidade();
+                $obj->exigeUMA              = $modelo->exigeUma();
+                $obj->numContagens          = $modelo->getNumContagens();
+                $obj->comparaEstoque        = $modelo->comparaEstoque();
+                $obj->usuarioNContagens     = $modelo->permiteUsuarioNContagens();
+                $obj->contarTudo            = $modelo->forcarContarTudo();
+                $obj->volumesSeparadamente  = $modelo->confereVolumesSeparadamente();
+                $obj->importaERP            = $modelo->importaERP();
+                $obj->idLayoutEXP           = $modelo->getIdLayoutEXP();
+                $return[] = $obj;
+            }
+        } else if($returnType === 'entity') {
+            $return = $modelos;
+        }
+
+        return $return;
+    }
 }
