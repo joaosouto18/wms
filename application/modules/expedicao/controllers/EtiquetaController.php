@@ -20,9 +20,10 @@ class Expedicao_EtiquetaController  extends Action
         if ($showCarga) {
             $this->view->cargas          = $ExpedicaoRepo->getCodCargasExterno($idExpedicao);
         }
+        $expedicaoEntity = $ExpedicaoRepo->findOneBy(array('id' => $idExpedicao));
 
-        $this->view->expedicao       = $idExpedicao;
-        $this->view->boxes = $this->_em->getRepository('wms:Deposito\Box')->findAll();
+        $this->view->expedicao = $expedicaoEntity;
+        $this->view->boxes     = $this->_em->getRepository('wms:Deposito\Box')->findAll();
     }
 
     public function imprimirAction()
@@ -263,9 +264,10 @@ class Expedicao_EtiquetaController  extends Action
                 $statusEntity = $this->getEntityManager()->getReference('wms:Util\Sigla', \Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO);
                 $ExpedicaoEntity->setStatus($statusEntity);
 
-                $boxEntity = $this->getEntityManager()->getReference('wms:Deposito\Box', $idBox);
-                $ExpedicaoEntity->setBox($boxEntity);
-
+                if (!is_null($idBox)) {
+                    $boxEntity = $this->getEntityManager()->getReference('wms:Deposito\Box', $idBox);
+                    $ExpedicaoEntity->setBox($boxEntity);
+                }
 
                 $this->getEntityManager()->persist($ExpedicaoEntity);
             }

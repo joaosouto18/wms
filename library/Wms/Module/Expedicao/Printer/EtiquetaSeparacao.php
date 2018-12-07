@@ -180,8 +180,10 @@ class EtiquetaSeparacao extends Pdf
             $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
             $ExpedicaoEntity->setStatus($statusEntity);
 
-            $boxEntity = $em->getReference('wms:Deposito\Box', $idBox);
-            $ExpedicaoEntity->setBox($boxEntity);
+            if (!is_null($idBox)) {
+                $boxEntity = $em->getReference('wms:Deposito\Box', $idBox);
+                $ExpedicaoEntity->setBox($boxEntity);
+            }
 
             $em->persist($ExpedicaoEntity);
         }
