@@ -150,6 +150,12 @@ class EtiquetaSeparacao extends Pdf
         $dscGradeAnterior = null;
         $countEtiquetasByProdutos = 1;
 
+        $boxEntity = null;
+        $dscBox = '';
+        if (!is_null($idBox)) {
+            $boxEntity = $em->getReference('wms:Deposito\Box', $idBox);
+            $dscBox = $boxEntity->getDescricao();
+        }
         foreach($etiquetas as $etiqueta) {
             if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == 'S') {
                 if ($etiquetaMaeAnterior != $etiqueta['codEtiquetaMae']) {
@@ -164,6 +170,7 @@ class EtiquetaSeparacao extends Pdf
             } else {
                 $countEtiquetasByProdutos = 1;
             }
+            $etiqueta['dscBox'] = $dscBox;
             $this->layoutEtiqueta($etiqueta,count($etiquetas),false,$modelo, false, $countEtiquetasByProdutos);
 
             $codProdutoAnterior = $etiqueta['codProduto'];
@@ -179,11 +186,7 @@ class EtiquetaSeparacao extends Pdf
         if ($ExpedicaoEntity->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_INTEGRADO) {
             $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
             $ExpedicaoEntity->setStatus($statusEntity);
-
-            if (!is_null($idBox)) {
-                $boxEntity = $em->getReference('wms:Deposito\Box', $idBox);
-                $ExpedicaoEntity->setBox($boxEntity);
-            }
+            $ExpedicaoEntity->setBox($boxEntity);
 
             $em->persist($ExpedicaoEntity);
         }
@@ -1107,7 +1110,7 @@ class EtiquetaSeparacao extends Pdf
         $impressao = str_replace('.','-',"$etiqueta[endereco]");
         $this->MultiCell(50, 6, $impressao, 1, 'C');
         $this->SetY($y3);
-        $impressao = "$countEtiquetasByProdutos / $etiqueta[qtdProdDist]";
+        $impressao = "$countEtiquetasByProdutos / $etiqueta[qtdProdDist] - $etiqueta[dscBox]";
         $this->SetX(53);
         $this->MultiCell(55, 6, $impressao, 1, 'L');
         $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 40, 41, 65, 17);
