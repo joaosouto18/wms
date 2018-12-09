@@ -43,10 +43,11 @@ class ModeloInventarioRepository extends EntityRepository
             $modelos = $this->findAll();
         }
         if ($returnType === 'json') {
-            $obj = new \stdClass;
             foreach ($modelos as $modelo) {
+                $obj = new \stdClass;
                 $obj->id                    = $modelo->getId();
                 $obj->dscModelo             = $modelo->getDescricao();
+                $obj->dthCriacao            = $modelo->getDthCriacao(true);
                 $obj->ativo                 = $modelo->isAtivo();
                 $obj->isDefault             = $modelo->isDefault();
                 $obj->itemAItem             = $modelo->confereItemAItem();
@@ -57,8 +58,6 @@ class ModeloInventarioRepository extends EntityRepository
                 $obj->usuarioNContagens     = $modelo->permiteUsuarioNContagens();
                 $obj->contarTudo            = $modelo->forcarContarTudo();
                 $obj->volumesSeparadamente  = $modelo->confereVolumesSeparadamente();
-                $obj->importaERP            = $modelo->importaERP();
-                $obj->idLayoutEXP           = $modelo->getIdLayoutEXP();
                 $return[] = $obj;
             }
         } else if($returnType === 'entity') {

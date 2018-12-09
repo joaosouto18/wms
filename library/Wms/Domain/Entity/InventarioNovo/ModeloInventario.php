@@ -101,18 +101,6 @@ class ModeloInventario
 
     /**
      * @var string $ativo
-     * @Column(name="IND_IMPORTA_ERP", type="string", length=1, nullable=false)
-     */
-    protected $importaERP;
-
-    /**
-     * @var string $ativo
-     * @Column(name="ID_MODELO", type="string", length=1, nullable=false)
-     */
-    protected $idLayoutEXP;
-
-    /**
-     * @var string $ativo
      * @Column(name="IND_DEFAULT", type="string", length=1, nullable=false)
      */
     protected $default;
@@ -237,7 +225,7 @@ class ModeloInventario
      */
     public function controlaValidade()
     {
-        return self::convertBoolean($this->controlaValidade);
+        return self::$statusValidade[$this->controlaValidade];
     }
 
     /**
@@ -374,46 +362,6 @@ class ModeloInventario
     public function confereVolumesSeparadamente()
     {
         return self::convertBoolean($this->volumesSeparadamente);
-    }
-
-    /**
-     * @return string
-     */
-    public function getImportaERP()
-    {
-        return $this->importaERP;
-    }
-
-    /**
-     * @param boolean $importaERP
-     */
-    public function setImportaERP($importaERP)
-    {
-        $this->importaERP = ($importaERP) ? 'S' : 'N';
-    }
-
-    /**
-     * @return bool
-     */
-    public function importaERP()
-    {
-        return self::convertBoolean($this->importaERP);
-    }
-
-    /**
-     * @return string
-     */
-    public function getIdLayoutEXP()
-    {
-        return $this->idLayoutEXP;
-    }
-
-    /**
-     * @param integer $idLayoutEXP
-     */
-    public function setIdLayoutEXP($idLayoutEXP)
-    {
-        $this->idLayoutEXP = $idLayoutEXP;
     }
 
     /**

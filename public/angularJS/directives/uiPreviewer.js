@@ -21,8 +21,41 @@ angular.module('wms').directive("uiPreviewer", function ($http, $window) {
         return arrColumns;
     };
 
+    let labelsCriterio = {
+        endereco: "Endereço",
+        produto: "Produto",
+    };
+
+    let postInventario = function () {
+        $http.post(URL_MODULO + '/index/criar-inventario', {
+            criterio: scope.criterio,
+            descricao: scope.dscInventario,
+            selecionados: scope.itens,
+            modelo: scope.modSel
+        }).then(function (response) {
+            console.log(response);
+            //$window.location.href = URL_MODULO
+        })
+    };
+
+    let checkNomeInventario = function ( nome ) {
+        if (isEmpty(nome)) {
+            let test = $.wmsDialogConfirm({
+                title: "Atenção!",
+                msg: "Não foi definido um nome para o inventário, deseja prosseguir?",
+                width: "auto",
+                height: "auto",
+                buttons: {confirm:'Sim', reject:'Não'}
+            });
+
+            console.log(test);
+        }
+    };
+
     return {
-        templateUrl: 'uiPreviewer-inventario.html',
+        templateUrl: function(elem,attrs) {
+            return attrs.templateUrl || 'default.html'
+        },
         scope: {
             description: "@",
             itens: "=",
@@ -32,19 +65,21 @@ angular.module('wms').directive("uiPreviewer", function ($http, $window) {
         restrict: 'E',
         link: function (scope) {
 
+            scope.modelos = [];
             let requestModelos = function () {
                 $http.get(URL_MODULO + '/index/get-modelos-inventarios-ajax').then(function (response) {
                     scope.modelos = response.data;
                 }).then(function () {
                     angular.forEach(scope.modelos, function (obj) {
-                        console.log(obj);
                         if (obj.isDefault) {
-                            console.log("entrou " + obj.dscModelo);
-                            scope.modeloSelecionado = obj.id;
+                            obj.dscModelo += " (Default)";
+                            scope.modSel = obj;
                         }
                     })
                 })
             };
+
+            scope.lblCriterio = labelsCriterio[scope.criterio];
 
             requestModelos();
             scope.close = function () {
@@ -54,23 +89,7 @@ angular.module('wms').directive("uiPreviewer", function ($http, $window) {
             scope.gridColumns = configGridHeaders(scope.criterio);
 
             scope.criarInventario = function () {
-                console.log(scope.dscNomeInventario);
-                console.log(scope.modeloSelecionado.id);
-                // if (scope.itens) {
-                //     $http.post(URL_MODULO + '/index/criar-inventario', {
-                //         criterio: scope.criterio,
-                //         descricao: scope.dscNomeInventario,
-                //         selecionados: scope.itens,
-                //         modelo: scope.modeloSelecionado.id
-                //     }).then(function () {
-                //         $window.location.href = URL_MODULO
-                //     })
-                // } else {
-                //     $.wmsDialogAlert({
-                //         title: "Atenção!",
-                //         msg: "Nenhum elemento foi adicionado na lista"
-                //     })
-                // }
+                checkNomeInventario(scope.dscInventario)
             };
 
             scope.drop = function(obj) {

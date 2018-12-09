@@ -58,6 +58,21 @@
     };
 
     $.wmsDialogConfirm = function(settings, callback, params, returnFunction){
+        let buttons = {};
+
+        let confirmBtnLbl = (!!settings.buttons.confirm)? settings.buttons.confirm : "Confirmar";
+        buttons[confirmBtnLbl] = function (){
+            // if($.isFunction(callback)){ callback.call(this, params); }
+            // if($.isFunction(returnFunction)){ returnFunction.call(this, true); }
+            $(this).remove();
+        };
+
+        let rejectBtnLbl = (!!settings.buttons.reject)? settings.buttons.reject : "Cancelar";
+        buttons[rejectBtnLbl] = function (){
+            // if($.isFunction(returnFunction)){ returnFunction.call(this, false); }
+            $(this).remove();
+        };
+
         var config = {
             'title': settings.title,
             'msg': settings.msg,
@@ -66,23 +81,7 @@
             'resizable': (!!settings.resizable)? settings.resizable : false,
             'position' : (!!settings.position)? settings.position : 'center',
             'modal' :  (!!settings.modal)? settings.modal :  true,
-            'buttons': (!!settings.buttons)? settings.buttons :  {
-                "Confirmar": function (){
-                    if($.isFunction(callback)){
-                        callback.call(this, params);
-                    }
-                    if($.isFunction(returnFunction)){
-                        returnFunction.call(this, true);
-                    }
-                    $(this).remove();
-                },
-                "Cancelar": function () {
-                    if($.isFunction(returnFunction)){
-                        returnFunction.call(this, false);
-                    }
-                    $(this).remove();
-                }
-            }
+            'buttons': (!!settings.buttons)? settings.buttons :  buttons
         };
 
         // show a spinner or something via css
