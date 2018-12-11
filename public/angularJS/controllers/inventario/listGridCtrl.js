@@ -1,8 +1,8 @@
 angular.module("wms").controller("listGridInventarioCtrl", function($scope, $http, $filter){
     $scope.maxPerPage = 15;
     $scope.inventarios = [];
-    $scope.showLoading = true ;
-    $scope.showNoResults = false ;
+    $scope.showLoading = true;
+    $scope.showNoResults = false;
     $scope.showList = false;
     $scope.massActionRoute = null;
 

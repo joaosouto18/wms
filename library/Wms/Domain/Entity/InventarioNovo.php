@@ -8,6 +8,8 @@
 
 namespace Wms\Domain\Entity;
 
+use Wms\Domain\Entity\InventarioNovo\ModeloInventario;
+
 /**
  * @Table(name="INVENTARIO_NOVO")
  * @Entity(repositoryClass="Wms\Domain\Entity\InventarioNovoRepository")
@@ -50,7 +52,7 @@ class InventarioNovo
      * @var \DateTime $dthIicio
      * @Column(name="DTH_INICIO", type="datetime")
      */
-    protected $dthIicio;
+    protected $dthInicio;
 
     /**
      * @var \DateTime $finalizacao
@@ -72,6 +74,61 @@ class InventarioNovo
      * @var string
      */
     protected $dscStatus;
+
+    /**
+     * @var ModeloInventario
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\ModeloInventario")
+     * @JoinColumn(name="COD_MODELO_INVENTARIO", referencedColumnName="COD_MODELO_INVENTARIO")
+     */
+    protected $modeloInventario;
+
+    /**
+     * @var string $ativo
+     * @Column(name="IND_ITEM_A_ITEM", type="string", length=1, nullable=false)
+     */
+    protected $itemAItem;
+
+    /**
+     * @var string $ativo
+     * @Column(name="IND_CONTROLA_VALIDADE", type="string", length=1, nullable=false)
+     */
+    protected $controlaValidade;
+
+    /**
+     * @var string $ativo
+     * @Column(name="IND_EXIGE_UMA", type="string", length=1, nullable=false)
+     */
+    protected $exigeUMA;
+
+    /**
+     * @var integer $ativo
+     * @Column(name="NUM_CONTAGENS", type="integer", length=2, nullable=false)
+     */
+    protected $numContagens;
+
+    /**
+     * @var string $ativo
+     * @Column(name="IND_COMPARA_ESTOQUE", type="string", length=1, nullable=false)
+     */
+    protected $comparaEstoque;
+
+    /**
+     * @var string $ativo
+     * @Column(name="IND_USUARIO_N_CONTAGENS", type="string", length=1, nullable=false)
+     */
+    protected $usuarioNContagens;
+
+    /**
+     * @var string $ativo
+     * @Column(name="IND_CONTAR_TUDO", type="string", length=1, nullable=false)
+     */
+    protected $contarTudo;
+
+    /**
+     * @var string $ativo
+     * @Column(name="IND_VOLUMES_SEPARADAMENTE", type="string", length=1, nullable=false)
+     */
+    protected $volumesSeparadamente;
 
     /**
      * @return mixed
@@ -108,25 +165,26 @@ class InventarioNovo
     /**
      * @return \DateTime
      */
-    public function getDthIicio()
+    public function getDthInicio()
     {
-        return $this->dthIicio;
+        return $this->dthInicio;
     }
 
     /**
-     * @param \DateTime $dthIicio
+     * @param \DateTime $dthInicio
      */
-    public function setDthIicio($dthIicio)
+    public function setDthInicio($dthInicio)
     {
-        $this->dthIicio = $dthIicio;
+        $this->dthInicio = $dthInicio;
     }
 
     /**
+     * @param $toString boolean Converter para String a data
      * @return \DateTime
      */
-    public function getDthFinalizacao()
+    public function getDthFinalizacao($toString = false)
     {
-        return $this->dthFinalizacao;
+        return (!$toString) ? $this->dthFinalizacao : $this->dthFinalizacao->format('d/m/Y H:i:s')  ;
     }
 
     /**
@@ -185,4 +243,208 @@ class InventarioNovo
         $this->dscStatus = self::$tipoStatus[$this->getStatus()];
     }
 
+    /**
+     * @return ModeloInventario
+     */
+    public function getModeloInventario()
+    {
+        return $this->modeloInventario;
+    }
+
+    /**
+     * @param ModeloInventario $modeloInventario
+     */
+    public function setModeloInventario($modeloInventario)
+    {
+        $this->modeloInventario = $modeloInventario;
+    }
+
+    /**
+     * @return string
+     */
+    public function getItemAItem()
+    {
+        return $this->itemAItem;
+    }
+
+    /**
+     * @param boolean $itemAItem
+     */
+    public function setItemAItem($itemAItem)
+    {
+        $this->itemAItem = ($itemAItem) ? 'S' : 'N';
+    }
+
+    /**
+     * @return boolean
+     */
+    public function confereItemAItem()
+    {
+        return self::convertBoolean($this->itemAItem);
+    }
+
+    /**
+     * @return string
+     */
+    public function getControlaValidade()
+    {
+        return $this->controlaValidade;
+    }
+
+    /**
+     * @param boolean $controlaValidade
+     */
+    public function setControlaValidade($controlaValidade)
+    {
+        $this->controlaValidade = ($controlaValidade) ? 'S' : 'N';
+    }
+
+    /**
+     * @return boolean
+     */
+    public function controlaValidade()
+    {
+        return self::$statusValidade[$this->controlaValidade];
+    }
+
+    /**
+     * @return string
+     */
+    public function getExigeUMA()
+    {
+        return $this->exigeUMA;
+    }
+
+    /**
+     * @param boolean $exigeUMA
+     */
+    public function setExigeUMA($exigeUMA)
+    {
+        $this->exigeUMA = ($exigeUMA) ? 'S' : 'N';
+    }
+
+    /**
+     * @return boolean
+     */
+    public function exigeUma()
+    {
+        return self::convertBoolean($this->exigeUMA);
+    }
+
+    /**
+     * @return int
+     */
+    public function getNumContagens()
+    {
+        return $this->numContagens;
+    }
+
+    /**
+     * @param int $numContagens
+     */
+    public function setNumContagens($numContagens)
+    {
+        $this->numContagens = $numContagens;
+    }
+
+    /**
+     * @return string
+     */
+    public function getComparaEstoque()
+    {
+        return $this->comparaEstoque;
+    }
+
+    /**
+     * @param boolean $comparaEstoque
+     */
+    public function setComparaEstoque($comparaEstoque)
+    {
+        $this->comparaEstoque = ($comparaEstoque) ? 'S' : 'N';
+    }
+
+    /**
+     * @return bool
+     */
+    public function comparaEstoque()
+    {
+        return self::convertBoolean($this->comparaEstoque);
+    }
+
+    /**
+     * @return string
+     */
+    public function getUsuarioNContagens()
+    {
+        return $this->usuarioNContagens;
+    }
+
+    /**
+     * @param boolean $usuarioNContagens
+     */
+    public function setUsuarioNContagens($usuarioNContagens)
+    {
+        $this->usuarioNContagens = ($usuarioNContagens) ? 'S' : 'N';
+    }
+
+    /**
+     * @return boolean
+     */
+    public function permiteUsuarioNContagens()
+    {
+        return self::convertBoolean($this->usuarioNContagens);
+    }
+
+    /**
+     * @return string
+     */
+    public function getContarTudo()
+    {
+        return $this->contarTudo;
+    }
+
+    /**
+     * @param boolean $contarTudo
+     */
+    public function setContarTudo($contarTudo)
+    {
+        $this->contarTudo = ($contarTudo) ? 'S' : 'N';
+    }
+
+    /**
+     * @return boolean
+     */
+    public function forcarContarTudo()
+    {
+        return self::convertBoolean($this->contarTudo);
+    }
+
+    /**
+     * @return string
+     */
+    public function getVolumesSeparadamente()
+    {
+        return $this->volumesSeparadamente;
+    }
+
+    /**
+     * @param boolean $volumesSeparadamente
+     */
+    public function setVolumesSeparadamente($volumesSeparadamente)
+    {
+        $this->volumesSeparadamente = ($volumesSeparadamente) ? 'S' : 'N';
+    }
+
+    /**
+     * @return boolean
+     */
+    public function confereVolumesSeparadamente()
+    {
+        return self::convertBoolean($this->volumesSeparadamente);
+    }
+
+    private function convertBoolean($param)
+    {
+        return ($param === 'S');
+    }
 }

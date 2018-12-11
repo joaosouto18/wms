@@ -20,18 +20,24 @@ class InventarioService extends AbstractService
      */
     public function registrarNovoInventario($params) {
 
+        throw new \Exception("Teste exception", 500);
+
         $this->em->beginTransaction();
 
         try {
-            /** @var InventarioNovo\ModeloInventario $modeloEn */
-            $modeloEn = $this->em->find('wms:InventarioNovo\ModeloInventario', $params['modelo']);
-
-            $inventarioEn = self::save([
+            $args = [
                 'descricao' => $params['descricao'],
-                'dthIicio' => new \DateTime(),
+                'dthInicio' => new \DateTime(),
                 'status' => InventarioNovo::STATUS_GERADO,
-//                'modelo' => $params['descricao']
-            ], false);
+                'modeloInventario' => $this->em->getReference('wms:InventarioNovo\ModeloInventario', $params['modelo']['id'])
+            ];
+            unset($params['modelo']['id']);
+            unset($params['modelo']['dscModelo']);
+            unset($params['modelo']['dthCriacao']);
+            unset($params['modelo']['ativo']);
+            unset($params['modelo']['isDefault']);
+
+            $inventarioEn = self::save( array_merge($args, $params['modelo']), false);
 
             /** @var InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo */
             $inventarioEnderecoRepo = $this->em->getRepository('wms:InventarioNovo\InventarioEnderecoNovo');
@@ -58,7 +64,7 @@ class InventarioService extends AbstractService
 
             $this->em->flush();
             $this->em->commit();
-            return $invEn;
+            return $inventarioEn;
 
         } catch (\Exception $e) {
             $this->em->rollback();

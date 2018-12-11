@@ -62,14 +62,14 @@
 
         let confirmBtnLbl = (!!settings.buttons.confirm)? settings.buttons.confirm : "Confirmar";
         buttons[confirmBtnLbl] = function (){
-            // if($.isFunction(callback)){ callback.call(this, params); }
-            // if($.isFunction(returnFunction)){ returnFunction.call(this, true); }
+            if($.isFunction(callback)){ callback.call(this, params); }
+            if($.isFunction(returnFunction)){ returnFunction.call(this, true); }
             $(this).remove();
         };
 
         let rejectBtnLbl = (!!settings.buttons.reject)? settings.buttons.reject : "Cancelar";
         buttons[rejectBtnLbl] = function (){
-            // if($.isFunction(returnFunction)){ returnFunction.call(this, false); }
+            if($.isFunction(returnFunction)){ returnFunction.call(this, false); }
             $(this).remove();
         };
 

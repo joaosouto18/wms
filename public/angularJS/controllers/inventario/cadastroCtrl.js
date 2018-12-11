@@ -1,4 +1,4 @@
-angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filter, $window){
+angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filter, uiDialogService, shareDataService){
     $scope.maxPerPage = 15;
     $scope.showLoading = false;
     $scope.showList = false;
@@ -7,9 +7,35 @@ angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filt
     $scope.showPaginatorElements = false;
     $scope.resultForm = [];
     $scope.elements = [];
+
     let rotasRequest = {
         endereco:  "/index/get-enderecos-criar-ajax",
         produto: "/index/get-produtos-criar-ajax"
+    };
+
+    let arrConfigColumns = {
+        endereco:  [
+            { name: 'dscEndereco', label: 'Endereço', type: 'ordenator', width: '13%'},
+            { name: 'caracEnd', label: 'Característica', type: 'ordenator', width: '19%'},
+            { name: 'dscArea', label: 'Área', type: 'ordenator', width: '30%'},
+            { name: 'dscEstrutura', label: 'Estrutura', type: 'ordenator', width: '28%'}
+        ],
+        produto: [
+            { name: 'codProduto', label: 'Código', type: 'ordenator', width: '19%'},
+            { name: 'dscProduto', label: 'Descrição', type: 'ordenator', width: '34%'},
+            { name: 'grade', label: 'Grade', type: 'ordenator', width: '24%'},
+            { name: 'dscEndereco', label: 'Endereço', type: 'ordenator', width: '13%'}
+        ]
+    };
+
+    $scope.configGridColumns = function (criterio) {
+        if (!isEmpty(criterio)) {
+            $scope.criterio = criterio;
+            $scope.gridColumnsResult = angular.copy(arrConfigColumns[$scope.criterio]);
+            $scope.gridColumnsResult.unshift({type: 'checkBox'});
+            $scope.gridColumnsElements = angular.copy(arrConfigColumns[$scope.criterio]);
+            $scope.gridColumnsElements.push({label: 'Ação', type: 'dropAction'});
+        }
     };
 
     $scope.gridState = {
@@ -183,33 +209,17 @@ angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filt
         return v1.value.localeCompare(v2.value);
     };
 
-    $scope.showPreviewer = function() {
+    $scope.showPreviewer = function(criterio) {
         if ($scope.elements.length) {
-            $scope.displayPreviewer = true;
+            shareDataService.addNewData("criterio", criterio);
+            shareDataService.addNewData("itens", $scope.elements);
+            shareDataService.addNewData("gridColumns", $scope.gridColumnsElements);
+            uiDialogService.dialogModal("previewer-inventario.html", "Preview do Novo Inventário",780,null,null,['center', 80]);
         } else {
-            $.wmsDialogAlert({
-                title: "Atenção!",
-                msg: "Nenhum elemento foi adicionado na lista"
-            })
+            uiDialogService.dialogAlert("Nenhum elemento foi adicionado na lista");
         }
     };
 
-    $scope.criarInventario = function (criterio) {
-        if ($scope.elements) {
-            $http.post(URL_MODULO + '/index/criar-inventario', {
-                criterio: criterio,
-                descricao: 'Teste',
-                selecionados: $scope.elements,
-                modelo: 1
-            }).then(function () {
-                $window.location.href = URL_MODULO
-            })
-        } else {
-            $.wmsDialogAlert({
-                title: "Atenção!",
-                msg: "Nenhum elemento foi adicionado na lista"
-            })
-        }
-    }
+
 
 });

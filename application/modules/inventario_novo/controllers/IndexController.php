@@ -42,7 +42,7 @@ class Inventario_Novo_IndexController  extends Action
     public function getInventariosAjaxAction()
     {
         $data = json_decode($this->getRequest()->getRawBody(),true);
-        $source = $this->_em->getRepository('wms:Inventario')->getInventarios(null, $data);
+        $source = $this->_em->getRepository('wms:InventarioNovo')->getInventarios(null, $data);
         $this->_helper->json($source);
     }
 
@@ -50,6 +50,7 @@ class Inventario_Novo_IndexController  extends Action
     {
         if ($this->getRequest()->isGet()) {
             $this->view->criterio = $this->getRequest()->getParam("criterio");
+            $buttons = [];
             if ($this->view->criterio === \Wms\Domain\Entity\InventarioNovo::CRITERIO_PRODUTO) {
                 $utilizaGrade = $this->getSystemParameterValue("UTILIZA_GRADE");
                 $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioProdutoForm();
@@ -65,9 +66,6 @@ class Inventario_Novo_IndexController  extends Action
                     ),
                     'tag' => 'a'
                 );
-                $this->configurePage($buttons);
-                $this->renderScript('index\criar-by-produto.phtml');
-
             } else {
                 $this->view->form = new \Wms\Module\InventarioNovo\Form\InventarioEnderecoForm();
                 $buttons[] = array(
@@ -81,9 +79,8 @@ class Inventario_Novo_IndexController  extends Action
                     ),
                     'tag' => 'a'
                 );
-                $this->configurePage($buttons);
-                $this->renderScript('index\criar-by-endereco.phtml');
             }
+            $this->configurePage($buttons);
         } elseif ($this->getRequest()->isPost()) {
             $data = json_decode($this->getRequest()->getRawBody(),true);
             try{
@@ -91,9 +88,11 @@ class Inventario_Novo_IndexController  extends Action
                 $invServc = $this->getServiceLocator()->getService("Inventario");
                 $novoInventario = $invServc->registrarNovoInventario($data);
                 $dsc = $novoInventario->getDescricao() . " número: " . $novoInventario->getId();
-                $this->addFlashMessage('success', "Inventário $dsc criado com sucesso");
+                $this->_helper->json(["status"=>200, "msg" => "Inventário $dsc criado com sucesso"]);
             } catch (Exception $e) {
-                $this->addFlashMessage('error', $e->getMessage());
+                $statusCode = (!empty($e->getCode())) ? $e->getCode() : 500;
+                $this->getResponse()->setHttpResponseCode($statusCode);
+                $this->_helper->json(["status"=> $statusCode, "msg" => $e->getMessage()]);
             }
         }
     }

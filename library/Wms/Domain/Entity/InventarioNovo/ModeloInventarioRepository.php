@@ -51,7 +51,8 @@ class ModeloInventarioRepository extends EntityRepository
                 $obj->ativo                 = $modelo->isAtivo();
                 $obj->isDefault             = $modelo->isDefault();
                 $obj->itemAItem             = $modelo->confereItemAItem();
-                $obj->controlaValidade      = $modelo->controlaValidade();
+                $obj->controlaValidadeLbl   = $modelo->controlaValidade();
+                $obj->controlaValidade      = $modelo->getControlaValidade();
                 $obj->exigeUMA              = $modelo->exigeUma();
                 $obj->numContagens          = $modelo->getNumContagens();
                 $obj->comparaEstoque        = $modelo->comparaEstoque();

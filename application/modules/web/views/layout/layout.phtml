@@ -108,8 +108,13 @@ use Core\Util\Converter;
             echo $this->headScript();
             echo $this->headLink();
         ?>
+        <script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
+        <script src="<?php echo $this->baseUrl('angularJS/wmsAngular.js') ?>"></script>
+        <script src="<?php echo $this->baseUrl('angularJS/libs/uiDialogService.js') ?>"></script>
+        <script src="<?php echo $this->baseUrl('angularJS/libs/shareDataService.js') ?>"></script>
+        <script src="<?php echo $this->baseUrl('angularJS/templates/templates.js') ?>"></script>
     </head>
-    <body>
+    <body ng-app="wms">
     <div id="loading">
         <center class="loading-image" ><img src="/img/ajax-loader.gif" width="35" height="35"/><p><b>Carregando...</b></p></center>
     </div>
