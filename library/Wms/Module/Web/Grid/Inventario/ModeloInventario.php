@@ -1,13 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Joaby
- * Date: 05/12/2018
- * Time: 15:41
- */
 
-namespace Wms\Module\Web\Grid\InventarioNovo;
-
+namespace Wms\Module\Web\Grid\Inventario;
+          
 
 use Wms\Module\Web\Grid;
 
@@ -20,29 +14,43 @@ class ModeloInventario extends Grid
     public function init ($values)
     {
         $this->setSource(new \Core\Grid\Source\ArraySource($values))
-            ->setId('modelo-inventario-grid')
-            ->addColumn(array(
-                'label'  => 'Código',
-                'index'  => 'id',
-            ))
-            ->addColumn(array(
-                'label' => 'Descrição',
-                'index' => 'descricao',
-            ))
-            ->addAction(array(
-                'label' => 'Editar',
-                'moduleName' => 'inventario-novo',
-                'controllerName' => 'modelo-inventario',
-                'actionName' => 'edit',
-                'pkIndex' => 'id'
-            ))
-            ->addAction(array(
-                'label' => 'Excluir',
-                'moduleName' => 'inventario-novo',
-                'controllerName' => 'modelo-inventario',
-                'actionName' => 'delete',
-                'pkIndex' => 'id'
-            ));
+                ->setId('modelo-inventario-grid')
+                ->addColumn(array(
+                    'label'  => 'Código',
+                    'index'  => 'id',
+                ))
+                ->addColumn(array(
+                    'label' => 'Descrição',
+                    'index' => 'descricao',
+                ))
+                ->addColumn(array(
+                    'label'  => 'Ativo',
+                    'index'  => 'ativo',
+                ))
+                ->addColumn(array(
+                    'label' => 'Data de criação',
+                    'index' => 'dthCriacao',
+                    'render' => 'Data',
+                ))
+                ->addColumn(array(
+                    'label'  => 'Default',
+                    'index'  => 'default',
+                ))
+                ->addAction(array(
+                    'label' => 'Editar',
+                    'moduleName' => 'inventario_novo',
+                    'controllerName' => 'modelo-inventario',
+                    'actionName' => 'edit',
+                    'pkIndex' => 'id'
+                ))
+                ->addAction(array(
+                    'label' => 'Excluir',
+                    'moduleName' => 'inventario_novo',
+                    'controllerName' => 'modelo-inventario',
+                    'actionName' => 'delete',
+                    'pkIndex' => 'id',
+                    'cssClass' => 'del'
+                ));
 
         return $this;
     }
