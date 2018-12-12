@@ -130,7 +130,7 @@ class InventarioEnderecoForm extends SubForm
                     'label' => 'Buscar',
                     'decorators' => array('ViewHelper'),
                     'attribs' => array('id' => 'btn-buscar-endereco'),
-                    'ng-click' => "requestForm('endereco','resultForm')"
+                    'ng-click' => "requestForm('resultForm')"
                 ))
                 ->addElement('button', 'clearForm', array(
                     'class' => 'btn btn-form',

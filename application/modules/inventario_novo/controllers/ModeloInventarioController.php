@@ -9,12 +9,11 @@
     use Wms\Module\Web\Controller\Action,
         Wms\Module\Web\Grid\InventarioNovo\ModeloInventario as ModelosInventarioGrid,
         Wms\Module\InventarioNovo\Form\ModeloInventario as ModeloInventarioForm,
-        Wms\Module\Controller\Action\Crud,
         Wms\Module\Web\Page,
         Wms\Domain\Entity\InventarioNovo;
 
 
-    class Inventario_Novo_ModeloInventarioController  extends  Crud
+    class Inventario_Novo_ModeloInventarioController  extends  Action\Crud
     {
         protected $entityName = 'InventarioNovo\ModeloInventario';
 

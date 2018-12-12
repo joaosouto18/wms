@@ -640,7 +640,7 @@ class InventarioRepository extends EntityRepository {
 
         $inventarioEndsEn = $inventarioEndRepo->findBy(array('inventario' => $id));
         foreach ($inventarioEndsEn as $invEndEn) {
-            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getID(), 'S');
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco(), 'S');
         }
         $this->_em->flush();
     }
@@ -653,7 +653,7 @@ class InventarioRepository extends EntityRepository {
 
         $inventarioEndsEn = $inventarioEndRepo->findBy(array('inventario' => $id));
         foreach ($inventarioEndsEn as $invEndEn) {
-            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getId(), 'N', false);
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco(), 'N', false);
         }
         $this->_em->flush();
 

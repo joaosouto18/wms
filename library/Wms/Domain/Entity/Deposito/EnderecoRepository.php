@@ -966,12 +966,11 @@ class EnderecoRepository extends EntityRepository {
     }
 
     /**
-     * @param $codDepositoEndereco
+     * @param $enderecoEn EnderecoEntity
      * @param string $opcao | S or N
      */
-    public function bloqueiaOuDesbloqueiaInventario($codDepositoEndereco, $opcao = 'S', $flush = true) {
-        $enderecoEn = $this->find($codDepositoEndereco);
-        $enderecoEn->setinventarioBloqueado($opcao);
+    public function bloqueiaOuDesbloqueiaInventario($enderecoEn, $opcao = 'S', $flush = true) {
+        $enderecoEn->setInventarioBloqueado($opcao);
         $this->_em->persist($enderecoEn);
         if ($flush == true) {
             $this->_em->flush();

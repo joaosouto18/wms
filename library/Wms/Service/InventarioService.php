@@ -20,8 +20,6 @@ class InventarioService extends AbstractService
      */
     public function registrarNovoInventario($params) {
 
-        throw new \Exception("Teste exception", 500);
-
         $this->em->beginTransaction();
 
         try {
@@ -43,7 +41,7 @@ class InventarioService extends AbstractService
             $inventarioEnderecoRepo = $this->em->getRepository('wms:InventarioNovo\InventarioEnderecoNovo');
 
             if ($params['criterio'] === InventarioNovo::CRITERIO_PRODUTO) {
-                /** @var InventarioNovo\InventarioContEndProdRepository $invEndProdRepod */
+                /** @var InventarioNovo\InventarioEndProdRepository $invEndProdRepod */
                 $invEndProdRepod = $this->em->getRepository('wms:InventarioNovo\InventarioEndProd');
             }
 
@@ -71,4 +69,60 @@ class InventarioService extends AbstractService
             throw $e;
         }
     }
+
+    public function liberarInventario($id)
+    {
+        $this->em->beginTransaction();
+        try {
+            /** @var InventarioNovo $inventarioEn */
+            $inventarioEn = $this->find($id);
+            if ($inventarioEn->getStatus() != InventarioNovo::STATUS_GERADO) {
+                throw new \Exception("O inventário $id está " . InventarioNovo::$tipoStatus[$inventarioEn->getStatus()], 500);
+            }
+
+            $impedimentos = $this->getRepository()->findImpedimentosLiberacao($id);
+            if (!empty($impedimentos)) {
+                return $impedimentos;
+            } else {
+                $inventarioEn->setStatus(InventarioNovo::STATUS_LIBERADO);
+
+                /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+                $enderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
+
+                /** @var InventarioNovo\InventarioEnderecoNovo[] $enderecos */
+                $enderecos = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->findBy(["inventario" => $inventarioEn]);
+
+                foreach ($enderecos as $endereco) {
+                    $this->addNovaContagem($endereco, $endereco->getContagem());
+                    $enderecoRepo->bloqueiaOuDesbloqueiaInventario($endereco->getDepositoEndereco(), 'S', false);
+                }
+
+                $this->em->persist($inventarioEn);
+                $this->em->flush();
+
+                return true;
+            }
+        }catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
+    }
+
+    public function addNovaContagem($inventarioEnderecoEn, $contagem, $divergencia = false)
+    {
+        try {
+            /** @var InventarioNovo\InventarioContEndRepository $inventContEndRepo */
+            $inventContEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEnd");
+            $ultimaContagem = $inventContEndRepo->findBy(["inventarioEndereco" => $inventarioEnderecoEn]);
+            $inventContEndRepo->save([
+                "inventarioEndereco" => $inventarioEnderecoEn,
+                "sequencia" => (count($ultimaContagem) + 1),
+                "contagem" => $contagem,
+                "contagemDivergencia" => $divergencia
+            ], false);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
 }

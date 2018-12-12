@@ -1,4 +1,4 @@
-angular.module("wms").controller("listGridInventarioCtrl", function($scope, $http, $filter){
+angular.module("wms").controller("listGridInventarioCtrl", function($scope, $http, $filter, uiDialogService){
     $scope.maxPerPage = 15;
     $scope.inventarios = [];
     $scope.showLoading = true;
@@ -6,12 +6,7 @@ angular.module("wms").controller("listGridInventarioCtrl", function($scope, $htt
     $scope.showList = false;
     $scope.massActionRoute = null;
 
-    $scope.statusArr = [
-        {id: 542, label: "GERADO"},
-        {id: 543, label: "LIBERADO"},
-        {id: 544, label: "FINALIZADO / CONCLUIDO"},
-        {id: 545, label: "CANCELADO"}
-    ];
+    $scope.statusArr = [];
 
     $scope.clearForm = function() {
         $scope.criterioForm = {
@@ -45,7 +40,6 @@ angular.module("wms").controller("listGridInventarioCtrl", function($scope, $htt
 
     $scope.paginator = newPaginator();
 
-
     $scope.ordenarPor = function (campo) {
         $scope.direction = (campo !== null && $scope.tbOrderBy === campo) ? !$scope.direction : true;
         $scope.tbOrderBy = campo;
@@ -72,8 +66,10 @@ angular.module("wms").controller("listGridInventarioCtrl", function($scope, $htt
     };
 
     let getInventarios = function (params) {
+        if (isEmpty($scope.statusArr)) params['getStatusArr'] = true;
         $http.post(URL_MODULO + "/index/get-inventarios-ajax", params).then(function (response){
-            $scope.inventarios = response.data;
+            $scope.inventarios = response.data.inventarios;
+            if (!isEmpty(response.data.statusArr)) $scope.statusArr = response.data.statusArr;
             preparePaginator();
         }).then(function () {
             $scope.showLoading = false ;
@@ -160,7 +156,22 @@ angular.module("wms").controller("listGridInventarioCtrl", function($scope, $htt
         })
     };
 
-    getInventarios([]);
+    $scope.liberarInventario = function(inventario) {
+        let result = undefined;
+        $http.get(URL_MODULO + "/index/liberar-ajax?id=" + inventario.id).then(function (response) {
+            result = response
+        }).then(function () {
+            if (result.status === 200) {
+                uiDialogService.dialogAlert(result.data.msg);
+                $scope.requestForm();
+            }
+        }).catch(function (err) {
+            console.log(err);
+            uiDialogService.dialogAlert(err.data);
+        })
+    };
+
+    getInventarios({});
     $scope.ordenarPor("id");
     
 });

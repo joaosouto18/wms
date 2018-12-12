@@ -102,11 +102,19 @@ class InventarioContEnd
     }
 
     /**
-     * @param mixed $contagemDivergencia
+     * @param bool $contagemDivergencia
      */
     public function setContagemDivergencia($contagemDivergencia)
     {
-        $this->contagemDivergencia = $contagemDivergencia;
+        $this->contagemDivergencia = ($contagemDivergencia) ? 'S' : 'N';
+    }
+
+    /**
+     * @return bool
+     */
+    public function isContagemDivergencia()
+    {
+        return self::convertBoolean($this->contagemDivergencia);
     }
 
     /**
@@ -123,5 +131,10 @@ class InventarioContEnd
     public function setContagem($contagem)
     {
         $this->contagem = $contagem;
+    }
+
+    private function convertBoolean($param)
+    {
+        return ($param === 'S');
     }
 }

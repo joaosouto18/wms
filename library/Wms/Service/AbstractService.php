@@ -64,7 +64,7 @@ abstract class AbstractService extends EntityService
     public function update(array $data, $executeFlush = true)
     {
         try {
-            $entity = $this->get($data['id']);
+            $entity = $this->find($data['id']);
             if (empty($entity))
                 throw new \Exception("Nenhum registro para '$this->entityName' foi encontrado pelo ID '$data[id]'", 404);
 
