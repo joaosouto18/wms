@@ -17,26 +17,18 @@ class InventarioContEndRepository extends EntityRepository
      * @return InventarioContEnd
      * @throws \Exception
      */
-    public function save() {
-
-        $this->_em->beginTransaction();
+    public function save($params, $executeFlush = true)
+    {
         try {
+            $entity = Configurator::configure(new $this->_entityName, $params);
 
-            $enInventarioContEnd = new InventarioContEnd();
+            $this->_em->persist($entity);
+            if ($executeFlush) $this->_em->flush();
 
-            $codEndereco = $this->_em->getReference('wms:InventarioNovo\InventarioEndereco',$params['idInventarioEndereco']);
+            return $entity;
 
-            $enInventarioContEnd->setInventarioEndereco($codEndereco);
-            $enInventarioContEnd->setContagem(1);
-
-            $this->_em->persist($enInventarioContEnd);
-            $this->_em->flush();
-            $this->_em->commit();
         } catch (\Exception $e) {
-            $this->_em->rollback();
             throw new \Exception($e->getMessage());
         }
-
-        return $enInventarioContEnd;
     }
 }

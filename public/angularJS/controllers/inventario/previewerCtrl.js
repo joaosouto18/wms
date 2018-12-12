@@ -45,13 +45,13 @@ angular.module("wms").controller("previewerCtrl", function ($scope, $http, $wind
     };
 
     $scope.criarInventario = function () {
-        let liberado = !isEmpty($scope.dscInventario);
-        if (!liberado)
+        if (isEmpty($scope.dscInventario)) {
             uiDialogService.dialogConfirm("Não foi definido um nome para o inventário. Deseja relamente prosseguir?", null, "Sim", "Não", function () {
-                liberado = true;
+                postInventario();
             });
-
-        if (liberado) postInventario();
+        } else {
+            postInventario();
+        }
     };
 
     let postInventario = function () {
@@ -61,8 +61,10 @@ angular.module("wms").controller("previewerCtrl", function ($scope, $http, $wind
                 descricao: $scope.dscInventario,
                 selecionados: $scope.itens,
                 modelo: $scope.modSel
-            }).then(function (response) {
+            }).then(function () {
                 $window.location.href = URL_MODULO
+            }).catch(function (err) {
+                uiDialogService.dialogAlert(err.data);
             })
     };
 });

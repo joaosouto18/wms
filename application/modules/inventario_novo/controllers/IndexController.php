@@ -11,6 +11,7 @@ class Inventario_Novo_IndexController  extends Action
     public function indexAction()
     {
         $importaInventario = $this->getSystemParameterValue("IMPORTA_INVENTARIO");
+        $this->view->usaGrade = ($this->getSystemParameterValue("UTILIZA_GRADE") === 'S');
         $this->view->showCodInvErp = ($importaInventario == 'S');
 
         $buttons[] = array(
@@ -42,8 +43,13 @@ class Inventario_Novo_IndexController  extends Action
     public function getInventariosAjaxAction()
     {
         $data = json_decode($this->getRequest()->getRawBody(),true);
-        $source = $this->_em->getRepository('wms:InventarioNovo')->getInventarios(null, $data);
-        $this->_helper->json($source);
+        $response = new stdClass();
+        if (isset($data['getStatusArr'])) {
+            $response->statusArr = \Wms\Domain\Entity\InventarioNovo::$tipoStatus;
+            unset($data['getStatusArr']);
+        }
+        $response->inventarios = $this->_em->getRepository('wms:InventarioNovo')->getInventarios($data);
+        $this->_helper->json($response);
     }
 
     public function criarInventarioAction()
@@ -88,11 +94,10 @@ class Inventario_Novo_IndexController  extends Action
                 $invServc = $this->getServiceLocator()->getService("Inventario");
                 $novoInventario = $invServc->registrarNovoInventario($data);
                 $dsc = $novoInventario->getDescricao() . " número: " . $novoInventario->getId();
-                $this->_helper->json(["status"=>200, "msg" => "Inventário $dsc criado com sucesso"]);
+                $this->_helper->json(["msg" => "Inventário $dsc criado com sucesso"]);
             } catch (Exception $e) {
-                $statusCode = (!empty($e->getCode())) ? $e->getCode() : 500;
-                $this->getResponse()->setHttpResponseCode($statusCode);
-                $this->_helper->json(["status"=> $statusCode, "msg" => $e->getMessage()]);
+                $this->getResponse()->setHttpResponseCode((!empty($e->getCode())) ? $e->getCode() : 500);
+                $this->_helper->json($e->getMessage());
             }
         }
     }
@@ -119,6 +124,30 @@ class Inventario_Novo_IndexController  extends Action
     public function configurePage($buttons = [])
     {
         Page::configure(array('buttons' => $buttons));
+    }
+
+    public function liberarAjaxAction ()
+    {
+        $id = $this->getRequest()->getParam('id');
+        try {
+            if (empty($id)) {
+                throw new Exception("ID do Inventário não foi especificado");
+            }
+            /** @var \Wms\Service\InventarioService $invServc */
+            $invServc = $this->getServiceLocator()->getService("Inventario");
+            $result = $invServc->liberarInventario($id);
+
+            $response = new stdClass();
+            if (is_array($result)) {
+                $response->status = "error";
+                //$response->grid =
+            }
+
+            $this->_helper->json(["msg" => "Inventário $id liberado com sucesso"]);
+        } catch (Exception $e) {
+            $this->getResponse()->setHttpResponseCode((!empty($e->getCode())) ? $e->getCode() : 500);
+            $this->_helper->json($e->getMessage());
+        }
     }
 
     public function atualizarAction()

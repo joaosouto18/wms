@@ -107,8 +107,8 @@ angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filt
         $scope[grid + 'Paginator'].actPage = $scope[grid + 'Paginator'].pages[ $scope[grid + 'Paginator'].actPage.idPage + destination ];
     };
 
-    $scope.requestForm = function (criterio, grid) {
-        let params = {criterio: criterio};
+    $scope.requestForm = function (grid) {
+        let params = {criterio: $scope.criterio};
         for (let x in $scope.criterioForm) {
             let val = $scope.criterioForm[x];
             if (val) params[x] = val;
@@ -117,7 +117,7 @@ angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filt
         $scope.gridState.requesting = true ;
         $scope.gridState.noResult = false;
         $scope.resultFormPaginator.show = false;
-        ajaxRequestByFormParams(params, rotasRequest[criterio], grid);
+        ajaxRequestByFormParams(params, rotasRequest[$scope.criterio], grid);
     };
 
     let ajaxRequestByFormParams = function (params, rota, grid) {
@@ -209,9 +209,9 @@ angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filt
         return v1.value.localeCompare(v2.value);
     };
 
-    $scope.showPreviewer = function(criterio) {
+    $scope.showPreviewer = function() {
         if ($scope.elements.length) {
-            shareDataService.addNewData("criterio", criterio);
+            shareDataService.addNewData("criterio", $scope.criterio);
             shareDataService.addNewData("itens", $scope.elements);
             shareDataService.addNewData("gridColumns", $scope.gridColumnsElements);
             uiDialogService.dialogModal("previewer-inventario.html", "Preview do Novo Inventário",780,null,null,['center', 80]);
