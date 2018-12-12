@@ -1,6 +1,6 @@
 <?php
 
-namespace Wms\Module\Web\Grid\Inventario;
+namespace Wms\Module\InventarioNovo\Grid;
           
 
 use Wms\Module\Web\Grid;

@@ -89,15 +89,17 @@ class Inventario_Novo_IndexController  extends Action
             $this->configurePage($buttons);
         } elseif ($this->getRequest()->isPost()) {
             $data = json_decode($this->getRequest()->getRawBody(),true);
+            $objResponse = new stdClass();
             try{
                 /** @var \Wms\Service\InventarioService $invServc */
                 $invServc = $this->getServiceLocator()->getService("Inventario");
                 $novoInventario = $invServc->registrarNovoInventario($data);
-                $dsc = $novoInventario->getDescricao() . " número: " . $novoInventario->getId();
-                $this->_helper->json(["msg" => "Inventário $dsc criado com sucesso"]);
+                $objResponse->msg = $novoInventario->getDescricao() . " número: " . $novoInventario->getId();
+                $this->_helper->json($objResponse);
             } catch (Exception $e) {
                 $this->getResponse()->setHttpResponseCode((!empty($e->getCode())) ? $e->getCode() : 500);
-                $this->_helper->json($e->getMessage());
+                $objResponse->exception = $e->getMessage();
+                $this->_helper->json($objResponse);
             }
         }
     }
@@ -129,6 +131,7 @@ class Inventario_Novo_IndexController  extends Action
     public function liberarAjaxAction ()
     {
         $id = $this->getRequest()->getParam('id');
+        $objResponse = new stdClass();
         try {
             if (empty($id)) {
                 throw new Exception("ID do Inventário não foi especificado");
@@ -137,16 +140,17 @@ class Inventario_Novo_IndexController  extends Action
             $invServc = $this->getServiceLocator()->getService("Inventario");
             $result = $invServc->liberarInventario($id);
 
-            $response = new stdClass();
             if (is_array($result)) {
-                $response->status = "error";
-                //$response->grid =
+                $objResponse->status = "error";
+                $objResponse->grid = new \Wms\Module\InventarioNovo\Grid\EmpecilhosGrid();
+                $objResponse->grid->init($result);
             }
 
             $this->_helper->json(["msg" => "Inventário $id liberado com sucesso"]);
         } catch (Exception $e) {
             $this->getResponse()->setHttpResponseCode((!empty($e->getCode())) ? $e->getCode() : 500);
-            $this->_helper->json($e->getMessage());
+            $objResponse->exception = $e->getMessage();
+            $this->_helper->json($objResponse);
         }
     }
 

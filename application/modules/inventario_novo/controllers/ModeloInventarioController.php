@@ -6,8 +6,7 @@
      * Time: 12:15
      */
 
-    use Wms\Module\Web\Controller\Action,
-        Wms\Module\Web\Grid\Inventario\ModeloInventario as ModeloInventarioGrid,
+    use Wms\Module\InventarioNovo\Grid\ModeloInventario as ModeloInventarioGrid,
         Wms\Module\InventarioNovo\Form\ModeloInventarioForm as ModeloInventarioForm,
         Wms\Module\Web\Controller\Action\Crud,
         Wms\Module\Web\Page,
