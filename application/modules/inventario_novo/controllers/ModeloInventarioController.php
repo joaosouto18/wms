@@ -1,4 +1,4 @@
-    <?php
+<?php
     /**
      * Created by PhpStorm.
      * User: Joaby
@@ -7,30 +7,48 @@
      */
 
     use Wms\Module\Web\Controller\Action,
-        Wms\Module\Web\Grid\InventarioNovo\ModeloInventario as ModelosInventarioGrid,
-        Wms\Module\InventarioNovo\Form\ModeloInventario as ModeloInventarioForm,
+        Wms\Module\Web\Grid\Inventario\ModeloInventario as ModeloInventarioGrid,
+        Wms\Module\InventarioNovo\Form\ModeloInventarioForm as ModeloInventarioForm,
+        Wms\Module\Web\Controller\Action\Crud,
         Wms\Module\Web\Page,
         Wms\Domain\Entity\InventarioNovo;
 
 
-    class Inventario_Novo_ModeloInventarioController  extends  Action\Crud
+    class Inventario_Novo_ModeloInventarioController  extends  Crud
     {
         protected $entityName = 'InventarioNovo\ModeloInventario';
 
         public function indexAction()
         {
-            /** @var \Wms\Domain\Entity\InventarioNovo\ModeloInventarioRepository $modeloRepository */
+            $buttons[] = array(
+                'label' => 'Novo Modelo de Inventário',
+                'cssClass' => 'button',
+                'urlParams' => array(
+                    'module' => 'inventario_novo',
+                    'controller' => 'modelo-inventario',
+                    'action' => 'add'
+                )
+            );
+
+            $this->configurePage($buttons);
+
+            /** @var \Wms\Domain\Entity\InventarioNovo\ModeloInventarioRepository $modeloRepo */
+            $modeloRepo = $this->em->getRepository('wms:inventarioNovo\ModeloInventario');
+
             /*
-            $modeloRepository   = $this->em->getRepository('wms:InventarioNovo\ModeloInventario');
+             * chama a função que busca os modelos de inventarios e converte os objetos encontrados em arrays
+             * que serão passados pro GRID
+             */
+            $modelos = $modeloRepo->getModelos();
+            //var_dump($modelos);
 
-            $modelos = $modeloRepository->getModelos();
-
-            $grid = new ModelosInventarioGrid();
+            $grid = new ModeloInventarioGrid();
             $this->view->grid = $grid->init($modelos)->render();
-            */
+        }
 
-
-            echo 'teste';
+        public function configurePage($buttons = [])
+        {
+            Page::configure(array('buttons' => $buttons));
         }
 
         public function deleteAction()
@@ -38,15 +56,15 @@
             try{
                 $id = $this->_getParam('id');
                 $modeloRepository = $this->em->getRepository('wms:InventarioNovo\ModeloInventario');
-                $modeloSeparacao   = $modeloRepository->findOneBy(array('id'=>$id));
+                $modeloInventario = $modeloRepository->findOneBy(array('id'=>$id));
 
-                $this->getEntityManager()->remove($modeloSeparacao);
+                $this->getEntityManager()->remove($modeloInventario);
                 $this->getEntityManager()->flush();
-                $this->addFlashMessage('success', 'Modelo de Separação excluido com sucesso' );
+                $this->addFlashMessage('success', 'Modelo de Inventário excluído com sucesso' );
             } catch (\Exception $ex) {
                 $this->addFlashMessage('error', $ex->getMessage() );
             }
-            $this->_redirect('/inventario-novo/modelo-inventario');
+            $this->_redirect('/inventario_novo/modelo-inventario');
         }
 
         public function addAction()
@@ -134,7 +152,9 @@
 
                     $dados = array();
 
-                    $dados['descricao'] = $entity->getDescricao();
+                    //$dados['descricao'] = $entity->getDescricao();
+                    $dados['descricao'] = 'TESTE';
+                    /*
                     $dados['ativo'] = $entity->getAtivo();
                     $dados['dthCriacao'] = $entity->getDthCriacao();
                     $dados['itemAItem'] = $entity->getItemAItem();
@@ -148,6 +168,7 @@
                     $dados['importaErp'] = $entity->getImportaERP();
                     $dados['idLayoutExp'] = $entity->getIdLayoutEXP();
                     $dados['default'] = $entity->getDefault();
+                    */
 
                     $form->populate($dados); // pass values to form
                 }

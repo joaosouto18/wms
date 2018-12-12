@@ -32,6 +32,15 @@ class ModeloInventarioRepository extends EntityRepository
         }
     }
 
+    public function getModelos() {
+        $source = $this->getEntityManager()->createQueryBuilder()
+            ->select('m')
+            ->from('wms:InventarioNovo\ModeloInventario', 'm')
+            ->orderBy("m.id");
+
+        return $source->getQuery()->getArrayResult();
+    }
+
     public function getModelosAtivos($returnType = 'entity', $findBy = [])
     {
         $return = [];
