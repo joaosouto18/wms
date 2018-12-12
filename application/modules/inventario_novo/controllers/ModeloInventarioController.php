@@ -25,7 +25,7 @@
                 'urlParams' => array(
                     'module' => 'inventario_novo',
                     'controller' => 'modelo-inventario',
-                    'action' => 'add'
+                    'action' => 'edit'
                 )
             );
 
@@ -137,6 +137,8 @@
                 if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
 
                     $params = $this->getRequest()->getParams();
+
+                    //var_dump($params);
                     try {
                         $this->repository->save($entity, $params);
                         $this->_helper->messenger('success', 'Registro alterado com sucesso');
@@ -151,23 +153,20 @@
 
                     $dados = array();
 
-                    //$dados['descricao'] = $entity->getDescricao();
-                    $dados['descricao'] = 'TESTE';
-                    /*
-                    $dados['ativo'] = $entity->getAtivo();
-                    $dados['dthCriacao'] = $entity->getDthCriacao();
-                    $dados['itemAItem'] = $entity->getItemAItem();
-                    $dados['controlaValidade'] = $entity->getControlaValidade();
-                    $dados['exigeUma'] = $entity->getExigeUMA();
-                    $dados['numContagens'] = $entity->getNumContagens();
-                    $dados['comparaEstoque'] = $entity->getComparaEstoque();
-                    $dados['usuarioNContagens'] = $entity->getUsuarioNContagens();
-                    $dados['contarTudo'] = $entity->getContarTudo();
+                    $dados['descricao']            = $entity->getDescricao();
+                    $dados['ativo']                = $entity->getAtivo();
+                    $dados['dthCriacao']           = $entity->getDthCriacao();
+                    $dados['itemAItem']            = $entity->getItemAItem();
+                    $dados['controlaValidade']     = $entity->getControlaValidade();
+                    $dados['exigeUma']             = $entity->getExigeUMA();
+                    $dados['numContagens']         = $entity->getNumContagens();
+                    $dados['comparaEstoque']       = $entity->getComparaEstoque();
+                    $dados['usuarioNContagens']    = $entity->getUsuarioNContagens();
+                    $dados['contarTudo']           = $entity->getContarTudo();
                     $dados['volumesSeparadamente'] = $entity->getVolumesSeparadamente();
-                    $dados['importaErp'] = $entity->getImportaERP();
-                    $dados['idLayoutExp'] = $entity->getIdLayoutEXP();
-                    $dados['default'] = $entity->getDefault();
-                    */
+                    //$dados['importaErp']           = $entity->getImportaERP();
+                    //$dados['idLayoutExp']          = $entity->getIdLayoutEXP();
+                    $dados['default']              = $entity->getDefault();
 
                     $form->populate($dados); // pass values to form
                 }

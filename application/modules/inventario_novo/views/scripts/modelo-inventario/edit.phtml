@@ -49,27 +49,31 @@
         margin: 0 0 0 5px;
     }
     -->
-
 </style>
 <form id="modelo-inventario-form" class="saveForm" method="post" action="" enctype="application/x-www-form-urlencoded" novalidate="novalidate">
     <fieldset id="fieldset-modelo">
-        <legend>Cadastro</legend>
+        <legend>Edição</legend>
         <div>
             <?php echo $this->form->getSubForm('identificacao')->getElement('descricao'); ?>
+        </div>
+        <div>
+            <?php echo $this->form->getSubForm('identificacao')->getElement('numContagens'); ?>
         </div>
 
         <div class="fieldsets">
             <div class="fieldset-left">
                 <div class="checkboxes">
                     <?php echo $this->form->getSubForm('identificacao')->getElement('ativo'); ?><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('default'); ?><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('itemAItem'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('controlaValidade'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('exigeUma'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('comparaEstoque'); ?><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('usuarioNContagens'); ?><br />
                     <?php echo $this->form->getSubForm('identificacao')->getElement('contarTudo'); ?><br />
-
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('volumesSeparadamente'); ?><br />
                 </div>
             </div>
 
-        </div>
     </fieldset>
 </form>
