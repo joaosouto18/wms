@@ -53,7 +53,7 @@ class Mobile_IndexController  extends Action
             ),
             12 => array(
                 'url' => '/mobile/inventario-novo/listagem-inventarios',
-                'label' => 'INVENTÁRIO NOVO'
+                'label' => 'NOVO INVENTÁRIO'
             )
 
         );
