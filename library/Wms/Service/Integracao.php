@@ -529,6 +529,7 @@ class Integracao {
                     'grade' => $row['GRADE'],
                     'quantidade' => $row['QTD'],
                     'valorVenda' => $row['VLR_VENDA'],
+                    'lote' => (isset($row['LOTE']) && $row['LOTE']!= "?" && !empty($row['LOTE'])) ? trim($row['LOTE']) : null,
                     'fatorEmbalagemVenda' => (isset($row['FATOR_EMBALAGEM_VENDA']) && !empty($row['FATOR_EMBALAGEM_VENDA'])) ? $row['FATOR_EMBALAGEM_VENDA'] : null
                 );
                 $produtos[] = $produto;
