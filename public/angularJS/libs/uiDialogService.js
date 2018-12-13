@@ -20,7 +20,7 @@ angular.module('uiDialogService', []).service('uiDialogService',
                     width: (!!width)? width : 350,
                     height: (!!height)? height : 'auto',
                     resizable: (!!resizable)? resizable : false,
-                    position: (!!position)? position : 'center',
+                    position: (!!position)? position : ['center', 250],
                     modal:  (!!modal)? modal :  true,
                     buttons: buttons
                 };
@@ -69,7 +69,7 @@ angular.module('uiDialogService', []).service('uiDialogService',
                     width: (!!width)? width : 'auto',
                     height: (!!height)? height : 'auto',
                     resizable: (!!resizable)? resizable : true,
-                    position: (!!position)? position : 'center',
+                    position: (!!position)? position : ['center',80],
                     modal:  (!!modal)? modal :  true,
                 };
 

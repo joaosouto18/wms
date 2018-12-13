@@ -30,7 +30,7 @@ class InventarioContEnd
     protected $inventarioEndereco;
 
     /**
-     * @Column(name="NUM_SEQUENCIA", type="integer" length=8)
+     * @Column(name="NUM_SEQUENCIA", type="integer", length=8)
      */
     protected $sequencia;
 

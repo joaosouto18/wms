@@ -128,29 +128,29 @@ class Inventario_Novo_IndexController  extends Action
         Page::configure(array('buttons' => $buttons));
     }
 
-    public function liberarAjaxAction ()
+    public function liberarAction ()
     {
         $id = $this->getRequest()->getParam('id');
-        $objResponse = new stdClass();
         try {
             if (empty($id)) {
                 throw new Exception("ID do Inventário não foi especificado");
             }
+
             /** @var \Wms\Service\InventarioService $invServc */
             $invServc = $this->getServiceLocator()->getService("Inventario");
             $result = $invServc->liberarInventario($id);
 
             if (is_array($result)) {
-                $objResponse->status = "error";
-                $objResponse->grid = new \Wms\Module\InventarioNovo\Grid\EmpecilhosGrid();
-                $objResponse->grid->init($result);
+                $grid = new \Wms\Module\InventarioNovo\Grid\ImpedimentosGrid();
+                $this->view->grid = $grid->init($result);
+                $this->addFlashMessage("warning", "Estes elementos impedem de liberar o inventário $id");
+                $this->renderScript('index\impedimentos.phtml');
+            } else {
+                $this->addFlashMessage("success", "Inventário $id liberado com sucesso");
+                $this->redirect();
             }
-
-            $this->_helper->json(["msg" => "Inventário $id liberado com sucesso"]);
         } catch (Exception $e) {
-            $this->getResponse()->setHttpResponseCode((!empty($e->getCode())) ? $e->getCode() : 500);
-            $objResponse->exception = $e->getMessage();
-            $this->_helper->json($objResponse);
+            $this->addFlashMessage("error", $e->getMessage());
         }
     }
 

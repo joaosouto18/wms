@@ -94,6 +94,7 @@ class InventarioNovoRepository extends EntityRepository
                   COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO ) \"qtdEndereco\",
                   COUNT( DISTINCT ICE.COD_INV_CONT_END) \"qtdDivergencia\",
                   SUM( CASE WHEN IEN.IND_FINALIZADO = 'S' THEN 1 ELSE 0 END ) \"qtdInventariado\",
+                  TO_CHAR(INVN.DTH_CRIACAO, 'DD/MM/YYYY HH24:MI:SS') \"dataCriacao\",
                   TO_CHAR(INVN.DTH_INICIO, 'DD/MM/YYYY HH24:MI:SS') \"dataInicio\",
                   INVN.COD_INVENTARIO_ERP \"codInvERP\",
                   TO_CHAR(INVN.DTH_FINALIZACAO, 'DD/MM/YYYY HH24:MI:SS') \"dataFinalizacao\",
@@ -107,7 +108,7 @@ class InventarioNovoRepository extends EntityRepository
                 LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
                 INNER JOIN DEPOSITO_ENDERECO DE ON IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                 $where
-                GROUP BY INVN.COD_INVENTARIO, INVN.COD_STATUS, INVN.DTH_INICIO, INVN.COD_INVENTARIO_ERP, INVN.DTH_FINALIZACAO";
+                GROUP BY INVN.COD_INVENTARIO, INVN.COD_STATUS, INVN.DTH_INICIO, INVN.DTH_CRIACAO, INVN.COD_INVENTARIO_ERP, INVN.DTH_FINALIZACAO";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
@@ -270,18 +271,18 @@ class InventarioNovoRepository extends EntityRepository
 
         $sql = "SELECT
                     DISTINCT
-                    DE.COD_DEPOSITO_ENDERECO \"id\",
+                    DE.COD_DEPOSITO_ENDERECO \"idEndereco\",
                     NVL(REP.COD_PRODUTO, IEP.COD_PRODUTO) \"produto\",
                     NVL(REP.DSC_GRADE, IEP.DSC_GRADE) \"grade\",
-                    RE.DTH_RESERVA \"dataReserva\",
+                    TO_CHAR(NVL(RE.DTH_RESERVA, INVATV.DTH_INICIO), 'DD/MM/YYYY HH24:MI:SS') \"dataOperacao\",
                     DE.DSC_DEPOSITO_ENDERECO \"descricao\",
                     CASE WHEN IEP.COD_INV_END_PROD IS NULL THEN
                             CASE
-                                WHEN REEXP.COD_EXPEDICAO IS NOT NULL THEN CONCAT('Expedição Código: ', REEXP.COD_EXPEDICAO)
+                                WHEN REEXP.COD_EXPEDICAO IS NOT NULL THEN CONCAT('Expedição número: ', REEXP.COD_EXPEDICAO)
                                 WHEN REOND.COD_ONDA_RESSUPRIMENTO_OS IS NOT NULL THEN CONCAT('Ressuprimento OS: ', REOND.COD_ONDA_RESSUPRIMENTO_OS)
-                                WHEN REEND.UMA IS NOT NULL THEN CONCAT('Palete:', REEND.UMA)
-                                WHEN INVATV.COD_INVENTARIO IS NOT NULL THEN CONCAT('Inventário: ', INVATV.COD_INVENTARIO)
-                                ELSE 'Não foi possível identificar a operação'
+                                WHEN REEND.UMA IS NOT NULL THEN CONCAT('Endereçamento Palete:', REEND.UMA)
+                                WHEN INVATV.COD_INVENTARIO IS NOT NULL THEN CONCAT('Inventário em andamento: ', INVATV.COD_INVENTARIO)
+                                ELSE 'Não foi possível identificar a operação do endereço'
                             END
                         WHEN (IEP.COD_PRODUTO = REP.COD_PRODUTO AND IEP.DSC_GRADE = REP.DSC_GRADE) 
                                 OR 
@@ -291,12 +292,12 @@ class InventarioNovoRepository extends EntityRepository
                                 WHEN REOND.COD_ONDA_RESSUPRIMENTO_OS IS NOT NULL THEN CONCAT('Ressuprimento OS: ', REOND.COD_ONDA_RESSUPRIMENTO_OS)
                                 WHEN IEP.COD_INV_END_PROD IS NOT NULL AND (IEP.COD_PRODUTO = REP.COD_PRODUTO AND IEP.DSC_GRADE = REP.DSC_GRADE) AND REEND.UMA IS NOT NULL THEN CONCAT('Palete:', REEND.UMA)
                                 WHEN IEP.COD_INV_END_PROD IS NOT NULL AND (IEP.COD_PRODUTO = INVATV.COD_PRODUTO AND IEP.DSC_GRADE = INVATV.DSC_GRADE) AND INVATV.COD_INVENTARIO IS NOT NULL THEN CONCAT('Inventário: ', INVATV.COD_INVENTARIO)
-                                ELSE 'Não foi possível identificar a operação por produto'
+                                ELSE 'Não foi possível identificar a operação do produto'
                             END 
                         END as \"origemImpedimento\",
-                    CASE WHEN IEP.COD_INV_END_PROD IS NULL THEN 'E' ELSE 'P' END \"Critério\",
-                    CASE WHEN REEXP.COD_EXPEDICAO IS NOT NULL THEN PED.COD_EXTERNO ELSE NULL END \"pedido\"
+                    CASE WHEN IEP.COD_INV_END_PROD IS NULL THEN 'E' ELSE 'P' END \"criterio\"
                 FROM INVENTARIO_ENDERECO_NOVO IEN
+                INNER JOIN INVENTARIO_NOVO INV ON INV.COD_INVENTARIO = IEN.COD_INVENTARIO
                 INNER JOIN DEPOSITO_ENDERECO DE ON IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                 LEFT JOIN RESERVA_ESTOQUE RE ON DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO 
                 LEFT JOIN RESERVA_ESTOQUE_EXPEDICAO REEXP ON RE.COD_RESERVA_ESTOQUE = REEXP.COD_RESERVA_ESTOQUE
@@ -304,9 +305,8 @@ class InventarioNovoRepository extends EntityRepository
                 LEFT JOIN RESERVA_ESTOQUE_ONDA_RESSUP REOND ON RE.COD_RESERVA_ESTOQUE = REOND.COD_RESERVA_ESTOQUE
                 LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
                 LEFT JOIN INVENTARIO_END_PROD IEP ON IEN.COD_INVENTARIO_ENDERECO = IEP.COD_INVENTARIO_ENDERECO
-                LEFT JOIN PEDIDO PED ON PED.COD_PEDIDO = REEXP.COD_PEDIDO
                 LEFT JOIN (
-                            SELECT INVN.COD_INVENTARIO, IEN2.COD_DEPOSITO_ENDERECO, IEP2.COD_PRODUTO, IEP2.DSC_GRADE
+                            SELECT INVN.COD_INVENTARIO, INVN.DTH_INICIO, IEN2.COD_DEPOSITO_ENDERECO, IEP2.COD_PRODUTO, IEP2.DSC_GRADE
                             FROM INVENTARIO_NOVO INVN
                             INNER JOIN INVENTARIO_ENDERECO_NOVO IEN2 ON INVN.COD_INVENTARIO = IEN2.COD_INVENTARIO
                             LEFT JOIN INVENTARIO_END_PROD IEP2 ON IEN2.COD_INVENTARIO_ENDERECO = IEP2.COD_INVENTARIO_ENDERECO

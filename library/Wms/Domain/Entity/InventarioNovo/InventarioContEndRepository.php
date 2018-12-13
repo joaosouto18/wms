@@ -9,6 +9,7 @@
 namespace Wms\Domain\Entity\InventarioNovo;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Configurator;
 use Wms\Domain\Entity\InventarioNovo;
 
 class InventarioContEndRepository extends EntityRepository

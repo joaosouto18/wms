@@ -49,6 +49,12 @@ class InventarioNovo
     protected $descricao;
 
     /**
+     * @var \DateTime $dthCriacao
+     * @Column(name="DTH_CRIACAO", type="datetime")
+     */
+    protected $dthCriacao;
+
+    /**
      * @var \DateTime $dthIicio
      * @Column(name="DTH_INICIO", type="datetime")
      */
@@ -163,11 +169,29 @@ class InventarioNovo
     }
 
     /**
-     * @return \DateTime
+     * @param $toString boolean Converter para String a data
+     * @return \DateTime|string
      */
-    public function getDthInicio()
+    public function getDthCriacao($toString = false)
     {
-        return $this->dthInicio;
+        return (!$toString) ? $this->dthCriacao : $this->dthCriacao->format('d/m/Y H:i:s') ;
+    }
+
+    /**
+     * @param \DateTime $dthCriacao
+     */
+    public function setDthCriacao($dthCriacao)
+    {
+        $this->dthCriacao = $dthCriacao;
+    }
+
+    /**
+     * @param $toString boolean Converter para String a data
+     * @return \DateTime|string
+     */
+    public function getDthInicio($toString = false)
+    {
+        return (!$toString) ? $this->dthInicio : $this->dthInicio->format('d/m/Y H:i:s') ;
     }
 
     /**
@@ -180,11 +204,11 @@ class InventarioNovo
 
     /**
      * @param $toString boolean Converter para String a data
-     * @return \DateTime
+     * @return \DateTime|string
      */
     public function getDthFinalizacao($toString = false)
     {
-        return (!$toString) ? $this->dthFinalizacao : $this->dthFinalizacao->format('d/m/Y H:i:s')  ;
+        return (!$toString) ? $this->dthFinalizacao : $this->dthFinalizacao->format('d/m/Y H:i:s') ;
     }
 
     /**

@@ -7,6 +7,7 @@
 
 INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7', 'xx-novo-inventario.sql');
 
+/*   CRIAÇÃO DO ACESSO AO INVENTARIO NOVO   */
 INSERT INTO RECURSO (COD_RECURSO, DSC_RECURSO, COD_RECURSO_PAI, NOM_RECURSO)
 VALUES (SQ_RECURSO_01.NEXTVAL, 'Novo Inventário', 0, 'inventario_novo:index');
 
@@ -14,7 +15,7 @@ INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_
 VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
          (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
          (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'index'),
-         'Novo Inventário'
+         'Lista de inventários'
            );
 
 UPDATE MENU_ITEM SET NUM_PESO = NUM_PESO + 1 WHERE DSC_MENU_ITEM IN ('Importação', 'Relatórios');
@@ -30,6 +31,31 @@ VALUES (SQ_MENU_ITEM_01.NEXTVAL,
         (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Novo Inventário'),
         'Inventário',
         1, '#', '_self', 'S');
+
+/* CRIAÇÃO DE ACTION DE LIBERAÇÃO DO INVENTÁRIO */
+
+INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO)
+VALUES (SQ_RECURSO_ACAO_01.nextval,
+        (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
+        (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'liberar'), 'Liberar Inventário');
+
+/* CRIAÇÃO DE ACTION DE REMOÇÃO DE ENDEREÇO/PRODUTO DO INVENTÁRIO */
+
+INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO)
+VALUES (SQ_ACAO_01.nextval, 'Remover Endereço', 'remover-endereco');
+
+INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO)
+VALUES (SQ_RECURSO_ACAO_01.nextval,
+        (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
+        (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'remover-endereco'), 'Remover Endereço');
+
+INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO)
+VALUES (SQ_ACAO_01.nextval, 'Remover Produto', 'remover-produto');
+
+INSERT INTO RECURSO_ACAO (COD_RECURSO_ACAO, COD_RECURSO, COD_ACAO, DSC_RECURSO_ACAO)
+VALUES (SQ_RECURSO_ACAO_01.nextval,
+        (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
+        (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'remover-produto'), 'Remover Produto');
 
 /* CRIAÇÃO DE ACTION DE CRIAÇÃO DE INVENTARIO */
 
@@ -245,7 +271,8 @@ ALTER TABLE MODELO_INVENTARIO ADD CONSTRAINT "MODELO_INVENTARIO_PK" PRIMARY KEY 
 CREATE TABLE inventario_novo (
   cod_inventario       NUMBER(8) NOT NULL,
   dsc_inventario       VARCHAR2(100),
-  dth_inicio           DATE NOT NULL,
+  dth_criacao          DATE NOT NULL,
+  dth_inicio           DATE,
   dth_finalizacao      DATE,
   cod_status           NUMBER(4) NOT NULL,
   cod_inventario_erp   NUMBER(8) ,

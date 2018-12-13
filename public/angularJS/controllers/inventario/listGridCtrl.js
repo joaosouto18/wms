@@ -156,21 +156,6 @@ angular.module("wms").controller("listGridInventarioCtrl", function($scope, $htt
         })
     };
 
-    $scope.liberarInventario = function(inventario) {
-        let result = undefined;
-        $http.get(URL_MODULO + "/index/liberar-ajax?id=" + inventario.id).then(function (response) {
-            result = response
-        }).then(function () {
-            if (result.status === 200) {
-                uiDialogService.dialogAlert(result.data.msg);
-                $scope.requestForm();
-            }
-        }).catch(function (err) {
-            console.log(err);
-            uiDialogService.dialogAlert(err.data);
-        })
-    };
-
     getInventarios({});
     $scope.ordenarPor("id");
     

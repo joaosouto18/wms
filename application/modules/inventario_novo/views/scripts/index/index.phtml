@@ -101,11 +101,12 @@
                     <?php if($this->showCodInvErp):?>
                     <td width=""><a href="" title="" class="sort" ng-click="ordenarPor('qtdEndereco')"><span>Código no ERP</span></a></td>
                     <?php endif;?>
-                    <td><a href="" title="" class="sort" ng-click="ordenarPor('qtdEndereco')"><span>Qtd Endereços</span></a></td>
-                    <td><a href="" title="" class="sort" ng-click="ordenarPor('qtdDivergente')"><span>Qtd Divergência</span></a></td>
-                    <td><a href="" title="" class="sort" ng-click="ordenarPor('qtdInventariado')"><span>Qtd Inventariado</span></a></td>
-                    <td><a href="" title="" class="sort" ng-click="ordenarPor('dthInicio')"><span>Dt. Início</span></a></td>
-                    <td><a href="" title="" class="sort" ng-click="ordenarPor('dthFinalizacao')"><span>Dt. Finalização</span></a></td>
+                    <td><a href="" title="Quantidade de endereços deste inventário" class="sort" ng-click="ordenarPor('qtdEndereco')"><span>Qtd End.</span></a></td>
+                    <td><a href="" title="Quantidade de divergências" class="sort" ng-click="ordenarPor('qtdDivergente')"><span>Qtd. Diverg.</span></a></td>
+                    <td><a href="" title="Endereços inventariados" class="sort" ng-click="ordenarPor('qtdInventariado')"><span>End. Invt.</span></a></td>
+                    <td><a href="" title="Data de criação" class="sort" ng-click="ordenarPor('dthCriacao')"><span>Dt. Criação</span></a></td>
+                    <td><a href="" title="Data de início" class="sort" ng-click="ordenarPor('dthInicio')"><span>Dt. Início</span></a></td>
+                    <td><a href="" title="Data de finalização" class="sort" ng-click="ordenarPor('dthFinalizacao')"><span>Dt. Finalização</span></a></td>
                     <td><a href="" title="" class="sort" ng-click="ordenarPor('andamento')"><span>Andamento (%)</span></a></td>
                     <td><a href="" title="" class="sort" ng-click="ordenarPor('status')"><span>Status</span></a></td>
                 </tr>
@@ -126,7 +127,7 @@
                             <ul>
                                 <li><img src="/img/admin/icon_opc.gif" alt="Opções">
                                     <ul>
-                                        <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_GERADO ?>"><a href="" ng-click="liberarInventario(inventario)">Liberar</a></li>
+                                        <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_GERADO ?>"><a href="/inventario_novo/index/liberar/id/{{inventario.id}}" >Liberar</a></li>
                                         <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CONCLUIDO ?>"><a href="/inventario_novo/index/atualizar/id/{{inventario.id}}" class="" title="" target="_self">Atualizar Estoque</a></li>
                                         <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>].indexOf(inventario.status) < 0"><a href="/inventario_novo/index/cancelar/id/{{inventario.id}}" class="confirm" title="Cancelar inventário?." target="_self">Cancelar</a></li>
                                         <li ng-if="inventario.status != <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_GERADO ?>"><a href="/inventario_novo/relatorio_avaria/index/id/{{inventario.id}}" class="pdf" title="" target="_self">Relatório Avariados</a></li>
@@ -151,6 +152,7 @@
                     <td>{{inventario.qtdEndereco}}</td>
                     <td>{{inventario.qtdDivergencia}}</td>
                     <td>{{inventario.qtdInventariado}}</td>
+                    <td>{{inventario.dataCriacao}}</td>
                     <td>{{inventario.dataInicio}}</td>
                     <td>{{inventario.dataFinalizacao}}</td>
                     <td><div style="float:right;">{{inventario.andamento}}%</div></td>
