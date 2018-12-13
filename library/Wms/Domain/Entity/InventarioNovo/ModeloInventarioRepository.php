@@ -17,19 +17,25 @@ class ModeloInventarioRepository extends EntityRepository
      * @return ModeloInventario
      * @throws \Exception
      */
-    public function save($params, $executeFlush = true)
-    {
-        try {
-            $entity = Configurator::configure(new $this->_entityName, $params);
+    public function save(ModeloInventario $entity, $params) {
 
-            $this->_em->persist($entity);
-            if ($executeFlush) $this->_em->flush();
+        $entity->setDescricao($params['descricao']);
+        $entity->setAtivo($params['ativo']);
+        $entity->setItemAItem($params['itemAItem']);
+        $entity->setDefault($params['default']);
+        $entity->setControlaValidade($params['controlaValidade']);
+        $entity->setExigeUma($params['exigeUma']);
+        $entity->setComparaEstoque($params['comparaEstoque']);
+        $entity->setUsuarioNContagens($params['usuarioNContagens']);
+        $entity->setContarTudo($params['contarTudo']);
+        $entity->setVolumesSeparadamente($params['volumesSeparadamente']);
+        $entity->setNumContagens($params['numContagens']);
 
-            return $entity;
+        $this->_em->persist($entity);
 
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
-        }
+        $this->_em->flush();
+
+        return $entity;
     }
 
     public function getModelos() {

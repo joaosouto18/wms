@@ -25,8 +25,10 @@
                 'urlParams' => array(
                     'module' => 'inventario_novo',
                     'controller' => 'modelo-inventario',
-                    'action' => 'edit'
-                )
+                    'action' => 'add',
+
+                ),
+                'tag' => 'a'
             );
 
             $this->configurePage($buttons);
@@ -138,7 +140,8 @@
 
                     $params = $this->getRequest()->getParams();
 
-                    //var_dump($params);
+                    //var_dump($this->repository);
+
                     try {
                         $this->repository->save($entity, $params);
                         $this->_helper->messenger('success', 'Registro alterado com sucesso');
@@ -148,6 +151,7 @@
                     }
 
                     return $this->redirect('index');
+
                 }
                 else {
 
@@ -164,8 +168,6 @@
                     $dados['usuarioNContagens']    = $entity->getUsuarioNContagens();
                     $dados['contarTudo']           = $entity->getContarTudo();
                     $dados['volumesSeparadamente'] = $entity->getVolumesSeparadamente();
-                    //$dados['importaErp']           = $entity->getImportaERP();
-                    //$dados['idLayoutExp']          = $entity->getIdLayoutEXP();
                     $dados['default']              = $entity->getDefault();
 
                     $form->populate($dados); // pass values to form

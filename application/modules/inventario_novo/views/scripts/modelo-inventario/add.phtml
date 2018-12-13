@@ -50,100 +50,30 @@
     }
     -->
 </style>
-<form id="modelo-separacao-form" class="saveForm" method="post" action="" enctype="application/x-www-form-urlencoded" novalidate="novalidate">
+<form id="modelo-inventario-form" class="saveForm" method="post" action="" enctype="application/x-www-form-urlencoded" novalidate="novalidate">
     <fieldset id="fieldset-modelo">
         <legend>Cadastro</legend>
         <div>
             <?php echo $this->form->getSubForm('identificacao')->getElement('descricao'); ?>
         </div>
+        <div>
+            <?php echo $this->form->getSubForm('identificacao')->getElement('numContagens'); ?>
+        </div>
 
         <div class="fieldsets">
             <div class="fieldset-left">
                 <div class="checkboxes">
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaCaixaMaster'); ?><br />
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaQuebraColetor'); ?><br />
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaEtiquetaMae'); ?><br />
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('forcarEmbVenda'); ?><br />
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('utilizaVolumePatrimonio'); ?><br />
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('imprimeEtiquetaPatrimonio'); ?><br /><br />
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('quebraPulmaDoca'); ?>
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('ativo'); ?><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('default'); ?><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('itemAItem'); ?><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('controlaValidade'); ?><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('exigeUma'); ?><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('comparaEstoque'); ?><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('usuarioNContagens'); ?><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('contarTudo'); ?><br />
+                    <?php echo $this->form->getSubForm('identificacao')->getElement('volumesSeparadamente'); ?><br />
                 </div>
-
-                <fieldset>
-                    <legend>Processo com Embalados</legend>
-
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoQuebraVolume'); ?>
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('separacaoPc'); ?>
-                    <fieldset id="fieldsetQuebraEmbalados" class="fieldsets">
-                        <legend>Quebras</legend>
-                        <?php echo $this->form->getSubForm('identificacao')->getElement('quebraEmbalados'); ?>
-                    </fieldset>
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoEmbalado'); ?>
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoDefaultEmbalado'); ?>
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoConferenciaEmbalado'); ?>
-                    <?php echo $this->form->getSubForm('identificacao')->getElement('tipoConferenciaNaoEmbalado'); ?>
-                </fieldset>
             </div>
 
-            <div class="fieldset-right">
-                <fieldset>
-                    <legend>Separação para Fracionados</legend>
-                    <table>
-                        <legend>Tipo de Separação:</legend>
-                        <tr>
-                            <td>
-                                <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoFracionadoEmbalado'); ?>
-                            </td>
-                            <td>
-                                <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoFracionado'); ?>
-                            </td>
-                        </tr>
-                    </table>
-                    <fieldset>
-                        <legend>Quebras</legend>
-                        <?php echo $this->form->getSubForm('identificacao')->getElement('quebraFracionados'); ?>
-                    </fieldset>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Separação para não Fracionados</legend>
-                    <table>
-                        <legend>Tipo de Separação:</legend>
-                        <tr>
-                            <td>
-                                <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoNaoFracionadoEmbalado'); ?>
-                            </td>
-                            <td>
-                                <?php echo $this->form->getSubForm('identificacao')->getElement('tipoSeparacaoNaoFracionado'); ?>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <fieldset>
-                        <legend>Quebras</legend>
-                        <?php echo $this->form->getSubForm('identificacao')->getElement('quebraNaoFracionados'); ?>
-                    </fieldset>
-                </fieldset>
-            </div>
-        </div>
     </fieldset>
 </form>
-<script>
-    $(function () {
-        $(document).ready(function () {
-            checkStatusSeparacaoPc();
-        });
-
-        $("#separacaoPc").change(function () {
-            checkStatusSeparacaoPc();
-        });
-
-        function checkStatusSeparacaoPc() {
-            if ($("#separacaoPc").val() === 'S') {
-                $("#fieldsetQuebraEmbalados").show();
-            } else {
-                $("#fieldsetQuebraEmbalados").hide();
-            }
-        }
-    })
-</script>
