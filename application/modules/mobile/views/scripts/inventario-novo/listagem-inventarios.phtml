@@ -8,7 +8,7 @@
             foreach ($this->inventarios as $inventario)
             { ?>
                 <div class="row">
-                    <a class="btn gradientBtn" href="<?php echo $this->url(array('controller' => 'inventarioNovo', 'action' => 'seleciona-contagem', 'idInventario' => $inventario['id'], 'descricaoInventario' =>$inventario['descricao'] )); ?>" title="<?php echo $inventario['id'] ?>" >Inv. <?php echo $inventario['id']. " - " .$inventario['descricao']; ?>  </a>
+                    <a class="btn gradientBtn" href="<?php echo $this->url(array('controller' => 'inventario-novo', 'action' => 'seleciona-contagem', 'idInventario' => $inventario->getId() )); ?>" title="<?php echo $inventario->getId(); ?>" >Inv. <?php echo $inventario->getId(). " - " .$inventario->getDescricao(); ?>  </a>
                 </div>
         <?php
             }

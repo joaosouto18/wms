@@ -16,7 +16,7 @@
 <script src="../layout/scripts/ie/html5shiv.min.js"></script>
 <![endif]-->
 
-<script src="../layout/scripts/jquery-3.1.1.min.js"></script>
+  <script src="../layout/scripts/jquery-3.1.1.min.js"></script>
 
   <script type = "text/javascript">
       function carregar(pagina)
@@ -55,9 +55,9 @@
       <li><a href="../expedicao/expedicao.html" title="Link Text">Expedição</a></li>
       <li><a href="../armazenagem/armazenagem.html" title="Link Text">Armazenagem</a></li>
       <li><a href="../inventario/inventario.html" title="Link Text">Inventário</a></li>
-      <li><a href="../inventario_novo/inventario_novo.html" title="Link Text">Novo Inventário</a></li>
+      <li class="active"><a href="inventario_novo.html" title="Link Text">Novo Inventário</a></li>
       <li><a href="../importacao/importacao.html" title="Link Text">Importação</a></li>
-      <li class="active"><a href="coletor.html" title="Link Text">Coletor</a></li>
+      <li><a href="../mobile/coletor.html" title="Link Text">Coletor</a></li>
       <li><a href="../relatorios/relatorios.html" title="Link Text">Relatórios</a></li>
     </ul>
   </nav>
@@ -69,44 +69,14 @@
     <div id="sidebar_1" class="sidebar one_quarter first">
       <aside>
         <!-- ########################################################################################## -->
-        <h2>Coletor</h2>
+        <h2>Novo Inventário</h2>
         <nav>
           <ul>
-            <li><a onclick="carregar('conf_recebimento.html');" href="#">Conf. Recebimento</a></li>
-            <li><a>Expedição</a></li>
-              <ul>
-                <li><a onclick="carregar('onda_ressuprimento.html');" href="#">Onda de ressuprimento</a></li>
-                <li><a onclick="carregar('equipe_carregamento.html');" href="#">Equipe de carregamento</a></li>
-                <li><a onclick="carregar('vincular_lacre.html');" href="#">Vincular lacre</a></li>
-                <li><a onclick="carregar('separacao.html');" href="#">Separação</a></li>
+            <li><a onclick="carregar('inventario.html');" href="#">Inventário</a></li>
+            <ul>
+              <li><a onclick="carregar('inventario_por_endereco.html');" href="#">Por endereço</a></li>
+              <li><a onclick="carregar('inventario_por_produto.html');" href="#">Por produto</a></li>
             </ul>
-            <li><a>Armazenagem</a></li>
-                <ul>
-                  <li><a onclick="carregar('enderecamento.html');" href="#">Endereçamento</a></li>
-                  <li><a onclick="carregar('enderecamento_automatico.html');" href="#">Endereçamento automático</a></li>
-                  <li><a onclick="carregar('enderecamento_manual.html');" href="#">Endereçamento manual</a></li>
-                  <li><a onclick="carregar('transferencia_estoque.html');" href="#">Tranferência de estoque</a></li>
-                </ul>
-             <li><a>Ressuprimento</a></li>
-                <ul>
-                  <li><a onclick="carregar('selecionar_picking.html');" href="#">Selecionar picking</a></li>
-                  <li><a onclick="carregar('ressuprimento_preventivo.html');" href="#">Ressuprimento preventivo</a></li>
-                  <li><a onclick="carregar('ressuprimento_manual.html');" href="#">Ressuprimento manual</a></li>                  
-                </ul>
-            <li><a onclick="carregar('inventario.html');" href="#">Inventário</a></li>            
-            <li><a onclick="carregar('consulta_produto.html');" href="#">Consulta produto</a></li>
-            <li><a onclick="carregar('reentrega.html');" href="#">Reentrega</a></li>
-            
-            <li><a>Produtividade</a></li>
-                <ul>
-                  <li><a onclick="carregar('recebimento_transbordo.html');" href="#">Recebimento transbordo</a></li>
-                  <li><a onclick="carregar('carregamento_expedicao_transbordo.html');" href="#">Carregamento expedição transbordo</a></li>                             
-                </ul>
-            <li><a onclick="carregar('cadastro_produto_endereco.html');" href="#">Cadastro produto endereço</a></li>
-            <li><a onclick="carregar('consulta_endereco.html');" href="#">Consulta endereço</a></li>
-            <li><a onclick="carregar('separacao_pulmao_doca.html');" href="#">Separação pulmão doca</a></li>
-            <li><a onclick="carregar('novo_inventario.html');" href="#">Novo Inventário</a></li>
-
           </ul>
         </nav>
 
@@ -116,15 +86,13 @@
     <!-- ################################################################################################ -->
     <div class="three_quarter">
 
-      <!--  as paginas sao carregas aqui -->
+      <!--  as paginas sao carregadas aqui -->
       <div id="conteudo">    
       
           <strong> Use o menu à esquerda para navegar na documentação. </strong>
       
       </div>
 
-        
-    
     </div>
     <!-- ################################################################################################ -->
     <div class="clear"></div>
@@ -138,7 +106,6 @@
     
   </div>
 </div>
-
 <!-- Scripts -->
 <script src="../layout/scripts/jquery-latest.min.js"></script>
 <script src="../layout/scripts/jquery-ui.min.js"></script>
