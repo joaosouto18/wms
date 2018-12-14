@@ -593,7 +593,7 @@ class Enderecamento_MovimentacaoController extends Action
         $estoque = $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->getEstoqueProprietario($idProprietario, $idProduto, $grade);
         $status = 'erro';
         if(is_array($estoque)) {
-            $compare = \Wms\Math::compare($estoque['SALDO_FINAL'], $quantidade, '>');
+            $compare = \Wms\Math::compare($estoque['SALDO_FINAL'], $quantidade, '>=');
             if ($compare == true) {
                 $status = 'ok';
             }
