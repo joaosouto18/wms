@@ -8,6 +8,7 @@
 
 namespace Wms\Domain\Entity\InventarioNovo;
 
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Configurator;
 
@@ -30,5 +31,27 @@ class InventarioEnderecoNovoRepository extends EntityRepository
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
+    }
+
+    public function getArrEnderecos($idInventario, $sequencia)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("de.descricao")
+            ->from("wms:InventarioNovo\InventarioContEnd", "ice")
+            ->innerJoin("ice.inventarioEndereco", "ie")
+            ->innerJoin("ie.inventario", "inv")
+            ->innerJoin("ie.depositoEndereco", "de")
+            ->where("inv.id = :id")
+            ->andWhere("ice.sequencia = :sq")
+            ->setParameters(["id" => $idInventario, "sq" => $sequencia])
+            ->distinct(true)
+        ;
+
+        $result = [];
+        foreach ($dql->getQuery()->getResult() as $item) {
+            $result["formated"][] = $item['descricao'];
+            $result["unformated"][] = str_replace(".", "", $item['descricao']);
+        }
+        return $result;
     }
 }

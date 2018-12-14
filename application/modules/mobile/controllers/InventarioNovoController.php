@@ -12,23 +12,21 @@ class Mobile_InventarioNovoController extends Action
 {
     public function listagemInventariosAction()
     {
-        /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
-        $inventarioRepo = $this->em->getRepository('wms:InventarioNovo');
-        $inventarios    = $inventarioRepo->findBy(['status' => \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO]);
-
-       $this->view->inventarios = $inventarios;
+        $this->renderScript('inventario-novo\inventarios.phtml');
     }
 
-    public function selecionaContagemAction()
+    public function getInventariosAction()
     {
-
-        // lógica para verificar o número da contagem
-
-        // retornar as contagens pra view
-
-        echo 'seleciona contagem';
-
-
+        $this->_helper->json($this->em->getRepository('wms:InventarioNovo')->getInventarios('stdClass',['status' => \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO]));
     }
 
+    public function getContagensAction()
+    {
+        $this->_helper->json($this->em->getRepository('wms:InventarioNovo\InventarioContEnd')->getContagens($this->_getParam("id")));
+    }
+
+    public function getEnderecosAction()
+    {
+        $this->_helper->json($this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->getArrEnderecos($this->_getParam("id"), $this->_getParam("sq")));
+    }
 }

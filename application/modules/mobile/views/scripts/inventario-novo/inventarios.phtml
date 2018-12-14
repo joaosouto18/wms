@@ -1,0 +1,229 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Tarcísio César
+ * Date: 14/12/2018
+ * Time: 10:51
+ */
+?>
+<style>
+    div.input-area {
+        padding: 10px;
+        margin: 10px 15px;
+        background-color: #c1c1c1;
+    }
+
+    .btn-spacing {
+        margin-top: 5px;
+    }
+
+    .list-area {
+        overflow-y:scroll;
+        max-height: 145px
+    }
+
+    .list-item {
+        width: 100%!important;
+        margin: 3px 0px !important;
+        padding: 0px !important;
+        text-align: center!important;
+    }
+</style>
+<div style="display: none" id="divBtnBack">
+    <button class="btn btnAlerta" id="btnBackAction" >Voltar</button>
+</div>
+<div id="headers">
+    <h4 id="lbl-inventario"></h4>
+    <h4 id="lbl-contagem"></h4>
+</div>
+<div id="loader" style="margin-top: 30px">
+    <span style="font-size: 18px">Carregando...</span>
+    <img src="/img/ajax-bar-loader.gif" alt="loading">
+</div>
+
+<div id="list-inventarios" style="display: none;">
+    <h3>Inventários disponíveis</h3>
+    <p id="list-empty">Nenhum Inventário liberado para conferência.</p>
+    <div id="list-inventarios"></div>
+</div>
+
+<div id="contagens-by-inventario" style="display: none">
+    <h3>Contagens</h3>
+    <div id="list-contagens"></div>
+</div>
+
+<div id="bipagem-endereco" style="display: none">
+    <div class="input-area">
+        <div class="field">
+            <form>
+                <label for="codigoBarras" class="field required">Busca por Endereço</label>
+                <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
+            </form>
+        </div>
+        <button id="btn-consultar-endereco" class="btn btn-spacing">Buscar</button>
+    </div>
+    <div class="list-area" id="list-enderecos"></div>
+</div>
+<div id="bipagem-produto" style="display: none">
+
+</div>
+
+<div id="conferencia" style="display: none">
+
+</div>
+
+<script>
+    $(function () {
+        var inventarios = [];
+        var invSelecioando = {};
+        var contagens = [];
+        var contSelecioando = {};
+        var enderecos = [];
+        var showing = 0;
+        var views = ["loader","list-inventarios","contagens-by-inventario","bipagem-endereco","bipagem-produto","conferencia"];
+        var headers = ["lbl-inventario", "lbl-contagem", "lbl-endereco", "lbl-produto"];
+
+        $(document).ready(function () {
+            changeViewer("loader");
+            getInventarios();
+        });
+
+        var changeViewer = function (showTo) {
+            $.each(views, function (k,v) {
+                $("#"+v).hide();
+            });
+
+            if (showTo === undefined || views.indexOf(showTo) < 0) {
+                showTo = views[1];
+            }
+
+            showing = views.indexOf(showTo);
+
+            $.each(headers, function (k,v) {
+                if ( k > (showing - 2))
+                    $("#"+v).hide();
+                else
+                    $("#"+v).show();
+            });
+
+            if (showing >= 2) {
+                $("#divBtnBack").show()
+            } else {
+                $("#divBtnBack").hide()
+            }
+            $("#"+showTo).show();
+        };
+
+        $("#btnBackAction").click(function () {
+            changeViewer(views[(showing - 1)])
+        });
+
+        var prepareListInventarios = function () {
+            if (inventarios.length) {
+                $("#list-empty").hide();
+                $.each(inventarios, function (k, v) {
+                    var dsc = "";
+                    if (v.dscInventario === null) {
+                        dsc = "Inventário " + v.id;
+                    } else {
+                        dsc = "Inv. " + v.id + " - " + v.dscInventario;
+                    }
+                    inventarios[k].dsc = dsc;
+                    var newRow = $('<div class="row"><button class="btn gradientBtn selectInv" data-key="'+k+'" title="'+v.id+'">'+dsc+'</button></div>');
+                    $("#list-inventarios").append(newRow);
+                });
+                $("#list-inventarios").show();
+            }
+            else {
+                $("#list-empty").show();
+                $("#list").hide();
+            }
+            changeViewer("list-inventarios")
+        };
+
+        var getInventarios = function () {
+            $.ajax({url: "/mobile/inventario-novo/get-inventarios",
+                success: function(result){
+                    inventarios = result;
+                },
+                complete:function () {
+                    prepareListInventarios();
+                }
+            });
+        };
+
+        $(".selectInv").live("click",function () {
+            invSelecioando = inventarios[$(this).data("key")];
+            $("#lbl-inventario").text(invSelecioando.dsc);
+            getContagens();
+        });
+
+        var getContagens = function () {
+            $.ajax({url: "/mobile/inventario-novo/get-contagens/id/" + invSelecioando.id,
+                success: function(result){
+                    contagens = result;
+                },
+                complete:function () {
+                    prepareListContagens()
+                }
+            });
+        };
+
+        var prepareListContagens = function () {
+            var rowsDivg = [];
+            var rowsNor = [];
+
+            $("#list-contagens").empty();
+
+            $.each(contagens, function (k, v) {
+
+                var dsc = v.contagem + "ª Contagem";
+                var classe = "gradientBtn";
+
+                if (v.divergencia === 'S'){
+                    dsc += " de Divergência"
+                }
+                contagens[k].dsc = dsc;
+                var newRow = $('<div class="row"><button class="btn '+ classe +' selectCont" data-key="'+ k +'" title="'+ v.contagem +'">'+ dsc +'</button></div>');
+
+                if (v.divergencia === 'S') {
+                    rowsDivg.push(newRow);
+                } else {
+                    rowsNor.push(newRow)
+                }
+
+            });
+
+            $.each($.merge(rowsNor, rowsDivg), function (k,v) {
+                $("#list-contagens").append(v);
+            });
+
+            changeViewer("contagens-by-inventario");
+        };
+
+        $(".selectCont").live("click",function () {
+            contSelecioando = contagens[$(this).data("key")];
+            $("#lbl-contagem").text(contSelecioando.dsc);
+            getEnderecos();
+        });
+
+        var getEnderecos = function () {
+            $.ajax({url: "/mobile/inventario-novo/get-enderecos/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia,
+                success: function(result){
+                    enderecos = result;
+                },
+                complete:function () {
+                    prepareListEnderecos()
+                }
+            });
+        };
+
+        var prepareListEnderecos = function () {
+            $("#list-enderecos").empty();
+            $.each(enderecos.formated, function (k, v) {
+                $("#list-enderecos").append('<div class="list-item">'+v+'</div>')
+            });
+            changeViewer("bipagem-endereco");
+        }
+    })
+</script>

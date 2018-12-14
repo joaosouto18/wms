@@ -131,7 +131,14 @@ h3 {
 *********************/
 button, .btn, button.back, .btnBack, .btnAjuda, .btnAlert {
     width: 90%;
-    background: url(../../img/admin/btn_bg.gif) repeat-x scroll 0 0 #F77C16;
+    background: rgba(255,172,71,1);
+    background: -moz-linear-gradient(top, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%);
+    background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(255,172,71,1)), color-stop(100%, rgba(245,109,6,1)));
+    background: -webkit-linear-gradient(top, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%);
+    background: -o-linear-gradient(top, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%);
+    background: -ms-linear-gradient(top, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%);
+    background: linear-gradient(to bottom, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffac47', endColorstr='#f56d06', GradientType=0 );
     border-top:solid 1px #ED6502;
     border-bottom:solid 1px #ED6502;
     color: #FFFFFF;
@@ -317,6 +324,32 @@ table tr.title td {
     background: -ms-linear-gradient(top, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%);
     background: linear-gradient(to bottom, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%);
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffac47', endColorstr='#f56d06', GradientType=0 );
+}
+
+.gradientBtnDanger{
+    font-size: 13px;
+    word-wrap: break-word;
+    background: rgb(255, 54, 22);
+    background: -moz-linear-gradient(top, rgba(255, 54, 22) 0%, rgb(159, 14, 0) 100%);
+    background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(255, 54, 22)), color-stop(100%, rgb(159, 14, 0)));
+    background: -webkit-linear-gradient(top, rgba(255, 54, 22) 0%, rgb(159, 14, 0) 100%);
+    background: -o-linear-gradient(top, rgba(255, 54, 22) 0%, rgb(159, 14, 0) 100%);
+    background: -ms-linear-gradient(top, rgba(255, 54, 22) 0%, rgb(159, 14, 0) 100%);
+    background: linear-gradient(to bottom, rgba(255, 54, 22) 0%, rgb(159, 14, 0) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#FF3616', endColorstr='#9F0E00', GradientType=0 );
+}
+
+.btnAlerta {
+    background: rgba(223,206,22,1);
+    background: -moz-linear-gradient(top, rgba(223,206,22,1) 0%, rgba(232,64,2,1) 100%);
+    background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(223,206,22,1)), color-stop(100%, rgba(232,64,2,1)));
+    background: -webkit-linear-gradient(top, rgba(223,206,22,1) 0%, rgba(232,64,2,1) 100%);
+    background: -o-linear-gradient(top, rgba(223,206,22,1) 0%, rgba(232,64,2,1) 100%);
+    background: -ms-linear-gradient(top, rgba(223,206,22,1) 0%, rgba(232,64,2,1) 100%);
+    background: linear-gradient(to bottom, rgba(223,206,22,1) 0%, rgba(232,64,2,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dfce16', endColorstr='#e84002', GradientType=0 );
+    border-color: #CCCCCC #AAAAAA #AAAAAA #CCCCCC;
+    color: #ffffff;
 }
 
 .row.margin-row {
