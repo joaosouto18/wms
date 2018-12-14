@@ -233,7 +233,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                   EP.COD_ESTOQUE_PROPRIETARIO IN (
                       SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO 
                       WHERE COD_PESSOA = $idProprietario
-                      GROUP BY COD_PESSOA)
+                      GROUP BY COD_PESSOA, COD_PRODUTO, DSC_GRADE)
                   GROUP BY 
                     EP.COD_PESSOA, EP.SALDO_FINAL 
                   ORDER BY 
