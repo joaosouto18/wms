@@ -85,7 +85,8 @@ CREATE TABLE MODELO_INVENTARIO
 (
   COD_MODELO_INVENTARIO     NUMBER (8) NOT NULL ,
   DSC_MODELO                VARCHAR2 (100) ,
-  IND_ATIVO                CHAR (1) NOT NULL ,
+  COD_USUARIO               NUMBER (8) NOT NULL ,
+  IND_ATIVO                 CHAR (1) NOT NULL ,
   DTH_CRIACAO               DATE NOT NULL ,
   IND_ITEM_A_ITEM           CHAR (1) NOT NULL ,
   IND_CONTROLA_VALIDADE     CHAR (1) NOT NULL ,
@@ -100,6 +101,11 @@ CREATE TABLE MODELO_INVENTARIO
   IND_DEFAULT               CHAR (1) NOT NULL
 ) ;
 ALTER TABLE MODELO_INVENTARIO ADD CONSTRAINT MODELO_INVENTARIO_PK PRIMARY KEY ( COD_MODELO_INVENTARIO ) ;
+
+ALTER TABLE modelo_inventario
+  ADD CONSTRAINT fk_modelo_usuario FOREIGN KEY ( cod_usuario )
+    REFERENCES usuario ( cod_usuario )
+      NOT DEFERRABLE;
 
 CREATE SEQUENCE SQ_MODELO_INVENTARIO_01
   INCREMENT BY 1
@@ -250,24 +256,6 @@ CREATE SEQUENCE SQ_N_INV_END_01
   NOCACHE
   NOORDER;
 
-CREATE TABLE MODELO_INVENTARIO(
-  COD_MODELO_INVENTARIO     NUMBER(8,0) NOT NULL,
-	DSC_MODELO                VARCHAR(100),
-	IND_ATIVO                 CHAR(1) NOT NULL,
-	DTH_CRIACAO               DATE NOT NULL,
-	IND_ITEM_A_ITEM           CHAR(1) NOT NULL,
-	IND_CONTROLA_VALIDADE     CHAR(1) NOT NULL,
-	IND_EXIGE_UMA             CHAR(1) NOT NULL,
-	NUM_CONTAGENS             NUMBER(2,0) NOT NULL,
-	IND_COMPARA_ESTOQUE       CHAR(1) NOT NULL,
-	IND_USUARIO_N_CONTAGENS   CHAR(1) NOT NULL,
-	IND_CONTAR_TUDO           CHAR(1) NOT NULL,
-	IND_VOLUMES_SEPARADAMENTE CHAR(1) NOT NULL,
-	IND_DEFAULT               CHAR(1) NOT NULL
-);
-
-ALTER TABLE MODELO_INVENTARIO ADD CONSTRAINT "MODELO_INVENTARIO_PK" PRIMARY KEY (COD_MODELO_INVENTARIO);
-
 CREATE TABLE inventario_novo (
   cod_inventario       NUMBER(8) NOT NULL,
   dsc_inventario       VARCHAR2(100),
@@ -344,3 +332,54 @@ REFERENCES inventario_endereco_novo ( cod_inventario_endereco );
 ALTER TABLE inventario_end_prod
   ADD CONSTRAINT fk_invendprod_prod FOREIGN KEY ( cod_produto, dsc_grade )
 REFERENCES produto ( cod_produto, dsc_grade );
+
+CREATE TABLE modelo_inventario_log (
+                                     cod_log                          NUMBER(8) NOT NULL,
+                                     cod_modelo_inventario            NUMBER(8) NOT NULL,
+                                     cod_usuario                      NUMBER(8) NOT NULL,
+                                     dth_registro                     DATE NOT NULL,
+                                     dsc_modelo_de                    VARCHAR2(100),
+                                     dsc_modelo_para                  VARCHAR2(100),
+                                     ind_ativo_de                     CHAR(1) NOT NULL,
+                                     ind_ativo_para                   CHAR(1) NOT NULL,
+                                     ind_item_a_item_de               CHAR(1) NOT NULL,
+                                     ind_item_a_item_para             CHAR(1) NOT NULL,
+                                     ind_controla_validade_de         CHAR(1) NOT NULL,
+                                     ind_controla_validade_para       CHAR(1) NOT NULL,
+                                     ind_exige_uma_de                 CHAR(1) NOT NULL,
+                                     ind_exige_uma_para               CHAR(1) NOT NULL,
+                                     num_contagens_de                 NUMBER(2) NOT NULL,
+                                     num_contagens_para               NUMBER(2) NOT NULL,
+                                     ind_compara_estoque_de           CHAR(1) NOT NULL,
+                                     ind_compara_estoque_para         CHAR(1) NOT NULL,
+                                     ind_usuario_n_contagens_de       CHAR(1) NOT NULL,
+                                     ind_usuario_n_contagens_para     CHAR(1) NOT NULL,
+                                     ind_contar_tudo_de               CHAR(1) NOT NULL,
+                                     ind_contar_tudo_para             CHAR(1) NOT NULL,
+                                     ind_volumes_separadamente_de     CHAR(1) NOT NULL,
+                                     ind_volumes_separadamente_para   CHAR(1) NOT NULL,
+                                     ind_default_de                   CHAR(1) NOT NULL,
+                                     ind_default_para                 CHAR(1) NOT NULL
+)
+  LOGGING;
+
+ALTER TABLE modelo_inventario_log ADD CONSTRAINT log_modelo_inventario_pk PRIMARY KEY ( cod_log );
+
+ALTER TABLE modelo_inventario_log
+  ADD CONSTRAINT fk_log_modelo FOREIGN KEY ( cod_modelo_inventario )
+    REFERENCES modelo_inventario ( cod_modelo_inventario )
+      NOT DEFERRABLE;
+
+ALTER TABLE modelo_inventario_log
+  ADD CONSTRAINT fk_log_usuario FOREIGN KEY ( cod_usuario )
+    REFERENCES usuario ( cod_usuario )
+      NOT DEFERRABLE;
+
+CREATE SEQUENCE SQ_MODELO_INVENTARIO_LOG_01
+  INCREMENT BY 1
+  START WITH 1
+  MAXVALUE 999999999999999999999999999
+  MINVALUE 0
+  NOCYCLE
+  NOCACHE
+  NOORDER;

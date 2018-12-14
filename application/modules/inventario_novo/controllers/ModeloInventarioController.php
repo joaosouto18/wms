@@ -40,8 +40,7 @@
              * chama a função que busca os modelos de inventarios e converte os objetos encontrados em arrays
              * que serão passados pro GRID
              */
-            $modelos = $modeloRepo->getModelos();
-            //var_dump($modelos);
+            $modelos = $modeloRepo->getModelos('array', ['ativo' => 'S']);
 
             $grid = new ModeloInventarioGrid();
             $this->view->grid = $grid->init($modelos)->render();
@@ -56,11 +55,10 @@
         {
             try{
                 $id = $this->_getParam('id');
-                $modeloRepository = $this->em->getRepository('wms:InventarioNovo\ModeloInventario');
-                $modeloInventario = $modeloRepository->findOneBy(array('id'=>$id));
+                /** @var \Wms\Service\ModeloInventarioService $modeloService */
+                $modeloService = $this->getServiceLocator()->getService("ModeloInventario");
+                $modeloService->remover($id);
 
-                $this->getEntityManager()->remove($modeloInventario);
-                $this->getEntityManager()->flush();
                 $this->addFlashMessage('success', 'Modelo de Inventário excluído com sucesso' );
             } catch (\Exception $ex) {
                 $this->addFlashMessage('error', $ex->getMessage() );
@@ -93,9 +91,13 @@
             try {
                 if ($this->getRequest()->isPost() && $form->isValid($this->getRequest()->getPost())) {
                     $params = $this->getRequest()->getParams();
-                    $this->repository->save(new InventarioNovo\ModeloInventario(), $params);
+
+                    /** @var \Wms\Service\ModeloInventarioService $modeloService */
+                    $modeloService = $this->getServiceLocator()->getService("ModeloInventario");
+                    $modeloService->salvar($params);
+
                     $this->_helper->messenger('success', 'Modelo de Inventário inserido com sucesso.');
-                    return $this->redirect('index');
+                    $this->redirect('index');
                 }
             } catch (\Exception $e) {
                 $this->_helper->messenger('error', $e->getMessage());
@@ -140,41 +142,27 @@
 
                     $params = $this->getRequest()->getParams();
 
-                    //var_dump($this->repository);
-
-                    try {
-                        $this->repository->save($entity, $params);
-                        $this->_helper->messenger('success', 'Registro alterado com sucesso');
-                    }
-                    catch(Exception $e) {
-                        $this->_helper->messenger("error", $e->getMessage());
-                    }
-
-                    return $this->redirect('index');
+                    /** @var \Wms\Service\ModeloInventarioService $modeloService */
+                    $modeloService = $this->getServiceLocator()->getService("ModeloInventario");
+                    $modeloService->salvar($params);
+                    $this->addFlashMessage('success', 'Registro alterado com sucesso');
+                    $this->redirect('index');
 
                 }
                 else {
 
-                    $dados = array();
-
-                    $dados['descricao']            = $entity->getDescricao();
-                    $dados['ativo']                = $entity->getAtivo();
-                    $dados['dthCriacao']           = $entity->getDthCriacao();
-                    $dados['itemAItem']            = $entity->getItemAItem();
-                    $dados['controlaValidade']     = $entity->getControlaValidade();
-                    $dados['exigeUma']             = $entity->getExigeUMA();
-                    $dados['numContagens']         = $entity->getNumContagens();
-                    $dados['comparaEstoque']       = $entity->getComparaEstoque();
-                    $dados['usuarioNContagens']    = $entity->getUsuarioNContagens();
-                    $dados['contarTudo']           = $entity->getContarTudo();
-                    $dados['volumesSeparadamente'] = $entity->getVolumesSeparadamente();
-                    $dados['default']              = $entity->getDefault();
+                    $dados = $entity->toArray();
 
                     $form->populate($dados); // pass values to form
                 }
             } catch (\Exception $e) {
-                $this->_helper->messenger('error', $e->getMessage());
+                $this->addFlashMessage('error', $e->getMessage());
             }
             $this->view->form = $form;
+        }
+
+        public function getModelosInventariosAjaxAction()
+        {
+            $this->_helper->json($this->_em->getRepository('wms:InventarioNovo\ModeloInventario')->getModelos('stdClass', ['ativo' => 'S']));
         }
     }

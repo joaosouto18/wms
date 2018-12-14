@@ -8,6 +8,7 @@
 
 namespace Wms\Domain\Entity;
 
+use Wms\Domain\Configurator;
 use Wms\Domain\Entity\InventarioNovo\ModeloInventario;
 
 /**
@@ -75,11 +76,6 @@ class InventarioNovo
      * @Column(name="COD_INVENTARIO_ERP", type="integer", length=8 )
      */
     protected $codErp;
-
-    /**
-     * @var string
-     */
-    protected $dscStatus;
 
     /**
      * @var ModeloInventario
@@ -236,6 +232,14 @@ class InventarioNovo
     }
 
     /**
+     * @return string
+     */
+    public function getDscStatus()
+    {
+        return self::$tipoStatus[$this->getStatus()];
+    }
+
+    /**
      * @return mixed
      */
     public function getCodErp()
@@ -249,22 +253,6 @@ class InventarioNovo
     public function setCodErp($codErp)
     {
         $this->codErp = $codErp;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDscStatus()
-    {
-        return $this->dscStatus;
-    }
-
-    /**
-     * @param string $dscStatus
-     */
-    public function setDscStatus($dscStatus)
-    {
-        $this->dscStatus = self::$tipoStatus[$this->getStatus()];
     }
 
     /**
@@ -296,7 +284,7 @@ class InventarioNovo
      */
     public function setItemAItem($itemAItem)
     {
-        $this->itemAItem = ($itemAItem) ? 'S' : 'N';
+        $this->itemAItem = ((is_bool($itemAItem) && $itemAItem) || (is_string($itemAItem) && $itemAItem == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -320,7 +308,7 @@ class InventarioNovo
      */
     public function setControlaValidade($controlaValidade)
     {
-        $this->controlaValidade = ($controlaValidade) ? 'S' : 'N';
+        $this->controlaValidade = $controlaValidade;
     }
 
     /**
@@ -344,7 +332,7 @@ class InventarioNovo
      */
     public function setExigeUMA($exigeUMA)
     {
-        $this->exigeUMA = ($exigeUMA) ? 'S' : 'N';
+        $this->exigeUMA = ((is_bool($exigeUMA) && $exigeUMA) || (is_string($exigeUMA) && $exigeUMA == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -384,7 +372,8 @@ class InventarioNovo
      */
     public function setComparaEstoque($comparaEstoque)
     {
-        $this->comparaEstoque = ($comparaEstoque) ? 'S' : 'N';
+        $this->comparaEstoque = ((is_bool($comparaEstoque) && $comparaEstoque) ||
+                                 (is_string($comparaEstoque) && $comparaEstoque == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -408,7 +397,8 @@ class InventarioNovo
      */
     public function setUsuarioNContagens($usuarioNContagens)
     {
-        $this->usuarioNContagens = ($usuarioNContagens) ? 'S' : 'N';
+        $this->usuarioNContagens = ((is_bool($usuarioNContagens) && $usuarioNContagens) ||
+                                    (is_string($usuarioNContagens) && $usuarioNContagens == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -432,7 +422,8 @@ class InventarioNovo
      */
     public function setContarTudo($contarTudo)
     {
-        $this->contarTudo = ($contarTudo) ? 'S' : 'N';
+        $this->contarTudo = ((is_bool($contarTudo) && $contarTudo) ||
+                             (is_string($contarTudo) && $contarTudo == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -456,7 +447,8 @@ class InventarioNovo
      */
     public function setVolumesSeparadamente($volumesSeparadamente)
     {
-        $this->volumesSeparadamente = ($volumesSeparadamente) ? 'S' : 'N';
+        $this->volumesSeparadamente = ((is_bool($volumesSeparadamente) && $volumesSeparadamente) ||
+                                       (is_string($volumesSeparadamente) && $volumesSeparadamente == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -470,5 +462,10 @@ class InventarioNovo
     private function convertBoolean($param)
     {
         return ($param === 'S');
+    }
+
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
     }
 }

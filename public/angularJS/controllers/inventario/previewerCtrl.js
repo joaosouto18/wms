@@ -2,15 +2,13 @@ angular.module("wms").controller("previewerCtrl", function ($scope, $http, $wind
 
     $scope.modelos = [];
 
-
-
     let labelsCriterio = {
         endereco: "Endereço",
         produto: "Produto",
     };
 
     let requestModelos = function () {
-        $http.get(URL_MODULO + '/index/get-modelos-inventarios-ajax').then(function (response) {
+        $http.get(URL_MODULO + '/modelo-inventario/get-modelos-inventarios-ajax').then(function (response) {
             $scope.modelos = response.data;
         }).then(function () {
             angular.forEach($scope.modelos, function (obj) {

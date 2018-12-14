@@ -14,8 +14,7 @@ class ModeloInventarioForm extends Form
         //form's attr
         $this->setAttribs(array('id' => 'modelo-inventario-form', 'class' => 'saveForm'));
 
-        $form = new SubForm;
-        $form->addElement('text', 'descricao', array(
+        $this->addElement('text', 'descricao', array(
             'label' => 'Descrição',
             'size' => 50,
         ))->addElement('checkbox', 'default', array(
@@ -27,10 +26,11 @@ class ModeloInventarioForm extends Form
         ))->addElement('checkbox', 'itemAItem', array(
             'label' => 'Controla item a item',
             'checkedValue' => 'S'
-        ))->addElement('checkbox', 'controlaValidade', array(
+        ))->addElement('select', 'controlaValidade', array(
             'label' => 'Controla validade',
-            'checkedValue' => 'S'
-        ))->addElement('checkbox', 'exigeUma', array(
+            'mostrarSelecione' => false,
+            'multiOptions' => InventarioNovo\ModeloInventario::$statusValidade,
+        ))->addElement('checkbox', 'exigeUMA', array(
             'label' => 'Exige U.M.A.',
             'checkedValue' => 'S'
         ))->addElement('checkbox', 'comparaEstoque', array(
@@ -48,22 +48,19 @@ class ModeloInventarioForm extends Form
         ))->addElement('text', 'numContagens', array(
             'label' => 'Número de contagens',
             'size' => 1,
-        ));
-
-        $form->addDisplayGroup(array(
+        ))->addDisplayGroup(array(
             'default',
             'descricao',
             'ativo',
             'itemAItem',
             'controlaValidade',
-            'exigeUma',
+            'exigeUMA',
             'comparaEstoque',
             'usuarioNContagens',
             'contarTudo',
             'volumesSeparadamente',
             'numContagens',
            ), 'identificacao');
-        $this->addSubFormTab("Identificação", $form, 'identificacao');
     }
 
 

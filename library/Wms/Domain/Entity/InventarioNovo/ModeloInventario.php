@@ -8,6 +8,8 @@
 
 namespace Wms\Domain\Entity\InventarioNovo;
 
+use Wms\Domain\Configurator;
+
 /**
  * @Table(name="MODELO_INVENTARIO")
  * @Entity(repositoryClass="Wms\Domain\Entity\InventarioNovo\ModeloInventarioRepository")
@@ -40,67 +42,74 @@ class ModeloInventario
     protected $descricao;
 
     /**
+     * @var Usuario
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario")
+     * @JoinColumn(name="COD_USUARIO", referencedColumnName="COD_USUARIO")
+     */
+    protected $usuario;
+
+    /**
      * @var string $ativo
      * @Column(name="IND_ATIVO", type="string", length=1, nullable=false)
      */
     protected $ativo;
 
     /**
-     * @var \DateTime $ativo
+     * @var \DateTime $dthCriacao
      * @Column(name="DTH_CRIACAO", type="datetime", nullable=false)
      */
     protected $dthCriacao;
 
     /**
-     * @var string $ativo
+     * @var string $itemAItem
      * @Column(name="IND_ITEM_A_ITEM", type="string", length=1, nullable=false)
      */
     protected $itemAItem;
 
     /**
-     * @var string $ativo
+     * @var string $controlaValidade
      * @Column(name="IND_CONTROLA_VALIDADE", type="string", length=1, nullable=false)
      */
     protected $controlaValidade;
 
     /**
-     * @var string $ativo
+     * @var string $exigeUMA
      * @Column(name="IND_EXIGE_UMA", type="string", length=1, nullable=false)
      */
     protected $exigeUMA;
 
     /**
-     * @var integer $ativo
+     * @var integer $numContagens
      * @Column(name="NUM_CONTAGENS", type="integer", length=2, nullable=false)
      */
     protected $numContagens;
 
     /**
-     * @var string $ativo
+     * @var string $comparaEstoque
      * @Column(name="IND_COMPARA_ESTOQUE", type="string", length=1, nullable=false)
      */
     protected $comparaEstoque;
 
     /**
-     * @var string $ativo
+     * @var string $usuarioNContagens
      * @Column(name="IND_USUARIO_N_CONTAGENS", type="string", length=1, nullable=false)
      */
     protected $usuarioNContagens;
 
     /**
-     * @var string $ativo
+     * @var string $contarTudo
      * @Column(name="IND_CONTAR_TUDO", type="string", length=1, nullable=false)
      */
     protected $contarTudo;
 
     /**
-     * @var string $ativo
+     * @var string $volumesSeparadamente
      * @Column(name="IND_VOLUMES_SEPARADAMENTE", type="string", length=1, nullable=false)
      */
     protected $volumesSeparadamente;
 
     /**
-     * @var string $ativo
+     * @var string $default
      * @Column(name="IND_DEFAULT", type="string", length=1, nullable=false)
      */
     protected $default;
@@ -140,6 +149,22 @@ class ModeloInventario
     public function setDescricao($descricao)
     {
         $this->descricao = $descricao;
+    }
+
+    /**
+     * @return Usuario
+     */
+    public function getUsuario()
+    {
+        return $this->usuario;
+    }
+
+    /**
+     * @param Usuario $usuario
+     */
+    public function setUsuario($usuario)
+    {
+        $this->usuario = $usuario;
     }
 
     /**
@@ -193,7 +218,7 @@ class ModeloInventario
      */
     public function setItemAItem($itemAItem)
     {
-        $this->itemAItem = ($itemAItem) ? 'S' : 'N';
+        $this->itemAItem = ((is_bool($itemAItem) && $itemAItem) || (is_string($itemAItem) && $itemAItem == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -217,7 +242,7 @@ class ModeloInventario
      */
     public function setControlaValidade($controlaValidade)
     {
-        $this->controlaValidade = ($controlaValidade) ? 'S' : 'N';
+        $this->controlaValidade = $controlaValidade;
     }
 
     /**
@@ -241,7 +266,7 @@ class ModeloInventario
      */
     public function setExigeUMA($exigeUMA)
     {
-        $this->exigeUMA = ($exigeUMA) ? 'S' : 'N';
+        $this->exigeUMA = ((is_bool($exigeUMA) && $exigeUMA) || (is_string($exigeUMA) && $exigeUMA == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -281,7 +306,8 @@ class ModeloInventario
      */
     public function setComparaEstoque($comparaEstoque)
     {
-        $this->comparaEstoque = ($comparaEstoque) ? 'S' : 'N';
+        $this->comparaEstoque = ((is_bool($comparaEstoque) && $comparaEstoque) ||
+                                 (is_string($comparaEstoque) && $comparaEstoque == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -305,7 +331,8 @@ class ModeloInventario
      */
     public function setUsuarioNContagens($usuarioNContagens)
     {
-        $this->usuarioNContagens = ($usuarioNContagens) ? 'S' : 'N';
+        $this->usuarioNContagens = ((is_bool($usuarioNContagens) && $usuarioNContagens) ||
+                                    (is_string($usuarioNContagens) && $usuarioNContagens == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -329,7 +356,8 @@ class ModeloInventario
      */
     public function setContarTudo($contarTudo)
     {
-        $this->contarTudo = ($contarTudo) ? 'S' : 'N';
+        $this->contarTudo = ((is_bool($contarTudo) && $contarTudo) ||
+                             (is_string($contarTudo) && $contarTudo == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -353,7 +381,8 @@ class ModeloInventario
      */
     public function setVolumesSeparadamente($volumesSeparadamente)
     {
-        $this->volumesSeparadamente = ($volumesSeparadamente) ? 'S' : 'N';
+        $this->volumesSeparadamente = ((is_bool($volumesSeparadamente) && $volumesSeparadamente) ||
+                                       (is_string($volumesSeparadamente) && $volumesSeparadamente == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -377,7 +406,7 @@ class ModeloInventario
      */
     public function setDefault($default)
     {
-        $this->default = ($default) ? 'S' : 'N';
+        $this->default = ((is_bool($default) && $default) || (is_string($default) && $default == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -391,5 +420,10 @@ class ModeloInventario
     private function convertBoolean($param)
     {
         return ($param === 'S');
+    }
+
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
     }
 }

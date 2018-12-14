@@ -24,10 +24,6 @@ class ModeloInventario extends Grid
                     'index' => 'descricao',
                 ))
                 ->addColumn(array(
-                    'label'  => 'Ativo',
-                    'index'  => 'ativo',
-                ))
-                ->addColumn(array(
                     'label' => 'Data de criação',
                     'index' => 'dthCriacao',
                     'render' => 'Data',
