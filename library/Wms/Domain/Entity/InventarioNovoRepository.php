@@ -274,6 +274,7 @@ class InventarioNovoRepository extends EntityRepository
             ->innerJoin('e.depositoEndereco', 'de')
             ->innerJoin('e.produto', 'p')
             ->innerJoin('p.classe', 'cl')
+            ->innerJoin('p.fabricante', 'f')
             ->innerJoin('de.caracteristica', 'c')
         ;
 

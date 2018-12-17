@@ -30,11 +30,12 @@
     }
 </style>
 <div style="display: none" id="divBtnBack">
-    <button class="btn btnAlerta" id="btnBackAction" >Voltar</button>
+    <button class="btn btnAlerta" id="btn-back-action">Voltar</button>
 </div>
 <div id="headers">
     <h4 id="lbl-inventario"></h4>
     <h4 id="lbl-contagem"></h4>
+    <h4 id="lbl-endereco"></h4>
 </div>
 <div id="loader" style="margin-top: 30px">
     <span style="font-size: 18px">Carregando...</span>
@@ -56,8 +57,8 @@
     <div class="input-area">
         <div class="field">
             <form>
-                <label for="codigoBarras" class="field required">Busca por Endereço</label>
-                <input type="text" name="codigoBarras" id="codigoBarras" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
+                <label for="cod-barras-end" class="field required"><h4>Buscar Endereço</h4></label>
+                <input type="text" name="cod-barras-end" id="cod-barras-end" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
             </form>
         </div>
         <button id="btn-consultar-endereco" class="btn btn-spacing">Buscar</button>
@@ -65,7 +66,16 @@
     <div class="list-area" id="list-enderecos"></div>
 </div>
 <div id="bipagem-produto" style="display: none">
-
+    <div class="input-area">
+        <div class="field">
+            <form>
+                <label for="cod-barras-prod" class="field required"><h4>Buscar Produto</h4></label>
+                <input type="text" name="cod-barras-prod" id="cod-barras-prod" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
+            </form>
+        </div>
+        <button id="btn-consultar-produto" class="btn btn-spacing">Buscar</button>
+    </div>
+    <div class="list-area" id="list-produtos"></div>
 </div>
 
 <div id="conferencia" style="display: none">
@@ -79,14 +89,58 @@
         var contagens = [];
         var contSelecioando = {};
         var enderecos = [];
+        var idEndSelecionado = null;
+        var dscEndSelecionado = null;
+        var produtos = [];
+        var prodBipado = {};
         var showing = 0;
         var views = ["loader","list-inventarios","contagens-by-inventario","bipagem-endereco","bipagem-produto","conferencia"];
         var headers = ["lbl-inventario", "lbl-contagem", "lbl-endereco", "lbl-produto"];
+        var endConfig = {};
 
         $(document).ready(function () {
             changeViewer("loader");
             getInventarios();
+            $.ajax({ url: "/configuracao/get-mask-endereco-ajax",
+                success: function (result) {
+                    endConfig.rua = result.enderecoRua.replace(/[9]/g,"0");
+                    endConfig.predio = result.enderecoPredio.replace(/[9]/g,"0");
+                    endConfig.nivel = result.enderecoNivel.replace(/[9]/g,"0");
+                    endConfig.apto = result.enderecoApartamento.replace(/[9]/g,"0");
+                    endConfig.mask = result.mask.replace(/[9]/g,"0");
+                }
+            })
         });
+
+        var formatEndereco = function (endereco) {
+            var cleared = endereco.slice(0, endereco.length - 1);
+            var rua = endConfig.rua.toString();
+            var predio = endConfig.predio.toString();
+            var nivel = endConfig.nivel.toString();
+            var apto = endConfig.apto.toString();
+            if (cleared.indexOf(".") > 0) {
+                var endArr = cleared.split(".");
+
+                if (endArr.length < 4) return false;
+
+                rua = (rua + endArr[0].toString()).slice(-endConfig.rua.length);
+                predio = (predio + endArr[1].toString()).slice(-endConfig.predio.length);
+                nivel = (nivel + endArr[2].toString()).slice(-endConfig.nivel.length);
+                apto = (apto + endArr[3].toString()).slice(-endConfig.apto.length);
+            } else {
+                var maskLength = endConfig.mask.replace(/\D/g,'').length;
+
+                if (cleared.length < maskLength) return false;
+
+                var endTrimned = cleared.slice(cleared.length - maskLength , cleared.length);
+                rua = endTrimned.slice(0 , rua.length);
+                predio = endTrimned.slice(rua.length , rua.length + predio.length);
+                nivel = endTrimned.slice(rua.length + predio.length , rua.length + predio.length + nivel.length);
+                apto = endTrimned.slice(rua.length + predio.length + nivel.length , rua.length + predio.length + nivel.length + apto.length);
+            }
+
+            return [rua,predio,nivel,apto].join(".");
+        };
 
         var changeViewer = function (showTo) {
             $.each(views, function (k,v) {
@@ -114,7 +168,7 @@
             $("#"+showTo).show();
         };
 
-        $("#btnBackAction").click(function () {
+        $("#btn-back-action").click(function () {
             changeViewer(views[(showing - 1)])
         });
 
@@ -181,7 +235,8 @@
                 var classe = "gradientBtn";
 
                 if (v.divergencia === 'S'){
-                    dsc += " de Divergência"
+                    dsc += " de Divergência";
+                    classe = "gradientBtnDanger"
                 }
                 contagens[k].dsc = dsc;
                 var newRow = $('<div class="row"><button class="btn '+ classe +' selectCont" data-key="'+ k +'" title="'+ v.contagem +'">'+ dsc +'</button></div>');
@@ -219,11 +274,90 @@
         };
 
         var prepareListEnderecos = function () {
-            $("#list-enderecos").empty();
-            $.each(enderecos.formated, function (k, v) {
-                $("#list-enderecos").append('<div class="list-item">'+v+'</div>')
-            });
-            changeViewer("bipagem-endereco");
+            var list = $("#list-enderecos");
+            list.empty();
+            if (!$.isEmptyObject(enderecos)) {
+                for (var i in enderecos){
+                    list.append('<div class="list-item">' + i + '</div>')
+                }
+                changeViewer("bipagem-endereco");
+            } else {
+                alert("A contagem " + contSelecioando.contagem + " já foi finalizada!");
+                getContagens();
+            }
+        };
+
+        $("#cod-barras-end").keypress(function( event ) {
+            if ( event.which === 13  || event.keyCode === 13 ) {
+                processEndereco($(this), event);
+            }
+        });
+
+        $("#btn-consultar-endereco").click(function( event ) {
+            processEndereco($("#cod-barras-end"),event);
+        });
+
+        var processEndereco = function (input, event) {
+            var endFormated = formatEndereco(input.val());
+
+            if (!endFormated) {
+                alert("O código de barras não corresponde à um endereço");
+            } else if ((enderecos[endFormated] !== undefined)) {
+                idEndSelecionado = enderecos[endFormated];
+                dscEndSelecionado = endFormated;
+                openEndereco()
+            } else {
+                alert("Este endereço "+input.val()+" não está no inventário");
+                input.val("");
+                input.focus();
+            }
+            if (event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
+        };
+
+        var openEndereco = function () {
+            $.ajax({
+                url: "/mobile/inventario-novo/get-info-endereco/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia + "/end/" + idEndSelecionado,
+                success: function (result) {
+                    produtos = result;
+                },
+                complete: function () {
+                    prepareListProdutos();
+                }
+            })
+        };
+
+        var prepareListProdutos = function () {
+            var list = $("#list-produtos");
+            list.empty();
+            if (produtos.length) {
+                $.each(produtos , function (k,v) {
+                    list.append('<div class="list-item">' + v.codProduto + " - " + v.grade + '</div>')
+                });
+            }
+            changeViewer("bipagem-produto");
+        };
+
+        $("#cod-barras-prod").keypress(function( event ) {
+            if ( event.which === 13  || event.keyCode === 13 ) {
+                processProduto($(this), event);
+            }
+        });
+
+        $("#btn-consultar-produto").click(function( event ) {
+            processProduto($("#cod-barras-prod"),event);
+        });
+
+        var processProduto = function (input, event) {
+            console.log("bipou o código de barras " + input.val());
+            if (event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
         }
     })
 </script>

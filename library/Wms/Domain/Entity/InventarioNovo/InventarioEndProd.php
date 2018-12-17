@@ -8,6 +8,8 @@
 
 namespace Wms\Domain\Entity\InventarioNovo;
 
+use Wms\Domain\Entity\Produto;
+
 /**
  * @Table(name="INVENTARIO_END_PROD")
  * @Entity(repositoryClass="Wms\Domain\Entity\InventarioNovo\InventarioEndProdRepository")

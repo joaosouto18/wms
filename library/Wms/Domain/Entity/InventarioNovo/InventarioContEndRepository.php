@@ -48,7 +48,7 @@ class InventarioContEndRepository extends EntityRepository
                     WHERE IEN2.COD_INVENTARIO = $idInventario
                     GROUP BY ICE2.COD_INVENTARIO_ENDERECO
                   ) LC ON LC.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO AND LC.ULTIMA = ICE.NUM_SEQUENCIA
-                WHERE IEN.COD_INVENTARIO = $idInventario";
+                WHERE IEN.COD_INVENTARIO = $idInventario AND IEN.IND_FINALIZADO = 'N'";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }

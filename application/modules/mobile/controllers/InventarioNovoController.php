@@ -29,4 +29,16 @@ class Mobile_InventarioNovoController extends Action
     {
         $this->_helper->json($this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->getArrEnderecos($this->_getParam("id"), $this->_getParam("sq")));
     }
+
+    public function getInfoEnderecoAction()
+    {
+        $this->_helper->json($this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->getInfoEndereco(
+            $this->_getParam("id"),
+            $this->_getParam("sq"),
+            $this->_getParam("end")
+            )
+        );
+    }
+
+
 }
