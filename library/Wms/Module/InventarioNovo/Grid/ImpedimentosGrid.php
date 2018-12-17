@@ -38,6 +38,7 @@ class ImpedimentosGrid extends Grid
                 'moduleName' => 'inventario_novo',
                 'controllerName' => 'index',
                 'actionName' => 'remover-endereco',
+                'cssClass' => 'del',
                 'pkIndex' => 'idEndereco',
                 'condition' => function ($row) {
                     return $row['criterio'] == "E";
@@ -48,6 +49,7 @@ class ImpedimentosGrid extends Grid
                 'moduleName' => 'inventario_novo',
                 'controllerName' => 'index',
                 'actionName' => 'remover-produto',
+                'cssClass' => 'del',
                 'pkIndex' => ['produto', 'grade'],
                 'condition' => function ($row) {
                     return $row['criterio'] == "P";

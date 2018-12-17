@@ -149,6 +149,46 @@ class Inventario_Novo_IndexController  extends Action
         }
     }
 
+    public function removerEnderecoAction()
+    {
+        $id          = $this->getRequest()->getParam('id');
+        $id_endereco = $this->getRequest()->getParam('id_endereco');
+
+
+
+
+        echo "id: $id - idendereço: $id_endereco";
+
+        $this->redirect();
+
+
+
+        /*
+        try {
+            if (empty($id)) {
+                throw new Exception("ID do Inventário não foi especificado");
+            }
+
+            /** @var \Wms\Service\InventarioService $invServc */
+           /*
+            $invServc = $this->getServiceLocator()->getService("Inventario");
+            $result = $invServc->liberarInventario($id);
+
+            if (is_array($result)) {
+                $grid = new \Wms\Module\InventarioNovo\Grid\ImpedimentosGrid();
+                $this->view->grid = $grid->init($result);
+                $this->addFlashMessage("warning", "Estes elementos impedem de liberar o inventário $id");
+                $this->renderScript('index\impedimentos.phtml');
+            } else {
+                $this->addFlashMessage("success", "Inventário $id liberado com sucesso");
+                $this->redirect();
+            }
+        } catch (Exception $e) {
+            $this->addFlashMessage("error", $e->getMessage());
+        }
+        */
+    }
+
     public function atualizarAction()
     {
         $id = $this->_getParam('id');
