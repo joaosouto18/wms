@@ -198,11 +198,12 @@ class ModeloInventarioLog
     }
 
     /**
-     * @return \DateTime
+     * @param $toString boolean Converter para String a data
+     * @return \DateTime|string
      */
-    public function getDthRegistro()
+    public function getDthRegistro($toString = false)
     {
-        return $this->dthRegistro;
+        return ($toString && !empty($this->dthRegistro)) ? $this->dthRegistro->format('d/m/Y H:i:s') : $this->dthRegistro ;
     }
 
     private function setDthRegistro()

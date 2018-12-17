@@ -48,7 +48,7 @@ class Inventario_Novo_IndexController  extends Action
             $response->statusArr = \Wms\Domain\Entity\InventarioNovo::$tipoStatus;
             unset($data['getStatusArr']);
         }
-        $response->inventarios = $this->_em->getRepository('wms:InventarioNovo')->getInventarios($data);
+        $response->inventarios = $this->_em->getRepository('wms:InventarioNovo')->listInventarios($data);
         $this->_helper->json($response);
     }
 
@@ -149,6 +149,7 @@ class Inventario_Novo_IndexController  extends Action
         }
     }
 
+<<<<<<< HEAD
     public function removerEnderecoAction()
     {
         $id          = $this->getRequest()->getParam('id');
@@ -403,4 +404,6 @@ class Inventario_Novo_IndexController  extends Action
 
     }
 
+=======
+>>>>>>> 67df3cf3c80562f7348935b6069b9d8d404e9e28
 }

@@ -197,7 +197,7 @@ class ModeloInventario
      */
     public function getDthCriacao($toString = false)
     {
-        return (!$toString) ? $this->dthCriacao : $this->dthCriacao->format('d/m/Y H:i:s') ;
+        return ($toString && !empty($this->dthCriacao)) ? $this->dthCriacao->format('d/m/Y H:i:s') : $this->dthCriacao ;
     }
 
     private function setDthCriacao()

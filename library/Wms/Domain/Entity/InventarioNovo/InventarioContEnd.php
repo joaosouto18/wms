@@ -106,7 +106,7 @@ class InventarioContEnd
      */
     public function setContagemDivergencia($contagemDivergencia)
     {
-        $this->contagemDivergencia = ($contagemDivergencia) ? 'S' : 'N';
+        $this->contagemDivergencia = ((is_bool($contagemDivergencia) && $contagemDivergencia) || (is_string($contagemDivergencia) && $contagemDivergencia == 'S') ) ? 'S' : 'N';
     }
 
     /**

@@ -170,7 +170,7 @@ class InventarioNovo
      */
     public function getDthCriacao($toString = false)
     {
-        return (!$toString) ? $this->dthCriacao : $this->dthCriacao->format('d/m/Y H:i:s') ;
+        return ($toString && !empty($this->dthCriacao)) ? $this->dthCriacao->format('d/m/Y H:i:s') : $this->dthCriacao ;
     }
 
     /**
@@ -187,7 +187,7 @@ class InventarioNovo
      */
     public function getDthInicio($toString = false)
     {
-        return (!$toString) ? $this->dthInicio : $this->dthInicio->format('d/m/Y H:i:s') ;
+        return ($toString && !empty($this->dthInicio)) ? $this->dthInicio->format('d/m/Y H:i:s') : $this->dthInicio ;
     }
 
     /**
@@ -204,7 +204,7 @@ class InventarioNovo
      */
     public function getDthFinalizacao($toString = false)
     {
-        return (!$toString) ? $this->dthFinalizacao : $this->dthFinalizacao->format('d/m/Y H:i:s') ;
+        return ($toString && !empty($this->dthFinalizacao)) ? $this->dthFinalizacao->format('d/m/Y H:i:s') : $this->dthFinalizacao ;
     }
 
     /**
@@ -316,7 +316,7 @@ class InventarioNovo
      */
     public function controlaValidade()
     {
-        return self::$statusValidade[$this->controlaValidade];
+        return ModeloInventario::$statusValidade[$this->controlaValidade];
     }
 
     /**

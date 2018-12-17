@@ -15,7 +15,51 @@ use Wms\Domain\EntityRepository;
 class InventarioNovoRepository extends EntityRepository
 {
 
-    public function getInventarios($args)
+    public function getInventarios($returnType = 'entity', $findBy = [])
+    {
+        $return = [];
+        /** @var InventarioNovo[] $inventarios */
+        if (!empty($findBy)) {
+            $inventarios = $this->findBy($findBy);
+        }
+        else {
+            $inventarios = $this->findAll();
+        }
+        if ($returnType === 'stdClass') {
+            foreach ($inventarios as $inventario) {
+                $obj = new \stdClass;
+                $obj->id                    = $inventario->getId();
+                $obj->dscInventario         = $inventario->getDescricao();
+                $obj->dthCriacao            = $inventario->getDthCriacao(true);
+                $obj->dthLiberacao          = $inventario->getDthInicio(true);
+                $obj->dthFinalizacao        = $inventario->getDthFinalizacao(true);
+                $obj->codErp                = $inventario->getCodErp(true);
+                $obj->status                = $inventario->getStatus();
+                $obj->dscStatus             = $inventario->getDscStatus();
+                $obj->modeloInventario      = $inventario->getModeloInventario()->toArray();
+                $obj->itemAItem             = $inventario->confereItemAItem();
+                $obj->controlaValidade      = $inventario->getControlaValidade();
+                $obj->controlaValidadeLbl   = $inventario->controlaValidade();
+                $obj->exigeUMA              = $inventario->exigeUma();
+                $obj->numContagens          = $inventario->getNumContagens();
+                $obj->comparaEstoque        = $inventario->comparaEstoque();
+                $obj->usuarioNContagens     = $inventario->permiteUsuarioNContagens();
+                $obj->contarTudo            = $inventario->forcarContarTudo();
+                $obj->volumesSeparadamente  = $inventario->confereVolumesSeparadamente();
+                $return[] = $obj;
+            }
+        } else if ($returnType === 'entity') {
+            $return = $inventarios;
+        } else if ($returnType === 'array') {
+            foreach ($inventarios as $inventario) {
+                $return[] = $inventario->toArray();
+            }
+        }
+
+        return $return;
+    }
+
+    public function listInventarios($args)
     {
         $arrWhere = [];
         $where = "";
@@ -230,6 +274,7 @@ class InventarioNovoRepository extends EntityRepository
             ->innerJoin('e.depositoEndereco', 'de')
             ->innerJoin('e.produto', 'p')
             ->innerJoin('p.classe', 'cl')
+            ->innerJoin('p.fabricante', 'f')
             ->innerJoin('de.caracteristica', 'c')
         ;
 
