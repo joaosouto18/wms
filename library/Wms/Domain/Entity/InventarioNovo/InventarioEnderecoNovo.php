@@ -10,6 +10,7 @@ namespace Wms\Domain\Entity\InventarioNovo;
 
 use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\InventarioNovo;
+use Wms\Domain\Configurator;
 
 /**
  * @Table(name="INVENTARIO_ENDERECO_NOVO")
@@ -48,6 +49,11 @@ class InventarioEnderecoNovo
      * @Column(name="IND_FINALIZADO", type="string" )
      */
     protected $finalizado;
+
+    /**
+     * @Column(name="IND_ATIVO", type="string" )
+     */
+    protected $ativo;
 
 
 
@@ -131,5 +137,25 @@ class InventarioEnderecoNovo
         $this->finalizado = $finalizado;
     }
 
+    /**
+     * @return string
+     */
+    public function getAtivo()
+    {
+        return $this->ativo;
+    }
+
+    /**
+     * @param boolean $ativo
+     */
+    public function setAtivo($ativo)
+    {
+        $this->ativo = ((is_bool($ativo) && $ativo) || (is_string($ativo) && $ativo == 'S') ) ? 'S' : 'N';
+    }
+
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
+    }
 
 }

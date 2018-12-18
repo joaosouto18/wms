@@ -28,7 +28,7 @@ class ModeloInventarioRepository extends EntityRepository
             foreach ($modelos as $modelo) {
                 $obj = new \stdClass;
                 $obj->id                    = $modelo->getId();
-                $obj->dscInventario             = $modelo->getDescricao();
+                $obj->dscModelo             = $modelo->getDescricao();
                 $obj->dthCriacao            = $modelo->getDthCriacao(true);
                 $obj->ativo                 = $modelo->isAtivo();
                 $obj->isDefault             = $modelo->isDefault();

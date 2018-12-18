@@ -149,45 +149,65 @@ class Inventario_Novo_IndexController  extends Action
         }
     }
 
-<<<<<<< HEAD
     public function removerEnderecoAction()
     {
-        $id          = $this->getRequest()->getParam('id');
-        $id_endereco = $this->getRequest()->getParam('id_endereco');
+        $idInventario = $this->getRequest()->getParam('id');
+        $idEndereco   = $this->getRequest()->getParam('idEndereco');
 
-
-
-
-        echo "id: $id - idendereço: $id_endereco";
-
-        $this->redirect();
-
-
-
-        /*
         try {
-            if (empty($id)) {
-                throw new Exception("ID do Inventário não foi especificado");
+            if (empty($idInventario))  {
+                throw new Exception("ID do Inventário não foi especificado.");
+            }
+
+            if (empty($idEndereco))  {
+                throw new Exception("Endereço não foi especificado.");
             }
 
             /** @var \Wms\Service\InventarioService $invServc */
-           /*
             $invServc = $this->getServiceLocator()->getService("Inventario");
-            $result = $invServc->liberarInventario($id);
+            $invServc->removerItem($idInventario, $idEndereco, 'E', null, null);
 
-            if (is_array($result)) {
-                $grid = new \Wms\Module\InventarioNovo\Grid\ImpedimentosGrid();
-                $this->view->grid = $grid->init($result);
-                $this->addFlashMessage("warning", "Estes elementos impedem de liberar o inventário $id");
-                $this->renderScript('index\impedimentos.phtml');
-            } else {
-                $this->addFlashMessage("success", "Inventário $id liberado com sucesso");
-                $this->redirect();
-            }
+            $this->addFlashMessage("success", "Endereço removido com sucesso.");
+
         } catch (Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
         }
-        */
+        //$this->renderScript('index\impedimentos.phtml');
+        $this->_redirect('/inventario_novo/index/liberar/id/'.$idInventario.'');
+    }
+
+    public function removerProdutoAction()
+    {
+        $idInventario = $this->getRequest()->getParam('id');
+        $idProduto    = $this->getRequest()->getParam('idProduto');
+        $grade        = $this->getRequest()->getParam('grade');
+        $lote         = $this->getRequest()->getParam('lote');
+
+        try {
+            if (empty($idInventario))  {
+                throw new Exception("ID do Inventário não foi especificado.");
+            }
+            if (empty($idProduto))  {
+                throw new Exception("Produto não foi especificado.");
+            }
+            if (empty($grade))  {
+                throw new Exception("Grade não foi especificada.");
+            }
+            if (empty($lote))  {
+                throw new Exception("Lote não foi especificado.");
+            }
+
+            /** @var \Wms\Service\InventarioService $invServc */
+            $invServc = $this->getServiceLocator()->getService("Inventario");
+            $invServc->removerItem($idInventario, $idProduto, 'P', $grade, $lote);
+
+            $this->addFlashMessage("success", "Produto removido com sucesso.");
+
+        } catch (Exception $e) {
+            $this->addFlashMessage("error", $e->getMessage());
+        }
+        //$this->renderScript('index\impedimentos.phtml');
+        $this->_redirect('/inventario_novo/index/liberar/id/'.$idInventario.'');
     }
 
     public function atualizarAction()
@@ -404,6 +424,5 @@ class Inventario_Novo_IndexController  extends Action
 
     }
 
-=======
->>>>>>> 67df3cf3c80562f7348935b6069b9d8d404e9e28
+
 }

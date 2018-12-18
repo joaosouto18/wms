@@ -109,6 +109,42 @@ class InventarioService extends AbstractService
         }
     }
 
+    public function removerItem($id_inventario, $id_item, $tipo, $grade, $lote)
+    {
+        $this->em->beginTransaction();
+        try {
+            // remover endereço
+            if($tipo == 'E') {
+                /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo */
+                $inventarioEnderecoRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
+                $endereco = $inventarioEnderecoRepo->findOneBy(['inventario' => $id_inventario, 'depositoEndereco' => $id_item]);
+
+                //exclusão lógica
+                $endereco->setAtivo(false);
+
+                $this->em->persist($endereco);
+                $this->em->flush();
+                $this->em->commit();
+            }
+            //remover produto
+            elseif($tipo == 'P'){
+                /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEndProdRepository $inventarioEndProdRepo */
+                $inventarioEndProdRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEndProd');
+                $produto = $inventarioEndProdRepo->findOneBy(['COD_INVENTARIO' => $id_inventario, 'COD_PRODUTO' => $id_item, 'GRADE' => $grade, 'LOTE' => $lote]);
+
+                //exclusão lógica
+                $produto->setAtivo(false);
+
+                $this->em->persist($produto);
+                $this->em->flush();
+                $this->em->commit();
+            }
+        }catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
+    }
+
     /**
      * @param InventarioNovo\InventarioEnderecoNovo $inventarioEnderecoEn
      * @param bool $divergencia
