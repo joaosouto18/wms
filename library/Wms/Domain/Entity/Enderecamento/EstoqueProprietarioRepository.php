@@ -141,12 +141,14 @@ class EstoqueProprietarioRepository extends EntityRepository
 
     public function getSaldoProp($codProduto, $grade, $codPessoa){
         $sql = "SELECT * FROM ESTOQUE_PROPRIETARIO 
-                WHERE COD_PRODUTO = '$codProduto' AND DSC_GRADE = '$grade' AND COD_PESSOA = $codPessoa AND ROWNUM = 1
+                WHERE COD_PRODUTO = $codProduto 
+                  AND DSC_GRADE = '$grade' 
+                  AND COD_PESSOA = $codPessoa 
                 ORDER BY COD_ESTOQUE_PROPRIETARIO DESC";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
 
-        if (count($result) > 0) {
-            return $result['SALDO_FINAL'];
+        if (count($result) >0) {
+            return reset($result)['SALDO_FINAL'];
         } else {
             return 0;
         }
