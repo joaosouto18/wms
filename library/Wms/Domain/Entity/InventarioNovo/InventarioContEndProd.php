@@ -54,11 +54,13 @@ class InventarioContEndProd
     protected $grade;
 
     /**
+     * @var string
      * @Column(name="DSC_LOTE", type="string" )
      */
     protected $lote;
 
     /**
+     * @var float
      * @Column(name="QTD_CONTADA", type="decimal" )
      */
     protected $qtdContada;
@@ -71,11 +73,13 @@ class InventarioContEndProd
     protected $produtoEmbalagem;
 
     /**
+     * @var float
      * @Column(name="QTD_EMBALAGEM", type="decimal" )
      */
     protected $qtdEmbalagem;
 
     /**
+     * @var string
      * @Column(name="COD_BARRAS", type="string" )
      */
     protected $codBarras;
@@ -88,19 +92,27 @@ class InventarioContEndProd
     protected $produtoVolume;
 
     /**
+     * @var string
      * @Column(name="IND_DIVERGENTE", type="string" )
      */
     protected $divergente;
 
     /**
+     * @var \DateTime
      * @Column(name="DTH_VALIDADE", type="datetime" )
      */
     protected $validade;
 
     /**
+     * @var \DateTime
      * @Column(name="DTH_CONTAGEM", type="datetime" )
      */
-    protected $contagem;
+    protected $dthContagem;
+
+    public function __construct()
+    {
+        $this->setDthContagem();
+    }
 
     /**
      * @return mixed
@@ -183,7 +195,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getLote()
     {
@@ -191,7 +203,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @param mixed $lote
+     * @param string $lote
      */
     public function setLote($lote)
     {
@@ -199,7 +211,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return float
      */
     public function getQtdContada()
     {
@@ -207,7 +219,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @param mixed $qtdContada
+     * @param float $qtdContada
      */
     public function setQtdContada($qtdContada)
     {
@@ -231,7 +243,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return float
      */
     public function getQtdEmbalagem()
     {
@@ -239,7 +251,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @param mixed $qtdEmbalagem
+     * @param float $qtdEmbalagem
      */
     public function setQtdEmbalagem($qtdEmbalagem)
     {
@@ -247,7 +259,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getCodBarras()
     {
@@ -255,7 +267,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @param mixed $codBarras
+     * @param string $codBarras
      */
     public function setCodBarras($codBarras)
     {
@@ -279,7 +291,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getDivergente()
     {
@@ -287,7 +299,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @param mixed $divergente
+     * @param string $divergente
      */
     public function setDivergente($divergente)
     {
@@ -295,7 +307,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
     public function getValidade()
     {
@@ -303,7 +315,7 @@ class InventarioContEndProd
     }
 
     /**
-     * @param mixed $validade
+     * @param \DateTime $validade
      */
     public function setValidade($validade)
     {
@@ -311,18 +323,20 @@ class InventarioContEndProd
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
-    public function getContagem()
+    public function getDthContagem()
     {
-        return $this->contagem;
+        return $this->dthContagem;
     }
 
-    /**
-     * @param mixed $contagem
-     */
-    public function setContagem($contagem)
+    private function setDthContagem()
     {
-        $this->contagem = $contagem;
+        $this->dthContagem = new \DateTime();
+    }
+
+    private function convertBoolean($param)
+    {
+        return ($param === 'S');
     }
 }

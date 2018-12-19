@@ -51,7 +51,7 @@
         position: absolute;
         background: #FFFFFF;
         width: 100%;
-        height: 100%
+        height: inherit;
     }
 </style>
 
@@ -267,10 +267,10 @@
                 $("#list-empty").hide();
                 $.each(inventarios, function (k, v) {
                     var dsc = "";
-                    if (v.dscInventario === null) {
+                    if (v.descricao === null) {
                         dsc = "Inventário " + v.id;
                     } else {
-                        dsc = "Inv. " + v.id + " - " + v.dscInventario;
+                        dsc = "Inv. " + v.id + " - " + v.descricao;
                     }
                     inventarios[k].dsc = dsc;
                     var newRow = $('<div class="row"><button class="btn gradientBtn selectInv" data-key="'+k+'" title="'+v.id+'">'+dsc+'</button></div>');
@@ -317,7 +317,7 @@
         };
 
         var getContagens = function () {
-            $("#loader").show();
+            changeViewer("loader");
             $.ajax({url: "/mobile/inventario-novo/get-contagens/id/" + invSelecioando.id,
                 success: function(result){
                     if (result.status === "ok") {
@@ -370,7 +370,7 @@
         });
 
         var getEnderecos = function () {
-            $("#loader").show();
+            changeViewer("loader");
             $.ajax({url: "/mobile/inventario-novo/get-enderecos/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia,
                 success: function(result){
                     if (result.status === "ok") {
@@ -401,15 +401,20 @@
         $("#cod-barras-end").keypress(function( event ) {
             if ( event.which === 13  || event.keyCode === 13 ) {
                 disarmEvent(event);
-                if (!isEmpty($(this).val()))
+                if (!isEmpty($(this).val())) {
                     processEndereco($(this));
+                    $(this).val("")
+                }
             }
         });
 
         $("#btn-consultar-endereco").click(function( event ) {
             var input = $("#cod-barras-end");
             disarmEvent(event);
-            if (!isEmpty(input.val())) processEndereco(input);
+            if (!isEmpty(input.val())) {
+                processEndereco(input);
+                input.val("")
+            }
         });
 
         var processEndereco = function (input) {
@@ -432,7 +437,7 @@
         };
 
         var openEndereco = function () {
-            $("#loader").show();
+            changeViewer("loader");
             $.ajax({
                 url: "/mobile/inventario-novo/get-info-endereco/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia + "/end/" + idEndSelecionado,
                 success: function (result) {
@@ -464,6 +469,7 @@
             if ( event.which === 13  || event.keyCode === 13 ) {
                 disarmEvent(event);
                 if (!isEmpty($(this).val())) {
+                    processProduto(input);
                     $(this).val("");
                 }
             }
@@ -471,8 +477,8 @@
 
         $("#btn-consultar-produto").click(function( event ) {
             var input = $("#cod-barras-prod");
+            disarmEvent(event);
             if (!isEmpty(input.val())) {
-                disarmEvent(event);
                 processProduto(input);
                 input.val("");
             }
@@ -499,7 +505,7 @@
         };
 
         var getInfoProduto = function (codBarras) {
-            $("#loader").show();
+            changeViewer("loader");
             $.ajax({
                 url: "/mobile/inventario-novo/get-info-produto/codbarras/" + codBarras ,
                 success: function (result) {
@@ -585,12 +591,12 @@
         };
 
         var registrar = function () {
+            changeViewer("loader");
             $.post(
                 "/mobile/inventario-novo/contagem-produto",
                 {
                     inventario: invSelecioando,
                     contagem: contSelecioando,
-                    endereco: idEndSelecionado,
                     produto: elemBipado,
                     conferencia: {
                         qtd: $("#qtd").val(),
@@ -599,9 +605,13 @@
                     }
                 }
             ).done(function( data ) {
-                console.log(data);
-                // notificar("success", "Contagem registrada com sucesso");
+                if (data.response.status === "ok") {
+                    notificar("success", data.response);
+                } else {
+                    notificar("error", data.exception)
+                }
                 prepareListProdutos();
+                changeViewer("bipagem-produto");
             })
 
         }

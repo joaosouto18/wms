@@ -5,12 +5,35 @@ namespace Wms\Domain\Entity;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
+use Wms\Domain\Configurator;
 
 /**
  * Deposito
  */
 class OrdemServicoRepository extends EntityRepository
 {
+
+    /**
+     * @param $params
+     * @param bool $executeFlush
+     * @return OrdemServico
+     * @throws \Exception
+     */
+    public function addNewOs($params, $executeFlush = true)
+    {
+        try {
+            /** @var OrdemServico $entity */
+            $entity = Configurator::configure(new $this->_entityName, $params);
+
+            $this->_em->persist($entity);
+            if ($executeFlush) $this->_em->flush();
+
+            return $entity;
+
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
 
     /**
      *

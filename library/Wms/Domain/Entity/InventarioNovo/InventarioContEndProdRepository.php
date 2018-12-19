@@ -9,42 +9,30 @@
 namespace Wms\Domain\Entity\InventarioNovo;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Configurator;
 use Wms\Domain\Entity\InventarioNovo;
 
 class InventarioContEndProdRepository extends EntityRepository
 {
     /**
+     * @param $params
+     * @param bool $executeFlush
      * @return InventarioContEndProd
      * @throws \Exception
      */
-    public function save() {
-
-        $this->_em->beginTransaction();
+    public function save($params, $executeFlush = true)
+    {
         try {
+            /** @var InventarioContEndProd $entity */
+            $entity = Configurator::configure(new $this->_entityName, $params);
 
-            $enInventarioContEndProd = new InventarioContEndProd();
+            $this->_em->persist($entity);
+            if ($executeFlush) $this->_em->flush();
 
-            $codInventarioContEnd = $this->_em->getReference('wms:InventarioNovo\InventarioContEnd',$params['idInventarioContEnd']);
-            $codProduto           = $this->_em->getReference('wms:Produto',$params['idProduto']);
-            $codGrade             = $this->_em->getReference('wms:Produto',$params['idGrade']);
-            $codProdutoEmbalagem  = $this->_em->getReference('wms:Produto\Embalagem',$params['idProdutoEmbalagem']);
-            $codProdutoVolume     = $this->_em->getReference('wms:Produto\Volume',$params['idProdutoVolume']);
+            return $entity;
 
-            $enInventarioContEndProd->setInventarioContEnd($codInventarioContEnd);
-            $enInventarioContEndProd->setProduto($codProduto);
-            $enInventarioContEndProd->setGrade($codGrade);
-            $enInventarioContEndProd->setGrade($codProdutoEmbalagem);
-            $enInventarioContEndProd->setProdutoVolume($codProdutoVolume);
-
-
-            $this->_em->persist($enInventarioContEndProd);
-            $this->_em->flush();
-            $this->_em->commit();
         } catch (\Exception $e) {
-            $this->_em->rollback();
             throw new \Exception($e->getMessage());
         }
-
-        return $enInventarioContEndProd;
     }
 }

@@ -20,6 +20,7 @@ class InventarioEndProdRepository extends EntityRepository
     public function save($params, $executeFlush = true)
     {
         try {
+            /** @var InventarioEndProd $entity */
             $entity = Configurator::configure(new $this->_entityName, $params);
 
             $this->_em->persist($entity);
