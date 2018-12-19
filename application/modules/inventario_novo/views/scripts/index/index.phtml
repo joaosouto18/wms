@@ -48,6 +48,8 @@
                     <?php endif; ?>
                     <div class="field"><label for="inventario" class="field optional">Inventário</label>
                         <input type="text" ng-model="criterioForm.inventario" id="inventario" value="" alt="number" size="15" class=" ctrSize"></div>
+                    <div class="field"><label for="descricao" class="field optional">Descrição</label>
+                        <input type="text" ng-model="criterioForm.descricao" id="descricao" value="" size="45" class=" ctrSize"></div>
                     <div class="field">
                         <input type="button" ng-click="requestForm()" value="Buscar" class="btn">
                     </div>
@@ -97,7 +99,8 @@
                 <tbody >
                 <tr class="gTTitle">
                     <td colspan="2"></td>
-                    <td><a href="" title="" class="sort" ng-click="ordenarPor('id')"><span>Inventário</span></a></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('id')"><span>Cod</span></a></td>
+                    <td><a href="" title="Descrição do inventário" class="sort" ng-click="ordenarPor('dscInventario')"><span>Descrição</span></a></td>
                     <?php if($this->showCodInvErp):?>
                     <td width=""><a href="" title="" class="sort" ng-click="ordenarPor('qtdEndereco')"><span>Código no ERP</span></a></td>
                     <?php endif;?>
@@ -107,7 +110,7 @@
                     <td><a href="" title="Data de criação" class="sort" ng-click="ordenarPor('dthCriacao')"><span>Dt. Criação</span></a></td>
                     <td><a href="" title="Data de início" class="sort" ng-click="ordenarPor('dthInicio')"><span>Dt. Início</span></a></td>
                     <td><a href="" title="Data de finalização" class="sort" ng-click="ordenarPor('dthFinalizacao')"><span>Dt. Finalização</span></a></td>
-                    <td><a href="" title="" class="sort" ng-click="ordenarPor('andamento')"><span>Andamento (%)</span></a></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('andamento')"><span>%</span></a></td>
                     <td><a href="" title="" class="sort" ng-click="ordenarPor('status')"><span>Status</span></a></td>
                 </tr>
                 <tr ng-show="showLoading">
@@ -146,6 +149,7 @@
                         </div>
                     </td>
                     <td>{{inventario.id}}</td>
+                    <td>{{inventario.descricao}}</td>
                     <?php if($this->showCodInvErp):?>
                     <td>{{inventario.codInvERP}}</td>
                     <?php endif;?>

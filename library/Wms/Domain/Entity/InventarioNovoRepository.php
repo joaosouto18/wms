@@ -29,7 +29,7 @@ class InventarioNovoRepository extends EntityRepository
             foreach ($inventarios as $inventario) {
                 $obj = new \stdClass;
                 $obj->id                    = $inventario->getId();
-                $obj->dscInventario         = $inventario->getDescricao();
+                $obj->descricao             = $inventario->getDescricao();
                 $obj->dthCriacao            = $inventario->getDthCriacao(true);
                 $obj->dthLiberacao          = $inventario->getDthInicio(true);
                 $obj->dthFinalizacao        = $inventario->getDthFinalizacao(true);
@@ -128,6 +128,11 @@ class InventarioNovoRepository extends EntityRepository
                 $arrWhere[] = "INVN.COD_INVENTARIO = $args[inventario]";
             }
 
+            if (isset($args['descricao']) && !empty($args['descricao'])) {
+                $descricao = strtolower($args['descricao']);
+                $arrWhere[] = "LOWER(INVN.DSC_INVENTARIO) like '%$descricao%'";
+            }
+
             $where = "WHERE 1 = 1  AND " . implode(" AND ", $arrWhere);
         }
 
@@ -135,6 +140,7 @@ class InventarioNovoRepository extends EntityRepository
         $sql = "SELECT
                   INVN.COD_INVENTARIO AS \"id\",
                   INVN.COD_STATUS \"status\",
+                  INVN.DSC_INVENTARIO \"descricao\",
                   COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO ) \"qtdEndereco\",
                   COUNT( DISTINCT ICE.COD_INV_CONT_END) \"qtdDivergencia\",
                   SUM( CASE WHEN IEN.IND_FINALIZADO = 'S' THEN 1 ELSE 0 END ) \"qtdInventariado\",
@@ -152,7 +158,7 @@ class InventarioNovoRepository extends EntityRepository
                 LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
                 INNER JOIN DEPOSITO_ENDERECO DE ON IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                 $where
-                GROUP BY INVN.COD_INVENTARIO, INVN.COD_STATUS, INVN.DTH_INICIO, INVN.DTH_CRIACAO, INVN.COD_INVENTARIO_ERP, INVN.DTH_FINALIZACAO";
+                GROUP BY INVN.COD_INVENTARIO, INVN.COD_STATUS, INVN.DTH_INICIO, INVN.DTH_CRIACAO, INVN.COD_INVENTARIO_ERP, INVN.DTH_FINALIZACAO, INVN.DSC_INVENTARIO";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }

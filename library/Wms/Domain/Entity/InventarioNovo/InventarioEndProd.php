@@ -54,6 +54,13 @@ class InventarioEndProd
     protected $grade;
 
     /**
+     * @Column(name="IND_ATIVO", type="string" )
+     */
+    protected $ativo;
+
+
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -131,6 +138,22 @@ class InventarioEndProd
     public function setGrade($grade)
     {
         $this->grade = $grade;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAtivo()
+    {
+        return $this->ativo;
+    }
+
+    /**
+     * @param boolean $ativo
+     */
+    public function setAtivo($ativo)
+    {
+        $this->ativo = ((is_bool($ativo) && $ativo) || (is_string($ativo) && $ativo == 'S') ) ? 'S' : 'N';
     }
 
 
