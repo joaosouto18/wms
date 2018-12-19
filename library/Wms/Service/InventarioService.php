@@ -50,11 +50,13 @@ class InventarioService extends AbstractService
                     'inventario' => $inventarioEn,
                     'depositoEndereco' => $this->em->getReference('wms:Deposito\Endereco', $item['id']),
                     'contagem' => 1,
-                    'finalizado' => 'N'
+                    'finalizado' => 'N',
+                    'ativo' => 'S'
                 ]);
                 if ($params['criterio'] === InventarioNovo::CRITERIO_PRODUTO) {
                     $invEndProdRepod->save([
                         'inventarioEndereco' => $inventarioEnderecoEn,
+                        'ativo' => 'S',
                         'produto' => $this->em->getReference('wms:Produto', ['id' => $item['codProduto'], 'grade' => $item['grade']])
                     ]);
                 }
