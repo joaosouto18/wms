@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection,
     Wms\Domain\Entity\Produto as ProdutoEntity,
     Wms\Domain\Entity\Produto\NormaPaletizacao as NormaPaletizacaoEntity,
     Core\Util\Converter;
+use Wms\Domain\Configurator;
 use Wms\Domain\Entity\Produto;
 
 use Wms\Domain\Entity\Deposito\Endereco;
@@ -552,4 +553,8 @@ class Volume
         $this->usuarioInativacao = $usuarioInativacao;
     }
 
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
+    }
 }

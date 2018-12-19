@@ -68,7 +68,7 @@ angular.module("wms").controller("listGridInventarioCtrl", function($scope, $htt
     let getInventarios = function (params) {
         if (isEmpty($scope.statusArr)) params['getStatusArr'] = true;
         $http.post(URL_MODULO + "/index/get-inventarios-ajax", params).then(function (response){
-            $scope.inventarios = response.data.inventarios;
+            $scope.inventarios = response.data.inventarios.reverse();
             if (!isEmpty(response.data.statusArr)) $scope.statusArr = response.data.statusArr;
             preparePaginator();
         }).then(function () {
