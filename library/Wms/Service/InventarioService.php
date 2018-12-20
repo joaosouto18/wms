@@ -56,11 +56,13 @@ class InventarioService extends AbstractService
                 $inventarioEnderecoEn = $inventarioEnderecoRepo->save([
                     'inventario' => $inventarioEn,
                     'depositoEndereco' => $this->em->getReference('wms:Deposito\Endereco', $item['id']),
-                    'contagem' => 1
+                    'contagem' => 1,
+                    'ativo' => 'S'
                 ]);
                 if ($params['criterio'] === InventarioNovo::CRITERIO_PRODUTO) {
                     $invEndProdRepod->save([
                         'inventarioEndereco' => $inventarioEnderecoEn,
+                        'ativo' => 'S',
                         'produto' => $this->em->getReference('wms:Produto', ['id' => $item['codProduto'], 'grade' => $item['grade']])
                     ]);
                 }
@@ -131,36 +133,76 @@ class InventarioService extends AbstractService
     public function removerItem($id_inventario, $id_item, $tipo, $grade, $lote)
     {
         $this->em->beginTransaction();
+
         try {
-            // remover endereço
-            if($tipo == 'E') {
-                /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo */
-                $inventarioEnderecoRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
-                $endereco = $inventarioEnderecoRepo->findOneBy(['inventario' => $id_inventario, 'depositoEndereco' => $id_item]);
+            /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo */
+            $inventarioEnderecoRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
+            $endereco = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'depositoEndereco' => $idEndereco]);
 
-                //exclusão lógica
-                $endereco->setAtivo(false);
+            //exclusão lógica
+            $endereco->setAtivo('N');
 
-                $this->em->persist($endereco);
-                $this->em->flush();
-                $this->em->commit();
-            }
-            //remover produto
-            elseif($tipo == 'P'){
-                /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEndProdRepository $inventarioEndProdRepo */
-                $inventarioEndProdRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEndProd');
-                $produto = $inventarioEndProdRepo->findOneBy(['COD_INVENTARIO' => $id_inventario, 'COD_PRODUTO' => $id_item, 'GRADE' => $grade, 'LOTE' => $lote]);
+            $this->em->persist($endereco);
+            $this->em->flush();
+            $this->em->commit();
 
-                //exclusão lógica
-                $produto->setAtivo(false);
+            // verifica se existe algum endereço ativo ainda no inventario
+            $enderecoAtivo = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'ativo' => 'S']);
 
-                $this->em->persist($produto);
-                $this->em->flush();
-                $this->em->commit();
-            }
+            if(empty($enderecoAtivo))
+                $this->cancelarInventario($idInventario);
+
         }catch (\Exception $e) {
             $this->em->rollback();
             throw $e;
+        }
+    }
+
+    public function removerProduto($idInventario, $idProduto, $grade, $lote){
+        $this->em->beginTransaction();
+
+        try {
+            /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEndProdRepository $inventarioEndProdRepo */
+            $inventarioEndProdRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEndProd');
+            $produto = $inventarioEndProdRepo->findOneBy(['COD_INVENTARIO' => $idInventario, 'COD_PRODUTO' => $idProduto, 'GRADE' => $grade, 'LOTE' => $lote]);
+
+            //exclusão lógica
+            $produto->setAtivo(false);
+
+            $this->em->persist($produto);
+            $this->em->flush();
+            $this->em->commit();
+
+            // verifica se existe algum produto ativo ainda no endereço
+            $enderecoAtivo = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'ativo' => 'S']);
+
+            if(empty($enderecoAtivo))
+                $this->cancelarInventario($idInventario);
+
+        }catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
+    }
+
+
+    public function cancelarEndereco($idInventario, $idEndereco){
+
+        // se o produto for o ultimo, cancela o endereço
+
+    }
+
+    public function cancelarInventario($idInventario){
+
+        // se o endereço for o ultimo, cancela o inventário
+        /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
+        $inventarioRepo = $this->em->getRepository("wms:Inventario");
+        $inventarioEn   = $inventarioRepo->find($idInventario);
+
+        if ($inventarioEn) {
+            $inventarioRepo->cancelar($inventarioEn);
+            $inventarioRepo->desbloqueiaEnderecos($idInventario);
+            //return $this->redirect('index');
         }
     }
 
