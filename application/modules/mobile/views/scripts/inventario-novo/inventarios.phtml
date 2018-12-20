@@ -9,6 +9,10 @@
 <script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
 <script src="<?php echo $this->baseUrl('angularJS/wmsAngular.js') ?>"></script>
 <style>
+    .btn {
+        width: 95%;
+    }
+
     .lbl-headers {
         font-size: 15px;
         font-weight: bold;
@@ -110,6 +114,7 @@
             </form>
         </div>
         <button id="btn-consultar-produto" class="btn btn-spacing">Buscar</button>
+        <button id="btn-finalizar" class="btn btn-spacing gradientBtnSuccess"></button>
     </div>
     <div class="list-area" id="list-produtos"></div>
 </div>
@@ -461,6 +466,13 @@
                     list.append('<div class="list-item">' + v.codProduto + " - " + v.grade + '</div>')
                 });
             }
+
+            if (contSelecioando.vazio === 'S') {
+                $("#btn-finalizar").text("Finalizar Endereço Vazio")
+            } else {
+                $("#btn-finalizar").text("Finalizar Endereço")
+            }
+
             changeViewer("bipagem-produto");
             $("#cod-barras-prod").focus();
         };
@@ -613,7 +625,25 @@
                 prepareListProdutos();
                 changeViewer("bipagem-produto");
             })
+        };
 
-        }
+        $("#btn-finalizar").click(function () {
+            changeViewer("loader");
+            $.post(
+                "/mobile/inventario-novo/finalizar-contagem-os",
+                {
+                    inventario: invSelecioando,
+                    contagem: contSelecioando
+                }
+            ).done(function( data ) {
+                if (data.response.status === "ok") {
+                    notificar("success", data.response);
+                } else {
+                    notificar("error", data.exception)
+                }
+                prepareListEnderecos();
+                changeViewer("bipagem-endereco");
+            })
+        });
     })
 </script>

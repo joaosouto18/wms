@@ -1626,7 +1626,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         pe.id idEmbalagem, pv.id idVolume, p.numVolumes,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                         NVL(pe.descricao, pv.descricao) descricaoEmbalagem,
-                        NVL(pe.quantidade, \'0\') quantidadeEmbalagem,
+                        NVL(pe.quantidade, 1) quantidadeEmbalagem,
                         p.indControlaLote, p.indFracionavel, p.validade controlaValidade'
                 )
                 ->from('wms:Produto', 'p')

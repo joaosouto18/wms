@@ -13,6 +13,7 @@ use Bisna\Base\Domain\Entity\EntityService;
 use Wms\Domain\Entity\Atividade;
 use Wms\Domain\Entity\InventarioNovo;
 use Wms\Domain\Entity\OrdemServico;
+use Wms\Domain\Entity\OrdemServicoRepository;
 use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Usuario;
 use Wms\Math;
@@ -165,22 +166,22 @@ class InventarioService extends AbstractService
 
     /**
      * @param InventarioNovo\InventarioEnderecoNovo $inventarioEnderecoEn
+     * @param int $ultimaSequencia
+     * @param int $contagem
      * @param bool $divergencia
      * @return InventarioNovo\InventarioContEnd
      * @throws \Exception
      */
-    public function addNovaContagem(InventarioNovo\InventarioEnderecoNovo $inventarioEnderecoEn, $divergencia = false)
+    public function addNovaContagem(InventarioNovo\InventarioEnderecoNovo $inventarioEnderecoEn, $ultimaSequencia = 1, $contagem = 1, $divergencia = false)
     {
         try {
             /** @var InventarioNovo\InventarioContEndRepository $inventContEndRepo */
             $inventContEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEnd");
 
-            $ultimaContagem = $inventContEndRepo->findBy(["inventarioEndereco" => $inventarioEnderecoEn]);
-
             return $inventContEndRepo->save([
                 "inventarioEndereco" => $inventarioEnderecoEn,
-                "sequencia" => (count($ultimaContagem) + 1),
-                "contagem" => $inventarioEnderecoEn->getContagem(),
+                "sequencia" => ($ultimaSequencia + 1),
+                "contagem" => ($contagem + 1),
                 "contagemDivergencia" => $divergencia,
                 "finalizada" => false
             ], false);
@@ -201,10 +202,8 @@ class InventarioService extends AbstractService
     {
         $this->em->beginTransaction();
         try {
-            /** @var Usuario $usuario */
-            $usuario = $this->em->getReference('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId());
 
-            $this->getOsUsuarioContagem($usuario, $contagem, $inventario, $tipoConferencia, true);
+            $this->getOsUsuarioContagem( $contagem, $inventario, $tipoConferencia, true);
 
             $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd")->save(array(
                 "inventarioContEnd" => $this->em->getReference("wms:InventarioNovo\InventarioContEnd", $contagem['id']),
@@ -227,7 +226,6 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $usuario
      * @param $contagem
      * @param $inventario
      * @param $tipoConferencia
@@ -235,9 +233,12 @@ class InventarioService extends AbstractService
      * @return InventarioNovo\InventarioContEndOs
      * @throws \Exception
      */
-    public function getOsUsuarioContagem($usuario, $contagem, $inventario, $tipoConferencia, $createIfNoExist = false)
+    public function getOsUsuarioContagem($contagem, $inventario = [], $tipoConferencia = [], $createIfNoExist = false)
     {
         try {
+            /** @var Usuario $usuario */
+            $usuario = $this->em->getReference('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId());
+
             /** @var InventarioNovo\InventarioContEndOsRepository $contagemEndOsRepo */
             $contagemEndOsRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndOs");
 
@@ -286,4 +287,106 @@ class InventarioService extends AbstractService
             throw $e;
         }
     }
+
+    /**
+     * @param $inventario
+     * @param $contagem
+     * @throws \Exception
+     */
+    public function finalizarOs($inventario, $contagem)
+    {
+        try {
+            /** @var OrdemServicoRepository $osRepo */
+            $osRepo = $this->em->getRepository("wms:OrdemServico");
+
+            $osUsuarioCont = $this->getOsUsuarioContagem($contagem);
+
+            $osRepo->finalizar($osUsuarioCont->getOrdemServico()->getId(), "Contagem finalizada", $osUsuarioCont->getOrdemServico(), false);
+
+            $outrasOs = $this->em->getRepository("wms:InventarioNovo\InventarioContEndOs")
+                ->getOutrasOsAbertasContagem($inventario['id'], $osUsuarioCont->getOrdemServico()->getPessoa()->getId(), $contagem['id']);
+
+            if (empty($outrasOs)) {
+                $contMaiorAcerto = $this->compararContagens($osUsuarioCont->getInvContEnd(), $inventario);
+                $nContagensNecessarias = ($inventario['comparaEstoque'])? $inventario['numContagens'] + 1 : $inventario['numContagens'] ;
+                if (count($contMaiorAcerto['seq']) < $nContagensNecessarias) {
+                    $this->addNovaContagem(
+                        $osUsuarioCont->getInvContEnd()->getInventarioEndereco(),
+
+                    );
+                }
+            }
+
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $contEnd InventarioNovo\InventarioContEnd
+     * @param $inventario
+     * @return array
+     */
+    public function compararContagens($contEnd, $inventario)
+    {
+        $countQtdsIguais = [];
+
+        $validaValidade = ($inventario['controlaValidade'] === InventarioNovo\ModeloInventario::VALIDADE_VALIDA);
+
+        $strConcat = "+=+";
+
+        if ($inventario['comparaEstoque']) {
+            /** @var \Wms\Domain\Entity\Enderecamento\Estoque[] $estoque */
+            $estoque = $this->em->getRepository("wms:Enderecamento\Estoque")->findBy(["depositoEndereco" => $contEnd->getInventarioEndereco()->getDepositoEndereco()]);
+            foreach ($estoque as $produto) {
+                $vol = $produto->getProdutoVolume();
+                $arg = [
+                    $produto->getCodProduto(),
+                    $produto->getGrade(),
+                    $produto->getLote(),
+                    (!empty($vol)) ? $vol->getId() : 1,
+                    $produto->getQtd(),
+                    (!empty($produto->getValidade()) && $validaValidade) ? $produto->getValidade()->format("d/m/Y") : ""
+                ];
+                $countQtdsIguais[implode($strConcat, $arg)][] = "estoque";
+            }
+        }
+
+        foreach ($this->em->getRepository("wms:InventarioNovo\InventarioContEndProd")->getContagensProdutos($contEnd->getInventarioEndereco()->getId()) as $contagem){
+            $arg = [
+                $contagem['codProduto'],
+                $contagem['grade'],
+                $contagem['lote'],
+                $contagem['idElem'],
+                $contagem['qtdContagem'],
+                $contagem['validade'],
+            ];
+            $countQtdsIguais[implode($strConcat, $arg)][] = $contagem['sequencia'];
+        }
+
+        $result = [];
+        foreach ($countQtdsIguais as $k => $v)
+        {
+            $exploded = explode($strConcat, $k);
+            $result[count($v)] = [
+                "seq" => $v,
+                "codProduto" => $exploded[0],
+                "grade"  => $exploded[1],
+                "lote" => $exploded[2],
+                "idElem" => $exploded[3],
+                "qtdContagem" => $exploded[4],
+                "validade" => $exploded[5]
+            ];
+        }
+
+        ksort($result);
+        return array_reverse($result)[0];
+    }
+
+    public function finalizarEndereco()
+    {
+
+    }
+
+
 }

@@ -77,4 +77,24 @@ class InventarioContEndOsRepository extends EntityRepository
 
         return $dql->getQuery()->getResult();
     }
+
+
+    public function getOutrasOsAbertasContagem($idInventraio, $idUsuario, $idContagemOs)
+    {
+        $dql = $this->_em->createQueryBuilder()
+            ->select("iceos")
+            ->from("wms:InventarioNovo\InventarioContEndOs", "iceos")
+            ->innerJoin("iceos.ordemServico", "os")
+            ->innerJoin("iceos.invContEnd", "ice")
+            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien.ativo = 'S'")
+            ->innerJoin("ien.inventario", "invn")
+            ->innerJoin("os.pessoa", "p")
+            ->where("invn.id = :idInventario")
+            ->andWhere("p.id = :idPessoa")
+            ->andWhere("os.dataFinal IS NULL")
+            ->andWhere("iceos.id != :idContagemOs")
+            ->setParameters(["idInventario" => $idInventraio, "idPessoa" => $idUsuario, "idContagemOs" => $idContagemOs]);
+
+        return $dql->getQuery()->getResult();
+    }
 }

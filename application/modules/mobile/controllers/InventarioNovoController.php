@@ -102,4 +102,21 @@ class Mobile_InventarioNovoController extends Action
             $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
         }
     }
+
+    public function finalizarContagemOsAction()
+    {
+        try {
+
+            $inventario = $this->_getParam("inventario");
+            $contagem = $this->_getParam("contagem");
+
+            /** @var \Wms\Service\InventarioService $invServc */
+            $invServc = $this->getServiceLocator()->getService("Inventario");
+            $invServc->registrarContagem($inventario, $contagem, \Wms\Domain\Entity\OrdemServico::COLETOR);
+
+            $this->_helper->json(["status" => "ok", 'response' => "Contagem efetuada com sucesso!"]);
+        } catch (Exception $e) {
+            $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
+        }
+    }
 }
