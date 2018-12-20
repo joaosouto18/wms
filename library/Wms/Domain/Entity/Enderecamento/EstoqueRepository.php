@@ -466,6 +466,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoqueAndVolumeByParams($parametros, $maxResult = null, $showPicking = true, $orderBy = null, $returnQuery = false)
     {
+        $loteNd = Lote::LND;
         $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
                        DE.COD_DEPOSITO_ENDERECO as COD_ENDERECO,
                        C.DSC_CARACTERISTICA_ENDERECO as TIPO,
@@ -512,7 +513,7 @@ class EstoqueRepository extends EntityRepository
                                   ON ESTQ.COD_PRODUTO = RE.COD_PRODUTO
                                  AND ESTQ.DSC_GRADE = RE.DSC_GRADE
                                  AND ESTQ.VOLUME = RE.VOLUME
-                                 AND ESTQ.LOTE = RE.LOTE
+                                 AND NVL(ESTQ.LOTE, '$loteNd') = NVL(RE.LOTE, '$loteNd')
                                  AND ESTQ.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
                           FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE
                                              FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME, REP.DSC_LOTE AS LOTE
@@ -524,7 +525,7 @@ class EstoqueRepository extends EntityRepository
                                   ON ESTQ.COD_PRODUTO = RS.COD_PRODUTO
                                  AND ESTQ.DSC_GRADE = RS.DSC_GRADE
                                  AND ESTQ.VOLUME = RS.VOLUME
-                                 AND ESTQ.LOTE = RS.LOTE
+                                 AND NVL(ESTQ.LOTE, '$loteNd') = NVL(RS.LOTE, '$loteNd')
                                  AND ESTQ.COD_DEPOSITO_ENDERECO = RS.COD_DEPOSITO_ENDERECO
                           LEFT JOIN PRODUTO_VOLUME PV ON (PV.COD_PRODUTO_VOLUME = ESTQ.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RE.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RS.VOLUME)) E
                   LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO

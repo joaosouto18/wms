@@ -17,28 +17,88 @@ class Mobile_InventarioNovoController extends Action
 
     public function getInventariosAction()
     {
-        $this->_helper->json($this->em->getRepository('wms:InventarioNovo')->getInventarios('stdClass',['status' => \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO]));
+        try {
+            $this->_helper->json([
+                "status" => "ok",
+                "response" => $this->em->getRepository('wms:InventarioNovo')->getInventarios('stdClass', ['status' => \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO])
+            ]);
+        } catch (Exception $e) {
+            $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
+        }
     }
 
     public function getContagensAction()
     {
-        $this->_helper->json($this->em->getRepository('wms:InventarioNovo\InventarioContEnd')->getContagens($this->_getParam("id")));
+        try{
+            $this->_helper->json([
+                "status" => "ok",
+                "response" => $this->em->getRepository('wms:InventarioNovo\InventarioContEnd')->getContagens($this->_getParam("id"))
+            ]);
+        } catch (Exception $e) {
+            $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
+        }
     }
 
     public function getEnderecosAction()
     {
-        $this->_helper->json($this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->getArrEnderecos($this->_getParam("id"), $this->_getParam("sq")));
+        try {
+            $this->_helper->json([
+                "status" => "ok",
+                "response" => $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->getArrEnderecos($this->_getParam("id"), $this->_getParam("sq"))
+            ]);
+        } catch (Exception $e) {
+            $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
+        }
     }
 
     public function getInfoEnderecoAction()
     {
-        $this->_helper->json($this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->getInfoEndereco(
-            $this->_getParam("id"),
-            $this->_getParam("sq"),
-            $this->_getParam("end")
-            )
-        );
+        try {
+            $this->_helper->json([
+                "status" => "ok",
+                "response" => $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->getInfoEndereco(
+                    $this->_getParam("id"),
+                    $this->_getParam("sq"),
+                    $this->_getParam("end")
+                    )
+                ]
+            );
+        } catch (Exception $e) {
+            $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
+        }
     }
 
+    public function getInfoProdutoAction()
+    {
+        try {
+            $this->_helper->json([
+                    "status" => "ok",
+                    "response" => [
+                        "produto" => $this->_em->getRepository('wms:Produto')->getEmbalagemByCodBarras($this->_getParam("codbarras"))[0],
+                        "usaGrade" => $this->getSystemParameterValue("UTILIZA_GRADE")
+                    ]
+                ]
+            );
+        } catch (Exception $e) {
+            $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
+        }
+    }
 
+    public function contagemProdutoAction()
+    {
+        try {
+            $params = $this->getRequest()->getParams();
+            $this->_helper->json(["status" => "ok", 'response' => $params]);
+            $inventario = $this->_getParam("inventario");
+            $contagem = $this->_getParam("contagem");
+            $endereco = $this->_getParam("endereco");
+            $produto = $this->_getParam("produto");
+            $conferencia = $this->_getParam("conferencia");
+
+
+
+        } catch (Exception $e) {
+            $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
+        }
+    }
 }

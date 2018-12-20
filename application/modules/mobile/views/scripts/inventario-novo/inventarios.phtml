@@ -6,11 +6,25 @@
  * Time: 10:51
  */
 ?>
+<script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
+<script src="<?php echo $this->baseUrl('angularJS/wmsAngular.js') ?>"></script>
 <style>
+    .lbl-headers {
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 6px;
+    }
+
     div.input-area {
         padding: 10px;
         margin: 10px 15px;
-        background-color: #c1c1c1;
+        background-color: #f3f3f3;
+        border-radius: 10px;
+    }
+
+    html, body {
+        margin:0;
+        height: 100%;
     }
 
     .btn-spacing {
@@ -18,8 +32,8 @@
     }
 
     .list-area {
-        overflow-y:scroll;
-        max-height: 145px
+        overflow-y: auto;
+        max-height: inherit
     }
 
     .list-item {
@@ -27,19 +41,40 @@
         margin: 3px 0px !important;
         padding: 0px !important;
         text-align: center!important;
+        font-weight: bold;
+    }
+
+    .div-loader {
+        float:left;
+        z-index: 9000;
+        padding-top: 30px;
+        position: absolute;
+        background: #FFFFFF;
+        width: 100%;
+        height: 100%
     }
 </style>
-<div style="display: none" id="divBtnBack">
-    <button class="btn btnAlerta" id="btn-back-action">Voltar</button>
-</div>
-<div id="headers">
-    <h4 id="lbl-inventario"></h4>
-    <h4 id="lbl-contagem"></h4>
-    <h4 id="lbl-endereco"></h4>
-</div>
-<div id="loader" style="margin-top: 30px">
+
+<span id="dummy"></span>
+<bgsound id="bgSoundId" loop="0" volume="100" />
+
+<div id="loader" class="div-loader">
     <span style="font-size: 18px">Carregando...</span>
     <img src="/img/ajax-bar-loader.gif" alt="loading">
+</div>
+
+<div id="messenger"></div>
+
+<!--<div style="display: none" id="divBtnBack">-->
+<!--    <button class="btn btnAlerta" id="btn-back-action">Voltar</button>-->
+<!--</div>-->
+
+<div id="headers" style="padding-top: 5px">
+    <div class="lbl-headers" id="lbl-inventario"></div>
+    <div class="lbl-headers" id="lbl-contagem"></div>
+    <div class="lbl-headers" id="lbl-endereco"></div>
+    <div class="lbl-headers" id="lbl-produto"></div>
+    <div class="lbl-headers" id="lbl-embvol"></div>
 </div>
 
 <div id="list-inventarios" style="display: none;">
@@ -57,7 +92,7 @@
     <div class="input-area">
         <div class="field">
             <form>
-                <label for="cod-barras-end" class="field required"><h4>Buscar Endereço</h4></label>
+                <label for="cod-barras-end" class="field required"><div class="lbl-headers">Buscar Endereço</div></label>
                 <input type="text" name="cod-barras-end" id="cod-barras-end" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
             </form>
         </div>
@@ -65,11 +100,12 @@
     </div>
     <div class="list-area" id="list-enderecos"></div>
 </div>
+
 <div id="bipagem-produto" style="display: none">
     <div class="input-area">
         <div class="field">
             <form>
-                <label for="cod-barras-prod" class="field required"><h4>Buscar Produto</h4></label>
+                <label for="cod-barras-prod" class="field required"><div class="lbl-headers">Buscar Produto</div></label>
                 <input type="text" name="cod-barras-prod" id="cod-barras-prod" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
             </form>
         </div>
@@ -79,7 +115,23 @@
 </div>
 
 <div id="conferencia" style="display: none">
-
+    <div class="input-area">
+        <form>
+            <div class="field">
+                <label for="qtd" class="field required"><div class="lbl-headers">Quantidade</div></label>
+                <input type="text" name="qtd" id="qtd" value="" class="required focus" size="10" maxlength="15">
+            </div>
+            <div class="field" id="div-validade">
+                <label for="validade" class="field optional"><div class="lbl-headers">Validade</div></label>
+                <input type="text" name="validade" id="validade" value="" size="10" maxlength="8" placeholder="dd/mm/yy">
+            </div>
+            <div class="field" id="div-lote">
+                <label for="lote" class="field optional"><div class="lbl-headers">Lote</div></label>
+                <input type="text" name="lote" id="lote" value="" size="10" maxlength="8" placeholder="dd/mm/yy">
+            </div>
+        </form>
+        <button id="btn-registrar" class="btn btn-spacing">Registrar</button>
+    </div>
 </div>
 
 <script>
@@ -92,7 +144,8 @@
         var idEndSelecionado = null;
         var dscEndSelecionado = null;
         var produtos = [];
-        var prodBipado = {};
+        var elemBipado = {};
+        var usaGrade = true;
         var showing = 0;
         var views = ["loader","list-inventarios","contagens-by-inventario","bipagem-endereco","bipagem-produto","conferencia"];
         var headers = ["lbl-inventario", "lbl-contagem", "lbl-endereco", "lbl-produto"];
@@ -110,6 +163,43 @@
                     endConfig.mask = result.mask.replace(/[9]/g,"0");
                 }
             })
+        });
+
+        var disarmEvent = function (event) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
+        };
+
+        var notificar = function (type, msg) {
+            if (type === undefined) type = "success";
+
+            var songFile = "/alarme_curto.mp3";
+            if (type === "success") {
+                songFile = "/confirm2.mp3";
+            }
+
+            $("#messenger").append(
+                '<ul class="flashMessenger">' +
+                '    <li class="' + type + '_message" id="">' +
+                '        <div style="display:block; float:right;">' +
+                '            <a href="#" class="fmBtnClose">X</a>' +
+                '        </div>' +
+                '        <div style="display: block;" id="msg-text">' + msg + '</div>' +
+                '    </li>' +
+                '</ul>');
+
+            if (type === "error") alert(msg);
+
+            $("#dummy").html('<embed src="' + songFile + '" hidden="true" autostart="true" loop="false" />');
+            var audio = new Audio(songFile);
+            audio.play()
+        };
+
+        $(".fmBtnClose").live("click", function () {
+            $("#messenger").empty();
         });
 
         var formatEndereco = function (endereco) {
@@ -198,10 +288,12 @@
         var getInventarios = function () {
             $.ajax({url: "/mobile/inventario-novo/get-inventarios",
                 success: function(result){
-                    inventarios = result;
-                },
-                complete:function () {
-                    prepareListInventarios();
+                    if (result.status === "ok") {
+                        inventarios = result.response;
+                        prepareListInventarios();
+                    } else {
+                        notificar("error", result.exception);
+                    }
                 }
             });
         };
@@ -212,13 +304,28 @@
             getContagens();
         });
 
+        var controlaValidade = function () {
+            return (!isEmpty(invSelecioando.controlaValidade) &&
+                invSelecioando.controlaValidade !== 'N' &&
+                (!isEmpty(elemBipado.controlaValidade) &&
+                    elemBipado.controlaValidade === "S"))
+        };
+
+        var controlaLote = function () {
+            return (!isEmpty(elemBipado.indControlaLote) &&
+                     elemBipado.indControlaLote === "S")
+        };
+
         var getContagens = function () {
+            $("#loader").show();
             $.ajax({url: "/mobile/inventario-novo/get-contagens/id/" + invSelecioando.id,
                 success: function(result){
-                    contagens = result;
-                },
-                complete:function () {
-                    prepareListContagens()
+                    if (result.status === "ok") {
+                        contagens = result.response;
+                        prepareListContagens();
+                    } else {
+                        notificar("error", result.exception);
+                    }
                 }
             });
         };
@@ -263,12 +370,15 @@
         });
 
         var getEnderecos = function () {
+            $("#loader").show();
             $.ajax({url: "/mobile/inventario-novo/get-enderecos/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia,
                 success: function(result){
-                    enderecos = result;
-                },
-                complete:function () {
-                    prepareListEnderecos()
+                    if (result.status === "ok") {
+                        enderecos = result.response;
+                        prepareListEnderecos()
+                    } else {
+                        notificar("error", result.exception);
+                    }
                 }
             });
         };
@@ -281,51 +391,59 @@
                     list.append('<div class="list-item">' + i + '</div>')
                 }
                 changeViewer("bipagem-endereco");
+                $("#cod-barras-end").focus();
             } else {
-                alert("A contagem " + contSelecioando.contagem + " já foi finalizada!");
+                notificar("warning", "A contagem " + contSelecioando.contagem + " já foi finalizada!");
                 getContagens();
             }
         };
 
         $("#cod-barras-end").keypress(function( event ) {
             if ( event.which === 13  || event.keyCode === 13 ) {
-                processEndereco($(this), event);
+                disarmEvent(event);
+                if (!isEmpty($(this).val()))
+                    processEndereco($(this));
             }
         });
 
         $("#btn-consultar-endereco").click(function( event ) {
-            processEndereco($("#cod-barras-end"),event);
+            var input = $("#cod-barras-end");
+            disarmEvent(event);
+            if (!isEmpty(input.val())) processEndereco(input);
         });
 
-        var processEndereco = function (input, event) {
+        var processEndereco = function (input) {
+
             var endFormated = formatEndereco(input.val());
 
             if (!endFormated) {
-                alert("O código de barras não corresponde à um endereço");
+                notificar("error", "O código de barras não corresponde à um endereço");
             } else if ((enderecos[endFormated] !== undefined)) {
                 idEndSelecionado = enderecos[endFormated];
                 dscEndSelecionado = endFormated;
+                $("#lbl-endereco").text(dscEndSelecionado);
                 openEndereco()
             } else {
-                alert("Este endereço "+input.val()+" não está no inventário");
-                input.val("");
+                notificar("error", "Este endereço "+input.val()+" não está no inventário");
                 input.focus();
             }
-            if (event.preventDefault) {
-                event.preventDefault();
-            } else {
-                event.returnValue = false;
-            }
+
+            input.val("");
         };
 
         var openEndereco = function () {
+            $("#loader").show();
             $.ajax({
                 url: "/mobile/inventario-novo/get-info-endereco/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia + "/end/" + idEndSelecionado,
                 success: function (result) {
-                    produtos = result;
-                },
-                complete: function () {
-                    prepareListProdutos();
+                    if (result.status === "ok") {
+                        for (var index in result.response) {
+                            produtos.push(result.response[index]);
+                        }
+                        prepareListProdutos();
+                    } else {
+                        notificar("error", result.exception);
+                    }
                 }
             })
         };
@@ -339,25 +457,153 @@
                 });
             }
             changeViewer("bipagem-produto");
+            $("#cod-barras-prod").focus();
         };
 
         $("#cod-barras-prod").keypress(function( event ) {
             if ( event.which === 13  || event.keyCode === 13 ) {
-                processProduto($(this), event);
+                disarmEvent(event);
+                if (!isEmpty($(this).val())) {
+                    $(this).val("");
+                }
             }
         });
 
         $("#btn-consultar-produto").click(function( event ) {
-            processProduto($("#cod-barras-prod"),event);
+            var input = $("#cod-barras-prod");
+            if (!isEmpty(input.val())) {
+                disarmEvent(event);
+                processProduto(input);
+                input.val("");
+            }
         });
 
-        var processProduto = function (input, event) {
-            console.log("bipou o código de barras " + input.val());
-            if (event.preventDefault) {
-                event.preventDefault();
-            } else {
-                event.returnValue = false;
+        var processProduto = function (input) {
+            var liberado = true;
+            if (produtos.length) {
+                var encontrou = false;
+                $.each(produtos, function (k,produto) {
+                    if (produto.codBarras.indexOf(input.val()) >= 0) encontrou = true;
+                });
+                if (!encontrou) {
+                    liberado = false;
+                    notificar("error", "Este código de barras "+input.val()+" não pertence à nenhum produto deste inventário")
+                }
             }
+
+            if (!liberado) {
+                return;
+            }
+
+            getInfoProduto(input.val());
+        };
+
+        var getInfoProduto = function (codBarras) {
+            $("#loader").show();
+            $.ajax({
+                url: "/mobile/inventario-novo/get-info-produto/codbarras/" + codBarras ,
+                success: function (result) {
+                    if (result.status === "ok") {
+                        elemBipado = result.response.produto;
+                        usaGrade = (result.response.usaGrade === 'S');
+                        prepareElement();
+                    } else {
+                        notificar("error", result.exception);
+                    }
+                }
+            })
+        };
+
+        var prepareElement = function () {
+            $("#lbl-produto").text([
+                elemBipado.idProduto,
+                elemBipado.descricao,
+                ((usaGrade) ? elemBipado.grade : ""),
+            ].join(" "));
+
+            $("#lbl-embvol").text( elemBipado.descricaoEmbalagem + ((elemBipado.idEmbalagem !== null) ? "(" + elemBipado.quantidadeEmbalagem + ")" : "" ) );
+
+            if (controlaValidade()) {
+                $("#validade").val("");
+                $("#div-validade").show();
+            } else {
+                $("#div-validade").hide();
+            }
+
+            if (controlaLote()) {
+                $("#lote").val("");
+                $("#div-lote").show();
+            } else {
+                $("#div-lote").hide();
+            }
+
+            changeViewer("conferencia");
+            $("#qtd")
+        };
+
+        $("#qtd, #validade, #lote").keypress(function( event ) {
+            if ( event.which === 13  || event.keyCode === 13 ) {
+                disarmEvent(event);
+                if ( checkInputs(true) ) {
+                    registrar();
+                }
+            }
+        });
+
+        $("#btn-registrar").click(function( event ) {
+            disarmEvent(event);
+            if ( checkInputs() ) {
+                registrar();
+            }
+        });
+
+        var checkInputs = function (toNext) {
+
+            var inputQtd = $("#qtd");
+            var inputVal = $("#validade");
+            var inputLote = $("#lote");
+
+            if (isEmpty(inputQtd.val())) {
+                if (!toNext) notificar("warning", "A quantidade não foi informada");
+                inputQtd.focus();
+                return false;
+            }
+
+            if ( controlaValidade() && !isEmpty(inputVal.val())) {
+                if (!toNext) notificar("warning", "A validade não foi informada");
+                inputVal.focus();
+                return false;
+            }
+
+            if ( controlaLote() && !isEmpty((inputLote.val()))) {
+                if (!toNext) notificar("warning", "O Lote não foi informado");
+                inputLote.focus();
+                return false;
+            }
+
+            return true;
+        };
+
+        var registrar = function () {
+            $.post(
+                "/mobile/inventario-novo/contagem-produto",
+                {
+                    inventario: invSelecioando,
+                    contagem: contSelecioando,
+                    endereco: idEndSelecionado,
+                    produto: elemBipado,
+                    conferencia: {
+                        qtd: $("#qtd").val(),
+                        validade: $("#validade").val(),
+                        lote: $("#lote").val()
+                    }
+                }
+            ).done(function( data ) {
+                console.log(data);
+                // notificar("success", "Contagem registrada com sucesso");
+                prepareListProdutos();
+            })
+
         }
     })
 </script>

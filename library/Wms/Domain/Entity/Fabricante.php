@@ -2,6 +2,8 @@
 
 namespace Wms\Domain\Entity;
 
+use Wms\Domain\Configurator;
+
 /**
  * Fabricante
  *
@@ -46,4 +48,8 @@ class Fabricante
         return $this;
     }
 
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
+    }
 }

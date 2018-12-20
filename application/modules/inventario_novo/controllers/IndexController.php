@@ -165,15 +165,15 @@ class Inventario_Novo_IndexController  extends Action
 
             /** @var \Wms\Service\InventarioService $invServc */
             $invServc = $this->getServiceLocator()->getService("Inventario");
-            $invServc->removerItem($idInventario, $idEndereco, 'E', null, null);
+            $invServc->removerEndereco($idInventario, $idEndereco);
 
-            $this->addFlashMessage("success", "Endereço removido com sucesso.");
+            //$this->addFlashMessage("success", "Endereço removido com sucesso.");
 
         } catch (Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
         }
-        //$this->renderScript('index\impedimentos.phtml');
-        $this->_redirect('/inventario_novo/index/liberar/id/'.$idInventario.'');
+        $this->renderScript('index\impedimentos.phtml');
+        //$this->_redirect('/inventario_novo/index/liberar/id/'.$idInventario.'');
     }
 
     public function removerProdutoAction()
@@ -199,7 +199,7 @@ class Inventario_Novo_IndexController  extends Action
 
             /** @var \Wms\Service\InventarioService $invServc */
             $invServc = $this->getServiceLocator()->getService("Inventario");
-            $invServc->removerItem($idInventario, $idProduto, 'P', $grade, $lote);
+            $invServc->removerProduto($idInventario, $idProduto, $grade, $lote);
 
             $this->addFlashMessage("success", "Produto removido com sucesso.");
 

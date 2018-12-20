@@ -1627,7 +1627,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                         NVL(pe.descricao, pv.descricao) descricaoEmbalagem,
                         NVL(pe.quantidade, \'0\') quantidadeEmbalagem,
-                        p.indControlaLote'
+                        p.indControlaLote, p.indFracionavel, p.validade controlaValidade'
                 )
                 ->from('wms:Produto', 'p')
                 ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
