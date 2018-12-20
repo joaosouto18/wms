@@ -17,7 +17,7 @@ use Wms\Domain\Entity\OrdemServico;
 class InventarioContEndOs
 {
     /**
-     * @Column(name="COD_INVENT_CONT_END_OS", type="integer", length=8, nullable=false)
+     * @Column(name="COD_INV_CONT_END_OS", type="integer", length=8, nullable=false)
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
      * @SequenceGenerator(sequenceName="SQ_N_INV_CONT_END_OS_01", allocationSize=1, initialValue=1)
@@ -36,7 +36,7 @@ class InventarioContEndOs
      * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
      * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS")
      */
-    protected $codOs;
+    protected $ordemServico;
 
 
     /**
@@ -74,17 +74,17 @@ class InventarioContEndOs
     /**
      * @return OrdemServico
      */
-    public function getCodOs()
+    public function getOrdemServico()
     {
-        return $this->codOs;
+        return $this->ordemServico;
     }
 
     /**
-     * @param OrdemServico $codOs
+     * @param OrdemServico $ordemServico
      */
-    public function setCodOs($codOs)
+    public function setOrdemServico($ordemServico)
     {
-        $this->codOs = $codOs;
+        $this->ordemServico = $ordemServico;
     }
 
 }

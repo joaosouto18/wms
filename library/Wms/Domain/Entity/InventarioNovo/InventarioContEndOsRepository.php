@@ -9,35 +9,72 @@
 namespace Wms\Domain\Entity\InventarioNovo;
 
 use Doctrine\ORM\EntityRepository;
+use Wms\Domain\Configurator;
 use Wms\Domain\Entity\InventarioNovo;
 
 class InventarioContEndOsRepository extends EntityRepository
 {
     /**
+     * @param $params
+     * @param bool $executeFlush
      * @return InventarioContEndOs
      * @throws \Exception
      */
-    public function save() {
-
-        $this->_em->beginTransaction();
+    public function save($params, $executeFlush = true)
+    {
         try {
+            /** @var InventarioContEndOs $entity */
+            $entity = Configurator::configure(new $this->_entityName, $params);
 
-            $enInventarioContEndOs = new InventarioContEndOs();
+            $this->_em->persist($entity);
+            if ($executeFlush) $this->_em->flush();
 
-            $codContEnd = $this->_em->getReference('wms:InventarioNovo\InventarioContEnd',$params['idInvContEnd']);
-            $codOs      = $this->_em->getReference('wms:OrdemServico',$params['idOs']);
+            return $entity;
 
-            $enInventarioContEndOs->setInvContEnd($codContEnd);
-            $enInventarioContEndOs->setCodOs($codOs);
-
-            $this->_em->persist($enInventarioContEndOs);
-            $this->_em->flush();
-            $this->_em->commit();
         } catch (\Exception $e) {
-            $this->_em->rollback();
             throw new \Exception($e->getMessage());
         }
+    }
 
-        return $enInventarioContEndOs;
+    /**
+     * @param $idUsuario
+     * @param $idContEnd
+     * @return InventarioContEndOs[]
+     */
+    public function getOsContUsuario($idUsuario, $idContEnd)
+    {
+        $dql = $this->_em->createQueryBuilder()
+            ->select("iceos")
+            ->from("wms:InventarioNovo\InventarioContEndOs", "iceos")
+            ->innerJoin("iceos.ordemServico", "os")
+            ->innerJoin("iceos.invContEnd", "ice")
+            ->innerJoin("os.pessoa", "p")
+            ->where("ice.id = :idContEnd")
+            ->andWhere("p.id = :idPessoa")
+            ->setParameters(["idContEnd" => $idContEnd, "idPessoa" => $idUsuario]);
+
+        return $dql->getQuery()->getResult();
+    }
+
+    /**
+     * @param $idUsuario
+     * @param $idInventraio
+     * @return InventarioContEndOs[]
+     */
+    public function getContagensUsuario($idUsuario, $idInventraio)
+    {
+        $dql = $this->_em->createQueryBuilder()
+            ->select("iceos")
+            ->from("wms:InventarioNovo\InventarioContEndOs", "iceos")
+            ->innerJoin("iceos.ordemServico", "os")
+            ->innerJoin("iceos.invContEnd", "ice")
+            ->innerJoin("ice.inventarioEndereco", "ien")
+            ->innerJoin("ien.inventario", "invn")
+            ->innerJoin("os.pessoa", "p")
+            ->where("invn.id = :idInventario")
+            ->andWhere("p.id = :idPessoa")
+            ->setParameters(["idInventario" => $idInventraio, "idPessoa" => $idUsuario]);
+
+        return $dql->getQuery()->getResult();
     }
 }

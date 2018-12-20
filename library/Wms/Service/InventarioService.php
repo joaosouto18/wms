@@ -10,13 +10,19 @@ namespace Wms\Service;
 
 
 use Bisna\Base\Domain\Entity\EntityService;
+use Wms\Domain\Entity\Atividade;
 use Wms\Domain\Entity\InventarioNovo;
+use Wms\Domain\Entity\OrdemServico;
+use Wms\Domain\Entity\Pessoa;
+use Wms\Domain\Entity\Usuario;
+use Wms\Math;
 
 class InventarioService extends AbstractService
 {
     /**
-     * @param $invData
-     * @return InventarioNovo
+     * @param $params array
+     * @return object|null
+     * @throws \Exception
      */
     public function registrarNovoInventario($params) {
 
@@ -50,7 +56,6 @@ class InventarioService extends AbstractService
                     'inventario' => $inventarioEn,
                     'depositoEndereco' => $this->em->getReference('wms:Deposito\Endereco', $item['id']),
                     'contagem' => 1,
-                    'finalizado' => 'N',
                     'ativo' => 'S'
                 ]);
                 if ($params['criterio'] === InventarioNovo::CRITERIO_PRODUTO) {
@@ -72,6 +77,11 @@ class InventarioService extends AbstractService
         }
     }
 
+    /**
+     * @param $id
+     * @return bool
+     * @throws \Exception
+     */
     public function liberarInventario($id)
     {
         $this->em->beginTransaction();
@@ -111,7 +121,16 @@ class InventarioService extends AbstractService
         }
     }
 
-    public function removerEndereco($idInventario, $idEndereco){
+    /**
+     * @param $id_inventario
+     * @param $id_item
+     * @param $tipo
+     * @param $grade
+     * @param $lote
+     * @throws \Exception
+     */
+    public function removerItem($id_inventario, $id_item, $tipo, $grade, $lote)
+    {
         $this->em->beginTransaction();
 
         try {
@@ -189,6 +208,7 @@ class InventarioService extends AbstractService
     /**
      * @param InventarioNovo\InventarioEnderecoNovo $inventarioEnderecoEn
      * @param bool $divergencia
+     * @return InventarioNovo\InventarioContEnd
      * @throws \Exception
      */
     public function addNovaContagem(InventarioNovo\InventarioEnderecoNovo $inventarioEnderecoEn, $divergencia = false)
@@ -203,7 +223,8 @@ class InventarioService extends AbstractService
                 "inventarioEndereco" => $inventarioEnderecoEn,
                 "sequencia" => (count($ultimaContagem) + 1),
                 "contagem" => $inventarioEnderecoEn->getContagem(),
-                "contagemDivergencia" => $divergencia
+                "contagemDivergencia" => $divergencia,
+                "finalizada" => false
             ], false);
 
         } catch (\Exception $e) {
@@ -211,4 +232,100 @@ class InventarioService extends AbstractService
         }
     }
 
+    /**
+     * @param $inventario
+     * @param $contagem
+     * @param $produto
+     * @param $conferencia
+     * @throws \Exception
+     */
+    public function registrarContagem($inventario, $contagem, $produto, $conferencia, $tipoConferencia)
+    {
+        $this->em->beginTransaction();
+        try {
+            /** @var Usuario $usuario */
+            $usuario = $this->em->getReference('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId());
+
+            $this->getOsUsuarioContagem($usuario, $contagem, $inventario, $tipoConferencia, true);
+
+            $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd")->save(array(
+                "inventarioContEnd" => $this->em->getReference("wms:InventarioNovo\InventarioContEnd", $contagem['id']),
+                "produto" => $this->em->getReference("wms:Produto", array("id" => $produto['idProduto'], "grade" => $produto['grade'])),
+                "lote" => $conferencia['lote'],
+                "qtdContada" => $conferencia['qtd'],
+                "produtoEmbalagem" => (!empty($produto['idEmbalagem'])) ? $this->em->getReference("wms:Produto\Embalagem", $produto['idEmbalagem']): null,
+                "qtdEmbalagem" => $produto['quantidadeEmbalagem'],
+                "codBarras" => $produto['codigoBarras'],
+                "produtoVolume" => (!empty($produto->idVolume)) ? $this->em->getReference("wms:Produto\Volume", $produto['idVolume']): null,
+                "validade" => (!empty($conferencia['validade'])) ? date_create_from_format("d/m/y", $conferencia['validade']) : null
+            ), false);
+
+            $this->em->flush();
+            $this->em->commit();
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $usuario
+     * @param $contagem
+     * @param $inventario
+     * @param $tipoConferencia
+     * @param $createIfNoExist
+     * @return InventarioNovo\InventarioContEndOs
+     * @throws \Exception
+     */
+    public function getOsUsuarioContagem($usuario, $contagem, $inventario, $tipoConferencia, $createIfNoExist = false)
+    {
+        try {
+            /** @var InventarioNovo\InventarioContEndOsRepository $contagemEndOsRepo */
+            $contagemEndOsRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndOs");
+
+            /** @var InventarioNovo\InventarioContEndOs $usrContOs */
+            $usrContOs = $contagemEndOsRepo->getOsContUsuario( $contagem['id'], $usuario->getId());
+
+            if (empty($usrContOs) && $createIfNoExist) {
+                $osContagensAnteriores = $contagemEndOsRepo->getContagensUsuario( $usuario->getId(), $inventario['id']);
+                if (!empty($osContagensAnteriores) && $inventario['usuarioNContagens'])
+                    throw new \Exception("Este usuário não tem permissão para iniciar uma nova contagem neste endereço");
+
+                $usrContOs = $this->addNewOsContagem($contagem, $usuario, $tipoConferencia);
+            }
+
+            return $usrContOs;
+
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $contagemEndereco
+     * @param $usuario Usuario
+     * @param $tipoConferencia
+     * @return InventarioNovo\InventarioContEndOs
+     * @throws \Exception
+     */
+    public function addNewOsContagem($contagemEndereco, $usuario, $tipoConferencia)
+    {
+        try {
+            /** @var OrdemServico $newOsEn */
+            $newOsEn = $this->em->getRepository("wms:OrdemServico")->addNewOs([
+                "dataInicial" => new \DateTime(),
+                "pessoa" => $usuario->getPessoa(),
+                "atividade" => $this->em->getReference('wms:Atividade', Atividade::INVENTARIO),
+                "formaConferencia" => $tipoConferencia,
+                "dscObservacao" => "Inclusão de novo usuário na contagem"
+            ], false);
+
+            return $this->em->getRepository("wms:InventarioNovo\InventarioContEndOs")->save([
+                "invContEnd" => $this->em->getReference("wms:InventarioNovo\InventarioContEnd", $contagemEndereco['id']),
+                "ordemServico" => $newOsEn
+            ], false);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }

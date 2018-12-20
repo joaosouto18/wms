@@ -8,6 +8,8 @@
 
 namespace Wms\Domain\Entity\InventarioNovo;
 
+use Wms\Domain\Configurator;
+
 /**
  * @Table(name="INVENTARIO_CONT_END")
  * @Entity(repositoryClass="Wms\Domain\Entity\InventarioNovo\InventarioContEndRepository")
@@ -15,6 +17,7 @@ namespace Wms\Domain\Entity\InventarioNovo;
 class InventarioContEnd
 {
     /**
+     * @var int
      * @Column(name="COD_INV_CONT_END", type="integer", length=8, nullable=false)
      * @Id
      * @GeneratedValue(strategy="SEQUENCE")
@@ -30,23 +33,26 @@ class InventarioContEnd
     protected $inventarioEndereco;
 
     /**
+     * @var int
      * @Column(name="NUM_SEQUENCIA", type="integer", length=8)
      */
     protected $sequencia;
 
     /**
+     * @var string
      * @Column(name="IND_CONTAGEM_DIVERGENCIA", type="string" )
      */
     protected $contagemDivergencia;
 
     /**
+     * @var int
      * @Column(name="NUM_CONTAGEM", type="integer", length=3 )
      */
     protected $contagem;
 
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getId()
     {
@@ -78,7 +84,7 @@ class InventarioContEnd
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getSequencia()
     {
@@ -86,7 +92,7 @@ class InventarioContEnd
     }
 
     /**
-     * @param mixed $sequencia
+     * @param int $sequencia
      */
     public function setSequencia($sequencia)
     {
@@ -94,7 +100,7 @@ class InventarioContEnd
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getContagemDivergencia()
     {
@@ -102,11 +108,12 @@ class InventarioContEnd
     }
 
     /**
-     * @param bool $contagemDivergencia
+     * @param bool|string $contagemDivergencia
      */
     public function setContagemDivergencia($contagemDivergencia)
     {
-        $this->contagemDivergencia = ((is_bool($contagemDivergencia) && $contagemDivergencia) || (is_string($contagemDivergencia) && $contagemDivergencia == 'S') ) ? 'S' : 'N';
+        $this->contagemDivergencia = ((is_bool($contagemDivergencia) && $contagemDivergencia) ||
+                                        (is_string($contagemDivergencia) && $contagemDivergencia == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -118,7 +125,7 @@ class InventarioContEnd
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getContagem()
     {
@@ -126,7 +133,7 @@ class InventarioContEnd
     }
 
     /**
-     * @param mixed $contagem
+     * @param int $contagem
      */
     public function setContagem($contagem)
     {
@@ -136,5 +143,10 @@ class InventarioContEnd
     private function convertBoolean($param)
     {
         return ($param === 'S');
+    }
+
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
     }
 }

@@ -20,7 +20,7 @@ class Mobile_InventarioNovoController extends Action
         try {
             $this->_helper->json([
                 "status" => "ok",
-                "response" => $this->em->getRepository('wms:InventarioNovo')->getInventarios('stdClass', ['status' => \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO])
+                "response" => $this->em->getRepository('wms:InventarioNovo')->getInventarios('stdClass', ['status' => \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO], ["id" => "DESC"])
             ]);
         } catch (Exception $e) {
             $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
@@ -87,16 +87,17 @@ class Mobile_InventarioNovoController extends Action
     public function contagemProdutoAction()
     {
         try {
-            $params = $this->getRequest()->getParams();
-            $this->_helper->json(["status" => "ok", 'response' => $params]);
+
             $inventario = $this->_getParam("inventario");
             $contagem = $this->_getParam("contagem");
-            $endereco = $this->_getParam("endereco");
             $produto = $this->_getParam("produto");
             $conferencia = $this->_getParam("conferencia");
 
+            /** @var \Wms\Service\InventarioService $invServc */
+            $invServc = $this->getServiceLocator()->getService("Inventario");
+            $invServc->registrarContagem($inventario, $contagem, $produto, $conferencia, \Wms\Domain\Entity\OrdemServico::COLETOR);
 
-
+            $this->_helper->json(["status" => "ok", 'response' => "Contagem efetuada com sucesso!"]);
         } catch (Exception $e) {
             $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
         }

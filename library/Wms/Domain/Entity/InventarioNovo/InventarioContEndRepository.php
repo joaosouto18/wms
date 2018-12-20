@@ -15,12 +15,15 @@ use Wms\Domain\Entity\InventarioNovo;
 class InventarioContEndRepository extends EntityRepository
 {
     /**
+     * @param $params
+     * @param bool $executeFlush
      * @return InventarioContEnd
      * @throws \Exception
      */
     public function save($params, $executeFlush = true)
     {
         try {
+            /** @var InventarioContEnd $entity */
             $entity = Configurator::configure(new $this->_entityName, $params);
 
             $this->_em->persist($entity);
@@ -36,6 +39,7 @@ class InventarioContEndRepository extends EntityRepository
     public function getContagens($idInventario)
     {
         $sql = "SELECT DISTINCT 
+                        ICE.COD_INV_CONT_END \"id\",
                         ICE.NUM_SEQUENCIA \"sequencia\", 
                         ICE.NUM_CONTAGEM \"contagem\", 
                         ICE.IND_CONTAGEM_DIVERGENCIA \"divergencia\"

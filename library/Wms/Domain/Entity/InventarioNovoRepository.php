@@ -15,12 +15,12 @@ use Wms\Domain\EntityRepository;
 class InventarioNovoRepository extends EntityRepository
 {
 
-    public function getInventarios($returnType = 'entity', $findBy = [])
+    public function getInventarios($returnType = 'entity', $findBy = [], $orderBy = null)
     {
         $return = [];
         /** @var InventarioNovo[] $inventarios */
         if (!empty($findBy)) {
-            $inventarios = $this->findBy($findBy);
+            $inventarios = $this->findBy($findBy,$orderBy);
         }
         else {
             $inventarios = $this->findAll();
@@ -33,7 +33,7 @@ class InventarioNovoRepository extends EntityRepository
                 $obj->dthCriacao            = $inventario->getDthCriacao(true);
                 $obj->dthLiberacao          = $inventario->getDthInicio(true);
                 $obj->dthFinalizacao        = $inventario->getDthFinalizacao(true);
-                $obj->codErp                = $inventario->getCodErp(true);
+                $obj->codErp                = $inventario->getCodErp();
                 $obj->status                = $inventario->getStatus();
                 $obj->dscStatus             = $inventario->getDscStatus();
                 $obj->modeloInventario      = $inventario->getModeloInventario()->toArray();
