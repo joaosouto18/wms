@@ -27,7 +27,7 @@ class EstoqueProprietarioRepository extends EntityRepository
     }
 
     public function buildMovimentacaoEstoque($codProduto, $grade, $qtd, $operacao, $codPessoa, $codOperacao = null, $codOperacaoDetalhe = null, $cnpjGrupoExcluir = array()){
-
+        
         $saldo = $this->getSaldoProp($codProduto, $grade, $codPessoa);
         $saldoFinal = $saldo + $qtd;
         /**
@@ -145,7 +145,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                   AND DSC_GRADE = '$grade' 
                   AND COD_PESSOA = $codPessoa 
                 ORDER BY COD_ESTOQUE_PROPRIETARIO DESC";
-        $result = $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         if (count($result) >0) {
             return reset($result)['SALDO_FINAL'];
