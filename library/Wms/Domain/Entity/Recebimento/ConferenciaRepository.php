@@ -123,8 +123,8 @@ class ConferenciaRepository extends EntityRepository
                          WHERE COD_OS = '$idOs'
                            AND PV.COD_PRODUTO = '$codProduto'
                            AND PV.DSC_GRADE = '$grade'
-                         GROUP BY RV.COD_PRODUTO_VOLUME, RV.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, COD_UNITIZADOR)
-                 GROUP BY COD_NORMA_PALETIZACAO, NUM_NORMA, COD_UNITIZADOR, NUM_PESO, RV.DSC_LOTE";
+                         GROUP BY RV.COD_PRODUTO_VOLUME, RV.COD_NORMA_PALETIZACAO, NP.NUM_NORMA, COD_UNITIZADOR, RV.DSC_LOTE)
+                 GROUP BY COD_NORMA_PALETIZACAO, NUM_NORMA, COD_UNITIZADOR, NUM_PESO";
         return $this->getEntityManager()->getConnection()->query($SQL)-> fetchAll(\PDO::FETCH_ASSOC);
     }
 
