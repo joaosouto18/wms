@@ -346,7 +346,7 @@ class InventarioService extends AbstractService
             $osRepo->finalizar($osUsuarioCont->getOrdemServico()->getId(), "Contagem finalizada", $osUsuarioCont->getOrdemServico(), false);
 
             $outrasOs = $this->em->getRepository("wms:InventarioNovo\InventarioContEndOs")
-                ->getOutrasOsAbertasContagem($inventario['id'], $osUsuarioCont->getOrdemServico()->getPessoa()->getId(), $contagem['id']);
+                ->getOutrasOsAbertasContagem($inventario['id'], $osUsuarioCont->getOrdemServico()->getPessoa()->getId(), $osUsuarioCont->getId());
 
             if (empty($outrasOs)) {
                 $contMaiorAcerto = $this->compararContagens($osUsuarioCont->getInvContEnd(), $inventario);
@@ -383,6 +383,15 @@ class InventarioService extends AbstractService
         $validaValidade = ($inventario['controlaValidade'] === InventarioNovo\ModeloInventario::VALIDADE_VALIDA);
 
         $strConcat = "+=+";
+
+        /*
+         * retornar a soma das contagens de cada produto
+         *
+         * caso compare com o estoque
+         *      caso seja por produto consultar estoque de cada produto individualmente
+         *      caso seja por endereço retornar todos os produtos do estoque
+         *      caso seja por endereço porem obrigar todos os produtos consultar apenas o q foi conferido
+         */
 
         if ($inventario['comparaEstoque']) {
             /** @var \Wms\Domain\Entity\Enderecamento\Estoque[] $estoque */

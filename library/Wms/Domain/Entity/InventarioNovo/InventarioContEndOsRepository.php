@@ -77,16 +77,11 @@ class InventarioContEndOsRepository extends EntityRepository
         $dql = $this->_em->createQueryBuilder()
             ->select("iceos")
             ->from("wms:InventarioNovo\InventarioContEndOs", "iceos")
-            ->innerJoin("iceos.ordemServico", "os")
+            ->innerJoin("iceos.ordemServico", "os", "WITH", "os.pessoa = $idUsuario and os.dataFinal IS NULL")
             ->innerJoin("iceos.invContEnd", "ice")
-            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien.ativo = 'S'")
+            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien.inventario = $idInventraio and ien.ativo = 'S'")
             ->innerJoin("ien.inventario", "invn")
-            ->innerJoin("os.pessoa", "p")
-            ->where("invn.id = :idInventario")
-            ->andWhere("p.id = :idPessoa")
-            ->andWhere("os.dataFinal IS NULL")
-            ->andWhere("iceos.id != :idContagemOs")
-            ->setParameters(["idInventario" => $idInventraio, "idPessoa" => $idUsuario, "idContagemOs" => $idContagemOs]);
+            ->where("iceos.id <> $idContagemOs");
 
         return $dql->getQuery()->getResult();
     }
