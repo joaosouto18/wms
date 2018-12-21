@@ -219,7 +219,8 @@ CREATE TABLE inventario_end_prod (
   cod_inv_end_prod          NUMBER(8) NOT NULL,
   cod_inventario_endereco   NUMBER(8) NOT NULL,
   cod_produto               VARCHAR2(20) NOT NULL,
-  dsc_grade                 VARCHAR2(100) NOT NULL
+  dsc_grade                 VARCHAR2(100) NOT NULL,
+  ind_ativo                 CHAR(1) NOT NULL
 );
 
 ALTER TABLE inventario_end_prod ADD CONSTRAINT n_inv_end_prod_pk PRIMARY KEY ( cod_inv_end_prod );
@@ -239,7 +240,8 @@ CREATE TABLE inventario_endereco_novo (
   cod_deposito_endereco     NUMBER(8) NOT NULL,
   num_contagem              NUMBER(3) NOT NULL,
   --  Flag (S/N) para indicar  se o inventário no endereço foi finalizado
-  ind_finalizado            CHAR(1) NOT NULL
+  ind_finalizado            CHAR(1) NOT NULL,
+  ind_ativo                 CHAR(1) NOT NULL
 );
 
 COMMENT ON COLUMN inventario_endereco_novo.ind_finalizado IS
@@ -276,6 +278,24 @@ CREATE TABLE inventario_novo (
   IND_IMPORTA_ERP           CHAR (1) NOT NULL ,
   ID_MODELO                 NUMBER (1)
 );
+
+CREATE TABLE INVENTARIO_ANDAMENTO
+  (
+    COD_INVENTARIO_ANDAMENTO NUMBER (8) NOT NULL ,
+    DTH_ACAO                 DATE ,
+    COD_ACAO                 NUMBER (8) ,
+    DESCRICAO                VARCHAR2(100) ,
+    COD_INVENTARIO           NUMBER (8) NOT NULL ,
+    COD_USUARIO              NUMBER (8)
+  ) ;
+ALTER TABLE INVENTARIO_ANDAMENTO
+  ADD CONSTRAINT INVENTARIO_ANDAMENTO_PK
+  PRIMARY KEY ( COD_INVENTARIO_ANDAMENTO ) ;
+ALTER TABLE INVENTARIO_ANDAMENTO
+  ADD CONSTRAINT INV_ANDAMENTO_INV_NOVO_FK
+  FOREIGN KEY ( COD_INVENTARIO )
+REFERENCES INVENTARIO_NOVO ( COD_INVENTARIO ) ;
+
 
 ALTER TABLE inventario_novo ADD CONSTRAINT inv_novo_pk PRIMARY KEY ( cod_inventario );
 ALTER TABLE INVENTARIO_NOVO ADD CONSTRAINT FK_INVNV_MODINV FOREIGN KEY ( COD_MODELO_INVENTARIO ) REFERENCES MODELO_INVENTARIO ( COD_MODELO_INVENTARIO ) ;

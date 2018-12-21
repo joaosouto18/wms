@@ -167,21 +167,24 @@ class Inventario_Novo_IndexController  extends Action
             $invServc = $this->getServiceLocator()->getService("Inventario");
             $invServc->removerEndereco($idInventario, $idEndereco);
 
-            //$this->addFlashMessage("success", "Endereço removido com sucesso.");
+            $this->addFlashMessage("success", "Endereço removido com sucesso.");
+
+            $this->_redirect('/inventario_novo/index/liberar/id/'.$idInventario.'');
 
         } catch (Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
         }
-        $this->renderScript('index\impedimentos.phtml');
-        //$this->_redirect('/inventario_novo/index/liberar/id/'.$idInventario.'');
+
     }
 
     public function removerProdutoAction()
     {
         $idInventario = $this->getRequest()->getParam('id');
-        $idProduto    = $this->getRequest()->getParam('idProduto');
+        $idProduto    = $this->getRequest()->getParam('produto');
         $grade        = $this->getRequest()->getParam('grade');
-        $lote         = $this->getRequest()->getParam('lote');
+        $idInventarioEndereco   = $this->getRequest()->getParam('idInventarioEndereco');
+
+        //cho "$idInventario - $idEndereco - $idProduto - $grade";
 
         try {
             if (empty($idInventario))  {
@@ -193,21 +196,20 @@ class Inventario_Novo_IndexController  extends Action
             if (empty($grade))  {
                 throw new Exception("Grade não foi especificada.");
             }
-            if (empty($lote))  {
-                throw new Exception("Lote não foi especificado.");
+            if (empty($idInventarioEndereco))  {
+                throw new Exception("Endereço não foi especificado.");
             }
 
             /** @var \Wms\Service\InventarioService $invServc */
             $invServc = $this->getServiceLocator()->getService("Inventario");
-            $invServc->removerProduto($idInventario, $idProduto, $grade, $lote);
-
+            $invServc->removerProduto($idInventario, $idInventarioEndereco, $idProduto, $grade);
             $this->addFlashMessage("success", "Produto removido com sucesso.");
+
+            $this->_redirect('/inventario_novo/index/liberar/id/'.$idInventario.'');
 
         } catch (Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
         }
-        //$this->renderScript('index\impedimentos.phtml');
-        $this->_redirect('/inventario_novo/index/liberar/id/'.$idInventario.'');
     }
 
     public function atualizarAction()

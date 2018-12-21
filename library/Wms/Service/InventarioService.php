@@ -56,6 +56,7 @@ class InventarioService extends AbstractService
                     'inventario' => $inventarioEn,
                     'depositoEndereco' => $this->em->getReference('wms:Deposito\Endereco', $item['id']),
                     'contagem' => 1,
+                    'finalizado' => 'N',
                     'ativo' => 'S'
                 ]);
                 if ($params['criterio'] === InventarioNovo::CRITERIO_PRODUTO) {
@@ -129,54 +130,31 @@ class InventarioService extends AbstractService
      * @param $lote
      * @throws \Exception
      */
-    public function removerItem($id_inventario, $id_item, $tipo, $grade, $lote)
-    {
+
+    public function removerProduto($idInventario, $idInventarioEndereco, $idProduto, $grade){
         $this->em->beginTransaction();
 
         try {
-            /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo */
-            $inventarioEnderecoRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
-            $endereco = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'depositoEndereco' => $idEndereco]);
-
-            //exclusão lógica
-            $endereco->setAtivo('N');
-
-            $this->em->persist($endereco);
-            $this->em->flush();
-            $this->em->commit();
-
-            // verifica se existe algum endereço ativo ainda no inventario
-            $enderecoAtivo = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'ativo' => 'S']);
-
-            if(empty($enderecoAtivo))
-                $this->cancelarInventario($idInventario);
-
-        }catch (\Exception $e) {
-            $this->em->rollback();
-            throw $e;
-        }
-    }
-
-    public function removerProduto($idInventario, $idProduto, $grade, $lote){
-        $this->em->beginTransaction();
-
-        try {
+            //exclusao logica do produto
             /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEndProdRepository $inventarioEndProdRepo */
             $inventarioEndProdRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEndProd');
-            $produto = $inventarioEndProdRepo->findOneBy(['COD_INVENTARIO' => $idInventario, 'COD_PRODUTO' => $idProduto, 'GRADE' => $grade, 'LOTE' => $lote]);
+            $produto = $inventarioEndProdRepo->findOneBy(['inventarioEndereco' => $idInventarioEndereco, 'codProduto' => $idProduto, 'grade' => $grade]);
 
             //exclusão lógica
             $produto->setAtivo(false);
 
             $this->em->persist($produto);
             $this->em->flush();
+
+            // se nao existir mais produtos no endereço, cancela o endereço
+            /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEndProdRepository $inventarioEndProdRepo2 */
+            $inventarioEndProdRepo2 = $this->em->getRepository('wms:inventarioNovo\InventarioEndProd');
+            $produtoAtivo = $inventarioEndProdRepo2->findOneBy(['inventarioEndereco' => $idInventarioEndereco, 'ativo' => 'S']);
+
+            if( count($produtoAtivo) == 0 )
+                $this->removerEndereco($idInventario, $idInventarioEndereco);
+
             $this->em->commit();
-
-            // verifica se existe algum produto ativo ainda no endereço
-            $enderecoAtivo = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'ativo' => 'S']);
-
-            if(empty($enderecoAtivo))
-                $this->cancelarInventario($idInventario);
 
         }catch (\Exception $e) {
             $this->em->rollback();
@@ -184,24 +162,43 @@ class InventarioService extends AbstractService
         }
     }
 
+    public function removerEndereco($idInventario, $idEndereco)
+    {
+        $this->em->beginTransaction();
 
-    public function cancelarEndereco($idInventario, $idEndereco){
+        try {
+            //exclusao logica do endereço
+            /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo */
+            $inventarioEnderecoRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
+            $endereco = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'depositoEndereco' => $idEndereco]);
 
-        // se o produto for o ultimo, cancela o endereço
+            $endereco->setAtivo(false);
 
-    }
+            $this->em->persist($endereco);
+            $this->em->flush();
+            //$this->em->commit();
 
-    public function cancelarInventario($idInventario){
+            // se nao existir mais endereços ativos nesse inventario, cancela o mesmo
+            /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo2 */
+            $inventarioEnderecoRepo2 = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
+            $enderecoAtivo = $inventarioEnderecoRepo2->findOneBy(['inventario' => $idInventario, 'ativo' => 'S']);
 
-        // se o endereço for o ultimo, cancela o inventário
-        /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
-        $inventarioRepo = $this->em->getRepository("wms:Inventario");
-        $inventarioEn   = $inventarioRepo->find($idInventario);
+            if( (count($enderecoAtivo)) == 0)
+            {
+                /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
+                $inventarioRepo = $this->find($idInventario);
+                $inventarioRepo->setStatus(InventarioNovo::STATUS_CANCELADO);
 
-        if ($inventarioEn) {
-            $inventarioRepo->cancelar($inventarioEn);
-            $inventarioRepo->desbloqueiaEnderecos($idInventario);
-            //return $this->redirect('index');
+                $this->em->persist($inventarioRepo);
+                $this->em->flush();
+
+                throw new \Exception("O inventário $idInventario foi cancelado pois está vazio");
+            }
+
+            $this->em->commit();
+        }catch (\Exception $e) {
+            //$this->em->rollback();
+            throw $e;
         }
     }
 

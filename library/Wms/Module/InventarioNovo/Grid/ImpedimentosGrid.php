@@ -50,7 +50,7 @@ class ImpedimentosGrid extends Grid
                 'controllerName' => 'index',
                 'actionName' => 'remover-produto',
                 'cssClass' => 'del',
-                'pkIndex' => ['produto', 'grade', 'idEndereco', 'lote'],
+                'pkIndex' => ['produto', 'grade', 'idInventarioEndereco'],
                 'condition' => function ($row) {
                     return $row['criterio'] == "P";
                 }

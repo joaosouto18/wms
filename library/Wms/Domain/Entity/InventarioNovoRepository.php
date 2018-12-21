@@ -323,6 +323,7 @@ class InventarioNovoRepository extends EntityRepository
         $sql = "SELECT
                     DISTINCT
                     DE.COD_DEPOSITO_ENDERECO \"idEndereco\",
+                    IEP.COD_INVENTARIO_ENDERECO \"idInventarioEndereco\",                       
                     NVL(REP.COD_PRODUTO, IEP.COD_PRODUTO) \"produto\",
                     NVL(REP.DSC_GRADE, IEP.DSC_GRADE) \"grade\",
                     TO_CHAR(NVL(RE.DTH_RESERVA, INVATV.DTH_INICIO), 'DD/MM/YYYY HH24:MI:SS') \"dataOperacao\",
@@ -348,7 +349,7 @@ class InventarioNovoRepository extends EntityRepository
                         END as \"origemImpedimento\",
                     CASE WHEN IEP.COD_INV_END_PROD IS NULL THEN 'E' ELSE 'P' END \"criterio\"
                 FROM INVENTARIO_NOVO INV 
-                INNER JOIN  INVENTARIO_ENDERECO_NOVO IEN ON INV.COD_INVENTARIO = IEN.COD_INVENTARIO AND IEN.IND_ATIVO = 'S'
+                INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON INV.COD_INVENTARIO = IEN.COD_INVENTARIO AND IEN.IND_ATIVO = 'S'
                 INNER JOIN DEPOSITO_ENDERECO DE ON IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                 LEFT JOIN RESERVA_ESTOQUE RE ON DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO AND RE.IND_ATENDIDA = 'N'
                 LEFT JOIN RESERVA_ESTOQUE_EXPEDICAO REEXP ON RE.COD_RESERVA_ESTOQUE = REEXP.COD_RESERVA_ESTOQUE
@@ -363,7 +364,7 @@ class InventarioNovoRepository extends EntityRepository
                             LEFT JOIN INVENTARIO_END_PROD IEP2 ON IEN2.COD_INVENTARIO_ENDERECO = IEP2.COD_INVENTARIO_ENDERECO AND IEP2.IND_ATIVO = 'S'
                             WHERE INVN.COD_STATUS IN ($statusLiberado, $statusConcluido)
                   ) INVATV ON INVATV.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO OR (INVATV.COD_PRODUTO = IEP.COD_PRODUTO AND INVATV.DSC_GRADE = IEP.DSC_GRADE)
-                WHERE IEN.COD_INVENTARIO = $id
+                WHERE IEN.COD_INVENTARIO = $id AND NVL(RE.COD_RESERVA_ESTOQUE, INVATV.COD_INVENTARIO) IS NOT NULL
                 ORDER BY DE.DSC_DEPOSITO_ENDERECO";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
