@@ -37,23 +37,19 @@ class InventarioContEndOsRepository extends EntityRepository
     }
 
     /**
-     * @param $idUsuario
      * @param $idContEnd
+     * @param $idUsuario
      * @return InventarioContEndOs[]
      */
-    public function getOsContUsuario($idUsuario, $idContEnd)
+    public function getOsContUsuario($idContEnd, $idUsuario)
     {
         $dql = $this->_em->createQueryBuilder()
             ->select("iceos")
             ->from("wms:InventarioNovo\InventarioContEndOs", "iceos")
-            ->innerJoin("iceos.ordemServico", "os")
-            ->innerJoin("iceos.invContEnd", "ice")
-            ->innerJoin("os.pessoa", "p")
-            ->where("ice.id = :idContEnd")
-            ->andWhere("p.id = :idPessoa")
-            ->setParameters(["idContEnd" => $idContEnd, "idPessoa" => $idUsuario]);
+            ->innerJoin("iceos.ordemServico", "os", "WITH", "os.pessoa = $idUsuario")
+            ->innerJoin("iceos.invContEnd", "ice", "WITH", "ice.id = $idContEnd");
 
-        return $dql->getQuery()->getResult();
+        return $dql->getQuery()->getOneOrNullResult();
     }
 
     /**
@@ -66,14 +62,11 @@ class InventarioContEndOsRepository extends EntityRepository
         $dql = $this->_em->createQueryBuilder()
             ->select("iceos")
             ->from("wms:InventarioNovo\InventarioContEndOs", "iceos")
-            ->innerJoin("iceos.ordemServico", "os")
+            ->innerJoin("iceos.ordemServico", "os", "WITH", "os.pessoa = $idUsuario")
             ->innerJoin("iceos.invContEnd", "ice")
-            ->innerJoin("ice.inventarioEndereco", "ien")
-            ->innerJoin("ien.inventario", "invn")
-            ->innerJoin("os.pessoa", "p")
-            ->where("invn.id = :idInventario")
-            ->andWhere("p.id = :idPessoa")
-            ->setParameters(["idInventario" => $idInventraio, "idPessoa" => $idUsuario]);
+            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien.inventario = $idInventraio")
+            ->where("ien.ativo = 'S'")
+        ;
 
         return $dql->getQuery()->getResult();
     }

@@ -88,14 +88,11 @@ class Mobile_InventarioNovoController extends Action
     {
         try {
 
-            $inventario = $this->_getParam("inventario");
-            $contagem = $this->_getParam("contagem");
-            $produto = $this->_getParam("produto");
-            $conferencia = $this->_getParam("conferencia");
-
-            /** @var \Wms\Service\InventarioService $invServc */
-            $invServc = $this->getServiceLocator()->getService("Inventario");
-            $invServc->registrarContagem($inventario, $contagem, $produto, $conferencia, \Wms\Domain\Entity\OrdemServico::COLETOR);
+            $this->getServiceLocator()->getService("Inventario")->registrarContagem(
+                $this->_getParam("inventario"),
+                $this->_getParam("contagem"),
+                $this->_getParam("produto"),
+                $this->_getParam("conferencia"), \Wms\Domain\Entity\OrdemServico::COLETOR);
 
             $this->_helper->json(["status" => "ok", 'response' => "Contagem efetuada com sucesso!"]);
         } catch (Exception $e) {
@@ -112,7 +109,7 @@ class Mobile_InventarioNovoController extends Action
 
             /** @var \Wms\Service\InventarioService $invServc */
             $invServc = $this->getServiceLocator()->getService("Inventario");
-            $invServc->registrarContagem($inventario, $contagem, \Wms\Domain\Entity\OrdemServico::COLETOR);
+            $invServc->finalizarOs($inventario, $contagem);
 
             $this->_helper->json(["status" => "ok", 'response' => "Contagem efetuada com sucesso!"]);
         } catch (Exception $e) {

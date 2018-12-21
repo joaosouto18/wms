@@ -309,7 +309,7 @@ class InventarioService extends AbstractService
      * @return InventarioNovo\InventarioContEndOs
      * @throws \Exception
      */
-    public function addNewOsContagem($contagemEndereco, $usuario, $tipoConferencia)
+    private function addNewOsContagem($contagemEndereco, $usuario, $tipoConferencia)
     {
         try {
             /** @var OrdemServico $newOsEn */
@@ -351,11 +351,18 @@ class InventarioService extends AbstractService
             if (empty($outrasOs)) {
                 $contMaiorAcerto = $this->compararContagens($osUsuarioCont->getInvContEnd(), $inventario);
                 $nContagensNecessarias = ($inventario['comparaEstoque'])? $inventario['numContagens'] + 1 : $inventario['numContagens'] ;
+                $isDiverg = ($contagem['sequencia'] > $nContagensNecessarias);
+                $this->updateFlagContagensProdutos($contagem, $isDiverg);
+
                 if (count($contMaiorAcerto['seq']) < $nContagensNecessarias) {
                     $this->addNovaContagem(
                         $osUsuarioCont->getInvContEnd()->getInventarioEndereco(),
-
+                        $contagem['sequencia'],
+                        (!$contagem['divergencia'] && $isDiverg) ? 0 : $contagem['contagem'],
+                        $isDiverg
                     );
+                } else {
+                    $this->finalizarEndereco($osUsuarioCont->getInvContEnd()->getInventarioEndereco());
                 }
             }
 
@@ -369,7 +376,7 @@ class InventarioService extends AbstractService
      * @param $inventario
      * @return array
      */
-    public function compararContagens($contEnd, $inventario)
+    private function compararContagens($contEnd, $inventario)
     {
         $countQtdsIguais = [];
 
@@ -425,7 +432,12 @@ class InventarioService extends AbstractService
         return array_reverse($result)[0];
     }
 
-    public function finalizarEndereco()
+    private function updateFlagContagensProdutos($contagem, $resultFlag)
+    {
+
+    }
+
+    private function finalizarEndereco()
     {
 
     }
