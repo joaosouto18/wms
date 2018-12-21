@@ -339,6 +339,19 @@ table tr.title td {
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#FF3616', endColorstr='#9F0E00', GradientType=0 );
 }
 
+.gradientBtnSuccess{
+    font-size: 13px;
+    word-wrap: break-word;
+    background: rgb(7, 224, 0);
+    background: -moz-linear-gradient(top, rgb(7, 224, 0) 0%, rgb(0, 128, 11) 100%);
+    background: -webkit-gradient(left top, left bottom, color-stop(0%, rgb(7, 224, 0)), color-stop(100%, rgb(0, 128, 11)));
+    background: -webkit-linear-gradient(top, rgb(7, 224, 0) 0%, rgb(0, 128, 11) 100%);
+    background: -o-linear-gradient(top, rgb(7, 224, 0) 0%, rgb(0, 128, 11) 100%);
+    background: -ms-linear-gradient(top, rgb(7, 224, 0) 0%, rgb(0, 128, 11) 100%);
+    background: linear-gradient(to bottom, rgb(7, 224, 0) 0%, rgb(0, 128, 11) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#FF3616', endColorstr='#9F0E00', GradientType=0 );
+}
+
 .btnAlerta {
     background: rgba(223,206,22,1);
     background: -moz-linear-gradient(top, rgba(223,206,22,1) 0%, rgba(232,64,2,1) 100%);

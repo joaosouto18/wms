@@ -9,6 +9,10 @@
 <script src="<?php echo $this->baseUrl('angularJS/angular.js') ?>"></script>
 <script src="<?php echo $this->baseUrl('angularJS/wmsAngular.js') ?>"></script>
 <style>
+    .btn {
+        width: 95%;
+    }
+
     .lbl-headers {
         font-size: 15px;
         font-weight: bold;
@@ -110,6 +114,7 @@
             </form>
         </div>
         <button id="btn-consultar-produto" class="btn btn-spacing">Buscar</button>
+        <button id="btn-finalizar" class="btn btn-spacing gradientBtnSuccess"></button>
     </div>
     <div class="list-area" id="list-produtos"></div>
 </div>
@@ -181,7 +186,11 @@
                 songFile = "/confirm2.mp3";
             }
 
-            $("#messenger").append(
+            $("#dummy").html('<embed src="' + songFile + '" hidden="true" autostart="true" loop="false" />');
+            var audio = new Audio(songFile);
+            audio.play();
+
+            $("#messenger").html(
                 '<ul class="flashMessenger">' +
                 '    <li class="' + type + '_message" id="">' +
                 '        <div style="display:block; float:right;">' +
@@ -192,10 +201,6 @@
                 '</ul>');
 
             if (type === "error") alert(msg);
-
-            $("#dummy").html('<embed src="' + songFile + '" hidden="true" autostart="true" loop="false" />');
-            var audio = new Audio(songFile);
-            audio.play()
         };
 
         $(".fmBtnClose").live("click", function () {
@@ -255,6 +260,7 @@
             } else {
                 $("#divBtnBack").hide()
             }
+
             $("#"+showTo).show();
         };
 
@@ -441,6 +447,7 @@
             $.ajax({
                 url: "/mobile/inventario-novo/get-info-endereco/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia + "/end/" + idEndSelecionado,
                 success: function (result) {
+                    produtos = [];
                     if (result.status === "ok") {
                         for (var index in result.response) {
                             produtos.push(result.response[index]);
@@ -461,6 +468,13 @@
                     list.append('<div class="list-item">' + v.codProduto + " - " + v.grade + '</div>')
                 });
             }
+
+            if (contSelecioando.vazio === 'S') {
+                $("#btn-finalizar").text("Finalizar Endereço Vazio")
+            } else {
+                $("#btn-finalizar").text("Finalizar Endereço")
+            }
+
             changeViewer("bipagem-produto");
             $("#cod-barras-prod").focus();
         };
@@ -469,7 +483,7 @@
             if ( event.which === 13  || event.keyCode === 13 ) {
                 disarmEvent(event);
                 if (!isEmpty($(this).val())) {
-                    processProduto(input);
+                    processProduto($(this).val());
                     $(this).val("");
                 }
             }
@@ -479,21 +493,21 @@
             var input = $("#cod-barras-prod");
             disarmEvent(event);
             if (!isEmpty(input.val())) {
-                processProduto(input);
+                processProduto(input.val());
                 input.val("");
             }
         });
 
-        var processProduto = function (input) {
+        var processProduto = function (codBarras) {
             var liberado = true;
             if (produtos.length) {
                 var encontrou = false;
                 $.each(produtos, function (k,produto) {
-                    if (produto.codBarras.indexOf(input.val()) >= 0) encontrou = true;
+                    if (produto.codBarras.indexOf(codBarras) >= 0) encontrou = true;
                 });
                 if (!encontrou) {
                     liberado = false;
-                    notificar("error", "Este código de barras "+input.val()+" não pertence à nenhum produto deste inventário")
+                    notificar("error", "Este código de barras " + codBarras + " não pertence à nenhum produto deste inventário")
                 }
             }
 
@@ -501,7 +515,7 @@
                 return;
             }
 
-            getInfoProduto(input.val());
+            getInfoProduto(codBarras);
         };
 
         var getInfoProduto = function (codBarras) {
@@ -544,7 +558,7 @@
             }
 
             changeViewer("conferencia");
-            $("#qtd")
+            $("#qtd").val("");
         };
 
         $("#qtd, #validade, #lote").keypress(function( event ) {
@@ -604,16 +618,34 @@
                         lote: $("#lote").val()
                     }
                 }
-            ).done(function( data ) {
-                if (data.response.status === "ok") {
-                    notificar("success", data.response);
+            ).done(function( result ) {
+                if (result.status === "ok") {
+                    notificar("success", result.response);
                 } else {
-                    notificar("error", data.exception)
+                    notificar("error", result.exception)
                 }
                 prepareListProdutos();
                 changeViewer("bipagem-produto");
             })
+        };
 
-        }
+        $("#btn-finalizar").click(function () {
+            changeViewer("loader");
+            $.post(
+                "/mobile/inventario-novo/finalizar-contagem-os",
+                {
+                    inventario: invSelecioando,
+                    contagem: contSelecioando
+                }
+            ).done(function( result ) {
+                if (result.status === "ok") {
+                    notificar("success", result.response);
+                } else {
+                    notificar("error", result.exception)
+                }
+                prepareListEnderecos();
+                changeViewer("bipagem-endereco");
+            })
+        });
     })
 </script>

@@ -152,9 +152,18 @@ class InventarioEnderecoNovo
         $this->ativo = ((is_bool($ativo) && $ativo) || (is_string($ativo) && $ativo == 'S') ) ? 'S' : 'N';
     }
 
+    public function isAtivo()
+    {
+        return self::convertBoolean($this->ativo);
+    }
+
     public function toArray()
     {
         return Configurator::configureToArray($this);
     }
 
+    private function convertBoolean($param)
+    {
+        return ($param === 'S');
+    }
 }

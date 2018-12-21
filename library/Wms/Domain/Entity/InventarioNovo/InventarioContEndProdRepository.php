@@ -35,4 +35,22 @@ class InventarioContEndProdRepository extends EntityRepository
             throw new \Exception($e->getMessage());
         }
     }
+
+    public function getContagensProdutos($idInvEnd)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("ice.sequencia, icep.codProduto, icep.grade, icep.lote, TO_CHAR(icep.validade, 'DD/MM/YYYY') validade, 
+                        NVL(pv.id, 1) idElem, SUM(icep.qtdContada * icep.qtdEmbalagem) qtdContagem")
+            ->from("wms:InventarioNovo\InventarioContEndProd", "icep")
+            ->innerJoin("icep.inventarioContEnd", "ice")
+            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien.ativo = 'S'")
+            ->leftJoin("icep.produtoVolume", "pv")
+            ->where("ien.id = :idInvEnd")
+            ->setParameters(["idInvEnd" => $idInvEnd])
+            ->groupBy("ice.sequencia, icep.codProduto, icep.grade, icep.lote, icep.validade, NVL(pv.id, 1)")
+            ->orderBy("ice.sequencia")
+        ;
+
+        return $dql->getQuery()->getResult();
+    }
 }
