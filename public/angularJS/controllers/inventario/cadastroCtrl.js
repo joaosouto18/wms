@@ -9,18 +9,18 @@ angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filt
     $scope.elements = [];
 
     let rotasRequest = {
-        endereco:  "/index/get-enderecos-criar-ajax",
-        produto: "/index/get-produtos-criar-ajax"
+        E:  "/index/get-enderecos-criar-ajax",
+        P: "/index/get-produtos-criar-ajax"
     };
 
     let arrConfigColumns = {
-        endereco:  [
+        E:  [
             { name: 'dscEndereco', label: 'Endereço', type: 'ordenator', width: '13%'},
             { name: 'caracEnd', label: 'Característica', type: 'ordenator', width: '19%'},
             { name: 'dscArea', label: 'Área', type: 'ordenator', width: '30%'},
             { name: 'dscEstrutura', label: 'Estrutura', type: 'ordenator', width: '28%'}
         ],
-        produto: [
+        P: [
             { name: 'codProduto', label: 'Código', type: 'ordenator', width: '19%'},
             { name: 'dscProduto', label: 'Descrição', type: 'ordenator', width: '34%'},
             { name: 'grade', label: 'Grade', type: 'ordenator', width: '24%'},

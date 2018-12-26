@@ -33,8 +33,8 @@ class InventarioNovo
         self::STATUS_CANCELADO => "CANCELADO"
     );
 
-    const CRITERIO_PRODUTO = 'produto';
-    const CRITERIO_ENDERECO = 'endereco';
+    const CRITERIO_PRODUTO = 'P';
+    const CRITERIO_ENDERECO = 'E';
 
     /**
      * @Column(name="COD_INVENTARIO", type="integer", length=8, nullable=false)
@@ -68,11 +68,13 @@ class InventarioNovo
     protected $dthFinalizacao;
 
     /**
+     * @var int
      * @Column(name="COD_STATUS", type="integer" )
      */
     protected $status;
 
     /**
+     * @var int
      * @Column(name="COD_INVENTARIO_ERP", type="integer", length=8 )
      */
     protected $codErp;
@@ -131,6 +133,17 @@ class InventarioNovo
      * @Column(name="IND_VOLUMES_SEPARADAMENTE", type="string", length=1, nullable=false)
      */
     protected $volumesSeparadamente;
+
+    /**
+     * @var string
+     * @Column(name="IND_CRITERIO", type="string", length=1, nullable=false)
+     */
+    protected $criterio;
+
+    public function __construct()
+    {
+        $this->setStatus(self::STATUS_GERADO);
+    }
 
     /**
      * @return mixed
@@ -216,19 +229,74 @@ class InventarioNovo
     }
 
     /**
-     * @return mixed
+     * @return ing
      */
     public function getStatus()
     {
         return $this->status;
     }
 
+    public function isGerado()
+    {
+        return ($this->status == self::STATUS_GERADO);
+    }
+
+    public function isLiberado()
+    {
+        return ($this->status == self::STATUS_LIBERADO);
+    }
+
+    public function isConcluido()
+    {
+        return ($this->status == self::STATUS_CONCLUIDO);
+    }
+
+    public function isFinalizado()
+    {
+        return ($this->status == self::STATUS_FINALIZADO);
+    }
+
+    public function isInterrompido()
+    {
+        return ($this->status == self::STATUS_INTERROMPIDO);
+    }
+
+    public function isCancelado()
+    {
+        return ($this->status == self::STATUS_CANCELADO);
+    }
+
     /**
      * @param mixed $status
      */
-    public function setStatus($status)
+    private function setStatus($status)
     {
         $this->status = $status;
+    }
+
+    public function liberar()
+    {
+        $this->setStatus(self::STATUS_LIBERADO);
+    }
+
+    public function concluir()
+    {
+        $this->setStatus(self::STATUS_CONCLUIDO);
+    }
+
+    public function finalizar()
+    {
+        $this->setStatus(self::STATUS_FINALIZADO);
+    }
+
+    public function interromper()
+    {
+        $this->setStatus(self::STATUS_INTERROMPIDO);
+    }
+
+    public function cancelar()
+    {
+        $this->setStatus(self::STATUS_CANCELADO);
     }
 
     /**
@@ -236,11 +304,11 @@ class InventarioNovo
      */
     public function getDscStatus()
     {
-        return self::$tipoStatus[$this->getStatus()];
+        return self::$tipoStatus[$this->status];
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getCodErp()
     {
@@ -449,6 +517,38 @@ class InventarioNovo
     {
         $this->volumesSeparadamente = ((is_bool($volumesSeparadamente) && $volumesSeparadamente) ||
                                        (is_string($volumesSeparadamente) && $volumesSeparadamente == 'S') ) ? 'S' : 'N';
+    }
+
+    /**
+     * @return string
+     */
+    public function getCriterio()
+    {
+        return $this->criterio;
+    }
+
+    /**
+     * @param string $criterio
+     */
+    public function setCriterio($criterio)
+    {
+        $this->criterio = $criterio;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPorProduto()
+    {
+        return ($this->criterio === self::CRITERIO_PRODUTO);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPorEndereco()
+    {
+        return ($this->criterio === self::CRITERIO_ENDERECO);
     }
 
     /**

@@ -3,8 +3,8 @@ angular.module("wms").controller("previewerCtrl", function ($scope, $http, $wind
     $scope.modelos = [];
 
     let labelsCriterio = {
-        endereco: "Endereço",
-        produto: "Produto",
+        E: "Endereço",
+        P: "Produto",
     };
 
     let requestModelos = function () {

@@ -40,14 +40,12 @@ class InventarioContEndProdRepository extends EntityRepository
     {
         $dql = $this->_em->createQueryBuilder();
         $dql->select("ice.sequencia, icep.codProduto, icep.grade, icep.lote, TO_CHAR(icep.validade, 'DD/MM/YYYY') validade, 
-                        NVL(pv.id, 1) idElem, SUM(icep.qtdContada * icep.qtdEmbalagem) qtdContagem")
+                        pv.id idVol, SUM(icep.qtdContada * icep.qtdEmbalagem) qtdContagem")
             ->from("wms:InventarioNovo\InventarioContEndProd", "icep")
             ->innerJoin("icep.inventarioContEnd", "ice")
-            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien.ativo = 'S'")
+            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien.ativo = 'S' AND ien.id = $idInvEnd")
             ->leftJoin("icep.produtoVolume", "pv")
-            ->where("ien.id = :idInvEnd")
-            ->setParameters(["idInvEnd" => $idInvEnd])
-            ->groupBy("ice.sequencia, icep.codProduto, icep.grade, icep.lote, icep.validade, NVL(pv.id, 1)")
+            ->groupBy("ice.sequencia, icep.codProduto, icep.grade, icep.lote, icep.validade, pv.id")
             ->orderBy("ice.sequencia")
         ;
 

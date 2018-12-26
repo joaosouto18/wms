@@ -259,13 +259,14 @@ CREATE SEQUENCE SQ_N_INV_END_01
   NOORDER;
 
 CREATE TABLE inventario_novo (
-  cod_inventario       NUMBER(8) NOT NULL,
-  dsc_inventario       VARCHAR2(100),
-  dth_criacao          DATE NOT NULL,
-  dth_inicio           DATE,
-  dth_finalizacao      DATE,
-  cod_status           NUMBER(4) NOT NULL,
-  cod_inventario_erp   NUMBER(8) ,
+  cod_inventario            NUMBER(8) NOT NULL,
+  dsc_inventario            VARCHAR2(100),
+  ind_criterio              CHAR(1) NOT NULL,
+  dth_criacao               DATE NOT NULL,
+  dth_inicio                DATE,
+  dth_finalizacao           DATE,
+  cod_status                NUMBER(4) NOT NULL,
+  cod_inventario_erp        NUMBER(8) ,
   COD_MODELO_INVENTARIO     NUMBER (8) NOT NULL ,
   IND_ITEM_A_ITEM           CHAR (1) NOT NULL ,
   IND_CONTROLA_VALIDADE     CHAR (1) NOT NULL ,

@@ -10,6 +10,7 @@ namespace Wms\Domain\Entity;
 
 
 use Wms\Domain\Entity\Inventario;
+use Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovo;
 use Wms\Domain\EntityRepository;
 
 class InventarioNovoRepository extends EntityRepository
@@ -30,6 +31,7 @@ class InventarioNovoRepository extends EntityRepository
                 $obj = new \stdClass;
                 $obj->id                    = $inventario->getId();
                 $obj->descricao             = $inventario->getDescricao();
+                $obj->criterio              = $inventario->getCriterio();
                 $obj->dthCriacao            = $inventario->getDthCriacao(true);
                 $obj->dthLiberacao          = $inventario->getDthInicio(true);
                 $obj->dthFinalizacao        = $inventario->getDthFinalizacao(true);
@@ -368,5 +370,20 @@ class InventarioNovoRepository extends EntityRepository
                 ORDER BY DE.DSC_DEPOSITO_ENDERECO";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
+
+    /**
+     * @param InventarioEnderecoNovo $invEnd
+     */
+    public function getEnderecosPendentes($invEnd)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("ien")
+            ->from("wms:InventarioNovo", 'ien', "WITH", "ien.ativo = 'S'")
+            ->where("ien.inventario != :inventario")
+            ->andWhere("ien != :invEnd")
+            ->setParameters(["inventario" => $invEnd->getInventario(), "invEnd" => $invEnd]);
+
+        return $dql->getQuery()->getResult();
     }
 }

@@ -21,7 +21,7 @@ class Inventario_Novo_IndexController  extends Action
                 'module' => 'inventario_novo',
                 'controller' => 'index',
                 'action' => 'criar-inventario',
-                'criterio' => 'endereco'
+                'criterio' => \Wms\Domain\Entity\InventarioNovo::CRITERIO_ENDERECO
             ),
             'tag' => 'a'
         );
@@ -32,7 +32,7 @@ class Inventario_Novo_IndexController  extends Action
                 'module' => 'inventario_novo',
                 'controller' => 'index',
                 'action' => 'criar-inventario',
-                'criterio' => 'produto'
+                'criterio' => \Wms\Domain\Entity\InventarioNovo::CRITERIO_PRODUTO
             ),
             'tag' => 'a'
         );

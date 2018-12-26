@@ -87,7 +87,6 @@ class Mobile_InventarioNovoController extends Action
     public function contagemProdutoAction()
     {
         try {
-
             $this->getServiceLocator()->getService("Inventario")->registrarContagem(
                 $this->_getParam("inventario"),
                 $this->_getParam("contagem"),
