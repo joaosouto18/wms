@@ -108,9 +108,9 @@ class Mobile_InventarioNovoController extends Action
 
             /** @var \Wms\Service\InventarioService $invServc */
             $invServc = $this->getServiceLocator()->getService("Inventario");
-            $invServc->finalizarOs($inventario, $contagem);
+            $response = $invServc->finalizarOs($inventario, $contagem);
 
-            $this->_helper->json(["status" => "ok", 'response' => "Contagem efetuada com sucesso!"]);
+            $this->_helper->json(["status" => "ok", 'response' => $response]);
         } catch (Exception $e) {
             $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
         }

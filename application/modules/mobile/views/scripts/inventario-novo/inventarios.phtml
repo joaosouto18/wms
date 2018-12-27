@@ -155,6 +155,7 @@
         var views = ["loader","list-inventarios","contagens-by-inventario","bipagem-endereco","bipagem-produto","conferencia"];
         var headers = ["lbl-inventario", "lbl-contagem", "lbl-endereco", "lbl-produto"];
         var endConfig = {};
+        var msgShowed = true;
 
         $(document).ready(function () {
             changeViewer("loader");
@@ -178,7 +179,7 @@
             }
         };
 
-        var notificar = function (type, msg) {
+        var notificar = function (type, msg, instantShowed) {
             if (type === undefined) type = "success";
 
             var songFile = "/alarme_curto.mp3";
@@ -201,6 +202,7 @@
                 '</ul>');
 
             if (type === "error") alert(msg);
+            msgShowed = instantShowed;
         };
 
         $(".fmBtnClose").live("click", function () {
@@ -261,6 +263,13 @@
                 $("#divBtnBack").hide()
             }
 
+            if (showTo !== "loader") {
+                if (msgShowed) {
+                    $("#messenger").empty();
+                } else {
+                    msgShowed = true;
+                }
+            }
             $("#"+showTo).show();
         };
 
@@ -299,6 +308,7 @@
                         prepareListInventarios();
                     } else {
                         notificar("error", result.exception);
+
                     }
                 }
             });
@@ -639,12 +649,18 @@
                 }
             ).done(function( result ) {
                 if (result.status === "ok") {
-                    notificar("success", result.response);
+                    notificar("success", result.response.msg);
+                    if (result.response.code !== 4) {
+                        getContagens();
+                        changeViewer("contagens-by-inventario");
+                    } else if (result.response.code === 4) {
+                        getInventarios();
+                        changeViewer("list-inventarios");
+                    }
                 } else {
-                    notificar("error", result.exception)
+                    notificar("error", result.exception);
+                    changeViewer("bipagem-produto");
                 }
-                prepareListEnderecos();
-                changeViewer("bipagem-endereco");
             })
         });
     })

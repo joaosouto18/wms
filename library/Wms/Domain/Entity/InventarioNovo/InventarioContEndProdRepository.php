@@ -36,19 +36,78 @@ class InventarioContEndProdRepository extends EntityRepository
         }
     }
 
-    public function getContagensProdutos($idInvEnd)
+    /**
+     * @param int $contEnd
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getContagensProdutos($contEnd)
     {
-        $dql = $this->_em->createQueryBuilder();
-        $dql->select("ice.sequencia, icep.codProduto, icep.grade, icep.lote, TO_CHAR(icep.validade, 'DD/MM/YYYY') validade, 
-                        pv.id idVol, SUM(icep.qtdContada * icep.qtdEmbalagem) qtdContagem")
-            ->from("wms:InventarioNovo\InventarioContEndProd", "icep")
-            ->innerJoin("icep.inventarioContEnd", "ice")
-            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien.ativo = 'S' AND ien.id = $idInvEnd")
-            ->leftJoin("icep.produtoVolume", "pv")
-            ->groupBy("ice.sequencia, icep.codProduto, icep.grade, icep.lote, icep.validade, pv.id")
-            ->orderBy("ice.sequencia")
-        ;
+        $sql = "
+            SELECT 
+              ICE.NUM_SEQUENCIA, 
+              ICEP.COD_PRODUTO, 
+              ICEP.DSC_GRADE, 
+              ICEP.DSC_LOTE, 
+              TO_CHAR(ICEP.DTH_VALIDADE, 'DD/MM/YYYY') VALIDADE, 
+              ICEP.COD_PRODUTO_VOLUME,
+              SUM(ICEP.QTD_CONTADA * ICEP.QTD_EMBALAGEM) QTD_CONTAGEM
+            FROM INVENTARIO_CONT_END_PROD ICEP
+            INNER JOIN INVENTARIO_CONT_END ICE on ICEP.COD_INV_CONT_END = ICE.COD_INV_CONT_END
+            INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO AND IEN.IND_ATIVO = 'S'
+            WHERE ICE.COD_INV_CONT_END = $contEnd
+            GROUP BY ICE.NUM_SEQUENCIA, ICEP.COD_PRODUTO, ICEP.DSC_GRADE, ICEP.DSC_LOTE, ICEP.DTH_VALIDADE, ICEP.COD_PRODUTO_VOLUME
+            ORDER BY ICE.NUM_SEQUENCIA
+        ";
 
-        return $dql->getQuery()->getResult();
+        return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
+
+    /**
+     * @param int $invEnd
+     * @param int $seq
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getProdutosContagemFinalizada($invEnd, $seq)
+    {
+        $sql = "
+            SELECT ICEP.COD_PRODUTO, ICEP.DSC_GRADE, ICEP.COD_PRODUTO_VOLUME, ICEP.DSC_LOTE
+            FROM INVENTARIO_CONT_END_PROD ICEP
+            INNER JOIN INVENTARIO_CONT_END ICE on ICEP.COD_INV_CONT_END = ICE.COD_INV_CONT_END
+            INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO AND IEN.IND_ATIVO = 'S'
+            WHERE IEN.COD_INVENTARIO_ENDERECO = $invEnd AND ICE.NUM_SEQUENCIA < $seq AND ICEP.IND_DIVERGENTE = 'N'";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
+
+    /**
+     * @param int $invEnd
+     * @param $seq
+     * @param $idProd
+     * @param $grade
+     * @param $lote
+     * @param null $idVol
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getContagensAnteriores($invEnd, $seq, $idProd, $grade, $lote, $idVol)
+    {
+        $whereVol = (!empty($idVol)) ? "AND ICEP.COD_PRODUTO_VOLUME = $idVol" : "";
+
+        $sql = "
+            SELECT 
+                ICE.NUM_SEQUENCIA,
+                TO_CHAR(ICEP.DTH_VALIDADE, 'DD/MM/YYYY') VALIDADE, 
+                SUM(ICEP.QTD_CONTADA * ICEP.QTD_EMBALAGEM) QTD_CONTAGEM
+            FROM INVENTARIO_CONT_END_PROD ICEP
+            INNER JOIN INVENTARIO_CONT_END ICE on ICEP.COD_INV_CONT_END = ICE.COD_INV_CONT_END
+            WHERE ICE.COD_INVENTARIO_ENDERECO = $invEnd AND ICE.NUM_SEQUENCIA < $seq AND
+                  ICEP.COD_PRODUTO = '$idProd' AND ICEP.DSC_GRADE = '$grade' AND 
+                  ICEP.DSC_LOTE = '$lote' $whereVol
+            GROUP BY ICE.NUM_SEQUENCIA, ICEP.DTH_VALIDADE
+            ORDER BY ICE.NUM_SEQUENCIA";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 }
