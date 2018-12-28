@@ -253,10 +253,10 @@ class InventarioService extends AbstractService
             }
 
             $elements = [];
-            $isEmb = null;
+            $isEmb = false;
 
             if (json_decode($inventario['volumesSeparadamente']) && (!empty($volEn) ||
-                    (is_array($produto) && (isset($produto['idVolume']) && !empty($produto['idVolume']))))) {
+                    (is_array($produto) && (isset($produto['idVolume']) && !empty(json_decode($produto['idVolume'])))))) {
                 if (empty($volEn)) {
                     $elements[] = $this->em->getReference("wms:Produto\Volume", $produto['idVolume']);
                 } else {
@@ -264,14 +264,14 @@ class InventarioService extends AbstractService
                 }
                 $isEmb = false;
             } elseif (!json_decode($inventario['volumesSeparadamente']) && (!empty($volEn) ||
-                    (is_array($produto) && isset($produto['idVolume']) && !empty($produto['idVolume'])))) {
+                    (is_array($produto) && isset($produto['idVolume']) && !empty(json_decode($produto['idVolume']))))) {
                 if (empty($volEn)) {
                     $elements = $this->em->getRepository("wms:Produto\Volume")->findBy(["id" => $produto['idProduto'], "grade" => $produto['grade'], "dataInativacao" => null]);
                 } else {
                     $elements = $produto->getVolumes()->filter(function ($vol) { return (empty($vol->getDataInativacao())); })->toArray();
                 }
                 $isEmb = false;
-            } elseif (!empty($embEn) || (!is_a($produto, "wms:Produto") && isset($produto['idEmbalagem']) && !empty($produto['idEmbalagem']))) {
+            } elseif (!empty($embEn) || (!is_a($produto, "wms:Produto") && isset($produto['idEmbalagem']) && !empty(json_decode($produto['idEmbalagem'])))) {
                 if (empty($embEn)) {
                     $elements[] = $this->em->getReference("wms:Produto\Embalagem", $produto['idEmbalagem']);
                 } else {
@@ -280,19 +280,19 @@ class InventarioService extends AbstractService
                 $isEmb = true;
             }
 
-            $produto = (!is_array($produto)) ? $produto : $this->em->getReference("wms:Produto", ["id" => $produto['idProduto'], "grade" => $produto['grade']]);
+            $prodEn = (!is_array($produto)) ? $produto : $this->em->getReference("wms:Produto", ["id" => $produto['idProduto'], "grade" => $produto['grade']]);
             $invContEnd = (!is_array($contagem)) ? $contagem : $osUserCont->getInvContEnd();
 
             foreach ($elements as $element) {
                 $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd")->save([
                     "inventarioContEnd" => $invContEnd,
-                    "produto" => $produto,
+                    "produto" => $prodEn,
                     "lote" => $conferencia['lote'],
                     "qtdContada" => $conferencia['qtd'],
-                    "produtoEmbalagem" => (!empty($isEmb)) ? $element : null,
-                    "qtdEmbalagem" => (is_array($produto)) ? $produto['quantidadeEmbalagem'] : null,
+                    "produtoEmbalagem" => ($isEmb) ? $element : null,
+                    "qtdEmbalagem" => (is_array($produto)) ? $produto['quantidadeEmbalagem'] : 0,
                     "codBarras" => (is_array($produto)) ? $produto['codigoBarras'] : null,
-                    "produtoVolume" => (empty($isEmb)) ? $element : null,
+                    "produtoVolume" => (!$isEmb) ? $element : null,
                     "validade" => (!empty($conferencia['validade'])) ? date_create_from_format("d/m/y", $conferencia['validade']) : null,
                     "divergente"
                 ], false);
@@ -499,7 +499,7 @@ class InventarioService extends AbstractService
                         $contagem['QTD_CONTAGEM'],
                         $contagem['VALIDADE']
                     ];
-                    $countQtdsIguais[$strProd][implode($strConcat, $elemCount)][] = $contagem['NUM_SEQUENCIA'];
+                    $countQtdsIguais[$strProd][implode($strConcat, $elemCount)][] = $contAnterior['NUM_SEQUENCIA'];
                 }
             }
 
@@ -517,15 +517,15 @@ class InventarioService extends AbstractService
                     ];
                     $countQtdsIguais[implode($strConcat, $prod)][implode($strConcat, $elemCount)][] = $osUsuarioCont->getInvContEnd()->getSequencia();
 
-                    $this->zerarProdutoNaoContado($inventario, $osUsuarioCont->getInvContEnd(), $estoque);
+                    $this->zerarProduto($inventario, $osUsuarioCont->getInvContEnd(), $estoque);
                 }
             }
 
             $count = [];
             foreach ($countQtdsIguais as $strProd => $arrCount) {
-                $count[$strProd] = 0;
-                foreach ($arrCount as $strElemCount => $seqs) {
-                    if ($count[$strProd] < count($seqs)) $count[$strProd] = count($seqs);
+                foreach ($arrCount as $seqs) {
+                    if (!isset($count[$strProd]) || $count[$strProd] < count($seqs))
+                        $count[$strProd] = count($seqs);
                 }
             }
 
@@ -544,7 +544,7 @@ class InventarioService extends AbstractService
                 $this->addNovaContagem(
                     $osUsuarioCont->getInvContEnd()->getInventarioEndereco(),
                     $osUsuarioCont->getInvContEnd()->getSequencia() + 1,
-                    (!$osUsuarioCont->getInvContEnd()->isContagemDivergencia() && ($osUsuarioCont->getInvContEnd()->getSequencia() > $nContagensNecessarias)) ? 1 : $osUsuarioCont->getInvContEnd()->getContagem() + 1,
+                    (!$osUsuarioCont->getInvContEnd()->isContagemDivergencia() && ($osUsuarioCont->getInvContEnd()->getSequencia() >= $inventario['numContagens'])) ? 1 : $osUsuarioCont->getInvContEnd()->getContagem() + 1,
                     ($osUsuarioCont->getInvContEnd()->getSequencia() >= $inventario['numContagens'])
                 );
                 return ["code" => 2, "msg" => "Contagem finalizada com divergência"];
@@ -562,7 +562,7 @@ class InventarioService extends AbstractService
      * @param $contEnd InventarioNovo\InventarioContEnd
      * @param $prodEstoque \Wms\Domain\Entity\Enderecamento\Estoque
      */
-    private function zerarProdutoNaoContado($inventario, $contEnd, $prodEstoque)
+    private function zerarProduto($inventario, $contEnd, $prodEstoque)
     {
         try {
             $this->registrarContagem(
@@ -650,5 +650,36 @@ class InventarioService extends AbstractService
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    public function getInfoEndereco($idInventario, $sequencia, $isDiverg, $endereco)
+    {
+        /** @var InventarioNovo\InventarioEnderecoNovoRepository $invEndRepo */
+        $invEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo");
+        if ($isDiverg == "S") {
+            $result = $invEndRepo->getItensDiverg($idInventario, $sequencia, $endereco);
+        } else {
+            $result = $invEndRepo->getInfoEndereco($idInventario, $sequencia, $endereco);
+        }
+
+        $agroup = [];
+        foreach( $result as $item) {
+            $strConcat = "$item[codProduto] -- $item[grade]";
+            if (!isset($agroup[$strConcat])) {
+                $agroup[$strConcat] = [
+                    "codProduto" => $item['codProduto'],
+                    "grade" => $item['grade'],
+                    "descricao" => $item['descricao'],
+                    "codBarras" => [$item["codBarras"]],
+                    "zerado" => (isset($item['qtdContada']) && empty($item['qtdContada']))
+                ];
+            }
+            else {
+                if (!in_array($item["codBarras"], $agroup[$strConcat]["codBarras"]))
+                    $agroup[$strConcat]["codBarras"][] = $item["codBarras"];
+            }
+        }
+
+        return $agroup;
     }
 }

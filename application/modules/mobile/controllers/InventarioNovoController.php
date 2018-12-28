@@ -56,9 +56,10 @@ class Mobile_InventarioNovoController extends Action
         try {
             $this->_helper->json([
                 "status" => "ok",
-                "response" => $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->getInfoEndereco(
+                "response" => $this->getServiceLocator()->getService("Inventario")->getInfoEndereco(
                     $this->_getParam("id"),
                     $this->_getParam("sq"),
+                    $this->_getParam("divrg"),
                     $this->_getParam("end")
                     )
                 ]

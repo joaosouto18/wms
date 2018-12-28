@@ -93,7 +93,8 @@ class InventarioContEndProdRepository extends EntityRepository
      */
     public function getContagensAnteriores($invEnd, $seq, $idProd, $grade, $lote, $idVol)
     {
-        $whereVol = (!empty($idVol)) ? "AND ICEP.COD_PRODUTO_VOLUME = $idVol" : "";
+        $whereVol = (!empty($idVol)) ? " = $idVol" : "IS NULL";
+        $whereLote = (!empty($lote)) ? " = '$lote'" : "IS NULL";
 
         $sql = "
             SELECT 
@@ -102,9 +103,10 @@ class InventarioContEndProdRepository extends EntityRepository
                 SUM(ICEP.QTD_CONTADA * ICEP.QTD_EMBALAGEM) QTD_CONTAGEM
             FROM INVENTARIO_CONT_END_PROD ICEP
             INNER JOIN INVENTARIO_CONT_END ICE on ICEP.COD_INV_CONT_END = ICE.COD_INV_CONT_END
-            WHERE ICE.COD_INVENTARIO_ENDERECO = $invEnd AND ICE.NUM_SEQUENCIA < $seq AND
-                  ICEP.COD_PRODUTO = '$idProd' AND ICEP.DSC_GRADE = '$grade' AND 
-                  ICEP.DSC_LOTE = '$lote' $whereVol
+            INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO AND IEN.IND_ATIVO = 'S'
+            WHERE ICE.COD_INVENTARIO_ENDERECO = $invEnd AND ICE.NUM_SEQUENCIA < $seq
+                  AND ICEP.COD_PRODUTO = '$idProd' AND ICEP.DSC_GRADE = '$grade'
+                  AND ICEP.DSC_LOTE $whereLote AND ICEP.COD_PRODUTO_VOLUME $whereVol
             GROUP BY ICE.NUM_SEQUENCIA, ICEP.DTH_VALIDADE
             ORDER BY ICE.NUM_SEQUENCIA";
 
