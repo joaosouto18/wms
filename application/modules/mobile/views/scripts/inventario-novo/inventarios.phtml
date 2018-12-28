@@ -57,6 +57,25 @@
         width: 100%;
         height: inherit;
     }
+
+    .btn-zerarProduto {
+        font-family: Arial;
+        color: #ffffff;
+        font-size: 12px;
+        background: #d93434;
+        padding: 10px 20px 10px 20px;
+        text-decoration: none;
+    }
+
+    .btn-zerarProduto:hover {
+        background: #781f08;
+        background-image: -webkit-linear-gradient(top, #781f08, #9e100b);
+        background-image: -moz-linear-gradient(top, #781f08, #9e100b);
+        background-image: -ms-linear-gradient(top, #781f08, #9e100b);
+        background-image: -o-linear-gradient(top, #781f08, #9e100b);
+        background-image: linear-gradient(to bottom, #781f08, #9e100b);
+        text-decoration: none;
+    }
 </style>
 
 <span id="dummy"></span>
@@ -477,7 +496,14 @@
             list.empty();
             if (produtos.length) {
                 $.each(produtos , function (k,v) {
-                    list.append('<div class="list-item">' + v.codProduto + " - " + v.grade + '</div>')
+                    if(v.zerado) {
+
+                        var link = '<a href="javascript:void(0)" onclick="confirmarProdutoZerado(idInventario, sq, v.codProduto, v.grade, v.volume)" class="btn-zerarProduto">Zerar produto</a>';
+
+                        list.append('<div class="list-item">' + v.codProduto + " - " + v.grade + ' ' + link + '</div>')
+                    }
+                    else
+                        list.append('<div class="list-item">' + v.codProduto + " - " + v.grade + '</div>')
                 });
             }
 
@@ -491,14 +517,9 @@
             $("#cod-barras-prod").focus();
         };
 
-        $("#cod-barras-prod").keypress(function( event ) {
-            if ( event.which === 13  || event.keyCode === 13 ) {
-                disarmEvent(event);
-                if (!isEmpty($(this).val())) {
-                    processProduto($(this).val());
-                    $(this).val("");
-                }
-            }
+        var confirmarProdutoZerado = function () {
+
+
         });
 
         $("#btn-consultar-produto").click(function( event ) {
