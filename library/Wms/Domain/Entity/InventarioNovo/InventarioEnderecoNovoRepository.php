@@ -60,17 +60,14 @@ class InventarioEnderecoNovoRepository extends EntityRepository
         $dql = $this->_em->createQueryBuilder();
         $dql->select("p.id codProduto, p.grade, p.descricao, NVL(e.codigoBarras, v.codigoBarras) codBarras")
             ->from("wms:InventarioNovo\InventarioContEnd", "ice")
-            ->innerJoin("ice.inventarioEndereco", "ie")
+            ->innerJoin("ice.inventarioEndereco", "ie", "WITH", "ie.ativo = 'S' and ie.inventario = $idInventario and ie.depositoEndereco = $endereco")
             ->innerJoin("ie.inventario", "inv")
             ->innerJoin("ie.depositoEndereco", "de")
             ->innerJoin("wms:InventarioNovo\InventarioEndProd", "iep", "WITH", "iep.inventarioEndereco = ie and iep.ativo = 'S'")
             ->innerJoin("iep.produto", "p")
             ->leftJoin("p.embalagens", "e")
             ->leftJoin("p.volumes", "v")
-            ->where("inv.id = :id")
-            ->andWhere("ice.sequencia = :sq")
-            ->andWhere("de.id = :end")
-            ->setParameters(["id" => $idInventario, "sq" => $sequencia, "end" => $endereco])
+            ->where("ice.sequencia = $sequencia")
             ->distinct(true);
 
         return $dql->getQuery()->getResult();
@@ -79,25 +76,19 @@ class InventarioEnderecoNovoRepository extends EntityRepository
     public function getItensDiverg($idInventario, $sequencia, $endereco)
     {
         $dql = $this->_em->createQueryBuilder();
-        $dql->select("p.id codProduto, p.grade, p.descricao, NVL(e.codigoBarras, v.codigoBarras) codBarras, icep.qtdContada")
+        $dql->select("p.id codProduto, p.grade, v.id idVol, p.descricao, NVL(e.codigoBarras, v.codigoBarras) codBarras, icep.qtdContada")
             ->from("wms:InventarioNovo\InventarioContEndProd", "icep")
             ->innerJoin("icep.inventarioContEnd", "ice", "WITH", "ice.sequencia = ($sequencia - 1)")
             ->innerJoin("ice.inventarioEndereco", "ie", "WITH", "ie.ativo = 'S' and ie.inventario = $idInventario and ie.depositoEndereco = $endereco")
             ->innerJoin("icep.produto", "p")
             ->leftJoin("p.embalagens", "e")
             ->leftJoin("p.volumes", "v")
-            ->where("NOT EXISTS(
+            ->where("icep.divergente = 'S'")
+            ->andWhere("NOT EXISTS(
                     SELECT 'x'
                     FROM wms:InventarioNovo\InventarioEndProd iep
                     INNER JOIN iep.inventarioEndereco ie2
                     WHERE iep.ativo = 'N' and ie2 = ie and iep.codProduto = icep.codProduto and iep.grade = icep.grade
-                )")
-            ->andWhere("NOT EXISTS(
-                    SELECT 'x'
-                    FROM wms:InventarioNovo\InventarioContEndProd icep2
-                    INNER JOIN icep2.inventarioContEnd ice2 WITH ice2.sequencia = $sequencia
-                    INNER JOIN ice2.inventarioEndereco ie3 WITH ie3.ativo = 'S'
-                    WHERE ie3 = ie and icep2.codProduto = icep.codProduto and icep2.grade = icep.grade
                 )")
             ->distinct(true);
 

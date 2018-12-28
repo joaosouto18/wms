@@ -100,6 +100,21 @@ class Mobile_InventarioNovoController extends Action
         }
     }
 
+    public function confirmarProdutoZeradoAction()
+    {
+        try {
+            $this->getServiceLocator()->getService("Inventario")->zerarProduto(
+                $this->_getParam("inventario"),
+                $this->_getParam("contagem"),
+                $this->_getParam("produto"),
+                $this->_getParam("conferencia"), \Wms\Domain\Entity\OrdemServico::COLETOR);
+
+            $this->_helper->json(["status" => "ok", 'response' => "Contagem efetuada com sucesso!"]);
+        } catch (Exception $e) {
+            $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
+        }
+    }
+
     public function finalizarContagemOsAction()
     {
         try {
