@@ -671,6 +671,7 @@ class InventarioService extends AbstractService
                     "grade" => $item['grade'],
                     "descricao" => $item['descricao'],
                     "codBarras" => [$item["codBarras"]],
+                    "idVolume" => (isset($item['qtdContada']) ? $item['qtdContada'] : null ),
                     "zerado" => (isset($item['qtdContada']) && empty($item['qtdContada']))
                 ];
             }
