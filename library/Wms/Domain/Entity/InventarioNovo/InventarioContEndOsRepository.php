@@ -54,17 +54,17 @@ class InventarioContEndOsRepository extends EntityRepository
 
     /**
      * @param $idUsuario
-     * @param $idInventraio
+     * @param InventarioEnderecoNovo $invEnd
      * @return InventarioContEndOs[]
      */
-    public function getContagensUsuario($idUsuario, $idInventraio)
+    public function getContagensUsuario($idUsuario, $invEnd)
     {
         $dql = $this->_em->createQueryBuilder()
             ->select("iceos")
             ->from("wms:InventarioNovo\InventarioContEndOs", "iceos")
             ->innerJoin("iceos.ordemServico", "os", "WITH", "os.pessoa = $idUsuario")
             ->innerJoin("iceos.invContEnd", "ice")
-            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien.inventario = $idInventraio")
+            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien = $invEnd")
             ->where("ien.ativo = 'S'")
         ;
 

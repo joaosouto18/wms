@@ -88,11 +88,12 @@ class Mobile_InventarioNovoController extends Action
     public function contagemProdutoAction()
     {
         try {
-            $this->getServiceLocator()->getService("Inventario")->registrarContagem(
+            $this->getServiceLocator()->getService("Inventario")->novaConferencia(
                 $this->_getParam("inventario"),
                 $this->_getParam("contagem"),
                 $this->_getParam("produto"),
-                $this->_getParam("conferencia"), \Wms\Domain\Entity\OrdemServico::COLETOR);
+                $this->_getParam("conferencia"),
+                \Wms\Domain\Entity\OrdemServico::COLETOR);
 
             $this->_helper->json(["status" => "ok", 'response' => "Contagem efetuada com sucesso!"]);
         } catch (Exception $e) {
@@ -103,13 +104,14 @@ class Mobile_InventarioNovoController extends Action
     public function confirmarProdutoZeradoAction()
     {
         try {
-            $this->getServiceLocator()->getService("Inventario")->zerarProduto(
+            $this->getServiceLocator()->getService("Inventario")->confirmarProdutoZerado(
                 $this->_getParam("inventario"),
+                $this->_getParam("endereco"),
                 $this->_getParam("contagem"),
                 $this->_getParam("produto"),
-                $this->_getParam("conferencia"), \Wms\Domain\Entity\OrdemServico::COLETOR);
+                \Wms\Domain\Entity\OrdemServico::COLETOR);
 
-            $this->_helper->json(["status" => "ok", 'response' => "Contagem efetuada com sucesso!"]);
+            $this->_helper->json(["status" => "ok", 'response' =>  "Produto zerado com sucesso!"]);
         } catch (Exception $e) {
             $this->_helper->json(["status" => "error", 'exception' => $e->getMessage()]);
         }
@@ -118,13 +120,10 @@ class Mobile_InventarioNovoController extends Action
     public function finalizarContagemOsAction()
     {
         try {
-
             $inventario = $this->_getParam("inventario");
             $contagem = $this->_getParam("contagem");
 
-            /** @var \Wms\Service\InventarioService $invServc */
-            $invServc = $this->getServiceLocator()->getService("Inventario");
-            $response = $invServc->finalizarOs($inventario, $contagem);
+            $response = $this->getServiceLocator()->getService("Inventario")->finalizarOs($inventario, $contagem, \Wms\Domain\Entity\OrdemServico::COLETOR);
 
             $this->_helper->json(["status" => "ok", 'response' => $response]);
         } catch (Exception $e) {

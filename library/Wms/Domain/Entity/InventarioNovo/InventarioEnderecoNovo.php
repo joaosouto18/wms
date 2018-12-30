@@ -133,7 +133,7 @@ class InventarioEnderecoNovo
      */
     public function setFinalizado($finalizado)
     {
-        $this->finalizado = $finalizado;
+        $this->finalizado = ((is_bool($finalizado) && $finalizado) || (is_string($finalizado) && $finalizado == 'S') ) ? 'S' : 'N';
     }
 
     /**

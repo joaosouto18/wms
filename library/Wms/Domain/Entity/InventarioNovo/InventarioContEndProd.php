@@ -303,7 +303,7 @@ class InventarioContEndProd
      */
     public function setDivergente($divergente)
     {
-        $this->divergente = $divergente;
+        $this->divergente = ((is_bool($divergente) && $divergente) || (is_string($divergente) && $divergente == 'S') ) ? 'S' : 'N';
     }
 
     /**

@@ -143,6 +143,7 @@ class InventarioNovo
     public function __construct()
     {
         $this->setStatus(self::STATUS_GERADO);
+        $this->setDthCriacao();
     }
 
     /**
@@ -186,12 +187,9 @@ class InventarioNovo
         return ($toString && !empty($this->dthCriacao)) ? $this->dthCriacao->format('d/m/Y H:i:s') : $this->dthCriacao ;
     }
 
-    /**
-     * @param \DateTime $dthCriacao
-     */
-    public function setDthCriacao($dthCriacao)
+    private function setDthCriacao()
     {
-        $this->dthCriacao = $dthCriacao;
+        $this->dthCriacao = new \DateTime();
     }
 
     /**
@@ -203,12 +201,9 @@ class InventarioNovo
         return ($toString && !empty($this->dthInicio)) ? $this->dthInicio->format('d/m/Y H:i:s') : $this->dthInicio ;
     }
 
-    /**
-     * @param \DateTime $dthInicio
-     */
-    public function setDthInicio($dthInicio)
+    private function setDthInicio()
     {
-        $this->dthInicio = $dthInicio;
+        $this->dthInicio = new \DateTime();
     }
 
     /**
@@ -220,12 +215,9 @@ class InventarioNovo
         return ($toString && !empty($this->dthFinalizacao)) ? $this->dthFinalizacao->format('d/m/Y H:i:s') : $this->dthFinalizacao ;
     }
 
-    /**
-     * @param \DateTime $dthFinalizacao
-     */
-    public function setDthFinalizacao($dthFinalizacao)
+    private function setDthFinalizacao()
     {
-        $this->dthFinalizacao = $dthFinalizacao;
+        $this->dthFinalizacao = new \DateTime();
     }
 
     /**
@@ -277,11 +269,13 @@ class InventarioNovo
     public function liberar()
     {
         $this->setStatus(self::STATUS_LIBERADO);
+        $this->setDthInicio();
     }
 
     public function concluir()
     {
         $this->setStatus(self::STATUS_CONCLUIDO);
+        $this->setDthFinalizacao();
     }
 
     public function finalizar()

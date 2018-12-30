@@ -63,7 +63,7 @@
         color: #ffffff;
         font-size: 12px;
         background: #d93434;
-        padding: 10px 20px 10px 20px;
+        padding: 2px 5px;
         text-decoration: none;
     }
 
@@ -198,17 +198,23 @@
             }
         };
 
-        var notificar = function (type, msg, instantShowed) {
-            if (type === undefined) type = "success";
-
+        var dispareSound = function (type) {
             var songFile = "/alarme_curto.mp3";
             if (type === "success") {
                 songFile = "/confirm2.mp3";
+            } else if (type === "warning") {
+                songFile = "/warning.mp3";
             }
 
             $("#dummy").html('<embed src="' + songFile + '" hidden="true" autostart="true" loop="false" />');
             var audio = new Audio(songFile);
             audio.play();
+        };
+
+        var notificar = function (type, msg, instantShowed) {
+            if (type === undefined) type = "success";
+
+            dispareSound(type);
 
             $("#messenger").html(
                 '<ul class="flashMessenger">' +
@@ -326,7 +332,7 @@
                         prepareListInventarios();
                     } else {
                         notificar("error", result.exception);
-
+                        window.location.href = "/mobile"
                     }
                 }
             });
@@ -429,7 +435,7 @@
                 changeViewer("bipagem-endereco");
                 $("#cod-barras-end").focus();
             } else {
-                notificar("warning", "A contagem " + contSelecioando.contagem + " já foi finalizada!");
+                notificar("warning", "Este inventário já foi finalizado!");
                 getContagens();
             }
         };
@@ -458,14 +464,14 @@
             var endFormated = formatEndereco(input.val());
 
             if (!endFormated) {
-                notificar("error", "O código de barras não corresponde à um endereço", true);
+                notificar("warning", "O código de barras não corresponde à um endereço", true);
             } else if ((enderecos[endFormated] !== undefined)) {
                 idEndSelecionado = enderecos[endFormated];
                 dscEndSelecionado = endFormated;
                 $("#lbl-endereco").text(dscEndSelecionado);
                 openEndereco()
             } else {
-                notificar("error", "Este endereço "+input.val()+" não está no inventário", true);
+                notificar("warning", "Este endereço "+input.val()+" não está no inventário", true);
                 input.focus();
             }
 
@@ -498,7 +504,7 @@
                 $.each(produtos , function (k,v) {
                     if(v.zerado) {
 
-                        var link = '<a href="javascript:void(0)" onclick="confirmarProdutoZerado(idInventario, sq, v.codProduto, v.grade, v.volume)" class="btn-zerarProduto">Zerar produto</a>';
+                        var link = '<a href="" data-key="' + k + '" class="btn-zerarProduto">Zerar Produto</a>';
 
                         list.append('<div class="list-item">' + v.codProduto + " - " + v.grade + ' ' + link + '</div>')
                     }
@@ -517,9 +523,46 @@
             $("#cod-barras-prod").focus();
         };
 
-        var confirmarProdutoZerado = function () {
+        $(".btn-zerarProduto").live("click", function (event) {
+            disarmEvent(event);
+            var produto = produtos[$(this).data("key")];
+            var descricao = produto.codProduto + " - " + produto.descricao + " " + produto.grade;
+            if (!isEmpty(produto.idVol)) {
+                descricao += " - " + produto.dscVol;
+            }
+            if (confirm("Esta ação irá zerar neste endereço o produto " + descricao+ ". Deseja realmente prosseguir?")) {
+                confirmarProdutoZerado(produto);
+            }
+        });
 
+        var confirmarProdutoZerado = function (produto) {
+            changeViewer("loader");
+            $.post(
+                "/mobile/inventario-novo/confirmar-produto-zerado",
+                {
+                    inventario: invSelecioando,
+                    contagem: contSelecioando,
+                    produto: produto,
+                    endereco: idEndSelecionado
+                }
+            ).done(function( result ) {
+                if (result.status === "ok") {
+                    notificar("success", result.response);
+                } else {
+                    notificar("error", result.exception)
+                }
+                openEndereco();
+            })
+        };
 
+        $("#cod-barras-prod").keypress(function( event ) {
+            if (event.which === 13 || event.keyCode === 13) {
+                disarmEvent(event);
+                if (!isEmpty($(this).val())) {
+                    processProduto($(this).val());
+                    $(this).val("");
+                }
+            }
         });
 
         $("#btn-consultar-produto").click(function( event ) {
@@ -540,7 +583,7 @@
                 });
                 if (!encontrou) {
                     liberado = false;
-                    notificar("error", "Este código de barras " + codBarras + " não pertence à nenhum produto deste inventário", true)
+                    notificar("warning", "Este código de barras " + codBarras + " não pertence à nenhum produto deste inventário", true)
                 }
             }
 
@@ -562,7 +605,7 @@
                         prepareElement();
                     } else {
                         notificar("error", result.exception);
-                        prepareListEnderecos();
+                        openEndereco();
                     }
                 }
             })
@@ -592,7 +635,7 @@
             }
 
             changeViewer("conferencia");
-            $("#qtd").val("");
+            $("#qtd").val("").focus();
         };
 
         $("#qtd, #validade, #lote").keypress(function( event ) {
@@ -658,7 +701,7 @@
                 } else {
                     notificar("error", result.exception)
                 }
-                prepareListProdutos();
+                openEndereco();
             })
         };
 
@@ -680,7 +723,7 @@
                     }
                 } else {
                     notificar("error", result.exception);
-                    changeViewer("bipagem-produto");
+                    openEndereco()
                 }
             })
         });

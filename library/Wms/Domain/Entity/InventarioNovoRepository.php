@@ -379,9 +379,12 @@ class InventarioNovoRepository extends EntityRepository
     {
         $dql = $this->_em->createQueryBuilder();
         $dql->select("ien")
-            ->from("wms:InventarioNovo", 'ien', "WITH", "ien.ativo = 'S'")
-            ->where("ien.inventario != :inventario")
+            ->from("wms:InventarioNovo\InventarioEnderecoNovo", 'ien')
+            ->innerJoin("ien.inventario", "ivn")
+            ->where("ivn = :inventario")
             ->andWhere("ien != :invEnd")
+            ->andWhere("ien.finalizado = 'N'")
+            ->andWhere("ien.ativo = 'S'")
             ->setParameters(["inventario" => $invEnd->getInventario(), "invEnd" => $invEnd]);
 
         return $dql->getQuery()->getResult();

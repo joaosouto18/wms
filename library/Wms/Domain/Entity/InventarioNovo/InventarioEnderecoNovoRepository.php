@@ -76,7 +76,7 @@ class InventarioEnderecoNovoRepository extends EntityRepository
     public function getItensDiverg($idInventario, $sequencia, $endereco)
     {
         $dql = $this->_em->createQueryBuilder();
-        $dql->select("p.id codProduto, p.grade, v.id idVol, p.descricao, NVL(e.codigoBarras, v.codigoBarras) codBarras, icep.qtdContada")
+        $dql->select("p.id codProduto, p.grade, p.descricao, v.id idVol, v.descricao dscVol, NVL(e.codigoBarras, v.codigoBarras) codBarras, icep.qtdContada, icep.lote")
             ->from("wms:InventarioNovo\InventarioContEndProd", "icep")
             ->innerJoin("icep.inventarioContEnd", "ice", "WITH", "ice.sequencia = ($sequencia - 1)")
             ->innerJoin("ice.inventarioEndereco", "ie", "WITH", "ie.ativo = 'S' and ie.inventario = $idInventario and ie.depositoEndereco = $endereco")
@@ -89,6 +89,15 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                     FROM wms:InventarioNovo\InventarioEndProd iep
                     INNER JOIN iep.inventarioEndereco ie2
                     WHERE iep.ativo = 'N' and ie2 = ie and iep.codProduto = icep.codProduto and iep.grade = icep.grade
+                )")
+            ->andWhere("NOT EXISTS(
+                    SELECT 'x'
+                    FROM wms:InventarioNovo\InventarioContEndProd icep2
+                    INNER JOIN icep2.inventarioContEnd ice2 WITH ice2.sequencia = $sequencia
+                    INNER JOIN ice2.inventarioEndereco ie3 WITH ie3.ativo = 'S'
+                    WHERE ie = ie3 and icep2.codProduto = icep.codProduto and icep2.grade = icep.grade 
+                         and NVL(icep2.lote,0) = NVL(icep.lote,0) and NVL(icep2.produtoVolume,0) = NVL(icep.produtoVolume,0) 
+                         and icep2.qtdContada = 0
                 )")
             ->distinct(true);
 
