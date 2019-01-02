@@ -91,6 +91,7 @@ class Mobile_InventarioNovoController extends Action
             $this->getServiceLocator()->getService("Inventario")->novaConferencia(
                 $this->_getParam("inventario"),
                 $this->_getParam("contagem"),
+                $this->_getParam("endereco"),
                 $this->_getParam("produto"),
                 $this->_getParam("conferencia"),
                 \Wms\Domain\Entity\OrdemServico::COLETOR);
@@ -120,10 +121,12 @@ class Mobile_InventarioNovoController extends Action
     public function finalizarContagemOsAction()
     {
         try {
-            $inventario = $this->_getParam("inventario");
-            $contagem = $this->_getParam("contagem");
 
-            $response = $this->getServiceLocator()->getService("Inventario")->finalizarOs($inventario, $contagem, \Wms\Domain\Entity\OrdemServico::COLETOR);
+            $response = $this->getServiceLocator()->getService("Inventario")->finalizarOs(
+                $this->_getParam("inventario"),
+                $this->_getParam("endereco"),
+                $this->_getParam("contagem"),
+                \Wms\Domain\Entity\OrdemServico::COLETOR);
 
             $this->_helper->json(["status" => "ok", 'response' => $response]);
         } catch (Exception $e) {
