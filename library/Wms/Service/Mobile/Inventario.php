@@ -310,7 +310,7 @@ class Inventario {
 
             $shelfLifeMax = $produtoEn->getDiasVidaUtilMax();
             $hoje = new \DateTime();
-            $PeriodoUtilMax = $hoje->add(new \DateInterval("P730D"));
+            $PeriodoUtilMax = $hoje->add(new \DateInterval("P" . $shelfLifeMax . "D"));
 
             if (strlen($params['validade']) < 8) {
                 $dataValida = false;
