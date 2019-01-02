@@ -149,9 +149,7 @@ class InventarioService extends AbstractService
             $this->em->flush();
 
             // se nao existir mais produtos no endereço, cancela o endereço
-            /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEndProdRepository $inventarioEndProdRepo2 */
-            $inventarioEndProdRepo2 = $this->em->getRepository('wms:inventarioNovo\InventarioEndProd');
-            $produtoAtivo = $inventarioEndProdRepo2->findOneBy(['inventarioEndereco' => $idInventarioEndereco, 'ativo' => 'S']);
+            $produtoAtivo = $inventarioEndProdRepo->findOneBy(['inventarioEndereco' => $idInventarioEndereco, 'ativo' => 'S']);
 
             if( count($produtoAtivo) == 0 )
                 $this->removerEndereco($idInventario, $idInventarioEndereco);
@@ -181,9 +179,7 @@ class InventarioService extends AbstractService
             //$this->em->commit();
 
             // se nao existir mais endereços ativos nesse inventario, cancela o mesmo
-            /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo2 */
-            $inventarioEnderecoRepo2 = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
-            $enderecoAtivo = $inventarioEnderecoRepo2->findOneBy(['inventario' => $idInventario, 'ativo' => 'S']);
+            $enderecoAtivo = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'ativo' => 'S']);
 
             if( (count($enderecoAtivo)) == 0)
             {
