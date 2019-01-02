@@ -2239,7 +2239,7 @@ class ExpedicaoRepository extends EntityRepository {
             $and = " and ";
             $andSub = " and ";
             $WhereFinalCarga = $WhereCarga . " AND  (E.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM CARGA WHERE COD_CARGA_EXTERNO LIKE '%" . $parametros['codCargaExterno'] . "%'))";
-            $WhereCarga .= " AND  (COD_CARGA_EXTERNO = LIKE '%" . $parametros['codCargaExterno'] . "%')";
+            $WhereCarga .= " AND  (COD_CARGA_EXTERNO  LIKE '%" . $parametros['codCargaExterno'] . "%')";
         }
 
         $JoinExpedicao = "";
