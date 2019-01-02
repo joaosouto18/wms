@@ -10,6 +10,7 @@ namespace Wms\Service;
 
 
 use Bisna\Base\Domain\Entity\EntityService;
+use Doctrine\Common\Collections\Criteria;
 use Wms\Domain\Entity\Atividade;
 use Wms\Domain\Entity\Enderecamento\EstoqueRepository;
 use Wms\Domain\Entity\InventarioNovo;
@@ -713,8 +714,84 @@ class InventarioService extends AbstractService
             $this->em->flush();
             $this->em->commit();
         } catch (\Exception $e) {
+            $this->em->rollback();
             throw $e;
         }
         return;
     }
+
+    public function concluirInventario($idInventario)
+    {
+        $this->em->beginTransaction();
+        try {
+            /** @var InventarioNovo $invEn */
+            $invEn = $this->find($idInventario);
+
+            if (!$invEn->isFinalizado()) throw new \Exception("Impossível concluir este inventário $idInventario pois está: " . $invEn->getDscStatus());
+
+            $resultInv = $this->getRepository()->getResultInventario($idInventario);
+
+            foreach ($resultInv as $item) {
+                if ($item["QTD"] > 0) {
+                    /** @var Produto $produtoEn */
+                    $produtoEn = $this->em->getRepository("wms:Produto")->find(["id"=> $item["COD_PRODUTO"], "grade" => $item["DSC_GRADE"]]);
+                    if (empty($produtoEn)) throw new \Exception("O produto $item[COD_PRODUTO] - $item[DSC_GRADE] não encontrado");
+
+                    $elem = null;
+                    if ($produtoEn->getTipoComercializacao()->getId() === Produto::TIPO_UNITARIO) {
+                        $embs = $produtoEn->getEmbalagens()->matching(Criteria::create()
+                            ->orderBy(array("quantidade" => Criteria::ASC)))->filter(function ($e) {
+                            return empty($e->getDataInativacao());
+                        })->toArray();
+
+                        if (empty($embs)) throw new \Exception("O produto $item[COD_PRODUTO] - $item[DSC_GRADE] não tem embalagens ativas");
+
+                        $elem = $embs[0];
+                    }
+                    elseif ($produtoEn->getTipoComercializacao()->getId() === Produto::TIPO_COMPOSTO && !empty($item["COD_PRODUTO_VOLUME"])) {
+                        $elem = $this->em->getReference("wms:Produto\Volume", $item["COD_PRODUTO_VOLUME"]);
+                    }
+
+                    $this->atualizarEstoque(
+                        $idInventario,
+                        $item["COD_DEPOSITO_ENDERECO"],
+                        $produtoEn,
+                        $item["DSC_LOTE"],
+                        $produtoEn->getTipoComercializacao()->getId(),
+                        $elem,
+                        $item["QTD"],
+                        $item["DTH_VALIDADE"],
+                        (!empty($item["POSSUI_SALDO"])) ? new \DateTime() : null
+                        );
+                }
+            }
+
+            $this->em->flush();
+            $this->em->commit();
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
+    }
+
+    private function atualizarEstoque($idInventario, $endereco, $produtoEn, $lote, $tipo, $elem, $qtd, $validade, $dthEntrada)
+    {
+        /** @var EstoqueRepository $estoqueRepo */
+        $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
+
+        $strTipo = ($tipo == Produto::TIPO_UNITARIO) ? "embalagem" : "volume";
+        $estoqueRepo->movimentaEstoque([
+            "idInventario" => $idInventario,
+            "endereco" => $this->em->find("wms:Deposito\Endereco", $endereco),
+            "produto" => $produtoEn,
+            "lote" => $lote,
+            $tipo => $elem,
+            "qtd" => $qtd,
+            "observacoes" => "Mov. correção inventário $idInventario",
+            "usuario" => "",
+            "tipo" => HistoricoEstoque::TIPO_INVENTARIO,
+            "dthEntrada" => $dthEntrada
+        ],false,false,$validade);
+    }
+
 }
