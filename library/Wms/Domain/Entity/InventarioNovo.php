@@ -275,12 +275,12 @@ class InventarioNovo
     public function concluir()
     {
         $this->setStatus(self::STATUS_CONCLUIDO);
-        $this->setDthFinalizacao();
     }
 
     public function finalizar()
     {
         $this->setStatus(self::STATUS_FINALIZADO);
+        $this->setDthFinalizacao();
     }
 
     public function interromper()

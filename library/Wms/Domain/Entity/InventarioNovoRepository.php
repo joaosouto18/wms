@@ -135,7 +135,7 @@ class InventarioNovoRepository extends EntityRepository
                 $arrWhere[] = "LOWER(INVN.DSC_INVENTARIO) like '%$descricao%'";
             }
 
-            $where = "WHERE 1 = 1  AND " . implode(" AND ", $arrWhere);
+            $where = "WHERE 1 = 1 AND IEN.IND_ATIVO = 'S' AND " . implode(" AND ", $arrWhere);
         }
 
 
@@ -144,14 +144,14 @@ class InventarioNovoRepository extends EntityRepository
                   INVN.COD_STATUS \"status\",
                   INVN.DSC_INVENTARIO \"descricao\",
                   COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO ) \"qtdEndereco\",
-                  COUNT( DISTINCT ICE.COD_INV_CONT_END) \"qtdDivergencia\",
-                  SUM( CASE WHEN IEN.IND_FINALIZADO = 'S' THEN 1 ELSE 0 END ) \"qtdInventariado\",
+                  COUNT( DISTINCT CASE WHEN ICE.IND_CONTAGEM_DIVERGENCIA = 'S' THEN IEN.COD_INVENTARIO_ENDERECO END ) \"qtdDivergencia\",
+                  COUNT( DISTINCT CASE WHEN IEN.IND_FINALIZADO = 'S' THEN IEN.COD_INVENTARIO_ENDERECO END ) \"qtdInventariado\",
                   TO_CHAR(INVN.DTH_CRIACAO, 'DD/MM/YYYY HH24:MI:SS') \"dataCriacao\",
                   TO_CHAR(INVN.DTH_INICIO, 'DD/MM/YYYY HH24:MI:SS') \"dataInicio\",
                   INVN.COD_INVENTARIO_ERP \"codInvERP\",
                   TO_CHAR(INVN.DTH_FINALIZACAO, 'DD/MM/YYYY HH24:MI:SS') \"dataFinalizacao\",
                   CASE WHEN SUM( CASE WHEN IEN.IND_FINALIZADO = 'S' THEN 1 ELSE 0 END ) > 0
-                       THEN ROUND(((SUM( CASE WHEN IEN.IND_FINALIZADO = 'S' THEN 1 ELSE 0 END ) / COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO )) * 100), 2)
+                         THEN ROUND(((COUNT( DISTINCT CASE WHEN IEN.IND_FINALIZADO = 'S' THEN IEN.COD_INVENTARIO_ENDERECO END ) / COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO )) * 100), 2)
                        ELSE 0 END AS \"andamento\"
                 FROM INVENTARIO_NOVO INVN
                 INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON INVN.COD_INVENTARIO = IEN.COD_INVENTARIO
@@ -388,5 +388,40 @@ class InventarioNovoRepository extends EntityRepository
             ->setParameters(["inventario" => $invEnd->getInventario(), "invEnd" => $invEnd]);
 
         return $dql->getQuery()->getResult();
+    }
+
+    public function getResultInventario($idInventario)
+    {
+        $sql = "
+            SELECT 
+                ICEP.COD_PRODUTO,
+                ICEP.DSC_GRADE,
+                ICEP.COD_PRODUTO_VOLUME,
+                ICEP.DSC_LOTE,
+                IEN.COD_DEPOSITO_ENDERECO,
+                ICEP.DTH_VALIDADE,
+                SUM(ICEP.QTD_EMBALAGEM * ICEP.QTD_CONTADA) - E.QTD QTD,
+                NVL(E.QTD, 0) POSSUI_SALDO
+            FROM INVENTARIO_NOVO INV
+            INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on INV.COD_INVENTARIO = IEN.COD_INVENTARIO AND IEN.IND_ATIVO = 'S' AND IEN.IND_FINALIZADO = 'S'
+            INNER JOIN INVENTARIO_CONT_END ICE on IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
+            INNER JOIN INVENTARIO_CONT_END_PROD ICEP on ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END AND  ICEP.IND_DIVERGENTE = 'N'
+             LEFT JOIN ESTOQUE E 
+               ON E.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO 
+              AND E.COD_PRODUTO = ICEP.COD_PRODUTO 
+              AND E.DSC_GRADE = ICEP.DSC_GRADE 
+              AND NVL(E.DSC_LOTE, 0) = NVL(ICEP.DSC_LOTE, 0)
+              AND NVL(E.COD_PRODUTO_VOLUME, 0) = NVL(ICEP.COD_PRODUTO_VOLUME, 0)
+            WHERE INV.COD_INVENTARIO = $idInventario 
+                  AND NOT EXISTS(
+                  SELECT 'x' FROM INVENTARIO_END_PROD IEP 
+                  WHERE IEP.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO 
+                    AND IEP.COD_PRODUTO = ICEP.COD_PRODUTO 
+                    AND IEP.DSC_GRADE = ICEP.DSC_GRADE 
+                    AND IEP.IND_ATIVO = 'N'
+            )
+            GROUP BY ICEP.COD_PRODUTO, ICEP.DSC_GRADE, ICEP.COD_PRODUTO_VOLUME, ICEP.DSC_LOTE, IEN.COD_DEPOSITO_ENDERECO, ICEP.DTH_VALIDADE, E.QTD";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 }
