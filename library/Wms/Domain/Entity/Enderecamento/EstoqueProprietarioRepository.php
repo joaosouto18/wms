@@ -167,20 +167,19 @@ class EstoqueProprietarioRepository extends EntityRepository
         }
     }
 
-    public function verificaProprietarioExistente($cnpj, $inserir = true){
+    public function verificaProprietarioExistente($cnpj, $dadosFilial = []){
         $cnpj = str_replace(array('.','-','/'),'',$cnpj);
         $empresa = $this->findEmpresaProprietario($cnpj);
-        if(empty($empresa)){
+        if (empty($empresa)) {
             return false;
-        }else{
+        } else {
             $entityPJ = $this->getEntityManager()->getRepository('wms:Pessoa\Juridica')->findOneBy(array('cnpj' => $cnpj));
-            if(empty($entityPJ)){
-                if($inserir == true) {
-                    $entityPJ = $this->insereFilialEmpresa($cnpj, $empresa);
-                }else{
-                    return false;
-                }
-            }else{
+
+            if (empty($entityPJ) && empty($dadosFilial)) {
+                return false;
+            } else if (empty($entityPJ)) {
+                $entityPJ = $this->inserirFilial(null, $cnpj, $dadosFilial);
+            } else {
                 $entityFilial = $this->getEntityManager()->getRepository('wms:Filial')->findOneBy(array('juridica' => $entityPJ->getId()));
                 if(empty($entityFilial)){
                     $this->inserirFilial($entityPJ);
@@ -189,29 +188,6 @@ class EstoqueProprietarioRepository extends EntityRepository
             $idPessoa = $entityPJ->getId();
         }
         return $idPessoa;
-    }
-
-    public function insereFilialEmpresa($cnpj, $empresa){
-        $filial['pessoa']['juridica']['dataAbertura'] = date('d/m/Y');
-        $filial['pessoa']['juridica']['cnpj'] = $cnpj;
-        $filial['pessoa']['juridica']['idTipoOrganizacao'] = 114;
-        $filial['pessoa']['juridica']['idRamoAtividade'] = null;
-        $filial['pessoa']['juridica']['nome'] = $empresa['NOM_EMPRESA'];
-        $filial['pessoa']['tipo'] = 'J';
-
-        $entityFilial  = new Filial();
-        $entityPessoa = $this->getEntityManager()->getRepository('wms:Filial')->persistirAtor($entityFilial, $filial);
-        $entityFilial->setId($entityPessoa->getId());
-        $entityFilial->setIdExterno(null);
-        $entityFilial->setCodExterno(null);
-        $entityFilial->setIndLeitEtqProdTransbObg('N');
-        $entityFilial->setIndUtilizaRessuprimento('N');
-        $entityFilial->setIndRecTransbObg('N');
-        $entityFilial->setIsAtivo('S');
-
-        $this->_em->persist($entityFilial);
-        $this->_em->flush();
-        return $entityPessoa;
     }
 
     public function findEmpresaProprietario($cnpj){
@@ -281,8 +257,19 @@ class EstoqueProprietarioRepository extends EntityRepository
         return $result;
     }
 
-    public function inserirFilial($pj){
+    public function inserirFilial($pj, $novoCnpj = null, $empresa = []){
         $entityFilial  = new Filial();
+
+        if (!empty($novoCnpj) && !empty($empresa)) {
+            $filial['pessoa']['juridica']['dataAbertura'] = date('d/m/Y');
+            $filial['pessoa']['juridica']['cnpj'] = $novoCnpj;
+            $filial['pessoa']['juridica']['idTipoOrganizacao'] = 114;
+            $filial['pessoa']['juridica']['idRamoAtividade'] = null;
+            $filial['pessoa']['juridica']['nome'] = $empresa['nome'];
+            $filial['pessoa']['tipo'] = 'J';
+            $pj = $this->getEntityManager()->getRepository('wms:Filial')->persistirAtor($entityFilial, $filial);
+        }
+
         $entityFilial->setId($pj->getId());
         $entityFilial->setJuridica($pj);
         $entityFilial->setIdExterno($pj->getId());
@@ -293,5 +280,7 @@ class EstoqueProprietarioRepository extends EntityRepository
         $entityFilial->setIsAtivo('S');
         $this->_em->persist($entityFilial);
         $this->_em->flush();
+
+        return $entityPessoa;
     }
 }
