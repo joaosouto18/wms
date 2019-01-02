@@ -39,7 +39,6 @@ class InventarioContEndRepository extends EntityRepository
     public function getContagens($idInventario)
     {
         $sql = "SELECT DISTINCT 
-                        ICE.COD_INV_CONT_END \"id\",
                         ICE.NUM_SEQUENCIA \"sequencia\", 
                         ICE.NUM_CONTAGEM \"contagem\", 
                         ICE.IND_CONTAGEM_DIVERGENCIA \"divergencia\",
@@ -63,5 +62,17 @@ class InventarioContEndRepository extends EntityRepository
                 WHERE IEN.COD_INVENTARIO = $idInventario AND IEN.IND_FINALIZADO = 'N' AND IEN.IND_ATIVO = 'S'";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
+
+    public function getContEnd($idEndereco, $sequencia)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("ice")
+            ->from("wms:InventarioNovo\InventarioContEnd", "ice")
+            ->innerJoin("ice.inventarioEndereco", "ien", "WITH", "ien.ativo = 'S'")
+            ->where("ien.depositoEndereco = $idEndereco and ice.sequencia = $sequencia")
+        ;
+
+        return $dql->getQuery()->getFirstResult();
     }
 }

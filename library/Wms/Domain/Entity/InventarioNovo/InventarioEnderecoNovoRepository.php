@@ -65,8 +65,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
             ->innerJoin("ie.depositoEndereco", "de")
             ->innerJoin("wms:InventarioNovo\InventarioEndProd", "iep", "WITH", "iep.inventarioEndereco = ie and iep.ativo = 'S'")
             ->innerJoin("iep.produto", "p")
-            ->leftJoin("p.embalagens", "e")
-            ->leftJoin("p.volumes", "v")
+            ->leftJoin("p.embalagens", "e", "WITH", "e.codigoBarras IS NOT NULL")
+            ->leftJoin("p.volumes", "v", "WITH", "v.codigoBarras IS NOT NULL")
             ->where("ice.sequencia = $sequencia")
             ->distinct(true);
 

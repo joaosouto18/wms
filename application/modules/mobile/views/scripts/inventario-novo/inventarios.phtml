@@ -471,7 +471,7 @@
                 $("#lbl-endereco").text(dscEndSelecionado);
                 openEndereco()
             } else {
-                notificar("warning", "Este endereço "+input.val()+" não está no inventário", true);
+                notificar("warning", "Este endereço "+endFormated+" não está no inventário", true);
                 input.focus();
             }
 
@@ -583,7 +583,7 @@
                 });
                 if (!encontrou) {
                     liberado = false;
-                    notificar("warning", "Este código de barras " + codBarras + " não pertence à nenhum produto deste inventário", true)
+                    notificar("warning", "Este código de barras " + codBarras + " não pertence à nenhum produto esperado neste endereço", true)
                 }
             }
 
@@ -687,6 +687,7 @@
                 "/mobile/inventario-novo/contagem-produto",
                 {
                     inventario: invSelecioando,
+                    endereco: idEndSelecionado,
                     contagem: contSelecioando,
                     produto: elemBipado,
                     conferencia: {
@@ -711,7 +712,8 @@
                 "/mobile/inventario-novo/finalizar-contagem-os",
                 {
                     inventario: invSelecioando,
-                    contagem: contSelecioando
+                    contagem: contSelecioando,
+                    endereco: idEndSelecionado
                 }
             ).done(function( result ) {
                 if (result.status === "ok") {

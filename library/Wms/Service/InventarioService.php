@@ -231,7 +231,7 @@ class InventarioService extends AbstractService
         }
     }
 
-    public function novaConferencia($inventario, $contagem, $produto, $conferencia, $tipoConferencia) {
+    public function novaConferencia($inventario, $contagem, $endereco, $produto, $conferencia, $tipoConferencia) {
         $this->em->beginTransaction();
         try {
 
@@ -256,7 +256,7 @@ class InventarioService extends AbstractService
             $this->registrarConferencia(
                 $elements,
                 $inventario,
-                $this->getOsUsuarioContagem( $contagem, $inventario, $tipoConferencia, true)->getInvContEnd(),
+                $this->getOsUsuarioContagem( $contagem, $endereco, $inventario, $tipoConferencia, true)->getInvContEnd(),
                 $conferencia,
                 $tipoConferencia,
                 $this->em->getReference("wms:Produto", ["id" => $produto['idProduto'], "grade" => $produto['grade']]),
@@ -310,13 +310,14 @@ class InventarioService extends AbstractService
 
     /**
      * @param $contagem
+     * @param $endereco
      * @param $inventario
      * @param $tipoConferencia
      * @param $createIfNoExist
      * @return InventarioNovo\InventarioContEndOs
      * @throws \Exception
      */
-    public function getOsUsuarioContagem($contagem, $inventario, $tipoConferencia, $createIfNoExist = false)
+    public function getOsUsuarioContagem($contagem, $endereco, $inventario, $tipoConferencia, $createIfNoExist = false)
     {
         try {
             /** @var Usuario $usuario */
@@ -325,8 +326,10 @@ class InventarioService extends AbstractService
             /** @var InventarioNovo\InventarioContEndOsRepository $contagemEndOsRepo */
             $contagemEndOsRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndOs");
 
+            $contEndEn = $this->em->getRepository("wms:InventarioNovo\InventarioContEnd")->getContEnd($endereco, $contagem["sequencia"]);
+
             /** @var InventarioNovo\InventarioContEndOs $usrContOs */
-            $usrContOs = $contagemEndOsRepo->getOsContUsuario( $contagem['id'], $usuario->getId());
+            $usrContOs = $contagemEndOsRepo->getOsContUsuario( $contEndEn,  $usuario->getId());
 
             if (!empty($usrContOs->getOrdemServico()->getDataFinal()))
                 throw new \Exception("Sua ordem de serviço já foi finalizada em: ". $usrContOs->getOrdemServico()->getDataFinal());
@@ -336,7 +339,7 @@ class InventarioService extends AbstractService
                 if (!empty($osContagensAnteriores) && json_decode($inventario['usuarioNContagens']))
                     throw new \Exception("Este usuário não tem permissão para iniciar uma nova contagem neste endereço");
 
-                $usrContOs = $this->addNewOsContagem($contagem, $usuario, $tipoConferencia);
+                $usrContOs = $this->addNewOsContagem($contEndEn, $usuario, $tipoConferencia);
             }
 
             return $usrContOs;
@@ -347,13 +350,13 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $contagemEndereco
+     * @param InventarioContEnd $contEndEn
      * @param $usuario Usuario
      * @param $tipoConferencia
      * @return InventarioNovo\InventarioContEndOs
      * @throws \Exception
      */
-    private function addNewOsContagem($contagemEndereco, $usuario, $tipoConferencia)
+    private function addNewOsContagem($contEndEn, $usuario, $tipoConferencia)
     {
         try {
             /** @var OrdemServico $newOsEn */
@@ -366,7 +369,7 @@ class InventarioService extends AbstractService
             ], false);
 
             return $this->em->getRepository("wms:InventarioNovo\InventarioContEndOs")->save([
-                "invContEnd" => $this->em->getReference("wms:InventarioNovo\InventarioContEnd", $contagemEndereco['id']),
+                "invContEnd" => $contEndEn,
                 "ordemServico" => $newOsEn
             ], false);
         } catch (\Exception $e) {
@@ -380,14 +383,14 @@ class InventarioService extends AbstractService
      * @return array
      * @throws \Exception
      */
-    public function finalizarOs($inventario, $contagem, $tipoConferencia)
+    public function finalizarOs($inventario, $endereco, $contagem, $tipoConferencia)
     {
         $this->em->beginTransaction();
         try {
             /** @var OrdemServicoRepository $osRepo */
             $osRepo = $this->em->getRepository("wms:OrdemServico");
 
-            $osUsuarioCont = $this->getOsUsuarioContagem($contagem);
+            $osUsuarioCont = $this->getOsUsuarioContagem($contagem, $endereco);
 
             $osRepo->finalizar($osUsuarioCont->getOrdemServico()->getId(), "Contagem finalizada", $osUsuarioCont->getOrdemServico(), false);
 
@@ -704,7 +707,7 @@ class InventarioService extends AbstractService
         try{
             $this->zerarProduto(
                 $inventario,
-                $this->em->find("wms:InventarioNovo\InventarioContEnd", $contagem["id"]),
+                $this->em->getRepository("wms:InventarioNovo\InventarioContEnd")->getContEnd($endereco, $contagem['sequencia']),
                 $this->em->getRepository("wms:Enderecamento\Estoque")->findOneBy([
                     "depositoEndereco" => $endereco,
                     "codProduto" => $produto["codProduto"],
@@ -765,7 +768,7 @@ class InventarioService extends AbstractService
                         $elem,
                         $item["QTD"],
                         $item["DTH_VALIDADE"],
-                        (!empty($item["POSSUI_SALDO"])) ? new \DateTime() : null
+                        (empty($item["POSSUI_SALDO"])) ? new \DateTime() : null
                         );
                 }
             }
@@ -778,21 +781,41 @@ class InventarioService extends AbstractService
         }
     }
 
+    /**
+     * @param $idInventario
+     * @param $endereco
+     * @param Produto $produtoEn
+     * @param $lote
+     * @param $tipo
+     * @param $elem
+     * @param $qtd
+     * @param $validade
+     * @param $dthEntrada
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\TransactionRequiredException
+     */
     private function atualizarEstoque($idInventario, $endereco, $produtoEn, $lote, $tipo, $elem, $qtd, $validade, $dthEntrada)
     {
         /** @var EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->em->getRepository("wms:Enderecamento\Estoque");
 
-        $strTipo = ($tipo == Produto::TIPO_UNITARIO) ? "embalagem" : "volume";
+        if ($produtoEn->getIndControlaLote() == "S" and !empty($lote) and !empty($dthEntrada)) {
+            $loteEn = $this->em->getRepository("wms:Produto\Lote")->findOneBy(["produto" => [$produtoEn, null], "descricao" => $lote]);
+            if (empty($loteEn)) {
+
+            }
+        }
+
         $estoqueRepo->movimentaEstoque([
             "idInventario" => $idInventario,
             "endereco" => $this->em->find("wms:Deposito\Endereco", $endereco),
             "produto" => $produtoEn,
             "lote" => $lote,
-            $tipo => $elem,
+            ($tipo == Produto::TIPO_UNITARIO) ? "embalagem" : "volume" => $elem,
             "qtd" => $qtd,
             "observacoes" => "Mov. correção inventário $idInventario",
-            "usuario" => "",
+            "usuario" => $this->em->getReference('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId()),
             "tipo" => HistoricoEstoque::TIPO_INVENTARIO,
             "dthEntrada" => $dthEntrada
         ],false,false,$validade);

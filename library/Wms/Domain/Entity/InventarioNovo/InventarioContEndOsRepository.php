@@ -37,7 +37,8 @@ class InventarioContEndOsRepository extends EntityRepository
     }
 
     /**
-     * @param $idContEnd
+     * @param $idEndereco
+     * @param $sequencia
      * @param $idUsuario
      * @return InventarioContEndOs[]
      */
@@ -47,7 +48,8 @@ class InventarioContEndOsRepository extends EntityRepository
             ->select("iceos")
             ->from("wms:InventarioNovo\InventarioContEndOs", "iceos")
             ->innerJoin("iceos.ordemServico", "os", "WITH", "os.pessoa = $idUsuario")
-            ->innerJoin("iceos.invContEnd", "ice", "WITH", "ice.id = $idContEnd");
+            ->innerJoin("iceos.invContEnd", "ice", "WITH", "ice.id = $idContEnd")
+        ;
 
         return $dql->getQuery()->getOneOrNullResult();
     }
