@@ -326,16 +326,17 @@ class InventarioService extends AbstractService
             /** @var InventarioNovo\InventarioContEndOsRepository $contagemEndOsRepo */
             $contagemEndOsRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndOs");
 
+            /** @var InventarioNovo\InventarioContEnd $contEndEn */
             $contEndEn = $this->em->getRepository("wms:InventarioNovo\InventarioContEnd")->getContEnd($endereco, $contagem["sequencia"]);
 
             /** @var InventarioNovo\InventarioContEndOs $usrContOs */
-            $usrContOs = $contagemEndOsRepo->getOsContUsuario( $contEndEn,  $usuario->getId());
+            $usrContOs = $contagemEndOsRepo->getOsContUsuario( $contEndEn->getId(),  $usuario->getId());
 
-            if (!empty($usrContOs->getOrdemServico()->getDataFinal()))
+            if (!empty($usrContOs) && !empty($usrContOs->getOrdemServico()->getDataFinal()))
                 throw new \Exception("Sua ordem de serviço já foi finalizada em: ". $usrContOs->getOrdemServico()->getDataFinal());
 
             if (empty($usrContOs) && $createIfNoExist) {
-                $osContagensAnteriores = $contagemEndOsRepo->getContagensUsuario( $usuario->getId(), $usrContOs->getInvContEnd()->getInventarioEndereco());
+                $osContagensAnteriores = $contagemEndOsRepo->getContagensUsuario( $usuario->getId(), $contEndEn->getInventarioEndereco()->getId());
                 if (!empty($osContagensAnteriores) && json_decode($inventario['usuarioNContagens']))
                     throw new \Exception("Este usuário não tem permissão para iniciar uma nova contagem neste endereço");
 

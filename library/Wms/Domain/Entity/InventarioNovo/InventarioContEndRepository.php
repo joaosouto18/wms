@@ -73,6 +73,6 @@ class InventarioContEndRepository extends EntityRepository
             ->where("ien.depositoEndereco = $idEndereco and ice.sequencia = $sequencia")
         ;
 
-        return $dql->getQuery()->getFirstResult();
+        return $dql->getQuery()->getOneOrNullResult();
     }
 }
