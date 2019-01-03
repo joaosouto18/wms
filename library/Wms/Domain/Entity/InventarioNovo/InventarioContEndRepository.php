@@ -41,8 +41,7 @@ class InventarioContEndRepository extends EntityRepository
         $sql = "SELECT DISTINCT 
                         ICE.NUM_SEQUENCIA \"sequencia\", 
                         ICE.NUM_CONTAGEM \"contagem\", 
-                        ICE.IND_CONTAGEM_DIVERGENCIA \"divergencia\",
-                        NVL(EV.END_VAZIO, 'S') \"vazio\"
+                        ICE.IND_CONTAGEM_DIVERGENCIA \"divergencia\"
                 FROM INVENTARIO_ENDERECO_NOVO IEN
                 INNER JOIN INVENTARIO_CONT_END ICE on IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
                 INNER JOIN (
@@ -52,13 +51,6 @@ class InventarioContEndRepository extends EntityRepository
                     WHERE IEN2.COD_INVENTARIO = $idInventario AND IEN2.IND_ATIVO = 'S'
                     GROUP BY ICE2.COD_INVENTARIO_ENDERECO
                   ) LC ON LC.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO AND LC.ULTIMA = ICE.NUM_SEQUENCIA
-                LEFT JOIN (
-                    SELECT 'N' END_VAZIO, ICE3.COD_INVENTARIO_ENDERECO
-                    FROM INVENTARIO_ENDERECO_NOVO IEN3
-                    INNER JOIN INVENTARIO_CONT_END ICE3 on IEN3.COD_INVENTARIO_ENDERECO = ICE3.COD_INVENTARIO_ENDERECO
-                    INNER JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE3.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
-                    WHERE IEN3.COD_INVENTARIO = $idInventario AND IEN3.IND_ATIVO = 'S' AND ICEP.QTD_CONTADA > 0
-                  ) EV ON EV.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
                 WHERE IEN.COD_INVENTARIO = $idInventario AND IEN.IND_FINALIZADO = 'N' AND IEN.IND_ATIVO = 'S'";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();

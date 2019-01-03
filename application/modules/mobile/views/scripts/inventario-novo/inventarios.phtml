@@ -165,8 +165,7 @@
         var contagens = [];
         var contSelecioando = {};
         var enderecos = [];
-        var idEndSelecionado = null;
-        var dscEndSelecionado = null;
+        var contEndSelecionado = null;
         var produtos = [];
         var elemBipado = {};
         var usaGrade = true;
@@ -466,9 +465,8 @@
             if (!endFormated) {
                 notificar("warning", "O código de barras não corresponde à um endereço", true);
             } else if ((enderecos[endFormated] !== undefined)) {
-                idEndSelecionado = enderecos[endFormated];
-                dscEndSelecionado = endFormated;
-                $("#lbl-endereco").text(dscEndSelecionado);
+                contEndSelecionado = enderecos[endFormated];
+                $("#lbl-endereco").text(endFormated);
                 openEndereco()
             } else {
                 notificar("warning", "Este endereço "+endFormated+" não está no inventário", true);
@@ -481,7 +479,7 @@
         var openEndereco = function () {
             changeViewer("loader");
             $.ajax({
-                url: "/mobile/inventario-novo/get-info-endereco/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia + "/divrg/" + contSelecioando.divergencia + "/end/" + idEndSelecionado,
+                url: "/mobile/inventario-novo/get-info-endereco/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia + "/divrg/" + contSelecioando.divergencia + "/end/" + contEndSelecionado.idEnd,
                 success: function (result) {
                     produtos = [];
                     if (result.status === "ok") {
@@ -513,7 +511,7 @@
                 });
             }
 
-            if (contSelecioando.vazio === 'S') {
+            if (contSelecioando.vazio) {
                 $("#btn-finalizar").text("Finalizar Endereço Vazio")
             } else {
                 $("#btn-finalizar").text("Finalizar Endereço")
@@ -541,9 +539,8 @@
                 "/mobile/inventario-novo/confirmar-produto-zerado",
                 {
                     inventario: invSelecioando,
-                    contagem: contSelecioando,
-                    produto: produto,
-                    endereco: idEndSelecionado
+                    contEnd: contEndSelecionado,
+                    produto: produto
                 }
             ).done(function( result ) {
                 if (result.status === "ok") {
@@ -687,8 +684,7 @@
                 "/mobile/inventario-novo/contagem-produto",
                 {
                     inventario: invSelecioando,
-                    endereco: idEndSelecionado,
-                    contagem: contSelecioando,
+                    contEnd: contEndSelecionado,
                     produto: elemBipado,
                     conferencia: {
                         qtd: $("#qtd").val(),
@@ -712,8 +708,7 @@
                 "/mobile/inventario-novo/finalizar-contagem-os",
                 {
                     inventario: invSelecioando,
-                    contagem: contSelecioando,
-                    endereco: idEndSelecionado
+                    contEnd: contEndSelecionado
                 }
             ).done(function( result ) {
                 if (result.status === "ok") {
