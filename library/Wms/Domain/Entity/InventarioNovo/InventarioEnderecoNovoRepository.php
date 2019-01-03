@@ -41,6 +41,7 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                     ICE.COD_INV_CONT_END,
                     ICE.IND_CONTAGEM_DIVERGENCIA,
                     ICE.NUM_CONTAGEM,
+                    ICE.COD_INVENTARIO_ENDERECO,
                     EV.END_VAZIO
                 FROM INVENTARIO_CONT_END ICE
                 INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO AND IEN.IND_ATIVO = 'S'
@@ -57,7 +58,7 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                               AND IEP.COD_INVENTARIO_ENDERECO = IEN3.COD_INVENTARIO_ENDERECO
                           )
                   ) EV ON EV.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
-                WHERE ICE.NUM_SEQUENCIA = $sequencia AND IEN.COD_INVENTARIO = $idInventario
+                WHERE ICE.NUM_SEQUENCIA = $sequencia AND IEN.COD_INVENTARIO = $idInventario AND IEN.IND_FINALIZADO = 'N'
         ";
 
         $result = [];
@@ -65,6 +66,7 @@ class InventarioEnderecoNovoRepository extends EntityRepository
             $result[$item['DSC_DEPOSITO_ENDERECO']] = [
                 "idEnd" => $item['COD_DEPOSITO_ENDERECO'],
                 "idContEnd" => $item['COD_INV_CONT_END'],
+                "idInvEnd" => $item['COD_INVENTARIO_ENDERECO'],
                 "vazio" => empty($item["END_VAZIO"]),
                 "indDivrg" => ($item["IND_CONTAGEM_DIVERGENCIA"] == "S"),
                 "sequencia" => $sequencia,
