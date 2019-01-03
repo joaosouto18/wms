@@ -90,8 +90,7 @@ class Mobile_InventarioNovoController extends Action
         try {
             $this->getServiceLocator()->getService("Inventario")->novaConferencia(
                 $this->_getParam("inventario"),
-                $this->_getParam("contagem"),
-                $this->_getParam("endereco"),
+                $this->_getParam("contEnd"),
                 $this->_getParam("produto"),
                 $this->_getParam("conferencia"),
                 \Wms\Domain\Entity\OrdemServico::COLETOR);
@@ -107,8 +106,7 @@ class Mobile_InventarioNovoController extends Action
         try {
             $this->getServiceLocator()->getService("Inventario")->confirmarProdutoZerado(
                 $this->_getParam("inventario"),
-                $this->_getParam("endereco"),
-                $this->_getParam("contagem"),
+                $this->_getParam("contEnd"),
                 $this->_getParam("produto"),
                 \Wms\Domain\Entity\OrdemServico::COLETOR);
 
@@ -124,8 +122,7 @@ class Mobile_InventarioNovoController extends Action
 
             $response = $this->getServiceLocator()->getService("Inventario")->finalizarOs(
                 $this->_getParam("inventario"),
-                $this->_getParam("endereco"),
-                $this->_getParam("contagem"),
+                $this->_getParam("contEnd"),
                 \Wms\Domain\Entity\OrdemServico::COLETOR);
 
             $this->_helper->json(["status" => "ok", 'response' => $response]);
