@@ -925,4 +925,64 @@ class InventarioRepository extends EntityRepository {
         fclose($file);
     }
 
+    public function exportaInventarioModelo03($id) {
+        /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
+        $inventarioEn = $this->_em->find('wms:Inventario', $id);
+        $codInvErp = $inventarioEn->getCodInventarioERP();
+
+
+        if (empty($codInvErp)){
+            throw new \Exception("Este inventário não tem o código do inventário respectivo no ERP");
+        }
+
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
+
+
+        $filename = "Exp_Inventario($codInvErp).txt";
+        $file = fopen($filename, 'w');
+
+
+        $SQL = "SELECT P.COD_PRODUTO, P.DSC_GRADE, NVL(ESTQ.QTD,0) as QTD
+                  FROM PRODUTO P
+                  LEFT JOIN (SELECT E.COD_PRODUTO,
+                                    E.DSC_GRADE, 
+                                    MIN(QTD) as QTD
+                               FROM (SELECT E.COD_PRODUTO,
+                                            E.DSC_GRADE,
+                                            SUM(E.QTD) as QTD,
+                                            NVL(E.COD_PRODUTO_VOLUME,0) as ID_VOLUME
+                                       FROM ESTOQUE E
+                                            GROUP BY E.COD_PRODUTO, E.DSC_GRADE,NVL(E.COD_PRODUTO_VOLUME,0)) E
+                              GROUP BY COD_PRODUTO, DSC_GRADE) ESTQ
+                    ON ESTQ.COD_PRODUTO = P.COD_PRODUTO
+                   AND ESTQ.DSC_GRADE = P.DSC_GRADE 
+                 INNER JOIN (SELECT DISTINCT 
+                                    ICE.COD_PRODUTO,
+                                    ICE.DSC_GRADE
+                               FROM INVENTARIO_ENDERECO IE
+                               LEFT JOIN INVENTARIO I ON I.COD_INVENTARIO = IE.COD_INVENTARIO
+                               LEFT JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+                              WHERE I.COD_INVENTARIO_ERP = $codInvErp AND ICE.CONTAGEM_INVENTARIADA = 1 AND ICE.DIVERGENCIA IS NULL
+                              GROUP BY ICE.COD_PRODUTO,
+                                       ICE.DSC_GRADE) I
+                    ON I.COD_PRODUTO = P.COD_PRODUTO
+                   AND I.DSC_GRADE = P.DSC_GRADE";
+        $produtos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $inventario = array();
+        foreach ($produtos as $produto) {
+            $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $produto['COD_PRODUTO'],
+                'grade' => $produto['DSC_GRADE'],
+                'dataInativacao' => null),
+                array('quantidade' => 'ASC'));
+
+            if (!$embalagemEntity) continue;
+
+            $inventario[$produto['COD_PRODUTO']]['QUANTIDADE'] = $produto['QTD'];
+            $inventario[$produto['COD_PRODUTO']]['NUM_CONTAGEM'] = 1;
+            $inventario[$produto['COD_PRODUTO']]['COD_BARRAS'] = reset($embalagemEntity)->getCodigoBarras();
+            $inventario[$produto['COD_PRODUTO']]['FATOR'] = reset($embalagemEntity)->getQuantidade();
+        }
+
 }
