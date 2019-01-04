@@ -13,6 +13,7 @@ use Bisna\Base\Domain\Entity\EntityService;
 use Doctrine\Common\Collections\Criteria;
 use Wms\Domain\Entity\Atividade;
 use Wms\Domain\Entity\Enderecamento\EstoqueRepository;
+use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
 use Wms\Domain\Entity\InventarioNovo;
 use Wms\Domain\Entity\OrdemServico;
 use Wms\Domain\Entity\OrdemServicoRepository;
@@ -727,24 +728,29 @@ class InventarioService extends AbstractService
             /** @var InventarioNovo $invEn */
             $invEn = $this->find($idInventario);
 
-            if (!$invEn->isFinalizado()) throw new \Exception("Impossível concluir este inventário $idInventario pois está: " . $invEn->getDscStatus());
+            if (!$invEn->isConcluido()) throw new \Exception("Impossível concluir este inventário $idInventario pois está: " . $invEn->getDscStatus());
 
             $resultInv = $this->getRepository()->getResultInventario($idInventario);
 
             foreach ($resultInv as $item) {
-                if ($item["QTD"] > 0) {
+                if ($item["QTD"] != 0) {
                     /** @var Produto $produtoEn */
                     $produtoEn = $this->em->getRepository("wms:Produto")->find(["id"=> $item["COD_PRODUTO"], "grade" => $item["DSC_GRADE"]]);
                     if (empty($produtoEn)) throw new \Exception("O produto $item[COD_PRODUTO] - $item[DSC_GRADE] não encontrado");
 
                     $elem = null;
                     if ($produtoEn->getTipoComercializacao()->getId() === Produto::TIPO_UNITARIO) {
-                        $embs = $produtoEn->getEmbalagens()->matching(Criteria::create()
-                            ->orderBy(array("quantidade" => Criteria::ASC)))->filter(function ($e) {
-                            return empty($e->getDataInativacao());
-                        })->toArray();
+                        $embs = $produtoEn->getEmbalagens()->filter(
+                            function ($e) {
+                                return empty($e->getDataInativacao());
+                            }
+                        )->toArray();
 
                         if (empty($embs)) throw new \Exception("O produto $item[COD_PRODUTO] - $item[DSC_GRADE] não tem embalagens ativas");
+
+                        usort($embs, function ($a, $b) {
+                            return $a->getQuantidade() > $b->getQuantidade();
+                        });
 
                         $elem = $embs[0];
                     }
@@ -762,9 +768,12 @@ class InventarioService extends AbstractService
                         $item["QTD"],
                         $item["DTH_VALIDADE"],
                         (empty($item["POSSUI_SALDO"])) ? new \DateTime() : null
-                        );
+                    );
                 }
             }
+
+            $invEn->finalizar();
+            $this->em->persist($invEn);
 
             $this->em->flush();
             $this->em->commit();
@@ -795,10 +804,11 @@ class InventarioService extends AbstractService
         /** @var Produto\LoteRepository $loteRepo */
         $loteRepo = $this->em->getRepository("wms:Produto\Lote");
 
-        if ($produtoEn->getIndControlaLote() == "S" and !empty($lote) and !empty($dthEntrada)) {
-            $loteEn = $loteRepo->findOneBy(["produto" => [$produtoEn, null], "descricao" => $lote]);
-            if (empty($loteEn)) $loteVirgem = $loteRepo->findOneBy(["descricao" => $lote, "origem" => Produto\Lote::INTERNO]);
+        $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
 
+        if ($produtoEn->getIndControlaLote() == "S" and !empty($lote) and !empty($dthEntrada)) {
+            if (empty($loteRepo->verificaLote($lote, $produtoEn->getId(), $produtoEn->getGrade(), $idUsuario)))
+                $loteRepo->save($produtoEn->getId(), $produtoEn->getGrade(), $lotem, $idUsuario);
         }
 
         $estoqueRepo->movimentaEstoque([
@@ -809,7 +819,7 @@ class InventarioService extends AbstractService
             ($tipo == Produto::TIPO_UNITARIO) ? "embalagem" : "volume" => $elem,
             "qtd" => $qtd,
             "observacoes" => "Mov. correção inventário $idInventario",
-            "usuario" => $this->em->getReference('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId()),
+            "usuario" => $this->em->getReference('wms:Usuario', $idUsuario),
             "tipo" => HistoricoEstoque::TIPO_INVENTARIO,
             "dthEntrada" => $dthEntrada
         ],false,false,$validade);

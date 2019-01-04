@@ -214,28 +214,26 @@ class Inventario_Novo_IndexController  extends Action
 
     public function atualizarAction()
     {
-        $id = $this->_getParam('id');
-        if (isset($id) && !empty($id)) {
-            /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
-            $inventarioRepo = $this->em->getRepository("wms:Inventario");
-            $inventarioEn = $inventarioRepo->find($id);
-            if ($inventarioEn) {
-
-                ini_set('max_execution_time', 3000);
-                try {
-                    $this->em->beginTransaction();
-                    $inventarioRepo->atualizarEstoque($inventarioEn);
-                    $inventarioRepo->desbloqueiaEnderecos($id);
-                    $this->em->commit();
-                    $this->_helper->messenger('success', 'Estoque atualizado com sucesso');
-                }catch(\Exception $e) {
-                    $this->em->rollback();
-                    $this->_helper->messenger('success', $e->getMessage());
-                }
-
-                return $this->redirect('index');
-            }
+        try{
+            $id = $this->_getParam('id');
+            $this->getServiceLocator()->getService("Inventario")->concluirInventario($id);
+            $this->addFlashMessage("success", "Atualização de estoque baseada no inventário $id concluida com sucesso");
+        } catch (Exception $e) {
+            $this->addFlashMessage("error", $e->getMessage());
         }
+        $this->redirect();
+    }
+
+    public function interromperAction()
+    {
+        try{
+            $id = $this->_getParam('id');
+            $this->getServiceLocator()->getService("Inventario")->concluirInventario($id);
+            $this->addFlashMessage("success", "Atualização de estoque baseada no inventário $id concluida com sucesso");
+        } catch (Exception $e) {
+            $this->addFlashMessage("error", $e->getMessage());
+        }
+        $this->redirect();
     }
 
     public function cancelarAction()
@@ -248,10 +246,11 @@ class Inventario_Novo_IndexController  extends Action
             if ($inventarioEn) {
                 $inventarioRepo->cancelar($inventarioEn);
                 $inventarioRepo->desbloqueiaEnderecos($id);
-                return $this->redirect('index');
+                $this->redirect('index');
             }
         }
     }
+
 
     public function viewMovimentacoesAjaxAction() {
         $id = $this->_getParam('id');
@@ -307,14 +306,8 @@ class Inventario_Novo_IndexController  extends Action
             if (!empty($codInventarioErp)) {
                 /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
                 $inventarioRepo = $this->em->getRepository('wms:Inventario');
-//                $check = $inventarioRepo->findOneBy(array('codInventarioERP' => $codInventarioErp));
-//                if (empty($check)) {
-                    $inventarioRepo->setCodInventarioERP($id,$codInventarioErp);
-                    $this->addFlashMessage('success', 'Código vinculado com sucesso!');
-//                } else {
-//                    $idInventario = $check->getId();
-//                    $this->addFlashMessage('error', "O inventário $idInventario já está vinculado com esse código $codInventarioErp");
-//                }
+                $inventarioRepo->setCodInventarioERP($id,$codInventarioErp);
+                $this->addFlashMessage('success', 'Código vinculado com sucesso!');
                 $this->redirect('index');
             }
 
