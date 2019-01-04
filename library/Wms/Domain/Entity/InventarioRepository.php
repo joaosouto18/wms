@@ -925,13 +925,14 @@ class InventarioRepository extends EntityRepository {
         fclose($file);
     }
 
-    public function exportaInventarioModelo03($id) {
+    public function exportaInventarioModelo03($id)
+    {
         /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
         $inventarioEn = $this->_em->find('wms:Inventario', $id);
         $codInvErp = $inventarioEn->getCodInventarioERP();
 
 
-        if (empty($codInvErp)){
+        if (empty($codInvErp)) {
             throw new \Exception("Este inventário não tem o código do inventário respectivo no ERP");
         }
 
@@ -984,5 +985,36 @@ class InventarioRepository extends EntityRepository {
             $inventario[$produto['COD_PRODUTO']]['COD_BARRAS'] = reset($embalagemEntity)->getCodigoBarras();
             $inventario[$produto['COD_PRODUTO']]['FATOR'] = reset($embalagemEntity)->getQuantidade();
         }
+        foreach ($inventario as $key => $produto) {
+            $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
+            $txtContagem = '001';
+            $txtLocal = '001';
+            $txtCodBarras = str_pad($produto['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
 
+            if ($produto["FATOR"] == 0) {
+                $produto["FATOR"] = 1;
+            }
+
+            $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 10, '0', STR_PAD_LEFT);
+            $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
+            $linha = "$txtCodInventario" . "$txtContagem" . "$txtLocal" . "$txtCodBarras" . "$txtQtd" . "$txtCodProduto" . "\r\n";
+            fwrite($file, $linha, strlen($linha));
+        }
+
+        fclose($file);
+
+        header("Content-Type: application/force-download");
+        header("Content-type: application/octet-stream;");
+        header("Content-disposition: attachment; filename=" . $filename);
+        header("Expires: 0");
+        header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+        header("Pragma: no-cache");
+
+        readfile($filename);
+        flush();
+
+        unlink($filename);
+        exit;
+
+    }
 }
