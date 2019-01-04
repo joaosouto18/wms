@@ -773,11 +773,11 @@ class InventarioService extends AbstractService
                         $item["DTH_VALIDADE"],
                         (empty($item["POSSUI_SALDO"])) ? new \DateTime() : null
                     );
-
-                    $invEn->finalizar();
-                    $this->em->persist($invEn);
                 }
             }
+
+            $invEn->finalizar();
+            $this->em->persist($invEn);
 
             $this->em->flush();
             $this->em->commit();
