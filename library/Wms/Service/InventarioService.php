@@ -732,7 +732,7 @@ class InventarioService extends AbstractService
             /** @var InventarioNovo $invEn */
             $invEn = $this->find($idInventario);
 
-            if (!$invEn->isConcluido()) throw new \Exception("Impossível concluir este inventário $idInventario pois está: " . $invEn->getDscStatus());
+            if (!($invEn->isConcluido() || $invEn->isInterrompido())) throw new \Exception("Impossível finalizar este inventário $idInventario pois está: " . $invEn->getDscStatus());
 
             $resultInv = $this->getRepository()->getResultInventario($idInventario);
 
@@ -829,4 +829,23 @@ class InventarioService extends AbstractService
         ],false,false,$validade);
     }
 
+    public function interromperInventario($id)
+    {
+        $this->em->beginTransaction();
+        try{
+            /** @var InventarioNovo $invEn */
+            $invEn = $this->find($id);
+
+            if (!$invEn->isLiberado()) throw new \Exception("Este inventário $id não pode ser interrompido pois está: " . $invEn->getDscStatus());
+
+            $invEn->interromper();
+            $this->em->persist($invEn);
+
+            $this->em->flush();
+            $this->em->commit();
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
+    }
 }

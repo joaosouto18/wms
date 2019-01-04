@@ -69,12 +69,25 @@ VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
          'Criar novo inventário'
 );
 
+/* CRIAÇÃO DE ACTION DE ATUALIZAÇÃO DE ESTOQUE */
 INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
 VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
          (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
          (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'atualizar'),
          'Atualizar estoque'
 );
+
+/* CRIAÇÃO DE ACTION DE INTERROMPER DE INVENTARIO */
+
+INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO)
+VALUES (SQ_ACAO_01.NEXTVAL, 'Interromper', 'interromper');
+
+INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
+VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
+         (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
+         (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'interromper'),
+         'Interromper inventário'
+       );
 
 /* CRIAÇÃO DE MODELOS DE INVENTÁRIO */
 

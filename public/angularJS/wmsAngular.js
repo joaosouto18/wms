@@ -7,6 +7,17 @@ angular.module("wms", ['uiDialogService'])
             return input.slice(start, (end + 1));
         }
     }
+}).filter('contains', function() {
+    return function (array, needle, notContains) {
+        if (Number.isInteger(needle)) needle = parseInt(needle);
+        else if (!isNaN(needle)) needle = parseFloat(needle);
+
+        if (!notContains) {
+            return (array.indexOf(needle) >= 0);
+        } else {
+            return !(array.indexOf(needle) >= 0);
+        }
+    };
 });
 
 function isEmpty( val ) {
