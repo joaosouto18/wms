@@ -995,9 +995,9 @@ class InventarioRepository extends EntityRepository {
                 $produto["FATOR"] = 1;
             }
 
-            $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 10, '0', STR_PAD_LEFT);
+            $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 9, '0', STR_PAD_LEFT);
             $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
-            $linha = "$txtCodInventario" . "$txtContagem" . "$txtLocal" . "$txtCodBarras" . "$txtQtd" . "$txtCodProduto" . "\r\n";
+            $linha = "$txtCodInventario" . "$txtContagem" . "$txtCodProduto" . "$txtCodBarras" . "$txtQtd" . "\r\n";
             fwrite($file, $linha, strlen($linha));
         }
 
