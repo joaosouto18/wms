@@ -1,6 +1,7 @@
 <?php
 
-use Wms\Module\Web\Page;
+use Wms\Module\Web\Page,
+    Core\Util\Converter;;
 
 class Inventario_ComparativoController extends \Wms\Controller\Action
 {
@@ -35,16 +36,16 @@ class Inventario_ComparativoController extends \Wms\Controller\Action
                         'Código' => $line['COD_PRODUTO'],
                         'Grade' => $line['DSC_GRADE'],
                         'Produto' => $line['DSC_PRODUTO'],
-                        'Estoque WMS' => $line['ESTOQUE_WMS'],
-                        'Estoque ERP' => $line['ESTOQUE_ERP'],
-                        'Divergência' => $line['DIVERGENCIA'],
-                        'Vlr. Estoque WMS' => $line['VLR_ESTOQUE_WMS'],
-                        'Vlr. Estoque ERP' => $line['VLR_ESTOQUE_ERP'],
-                        'Vlr. Divergencia' => $line['VLR_DIVERGENCIA'],
+                        'Estoque WMS' => Converter::enToBr($line['ESTOQUE_WMS'],3),
+                        'Estoque ERP' => Converter::enToBr($line['ESTOQUE_ERP'],3),
+                        'Divergência' => Converter::enToBr($line['DIVERGENCIA'],3),
+                        'Vlr. Estoque WMS' => Converter::enToBr($line['VLR_ESTOQUE_WMS'],2),
+                        'Vlr. Estoque ERP' => Converter::enToBr($line['VLR_ESTOQUE_ERP'],2),
+                        'Vlr. Divergencia' => Converter::enToBr($line['VLR_DIVERGENCIA'],2),
                         'Cod. Fabricante' => $line['COD_FABRICANTE'],
                         'Fabricante' => $line['FABRICANTE']);
                 }
-                    $this->exportCSV($pdf, 'comparativoEstoque');
+                $this->exportCSV($pdf, 'comparativoEstoque');
             }
         }
 
