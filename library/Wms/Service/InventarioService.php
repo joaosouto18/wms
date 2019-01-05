@@ -340,7 +340,7 @@ class InventarioService extends AbstractService
 
             if (empty($usrContOs) && $createIfNoExist) {
                 $osContagensAnteriores = $contagemEndOsRepo->getContagensUsuario( $usuario->getId(), $contEnd["idInvEnd"]);
-                if (!empty($osContagensAnteriores) && json_decode($inventario['usuarioNContagens']))
+                if (!empty($osContagensAnteriores) && !json_decode($inventario['usuarioNContagens']))
                     throw new \Exception("Este usuário não tem permissão para iniciar uma nova contagem neste endereço");
 
                 $usrContOs = $this->addNewOsContagem($contEnd["idContEnd"], $usuario, $tipoConferencia);
@@ -846,7 +846,7 @@ class InventarioService extends AbstractService
 
         if ($produtoEn->getIndControlaLote() == "S" and !empty($lote) and !empty($dthEntrada)) {
             if (empty($loteRepo->verificaLote($lote, $produtoEn->getId(), $produtoEn->getGrade(), $idUsuario)))
-                $loteRepo->save($produtoEn->getId(), $produtoEn->getGrade(), $lotem, $idUsuario);
+                $loteRepo->save($produtoEn->getId(), $produtoEn->getGrade(), $lote, $idUsuario);
         }
 
         $estoqueRepo->movimentaEstoque([

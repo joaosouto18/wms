@@ -98,8 +98,38 @@ INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_
 VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
          (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:modelo-inventario'),
          (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'index'),
-         'Novo Modelo de Inventário'
+         'Modelo de Inventário'
            );
+
+INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
+VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
+         (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:modelo-inventario'),
+         (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'add'),
+         'Criar novo modelo de inventário'
+       );
+
+INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
+VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
+         (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:modelo-inventario'),
+         (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'edit'),
+         'Editar modelo de inventário'
+         );
+
+INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
+VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
+         (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:modelo-inventario'),
+         (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'delete'),
+         'Deletar modelo de inventário'
+       );
+
+INSERT INTO MENU_ITEM (COD_MENU_ITEM, COD_RECURSO_ACAO, COD_PAI, DSC_MENU_ITEM, NUM_PESO, DSC_URL, DSC_TARGET, SHOW)
+VALUES (SQ_MENU_ITEM_01.NEXTVAL,
+        (SELECT COD_RECURSO_ACAO FROM RECURSO_ACAO
+         WHERE COD_RECURSO = (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:modelo-inventario')
+           AND COD_ACAO = (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'index')),
+        (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Cadastros'),
+        'Modelo Inventário',
+        7, '#', '_self', 'S');
 
 CREATE TABLE MODELO_INVENTARIO
 (
@@ -295,9 +325,7 @@ CREATE TABLE inventario_novo (
   IND_COMPARA_ESTOQUE       CHAR (1) NOT NULL ,
   IND_USUARIO_N_CONTAGENS   CHAR (1) NOT NULL ,
   IND_CONTAR_TUDO           CHAR (1) NOT NULL ,
-  IND_VOLUMES_SEPARADAMENTE CHAR (1) NOT NULL ,
-  IND_IMPORTA_ERP           CHAR (1) NOT NULL ,
-  ID_MODELO                 NUMBER (1)
+  IND_VOLUMES_SEPARADAMENTE CHAR (1) NOT NULL
 );
 
 ALTER TABLE inventario_novo ADD CONSTRAINT inv_novo_pk PRIMARY KEY ( cod_inventario );

@@ -103,7 +103,7 @@
 <div id="list-inventarios" style="display: none;">
     <h3>Inventários disponíveis</h3>
     <p id="list-empty">Nenhum Inventário liberado para conferência.</p>
-    <div id="list-inventarios"></div>
+    <div id="list"></div>
 </div>
 
 <div id="contagens-by-inventario" style="display: none">
@@ -151,7 +151,7 @@
             </div>
             <div class="field" id="div-lote">
                 <label for="lote" class="field optional"><div class="lbl-headers">Lote</div></label>
-                <input type="text" name="lote" id="lote" value="" size="10" maxlength="8" placeholder="dd/mm/yy">
+                <input type="text" name="lote" id="lote" value="" size="10" maxlength="8" placeholder="Ex.: LI001">
             </div>
         </form>
         <button id="btn-registrar" class="btn btn-spacing">Registrar</button>
@@ -312,9 +312,9 @@
                     }
                     inventarios[k].dsc = dsc;
                     var newRow = $('<div class="row"><button class="btn gradientBtn selectInv" data-key="'+k+'" title="'+v.id+'">'+dsc+'</button></div>');
-                    $("#list-inventarios").append(newRow);
+                    $("#list").append(newRow);
                 });
-                $("#list-inventarios").show();
+                $("#list").show();
             }
             else {
                 $("#list-empty").show();
@@ -324,6 +324,7 @@
         };
 
         var getInventarios = function () {
+            $("#list").empty();
             $.ajax({url: "/mobile/inventario-novo/get-inventarios",
                 success: function(result){
                     if (result.status === "ok") {
@@ -663,13 +664,13 @@
                 return false;
             }
 
-            if ( controlaValidade() && !isEmpty(inputVal.val())) {
+            if ( controlaValidade() && isEmpty(inputVal.val())) {
                 if (!toNext) notificar("warning", "A validade não foi informada", true);
                 inputVal.focus();
                 return false;
             }
 
-            if ( controlaLote() && !isEmpty((inputLote.val()))) {
+            if ( controlaLote() && isEmpty((inputLote.val()))) {
                 if (!toNext) notificar("warning", "O Lote não foi informado", true);
                 inputLote.focus();
                 return false;

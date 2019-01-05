@@ -400,7 +400,7 @@ class InventarioNovoRepository extends EntityRepository
                 ICEP.DSC_LOTE,
                 IEN.COD_DEPOSITO_ENDERECO,
                 ICEP.DTH_VALIDADE,
-                SUM(ICEP.QTD_EMBALAGEM * ICEP.QTD_CONTADA) - E.QTD QTD,
+                SUM(ICEP.QTD_EMBALAGEM * ICEP.QTD_CONTADA) - NVL(E.QTD,0) QTD,
                 NVL(E.QTD, 0) POSSUI_SALDO
             FROM INVENTARIO_NOVO INV
             INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on INV.COD_INVENTARIO = IEN.COD_INVENTARIO AND IEN.IND_ATIVO = 'S'
