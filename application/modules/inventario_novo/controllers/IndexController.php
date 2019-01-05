@@ -216,7 +216,7 @@ class Inventario_Novo_IndexController  extends Action
     {
         try{
             $id = $this->_getParam('id');
-            $this->getServiceLocator()->getService("Inventario")->concluirInventario($id);
+            $this->getServiceLocator()->getService("Inventario")->finalizarInventario($id);
             $this->addFlashMessage("success", "Atualização de estoque baseada no inventário $id concluida com sucesso");
         } catch (Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());

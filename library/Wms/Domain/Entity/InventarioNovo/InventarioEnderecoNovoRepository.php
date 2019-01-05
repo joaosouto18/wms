@@ -8,7 +8,6 @@
 
 namespace Wms\Domain\Entity\InventarioNovo;
 
-use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Configurator;
 
@@ -57,8 +56,12 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                             WHERE IEP.IND_ATIVO = 'N' AND IEP.COD_PRODUTO = ICEP.COD_PRODUTO AND IEP.DSC_GRADE = ICEP.DSC_GRADE 
                               AND IEP.COD_INVENTARIO_ENDERECO = IEN3.COD_INVENTARIO_ENDERECO
                           )
-                  ) EV ON EV.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
+                    ) EV ON EV.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
                 WHERE ICE.NUM_SEQUENCIA = $sequencia AND IEN.COD_INVENTARIO = $idInventario AND IEN.IND_FINALIZADO = 'N'
+                      AND NOT EXISTS(
+                                SELECT 'x' FROM INVENTARIO_CONT_END ICE2
+                                WHERE ICE2.NUM_SEQUENCIA > $sequencia AND IEN.COD_INVENTARIO_ENDERECO = ICE2.COD_INVENTARIO_ENDERECO
+                              )
         ";
 
         $result = [];
