@@ -228,10 +228,20 @@ class InventarioService extends AbstractService
         }
     }
 
-    public function novaConferencia($inventario, $contEnd, $produto, $conferencia, $tipoConferencia) {
+    /**
+     * @param $inventario
+     * @param $contEnd
+     * @param $produto
+     * @param $conferencia
+     * @param $tipoConferencia
+     * @throws \Exception
+     */
+    public function novaConferencia($inventario, $contEnd, $produto, $conferencia, $tipoConferencia)
+    {
         $this->em->beginTransaction();
         try {
-
+            $elements = [];
+            $isEmb = false;
             if (isset($produto['idVolume']) && !empty(json_decode($produto['idVolume']))) {
                 $isEmb = false;
                 if (json_decode($inventario['volumesSeparadamente']))
@@ -252,10 +262,8 @@ class InventarioService extends AbstractService
 
             $this->registrarConferencia(
                 $elements,
-                $inventario,
                 $this->getOsUsuarioContagem( $contEnd, $inventario, $tipoConferencia, true)->getInvContEnd(),
                 $conferencia,
-                $tipoConferencia,
                 $this->em->getReference("wms:Produto", ["id" => $produto['idProduto'], "grade" => $produto['grade']]),
                 $isEmb,
                 $produto["quantidadeEmbalagem"],
@@ -272,10 +280,8 @@ class InventarioService extends AbstractService
 
     /**
      * @param array $elements
-     * @param array $inventario
      * @param InventarioNovo\InventarioContEnd $contagem
      * @param array $conferencia
-     * @param string $tipoConferencia
      * @param Produto $produto
      * @param bool $isEmb
      * @param int $qtdElem
@@ -283,7 +289,7 @@ class InventarioService extends AbstractService
      * @param null $divergente
      * @throws \Exception
      */
-    private function registrarConferencia($elements, $inventario, $contagem, $conferencia, $tipoConferencia, $produto, $isEmb, $qtdElem = 1, $codBarras = null, $divergente = null)
+    private function registrarConferencia($elements, $contagem, $conferencia, $produto, $isEmb, $qtdElem = 1, $codBarras = null, $divergente = null)
     {
         try {
             foreach ($elements as $element) {
@@ -330,7 +336,7 @@ class InventarioService extends AbstractService
 
             if (empty($usrContOs) && $createIfNoExist) {
                 $osContagensAnteriores = $contagemEndOsRepo->getContagensUsuario( $usuario->getId(), $contEnd["idInvEnd"]);
-                if (!empty($osContagensAnteriores) && json_decode($inventario['usuarioNContagens']))
+                if (!empty($osContagensAnteriores) && !json_decode($inventario['usuarioNContagens']))
                     throw new \Exception("Este usuário não tem permissão para iniciar uma nova contagem neste endereço");
 
                 $usrContOs = $this->addNewOsContagem($contEnd["idContEnd"], $usuario, $tipoConferencia);
@@ -410,7 +416,9 @@ class InventarioService extends AbstractService
     /**
      * @param $invContEnd InventarioNovo\InventarioContEnd
      * @param $inventario
+     * @param $tipoConferencia
      * @return array
+     * @throws \Exception
      */
     private function compararContagens($invContEnd, $inventario, $tipoConferencia)
     {
@@ -518,7 +526,7 @@ class InventarioService extends AbstractService
                     ];
                     $countQtdsIguais[implode($strConcat, $prod)][implode($strConcat, $elemCount)][] = $invContEnd->getSequencia();
 
-                    $this->zerarProduto($inventario, $invContEnd, $estoque, $tipoConferencia,true);
+                    $this->zerarProduto($inventario, $invContEnd, $estoque,true);
                 }
             }
 
@@ -558,11 +566,13 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $inventario array
+     * @param $inventario
      * @param $contEnd InventarioNovo\InventarioContEnd
      * @param $prodEstoque \Wms\Domain\Entity\Enderecamento\Estoque
+     * @param $divergente
+     * @throws \Exception
      */
-    private function zerarProduto($inventario, $contEnd, $prodEstoque, $tipoConferencia, $divergente)
+    private function zerarProduto($inventario, $contEnd, $prodEstoque, $divergente)
     {
         try {
 
@@ -571,7 +581,7 @@ class InventarioService extends AbstractService
                 if (json_decode($inventario['volumesSeparadamente']))
                     $elements[] = $prodEstoque->getProdutoVolume();
                 else
-                    $elements = $produto->getVolumes()->filter(function ($vol) { return (empty($vol->getDataInativacao())); })->toArray();
+                    $elements = $prodEstoque->getProduto()->getVolumes()->filter(function ($vol) { return (empty($vol->getDataInativacao())); })->toArray();
             } else {
                 $isEmb = true;
                 $elements[] = $prodEstoque->getProdutoEmbalagem();
@@ -579,10 +589,8 @@ class InventarioService extends AbstractService
 
             $this->registrarConferencia(
                 $elements,
-                $inventario,
                 $contEnd,
                 [ 'qtd' => 0, 'lote' => $prodEstoque->getLote(),  'validade' => $prodEstoque->getValidade() ],
-                $tipoConferencia,
                 $prodEstoque->getProduto(),
                 $isEmb,
                 0,
@@ -595,8 +603,13 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param InventarioNovo\InventarioContEnd $contEnd
-     * @param bool $isDiverg
+     * @param $contEnd InventarioNovo\InventarioContEnd
+     * @param $produto
+     * @param $grade
+     * @param $lote
+     * @param $vol
+     * @param $isDiverg bool
+     * @throws \Exception
      */
     private function updateFlagContagensProdutos($contEnd, $produto, $grade, $lote, $vol, $isDiverg)
     {
@@ -619,7 +632,9 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param InventarioNovo\InventarioEnderecoNovo $inventarioEnd
+     * @param $inventarioEnd InventarioNovo\InventarioEnderecoNovo
+     * @return array
+     * @throws \Exception
      */
     private function finalizarEndereco($inventarioEnd)
     {
@@ -630,14 +645,14 @@ class InventarioService extends AbstractService
             }
 
             if (!$inventarioEnd->isAtivo()) {
-                throw new Exception("Este endereço " . $inventarioEnd->getDepositoEndereco()->getDescricao() . " foi removido do inventário e não pode ser finalizado!");
+                throw new \Exception("Este endereço " . $inventarioEnd->getDepositoEndereco()->getDescricao() . " foi removido do inventário e não pode ser finalizado!");
             }
 
             $inventarioEnd->setFinalizado(true);
             $this->em->persist($inventarioEnd);
 
             if (empty($this->getRepository()->getEnderecosPendentes($inventarioEnd))) {
-                return $this->finalizarInventario($inventarioEnd->getInventario());
+                return $this->concluirInventario($inventarioEnd->getInventario());
             }
 
             return ["code" => 3, "msg" => "Endereço finalizado com sucesso"];
@@ -648,9 +663,11 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param InventarioNovo $inventario
+     * @param $inventario InventarioNovo
+     * @return array
+     * @throws \Exception
      */
-    private function finalizarInventario($inventario)
+    private function concluirInventario($inventario)
     {
         try {
             $inventario->concluir();
@@ -661,6 +678,13 @@ class InventarioService extends AbstractService
         }
     }
 
+    /**
+     * @param $idInventario
+     * @param $sequencia
+     * @param $isDiverg
+     * @param $endereco
+     * @return array
+     */
     public function getInfoEndereco($idInventario, $sequencia, $isDiverg, $endereco)
     {
         /** @var InventarioNovo\InventarioEnderecoNovoRepository $invEndRepo */
@@ -695,7 +719,13 @@ class InventarioService extends AbstractService
         return $agroup;
     }
 
-    public function confirmarProdutoZerado($inventario, $contEnd, $produto, $tipoConferencia)
+    /**
+     * @param $inventario
+     * @param $contEnd
+     * @param $produto
+     * @throws \Exception
+     */
+    public function confirmarProdutoZerado($inventario, $contEnd, $produto)
     {
         $this->em->beginTransaction();
         try{
@@ -709,7 +739,7 @@ class InventarioService extends AbstractService
                     "lote" => (!empty(json_decode($produto["lote"]))) ? $produto["lote"] : null,
                     "produtoVolume" => (!empty(json_decode($produto["idVolume"]))) ? $produto["idVolume"] : null
                 ]),
-                $tipoConferencia
+                null
             );
 
             $this->em->flush();
@@ -721,14 +751,18 @@ class InventarioService extends AbstractService
         return;
     }
 
-    public function concluirInventario($idInventario)
+    /**
+     * @param $idInventario
+     * @throws \Exception
+     */
+    public function finalizarInventario($idInventario)
     {
         $this->em->beginTransaction();
         try {
             /** @var InventarioNovo $invEn */
             $invEn = $this->find($idInventario);
 
-            if (!$invEn->isConcluido()) throw new \Exception("Impossível concluir este inventário $idInventario pois está: " . $invEn->getDscStatus());
+            if (!($invEn->isConcluido() || $invEn->isInterrompido())) throw new \Exception("Impossível finalizar este inventário $idInventario pois está: " . $invEn->getDscStatus());
 
             $resultInv = $this->getRepository()->getResultInventario($idInventario);
 
@@ -808,7 +842,7 @@ class InventarioService extends AbstractService
 
         if ($produtoEn->getIndControlaLote() == "S" and !empty($lote) and !empty($dthEntrada)) {
             if (empty($loteRepo->verificaLote($lote, $produtoEn->getId(), $produtoEn->getGrade(), $idUsuario)))
-                $loteRepo->save($produtoEn->getId(), $produtoEn->getGrade(), $lotem, $idUsuario);
+                $loteRepo->save($produtoEn->getId(), $produtoEn->getGrade(), $lote, $idUsuario);
         }
 
         $estoqueRepo->movimentaEstoque([
@@ -825,4 +859,27 @@ class InventarioService extends AbstractService
         ],false,false,$validade);
     }
 
+    /**
+     * @param $id
+     * @throws \Exception
+     */
+    public function interromperInventario($id)
+    {
+        $this->em->beginTransaction();
+        try{
+            /** @var InventarioNovo $invEn */
+            $invEn = $this->find($id);
+
+            if (!$invEn->isLiberado()) throw new \Exception("Este inventário $id não pode ser interrompido pois está: " . $invEn->getDscStatus());
+
+            $invEn->interromper();
+            $this->em->persist($invEn);
+
+            $this->em->flush();
+            $this->em->commit();
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
+    }
 }

@@ -216,7 +216,7 @@ class Inventario_Novo_IndexController  extends Action
     {
         try{
             $id = $this->_getParam('id');
-            $this->getServiceLocator()->getService("Inventario")->concluirInventario($id);
+            $this->getServiceLocator()->getService("Inventario")->finalizarInventario($id);
             $this->addFlashMessage("success", "Atualização de estoque baseada no inventário $id concluida com sucesso");
         } catch (Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
@@ -228,8 +228,8 @@ class Inventario_Novo_IndexController  extends Action
     {
         try{
             $id = $this->_getParam('id');
-            $this->getServiceLocator()->getService("Inventario")->concluirInventario($id);
-            $this->addFlashMessage("success", "Atualização de estoque baseada no inventário $id concluida com sucesso");
+            $this->getServiceLocator()->getService("Inventario")->interromperInventario($id);
+            $this->addFlashMessage("success", "O inventário $id foi interrompido e está liberado para atualizar o estoque,");
         } catch (Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
         }

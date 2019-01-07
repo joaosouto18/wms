@@ -69,12 +69,25 @@ VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
          'Criar novo inventário'
 );
 
+/* CRIAÇÃO DE ACTION DE ATUALIZAÇÃO DE ESTOQUE */
 INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
 VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
          (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
          (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'atualizar'),
          'Atualizar estoque'
 );
+
+/* CRIAÇÃO DE ACTION DE INTERROMPER DE INVENTARIO */
+
+INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO)
+VALUES (SQ_ACAO_01.NEXTVAL, 'Interromper', 'interromper');
+
+INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
+VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
+         (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
+         (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'interromper'),
+         'Interromper inventário'
+       );
 
 /* CRIAÇÃO DE MODELOS DE INVENTÁRIO */
 
@@ -85,8 +98,38 @@ INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_
 VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
          (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:modelo-inventario'),
          (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'index'),
-         'Novo Modelo de Inventário'
+         'Modelo de Inventário'
            );
+
+INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
+VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
+         (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:modelo-inventario'),
+         (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'add'),
+         'Criar novo modelo de inventário'
+       );
+
+INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
+VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
+         (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:modelo-inventario'),
+         (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'edit'),
+         'Editar modelo de inventário'
+         );
+
+INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
+VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
+         (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:modelo-inventario'),
+         (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'delete'),
+         'Deletar modelo de inventário'
+       );
+
+INSERT INTO MENU_ITEM (COD_MENU_ITEM, COD_RECURSO_ACAO, COD_PAI, DSC_MENU_ITEM, NUM_PESO, DSC_URL, DSC_TARGET, SHOW)
+VALUES (SQ_MENU_ITEM_01.NEXTVAL,
+        (SELECT COD_RECURSO_ACAO FROM RECURSO_ACAO
+         WHERE COD_RECURSO = (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:modelo-inventario')
+           AND COD_ACAO = (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'index')),
+        (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Cadastros'),
+        'Modelo Inventário',
+        7, '#', '_self', 'S');
 
 CREATE TABLE MODELO_INVENTARIO
 (
@@ -282,10 +325,20 @@ CREATE TABLE inventario_novo (
   IND_COMPARA_ESTOQUE       CHAR (1) NOT NULL ,
   IND_USUARIO_N_CONTAGENS   CHAR (1) NOT NULL ,
   IND_CONTAR_TUDO           CHAR (1) NOT NULL ,
-  IND_VOLUMES_SEPARADAMENTE CHAR (1) NOT NULL ,
-  IND_IMPORTA_ERP           CHAR (1) NOT NULL ,
-  ID_MODELO                 NUMBER (1)
+  IND_VOLUMES_SEPARADAMENTE CHAR (1) NOT NULL
 );
+
+ALTER TABLE inventario_novo ADD CONSTRAINT inv_novo_pk PRIMARY KEY ( cod_inventario );
+ALTER TABLE INVENTARIO_NOVO ADD CONSTRAINT FK_INVNV_MODINV FOREIGN KEY ( COD_MODELO_INVENTARIO ) REFERENCES MODELO_INVENTARIO ( COD_MODELO_INVENTARIO ) ;
+
+CREATE SEQUENCE SQ_N_INV_01
+  INCREMENT BY 1
+  START WITH 1
+  MAXVALUE 999999999999999999999999999
+  MINVALUE 0
+  NOCYCLE
+  NOCACHE
+  NOORDER;
 
 CREATE TABLE INVENTARIO_ANDAMENTO
   (
@@ -303,19 +356,6 @@ ALTER TABLE INVENTARIO_ANDAMENTO
   ADD CONSTRAINT INV_ANDAMENTO_INV_NOVO_FK
   FOREIGN KEY ( COD_INVENTARIO )
 REFERENCES INVENTARIO_NOVO ( COD_INVENTARIO ) ;
-
-
-ALTER TABLE inventario_novo ADD CONSTRAINT inv_novo_pk PRIMARY KEY ( cod_inventario );
-ALTER TABLE INVENTARIO_NOVO ADD CONSTRAINT FK_INVNV_MODINV FOREIGN KEY ( COD_MODELO_INVENTARIO ) REFERENCES MODELO_INVENTARIO ( COD_MODELO_INVENTARIO ) ;
-
-CREATE SEQUENCE SQ_N_INV_01
-  INCREMENT BY 1
-  START WITH 1
-  MAXVALUE 999999999999999999999999999
-  MINVALUE 0
-  NOCYCLE
-  NOCACHE
-  NOORDER;
 
 ALTER TABLE inventario_cont_end_os
   ADD CONSTRAINT fk_invcontendos_invcontend FOREIGN KEY ( cod_inv_cont_end )
