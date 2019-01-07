@@ -240,7 +240,12 @@ class AcaoIntegracaoRepository extends EntityRepository
             } else {
                 $result = $dados;
             }
-	    
+
+            //pegar os ID's das tabelas temporárias das triggers
+            if (count($result) && !is_null($acaoEn->getTabelaReferencia())) {
+                $idTabelaTemp = $result;
+            }
+            
             if ($acaoEn->getidAcaoRelacionada() != null) {
                 if (count($result) >0) {
 
