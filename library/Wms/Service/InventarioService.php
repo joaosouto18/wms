@@ -258,7 +258,7 @@ class InventarioService extends AbstractService
                 $elements[] = $this->em->getReference("wms:Produto\Embalagem", $produto['idEmbalagem']);
             }
 
-            $conferencia["validade"] = (!empty($conferencia['validade'])) ? date_create_from_format("d/m/y", $conferencia['validade']) : null;
+            $conferencia["validade"] = (!empty($conferencia['validade'])) ? date_create_from_format("d/m/Y", $conferencia['validade']) : null;
 
             $this->registrarConferencia(
                 $elements,
