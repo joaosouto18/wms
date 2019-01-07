@@ -248,7 +248,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                     $dadosFiltrar = array();
                     foreach ($result as $row) {
-                        $dadosFiltrar[] = $row['ID'];
+                        $dadosFiltrar[] = $row['COD_PRODUTO'];
                     }
                     $options = array();
                     $options[] = implode(",", $dadosFiltrar);
@@ -369,7 +369,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $max = 900;
                         $ids = array();
                         foreach ($idTabelaTemp as $key => $value){
-                            $ids[] = $value['COD_PRODUTO'];
+                            $ids[] = $value['ID'];
                             if(count($ids) == $max){
                                 $ids = implode(',',$ids);
                                 $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
