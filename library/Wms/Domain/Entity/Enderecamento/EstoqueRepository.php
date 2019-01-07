@@ -474,15 +474,15 @@ class EstoqueRepository extends EntityRepository
                        P.COD_PRODUTO,
                        P.DSC_PRODUTO,
                        P.DSC_GRADE as DSC_GRADE,
-                       PV.DSC_VOLUME as VOLUME,
-                       PV.COD_PRODUTO_VOLUME AS COD_VOLUME,
-                       NVL(RE.QTD_RESERVADA,0) as RESERVA_ENTRADA,
-                       NVL(RS.QTD_RESERVADA,0) as RESERVA_SAIDA,
-                       NVL(ESTQ.QTD,0) as QTD,
-                       NVL(PV.COD_NORMA_PALETIZACAO,0) as NORMA,
-                       TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy hh:mi:ss') AS DTH_PRIMEIRA_MOVIMENTACAO,
-                       ESTQ.UMA,
-                       UN.DSC_UNITIZADOR AS UNITIZADOR,
+                       NVL(PV.DSC_VOLUME, 'PRODUTO UNITÁRIO') as VOLUME,
+                       NVL(PV.COD_PRODUTO_VOLUME, 0) AS COD_VOLUME,
+                       SUM(NVL(RE.QTD_RESERVADA, 0)) as RESERVA_ENTRADA,
+                       SUM(NVL(RS.QTD_RESERVADA, 0)) as RESERVA_SAIDA,
+                       SUM(NVL(ESTQ.QTD, 0)) as QTD,
+                       NVL(PV.COD_NORMA_PALETIZACAO, 0) as NORMA,
+                       MAX(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy hh:mi:ss')) AS DTH_PRIMEIRA_MOVIMENTACAO,
+                       MAX(ESTQ.UMA) AS UMA,
+                       MAX(UN.DSC_UNITIZADOR) AS UNITIZADOR,
                        ESTQ.DTH_VALIDADE,
                        NVL(ESTQ.LOTE, NVL(RE.LOTE, RS.LOTE)) AS LOTE
                 FROM (SELECT DTH_PRIMEIRA_MOVIMENTACAO, QTD, UMA, COD_UNITIZADOR, DTH_VALIDADE,
@@ -563,11 +563,12 @@ class EstoqueRepository extends EntityRepository
             $SQLOrderBy = " ORDER BY ESTQ.DTH_VALIDADE, P.COD_PRODUTO, P.DSC_GRADE, NORMA, VOLUME, C.COD_CARACTERISTICA_ENDERECO, ESTQ.DTH_PRIMEIRA_MOVIMENTACAO";
         }
 
+        $SQLgroupBy = " GROUP BY DE.DSC_DEPOSITO_ENDERECO, DE.COD_DEPOSITO_ENDERECO, C.DSC_CARACTERISTICA_ENDERECO, P.COD_PRODUTO, P.DSC_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME, NVL(PV.COD_PRODUTO_VOLUME,0), NVL(PV.COD_NORMA_PALETIZACAO,0), ESTQ.DTH_VALIDADE, ESTQ.LOTE, RE.LOTE, RS.LOTE";
         if ($returnQuery == true) {
-            return $SQL . $SQLWhere . $SQLOrderBy;
+            return $SQL . $SQLWhere . $SQLgroupBy . $SQLOrderBy;
         }
 
-        $result = $this->getEntityManager()->getConnection()->query("$SQL $SQLWhere")->fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query("$SQL $SQLWhere $SQLgroupBy")->fetchAll(\PDO::FETCH_ASSOC);
 
         if (isset($maxResult) && !empty($maxResult)) {
             if ($maxResult != false) {
