@@ -97,6 +97,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         }
 
         $modeloEtiqueta = $this->getSystemParameterValue('MODELO_VOLUME_EMBALADO');
+        $xy = explode(",",$this->getSystemParameterValue('TAMANHO_ETIQUETA_VOLUME_EMBALADO'));
         switch ($modeloEtiqueta) {
             case 1:
                 //LAYOUT CASA DO CONFEITEIRO
@@ -106,8 +107,15 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 //LAYOUT WILSO
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
-            default:
+            case 3:
                 //LAYOUT ABRAFER
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
+                break;
+            case 4:
+                //LAYOUT HIDRAU
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                break;
+            default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
 
