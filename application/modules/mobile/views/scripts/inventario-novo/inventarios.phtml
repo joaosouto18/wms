@@ -145,7 +145,7 @@
             </div>
             <div class="field" id="div-validade">
                 <label for="validade" class="field optional"><div class="lbl-headers">Validade</div></label>
-                <input type="text" name="validade" id="validade" value="" size="10" maxlength="8" placeholder="dd/mm/yy">
+                <input type="text" name="validade" id="validade" size="10" maxlength="10" placeholder="dd/mm/yyyy">
             </div>
             <div class="field" id="div-lote">
                 <label for="lote" class="field optional"><div class="lbl-headers">Lote</div></label>
@@ -194,6 +194,23 @@
                     endConfig.mask = result.mask.replace(/[9]/g,"0");
                 }
             })
+        });
+
+        $("#validade").keyup(function () {
+            var data = $(this).val();
+
+            if (data.length == 2)
+            {
+                data = data + '/';
+                $(this).val(data);
+                return true;
+            }
+            if (data.length == 5)
+            {
+                data = data + '/';
+                $(this).val(data);
+                return true;
+            }
         });
 
         var disarmEvent = function (event) {
