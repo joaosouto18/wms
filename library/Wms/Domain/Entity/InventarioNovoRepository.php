@@ -366,7 +366,13 @@ class InventarioNovoRepository extends EntityRepository
                             LEFT JOIN INVENTARIO_END_PROD IEP2 ON IEN2.COD_INVENTARIO_ENDERECO = IEP2.COD_INVENTARIO_ENDERECO AND IEP2.IND_ATIVO = 'S'
                             WHERE INVN.COD_STATUS IN ($statusLiberado, $statusConcluido)
                   ) INVATV ON INVATV.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO OR (INVATV.COD_PRODUTO = IEP.COD_PRODUTO AND INVATV.DSC_GRADE = IEP.DSC_GRADE)
-                WHERE IEN.COD_INVENTARIO = $id AND NVL(RE.COD_RESERVA_ESTOQUE, INVATV.COD_INVENTARIO) IS NOT NULL
+                WHERE IEN.COD_INVENTARIO = $id AND 
+                      CASE WHEN ( IEP.COD_PRODUTO IS NULL) OR (
+                          (IEP.COD_PRODUTO = REP.COD_PRODUTO AND IEP.DSC_GRADE = REP.DSC_GRADE) 
+                                 OR (IEP.COD_PRODUTO = INVATV.COD_PRODUTO AND IEP.DSC_GRADE = INVATV.DSC_GRADE))
+                      THEN NVL(RE.COD_RESERVA_ESTOQUE, INVATV.COD_INVENTARIO)
+                      ELSE NULL
+                      END IS NOT NULL
                 ORDER BY DE.DSC_DEPOSITO_ENDERECO";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();

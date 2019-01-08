@@ -441,9 +441,9 @@ class GerarEtiqueta extends eFPDF
     {
         $this->AddPage();
         $center = $this->w / 2;
-        Barcode::fpdf($this,'000000', $center,10,0,'code128',array('code'=>$lote['DSC_LOTE']),0.65,10);
+        Barcode::fpdf($this,'000000', $center,20,0,'code128',array('code'=>$lote['DSC_LOTE']),0.7,12);
         $this->SetFont('Arial', 'B', 12);
-        $this->Text($center - ($this->GetStringWidth($lote['DSC_LOTE'])/2),22, $lote['DSC_LOTE']);
+        $this->Text($center - ($this->GetStringWidth($lote['DSC_LOTE'])/2),32, $lote['DSC_LOTE']);
     }
 
     public function layout6($produto)
