@@ -6,6 +6,8 @@
  * Time: 10:51
  */
 ?>
+
+<script src="<?php echo $this->baseUrl('wms/jquery.mask.js') ?>"></script>
 <style>
     .btn {
         width: 95%;
@@ -145,7 +147,7 @@
             </div>
             <div class="field" id="div-validade">
                 <label for="validade" class="field optional"><div class="lbl-headers">Validade</div></label>
-                <input type="text" name="validade" id="validade" size="10" maxlength="10" placeholder="dd/mm/yyyy">
+                <input type="text" name="validade" id="validade" size="10" maxlength="10" placeholder="dd/mm/aaaa" alt="date">
             </div>
             <div class="field" id="div-lote">
                 <label for="lote" class="field optional"><div class="lbl-headers">Lote</div></label>
@@ -158,6 +160,9 @@
 
 <script>
     $(function () {
+
+        $("#validade").mask('00/00/0000');
+
         var inventarios = [];
         var invSelecioando = {};
         var contagens = [];
@@ -194,23 +199,6 @@
                     endConfig.mask = result.mask.replace(/[9]/g,"0");
                 }
             })
-        });
-
-        $("#validade").keyup(function () {
-            var data = $(this).val();
-
-            if (data.length == 2)
-            {
-                data = data + '/';
-                $(this).val(data);
-                return true;
-            }
-            if (data.length == 5)
-            {
-                data = data + '/';
-                $(this).val(data);
-                return true;
-            }
         });
 
         var disarmEvent = function (event) {
@@ -688,10 +676,17 @@
                 return false;
             }
 
-            if ( controlaValidade() && isEmpty(inputVal.val())) {
-                if (!toNext) notificar("warning", "A validade não foi informada", true);
-                inputVal.focus();
-                return false;
+            if ( controlaValidade()) {
+                if (isEmpty(inputVal.val())) {
+                    if (!toNext) notificar("warning", "A validade não foi informada", true);
+                    inputVal.focus();
+                    return false;
+                }
+                if (!isValidDate(inputVal.val())){
+                    if (!toNext) notificar("warning", "Esta data " + inputVal.val() + " não é válida" , true);
+                    inputVal.focus();
+                    return false;
+                }
             }
 
             if ( controlaLote() && isEmpty((inputLote.val()))) {
@@ -702,6 +697,12 @@
 
             return true;
         };
+
+        function isValidDate(s) {
+            var bits = s.split('/');
+            var d = new Date(bits[2] + '/' + bits[1] + '/' + bits[0]);
+            return !!(d && (d.getMonth() + 1) == bits[1] && d.getDate() == Number(bits[0]));
+        }
 
         var registrar = function () {
             changeViewer("loader");
