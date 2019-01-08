@@ -6,6 +6,8 @@
  * Time: 10:51
  */
 ?>
+
+<script src="<?php echo $this->baseUrl('wms/jquery.mask.js') ?>"></script>
 <style>
     .btn {
         width: 95%;
@@ -130,7 +132,7 @@
                 <input type="text" name="cod-barras-prod" id="cod-barras-prod" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
             </form>
         </div>
-        <button id="btn-consultar-produto" class="btn btn-spacing">Buscar</button>
+        <button id="btn-consultar-produto" class="btn btn-spacing">Buscar</button><br>
         <button id="btn-finalizar" class="btn btn-spacing gradientBtnSuccess"></button>
     </div>
     <div class="list-area" id="list-produtos"></div>
@@ -145,7 +147,7 @@
             </div>
             <div class="field" id="div-validade">
                 <label for="validade" class="field optional"><div class="lbl-headers">Validade</div></label>
-                <input type="text" name="validade" id="validade" size="10" maxlength="10" placeholder="dd/mm/yyyy">
+                <input type="text" name="validade" id="validade" size="10" maxlength="10" placeholder="dd/mm/aaaa" alt="date">
             </div>
             <div class="field" id="div-lote">
                 <label for="lote" class="field optional"><div class="lbl-headers">Lote</div></label>
@@ -158,6 +160,9 @@
 
 <script>
     $(function () {
+
+        $("#validade").mask('00/00/0000');
+
         var inventarios = [];
         var invSelecioando = {};
         var contagens = [];
@@ -173,8 +178,17 @@
         var endConfig = {};
         var msgShowed = true;
 
+        function myIndexOf(collection, target) {
+            var index;
+            for(var val in collection){
+                if(collection[val] === target){
+                    index = val;
+                    return index;
+                }
+            }
+        }
+
         $(document).ready(function () {
-            changeViewer("loader");
             getInventarios();
             $.ajax({ url: "/configuracao/get-mask-endereco-ajax",
                 success: function (result) {
@@ -185,23 +199,6 @@
                     endConfig.mask = result.mask.replace(/[9]/g,"0");
                 }
             })
-        });
-
-        $("#validade").keyup(function () {
-            var data = $(this).val();
-
-            if (data.length == 2)
-            {
-                data = data + '/';
-                $(this).val(data);
-                return true;
-            }
-            if (data.length == 5)
-            {
-                data = data + '/';
-                $(this).val(data);
-                return true;
-            }
         });
 
         var disarmEvent = function (event) {
@@ -221,8 +218,6 @@
             }
 
             $("#dummy").html('<embed src="' + songFile + '" hidden="true" autostart="true" loop="false" />');
-            var audio = new Audio(songFile);
-            audio.play();
         };
 
         var notificar = function (type, msg, instantShowed) {
@@ -254,16 +249,15 @@
             var predio = endConfig.predio.toString();
             var nivel = endConfig.nivel.toString();
             var apto = endConfig.apto.toString();
-            if (cleared.indexOf(".") > 0) {
-                var endArr = cleared.split(".");
+            var endArr = cleared.split(".");
+            if (endArr.length === 4) {
 
-                if (endArr.length < 4) return false;
+                rua = (rua + endArr[0].toString()).slice(-rua.length);
+                predio = (predio + endArr[1].toString()).slice(-predio.length);
+                nivel = (nivel + endArr[2].toString()).slice(-nivel.length);
+                apto = (apto + endArr[3].toString()).slice(-apto.length);
 
-                rua = (rua + endArr[0].toString()).slice(-endConfig.rua.length);
-                predio = (predio + endArr[1].toString()).slice(-endConfig.predio.length);
-                nivel = (nivel + endArr[2].toString()).slice(-endConfig.nivel.length);
-                apto = (apto + endArr[3].toString()).slice(-endConfig.apto.length);
-            } else {
+            } else if (endArr.length === 1) {
                 var maskLength = endConfig.mask.replace(/\D/g,'').length;
 
                 if (cleared.length < maskLength) return false;
@@ -273,6 +267,8 @@
                 predio = endTrimned.slice(rua.length , rua.length + predio.length);
                 nivel = endTrimned.slice(rua.length + predio.length , rua.length + predio.length + nivel.length);
                 apto = endTrimned.slice(rua.length + predio.length + nivel.length , rua.length + predio.length + nivel.length + apto.length);
+            } else {
+                notificar("error", "Formato de endereço incorreto!", true)
             }
 
             return [rua,predio,nivel,apto].join(".");
@@ -283,11 +279,11 @@
                 $("#"+v).hide();
             });
 
-            if (showTo === undefined || views.indexOf(showTo) < 0) {
+            if (showTo === undefined || myIndexOf(views, showTo) < 0) {
                 showTo = views[1];
             }
 
-            showing = views.indexOf(showTo);
+            showing = myIndexOf(views, showTo);
 
             $.each(headersArr, function (k,v) {
                 if ( k > (showing - 2))
@@ -339,6 +335,7 @@
         };
 
         var getInventarios = function () {
+            changeViewer("loader");
             $("#list").empty();
             $.ajax({url: "/mobile/inventario-novo/get-inventarios",
                 success: function(result){
@@ -592,7 +589,7 @@
             if (produtos.length) {
                 var encontrou = false;
                 $.each(produtos, function (k,produto) {
-                    if (produto.codBarras.indexOf(codBarras) >= 0) encontrou = true;
+                    if (myIndexOf(produto.codBarras, codBarras) >= 0) encontrou = true;
                 });
                 if (!encontrou) {
                     liberado = false;
@@ -679,10 +676,17 @@
                 return false;
             }
 
-            if ( controlaValidade() && isEmpty(inputVal.val())) {
-                if (!toNext) notificar("warning", "A validade não foi informada", true);
-                inputVal.focus();
-                return false;
+            if ( controlaValidade()) {
+                if (isEmpty(inputVal.val())) {
+                    if (!toNext) notificar("warning", "A validade não foi informada", true);
+                    inputVal.focus();
+                    return false;
+                }
+                if (!isValidDate(inputVal.val())){
+                    if (!toNext) notificar("warning", "Esta data " + inputVal.val() + " não é válida" , true);
+                    inputVal.focus();
+                    return false;
+                }
             }
 
             if ( controlaLote() && isEmpty((inputLote.val()))) {
@@ -693,6 +697,12 @@
 
             return true;
         };
+
+        function isValidDate(s) {
+            var bits = s.split('/');
+            var d = new Date(bits[2] + '/' + bits[1] + '/' + bits[0]);
+            return !!(d && (d.getMonth() + 1) == bits[1] && d.getDate() == Number(bits[0]));
+        }
 
         var registrar = function () {
             changeViewer("loader");

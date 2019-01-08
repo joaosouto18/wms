@@ -34,7 +34,12 @@ BEGIN
     UPDATE CONTEXTO_PARAMETRO SET DSC_CONTEXTO_PARAMETRO = 'RELATÓRIOS E IMPRESSÃO' WHERE
       TRANSLATE (DSC_CONTEXTO_PARAMETRO,
                  'ŠŽšžŸÁÇÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕËÜÏÖÑÝåáçéíóúàèìòùâêîôûãõëüïöñýÿ',
-                 'SZszYACEIOUAEIOUAEIOUAOEUIONYaaceiouaeiouaeiouaoeuionyy') = 'RELATORIO E IMPRESSAO';
+                 'SZszYACEIOUAEIOUAEIOUAOEUIONYaaceiouaeiouaeiouaoeuionyy') = 'RELATORIOS E IMPRESSAO';
+
+    UPDATE CONTEXTO_PARAMETRO SET DSC_CONTEXTO_PARAMETRO = 'EXPEDIÇÃO' WHERE
+      TRANSLATE (DSC_CONTEXTO_PARAMETRO,
+                 'ŠŽšžŸÁÇÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕËÜÏÖÑÝåáçéíóúàèìòùâêîôûãõëüïöñýÿ',
+                 'SZszYACEIOUAEIOUAEIOUAOEUIONYaaceiouaeiouaeiouaoeuionyy') = 'EXPEDICAO';
 
     UPDATE CONTEXTO_PARAMETRO SET DSC_CONTEXTO_PARAMETRO = 'INVENTÁRIO' WHERE
       TRANSLATE (DSC_CONTEXTO_PARAMETRO,

@@ -340,7 +340,7 @@ table tr.title td {
 .gradientBtnSuccess{
     font-size: 13px;
     word-wrap: break-word;
-    background: url(../../img/admin/gradient-btn-success.png) repeat-x scroll 0 0 #F77C16;
+    background: url(../../img/admin/gradient-btn-success.png) repeat-x scroll 0 0 #00800B;
     background-size: auto 100%;
     /*background: rgb(7, 224, 0);*/
     background: -moz-linear-gradient(top, rgb(7, 224, 0) 0%, rgb(0, 128, 11) 100%);
