@@ -247,12 +247,12 @@ class EtiquetaEmbalados extends eFPDF
             $impressao = $existeItensPendentes == false ? 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'] : 'VOLUME: '.$volume['NUM_SEQUENCIA'];
             $this->MultiCell(110, 10, $impressao, 0, 'L');
 
-            $this->SetXY(6,40);
+            $this->SetXY(2,39);
             $this->SetFont('Arial', 'B', 20);
             $impressao = utf8_decode(substr("PEDIDO: \n".$volume['COD_PEDIDO']."\n",0,30));
             $this->MultiCell(110, 10, $impressao, 0, 'L');
 
-            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 45, 35 , 40, 13);
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 40, 42 , 60, 16);
             $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 75, 0, 23, 12);
 
         }
