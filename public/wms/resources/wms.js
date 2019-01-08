@@ -60,14 +60,14 @@
     $.wmsDialogConfirm = function(settings, callback, params, returnFunction){
         var buttons = {};
 
-        var confirmBtnLbl = (!!settings.buttons.confirm)? settings.buttons.confirm : "Confirmar";
+        var confirmBtnLbl = (!!settings.buttons && !!settings.buttons.confirm)? settings.buttons.confirm : "Confirmar";
         buttons[confirmBtnLbl] = function (){
             if($.isFunction(callback)){ callback.call(this, params); }
             if($.isFunction(returnFunction)){ returnFunction.call(this, true); }
             $(this).remove();
         };
 
-        var rejectBtnLbl = (!!settings.buttons.reject)? settings.buttons.reject : "Cancelar";
+        var rejectBtnLbl = (!!settings.buttons && !!settings.buttons.reject)? settings.buttons.reject : "Cancelar";
         buttons[rejectBtnLbl] = function (){
             if($.isFunction(returnFunction)){ returnFunction.call(this, false); }
             $(this).remove();
