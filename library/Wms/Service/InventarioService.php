@@ -519,8 +519,8 @@ class InventarioService extends AbstractService
                 foreach ($contEndProdRepo->getContagensAnteriores($invContEnd->getInventarioEndereco()->getId(), $invContEnd->getSequencia(),
                     $contagem['COD_PRODUTO'], $contagem['DSC_GRADE'], $contagem['DSC_LOTE'], $contagem['COD_PRODUTO_VOLUME']) as $contAnterior) {
                     $elemCount = [
-                        $contagem['QTD_CONTAGEM'],
-                        $contagem['VALIDADE']
+                        $contAnterior['QTD_CONTAGEM'],
+                        $contAnterior['VALIDADE']
                     ];
                     $countQtdsIguais[$strProd][implode($strConcat, $elemCount)][] = $contAnterior['NUM_SEQUENCIA'];
                 }
