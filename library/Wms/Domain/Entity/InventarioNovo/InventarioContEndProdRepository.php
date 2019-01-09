@@ -112,4 +112,31 @@ class InventarioContEndProdRepository extends EntityRepository
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
+
+    /**
+     * @param $invEnd
+     * @param $seq
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getProdutosContagemAnterior($invEnd, $seq)
+    {
+        $sql = "
+            SELECT 
+                   ICEP.COD_PRODUTO,
+                   ICEP.DSC_GRADE,
+                   ICEP.COD_PRODUTO_VOLUME,
+                   ICEP.DSC_LOTE,
+                   ICE.NUM_SEQUENCIA,
+                   TO_CHAR(ICEP.DTH_VALIDADE, 'DD/MM/YYYY') VALIDADE, 
+                   SUM(ICEP.QTD_CONTADA * ICEP.QTD_EMBALAGEM) QTD_CONTAGEM
+            FROM INVENTARIO_CONT_END_PROD ICEP
+            INNER JOIN INVENTARIO_CONT_END ICE on ICEP.COD_INV_CONT_END = ICE.COD_INV_CONT_END
+            INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO AND IEN.IND_ATIVO = 'S'
+            WHERE ICE.COD_INVENTARIO_ENDERECO = $invEnd AND ICE.NUM_SEQUENCIA = ($seq - 1)
+            GROUP BY ICEP.COD_PRODUTO, ICEP.DSC_GRADE, ICEP.COD_PRODUTO_VOLUME, ICEP.DSC_LOTE, ICE.NUM_SEQUENCIA, ICEP.DTH_VALIDADE
+            ORDER BY ICE.NUM_SEQUENCIA";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
 }

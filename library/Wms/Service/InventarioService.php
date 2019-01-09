@@ -450,13 +450,16 @@ class InventarioService extends AbstractService
                         if ($prod->getCodProduto() == $elem['COD_PRODUTO'] && $prod->getGrade() == $elem['DSC_GRADE'] && $prod->getLote() == $elem['DSC_LOTE']) {
                             if (empty($prod->getProdutoVolume()) || (!empty($prod->getProdutoVolume() && $prod->getProdutoVolume()->getId() == $elem['COD_PRODUTO_VOLUME']))) {
                                 unset($estoques[$k]);
-                                $estoques = array_values($estoques);
                                 break;
                             }
                         }
                     }
                 }
             }
+
+            $estoques = array_values($estoques);
+
+            $contagemAnterior = $contEndProdRepo->getProdutosContagemAnterior($invContEnd->getInventarioEndereco()->getId(), $invContEnd->getSequencia());
 
             foreach ($contados as $contagem) {
                 $estoque = null;
@@ -473,6 +476,17 @@ class InventarioService extends AbstractService
                         unset($estoques[$i]);
                         $estoques = array_values($estoques);
                         break;
+                    }
+                }
+
+                foreach($contagemAnterior as $key => $prodContAnt) {
+                    if (
+                        $prodContAnt['COD_PRODUTO'] == $contagem["COD_PRODUTO"] &&
+                        $prodContAnt['DSC_GRADE'] == $contagem["DSC_GRADE"] &&
+                        $prodContAnt['COD_PRODUTO_VOLUME'] == $contagem["COD_PRODUTO_VOLUME"] &&
+                        $prodContAnt['DSC_LOTE'] == $contagem["DSC_LOTE"]
+                    ) {
+                        unset($contagemAnterior[$key]);
                     }
                 }
 
@@ -512,17 +526,13 @@ class InventarioService extends AbstractService
                 }
             }
 
-            /*
-             * SE TEM ESTOQUE NAO CONFERIDO
-             * SE TEM PRODUTO OBRIGATORIO NAO CONFERIDO
-             */
-            if ((!empty($estoques) && json_decode($inventario['contarTudo'])) (!$invPorProduto xor )) {
+            if (!$invPorProduto && json_decode($inventario['contarTudo'])) {
                 foreach ($estoques as $estoque) {
                     $prod = [
-                        $estoque->getCodProduto(),
-                        $estoque->getGrade(),
-                        $estoque->getLote(),
-                        $estoque->getProdutoVolume()
+                        "codProduto" => $estoque->getCodProduto(),
+                        "grade" => $estoque->getGrade(),
+                        "lote" => $estoque->getLote(),
+                        "idVolume" => $estoque->getProdutoVolume()
                     ];
                     $elemCount = [
                         0,
@@ -530,8 +540,24 @@ class InventarioService extends AbstractService
                     ];
                     $countQtdsIguais[implode($strConcat, $prod)][implode($strConcat, $elemCount)][] = $invContEnd->getSequencia();
 
-                    $this->zerarProduto($inventario, $invContEnd, $estoque,true);
+                    $this->zerarProduto( $invContEnd, $prod,true);
                 }
+            }
+
+            foreach ($contagemAnterior as $produto) {
+                $prod = [
+                    "codProduto" => $produto['COD_PRODUTO'],
+                    "grade" => $produto['DSC_GRADE'],
+                    "lote" => $produto['DSC_LOTE'],
+                    "idVolume" => $produto['COD_PRODUTO_VOLUME']
+                ];
+                $elemCount = [
+                    0,
+                    ""
+                ];
+                $countQtdsIguais[implode($strConcat, $prod)][implode($strConcat, $elemCount)][] = $invContEnd->getSequencia();
+
+                $this->zerarProduto($invContEnd, $prod,true);
             }
 
             $count = [];
@@ -570,32 +596,28 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $inventario
      * @param $contEnd InventarioNovo\InventarioContEnd
-     * @param $prodEstoque \Wms\Domain\Entity\Enderecamento\Estoque
+     * @param $produto
      * @param $divergente
      * @throws \Exception
      */
-    private function zerarProduto($inventario, $contEnd, $prodEstoque, $divergente)
+    private function zerarProduto($contEnd, $produto, $divergente)
     {
         try {
 
-            if ($prodEstoque->getProduto()->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
+            if (isset($produto["idVolume"]) && !empty($produto["idVolume"])) {
                 $isEmb = false;
-                if (json_decode($inventario['volumesSeparadamente']))
-                    $elements[] = $prodEstoque->getProdutoVolume();
-                else
-                    $elements = $prodEstoque->getProduto()->getVolumes()->filter(function ($vol) { return (empty($vol->getDataInativacao())); })->toArray();
+                $elements[] = $produto["idVolume"];
             } else {
                 $isEmb = true;
-                $elements[] = $prodEstoque->getProdutoEmbalagem();
+                $elements[] = null;
             }
 
             $this->registrarConferencia(
                 $elements,
                 $contEnd,
-                [ 'qtd' => 0, 'lote' => $prodEstoque->getLote(),  'validade' => $prodEstoque->getValidade() ],
-                $prodEstoque->getProduto(),
+                [ 'qtd' => 0, 'lote' => $produto["lote"],  'validade' => null ],
+                $this->em->getReference("wms:Produto", ["id" => $produto['codProduto'], "grade" => $produto['grade']]),
                 $isEmb,
                 0,
                 null,
@@ -724,25 +746,17 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $inventario
      * @param $contEnd
      * @param $produto
      * @throws \Exception
      */
-    public function confirmarProdutoZerado($inventario, $contEnd, $produto)
+    public function confirmarProdutoZerado($contEnd, $produto)
     {
         $this->em->beginTransaction();
         try{
             $this->zerarProduto(
-                $inventario,
                 $this->em->getReference("wms:InventarioNovo\InventarioContEnd", $contEnd["idContEnd"]),
-                $this->em->getRepository("wms:Enderecamento\Estoque")->findOneBy([
-                    "depositoEndereco" => $contEnd["idEnd"],
-                    "codProduto" => $produto["codProduto"],
-                    "grade" => $produto["grade"],
-                    "lote" => (!empty(json_decode($produto["lote"]))) ? $produto["lote"] : null,
-                    "produtoVolume" => (!empty(json_decode($produto["idVolume"]))) ? $produto["idVolume"] : null
-                ]),
+                $produto,
                 null
             );
 
