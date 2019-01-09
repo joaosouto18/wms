@@ -605,7 +605,7 @@ class InventarioService extends AbstractService
     {
         try {
 
-            if (isset($produto["idVolume"]) && !empty($produto["idVolume"])) {
+            if (isset($produto["idVolume"]) && !empty(json_decode($produto["idVolume"]))) {
                 $isEmb = false;
                 $elements[] = $produto["idVolume"];
             } else {
@@ -616,7 +616,7 @@ class InventarioService extends AbstractService
             $this->registrarConferencia(
                 $elements,
                 $contEnd,
-                [ 'qtd' => 0, 'lote' => $produto["lote"],  'validade' => null ],
+                [ 'qtd' => 0, 'lote' => json_decode($produto["lote"]),  'validade' => null ],
                 $this->em->getReference("wms:Produto", ["id" => $produto['codProduto'], "grade" => $produto['grade']]),
                 $isEmb,
                 0,
