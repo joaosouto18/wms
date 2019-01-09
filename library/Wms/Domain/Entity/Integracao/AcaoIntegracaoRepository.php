@@ -245,7 +245,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             if (count($result) && !is_null($acaoEn->getTabelaReferencia())) {
                 $idTabelaTemp = $result;
             }
-            
+
             if ($acaoEn->getidAcaoRelacionada() != null) {
                 if (count($result) >0) {
 
@@ -257,7 +257,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                     $options = array();
                     $options[] = implode(",", $dadosFiltrar);
-                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO, true);
                 } else {
                     $result = true;
                 }
@@ -268,11 +268,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                             'dados'=>$result));
                     $result = $integracaoService->salvaTemporario();
                 } else {
-                    //pegar os ID's das tabelas temporárias das triggers
-                    if (count($result) && !is_null($acaoEn->getTabelaReferencia())) {
-                        $idTabelaTemp = $result;
-                    }
-
                     $integracaoService = new Integracao($this->getEntityManager(),
                         array('acao'=>$acaoEn,
                             'options'=>$options,
