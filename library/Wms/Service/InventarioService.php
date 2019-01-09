@@ -605,7 +605,7 @@ class InventarioService extends AbstractService
     {
         try {
 
-            if (isset($produto["idVolume"]) && !empty($produto["idVolume"])) {
+            if (isset($produto["idVolume"]) && !empty(json_decode($produto["idVolume"]))) {
                 $isEmb = false;
                 $elements[] = $produto["idVolume"];
             } else {
