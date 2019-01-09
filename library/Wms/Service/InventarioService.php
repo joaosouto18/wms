@@ -15,6 +15,7 @@ use Wms\Domain\Entity\Atividade;
 use Wms\Domain\Entity\Enderecamento\EstoqueRepository;
 use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
 use Wms\Domain\Entity\InventarioNovo;
+use Wms\Domain\Entity\InventarioNovoRepository;
 use Wms\Domain\Entity\OrdemServico;
 use Wms\Domain\Entity\OrdemServicoRepository;
 use Wms\Domain\Entity\Pessoa;
@@ -898,6 +899,19 @@ class InventarioService extends AbstractService
         } catch (\Exception $e) {
             $this->em->rollback();
             throw $e;
+        }
+    }
+
+    public function getMovimentacaoByInventario($idInventario)
+    {
+        /** @var InventarioNovoRepository $inventarioRepo */
+        $inventarioRepo = $this->getRepository();
+        $result = [];
+        $usaGrade = ($inventarioRepo->getSystemParameterValue("UTILIZA_GRADE"));
+        foreach ($inventarioRepo->getResultInventario($idInventario) as $item) {
+            $result[] = [
+
+            ];
         }
     }
 }
