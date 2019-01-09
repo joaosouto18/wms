@@ -12,6 +12,12 @@ class Mobile_InventarioNovoController extends Action
 {
     public function listagemInventariosAction()
     {
+        $this->view->usaGrade = ($this->getSystemParameterValue("UTILIZA_GRADE") == "S");
+        $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
+        $mascara = \Wms\Util\Endereco::mascara($arrQtdDigitos,'0');
+        $arrMasc = \Wms\Util\Endereco::separar($mascara, $arrQtdDigitos);
+        $arrMasc["mask"] = $mascara;
+        $this->view->endConfig = json_encode($arrMasc);
         $this->renderScript('inventario-novo\inventarios.phtml');
     }
 
@@ -75,8 +81,7 @@ class Mobile_InventarioNovoController extends Action
             $this->_helper->json([
                     "status" => "ok",
                     "response" => [
-                        "produto" => $this->_em->getRepository('wms:Produto')->getEmbalagemByCodBarras($this->_getParam("codbarras"))[0],
-                        "usaGrade" => $this->getSystemParameterValue("UTILIZA_GRADE")
+                        "produto" => $this->_em->getRepository('wms:Produto')->getEmbalagemByCodBarras($this->_getParam("codbarras"))[0]
                     ]
                 ]
             );

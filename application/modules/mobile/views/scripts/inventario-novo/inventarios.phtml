@@ -171,11 +171,11 @@
         var contEndSelecionado = null;
         var produtos = [];
         var elemBipado = {};
-        var usaGrade = true;
+        var usaGrade = <?php echo ($this->usaGrade) ? "true" : "false"; ?>;
         var showing = 0;
         var views = ["loader","list-inventarios","contagens-by-inventario","bipagem-endereco","bipagem-produto","conferencia"];
         var headersArr = ["lbl-inventario", "lbl-contagem", "lbl-endereco", "lbl-produto", "lbl-embvol"];
-        var endConfig = {};
+        var endConfig = <?php echo $this->endConfig; ?>;
         var msgShowed = true;
 
         function myIndexOf(collection, target) {
@@ -190,15 +190,6 @@
 
         $(document).ready(function () {
             getInventarios();
-            $.ajax({ url: "/configuracao/get-mask-endereco-ajax",
-                success: function (result) {
-                    endConfig.rua = result.enderecoRua.replace(/[9]/g,"0");
-                    endConfig.predio = result.enderecoPredio.replace(/[9]/g,"0");
-                    endConfig.nivel = result.enderecoNivel.replace(/[9]/g,"0");
-                    endConfig.apto = result.enderecoApartamento.replace(/[9]/g,"0");
-                    endConfig.mask = result.mask.replace(/[9]/g,"0");
-                }
-            })
         });
 
         var disarmEvent = function (event) {
@@ -248,7 +239,7 @@
             var rua = endConfig.rua.toString();
             var predio = endConfig.predio.toString();
             var nivel = endConfig.nivel.toString();
-            var apto = endConfig.apto.toString();
+            var apto = endConfig.apartamento.toString();
             var endArr = cleared.split(".");
             if (endArr.length === 4) {
 
@@ -513,14 +504,21 @@
             list.empty();
             if (produtos.length) {
                 $.each(produtos , function (k,v) {
-                    if(v.zerado) {
-
-                        var link = '<a href="" data-key="' + k + '" class="btn-zerarProduto">Zerar Produto</a>';
-
-                        list.append('<div class="list-item">' + v.codProduto + " - " + v.grade + ' ' + link + '</div>')
+                    var dscProd = v.codProduto;
+                    if (usaGrade) {
+                        dscProd += " - " + v.grade;
                     }
-                    else
-                        list.append('<div class="list-item">' + v.codProduto + " - " + v.grade + '</div>')
+                    if (!isEmpty(v.lote)) {
+                        dscProd += " Lote: " + v.lote;
+                    }
+                    if (!isEmpty(v.idVolume)) {
+                        dscProd += " Volume: " + v.dscVolume;
+                    }
+                    if(v.zerado) {
+                        dscProd += ' <a href="" data-key="' + k + '" class="btn-zerarProduto">Zerar Produto</a>';
+                    }
+
+                    list.append('<div class="list-item">' + dscProd + '</div>');
                 });
             }
 
@@ -611,7 +609,6 @@
                 success: function (result) {
                     if (result.status === "ok") {
                         elemBipado = result.response.produto;
-                        usaGrade = (result.response.usaGrade === 'S');
                         prepareElement();
                     } else {
                         notificar("error", result.exception);

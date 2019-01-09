@@ -11,12 +11,17 @@ angular.module("wms").controller("previewerCtrl", function ($scope, $http, $wind
         $http.get(URL_MODULO + '/modelo-inventario/get-modelos-inventarios-ajax').then(function (response) {
             $scope.modelos = response.data;
         }).then(function () {
-            angular.forEach($scope.modelos, function (obj) {
-                if (obj.isDefault) {
-                    obj.dscModelo += " (Default)";
-                    $scope.modSel = obj;
-                }
-            })
+            if ($scope.modelos.length) {
+                angular.forEach($scope.modelos, function (obj) {
+                    if (obj.isDefault) {
+                        obj.dscModelo += " (Default)";
+                        $scope.modSel = obj;
+                    }
+                })
+            } else {
+                uiDialogService.dialogAlert("Não foi encontrado nenhum modelo de inventário ativo!");
+                uiDialogService.close("previewer-inventario.html");
+            }
         })
     };
 

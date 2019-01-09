@@ -450,6 +450,7 @@ class InventarioService extends AbstractService
                         if ($prod->getCodProduto() == $elem['COD_PRODUTO'] && $prod->getGrade() == $elem['DSC_GRADE'] && $prod->getLote() == $elem['DSC_LOTE']) {
                             if (empty($prod->getProdutoVolume()) || (!empty($prod->getProdutoVolume() && $prod->getProdutoVolume()->getId() == $elem['COD_PRODUTO_VOLUME']))) {
                                 unset($estoques[$k]);
+                                $estoques = array_values($estoques);
                                 break;
                             }
                         }
@@ -461,9 +462,8 @@ class InventarioService extends AbstractService
                 $estoque = null;
                 if (!empty($estoques)) {
                     for ($i = 0; $i < count($estoques); $i++) {
-                        if ($invPorProduto || !json_decode($inventario['contarTudo'])) {
-                            if ($contagem["COD_PRODUTO"] != $estoques[$i]->getCodProduto() || $contagem["DSC_GRADE"] != $estoques[$i]->getGrade())
-                                continue;
+                        if ($contagem["COD_PRODUTO"] != $estoques[$i]->getCodProduto() || $contagem["DSC_GRADE"] != $estoques[$i]->getGrade()){
+                            continue;
                         }
                         if (json_decode($inventario["volumesSeparadamente"]) && !empty($contagem["COD_PRODUTO_VOLUME"])) {
                             if ($contagem["COD_PRODUTO_VOLUME"] != $estoques[$i]->getProdutoVolume()->getId())
@@ -512,7 +512,11 @@ class InventarioService extends AbstractService
                 }
             }
 
-            if (!empty($estoques) && (!$invPorProduto || json_decode($inventario['contarTudo']))) {
+            /*
+             * SE TEM ESTOQUE NAO CONFERIDO
+             * SE TEM PRODUTO OBRIGATORIO NAO CONFERIDO
+             */
+            if ((!empty($estoques) && json_decode($inventario['contarTudo'])) (!$invPorProduto xor )) {
                 foreach ($estoques as $estoque) {
                     $prod = [
                         $estoque->getCodProduto(),
@@ -697,7 +701,7 @@ class InventarioService extends AbstractService
 
         $agroup = [];
         foreach( $result as $item) {
-            $strConcat = "$item[codProduto] -- $item[grade]";
+            $strConcat = "$item[codProduto]--$item[grade]--$item[idVol]--$item[lote]";
             if (!isset($agroup[$strConcat])) {
                 $agroup[$strConcat] = [
                     "codProduto" => $item['codProduto'],

@@ -65,7 +65,7 @@ templates.push({
         '<span>Total de {{itens.length}} incluídos</span>' +
         '</div>' +
         '<div class="gAction">' +
-        '<button type="button" class="btn-grid" ng-click="criarInventario()"><span>Concluir</span></button>' +
+        '<button ng-show="modelos.length" type="button" class="btn-grid" ng-click="criarInventario()"><span>Concluir</span></button>' +
         '</div>' +
         '</div>' +
         '<table class="gTable" style="width: 708px">' +
