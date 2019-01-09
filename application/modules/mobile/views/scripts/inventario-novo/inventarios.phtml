@@ -695,6 +695,11 @@
             return true;
         };
 
+        $("#qtd").keyup(function () {
+            var data = $(this).val().replace(/[^\d.]/,"");
+            $(this).val(data);
+        });
+
         function isValidDate(s) {
             var bits = s.split('/');
             var d = new Date(bits[2] + '/' + bits[1] + '/' + bits[0]);
