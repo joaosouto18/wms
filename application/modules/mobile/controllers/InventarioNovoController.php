@@ -110,8 +110,10 @@ class Mobile_InventarioNovoController extends Action
     {
         try {
             $this->getServiceLocator()->getService("Inventario")->confirmarProdutoZerado(
+                $this->_getParam("inventario"),
                 $this->_getParam("contEnd"),
-                $this->_getParam("produto"));
+                $this->_getParam("produto"),
+                \Wms\Domain\Entity\OrdemServico::COLETOR);
 
             $this->_helper->json(["status" => "ok", 'response' =>  "Produto zerado com sucesso!"]);
         } catch (Exception $e) {

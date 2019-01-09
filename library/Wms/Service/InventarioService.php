@@ -750,12 +750,12 @@ class InventarioService extends AbstractService
      * @param $produto
      * @throws \Exception
      */
-    public function confirmarProdutoZerado($contEnd, $produto)
+    public function confirmarProdutoZerado($inventario, $contEnd, $produto, $tipoConferencia)
     {
         $this->em->beginTransaction();
         try{
             $this->zerarProduto(
-                $this->em->getReference("wms:InventarioNovo\InventarioContEnd", $contEnd["idContEnd"]),
+                $this->getOsUsuarioContagem( $contEnd, $inventario, $tipoConferencia, true)->getInvContEnd(),
                 $produto,
                 null
             );
