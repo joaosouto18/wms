@@ -82,7 +82,7 @@ class InventarioEnderecoNovoRepository extends EntityRepository
     public function getInfoEndereco($idInventario, $sequencia, $endereco)
     {
         $dql = $this->_em->createQueryBuilder();
-        $dql->select("p.id codProduto, p.grade, p.descricao, NVL(e.codigoBarras, v.codigoBarras) codBarras")
+        $dql->select("p.id codProduto, p.grade, p.descricao, NVL(e.codigoBarras, v.codigoBarras) codBarras, '' idVol, '' lote")
             ->from("wms:InventarioNovo\InventarioContEnd", "ice")
             ->innerJoin("ice.inventarioEndereco", "ie", "WITH", "ie.ativo = 'S' and ie.inventario = $idInventario and ie.depositoEndereco = $endereco")
             ->innerJoin("ie.inventario", "inv")
