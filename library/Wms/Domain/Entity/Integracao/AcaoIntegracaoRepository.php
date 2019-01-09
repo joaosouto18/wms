@@ -257,7 +257,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                     $options = array();
                     $options[] = implode(",", $dadosFiltrar);
-                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO, true);
+                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
                 } else {
                     $result = true;
                 }
