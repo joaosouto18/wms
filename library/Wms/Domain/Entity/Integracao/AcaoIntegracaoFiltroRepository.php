@@ -42,6 +42,7 @@ class AcaoIntegracaoFiltroRepository extends EntityRepository
                 $query = $acaoEn->getQuery();
             }
             $query = 'INSERT ALL '.implode(' ', $queryAll).' SELECT * FROM dual';
+            var_dump($query);exit;
         }elseif($insertAll === 'MSSQL'){
             $vetQuery = explode('VALUES', $query);
             $query = $vetQuery[1];
