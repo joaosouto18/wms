@@ -29,7 +29,7 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
     {
         $idClasse = trim($idClasse);
 
-        $classeEntity = $this->__getServiceLocator()->getService('Produto\Classe')->get($idClasse);
+        $classeEntity = $this->__getServiceLocator()->getService('Produto\Classe')->find($idClasse);
 
         if ($classeEntity == null)
             throw new \Exception('Classe não encontrada');
@@ -56,7 +56,7 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
         $em->beginTransaction();
 
         try {
-            $produtoClasse = $service->get($idClasse);
+            $produtoClasse = $service->find($idClasse);
 
             if (!$produtoClasse)
                 $produtoClasse = new \Wms\Domain\Entity\Produto\Classe;
@@ -65,7 +65,7 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
                     ->setNome($nome);
 
             if ($idClassePai != null) {
-                $classePai = $service->get($idClassePai);
+                $classePai = $service->find($idClassePai);
 
                 if ($classePai == null)
                     throw new \Exception('Classe pai não existe');
@@ -100,13 +100,13 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
         
         try {
             $service = $this->__getServiceLocator()->getService('Produto\Classe');
-            $produtoClasse = $service->get($idClasse);
+            $produtoClasse = $service->find($idClasse);
             
             $produtoClasse->setId($idClasse)
                     ->setNome($nome);
 
             if ($idClassePai != null) {
-                $classePai = $service->get($idClassePai);
+                $classePai = $service->find($idClassePai);
 
                 if ($classePai == null)
                     throw new \Exception('Classe pai não existe');
@@ -140,7 +140,7 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
         $nome = trim ($nome);
 
         $service = $this->__getServiceLocator()->getService('Produto\Classe');
-        $entity = $service->get($idClasse);
+        $entity = $service->find($idClasse);
 
         //novo Classe
         $op = ($entity == null) ? $this->inserir($idClasse, $nome, $idClassePai) :
@@ -168,7 +168,7 @@ class Wms_WebService_ProdutoClasse extends Wms_WebService
         
         try {
             $service = $this->__getServiceLocator()->getService('Produto\Classe');
-            $produtoClasse = $service->get($idClasse);
+            $produtoClasse = $service->find($idClasse);
 
             if (!$produtoClasse)
                 throw new \Exception('Não existe classe de Produto com esse codigo no sistema');

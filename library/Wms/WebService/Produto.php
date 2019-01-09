@@ -167,7 +167,7 @@ class Wms_WebService_Produto extends Wms_WebService {
     private function getFabricante($idFabricante) {
         $fabricante = $this->__getServiceLocator()
             ->getService('Fabricante')
-            ->get($idFabricante);
+            ->find($idFabricante);
 
         return ($fabricante == null) ? false : $fabricante;
     }
@@ -181,7 +181,7 @@ class Wms_WebService_Produto extends Wms_WebService {
     private function getClasse($idClasse) {
         $classe = $this->__getServiceLocator()
             ->getService('Produto\Classe')
-            ->get($idClasse);
+            ->find($idClasse);
 
         return ($classe == null) ? false : $classe;
     }
