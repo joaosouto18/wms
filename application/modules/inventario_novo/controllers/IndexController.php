@@ -264,8 +264,7 @@ class Inventario_Novo_IndexController  extends Action
     
     public function viewAndamentoAjaxAction()
     {
-        $grid =  new \Wms\Module\Inventario\Grid\Andamento();
-        $this->view->grid = $grid->init($this->_getAllParams());
+        $this->view->id = $this->_getParam('id');
     }
 
     public function exportInventarioAjaxAction()

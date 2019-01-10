@@ -1,9 +1,5 @@
 <span ng-controller="listGridInventarioCtrl">
     <script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/listGridCtrl.js') ?>"></script>
-    <script src="<?php echo $this->baseUrl('angularJS/directives/uiAccordion.js') ?>"></script>
-    <link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl('css/admin/uiAccordion.css'); ?>" />
-<!--    <ui-accordion title="Rua 22">    </ui-accordion>-->
-<!--    <ui-accordion title="Rua 23">    </ui-accordion>-->
     <form id="cadastro-movimentacao" class="filtro">
         <dt id="identificacao-label">&nbsp;</dt>
         <dd id="identificacao-element" >
@@ -139,7 +135,7 @@
                                         <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>] | contains:inventario.status:true"><a href="/inventario_novo/index/cancelar/id/{{inventario.id}}" class="confirm" title="Cancelar inventário" target="_self">Cancelar</a></li>
                                         <li ng-if="inventario.status != <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_GERADO ?>"><a href="/inventario_novo/relatorio-divergencia/index/id/{{inventario.id}}" class="pdf" title="" target="_self">Relatório Divergências</a></li>
                                         <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>] | contains:inventario.status:true"><a href="/inventario/parcial/endereco/id/{{inventario.id}}" class="confirm" title="Adicionar novos endereços" target="_self">Adicionar endereços</a></li>
-                                        <li ><a href="/inventario_novo/index/view-andamento-ajax/id/{{inventario.id}}" class="view-andamento dialogAjax" title="Andamento do Inventário" target="_self">Visualizar Andamento</a></li>
+                                        <li><a href="#" ng-click="showAndamento(inventario.id)" class="view-andamento" title="Andamento do Inventário" target="_self">Visualizar Andamento</a></li>
                                         <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>"><a href="/inventario_novo/index/view-movimentacoes-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações por Produto" target="_self">Movimentações no Estoque</a></li>
                                         <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO ?>"><a href="/inventario_novo/index/imprimir-enderecos-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações por Produto" target="_self">Imprimir Endereços</a></li>
                                         <?php if($this->showCodInvErp):?>

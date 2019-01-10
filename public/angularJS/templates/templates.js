@@ -93,18 +93,6 @@ templates.push({
         '</div>'
 });
 
-templates.push({
-    name: 'andamento-accordion.html',
-    template: '<div class="accordion__item js-accordion-item">' +
-        '<div class="accordion-header js-accordion-header">{{title}}</div>' +
-    '<div class="accordion-body js-accordion-body">' +
-    '<div class="accordion-body__contents">' +
-    '{{content}}' +
-'</div>' +
-'</div><!-- end of accordion body -->' +
-'</div><!-- end of accordion item -->'
-});
-
 angular.module('wms').run(function ($templateCache) {
     angular.forEach(templates, function (obj) {
         $templateCache.put(obj.name, obj.template)
