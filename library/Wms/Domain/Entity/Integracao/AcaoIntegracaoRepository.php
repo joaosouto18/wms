@@ -255,9 +255,17 @@ class AcaoIntegracaoRepository extends EntityRepository
                     foreach ($result as $row) {
                         $dadosFiltrar[] = $row['COD_PRODUTO'];
                     }
-                    $options = array();
-                    $options[] = implode(",", $dadosFiltrar);
-                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+                    foreach ($dadosFiltrar as $value) {
+                        $options = array();
+                        $options[] = $value;
+                        $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+
+                    }
+
+
+//                    $options = array();
+//                    $options[] = implode(",", $dadosFiltrar);
+//                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
                 } else {
                     $result = true;
                 }
