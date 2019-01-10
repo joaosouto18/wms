@@ -380,6 +380,7 @@ class InventarioNovoRepository extends EntityRepository
 
     /**
      * @param InventarioEnderecoNovo $invEnd
+     * @return array
      */
     public function getEnderecosPendentes($invEnd)
     {

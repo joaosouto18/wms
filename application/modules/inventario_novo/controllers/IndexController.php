@@ -255,13 +255,11 @@ class Inventario_Novo_IndexController  extends Action
     public function viewMovimentacoesAjaxAction() {
         $id = $this->_getParam('id');
         if (isset($id) && !empty($id)) {
-            /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
-            $inventarioRepo = $this->em->getRepository("wms:Inventario");
-            $movimentacoes = $inventarioRepo->getMovimentacaoEstoqueByInventario($id);
+            /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
+            $inventarioRepo = $this->em->getRepository("wms:InventarioNovo");
+            $movimentacoes = $inventarioRepo->getResultadoInventario($id);
             $this->exportCSV($movimentacoes,'movimentacao');
-//            $this->exportPDF($movimentacoes, "movimentacoes-invenario","Movimentações de Estoque por Inventário","P");
         }
-        //return $this->redirect('index');
     }
     
     public function viewAndamentoAjaxAction()
