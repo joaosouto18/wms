@@ -1049,6 +1049,7 @@ class EnderecoRepository extends EntityRepository {
                       WHERE PE.COD_BARRAS = '$codbarras' OR PV.COD_BARRAS = '$codbarras'";
 
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        //var_dump($array);
         return $array;
 
     }
