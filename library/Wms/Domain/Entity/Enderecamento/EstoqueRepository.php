@@ -514,7 +514,7 @@ class EstoqueRepository extends EntityRepository
                                  AND ESTQ.VOLUME = RE.VOLUME
                                  AND ESTQ.LOTE = RE.LOTE
                                  AND ESTQ.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
-                          FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE
+                          LEFT JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE
                                              FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME, REP.DSC_LOTE AS LOTE
                                                      FROM RESERVA_ESTOQUE RE
                                                     INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
