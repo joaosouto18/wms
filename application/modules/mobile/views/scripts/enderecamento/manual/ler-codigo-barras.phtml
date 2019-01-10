@@ -19,7 +19,7 @@
                     <label>Qtd:</label>
                     <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="qtd" id="qtd" value="" />
                 </div>
-                <div class="field">
+                <div class="field div-lote" style="display: none">
                     <label>Lote:</label>
                     <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="lote" id="lote" value="" />
                 </div>
@@ -122,9 +122,11 @@
                             '        </tr>'
 
                         var color = true;
+                        console.log(data.result);
                         if (data.result.length >0) {
                             $.each(data.result, function (key, value) {
                                 color = !color;
+                                console.log(value);
                                 if(value.IND_CONTROLA_LOTE == 'S'){
                                     $('.div-lote').show();
                                     $('#controlaLote').val(1);
