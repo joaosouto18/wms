@@ -253,7 +253,9 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                     $dadosFiltrar = array();
                     foreach ($result as $row) {
-                        $dadosFiltrar[] = $row['COD_PRODUTO'];
+                        if (!in_array($row['COD_PRODUTO'],$dadosFiltrar)) {
+                            $dadosFiltrar[] = $row['COD_PRODUTO'];
+                        }
                     }
                     foreach ($dadosFiltrar as $value) {
                         $options = array();
