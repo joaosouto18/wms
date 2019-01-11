@@ -302,6 +302,7 @@ class ReservaEstoqueRepository extends EntityRepository
                 $params['produto'] = $produtoEn;
                 $params['volume'] = $volumeEn;
                 $params['embalagem'] = $embalagenEn;
+                $params['lote'] = $produto['lote'];
                 $estoqueRepo->movimentaEstoque($params);
             }
         }
