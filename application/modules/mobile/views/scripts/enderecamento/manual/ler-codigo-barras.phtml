@@ -125,12 +125,12 @@
 
                         if (data.result.length >0) {
 
-                            alert("linha 104");
-
                             $.each(data.result, function (key, value) {
                                 color = !color;
 
                                 if(value.IND_CONTROLA_LOTE == 'S'){
+
+                                    alert("linha 133");
 
                                     $('.div-lote').show();
                                     $('#controlaLote').val(1);
