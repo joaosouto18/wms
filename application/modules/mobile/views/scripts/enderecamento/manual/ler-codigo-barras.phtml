@@ -102,6 +102,8 @@
                 success: function (data) {
                     if (data.status === 'ok') {
 
+                        alert("linha 104");
+
                         $("#reservas").val('');
                         $("#submit").val("Buscar");
                         $("#qtd").val("").prop('readonly', false);
@@ -122,13 +124,13 @@
                             '        </tr>'
 
                         var color = true;
-                        console.log(data.result);
+
                         if (data.result.length >0) {
                             $.each(data.result, function (key, value) {
                                 color = !color;
 
                                 if(value.IND_CONTROLA_LOTE == 'S'){
-                                    alert("linha 131");
+
                                     $('.div-lote').show();
                                     $('#controlaLote').val(1);
                                 }
