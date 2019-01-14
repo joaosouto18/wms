@@ -1093,10 +1093,9 @@ class EtiquetaSeparacao extends Pdf
         $this->MultiCell(38, 4.2, $impressao, 1, 'L');
         $this->SetX(3);
         $y2 = $this->getY();
-        $this->SetY($y2);
         $this->SetFont('Arial', 'B', 17);
         $impressao = "CARGA: $etiqueta[codCargaExterno] ";
-        $this->MultiCell(105, 4.5, $impressao, 1, 'L');
+        $this->MultiCell(105, 6, $impressao, 1, 'L');
         $this->SetY($y2 + 1.5);
         $impressao = (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total;
         $this->SetX(70);
