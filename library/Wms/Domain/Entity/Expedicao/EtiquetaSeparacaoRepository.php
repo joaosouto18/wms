@@ -323,7 +323,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         ")
             ->addSelect("
                         (
-                            SELECT COUNT(et.id)
+                            SELECT COUNT(c.id)
                             FROM wms:Expedicao\Carga c
                             WHERE es.codCargaExterno = c.codCargaExterno
                         )
