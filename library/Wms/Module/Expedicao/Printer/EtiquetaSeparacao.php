@@ -282,6 +282,8 @@ class EtiquetaSeparacao extends Pdf
             $etiqueta['dscBox'] = $dscBox;
             $etiqueta['contadorProdutos'] = $contadorProduto;
             $etiqueta['contadorCargas'] = $contadorCarga;
+            var_dump($etiqueta['contadorProdutos']);
+            var_dump($etiqueta['contadorProdutos'][$etiqueta['codProduto']]);
             $this->layoutEtiqueta($etiqueta,count($etiquetas),false, $modelo,false);
             $etiquetaEntity->setReimpressao($motivo);
             $em->persist($etiquetaEntity);
