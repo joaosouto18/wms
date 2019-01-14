@@ -167,10 +167,11 @@ class EtiquetaSeparacao extends Pdf
                 }
             }
             $this->etqMae = false;
-            if (!isset($contadorProduto[$etiqueta['codProduto']]))
-                $contadorProduto[$etiqueta['codProduto']] = 0;
 
-            $contadorProduto[$etiqueta['codProduto']] = $contadorProduto[$etiqueta['codProduto']] + 1;
+            if (!isset($contadorProduto[$etiqueta['codProduto']]['idCaracteristica']))
+                $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] = 0;
+
+            $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] = $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] + 1;
 
             if (!isset($contadorCarga[$etiqueta['codCargaExterno']])) {
                 $contadorCarga[$etiqueta['codCargaExterno']] = 0;
@@ -266,10 +267,10 @@ class EtiquetaSeparacao extends Pdf
         foreach($etiquetas as $etiquetaEntity) {
             $etiqueta      = $EtiquetaRepo->getEtiquetaById($etiquetaEntity->getId());
 
-            if (!isset($contadorProduto[$etiqueta['codProduto']]))
-                $contadorProduto[$etiqueta['codProduto']] = 0;
+            if (!isset($contadorProduto[$etiqueta['codProduto']]['idCaracteristica']))
+                $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] = 0;
 
-            $contadorProduto[$etiqueta['codProduto']] = $contadorProduto[$etiqueta['codProduto']] + 1;
+            $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] = $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] + 1;
 
             if (!isset($contadorCarga[$etiqueta['codCargaExterno']]))
                 $contadorCarga[$etiqueta['codCargaExterno']] = 0;
@@ -1129,7 +1130,7 @@ class EtiquetaSeparacao extends Pdf
         $impressao = str_replace('.','-',"$etiqueta[endereco]");
         $this->MultiCell(50, 6, $impressao, 1, 'C');
         $this->SetY($y3);
-        $impressao = $etiqueta['contadorProdutos'][$etiqueta['codProduto']] . '/' . $etiqueta['qtdProdDist'] . '-' . $etiqueta['dscBox'];
+        $impressao = $etiqueta['contadorProdutos'][$etiqueta['codProduto']]['idCaracteristica'] . '/' . $etiqueta['qtdProdDist'] . '-' . $etiqueta['dscBox'];
         $this->SetX(53);
         $this->MultiCell(55, 6, $impressao, 1, 'L');
         $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 40, 41, 65, 17);
