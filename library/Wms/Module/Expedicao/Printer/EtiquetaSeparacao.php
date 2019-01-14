@@ -1080,6 +1080,7 @@ class EtiquetaSeparacao extends Pdf
         $this->strReimpressao = $strReimpressao;
 
         $this->SetX(30);
+        $this->MultiCell(78, 4.3, '', 0, 'L');
         $this->SetFont('Arial', 'B', 11);
         $impressao = utf8_decode("$etiqueta[codClienteExterno] - $etiqueta[cliente] \n");
         $this->MultiCell(78, 4.3, $impressao, 1, 'L');
