@@ -88,7 +88,7 @@ class ProdutosCarregamento extends Pdf
             foreach ($embalagemEntities as $embalagemEntity) {
                 if (Math::resto($valorPesoCubagem['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
                     $volumeTotal = $volumeTotal + ($valorPesoCubagem['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
-                    continue;
+                    break;
                 }
             }
         }
