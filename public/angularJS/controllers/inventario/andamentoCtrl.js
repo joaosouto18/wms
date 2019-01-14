@@ -1,2 +1,3 @@
-angular.module('wms').controller("andamentoCtrl", function ($scope) {}
-);
+angular.module('wms').controller("andamentoCtrl", function ($scope) {
+
+});

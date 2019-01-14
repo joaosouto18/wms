@@ -1,0 +1,85 @@
+.accordion {
+    margin: 0 auto;
+    border-radius: 5px;
+}
+
+.accordion-header {
+    padding: 1em 2.5em;
+    background: rgba(255,172,71,1) !important;
+    background: -moz-linear-gradient(top, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%) !important;
+    background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(255,172,71,1)), color-stop(100%, rgba(245,109,6,1))) !important;
+    background: -webkit-linear-gradient(top, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%) !important;
+    background: -o-linear-gradient(top, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%) !important;
+    background: -ms-linear-gradient(top, rgba(255,172,71,1) 0%, rgba(245,109,6,1) 100%) !important;
+    background: linear-gradient(to bottom, rgb(255, 172, 71) 0%, rgb(245, 109, 6) 100%) !important;
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#FFAC47', endColorstr='#F56D06', GradientType=0 ) !important;
+    color: white !important;
+    cursor: pointer;
+    letter-spacing: .1em !important;
+    margin: 3px 0px !important;
+}
+
+.accordion-header:hover {
+    background: rgb(255, 218, 153) !important;
+    background: -moz-linear-gradient(top, rgb(255, 218, 153) 0%, rgb(235, 152, 68) 100%);
+    background: -webkit-gradient(left top, left bottom, color-stop(0%, rgb(255, 218, 153)), color-stop(100%, rgb(235, 152, 68))) !important;
+    background: -webkit-linear-gradient(top, rgb(255, 218, 153) 0%, rgb(235, 152, 68) 100%) !important;
+    background: -o-linear-gradient(top, rgb(255, 218, 153) 0%, rgb(235, 152, 68) 100%) !important;
+    background: -ms-linear-gradient(top, rgb(255, 218, 153) 0%, rgb(235, 152, 68) 100%) !important;
+    background: linear-gradient(to bottom, rgb(255, 218, 153) 0%, rgb(235, 152, 68) 100%) !important;
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#FFDA99', endColorstr='#EB9844', GradientType=0 ) !important;
+    position: relative;
+    color: #000000 !important;
+}
+
+.ui-icon-accordion-header {
+    background-image: url("/../../img/icons/arrow_right.png") !important;
+}
+
+.ui-icon-accordion-active {
+    background-image: url("/../../img/icons/arrow_turn_left.png") !important;
+    transform: rotate(180deg);
+}
+
+.accordion-body {
+    background: #fcfcfc;
+    color: #3f3c3c;
+    display: none;
+    margin: -2px 2px;
+}
+
+.accordion-body__contents {
+    padding: 1.5em 1.5em;
+    font-size: .85em;
+}
+
+.accordion__item.active:last-child .accordion-header {
+    border-radius: 0;
+}
+
+.accordion:first-child > .accordion__item > .accordion-header {
+    border-bottom: 1px solid transparent;
+}
+
+.accordion__item > .accordion-header:after {
+    content: "\f3d0";
+    font-size: 1.2em;
+    float: right;
+    position: relative;
+    top: -2px;
+    transition: .3s all;
+    transform: rotate(0deg);
+}
+
+.accordion__item.active > .accordion-header:after {
+    transform: rotate(-180deg);
+}
+
+.accordion__item.active .accordion-header {
+    background: #c3820f;
+}
+
+.accordion__item .accordion__item .accordion-header {
+    background: #f1f1f1;
+    color: black;
+}
