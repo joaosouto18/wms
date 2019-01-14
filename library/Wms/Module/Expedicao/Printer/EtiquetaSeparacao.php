@@ -171,13 +171,11 @@ class EtiquetaSeparacao extends Pdf
             } else {
                 $countEtiquetasByProdutos = 1;
             }
-            $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
 
-//            if (!in_array($etiqueta['codCargaExterno'],$contadorCarga)) {
-//                $contadorCarga[$etiqueta['codCargaExterno']] = 1;
-//            } else {
-//                $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
-//            }
+            if (!isset($contadorCarga[$etiqueta['codCargaExterno']])) {
+                $contadorCarga[$etiqueta['codCargaExterno']] = 0;
+            }
+            $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
 
             $etiqueta['dscBox'] = $dscBox;
             $etiqueta['contadorProdutos'] = $countEtiquetasByProdutos;
@@ -280,6 +278,9 @@ class EtiquetaSeparacao extends Pdf
                 $countEtiquetasByProdutos = 1;
             }
 
+            if (!isset($contadorCarga[$etiqueta['codCargaExterno']])) {
+                $contadorCarga[$etiqueta['codCargaExterno']] = 0;
+            }
             $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
 
             $dscBox = '';
