@@ -14,7 +14,7 @@ class RelatoriosCarregamento extends Form
                   'method' => 'get',
               ));
 
-          if (isset($linhasSeparacao) && !empty($linhasSeparacao)) {
+//          if (isset($linhasSeparacao) && !empty($linhasSeparacao)) {
               $this->addElement('select', 'idLinhaSeparacao', array(
                   'label' => 'Linha de Separação',
                   'style' => 'height:auto; width:100%',
@@ -40,6 +40,6 @@ class RelatoriosCarregamento extends Form
                   ))
                   ->addDisplayGroup(array('idLinhaSeparacao','relatorioCliente', 'relatorioProduto'), 'identificacao', array('legend' => 'Relatórios'));
           }
-    }
+//    }
 
 }

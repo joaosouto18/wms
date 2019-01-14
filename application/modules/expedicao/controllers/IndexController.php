@@ -875,7 +875,7 @@ class Expedicao_IndexController extends Action {
 
             $possuiConferenciaConcluida = true;
             if (!isset($linhasSeparacao) || empty($linhasSeparacao)) {
-                $possuiConferenciaConcluida = false;
+//                $possuiConferenciaConcluida = false;
             }
 
             $form->start($linhasSeparacao);
