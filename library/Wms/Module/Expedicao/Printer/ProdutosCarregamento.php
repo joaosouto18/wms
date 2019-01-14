@@ -75,11 +75,20 @@ class ProdutosCarregamento extends Pdf
 
         $pesoTotal = 0;
         $cubagemTotal = 0;
+        $volumeTotal = 0;
         foreach ($resultado as $valorPesoCubagem) {
             $produtoEntity = $produtoRepo->getPesoProduto($valorPesoCubagem);
             if (isset($produtoEntity) && !empty($produtoEntity)) {
                 $pesoTotal = $pesoTotal + $produtoEntity[0]['NUM_PESO'];
                 $cubagemTotal = $cubagemTotal + $produtoEntity[0]['NUM_CUBAGEM'];
+            }
+
+            $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $valorPesoCubagem['COD_PRODUTO'], 'grade' => $valorPesoCubagem['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
+            $qtdTotal = $valorPesoCubagem['QUANTIDADE_CONFERIDA'];
+            foreach ($embalagemEntities as $embalagemEntity) {
+                if (Math::resto($valorPesoCubagem['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
+                    $volumeTotal = $volumeTotal + ($valorPesoCubagem['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
+                }
             }
         }
 
@@ -96,7 +105,8 @@ class ProdutosCarregamento extends Pdf
                 $this->Cell(20, 10, utf8_decode("Linha de Separação: $valor[DSC_LINHA_SEPARACAO]"),0,1);
                 $this->Cell(45, 10, utf8_decode("Placa: $valor[DSC_PLACA_CARGA]"),0,0);
                 $this->Cell(45, 10, utf8_decode("Peso: $pesoTotal kg"),0,0);
-                $this->Cell(20, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,1);
+                $this->Cell(20, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,0);
+                $this->Cell(20, 10, utf8_decode("Volumes: $volumeTotal"),0,1);
 
                 $this->Line(10,60,200,60);
 
