@@ -507,7 +507,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->setParameter('id', $id);
 
 
-        echo $dql->getQuery()->getSQL();exit;
         $result = $dql->getQuery()->getSingleResult();
         if(!empty($result['numSequencial']) && $result['numSequencial'] > 1){
             $result['codEntrega'] = $result['codEntrega'].' - '.$result['numSequencial'];
