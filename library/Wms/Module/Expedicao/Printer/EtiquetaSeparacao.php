@@ -157,6 +157,7 @@ class EtiquetaSeparacao extends Pdf
             $dscBox = $boxEntity->getDescricao();
         }
         $contadorCarga = array();
+        $contadorProduto = array();
         foreach($etiquetas as $etiqueta) {
             if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == 'S') {
                 if ($etiquetaMaeAnterior != $etiqueta['codEtiquetaMae']) {
@@ -166,11 +167,10 @@ class EtiquetaSeparacao extends Pdf
                 }
             }
             $this->etqMae = false;
-            if ($etiqueta['codProduto'] == $codProdutoAnterior && $dscGradeAnterior == $etiqueta['grade']) {
-                $countEtiquetasByProdutos = $countEtiquetasByProdutos + 1;
-            } else {
-                $countEtiquetasByProdutos = 1;
-            }
+            if (!isset($contadorProduto[$etiqueta['codProduto']]))
+                $contadorProduto[$etiqueta['codProduto']] = 0;
+
+            $contadorProduto[$etiqueta['codProduto']] = $contadorProduto[$etiqueta['codProduto']] + 1;
 
             if (!isset($contadorCarga[$etiqueta['codCargaExterno']])) {
                 $contadorCarga[$etiqueta['codCargaExterno']] = 0;
@@ -178,13 +178,10 @@ class EtiquetaSeparacao extends Pdf
             $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
 
             $etiqueta['dscBox'] = $dscBox;
-            $etiqueta['contadorProdutos'] = $countEtiquetasByProdutos;
+            $etiqueta['contadorProdutos'] = $contadorProduto;
             $etiqueta['contadorCargas'] = $contadorCarga;
             $this->layoutEtiqueta($etiqueta,count($etiquetas),false, $modelo,false);
 
-            $codProdutoAnterior = $etiqueta['codProduto'];
-            $dscGradeAnterior = $etiqueta['grade'];
-            $codCargaExternoAnterior = $etiqueta['codCargaExterno'];
         }
         $this->Output('Etiquetas-expedicao-'.$idExpedicao.'-'.$centralEntregaPedido.'.pdf','D');
 
@@ -264,37 +261,32 @@ class EtiquetaSeparacao extends Pdf
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo   = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
 
-        $codProdutoAnterior = null;
-        $dscGradeAnterior = null;
-        $codCargaExternoAnterior = null;
-        $countEtiquetasByProdutos = 1;
         $contadorCarga = array();
+        $contadorProduto = array();
         foreach($etiquetas as $etiquetaEntity) {
             $etiqueta      = $EtiquetaRepo->getEtiquetaById($etiquetaEntity->getId());
 
-            if ($etiqueta['codProduto'] == $codProdutoAnterior && $dscGradeAnterior == $etiqueta['grade']) {
-                $countEtiquetasByProdutos = $countEtiquetasByProdutos + 1;
-            } else {
-                $countEtiquetasByProdutos = 1;
-            }
+            if (!isset($contadorProduto[$etiqueta['codProduto']]))
+                $contadorProduto[$etiqueta['codProduto']] = 0;
 
-            if (!isset($contadorCarga[$etiqueta['codCargaExterno']])) {
+            $contadorProduto[$etiqueta['codProduto']] = $contadorProduto[$etiqueta['codProduto']] + 1;
+
+            if (!isset($contadorCarga[$etiqueta['codCargaExterno']]))
                 $contadorCarga[$etiqueta['codCargaExterno']] = 0;
-            }
+
             $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
 
             $dscBox = '';
             $cargaEntity = $em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno' => $etiqueta['codCargaExterno']));
             $dscBox = $cargaEntity->getExpedicao()->getBox()->getDescricao();
             $etiqueta['dscBox'] = $dscBox;
-            $etiqueta['contadorProdutos'] = $countEtiquetasByProdutos;
+            $etiqueta['contadorProdutos'] = $contadorProduto;
             $etiqueta['contadorCargas'] = $contadorCarga;
             $this->layoutEtiqueta($etiqueta,count($etiquetas),false, $modelo,false);
             $etiquetaEntity->setReimpressao($motivo);
             $em->persist($etiquetaEntity);
             $codProdutoAnterior = $etiqueta['codProduto'];
             $dscGradeAnterior = $etiqueta['grade'];
-            $codCargaExternoAnterior = $etiqueta['codCargaExterno'];
 
         }
 
@@ -1137,7 +1129,7 @@ class EtiquetaSeparacao extends Pdf
         $impressao = str_replace('.','-',"$etiqueta[endereco]");
         $this->MultiCell(50, 6, $impressao, 1, 'C');
         $this->SetY($y3);
-        $impressao = "$etiqueta[contadorProdutos] / $etiqueta[qtdProdDist] - $etiqueta[dscBox]";
+        $impressao = "$etiqueta[contadorProdutos][$etiqueta[codProduto]] / $etiqueta[qtdProdDist] - $etiqueta[dscBox]";
         $this->SetX(53);
         $this->MultiCell(55, 6, $impressao, 1, 'L');
         $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 40, 41, 65, 17);
