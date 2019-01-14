@@ -1130,7 +1130,7 @@ class EtiquetaSeparacao extends Pdf
         $impressao = str_replace('.','-',"$etiqueta[endereco]");
         $this->MultiCell(50, 6, $impressao, 1, 'C');
         $this->SetY($y3);
-        $impressao = $etiqueta['contadorProdutos'][$etiqueta['codProduto']]['idCaracteristica'] . '/' . $etiqueta['qtdProdDist'] . '-' . $etiqueta['dscBox'];
+        $impressao = $etiqueta['contadorProdutos'][$etiqueta['codProduto']][$etiqueta['idCaracteristica']] . '/' . $etiqueta['qtdProdDist'] . '-' . $etiqueta['dscBox'];
         $this->SetX(53);
         $this->MultiCell(55, 6, $impressao, 1, 'L');
         $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 40, 41, 65, 17);
