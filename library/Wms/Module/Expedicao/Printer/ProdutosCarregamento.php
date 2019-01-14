@@ -88,6 +88,7 @@ class ProdutosCarregamento extends Pdf
             foreach ($embalagemEntities as $embalagemEntity) {
                 if (Math::resto($valorPesoCubagem['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
                     $volumeTotal = $volumeTotal + ($valorPesoCubagem['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
+                    continue;
                 }
             }
         }
@@ -105,7 +106,7 @@ class ProdutosCarregamento extends Pdf
                 $this->Cell(20, 10, utf8_decode("Linha de Separação: $valor[DSC_LINHA_SEPARACAO]"),0,1);
                 $this->Cell(45, 10, utf8_decode("Placa: $valor[DSC_PLACA_CARGA]"),0,0);
                 $this->Cell(45, 10, utf8_decode("Peso: $pesoTotal kg"),0,0);
-                $this->Cell(20, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,0);
+                $this->Cell(45, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,0);
                 $this->Cell(20, 10, utf8_decode("Volumes: $volumeTotal"),0,1);
 
                 $this->Line(10,60,200,60);
