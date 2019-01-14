@@ -321,6 +321,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         )
                          AS qtdProdDist
                         ")
+            ->addSelect("
+                        (
+                            SELECT COUNT(et.id)
+                            FROM wms:Expedicao\Carga c
+                            WHERE es.codCargaExterno = c.codCargaExterno
+                        )
+                         AS qtdCargaDist
+                        ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
