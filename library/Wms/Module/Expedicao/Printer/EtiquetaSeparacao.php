@@ -267,11 +267,12 @@ class EtiquetaSeparacao extends Pdf
         foreach($etiquetas as $etiquetaEntity) {
             $etiqueta      = $EtiquetaRepo->getEtiquetaById($etiquetaEntity->getId());
 
-            if (!isset($contadorProduto[$etiqueta['codProduto']]['idCaracteristica']))
-                $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] = 0;
+            if (!isset($contadorProduto[$etiqueta['codProduto']['idCaracteristica']]))
+                $contadorProduto[$etiqueta['codProduto']['idCaracteristica']] = 0;
 
-            $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] = $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] + 1;
+            $contadorProduto[$etiqueta['codProduto']['idCaracteristica']] = $contadorProduto[$etiqueta['codProduto']['idCaracteristica']] + 1;
 
+            var_dump($contadorProduto);
             if (!isset($contadorCarga[$etiqueta['codCargaExterno']]))
                 $contadorCarga[$etiqueta['codCargaExterno']] = 0;
 
