@@ -265,6 +265,7 @@ class EtiquetaSeparacao extends Pdf
 
         $codProdutoAnterior = null;
         $dscGradeAnterior = null;
+        $codCargaExternoAnterior = null;
         $countEtiquetasByProdutos = 1;
         foreach($etiquetas as $etiquetaEntity) {
             $etiqueta      = $EtiquetaRepo->getEtiquetaById($etiquetaEntity->getId());
@@ -288,6 +289,7 @@ class EtiquetaSeparacao extends Pdf
             $em->persist($etiquetaEntity);
             $codProdutoAnterior = $etiqueta['codProduto'];
             $dscGradeAnterior = $etiqueta['grade'];
+            $codCargaExternoAnterior = $etiqueta['codCargaExterno'];
 
         }
 
