@@ -483,8 +483,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         (
                             SELECT COUNT(et.id)
                             FROM wms:Expedicao\EtiquetaSeparacao et
-                            INNER JOIN wms:Expedicao\Pedido pedido WITH pedido.id = et.pedido
-                            INNER JOIN wms:Expedicao\Carga carg WITH carg.id = pedido.codCarga                            
+                            INNER JOIN wms:Expedicao\Pedido pedi WITH pedi.id = et.pedido
+                            INNER JOIN wms:Expedicao\Carga carg WITH carg.id = pedi.codCarga                            
                             WHERE et.codProduto = es.codProduto AND et.dscGrade = es.grade AND es.codExpedicao = carg.codExpedicao
                         )
                          AS qtdProdDist
