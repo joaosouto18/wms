@@ -274,7 +274,16 @@ class EtiquetaSeparacao extends Pdf
             } else {
                 $countEtiquetasByProdutos = 1;
             }
-            $this->layoutEtiqueta($etiqueta,1,true, $modelo, false, $countEtiquetasByProdutos);
+            if ($etiqueta['codCargaExterno'] == $codCargaExternoAnterior) {
+                $contadorCarga = $contadorCarga + 1;
+            } else {
+                $contadorCarga = 1;
+            }
+
+            $etiqueta['dscBox'] = $dscBox;
+            $etiqueta['contadorProdutos'] = $countEtiquetasByProdutos;
+            $etiqueta['contadorCargas'] = $contadorCarga;
+            $this->layoutEtiqueta($etiqueta,count($etiquetas),false, $modelo,false);
             $etiquetaEntity->setReimpressao($motivo);
             $em->persist($etiquetaEntity);
             $codProdutoAnterior = $etiqueta['codProduto'];
