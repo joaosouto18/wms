@@ -31,7 +31,7 @@ class ProdutosCarregamento extends Pdf
             $this->Cell(70, 6, $dataEmb['NOM_PESSOA'],0,1);
         } else {
             $this->SetFont('Arial',  '', 10);
-            $this->Cell(10, 6, utf8_decode($data['SEQUENCIA']),0,0);
+            $this->Cell(10, 6, utf8_decode($data['COD_EXTERNO']),0,0);
             $this->Cell(20, 6, utf8_decode($data['COD_PRODUTO']),0,0,'R');
             $this->Cell(110, 6, utf8_decode(substr($data['DSC_PRODUTO'],0,50)),0,0);
 
