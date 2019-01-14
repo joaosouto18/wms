@@ -156,6 +156,7 @@ class EtiquetaSeparacao extends Pdf
             $boxEntity = $em->getReference('wms:Deposito\Box', $idBox);
             $dscBox = $boxEntity->getDescricao();
         }
+        $contadorCarga = array();
         foreach($etiquetas as $etiqueta) {
             if ($modeloSeparacaoEn->getUtilizaEtiquetaMae() == 'S') {
                 if ($etiquetaMaeAnterior != $etiqueta['codEtiquetaMae']) {
@@ -170,10 +171,10 @@ class EtiquetaSeparacao extends Pdf
             } else {
                 $countEtiquetasByProdutos = 1;
             }
-            if ($etiqueta['codCargaExterno'] == $codCargaExternoAnterior) {
-                $contadorCarga = $contadorCarga + 1;
+            if (!in_array($etiqueta['codCargaExterno'],$contadorCarga)) {
+                $contadorCarga[$etiqueta['codCargaExterno']] = 1;
             } else {
-                $contadorCarga = 1;
+                $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
             }
 
             $etiqueta['dscBox'] = $dscBox;
@@ -267,6 +268,7 @@ class EtiquetaSeparacao extends Pdf
         $dscGradeAnterior = null;
         $codCargaExternoAnterior = null;
         $countEtiquetasByProdutos = 1;
+        $contadorCarga = array();
         foreach($etiquetas as $etiquetaEntity) {
             $etiqueta      = $EtiquetaRepo->getEtiquetaById($etiquetaEntity->getId());
 
@@ -275,10 +277,10 @@ class EtiquetaSeparacao extends Pdf
             } else {
                 $countEtiquetasByProdutos = 1;
             }
-            if ($etiqueta['codCargaExterno'] == $codCargaExternoAnterior) {
-                $contadorCarga = $contadorCarga + 1;
+            if (!in_array($etiqueta['codCargaExterno'],$contadorCarga)) {
+                $contadorCarga[$etiqueta['codCargaExterno']] = 1;
             } else {
-                $contadorCarga = 1;
+                $contadorCarga[$etiqueta['codCargaExterno']] = $contadorCarga[$etiqueta['codCargaExterno']] + 1;
             }
 
             $dscBox = '';
@@ -1121,7 +1123,7 @@ class EtiquetaSeparacao extends Pdf
         $this->SetY($y2 + 1.5);
         $this->MultiCell(105, 6.5, $impressao, 1, 'L');
         $this->SetY($y2 + 1.5);
-        $impressao = $etiqueta['contadorCargas'] . '/' . $etiqueta['qtdCargaDist'];
+        $impressao = $etiqueta['contadorCargas'][$etiqueta['codCargaExterno']] . '/' . $etiqueta['qtdCargaDist'];
         $this->SetX(70);
         $this->MultiCell(38, 6.5, $impressao, 1, 'L');
         $this->SetFont('Arial', 'B', 17);
