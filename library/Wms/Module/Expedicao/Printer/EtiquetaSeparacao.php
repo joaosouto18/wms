@@ -168,10 +168,10 @@ class EtiquetaSeparacao extends Pdf
             }
             $this->etqMae = false;
 
-            if (!isset($contadorProduto[$etiqueta['codProduto']]['idCaracteristica']))
-                $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] = 0;
+            if (!isset($contadorProduto[$etiqueta['codProduto']][$etiqueta['idCaracteristica']]))
+                $contadorProduto[$etiqueta['codProduto']][$etiqueta['idCaracteristica']] = 0;
 
-            $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] = $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] + 1;
+            $contadorProduto[$etiqueta['codProduto']][$etiqueta['idCaracteristica']] = $contadorProduto[$etiqueta['codProduto']][$etiqueta['idCaracteristica']] + 1;
 
             if (!isset($contadorCarga[$etiqueta['codCargaExterno']])) {
                 $contadorCarga[$etiqueta['codCargaExterno']] = 0;
@@ -267,12 +267,11 @@ class EtiquetaSeparacao extends Pdf
         foreach($etiquetas as $etiquetaEntity) {
             $etiqueta      = $EtiquetaRepo->getEtiquetaById($etiquetaEntity->getId());
 
-            if (!isset($contadorProduto[$etiqueta['codProduto']]['idCaracteristica']))
-                $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] = 0;
+            if (!isset($contadorProduto[$etiqueta['codProduto']][$etiqueta['idCaracteristica']]))
+                $contadorProduto[$etiqueta['codProduto']][$etiqueta['idCaracteristica']] = 0;
 
-            $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] = $contadorProduto[$etiqueta['codProduto']]['idCaracteristica'] + 1;
+            $contadorProduto[$etiqueta['codProduto']][$etiqueta['idCaracteristica']] = $contadorProduto[$etiqueta['codProduto']][$etiqueta['idCaracteristica']] + 1;
 
-            var_dump($contadorProduto);
             if (!isset($contadorCarga[$etiqueta['codCargaExterno']]))
                 $contadorCarga[$etiqueta['codCargaExterno']] = 0;
 
