@@ -70,8 +70,7 @@ class ProdutosCarregamento extends Pdf
 
         $linhaSeparacaoAnt = null;
         $sequenciaAnt      = null;
-        $codProdutoAnt     = null;
-        $gradeAnt          = null;
+        $pedidoAnt         = null;
 
         $pesoTotal = 0;
         $cubagemTotal = 0;
@@ -85,12 +84,25 @@ class ProdutosCarregamento extends Pdf
 
             $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $valorPesoCubagem['COD_PRODUTO'], 'grade' => $valorPesoCubagem['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
             $qtdTotal = $valorPesoCubagem['QUANTIDADE_CONFERIDA'];
+            if ($valorPesoCubagem['COD_EXTERNO'] == $pedidoAnt) {
+                if (!isset($volumesPedido[$valorPesoCubagem['COD_EXTERNO']]))
+                    $volumesPedido[$valorPesoCubagem['COD_EXTERNO']] = 0;
+
+                foreach ($embalagemEntities as $embalagemEntity) {
+                    if (Math::resto($valorPesoCubagem['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
+                        $volumesPedido[$valorPesoCubagem['COD_EXTERNO']] = $volumesPedido[$valorPesoCubagem['COD_EXTERNO']] + ($valorPesoCubagem['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
+                        break;
+                    }
+                }
+
+            }
             foreach ($embalagemEntities as $embalagemEntity) {
                 if (Math::resto($valorPesoCubagem['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
                     $volumeTotal = $volumeTotal + ($valorPesoCubagem['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
                     break;
                 }
             }
+            $pedidoAnt = $valorPesoCubagem['COD_EXTERNO'];
         }
 
         foreach ($resultado as $chave => $valor) {
@@ -109,7 +121,7 @@ class ProdutosCarregamento extends Pdf
                 $this->Cell(45, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,0);
                 $this->Cell(20, 10, utf8_decode("Volumes: $volumeTotal"),0,1);
                 $this->Cell(20, 10, utf8_decode("Motorista: ________________________________________________"),0,1);
-                $this->Cell(20, 10, utf8_decode("Transportadora:____________________________________________"),0,1);
+                $this->Cell(20, 10, utf8_decode("Transportadora:___________________________________________"),0,1);
 
                 $this->Line(10,70,200,70);
 
@@ -122,6 +134,13 @@ class ProdutosCarregamento extends Pdf
             }
 
             $this->bodyPage($valor,null,$embalagemRepo);
+
+            foreach ($volumesPedido as $codPedido => $item) {
+                if ($codPedido == $valor['COD_EXTERNO']) {
+                    $this->Cell(100, 6, $item.' VOLUMES.',0,1,'R');
+                }
+
+            }
 
             $linhaSeparacaoAnt = $valor['DSC_LINHA_SEPARACAO'];
             $sequenciaAnt      = $valor['SEQUENCIA'];
