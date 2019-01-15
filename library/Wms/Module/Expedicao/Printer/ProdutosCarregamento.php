@@ -137,22 +137,14 @@ class ProdutosCarregamento extends Pdf
             $this->bodyPage($valor,null,$embalagemRepo);
 
             if (isset($volumesPedido[$pedidoAnterior])) {
-                if ($valor['COD_EXTERNO'] != $volumesPedido[$pedidoAnterior] && $pedidoAnterior) {
+                if ($valor['COD_EXTERNO'] != $pedidoAnterior) {
                     $this->Cell(100, 6, $volumesPedido[$pedidoAnterior].' VOLUMES.',0,1,'R');
                 }
             }
 
-
-//            foreach ($volumesPedido as $codPedido => $item) {
-//                if ($codPedido !=  && $pedidoAnterior) {
-//                    $this->Cell(100, 6, $volumesPedido[$pedidoAnterior].' VOLUMES.',0,1,'R');
-//                }
-//                $pedidoAnterior = $valor['COD_EXTERNO'];
-//            }
-
             $linhaSeparacaoAnt = $valor['DSC_LINHA_SEPARACAO'];
             $sequenciaAnt      = $valor['SEQUENCIA'];
-            $pedidoAnterior = $valor['COD_EXTERNO'];
+            $pedidoAnterior    = $valor['COD_EXTERNO'];
         }
 
         $sequencia = 99999;
