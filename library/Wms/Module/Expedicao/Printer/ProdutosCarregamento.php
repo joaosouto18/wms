@@ -121,8 +121,8 @@ class ProdutosCarregamento extends Pdf
                 $this->Cell(45, 10, utf8_decode("Peso: $pesoTotal kg"),0,0);
                 $this->Cell(45, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,0);
                 $this->Cell(20, 10, utf8_decode("Volumes: $volumeTotal"),0,1);
-                $this->Cell(20, 10, utf8_decode("Motorista: ________________________________________________"),0,1);
-                $this->Cell(20, 10, utf8_decode("Transportadora:___________________________________________"),0,1);
+                $this->Cell(20, 10, utf8_decode("Motorista/RG: ____________________________________________________"),0,1);
+                $this->Cell(20, 10, utf8_decode("Transportadora:__________________________________________________"),0,1);
 
                 $this->Line(10,70,200,70);
 
