@@ -75,7 +75,7 @@ class ProdutosCarregamento extends Pdf
         $pesoTotal = 0;
         $cubagemTotal = 0;
         $volumeTotal = 0;
-        foreach ($resultado as $valorPesoCubagem) {
+        foreach ($resultado as $key => $valorPesoCubagem) {
             $produtoEntity = $produtoRepo->getPesoProduto($valorPesoCubagem);
             if (isset($produtoEntity) && !empty($produtoEntity)) {
                 $pesoTotal = $pesoTotal + $produtoEntity[0]['NUM_PESO'];
@@ -84,7 +84,7 @@ class ProdutosCarregamento extends Pdf
 
             $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $valorPesoCubagem['COD_PRODUTO'], 'grade' => $valorPesoCubagem['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
             $qtdTotal = $valorPesoCubagem['QUANTIDADE_CONFERIDA'];
-            if ($valorPesoCubagem['COD_EXTERNO'] == $pedidoAnt || $pedidoAnt == null) {
+            if ($valorPesoCubagem['COD_EXTERNO'] == $pedidoAnt || $pedidoAnt == null || end($resultado)) {
                 if (!isset($volumesPedido[$valorPesoCubagem['COD_EXTERNO']]))
                     $volumesPedido[$valorPesoCubagem['COD_EXTERNO']] = 0;
 
