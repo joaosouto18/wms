@@ -139,8 +139,7 @@ class ProdutosCarregamento extends Pdf
             if (isset($volumesPedido[$pedidoAnterior])) {
                 if (!isset($resultado[$chave + 1])) {
                     $this->Cell(100, 6, $volumesPedido[$pedidoAnterior].' VOLUMES.',0,1,'R');
-                }
-                if ($valor['COD_EXTERNO'] == $pedidoAnterior && $valor['COD_EXTERNO'] != $resultado[$chave + 1]) {
+                } elseif ($valor['COD_EXTERNO'] == $pedidoAnterior && $valor['COD_EXTERNO'] != $resultado[$chave + 1]) {
                     $this->Cell(100, 6, $volumesPedido[$pedidoAnterior].' VOLUMES.',0,1,'R');
                 }
             }
