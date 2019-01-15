@@ -137,9 +137,9 @@ class ProdutosCarregamento extends Pdf
             $this->bodyPage($valor,null,$embalagemRepo);
 
             if (isset($volumesPedido[$pedidoAnterior])) {
-                $variavel = $chave + 1;
-                if (isset($variavel)) {
-                    $chaveFutura = $variavel;
+                $ultimoValor = count($resultado);
+                if ($ultimoValor == $chave + 1) {
+                    $chaveFutura = 0;
                 } else {
                     $chaveFutura = $chave;
                 }
