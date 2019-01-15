@@ -137,7 +137,7 @@ class ProdutosCarregamento extends Pdf
             $this->bodyPage($valor,null,$embalagemRepo);
 
             if (isset($volumesPedido[$pedidoAnterior])) {
-                if ($valor['COD_EXTERNO'] != $pedidoAnterior) {
+                if ($valor['COD_EXTERNO'] == $pedidoAnterior && $valor['COD_EXTERNO'] != $resultado[$chave + 1]) {
                     $this->Cell(100, 6, $volumesPedido[$pedidoAnterior].' VOLUMES.',0,1,'R');
                 }
             }
