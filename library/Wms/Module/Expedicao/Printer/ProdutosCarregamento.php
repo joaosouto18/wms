@@ -135,11 +135,12 @@ class ProdutosCarregamento extends Pdf
 
             $this->bodyPage($valor,null,$embalagemRepo);
 
+            $pedidoAnterior = null;
             foreach ($volumesPedido as $codPedido => $item) {
-                if ($codPedido == $valor['COD_EXTERNO']) {
-                    $this->Cell(100, 6, $item.' VOLUMES.',0,1,'R');
+                if ($codPedido != $valor['COD_EXTERNO']) {
+                    $this->Cell(100, 6, $volumesPedido[$pedidoAnterior].' VOLUMES.',0,1,'R');
+                    $pedidoAnterior = $codPedido;
                 }
-
             }
 
             $linhaSeparacaoAnt = $valor['DSC_LINHA_SEPARACAO'];
