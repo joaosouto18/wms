@@ -141,7 +141,7 @@ class ProdutosCarregamento extends Pdf
                 if ($ultimoValor == $chave + 1) {
                     $chaveFutura = 0;
                 } else {
-                    $chaveFutura = $chave;
+                    $chaveFutura = $chave + 1;
                 }
 
                 if ($valor['COD_EXTERNO'] == $pedidoAnterior && $valor['COD_EXTERNO'] != $resultado[$chaveFutura]) {
