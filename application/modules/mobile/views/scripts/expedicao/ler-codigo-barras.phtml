@@ -94,13 +94,11 @@
 
         if (x[i].getElementsByTagName("resposta").length > 0) {
             status = (x[i].getElementsByTagName("resposta")[0].childNodes[0].nodeValue);
-            alert(status);
             if (status == 'error') {
                 try{
-                    //var audioElement = document.createElement('audio');
-                    //audioElement.setAttribute('src', '/alarme.mp3');
-                    //audioElement.play();
-                    playSound('/alarme.mp3');
+                    var soundFile = '/alarme.mp3?rel=0&amp;autoplay=1';
+                    document.getElementById("dummy").innerHTML=
+                        "<iframe src=\""+soundFile+"\" hidden=\"false\" loop=\"false\" allow=\"autoplay\"></iframe>";
                 }
                 catch(e){
                     alert(message);
