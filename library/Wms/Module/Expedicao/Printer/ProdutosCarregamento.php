@@ -144,6 +144,9 @@ class ProdutosCarregamento extends Pdf
                     $chaveFutura = $chave + 1;
                 }
 
+                var_dump($ultimoValor);
+                var_dump($chaveFutura);
+                var_dump($chave);
                 if ($valor['COD_EXTERNO'] == $pedidoAnterior && $valor['COD_EXTERNO'] != $resultado[$chaveFutura]) {
                     $this->Cell(100, 6, $volumesPedido[$pedidoAnterior].' VOLUMES.',0,1,'R');
                 }
