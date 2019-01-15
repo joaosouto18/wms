@@ -23,7 +23,7 @@ if ($this->fornecedor) {
                 <td style="padding: 35px;">
                     <div id="carousel" class="row">
                         <?php foreach ($this->listaProdutos as $produto): ?>
-                            <div class="row" id="lista-produto<?php echo $produto['codigo'] ?>"><?php echo $produto['descricao'] ?> - <?php echo $produto['grade'] ?></div>
+                            <div class="row" id="lista-produto<?php echo $produto['codigo'] ?>"><?php echo $produto['codigo'] ?> - <?php echo $produto['descricao'] ?> - <?php echo $produto['grade'] ?></div>
                         <?php endforeach; ?>
                     </div>
                 </td>
