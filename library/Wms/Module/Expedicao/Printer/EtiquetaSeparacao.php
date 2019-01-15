@@ -279,7 +279,9 @@ class EtiquetaSeparacao extends Pdf
 
             $dscBox = '';
             $cargaEntity = $em->getRepository('wms:Expedicao\Carga')->findOneBy(array('codCargaExterno' => $etiqueta['codCargaExterno']));
-            if (isset($cargaEntity->getExpedicao()->getBox()))
+            $boxEntity = $cargaEntity->getExpedicao()->getBox();
+            $dscBox = '';
+            if (isset($boxEntity))
                 $dscBox = $cargaEntity->getExpedicao()->getBox()->getDescricao();
             $etiqueta['dscBox'] = $dscBox;
             $etiqueta['contadorProdutos'] = $contadorProduto;
