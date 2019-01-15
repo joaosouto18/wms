@@ -46,6 +46,7 @@
     $(function() {
         $( ".accordion" )
             .accordion({
+                active: false,
                 header: "> div > h3",
                 heightStyle: "content",
                 collapsible: true,
@@ -54,18 +55,18 @@
                     activeHeader: "ui-icon-accordion-active"
                 }
             })
-            // .sortable({
-            //     axis: "y",
-            //     handle: "h3",
-            //     stop: function( event, ui ) {
-            //         // IE doesn't register the blur when sorting
-            //         // so trigger focusout handlers to remove .ui-state-focus
-            //         ui.item.children( "h3" ).triggerHandler( "focusout" );
-            //
-            //         // Refresh accordion to handle new order
-            //         $( this ).accordion( "refresh" );
-            //     }
-            // })
+            .sortable({
+                axis: "y",
+                handle: "h3",
+                stop: function( event, ui ) {
+                    // IE doesn't register the blur when sorting
+                    // so trigger focusout handlers to remove .ui-state-focus
+                    ui.item.children( "h3" ).triggerHandler( "focusout" );
+
+                    // Refresh accordion to handle new order
+                    $( this ).accordion( "refresh" );
+                }
+            })
         ;
 
     });
