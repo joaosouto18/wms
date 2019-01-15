@@ -879,8 +879,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
                   P.DSC_PRODUTO,
                   DECODE(ESTOQUE_PICKING.QTD,null,0,(ESTOQUE_PICKING.QTD / NVL(PE.CAPACIDADE_PICKING, PV.CAPACIDADE_PICKING))) * 100  
                   ORDER BY P.COD_PRODUTO, DE.DSC_DEPOSITO_ENDERECO";
-
-        echo $SQL . $SQLWhere . $SQLOrderBy; exit;
         return $this->getEntityManager()->getConnection()->query($SQL . $SQLWhere . $SQLOrderBy)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
