@@ -84,7 +84,7 @@ class ProdutosCarregamento extends Pdf
 
             $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $valorPesoCubagem['COD_PRODUTO'], 'grade' => $valorPesoCubagem['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
             $qtdTotal = $valorPesoCubagem['QUANTIDADE_CONFERIDA'];
-            if ($valorPesoCubagem['COD_EXTERNO'] == $pedidoAnt) {
+            if ($valorPesoCubagem['COD_EXTERNO'] == $pedidoAnt || $pedidoAnt == null) {
                 if (!isset($volumesPedido[$valorPesoCubagem['COD_EXTERNO']]))
                     $volumesPedido[$valorPesoCubagem['COD_EXTERNO']] = 0;
 
@@ -145,6 +145,7 @@ class ProdutosCarregamento extends Pdf
                 }
 
                 if ($valor['COD_EXTERNO'] == $pedidoAnterior && $valor['COD_EXTERNO'] != $resultado[$chaveFutura]['COD_EXTERNO']) {
+                    $this->SetFont('Arial',  "B", 12);
                     $this->Cell(100, 6, $volumesPedido[$pedidoAnterior].' VOLUMES.',0,1,'R');
                 }
             }
