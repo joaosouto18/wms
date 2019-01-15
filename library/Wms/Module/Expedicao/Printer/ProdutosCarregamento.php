@@ -137,7 +137,7 @@ class ProdutosCarregamento extends Pdf
 
             $pedidoAnterior = null;
             foreach ($volumesPedido as $codPedido => $item) {
-                if ($codPedido != $valor['COD_EXTERNO']) {
+                if ($codPedido != $valor['COD_EXTERNO'] && $pedidoAnterior) {
                     $this->Cell(100, 6, $volumesPedido[$pedidoAnterior].' VOLUMES.',0,1,'R');
                     $pedidoAnterior = $codPedido;
                 }
