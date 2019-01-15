@@ -105,6 +105,7 @@ class ProdutosCarregamento extends Pdf
             $pedidoAnt = $valorPesoCubagem['COD_EXTERNO'];
         }
 
+        $pedidoAnterior = null;
         foreach ($resultado as $chave => $valor) {
 
             if ($valor['DSC_LINHA_SEPARACAO'] != $linhaSeparacaoAnt || $valor['SEQUENCIA'] != $sequenciaAnt) {
@@ -135,16 +136,13 @@ class ProdutosCarregamento extends Pdf
 
             $this->bodyPage($valor,null,$embalagemRepo);
 
-            $pedidoAnterior = null;
-            foreach ($volumesPedido as $codPedido => $item) {
-                if ($codPedido != $valor['COD_EXTERNO'] && $pedidoAnterior) {
-                    $this->Cell(100, 6, $volumesPedido[$pedidoAnterior].' VOLUMES.',0,1,'R');
-                }
-                $pedidoAnterior = $codPedido;
+            if ($valor['COD_EXTERNO'] != $volumesPedido[$pedidoAnterior] && $pedidoAnterior) {
+                $this->Cell(100, 6, $volumesPedido[$pedidoAnterior].' VOLUMES.',0,1,'R');
             }
 
             $linhaSeparacaoAnt = $valor['DSC_LINHA_SEPARACAO'];
             $sequenciaAnt      = $valor['SEQUENCIA'];
+            $pedidoAnterior = $valor['COD_EXTERNO'];
         }
 
         $sequencia = 99999;
