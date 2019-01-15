@@ -31,7 +31,7 @@ class ProdutosCarregamento extends Pdf
             $this->Cell(70, 6, $dataEmb['NOM_PESSOA'],0,1);
         } else {
             $this->SetFont('Arial',  '', 10);
-            $this->Cell(10, 6, utf8_decode($data['COD_EXTERNO']),0,0);
+            $this->Cell(20, 6, utf8_decode($data['COD_EXTERNO']),0,0);
             $this->Cell(20, 6, utf8_decode($data['COD_PRODUTO']),0,0,'R');
             $this->Cell(110, 6, utf8_decode(substr($data['DSC_PRODUTO'],0,50)),0,0);
 
@@ -108,11 +108,13 @@ class ProdutosCarregamento extends Pdf
                 $this->Cell(45, 10, utf8_decode("Peso: $pesoTotal kg"),0,0);
                 $this->Cell(45, 10, utf8_decode("Cubagem: $cubagemTotal m³"),0,0);
                 $this->Cell(20, 10, utf8_decode("Volumes: $volumeTotal"),0,1);
+                $this->Cell(20, 10, utf8_decode("Motorista: ________________________________________________"),0,1);
+                $this->Cell(20, 10, utf8_decode("Transportadora: : ________________________________________________"),0,1);
 
                 $this->Line(10,60,200,60);
 
                 $this->SetFont('Arial',  "B", 8);
-                $this->Cell(10, 15, utf8_decode("Seq.:"),0,0);
+                $this->Cell(20, 15, utf8_decode("Seq.:"),0,0);
                 $this->Cell(20, 15, utf8_decode("Cód. Prod.:"),0,0);
                 $this->Cell(110, 15, utf8_decode("Produto:"),0,0);
                 $this->Cell(20, 15, utf8_decode("Unidade:"),0,0);
