@@ -154,7 +154,7 @@ class InventarioService extends AbstractService
             // se nao existir mais produtos no endereço, cancela o endereço
             $produtoAtivo = $inventarioEndProdRepo->findOneBy(['inventarioEndereco' => $idInventarioEndereco, 'ativo' => 'S']);
 
-            if( count($produtoAtivo) == 0 )
+            if( empty($produtoAtivo) )
                 $this->removerEndereco($idInventario, $idInventarioEndereco);
 
             $this->em->commit();
@@ -184,7 +184,7 @@ class InventarioService extends AbstractService
             // se nao existir mais endereços ativos nesse inventario, cancela o mesmo
             $enderecoAtivo = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'ativo' => 'S']);
 
-            if( (count($enderecoAtivo)) == 0)
+            if( empty($enderecoAtivo) )
             {
                 /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
                 $inventarioRepo = $this->find($idInventario);
@@ -335,12 +335,17 @@ class InventarioService extends AbstractService
             if (!empty($usrContOs) && !empty($usrContOs->getOrdemServico()->getDataFinal()))
                 throw new \Exception("Sua ordem de serviço já foi finalizada em: ". $usrContOs->getOrdemServico()->getDataFinal());
 
-            if (empty($usrContOs) && $createIfNoExist) {
+            if (empty($usrContOs)) {
                 $osContagensAnteriores = $contagemEndOsRepo->getContagensUsuario( $usuario->getId(), $contEnd["idInvEnd"]);
+
+                if (!empty($osContagensAnteriores) && !$createIfNoExist && !json_decode($inventario['usuarioNContagens']))
+                    throw new \Exception("Não existe OS aberta para esse usuário");
+
                 if (!empty($osContagensAnteriores) && !json_decode($inventario['usuarioNContagens']))
                     throw new \Exception("Este usuário não tem permissão para iniciar uma nova contagem neste endereço");
 
-                $usrContOs = $this->addNewOsContagem($contEnd["idContEnd"], $usuario, $tipoConferencia);
+                if ($createIfNoExist)
+                    $usrContOs = $this->addNewOsContagem($contEnd["idContEnd"], $usuario, $tipoConferencia);
             }
 
             return $usrContOs;
@@ -391,7 +396,7 @@ class InventarioService extends AbstractService
             /** @var OrdemServicoRepository $osRepo */
             $osRepo = $this->em->getRepository("wms:OrdemServico");
 
-            $osUsuarioCont = $this->getOsUsuarioContagem($contEnd);
+            $osUsuarioCont = $this->getOsUsuarioContagem($contEnd, $inventario);
 
             $osRepo->finalizar($osUsuarioCont->getOrdemServico()->getId(), "Contagem finalizada", $osUsuarioCont->getOrdemServico(), false);
 
