@@ -67,7 +67,7 @@ class Produtividade_Relatorio_IndicadoresController extends Action {
                        SUM(P.QTD_CARGA)   as QTD_CARGA
                    FROM PRODUTIVIDADE_DETALHE P
                   INNER JOIN PESSOA PE ON PE.COD_PESSOA = P.COD_PESSOA
-                  WHERE TO_DATE(P.DTH_INICIO) BETWEEN TO_DATE('$params[dataInicio]','DD/MM/YYYY') AND TO_DATE('$params[dataFim]','DD/MM/YYYY')
+                  WHERE TO_DATE(P.DTH_INICIO) BETWEEN TO_DATE('$params[dataInicio] 00:00:00','DD/MM/YYYY HH24:MI:SS') AND TO_DATE('$params[dataFim] 23:59:59','DD/MM/YYYY HH24:MI:SS')
                   $SQLWHere
                   GROUP BY ";
         if ($tipo == 'detalhado') {
