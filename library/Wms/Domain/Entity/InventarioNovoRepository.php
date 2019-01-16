@@ -431,4 +431,37 @@ class InventarioNovoRepository extends EntityRepository
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
+
+    public function getSumarioByRua($params) {
+        $idInventario = $params['id'];
+
+        $sql = "
+        SELECT
+              F.NUM_RUA RUA,
+              COUNT(G.COD_INVENTARIO) QTD_ENDERECOS,
+              COUNT(ICE.IND_CONTAGEM_DIVERGENCIA) QTD_DIVERGENTE,
+              G.IND_FINALIZADO QTD_INVENTARIADO,
+              --COUNT(PENDENTES.CONT) as QTD_PENDENTE,
+              --round( (COUNT(G.INVENTARIADO) * 100) / COUNT(G.COD_INVENTARIO) ) CONCLUIDO
+            FROM INVENTARIO_ENDERECO_NOVO G, INVENTARIO_CONT_END ICE
+            
+            INNER JOIN  DEPOSITO_ENDERECO F  ON F.COD_DEPOSITO_ENDERECO = G.COD_DEPOSITO_ENDERECO
+            
+            INNER JOIN (SELECT G.IND_FINALIZADO as QTD_INVENTARIADO FROM INVENTARIO_ENDERECO_NOVO G WHERE G.IND_FINALIZADO = 'S')            
+            INNER JOIN (SELECT ICE.IND_CONTAGEM_DIVERGENCIA as QTD_DIVERGENTE FROM INVENTARIO_CONT_END ICE
+                            ON G.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO WHERE ICE.IND_CONTAGEM_DIVERGENCIA = 'S')            
+            
+            LEFT JOIN (SELECT IEN.COD_INVENTARIO_ENDERECO as CONT, IEN.COD_INVENTARIO_ENDERECO FROM INVENTARIO_ENDERECO_NOVO IEN
+                  INNER JOIN DEPOSITO_ENDERECO DE ON IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO)
+                  --WHERE INVENTARIADO IS NULL AND DIVERGENCIA IS NULL
+                  --GROUP BY IE.COD_INVENTARIO_ENDERECO) PENDENTES
+              --ON PENDENTES.COD_INVENTARIO_ENDERECO = G.COD_INVENTARIO_ENDERECO
+            WHERE
+             G.COD_INVENTARIO = " . $idInventario . "
+            GROUP BY F.NUM_RUA
+            ORDER BY F.NUM_RUA
+        ";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }
