@@ -158,9 +158,9 @@ class Enderecamento_PaleteController extends Action
             //SE O PRODUTO TIVER PESO VARIAVEL CONSIDERA O PESO DO PALETE
             if ($produtoEn->getPossuiPesoVariavel() == 'S') {
                 $dadosPalete['qtd'] = str_replace('.',',',$paleteEn->getPeso(). ' kg');
-                $paletesEn = $paleteEn->getProdutos();
+                $paletesEn = $paleteEn->getProdutos()->toArray();
             } else {
-                $paletesEn = $paleteEn->getProdutos();
+                $paletesEn = $paleteEn->getProdutos()->toArray();
                 if ($produtoEn->getIndControlaLote() == 'S') {
                     /** @var \Wms\Domain\Entity\Enderecamento\PaleteProduto $umaProd */
                     foreach ($paletesEn as $umaProd){
@@ -168,7 +168,7 @@ class Enderecamento_PaleteController extends Action
                         $dadosPalete['lotes'][] = $umaProd->getLote();
                     }
                 } else {
-                    $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
+                    $dadosPalete['qtd'] = $paletesEn[0]->getQtd();
                 }
             }
 

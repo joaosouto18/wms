@@ -578,9 +578,17 @@ class InventarioService extends AbstractService
 
             $temDivergencia = false;
             foreach ($count as $strProd => $contsIguais) {
-                $divergente = false;
-                if ($contsIguais < $nContagensNecessarias)  $temDivergencia = $divergente = true;
                 $prodX = explode($strConcat, $strProd);
+                /** @var Produto $produtoEn */
+                $produtoEn = $this->em->find("wms:Produto", ["id" => $prodX[0], "grade" => $prodX[1]]);
+                $divergente = false;
+                if ($contsIguais < $nContagensNecessarias && (
+                    ($produtoEn->getIndControlaLote() == "S" && !empty(explode($strConcat,$strProd)[2])) ||
+                    ($produtoEn->getIndControlaLote() == "N" && empty(explode($strConcat,$strProd)[2]))
+                   )
+                ) {
+                    $temDivergencia = $divergente = true;
+                }
                 $this->updateFlagContagensProdutos($invContEnd, $prodX[0], $prodX[1], $prodX[2], $prodX[3], $divergente);
             }
 

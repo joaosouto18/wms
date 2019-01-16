@@ -2,6 +2,7 @@
 
 namespace Wms\Domain\Entity\Enderecamento;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Wms\Domain\Entity\Recebimento;
 
 
@@ -207,7 +208,7 @@ class Palete
     }
 
     /**
-     * @return \Wms\Domain\Entity\Enderecamento\ArrayCollection
+     * @return ArrayCollection
      */
     public function getProdutos()
     {

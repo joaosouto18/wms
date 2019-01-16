@@ -1067,8 +1067,9 @@ class PaleteRepository extends EntityRepository {
                 for ($i = 0; $i < floor($qtdPaletes); $i++) {
                     $pesoTotal += $pesoPorPalete;
                     $pesoTotalPaletes += $pesoPorPalete;
+                    $lote = (isset($paletesCompletos[$i]) && !empty($paletesCompletos[$i])) ? $paletesCompletos[$i] : null;
 
-                    $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $unitizador['NUM_NORMA'], $dataValidade, $tipoEnderecamento, $pesoPorPalete, $paletesCompletos[$i]);
+                    $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $unitizador['NUM_NORMA'], $dataValidade, $tipoEnderecamento, $pesoPorPalete, $lote);
                 }
                 if ($qtdUltimoPalete > 0) {
                     //TRAVA PARA GERAR O PALETE COM A QUANTIDADE QUEBRADA SOMENTE SE TIVER FINALIZADO
