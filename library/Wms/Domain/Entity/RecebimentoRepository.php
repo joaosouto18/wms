@@ -924,7 +924,6 @@ class RecebimentoRepository extends EntityRepository {
         }
 
         $em->persist($recebimentoEmbalagemEntity);
-        $em->flush();
     }
 
     /**
