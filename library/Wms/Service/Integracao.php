@@ -529,7 +529,8 @@ class Integracao {
                     'grade' => $row['GRADE'],
                     'quantidade' => $row['QTD'],
                     'valorVenda' => $row['VLR_VENDA'],
-                    'fatorEmbalagemVenda' => (isset($row['FATOR_EMBALAGEM_VENDA']) && !empty($row['FATOR_EMBALAGEM_VENDA'])) ? $row['FATOR_EMBALAGEM_VENDA'] : null
+                    'fatorEmbalagemVenda' => (isset($row['FATOR_EMBALAGEM_VENDA']) && !empty($row['FATOR_EMBALAGEM_VENDA'])) ? $row['FATOR_EMBALAGEM_VENDA'] : null,
+                    'lote' => (isset($row['LOTE']) and !empty($row['LOTE']))? $row['LOTE'] : ''
                 );
                 $produtos[] = $produto;
 
@@ -564,9 +565,7 @@ class Integracao {
                         'produtos' => $produtos,
                         'linhaEntrega' => $row['DSC_ROTA'],
                         'tipoPedido' => $tipoPedido,
-                        'codProprietario' => null,
-                        'lote' => (isset($row['LOTE']) and !empty($row['LOTE']))? $row['LOTE'] : ''
-
+                        'codProprietario' => null
                     );
 
                     $pedidos[] = $pedido;
