@@ -271,11 +271,10 @@ class Mobile_RecebimentoController extends Action
             if ($produtoEn->getIndControlaLote() == 'S' && (!isset($params['lotes']) || empty($params['lotes']))) {
                 throw new Exception("Nenhum lote foi definido para esta contagem!");
             } elseif ($produtoEn->getIndControlaLote() == 'N'){
-                if (isset($isEmbFracDefault) && $isEmbFracDefault == 'S') {
-                    $qtds[null] = (float) $qtdConferida[0];
-                } else {
-                    $qtds[null] = (int) $qtdConferida[0];
-                }
+                $qtds[\Wms\Domain\Entity\Produto\Lote::NCL] = [
+                    "lote" => null,
+                    "qtd" => (isset($isEmbFracDefault) && $isEmbFracDefault == 'S') ? (float) $qtdConferida[0] : (int) $qtdConferida[0]
+                ];
             } else {
                 foreach ($params["lotes"] as $i => $lote){
 
