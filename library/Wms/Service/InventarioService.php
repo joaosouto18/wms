@@ -149,7 +149,6 @@ class InventarioService extends AbstractService
             $produto->setAtivo(false);
 
             $this->em->persist($produto);
-            $this->em->flush();
 
             // se nao existir mais produtos no endereço, cancela o endereço
             $produtoAtivo = $inventarioEndProdRepo->findOneBy(['inventarioEndereco' => $idInventarioEndereco, 'ativo' => 'S']);
@@ -157,6 +156,7 @@ class InventarioService extends AbstractService
             if( empty($produtoAtivo) )
                 $this->removerEndereco($idInventario, $idInventarioEndereco);
 
+            $this->em->flush();
             $this->em->commit();
 
         }catch (\Exception $e) {
@@ -178,8 +178,6 @@ class InventarioService extends AbstractService
             $endereco->setAtivo(false);
 
             $this->em->persist($endereco);
-            $this->em->flush();
-            //$this->em->commit();
 
             // se nao existir mais endereços ativos nesse inventario, cancela o mesmo
             $enderecoAtivo = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'ativo' => 'S']);
@@ -191,11 +189,11 @@ class InventarioService extends AbstractService
                 $inventarioEn->cancelar();
 
                 $this->em->persist($inventarioEn);
-                $this->em->flush();
 
                 throw new \Exception("O inventário $idInventario foi cancelado pois está vazio");
             }
 
+            $this->em->flush();
             $this->em->commit();
         }catch (\Exception $e) {
             //$this->em->rollback();
