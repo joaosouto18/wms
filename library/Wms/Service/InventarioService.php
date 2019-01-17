@@ -334,16 +334,15 @@ class InventarioService extends AbstractService
                 throw new \Exception("Sua ordem de serviço já foi finalizada em: ". $usrContOs->getOrdemServico()->getDataFinal());
 
             if (empty($usrContOs)) {
-                $osContagensAnteriores = $contagemEndOsRepo->getContagensUsuario( $usuario->getId(), $contEnd["idInvEnd"]);
+                if (!$createIfNoExist)
+                    throw new \Exception("Não existe O.S aberta para esse usuário");
 
-                if (!empty($osContagensAnteriores) && !$createIfNoExist && !json_decode($inventario['usuarioNContagens']))
-                    throw new \Exception("Não existe OS aberta para esse usuário");
+                $osContagensAnteriores = $contagemEndOsRepo->getContagensUsuario( $usuario->getId(), $contEnd["idInvEnd"]);
 
                 if (!empty($osContagensAnteriores) && !json_decode($inventario['usuarioNContagens']))
                     throw new \Exception("Este usuário não tem permissão para iniciar uma nova contagem neste endereço");
 
-                if ($createIfNoExist)
-                    $usrContOs = $this->addNewOsContagem($contEnd["idContEnd"], $usuario, $tipoConferencia);
+                $usrContOs = $this->addNewOsContagem($contEnd["idContEnd"], $usuario, $tipoConferencia);
             }
 
             return $usrContOs;
@@ -384,6 +383,7 @@ class InventarioService extends AbstractService
     /**
      * @param $inventario
      * @param $contEnd
+     * @param $tipoConferencia
      * @return array
      * @throws \Exception
      */
@@ -394,18 +394,21 @@ class InventarioService extends AbstractService
             /** @var OrdemServicoRepository $osRepo */
             $osRepo = $this->em->getRepository("wms:OrdemServico");
 
-            $osUsuarioCont = $this->getOsUsuarioContagem($contEnd, $inventario);
-
-            $osRepo->finalizar($osUsuarioCont->getOrdemServico()->getId(), "Contagem finalizada", $osUsuarioCont->getOrdemServico(), false);
-
             $outrasOs = $this->em->getRepository("wms:InventarioNovo\InventarioContEndOs")
-                ->getOutrasOsAbertasContagem($inventario['id'], $osUsuarioCont->getOrdemServico()->getPessoa()->getId(), $osUsuarioCont->getId());
+                ->getOutrasOsAbertasContagem(\Zend_Auth::getInstance()->getIdentity()->getId(), $contEnd['idContEnd']);
 
             $result = ["code" => 1, "msg" => "Ordem de serviço finalizada com sucesso"];
 
             if (empty($outrasOs)) {
-                $result = $contMaiorAcerto = $this->compararContagens($osUsuarioCont->getInvContEnd(), $inventario, $tipoConferencia);
+                $result = $contMaiorAcerto = $this->compararContagens(
+                    $this->em->find("wms:InventarioNovo\InventarioContEnd", $contEnd['idContEnd']),
+                    $inventario);
             }
+
+            $osUsuarioCont = $this->getOsUsuarioContagem($contEnd, $inventario, $tipoConferencia,  empty($outrasOs));
+
+            $osRepo->finalizar(null, "Contagem finalizada", $osUsuarioCont->getOrdemServico(), false);
+
 
             $this->em->flush();
             $this->em->commit();
@@ -420,11 +423,10 @@ class InventarioService extends AbstractService
     /**
      * @param $invContEnd InventarioNovo\InventarioContEnd
      * @param $inventario
-     * @param $tipoConferencia
      * @return array
      * @throws \Exception
      */
-    private function compararContagens($invContEnd, $inventario, $tipoConferencia)
+    private function compararContagens($invContEnd, $inventario)
     {
         try {
             /** @var InventarioNovo\InventarioContEndProdRepository $contEndProdRepo */
@@ -445,8 +447,6 @@ class InventarioService extends AbstractService
                 ]);
             }
 
-            $contados = $contEndProdRepo->getContagensProdutos($invContEnd->getId());
-            
             $finalizados = $contEndProdRepo->getProdutosContagemFinalizada($invContEnd->getInventarioEndereco()->getId(), $invContEnd->getSequencia());
             if (!empty($estoques) && !empty($finalizados)) {
                 foreach ($estoques as $k => $prod) {
@@ -465,16 +465,19 @@ class InventarioService extends AbstractService
 
             $contagemAnterior = $contEndProdRepo->getProdutosContagemAnterior($invContEnd->getInventarioEndereco()->getId(), $invContEnd->getSequencia());
 
+            $contados = $contEndProdRepo->getContagensProdutos($invContEnd->getId());
+
             foreach ($contados as $contagem) {
                 $estoque = null;
                 if (!empty($estoques)) {
                     for ($i = 0; $i < count($estoques); $i++) {
-                        if ($contagem["COD_PRODUTO"] != $estoques[$i]->getCodProduto() || $contagem["DSC_GRADE"] != $estoques[$i]->getGrade()){
+                        if ($contagem["COD_PRODUTO"] != $estoques[$i]->getCodProduto() ||
+                            $contagem["DSC_GRADE"] != $estoques[$i]->getGrade() ||
+                            $contagem["DSC_LOTE"] != $estoques[$i]->getLote() ||
+                            (json_decode($inventario["volumesSeparadamente"]) && !empty($contagem["COD_PRODUTO_VOLUME"]) &&
+                                $contagem["COD_PRODUTO_VOLUME"] != $estoques[$i]->getProdutoVolume()->getId())
+                        ) {
                             continue;
-                        }
-                        if (json_decode($inventario["volumesSeparadamente"]) && !empty($contagem["COD_PRODUTO_VOLUME"])) {
-                            if ($contagem["COD_PRODUTO_VOLUME"] != $estoques[$i]->getProdutoVolume()->getId())
-                                continue;
                         }
                         $estoque = $estoques[$i];
                         unset($estoques[$i]);
@@ -530,7 +533,7 @@ class InventarioService extends AbstractService
                 }
             }
 
-            if (!$invPorProduto && json_decode($inventario['contarTudo'])) {
+            if ($invContEnd->getContagemDivergencia() == 'N' && !$invPorProduto && json_decode($inventario['contarTudo'])) {
                 foreach ($estoques as $estoque) {
                     $prod = [
                         "codProduto" => $estoque->getCodProduto(),
@@ -540,7 +543,7 @@ class InventarioService extends AbstractService
                     ];
                     $elemCount = [
                         0,
-                        (!empty($estoque->getValidade()) && $validaValidade) ? $estoque->getValidade()->format("d/m/Y") : ""
+                        (!empty($estoque->getValidade()) && $validaValidade) ? $estoque->getValidade()->format("d/m/Y") : null
                     ];
                     $countQtdsIguais[implode($strConcat, $prod)][implode($strConcat, $elemCount)][] = $invContEnd->getSequencia();
 
@@ -548,6 +551,7 @@ class InventarioService extends AbstractService
                 }
             }
 
+            $itensRecontPendente = [];
             foreach ($contagemAnterior as $produto) {
                 $prod = [
                     "codProduto" => $produto['COD_PRODUTO'],
@@ -557,10 +561,11 @@ class InventarioService extends AbstractService
                 ];
                 $elemCount = [
                     0,
-                    ""
+                    null
                 ];
-                $countQtdsIguais[implode($strConcat, $prod)][implode($strConcat, $elemCount)][] = $invContEnd->getSequencia();
-
+                $strProd = implode($strConcat, $prod);
+                $countQtdsIguais[$strProd][implode($strConcat, $elemCount)][] = $invContEnd->getSequencia();
+                $itensRecontPendente[] = $strProd;
                 $this->zerarProduto($invContEnd, $prod,true);
             }
 
@@ -577,27 +582,24 @@ class InventarioService extends AbstractService
             $temDivergencia = false;
             foreach ($count as $strProd => $contsIguais) {
                 $prodX = explode($strConcat, $strProd);
-                /** @var Produto $produtoEn */
-                $produtoEn = $this->em->find("wms:Produto", ["id" => $prodX[0], "grade" => $prodX[1]]);
                 $divergente = false;
-                if ($contsIguais < $nContagensNecessarias && (
-                    ($produtoEn->getIndControlaLote() == "S" && !empty(explode($strConcat,$strProd)[2])) ||
-                    ($produtoEn->getIndControlaLote() == "N" && empty(explode($strConcat,$strProd)[2]))
-                   )
-                ) {
+                if ($contsIguais < $nContagensNecessarias || in_array($strProd, $itensRecontPendente)) {
                     $temDivergencia = $divergente = true;
                 }
                 $this->updateFlagContagensProdutos($invContEnd, $prodX[0], $prodX[1], $prodX[2], $prodX[3], $divergente);
             }
 
-            if ($temDivergencia) {
+            ;
+            if ($temDivergencia || (empty($count) && $invContEnd->getSequencia() < $inventario['numContagens'])) {
+                $contDiverg = ($invContEnd->getSequencia() >= $inventario['numContagens']);
                 $this->addNovaContagem(
                     $invContEnd->getInventarioEndereco(),
                     $invContEnd->getSequencia() + 1,
                     (!$invContEnd->isContagemDivergencia() && ($invContEnd->getSequencia() >= $inventario['numContagens'])) ? 1 : $invContEnd->getContagem() + 1,
-                    ($invContEnd->getSequencia() >= $inventario['numContagens'])
+                    $contDiverg
                 );
-                return ["code" => 2, "msg" => "Contagem finalizada com divergência"];
+                $situacao = ($contDiverg) ? "divergência" : "sucesso";
+                return ["code" => 2, "msg" => "Contagem finalizada com $situacao"];
             } else {
                 return $this->finalizarEndereco($invContEnd->getInventarioEndereco());
             }
@@ -625,10 +627,13 @@ class InventarioService extends AbstractService
                 $elements[] = null;
             }
 
+            $produto["qtd"] = 0;
+            $produto["validade"] = null;
+
             $this->registrarConferencia(
                 $elements,
                 $contEnd,
-                [ 'qtd' => 0, 'lote' => json_decode($produto["lote"]),  'validade' => null ],
+                $produto,
                 $this->em->getReference("wms:Produto", ["id" => $produto['codProduto'], "grade" => $produto['grade']]),
                 $isEmb,
                 0,
@@ -766,6 +771,8 @@ class InventarioService extends AbstractService
     {
         $this->em->beginTransaction();
         try{
+            $produto["lote"] = json_decode($produto["lote"]);
+            $produto["idVolume"] = json_decode($produto["idVolume"]);
             $this->zerarProduto(
                 $this->getOsUsuarioContagem( $contEnd, $inventario, $tipoConferencia, true)->getInvContEnd(),
                 $produto,

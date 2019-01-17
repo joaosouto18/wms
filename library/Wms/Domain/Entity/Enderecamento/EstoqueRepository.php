@@ -92,9 +92,9 @@ class EstoqueRepository extends EntityRepository
             $pessoaRepo = $this->getEntityManager()->getRepository("wms:Usuario");
             $usuarioEn = $pessoaRepo->find($usuarioSessao->getId());
         }
-        if($controlaLote == 'S' && (!isset($params['lote']) || empty($params['lote']))) {
+        if ($controlaLote == 'S' && ((!isset($params['lote']) || empty($params['lote'])) && empty($idInventario))) {
             throw new \Exception('Informe o Lote.');
-        }elseif($controlaLote == 'S'){
+        } elseif($controlaLote == 'S' && isset($params['lote']) && !empty($params['lote'])){
             /** @var LoteRepository $loteRepository */
             $loteRepository = $em->getRepository('wms:Produto\Lote');
             $loteEntity = $loteRepository->verificaLote($params['lote'], $codProduto, $grade);
