@@ -150,14 +150,13 @@ class InventarioService extends AbstractService
 
             $this->em->persist($produto);
             $this->em->flush();
+            $this->em->commit();
 
             // se nao existir mais produtos no endereço, cancela o endereço
             $produtoAtivo = $inventarioEndProdRepo->findOneBy(['inventarioEndereco' => $idInventarioEndereco, 'ativo' => 'S']);
 
             if( empty($produtoAtivo) )
                 $this->removerEndereco($idInventario, $idInventarioEndereco);
-
-            $this->em->commit();
 
         }catch (\Exception $e) {
             $this->em->rollback();
@@ -175,10 +174,13 @@ class InventarioService extends AbstractService
             $inventarioEnderecoRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
             $endereco = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'depositoEndereco' => $idEndereco]);
 
+            var_dump($endereco);
+
+            /*
             $endereco->setAtivo(false);
 
             $this->em->persist($endereco);
-            $this->em->flush();
+            //$this->em->flush();
             //$this->em->commit();
 
             // se nao existir mais endereços ativos nesse inventario, cancela o mesmo
@@ -186,17 +188,20 @@ class InventarioService extends AbstractService
 
             if( empty($enderecoAtivo) )
             {
-                /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
-                $inventarioRepo = $this->find($idInventario);
-                $inventarioRepo->setStatus(InventarioNovo::STATUS_CANCELADO);
+                /** @var \Wms\Domain\Entity\InventarioNovo $inventarioEn */
+               /*
+                $inventarioEn = $this->find($idInventario);
+                $inventarioEn->cancelar();
 
-                $this->em->persist($inventarioRepo);
+                $this->em->persist($inventarioEn);
                 $this->em->flush();
+                $this->em->commit();
 
                 throw new \Exception("O inventário $idInventario foi cancelado pois está vazio");
             }
+            */
 
-            $this->em->commit();
+           // $this->em->commit();
         }catch (\Exception $e) {
             //$this->em->rollback();
             throw $e;
