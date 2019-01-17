@@ -264,6 +264,7 @@ class Inventario_Novo_IndexController  extends Action
     
     public function viewAndamentoAjaxAction()
     {
+        \Zend_Layout::getMvcInstance()->disableLayout();
         $this->view->id = $this->_getParam('id');
     }
 

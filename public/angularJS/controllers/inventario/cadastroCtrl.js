@@ -214,7 +214,7 @@ angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filt
             shareDataService.addNewData("criterio", $scope.criterio);
             shareDataService.addNewData("itens", $scope.elements);
             shareDataService.addNewData("gridColumns", $scope.gridColumnsElements);
-            uiDialogService.dialogModal("previewer-inventario.html", "Preview do Novo Inventário",780,null,null,['center', 80]);
+            uiDialogService.dialogModal("previewer-inventario.html", true, "Preview do Novo Inventário",780,null,null,['center', 80]);
         } else {
             uiDialogService.dialogAlert("Nenhum elemento foi adicionado na lista");
         }

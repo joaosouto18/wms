@@ -403,12 +403,10 @@ class RecebimentoRepository extends EntityRepository {
         $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
         $arrayDivergencia = $this->getDivergenciaByProduto($qtdConferidas, $qtdAvarias, $qtdNFs);
 
-        $arrDivergLoteInterno = [];
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $lotes) {
                 /** @var Produto $produtoEn */
                 $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
-                $qtdJaConferido = 0;
                 foreach ($lotes as $lote => $qtdConferida) {
                     if (isset($numPeso[$idProduto][$grade][$lote]) && !empty($numPeso[$idProduto][$grade][$lote]))
                         $numPeso = (float)str_replace(',', '.', $numPeso[$idProduto][$grade][$lote]);
@@ -420,7 +418,7 @@ class RecebimentoRepository extends EntityRepository {
                     }
 
                     $qtdConferida = (float)$qtdConferida;
-                    $qtdAvaria = (float)$qtdAvarias[$idProduto][$grade][$lote];
+                    $qtdAvaria = (float)0;//$qtdAvarias[$idProduto][$grade][$lote];
 
                     $numPecas = 0;
                     if ($produtoEn->getIndFracionavel() == "S"

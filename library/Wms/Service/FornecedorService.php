@@ -4,7 +4,7 @@ namespace Wms\Service;
 
 use Doctrine\ORM\EntityManager;
 
-class Fornecedor extends AbstractService
+class FornecedorService extends AbstractService
 {
 
 }

@@ -1,4 +1,4 @@
-angular.module("wms", ['uiDialogService'])
+angular.module("wms", ['uiDialogService', 'ui.bootstrap'])
     .filter("interval", function () {
     return function (input, interval) {
         if (input.length > 0) {

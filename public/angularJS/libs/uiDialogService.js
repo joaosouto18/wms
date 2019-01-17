@@ -25,7 +25,7 @@ angular.module('uiDialogService', []).service('uiDialogService',
                     buttons: buttons
                 };
 
-                this.open(id, template, { msg: msg }, config)
+                this.open(id, template, false, { msg: msg }, config)
             };
 
             this.dialogConfirm = function (msg, title, confirmLbl, rejectLbl, confirmCallback, paramsConfirmCallback, rejectCallback, width, height, resizable, position, modal) {
@@ -53,7 +53,7 @@ angular.module('uiDialogService', []).service('uiDialogService',
                     buttons: buttons
                 };
 
-                return this.open(id, template, { msg: msg }, config).then(function (result) {
+                return this.open(id, template, false, { msg: msg }, config).then(function (result) {
                     if (result) {
                         if (angular.isFunction(confirmCallback)) { confirmCallback.call(); }
                     } else {
@@ -62,7 +62,7 @@ angular.module('uiDialogService', []).service('uiDialogService',
                 })
             };
 
-            this.dialogModal = function (template, title, width, height, resizable, position, modal, args) {
+            this.dialogModal = function (template, cached, title, width, height, resizable, position, modal, args) {
 
                 let config = {
                     title: (!!title)? title : "--- Sistema ---",
@@ -73,11 +73,11 @@ angular.module('uiDialogService', []).service('uiDialogService',
                     modal:  (!!modal)? modal :  true,
                 };
 
-                this.open(template, template, { args: args }, config)
+                this.open(template, template, cached, { args: args }, config)
                 
             };
 
-            this.open = function(id, template, model, options) {
+            this.open = function(id, template, cached, model, options) {
 
                 // Check our required arguments
                 if (!angular.isDefined(id)) {
@@ -104,13 +104,17 @@ angular.module('uiDialogService', []).service('uiDialogService',
 
                 // Initialize our dialog structure
                 let dialog = { scope: null, ref: null, deferred: null };
-
-                // Get the template and trim to make it valid
-                let dialogTemplate = $templateCache.get(template);
-                if (!angular.isDefined(dialogTemplate)) {
-                    throw "dialogService could not find template " + template;
+                let dialogTemplate;
+                if (cached) {
+                    // Get the template and trim to make it valid
+                    dialogTemplate = $templateCache.get(template);
+                    if (!angular.isDefined(dialogTemplate)) {
+                        throw "dialogService could not find template " + template;
+                    }
+                    dialogTemplate = dialogTemplate.trim();
+                } else {
+                    dialogTemplate = template;
                 }
-                dialogTemplate = dialogTemplate.trim();
 
                 // Create a new scope, inherited from the parent.
                 dialog.scope = $rootScope.$new();

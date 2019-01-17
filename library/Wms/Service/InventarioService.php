@@ -186,11 +186,11 @@ class InventarioService extends AbstractService
 
             if( empty($enderecoAtivo) )
             {
-                /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
-                $inventarioRepo = $this->find($idInventario);
-                $inventarioRepo->setStatus(InventarioNovo::STATUS_CANCELADO);
+                /** @var \Wms\Domain\Entity\InventarioNovo $inventarioEn */
+                $inventarioEn = $this->find($idInventario);
+                $inventarioEn->cancelar();
 
-                $this->em->persist($inventarioRepo);
+                $this->em->persist($inventarioEn);
                 $this->em->flush();
 
                 throw new \Exception("O inventário $idInventario foi cancelado pois está vazio");

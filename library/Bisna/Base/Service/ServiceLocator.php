@@ -2,6 +2,7 @@
 
 namespace Bisna\Base\Service;
 
+use Bisna\Base\Service\Loader\LoaderManager;
 use Bisna\Doctrine\Container as DoctrineContainer,
     Bisna\Exception;
 
@@ -23,7 +24,7 @@ class ServiceLocator
     private $doctrineContainer;
     
     /**
-     * @var Bisna\Base\Service\Loader\LaderManager $loaderManager Doctrine Service Loader Manager
+     * @var LoaderManager $loaderManager Doctrine Service Loader Manager
      */
     private $loaderManager;
 
@@ -176,7 +177,7 @@ class ServiceLocator
     /**
      * Retrieve internal instance of Bisna Service Loader Manager.
      * 
-     * @return Bisna\Base\Service\Loader\LoaderManager
+     * @return LoaderManager
      */
     protected function getLoaderManager()
     {
