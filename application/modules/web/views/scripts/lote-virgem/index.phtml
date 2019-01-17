@@ -14,17 +14,20 @@ echo $this->form;
         $('#qtdLote').parent().css('text-align', 'center');
         $('#loteInicio').parent().hide();
         $('#loteFim').parent().hide();
+        $('#loteLimpo')
+            .css('margin-top', '2px').parent().css('margin-top', '25px').hide()
+            .find("label").last().css('margin-right', '20px');
 
         $('#tipoLote').change(function () {
             $('#codLote').parent().show();
-            if($(this).val() == 'I'){
+            if ($(this).val() == 'I') {
                 $('#loteInicio').parent().show();
                 $('#loteFim').parent().show();
-            }else{
-                $('#loteInicio').parent().hide();
-                $('#loteFim').parent().hide();
-                $('#loteInicio').val('');
-                $('#loteFim').val('');
+                $('#loteLimpo').parent().show();
+            } else {
+                $('#loteInicio').val('').parent().hide();
+                $('#loteFim').val('').parent().hide();
+                $('#loteLimpo').prop( "checked", false ).parent().hide();
             }
             if($(this).val() == 'E'){
                 $('#codLote').val('');

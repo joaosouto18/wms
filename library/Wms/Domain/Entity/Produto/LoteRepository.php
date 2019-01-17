@@ -98,6 +98,9 @@ class LoteRepository extends EntityRepository
         if (isset($parametros['dataFim']) && !empty($parametros['dataFim'])) {
             $where .= " AND L.DTH_CRIACAO <= TO_DATE('".$parametros['dataFim']." 23:59','DD-MM-YYYY HH24:MI')";
         }
+        if (isset($parametros['loteLimpo']) && !empty($parametros['loteLimpo'])) {
+            $where .= " AND L.COD_PRODUTO IS NULL";
+        }
         if(isset($parametros['qtdLote']) && !empty($parametros['qtdLote'])){
             $sql = "SELECT L.*, PE.NOM_PESSOA , TO_CHAR(L.DTH_CRIACAO,'DD/MM/YYYY HH24:MI:SS') as CRIACAO, '' AS DSC_PRODUTO FROM LOTE L
                     INNER JOIN PESSOA PE ON PE.COD_PESSOA = L.COD_PESSOA_CRIACAO WHERE ROWNUM <= ".$parametros['qtdLote']." ORDER BY L.COD_LOTE DESC";
