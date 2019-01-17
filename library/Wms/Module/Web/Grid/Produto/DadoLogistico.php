@@ -66,7 +66,7 @@ class DadoLogistico extends Grid
             $source->andWhere("p.grade LIKE '%{$grade}%'");
         }
         if (!empty($id))
-            $source->andWhere ("p.id = '" . $id . "'");
+            $source->andWhere ("p.id LIKE '" . $id . "'");
 
 //        $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
         $this->setSource(new \Core\Grid\Source\Doctrine($source))
