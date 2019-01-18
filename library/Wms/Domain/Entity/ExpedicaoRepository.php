@@ -2349,10 +2349,14 @@ class ExpedicaoRepository extends EntityRepository {
                 ->leftJoin('nfsp.notaFiscalSaida', 'nfs')
                 ->leftJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsprod', 'WITH', 'nfsprod.notaFiscalSaida = nfs.id')
                 ->leftJoin('wms:Expedicao\Reentrega', 'r', 'WITH', 'r.codNotaFiscalSaida = nfs.id')
-//            ->leftJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'es.codReentrega = r.id')
-                ->where('rp.codExpedicao in (' . $idExpedicao . ')')
-                ->andWhere('rp.centralEntrega = :centralEntrega')
+                ->where('rp.codExpedicao in (' . $idExpedicao . ')');
+
+
+        if (isset($central)) {
+            $source->andWhere('rp.centralEntrega = :centralEntrega')
                 ->setParameter('centralEntrega', $central);
+        }
+
 
         if (!is_null($linhaSeparacao)) {
             $source->andWhere("p.linhaSeparacao = $linhaSeparacao");
@@ -2366,7 +2370,6 @@ class ExpedicaoRepository extends EntityRepository {
                     ->setParameter('cargas', $cargas);
         }
 
-        echo $source->getQuery()->getSQL();exit;
         return $source->getQuery()->getResult();
     }
 

@@ -275,7 +275,7 @@ class Expedicao extends Grid
                 'modelName' => 'expedicao',
                 'controllerName' => 'relatorio_produtos-expedicao',
                 'actionName' => 'index',
-                'params' => array('sc' => true),
+                'params' => array('central' => 1),
                 'cssClass' => 'pdf',
                 'pkIndex' => 'id'
             ))
