@@ -23,16 +23,10 @@ class ModeloInventarioForm extends Form
         ))->addElement('checkbox', 'ativo', array(
             'label' => 'Modelo de inventário ativo',
             'checkedValue' => 'S'
-        ))->addElement('checkbox', 'itemAItem', array(
-            'label' => 'Controla item a item',
-            'checkedValue' => 'S'
         ))->addElement('select', 'controlaValidade', array(
             'label' => 'Controla validade',
             'mostrarSelecione' => false,
-            'multiOptions' => InventarioNovo\ModeloInventario::$statusValidade,
-        ))->addElement('checkbox', 'exigeUMA', array(
-            'label' => 'Exige U.M.A.',
-            'checkedValue' => 'S'
+            'multiOptions' => InventarioNovo\ModeloInventario::$statusValidade
         ))->addElement('checkbox', 'comparaEstoque', array(
             'label' => 'Compara estoque',
             'checkedValue' => 'S'
@@ -52,9 +46,7 @@ class ModeloInventarioForm extends Form
             'default',
             'descricao',
             'ativo',
-            'itemAItem',
             'controlaValidade',
-            'exigeUMA',
             'comparaEstoque',
             'usuarioNContagens',
             'contarTudo',

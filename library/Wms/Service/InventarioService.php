@@ -804,7 +804,7 @@ class InventarioService extends AbstractService
             $resultInv = $this->getRepository()->getResultInventario($idInventario);
 
             foreach ($resultInv as $item) {
-                if ($item["QTD"] != 0) {
+                if ($item["QTD"] != 0 || !empty($item["DTH_VALIDADE"])) {
                     /** @var Produto $produtoEn */
                     $produtoEn = $this->em->getRepository("wms:Produto")->find(["id"=> $item["COD_PRODUTO"], "grade" => $item["DSC_GRADE"]]);
                     if (empty($produtoEn)) throw new \Exception("O produto $item[COD_PRODUTO] - $item[DSC_GRADE] não encontrado");
@@ -837,7 +837,7 @@ class InventarioService extends AbstractService
                         $produtoEn->getTipoComercializacao()->getId(),
                         $elem,
                         $item["QTD"],
-                        $item["DTH_VALIDADE"],
+                        ["dataValidade" => $item["DTH_VALIDADE"]],
                         (empty($item["POSSUI_SALDO"])) ? new \DateTime() : null
                     );
                 }
@@ -893,7 +893,7 @@ class InventarioService extends AbstractService
             "usuario" => $this->em->getReference('wms:Usuario', $idUsuario),
             "tipo" => HistoricoEstoque::TIPO_INVENTARIO,
             "dthEntrada" => $dthEntrada
-        ],false,false,$validade);
+        ],false,false, $validade);
     }
 
     /**

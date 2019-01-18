@@ -30,9 +30,7 @@ templates.push({
         '<table>' +
         '<thead>' +
         '<tr>' +
-        '<th>Conferir Item à item?</th>' +
         '<th>Controlar validade?</th>' +
-        '<th>Exigir U.M.A.?</th>' +
         '<th>Número mínimo de contagens iguais?</th>' +
         '<th>Comparar com estoque atual?</th>' +
         '<th>Permitir mesmo usuário em N contagens?</th>' +
@@ -42,9 +40,7 @@ templates.push({
         '</thead>' +
         '<tbody>' +
         '<tr>' +
-        '<td valign="center" align="center"><img ng-if="modSel.itemAItem" alt="Sim" src="/img/icons/tick.png"><img ng-if="!modSel.itemAItem" alt="Não" src="/img/icons/cross.png"></td>' +
         '<td valign="center" align="center">{{modSel.controlaValidadeLbl}}</td>' +
-        '<td valign="center" align="center"><img ng-if="modSel.exigeUMA" alt="Sim" src="/img/icons/tick.png"><img ng-if="!modSel.exigeUMA" alt="Não" src="/img/icons/cross.png"></td>' +
         '<td valign="center" align="center">{{modSel.numContagens}}</td>' +
         '<td valign="center" align="center"><img ng-if="modSel.comparaEstoque" alt="Sim" src="/img/icons/tick.png"><img ng-if="!modSel.comparaEstoque" alt="Não" src="/img/icons/cross.png"></td>' +
         '<td valign="center" align="center"><img ng-if="modSel.usuarioNContagens" alt="Sim" src="/img/icons/tick.png"><img ng-if="!modSel.usuarioNContagens" alt="Não" src="/img/icons/cross.png"></td>' +

@@ -27,6 +27,8 @@ class ModeloInventarioService extends AbstractService
             $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
             $pessoaEntity = $this->em->getReference('wms:Usuario', $idPessoa);
 
+            echo $data['$exigeUMA'];
+
             if (empty($default) && $data['default'] !== 'S') {
 
                 $data['default'] = 'S';
@@ -78,7 +80,7 @@ class ModeloInventarioService extends AbstractService
 
             if ($entity->isDefault()) {
                 /** @var ModeloInventario $next */
-                $next = $this->findOneBy(['default' => 'N']);
+                $next = $this->findOneBy(['default' => 'N', 'ativo' => 'S']);
 
                 $arr = $next->toArray();
                 $arr['default'] = true;
