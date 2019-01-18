@@ -256,14 +256,17 @@ class Wms_WebService_Produto extends Wms_WebService {
                 ->setFabricante($fabricante)
                 ->setClasse($classe)
                 ->setReferencia($referencia)
-                ->setPossuiPesoVariavel($possuiPesoVariavel)
-                ->setIndControlaLote((isset($indControlaLote) && !empty($indControlaLote)) ? $indControlaLote : 'N');
+                ->setPossuiPesoVariavel($possuiPesoVariavel);
 
             if ($produtoNovo == true) {
                 $produto
                     ->setTipoComercializacao($tipoComercializacaoEntity)
                     ->setNumVolumes($numVolumes)
-                    ->setIndFracionavel('N');
+                    ->setIndFracionavel('N')
+                    ->setIndControlaLote((isset($indControlaLote) && !empty($indControlaLote)) ? $indControlaLote : 'N');
+            } else {
+                $valorAtual = $produto->getIndControlaLote();
+                $produto->setIndControlaLote((isset($indControlaLote) && !empty($indControlaLote)) ? $indControlaLote : $valorAtual);
             }
 
             $em->persist($produto);

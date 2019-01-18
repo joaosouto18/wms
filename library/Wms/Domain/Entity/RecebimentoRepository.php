@@ -1239,7 +1239,8 @@ class RecebimentoRepository extends EntityRepository {
                               GROUP BY NFI.COD_PRODUTO, NFI.DSC_GRADE,P.IND_POSSUI_PESO_VARIAVEL) NOTAFISCAL
                     ON NOTAFISCAL.COD_PRODUTO = V.COD_PRODUTO
                    AND NOTAFISCAL.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = V.COD_PRODUTO AND P.DSC_GRADE = V.DSC_GRADE";
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = V.COD_PRODUTO AND P.DSC_GRADE = V.DSC_GRADE
+                  ORDER BY V.COD_PRODUTO, V.DSC_GRADE";
         $resultado = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
 

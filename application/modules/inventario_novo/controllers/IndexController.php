@@ -264,8 +264,29 @@ class Inventario_Novo_IndexController  extends Action
     
     public function viewAndamentoAjaxAction()
     {
-        \Zend_Layout::getMvcInstance()->disableLayout();
         $this->view->id = $this->_getParam('id');
+        $arr = [
+           [
+               "rua" => 3,
+               "enderecos" => [
+                   [
+                       "dscEndereco" => "99.999.99.99",
+                       "codStatus" => 1,
+                       "conferencias" => [
+                           "contagem" => "1ª Contagem",
+                           "codProduto" => "102030",
+                           "dscProd" => "Produto teste 1",
+                           "grade" => "UNICA",
+                           "lote" => "LI1",
+                           "dscEmbVol" => "METRO(1)",
+                           "qtdContada" => 10,
+                           "dthConferencia" => "10/01/19"
+                       ]
+                   ]
+               ],
+           ]
+        ];
+        $this->view->andamentos = json_encode($arr);
     }
 
     public function exportInventarioAjaxAction()
