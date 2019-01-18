@@ -2153,7 +2153,7 @@ class ExpedicaoRepository extends EntityRepository {
         $central = $deposito->getFilial()->getCodExterno();
         $statusFinalizado = Expedicao::STATUS_FINALIZADO;
         $statusCancelada = Expedicao::STATUS_CANCELADO;
-        $SQLOrder = " ORDER BY E.COD_EXPEDICAO ";
+        $SQLOrder = " ORDER BY E.COD_EXPEDICAO DESC";
         $idModeloDefault = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
 
         $Query = "SELECT DISTINCT E.COD_EXPEDICAO,
