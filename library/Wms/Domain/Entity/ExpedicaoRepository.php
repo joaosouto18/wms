@@ -2366,6 +2366,7 @@ class ExpedicaoRepository extends EntityRepository {
                     ->setParameter('cargas', $cargas);
         }
 
+        echo $source->getQuery()->getSQL();exit;
         return $source->getQuery()->getResult();
     }
 
