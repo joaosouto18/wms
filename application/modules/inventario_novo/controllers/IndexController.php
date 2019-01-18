@@ -264,8 +264,14 @@ class Inventario_Novo_IndexController  extends Action
     
     public function viewAndamentoAjaxAction()
     {
-        \Zend_Layout::getMvcInstance()->disableLayout();
         $this->view->id = $this->_getParam('id');
+        $arr = [
+           [
+               "rua" => 3,
+               "info"
+           ]
+        ];
+        $this->view->andamentos = json_encode([["rua 3" =>["apto 1", "apto 2", "apto 3"]], ["rua 4" =>["apto 4", "apto 5", "apto 6"]]]);
     }
 
     public function exportInventarioAjaxAction()
