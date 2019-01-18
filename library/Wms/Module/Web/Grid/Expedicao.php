@@ -276,7 +276,7 @@ class Expedicao extends Grid
                 'controllerName' => 'relatorio_produtos-expedicao',
                 'actionName' => 'index',
                 'params' => array('sc' => true),
-                'cssClass' => 'dialogAjax pdf',
+                'cssClass' => 'pdf',
                 'pkIndex' => 'id'
             ))
             ->addAction(array(
