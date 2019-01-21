@@ -1,6 +1,6 @@
 <?php
 
-namespace Wms\Domain\Entity\Deposito\Expedicao\Pedido;
+namespace Wms\Domain\Entity\Expedicao;
 
 /**
  * @Table(name="TIPO_PEDIDO_EXPEDICAO")

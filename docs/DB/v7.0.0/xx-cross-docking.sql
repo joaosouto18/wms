@@ -16,7 +16,23 @@ BEGIN
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
 
-      EXECUTE IMMEDIATE 'ALTER TABLE TIPO_PEDIDO_EXPEDICAO ADD (COD_EXTERNO VARCHAR2(30), IND_ATIVO CHAR(1))';
+      EXECUTE IMMEDIATE 'ALTER TABLE TIPO_PEDIDO_EXPEDICAO ADD (COD_EXTERNO VARCHAR2(30))';
+      INSERT INTO TIPO_PEDIDO_EXPEDICAO (COD_TIPO_PEDIDO_EXPEDICAO, DSC_TIPO_PEDIDO_EXPEDICAO, COD_EXTERNO)
+        VALUES (1, 'Mostruário','MOSTRUARIO'),
+                   (2, 'Reposição','REPOSICAO'),
+                   (3, 'Entrega','ENTREGA'),
+                   (4, 'Sugestão','SUGESTAO'),
+                   (5, 'Avulso','AVULSO'),
+                   (6, 'Assistencia','ASSISTENCIA'),
+                   (7, 'Kit','KIT'),
+                   (8, 'Venda Balcão','VENDA_BALCAO'),
+                   (9, 'Simples Remessa','SIMPLES_REMESSA'),
+                   (10, 'Reentrega','REENTREGA'),
+                   (11, 'Pedido Antecipado','PEDIDO_ANTECIPADO'),
+                   (12, 'Outros','OUTROS'),
+                   (13, 'CROSS DOCKING','CROSS_DOCKING'),
+               )
+      ;
 
     /************************************************************************
 **                 NÃO ALTERAR ABAIXO DESTA REGIÃO                     **
