@@ -1815,7 +1815,7 @@ class RecebimentoRepository extends EntityRepository {
                                   AND (QTD_DIVERGENCIA = 0 OR COD_NOTA_FISCAL IS NOT NULL)
                              ) V ON V.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                 LEFT JOIN (SELECT COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, SUM(QTD) as QTD
-                            FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD
+                            FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, PP.DSC_LOTE
                                   FROM PALETE P
                                   INNER JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
                                   WHERE P.COD_RECEBIMENTO = $idRecebimento AND P.COD_STATUS = 536)
