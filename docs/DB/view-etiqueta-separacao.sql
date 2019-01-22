@@ -1,10 +1,13 @@
-/* 
- * SCRIPT PARA: Atualizar V_ETIQUETA_SEPARACAO com a inclusão do lote
- * DATA DE CRIAÇÃO: 24/08/2018 
- * CRIADO POR: Tarcísio César
- *
+/*
+ DATA DE CRIAÇÃO: 24/08/2018
+ CRIADO POR: Tarcísio César
+
+ ATUALIZAÇÕES:
+ Data        Autor       Modificação
+ 24/08/18   (Tarcísio)   Inclusão da descrição de LOTE
+ 22/01/19   (Tarcísio)   Alteração do vinculo TIPO_PEDIDO da tabela SIGLA para a tabela TIPO_PEDIDO_EXPEDICAO
+
  */
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.0.0', '05-view-etiqueta-separacao.sql');
 
 CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENTREGA", "CARGA", "LINHAENTREGA", "ITINERARIO", "CODCLIENTEEXTERNO", "CLIENTE", "CODPRODUTO", "PRODUTO", "GRADE", "FORNECEDOR", "TIPOCOMERCIALIZACAO", "ENDERECO", "LINHASEPARACAO", "ESTOQUE", "PONTOTRANSBORDO", "EXPEDICAO", "PLACAEXPEDICAO", "PLACACARGA", "CODTIPOCARGA", "TIPOCARGA", "CODCARGAEXTERNO", "CODTIPOPEDIDO", "DTHCONFERENCIA", "REIMPRESSAO", "TIPOPEDIDO", "CODBARRASPRODUTO", "CODEXTERNO", "LOTE")
   AS
@@ -34,7 +37,7 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
            ped.cod_tipo_pedido            AS codTipoPedido,
            es.dth_conferencia             AS dthConferencia,
            es.dsc_reimpressao             AS reimpressao,
-           stp.dsc_sigla                  AS tipoPedido,
+           tpe.cod_externo                AS tipoPedido,
            v.cod_barras                   AS codBarrasProduto,
            CASE WHEN ped.num_sequencial > 1
                      THEN
@@ -67,8 +70,8 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
              ON c.cod_carga = ped.cod_carga
            INNER JOIN sigla
              ON sigla.cod_sigla = c.cod_tipo_carga
-           INNER JOIN sigla stp
-             ON stp.cod_sigla = ped.cod_tipo_pedido
+           INNER JOIN tipo_pedido_expedicao tpe
+             ON tpe.COD_TIPO_PEDIDO_EXPEDICAO = ped.cod_tipo_pedido
     UNION
     SELECT es.cod_etiqueta_separacao AS codBarras,
            es.cod_status                  AS status,
@@ -96,7 +99,7 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
            ped.cod_tipo_pedido            AS codTipoPedido,
            es.dth_conferencia             AS dthConferencia,
            es.dsc_reimpressao             AS reimpressao,
-           stp.dsc_sigla                  AS tipoPedido,
+           tpe.cod_externo                AS tipoPedido,
            e.cod_barras                   AS codBarrasProduto,
            CASE WHEN ped.num_sequencial > 1
                      THEN
@@ -129,5 +132,5 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
              ON c.cod_carga = ped.cod_carga
            INNER JOIN sigla
              ON sigla.cod_sigla = c.cod_tipo_carga
-           INNER JOIN sigla stp
-             ON stp.cod_sigla = ped.cod_tipo_pedido;
+           INNER JOIN tipo_pedido_expedicao tpe
+             ON tpe.COD_TIPO_PEDIDO_EXPEDICAO = ped.cod_tipo_pedido;

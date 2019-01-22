@@ -1,4 +1,12 @@
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.0.0', '06-view-recebimento.sql');
+/*
+ DATA DE CRIAÇÃO: 24/08/2018
+ CRIADO POR: Tarcísio César
+
+ ATUALIZAÇÕES:
+ Data        Autor       Modificação
+ 24/08/18   (Tarcísio)   Inclusão da descrição de LOTE
+
+ */
 
 CREATE OR REPLACE FORCE VIEW "V_QTD_RECEBIMENTO" ("QTD", "COD_RECEBIMENTO", "COD_PRODUTO", "DSC_GRADE", "COD_OS", "NUM_PESO", "DSC_LOTE") AS
 SELECT MIN(QTD.QTD) as QTD,

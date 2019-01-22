@@ -2714,8 +2714,8 @@ class ExpedicaoRepository extends EntityRepository {
                                GROUP BY C.COD_EXPEDICAO ) RESUMO
                         ON RESUMO.COD_EXPEDICAO = E.COD_EXPEDICAO
                   LEFT JOIN (SELECT PED.COD_EXPEDICAO,
-                                  LISTAGG (S.DSC_SIGLA,\', \') WITHIN GROUP (ORDER BY S.DSC_SIGLA) TIPO_PEDIDO
-                                  FROM SIGLA S
+                                  LISTAGG (TPE.COD_EXTERNO,\', \') WITHIN GROUP (ORDER BY TPE.COD_EXTERNO) TIPO_PEDIDO
+                                  FROM TIPO_PEDIDO_EXPEDICAO TPE
                                   INNER JOIN (
                                     SELECT CASE WHEN REENTREGA.COD_CARGA IS NOT NULL THEN 621 ELSE P.COD_TIPO_PEDIDO END COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
                                     FROM CARGA C
@@ -2726,7 +2726,7 @@ class ExpedicaoRepository extends EntityRepository {
                                       INNER JOIN CARGA C ON R.COD_CARGA = C.COD_CARGA
                                     ) REENTREGA ON REENTREGA.COD_EXPEDICAO = C.COD_EXPEDICAO AND REENTREGA.COD_CARGA = C.COD_CARGA
                                     GROUP BY P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO, REENTREGA.COD_CARGA 
-                                  ) PED ON PED.COD_TIPO_PEDIDO = S.COD_SIGLA
+                                  ) PED ON PED.COD_TIPO_PEDIDO = TPE.COD_TIPO_PEDIDO_EXPEDICAO
                                   GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = E.COD_EXPEDICAO                                                                
                  WHERE 1 = 1 AND ((C.CARGAS IS NOT NULL) OR (C.CARGAS IS NULL AND S.COD_SIGLA = 466)) ' . $FullWhereFinal . '
                  ORDER BY E.COD_EXPEDICAO DESC
