@@ -499,7 +499,7 @@ class Mobile_Enderecamento_ManualController extends Action
         $paleteRepo    = $this->em->getRepository('wms:Enderecamento\Palete');
         $arrayLote = array();
         if($lote != null){
-            $arrayLote[$lote] = $qtd;
+            $arrayLote['lotes'][$lote] = $qtd;
         }
 
         $paleteEn = $paleteRepo->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $qtd, $dataValidade, 'M', null, $arrayLote);
