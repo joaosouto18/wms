@@ -1618,6 +1618,7 @@ class RecebimentoRepository extends EntityRepository {
                 }
             }
         }
+        $this->_em->flush();
     }
 
     public function alteraNormaPaletizacaoRecebimento($codRecebimento, $codProduto, $grade, $codOs, $idNorma) {
