@@ -2864,7 +2864,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         $SQL = " SELECT C.COD_CARGA_EXTERNO as idCarga,
                         TC.DSC_SIGLA as tipoCarga,
-                        TP.DSC_SIGLA as tipoPedido,
+                        TPE.COD_EXTERNO as tipoPedido,
                         P.COD_EXTERNO as codPedido,
                         ES.COD_ETIQUETA_SEPARACAO AS codEtiqueta,
                         ES.COD_PRODUTO as codProduto,
@@ -2882,7 +2882,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                    LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ES.COD_PRODUTO_VOLUME
                    LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = ES.COD_PRODUTO_EMBALAGEM
                    LEFT JOIN SIGLA TC ON TC.COD_SIGLA = C.COD_TIPO_CARGA
-                   LEFT JOIN SIGLA TP ON TP.COD_SIGLA = P.COD_TIPO_PEDIDO
+                   LEFT JOIN TIPO_PEDIDO_EXPEDICAO TPE ON TPE.COD_TIPO_PEDIDO_EXPEDICAO = P.COD_TIPO_PEDIDO
                    LEFT JOIN SIGLA SE ON SE.COD_SIGLA = ES.COD_STATUS
                   WHERE C.COD_CARGA_EXTERNO = $idCargaExterno AND C.COD_TIPO_CARGA = $idTipoCarga ";
 

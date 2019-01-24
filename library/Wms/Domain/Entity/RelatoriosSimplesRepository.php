@@ -324,7 +324,7 @@ class RelatoriosSimplesRepository extends EntityRepository {
             $dql->andWhere(" c.placaCarga = :placa ")
                 ->setParameter("placa",$params['placa']);
         }
-        $idCaracteristicaPicking = Endereco::ENDERECO_PICKING;
+        $idCaracteristicaPicking = Endereco::PICKING;
         $dql->andWhere(" ed.descricao is not null ")
             ->andWhere("ed.idCaracteristica != $idCaracteristicaPicking");
 

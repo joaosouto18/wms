@@ -184,7 +184,7 @@ class EnderecoRepository extends EntityRepository {
 
     public function getPicking() {
         $em = $this->getEntityManager();
-        $tipoPicking = Endereco::ENDERECO_PICKING;
+        $tipoPicking = Endereco::PICKING;
 
         $dql = $em->createQueryBuilder()
                 ->select('e.descricao as DESCRICAO, MOD(e.predio,2) as lado')
@@ -349,7 +349,7 @@ class EnderecoRepository extends EntityRepository {
             ->where("de.descricao = '$endereco'");
 
         if ($picking) {
-            $dql->andWhere('de.idCaracteristica =' . Endereco::ENDERECO_PICKING);
+            $dql->andWhere('de.idCaracteristica =' . Endereco::PICKING);
         }
 
         if ($unico == true) {
@@ -363,7 +363,7 @@ class EnderecoRepository extends EntityRepository {
     }
 
     public function getEnderecoesDisponivesByParam($params) {
-        $idCaracteristicaEndereco = Endereco::ENDERECO_PICKING;
+        $idCaracteristicaEndereco = Endereco::PICKING;
         $estruturaBlocado = \Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO;
 
         extract($params);
@@ -721,7 +721,7 @@ class EnderecoRepository extends EntityRepository {
         $dataFinal = $params['dataInicial2'];
         $ruaInicial = $params['ruaInicial'];
         $ruaFinal = $params['ruaFinal'];
-        $tipoPicking = Endereco::ENDERECO_PICKING;
+        $tipoPicking = Endereco::PICKING;
 
         $sqlWhere = "";
         if (isset($ruaInicial) && !empty($ruaFinal)) {

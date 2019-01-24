@@ -9,6 +9,20 @@ namespace Wms\Domain\Entity\Expedicao;
 class TipoPedido
 {
 
+    const MOSTRUARIO = 1;
+    const REPOSICAO = 2;
+    const ENTREGA = 3;
+    const SUGESTAO = 4;
+    const AVULSO = 5;
+    const ASSISTENCIA = 6;
+    const KIT = 7;
+    const VENDA_BALCAO = 8;
+    const SIMPLES_REMESSA = 9;
+    const REENTREGA = 10;
+    const PEDIDO_ANTECIPADO = 11;
+    const OUTROS = 12;
+    const CROSS_DOCKING = 13;
+
     /**
      * @Column(name="COD_TIPO_PEDIDO_EXPEDICAO", type="integer", nullable=false)
      * @Id

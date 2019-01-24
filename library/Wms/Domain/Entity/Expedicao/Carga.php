@@ -86,6 +86,9 @@ class Carga
         $this->pedido = $pedido;
     }
 
+    /**
+     * @return Pedido[]
+     */
     public function getPedido()
     {
         return $this->pedido;

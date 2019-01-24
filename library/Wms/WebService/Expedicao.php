@@ -77,6 +77,8 @@ class pedido {
     public $cliente;
     /** @var string */
     public $situacao;
+    /** @var string */
+    public $tipo;
     /** @var  boolean */
     public $conferido;
     /** @var produto[] */
@@ -263,6 +265,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $pedido['produtos'] = $produtos;
             $pedido['linhaEntrega'] = $pedidoWs->linhaEntrega;
             $pedido['codProprietario'] = $codProprietario;
+            $pedido['tipoPedido'] = (isset($pedidoWs->tipo) && !empty($pedidoWs->tipo)) ? $pedidoWs->tipo : "ENTREGA";
 
             $pedidosArray[] = $pedido;
         }

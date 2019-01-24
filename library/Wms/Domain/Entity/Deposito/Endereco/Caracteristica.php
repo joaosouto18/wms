@@ -9,11 +9,6 @@ use Doctrine\Common\Collections\ArrayCollection;
  */
 class Caracteristica
 {
-    const PICKING = 37;
-    const PULMAO = 38;
-    const PICKING_DINAMICO = 39;
-    const CROSS_DOCKING = 40;
-
     /**
      * @Column(name="COD_CARACTERISTICA_ENDERECO", type="integer", nullable=false)
      * @Id

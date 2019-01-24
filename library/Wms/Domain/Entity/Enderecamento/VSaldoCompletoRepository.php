@@ -9,7 +9,7 @@ class VSaldoCompletoRepository extends EntityRepository
 
     public function saldo($params)
     {
-        $tipoPicking = Endereco::ENDERECO_PICKING;
+        $tipoPicking = Endereco::PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
         ->select('s.codProduto, s.grade,s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, MOD(e.predio,2) as lado, e.id as idEndereco, s.codUnitizador, s.unitizador, s.volume, tp.descricao as tipoComercializacao, MAX(pe.quantidade) quantidade')
         ->from("wms:Enderecamento\VSaldoCompleto","s")

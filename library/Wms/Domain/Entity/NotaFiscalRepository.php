@@ -672,7 +672,7 @@ class NotaFiscalRepository extends EntityRepository {
         }
 
         if (isset($estoquePulmao) && !empty($estoquePulmao) && !($estoquePulmao == 'T')) {
-            $caracteristicaPicking = Endereco::ENDERECO_PICKING;
+            $caracteristicaPicking = Endereco::PICKING;
             if ($estoquePulmao == 'S') {
                 $sql .= " AND (EXISTS (SELECT 'X'
                                          FROM ESTOQUE EX

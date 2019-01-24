@@ -120,8 +120,8 @@ class Mobile_Enderecamento_ManualController extends Action
 
             $params['endereco'] = $enderecoEn->getId();
 
-            if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING
-                || $enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING_DINAMICO) {
+            if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::PICKING
+                || $enderecoEn->getIdCaracteristica() == EnderecoEntity::PICKING_DINAMICO) {
                 $params['urlOrigem'] = $urlOrigem;
                 $params['urlDestino'] = $urlDestino;
                 $this->redirect('selecionar-nivel','enderecamento_manual','mobile', $params);
@@ -256,7 +256,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
                 $enderecoEn = $enderecoRepo->find($idEndereco);
 
-                if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING_DINAMICO) {
+                if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::PICKING_DINAMICO) {
                     if (isset($params['capacidadePicking']) && empty($params['capacidadePicking']))
                         throw new \Exception('Necessário informar a capacidade de picking para esse produto!');
                 } else {
@@ -293,10 +293,10 @@ class Mobile_Enderecamento_ManualController extends Action
                     if (!is_null($embalagemEn->getEndereco()))
                         $endereco = $embalagemEn->getEndereco()->getId();
 
-                    if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING && $endereco != $enderecoEn->getId() && !is_null($endereco)) {
+                    if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::PICKING && $endereco != $enderecoEn->getId() && !is_null($endereco)) {
                         throw new \Exception('O produto já está cadastrado no Picking ' . $embalagemEn->getEndereco()->getDescricao());
                     }
-                    if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING_DINAMICO) {
+                    if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == EnderecoEntity::PICKING_DINAMICO) {
                         $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
                         if (isset($estoqueEn) && !empty($estoqueEn)) {
                             throw new \Exception('Não é possível endereçar produto com estoque em outro endereço');
@@ -314,10 +314,10 @@ class Mobile_Enderecamento_ManualController extends Action
                     if (!is_null($volumeEn->getEndereco()))
                         $endereco = $volumeEn->getEndereco()->getId();
 
-                    if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING && $endereco != $enderecoEn->getId() && !is_null($endereco)) {
+                    if ($enderecoEn->getIdCaracteristica() == EnderecoEntity::PICKING && $endereco != $enderecoEn->getId() && !is_null($endereco)) {
                         throw new \Exception('O produto já está cadastrado no Picking ' . $volumeEn->getEndereco()->getDescricao());
                     }
-                    if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == EnderecoEntity::ENDERECO_PICKING_DINAMICO) {
+                    if ($endereco != $enderecoEn->getId() && $enderecoEn->getIdCaracteristica() == EnderecoEntity::PICKING_DINAMICO) {
                         $estoqueEn = $estoqueRepo->findOneBy(array('codProduto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade()));
                         if (isset($estoqueEn) && !empty($estoqueEn)) {
                             throw new \Exception('Não é possível endereçar produto com estoque em outro endereço');
@@ -548,7 +548,7 @@ class Mobile_Enderecamento_ManualController extends Action
             $nivel = $enderecoEn->getNivel();
             $caracteristicaEndereco = $enderecoEn->getIdCaracteristica();
 
-            if (($nivel != 0 && $caracteristicaEndereco == EnderecoEntity::ENDERECO_PICKING_DINAMICO) || ($primeiraTela == false && $caracteristicaEndereco == EnderecoEntity::ENDERECO_PICKING_DINAMICO))
+            if (($nivel != 0 && $caracteristicaEndereco == EnderecoEntity::PICKING_DINAMICO) || ($primeiraTela == false && $caracteristicaEndereco == EnderecoEntity::PICKING_DINAMICO))
                 $data = true;
         }
 

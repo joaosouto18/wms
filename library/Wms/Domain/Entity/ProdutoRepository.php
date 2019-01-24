@@ -1802,8 +1802,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $where .= "AND LOWER(PES.NOM_PESSOA) LIKE LOWER('%$params[fornecedor]%') ";
         }
 
-        $picking = Endereco::ENDERECO_PICKING;
-        $pulmao = Endereco::ENDERECO_PULMAO;
+        $picking = Endereco::PICKING;
+        $pulmao = Endereco::PULMAO;
         if (isset($params['endereco']) && !empty($params['endereco'])) {
             if ($params['endereco'] == $picking) {
                 $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = $picking";

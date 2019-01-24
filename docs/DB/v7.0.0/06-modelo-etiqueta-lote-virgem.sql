@@ -7,11 +7,11 @@
 DECLARE
   CHECK_RESULT VARCHAR2(100);
 BEGIN
-  SELECT FUNC_CHECK_SCRIPT('08-modelo-etiqueta-lote-virgem.sql', '') INTO CHECK_RESULT FROM DUAL;
+  SELECT FUNC_CHECK_SCRIPT('06-modelo-etiqueta-lote-virgem.sql', '') INTO CHECK_RESULT FROM DUAL;
   IF (CHECK_RESULT <> 'TRUE') THEN
     DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
   ELSE
-    INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.2', '08-modelo-etiqueta-lote-virgem.sql');
+    INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.2', '06-modelo-etiqueta-lote-virgem.sql');
     /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/

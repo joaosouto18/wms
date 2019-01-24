@@ -13,14 +13,16 @@ use Doctrine\Common\Collections\ArrayCollection;
 class Endereco
 {
 
-    const ENDERECO_PICKING = 37;
-    const ENDERECO_PULMAO = 38;
-    const ENDERECO_PICKING_DINAMICO = 39;
+    const PICKING = 37;
+    const PULMAO = 38;
+    const PICKING_DINAMICO = 39;
+    const CROSS_DOCKING = 40;
 
     public static $tiposEndereco = array(
-        self::ENDERECO_PICKING => "Picking",
-        self::ENDERECO_PULMAO => "Pulmão",
-        self::ENDERECO_PICKING_DINAMICO => "Picking Dinâmico"
+        self::PICKING => "Picking",
+        self::PULMAO => "Pulmão",
+        self::PICKING_DINAMICO => "Picking Dinâmico",
+        self::CROSS_DOCKING => "Cross-Docking",
     );
 
     /**

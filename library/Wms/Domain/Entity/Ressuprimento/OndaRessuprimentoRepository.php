@@ -471,7 +471,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 'grade' => $grade,
                 'idVolume' => $idVolume,
                 'idEnderecoIgnorar' => $idPicking,
-                'controlaLote' => $controlaLote
+                'controlaLote' => $controlaLote,
+                'idCaracteristicaIgnorar' => Endereco::CROSS_DOCKING
             );
             $estoquePulmao = $estoqueRepo->getEstoqueByParams($params);
 

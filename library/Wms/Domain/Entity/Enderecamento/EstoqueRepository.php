@@ -168,7 +168,7 @@ class EstoqueRepository extends EntityRepository
             $validade = $validadeEsttoque;
         }
         if (!empty($notaFiscalDevolucao)) {
-            if (($enderecoEn->getCaracteristica()->getId() == Endereco::ENDERECO_PICKING) && ($this->getSystemParameterValue('ATUALIZAR_DATA_PICKING') != 'S')) {
+            if (($enderecoEn->getCaracteristica()->getId() == Endereco::PICKING) && ($this->getSystemParameterValue('ATUALIZAR_DATA_PICKING') != 'S')) {
                 if (isset($validadeEsttoque) && !empty($validadeEsttoque)) {
                     $validade = $validadeEsttoque;
                 } elseif (isset($validadeParam) && !empty($validadeParam)) {
@@ -339,7 +339,7 @@ class EstoqueRepository extends EntityRepository
             $subWhereReserva = " IN ('S', 'E')";
         }
 
-        $endPicking = EnderecoEntity::ENDERECO_PICKING;
+        $endPicking = EnderecoEntity::PICKING;
         $Sql = " SELECT
                     ESTQ.COD_DEPOSITO_ENDERECO,
                     DE.DSC_DEPOSITO_ENDERECO, 
@@ -374,11 +374,11 @@ class EstoqueRepository extends EntityRepository
         $SqlOrder = " ORDER BY TO_DATE(ESTQ.DTH_VALIDADE), PRIORIDADE_PICKING, TO_DATE(DT_MOVIMENTACAO), SUM(ESTQ.QTD + NVL(RS.QTD_RESERVA,0))";
         $SqlWhere = "";
 
-        if ((isset($params['idProduto'])) && ($params['idProduto'] != null)) {
+        if (isset($params['idProduto']) && $params['idProduto'] != null) {
             $SqlWhere .= " AND ESTQ.COD_PRODUTO = '" . $params['idProduto'] . "'";
         }
 
-        if ((isset($params['grade'])) && ($params['grade'] != null)) {
+        if (isset($params['grade']) && $params['grade'] != null) {
             $SqlWhere .= " AND ESTQ.DSC_GRADE = '" . $params['grade'] . "'";
         }
 
@@ -387,7 +387,7 @@ class EstoqueRepository extends EntityRepository
             $SqlWhere .= " AND ESTQ.DSC_LOTE = '" . $params['lote'] . "'";
         }
 
-        if ((isset($params['idVolume'])) && ($params['idVolume'] != null)) {
+        if (isset($params['idVolume']) && ($params['idVolume'] != null)) {
             $idVolume = $params['idVolume'];
             if (is_array($params['idVolume']) == true) {
                 $idVolume = implode(",", $params['idVolume']);
@@ -396,19 +396,23 @@ class EstoqueRepository extends EntityRepository
             $SqlWhere .= " AND ESTQ.COD_PRODUTO_VOLUME IN (" . $idVolume . ")";
         }
 
-        if ((isset($params['idCaracteristicaIgnorar'])) && ($params['idCaracteristicaIgnorar'] != null)) {
+        if (isset($params['idCaracteristicaIgnorar']) && $params['idCaracteristicaIgnorar'] != null) {
             $SqlWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO <> " . $params['idCaracteristicaIgnorar'] . "";
         }
 
-        if ((isset($params['idEnderecoIgnorar'])) && ($params['idEnderecoIgnorar'] != null)) {
+        if (isset($params['idEnderecoIgnorar']) && $params['idEnderecoIgnorar'] != null) {
             $SqlWhere .= " AND DE.COD_DEPOSITO_ENDERECO <> '" . $params['idEnderecoIgnorar'] . "'";
         }
 
-        if ((isset($params['idEnderecoEspecifico'])) && ($params['idEnderecoEspecifico'] != null)) {
+        if (isset($params['idEnderecoEspecifico']) && $params['idEnderecoEspecifico'] != null) {
             $SqlWhere .= " AND DE.COD_DEPOSITO_ENDERECO = '" . $params['idEnderecoEspecifico'] . "' ";
         }
 
-        $SqlGroupBy = "GROUP BY 
+        if (isset($params['isCDK']) && $params['isCDK']) {
+            $SqlWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO = ". EnderecoEntity::CROSS_DOCKING;
+        }
+
+        $SqlGroupBy = " GROUP BY 
                             ESTQ.COD_DEPOSITO_ENDERECO,
                             DE.DSC_DEPOSITO_ENDERECO,
                             ESTQ.COD_PRODUTO_VOLUME, 
@@ -535,7 +539,7 @@ class EstoqueRepository extends EntityRepository
         }
 
         if ($showPicking == false) {
-            $caracteristicaPicking = EnderecoEntity::ENDERECO_PICKING;
+            $caracteristicaPicking = EnderecoEntity::PICKING;
             $SQLWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO <> " . $caracteristicaPicking;
         }
         if (isset($parametros['lote']) && !empty($parametros['lote'])) {
@@ -606,7 +610,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoquePulmao($parametros)
     {
-        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
+        $tipoPicking = EnderecoEntity::PICKING;
 
         $and = "";
         $cond = "";
@@ -741,7 +745,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoqueByRua($inicioRua, $fimRua, $grandeza = null,$exibePicking = 1, $exibePulmao = 1)
     {
-        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
+        $tipoPicking = EnderecoEntity::PICKING;
 
         $query = $this->getEntityManager()->createQueryBuilder()
                 ->select("e.descricao, estq.codProduto, estq.grade, p.descricao nomeProduto")
@@ -778,7 +782,7 @@ class EstoqueRepository extends EntityRepository
 
     public function saldo($params)
     {
-        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
+        $tipoPicking = EnderecoEntity::PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
                 ->select('estq.codProduto, estq.grade, ls.descricao, sum(estq.qtd) qtdestoque, NVL(depv.descricao, depe.descricao) enderecoPicking')
                 ->from("wms:Enderecamento\Estoque", 'estq')
@@ -820,7 +824,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getExisteEnderecoPulmao ($codProduto, $grade)
     {
-        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
+        $tipoPicking = EnderecoEntity::PICKING;
         $query = $this->getEntityManager()->createQueryBuilder()
                 ->select('estq.codProduto, estq.grade')
                 ->from("wms:Enderecamento\Estoque", 'estq')
@@ -905,7 +909,7 @@ class EstoqueRepository extends EntityRepository
 
     public function getSituacaoEstoque($params) {
 
-        $tipoPicking = EnderecoEntity::ENDERECO_PICKING;
+        $tipoPicking = EnderecoEntity::PICKING;
 
         $query = $this->getEntityManager()->createQueryBuilder()
                 ->select("de.descricao,
@@ -1366,7 +1370,7 @@ class EstoqueRepository extends EntityRepository
     }
 
     public function getMenorValidadePulmao($codProduto, $grade){
-        $tipoPulmao = EnderecoEntity::ENDERECO_PULMAO;
+        $tipoPulmao = EnderecoEntity::PULMAO;
         $SQL = "SELECT MIN(DTH_VALIDADE) AS DATA 
                 FROM ESTOQUE  E 
                 INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO

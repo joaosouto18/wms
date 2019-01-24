@@ -114,6 +114,7 @@ class ExpedicaoRepository extends EntityRepository {
                     E.COD_EXPEDICAO,
                     C.COD_CARGA,
                     P.COD_PEDIDO,
+                    P.COD_TIPO_PEDIDO AS TIPO_PEDIDO,
                     P.COD_EXTERNO AS COD_PED_EXT,
                     P.COD_PESSOA AS COD_CLIENTE,
                     PESS.NOM_PESSOA,
@@ -290,13 +291,14 @@ class ExpedicaoRepository extends EntityRepository {
                  *
                  */
                 else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PEDIDO) {
+                    /** @var Expedicao\Carga $cargaEn */
                     foreach ($cargasEn as $cargaEn) {
                         $pedidos = $cargaEn->getPedido();
                         foreach ($pedidos as $pedidoEn) {
                             $options = array();
                             $options[] = $cargaEn->getCodCargaExterno();
                             $options[] = $pedidoEn->getCodExterno();
-                            $options[] = $pedidoEn->getTipoPedido()->getSigla();
+                            $options[] = $pedidoEn->getTipoPedido()->getCodExterno();
 
                             $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                             if (!$resultAcao === true) {
@@ -404,8 +406,6 @@ class ExpedicaoRepository extends EntityRepository {
                     break;
                 }
             }
-
-            $quebraPulmaoDoca = $modeloSeparacaoEn->getQuebraPulmaDoca();
 
             $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
 
@@ -660,7 +660,13 @@ class ExpedicaoRepository extends EntityRepository {
             $codProduto = $itemPedido['COD_PRODUTO'];
             $grade = $itemPedido['DSC_GRADE'];
             $idExpedicao = $itemPedido['COD_EXPEDICAO'];
-            $codCriterio = $itemPedido[$strCriterio];
+
+            $isCDK = ($itemPedido['TIPO_PEDIDO'] == Expedicao\TipoPedido::CROSS_DOCKING);
+            if ($isCDK) {
+                $codCriterio = "CDK-".$itemPedido["COD_PEDIDO"];
+            } else {
+                $codCriterio = $itemPedido[$strCriterio];
+            }
             if (empty($codCriterio)) {
                 $campo = explode("_", $strCriterio)[1];
                 throw new \Exception("O cliente $itemPedido[NOM_PESSOA] não tem $campo cadastrado(a), 
@@ -680,7 +686,8 @@ class ExpedicaoRepository extends EntityRepository {
             $sumQtdItemExpedicao[$idExpedicao][$codCriterio][$codProduto][$grade][$lote][$itemPedido['COD_PEDIDO']] = [
                 'qtd' => $itemPedido['QTD'],
                 'fatorEmb' => $itemPedido['FATOR_EMB_VEND'],
-                'codPedExt' => $itemPedido['COD_PED_EXT']
+                'codPedExt' => $itemPedido['COD_PED_EXT'],
+                'isCDK' => $isCDK
             ];
         }
 
@@ -721,11 +728,19 @@ class ExpedicaoRepository extends EntityRepository {
             $codProduto = $itemPedido['COD_PRODUTO'];
             $grade = $itemPedido['DSC_GRADE'];
             $expedicao = $itemPedido['COD_EXPEDICAO'];
-            $criterio = $itemPedido['COD_PEDIDO'];
+
+            $isCDK = ($itemPedido['TIPO_PEDIDO'] == Expedicao\TipoPedido::CROSS_DOCKING);
+            if ($isCDK) {
+                $codCriterio = "CDK-".$itemPedido["COD_PEDIDO"];
+            } else {
+                $codCriterio = $itemPedido['COD_PEDIDO'];
+            }
+
             $pedido = [ $itemPedido['COD_PEDIDO'] => [
                 'qtd' => $itemPedido['QTD'],
                 'fatorEmb' => $itemPedido['FATOR_EMB_VEND'],
-                'codPedExt' => $itemPedido['COD_PED_EXT']
+                'codPedExt' => $itemPedido['COD_PED_EXT'],
+                'isCDK' => $isCDK
             ]];
 
             /** @var Produto $produtoEn */
@@ -738,7 +753,7 @@ class ExpedicaoRepository extends EntityRepository {
                 $lote = Lote::NCL;
             }
 
-            list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $criterio, $pedido, $lote, $forcarEmbVendaDefault, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
+            list($itensReservar, $arrEstoqueReservado) = self::setDestinoSeparacao($expedicao, $quebra, $produtoEn, $codCriterio, $pedido, $lote, $forcarEmbVendaDefault, $dadosProdutos, $itensReservar, $arrEstoqueReservado, $repositorios);
         }
 
         return $itensReservar;
@@ -803,8 +818,10 @@ class ExpedicaoRepository extends EntityRepository {
         $naoUsaPD = Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_NAO_USA;
 
         $qtdRestante = 0;
+        $isCDK = false;
         foreach ($pedidos as $codPedido => $qtdItem) {
             $qtdRestante = Math::adicionar($qtdRestante, $qtdItem['qtd']);
+            $isCDK = $qtdItem['isCDK'];
         }
 
         $estoquePulmao = null;
@@ -853,7 +870,7 @@ class ExpedicaoRepository extends EntityRepository {
             // ou quantidade insuficiente
             $forcarSairDoPicking = false;
 
-            if (($quebra != $naoUsaPD) || ($quebra == $naoUsaPD && empty($enderecoPicking)) || $forcarSeparacaoAerea) {
+            if (($quebra != $naoUsaPD) || ($quebra == $naoUsaPD && empty($enderecoPicking)) || $forcarSeparacaoAerea || $isCDK) {
                 // Separação no estoque que não é o próprio picking do produto.
                 $params = array(
                     'idProduto' => $codProduto,
@@ -861,12 +878,13 @@ class ExpedicaoRepository extends EntityRepository {
                     'idVolume' => (empty($volume)) ? null : $volume->getId(),
                     'idEnderecoIgnorar' => (!empty($enderecoPicking)) ? $enderecoPicking->getId() : null,
                     'lote' => $lote,
-                    'controlaLote' => $controlaLote
+                    'controlaLote' => $controlaLote,
+                    'isCDK' => $isCDK
                 );
                 $estoquePulmao = $repositorios['estoqueRepo']->getEstoqueByParams($params);
 
                 while ($qtdRestante > 0) {
-                    if (empty($estoquePulmao) || ($controlaLote == 'S' && $lote == Lote::LND && !empty($enderecoPicking))) {
+                    if (empty($estoquePulmao) || ($controlaLote == 'S' && $lote == Lote::LND && !empty($enderecoPicking) && !$isCDK)) {
                         $forcarSairDoPicking = true;
                         break;
                     } else {
@@ -1206,6 +1224,10 @@ class ExpedicaoRepository extends EntityRepository {
         $deposito = $this->_em->getReference('wms:Deposito', $sessao->idDepositoLogado);
         $central = $deposito->getFilial()->getCodExterno();
 
+        $caracEndCrossDocking = Endereco::CROSS_DOCKING;
+        $tipoSaidaCrossDocking = ReservaEstoqueExpedicao::SAIDA_CROSS_DOCKING;
+        $tipoPedidoCrossDocking = Expedicao\TipoPedido::CROSS_DOCKING;
+
         $andWhere = '';
         if ($gerarNovaOnda) {
             $andWhere = "AND EXP.IND_PROCESSANDO = 'N'";
@@ -1218,6 +1240,7 @@ class ExpedicaoRepository extends EntityRepository {
                 PP.COD_PRODUTO as CODIGO,
                 PP.DSC_GRADE as GRADE,
                 PROD.DSC_LOTE as LOTE,
+                CASE WHEN PROD.IS_CROSSDOCKING = 1 THEN 'CROSS-DOCKING' ELSE 'COMUM' END TIPO_PEDIDO,
                 PROD.PRODUTO,
                 PROD.PICKING,
                 PROD.ESTOQUE,
@@ -1229,60 +1252,76 @@ class ExpedicaoRepository extends EntityRepository {
                         PROD.DSC_PRODUTO as Produto,
                         DE.DSC_DEPOSITO_ENDERECO as Picking,
                         PEDIDO.DSC_LOTE,
-                        (NVL(EL.QTD,0) + NVL(REPL.QTD_RESERVADA,0)) AS Estoque,
+                        CASE WHEN PEDIDO.DSC_LOTE IS NOT NULL
+                             THEN (NVL(EL.QTD,0) + NVL(REPL.QTD_RESERVADA,0))
+                             ELSE (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) END AS Estoque,
                         PEDIDO.quantidade_pedido as QTD_SEPARAR_TOTAL,
-                        (NVL(EL.QTD,0) + NVL(REPL.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido saldo_Final
+                        CASE WHEN PEDIDO.DSC_LOTE IS NOT NULL
+                             THEN (NVL(EL.QTD,0) + NVL(REPL.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido
+                             ELSE (NVL(E.QTD,0) + NVL(REP.QTD_RESERVADA,0)) - PEDIDO.quantidade_pedido END saldo_Final,
+                        PEDIDO.IS_CROSSDOCKING
                    FROM (SELECT CASE WHEN (PPL.DSC_LOTE IS NOT NULL )
                                 THEN SUM(PPL.QUANTIDADE - NVL(PPL.QTD_CORTE,0))
                                 ELSE SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) END AS quantidade_pedido,
-                                PP.COD_PRODUTO, PP.DSC_GRADE, PPL.DSC_LOTE
+                                PP.COD_PRODUTO, PP.DSC_GRADE, PPL.DSC_LOTE,
+                                CASE WHEN P.COD_TIPO_PEDIDO = $tipoPedidoCrossDocking THEN 1 ELSE 0 END IS_CROSSDOCKING
                            FROM PEDIDO P
                           INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                           LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
                           LEFT JOIN ONDA_RESSUPRIMENTO_PEDIDO ORP ON PP.COD_PEDIDO = ORP.COD_PEDIDO AND PP.COD_PRODUTO = ORP.COD_PRODUTO AND PP.DSC_GRADE = ORP.DSC_GRADE
                           INNER JOIN CARGA C ON P.COD_CARGA = C.COD_CARGA
                           WHERE P.CENTRAL_ENTREGA = $central AND ORP.COD_PEDIDO IS NULL AND P.DTH_CANCELAMENTO IS NULL AND C.COD_EXPEDICAO IN ($expedicoes)
-                          GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PPL.DSC_LOTE) PEDIDO
-              LEFT JOIN (SELECT P.COD_PRODUTO, P.DSC_GRADE, MIN(NVL(E.QTD,0)) as QTD, E.DSC_LOTE 
+                          GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PPL.DSC_LOTE, P.COD_TIPO_PEDIDO) PEDIDO
+              LEFT JOIN (SELECT P.COD_PRODUTO, P.DSC_GRADE, MIN(NVL(E.QTD,0)) as QTD, E.DSC_LOTE , E.END_CROSSDOCKING
                            FROM PRODUTO P
                            LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
                            LEFT JOIN (SELECT SUM(E.QTD) AS QTD, E.COD_PRODUTO, E.DSC_GRADE,
-                                             NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME, DSC_LOTE
-                                        FROM ESTOQUE E
-                                       GROUP BY E.COD_PRODUTO, E.DSC_GRADE, DSC_LOTE, NVL(E.COD_PRODUTO_VOLUME,0)) E
-                                  ON E.COD_PRODUTO = P.COD_PRODUTO
-                                 AND E.DSC_GRADE = P.DSC_GRADE
-                                 AND E.VOLUME = NVL(PV.COD_PRODUTO_VOLUME,0)
-                          GROUP BY P.COD_PRODUTO, P.DSC_GRADE, E.DSC_LOTE) EL ON PEDIDO.COD_PRODUTO = EL.COD_PRODUTO AND PEDIDO.DSC_GRADE = EL.DSC_GRADE AND PEDIDO.DSC_LOTE = EL.DSC_LOTE
-              LEFT JOIN (SELECT P.COD_PRODUTO, P.DSC_GRADE, MIN(NVL(E.QTD,0)) as QTD
-                            FROM PRODUTO P
-                            LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
-                            LEFT JOIN (SELECT SUM(E.QTD) AS QTD, E.COD_PRODUTO, E.DSC_GRADE,
-                                              NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME
+                                             NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME, E.DSC_LOTE, 
+                                             CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END END_CROSSDOCKING
                                         FROM ESTOQUE E
                                        INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                                        WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . "
-                                       GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0)) E
+                                       GROUP BY E.COD_PRODUTO, E.DSC_GRADE, E.DSC_LOTE, NVL(E.COD_PRODUTO_VOLUME,0), CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END) E
                                   ON E.COD_PRODUTO = P.COD_PRODUTO
                                  AND E.DSC_GRADE = P.DSC_GRADE
                                  AND E.VOLUME = NVL(PV.COD_PRODUTO_VOLUME,0)
-                          GROUP BY P.COD_PRODUTO, P.DSC_GRADE) E ON PEDIDO.COD_PRODUTO = E.COD_PRODUTO AND PEDIDO.DSC_GRADE = E.DSC_GRADE
-              LEFT JOIN (SELECT MAX(QTD_RESERVADA) QTD_RESERVADA, COD_PRODUTO, DSC_GRADE, DSC_LOTE
-                           FROM (SELECT SUM(REP.QTD_RESERVADA) AS QTD_RESERVADA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0), REP.DSC_LOTE 
+                          GROUP BY P.COD_PRODUTO, P.DSC_GRADE, E.DSC_LOTE, E.END_CROSSDOCKING
+                          ) EL ON PEDIDO.COD_PRODUTO = EL.COD_PRODUTO AND PEDIDO.DSC_GRADE = EL.DSC_GRADE AND PEDIDO.DSC_LOTE = EL.DSC_LOTE AND PEDIDO.IS_CROSSDOCKING = EL.END_CROSSDOCKING
+              LEFT JOIN (SELECT P.COD_PRODUTO, P.DSC_GRADE, MIN(NVL(E.QTD,0)) as QTD , E.END_CROSSDOCKING
+                            FROM PRODUTO P
+                            LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = P.COD_PRODUTO AND P.DSC_GRADE = PV.DSC_GRADE
+                            LEFT JOIN (SELECT SUM(E.QTD) AS QTD, E.COD_PRODUTO, E.DSC_GRADE,
+                                              NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME, 
+                                              CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END END_CROSSDOCKING
+                                        FROM ESTOQUE E
+                                       INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                                       WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . "
+                                       GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0), CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END) E
+                                  ON E.COD_PRODUTO = P.COD_PRODUTO
+                                 AND E.DSC_GRADE = P.DSC_GRADE
+                                 AND E.VOLUME = NVL(PV.COD_PRODUTO_VOLUME,0)
+                          GROUP BY P.COD_PRODUTO, P.DSC_GRADE , E.END_CROSSDOCKING
+                          ) E ON PEDIDO.COD_PRODUTO = E.COD_PRODUTO AND PEDIDO.DSC_GRADE = E.DSC_GRADE AND PEDIDO.IS_CROSSDOCKING = E.END_CROSSDOCKING
+              LEFT JOIN (SELECT MAX(QTD_RESERVADA) QTD_RESERVADA, COD_PRODUTO, DSC_GRADE, DSC_LOTE, IND_CROSSDOCKING
+                           FROM (SELECT SUM(REP.QTD_RESERVADA) AS QTD_RESERVADA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0), REP.DSC_LOTE ,
+                                        CASE WHEN REE.TIPO_SAIDA = $tipoSaidaCrossDocking THEN 1 ELSE 0 END IND_CROSSDOCKING
                                    FROM RESERVA_ESTOQUE_EXPEDICAO REE
                                   INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                                   INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                                   WHERE RE.TIPO_RESERVA = 'S' AND RE.IND_ATENDIDA = 'N'
-                                  GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0), REP.DSC_LOTE) MAX_RES
-                          GROUP BY COD_PRODUTO, DSC_GRADE, DSC_LOTE) REPL  ON PEDIDO.COD_PRODUTO = REPL.COD_PRODUTO AND PEDIDO.DSC_GRADE = REPL.DSC_GRADE AND PEDIDO.DSC_LOTE = REPL.DSC_LOTE
-              LEFT JOIN (SELECT MAX(QTD_RESERVADA) QTD_RESERVADA, COD_PRODUTO, DSC_GRADE
-                           FROM (SELECT SUM(REP.QTD_RESERVADA) AS QTD_RESERVADA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0)
+                                  GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0), REP.DSC_LOTE, CASE WHEN REE.TIPO_SAIDA = 4 THEN 1 ELSE 0 END) MAX_RES
+                          GROUP BY COD_PRODUTO, DSC_GRADE, DSC_LOTE, IND_CROSSDOCKING
+                          ) REPL  ON PEDIDO.COD_PRODUTO = REPL.COD_PRODUTO AND PEDIDO.DSC_GRADE = REPL.DSC_GRADE AND PEDIDO.DSC_LOTE = REPL.DSC_LOTE AND PEDIDO.IS_CROSSDOCKING = REPL.IND_CROSSDOCKING
+              LEFT JOIN (SELECT MAX(QTD_RESERVADA) QTD_RESERVADA, COD_PRODUTO, DSC_GRADE, IND_CROSSDOCKING
+                           FROM (SELECT SUM(REP.QTD_RESERVADA) AS QTD_RESERVADA, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0),
+                                        CASE WHEN REE.TIPO_SAIDA = $tipoSaidaCrossDocking THEN 1 ELSE 0 END IND_CROSSDOCKING
                                    FROM RESERVA_ESTOQUE_EXPEDICAO REE
                                   INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                                   INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                                   WHERE RE.TIPO_RESERVA = 'S' AND RE.IND_ATENDIDA = 'N'
-                                  GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0)) MAX_RES
-                          GROUP BY COD_PRODUTO, DSC_GRADE) REP ON PEDIDO.COD_PRODUTO = REP.COD_PRODUTO AND PEDIDO.DSC_GRADE = REP.DSC_GRADE
+                                  GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0), CASE WHEN REE.TIPO_SAIDA = 4 THEN 1 ELSE 0 END) MAX_RES
+                          GROUP BY COD_PRODUTO, DSC_GRADE, IND_CROSSDOCKING
+                          ) REP ON PEDIDO.COD_PRODUTO = REP.COD_PRODUTO AND PEDIDO.DSC_GRADE = REP.DSC_GRADE AND PEDIDO.IS_CROSSDOCKING = REP.IND_CROSSDOCKING
               LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PEDIDO.COD_PRODUTO AND PROD.DSC_GRADE = PEDIDO.DSC_GRADE
               LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO = PROD.COD_PRODUTO AND PV.DSC_GRADE = PROD.DSC_GRADE
               LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO = PROD.COD_PRODUTO AND PE.DSC_GRADE = PROD.DSC_GRADE
@@ -2717,7 +2756,7 @@ class ExpedicaoRepository extends EntityRepository {
                                   LISTAGG (TPE.COD_EXTERNO,\', \') WITHIN GROUP (ORDER BY TPE.COD_EXTERNO) TIPO_PEDIDO
                                   FROM TIPO_PEDIDO_EXPEDICAO TPE
                                   INNER JOIN (
-                                    SELECT CASE WHEN REENTREGA.COD_CARGA IS NOT NULL THEN 621 ELSE P.COD_TIPO_PEDIDO END COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
+                                    SELECT CASE WHEN REENTREGA.COD_CARGA IS NOT NULL THEN '.Expedicao\TipoPedido::REENTREGA.' ELSE P.COD_TIPO_PEDIDO END COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
                                     FROM CARGA C
                                     LEFT JOIN PEDIDO P ON C.COD_CARGA = P.COD_CARGA 
                                     LEFT JOIN (
@@ -3332,7 +3371,7 @@ class ExpedicaoRepository extends EntityRepository {
                          (SELECT COUNT (PP.COD_PEDIDO_PRODUTO) FROM PEDIDO PED
                              INNER JOIN ETIQUETA_SEPARACAO ETI ON PED.COD_PEDIDO = ETI.COD_PEDIDO WHERE PED.COD_CARGA = C.COD_CARGA) \"QTD. ETIQUETAS CARGA\",
                          P.COD_EXTERNO \"PEDIDO\",
-                         S2.DSC_SIGLA AS \"TIPO PEDIDO\",
+                         TPE.COD_EXTERNO AS \"TIPO PEDIDO\",
                          I.DSC_ITINERARIO \"ITINERARIO\",
                          P.DSC_LINHA_ENTREGA \"LINHA DE ENTREGA\",
                          P.CENTRAL_ENTREGA as \"CENTRAL ENTREGA PEDIDO\",
@@ -3369,7 +3408,7 @@ class ExpedicaoRepository extends EntityRepository {
                         INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                         INNER JOIN SIGLA S ON E.COD_STATUS = S.COD_SIGLA
                         INNER JOIN PEDIDO P ON C.COD_CARGA = P.COD_CARGA
-                        INNER JOIN SIGLA S2 ON S2.COD_SIGLA = P.COD_TIPO_PEDIDO
+                        INNER JOIN TIPO_PEDIDO_EXTERNO TPE ON TPE.COD_TIPO_PEDIDO_EXPEDICAO = P.COD_TIPO_PEDIDO
                         INNER JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO
                         INNER JOIN PEDIDO_PRODUTO PP ON P.COD_PEDIDO = PP.COD_PEDIDO
                          LEFT JOIN PRODUTO PROD ON PP.COD_PRODUTO = PROD.COD_PRODUTO AND PP.DSC_GRADE  = PROD.DSC_GRADE

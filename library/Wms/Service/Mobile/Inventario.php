@@ -204,8 +204,8 @@ class Inventario {
         $embalagemEn = $embalagemRepo->findOneBy(array('codigoBarras' => $params['codigoBarras']));
         $volumeEn = $volumeRepo->findOneBy(array('codigoBarras' => $params['codigoBarras']));
 
-        $idPicking = Endereco::ENDERECO_PICKING;
-        $idPickingDinamico = Endereco::ENDERECO_PICKING_DINAMICO;
+        $idPicking = Endereco::PICKING;
+        $idPickingDinamico = Endereco::PICKING_DINAMICO;
 
         $pickingCorreto = true;
         if ($enderecoEn->getIdCaracteristica() == $idPickingDinamico ||
