@@ -493,7 +493,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
      * Descarta uma nota desvinculando ela do recebimento.
      * <br />Ação pode ser executada em qualquer status em que a nota esteja.
      * <br />
-     * <br /><b>(Obrigatório)</b> idFornecedor -> Código externo do fornecedor
+     * <br />(Obrigatório) idFornecedor -> Código externo do fornecedor
      * <br />(Obrigatório) numero -> Número da Nota fiscal
      * <br />(Obrigatório) serie -> Série da nota fiscal
      * <br />(Opcional) dataEmissao -> Data de emissao da nota fiscal. Formato esperado (d/m/Y) ex:'DD/MM/YYYY' -- Será descontinuado em futuras versões

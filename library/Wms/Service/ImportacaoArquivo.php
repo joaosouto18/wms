@@ -7,11 +7,6 @@ use Wms\Domain\Entity\Importacao\Arquivo;
 
 class ImportacaoArquivo extends AbstractService
 {
-    public function __construct(EntityManager $em)
-    {
-        parent::__construct($em);
-        $this->entity = 'wms:Importacao\Arquivo';
-    }
 
     public function alterarStatus($id)
     {

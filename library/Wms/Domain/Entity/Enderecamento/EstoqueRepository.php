@@ -466,79 +466,71 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoqueAndVolumeByParams($parametros, $maxResult = null, $showPicking = true, $orderBy = null, $returnQuery = false)
     {
-        $SQL = "SELECT DE.DSC_DEPOSITO_ENDERECO as ENDERECO,
-                       DE.COD_DEPOSITO_ENDERECO as COD_ENDERECO,
-                       C.DSC_CARACTERISTICA_ENDERECO as TIPO,
-                       E.COD_PRODUTO,
-                       E.DSC_GRADE,
-                       E.NORMA,
-                       E.COD_VOLUME,
-                       E.VOLUME,
-                       TO_CHAR(E.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy hh:mi:ss') AS DTH_PRIMEIRA_MOVIMENTACAO,
-                       E.RESERVA_ENTRADA,
-                       E.RESERVA_SAIDA,
-                       E.UNITIZADOR,
-                       E.QTD,
+        $loteNd = Lote::LND;
+        $SQL = "SELECT 
+                       DE.DSC_DEPOSITO_ENDERECO ENDERECO,
+                       DE.COD_DEPOSITO_ENDERECO COD_ENDERECO,
+                       C.DSC_CARACTERISTICA_ENDERECO TIPO,
+                       P.COD_PRODUTO,
                        P.DSC_PRODUTO,
-                       E.UMA,
-                       E.DTH_VALIDADE,
-                       E.LOTE
-                  FROM (SELECT NVL(NVL(RE.COD_DEPOSITO_ENDERECO, RS.COD_DEPOSITO_ENDERECO),ESTQ.COD_DEPOSITO_ENDERECO) as COD_DEPOSITO_ENDERECO,
-                               NVL(NVL(RE.COD_PRODUTO, RS.COD_PRODUTO),ESTQ.COD_PRODUTO) as COD_PRODUTO,
-                               NVL(NVL(RE.DSC_GRADE,RS.DSC_GRADE),ESTQ.DSC_GRADE) as DSC_GRADE,
-                               CASE WHEN (ESTQ.VOLUME = '0' OR RE.VOLUME = '0' OR RS.VOLUME = '0') THEN 'PRODUTO UNITÁRIO'
-                                    ELSE PV.DSC_VOLUME
-                               END as VOLUME,
-                               NVL(NVL(RS.VOLUME, RE.VOLUME),ESTQ.VOLUME) as COD_VOLUME,
-                               NVL(RE.QTD_RESERVADA,0) as RESERVA_ENTRADA,
-                               NVL(RS.QTD_RESERVADA,0) as RESERVA_SAIDA,
-                               NVL(ESTQ.QTD,0) as QTD,
-                               NVL(PV.COD_NORMA_PALETIZACAO,0) as NORMA,
-                               ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,
-                               ESTQ.UMA,
-                               UN.DSC_UNITIZADOR AS UNITIZADOR,
-                               ESTQ.DTH_VALIDADE,
-                               NVL(ESTQ.LOTE, NVL(RE.LOTE, RS.LOTE)) AS LOTE
-                          FROM (SELECT DTH_PRIMEIRA_MOVIMENTACAO, QTD, UMA, COD_UNITIZADOR, DTH_VALIDADE,
-                                       COD_DEPOSITO_ENDERECO, COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,'0') as VOLUME, DSC_LOTE AS LOTE FROM ESTOQUE) ESTQ
-                          LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = ESTQ.COD_UNITIZADOR
-                          FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE
-                                             FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME, REP.DSC_LOTE AS LOTE
-                                                     FROM RESERVA_ESTOQUE RE
-                                                    INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
-                                                    WHERE IND_ATENDIDA = 'N'
-                                                      AND TIPO_RESERVA = 'E') R
-                                            GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE) RE
-                                  ON ESTQ.COD_PRODUTO = RE.COD_PRODUTO
+                       P.DSC_GRADE as DSC_GRADE,
+                       NVL(PV.DSC_VOLUME, 'PRODUTO UNITÁRIO') as VOLUME,
+                       NVL(PV.COD_PRODUTO_VOLUME, 0) AS COD_VOLUME,
+                       SUM(NVL(RE.QTD_RESERVADA, 0)) as RESERVA_ENTRADA,
+                       SUM(NVL(RS.QTD_RESERVADA, 0)) as RESERVA_SAIDA,
+                       SUM(NVL(ESTQ.QTD, 0)) as QTD,
+                       NVL(PV.COD_NORMA_PALETIZACAO, 0) as NORMA,
+                       MAX(TO_CHAR(ESTQ.DTH_PRIMEIRA_MOVIMENTACAO,'dd/mm/yyyy hh:mi:ss')) AS DTH_PRIMEIRA_MOVIMENTACAO,
+                       MAX(ESTQ.UMA) AS UMA,
+                       MAX(UN.DSC_UNITIZADOR) AS UNITIZADOR,
+                       ESTQ.DTH_VALIDADE,
+                       NVL(ESTQ.LOTE, NVL(RE.LOTE, RS.LOTE)) AS LOTE
+                FROM (SELECT DTH_PRIMEIRA_MOVIMENTACAO, QTD, UMA, COD_UNITIZADOR, DTH_VALIDADE,
+                             COD_DEPOSITO_ENDERECO, COD_PRODUTO, DSC_GRADE, COD_PRODUTO_VOLUME as VOLUME, DSC_LOTE AS LOTE FROM ESTOQUE) ESTQ
+                LEFT JOIN UNITIZADOR UN ON UN.COD_UNITIZADOR = ESTQ.COD_UNITIZADOR
+                FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE
+                                FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, REP.COD_PRODUTO_VOLUME as VOLUME, REP.DSC_LOTE AS LOTE
+                                      FROM RESERVA_ESTOQUE RE
+                                             INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
+                                      WHERE IND_ATENDIDA = 'N'
+                                        AND TIPO_RESERVA = 'E') R
+                                GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE) RE
+                               ON ESTQ.COD_PRODUTO = RE.COD_PRODUTO
                                  AND ESTQ.DSC_GRADE = RE.DSC_GRADE
                                  AND ESTQ.VOLUME = RE.VOLUME
-                                 AND ESTQ.LOTE = RE.LOTE
+                                 AND NVL(ESTQ.LOTE, '$loteNd') = NVL(RE.LOTE, '$loteNd')
                                  AND ESTQ.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
-                          FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE
-                                             FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0) as VOLUME, REP.DSC_LOTE AS LOTE
-                                                     FROM RESERVA_ESTOQUE RE
-                                                    INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
-                                                    WHERE IND_ATENDIDA = 'N'
-                                                      AND TIPO_RESERVA = 'S') R
-                                            GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE) RS
-                                  ON ESTQ.COD_PRODUTO = RS.COD_PRODUTO
+                FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE
+                                FROM (SELECT REP.QTD_RESERVADA, RE.COD_DEPOSITO_ENDERECO, REP.COD_PRODUTO, REP.DSC_GRADE, REP.COD_PRODUTO_VOLUME as VOLUME, REP.DSC_LOTE AS LOTE
+                                      FROM RESERVA_ESTOQUE RE
+                                             INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
+                                      WHERE IND_ATENDIDA = 'N'
+                                        AND TIPO_RESERVA = 'S') R
+                                GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE) RS
+                               ON ESTQ.COD_PRODUTO = RS.COD_PRODUTO
                                  AND ESTQ.DSC_GRADE = RS.DSC_GRADE
                                  AND ESTQ.VOLUME = RS.VOLUME
-                                 AND ESTQ.LOTE = RS.LOTE
+                                 AND NVL(ESTQ.LOTE, '$loteNd') = NVL(RS.LOTE, '$loteNd')
                                  AND ESTQ.COD_DEPOSITO_ENDERECO = RS.COD_DEPOSITO_ENDERECO
-                          LEFT JOIN PRODUTO_VOLUME PV ON (PV.COD_PRODUTO_VOLUME = ESTQ.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RE.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RS.VOLUME)) E
-                  LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = E.COD_DEPOSITO_ENDERECO
-                  LEFT JOIN CARACTERISTICA_ENDERECO C ON C.COD_CARACTERISTICA_ENDERECO = DE.COD_CARACTERISTICA_ENDERECO
-                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE";
+                LEFT JOIN PRODUTO_VOLUME PV ON (PV.COD_PRODUTO_VOLUME = ESTQ.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RE.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RS.VOLUME)
+                LEFT JOIN PRODUTO P ON
+                  (P.COD_PRODUTO = ESTQ.COD_PRODUTO AND P.DSC_GRADE = ESTQ.DSC_GRADE) OR
+                  (P.COD_PRODUTO = RE.COD_PRODUTO AND P.DSC_GRADE = RE.DSC_GRADE) OR
+                  (P.COD_PRODUTO = RS.COD_PRODUTO AND P.DSC_GRADE = RS.DSC_GRADE)
+                LEFT JOIN DEPOSITO_ENDERECO DE ON
+                  (DE.COD_DEPOSITO_ENDERECO = ESTQ.COD_DEPOSITO_ENDERECO) OR
+                  (DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO) OR
+                  (DE.COD_DEPOSITO_ENDERECO = RS.COD_DEPOSITO_ENDERECO)
+                LEFT JOIN CARACTERISTICA_ENDERECO C ON C.COD_CARACTERISTICA_ENDERECO = DE.COD_CARACTERISTICA_ENDERECO";
 
         $SQLWhere = " WHERE 1 = 1 ";
         if (isset($parametros['idProduto']) && !empty($parametros['idProduto'])) {
             $parametros['idProduto'] = ProdutoUtil::formatar($parametros['idProduto']);
-            $SQLWhere .= " AND E.COD_PRODUTO = '" . $parametros['idProduto'] . "' ";
+            $SQLWhere .= " AND P.COD_PRODUTO = '" . $parametros['idProduto'] . "' ";
             if (isset($parametros['grade']) && !empty($parametros['grade'])) {
-                $SQLWhere .= " AND E.DSC_GRADE = '" . $parametros['grade'] . "'";
+                $SQLWhere .= " AND P.DSC_GRADE = '" . $parametros['grade'] . "'";
             } else {
-                $SQLWhere .= " AND E.DSC_GRADE = 'UNICA'";
+                $SQLWhere .= " AND P.DSC_GRADE = 'UNICA'";
             }
         }
 
@@ -547,7 +539,7 @@ class EstoqueRepository extends EntityRepository
             $SQLWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO <> " . $caracteristicaPicking;
         }
         if (isset($parametros['lote']) && !empty($parametros['lote'])) {
-            $SQLWhere .= " AND E.LOTE = '" . $parametros['lote'] ."'";
+            $SQLWhere .= " AND NVL(ESTQ.LOTE, NVL(RE.LOTE, RS.LOTE)) = '" . $parametros['lote'] ."'";
         }
         if (isset($parametros['rua']) && !empty($parametros['rua'])) {
             $SQLWhere .= " AND DE.NUM_RUA = " . $parametros['rua'];
@@ -562,45 +554,21 @@ class EstoqueRepository extends EntityRepository
             $SQLWhere .= " AND DE.NUM_APARTAMENTO = " . $parametros['apto'];
         }
         if (isset($parametros['volume']) && !empty($parametros['volume'])) {
-            $SQLWhere .= " AND E.COD_VOLUME = " . $parametros['volume'];
+            $SQLWhere .= " AND PV.COD_PRODUTO_VOLUME = " . $parametros['volume'];
         }
 
         if ($orderBy != null) {
             $SQLOrderBy = $orderBy;
         } else {
-            $SQLOrderBy = " ORDER BY E.DTH_VALIDADE, E.COD_PRODUTO, E.DSC_GRADE, E.NORMA, E.VOLUME, C.COD_CARACTERISTICA_ENDERECO, E.DTH_PRIMEIRA_MOVIMENTACAO";
+            $SQLOrderBy = " ORDER BY ESTQ.DTH_VALIDADE, P.COD_PRODUTO, P.DSC_GRADE, NORMA, VOLUME, C.COD_CARACTERISTICA_ENDERECO, ESTQ.DTH_PRIMEIRA_MOVIMENTACAO";
         }
 
+        $SQLgroupBy = " GROUP BY DE.DSC_DEPOSITO_ENDERECO, DE.COD_DEPOSITO_ENDERECO, C.DSC_CARACTERISTICA_ENDERECO, P.COD_PRODUTO, P.DSC_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME, NVL(PV.COD_PRODUTO_VOLUME,0), NVL(PV.COD_NORMA_PALETIZACAO,0), ESTQ.DTH_VALIDADE, NVL(ESTQ.LOTE, NVL(RE.LOTE, RS.LOTE))";
         if ($returnQuery == true) {
-            return $SQL . $SQLWhere . $SQLOrderBy;
+            return $SQL . $SQLWhere . $SQLgroupBy . $SQLOrderBy;
         }
 
-        $query = "SELECT 
-                       ENDERECO,
-                       COD_ENDERECO,
-                       TIPO,
-                       COD_PRODUTO,
-                       DSC_GRADE,
-                       NORMA,
-                       COD_VOLUME,
-                       VOLUME,
-                       DTH_PRIMEIRA_MOVIMENTACAO,
-                       SUM(RESERVA_ENTRADA) AS RESERVA_ENTRADA,
-                       SUM(RESERVA_SAIDA) AS RESERVA_SAIDA,
-                       UNITIZADOR,
-                       QTD,
-                       DSC_PRODUTO,
-                       UMA,
-                       DTH_VALIDADE,
-                       LOTE
-                  FROM ($SQL $SQLWhere )
-                  GROUP BY ENDERECO,  COD_ENDERECO,  TIPO, COD_PRODUTO, DSC_GRADE, NORMA, COD_VOLUME, VOLUME, QTD,
-                        DTH_PRIMEIRA_MOVIMENTACAO, DSC_PRODUTO, UMA, UNITIZADOR, DTH_VALIDADE, LOTE
-                   ORDER BY DTH_VALIDADE, COD_PRODUTO, DSC_GRADE, NORMA, VOLUME, DTH_PRIMEIRA_MOVIMENTACAO";
-
-        $result = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
-
-
+        $result = $this->getEntityManager()->getConnection()->query("$SQL $SQLWhere $SQLgroupBy")->fetchAll(\PDO::FETCH_ASSOC);
 
         if (isset($maxResult) && !empty($maxResult)) {
             if ($maxResult != false) {
@@ -630,9 +598,6 @@ class EstoqueRepository extends EntityRepository
                     }else{
                         $result[$key]['QTD_EMBALAGEM'] = $vetEstoque;
                     }
-
-
-                    //$result[$key]['QTD_EMBALAGEM'] = implode('<br />', $vetEstoque);
                 }
             }
         }

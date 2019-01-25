@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity\Produto;
 
 use Doctrine\Common\Collections\ArrayCollection,
     Wms\Domain\Entity\Produto;
+use Wms\Domain\Configurator;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Core\Util\Converter;
 $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
@@ -588,4 +589,8 @@ class Embalagem {
         return $this;
     }
 
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
+    }
 }

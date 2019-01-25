@@ -5,12 +5,35 @@ namespace Wms\Domain\Entity;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
+use Wms\Domain\Configurator;
 
 /**
  * Deposito
  */
 class OrdemServicoRepository extends EntityRepository
 {
+
+    /**
+     * @param $params
+     * @param bool $executeFlush
+     * @return OrdemServico
+     * @throws \Exception
+     */
+    public function addNewOs($params, $executeFlush = true)
+    {
+        try {
+            /** @var OrdemServico $entity */
+            $entity = Configurator::configure(new $this->_entityName, $params);
+
+            $this->_em->persist($entity);
+            if ($executeFlush) $this->_em->flush();
+
+            return $entity;
+
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
 
     /**
      *
@@ -109,18 +132,22 @@ class OrdemServicoRepository extends EntityRepository
     /**
      * Finaliza uma ordem de serviço setando os parametros
      *
-     * @param integer $idOrdemServico
-     * @return boolean
+     * @param $idOrdemServico
+     * @param string $observacao
+     * @param null $ordemServicoEntity
+     * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function finalizar($idOrdemServico, $observacao='Recebimento Finalizado.')
+    public function finalizar($idOrdemServico, $observacao='Recebimento Finalizado.', $ordemServicoEntity = null, $flush = true)
     {
-        $ordemServicoEntity = $this->find($idOrdemServico);
+        if (empty($ordemServicoEntity))
+            $ordemServicoEntity = $this->find($idOrdemServico);
 
         $ordemServicoEntity->setDscObservacao($observacao)
             ->setDataFinal(new \DateTime());
 
         $this->getEntityManager()->persist($ordemServicoEntity);
-        $this->getEntityManager()->flush();
+        if ($flush) $this->getEntityManager()->flush();
 
         return true;
     }

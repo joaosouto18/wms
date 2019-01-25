@@ -43,30 +43,11 @@ class Web_LoteVirgemController extends Action{
         $params = $this->_getAllParams();
         $lotes = $loteRepository->getLotes($params);
 
-        /*
-         * Caso for preciso criar um parametro para modelo de etiqueta
-         * $this->getSystemParameterValue("MODELO_ETIQUETA_LOTE");
-         */
-        $modelo = 3;
-        $gerarEtiqueta = null;
-        switch ($modelo) {
-            case 1:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
-                break;
-            case 2:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
-                break;
-            case 3:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(75, 45));
-                break;
-            case 4:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
-                break;
-            case 5:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(60, 60));
-                break;
-        }
+        $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_LOTE");
+        $xy = explode(",", $this->getSystemParameterValue("TAMANHO_ETIQUETA_LOTE"));
+        if (empty($xy) && count($xy) < 2) throw new Exception("As dimensões da etiqueta de lote não foram definidas");
 
+        $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', $xy);
         $gerarEtiqueta->etiquetaLote($lotes, $modelo);
     }
 

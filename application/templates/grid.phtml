@@ -217,7 +217,7 @@ $attribs = $grid->getAttribs();
                 <?php } ?>
                 <?php foreach ($grid->getColumns() as $column) { ?>
                 <?php
-                    $style = 'style="text-align:<?php echo $column->getAlign(false); ?>"';
+                    $style = 'style="text-align:' . $column->getAlign(false) . '"';
                     if ($column->getVisible() == false) {
                         $style = 'style="display:none;"';
                     }

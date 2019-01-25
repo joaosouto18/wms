@@ -1,6 +1,8 @@
 <?php
 namespace Wms\Domain\Entity\Armazenagem;
 
+use Wms\Domain\Configurator;
+
 /**
  * Atividade
  *
@@ -36,6 +38,11 @@ class LinhaSeparacao
     {
 	$this->descricao = mb_strtoupper($descricao, 'UTF-8');
         return $this;
+    }
+
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
     }
 
 }

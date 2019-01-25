@@ -122,12 +122,18 @@ input, select, textarea {
     border: 1px solid #CCC;
 }
 
-input[type="submit"]{
+input[type="submit"], input[type="button"]{
     margin-top: 20px;
     height: 28px;
     line-height: 28.5px;
 }
 button {
+    height: 28px;
+    line-height: 28.5px;
+}
+
+button.btn.btn-form {
+    margin-top: 20px;
     height: 28px;
     line-height: 28.5px;
 }
@@ -250,7 +256,7 @@ input.date:focus, input.date:hover{
 
 select {
     height: 27px !important;
-    min-width: 100px;
+    min-width: 50px;
     /*    line-height:20px;
         height:20px;*/
 }

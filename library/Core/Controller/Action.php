@@ -38,7 +38,7 @@ abstract class Action extends \Zend_Controller_Action
     /**
      * Retrieve the ServiceLocator Container.
      *
-     * @return Bisna\Base\Service\ServiceLocator
+     * @return \Bisna\Base\Service\ServiceLocator
      */
     public function getServiceLocator()
     {

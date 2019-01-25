@@ -255,19 +255,24 @@ class PaleteRepository extends EntityRepository {
             $groupNorma = " ";
         }
 
-        $SQL = "SELECT SUM(QTD.QTD) as QTD, QTD.COD_NORMA_PALETIZACAO, SUM(QTD.PESO) AS PESO
-                  FROM (SELECT P.UMA, PP.QTD, $norma as COD_NORMA_PALETIZACAO, SUM(P.PESO) AS PESO
+        $SQL = "SELECT SUM(QTD.QTD) as QTD, QTD.COD_NORMA_PALETIZACAO, SUM(QTD.PESO) AS PESO, DSC_LOTE as LOTE
+                  FROM (SELECT P.UMA, PP.QTD, $norma as COD_NORMA_PALETIZACAO, SUM(P.PESO) AS PESO, PP.DSC_LOTE
                           FROM PALETE P
-                     LEFT JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
+                     INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                          WHERE PP.COD_PRODUTO = '$idProduto' 
                            AND PP.DSC_GRADE = '$grade'
                            AND P.COD_RECEBIMENTO = '$idRecebimento'
                            AND (P.IND_IMPRESSO <> 'N' OR P.COD_STATUS <> " . Palete::STATUS_EM_RECEBIMENTO . ")
                      GROUP BY
-                        P.UMA, PP.QTD $groupNorma
+                        P.UMA, PP.QTD, PP.DSC_LOTE $groupNorma
                            ) QTD
-                 GROUP BY QTD.COD_NORMA_PALETIZACAO";
-        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+                 GROUP BY QTD.COD_NORMA_PALETIZACAO, DSC_LOTE";
+
+        $result = [];
+        foreach ($this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC) as $item) {
+            $result["$item[COD_NORMA_PALETIZACAO]-+-$item[LOTE]"] = $item;
+        }
+
         return $result;
     }
 
@@ -860,12 +865,12 @@ class PaleteRepository extends EntityRepository {
             }
         }
 
-        foreach ($qtdEnderecada as $enderecado) {
-            foreach ($qtdRecebida as $key => $recebido) {
-                if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']){
-                    $qtdRecebida[$key]['QTD'] = $recebido['QTD'] - $enderecado['QTD'];
-                    $qtdRecebida[$key]['PESO'] = $recebido['PESO'] - $enderecado['PESO'];
-                }
+        foreach ($qtdEnderecada as $key => $enderecado) {
+            $recebido = $qtdRecebida[$key];
+            if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']
+                && $recebido["LOTE"] == $enderecado["LOTE"]){
+                $qtdRecebida[$key]['QTD'] = $recebido['QTD'] - $enderecado['QTD'];
+                $qtdRecebida[$key]['PESO'] = $recebido['PESO'] - $enderecado['PESO'];
             }
         }
 
@@ -1029,48 +1034,49 @@ class PaleteRepository extends EntityRepository {
                 if(isset($unitizador['LOTE'])) {
                     $vetLote = $unitizador['LOTE'];
                 }
-                for ($i = 1; $i <= $qtdPaletes; $i++) {
-                    $arrayPaleteLote = array();
-                    $arrayUltimoPaleteLote = array();
-                    $break = 0;
-                    $qtdNoPalete = $unitizador['NUM_NORMA'];
-                    $pesoTotal += $pesoPorPalete;
-                    $pesoTotalPaletes += $pesoPorPalete;
-                    if(isset($vetLote)) {
-                        foreach ($vetLote as $key => $prodLote) {
-                            if ($vetLote[$key]['QTD'] > 0) {
-                                while ($vetLote[$key]['QTD'] != 0) {
-                                    if ($vetLote[$key]['QTD'] >= $qtdNoPalete) {
-                                        $vetLote[$key]['QTD'] = $vetLote[$key]['QTD'] - $qtdNoPalete;
-                                        $arrayPaleteLote[$prodLote['LOTE']] = $qtdNoPalete;
-                                        $break = 1;
-                                        break;
-                                    } else {
-                                        $arrayPaleteLote[$prodLote['LOTE']] = $vetLote[$key]['QTD'];
-                                        $qtdNoPalete = $qtdNoPalete - $vetLote[$key]['QTD'];
-                                        $vetLote[$key]['QTD'] = 0;
-                                    }
-                                }
-                                $arrayUltimoPaleteLote[$prodLote['LOTE']] = $vetLote[$key]['QTD'];
+
+                $newPalete = function(){ return [ 'qtdTotal' => 0, 'lotes' => [] ]; };
+
+                $paletesCompletos = [];
+                $ultimoPalete = [];
+                $qtdNoPalete = $unitizador['NUM_NORMA'];
+                if (isset($vetLote) && !empty($vetLote)) {
+                    $palete = $newPalete();
+                    foreach ($vetLote as $lote) {
+                        $incremento = Math::adicionar($palete['qtdTotal'], $lote['QTD']);
+                        if (Math::compare($incremento,$qtdNoPalete, '<=')){
+                            $palete['qtdTotal'] = $incremento;
+                            $palete['lotes'][$lote['LOTE']] = $lote['QTD'];
+                            if ($incremento == $qtdNoPalete) {
+                                $paletesCompletos[] = $palete;
+                                $palete = $newPalete();
                             }
-                            if ($break == 1) {
-                                break;
-                            }
+                            $ultimoPalete = $palete;
+                        } else {
+                            $excedente = Math::subtrair($incremento, $qtdNoPalete);
+                            $palete['qtdTotal'] = $qtdNoPalete;
+                            $palete['lotes'][$lote['LOTE']] = Math::subtrair($lote['QTD'], $excedente);
+                            $paletesCompletos[] = $palete;
+                            $palete = $newPalete();
+                            $palete['qtdTotal'] = $excedente;
+                            $palete['lotes'][$lote['LOTE']] = $excedente;
                         }
                     }
-                    $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $unitizador['NUM_NORMA'], $dataValidade, $tipoEnderecamento, $pesoPorPalete, $arrayPaleteLote);
+                }
+
+                for ($i = 0; $i < floor($qtdPaletes); $i++) {
+                    $pesoTotal += $pesoPorPalete;
+                    $pesoTotalPaletes += $pesoPorPalete;
+                    $lote = (isset($paletesCompletos[$i]) && !empty($paletesCompletos[$i])) ? $paletesCompletos[$i] : null;
+
+                    $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $unitizador['NUM_NORMA'], $dataValidade, $tipoEnderecamento, $pesoPorPalete, $lote);
                 }
                 if ($qtdUltimoPalete > 0) {
                     //TRAVA PARA GERAR O PALETE COM A QUANTIDADE QUEBRADA SOMENTE SE TIVER FINALIZADO
                     if ($recebimentoFinalizado == true || ($qtdTotalConferido == $qtdNotaFiscal)) {
                         $pesoUltimoPalete = $peso - $pesoTotalPaletes;
                         if(!isset($arrayUltimoPaleteLote) && isset($vetLote)){
-                            foreach ($vetLote as $lote){
-                                if($lote['QTD'] > 0){
-                                    $arrayUltimoPaleteLote[$lote['LOTE']] = $lote['QTD'];
-                                }
-                            }
-                            $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $qtdUltimoPalete, $dataValidade, $tipoEnderecamento, $pesoUltimoPalete, $arrayUltimoPaleteLote);
+                            $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $qtdUltimoPalete, $dataValidade, $tipoEnderecamento, $pesoUltimoPalete, $ultimoPalete);
                         }else {
                             $this->salvarPaleteEntity($produtoEn, $recebimentoEn, $unitizadorEn, $statusEn, $volumes, $idNorma, $qtdUltimoPalete, $dataValidade, $tipoEnderecamento, $pesoUltimoPalete);
                         }
@@ -1095,11 +1101,11 @@ class PaleteRepository extends EntityRepository {
         $this->_em->persist($paleteEn);
         foreach ($volumes as $volume) {
             if (!empty($arrayPaleteLote)) {
-                foreach ($arrayPaleteLote as $key => $lote) {
+                foreach ($arrayPaleteLote['lotes'] as $key => $qtd) {
                     $paleteProduto = new PaleteProduto();
                     $paleteProduto->setUma($paleteEn);
                     $paleteProduto->setCodNormaPaletizacao($idNorma);
-                    $paleteProduto->setQtd($arrayPaleteLote[$key]);
+                    $paleteProduto->setQtd($qtd);
                     $paleteProduto->setCodProduto($produtoEn->getId());
                     $paleteProduto->setGrade($produtoEn->getGrade());
                     $paleteProduto->setProduto($produtoEn);

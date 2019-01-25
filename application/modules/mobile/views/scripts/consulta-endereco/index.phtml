@@ -38,8 +38,10 @@
                         if (data.status === 'ok') {
                             var txt = '___________________________________<br>';
                             $.each(data.result, function (key, value) {
-                                txt += value.produto + ' - ';
-                                txt += value.desc + ' ( ' + value.grade + ' ) - ' + value.qtd + '<br> ';
+                                var lote = "";
+                                if (!isEmpty(value.lote)) lote = ' (' + value.lote  + ')';
+                                txt += value.produto +  lote + ' - ';
+                                txt += value.desc +' - ' + value.qtd +  '<br> ';
                                 if (value.dataValidade !== null && value.dataValidade !== undefined) {
                                     txt += value.dataValidade + '<br>';
                                 }

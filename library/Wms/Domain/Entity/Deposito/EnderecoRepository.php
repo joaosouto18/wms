@@ -966,12 +966,11 @@ class EnderecoRepository extends EntityRepository {
     }
 
     /**
-     * @param $codDepositoEndereco
+     * @param $enderecoEn EnderecoEntity
      * @param string $opcao | S or N
      */
-    public function bloqueiaOuDesbloqueiaInventario($codDepositoEndereco, $opcao = 'S', $flush = true) {
-        $enderecoEn = $this->find($codDepositoEndereco);
-        $enderecoEn->setinventarioBloqueado($opcao);
+    public function bloqueiaOuDesbloqueiaInventario($enderecoEn, $opcao = 'S', $flush = true) {
+        $enderecoEn->setInventarioBloqueado($opcao);
         $this->_em->persist($enderecoEn);
         if ($flush == true) {
             $this->_em->flush();
@@ -1050,6 +1049,7 @@ class EnderecoRepository extends EntityRepository {
                       WHERE PE.COD_BARRAS = '$codbarras' OR PV.COD_BARRAS = '$codbarras'";
 
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        //var_dump($array);
         return $array;
 
     }
@@ -1058,6 +1058,9 @@ class EnderecoRepository extends EntityRepository {
     {
 
         $enderecoEn = $this->findOneBy(array('descricao' => $endereco));
+
+        $usaGrade = ($this->getSystemParameterValue("UTILIZA_GRADE") == "S");
+
         if (!isset($enderecoEn) || empty($enderecoEn)) {
             throw new \Exception("Endereço não encontrado");
         } else {
@@ -1102,16 +1105,19 @@ class EnderecoRepository extends EntityRepository {
                     $dataValidade = !is_null($item->getValidade()) ? $item->getValidade()->format('d/m/Y') : null;
                     if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
                         $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $item->getQtd());
-                        $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                            'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens),
-                            'dataValidade' => $dataValidade);
-                        $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()] = $produto;
+                        $produto = array('produto' => $produtoEn->getId(),
+                            'desc' => (!$usaGrade) ? $produtoEn->getDescricao() : $produtoEn->getDescricao() . " ( " .$produtoEn->getGrade() . " ) ",
+                            'qtd' => implode(' + ', $vetEmbalagens),
+                            'dataValidade' => $dataValidade, 'lote' => $item->getLote());
+                        $result[$produtoEn->getId() . "---" . $produtoEn->getGrade() . "---" .$item->getLote()] = $produto;
                     } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
                         /** @var Produto\Volume $volumeEn */
                         $volumeEn = $item->getProdutoVolume();
-                        $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()."-".$volumeEn->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                            'desc' => $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ")", 'qtd' => $item->getQtd(),
-                            'dataValidade' => $dataValidade);
+                        $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()."-".$volumeEn->getId(). "---" .$item->getLote()] = array('produto' => $produtoEn->getId(),
+                            'desc' => (!$usaGrade) ? $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ")" :
+                                $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ") ( " .$produtoEn->getGrade() . " ) ",
+                            'qtd' => $item->getQtd(),
+                            'dataValidade' => $dataValidade, 'lote' => $item->getLote());
                     }
                 }
             }

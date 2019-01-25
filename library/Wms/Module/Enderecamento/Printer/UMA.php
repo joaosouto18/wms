@@ -7,6 +7,7 @@ use Core\Pdf,
     Wms\Domain\Entity\Enderecamento\Palete;
 use Wms\Domain\Entity\Deposito;
 use Wms\Domain\Entity\NotaFiscal\Item;
+use Wms\Math;
 
 class UMA extends Pdf {
 
@@ -147,7 +148,7 @@ class UMA extends Pdf {
 
             if ($modelo == 1) {
                 $this->layout01($palete, $produtoEn, $font_size, $line_width, $picking, $params);
-            } else if ($modelo == 2) {
+            } else if ($modelo == 2 || $modelo == 6) {
                 $this->layout02($palete, $produtoEn, $font_size, $line_width, $picking, $params);
             } else if ($modelo == 4) {
                 $this->layout04($palete, $produtoEn, $font_size, $line_width, $picking);
@@ -383,15 +384,35 @@ class UMA extends Pdf {
         }
 
         $this->SetFont('Arial', 'B', $size);
-        $this->SetXY(145, 110);
+        $this->SetXY(145, 95);
         $this->Cell(-15, 30, $qtd, 0, 1);
 
         $this->SetFont('Arial', 'B', 32);
-        $this->SetXY(10, 110);
+        $this->SetXY(10, 95);
         $this->Cell(35, 30, utf8_decode("Prod"), 0, 0);
 
         $this->SetFont('Arial', 'B', 70);
         $this->Cell(40, 30, $codigoProduto, 0, 1);
+
+        if (!empty($palete["lotes"])) {
+            $this->SetFont('Arial', 'B', 40);
+            $this->SetXY(10, 125);
+            $this->Cell(55, 20, utf8_decode("LOTES:"), 0, 0);
+            $strLotesWidth = 220;
+            while (!empty($palete["lotes"])) {
+                $strLotes = "";
+                foreach ($palete["lotes"] as $key => $lote) {
+                    if (Math::compare(Math::adicionar($this->GetStringWidth($strLotes), $this->GetStringWidth($lote)), $strLotesWidth, "<=")) {
+                        $strLotes = (empty($strLotes)) ? $lote : "$strLotes, $lote";
+                        unset($palete["lotes"][$key]);
+                    } else {
+                        break;
+                    }
+                }
+                $this->SetX(65);
+                $this->Cell($strLotesWidth, 20, $strLotes,0,1);
+            }
+        }
     }
 
     public function layout01($palete, $produtoEn, $font_size, $line_width, $enderecoPicking, $params = null) {

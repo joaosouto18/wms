@@ -105,7 +105,7 @@ class ServiceLocator
      * Loads an external Service.
      *
      * @param string $name External service name
-     * @return Bisna\Base\Service\AbstractService
+     * @return \Bisna\Base\Service\AbstractService
      */
     public function getService($name)
     {

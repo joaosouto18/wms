@@ -2,6 +2,7 @@
 
 namespace Bisna\Base\Domain\Entity;
 
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr,
     Doctrine\ORM\Mapping\MappingException,
     Bisna\Base\Service as BaseService;
@@ -93,9 +94,9 @@ class EntityService extends BaseService\Service
      * @param integer|string $id
      * @return Bisna\Base\Domain\Entity\Entity
      */
-    public function get($id)
+    public function find($id)
     {
-	return $this->getRepository($this->options['entityManagerRead'])->find($id);   
+	    return $this->getRepository($this->options['entityManagerRead'])->find($id);
     }
 
     public function findBy(array $criteria)
@@ -105,7 +106,7 @@ class EntityService extends BaseService\Service
     
     public function findOneBy(array $criteria)
     {
-	return $this->getRepository($this->options['entityManagerRead'])->findOneBy($criteria);
+	    return $this->getRepository($this->options['entityManagerRead'])->findOneBy($criteria);
     }
 
     /**
@@ -203,7 +204,7 @@ class EntityService extends BaseService\Service
      *
      * @param string $emName
      *
-     * @return Bisna\Base\Domain\Entity\EntityRepository
+     * @return EntityRepository
      */
     protected function getRepository($emName = null)
     {

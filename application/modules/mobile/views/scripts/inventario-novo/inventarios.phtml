@@ -1,0 +1,756 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Tarcísio César
+ * Date: 14/12/2018
+ * Time: 10:51
+ */
+?>
+
+<script src="<?php echo $this->baseUrl('wms/jquery.mask.js') ?>"></script>
+<style>
+    .btn {
+        width: 95%;
+    }
+
+    .lbl-headers {
+        font-size: 15px;
+        font-weight: bold;
+        padding: 0 6px;
+    }
+
+    div.input-area {
+        padding: 10px;
+        margin: 10px 15px;
+        background-color: #f3f3f3;
+        border-radius: 10px;
+    }
+
+    html, body {
+        margin:0;
+        height: 100%;
+    }
+
+    .btn-spacing {
+        margin-top: 5px;
+    }
+
+    .list-area {
+        overflow-y: auto;
+        max-height: inherit
+    }
+
+    .list-item {
+        width: 100%!important;
+        margin: 3px 0px !important;
+        padding: 0px !important;
+        text-align: center!important;
+        font-weight: bold;
+    }
+
+    .div-loader {
+        float:left;
+        z-index: 9000;
+        padding-top: 30px;
+        position: absolute;
+        background: #FFFFFF;
+        width: 100%;
+        height: inherit;
+    }
+
+    .btn-zerarProduto {
+        font-family: Arial;
+        color: #ffffff;
+        font-size: 12px;
+        background: #d93434;
+        padding: 2px 5px;
+        text-decoration: none;
+    }
+
+    .btn-zerarProduto:hover {
+        background: #781f08;
+        background-image: -webkit-linear-gradient(top, #781f08, #9e100b);
+        background-image: -moz-linear-gradient(top, #781f08, #9e100b);
+        background-image: -ms-linear-gradient(top, #781f08, #9e100b);
+        background-image: -o-linear-gradient(top, #781f08, #9e100b);
+        background-image: linear-gradient(to bottom, #781f08, #9e100b);
+        text-decoration: none;
+    }
+</style>
+
+<span id="dummy"></span>
+<bgsound id="bgSoundId" loop="0" volume="100" />
+
+<div id="loader" class="div-loader">
+    <span style="font-size: 18px">Carregando...</span>
+    <img src="/img/ajax-bar-loader.gif" alt="loading">
+</div>
+
+<div id="messenger"></div>
+
+<!--<div style="display: none" id="divBtnBack">-->
+<!--    <button class="btn btnAlerta" id="btn-back-action">Voltar</button>-->
+<!--</div>-->
+
+<div id="headers" style="padding-top: 5px">
+    <div class="lbl-headers" id="lbl-inventario"></div>
+    <div class="lbl-headers" id="lbl-contagem"></div>
+    <div class="lbl-headers" id="lbl-endereco"></div>
+    <div class="lbl-headers" id="lbl-produto"></div>
+    <div class="lbl-headers" id="lbl-embvol"></div>
+</div>
+
+<div id="list-inventarios" style="display: none;">
+    <h3>Inventários disponíveis</h3>
+    <p id="list-empty">Nenhum Inventário liberado para conferência.</p>
+    <div id="list"></div>
+</div>
+
+<div id="contagens-by-inventario" style="display: none">
+    <h3>Contagens</h3>
+    <div id="list-contagens"></div>
+</div>
+
+<div id="bipagem-endereco" style="display: none">
+    <div class="input-area">
+        <div class="field">
+            <form>
+                <label for="cod-barras-end" class="field required"><div class="lbl-headers">Buscar Endereço</div></label>
+                <input type="text" name="cod-barras-end" id="cod-barras-end" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
+            </form>
+        </div>
+        <button id="btn-consultar-endereco" class="btn btn-spacing">Buscar</button>
+    </div>
+    <div class="list-area" id="list-enderecos"></div>
+</div>
+
+<div id="bipagem-produto" style="display: none">
+    <div class="input-area">
+        <div class="field">
+            <form>
+                <label for="cod-barras-prod" class="field required"><div class="lbl-headers">Buscar Produto</div></label>
+                <input type="text" name="cod-barras-prod" id="cod-barras-prod" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
+            </form>
+        </div>
+        <button id="btn-consultar-produto" class="btn btn-spacing">Buscar</button><br>
+        <button id="btn-finalizar" class="btn btn-spacing gradientBtnSuccess"></button>
+    </div>
+    <div class="list-area" id="list-produtos"></div>
+</div>
+
+<div id="conferencia" style="display: none">
+    <div class="input-area">
+        <form>
+            <div class="field">
+                <label for="qtd" class="field required"><div class="lbl-headers">Quantidade</div></label>
+                <input type="text" name="qtd" id="qtd" value="" class="required focus" size="10" maxlength="15">
+            </div>
+            <div class="field" id="div-validade">
+                <label for="validade" class="field optional"><div class="lbl-headers">Validade</div></label>
+                <input type="text" name="validade" id="validade" size="10" maxlength="10" placeholder="dd/mm/aaaa" alt="date">
+            </div>
+            <div class="field" id="div-lote">
+                <label for="lote" class="field optional"><div class="lbl-headers">Lote</div></label>
+                <input type="text" name="lote" id="lote" value="" size="10" maxlength="8" placeholder="Ex.: LI001">
+            </div>
+        </form>
+        <button id="btn-registrar" class="btn btn-spacing">Registrar</button>
+    </div>
+</div>
+
+<script>
+    $(function () {
+
+        $("#validade").mask('00/00/0000');
+
+        var inventarios = [];
+        var invSelecioando = {};
+        var contagens = [];
+        var contSelecioando = {};
+        var enderecos = [];
+        var contEndSelecionado = null;
+        var produtos = [];
+        var elemBipado = {};
+        var usaGrade = <?php echo ($this->usaGrade) ? "true" : "false"; ?>;
+        var showing = 0;
+        var views = ["loader","list-inventarios","contagens-by-inventario","bipagem-endereco","bipagem-produto","conferencia"];
+        var headersArr = ["lbl-inventario", "lbl-contagem", "lbl-endereco", "lbl-produto", "lbl-embvol"];
+        var endConfig = <?php echo $this->endConfig; ?>;
+        var msgShowed = true;
+
+        function myIndexOf(collection, target) {
+            var index;
+            for(var val in collection){
+                if(collection[val] === target){
+                    index = val;
+                    return index;
+                }
+            }
+        }
+
+        $(document).ready(function () {
+            getInventarios();
+        });
+
+        var disarmEvent = function (event) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
+        };
+
+        var dispareSound = function (type) {
+            var songFile = "/alarme_curto.mp3";
+            if (type === "success") {
+                songFile = "/confirm2.mp3";
+            } else if (type === "warning") {
+                songFile = "/warning.mp3";
+            }
+
+            $("#dummy").html('<embed src="' + songFile + '" hidden="true" autostart="true" loop="false" />');
+        };
+
+        var notificar = function (type, msg, instantShowed) {
+            if (type === undefined) type = "success";
+
+            dispareSound(type);
+
+            $("#messenger").html(
+                '<ul class="flashMessenger">' +
+                '    <li class="' + type + '_message" id="">' +
+                '        <div style="display:block; float:right;">' +
+                '            <a href="#" class="fmBtnClose">X</a>' +
+                '        </div>' +
+                '        <div style="display: block;" id="msg-text">' + msg + '</div>' +
+                '    </li>' +
+                '</ul>');
+
+            if (type === "error") alert(msg);
+            msgShowed = instantShowed;
+        };
+
+        $(".fmBtnClose").live("click", function () {
+            $("#messenger").empty();
+        });
+
+        var formatEndereco = function (endereco) {
+            var cleared = endereco.slice(0, endereco.length - 1);
+            var rua = endConfig.rua.toString();
+            var predio = endConfig.predio.toString();
+            var nivel = endConfig.nivel.toString();
+            var apto = endConfig.apartamento.toString();
+            var endArr = cleared.split(".");
+            if (endArr.length === 4) {
+
+                rua = (rua + endArr[0].toString()).slice(-rua.length);
+                predio = (predio + endArr[1].toString()).slice(-predio.length);
+                nivel = (nivel + endArr[2].toString()).slice(-nivel.length);
+                apto = (apto + endArr[3].toString()).slice(-apto.length);
+
+            } else if (endArr.length === 1) {
+                var maskLength = endConfig.mask.replace(/\D/g,'').length;
+
+                if (cleared.length < maskLength) return false;
+
+                var endTrimned = cleared.slice(cleared.length - maskLength , cleared.length);
+                rua = endTrimned.slice(0 , rua.length);
+                predio = endTrimned.slice(rua.length , rua.length + predio.length);
+                nivel = endTrimned.slice(rua.length + predio.length , rua.length + predio.length + nivel.length);
+                apto = endTrimned.slice(rua.length + predio.length + nivel.length , rua.length + predio.length + nivel.length + apto.length);
+            } else {
+                notificar("error", "Formato de endereço incorreto!", true)
+            }
+
+            return [rua,predio,nivel,apto].join(".");
+        };
+
+        var changeViewer = function (showTo) {
+            $.each(views, function (k,v) {
+                $("#"+v).hide();
+            });
+
+            if (showTo === undefined || myIndexOf(views, showTo) < 0) {
+                showTo = views[1];
+            }
+
+            showing = myIndexOf(views, showTo);
+
+            $.each(headersArr, function (k,v) {
+                if ( k > (showing - 2))
+                    $("#" + v).hide();
+                else
+                    $("#" + v).show();
+            });
+
+            if (showTo === "conferencia")
+                $("#lbl-embvol").show();
+            else
+                $("#lbl-embvol").hide();
+
+            if (showTo !== "loader") {
+                if (msgShowed) {
+                    $("#messenger").empty();
+                } else {
+                    msgShowed = true;
+                }
+            }
+            $("#"+showTo).show();
+        };
+
+        $("#btn-back-action").click(function () {
+            changeViewer(views[(showing - 1)])
+        });
+
+        var prepareListInventarios = function () {
+            if (inventarios.length) {
+                $("#list-empty").hide();
+                $.each(inventarios, function (k, v) {
+                    var dsc = "";
+                    if (v.descricao === null) {
+                        dsc = "Inventário " + v.id;
+                    } else {
+                        dsc = "Inv. " + v.id + " - " + v.descricao;
+                    }
+                    inventarios[k].dsc = dsc;
+                    var newRow = $('<div class="row"><button class="btn gradientBtn selectInv" data-key="'+k+'" title="'+v.id+'">'+dsc+'</button></div>');
+                    $("#list").append(newRow);
+                });
+                $("#list").show();
+            }
+            else {
+                $("#list-empty").show();
+                $("#list").hide();
+            }
+            changeViewer("list-inventarios")
+        };
+
+        var getInventarios = function () {
+            changeViewer("loader");
+            $("#list").empty();
+            $.ajax({url: "/mobile/inventario-novo/get-inventarios",
+                success: function(result){
+                    if (result.status === "ok") {
+                        inventarios = result.response;
+                        prepareListInventarios();
+                    } else {
+                        notificar("error", result.exception);
+                        window.location.href = "/mobile"
+                    }
+                }
+            });
+        };
+
+        $(".selectInv").live("click",function () {
+            invSelecioando = inventarios[$(this).data("key")];
+            $("#lbl-inventario").text(invSelecioando.dsc);
+            getContagens();
+        });
+
+        var controlaValidade = function () {
+            return (!isEmpty(invSelecioando.controlaValidade) &&
+                invSelecioando.controlaValidade !== 'N' &&
+                (!isEmpty(elemBipado.controlaValidade) &&
+                    elemBipado.controlaValidade === "S"))
+        };
+
+        var controlaLote = function () {
+            return (!isEmpty(elemBipado.indControlaLote) &&
+                     elemBipado.indControlaLote === "S")
+        };
+
+        var getContagens = function () {
+            changeViewer("loader");
+            $.ajax({url: "/mobile/inventario-novo/get-contagens/id/" + invSelecioando.id,
+                success: function(result){
+                    if (result.status === "ok") {
+                        contagens = result.response;
+                        prepareListContagens();
+                    } else {
+                        notificar("error", result.exception);
+                        getInventarios();
+                    }
+                }
+            });
+        };
+
+        var prepareListContagens = function () {
+            var rowsDivg = [];
+            var rowsNor = [];
+
+            $("#list-contagens").empty();
+
+            $.each(contagens, function (k, v) {
+
+                var dsc = v.contagem + "ª Contagem";
+                var classe = "gradientBtn";
+
+                if (v.divergencia === 'S'){
+                    dsc += " de Divergência";
+                    classe = "gradientBtnDanger"
+                }
+                contagens[k].dsc = dsc;
+                var newRow = $('<div class="row"><button class="btn '+ classe +' selectCont" data-key="'+ k +'" title="'+ v.contagem +'">'+ dsc +'</button></div>');
+
+                if (v.divergencia === 'S') {
+                    rowsDivg.push(newRow);
+                } else {
+                    rowsNor.push(newRow)
+                }
+
+            });
+
+            $.each($.merge(rowsNor, rowsDivg), function (k,v) {
+                $("#list-contagens").append(v);
+            });
+
+            changeViewer("contagens-by-inventario");
+        };
+
+        $(".selectCont").live("click",function () {
+            contSelecioando = contagens[$(this).data("key")];
+            $("#lbl-contagem").text(contSelecioando.dsc);
+            getEnderecos();
+        });
+
+        var getEnderecos = function () {
+            changeViewer("loader");
+            $.ajax({url: "/mobile/inventario-novo/get-enderecos/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia,
+                success: function(result){
+                    if (result.status === "ok") {
+                        enderecos = result.response;
+                        prepareListEnderecos()
+                    } else {
+                        notificar("error", result.exception);
+                        getContagens();
+                    }
+                }
+            });
+        };
+
+        var prepareListEnderecos = function () {
+            var list = $("#list-enderecos");
+            list.empty();
+            if (!$.isEmptyObject(enderecos)) {
+                for (var i in enderecos){
+                    list.append('<div class="list-item">' + i + '</div>')
+                }
+                changeViewer("bipagem-endereco");
+                $("#cod-barras-end").focus();
+            } else {
+                notificar("warning", "Este inventário já foi finalizado!");
+                getContagens();
+            }
+        };
+
+        $("#cod-barras-end").keypress(function( event ) {
+            if ( event.which === 13  || event.keyCode === 13 ) {
+                disarmEvent(event);
+                if (!isEmpty($(this).val())) {
+                    processEndereco($(this));
+                    $(this).val("")
+                }
+            }
+        });
+
+        $("#btn-consultar-endereco").click(function( event ) {
+            var input = $("#cod-barras-end");
+            disarmEvent(event);
+            if (!isEmpty(input.val())) {
+                processEndereco(input);
+                input.val("")
+            }
+        });
+
+        var processEndereco = function (input) {
+
+            var endFormated = formatEndereco(input.val());
+
+            if (!endFormated) {
+                notificar("warning", "O código de barras não corresponde à um endereço", true);
+            } else if ((enderecos[endFormated] !== undefined)) {
+                contEndSelecionado = enderecos[endFormated];
+                $("#lbl-endereco").text(endFormated);
+                openEndereco()
+            } else {
+                notificar("warning", "Este endereço "+endFormated+" não está no inventário", true);
+                input.focus();
+            }
+
+            input.val("");
+        };
+
+        var openEndereco = function () {
+            changeViewer("loader");
+            $.ajax({
+                url: "/mobile/inventario-novo/get-info-endereco/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia + "/divrg/" + contSelecioando.divergencia + "/end/" + contEndSelecionado.idEnd,
+                success: function (result) {
+                    produtos = [];
+                    if (result.status === "ok") {
+                        for (var index in result.response) {
+                            produtos.push(result.response[index]);
+                        }
+                        prepareListProdutos();
+                    } else {
+                        notificar("error", result.exception);
+                        getEnderecos();
+                    }
+                }
+            })
+        };
+
+        var prepareListProdutos = function () {
+            var list = $("#list-produtos");
+            list.empty();
+            if (produtos.length) {
+                $.each(produtos , function (k,v) {
+                    var dscProd = v.codProduto;
+                    if (usaGrade) {
+                        dscProd += " - " + v.grade;
+                    }
+                    if (!isEmpty(v.lote)) {
+                        dscProd += " Lote: " + v.lote;
+                    }
+                    if (!isEmpty(v.idVolume)) {
+                        dscProd += " Volume: " + v.dscVolume;
+                    }
+                    if(v.zerado) {
+                        dscProd += ' <a href="" data-key="' + k + '" class="btn-zerarProduto">Zerar Produto</a>';
+                    }
+
+                    list.append('<div class="list-item">' + dscProd + '</div>');
+                });
+            }
+
+            if (contSelecioando.vazio) {
+                $("#btn-finalizar").text("Finalizar Endereço Vazio")
+            } else {
+                $("#btn-finalizar").text("Finalizar Endereço")
+            }
+
+            changeViewer("bipagem-produto");
+            $("#cod-barras-prod").focus();
+        };
+
+        $(".btn-zerarProduto").live("click", function (event) {
+            disarmEvent(event);
+            var produto = produtos[$(this).data("key")];
+            var descricao = produto.codProduto + " - " + produto.descricao + " " + produto.grade;
+            if (!isEmpty(produto.idVol)) {
+                descricao += " - " + produto.dscVol;
+            }
+            if (confirm("Esta ação irá zerar neste endereço o produto " + descricao+ ". Deseja realmente prosseguir?")) {
+                confirmarProdutoZerado(produto);
+            }
+        });
+
+        var confirmarProdutoZerado = function (produto) {
+            changeViewer("loader");
+            $.post(
+                "/mobile/inventario-novo/confirmar-produto-zerado",
+                {
+                    inventario: invSelecioando,
+                    contEnd: contEndSelecionado,
+                    produto: produto
+                }
+            ).done(function( result ) {
+                if (result.status === "ok") {
+                    notificar("success", result.response);
+                } else {
+                    notificar("error", result.exception)
+                }
+                openEndereco();
+            })
+        };
+
+        $("#cod-barras-prod").keypress(function( event ) {
+            if (event.which === 13 || event.keyCode === 13) {
+                disarmEvent(event);
+                if (!isEmpty($(this).val())) {
+                    processProduto($(this).val());
+                    $(this).val("");
+                }
+            }
+        });
+
+        $("#btn-consultar-produto").click(function( event ) {
+            var input = $("#cod-barras-prod");
+            disarmEvent(event);
+            if (!isEmpty(input.val())) {
+                processProduto(input.val());
+                input.val("");
+            }
+        });
+
+        var processProduto = function (codBarras) {
+            var liberado = true;
+            if (produtos.length) {
+                var encontrou = false;
+                $.each(produtos, function (k,produto) {
+                    if (myIndexOf(produto.codBarras, codBarras) >= 0) encontrou = true;
+                });
+                if (!encontrou) {
+                    liberado = false;
+                    notificar("warning", "Este código de barras " + codBarras + " não pertence à nenhum produto esperado neste endereço", true)
+                }
+            }
+
+            if (!liberado) {
+                return;
+            }
+
+            getInfoProduto(codBarras);
+        };
+
+        var getInfoProduto = function (codBarras) {
+            changeViewer("loader");
+            $.ajax({
+                url: "/mobile/inventario-novo/get-info-produto/codbarras/" + codBarras ,
+                success: function (result) {
+                    if (result.status === "ok") {
+                        elemBipado = result.response.produto;
+                        prepareElement();
+                    } else {
+                        notificar("error", result.exception);
+                        openEndereco();
+                    }
+                }
+            })
+        };
+
+        var prepareElement = function () {
+            $("#lbl-produto").text([
+                elemBipado.idProduto,
+                elemBipado.descricao,
+                ((usaGrade) ? elemBipado.grade : ""),
+            ].join(" "));
+
+            $("#lbl-embvol").text( elemBipado.descricaoEmbalagem + ((elemBipado.idEmbalagem !== null) ? "(" + elemBipado.quantidadeEmbalagem + ")" : "" ) );
+
+            if (controlaValidade()) {
+                $("#validade").val("");
+                $("#div-validade").show();
+            } else {
+                $("#div-validade").hide();
+            }
+
+            if (controlaLote()) {
+                $("#lote").val("");
+                $("#div-lote").show();
+            } else {
+                $("#div-lote").hide();
+            }
+
+            changeViewer("conferencia");
+            $("#qtd").val("").focus();
+        };
+
+        $("#qtd, #validade, #lote").keypress(function( event ) {
+            if ( event.which === 13  || event.keyCode === 13 ) {
+                disarmEvent(event);
+                if ( checkInputs(true) ) {
+                    registrar();
+                }
+            }
+        });
+
+        $("#btn-registrar").click(function( event ) {
+            disarmEvent(event);
+            if ( checkInputs() ) {
+                registrar();
+            }
+        });
+
+        var checkInputs = function (toNext) {
+
+            var inputQtd = $("#qtd");
+            var inputVal = $("#validade");
+            var inputLote = $("#lote");
+
+            if (isEmpty(inputQtd.val())) {
+                if (!toNext) notificar("warning", "A quantidade não foi informada", true);
+                inputQtd.focus();
+                return false;
+            }
+
+            if ( controlaValidade()) {
+                if (isEmpty(inputVal.val())) {
+                    if (!toNext) notificar("warning", "A validade não foi informada", true);
+                    inputVal.focus();
+                    return false;
+                }
+                if (!isValidDate(inputVal.val())){
+                    if (!toNext) notificar("warning", "Esta data " + inputVal.val() + " não é válida" , true);
+                    inputVal.focus();
+                    return false;
+                }
+            }
+
+            if ( controlaLote() && isEmpty(inputLote.val())) {
+                if (!toNext) notificar("warning", "O Lote não foi informado", true);
+                inputLote.focus();
+                return false;
+            }
+
+            return true;
+        };
+
+        $("#qtd").keyup(function () {
+            var data = $(this).val().replace(/[^\d.]/,"");
+            $(this).val(data);
+        });
+
+        function isValidDate(s) {
+            var bits = s.split('/');
+            var d = new Date(bits[2] + '/' + bits[1] + '/' + bits[0]);
+            return !!(d && (d.getMonth() + 1) == bits[1] && d.getDate() == Number(bits[0]));
+        }
+
+        var registrar = function () {
+            changeViewer("loader");
+            $.post(
+                "/mobile/inventario-novo/contagem-produto",
+                {
+                    inventario: invSelecioando,
+                    contEnd: contEndSelecionado,
+                    produto: elemBipado,
+                    conferencia: {
+                        qtd: $("#qtd").val(),
+                        validade: $("#validade").val(),
+                        lote: $("#lote").val()
+                    }
+                }
+            ).done(function( result ) {
+                if (result.status === "ok") {
+                    notificar("success", result.response);
+                } else {
+                    notificar("error", result.exception)
+                }
+                openEndereco();
+            })
+        };
+
+        $("#btn-finalizar").click(function () {
+            changeViewer("loader");
+            $.post(
+                "/mobile/inventario-novo/finalizar-contagem-os",
+                {
+                    inventario: invSelecioando,
+                    contEnd: contEndSelecionado
+                }
+            ).done(function( result ) {
+                if (result.status === "ok") {
+                    notificar("success", result.response.msg);
+                    if (result.response.code !== 4) {
+                        getContagens();
+                    } else if (result.response.code === 4) {
+                        getInventarios();
+                    }
+                } else {
+                    notificar("error", result.exception);
+                    openEndereco()
+                }
+            })
+        });
+    })
+</script>

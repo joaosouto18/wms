@@ -589,6 +589,7 @@ class Expedicao_EtiquetaController  extends Action
                 $this->_redirect('/expedicao/index');
             }
             $modeloEtiqueta = $this->getSystemParameterValue('MODELO_VOLUME_EMBALADO');
+            $xy = explode(",",$this->getSystemParameterValue('TAMANHO_ETIQUETA_VOLUME_EMBALADO'));
 
             switch ($modeloEtiqueta) {
                 case 1:
@@ -602,6 +603,10 @@ class Expedicao_EtiquetaController  extends Action
                 case 3:
                     //LAYOUT ABRAFER ...
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
+                    break;
+                case 4:
+                    //LAYOUT HIDRAU
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
                 default:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));

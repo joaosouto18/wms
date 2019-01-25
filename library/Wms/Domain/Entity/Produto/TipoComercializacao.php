@@ -2,6 +2,7 @@
 namespace Wms\Domain\Entity\Produto;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Wms\Domain\Configurator;
 
 /**
  * @Table(name="V_TIPO_COMERCIALIZACAO")
@@ -42,4 +43,8 @@ class TipoComercializacao
         return $this;
     }
 
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
+    }
 }

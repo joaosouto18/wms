@@ -106,7 +106,7 @@ class Wms_WebService_Recebimento extends Wms_WebService
         $idRecebimento = trim ($idRecebimento);
 
         /** @var \Wms\Domain\Entity\Recebimento $recebimento */
-        $recebimento = $this->__getServiceLocator()->getService('Recebimento')->get($idRecebimento);
+        $recebimento = $this->__getServiceLocator()->getService('Recebimento')->find($idRecebimento);
 
         if ($recebimento == null)
             throw new \Exception('Recebimento não encontrado');
@@ -157,7 +157,7 @@ class Wms_WebService_Recebimento extends Wms_WebService
         $em->beginTransaction();
 
         try {
-            $recebimento = $service->get($idRecebimento);
+            $recebimento = $service->find($idRecebimento);
 
             $salvarNotas = false;
 
@@ -253,7 +253,7 @@ class Wms_WebService_Recebimento extends Wms_WebService
      */
     public function status($idRecebimento)
     {
-        $recebimento = $this->__getServiceLocator()->getService('Recebimento')->get($idRecebimento);
+        $recebimento = $this->__getServiceLocator()->getService('Recebimento')->find($idRecebimento);
 
         if ($recebimento == null)
             throw new \Exception('Recebimento não encontrado');

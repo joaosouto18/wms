@@ -2,6 +2,7 @@
 
 namespace Wms\Domain\Entity;
 
+use Wms\Domain\Configurator;
 use Wms\Domain\Entity\ProdutoRepository,
     Wms\Domain\Entity\Fabricante,
     Wms\Domain\Entity\Produto\Classe,
@@ -601,5 +602,10 @@ class Produto {
     {
         $this->forcarEmbVenda = $forcarEmbVenda;
         return $this;
+    }
+
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
     }
 }

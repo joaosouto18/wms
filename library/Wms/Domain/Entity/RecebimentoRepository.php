@@ -241,54 +241,55 @@ class RecebimentoRepository extends EntityRepository {
             switch ($item['idTipoComercializacao']) {
                 case ProdutoEntity::TIPO_COMPOSTO:
 
-                        $volumes = $produtoVolumeRepo->findBy(array('codProduto' => $item['produto'], 'grade' => $item['grade']));
+                    $volumes = $produtoVolumeRepo->findBy(array('codProduto' => $item['produto'], 'grade' => $item['grade']));
 
-                        if (empty($volumes)) {
-                            return array('message' => null,
-                                'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
-                                'concluido' => false);
-                        }
+                    if (empty($volumes)) {
+                        return array('message' => null,
+                            'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
+                            'concluido' => false);
+                    }
 
-                        foreach ($volumes as $volume) {
-                            //verifica se o volume foi conferido.
-                            $qtdConferida = $this->buscarConferenciaPorVolume($item['produto'], $item['grade'], $volume->getId(), $idOrdemServico);
+                    foreach ($volumes as $volume) {
+                        //verifica se o volume foi conferido.
+                        $qtdConferida = $this->buscarConferenciaPorVolume($item['produto'], $item['grade'], $volume->getId(), $idOrdemServico);
 
-                            //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
+                        //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
 
-                            foreach ($qtdConferida as $lote => $value) {
-                                if ($value == 0) {
-                                    if ($lote == 0) {
-                                        $lote = null;
-                                    }
-                                    $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null,null,null, $volume, $lote);
-                                } else {
-                                    $qtdConferidasVolumes[$lote][$item['produto']][$item['grade']][$volume->getId()] = $value;
+                        foreach ($qtdConferida as $lote => $value) {
+                            if ($value == 0) {
+                                if ($lote == 0) {
+                                    $lote = null;
                                 }
+                                $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null,null,null, $volume, $lote);
+                            } else {
+                                $qtdConferidasVolumes[$lote][$item['produto']][$item['grade']][$volume->getId()] = $value;
                             }
                         }
+                    }
 
-                        foreach ($qtdConferidasVolumes as $lote => $volumes) {
-                            //Pega a menor quantidade de produtos completos
-                            $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
-                        }
+                    foreach ($qtdConferidasVolumes as $lote => $volumes) {
+                        //Pega a menor quantidade de produtos completos
+                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
+                    }
 
-                        if (!isset($qtdConferidas)) {
-                            return array('message' => null,
-                                'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
-                                'concluido' => false);
-                        }
-                        break;
-                    case ProdutoEntity::TIPO_UNITARIO:
+                    if (!isset($qtdConferidas)) {
+                        return array('message' => null,
+                            'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
+                            'concluido' => false);
+                    }
+                    break;
+                case ProdutoEntity::TIPO_UNITARIO:
 
-                        $qtdConferida = $this->buscarConferenciaPorEmbalagem($item['produto'], $item['grade'], $idOrdemServico);
-                        foreach ($qtdConferida as $lote => $value) {
-                            $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
-                        }
+                    $qtdConferida = $this->buscarConferenciaPorEmbalagem($item['produto'], $item['grade'], $idOrdemServico);
+                    foreach ($qtdConferida as $lote => $value) {
+                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
+                    }
 
-                        break;
-                    default:
-                        break;
-                }
+                    break;
+                default:
+                    break;
+            }
+
             if ((!empty($item['lote']) && !isset($qtdConferidas[$item['produto']][$item['grade']][$item['lote']]))
                 || !isset($qtdConferidas[$item['produto']][$item['grade']])) {
                 $qtdConferidas[$item['produto']][$item['grade']][$item['lote']] = 0;
@@ -923,7 +924,6 @@ class RecebimentoRepository extends EntityRepository {
         }
 
         $em->persist($recebimentoEmbalagemEntity);
-        $em->flush();
     }
 
     /**
@@ -1665,8 +1665,7 @@ class RecebimentoRepository extends EntityRepository {
                 $conferenciaEn = $conferenciaRepo->findOneBy(array('recebimento' => $codRecebimento, 'codProduto' => $codProduto, 'grade' => $grade, 'ordemServico' => $codOs));
                 $qtd = $conferenciaEn->getQtdConferida();
                 $numPcs = $conferenciaEn->getNumPecas();
-
-            $this->gravarRecebimentoEmbalagemVolume($codProduto, $grade, $conferenciaEn->getProduto(), $qtd, $numPcs, $codRecebimento, $codOs);
+                $this->gravarRecebimentoEmbalagemVolume($codProduto, $grade, $conferenciaEn->getProduto(), $qtd, $numPcs, $codRecebimento, $codOs);
             }
         }
 

@@ -50,8 +50,11 @@ class Mobile_IndexController  extends Action
             11 => array(
                 'url' => '/mobile/index/separacao-pulmao-doca-ajax',
                 'label' => 'SEPARAÇÃO PULMÃO DOCA'
+            ),
+            12 => array(
+                'url' => '/mobile/inventario-novo/listagem-inventarios',
+                'label' => 'NOVO INVENTÁRIO'
             )
-
 
         );
         $this->view->menu = $menu;
