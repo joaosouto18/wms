@@ -8,7 +8,7 @@
  * Created: 01/06/2018
  */
 
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.0.0', '07-permissao-acesso');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.0.0', '09-permissao-acesso');
 
 INSERT INTO ACAO (COD_ACAO, DSC_ACAO, NOM_ACAO) VALUES (SQ_ACAO_01.NEXTVAL, 'Imprimir Etiquetas','gerar-etiqueta');
 
