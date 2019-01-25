@@ -511,7 +511,7 @@ class Web_ProdutoController extends Crud {
         $this->view->produtoComposto = ProdutoEntity::TIPO_COMPOSTO;
     }
 
-    public function gerarEtiquetaPdfAction() {
+    public function gerarEtiquetaAction() {
         $codProduto = $this->getRequest()->getParam('id');
         $grade = $this->getRequest()->getParam('grade');
         $idEmbalagens = $this->getRequest()->getParam('embalagens');
