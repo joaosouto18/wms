@@ -955,7 +955,9 @@ class ExpedicaoRepository extends EntityRepository {
                                 $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['estoqueReservado'] = $zerouEstoque;
                             }
 
-                            if (($quebra != $naoUsaPD) && ($zerouEstoque || $saiuQtdNorma) && !$forcarSeparacaoAerea) {
+                            if ($isCDK){
+                                $tipoSaida = ReservaEstoqueExpedicao::SAIDA_CROSS_DOCKING;
+                            } elseif (($quebra != $naoUsaPD) && ($zerouEstoque || $saiuQtdNorma) && !$forcarSeparacaoAerea) {
                                 $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA;
                             } else {
                                 $tipoSaida = ReservaEstoqueExpedicao::SAIDA_SEPARACAO_AEREA;
@@ -978,7 +980,7 @@ class ExpedicaoRepository extends EntityRepository {
                                     } else {
                                         if ($produtoEn->getForcarEmbVenda() == 'S' || empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S') {
                                             if (empty($repositorios['embalagemRepo']->findOneBy(['codProduto' => $codProduto, 'grade' => $dscGrade, 'quantidade' => $qtdItenPedido['fatorEmb'], 'dataInativacao' => null])))
-                                                throw new \Exception("O item $codProduto grade $dscGrade no pedido $produto[codPedExt], exige fator de venda de '$qtdItenPedido[fatorEmb]', mas não foi encontrada embalagem ativa com esse fator!");
+                                                throw new \Exception("O item $codProduto grade $dscGrade no pedido $qtdItenPedido[codPedExt], exige fator de venda de '$qtdItenPedido[fatorEmb]', mas não foi encontrada embalagem ativa com esse fator!");
 
                                             if (Math::compare($qtdReservar, $qtdItenPedido['fatorEmb'], ">=")) {
                                                 $qtdReservada = Math::subtrair($qtdReservar, Math::resto($qtdReservar, $qtdItenPedido['fatorEmb']));

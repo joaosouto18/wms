@@ -951,6 +951,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $arrEtqtSemControleEstoque = array();
             $arrEtqtPicking = array();
             $arrEtqtPulmaoDoca = array();
+            $arrEtqtCrossDocking = array();
             $arrEtqtSeparacaoAerea = array();
             $codGrupo = 0;
             $expedicaoEntity = null;
@@ -1104,6 +1105,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                             break;
                                         case ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA:
                                             $arrEtqtPulmaoDoca[] = $arrEtiqueta;
+                                            break;
+                                        case ReservaEstoqueExpedicao::SAIDA_CROSS_DOCKING:
+                                            $arrEtqtCrossDocking[] = $arrEtiqueta;
                                             break;
                                     }
 
@@ -1307,30 +1311,31 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $quantidadeRestantePedido = 0;
                             }
 
-                            if (!empty($quebraPD) && $quebraPD != "N" && $reserva['tipoSaida'] == ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA) {
+                            $getTipoSeparacao = function ($fracionado, $embalado) use ($modeloSeparacaoEn){
+                                $type = "getTipoSeparacao";
+                                $type .= ($fracionado) ? "Fracionado" : "NaoFracionado";
+                                $type .= ($embalado) ? "Embalado" : "";
+
+                                return $modeloSeparacaoEn->$type();
+                            };
+
+                            if ($reserva['tipoSaida'] == ReservaEstoqueExpedicao::SAIDA_CROSS_DOCKING) {
+                                $quebras = array();
+                                $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CROSS_DOCKING;
+                                $tipoSeparacao = $getTipoSeparacao(false, $embalado);
+                            }
+                            elseif (!empty($quebraPD) && $quebraPD != "N" && $reserva['tipoSaida'] == ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA) {
                                 $quebras = array();
                                 $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_PULMAO_DOCA;
-                                if ($embalado == true) {
-                                    $tipoSeparacao = $modeloSeparacaoEn->getTipoSeparacaoNaoFracionadoEmbalado();
-                                } else {
-                                    $tipoSeparacao = $modeloSeparacaoEn->getTipoSeparacaoNaoFracionado();
-                                }
+                                $tipoSeparacao = $getTipoSeparacao(false, $embalado);
                             }
                             elseif ($embalagemAtual->getQuantidade() >= $qtdEmbalagemPadraoRecebimento) {
                                 $quebras = $quebrasNaoFracionado;
-                                if ($embalado == true) {
-                                    $tipoSeparacao = $modeloSeparacaoEn->getTipoSeparacaoNaoFracionadoEmbalado();
-                                } else {
-                                    $tipoSeparacao = $modeloSeparacaoEn->getTipoSeparacaoNaoFracionado();
-                                }
+                                $tipoSeparacao = $getTipoSeparacao(false, $embalado);
                             }
                             else {
                                 $quebras = $quebrasFracionado;
-                                if ($embalado == true) {
-                                    $tipoSeparacao = $modeloSeparacaoEn->getTipoSeparacaoFracionadoEmbalado();
-                                } else {
-                                    $tipoSeparacao = $modeloSeparacaoEn->getTipoSeparacaoFracionado();
-                                }
+                                $tipoSeparacao = $getTipoSeparacao(true, $embalado);
                             }
 
                             if ($tipoSeparacao == ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA) {
@@ -1382,6 +1387,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                             break;
                                         case ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA:
                                             $arrEtqtPulmaoDoca[] = $arrEtiqueta;
+                                            break;
+                                        case ReservaEstoqueExpedicao::SAIDA_CROSS_DOCKING:
+                                            $arrEtqtCrossDocking[] = $arrEtiqueta;
                                             break;
                                     }
                                 }
@@ -2065,6 +2073,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
                 $dscQuebra = "PULMÃO-DOCA $dscPD";
                 $codQuebra = 2;
+            }
+
+            //CROSS-DOCKING
+            elseif ($quebra == MapaSeparacaoQuebra::QUEBRA_CROSS_DOCKING) {
+                $dscQuebra = "MAPA DE CROSS-DOCKING";
+                $codQuebra = 0;
             }
 
             $arrQuebras[$quebra] = [
