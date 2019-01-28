@@ -175,7 +175,7 @@ class GerarEtiqueta extends eFPDF
 
                 $this->layout6($produto, $tipo);
             case "recebimento":
-                $this->SetMargins(4, 5);
+                $this->SetMargins(0, 1);
                 $this->SetFont('Arial', 'B', 8);
 
                 $this->layoutEtiquetaRecebimento($produto, $tipo);

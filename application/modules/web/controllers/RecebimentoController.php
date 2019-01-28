@@ -1316,7 +1316,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(120, 70));
                 break;
             case "recebimento":
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(60, 30));
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(50, 28));
 		$gerarEtiqueta->SetAutoPageBreak(false);
                 break;
             default:
