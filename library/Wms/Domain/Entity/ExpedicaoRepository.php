@@ -4105,39 +4105,48 @@ class ExpedicaoRepository extends EntityRepository {
     }
 
     public function getCargasFechadasByData($dataInicial, $dataFinal) {
-        $SQL = " SELECT  C.COD_CARGA_EXTERNO,
+        $SQL = " SELECT C.COD_CARGA_EXTERNO,
                         C.DSC_PLACA_EXPEDICAO,
                         '' as NOM_MOTORISTA,
                         L.DSC_LINHA_ENTREGA,
                         NVL(SUM(NVL(PROD.NUM_PESO,0) * (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0))),0) as NUM_PESO,
                         NVL(SUM(NVL(PROD.NUM_CUBAGEM,0) * PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)),0) as NUM_CUBAGEM,
-                        NVL(SUM(NVL(PP.VALOR_VENDA,0)),0) as VLR_CARGA,
+                        CASE WHEN NVL(SUM(NVL(PP.VALOR_VENDA,0)),0) = 0 THEN NVL(NF.VLR_CARGA,0)
+                             ELSE NVL(SUM(NVL(PP.VALOR_VENDA,0)),0)
+                        END AS VLR_CARGA,
                         NVL(SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)),0) as VOLUMES,
                         NVL(COUNT(DISTINCT(P.COD_PEDIDO)),0) as QTD_PEDIDOS,
                         NVL(COUNT(DISTINCT(P.COD_PESSOA)),0) as ENTREGAS,
                         TO_CHAR(E.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI') as DTH_FINALIZACAO
-                  FROM CARGA C
-                  LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
-                  LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                  LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                  LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                  LEFT JOIN (SELECT MAX(NUM_PESO), DSC_LINHA_ENTREGA, COD_CARGA FROM (
-                                    SELECT SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO, P.DSC_LINHA_ENTREGA, P.COD_CARGA
-                                      FROM PEDIDO P
-                                      LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                                      LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                   FROM CARGA C
+                   LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                   LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                   LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                   LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                   LEFT JOIN (SELECT MAX(NUM_PESO), DSC_LINHA_ENTREGA, COD_CARGA FROM (
+                                     SELECT SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO, P.DSC_LINHA_ENTREGA, P.COD_CARGA
+                                       FROM PEDIDO P
+                                       LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                                       LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                                       GROUP BY P.DSC_LINHA_ENTREGA, P.COD_CARGA) GROUP BY COD_CARGA, DSC_LINHA_ENTREGA) L
-                         ON L.COD_CARGA = C.COD_CARGA
+                          ON L.COD_CARGA = C.COD_CARGA
+                   LEFT JOIN (SELECT COD_CARGA, COD_CARGA_EXTERNO, SUM(VALOR_TOTAL_NF) as VLR_CARGA 
+                               FROM (SELECT DISTINCT C.COD_CARGA, C.COD_CARGA_EXTERNO, NFS.COD_NOTA_FISCAL_SAIDA, NFS.VALOR_TOTAL_NF
+                                       FROM NOTA_FISCAL_SAIDA_PEDIDO NFSP
+                                       LEFT JOIN NOTA_FISCAL_SAIDA NFS ON NFS.COD_NOTA_FISCAL_SAIDA = NFSP.COD_NOTA_FISCAL_SAIDA
+                                       LEFT JOIN PEDIDO P ON P.COD_PEDIDO = NFSP.COD_PEDIDO
+                                       LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA)
+                                      GROUP BY COD_CARGA, COD_CARGA_EXTERNO) NF 
+                          ON NF.COD_CARGA = C.COD_CARGA            
                   WHERE 1 = 1
-                  AND E.DTH_FINALIZACAO >= TO_DATE('$dataInicial','DD/MM/YYYY HH24:MI')
-                  AND E.DTH_FINALIZACAO <= TO_DATE('$dataFinal','DD/MM/YYYY HH24:MI')
-                  AND E.COD_STATUS IN (530,465)
-                  GROUP BY C.COD_CARGA_EXTERNO, C.DSC_PLACA_EXPEDICAO, E.DTH_FINALIZACAO, L.DSC_LINHA_ENTREGA";
+                   AND E.DTH_FINALIZACAO >= TO_DATE('$dataInicial','DD/MM/YYYY HH24:MI')
+                   AND E.DTH_FINALIZACAO <= TO_DATE('$dataFinal','DD/MM/YYYY HH24:MI')
+                   AND E.COD_STATUS IN (530,465)
+                 GROUP BY C.COD_CARGA_EXTERNO, C.DSC_PLACA_EXPEDICAO, E.DTH_FINALIZACAO, L.DSC_LINHA_ENTREGA, NF.VLR_CARGA";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
-
     public function getSaidaEstoqueByExpedicao($idExpedicoes) {
         $params = array(
             'idExpedicoes' => $idExpedicoes,
