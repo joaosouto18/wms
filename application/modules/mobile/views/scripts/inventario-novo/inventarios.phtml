@@ -129,7 +129,7 @@
         <div class="field">
             <form>
                 <label for="cod-barras-prod" class="field required"><div class="lbl-headers">Buscar Produto</div></label>
-                <input type="text" name="cod-barras-prod" id="cod-barras-prod" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
+                <input type="text" name="cod-barras-prod" id="cod-barras-prod" value="" class="required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
             </form>
         </div>
         <button id="btn-consultar-produto" class="btn btn-spacing">Buscar</button><br>
@@ -609,6 +609,9 @@
                 success: function (result) {
                     if (result.status === "ok") {
                         elemBipado = result.response.produto;
+                        if (elemBipado.idVolume === null) {
+                            elemBipado.idVolume = "";
+                        }
                         prepareElement();
                     } else {
                         notificar("error", result.exception);

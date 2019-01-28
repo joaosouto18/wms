@@ -25,7 +25,7 @@ angular.module('uiDialogService', []).service('uiDialogService',
                     buttons: buttons
                 };
 
-                this.open(id, template, false, { msg: msg }, config)
+                this.open(id, template, true, { msg: msg }, config)
             };
 
             this.dialogConfirm = function (msg, title, confirmLbl, rejectLbl, confirmCallback, paramsConfirmCallback, rejectCallback, width, height, resizable, position, modal) {
@@ -53,7 +53,7 @@ angular.module('uiDialogService', []).service('uiDialogService',
                     buttons: buttons
                 };
 
-                return this.open(id, template, false, { msg: msg }, config).then(function (result) {
+                return this.open(id, template, true, { msg: msg }, config).then(function (result) {
                     if (result) {
                         if (angular.isFunction(confirmCallback)) { confirmCallback.call(); }
                     } else {
