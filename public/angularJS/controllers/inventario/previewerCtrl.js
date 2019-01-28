@@ -48,6 +48,12 @@ angular.module("wms").controller("previewerCtrl", function ($scope, $http, $wind
     };
 
     $scope.criarInventario = function () {
+
+        if (isEmpty($scope.modSel)) {
+            uiDialogService.dialogAlert("Nenhum modelo foi selecionado!");
+            return;
+        }
+
         if (isEmpty($scope.dscInventario)) {
             uiDialogService.dialogConfirm("Não foi definido um nome para o inventário. Deseja relamente prosseguir?", null, "Sim", "Não", function () {
                 postInventario();

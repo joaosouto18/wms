@@ -18,6 +18,18 @@ use Wms\Domain\Configurator;
  */
 class InventarioEnderecoNovo
 {
+    const STATUS_PENDENTE    = 0;
+    const STATUS_CONFERENCIA = 1;
+    const STATUS_DIVERGENCIA = 2;
+    const STATUS_FINALIZADO  = 3;
+
+    public static $tipoStatus = array(
+        self::STATUS_PENDENTE => "GERADO",
+        self::STATUS_CONFERENCIA => "LIBERADO",
+        self::STATUS_DIVERGENCIA => "CONCLUIDO",
+        self::STATUS_FINALIZADO => "FINALIZADO"
+    );
+
     /**
      * @Column(name="COD_INVENTARIO_ENDERECO", type="integer", length=8, nullable=false)
      * @Id

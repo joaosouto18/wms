@@ -189,14 +189,13 @@ class InventarioService extends AbstractService
                 $inventarioEn->cancelar();
 
                 $this->em->persist($inventarioEn);
-
-                throw new \Exception("O inventário $idInventario foi cancelado pois está vazio");
+                //throw new \Exception("O inventário $idInventario foi cancelado pois está vazio");
             }
 
             $this->em->flush();
             $this->em->commit();
         }catch (\Exception $e) {
-            //$this->em->rollback();
+            $this->em->rollback();
             throw $e;
         }
     }
@@ -259,17 +258,32 @@ class InventarioService extends AbstractService
 
             $conferencia["validade"] = (!empty($conferencia['validade'])) ? date_create_from_format("d/m/Y", $conferencia['validade']) : null;
 
-            $this->registrarConferencia(
-                $elements,
-                $this->getOsUsuarioContagem( $contEnd, $inventario, $tipoConferencia, true)->getInvContEnd(),
-                $conferencia,
-                $this->em->getReference("wms:Produto", ["id" => $produto['idProduto'], "grade" => $produto['grade']]),
-                $isEmb,
-                $produto["quantidadeEmbalagem"],
-                $produto["codigoBarras"]);
+            $invContEndProd     = $this->em->getRepository('wms:InventarioNovo\InventarioContEndProd');
 
-            $this->em->flush();
-            $this->em->commit();
+            $contagemFinalizada = $invContEndProd->findOneBy([
+                'codProduto' => $produto['idProduto'],
+                'grade' => $produto['grade'],
+                'produtoVolume' => (!empty($produto['idVolume']))? $produto['idVolume'] : null,
+                'lote' => (!empty($conferencia['lote']))? $conferencia['lote'] : null,
+                'divergente' => 'N'
+            ]);
+
+            if(empty($contagemFinalizada)) {
+
+                $this->registrarConferencia(
+                    $elements,
+                    $this->getOsUsuarioContagem($contEnd, $inventario, $tipoConferencia, true)->getInvContEnd(),
+                    $conferencia,
+                    $this->em->getReference("wms:Produto", ["id" => $produto['idProduto'], "grade" => $produto['grade']]),
+                    $isEmb,
+                    $produto["quantidadeEmbalagem"],
+                    $produto["codigoBarras"]);
+
+                $this->em->flush();
+                $this->em->commit();
+            }
+            else
+               throw new \Exception("A contagem desse produto já foi finalizada.");
 
         } catch (\Exception $e) {
             $this->em->rollback();
@@ -619,7 +633,7 @@ class InventarioService extends AbstractService
     {
         try {
 
-            if (isset($produto["idVolume"]) && !empty(json_decode($produto["idVolume"]))) {
+            if (isset($produto["idVolume"]) && !empty($produto["idVolume"])) {
                 $isEmb = false;
                 $elements[] = $produto["idVolume"];
             } else {
