@@ -1836,8 +1836,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             foreach ($carrinhos as $idCarrinho => $infoCarrinho) {
                 foreach ($infoCarrinho['clientes'] as $idCliente => $infoCliente) {
                     foreach ($infoCliente['itens'] as $produtoGradeLote => $dadosPedProd) {
-                        //$newArray[$strQuebra][$dadosPedProd['firstIdPedProdLote']] = $dadosPedProd;
-                        $newArray[$strQuebra][$produtoGradeLote] = $dadosPedProd;
+                        $newArray[$strQuebra]["$idCliente-!-$produtoGradeLote"] = $dadosPedProd;
                     }
                 }
             }
