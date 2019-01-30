@@ -57,7 +57,7 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                               AND IEP.COD_INVENTARIO_ENDERECO = IEN3.COD_INVENTARIO_ENDERECO
                           )
                     ) EV ON EV.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
-                WHERE ICE.NUM_SEQUENCIA = $sequencia AND IEN.COD_INVENTARIO = $idInventario AND IEN.IND_FINALIZADO = 'N'
+                WHERE ICE.NUM_SEQUENCIA = $sequencia AND IEN.COD_INVENTARIO = $idInventario AND IEN.COD_STATUS != 3
                       AND NOT EXISTS(
                                 SELECT 'x' FROM INVENTARIO_CONT_END ICE2
                                 WHERE ICE2.NUM_SEQUENCIA > $sequencia AND IEN.COD_INVENTARIO_ENDERECO = ICE2.COD_INVENTARIO_ENDERECO

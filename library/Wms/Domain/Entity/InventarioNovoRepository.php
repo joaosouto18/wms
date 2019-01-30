@@ -145,13 +145,13 @@ class InventarioNovoRepository extends EntityRepository
                   INVN.DSC_INVENTARIO \"descricao\",
                   COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO ) \"qtdEndereco\",
                   COUNT( DISTINCT CASE WHEN ICE.IND_CONTAGEM_DIVERGENCIA = 'S' THEN IEN.COD_INVENTARIO_ENDERECO END ) \"qtdDivergencia\",
-                  COUNT( DISTINCT CASE WHEN IEN.IND_FINALIZADO = 'S' THEN IEN.COD_INVENTARIO_ENDERECO END ) \"qtdInventariado\",
+                  COUNT( DISTINCT CASE WHEN IEN.COD_STATUS = 3 THEN IEN.COD_INVENTARIO_ENDERECO END ) \"qtdInventariado\",
                   TO_CHAR(INVN.DTH_CRIACAO, 'DD/MM/YYYY HH24:MI:SS') \"dataCriacao\",
                   TO_CHAR(INVN.DTH_INICIO, 'DD/MM/YYYY HH24:MI:SS') \"dataInicio\",
                   INVN.COD_INVENTARIO_ERP \"codInvERP\",
                   TO_CHAR(INVN.DTH_FINALIZACAO, 'DD/MM/YYYY HH24:MI:SS') \"dataFinalizacao\",
-                  CASE WHEN SUM( CASE WHEN IEN.IND_FINALIZADO = 'S' THEN 1 ELSE 0 END ) > 0
-                         THEN ROUND(((COUNT( DISTINCT CASE WHEN IEN.IND_FINALIZADO = 'S' THEN IEN.COD_INVENTARIO_ENDERECO END ) / COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO )) * 100), 2)
+                  CASE WHEN SUM( CASE WHEN IEN.COD_FINALIZADO = 3 THEN 1 ELSE 0 END ) > 0
+                         THEN ROUND(((COUNT( DISTINCT CASE WHEN IEN.COD_FINALIZADO = 3 THEN IEN.COD_INVENTARIO_ENDERECO END ) / COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO )) * 100), 2)
                        ELSE 0 END AS \"andamento\"
                 FROM INVENTARIO_NOVO INVN
                 INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON INVN.COD_INVENTARIO = IEN.COD_INVENTARIO
@@ -447,7 +447,7 @@ class InventarioNovoRepository extends EntityRepository
               on ien.cod_inventario_endereco = ie.cod_inventario_endereco
               
               left join inventario_endereco_novo ienn
-              on ienn.cod_inventario_endereco = ie.cod_inventario_endereco and ie.ind_finalizado = 'S'
+              on ienn.cod_inventario_endereco = ie.cod_inventario_endereco and ie.cod_status = 3
             
             WHERE ien.cod_inventario = $idInventario";
 
