@@ -62,7 +62,7 @@ class InventarioService extends AbstractService
                     'inventario' => $inventarioEn,
                     'depositoEndereco' => $this->em->getReference('wms:Deposito\Endereco', $item['id']),
                     'contagem' => 1,
-                    'finalizado' => 'N',
+                    'status' => InventarioNovo\InventarioEnderecoNovo::STATUS_PENDENTE,
                     'ativo' => 'S'
                 ]);
                 if ($inventarioEn->isPorProduto()) {
@@ -213,6 +213,20 @@ class InventarioService extends AbstractService
         try {
             /** @var InventarioNovo\InventarioContEndRepository $inventContEndRepo */
             $inventContEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEnd");
+
+            /** @var InventarioNovo\InventarioEnderecoNovo[] $endereco */
+            $endereco = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->findOneBy(["inventario" => $inventarioEnderecoEn['cod_inventario']]);
+
+            if($endereco->getStatus() == InventarioNovo\InventarioEnderecoNovo::STATUS_PENDENTE){
+                $endereco->setConferencia();
+                $this->em->persist($endereco);
+                $this->em->flush($endereco);
+            }
+            elseif($divergencia && $endereco->getStatus() == InventarioNovo\InventarioEnderecoNovo::STATUS_CONFERENCIA){
+                    $endereco->setDivergencia();
+                    $this->em->persist($endereco);
+                    $this->em->flush($endereco);
+                }
 
             return $inventContEndRepo->save([
                 "inventarioEndereco" => $inventarioEnderecoEn,
@@ -705,7 +719,7 @@ class InventarioService extends AbstractService
                 throw new \Exception("Este endereço " . $inventarioEnd->getDepositoEndereco()->getDescricao() . " foi removido do inventário e não pode ser finalizado!");
             }
 
-            $inventarioEnd->setFinalizado(true);
+            $inventarioEnd->setFinalizado();
             $this->em->persist($inventarioEnd);
 
             if (empty($this->getRepository()->getEnderecosPendentes($inventarioEnd))) {

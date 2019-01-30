@@ -288,12 +288,10 @@ CREATE TABLE inventario_endereco_novo (
   cod_deposito_endereco     NUMBER(8) NOT NULL,
   num_contagem              NUMBER(3) NOT NULL,
   --  Flag (S/N) para indicar  se o inventário no endereço foi finalizado
-  ind_finalizado            CHAR(1) NOT NULL,
+  cod_status                NUMBER(4) NOT NULL,
   ind_ativo                 CHAR(1) NOT NULL
 );
 
-COMMENT ON COLUMN inventario_endereco_novo.ind_finalizado IS
-  'Flag (S/N) para indicar  se o inventário no endereço foi finalizado';
 
 ALTER TABLE inventario_endereco_novo ADD CONSTRAINT inv_end_novo_pk PRIMARY KEY ( cod_inventario_endereco );
 
