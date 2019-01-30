@@ -449,7 +449,7 @@ class InventarioNovoRepository extends EntityRepository
               left join inventario_endereco_novo ienn
               on ienn.cod_inventario_endereco = ie.cod_inventario_endereco and ie.cod_status = 3
             
-            WHERE ien.cod_inventario = $idInventario;
+            WHERE ien.cod_inventario = $idInventario";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
