@@ -267,7 +267,7 @@ class Inventario_Novo_IndexController  extends Action
         $this->view->id = $this->_getParam('id');
         $arr = [
            [
-               "rua" => 3,
+               "numRua" => 3,
                "enderecos" => [
                    [
                        "dscEndereco" => "99.999.99.99",
@@ -336,7 +336,78 @@ class Inventario_Novo_IndexController  extends Action
                        ]
                    ],
                ],
-           ]
+           ],
+           [
+               "numRua" => 4,
+               "enderecos" => [
+                   [
+                       "dscEndereco" => "99.999.99.99",
+                       "codStatus" => 1,
+                       "conferencias" => [
+                           ["contagem" => "1ª Contagem",
+                           "codProduto" => "102030",
+                           "dscProd" => "Produto teste 1",
+                           "grade" => "UNICA",
+                           "lote" => "LI1",
+                           "dscEmbVol" => "METRO(1)",
+                           "qtdContada" => 10,
+                           "dthConferencia" => "10/01/19"],
+                           ["contagem" => "2ª Contagem",
+                           "codProduto" => "102030",
+                           "dscProd" => "Produto teste 1",
+                           "grade" => "UNICA",
+                           "lote" => "LI1",
+                           "dscEmbVol" => "METRO(1)",
+                           "qtdContada" => 10,
+                           "dthConferencia" => "10/01/19"],
+                       ]
+                   ],
+                   [
+                       "dscEndereco" => "99.999.99.99",
+                       "codStatus" => 2,
+                       "conferencias" => [
+                           ["contagem" => "1ª Contagem",
+                           "codProduto" => "102030",
+                           "dscProd" => "Produto teste 1",
+                           "grade" => "UNICA",
+                           "lote" => "LI1",
+                           "dscEmbVol" => "METRO(1)",
+                           "qtdContada" => 10,
+                           "dthConferencia" => "10/01/19"],
+                           ["contagem" => "2ª Contagem",
+                           "codProduto" => "102030",
+                           "dscProd" => "Produto teste 1",
+                           "grade" => "UNICA",
+                           "lote" => "LI1",
+                           "dscEmbVol" => "METRO(1)",
+                           "qtdContada" => 10,
+                           "dthConferencia" => "10/01/19"],
+                       ]
+                   ],
+                   [
+                       "dscEndereco" => "99.999.99.99",
+                       "codStatus" => 0,
+                       "conferencias" => [
+                           ["contagem" => "1ª Contagem",
+                           "codProduto" => "102030",
+                           "dscProd" => "Produto teste 1",
+                           "grade" => "UNICA",
+                           "lote" => "LI1",
+                           "dscEmbVol" => "METRO(1)",
+                           "qtdContada" => 10,
+                           "dthConferencia" => "10/01/19"],
+                           ["contagem" => "2ª Contagem",
+                           "codProduto" => "102030",
+                           "dscProd" => "Produto teste 1",
+                           "grade" => "UNICA",
+                           "lote" => "LI1",
+                           "dscEmbVol" => "METRO(1)",
+                           "qtdContada" => 10,
+                           "dthConferencia" => "10/01/19"],
+                       ]
+                   ],
+               ],
+           ],
         ];
         $this->view->andamentos = json_encode($arr);
     }

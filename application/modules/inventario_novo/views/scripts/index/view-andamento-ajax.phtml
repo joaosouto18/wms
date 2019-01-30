@@ -13,7 +13,7 @@
         <div class="group">
             <h3 class="accordion-header">Section 1</h3>
             <div class="accordion-body">
-                <p>Mauris mauris ante, blandit et, ultrices a, suscipit eget, quam. Integer ut neque. Vivamus nisi metus, molestie vel, gravida in, condimentum sit amet, nunc. Nam a nibh. Donec suscipit eros. Nam mi. Proin viverra leo ut odio. Curabitur malesuada. Vestibulum a velit eu ante scelerisque vulputate.</p>
+                <p></p>
             </div>
         </div>
         <div class="group">
@@ -37,14 +37,35 @@
 
         $(document).ready(function () {
             if (arrAndamento.length > 0) {
-                console.log(arrAndamento);
                 $.each(arrAndamento, function (k, rua) {
-                    $.each(rua, function (k, info) {
 
+                    let accordionRua = $('<div class="accordion"></div>');
+
+                    $.each(rua.enderecos, function (k, end) {
+                        let tableConf = prepareGridConf(end.conferencias);
+                        accordionRua.append(
+                            newAccordionGroup(end.dscEndereco, tableConf)
+                        )
                     });
+
+                    $("#accordion-master").append(
+                        newAccordionGroup("Rua "+rua.numRua, accordionRua)
+                    )
                 })
             }
         });
+
+        var prepareGridConf = function (conferencias) {
+
+        };
+
+        var newAccordionGroup = function (header, dataBody) {
+            let divGroupAcc = $('<div class="group"></div>');
+            let accHeader = $('<h3 class="accordion-header">'+header+'</h3>');
+            let divAccBody = $('<div class="accordion-body"></div>');
+
+            return divGroupAcc.append(accHeader).append(divAccBody.append(dataBody));
+        };
 
         $(".accordion")
             .accordion({
