@@ -985,7 +985,7 @@ class ExpedicaoRepository extends EntityRepository {
             $whereCargas = " AND c.codCargaExterno = '$cargas' ";
         }
 
-        /*
+        
         $query = "SELECT pp
                         FROM wms:Expedicao\PedidoProduto pp
                         INNER JOIN pp.produto p
@@ -1002,20 +1002,20 @@ class ExpedicaoRepository extends EntityRepository {
                           AND ped.centralEntrega = '$central'
                           AND ped.dataCancelamento is null
                         ";
-          */
+          
 
-        $query = "SELECT pp
-                        FROM wms:Expedicao\PedidoProduto pp
-                        INNER JOIN pp.produto p
-                         LEFT JOIN p.linhaSeparacao ls
-                        INNER JOIN pp.pedido ped
-                        INNER JOIN wms:Expedicao\VProdutoEndereco e WITH p.id = e.codProduto AND p.grade = e.grade
-                        INNER JOIN ped.carga c
-                        WHERE ped.indEtiquetaMapaGerado != 'S'
-                          $whereCargas
-                          AND ped.centralEntrega = '$central'
-                          AND ped.dataCancelamento is null
-                        ";
+//        $query = "SELECT pp
+//                        FROM wms:Expedicao\PedidoProduto pp
+//                        INNER JOIN pp.produto p
+//                         LEFT JOIN p.linhaSeparacao ls
+//                        INNER JOIN pp.pedido ped
+//                        INNER JOIN wms:Expedicao\VProdutoEndereco e WITH p.id = e.codProduto AND p.grade = e.grade
+//                        INNER JOIN ped.carga c
+//                        WHERE ped.indEtiquetaMapaGerado != 'S'
+//                          $whereCargas
+//                          AND ped.centralEntrega = '$central'
+//                          AND ped.dataCancelamento is null
+//                        ";
 
         switch ($sequencia) {
             case 3:
