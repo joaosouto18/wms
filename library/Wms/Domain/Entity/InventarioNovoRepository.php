@@ -390,7 +390,7 @@ class InventarioNovoRepository extends EntityRepository
             ->innerJoin("ien.inventario", "ivn")
             ->where("ivn = :inventario")
             ->andWhere("ien != :invEnd")
-            ->andWhere("ien.finalizado = 'N'")
+            ->andWhere("ien.status != 3")
             ->andWhere("ien.ativo = 'S'")
             ->setParameters(["inventario" => $invEnd->getInventario(), "invEnd" => $invEnd]);
 

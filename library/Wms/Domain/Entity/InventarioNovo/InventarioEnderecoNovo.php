@@ -58,7 +58,8 @@ class InventarioEnderecoNovo
     protected $contagem;
 
     /**
-     * @Column(name="COD_STATUS", type="string" )
+     * @var int
+     * @Column(name="COD_STATUS", type="integer" )
      */
     protected $status;
 
@@ -67,6 +68,18 @@ class InventarioEnderecoNovo
      */
     protected $ativo;
 
+    public function __construct()
+    {
+        $this->setPendente(self::STATUS_PENDENTE);
+    }
+
+    /**
+     * @param mixed $status
+     */
+    private function setStatus($status)
+    {
+        $this->status = $status;
+    }
 
     /**
      * @return mixed
@@ -140,33 +153,21 @@ class InventarioEnderecoNovo
         return $this->status;
     }
 
-    /**
-     * @param mixed $pendente
-     */
     public function setPendente()
     {
         $this->setStatus(self::STATUS_PENDENTE);
     }
 
-     /**
-     * @param mixed $conferencia
-     */
     public function setConferencia()
     {
         $this->setStatus(self::STATUS_CONFERENCIA);
     }
 
-    /**
-     * @param mixed $divergencia
-     */
     public function setDivergencia()
     {
         $this->setStatus(self::STATUS_DIVERGENCIA);
     }
 
-    /**
-     * @param mixed $finalizado
-     */
     public function setFinalizado()
     {
         $this->setStatus(self::STATUS_FINALIZADO);

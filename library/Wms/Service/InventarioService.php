@@ -62,7 +62,6 @@ class InventarioService extends AbstractService
                     'inventario' => $inventarioEn,
                     'depositoEndereco' => $this->em->getReference('wms:Deposito\Endereco', $item['id']),
                     'contagem' => 1,
-                    'status' => InventarioNovo\InventarioEnderecoNovo::STATUS_PENDENTE,
                     'ativo' => 'S'
                 ]);
                 if ($inventarioEn->isPorProduto()) {
@@ -214,8 +213,10 @@ class InventarioService extends AbstractService
             /** @var InventarioNovo\InventarioContEndRepository $inventContEndRepo */
             $inventContEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEnd");
 
+            //echo $inventarioEnderecoEn->getInventario();
+
             /** @var InventarioNovo\InventarioEnderecoNovo[] $endereco */
-            $endereco = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->findOneBy(["inventario" => $inventarioEnderecoEn['cod_inventario']]);
+            $endereco = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->findOneBy(["inventario" => $inventarioEnderecoEn->getInventario()]);
 
             if($endereco->getStatus() == InventarioNovo\InventarioEnderecoNovo::STATUS_PENDENTE){
                 $endereco->setConferencia();
