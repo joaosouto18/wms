@@ -1395,11 +1395,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                     $consolidado = 'S';
                                 }
 
-                                if (isset($arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco])) {
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco]['qtd'] += $qtdSepararEmbalagemAtual;
+                                $unicIndex = implode("-*-", [$pedidoProduto->getId(), $embalagemAtual->getId(), $idEndereco, $lote]);
+                                if (isset($arrMapasEmbPP[$unicIndex])) {
+                                    $arrMapasEmbPP[$unicIndex]['qtd'] += $qtdSepararEmbalagemAtual;
                                 } else {
                                     list($strQuebrasConcat, $arrQuebras) = self::getSetupQuebras($quebras, $pedidoProduto, $reserva);
-                                    $arrMapasEmbPP[$pedidoProduto->getId()][$embalagemAtual->getId()][$idEndereco] = array(
+                                    $arrMapasEmbPP[$unicIndex] = array(
                                         'forcarEmbVenda' => $forcarEmbVenda,
                                         'qtd' => $qtdSepararEmbalagemAtual,
                                         'consolidado' => $consolidado,
@@ -1623,80 +1624,76 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $i = 0;
 
         // Passa por todos os possíveis registros de mapaProduto e soma as quantidades por mapa->endereco->produto
-        foreach ($arrItens as $pedidoProduto) {
-            foreach ($pedidoProduto as $embalagem) {
-                foreach ($embalagem as $element) {
+        foreach ($arrItens as $element) {
 
-                    $embalagens = $element['embalagensDisponiveis'];
-                    $qtdMapa = $element['qtd'];
+            $embalagens = $element['embalagensDisponiveis'];
+            $qtdMapa = $element['qtd'];
 
-                    /** @var PedidoProduto $pedidoProdutoEn */
-                    $pedidoProdutoEn = $element['pedidoProdutoEn'];
-                    /** @var Produto\Embalagem $embalagemEn */
-                    $embalagemEn = $element['embalagemEn'];
-                    /** @var Produto $produtoEn */
-                    $produtoEn = $pedidoProdutoEn->getProduto();
-                    /** @var Endereco $enderecoEn */
-                    $enderecoEn = $element['enderecoEn'];
+            /** @var PedidoProduto $pedidoProdutoEn */
+            $pedidoProdutoEn = $element['pedidoProdutoEn'];
+            /** @var Produto\Embalagem $embalagemEn */
+            $embalagemEn = $element['embalagemEn'];
+            /** @var Produto $produtoEn */
+            $produtoEn = $pedidoProdutoEn->getProduto();
+            /** @var Endereco $enderecoEn */
+            $enderecoEn = $element['enderecoEn'];
 
-                    $expedicaoEn = $element['expedicaoEn'];
+            $expedicaoEn = $element['expedicaoEn'];
 
-                    $quebras = $element['quebras'];
-                    $strQuebrasConcat = $element['strQuebrasConcat'];
+            $quebras = $element['quebras'];
+            $strQuebrasConcat = $element['strQuebrasConcat'];
 
-                    $enderecoId = (!empty($enderecoEn)) ? $enderecoEn->getId() : null;
-                    $produtoGradeLote = $produtoEn->getId().'#!#'.$produtoEn->getGrade().'#!#'.$element['lote'];
+            $enderecoId = (!empty($enderecoEn)) ? $enderecoEn->getId() : null;
+            $produtoGradeLote = $produtoEn->getId().'#!#'.$produtoEn->getGrade().'#!#'.$element['lote'];
 
-                    if ($element['consolidado'] == 'S') {
-                        $idCliente = $pedidoProdutoEn->getPedido()->getPessoa()->getId();
-                        $idPedProd = $pedidoProdutoEn->getId();
+            if ($element['consolidado'] == 'S') {
+                $idCliente = $pedidoProdutoEn->getPedido()->getPessoa()->getId();
+                $idPedProd = $pedidoProdutoEn->getId();
 
-                        if (isset($arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()])) {
-                            $qtdAtual = $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'];
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'] = Math::adicionar($qtdAtual, $qtdMapa);
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd] = $pedidoProdutoEn;
-                        } else {
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['expedicaoEn'] = $expedicaoEn;
-                            $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()] = array(
-                                'qtd' => $qtdMapa,
-                                'lote' => $element['lote'],
-                                'consolidado' => $element['consolidado'],
-                                'cubagem' => $element['cubagem'],
-                                'arrPedProd' => array($idPedProd => $pedidoProdutoEn),
-                                'pedidoEn' => $pedidoProdutoEn->getPedido(),
-                                'produtoEn' => $produtoEn,
-                                'quebras' => $quebras,
-                                'embalagemEn' => $embalagemEn,
-                                'enderecoEn' => $enderecoEn);
-                        }
-                        continue;
-                    }
-
-                    $qtd = Math::multiplicar($qtdMapa, $embalagemEn->getQuantidade());
-
-                    $idPresetEmb = ($element['forcarEmbVenda']) ? $embalagemEn->getId() : 0;
-
-                    if (isset($arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote][$idPresetEmb])){
-                        $qtdAtual = $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote][$idPresetEmb]['qtd'];
-                        $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote][$idPresetEmb]['qtd'] = Math::adicionar($qtdAtual, $qtd);
-                        $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote][$idPresetEmb]['arrPedProd'][$pedidoProdutoEn->getId()] = $pedidoProdutoEn;
-                    } else {
-                        $arr = [
-                            'qtd' => $qtd,
-                            'lote' => $element['lote'],
-                            'embalagensDisponiveis' => $embalagens,
-                            'arrPedProd' => array($pedidoProdutoEn->getId() => $pedidoProdutoEn),
-                            'quebras' => $quebras,
-                            'embalagemPreset' => $embalagemEn,
-                            'expedicaoEn' => $expedicaoEn,
-                            'enderecoEn' => $enderecoEn,
-                            'produtoEn' => $produtoEn,
-                            'forcarEmbVenda' => $element['forcarEmbVenda']
-                        ];
-
-                        $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote][$idPresetEmb] = $arr;
-                    }
+                if (isset($arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()])) {
+                    $qtdAtual = $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'];
+                    $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'] = Math::adicionar($qtdAtual, $qtdMapa);
+                    $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd] = $pedidoProdutoEn;
+                } else {
+                    $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['expedicaoEn'] = $expedicaoEn;
+                    $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()] = array(
+                        'qtd' => $qtdMapa,
+                        'lote' => $element['lote'],
+                        'consolidado' => $element['consolidado'],
+                        'cubagem' => $element['cubagem'],
+                        'arrPedProd' => array($idPedProd => $pedidoProdutoEn),
+                        'pedidoEn' => $pedidoProdutoEn->getPedido(),
+                        'produtoEn' => $produtoEn,
+                        'quebras' => $quebras,
+                        'embalagemEn' => $embalagemEn,
+                        'enderecoEn' => $enderecoEn);
                 }
+                continue;
+            }
+
+            $qtd = Math::multiplicar($qtdMapa, $embalagemEn->getQuantidade());
+
+            $idPresetEmb = ($element['forcarEmbVenda']) ? $embalagemEn->getId() : 0;
+
+            if (isset($arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote][$idPresetEmb])){
+                $qtdAtual = $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote][$idPresetEmb]['qtd'];
+                $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote][$idPresetEmb]['qtd'] = Math::adicionar($qtdAtual, $qtd);
+                $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote][$idPresetEmb]['arrPedProd'][$pedidoProdutoEn->getId()] = $pedidoProdutoEn;
+            } else {
+                $arr = [
+                    'qtd' => $qtd,
+                    'lote' => $element['lote'],
+                    'embalagensDisponiveis' => $embalagens,
+                    'arrPedProd' => array($pedidoProdutoEn->getId() => $pedidoProdutoEn),
+                    'quebras' => $quebras,
+                    'embalagemPreset' => $embalagemEn,
+                    'expedicaoEn' => $expedicaoEn,
+                    'enderecoEn' => $enderecoEn,
+                    'produtoEn' => $produtoEn,
+                    'forcarEmbVenda' => $element['forcarEmbVenda']
+                ];
+
+                $arrayTemp[$strQuebrasConcat][$enderecoId][$produtoGradeLote][$idPresetEmb] = $arr;
             }
         }
 

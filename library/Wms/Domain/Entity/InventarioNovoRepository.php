@@ -400,7 +400,7 @@ class InventarioNovoRepository extends EntityRepository
     public function getResultInventario($idInventario)
     {
         $sql = "
-            SELECT 
+            SELECT DISTINCT
                 ICEP.COD_PRODUTO,
                 ICEP.DSC_GRADE,
                 ICEP.COD_PRODUTO_VOLUME,
@@ -432,24 +432,41 @@ class InventarioNovoRepository extends EntityRepository
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 
-    public function getSumarioByRua($params) {
-        $idInventario = $params['id'];
+    public function getSumarioByRua($idInventario) {
 
         $sql = "
             SELECT 
-              count(ien.cod_inventario_endereco) qtd_enderecos,
-              count(ienn.cod_inventario_endereco) qtd_finalizados,
-              count(ien.cod_inventario_endereco - ienn.cod_inventario_endereco) qtd_pendentes,
-              round( (COUNT(ienn.cod_inventario_endereco) * 100) / COUNT(ien.cod_inventario_endereco) ) CONCLUIDO
-              
-              from inventario_endereco_novo ien
-              join inventario_endereco_novo ie
-              on ien.cod_inventario_endereco = ie.cod_inventario_endereco
-              
-              left join inventario_endereco_novo ienn
-              on ienn.cod_inventario_endereco = ie.cod_inventario_endereco and ie.cod_status = 3
+                   DE.NUM_RUA, 
+                   DE.DSC_DEPOSITO_ENDERECO, 
+                   IEN.IND_ATIVO, 
+                   IEN.COD_STATUS,
+                   ICE.NUM_SEQUENCIA,
+                   ICE.NUM_CONTAGEM,
+                   ICE.IND_CONTAGEM_DIVERGENCIA,
+                   PES.NOM_PESSOA,
+                   ICEP.COD_PRODUTO,
+                   P.DSC_PRODUTO,
+                   ICEP.DSC_GRADE,
+                   NVL(ICEP.DSC_LOTE, '-') DSC_LOTE,
+                   NVL(PE.DSC_EMBALAGEM || '(' || ICEP.QTD_EMBALAGEM || ')' , PV.DSC_VOLUME) UNID,
+                   ICEP.QTD_CONTADA,
+                   NVL(TO_CHAR(ICEP.DTH_VALIDADE, 'DD/MM/YYYY'), '-') DTH_VALIDADE,
+                   TO_CHAR(ICEP.DTH_CONTAGEM, 'DD/MM/YYYY HH24:MI:SS') DTH_CONFERENCIA
+              FROM INVENTARIO_NOVO INVN
+        INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON IEN.COD_INVENTARIO = INVN.COD_INVENTARIO
+        INNER JOIN INVENTARIO_CONT_END ICE ON IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
+        INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO
+         LEFT JOIN INVENTARIO_CONT_END_OS ICEO ON ICE.COD_INV_CONT_END = ICEO.COD_INV_CONT_END
+         LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = ICEO.COD_OS
+         LEFT JOIN PESSOA PES ON PES.COD_PESSOA = OS.COD_PESSOA
+         LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
+         LEFT JOIN INVENTARIO_END_PROD IEP ON IEN.COD_INVENTARIO_ENDERECO = IEP.COD_INVENTARIO_ENDERECO
+         LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ICEP.COD_PRODUTO_VOLUME
+         LEFT JOIN PRODUTO_EMBALAGEM PE ON ICEP.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+         LEFT JOIN PRODUTO P ON P.COD_PRODUTO = ICEP.COD_PRODUTO AND P.DSC_GRADE = ICEP.DSC_GRADE
             
-            WHERE ien.cod_inventario = $idInventario";
+             WHERE INVN.COD_INVENTARIO = $idInventario
+          ORDER BY DE.NUM_RUA, ICE.NUM_SEQUENCIA, ICEP.COD_PRODUTO, ICEP.DSC_GRADE";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }

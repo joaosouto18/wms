@@ -951,11 +951,43 @@ class InventarioService extends AbstractService
         /** @var InventarioNovoRepository $inventarioRepo */
         $inventarioRepo = $this->getRepository();
         $result = [];
-        $usaGrade = ($inventarioRepo->getSystemParameterValue("UTILIZA_GRADE"));
-        foreach ($inventarioRepo->getResultInventario($idInventario) as $item) {
-            $result[] = [
 
+        foreach ($inventarioRepo->getSumarioByRua($idInventario) as $conf) {
+            if (isset($result[$conf['NUM_RUA']])) {
+                if ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_PENDENTE) {
+                    $result[$conf['NUM_RUA']]['pendentes']++;
+                }
+                elseif ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_CONFERENCIA) {
+                    $result[$conf['NUM_RUA']]['conferencia']++;
+                }
+                elseif ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_DIVERGENCIA) {
+                    $result[$conf['NUM_RUA']]['divergentes']++;
+                }
+                elseif ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_FINALIZADO) {
+                    $result[$conf['NUM_RUA']]['finalizados']++;
+                }
+            } else {
+                $result[$conf['NUM_RUA']]['pendentes'] = 0;
+                $result[$conf['NUM_RUA']]['conferencia'] = 0;
+                $result[$conf['NUM_RUA']]['divergentes'] = 0;
+                $result[$conf['NUM_RUA']]['finalizados'] = 0;
+            }
+
+            $result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['status'] = InventarioNovo\InventarioEnderecoNovo::$tipoStatus[$conf['COD_STATUS']];
+            $result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['conferencias'][] = [
+                "contagem" => "$conf[NUM_CONTAGEM]ª Cont." . (($conf['IND_CONTAGEM_DIVERGENCIA'] == 'S') ? ' Divergência' : ''),
+                "conferente" => $conf['NOM_PESSOA'],
+                "codProduto" => $conf['COD_PRODUTO'],
+                "dscProd" => $conf['DSC_PRODUTO'],
+                "grade" => $conf['DSC_GRADE'],
+                "lote" => $conf['DSC_LOTE'],
+                "dscEmbVol" => $conf['UNID'],
+                "qtdContada" => $conf['QTD_CONTADA'],
+                "dthValidade" => $conf['DTH_VALIDADE'],
+                "dthConferencia" => $conf['DTH_CONFERENCIA']
             ];
         }
+
+        return $result;
     }
 }

@@ -19,10 +19,14 @@ $(document).ready(function(){
     $('.dialogAjax').live('click', function (ev, el) {
         //stop event    
         ev.preventDefault();
+
+        var width = $(this).data("dialog-width");
+        var height = $(this).data("dialog-height");
+
         //load window
         $.wmsDialogAjax({
-            'width':800,
-            'height':500,
+            'width':(isEmpty(width)) ? 800 : width,
+            'height':(isEmpty(height)) ? 500 : height,
             'url': this.href,
             'title':$(this).html()
         });
