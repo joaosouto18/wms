@@ -22,13 +22,15 @@ $(document).ready(function(){
 
         var width = $(this).data("dialog-width");
         var height = $(this).data("dialog-height");
+        var position = $(this).data("dialog-position");
 
         //load window
         $.wmsDialogAjax({
             'width':(isEmpty(width)) ? 800 : width,
             'height':(isEmpty(height)) ? 500 : height,
             'url': this.href,
-            'title':$(this).html()
+            'title':$(this).html(),
+            'position':(isEmpty(position)) ? 'center' : ['center', position]
         });
     });
 
