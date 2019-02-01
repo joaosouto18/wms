@@ -952,9 +952,16 @@ class InventarioService extends AbstractService
         /** @var InventarioNovoRepository $inventarioRepo */
         $inventarioRepo = $this->getRepository();
         $result = [];
+        $ends = [];
 
         foreach ($inventarioRepo->getSumarioByRua($idInventario) as $conf) {
-            if (isset($result[$conf['NUM_RUA']])) {
+            if (!in_array($conf['DSC_DEPOSITO_ENDERECO'], $ends)) {
+                if (!isset($result[$conf['NUM_RUA']])) {
+                    $result[$conf['NUM_RUA']]['pendentes'] = 0;
+                    $result[$conf['NUM_RUA']]['conferencia'] = 0;
+                    $result[$conf['NUM_RUA']]['divergentes'] = 0;
+                    $result[$conf['NUM_RUA']]['finalizados'] = 0;
+                }
                 if ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_PENDENTE) {
                     $result[$conf['NUM_RUA']]['pendentes']++;
                 }
@@ -967,11 +974,7 @@ class InventarioService extends AbstractService
                 elseif ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_FINALIZADO) {
                     $result[$conf['NUM_RUA']]['finalizados']++;
                 }
-            } else {
-                $result[$conf['NUM_RUA']]['pendentes'] = 0;
-                $result[$conf['NUM_RUA']]['conferencia'] = 0;
-                $result[$conf['NUM_RUA']]['divergentes'] = 0;
-                $result[$conf['NUM_RUA']]['finalizados'] = 0;
+                $ends[] = $conf['DSC_DEPOSITO_ENDERECO'];
             }
 
             $result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['status'] = InventarioNovo\InventarioEnderecoNovo::$tipoStatus[$conf['COD_STATUS']];
