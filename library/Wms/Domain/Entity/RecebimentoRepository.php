@@ -590,6 +590,9 @@ class RecebimentoRepository extends EntityRepository {
                         $em->getRepository("wms:Enderecamento\EstoqueProprietario")->efetivaEstoquePropRecebimento($recebimentoEntity->getId());
                     }
                 }
+
+                $this->atualizaRecebimentoBenner($idRecebimento);
+
                 $em->flush();
                 $em->commit();
                 return array('exception' => null);
@@ -1999,5 +2002,39 @@ class RecebimentoRepository extends EntityRepository {
         return $produtos;
     }
 
+    public function atualizaRecebimentoBenner ($idRecebimento) {
+        $sql = "SELECT DISTINCT TR.RECEBIMENTOFISICOBENNER
+                  FROM NOTA_FISCAL NF
+                  LEFT JOIN FORNECEDOR F ON F.COD_FORNECEDOR = NF.COD_FORNECEDOR
+                 INNER JOIN TR_NOTA_FISCAL_ENTRADA TR 
+                    ON NF.NUM_NOTA_FISCAL = TR.NUM_NOTA_FISCAL
+                   AND NF.COD_SERIE_NOTA_FISCAL = TR.COD_SERIE_NOTA_FISCAL
+                   AND F.COD_EXTERNO = TR.COD_FORNECEDOR
+                   AND TR.RECEBIMENTOFISICOBENNER IS NOT NULL
+                 WHERE NF.COD_RECEBIMENTO = " . $idRecebimento;
+        $idsBenner = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $idsArray = array();
+        foreach ($idsBenner as $id) {
+            $idsArray[] = $id['RECEBIMENTOFISICOBENNER'];
+        }
+
+        if (counts($idsArray) >0) {
+            $ids = implode(",", $idsArray);
+
+            /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
+            $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+            $conexaoEn = $conexaoRepo->find(10);
+
+            $UPDATE01 = "UPDATE CP_RECEBIMENTOFISICO SET STATUS = 6 WHERE HANDLE IN ($ids)";
+
+            $UPDATE02 = "UPDATE CP_RECEBIMENTOFISICOPAI SET STATUS = 6 WHERE HANDLE IN (
+                        SELECT RECEBIMENTOFISICOPAI FROM CP_RECEBIMENTOFISICO WHERE HANDLE IN ($ids))";
+
+            $conexaoRepo->runQuery($UPDATE01, $conexaoEn,true);
+
+            $conexaoRepo->runQuery($UPDATE02, $conexaoEn,true);
+        }
+    }
 
 }
