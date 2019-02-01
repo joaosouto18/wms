@@ -1286,6 +1286,25 @@ class ExpedicaoRepository extends EntityRepository {
 
         $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
 
+        /*
+         * Remover pois foi feito exclusivo para edmil para não disparar nenhum retorno para a Benner
+         */
+
+        $sql = "SELECT COD_TIPO_PEDIDO
+                      FROM PEDIDO P
+                      LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                      WHERE C.COD_EXPEDICAO = $idExpedicao
+                      AND P.COD_TIPO_PEDIDO IN (521,471)";
+
+        $qtdPedidos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($qtdPedidos) <= 0) {
+            return true;
+        }
+        /*
+         * Fim remover
+         */
+
         $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
         $cargaEntities = $this->getProdutosExpedicaoCorteToIntegracao(null,$idExpedicao,true);
 
