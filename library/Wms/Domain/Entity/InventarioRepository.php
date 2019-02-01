@@ -780,9 +780,7 @@ class InventarioRepository extends EntityRepository {
     /*
      * Layout de exportação definido para o Winthor
      */
-    public function exportaInventarioModelo01($id) {
-        /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
-        $inventarioEn = $this->_em->find('wms:Inventario', $id);
+    public function exportaInventarioModelo01($id, $inventarioNovo = false) {
 
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
@@ -791,7 +789,13 @@ class InventarioRepository extends EntityRepository {
 
         $inventarioRepo = $this->_em->getRepository('wms:Inventario');
 
-        $codInvErp = $inventarioEn->getCodInventarioERP();
+        $codInvErp = null;
+        if (!$inventarioNovo) {
+            $codInvErp = $this->_em->find('wms:Inventario', $id)->getCodInventarioERP();
+        } else {
+            $codInvErp = $this->_em->find("wms:InventarioNovo", $id)->getCodErp();
+        }
+
         if (empty($codInvErp)){
             throw new \Exception("Este inventário não tem o código do inventário respectivo no ERP");
         }

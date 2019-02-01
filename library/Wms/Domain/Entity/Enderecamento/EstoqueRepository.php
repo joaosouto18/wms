@@ -64,6 +64,17 @@ class EstoqueRepository extends EntityRepository
 
         $qtdReserva = 0;
 
+        if ($controlaLote == 'S' && ((!isset($params['lote']) || empty($params['lote'])) && empty($idInventario))) {
+            throw new \Exception('Informe o Lote.');
+        } elseif($controlaLote == 'S' && isset($params['lote']) && !empty($params['lote'])){
+            /** @var LoteRepository $loteRepository */
+            $loteRepository = $em->getRepository('wms:Produto\Lote');
+            $loteEntity = $loteRepository->verificaLote($params['lote'], $codProduto, $grade);
+            if(empty($loteEntity)){
+                throw new \Exception('O lote '.$params['lote'].' não pertence ao produto '.$codProduto);
+            }
+        }
+
         if ($saidaProduto == true) {
             $dql = "SELECT SUM(REP.QTD_RESERVADA) QTD_RESERVADA
                         FROM RESERVA_ESTOQUE RE
@@ -73,6 +84,9 @@ class EstoqueRepository extends EntityRepository
                         if (isset($volumeEn) && !empty($volumeEn)) {
                             $idVolume = $volumeEn->getId();
                             $dql .= " AND REP.COD_PRODUTO_VOLUME = $idVolume";
+                        }
+                        if (isset($params['lote']) && !empty($params['lote'])) {
+                            $dql .= " AND REP.DSC_LOTE = '$params[lote]'";
                         }
             $dql .= " GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO, NVL(COD_PRODUTO_VOLUME,0)";
 
@@ -91,16 +105,6 @@ class EstoqueRepository extends EntityRepository
             $usuarioSessao = $auth->getIdentity();
             $pessoaRepo = $this->getEntityManager()->getRepository("wms:Usuario");
             $usuarioEn = $pessoaRepo->find($usuarioSessao->getId());
-        }
-        if ($controlaLote == 'S' && ((!isset($params['lote']) || empty($params['lote'])) && empty($idInventario))) {
-            throw new \Exception('Informe o Lote.');
-        } elseif($controlaLote == 'S' && isset($params['lote']) && !empty($params['lote'])){
-            /** @var LoteRepository $loteRepository */
-            $loteRepository = $em->getRepository('wms:Produto\Lote');
-            $loteEntity = $loteRepository->verificaLote($params['lote'], $codProduto, $grade);
-            if(empty($loteEntity)){
-                throw new \Exception('O lote '.$params['lote'].' não pertence ao produto '.$codProduto);
-            }
         }
 
         $argsConsultaEstoque = [
