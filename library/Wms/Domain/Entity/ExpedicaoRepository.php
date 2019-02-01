@@ -973,7 +973,7 @@ class ExpedicaoRepository extends EntityRepository {
                                     }
 
                                     foreach ($idsElementos as $id) {
-                                        $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id] = array(
+                                        $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar] = array(
                                             'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
                                             'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
                                             'codProduto' => $codProduto,
@@ -999,11 +999,11 @@ class ExpedicaoRepository extends EntityRepository {
                                     $forcarSairDoPicking = true;
                                     foreach ($pedidos as $codPedido => $qtdItenPedido) {
                                         foreach ($idsElementos as $id) {
-                                            if (isset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id])) {
-                                                $temp = $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id];
+                                            if (isset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar])) {
+                                                $temp = $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar];
                                                 $elemento[$codPedido]['atendida'] = Math::subtrair($elemento[$codPedido]['atendida'], $temp['qtd']);
                                             }
-                                            unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id]);
+                                            unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar]);
                                             unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica]);
                                             unset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]);
                                             unset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica]);
@@ -1018,16 +1018,16 @@ class ExpedicaoRepository extends EntityRepository {
                                         if ($tipoSaida == ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA) {
                                             /* caso seja tentativa de pulmão-doca e não tenha picking apenas converte para separação aérea */
                                             foreach ($pedidos as $codPedido => $qtdItenPedido) {
-                                                if (isset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id])) {
-                                                    $arrTemp = $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id];
-                                                    unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id]);
+                                                if (isset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar])) {
+                                                    $arrTemp = $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar];
+                                                    unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar]);
                                                     unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica]);
-                                                    $enderecos[ReservaEstoqueExpedicao::SAIDA_SEPARACAO_AEREA]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id] = $arrTemp;
+                                                    $enderecos[ReservaEstoqueExpedicao::SAIDA_SEPARACAO_AEREA]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar] = $arrTemp;
                                                 }
                                             }
                                         }
-                                        if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id])) {
-                                            $temp = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id];
+                                        if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id][$loteReservar])) {
+                                            $temp = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id][$loteReservar];
                                             $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'] = Math::subtrair($temp['qtdReservada'], $qtdReservar);
                                             $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['estoqueReservado'] = false;
                                         }
@@ -1149,7 +1149,7 @@ class ExpedicaoRepository extends EntityRepository {
                             }
 
                             foreach ($idsElementos as $id) {
-                                $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id] = array(
+                                $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar] = array(
                                     'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
                                     'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
                                     'codProduto' => $codProduto,
@@ -1178,20 +1178,22 @@ class ExpedicaoRepository extends EntityRepository {
         foreach ($enderecos as $codTipoSaida => $tipoSaida) {
             foreach ($tipoSaida['enderecos'] as $codEndereco => $pedidos) {
                 foreach ($pedidos as $codPedido => $elementos) {
-                    foreach ($elementos as $itens) {
-                        $itensReservados
+                    foreach ($elementos as $lotes) {
+                        foreach ($lotes as $itens) {
+                            $itensReservados
                             [$idExpedicao]
-                                [$codProduto]
-                                    [$dscGrade]
-                                        [$lote]
-                                            [$quebra]
-                                                [$criterio]
-                                                    ['tiposSaida']
-                                                        [$codTipoSaida]
-                                                            ['enderecos']
-                                                                [$codEndereco]
-                                                                    [$codPedido]
-                                                                        [$codNorma] = $itens;
+                            [$codProduto]
+                            [$dscGrade]
+                            [$lote]
+                            [$quebra]
+                            [$criterio]
+                            ['tiposSaida']
+                            [$codTipoSaida]
+                            ['enderecos']
+                            [$codEndereco]
+                            [$codPedido]
+                            [$codNorma] = $itens;
+                        }
                     }
                 }
             }
