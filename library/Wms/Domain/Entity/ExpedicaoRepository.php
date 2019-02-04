@@ -873,7 +873,7 @@ class ExpedicaoRepository extends EntityRepository {
                         foreach ($estoquePulmao as $estoque) {
                             $qtdEstoque = $estoque['SALDO'];
                             $idEndereco = $estoque['COD_DEPOSITO_ENDERECO'];
-                            $loteReservar = $estoque['DSC_LOTE'];
+                            $loteReservar = (isset($estoque['DSC_LOTE'])) ? $estoque['DSC_LOTE'] : $lote;
                             $zerouEstoque = false;
                             $saiuQtdNorma = false;
                             $nextEndereco = false;

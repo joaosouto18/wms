@@ -787,8 +787,6 @@ class InventarioRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
         $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
-        $inventarioRepo = $this->_em->getRepository('wms:Inventario');
-
         $codInvErp = null;
         if (!$inventarioNovo) {
             $codInvErp = $this->_em->find('wms:Inventario', $id)->getCodInventarioERP();
@@ -799,25 +797,27 @@ class InventarioRepository extends EntityRepository {
         if (empty($codInvErp)){
             throw new \Exception("Este inventário não tem o código do inventário respectivo no ERP");
         }
-        $inventariosByErp = $inventarioRepo->findBy(array('codInventarioERP' => $codInvErp));
-        foreach ($inventariosByErp as $inventarios) {
-            $inventario[] = $inventarios->getId();
+        if (!$inventarioNovo) {
+            $inventariosByErp = $this->_em->getRepository('wms:Inventario')->findBy(array('codInventarioERP' => $codInvErp));
+        } else {
+            $inventariosByErp = $this->_em->getRepository('wms:InventarioNovo')->findBy(array('codErp' => $codInvErp));
         }
-        $codInventarios = implode(',', $inventario);
+        foreach ($inventariosByErp as $inventario) {
+            $inventarios[] = $inventario->getId();
+        }
 
         $filename = "Exp_Inventario($codInvErp).txt";
         $file = fopen($filename, 'w');
 
-        $invEnderecosEn = $enderecoRepo->getComContagem($codInventarios);
+        $invEnderecosEn = $enderecoRepo->getComContagem(implode(',', $inventarios));
         $qtdTotal = 0;
         $produtoAnterior = null;
         $inventario = array();
         foreach ($invEnderecosEn as $invEnderecoEn) {
             $codInventarioEnderecos[] = $invEnderecoEn->getId();
         }
-        $codInventarioEndereco = implode(',',$codInventarioEnderecos);
 
-        $contagemEndEnds = $enderecoRepo->getUltimaContagem($codInventarioEndereco);
+        $contagemEndEnds = $enderecoRepo->getUltimaContagem(implode(',',$codInventarioEnderecos));
         foreach ($contagemEndEnds as $contagemEndEn) {
             $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()), array('quantidade' => 'ASC'));
             if (!$embalagemEntity) continue;
@@ -839,7 +839,7 @@ class InventarioRepository extends EntityRepository {
             $txtCodBarras = str_pad($produto['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
             $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 10, '0', STR_PAD_LEFT);
             $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
-            $linha = "$txtCodInventario"."$txtContagem"."$txtLocal"."$txtCodBarras"."$txtQtd"."$txtCodProduto"."\r\n";
+            $linha = $txtCodInventario.$txtContagem.$txtLocal.$txtCodBarras.$txtQtd.$txtCodProduto."\r\n";
             fwrite($file, $linha, strlen($linha));
         }
 
