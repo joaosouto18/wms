@@ -287,7 +287,6 @@ CREATE TABLE inventario_endereco_novo (
   cod_inventario            NUMBER(8) NOT NULL,
   cod_deposito_endereco     NUMBER(8) NOT NULL,
   num_contagem              NUMBER(3) NOT NULL,
-  --  Flag (S/N) para indicar  se o inventário no endereço foi finalizado
   cod_status                NUMBER(4) NOT NULL,
   ind_ativo                 CHAR(1) NOT NULL
 );

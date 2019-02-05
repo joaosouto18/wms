@@ -492,7 +492,8 @@ class ReservaEstoqueRepository extends EntityRepository
     }
 
     public function getResumoReservasNaoAtendidasByParams($params) {
-        $SQL = "SELECT CASE WHEN REEXP.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Expedição: ' || REEXP.COD_EXPEDICAO || ' Pedido: ' || P.COD_EXTERNO
+        $SQL = "SELECT 
+                       CASE WHEN REEXP.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Expedição: ' || REEXP.COD_EXPEDICAO || ' Pedido: ' || P.COD_EXTERNO
                             WHEN REOND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Ressuprimento: '  || OOS.COD_ONDA_RESSUPRIMENTO
                             WHEN REEND.COD_RESERVA_ESTOQUE IS NOT NULL THEN 'Endereçamento do Palete: '  || REEND.UMA || ' Recebimento: ' || P.COD_RECEBIMENTO
                        END AS ORIGEM,
@@ -515,18 +516,17 @@ class ReservaEstoqueRepository extends EntityRepository
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = REEXP.COD_PEDIDO
                  WHERE RE.IND_ATENDIDA = 'N'";
 
-        $idVolume = $params['idVolume'];
-        $idProduto = $params['idProduto'];
-        $grade = $params['grade'];
-
-        if ($idVolume == "0") {
-            $SQL .= " AND REP.COD_PRODUTO = '" . $idProduto. "' ";
-            $SQL .= " AND REP.DSC_GRADE = '" . $grade. "' ";
+        if ($params['idVolume'] == "0") {
+            $SQL .= " AND REP.COD_PRODUTO = '$params[idProduto]' ";
+            $SQL .= " AND REP.DSC_GRADE = '$params[grade]' ";
         }else {
-            $SQL .= " AND REP.COD_PRODUTO_VOLUME = '" . $idVolume. "' ";
+            $SQL .= " AND REP.COD_PRODUTO_VOLUME = '$params[idVolume]' ";
         }
         if (isset($params['idEndereco']) && !empty($params['idEndereco'])) {
-            $SQL .= " AND RE.COD_DEPOSITO_ENDERECO = '" . $params['idEndereco']. "' ";
+            $SQL .= " AND RE.COD_DEPOSITO_ENDERECO = $params[idEndereco] ";
+        }
+        if (isset($params['dscLote']) && !empty($params['dscLote'])) {
+            $SQL .= " AND REP.DSC_LOTE = '$params[dscLote]' ";
         }
         $result = $this->getEntityManager()->getConnection()->query($SQL . " ORDER BY RE.DTH_RESERVA ")->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $key => $value){
