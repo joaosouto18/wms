@@ -1974,7 +1974,7 @@ class RecebimentoRepository extends EntityRepository {
                      FROM 
                        NOTA_FISCAL NF2 INNER JOIN 
                        NOTA_FISCAL_ITEM NFI on (NF2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) LEFT JOIN
-                       PRODUTO_EMBALAGEM PE ON (NFI.COD_PRODUTO = PE.COD_PRODUTO)
+                       PRODUTO_EMBALAGEM PE ON (NFI.COD_PRODUTO = PE.COD_PRODUTO AND PE.DTH_INATIVACAO IS NULL)
                      WHERE 
                        NF2.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                      GROUP BY 
