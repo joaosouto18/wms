@@ -2023,7 +2023,7 @@ class RecebimentoRepository extends EntityRepository {
             $ids = implode(",", $idsArray);
 
             /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
-            $conexaoRepo = $this->_em->getRepository('wms:integracao\ConexaoIntegracao');
+            $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
             $conexaoEn = $conexaoRepo->find(10);
 
             $UPDATE01 = "UPDATE CP_RECEBIMENTOFISICO SET STATUS = 6 WHERE HANDLE IN ($ids)";
