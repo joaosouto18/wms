@@ -780,28 +780,21 @@ class InventarioRepository extends EntityRepository {
     /*
      * Layout de exportação definido para o Winthor
      */
-    public function exportaInventarioModelo01($id, $inventarioNovo = false) {
+    public function exportaInventarioModelo01($id) {
 
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
         $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
-        $codInvErp = null;
-        if (!$inventarioNovo) {
-            $codInvErp = $this->_em->find('wms:Inventario', $id)->getCodInventarioERP();
-        } else {
-            $codInvErp = $this->_em->find("wms:InventarioNovo", $id)->getCodErp();
-        }
+        $codInvErp = $this->_em->find('wms:Inventario', $id)->getCodInventarioERP();
 
         if (empty($codInvErp)){
             throw new \Exception("Este inventário não tem o código do inventário respectivo no ERP");
         }
-        if (!$inventarioNovo) {
-            $inventariosByErp = $this->_em->getRepository('wms:Inventario')->findBy(array('codInventarioERP' => $codInvErp));
-        } else {
-            $inventariosByErp = $this->_em->getRepository('wms:InventarioNovo')->findBy(array('codErp' => $codInvErp));
-        }
+
+        $inventariosByErp = $this->_em->getRepository('wms:Inventario')->findBy(array('codInventarioERP' => $codInvErp));
+
         foreach ($inventariosByErp as $inventario) {
             $inventarios[] = $inventario->getId();
         }

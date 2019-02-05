@@ -272,15 +272,13 @@ class Inventario_Novo_IndexController  extends Action
         $idInventario = $this->_getParam('id');
 
         try {
-            /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
-            $inventarioRepo = $this->_em->getRepository('wms:Inventario');
 
             $modelo = $this->getSystemParameterValue("MODELO_EXPORTACAO_INVENTARIO");
 
             if ($modelo == 1) {
-                $inventarioRepo->exportaInventarioModelo01($idInventario);
+                $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo1($idInventario);
             } else {
-                $inventarioRepo->exportaInventarioModelo02($idInventario);
+                $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo2($idInventario);
             }
             $this->addFlashMessage('success', "Inventário $idInventario exportado com sucesso");
 

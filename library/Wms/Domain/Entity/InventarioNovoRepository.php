@@ -397,8 +397,11 @@ class InventarioNovoRepository extends EntityRepository
         return $dql->getQuery()->getResult();
     }
 
-    public function getResultInventario($idInventario)
+    public function getResultInventario($idInventario, $toExport = false)
     {
+        $condition = ($toExport) ? "IN ($idInventario)" : " = $idInventario";
+        $sumCondition = ($toExport) ? "" : " - NVL(E.QTD,0)";
+
         $sql = "
             SELECT DISTINCT
                 ICEP.COD_PRODUTO,
@@ -407,7 +410,7 @@ class InventarioNovoRepository extends EntityRepository
                 ICEP.DSC_LOTE,
                 IEN.COD_DEPOSITO_ENDERECO,
                 ICEP.DTH_VALIDADE,
-                SUM(ICEP.QTD_EMBALAGEM * ICEP.QTD_CONTADA) - NVL(E.QTD,0) QTD,
+                SUM(ICEP.QTD_EMBALAGEM * ICEP.QTD_CONTADA) $sumCondition QTD,
                 NVL(E.QTD, 0) POSSUI_SALDO
             FROM INVENTARIO_NOVO INV
             INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on INV.COD_INVENTARIO = IEN.COD_INVENTARIO AND IEN.IND_ATIVO = 'S'
@@ -419,7 +422,7 @@ class InventarioNovoRepository extends EntityRepository
               AND E.DSC_GRADE = ICEP.DSC_GRADE 
               AND NVL(E.DSC_LOTE, 0) = NVL(ICEP.DSC_LOTE, 0)
               AND NVL(E.COD_PRODUTO_VOLUME, 0) = NVL(ICEP.COD_PRODUTO_VOLUME, 0)
-            WHERE INV.COD_INVENTARIO = $idInventario 
+            WHERE INV.COD_INVENTARIO $condition
                   AND NOT EXISTS(
                   SELECT 'x' FROM INVENTARIO_END_PROD IEP 
                   WHERE IEP.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO 
