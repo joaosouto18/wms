@@ -1296,7 +1296,7 @@ class ExpedicaoRepository extends EntityRepository {
                       WHERE C.COD_EXPEDICAO = $idExpedicao
                       AND P.COD_TIPO_PEDIDO IN (521,471)";
 
-        $qtdPedidos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        $qtdPedidos = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         if (count($qtdPedidos) <= 0) {
             return true;
