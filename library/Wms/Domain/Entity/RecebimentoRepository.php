@@ -2019,7 +2019,7 @@ class RecebimentoRepository extends EntityRepository {
             $idsArray[] = $id['RECEBIMENTOFISICOBENNER'];
         }
 
-        if (counts($idsArray) >0) {
+        if (count($idsArray) >0) {
             $ids = implode(",", $idsArray);
 
             /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
