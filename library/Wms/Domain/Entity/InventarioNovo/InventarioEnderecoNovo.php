@@ -25,8 +25,8 @@ class InventarioEnderecoNovo
 
     public static $tipoStatus = array(
         self::STATUS_PENDENTE => "PENDENTE",
-        self::STATUS_CONFERENCIA => "LIBERADO",
-        self::STATUS_DIVERGENCIA => "CONCLUIDO",
+        self::STATUS_CONFERENCIA => "CONFERENCIA",
+        self::STATUS_DIVERGENCIA => "DIVERGENCIA",
         self::STATUS_FINALIZADO => "FINALIZADO"
     );
 

@@ -16,7 +16,7 @@
         var arrAndamento = <?php echo $this->andamentos; ?> ;
 
         $(document).ready(function () {
-            if (arrAndamento.length > 0) {
+            if (Object.keys(arrAndamento).length > 0) {
                 $.each(arrAndamento, function (k, rua) {
 
                     let accordionRua = $('<div class="accordion"></div>');
@@ -24,12 +24,12 @@
                     $.each(rua.enderecos, function (k, end) {
                         let tableConf = prepareGridConf(end.conferencias);
                         accordionRua.append(
-                            newAccordionGroup(end.dscEndereco, tableConf)
+                            newAccordionGroup(k, end, tableConf, true)
                         )
                     });
 
                     $("#accordion-master").append(
-                        newAccordionGroup("Rua "+rua.numRua, accordionRua)
+                        newAccordionGroup(k, rua, accordionRua)
                     )
                 })
             }
@@ -66,11 +66,13 @@
                 '<td>Nº.</td>' +
                 '<td>Conferente</td>' +
                 '<td>Código</td>' +
+                '<td>Produto</td>' +
                 '<td>Grade</td>' +
                 '<td>Lote</td>' +
                 '<td>Unid</td>' +
                 '<td>Qtd Conferida</td>' +
                 '<td>Dth Validade</td>' +
+                '<td>Dth Conferencia</td>' +
                 '</tr>');
 
             $.each(conferencias, function (k, conf) {
@@ -78,20 +80,52 @@
                     '<td>'+conf.contagem+'</td>' +
                     '<td>'+conf.conferente+'</td>' +
                     '<td>'+conf.codProduto+'</td>' +
+                    '<td>'+conf.dscProd+'</td>' +
                     '<td>'+conf.grade+'</td>' +
                     '<td>'+conf.lote+'</td>' +
                     '<td>'+conf.dscEmbVol+'</td>' +
                     '<td>'+conf.qtdContada+'</td>' +
                     '<td>'+conf.dthValidade+'</td>' +
+                    '<td>'+conf.dthConferencia+'</td>' +
                     '</tr>');
             });
 
             return $('<table class="gTable">').append(tBody);
         };
 
-        var newAccordionGroup = function (header, dataBody) {
+        var newAccordionGroup = function (index, accTitle, dataBody, subAcc) {
             let divGroupAcc = $('<div class="group"></div>');
-            let accHeader = $('<h3 class="accordion-header">'+header+'</h3>');
+            let accHeader = null;
+
+            if (!subAcc) {
+                let title = '' +
+                    '<table width="100%">' +
+                        '<thead>' +
+                            '<tr>' +
+                                '<td class="accordion-master-head">Rua: '+index+'</td>' +
+                                '<td class="accordion-master-head" width="15%">Endereços: '+Object.keys(accTitle.enderecos).length+'</td>' +
+                                '<td class="accordion-master-head" width="15%">Pendentes: '+accTitle.divergentes+'</td>' +
+                                '<td class="accordion-master-head" width="15%">Conferência: '+accTitle.conferencia+'</td>' +
+                                '<td class="accordion-master-head" width="15%">Divergentes: '+accTitle.divergentes+'</td>' +
+                                '<td class="accordion-master-head" width="15%">Finalizados: '+accTitle.finalizados+'</td>' +
+                            '</tr>' +
+                        '</thead>' +
+                    '</table>';
+                accHeader = $('<h3 class="accordion-header">' + title + '</h3>');
+            }
+            else {
+                let title = '' +
+                    '<table width="100%">' +
+                        '<thead>' +
+                            '<tr>' +
+                                '<td class="accordion-master-head" width="30%">Endereço '+index+'</td>' +
+                                '<td class="accordion-master-head" >Situação: '+accTitle.status+'</td>' +
+                            '</tr>' +
+                        '</thead>' +
+                    '</table>';
+                accHeader = $('<h3 class="accordion-header">' + title + '</h3>');
+            }
+
             let divAccBody = $('<div class="accordion-body"></div>');
 
             return divGroupAcc.append(accHeader).append(divAccBody.append(dataBody));

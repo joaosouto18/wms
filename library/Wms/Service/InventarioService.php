@@ -980,11 +980,170 @@ class InventarioService extends AbstractService
         /** @var InventarioNovoRepository $inventarioRepo */
         $inventarioRepo = $this->getRepository();
         $result = [];
-        $usaGrade = ($inventarioRepo->getSystemParameterValue("UTILIZA_GRADE"));
-        foreach ($inventarioRepo->getResultInventario($idInventario) as $item) {
-            $result[] = [
+        $ends = [];
 
+        foreach ($inventarioRepo->getSumarioByRua($idInventario) as $conf) {
+            if (!in_array($conf['DSC_DEPOSITO_ENDERECO'], $ends)) {
+                if (!isset($result[$conf['NUM_RUA']])) {
+                    $result[$conf['NUM_RUA']]['pendentes'] = 0;
+                    $result[$conf['NUM_RUA']]['conferencia'] = 0;
+                    $result[$conf['NUM_RUA']]['divergentes'] = 0;
+                    $result[$conf['NUM_RUA']]['finalizados'] = 0;
+                }
+                if ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_PENDENTE) {
+                    $result[$conf['NUM_RUA']]['pendentes']++;
+                }
+                elseif ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_CONFERENCIA) {
+                    $result[$conf['NUM_RUA']]['conferencia']++;
+                }
+                elseif ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_DIVERGENCIA) {
+                    $result[$conf['NUM_RUA']]['divergentes']++;
+                }
+                elseif ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_FINALIZADO) {
+                    $result[$conf['NUM_RUA']]['finalizados']++;
+                }
+                $ends[] = $conf['DSC_DEPOSITO_ENDERECO'];
+            }
+
+            $result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['status'] = InventarioNovo\InventarioEnderecoNovo::$tipoStatus[$conf['COD_STATUS']];
+            $result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['conferencias'][] = [
+                "contagem" => "$conf[NUM_CONTAGEM]ª Cont." . (($conf['IND_CONTAGEM_DIVERGENCIA'] == 'S') ? ' Divergência' : ''),
+                "conferente" => $conf['NOM_PESSOA'],
+                "codProduto" => $conf['COD_PRODUTO'],
+                "dscProd" => $conf['DSC_PRODUTO'],
+                "grade" => $conf['DSC_GRADE'],
+                "lote" => $conf['DSC_LOTE'],
+                "dscEmbVol" => $conf['UNID'],
+                "qtdContada" => $conf['QTD_CONTADA'],
+                "dthValidade" => $conf['DTH_VALIDADE'],
+                "dthConferencia" => $conf['DTH_CONFERENCIA']
             ];
         }
+
+        return $result;
     }
+
+    /*
+     * Layout de exportação definido para o Winthor
+     */
+    public function exportaInventarioModelo01($id)
+    {
+
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->getRepository('wms:Produto\Embalagem');
+
+        $codInvErp = $this->find($id)->getCodErp();
+
+        if (empty($codInvErp)){
+            throw new \Exception("Este inventário não tem o código do inventário respectivo do ERP");
+        }
+
+        $inventariosByErp = $this->findBy(array('codErp' => $codInvErp));
+        foreach ($inventariosByErp as $inventario) {
+            $inventarios[] = $inventario->getId();
+        }
+
+        $filename = "Exp_Inventario($codInvErp).txt";
+        $file = fopen($filename, 'w');
+
+        $contagens = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd")->getResultInventario(implode(',', $inventarios), true);
+        $inventario = array();
+
+        foreach ($contagens as $contagem) {
+            $embalagemEntity = reset($embalagemRepo->findBy(array('codProduto' => $contagem['COD_PRODUTO'], 'grade' => $contagem['DSC_GRADE']), array('quantidade' => 'ASC')));
+            if (empty($embalagemEntity)) continue;
+
+            if (isset($inventario[$contagem['COD_PRODUTO']])) {
+                $inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'] = Math::adicionar($inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'], $contagem['QTD']);
+            } else {
+                $inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'] = $contagem['QTD'];
+                $inventario[$contagem['COD_PRODUTO']]['COD_BARRAS'] = $embalagemEntity->getCodigoBarras();
+                $inventario[$contagem['COD_PRODUTO']]['FATOR'] = $embalagemEntity->getQuantidade();
+            };
+        }
+
+        foreach ($inventario as $key => $produto) {
+            $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
+            $txtContagem = '001';
+            $txtLocal = '001';
+            $txtCodBarras = str_pad($produto['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
+            $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 10, '0', STR_PAD_LEFT);
+            $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
+            $linha = $txtCodInventario.$txtContagem.$txtLocal.$txtCodBarras.$txtQtd.$txtCodProduto."\r\n";
+            fwrite($file, $linha, strlen($linha));
+        }
+
+        fclose($file);
+
+        header("Content-Type: application/force-download");
+        header("Content-type: application/octet-stream;");
+        header("Content-disposition: attachment; filename=" . $filename);
+        header("Expires: 0");
+        header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+        header("Pragma: no-cache");
+
+        readfile($filename);
+        flush();
+
+        unlink($filename);
+    }
+
+    /*
+     * Layout de exportação definido para a SonosShow
+     */
+    public function exportaInventarioModelo02($idInventario = null) {
+        /*
+         * Nome do arquivo solicitado pela sonoshow como aammddhh.min
+         */
+        $nomeArquivo = date("ymdH.0i");
+        $arquivo = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO") . DIRECTORY_SEPARATOR. $nomeArquivo;
+
+        $SQL = "SELECT P.COD_PRODUTO, NVL(ESTQ.QTD,0) as QTD
+                  FROM PRODUTO P
+                  LEFT JOIN (SELECT E.COD_PRODUTO,
+                                    E.DSC_GRADE, 
+                                    MIN(QTD) as QTD
+                               FROM (SELECT E.COD_PRODUTO,
+                                            E.DSC_GRADE,
+                                            SUM(E.QTD) as QTD,
+                                            NVL(E.COD_PRODUTO_VOLUME,0) as ID_VOLUME
+                                       FROM ESTOQUE E
+                                            GROUP BY E.COD_PRODUTO, E.DSC_GRADE,NVL(E.COD_PRODUTO_VOLUME,0)) E
+                              GROUP BY COD_PRODUTO, DSC_GRADE) ESTQ
+                    ON ESTQ.COD_PRODUTO = P.COD_PRODUTO
+                   AND ESTQ.DSC_GRADE = P.DSC_GRADE " ;
+
+        if ($idInventario != null) {
+            $SQL .= " INNER JOIN (SELECT ICE.COD_PRODUTO,
+                                    ICE.DSC_GRADE
+                               FROM INVENTARIO_ENDERECO IE
+                               LEFT JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+                              WHERE COD_INVENTARIO = $idInventario AND ICE.CONTAGEM_INVENTARIADA = 1 AND ICE.DIVERGENCIA IS NULL
+                              GROUP BY ICE.COD_PRODUTO,
+                                       ICE.DSC_GRADE) I
+                    ON (I.COD_PRODUTO = P.COD_PRODUTO)
+                   AND (I.DSC_GRADE = P.DSC_GRADE)";
+        }
+
+        $produtos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $file = fopen($arquivo, "w");
+
+        $i = 0;
+        foreach ($produtos  as $produto) {
+            $i ++;
+
+            $result = fwrite($file,$produto['COD_PRODUTO'] . ";");
+            $result = fwrite($file,$produto['QTD'] . ";");
+
+            if (count($produtos) != $i) {
+                $result = fwrite($file,"\r\n");
+            }
+
+        }
+
+        $result = fwrite($file,"\r\n");
+        fclose($file);
+    }
+
 }

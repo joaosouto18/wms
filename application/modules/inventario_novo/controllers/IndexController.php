@@ -265,194 +265,7 @@ class Inventario_Novo_IndexController  extends Action
     
     public function viewAndamentoAjaxAction()
     {
-        $this->view->id = $this->_getParam('id');
-        $arr = [
-           [
-               "numRua" => 3,
-               "enderecos" => [
-                   [
-                       "dscEndereco" => "99.999.99.99",
-                       "codStatus" => 1,
-                       "conferencias" => [
-                           [
-                               "contagem" => "1ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthValidade" => "-",
-                               "dthConferencia" => "10/01/19"
-                           ],
-                           [
-                               "contagem" => "2ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthValidade" => "-",
-                               "dthConferencia" => "10/01/19"
-                           ],
-                       ]
-                   ],
-                   [
-                       "dscEndereco" => "99.999.99.99",
-                       "codStatus" => 2,
-                       "conferencias" => [
-                           [
-                               "contagem" => "1ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthValidade" => "10/10/19",
-                               "dthConferencia" => "10/01/19"
-                           ],
-                           [
-                               "contagem" => "2ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthValidade" => "10/10/19",
-                               "dthConferencia" => "10/01/19"
-                           ],
-                       ]
-                   ],
-                   [
-                       "dscEndereco" => "99.999.99.99",
-                       "codStatus" => 0,
-                       "conferencias" => [
-                           [
-                               "contagem" => "1ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthValidade" => "-",
-                               "dthConferencia" => "10/01/19"
-                           ],
-                           [
-                               "contagem" => "2ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthValidade" => "-",
-                               "dthConferencia" => "10/01/19"
-                           ],
-                       ]
-                   ],
-               ],
-           ],
-           [
-               "numRua" => 4,
-               "enderecos" => [
-                   [
-                       "dscEndereco" => "99.999.99.99",
-                       "codStatus" => 1,
-                       "conferencias" => [
-                           [
-                               "contagem" => "1ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthConferencia" => "10/01/19"
-                           ],
-                           [
-                               "contagem" => "2ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthConferencia" => "10/01/19"
-                           ],
-                       ]
-                   ],
-                   [
-                       "dscEndereco" => "99.999.99.99",
-                       "codStatus" => 2,
-                       "conferencias" => [
-                           [
-                               "contagem" => "1ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthConferencia" => "10/01/19"
-                           ],
-                           [
-                               "contagem" => "2ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthConferencia" => "10/01/19"
-                           ],
-                       ]
-                   ],
-                   [
-                       "dscEndereco" => "99.999.99.99",
-                       "codStatus" => 0,
-                       "conferencias" => [
-                           [
-                               "contagem" => "1ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthConferencia" => "10/01/19"
-                           ],
-                           [
-                               "contagem" => "2ª Contagem",
-                               "conferente" => "José das coves",
-                               "codProduto" => "102030",
-                               "dscProd" => "Produto teste 1",
-                               "grade" => "UNICA",
-                               "lote" => "LI1",
-                               "dscEmbVol" => "METRO(1)",
-                               "qtdContada" => 10,
-                               "dthConferencia" => "10/01/19"
-                           ],
-                       ]
-                   ],
-               ],
-           ],
-        ];
-        $this->view->andamentos = json_encode($arr);
+        $this->view->andamentos = json_encode($this->getServiceLocator()->getService("Inventario")->getMovimentacaoByInventario($this->_getParam('id')));
     }
 
     public function exportInventarioAjaxAction()
@@ -460,15 +273,13 @@ class Inventario_Novo_IndexController  extends Action
         $idInventario = $this->_getParam('id');
 
         try {
-            /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
-            $inventarioRepo = $this->_em->getRepository('wms:Inventario');
 
             $modelo = $this->getSystemParameterValue("MODELO_EXPORTACAO_INVENTARIO");
 
             if ($modelo == 1) {
-                $inventarioRepo->exportaInventarioModelo01($idInventario);
+                $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo1($idInventario);
             } else {
-                $inventarioRepo->exportaInventarioModelo02($idInventario);
+                $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo2($idInventario);
             }
             $this->addFlashMessage('success', "Inventário $idInventario exportado com sucesso");
 
