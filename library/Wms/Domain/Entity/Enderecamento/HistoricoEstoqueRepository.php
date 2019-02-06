@@ -154,4 +154,21 @@ class HistoricoEstoqueRepository extends EntityRepository {
         return $resultado;
     }
 
+    public function getMovimentacaoInventario($idInventario){
+
+        $SQL = "SELECT HE.COD_OPERACAO as \"Inventário\", 
+                       DE.DSC_DEPOSITO_ENDERECO as \"Endereço\",                       
+                       HE.COD_PRODUTO as \"Cod. produto\",      
+                       P.DSC_PRODUTO as \"Produto\",
+                       HE.SALDO_ANTERIOR as \"Estoque inicial\",
+                       HE.SALDO_FINAL as \"Qtd conferida.\",
+                       HE.SALDO_FINAL - HE.SALDO_ANTERIOR as \"Qtd movimentada\"                                             
+                FROM HISTORICO_ESTOQUE HE
+                    INNER JOIN DEPOSITO_ENDERECO DE ON HE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                    INNER JOIN PRODUTO P ON P.COD_PRODUTO = HE.COD_PRODUTO
+                WHERE HE.COD_OPERACAO = $idInventario ";
+
+        return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }

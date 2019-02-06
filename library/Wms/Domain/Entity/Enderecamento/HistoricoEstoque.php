@@ -53,6 +53,11 @@ class HistoricoEstoque
     protected $codProduto;
 
     /**
+     * @Column(name="COD_OPERACAO", type="integer")
+     */
+    protected $operacao;
+
+    /**
      * @Column(name="DSC_GRADE", type="string", nullable=false)
      */
     protected $grade;
@@ -153,6 +158,22 @@ class HistoricoEstoque
     public function setValidade($validade)
     {
         $this->validade = $validade;
+    }
+
+    /**
+     * @param mixed $operacao
+     */
+    public function setOperacao($operacao)
+    {
+        $this->operacao = $operacao;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOperacao()
+    {
+        return $this->operacao;
     }
 
     /**

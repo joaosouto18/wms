@@ -241,6 +241,10 @@ class EstoqueRepository extends EntityRepository
         $historico->setProdutoEmbalagem($embalagemEn);
         $historico->setProdutoVolume($volumeEn);
         $historico->setValidade($validade);
+
+        if(!empty($idInventario))
+            $historico->setOperacao($idInventario);
+
         $em->persist($historico);
         $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         if($controleProprietario == 'S') {
