@@ -67,4 +67,18 @@ class InventarioContEndRepository extends EntityRepository
 
         return $dql->getQuery()->getOneOrNullResult();
     }
+
+    public function getValidadeProdutoContagemAberta($idContEnd, $produto, $grade, $lote){
+        $sql = "SELECT 
+                     dth_validade
+                FROM inventario_cont_end_prod icep
+                  INNER JOIN inventario_cont_end ice ON ice.cod_inv_cont_end = icep.cod_inv_cont_end
+                WHERE ice.cod_inv_cont_end = $idContEnd 
+                    AND icep.cod_produto = $produto
+                    AND icep.dsc_grade = $grade
+                    AND icep.dsc_lote = $lote 
+                    AND rownum = 1";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

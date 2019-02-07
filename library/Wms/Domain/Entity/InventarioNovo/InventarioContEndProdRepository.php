@@ -139,4 +139,32 @@ class InventarioContEndProdRepository extends EntityRepository
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
+
+    public function getContagemFinalizada($contEnd, $produto){
+        $end   = $contEnd['idInvEnd'];
+        $prod  = $produto['idProduto'];
+        $grade = $produto['grade'];
+
+        $dql = "SELECT
+                      ICEP.COD_INV_CONT_END_PROD
+                      FROM INVENTARIO_CONT_END_PROD ICEP
+                          INNER JOIN INVENTARIO_CONT_END ICE ON ICEP.COD_INV_CONT_END = ICE.COD_INV_CONT_END
+                          INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
+                      WHERE IEN.COD_INVENTARIO_ENDERECO = '$end'
+                          AND ICEP.COD_PRODUTO = '$prod'
+                          AND ICEP.DSC_GRADE = '$grade'
+                          AND ICEP.IND_DIVERGENTE = 'N' ";
+        if (isset($produto['idVolume']) && !empty($produto['idVolume']))
+        {
+            $volume = $produto['idVolume'];
+            $dql .= " AND ICEP.COD_PRODUTO_VOLUME = $volume";
+        }
+        if (isset($conferencia['lote']) && !empty($conferencia['lote']))
+        {
+            $lote = $conferencia['lote'];
+            $dql .= " AND ICEP.DSC_LOTE = $lote";
+        }
+
+        return $this->getEntityManager()->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

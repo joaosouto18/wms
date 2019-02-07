@@ -270,46 +270,11 @@ class InventarioService extends AbstractService
                 $isEmb = true;
                 $elements[] = $this->em->getReference("wms:Produto\Embalagem", $produto['idEmbalagem']);
             }
-
             $conferencia["validade"] = (!empty($conferencia['validade'])) ? date_create_from_format("d/m/Y", $conferencia['validade']) : null;
 
-            $invContEndProd     = $this->em->getRepository('wms:InventarioNovo\InventarioContEndProd');
-
-            /*
-            $contagemFinalizada = $invContEndProd->findOneBy([
-                'codProduto' => $produto['idProduto'],
-                'grade' => $produto['grade'],
-                'produtoVolume' => (!empty($produto['idVolume']))? $produto['idVolume'] : null,
-                'lote' => (!empty($conferencia['lote']))? $conferencia['lote'] : null,
-                'divergente' => 'N'
-            ]);
-            */
-
-            $end   = $contEnd['idInvEnd'];
-            $prod  = $produto['idProduto'];
-            $grade = $produto['grade'];
-
-            $dql = "SELECT
-                      ICEP.COD_INV_CONT_END_PROD
-                      FROM INVENTARIO_CONT_END_PROD ICEP
-                          INNER JOIN INVENTARIO_CONT_END ICE ON ICEP.COD_INV_CONT_END = ICE.COD_INV_CONT_END
-                          INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
-                      WHERE IEN.COD_INVENTARIO_ENDERECO = '$end'
-                          AND ICEP.COD_PRODUTO = '$prod'
-                          AND ICEP.DSC_GRADE = '$grade'
-                          AND ICEP.IND_DIVERGENTE = 'N' ";
-                      if (isset($produto['idVolume']) && !empty($produto['idVolume']))
-                      {
-                          $volume = $produto['idVolume'];
-                          $dql .= " AND ICEP.COD_PRODUTO_VOLUME = $volume";
-                      }
-                      if (isset($conferencia['lote']) && !empty($conferencia['lote']))
-                      {
-                            $lote = $conferencia['lote'];
-                            $dql .= " AND ICEP.DSC_LOTE = $lote";
-                      }
-
-            $resultado = $this->getEntityManager()->getConnection()->query($dql)->fetchAll(\PDO::FETCH_ASSOC);
+            /** @var InventarioNovo\InventarioContEndProdRepository $inventContEndProdRepo */
+            $inventContEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd");
+            $resultado = $inventContEndProdRepo->getContagemFinalizada($contEnd, $produto);
 
             if(empty($resultado)) {
 
@@ -963,6 +928,14 @@ class InventarioService extends AbstractService
             $invEn = $this->find($id);
 
             if (!$invEn->isLiberado()) throw new \Exception("Este inventário $id não pode ser interrompido pois está: " . $invEn->getDscStatus());
+
+            /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
+            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+
+            if($invEn->getCriterio() == 'E')
+                $ordemServicoRepo->excluiOsInventarioPorEnderecoInterrompido($id);
+            else
+                $ordemServicoRepo->excluiOsInventarioPorProdutoInterrompido($id);
 
             $invEn->interromper();
             $this->em->persist($invEn);
