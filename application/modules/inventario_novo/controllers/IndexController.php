@@ -251,13 +251,14 @@ class Inventario_Novo_IndexController  extends Action
         }
     }
 
-
     public function viewMovimentacoesAjaxAction() {
         $id = $this->_getParam('id');
         if (isset($id) && !empty($id)) {
-            /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
-            $inventarioRepo = $this->em->getRepository("wms:InventarioNovo");
-            $movimentacoes = $inventarioRepo->getResultadoInventario($id);
+            /** @var \Wms\Domain\Entity\Enderecamento\HistoricoEstoqueRepository $historicoEstoqueRepo */
+            $historicoEstoqueRepo = $this->em->getRepository("wms:Enderecamento\HistoricoEstoque");
+            $movimentacoes = $historicoEstoqueRepo->getMovimentacaoInventario($id);
+
+            //var_dump($movimentacoes);
             $this->exportCSV($movimentacoes,'movimentacao');
         }
     }
