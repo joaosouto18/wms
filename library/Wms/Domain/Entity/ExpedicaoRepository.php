@@ -17,6 +17,7 @@ use Wms\Domain\Entity\Produto\VolumeRepository;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao;
 use Wms\Math;
 use Wms\Module\Expedicao\Form\ModeloSeparacao;
+use Wms\Service\OndaRessuprimentoService;
 
 class ExpedicaoRepository extends EntityRepository {
 
@@ -376,7 +377,12 @@ class ExpedicaoRepository extends EntityRepository {
         return $resultado;
     }
 
-    public function gerarOnda($strExpedicao) {
+    /**
+     * @param $strExpedicao
+     * @param $ondaRessupService OndaRessuprimentoService
+     * @return array
+     */
+    public function gerarOnda($strExpedicao, $ondaRessupService) {
         try {
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
             $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
@@ -391,10 +397,6 @@ class ExpedicaoRepository extends EntityRepository {
             if (count($countmodeloSeparacao) > 1)
                 throw new \Exception('Não é possível gerar onda de ressuprimento para '.count($countmodeloSeparacao).' modelos distintos');
 
-            $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
-            /** @var Expedicao\ModeloSeparacao $modeloSeparacaoEn */
-            $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
-
             //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
             $codEexpedicoes = explode(',',$strExpedicao);
             foreach ($codEexpedicoes as $codExpedicao) {
@@ -405,7 +407,11 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
 
-            $quebraPulmaoDoca = $modeloSeparacaoEn->getQuebraPulmaDoca();
+            if (empty($modeloSeparacaoEn)) {
+                $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
+                /** @var Expedicao\ModeloSeparacao $modeloSeparacaoEn */
+                $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
+            }
 
             $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
 
@@ -460,6 +466,12 @@ class ExpedicaoRepository extends EntityRepository {
 
             /* Prepara os itens para picking ou pulmão de acordo com a quebra do pulmão-doca, caso utilize */
             $itensReservar = self::prepareArrayRessup($pedidosProdutosRessuprir, $modeloSeparacaoEn, $dadosProdutos, $repositorios);
+
+            if ($modeloSeparacaoEn->getProdutoInventario() == 'N') {
+                if ($ondaRessupService->checkImpedimentoReservas($itensReservar)) {
+
+                }
+            }
 
             $reservaEstoqueExpedicaoRepo->gerarReservaSaida($itensReservar, $repositorios);
             $this->getEntityManager()->flush();

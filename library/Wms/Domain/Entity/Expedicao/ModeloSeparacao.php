@@ -143,6 +143,11 @@ class ModeloSeparacao
     protected $forcarEmbVenda;
 
     /**
+     * @Column(name="PRODUTO_EM_INVENTARIO", type="string", nullable=false)
+     */
+    protected $produtoInventario;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -476,6 +481,22 @@ class ModeloSeparacao
     public function setForcarEmbVenda($forcarEmbVenda)
     {
         $this->forcarEmbVenda = $forcarEmbVenda;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getProdutoInventario()
+    {
+        return $this->produtoInventario;
+    }
+
+    /**
+     * @param mixed $produtoInventario
+     */
+    public function setProdutoInventario($produtoInventario)
+    {
+        $this->produtoInventario = $produtoInventario;
     }
 
 }

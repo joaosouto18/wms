@@ -168,7 +168,7 @@ class Expedicao_OndaRessuprimentoController extends Action
 
             if (count($idsExpedicoes) > 0) {
                 $expedicoes = implode(',', $idsExpedicoes);
-                $result = $expedicaoRepo->gerarOnda($expedicoes);
+                $result = $expedicaoRepo->gerarOnda($expedicoes, $this->getServiceLocator()->getService("OndaRessuprimento"));
             } else {
                 throw new Exception("Todas as expedições selecionadas estão com saldo insuficiente em ao menos 1 item!");
             }
