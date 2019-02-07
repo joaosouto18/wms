@@ -1071,6 +1071,8 @@ class InventarioService extends AbstractService
         $nomeArquivo = date("ymdH.0i");
         $arquivo = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO") . DIRECTORY_SEPARATOR. $nomeArquivo;
 
+        $statusFinalizado = InventarioNovo::STATUS_FINALIZADO;
+
         $SQL = "SELECT P.COD_PRODUTO, NVL(ESTQ.QTD,0) as QTD
                   FROM PRODUTO P
                   LEFT JOIN (SELECT E.COD_PRODUTO,
@@ -1087,13 +1089,13 @@ class InventarioService extends AbstractService
                    AND ESTQ.DSC_GRADE = P.DSC_GRADE " ;
 
         if ($idInventario != null) {
-            $SQL .= " INNER JOIN (SELECT ICE.COD_PRODUTO,
-                                    ICE.DSC_GRADE
-                               FROM INVENTARIO_ENDERECO IE
-                               LEFT JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
-                              WHERE COD_INVENTARIO = $idInventario AND ICE.CONTAGEM_INVENTARIADA = 1 AND ICE.DIVERGENCIA IS NULL
-                              GROUP BY ICE.COD_PRODUTO,
-                                       ICE.DSC_GRADE) I
+            $SQL .= " INNER JOIN (SELECT DISTINCT ICEP.COD_PRODUTO,
+                                    ICEP.DSC_GRADE
+                               FROM INVENTARIO_ENDERECO_NOVO IEN
+                               INNER JOIN INVENTARIO_NOVO INVN ON INVN.COD_INVENATRIO = IEN.COD_INVENTARIO
+                               INNER JOIN INVENTARIO_CONT_END ICE ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
+                               LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
+                              WHERE IE.COD_INVENTARIO = $idInventario AND INVN.COD_STATUS = $statusFinalizado AND ICEP.IND_DIVERGENTE = 'N') I
                     ON (I.COD_PRODUTO = P.COD_PRODUTO)
                    AND (I.DSC_GRADE = P.DSC_GRADE)";
         }
