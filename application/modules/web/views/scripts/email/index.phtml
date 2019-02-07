@@ -1,0 +1,92 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: rodrigo
+ * Date: 29/01/19
+ * Time: 15:04
+ */
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Abertura de Chamados</title>
+
+</head>
+
+<body>
+<div class="container">
+    <br>
+
+    <form class="form-horizontal" method="POST" action="<?php echo '/email/index' ?>" enctype="multipart/form-data">
+        <fieldset>
+
+            <!-- Título do formulário -->
+            <legend>Abertura de Chamados</legend>
+
+            <!-- Campo: Nome -->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="nome">Nome</label>
+                <div class="col-md-4">
+                    <input size="60" id="nome" name="nome" placeholder="Informe seu nome" class="form-control input-md" required="" type="text">
+                </div>
+            </div>
+
+            <!-- Campo: Assunto -->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="nome">Assunto</label>
+                <div class="col-md-4">
+                    <input size="60" id="assunto" name="assunto" placeholder="Informe o assunto da mensagem" class="form-control input-md" required="" type="text">
+                </div>
+            </div>
+
+            <!-- Campo: anexo -->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="arquivo">Anexo</label>
+                <div class="col-md-4">
+                    <input size="30" id="arquivo" name="arquivo[]" class="input-file" multiple="multiple" type="file">
+                    <span class="help-block">2MB por mensagem</span>
+                </div>
+            </div>
+
+            <!-- Campo: Mensagem -->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="mensagem">Mensagem</label>
+                <div class="col-md-4">
+                    <textarea style="width: 375px; height: 110px;" class="form-control" id="mensagem" name="mensagem"></textarea>
+                </div>
+            </div>
+
+            <!-- Botão Enviar -->
+            <center>
+                <div class="form-group">
+                    <label class="col-md-4 control-label" for="submit"></label>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-inverse">Enviar</button>
+                    </div>
+                </div>
+
+        </fieldset>
+    </form>
+
+</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
