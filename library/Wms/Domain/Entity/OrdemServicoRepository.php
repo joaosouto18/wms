@@ -416,13 +416,18 @@ class OrdemServicoRepository extends EntityRepository
 
     public function excluiOsInventarioPorProdutoInterrompido($idInventario){
         $sql = "delete from 
-                  (select os.cod_os 
-                    from ordem_servico os            
-                      inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os
-                      inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end
-                      inner join inventario_endereco_novo ien on ien.cod_inventario_endereco = ice.cod_inventario_endereco                      
-                    where ien.cod_inventario = $idInventario
-                      and ice.ind_contagem_divergencia = 'S' )";
+                  (select 
+                      os.cod_os codOs,
+                      icep.COD_INV_CONT_END_PROD codContProd,
+                      icep.ind_divergente divergente
+                      from ordem_servico os            
+                        inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os      
+                        inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end
+                        inner join inventario_cont_end_prod icep on icep.cod_inv_cont_end = ice.cod_inv_cont_end  
+                        inner join inventario_endereco_novo ien on ien.cod_inventario_endereco = ice.cod_inventario_endereco                      
+                      where ien.cod_inventario = $idInventario
+                        and ien.cod_status <> 3
+                        and icep.ind_divergente = 'S'; ";
 
         return $this->getEntityManager()->getConnection()->query($sql)->execute();
     }
@@ -439,5 +444,5 @@ class OrdemServicoRepository extends EntityRepository
 
         return $this->getEntityManager()->getConnection()->query($sql)->execute();
     }
-}
+}'  '
 
