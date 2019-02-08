@@ -33,6 +33,9 @@ class ModeloSeparacao extends Form
         ))->addElement('checkbox', 'imprimeEtiquetaPatrimonio', array(
             'label' => 'Imprime Etiqueta Volume Patrimonio',
             'checkedValue' => 'S',
+        ))->addElement('checkbox', 'produtoInventario', array(
+            'label' => 'Expedir produtos sendo inventariados',
+            'checkedValue' => 'S',
         ))->addElement('checkbox', 'forcarEmbVenda', array(
             'label' => 'Utilizar embalagem de venda por padrão',
             'checkedValue' => 'S',
@@ -120,6 +123,7 @@ class ModeloSeparacao extends Form
             'utilizaEtiquetaMae',
             'utilizaVolumePatrimonio',
             'forcarEmbVenda',
+            'produtoInventario',
             'imprimeEtiquetaPatrimonio',
             'quebraPulmaDoca',
             'tipoQuebraVolume',

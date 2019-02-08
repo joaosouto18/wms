@@ -473,4 +473,15 @@ class InventarioNovoRepository extends EntityRepository
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function checkProdutosPedidos($prodsEnds)
+    {
+        $arrOr = [];
+        foreach ($prodsEnds as $idEnd => $prod) {
+            $arrOr[] = "( IEN.COD_DEPOSITO_ENDERECO = $idEnd AND CASE WHEN INVN.IND_CRITERIO = 'P' THEN 
+            CASE WHEN IEP.COD_PRODUTO = '$prod[codigo]' AND IEP.DSC_GRADE = '$prod[grade]' THEN 1 ELSE 0 END ELSE 1 END = 1 )";
+        }
+
+        $sql = "";
+    }
 }
