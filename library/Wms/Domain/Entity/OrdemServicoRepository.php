@@ -229,6 +229,8 @@ class OrdemServicoRepository extends EntityRepository
                       ');
             $queryBuilder->andWhere('es.codOSTransbordo = :idOS');
         }
+        $queryBuilder->orderBy('prod.id','ASC')
+                     ->addOrderBy('es.id', 'ASC');
 
         return $queryBuilder;
     }
