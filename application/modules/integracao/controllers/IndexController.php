@@ -51,7 +51,7 @@ class Integracao_IndexController extends Core\Controller\Action\WebService
         $integracaoAndamentoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracaoAndamento');
         $integracaoError = $integracaoAndamentoRepository->getStatusAcaoIntegracao();
 
-        $pdf = new \Wms\Module\Web\Report\Generico('P');
+        $pdf = new \Wms\Module\Web\Report\Generico('L');
         $pdf->init($integracaoError, 'integracao-falha', 'Integrações com falha');
     }
 }
