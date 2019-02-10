@@ -468,9 +468,7 @@ class ExpedicaoRepository extends EntityRepository {
             $itensReservar = self::prepareArrayRessup($pedidosProdutosRessuprir, $modeloSeparacaoEn, $dadosProdutos, $repositorios);
 
             if ($modeloSeparacaoEn->getProdutoInventario() == 'N') {
-                if ($ondaRessupService->checkImpedimentoReservas($itensReservar)) {
-
-                }
+                $ondaRessupService->checkImpedimentoReservas($itensReservar);
             }
 
             $reservaEstoqueExpedicaoRepo->gerarReservaSaida($itensReservar, $repositorios);

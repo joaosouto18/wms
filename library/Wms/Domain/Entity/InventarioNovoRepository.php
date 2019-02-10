@@ -477,11 +477,29 @@ class InventarioNovoRepository extends EntityRepository
     public function checkProdutosPedidos($prodsEnds)
     {
         $arrOr = [];
-        foreach ($prodsEnds as $idEnd => $prod) {
-            $arrOr[] = "( IEN.COD_DEPOSITO_ENDERECO = $idEnd AND CASE WHEN INVN.IND_CRITERIO = 'P' THEN 
-            CASE WHEN IEP.COD_PRODUTO = '$prod[codigo]' AND IEP.DSC_GRADE = '$prod[grade]' THEN 1 ELSE 0 END ELSE 1 END = 1 )";
+        foreach ($prodsEnds as $idEnd => $prods) {
+            foreach ($prods as $prod) {
+                $arrOr[] = "( IEN.COD_DEPOSITO_ENDERECO = $idEnd AND CASE WHEN INVN.IND_CRITERIO = 'P' THEN CASE WHEN IEP.COD_PRODUTO = '$prod[codigo]' AND IEP.DSC_GRADE = '$prod[grade]' THEN 1 ELSE 0 END ELSE 1 END = 1 )";
+            }
         }
 
-        $sql = "";
+        $statusLiberado = InventarioNovo::STATUS_LIBERADO;
+        $statusConcluido = InventarioNovo::STATUS_CONCLUIDO;
+        $statusInterrompido = InventarioNovo::STATUS_INTERROMPIDO;
+
+        $sql = "SELECT DISTINCT
+                    INVN.COD_INVENTARIO \"INVENTÁRIO\",
+                    INVN.DSC_INVENTARIO \"DESCRIÇÃO\",
+                    DE.DSC_DEPOSITO_ENDERECO \"ENDEREÇO\",
+                    CASE WHEN INVN.IND_CRITERIO = 'P' THEN 'PRODUTO' ELSE 'ENDEREÇO' END \"INVENTÁRIO POR\",
+                    NVL(IEP.COD_PRODUTO, '-') \"CÓDIGO\",
+                    NVL(IEP.DSC_GRADE, '-') GRADE
+                FROM INVENTARIO_ENDERECO_NOVO IEN
+                INNER JOIN DEPOSITO_ENDERECO DE ON IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                LEFT JOIN INVENTARIO_END_PROD IEP on IEP.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO AND IEP.IND_ATIVO = 'S'
+                INNER JOIN INVENTARIO_NOVO INVN on IEN.COD_INVENTARIO = INVN.COD_INVENTARIO
+                WHERE INVN.COD_STATUS IN ($statusLiberado, $statusConcluido, $statusInterrompido) AND IEN.IND_ATIVO = 'S' AND (" . implode(" OR ", $arrOr) . ")";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 }
