@@ -41,6 +41,9 @@ class ProdutosCarregamento extends Pdf
                 if (Math::resto($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
                     $this->Cell(20, 6, $data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade() . ' ' . $embalagemEntity->getDescricao());
                     break;
+                } else {
+                    $this->Cell(20, 6, '1' . ' ' . $embalagemEntity->getDescricao());
+                    break;
                 }
             }
             $this->Cell(10, 6, $qtdTotal.' und.',0,1,'R');
@@ -92,6 +95,9 @@ class ProdutosCarregamento extends Pdf
                     if (Math::resto($valorPesoCubagem['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
                         $volumesPedido[$valorPesoCubagem['COD_EXTERNO']] = $volumesPedido[$valorPesoCubagem['COD_EXTERNO']] + ($valorPesoCubagem['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
                         break;
+                    } else {
+                        $volumesPedido[$valorPesoCubagem['COD_EXTERNO']] = $volumesPedido[$valorPesoCubagem['COD_EXTERNO']] + 1;
+                        break;
                     }
                 }
 
@@ -99,6 +105,9 @@ class ProdutosCarregamento extends Pdf
             foreach ($embalagemEntities as $embalagemEntity) {
                 if (Math::resto($valorPesoCubagem['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
                     $volumeTotal = $volumeTotal + ($valorPesoCubagem['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
+                    break;
+                } else {
+                    $volumeTotal = $volumeTotal + 1;
                     break;
                 }
             }
