@@ -64,6 +64,17 @@ class EstoqueRepository extends EntityRepository
 
         $qtdReserva = 0;
 
+        if ($controlaLote == 'S' && ((!isset($params['lote']) || empty($params['lote'])) && empty($idInventario))) {
+            throw new \Exception('Informe o Lote.');
+        } elseif($controlaLote == 'S' && isset($params['lote']) && !empty($params['lote'])){
+            /** @var LoteRepository $loteRepository */
+            $loteRepository = $em->getRepository('wms:Produto\Lote');
+            $loteEntity = $loteRepository->verificaLote($params['lote'], $codProduto, $grade);
+            if(empty($loteEntity)){
+                throw new \Exception('O lote '.$params['lote'].' não pertence ao produto '.$codProduto);
+            }
+        }
+
         if ($saidaProduto == true) {
             $dql = "SELECT SUM(REP.QTD_RESERVADA) QTD_RESERVADA
                         FROM RESERVA_ESTOQUE RE
@@ -73,6 +84,9 @@ class EstoqueRepository extends EntityRepository
                         if (isset($volumeEn) && !empty($volumeEn)) {
                             $idVolume = $volumeEn->getId();
                             $dql .= " AND REP.COD_PRODUTO_VOLUME = $idVolume";
+                        }
+                        if (isset($params['lote']) && !empty($params['lote'])) {
+                            $dql .= " AND REP.DSC_LOTE = '$params[lote]'";
                         }
             $dql .= " GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, RE.COD_DEPOSITO_ENDERECO, NVL(COD_PRODUTO_VOLUME,0)";
 
@@ -91,16 +105,6 @@ class EstoqueRepository extends EntityRepository
             $usuarioSessao = $auth->getIdentity();
             $pessoaRepo = $this->getEntityManager()->getRepository("wms:Usuario");
             $usuarioEn = $pessoaRepo->find($usuarioSessao->getId());
-        }
-        if ($controlaLote == 'S' && ((!isset($params['lote']) || empty($params['lote'])) && empty($idInventario))) {
-            throw new \Exception('Informe o Lote.');
-        } elseif($controlaLote == 'S' && isset($params['lote']) && !empty($params['lote'])){
-            /** @var LoteRepository $loteRepository */
-            $loteRepository = $em->getRepository('wms:Produto\Lote');
-            $loteEntity = $loteRepository->verificaLote($params['lote'], $codProduto, $grade);
-            if(empty($loteEntity)){
-                throw new \Exception('O lote '.$params['lote'].' não pertence ao produto '.$codProduto);
-            }
         }
 
         $argsConsultaEstoque = [
@@ -241,6 +245,10 @@ class EstoqueRepository extends EntityRepository
         $historico->setProdutoEmbalagem($embalagemEn);
         $historico->setProdutoVolume($volumeEn);
         $historico->setValidade($validade);
+
+        if(!empty($idInventario))
+            $historico->setOperacao($idInventario);
+
         $em->persist($historico);
         $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         if($controleProprietario == 'S') {
@@ -561,18 +569,19 @@ class EstoqueRepository extends EntityRepository
             $SQLWhere .= " AND PV.COD_PRODUTO_VOLUME = " . $parametros['volume'];
         }
 
+        $SQLgroupBy = " GROUP BY DE.DSC_DEPOSITO_ENDERECO, DE.COD_DEPOSITO_ENDERECO, C.COD_CARACTERISTICA_ENDERECO, C.DSC_CARACTERISTICA_ENDERECO, P.COD_PRODUTO, P.DSC_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME, NVL(PV.COD_PRODUTO_VOLUME,0), NVL(PV.COD_NORMA_PALETIZACAO,0), ESTQ.DTH_VALIDADE, NVL(ESTQ.LOTE, NVL(RE.LOTE, RS.LOTE))";
+
         if ($orderBy != null) {
             $SQLOrderBy = $orderBy;
         } else {
-            $SQLOrderBy = " ORDER BY ESTQ.DTH_VALIDADE, P.COD_PRODUTO, P.DSC_GRADE, NORMA, VOLUME, C.COD_CARACTERISTICA_ENDERECO, ESTQ.DTH_PRIMEIRA_MOVIMENTACAO";
+            $SQLOrderBy = " ORDER BY ESTQ.DTH_VALIDADE, P.COD_PRODUTO, P.DSC_GRADE, NORMA, VOLUME, C.COD_CARACTERISTICA_ENDERECO, DTH_PRIMEIRA_MOVIMENTACAO, LOTE";
         }
 
-        $SQLgroupBy = " GROUP BY DE.DSC_DEPOSITO_ENDERECO, DE.COD_DEPOSITO_ENDERECO, C.DSC_CARACTERISTICA_ENDERECO, P.COD_PRODUTO, P.DSC_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME, NVL(PV.COD_PRODUTO_VOLUME,0), NVL(PV.COD_NORMA_PALETIZACAO,0), ESTQ.DTH_VALIDADE, NVL(ESTQ.LOTE, NVL(RE.LOTE, RS.LOTE))";
         if ($returnQuery == true) {
             return $SQL . $SQLWhere . $SQLgroupBy . $SQLOrderBy;
         }
 
-        $result = $this->getEntityManager()->getConnection()->query("$SQL $SQLWhere $SQLgroupBy")->fetchAll(\PDO::FETCH_ASSOC);
+        $result = $this->getEntityManager()->getConnection()->query("$SQL $SQLWhere $SQLgroupBy $SQLOrderBy")->fetchAll(\PDO::FETCH_ASSOC);
 
         if (isset($maxResult) && !empty($maxResult)) {
             if ($maxResult != false) {

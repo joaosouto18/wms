@@ -51,7 +51,7 @@ class InventarioContEndRepository extends EntityRepository
                     WHERE IEN2.COD_INVENTARIO = $idInventario AND IEN2.IND_ATIVO = 'S'
                     GROUP BY ICE2.COD_INVENTARIO_ENDERECO
                   ) LC ON LC.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO AND LC.ULTIMA = ICE.NUM_SEQUENCIA
-                WHERE IEN.COD_INVENTARIO = $idInventario AND IEN.IND_FINALIZADO = 'N' AND IEN.IND_ATIVO = 'S'";
+                WHERE IEN.COD_INVENTARIO = $idInventario AND IEN.COD_STATUS != 3 AND IEN.IND_ATIVO = 'S'";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
@@ -66,5 +66,19 @@ class InventarioContEndRepository extends EntityRepository
         ;
 
         return $dql->getQuery()->getOneOrNullResult();
+    }
+
+    public function getValidadeProdutoContagemAberta($idContEnd, $produto, $grade, $lote){
+        $sql = "SELECT 
+                     dth_validade
+                FROM inventario_cont_end_prod icep
+                  INNER JOIN inventario_cont_end ice ON ice.cod_inv_cont_end = icep.cod_inv_cont_end
+                WHERE ice.cod_inv_cont_end = $idContEnd 
+                    AND icep.cod_produto = $produto
+                    AND icep.dsc_grade = $grade
+                    AND icep.dsc_lote = $lote 
+                    AND rownum = 1";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

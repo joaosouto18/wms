@@ -85,7 +85,7 @@
                 </div>
                 <div class="gAction">
                     <span>Mass Action: </span>
-                    <select name="massaction-select" ng-model="massActionRoute" >
+                    <select ng-model="massActionRoute" >
                         <option value=""></option>
                         <option value="index/relatorio">Movimentações no Estoque (xls)</option>
                     </select>
@@ -132,12 +132,17 @@
                                     <ul>
                                         <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_GERADO ?>"><a href="/inventario_novo/index/liberar/id/{{inventario.id}}" >Liberar</a></li>
                                         <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CONCLUIDO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_INTERROMPIDO ?>] | contains:inventario.status"><a href="/inventario_novo/index/atualizar/id/{{inventario.id}}" class="" title="Atualizar estoque baseado neste inventário" target="_self">Atualizar Estoque</a></li>
+                                        <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO ?>] | contains:inventario.status"><a href="/inventario_novo/index/interromper/id/{{inventario.id}}" class="" title="Interromper este inventário" target="_self">Interromper Inventário</a></li>
                                         <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>] | contains:inventario.status:true"><a href="/inventario_novo/index/cancelar/id/{{inventario.id}}" class="confirm" title="Cancelar inventário" target="_self">Cancelar</a></li>
-                                        <li ng-if="inventario.status != <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_GERADO ?>"><a href="/inventario_novo/relatorio-divergencia/index/id/{{inventario.id}}" class="pdf" title="" target="_self">Relatório Divergências</a></li>
-                                        <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>] | contains:inventario.status:true"><a href="/inventario/parcial/endereco/id/{{inventario.id}}" class="confirm" title="Adicionar novos endereços" target="_self">Adicionar endereços</a></li>
-                                        <li ><a href="/inventario_novo/index/view-andamento-ajax/id/{{inventario.id}}" class="view-andamento dialogAjax" title="Andamento do Inventário" target="_self">Visualizar Andamento</a></li>
-                                        <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>"><a href="/inventario_novo/index/view-movimentacoes-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações por Produto" target="_self">Movimentações no Estoque</a></li>
-                                        <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO ?>"><a href="/inventario_novo/index/imprimir-enderecos-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações por Produto" target="_self">Imprimir Endereços</a></li>
+<!--                                        <li ng-if="inventario.status != --><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_GERADO ?><!--"><a href="/inventario_novo/relatorio-divergencia/index/id/{{inventario.id}}" class="pdf" title="" target="_self">Relatório Divergências</a></li>-->
+<!--                                        <li ng-if="[--><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?><!--, --><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?><!--] | contains:inventario.status:true"><a href="/inventario/parcial/endereco/id/{{inventario.id}}" class="confirm" title="Adicionar novos endereços" target="_self">Adicionar endereços</a></li>-->
+                                        <li ><a href="/inventario_novo/index/view-andamento-ajax/id/{{inventario.id}}" class="view-andamento dialogAjax" data-dialog-width="75%" title="Andamento do Inventário" target="_self">Visualizar Andamento</a></li>
+                                        <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>"><a href="/inventario_novo/index/view-movimentacoes-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações no estoque" target="_self">Movimentações no Estoque</a></li>
+                                        <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>] | contains:inventario.status:true">
+                                            <a ng-if="inventario.criterio == 'P'" href="/inventario_novo/index/list-produtos-ajax/id/{{inventario.id}}" class="dialogAjax" title="Produtos deste inventário" target="_self">Remover Produtos</a>
+                                            <a ng-if="inventario.criterio == 'E'" href="/inventario_novo/index/list-enderecos-ajax/id/{{inventario.id}}" class="dialogAjax" title="Endereços deste inventário" target="_self">Remover Endereços</a>
+                                        </li>
+<!--                                        <li ng-if="inventario.status == --><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO ?><!--"><a href="/inventario_novo/index/imprimir-enderecos-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações por Produto" target="_self">Imprimir Endereços</a></li>-->
                                         <?php if($this->showCodInvErp):?>
                                         <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>"><a href="/inventario_novo/index/export-inventario-ajax/id/{{inventario.id}}" class="" title="" target="_self">Exportar Inventario</a></li>
                                         <li ><a href="/inventario_novo/index/view-vincular-cod-erp-ajax/id/{{inventario.id}}" class="view-andamento dialogAjax" title="" target="_self">Vincular inventário do ERP</a></li>

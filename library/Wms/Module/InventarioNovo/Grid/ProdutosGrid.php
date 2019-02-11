@@ -4,36 +4,37 @@ namespace Wms\Module\InventarioNovo\Grid;
 
 use Wms\Module\Web\Grid;
 
-class ImpedimentosGrid extends Grid
+class ProdutosGrid extends Grid
 {
 
-    public function init($arr, $direction)
+    public function init($arr)
     {
-        $this->setAttrib('title','Impedimentos');
+        $this->setAttrib('title','Produtos deste inventário');
         $this->setSource(new \Core\Grid\Source\ArraySource($arr));
         $this->setShowExport(false);
+        $this->setHiddenId("remover");
         $this
             ->addColumn(array(
-                'label' => 'Endereço',
-                'index' => 'descricao',
+                'label' => 'Código',
+                'index' => 'codProduto',
             ))
             ->addColumn(array(
                 'label' => 'Produto',
-                'index' => 'produto',
+                'index' => 'descricao',
             ))
             ->addColumn(array(
                 'label' => 'Grade',
                 'index' => 'grade',
             ))
             ->addColumn(array(
-                'label' => 'Operação',
-                'index' => 'origemImpedimento',
+                'label' => 'Endereço',
+                'index' => 'dscEndereco',
             ))
             ->addColumn(array(
-                'label' => 'Data da Operação',
-                'index' => 'dataOperacao'
+                'label' => 'Situação do Endereço',
+                'index' => 'status',
             ))
-            ->addMassAction("../../../$direction", "Remover");
+            ->addMassAction('index/remover-produto', "Remover Produtos");
 
         return $this;
     }

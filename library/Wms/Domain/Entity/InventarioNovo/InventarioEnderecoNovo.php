@@ -24,9 +24,9 @@ class InventarioEnderecoNovo
     const STATUS_FINALIZADO  = 3;
 
     public static $tipoStatus = array(
-        self::STATUS_PENDENTE => "GERADO",
-        self::STATUS_CONFERENCIA => "LIBERADO",
-        self::STATUS_DIVERGENCIA => "CONCLUIDO",
+        self::STATUS_PENDENTE => "PENDENTE",
+        self::STATUS_CONFERENCIA => "CONFERENCIA",
+        self::STATUS_DIVERGENCIA => "DIVERGENCIA",
         self::STATUS_FINALIZADO => "FINALIZADO"
     );
 
@@ -58,15 +58,28 @@ class InventarioEnderecoNovo
     protected $contagem;
 
     /**
-     * @Column(name="IND_FINALIZADO", type="string" )
+     * @var int
+     * @Column(name="COD_STATUS", type="integer" )
      */
-    protected $finalizado;
+    protected $status;
 
     /**
      * @Column(name="IND_ATIVO", type="string" )
      */
     protected $ativo;
 
+    public function __construct()
+    {
+        $this->setPendente(self::STATUS_PENDENTE);
+    }
+
+    /**
+     * @param mixed $status
+     */
+    private function setStatus($status)
+    {
+        $this->status = $status;
+    }
 
     /**
      * @return mixed
@@ -135,17 +148,29 @@ class InventarioEnderecoNovo
     /**
      * @return mixed
      */
-    public function getFinalizado()
+    public function getStatus()
     {
-        return $this->finalizado;
+        return $this->status;
     }
 
-    /**
-     * @param mixed $finalizado
-     */
-    public function setFinalizado($finalizado)
+    public function setPendente()
     {
-        $this->finalizado = ((is_bool($finalizado) && $finalizado) || (is_string($finalizado) && $finalizado == 'S') ) ? 'S' : 'N';
+        $this->setStatus(self::STATUS_PENDENTE);
+    }
+
+    public function setConferencia()
+    {
+        $this->setStatus(self::STATUS_CONFERENCIA);
+    }
+
+    public function setDivergencia()
+    {
+        $this->setStatus(self::STATUS_DIVERGENCIA);
+    }
+
+    public function setFinalizado()
+    {
+        $this->setStatus(self::STATUS_FINALIZADO);
     }
 
     /**

@@ -17,6 +17,7 @@ use Wms\Domain\Entity\Produto\VolumeRepository;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao;
 use Wms\Math;
 use Wms\Module\Expedicao\Form\ModeloSeparacao;
+use Wms\Service\OndaRessuprimentoService;
 
 class ExpedicaoRepository extends EntityRepository {
 
@@ -378,7 +379,14 @@ class ExpedicaoRepository extends EntityRepository {
         return $resultado;
     }
 
-    public function gerarOnda($strExpedicao) {
+    /**
+     * @param $strExpedicao
+     * @param $ondaRessupService OndaRessuprimentoService
+     * @return array
+     */
+    public function gerarOnda($strExpedicao, $ondaRessupService)
+    {
+        $resultado = array();
         try {
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
             $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
@@ -393,10 +401,6 @@ class ExpedicaoRepository extends EntityRepository {
             if (count($countmodeloSeparacao) > 1)
                 throw new \Exception('Não é possível gerar onda de ressuprimento para '.count($countmodeloSeparacao).' modelos distintos');
 
-            $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
-            /** @var Expedicao\ModeloSeparacao $modeloSeparacaoEn */
-            $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
-
             //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
             $codEexpedicoes = explode(',',$strExpedicao);
             foreach ($codEexpedicoes as $codExpedicao) {
@@ -405,6 +409,12 @@ class ExpedicaoRepository extends EntityRepository {
                     $modeloSeparacaoEn = $expedicaoEntity->getModeloSeparacao();
                     break;
                 }
+            }
+
+            if (empty($modeloSeparacaoEn)) {
+                $modeloId = $this->getSystemParameterValue("MODELO_SEPARACAO_PADRAO");
+                /** @var Expedicao\ModeloSeparacao $modeloSeparacaoEn */
+                $modeloSeparacaoEn = $this->_em->find("wms:Expedicao\ModeloSeparacao",$modeloId);
             }
 
             $pedidosProdutosRessuprir = $this->getPedidoProdutoSemOnda($strExpedicao, $central);
@@ -461,6 +471,14 @@ class ExpedicaoRepository extends EntityRepository {
             /* Prepara os itens para picking ou pulmão de acordo com a quebra do pulmão-doca, caso utilize */
             $itensReservar = self::prepareArrayRessup($pedidosProdutosRessuprir, $modeloSeparacaoEn, $dadosProdutos, $repositorios);
 
+            if ($modeloSeparacaoEn->getProdutoInventario() == 'N') {
+                $check = $ondaRessupService->checkImpedimentoReservas($itensReservar);
+                if (!empty($check)) {
+                    $resultado['impedimentos'] = $check;
+                    throw new \Exception("Existem produtos ou endereços à serem reservados que estão em processo de inventário");
+                }
+            }
+
             $reservaEstoqueExpedicaoRepo->gerarReservaSaida($itensReservar, $repositorios);
             $this->getEntityManager()->flush();
 
@@ -480,7 +498,7 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
 
-            $resultado = array();
+
             $msg = "Ondas Geradas com sucesso";
 
             if ($qtdOsGerada == 0) {
@@ -490,15 +508,13 @@ class ExpedicaoRepository extends EntityRepository {
             $resultado['observacao'] = $msg;
             $resultado['resultado'] = true;
 
-            return $resultado;
         } catch (\Exception $e) {
 
-            $resultado = array();
             $resultado['observacao'] = $e->getMessage();
             $resultado['resultado'] = false;
-
-            return $resultado;
         }
+
+        return $resultado;
     }
 
     private function filtrarSaidaPicking($expedicoes)
@@ -890,7 +906,7 @@ class ExpedicaoRepository extends EntityRepository {
                         foreach ($estoquePulmao as $estoque) {
                             $qtdEstoque = $estoque['SALDO'];
                             $idEndereco = $estoque['COD_DEPOSITO_ENDERECO'];
-                            $loteReservar = $lote;
+                            $loteReservar = (isset($estoque['DSC_LOTE'])) ? $estoque['DSC_LOTE'] : $lote;
                             $zerouEstoque = false;
                             $saiuQtdNorma = false;
                             $nextEndereco = false;
@@ -992,7 +1008,7 @@ class ExpedicaoRepository extends EntityRepository {
                                     }
 
                                     foreach ($idsElementos as $id) {
-                                        $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id] = array(
+                                        $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar] = array(
                                             'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
                                             'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
                                             'codProduto' => $codProduto,
@@ -1018,11 +1034,11 @@ class ExpedicaoRepository extends EntityRepository {
                                     $forcarSairDoPicking = true;
                                     foreach ($pedidos as $codPedido => $qtdItenPedido) {
                                         foreach ($idsElementos as $id) {
-                                            if (isset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id])) {
-                                                $temp = $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id];
+                                            if (isset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar])) {
+                                                $temp = $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar];
                                                 $elemento[$codPedido]['atendida'] = Math::subtrair($elemento[$codPedido]['atendida'], $temp['qtd']);
                                             }
-                                            unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id]);
+                                            unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar]);
                                             unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica]);
                                             unset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]);
                                             unset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica]);
@@ -1037,16 +1053,16 @@ class ExpedicaoRepository extends EntityRepository {
                                         if ($tipoSaida == ReservaEstoqueExpedicao::SAIDA_PULMAO_DOCA) {
                                             /* caso seja tentativa de pulmão-doca e não tenha picking apenas converte para separação aérea */
                                             foreach ($pedidos as $codPedido => $qtdItenPedido) {
-                                                if (isset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id])) {
-                                                    $arrTemp = $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id];
-                                                    unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id]);
+                                                if (isset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar])) {
+                                                    $arrTemp = $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar];
+                                                    unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar]);
                                                     unset($enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica]);
-                                                    $enderecos[ReservaEstoqueExpedicao::SAIDA_SEPARACAO_AEREA]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id] = $arrTemp;
+                                                    $enderecos[ReservaEstoqueExpedicao::SAIDA_SEPARACAO_AEREA]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar] = $arrTemp;
                                                 }
                                             }
                                         }
-                                        if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id])) {
-                                            $temp = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id];
+                                        if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id][$loteReservar])) {
+                                            $temp = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id][$loteReservar];
                                             $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'] = Math::subtrair($temp['qtdReservada'], $qtdReservar);
                                             $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['estoqueReservado'] = false;
                                         }
@@ -1168,7 +1184,7 @@ class ExpedicaoRepository extends EntityRepository {
                             }
 
                             foreach ($idsElementos as $id) {
-                                $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id] = array(
+                                $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar] = array(
                                     'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
                                     'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
                                     'codProduto' => $codProduto,
@@ -1197,20 +1213,22 @@ class ExpedicaoRepository extends EntityRepository {
         foreach ($enderecos as $codTipoSaida => $tipoSaida) {
             foreach ($tipoSaida['enderecos'] as $codEndereco => $pedidos) {
                 foreach ($pedidos as $codPedido => $elementos) {
-                    foreach ($elementos as $itens) {
-                        $itensReservados
+                    foreach ($elementos as $lotes) {
+                        foreach ($lotes as $itens) {
+                            $itensReservados
                             [$idExpedicao]
-                                [$codProduto]
-                                    [$dscGrade]
-                                        [$lote]
-                                            [$quebra]
-                                                [$criterio]
-                                                    ['tiposSaida']
-                                                        [$codTipoSaida]
-                                                            ['enderecos']
-                                                                [$codEndereco]
-                                                                    [$codPedido]
-                                                                        [$codNorma] = $itens;
+                            [$codProduto]
+                            [$dscGrade]
+                            [$lote]
+                            [$quebra]
+                            [$criterio]
+                            ['tiposSaida']
+                            [$codTipoSaida]
+                            ['enderecos']
+                            [$codEndereco]
+                            [$codPedido]
+                            [$codNorma] = $itens;
+                        }
                     }
                 }
             }
@@ -2267,6 +2285,14 @@ class ExpedicaoRepository extends EntityRepository {
             unset($parametros['dataFinal2']);
         }
 
+        if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
+            $Query = $Query . " AND P.COD_EXTERNO = '$parametros[pedido]' ";
+            unset($parametros['dataInicial1']);
+            unset($parametros['dataInicial2']);
+            unset($parametros['dataFinal1']);
+            unset($parametros['dataFinal2']);
+        }
+
         if (isset($parametros['placa']) && !empty($parametros['placa'])) {
             $Query = $Query . " AND E.DSC_PLACA_EXPEDICAO = '$parametros[placa]'" ;
             unset($parametros['dataInicial1']);
@@ -2275,16 +2301,12 @@ class ExpedicaoRepository extends EntityRepository {
             unset($parametros['dataFinal2']);
         }
 
-        if (isset($parametros['dataInicial1']) && (!empty($parametros['dataInicial1'])) && (!empty($parametros['dataInicial2']))) {
-            $dataInicial = $parametros['dataInicial1'];
-            $dataFinal = $parametros['dataInicial2'];
-            $Query = $Query . " AND (E.DTH_INICIO BETWEEN TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))";
+        if (isset($parametros['dataInicial1']) && (!empty($parametros['dataInicial1'])) && isset($parametros['dataInicial2']) && (!empty($parametros['dataInicial2']))) {
+            $Query = $Query . " AND (E.DTH_INICIO BETWEEN TO_DATE('$parametros[dataInicial1] 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$parametros[dataInicial2] 23:59', 'DD-MM-YYYY HH24:MI'))";
         }
 
-        if (isset($parametros['dataFinal1']) && (!empty($parametros['dataFinal1'])) && (!empty($parametros['dataFinal2']))) {
-            $dataInicial = $parametros['dataFinal1'];
-            $dataFinal = $parametros['dataFinal2'];
-            $Query = $Query . " AND (E.DTH_FINALIZACAO BETWEEN TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))";
+        if (isset($parametros['dataFinal1']) && (!empty($parametros['dataFinal1'])) && isset($parametros['dataFinal2']) && (!empty($parametros['dataFinal2']))) {
+            $Query = $Query . " AND (E.DTH_FINALIZACAO BETWEEN TO_DATE('$parametros[dataFinal1] 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$parametros[dataFinal2] 23:59', 'DD-MM-YYYY HH24:MI'))";
         }
 
         if (isset($parametros['status']) && (!empty($parametros['status']))) {

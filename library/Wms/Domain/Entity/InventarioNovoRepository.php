@@ -145,14 +145,15 @@ class InventarioNovoRepository extends EntityRepository
                   INVN.DSC_INVENTARIO \"descricao\",
                   COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO ) \"qtdEndereco\",
                   COUNT( DISTINCT CASE WHEN ICE.IND_CONTAGEM_DIVERGENCIA = 'S' THEN IEN.COD_INVENTARIO_ENDERECO END ) \"qtdDivergencia\",
-                  COUNT( DISTINCT CASE WHEN IEN.IND_FINALIZADO = 'S' THEN IEN.COD_INVENTARIO_ENDERECO END ) \"qtdInventariado\",
+                  COUNT( DISTINCT CASE WHEN IEN.COD_STATUS = 3 THEN IEN.COD_INVENTARIO_ENDERECO END ) \"qtdInventariado\",
                   TO_CHAR(INVN.DTH_CRIACAO, 'DD/MM/YYYY HH24:MI:SS') \"dataCriacao\",
                   TO_CHAR(INVN.DTH_INICIO, 'DD/MM/YYYY HH24:MI:SS') \"dataInicio\",
                   INVN.COD_INVENTARIO_ERP \"codInvERP\",
                   TO_CHAR(INVN.DTH_FINALIZACAO, 'DD/MM/YYYY HH24:MI:SS') \"dataFinalizacao\",
-                  CASE WHEN SUM( CASE WHEN IEN.IND_FINALIZADO = 'S' THEN 1 ELSE 0 END ) > 0
-                         THEN ROUND(((COUNT( DISTINCT CASE WHEN IEN.IND_FINALIZADO = 'S' THEN IEN.COD_INVENTARIO_ENDERECO END ) / COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO )) * 100), 2)
-                       ELSE 0 END AS \"andamento\"
+                  CASE WHEN SUM( CASE WHEN IEN.COD_STATUS = 3 THEN 1 ELSE 0 END ) > 0
+                         THEN ROUND(((COUNT( DISTINCT CASE WHEN IEN.COD_STATUS = 3 THEN IEN.COD_INVENTARIO_ENDERECO END ) / COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO )) * 100), 2)
+                       ELSE 0 END AS \"andamento\",
+                  INVN.IND_CRITERIO \"criterio\"
                 FROM INVENTARIO_NOVO INVN
                 INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON INVN.COD_INVENTARIO = IEN.COD_INVENTARIO
                 LEFT JOIN INVENTARIO_CONT_END ICE ON IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO AND ICE.IND_CONTAGEM_DIVERGENCIA = 'S'
@@ -160,7 +161,7 @@ class InventarioNovoRepository extends EntityRepository
                 LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
                 INNER JOIN DEPOSITO_ENDERECO DE ON IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                 $where
-                GROUP BY INVN.COD_INVENTARIO, INVN.COD_STATUS, INVN.DTH_INICIO, INVN.DTH_CRIACAO, INVN.COD_INVENTARIO_ERP, INVN.DTH_FINALIZACAO, INVN.DSC_INVENTARIO";
+                GROUP BY INVN.COD_INVENTARIO, INVN.COD_STATUS, INVN.DTH_INICIO, INVN.DTH_CRIACAO, INVN.COD_INVENTARIO_ERP, INVN.DTH_FINALIZACAO, INVN.DSC_INVENTARIO, INVN.IND_CRITERIO";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
@@ -324,6 +325,7 @@ class InventarioNovoRepository extends EntityRepository
 
         $sql = "SELECT
                     DISTINCT
+                    CASE WHEN (INV.IND_CRITERIO = 'P') THEN IEP.COD_INV_END_PROD ELSE IEN.COD_INVENTARIO_ENDERECO END \"id\",
                     DE.COD_DEPOSITO_ENDERECO \"idEndereco\",
                     IEP.COD_INVENTARIO_ENDERECO \"idInventarioEndereco\",                       
                     NVL(REP.COD_PRODUTO, IEP.COD_PRODUTO) \"produto\",
@@ -390,24 +392,27 @@ class InventarioNovoRepository extends EntityRepository
             ->innerJoin("ien.inventario", "ivn")
             ->where("ivn = :inventario")
             ->andWhere("ien != :invEnd")
-            ->andWhere("ien.finalizado = 'N'")
+            ->andWhere("ien.status != 3")
             ->andWhere("ien.ativo = 'S'")
             ->setParameters(["inventario" => $invEnd->getInventario(), "invEnd" => $invEnd]);
 
         return $dql->getQuery()->getResult();
     }
 
-    public function getResultInventario($idInventario)
+    public function getResultInventario($idInventario, $toExport = false)
     {
+        $condition = ($toExport) ? "IN ($idInventario)" : " = $idInventario";
+        $sumCondition = ($toExport) ? "" : " - NVL(E.QTD,0)";
+
         $sql = "
-            SELECT 
+            SELECT DISTINCT
                 ICEP.COD_PRODUTO,
                 ICEP.DSC_GRADE,
                 ICEP.COD_PRODUTO_VOLUME,
                 ICEP.DSC_LOTE,
                 IEN.COD_DEPOSITO_ENDERECO,
                 ICEP.DTH_VALIDADE,
-                SUM(ICEP.QTD_EMBALAGEM * ICEP.QTD_CONTADA) - NVL(E.QTD,0) QTD,
+                SUM(ICEP.QTD_EMBALAGEM * ICEP.QTD_CONTADA) $sumCondition QTD,
                 NVL(E.QTD, 0) POSSUI_SALDO
             FROM INVENTARIO_NOVO INV
             INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on INV.COD_INVENTARIO = IEN.COD_INVENTARIO AND IEN.IND_ATIVO = 'S'
@@ -419,7 +424,7 @@ class InventarioNovoRepository extends EntityRepository
               AND E.DSC_GRADE = ICEP.DSC_GRADE 
               AND NVL(E.DSC_LOTE, 0) = NVL(ICEP.DSC_LOTE, 0)
               AND NVL(E.COD_PRODUTO_VOLUME, 0) = NVL(ICEP.COD_PRODUTO_VOLUME, 0)
-            WHERE INV.COD_INVENTARIO = $idInventario 
+            WHERE INV.COD_INVENTARIO $condition
                   AND NOT EXISTS(
                   SELECT 'x' FROM INVENTARIO_END_PROD IEP 
                   WHERE IEP.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO 
@@ -432,25 +437,111 @@ class InventarioNovoRepository extends EntityRepository
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 
-    public function getSumarioByRua($params) {
-        $idInventario = $params['id'];
+    public function getSumarioByRua($idInventario) {
 
         $sql = "
             SELECT 
-              count(ien.cod_inventario_endereco) qtd_enderecos,
-              count(ienn.cod_inventario_endereco) qtd_finalizados,
-              count(ien.cod_inventario_endereco - ienn.cod_inventario_endereco) qtd_pendentes,
-              round( (COUNT(ienn.cod_inventario_endereco) * 100) / COUNT(ien.cod_inventario_endereco) ) CONCLUIDO
-              
-              from inventario_endereco_novo ien
-              join inventario_endereco_novo ie
-              on ien.cod_inventario_endereco = ie.cod_inventario_endereco
-              
-              left join inventario_endereco_novo ienn
-              on ienn.cod_inventario_endereco = ie.cod_inventario_endereco and ie.ind_finalizado = 'S'
+                   DE.NUM_RUA, 
+                   DE.DSC_DEPOSITO_ENDERECO, 
+                   IEN.IND_ATIVO, 
+                   IEN.COD_STATUS,
+                   ICE.NUM_SEQUENCIA,
+                   ICE.NUM_CONTAGEM,
+                   ICE.IND_CONTAGEM_DIVERGENCIA,
+                   PES.NOM_PESSOA,
+                   ICEP.COD_PRODUTO,
+                   P.DSC_PRODUTO,
+                   ICEP.DSC_GRADE,
+                   NVL(ICEP.DSC_LOTE, '-') DSC_LOTE,
+                   NVL(PE.DSC_EMBALAGEM || '(' || ICEP.QTD_EMBALAGEM || ')' , PV.DSC_VOLUME) UNID,
+                   ICEP.QTD_CONTADA,
+                   NVL(TO_CHAR(ICEP.DTH_VALIDADE, 'DD/MM/YYYY'), '-') DTH_VALIDADE,
+                   TO_CHAR(ICEP.DTH_CONTAGEM, 'DD/MM/YYYY HH24:MI:SS') DTH_CONFERENCIA
+              FROM INVENTARIO_NOVO INVN
+        INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON IEN.COD_INVENTARIO = INVN.COD_INVENTARIO
+        INNER JOIN INVENTARIO_CONT_END ICE ON IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
+        INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO
+         LEFT JOIN INVENTARIO_CONT_END_OS ICEO ON ICE.COD_INV_CONT_END = ICEO.COD_INV_CONT_END
+         LEFT JOIN ORDEM_SERVICO OS ON OS.COD_OS = ICEO.COD_OS
+         LEFT JOIN PESSOA PES ON PES.COD_PESSOA = OS.COD_PESSOA
+         LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
+         LEFT JOIN INVENTARIO_END_PROD IEP ON IEN.COD_INVENTARIO_ENDERECO = IEP.COD_INVENTARIO_ENDERECO
+         LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = ICEP.COD_PRODUTO_VOLUME
+         LEFT JOIN PRODUTO_EMBALAGEM PE ON ICEP.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+         LEFT JOIN PRODUTO P ON P.COD_PRODUTO = ICEP.COD_PRODUTO AND P.DSC_GRADE = ICEP.DSC_GRADE
             
-            WHERE ien.cod_inventario = $idInventario;
+             WHERE INVN.COD_INVENTARIO = $idInventario
+          ORDER BY DE.NUM_RUA, ICE.NUM_SEQUENCIA, ICEP.COD_PRODUTO, ICEP.DSC_GRADE";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function checkProdutosPedidos($prodsEnds)
+    {
+        $arrOr = [];
+        foreach ($prodsEnds as $idEnd => $prods) {
+            foreach ($prods as $prod) {
+                $arrOr[] = "( IEN.COD_DEPOSITO_ENDERECO = $idEnd AND CASE WHEN INVN.IND_CRITERIO = 'P' THEN CASE WHEN IEP.COD_PRODUTO = '$prod[codigo]' AND IEP.DSC_GRADE = '$prod[grade]' THEN 1 ELSE 0 END ELSE 1 END = 1 )";
+            }
+        }
+
+        $statusLiberado = InventarioNovo::STATUS_LIBERADO;
+        $statusConcluido = InventarioNovo::STATUS_CONCLUIDO;
+        $statusInterrompido = InventarioNovo::STATUS_INTERROMPIDO;
+
+        $sql = "SELECT DISTINCT
+                    INVN.COD_INVENTARIO \"INVENTÁRIO\",
+                    INVN.DSC_INVENTARIO \"DESCRIÇÃO\",
+                    DE.DSC_DEPOSITO_ENDERECO \"ENDEREÇO\",
+                    CASE WHEN INVN.IND_CRITERIO = 'P' THEN 'PRODUTO' ELSE 'ENDEREÇO' END \"INVENTÁRIO POR\",
+                    NVL(IEP.COD_PRODUTO, '-') \"CÓDIGO\",
+                    NVL(IEP.DSC_GRADE, '-') GRADE
+                FROM INVENTARIO_ENDERECO_NOVO IEN
+                INNER JOIN DEPOSITO_ENDERECO DE ON IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                LEFT JOIN INVENTARIO_END_PROD IEP on IEP.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO AND IEP.IND_ATIVO = 'S'
+                INNER JOIN INVENTARIO_NOVO INVN on IEN.COD_INVENTARIO = INVN.COD_INVENTARIO
+                WHERE INVN.COD_STATUS IN ($statusLiberado, $statusConcluido, $statusInterrompido) AND IEN.IND_ATIVO = 'S' AND (" . implode(" OR ", $arrOr) . ")";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
+
+    public function listEnderecos($idInventario)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select(
+            "ien.id, de.descricao, 
+                    CASE
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_CONFERENCIA." THEN 'Em Conferência'
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_DIVERGENCIA." THEN 'Em Divergência'
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_FINALIZADO." THEN 'Finalizado' 
+                    ELSE 'Pendente' END status")
+            ->from('wms:InventarioNovo\InventarioEnderecoNovo', 'ien')
+            ->innerJoin("ien.depositoEndereco", 'de')
+            ->where("ien.inventario = $idInventario and ien.ativo = 'S'");
+
+        return $dql->getQuery()->getResult();
+    }
+
+    public function listProdutos($idInventario)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("
+                    iep.id,
+                    de.descricao dscEndereco, 
+                    CASE
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_CONFERENCIA." THEN 'Em Conferência'
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_DIVERGENCIA." THEN 'Em Divergência'
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_FINALIZADO." THEN 'Finalizado' 
+                    ELSE 'Pendente' END status,
+                    p.id codProduto,
+                    p.grade,
+                    p.descricao")
+            ->from('wms:InventarioNovo\InventarioEndProd', 'iep')
+            ->innerJoin('iep.produto', 'p')
+            ->innerJoin('iep.inventarioEndereco', 'ien')
+            ->innerJoin("ien.depositoEndereco", 'de')
+            ->where("ien.inventario = $idInventario and ien.ativo = 'S' and iep.ativo = 'S'");
+
+        return $dql->getQuery()->getResult();
     }
 }

@@ -1259,7 +1259,7 @@ class NotaFiscalRepository extends EntityRepository {
                     NOTA_FISCAL NF2 INNER JOIN 
                     NOTA_FISCAL_ITEM NFI on (NF2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) INNER JOIN 
                     PRODUTO PR ON (NFI.COD_PRODUTO = PR.COD_PRODUTO) INNER JOIN 
-                    PRODUTO_EMBALAGEM PE ON (PR.COD_PRODUTO = PE.COD_PRODUTO)
+                    PRODUTO_EMBALAGEM PE ON (PR.COD_PRODUTO = PE.COD_PRODUTO AND PE.DTH_INATIVACAO IS NULL)
                 WHERE 
                     NF2.COD_NOTA_FISCAL = $idNota
                 GROUP BY 

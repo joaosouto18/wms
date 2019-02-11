@@ -131,6 +131,11 @@ VALUES (SQ_MENU_ITEM_01.NEXTVAL,
         'Modelo Inventário',
         7, '#', '_self', 'S');
 
+ALTER TABLE
+   HISTORICO_ESTOQUE
+ADD
+   COD_OPERACAO  NUMBER(8);
+
 CREATE TABLE MODELO_INVENTARIO
 (
   COD_MODELO_INVENTARIO     NUMBER (8) NOT NULL ,
@@ -287,13 +292,10 @@ CREATE TABLE inventario_endereco_novo (
   cod_inventario            NUMBER(8) NOT NULL,
   cod_deposito_endereco     NUMBER(8) NOT NULL,
   num_contagem              NUMBER(3) NOT NULL,
-  --  Flag (S/N) para indicar  se o inventário no endereço foi finalizado
-  ind_finalizado            CHAR(1) NOT NULL,
+  cod_status                NUMBER(4) NOT NULL,
   ind_ativo                 CHAR(1) NOT NULL
 );
 
-COMMENT ON COLUMN inventario_endereco_novo.ind_finalizado IS
-  'Flag (S/N) para indicar  se o inventário no endereço foi finalizado';
 
 ALTER TABLE inventario_endereco_novo ADD CONSTRAINT inv_end_novo_pk PRIMARY KEY ( cod_inventario_endereco );
 
@@ -449,3 +451,6 @@ CREATE SEQUENCE SQ_MODELO_INVENTARIO_LOG_01
   NOCYCLE
   NOCACHE
   NOORDER;
+
+
+ALTER TABLE MODELO_SEPARACAO ADD (PRODUTO_EM_INVENTARIO CHAR(1) DEFAULT 'N' NOT NULL);

@@ -36,7 +36,7 @@ class InventarioService extends AbstractService
 
         try {
             $args = [
-                'descricao' => $params['descricao'],
+                'descricao' => (isset($params['descricao']) && !empty($params['descricao'])) ? $params['descricao'] : null,
                 'modeloInventario' => $this->em->getReference('wms:InventarioNovo\ModeloInventario', $params['modelo']['id']),
                 'criterio' => $params['criterio']
             ];
@@ -62,7 +62,6 @@ class InventarioService extends AbstractService
                     'inventario' => $inventarioEn,
                     'depositoEndereco' => $this->em->getReference('wms:Deposito\Endereco', $item['id']),
                     'contagem' => 1,
-                    'finalizado' => 'N',
                     'ativo' => 'S'
                 ]);
                 if ($inventarioEn->isPorProduto()) {
@@ -86,7 +85,7 @@ class InventarioService extends AbstractService
 
     /**
      * @param $id
-     * @return bool
+     * @return bool|array
      * @throws \Exception
      */
     public function liberarInventario($id)
@@ -101,7 +100,7 @@ class InventarioService extends AbstractService
 
             $impedimentos = $this->getRepository()->findImpedimentosLiberacao($id);
             if (!empty($impedimentos)) {
-                return $impedimentos;
+                return [$impedimentos, $inventarioEn];
             } else {
                 $inventarioEn->liberar();
 
@@ -128,44 +127,47 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $id_inventario
-     * @param $id_item
-     * @param $tipo
-     * @param $grade
-     * @param $lote
+     * @param $id
+     * @return InventarioNovo
      * @throws \Exception
      */
-
-    public function removerProduto($idInventario, $idInventarioEndereco, $idProduto, $grade){
+    public function removerProduto($id){
         $this->em->beginTransaction();
 
         try {
             //exclusao logica do produto
             /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEndProdRepository $inventarioEndProdRepo */
             $inventarioEndProdRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEndProd');
-            $produto = $inventarioEndProdRepo->findOneBy(['inventarioEndereco' => $idInventarioEndereco, 'codProduto' => $idProduto, 'grade' => $grade]);
+            /** @var InventarioNovo\InventarioEndProd $produto */
+            $produto = $inventarioEndProdRepo->find($id);
 
             //exclusão lógica
             $produto->setAtivo(false);
 
             $this->em->persist($produto);
 
+            $this->em->flush();
+
             // se nao existir mais produtos no endereço, cancela o endereço
-            $produtoAtivo = $inventarioEndProdRepo->findOneBy(['inventarioEndereco' => $idInventarioEndereco, 'ativo' => 'S']);
+            $produtoAtivo = $inventarioEndProdRepo->findOneBy(['inventarioEndereco' => $produto->getInventarioEndereco()->getId(), 'ativo' => 'S']);
 
             if( empty($produtoAtivo) )
-                $this->removerEndereco($idInventario, $idInventarioEndereco);
+                $this->removerEndereco($produto->getInventarioEndereco()->getId());
 
-            $this->em->flush();
             $this->em->commit();
-
+            return $produto->getInventarioEndereco()->getInventario();
         }catch (\Exception $e) {
             $this->em->rollback();
             throw $e;
         }
     }
 
-    public function removerEndereco($idInventario, $idEndereco)
+    /**
+     * @param $id
+     * @return InventarioNovo
+     * @throws \Exception
+     */
+    public function removerEndereco($id)
     {
         $this->em->beginTransaction();
 
@@ -173,27 +175,30 @@ class InventarioService extends AbstractService
             //exclusao logica do endereço
             /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo */
             $inventarioEnderecoRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
-            $endereco = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'depositoEndereco' => $idEndereco]);
+            /** @var InventarioNovo\InventarioEnderecoNovo $endereco */
+            $endereco = $inventarioEnderecoRepo->find($id);
 
             $endereco->setAtivo(false);
 
             $this->em->persist($endereco);
 
+            $this->em->flush();
+
             // se nao existir mais endereços ativos nesse inventario, cancela o mesmo
-            $enderecoAtivo = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'ativo' => 'S']);
+            $enderecoAtivo = $inventarioEnderecoRepo->findOneBy(['inventario' => $endereco->getInventario()->getId(), 'ativo' => 'S']);
 
             if( empty($enderecoAtivo) )
             {
                 /** @var \Wms\Domain\Entity\InventarioNovo $inventarioEn */
-                $inventarioEn = $this->find($idInventario);
+                $inventarioEn = $endereco->getInventario();
                 $inventarioEn->cancelar();
-
                 $this->em->persist($inventarioEn);
-                //throw new \Exception("O inventário $idInventario foi cancelado pois está vazio");
+                $this->em->flush();
             }
 
-            $this->em->flush();
             $this->em->commit();
+
+            return $endereco->getInventario();
         }catch (\Exception $e) {
             $this->em->rollback();
             throw $e;
@@ -213,6 +218,22 @@ class InventarioService extends AbstractService
         try {
             /** @var InventarioNovo\InventarioContEndRepository $inventContEndRepo */
             $inventContEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEnd");
+
+            //echo $inventarioEnderecoEn->getInventario();
+
+            /** @var InventarioNovo\InventarioEnderecoNovo[] $endereco */
+            $endereco = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->findOneBy(["inventario" => $inventarioEnderecoEn->getInventario()]);
+
+            if($endereco->getStatus() == InventarioNovo\InventarioEnderecoNovo::STATUS_PENDENTE){
+                $endereco->setConferencia();
+                $this->em->persist($endereco);
+                $this->em->flush($endereco);
+            }
+            elseif($divergencia && $endereco->getStatus() == InventarioNovo\InventarioEnderecoNovo::STATUS_CONFERENCIA){
+                    $endereco->setDivergencia();
+                    $this->em->persist($endereco);
+                    $this->em->flush($endereco);
+                }
 
             return $inventContEndRepo->save([
                 "inventarioEndereco" => $inventarioEnderecoEn,
@@ -255,20 +276,13 @@ class InventarioService extends AbstractService
                 $isEmb = true;
                 $elements[] = $this->em->getReference("wms:Produto\Embalagem", $produto['idEmbalagem']);
             }
-
             $conferencia["validade"] = (!empty($conferencia['validade'])) ? date_create_from_format("d/m/Y", $conferencia['validade']) : null;
 
-            $invContEndProd     = $this->em->getRepository('wms:InventarioNovo\InventarioContEndProd');
+            /** @var InventarioNovo\InventarioContEndProdRepository $inventContEndProdRepo */
+            $inventContEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd");
+            $resultado = $inventContEndProdRepo->getContagemFinalizada($contEnd, $produto);
 
-            $contagemFinalizada = $invContEndProd->findOneBy([
-                'codProduto' => $produto['idProduto'],
-                'grade' => $produto['grade'],
-                'produtoVolume' => (!empty($produto['idVolume']))? $produto['idVolume'] : null,
-                'lote' => (!empty($conferencia['lote']))? $conferencia['lote'] : null,
-                'divergente' => 'N'
-            ]);
-
-            if(empty($contagemFinalizada)) {
+            if(empty($resultado)) {
 
                 $this->registrarConferencia(
                     $elements,
@@ -705,7 +719,7 @@ class InventarioService extends AbstractService
                 throw new \Exception("Este endereço " . $inventarioEnd->getDepositoEndereco()->getDescricao() . " foi removido do inventário e não pode ser finalizado!");
             }
 
-            $inventarioEnd->setFinalizado(true);
+            $inventarioEnd->setFinalizado();
             $this->em->persist($inventarioEnd);
 
             if (empty($this->getRepository()->getEnderecosPendentes($inventarioEnd))) {
@@ -921,7 +935,45 @@ class InventarioService extends AbstractService
 
             if (!$invEn->isLiberado()) throw new \Exception("Este inventário $id não pode ser interrompido pois está: " . $invEn->getDscStatus());
 
+            /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
+            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+
+            if($invEn->getCriterio() == 'E')
+                $ordemServicoRepo->excluiOsInventarioPorEnderecoInterrompido($id);
+            else
+                $ordemServicoRepo->excluiOsInventarioPorProdutoInterrompido($id);
+
             $invEn->interromper();
+            $this->em->persist($invEn);
+
+            $this->em->flush();
+            $this->em->commit();
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
+    }
+
+    /**
+     * @param $id
+     * @throws \Exception
+     */
+    public function cancelarInventario($id)
+    {
+        $this->em->beginTransaction();
+        try{
+            /** @var InventarioNovo $invEn */
+            $invEn = $this->find($id);
+
+            if ($invEn->isCancelado()) throw new \Exception("Este inventário $id já está cancelado");
+            if ($invEn->isFinalizado()) throw new \Exception("Este inventário $id não pode mais ser cancelado, pois já foi aplicado ao estoque");
+
+            /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
+            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+
+            $ordemServicoRepo->excluiOsInventarioCancelado($id);
+
+            $invEn->cancelar();
             $this->em->persist($invEn);
 
             $this->em->flush();
@@ -937,11 +989,182 @@ class InventarioService extends AbstractService
         /** @var InventarioNovoRepository $inventarioRepo */
         $inventarioRepo = $this->getRepository();
         $result = [];
-        $usaGrade = ($inventarioRepo->getSystemParameterValue("UTILIZA_GRADE"));
-        foreach ($inventarioRepo->getResultInventario($idInventario) as $item) {
-            $result[] = [
+        $ends = [];
 
+        foreach ($inventarioRepo->getSumarioByRua($idInventario) as $conf) {
+            if (!in_array($conf['DSC_DEPOSITO_ENDERECO'], $ends)) {
+                if (!isset($result[$conf['NUM_RUA']])) {
+                    $result[$conf['NUM_RUA']]['pendentes'] = 0;
+                    $result[$conf['NUM_RUA']]['conferencia'] = 0;
+                    $result[$conf['NUM_RUA']]['divergentes'] = 0;
+                    $result[$conf['NUM_RUA']]['finalizados'] = 0;
+                }
+                if ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_PENDENTE) {
+                    $result[$conf['NUM_RUA']]['pendentes']++;
+                }
+                elseif ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_CONFERENCIA) {
+                    $result[$conf['NUM_RUA']]['conferencia']++;
+                }
+                elseif ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_DIVERGENCIA) {
+                    $result[$conf['NUM_RUA']]['divergentes']++;
+                }
+                elseif ($conf['COD_STATUS'] == InventarioNovo\InventarioEnderecoNovo::STATUS_FINALIZADO) {
+                    $result[$conf['NUM_RUA']]['finalizados']++;
+                }
+                $ends[] = $conf['DSC_DEPOSITO_ENDERECO'];
+            }
+
+            $result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['status'] = InventarioNovo\InventarioEnderecoNovo::$tipoStatus[$conf['COD_STATUS']];
+            $result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['conferencias'][] = [
+                "contagem" => "$conf[NUM_CONTAGEM]ª Cont." . (($conf['IND_CONTAGEM_DIVERGENCIA'] == 'S') ? ' Divergência' : ''),
+                "conferente" => $conf['NOM_PESSOA'],
+                "codProduto" => $conf['COD_PRODUTO'],
+                "dscProd" => $conf['DSC_PRODUTO'],
+                "grade" => $conf['DSC_GRADE'],
+                "lote" => $conf['DSC_LOTE'],
+                "dscEmbVol" => $conf['UNID'],
+                "qtdContada" => $conf['QTD_CONTADA'],
+                "dthValidade" => $conf['DTH_VALIDADE'],
+                "dthConferencia" => $conf['DTH_CONFERENCIA']
             ];
+        }
+
+        return $result;
+    }
+
+    /*
+     * Layout de exportação definido para o Winthor
+     */
+    public function exportaInventarioModelo01($id)
+    {
+
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->getRepository('wms:Produto\Embalagem');
+
+        $codInvErp = $this->find($id)->getCodErp();
+
+        if (empty($codInvErp)){
+            throw new \Exception("Este inventário não tem o código do inventário respectivo do ERP");
+        }
+
+        $inventariosByErp = $this->findBy(array('codErp' => $codInvErp));
+        foreach ($inventariosByErp as $inventario) {
+            $inventarios[] = $inventario->getId();
+        }
+
+        $filename = "Exp_Inventario($codInvErp).txt";
+        $file = fopen($filename, 'w');
+
+        $contagens = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd")->getResultInventario(implode(',', $inventarios), true);
+        $inventario = array();
+
+        foreach ($contagens as $contagem) {
+            $embalagemEntity = reset($embalagemRepo->findBy(array('codProduto' => $contagem['COD_PRODUTO'], 'grade' => $contagem['DSC_GRADE']), array('quantidade' => 'ASC')));
+            if (empty($embalagemEntity)) continue;
+
+            if (isset($inventario[$contagem['COD_PRODUTO']])) {
+                $inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'] = Math::adicionar($inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'], $contagem['QTD']);
+            } else {
+                $inventario[$contagem['COD_PRODUTO']]['QUANTIDADE'] = $contagem['QTD'];
+                $inventario[$contagem['COD_PRODUTO']]['COD_BARRAS'] = $embalagemEntity->getCodigoBarras();
+                $inventario[$contagem['COD_PRODUTO']]['FATOR'] = $embalagemEntity->getQuantidade();
+            };
+        }
+
+        foreach ($inventario as $key => $produto) {
+            $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
+            $txtContagem = '001';
+            $txtLocal = '001';
+            $txtCodBarras = str_pad($produto['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
+            $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 10, '0', STR_PAD_LEFT);
+            $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
+            $linha = $txtCodInventario.$txtContagem.$txtLocal.$txtCodBarras.$txtQtd.$txtCodProduto."\r\n";
+            fwrite($file, $linha, strlen($linha));
+        }
+
+        fclose($file);
+
+        header("Content-Type: application/force-download");
+        header("Content-type: application/octet-stream;");
+        header("Content-disposition: attachment; filename=" . $filename);
+        header("Expires: 0");
+        header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+        header("Pragma: no-cache");
+
+        readfile($filename);
+        flush();
+
+        unlink($filename);
+    }
+
+    /*
+     * Layout de exportação definido para a SonosShow
+     */
+    public function exportaInventarioModelo02($idInventario = null) {
+        /*
+         * Nome do arquivo solicitado pela sonoshow como aammddhh.min
+         */
+        $nomeArquivo = date("ymdH.0i");
+        $arquivo = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO") . DIRECTORY_SEPARATOR. $nomeArquivo;
+
+        $statusFinalizado = InventarioNovo::STATUS_FINALIZADO;
+
+        $SQL = "SELECT P.COD_PRODUTO, NVL(ESTQ.QTD,0) as QTD
+                  FROM PRODUTO P
+                  LEFT JOIN (SELECT E.COD_PRODUTO,
+                                    E.DSC_GRADE, 
+                                    MIN(QTD) as QTD
+                               FROM (SELECT E.COD_PRODUTO,
+                                            E.DSC_GRADE,
+                                            SUM(E.QTD) as QTD,
+                                            NVL(E.COD_PRODUTO_VOLUME,0) as ID_VOLUME
+                                       FROM ESTOQUE E
+                                            GROUP BY E.COD_PRODUTO, E.DSC_GRADE,NVL(E.COD_PRODUTO_VOLUME,0)) E
+                              GROUP BY COD_PRODUTO, DSC_GRADE) ESTQ
+                    ON ESTQ.COD_PRODUTO = P.COD_PRODUTO
+                   AND ESTQ.DSC_GRADE = P.DSC_GRADE " ;
+
+        if ($idInventario != null) {
+            $SQL .= " INNER JOIN (SELECT DISTINCT ICEP.COD_PRODUTO,
+                                    ICEP.DSC_GRADE
+                               FROM INVENTARIO_ENDERECO_NOVO IEN
+                               INNER JOIN INVENTARIO_NOVO INVN ON INVN.COD_INVENATRIO = IEN.COD_INVENTARIO
+                               INNER JOIN INVENTARIO_CONT_END ICE ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
+                               LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
+                              WHERE IE.COD_INVENTARIO = $idInventario AND INVN.COD_STATUS = $statusFinalizado AND ICEP.IND_DIVERGENTE = 'N') I
+                    ON (I.COD_PRODUTO = P.COD_PRODUTO)
+                   AND (I.DSC_GRADE = P.DSC_GRADE)";
+        }
+
+        $produtos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $file = fopen($arquivo, "w");
+
+        $i = 0;
+        foreach ($produtos  as $produto) {
+            $i ++;
+
+            $result = fwrite($file,$produto['COD_PRODUTO'] . ";");
+            $result = fwrite($file,$produto['QTD'] . ";");
+
+            if (count($produtos) != $i) {
+                $result = fwrite($file,"\r\n");
+            }
+
+        }
+
+        $result = fwrite($file,"\r\n");
+        fclose($file);
+    }
+
+    public function setCodInventarioERP($idInventario, $codInventarioERP) {
+        /** @var InventarioNovo $inventarioEn */
+        $inventarioEn = $this->find($idInventario);
+        if (!empty($inventarioEn)) {
+            $inventarioEn->setCodErp($codInventarioERP);
+            $this->em->flush($inventarioEn);
+        } else {
+            throw new \Exception("Nenhum inventário encontrado com o código $idInventario!");
         }
     }
 }
