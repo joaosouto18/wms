@@ -382,7 +382,9 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $ondaRessupService OndaRessuprimentoService
      * @return array
      */
-    public function gerarOnda($strExpedicao, $ondaRessupService) {
+    public function gerarOnda($strExpedicao, $ondaRessupService)
+    {
+        $resultado = array();
         try {
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
             $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
@@ -468,7 +470,11 @@ class ExpedicaoRepository extends EntityRepository {
             $itensReservar = self::prepareArrayRessup($pedidosProdutosRessuprir, $modeloSeparacaoEn, $dadosProdutos, $repositorios);
 
             if ($modeloSeparacaoEn->getProdutoInventario() == 'N') {
-                $ondaRessupService->checkImpedimentoReservas($itensReservar);
+                $check = $ondaRessupService->checkImpedimentoReservas($itensReservar);
+                if (!empty($check)) {
+                    $resultado['impedimentos'] = $check;
+                    throw new \Exception("Existem produtos ou endereços à serem reservados que estão em processo de inventário");
+                }
             }
 
             $reservaEstoqueExpedicaoRepo->gerarReservaSaida($itensReservar, $repositorios);
@@ -490,7 +496,7 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
 
-            $resultado = array();
+
             $msg = "Ondas Geradas com sucesso";
 
             if ($qtdOsGerada == 0) {
@@ -500,15 +506,13 @@ class ExpedicaoRepository extends EntityRepository {
             $resultado['observacao'] = $msg;
             $resultado['resultado'] = true;
 
-            return $resultado;
         } catch (\Exception $e) {
 
-            $resultado = array();
             $resultado['observacao'] = $e->getMessage();
             $resultado['resultado'] = false;
-
-            return $resultado;
         }
+
+        return $resultado;
     }
 
     private function filtrarSaidaPicking($expedicoes)
@@ -2227,6 +2231,14 @@ class ExpedicaoRepository extends EntityRepository {
             unset($parametros['dataFinal2']);
         }
 
+        if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
+            $Query = $Query . " AND P.COD_EXTERNO = '$parametros[pedido]' ";
+            unset($parametros['dataInicial1']);
+            unset($parametros['dataInicial2']);
+            unset($parametros['dataFinal1']);
+            unset($parametros['dataFinal2']);
+        }
+
         if (isset($parametros['placa']) && !empty($parametros['placa'])) {
             $Query = $Query . " AND E.DSC_PLACA_EXPEDICAO = '$parametros[placa]'" ;
             unset($parametros['dataInicial1']);
@@ -2235,16 +2247,12 @@ class ExpedicaoRepository extends EntityRepository {
             unset($parametros['dataFinal2']);
         }
 
-        if (isset($parametros['dataInicial1']) && (!empty($parametros['dataInicial1'])) && (!empty($parametros['dataInicial2']))) {
-            $dataInicial = $parametros['dataInicial1'];
-            $dataFinal = $parametros['dataInicial2'];
-            $Query = $Query . " AND (E.DTH_INICIO BETWEEN TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))";
+        if (isset($parametros['dataInicial1']) && (!empty($parametros['dataInicial1'])) && isset($parametros['dataInicial2']) && (!empty($parametros['dataInicial2']))) {
+            $Query = $Query . " AND (E.DTH_INICIO BETWEEN TO_DATE('$parametros[dataInicial1] 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$parametros[dataInicial2] 23:59', 'DD-MM-YYYY HH24:MI'))";
         }
 
-        if (isset($parametros['dataFinal1']) && (!empty($parametros['dataFinal1'])) && (!empty($parametros['dataFinal2']))) {
-            $dataInicial = $parametros['dataFinal1'];
-            $dataFinal = $parametros['dataFinal2'];
-            $Query = $Query . " AND (E.DTH_FINALIZACAO BETWEEN TO_DATE('$dataInicial 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$dataFinal 23:59', 'DD-MM-YYYY HH24:MI'))";
+        if (isset($parametros['dataFinal1']) && (!empty($parametros['dataFinal1'])) && isset($parametros['dataFinal2']) && (!empty($parametros['dataFinal2']))) {
+            $Query = $Query . " AND (E.DTH_FINALIZACAO BETWEEN TO_DATE('$parametros[dataFinal1] 00:00', 'DD-MM-YYYY HH24:MI') AND TO_DATE('$parametros[dataFinal2] 23:59', 'DD-MM-YYYY HH24:MI'))";
         }
 
         if (isset($parametros['status']) && (!empty($parametros['status']))) {

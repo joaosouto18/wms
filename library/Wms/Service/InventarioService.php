@@ -36,7 +36,7 @@ class InventarioService extends AbstractService
 
         try {
             $args = [
-                'descricao' => $params['descricao'],
+                'descricao' => (isset($params['descricao']) && !empty($params['descricao'])) ? $params['descricao'] : null,
                 'modeloInventario' => $this->em->getReference('wms:InventarioNovo\ModeloInventario', $params['modelo']['id']),
                 'criterio' => $params['criterio']
             ];
@@ -85,7 +85,7 @@ class InventarioService extends AbstractService
 
     /**
      * @param $id
-     * @return bool
+     * @return bool|array
      * @throws \Exception
      */
     public function liberarInventario($id)
@@ -100,7 +100,7 @@ class InventarioService extends AbstractService
 
             $impedimentos = $this->getRepository()->findImpedimentosLiberacao($id);
             if (!empty($impedimentos)) {
-                return $impedimentos;
+                return [$impedimentos, $inventarioEn];
             } else {
                 $inventarioEn->liberar();
 
@@ -127,44 +127,47 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $id_inventario
-     * @param $id_item
-     * @param $tipo
-     * @param $grade
-     * @param $lote
+     * @param $id
+     * @return InventarioNovo
      * @throws \Exception
      */
-
-    public function removerProduto($idInventario, $idInventarioEndereco, $idProduto, $grade){
+    public function removerProduto($id){
         $this->em->beginTransaction();
 
         try {
             //exclusao logica do produto
             /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEndProdRepository $inventarioEndProdRepo */
             $inventarioEndProdRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEndProd');
-            $produto = $inventarioEndProdRepo->findOneBy(['inventarioEndereco' => $idInventarioEndereco, 'codProduto' => $idProduto, 'grade' => $grade]);
+            /** @var InventarioNovo\InventarioEndProd $produto */
+            $produto = $inventarioEndProdRepo->find($id);
 
             //exclusão lógica
             $produto->setAtivo(false);
 
             $this->em->persist($produto);
 
+            $this->em->flush();
+
             // se nao existir mais produtos no endereço, cancela o endereço
-            $produtoAtivo = $inventarioEndProdRepo->findOneBy(['inventarioEndereco' => $idInventarioEndereco, 'ativo' => 'S']);
+            $produtoAtivo = $inventarioEndProdRepo->findOneBy(['inventarioEndereco' => $produto->getInventarioEndereco()->getId(), 'ativo' => 'S']);
 
             if( empty($produtoAtivo) )
-                $this->removerEndereco($idInventario, $idInventarioEndereco);
+                $this->removerEndereco($produto->getInventarioEndereco()->getId());
 
-            $this->em->flush();
             $this->em->commit();
-
+            return $produto->getInventarioEndereco()->getInventario();
         }catch (\Exception $e) {
             $this->em->rollback();
             throw $e;
         }
     }
 
-    public function removerEndereco($idInventario, $idEndereco)
+    /**
+     * @param $id
+     * @return InventarioNovo
+     * @throws \Exception
+     */
+    public function removerEndereco($id)
     {
         $this->em->beginTransaction();
 
@@ -172,27 +175,30 @@ class InventarioService extends AbstractService
             //exclusao logica do endereço
             /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo */
             $inventarioEnderecoRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
-            $endereco = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'depositoEndereco' => $idEndereco]);
+            /** @var InventarioNovo\InventarioEnderecoNovo $endereco */
+            $endereco = $inventarioEnderecoRepo->find($id);
 
             $endereco->setAtivo(false);
 
             $this->em->persist($endereco);
 
+            $this->em->flush();
+
             // se nao existir mais endereços ativos nesse inventario, cancela o mesmo
-            $enderecoAtivo = $inventarioEnderecoRepo->findOneBy(['inventario' => $idInventario, 'ativo' => 'S']);
+            $enderecoAtivo = $inventarioEnderecoRepo->findOneBy(['inventario' => $endereco->getInventario()->getId(), 'ativo' => 'S']);
 
             if( empty($enderecoAtivo) )
             {
                 /** @var \Wms\Domain\Entity\InventarioNovo $inventarioEn */
-                $inventarioEn = $this->find($idInventario);
+                $inventarioEn = $endereco->getInventario();
                 $inventarioEn->cancelar();
-
                 $this->em->persist($inventarioEn);
-                //throw new \Exception("O inventário $idInventario foi cancelado pois está vazio");
+                $this->em->flush();
             }
 
-            $this->em->flush();
             $this->em->commit();
+
+            return $endereco->getInventario();
         }catch (\Exception $e) {
             $this->em->rollback();
             throw $e;
@@ -948,6 +954,36 @@ class InventarioService extends AbstractService
         }
     }
 
+    /**
+     * @param $id
+     * @throws \Exception
+     */
+    public function cancelarInventario($id)
+    {
+        $this->em->beginTransaction();
+        try{
+            /** @var InventarioNovo $invEn */
+            $invEn = $this->find($id);
+
+            if ($invEn->isCancelado()) throw new \Exception("Este inventário $id já está cancelado");
+            if ($invEn->isFinalizado()) throw new \Exception("Este inventário $id não pode mais ser cancelado, pois já foi aplicado ao estoque");
+
+            /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
+            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+
+            $ordemServicoRepo->excluiOsInventarioCancelado($id);
+
+            $invEn->cancelar();
+            $this->em->persist($invEn);
+
+            $this->em->flush();
+            $this->em->commit();
+        } catch (\Exception $e) {
+            $this->em->rollback();
+            throw $e;
+        }
+    }
+
     public function getMovimentacaoByInventario($idInventario)
     {
         /** @var InventarioNovoRepository $inventarioRepo */
@@ -1121,4 +1157,14 @@ class InventarioService extends AbstractService
         fclose($file);
     }
 
+    public function setCodInventarioERP($idInventario, $codInventarioERP) {
+        /** @var InventarioNovo $inventarioEn */
+        $inventarioEn = $this->find($idInventario);
+        if (!empty($inventarioEn)) {
+            $inventarioEn->setCodErp($codInventarioERP);
+            $this->em->flush($inventarioEn);
+        } else {
+            throw new \Exception("Nenhum inventário encontrado com o código $idInventario!");
+        }
+    }
 }

@@ -35,12 +35,6 @@ class OndaRessuprimentoService extends AbstractService
             }
         }
 
-        $produtosImpedidos = $this->em->getRepository("wms:InventarioNovo")->checkProdutosPedidos($prodsEnds);
-
-        if (!empty($produtosImpedidos)) {
-            $pdf = new \Wms\Module\Web\Report\Generico("L");
-            $pdf->init($produtosImpedidos, "Impedimentos por inventário", "Produtos/Endereços impedidos por inventário(s) em aberto");
-            throw new \Exception("Existem produtos ou endereços à serem reservados que estão em processo de inventário");
-        }
+        return $this->em->getRepository("wms:InventarioNovo")->checkProdutosPedidos($prodsEnds);
     }
 }

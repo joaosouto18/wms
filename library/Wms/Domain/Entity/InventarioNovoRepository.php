@@ -152,7 +152,8 @@ class InventarioNovoRepository extends EntityRepository
                   TO_CHAR(INVN.DTH_FINALIZACAO, 'DD/MM/YYYY HH24:MI:SS') \"dataFinalizacao\",
                   CASE WHEN SUM( CASE WHEN IEN.COD_STATUS = 3 THEN 1 ELSE 0 END ) > 0
                          THEN ROUND(((COUNT( DISTINCT CASE WHEN IEN.COD_STATUS = 3 THEN IEN.COD_INVENTARIO_ENDERECO END ) / COUNT( DISTINCT IEN.COD_DEPOSITO_ENDERECO )) * 100), 2)
-                       ELSE 0 END AS \"andamento\"
+                       ELSE 0 END AS \"andamento\",
+                  INVN.IND_CRITERIO \"criterio\"
                 FROM INVENTARIO_NOVO INVN
                 INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON INVN.COD_INVENTARIO = IEN.COD_INVENTARIO
                 LEFT JOIN INVENTARIO_CONT_END ICE ON IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO AND ICE.IND_CONTAGEM_DIVERGENCIA = 'S'
@@ -160,7 +161,7 @@ class InventarioNovoRepository extends EntityRepository
                 LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
                 INNER JOIN DEPOSITO_ENDERECO DE ON IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
                 $where
-                GROUP BY INVN.COD_INVENTARIO, INVN.COD_STATUS, INVN.DTH_INICIO, INVN.DTH_CRIACAO, INVN.COD_INVENTARIO_ERP, INVN.DTH_FINALIZACAO, INVN.DSC_INVENTARIO";
+                GROUP BY INVN.COD_INVENTARIO, INVN.COD_STATUS, INVN.DTH_INICIO, INVN.DTH_CRIACAO, INVN.COD_INVENTARIO_ERP, INVN.DTH_FINALIZACAO, INVN.DSC_INVENTARIO, INVN.IND_CRITERIO";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
@@ -324,6 +325,7 @@ class InventarioNovoRepository extends EntityRepository
 
         $sql = "SELECT
                     DISTINCT
+                    CASE WHEN (INV.IND_CRITERIO = 'P') THEN IEP.COD_INV_END_PROD ELSE IEN.COD_INVENTARIO_ENDERECO END \"id\",
                     DE.COD_DEPOSITO_ENDERECO \"idEndereco\",
                     IEP.COD_INVENTARIO_ENDERECO \"idInventarioEndereco\",                       
                     NVL(REP.COD_PRODUTO, IEP.COD_PRODUTO) \"produto\",
@@ -501,5 +503,45 @@ class InventarioNovoRepository extends EntityRepository
                 WHERE INVN.COD_STATUS IN ($statusLiberado, $statusConcluido, $statusInterrompido) AND IEN.IND_ATIVO = 'S' AND (" . implode(" OR ", $arrOr) . ")";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
+
+    public function listEnderecos($idInventario)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select(
+            "ien.id, de.descricao, 
+                    CASE
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_CONFERENCIA." THEN 'Em Conferência'
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_DIVERGENCIA." THEN 'Em Divergência'
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_FINALIZADO." THEN 'Finalizado' 
+                    ELSE 'Pendente' END status")
+            ->from('wms:InventarioNovo\InventarioEnderecoNovo', 'ien')
+            ->innerJoin("ien.depositoEndereco", 'de')
+            ->where("ien.inventario = $idInventario and ien.ativo = 'S'");
+
+        return $dql->getQuery()->getResult();
+    }
+
+    public function listProdutos($idInventario)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("
+                    iep.id,
+                    de.descricao dscEndereco, 
+                    CASE
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_CONFERENCIA." THEN 'Em Conferência'
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_DIVERGENCIA." THEN 'Em Divergência'
+                    WHEN ien.status = ".InventarioEnderecoNovo::STATUS_FINALIZADO." THEN 'Finalizado' 
+                    ELSE 'Pendente' END status,
+                    p.id codProduto,
+                    p.grade,
+                    p.descricao")
+            ->from('wms:InventarioNovo\InventarioEndProd', 'iep')
+            ->innerJoin('iep.produto', 'p')
+            ->innerJoin('iep.inventarioEndereco', 'ien')
+            ->innerJoin("ien.depositoEndereco", 'de')
+            ->where("ien.inventario = $idInventario and ien.ativo = 'S' and iep.ativo = 'S'");
+
+        return $dql->getQuery()->getResult();
     }
 }

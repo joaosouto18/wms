@@ -444,5 +444,16 @@ class OrdemServicoRepository extends EntityRepository
 
         return $this->getEntityManager()->getConnection()->query($sql)->execute();
     }
-}'  '
+
+    public function excluiOsInventarioCancelado($idInventario){
+        $sql = "delete from ordem_servico where cod_os in 
+                  (select distinct iceos.cod_os 
+                   from inventario_endereco_novo ien   
+                   inner join inventario_cont_end ice on ice.cod_inventario_endereco = ien.cod_inventario_endereco          
+                   inner join inventario_cont_end_os iceos on iceos.cod_inv_cont_end = ice.cod_inv_cont_end            
+                   where ien.cod_inventario = $idInventario)";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->execute();
+    }
+}
 
