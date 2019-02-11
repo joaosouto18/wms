@@ -81,6 +81,11 @@ class pedido {
     public $conferido;
     /** @var produto[] */
     public $produtos = array();
+    /** @var string */
+    public $centralEntrega;
+    /** @var string */
+    public $pontoTransbordo;
+
 }
 
 class pedidos {
@@ -214,10 +219,11 @@ class Wms_WebService_Expedicao extends Wms_WebService
      *
      * @param string codCarga informacoes das cargas com os pedidos
      * @param string placa informacoes das cargas com os pedidos
+     * @param string placaExpedicao informacoes das cargas com os pedidos
      * @param pedidos pedidos informacoes das cargas com os pedidos
      * @return boolean Se as cargas foram salvas com sucesso
      */
-    public function enviarPedidos ($codCarga, $placa, $pedidos) {
+    public function enviarPedidos ($codCarga, $placa, $placaExpedicao, $pedidos) {
         $pedidosArray = array();
         foreach ($pedidos->pedidos as $pedidoWs) {
             $cliente = array();
@@ -264,12 +270,28 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $pedido['linhaEntrega'] = $pedidoWs->linhaEntrega;
             $pedido['codProprietario'] = $codProprietario;
 
+            if (($pedidoWs->centralEntrega == null) || ($pedidoWs->centralEntrega == "")) {
+                $pedido['centralEntrega'] = "1";
+            } else {
+                $pedido['centralEntrega'] = $pedidoWs->centralEntrega;
+            }
+
+            if (($pedidoWs->pontoTransbordo == null) || ($pedidoWs->pontoTransbordo == "")) {
+                $pedido['pontoTransbordo'] = "1";
+            } else {
+                $pedido['pontoTransbordo'] = $pedidoWs->pontoTransbordo;
+            }
+
             $pedidosArray[] = $pedido;
         }
 
         $carga = array();
         $carga['idCarga'] = $codCarga;
-        $carga['placaExpedicao'] = $placa;
+
+        if (($placaExpedicao = "") || ($placaExpedicao = null) ) {
+            $placaExpedicao = $placa;
+        }
+        $carga['placaExpedicao'] = $placaExpedicao;
         $carga['placa'] = $placa;
         $carga['pedidos'] = $pedidosArray;
 
