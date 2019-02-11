@@ -4151,7 +4151,8 @@ class ExpedicaoRepository extends EntityRepository {
                    AND E.DTH_FINALIZACAO >= TO_DATE('$dataInicial','DD/MM/YYYY HH24:MI')
                    AND E.DTH_FINALIZACAO <= TO_DATE('$dataFinal','DD/MM/YYYY HH24:MI')
                    AND E.COD_STATUS IN (530,465)
-                 GROUP BY C.COD_CARGA_EXTERNO, C.DSC_PLACA_EXPEDICAO, E.DTH_FINALIZACAO, L.DSC_LINHA_ENTREGA, NF.VLR_CARGA";
+                 GROUP BY C.COD_CARGA_EXTERNO, C.DSC_PLACA_EXPEDICAO, E.DTH_FINALIZACAO, L.DSC_LINHA_ENTREGA, NF.VLR_CARGA
+                 ORDER BY C.COD_CARGA_EXTERNO";
 
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
