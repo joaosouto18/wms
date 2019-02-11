@@ -7,11 +7,11 @@
 DECLARE
   CHECK_RESULT VARCHAR2(100);
 BEGIN
-  SELECT FUNC_CHECK_SCRIPT('xx-cross-docking.sql', '') INTO CHECK_RESULT FROM DUAL;
+  SELECT FUNC_CHECK_SCRIPT('07-cross-docking.sql', '') INTO CHECK_RESULT FROM DUAL;
   IF (CHECK_RESULT <> 'TRUE') THEN
     DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
   ELSE
-    INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7', 'xx-cross-docking.sql');
+    INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7', '07-cross-docking.sql');
     /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
