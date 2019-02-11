@@ -4123,12 +4123,21 @@ class ExpedicaoRepository extends EntityRepository {
                    LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                    LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                    LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                   LEFT JOIN (SELECT MAX(NUM_PESO), DSC_LINHA_ENTREGA, COD_CARGA FROM (
-                                     SELECT SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO, P.DSC_LINHA_ENTREGA, P.COD_CARGA
-                                       FROM PEDIDO P
-                                       LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
-                                       LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                                      GROUP BY P.DSC_LINHA_ENTREGA, P.COD_CARGA) GROUP BY COD_CARGA, DSC_LINHA_ENTREGA) L
+                   LEFT JOIN (SELECT C1.COD_CARGA, C1.DSC_LINHA_ENTREGA
+                                FROM (SELECT SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO, P.DSC_LINHA_ENTREGA, P.COD_CARGA
+                                        FROM PEDIDO P
+                                        LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                                        LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                                       GROUP BY P.DSC_LINHA_ENTREGA, P.COD_CARGA) C1
+                               INNER JOIN (SELECT MAX(NUM_PESO) as NUM_PESO, COD_CARGA 
+                                             FROM (SELECT SUM(PROD.NUM_PESO * PP.QUANTIDADE) as NUM_PESO, P.DSC_LINHA_ENTREGA, P.COD_CARGA
+                                                     FROM PEDIDO P
+                                                     LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
+                                                     LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                                                    GROUP BY P.DSC_LINHA_ENTREGA, P.COD_CARGA) 
+                                            GROUP BY COD_CARGA) C2
+                                  ON C2.COD_CARGA = C1.COD_CARGA
+                                 AND C1.NUM_PESO = C2.NUM_PESO) L
                           ON L.COD_CARGA = C.COD_CARGA
                    LEFT JOIN (SELECT COD_CARGA, COD_CARGA_EXTERNO, SUM(VALOR_TOTAL_NF) as VLR_CARGA 
                                FROM (SELECT DISTINCT C.COD_CARGA, C.COD_CARGA_EXTERNO, NFS.COD_NOTA_FISCAL_SAIDA, NFS.VALOR_TOTAL_NF
