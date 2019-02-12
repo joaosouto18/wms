@@ -107,15 +107,18 @@ class ProdutosCarregamento extends Pdf
                 }
 
             }
-            foreach ($embalagemEntities as $embalagemEntity) {
-                if (Math::resto($valorPesoCubagem['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
-                    $volumeTotal = $volumeTotal + ($valorPesoCubagem['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
-                    break;
+
+            foreach ($embalagemEntities as $key => $embalagemEntity) {
+                if ($key == 0) {
+                    $volumeTotal = $volumeTotal + floor($data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
+                    $embMaster = $embalagemEntity->getDescricao();
                 } else {
-                    $volumeTotal = $volumeTotal + 1;
-                    break;
+                    if (Math::resto($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) > 0) {
+                        $volumeTotal = $volumeTotal + 1;
+                    }
                 }
             }
+
             $pedidoAnt = $valorPesoCubagem['COD_EXTERNO'];
         }
 
