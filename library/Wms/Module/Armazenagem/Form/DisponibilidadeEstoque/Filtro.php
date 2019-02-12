@@ -12,7 +12,7 @@ class Filtro extends Form {
     {
 
         $this->setAttribs(array('id' => 'filtro-estoque-form',
-                                'method' => 'post',
+                                'method' => 'get',
                                 'class' => 'saveForm'));
 
         $this->addElement('text', 'rua', array(
