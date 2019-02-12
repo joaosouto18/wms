@@ -11,7 +11,7 @@ class AcaoIntegracaoAndamentoRepository extends EntityRepository
         $sql = "SELECT TO_CHAR(AIA.DTH_ANDAMENTO,'DD/MM/YYYY HH24:MI:SS') as DTH_ANDAMENTO,
                       AIA.COD_ACAO_INTEGRACAO,
                       AIA.IND_SUCESSO,
-                      SUBSTR(AIA.DSC_OBSERVACAO,0,60) DSC_OBSERVACAO,
+                      SUBSTR(AIA.DSC_OBSERVACAO,0,80) DSC_OBSERVACAO,
                       AI.DSC_ACAO_INTEGRACAO
                  FROM ACAO_INTEGRACAO_ANDAMENTO AIA
                  INNER JOIN (SELECT MAX(COD_ACAO_INTEGRACAO_ANDAMENTO) as COD_ACAO_INTEGRACAO_ANDAMENTO,
