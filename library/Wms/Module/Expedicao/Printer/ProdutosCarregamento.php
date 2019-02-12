@@ -44,7 +44,7 @@ class ProdutosCarregamento extends Pdf
                     $qtdCaixas = floor($data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
                     $embMaster = $embalagemEntity->getDescricao();
                 } else {
-                    if (Math::resto($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) > 0) {
+                    if (Math::resto($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) != 0) {
                         $qtdCaixas = $qtdCaixas + 1;
                     }
                 }
