@@ -37,15 +37,15 @@ class ProdutosCarregamento extends Pdf
 
             $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $data['COD_PRODUTO'], 'grade' => $data['DSC_GRADE'], 'dataInativacao' => null), array('quantidade' => 'DESC'));
             $qtdTotal = $data['QUANTIDADE_CONFERIDA'];
+            $qtdRestante = $data['QUANTIDADE_CONFERIDA'];
+            $qtdCaixas = 0;
             foreach ($embalagemEntities as $embalagemEntity) {
-                if (Math::resto($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) == 0) {
-                    $this->Cell(20, 6, $data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade() . ' ' . $embalagemEntity->getDescricao());
-                    break;
-                } else {
-                    $this->Cell(20, 6, '1' . ' ' . $embalagemEntity->getDescricao());
-                    break;
+                $qtdCaixas = floor($data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
+                if (Math::resto($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) > 0) {
+                    $qtdCaixas = $qtdCaixas + 1;
                 }
             }
+            $this->Cell(20, 6, $data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade() . ' ' . $embalagemEntity->getDescricao());
             $this->Cell(10, 6, $qtdTotal.' und.',0,1,'R');
         }
     }
