@@ -114,9 +114,10 @@ class ProdutosCarregamento extends Pdf
                 if ($key == 0) {
                     $volumeTotal = $volumeTotal + floor($valorPesoCubagem['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
                     $embMaster = $embalagemEntity->getDescricao();
+                    $resto = Math::resto($valorPesoCubagem['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade());
                 } else {
-                    if (Math::resto($valorPesoCubagem['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) > 0) {
-                        $volumeTotal = $volumeTotal + 1;
+                    if ($resto > 0) {
+                        $qtdCaixas = $qtdCaixas + 1;
                     }
                 }
             }
