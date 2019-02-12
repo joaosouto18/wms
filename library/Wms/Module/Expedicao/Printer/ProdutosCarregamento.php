@@ -110,10 +110,10 @@ class ProdutosCarregamento extends Pdf
 
             foreach ($embalagemEntities as $key => $embalagemEntity) {
                 if ($key == 0) {
-                    $volumeTotal = $volumeTotal + floor($data['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
+                    $volumeTotal = $volumeTotal + floor($valorPesoCubagem['QUANTIDADE_CONFERIDA'] / $embalagemEntity->getQuantidade());
                     $embMaster = $embalagemEntity->getDescricao();
                 } else {
-                    if (Math::resto($data['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) > 0) {
+                    if (Math::resto($valorPesoCubagem['QUANTIDADE_CONFERIDA'],$embalagemEntity->getQuantidade()) > 0) {
                         $volumeTotal = $volumeTotal + 1;
                     }
                 }
