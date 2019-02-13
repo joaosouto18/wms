@@ -924,6 +924,7 @@ class EstoqueRepository extends EntityRepository
                 ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "de.id = pe.endereco")
                 ->leftJoin("p.recebimento", "r")
                 ->leftJoin("p.status", "s")
+                ->andWhere("de.situacao <> 'B'")
                 ->distinct(true)
                 ->orderBy("de.descricao");
 
