@@ -137,7 +137,14 @@ class Inventario_Novo_IndexController  extends Action
 
             if (is_array($result)) {
                 $grid = new \Wms\Module\InventarioNovo\Grid\ImpedimentosGrid();
-                $this->view->grid = $grid->init($result);
+
+                if ($result[1]->isPorProduto()){
+                    $direction = 'remover-produto';
+                } else {
+                    $direction = 'remover-endereco';
+                }
+
+                $this->view->grid = $grid->init($result[0], $direction);
                 $this->addFlashMessage("warning", "Estes elementos impedem de liberar o inventário $id");
                 $this->renderScript('index\impedimentos.phtml');
             } else {
@@ -149,27 +156,37 @@ class Inventario_Novo_IndexController  extends Action
         }
     }
 
+    public function listEnderecosAjaxAction()
+    {
+        $grid = new \Wms\Module\InventarioNovo\Grid\EnderecosGrid();
+        $this->view->grid = $grid->init($this->_em->getRepository('wms:InventarioNovo')->listEnderecos($this->getRequest()->getParam('id')));
+        $this->renderScript('index\generic-grid-view.phtml');
+    }
+
+    public function listProdutosAjaxAction()
+    {
+        $grid = new \Wms\Module\InventarioNovo\Grid\ProdutosGrid();
+        $this->view->grid = $grid->init($this->_em->getRepository('wms:InventarioNovo')->listProdutos($this->getRequest()->getParam('id')));
+        $this->renderScript('index\generic-grid-view.phtml');
+    }
+
     public function removerEnderecoAction()
     {
-        $idInventario = $this->getRequest()->getParam('id');
-        $idEndereco   = $this->getRequest()->getParam('idEndereco');
+        $origemRequest   = $this->getRequest()->getParam('hiddenId', "remover");
 
         try {
-            if (empty($idInventario))  {
-                throw new Exception("ID do Inventário não foi especificado.");
-            }
-
-            if (empty($idEndereco))  {
-                throw new Exception("Endereço não foi especificado.");
-            }
-
             /** @var \Wms\Service\InventarioService $invServc */
             $invServc = $this->getServiceLocator()->getService("Inventario");
-            $invServc->removerEndereco($idInventario, $idEndereco);
-
+            foreach ($this->getRequest()->getParam('mass-id') as $id) {
+                $inventarioEn = $invServc->removerEndereco($id);
+            }
             $this->addFlashMessage("success", "Endereço removido com sucesso.");
 
-            $this->_redirect('/inventario_novo/index/liberar/id/'.$idInventario.'');
+            if ($origemRequest != 'remover' && $inventarioEn->isGerado()) {
+                $this->_redirect('/inventario_novo/index/liberar/id/' . $inventarioEn->getId() . '');
+            } else {
+                $this->redirect();
+            }
 
         } catch (Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
@@ -179,33 +196,22 @@ class Inventario_Novo_IndexController  extends Action
 
     public function removerProdutoAction()
     {
-        $idInventario = $this->getRequest()->getParam('id');
-        $idProduto    = $this->getRequest()->getParam('produto');
-        $grade        = $this->getRequest()->getParam('grade');
-        $idInventarioEndereco   = $this->getRequest()->getParam('idInventarioEndereco');
-
-        //cho "$idInventario - $idEndereco - $idProduto - $grade";
+        $origemRequest   = $this->getRequest()->getParam('hiddenId', "remover");
 
         try {
-            if (empty($idInventario))  {
-                throw new Exception("ID do Inventário não foi especificado.");
-            }
-            if (empty($idProduto))  {
-                throw new Exception("Produto não foi especificado.");
-            }
-            if (empty($grade))  {
-                throw new Exception("Grade não foi especificada.");
-            }
-            if (empty($idInventarioEndereco))  {
-                throw new Exception("Endereço não foi especificado.");
-            }
-
             /** @var \Wms\Service\InventarioService $invServc */
             $invServc = $this->getServiceLocator()->getService("Inventario");
-            $invServc->removerProduto($idInventario, $idInventarioEndereco, $idProduto, $grade);
+
+            foreach ($this->getRequest()->getParam('mass-id') as $id) {
+                $inventarioEn = $invServc->removerProduto($id);
+            }
             $this->addFlashMessage("success", "Produto removido com sucesso.");
 
-            $this->_redirect('/inventario_novo/index/liberar/id/'.$idInventario.'');
+            if ($origemRequest != 'remover' && $inventarioEn->isGerado()) {
+                $this->_redirect('/inventario_novo/index/liberar/id/' . $inventarioEn->getId() . '');
+            } else {
+                $this->redirect();
+            }
 
         } catch (Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
@@ -229,7 +235,7 @@ class Inventario_Novo_IndexController  extends Action
         try{
             $id = $this->_getParam('id');
             $this->getServiceLocator()->getService("Inventario")->interromperInventario($id);
-            $this->addFlashMessage("success", "O inventário $id foi interrompido e está liberado para atualizar o estoque,");
+            $this->addFlashMessage("success", "O inventário $id foi interrompido e está liberado para atualizar o estoque.");
         } catch (Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
         }
@@ -238,17 +244,14 @@ class Inventario_Novo_IndexController  extends Action
 
     public function cancelarAction()
     {
-        $id = $this->_getParam('id');
-        if (isset($id) && !empty($id)) {
-            /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
-            $inventarioRepo = $this->em->getRepository("wms:Inventario");
-            $inventarioEn = $inventarioRepo->find($id);
-            if ($inventarioEn) {
-                $inventarioRepo->cancelar($inventarioEn);
-                $inventarioRepo->desbloqueiaEnderecos($id);
-                $this->redirect('index');
-            }
+        try{
+            $id = $this->_getParam('id');
+            $this->getServiceLocator()->getService("Inventario")->cancelarInventario($id);
+            $this->addFlashMessage("success", "O inventário $id foi cancelado");
+        } catch (Exception $e) {
+            $this->addFlashMessage("error", $e->getMessage());
         }
+        $this->redirect();
     }
 
     public function viewMovimentacoesAjaxAction() {
@@ -301,8 +304,7 @@ class Inventario_Novo_IndexController  extends Action
 
             if (!empty($codInventarioErp)) {
                 /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
-                $inventarioRepo = $this->em->getRepository('wms:Inventario');
-                $inventarioRepo->setCodInventarioERP($id,$codInventarioErp);
+                $this->getServiceLocator()->getService("Inventario")->setCodInventarioERP($id, $codInventarioErp);
                 $this->addFlashMessage('success', 'Código vinculado com sucesso!');
                 $this->redirect('index');
             }
@@ -312,18 +314,6 @@ class Inventario_Novo_IndexController  extends Action
             $this->addFlashMessage('error', $e->getMessage());
             $this->redirect('index');
         }
-    }
-
-    public function viewRuaAjaxAction()
-    {
-        $grid =  new \Wms\Module\Inventario\Grid\Rua();
-        $this->view->grid = $grid->init($this->_getAllParams());
-    }
-
-    public function viewDetalheContagemAjaxAction()
-    {
-        $grid =  new \Wms\Module\Inventario\Grid\DetalheContagem();
-        $this->view->grid = $grid->init($this->_getAllParams());
     }
 
     public function imprimirEnderecosAjaxAction()

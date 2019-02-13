@@ -35,6 +35,6 @@ class OndaRessuprimentoService extends AbstractService
             }
         }
 
-        $produtosImpedidos = $this->em->getRepository("wms:InventarioNovo")->checkProdutosPedidos($prodsEnds);
+        return $this->em->getRepository("wms:InventarioNovo")->checkProdutosPedidos($prodsEnds);
     }
 }

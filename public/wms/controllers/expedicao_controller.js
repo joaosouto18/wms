@@ -127,6 +127,26 @@ $.Controller.extend('Wms.Controllers.Expedicao',
                                 msgs = data.response;
                             } else if (data.status === "Error") {
                                 msgs = data.response;
+                                if (!isEmpty(data.impedimentos)){
+                                    var doc = new jsPDF({lineHeight:0.6});
+                                    doc.cellInitialize();
+
+                                    doc.text("Impedimentos para gerar as reservas", 55,15);
+
+                                    var pdfHeaders = [];
+                                    for (var prop in data.impedimentos[0]){
+                                        pdfHeaders.push( {name: prop, prompt: prop, width: (doc.getTextDimensions(prop).w / (72/25.4)) + 12} );
+                                    }
+
+                                    doc.table( 7, 20, data.impedimentos, pdfHeaders);
+
+                                    var string = doc.output('datauristring');
+                                    var iframe = "<iframe width='100%' height='100%' src='" + string + "'></iframe>";
+                                    var x = window.open();
+                                    x.document.open();
+                                    x.document.write(iframe);
+                                    x.document.close();
+                                }
                             }
                             if (expedicoes !== null) {
                                 este.selectExpToPrint(expedicoes);

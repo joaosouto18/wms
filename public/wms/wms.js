@@ -18,7 +18,8 @@ steal.plugins(
 // 3rd party script's (like jQueryUI), in resources folder
 .resources(
     'ui', 
-    'form', 
+    'jspdf',
+    'form',
     'menu', 
     'validate', 
     'cookie', 

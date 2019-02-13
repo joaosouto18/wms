@@ -176,6 +176,9 @@ class Expedicao_OndaRessuprimentoController extends Action
             ini_set('max_execution_time', 30);
 
             if ($result['resultado'] == false) {
+                if (isset($result['impedimentos']) && !empty($result['impedimentos'])) {
+                    $return['impedimentos'] = $result['impedimentos'];
+                }
                 throw new Exception($result['observacao']);
             } else {
                 $return['status'] = 'Ok';
