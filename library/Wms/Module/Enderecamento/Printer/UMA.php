@@ -313,13 +313,13 @@ class UMA extends Pdf {
         }
 
         $this->SetFont('Arial', 'B', $font_size);
-        $this->MultiCell($line_width, 15, $descricaoProduto, 0, 'C');
+        $this->MultiCell($line_width, 15, wordwrap($codigoProduto . ' - ' .$descricaoProduto, 35), 0, 'C');
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35, 40, "", 0, 0);
 
         $this->SetFont('Arial', 'B', 32);
-        $this->SetXY(30, 35);
+        $this->SetXY(30, 45);
         if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
@@ -329,11 +329,11 @@ class UMA extends Pdf {
         }
 
         $this->SetFont('Arial', 'B', 32);
-        $this->SetXY(10, 55);
+        $this->SetXY(10, 60);
         $this->Cell(55, 20, utf8_decode("Endereço"), 0, 0);
 
         $this->SetFont('Arial', 'B', 55);
-        $this->SetXY(10, 70);
+        $this->SetXY(10, 75);
         if (isset($palete['endereco']) && !empty($palete['endereco'])) {
             $this->Cell(95, 27, $palete['endereco'], 0, 1);
         } else {
@@ -382,16 +382,16 @@ class UMA extends Pdf {
             $size = 30;
         }
 
-        $this->SetFont('Arial', 'B', $size);
+        $this->SetFont('Arial', 'B', 75);
         $this->SetXY(145, 110);
-        $this->Cell(-15, 30, $qtd, 0, 1);
+        $this->Cell(-15, 30, $qtd, 0, 1, 'C');
 
-        $this->SetFont('Arial', 'B', 32);
-        $this->SetXY(10, 110);
-        $this->Cell(35, 30, utf8_decode("Prod"), 0, 0);
-
-        $this->SetFont('Arial', 'B', 70);
-        $this->Cell(40, 30, $codigoProduto, 0, 1);
+//        $this->SetFont('Arial', 'B', 32);
+//        $this->SetXY(10, 110);
+//        $this->Cell(35, 30, utf8_decode("Prod"), 0, 0);
+//
+//        $this->SetFont('Arial', 'B', 70);
+//        $this->Cell(40, 30, $codigoProduto, 0, 1);
     }
 
     public function layout01($palete, $produtoEn, $font_size, $line_width, $enderecoPicking, $params = null) {
