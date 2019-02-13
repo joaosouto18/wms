@@ -1261,7 +1261,7 @@ class ExpedicaoRepository extends EntityRepository {
                                               NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME
                                         FROM ESTOQUE E
                                        INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
-                                       WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . "
+                                       WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . " AND DE.IND_SITUACAO <> 'B'
                                        GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0)) E
                                   ON E.COD_PRODUTO = P.COD_PRODUTO
                                  AND E.DSC_GRADE = P.DSC_GRADE
