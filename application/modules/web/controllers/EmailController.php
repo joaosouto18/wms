@@ -14,19 +14,21 @@ class Web_EmailController extends Action
 
     public function indexAction()
     {
-//        $params = $this->_getAllParams();
-
         $request = $this->getRequest();
+
         if ($request->isPost()) {
+            $params = $this->getRequest()->getParams();
+            $emailCadastrado = $this->getSystemParameterValue('EMAIL_CHAMADOS');
 
-            $mail = $mail = new Zend_Mail();
-            $mail->setFrom('rodrigodantley@gmail.com', 'Rodrigo Dantley');
-            $mail->setSubject('email from web');
-            $mail->addTo('rodrigodantley@imperiumsistemas.com.br','EU');
-            $mail->setBodyText('abcdefg');
+            $to      = 'rodrigodantley@gmail.com';
+            $subject = $params['assunto'];
+            $message = 'Email de: '.$params['nome'].' - '.$params['mensagem'];
+            $headers = 'From: '. $emailCadastrado . "\r\n" .
+                'Reply-To: '. $emailCadastrado . "\r\n" .
+                'X-Mailer: PHP/' . phpversion();
 
-//            $transport = new Zend_Mail_Transport_Sendmail();
-            $mail->send();
+            mail($to, $subject, $message, $headers);
+
         }
 
 

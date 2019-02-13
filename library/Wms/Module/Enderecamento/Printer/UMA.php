@@ -312,14 +312,18 @@ class UMA extends Pdf {
             $font_size = 40;
         }
 
+        $this->SetFont('Arial', 'B', 50);
+        $this->MultiCell($line_width, 15, $codigoProduto, 0, 'C');
+
+
         $this->SetFont('Arial', 'B', $font_size);
-        $this->MultiCell($line_width, 15, wordwrap($codigoProduto . ' - ' .$descricaoProduto, 35), 0, 'C');
+        $this->MultiCell($line_width, 15, wordwrap($descricaoProduto, 35), 0, 'C');
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(35, 40, "", 0, 0);
 
         $this->SetFont('Arial', 'B', 32);
-        $this->SetXY(30, 45);
+        $this->SetXY(30, 65);
         if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
             $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
@@ -329,34 +333,34 @@ class UMA extends Pdf {
         }
 
         $this->SetFont('Arial', 'B', 32);
-        $this->SetXY(10, 60);
+        $this->SetXY(10, 80);
         $this->Cell(55, 20, utf8_decode("Endereço"), 0, 0);
 
         $this->SetFont('Arial', 'B', 55);
-        $this->SetXY(10, 75);
+        $this->SetXY(10, 95);
         if (isset($palete['endereco']) && !empty($palete['endereco'])) {
-            $this->Cell(95, 27, $palete['endereco'], 0, 1);
+            $this->Cell(100, 27, $palete['endereco'], 0, 1);
         } else {
-            $this->Cell(95, 27, '--.---.--.--', 0, 1);
+            $this->Cell(100, 27, '--.---.--.--', 0, 1);
         }
 
         $this->SetFont('Arial', 'B', 32);
-        $this->SetXY(145, 55);
+        $this->SetXY(145, 65);
         $this->Cell(25, 20, 'Nota', 0, 1);
 
         if ((isset($params['notaFiscal'])) && ($params['notaFiscal'] != null)) {
             $this->SetFont('Arial', 'B', 55);
-            $this->SetXY(173, 55);
+            $this->SetXY(173, 65);
             $this->Cell(25, 20, $params['notaFiscal']->getNumero(), 0, 1);
         }
 
         $this->SetFont('Arial', 'B', 32);
-        $this->SetXY(145, 77);
+        $this->SetXY(145, 80);
         $this->Cell(25, 20, 'Entrada da Nota', 0, 1);
 
         if ((isset($params['notaFiscal'])) && ($params['notaFiscal'] != null)) {
             $this->SetFont('Arial', 'B', 32);
-            $this->SetXY(235, 77);
+            $this->SetXY(235, 80);
             $this->Cell(25, 20, $params['notaFiscal']->getDataEntrada()->format('d/m/Y'), 0, 1);
         }
 
@@ -382,16 +386,10 @@ class UMA extends Pdf {
             $size = 30;
         }
 
-        $this->SetFont('Arial', 'B', 75);
-        $this->SetXY(145, 110);
+        $this->SetFont('Arial', 'B', $size);
+        $this->SetXY(145, 115);
         $this->Cell(-15, 30, $qtd, 0, 1, 'C');
 
-//        $this->SetFont('Arial', 'B', 32);
-//        $this->SetXY(10, 110);
-//        $this->Cell(35, 30, utf8_decode("Prod"), 0, 0);
-//
-//        $this->SetFont('Arial', 'B', 70);
-//        $this->Cell(40, 30, $codigoProduto, 0, 1);
     }
 
     public function layout01($palete, $produtoEn, $font_size, $line_width, $enderecoPicking, $params = null) {
