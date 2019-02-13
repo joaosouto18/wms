@@ -823,44 +823,35 @@ class Expedicao_IndexController extends Action {
         $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
         $NotaFiscalSaidaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
         $ReentregaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Reentrega');
-        $cargaEntities = $expedicaoRepository->getCargas($idExpedicao);
 
-        $idCargas = null;
-        foreach ($cargaEntities as $key => $cargaEntity) {
-            if (count($cargaEntities) > $key + 1) {
-                $idCargas .= $cargaEntity->getCodCargaExterno() . ',';
-            } else {
-                $idCargas .= $cargaEntity->getCodCargaExterno();
-            }
-            $pedidoEntities = $cargaRepository->getPedidos($cargaEntity->getId());
+        $expedicaoEn = $expedicaoRepository->find($idExpedicao);
+        $cargasEn = $expedicaoEn->getCarga();
+
+        foreach ($cargasEn as $key => $cargaEn) {
+            $codCargaExterno = $cargaEn->getCodCargaExterno();
+
+            $pedidoEntities = $cargaRepository->getPedidos($cargaEn->getId());
             foreach ($pedidoEntities as $rowPedido) {
                 $pedidoRepository->removeReservaEstoque($rowPedido->getId());
                 $pedidoRepository->remove($rowPedido, true);
             }
-            $ReentregaRepository->removeReentrega($cargaEntity->getId());
-            $NotaFiscalSaidaRepository->atualizaStatusNota(explode("-" , $cargaEntity->getCodCargaExterno() )[0]);
-            $cargaRepository->removeCarga($cargaEntity->getId());
+            $ReentregaRepository->removeReentrega($cargaEn->getId());
+            $NotaFiscalSaidaRepository->atualizaStatusNota(explode("-" , $codCargaExterno  )[0]);
+            $cargaRepository->removeCarga($cargaEn->getId());
+
+            $expedicaoAndamentoRepository->save("carga $codCargaExterno removida da expedicao $idExpedicao", $idExpedicao);
         }
 
-        //GERA ETIQUETA MAPA ERP
+        /*
+         * Cancela Carga no ERP
+         */
         if ($this->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S') {
-            $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_CANCELA_CARGA_ERP');
-
-            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-            $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-            $acaoEn = $acaoIntRepo->find($idIntegracao);
-            $options[] = (!is_null($idCargas)) ? $idCargas : null;
-
-            $result = $acaoIntRepo->processaAcao($acaoEn, $options, 'E', "P", null, 612);
-            if (!$result === true) {
-                throw new \Wms\Util\WMS_Exception($result);
-            }
+            $expedicaoRepository->executaIntegracaoBDCancelamentoCarga($expedicaoEn);
         }
 
-        $expedicaoEntity = $expedicaoRepository->find($idExpedicao);
-        $expedicaoRepository->alteraStatus($expedicaoEntity, Expedicao::STATUS_CANCELADO);
-        $expedicaoAndamentoRepository->save("cargas $idCargas removidas", $idExpedicao);
-        $this->addFlashMessage('success', "cargas $idCargas da expedicao $idExpedicao removidas com sucesso");
+        $expedicaoRepository->alteraStatus($expedicaoEn, Expedicao::STATUS_CANCELADO);
+
+        $this->addFlashMessage('success', "cargas da expedicao $idExpedicao removidas com sucesso");
         $this->_redirect('expedicao');
     }
 
