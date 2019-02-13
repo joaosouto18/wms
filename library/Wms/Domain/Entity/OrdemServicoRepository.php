@@ -414,46 +414,31 @@ class OrdemServicoRepository extends EntityRepository
         return $ordemServicoEn;
     }
 
-    public function excluiOsInventarioPorProdutoInterrompido($idInventario){
-        $sql = "delete from 
-                  (select 
-                      os.cod_os codOs,
-                      icep.COD_INV_CONT_END_PROD codContProd,
-                      icep.ind_divergente divergente
-                      from ordem_servico os            
-                        inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os      
-                        inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end
-                        inner join inventario_cont_end_prod icep on icep.cod_inv_cont_end = ice.cod_inv_cont_end  
-                        inner join inventario_endereco_novo ien on ien.cod_inventario_endereco = ice.cod_inventario_endereco                      
-                      where ien.cod_inventario = $idInventario
-                        and ien.cod_status <> 3
-                        and icep.ind_divergente = 'S'; ";
-
-        return $this->getEntityManager()->getConnection()->query($sql)->execute();
-    }
-
-    public function excluiOsInventarioPorEnderecoInterrompido($idInventario){
-        $sql = "delete from 
-                  (select os.cod_os 
+    public function excluiOsInventarioInterrompido($idInventario) {
+        $sql = "select 
+                    os.cod_os os                    
                     from ordem_servico os            
                       inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os
                       inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end
                       inner join inventario_endereco_novo ien on ien.cod_inventario_endereco = ice.cod_inventario_endereco                      
                     where ien.cod_inventario = $idInventario
-                      and ien.cod_status <> 3 )";
+                      and os.dth_final_atividade is null";
 
-        return $this->getEntityManager()->getConnection()->query($sql)->execute();
-    }
+       $resultado = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-    public function excluiOsInventarioCancelado($idInventario){
-        $sql = "delete from ordem_servico where cod_os in 
-                  (select distinct iceos.cod_os 
-                   from inventario_endereco_novo ien   
-                   inner join inventario_cont_end ice on ice.cod_inventario_endereco = ien.cod_inventario_endereco          
-                   inner join inventario_cont_end_os iceos on iceos.cod_inv_cont_end = ice.cod_inv_cont_end            
-                   where ien.cod_inventario = $idInventario)";
+       if(!empty($resultado)){
 
-        return $this->getEntityManager()->getConnection()->query($sql)->execute();
+            $codigos = array();
+           foreach ($resultado as $item) {
+               $codigos[] = $item['OS'];
+            }
+
+            $sql = "delete from inventario_cont_end_os where cod_os in (" . implode(",", $codigos).")";
+            $this->getEntityManager()->getConnection()->query($sql)->execute();
+
+            $sql = "delete from ordem_servico where cod_os in (" . implode(",", $codigos).")";
+            $this->getEntityManager()->getConnection()->query($sql)->execute();
+        }
     }
 }
 
