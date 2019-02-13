@@ -1807,16 +1807,16 @@ class ExpedicaoRepository extends EntityRepository {
                 throw new \Exception("Expedição ja se encontra finalizada");
             }
 
-            if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
-                $statusAntigo = $expedicaoEn->getStatus();
-                $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
+//            if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
+//                $statusAntigo = $expedicaoEn->getStatus();
+//                $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
 
-                $expedicaoEn->setStatus($statusEmFinalizacao);
-                $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
+//                $expedicaoEn->setStatus($statusEmFinalizacao);
+//                $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
 
-                $this->getEntityManager()->persist($expedicaoEn);
-                $this->getEntityManager()->flush();
-            }
+//                $this->getEntityManager()->persist($expedicaoEn);
+//                $this->getEntityManager()->flush();
+//            }
 
             $codCargaExterno = $this->validaCargaFechada($idExpedicao);
             if (!empty($codCargaExterno)) {

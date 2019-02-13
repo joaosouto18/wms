@@ -143,6 +143,8 @@ class Inventario_IndexController  extends Action
 
             if ($modelo == 1) {
                 $inventarioRepo->exportaInventarioModelo01($idInventario);
+            } else if ($modelo == 3) {
+                $inventarioRepo->exportaInventarioModelo03($idInventario);
             } else {
                 $inventarioRepo->exportaInventarioModelo02($idInventario);
             }

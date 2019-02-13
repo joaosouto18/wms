@@ -96,6 +96,17 @@ class Expedicao_ConferenciaController extends Action
                 }
             } else {
                 $result = $expedicaoRepo->finalizarExpedicao($idExpedicao,$centrais,true, 'M', null, null,  $motivo);
+
+                /** @var \Wms\Domain\Entity\Expedicao $expedicaoEn */
+                $expedicaoEn  = $this->getEntityManager()->getRepository('wms:Expedicao')->findOneBy(array('id'=>$idExpedicao));
+                if ($expedicaoEn->getCodStatus() == \Wms\Domain\Entity\Expedicao::STATUS_EM_FINALIZACAO) {
+                    $statusConferencia = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => \Wms\Domain\Entity\Expedicao::STATUS_EM_CONFERENCIA));
+                    $expedicaoEn->setStatus($statusConferencia);
+                    $expedicaoEn->setCodStatus(\Wms\Domain\Entity\Expedicao::STATUS_EM_CONFERENCIA);
+                    $this->getEntityManager()->persist($expedicaoEn);
+                    $this->getEntityManager()->flush();
+                }
+
                 if ($origin == 'coletor') {
                     if ($result === true) {
                         $result = 'Expedição Finalizada com Sucesso!';

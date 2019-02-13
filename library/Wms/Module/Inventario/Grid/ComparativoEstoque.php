@@ -58,7 +58,6 @@ class ComparativoEstoque extends Grid {
                 ->addMassAction('mass-select', 'Selecionar');
         $pg = new Pager(count($result), 0, count($result));
         $this->setPager($pg);
-
         return $this;
     }
 
