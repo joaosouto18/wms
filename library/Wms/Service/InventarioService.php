@@ -932,10 +932,7 @@ class InventarioService extends AbstractService
             /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
             $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
 
-            if($invEn->getCriterio() == 'E')
-                $ordemServicoRepo->excluiOsInventarioPorEnderecoInterrompido($id);
-            else
-                $ordemServicoRepo->excluiOsInventarioPorProdutoInterrompido($id);
+            $ordemServicoRepo->excluiOsInventarioInterrompido($id);
 
             $invEn->interromper();
             $this->em->persist($invEn);
