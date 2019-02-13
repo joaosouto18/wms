@@ -1055,7 +1055,7 @@ class InventarioService extends AbstractService
         $filename = "Exp_Inventario($codInvErp).txt";
         $file = fopen($filename, 'w');
 
-        $contagens = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd")->getResultInventario(implode(',', $inventarios), true);
+        $contagens = $this->em->getRepository("wms:InventarioNovo")->getResultInventario(implode(',', $inventarios), true);
         $inventario = array();
 
         foreach ($contagens as $contagem) {
