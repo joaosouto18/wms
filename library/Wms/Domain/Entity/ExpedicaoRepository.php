@@ -1505,7 +1505,7 @@ class ExpedicaoRepository extends EntityRepository {
             $whereCargas = " AND c.codCargaExterno = '$cargas' ";
         }
 
-        /*
+        
         $query = "SELECT pp
                         FROM wms:Expedicao\PedidoProduto pp
                         INNER JOIN pp.produto p
@@ -1522,20 +1522,20 @@ class ExpedicaoRepository extends EntityRepository {
                           AND ped.centralEntrega = '$central'
                           AND ped.dataCancelamento is null
                         ";
-          */
+          
 
-        $query = "SELECT pp
-                        FROM wms:Expedicao\PedidoProduto pp
-                        INNER JOIN pp.produto p
-                         LEFT JOIN p.linhaSeparacao ls
-                        INNER JOIN pp.pedido ped
-                        INNER JOIN wms:Expedicao\VProdutoEndereco e WITH p.id = e.codProduto AND p.grade = e.grade
-                        INNER JOIN ped.carga c
-                        WHERE ped.indEtiquetaMapaGerado != 'S'
-                          $whereCargas
-                          AND ped.centralEntrega = '$central'
-                          AND ped.dataCancelamento is null
-                        ";
+//        $query = "SELECT pp
+//                        FROM wms:Expedicao\PedidoProduto pp
+//                        INNER JOIN pp.produto p
+//                         LEFT JOIN p.linhaSeparacao ls
+//                        INNER JOIN pp.pedido ped
+//                        INNER JOIN wms:Expedicao\VProdutoEndereco e WITH p.id = e.codProduto AND p.grade = e.grade
+//                        INNER JOIN ped.carga c
+//                        WHERE ped.indEtiquetaMapaGerado != 'S'
+//                          $whereCargas
+//                          AND ped.centralEntrega = '$central'
+//                          AND ped.dataCancelamento is null
+//                        ";
 
         switch ($sequencia) {
             case 3:
@@ -1805,6 +1805,25 @@ class ExpedicaoRepository extends EntityRepository {
         $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
 
         $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
+
+        /*
+         * Remover pois foi feito exclusivo para edmil para não disparar nenhum retorno para a Benner
+         */
+
+        $sql = "SELECT COD_TIPO_PEDIDO
+                      FROM PEDIDO P
+                      LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                      WHERE C.COD_EXPEDICAO = $idExpedicao
+                      AND P.COD_TIPO_PEDIDO IN (521,471)";
+
+        $qtdPedidos = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($qtdPedidos) <= 0) {
+            return true;
+        }
+        /*
+         * Fim remover
+         */
 
         $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
         $cargaEntities = $this->getProdutosExpedicaoCorteToIntegracao(null,$idExpedicao,true);
