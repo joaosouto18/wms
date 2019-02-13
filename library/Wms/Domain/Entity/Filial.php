@@ -173,7 +173,7 @@ class Filial implements AtorInterface
     {
         return $this->indUtilizaRessuprimento;
     }
-
+	
     /**
      * @return mixed
      */

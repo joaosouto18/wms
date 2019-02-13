@@ -27,17 +27,15 @@ class EstoqueProprietarioRepository extends EntityRepository
     }
 
     public function buildMovimentacaoEstoque($codProduto, $grade, $qtd, $operacao, $codPessoa, $codOperacao = null, $codOperacaoDetalhe = null, $cnpjGrupoExcluir = array()){
-
+        
+        $saldo = $this->getSaldoProp($codProduto, $grade, $codPessoa);
+        $saldoFinal = $saldo + $qtd;
         /**
          * Verifica se é uma operação credito ou debito do estoque
          */
         if($qtd > 0){
             $this->save($codProduto, $grade, $qtd, $operacao, $saldoFinal, $codPessoa, $codOperacao, $codOperacaoDetalhe);
         }else{
-
-            $saldo = $this->getSaldoProp($codProduto, $grade, $codPessoa);
-            $saldoFinal = $saldo + $qtd;
-
             /**
              * Verifica se esse proprietario tem saldo suficiente para atender o solicitado
              */
@@ -85,7 +83,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                         $this->buildMovimentacaoEstoque($codProduto, $grade, $qtd, $operacao, $vetProprietario[0]['COD_PESSOA'], $codOperacao, $codOperacaoDetalhe, $cnpjGrupoExcluir);
                         break;
                     }else{
-                        throw new \Exception('Estoque Proprietario insuficiente.');
+                        throw new \Exception('Estoque Proprietario insuficiente.'.$codProduto);
                     }
                 }
             }
@@ -143,10 +141,17 @@ class EstoqueProprietarioRepository extends EntityRepository
 
     public function getSaldoProp($codProduto, $grade, $codPessoa){
         $sql = "SELECT * FROM ESTOQUE_PROPRIETARIO 
-                WHERE COD_PRODUTO = $codProduto AND DSC_GRADE = '$grade' AND COD_PESSOA = $codPessoa AND ROWNUM = 1
+                WHERE COD_PRODUTO = $codProduto 
+                  AND DSC_GRADE = '$grade' 
+                  AND COD_PESSOA = $codPessoa 
                 ORDER BY COD_ESTOQUE_PROPRIETARIO DESC";
-        $result = $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
-        return $result['SALDO_FINAL'];
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($result) >0) {
+            return reset($result)['SALDO_FINAL'];
+        } else {
+            return 0;
+        }
     }
 
     public function efetivaEstoquePropRecebimento($idRecebimento){
@@ -211,7 +216,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                   EP.DSC_GRADE = '$grade' AND
                   EP.COD_ESTOQUE_PROPRIETARIO IN (
                       SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO 
-                      WHERE COD_PESSOA = $idProprietario  AND
+                      WHERE COD_PESSOA = $idProprietario AND
                             COD_PRODUTO = $codProduto AND
                             DSC_GRADE = '$grade'
                       GROUP BY COD_PESSOA)

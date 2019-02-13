@@ -8,7 +8,11 @@ DECLARE
   CHECK_RESULT VARCHAR2(100);
 BEGIN
   SELECT FUNC_CHECK_SCRIPT('02-integracao-recebimento-enderecamento-finalizado.sql', '') INTO CHECK_RESULT FROM DUAL ;
+<<<<<<< HEAD
   IF (CHECK_RESULT <> 'TRUE') THEN
+=======
+  IF (CHECK_RESULT <> 'TRUE') THEN 
+>>>>>>> correcaoproprietario
     DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
   ELSE 
         INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7','02-integracao-recebimento-enderecamento-finalizado.sql');
