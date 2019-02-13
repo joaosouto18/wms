@@ -87,7 +87,7 @@ class RelatorioPaletes extends Pdf
         $this->Cell(18,5,$palete,0,0);
         $this->Cell(18,5,$embalagemEn->getProduto()->getId(),0,0);
         $this->Cell(30,5,$embalagemEn->getProduto()->getGrade(),0,0);
-        $this->Cell(105,5,$embalagemEn->getProduto()->getDescricao(),0,0);
+        $this->Cell(105,5,substr($embalagemEn->getProduto()->getDescricao(),0,45),0,0);
         $this->Cell(25,5,$enderecoSelecionado,0,0);
         $this->Cell(13,5,$produtosEn[0]->getQtd(),0,0);
         $this->Cell(25,5,$enderecoPicking,0,0);
