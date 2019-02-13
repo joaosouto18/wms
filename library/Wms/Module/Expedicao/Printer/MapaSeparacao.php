@@ -1553,11 +1553,11 @@ class MapaSeparacao extends eFPDF {
                 if ($tipoQebra == true) {
                     $this->Cell(23, 4, $dscEndereco, 0, 0);
                     $this->Cell(13, 4, $codProduto, 0, 0);
-                    $this->Cell(98, 4, $descricao, 0, 0);
-                    $this->Cell(30, 4, $codigoBarras, 0, 0,'C');
-                    $this->Cell(17, 4, $embalagem, 0, 0, 'C');
+                    $this->Cell(90, 4, $descricao, 0, 0);
+                    $this->Cell(28, 4, $codigoBarras, 0, 0,'C');
+                    $this->Cell(13, 4, $embalagem, 0, 0, 'C');
                     $this->SetFont('Arial', "B", 10);
-                    $this->Cell(15, 4, $quantidade, 0, 0,'L');
+                    $this->Cell(11, 4, $quantidade, 0, 0,'L');
                     $this->Cell(15, 4, $caixas, 0, 1, 'C');
                 } else {
                     $this->Cell(23, 4, $dscEndereco, 0, 0);
@@ -1932,11 +1932,11 @@ class MapaSeparacao extends eFPDF {
             if ($tipoQebra == true) {
                 $object->Cell(23, 5, utf8_decode("Endereço"), 1, 0);
                 $object->Cell(13, 5, utf8_decode("Cod."), 1, 0);
-                $object->Cell(98, 5, utf8_decode("Produto"), 1, 0);
-                $object->Cell(30, 5, utf8_decode("Cod. Barras"), 1, 0);
-                $object->Cell(15, 5, utf8_decode("Emb."), 1, 0);
-                $object->Cell(17, 5, utf8_decode("Qtd."), 1, 0);
-                $object->Cell(17, 5, utf8_decode("Caixas"), 1, 1);
+                $object->Cell(90, 5, utf8_decode("Produto"), 1, 0);
+                $object->Cell(28, 5, utf8_decode("Cod. Barras"), 1, 0);
+                $object->Cell(13, 5, utf8_decode("Emb."), 1, 0);
+                $object->Cell(11, 5, utf8_decode("Qtd."), 1, 0);
+                $object->Cell(15, 5, utf8_decode("Caixas"), 1, 1);
             } else {
                 $object->Cell(23, 5, utf8_decode("Endereço"), 1, 0);
                 $object->Cell(13, 5, utf8_decode("Cod."), 1, 0);
