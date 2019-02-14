@@ -1477,7 +1477,7 @@ class RecebimentoRepository extends EntityRepository {
                 ->andWhere('os.dataFinal is not NULL ')
                 ->setParameter(1, $idRecebimento);
 
-        $ordensServico = $dql->getQuery()->getOneOrNullResult();
+        $ordensServico = $dql->getQuery()->getFirstResult();
 
         if ($ordensServico) {
             return array(

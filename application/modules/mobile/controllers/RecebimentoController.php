@@ -123,7 +123,7 @@ class Mobile_RecebimentoController extends Action
             $this->view->idRecebimento = $idRecebimento;
             $this->view->error = $this->getRequest()->getParam('error');
         } catch (\Exception $e) {
-            $this->_helper->messenger('error', $e->getMessage());
+            $this->addFlashMessage('error', $e->getMessage());
             $this->redirect('conferencia-recebimento', 'ordem-servico');
         }
 
