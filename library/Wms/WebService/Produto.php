@@ -319,6 +319,7 @@ class Wms_WebService_Produto extends Wms_WebService {
 
                     if ($encontrouEmbalagem == false) {
                         $embalagemArray['ativarDesativar'] = false;
+                        $embalagemArray['codigoBarras'] = null;
                     } else {
                         $embalagemArray['ativarDesativar'] = true;
                     }
