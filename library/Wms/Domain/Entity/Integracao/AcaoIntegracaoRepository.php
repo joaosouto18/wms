@@ -309,6 +309,22 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $this->_em->rollback();
             $this->_em->clear();
+
+            $url = $_SERVER['REQUEST_URI'];
+            $andamentoEn = new AcaoIntegracaoAndamento();
+            $andamentoEn->setAcaoIntegracao($acaoEn);
+            $andamentoEn->setIndSucesso($sucess);
+            $andamentoEn->setUrl($url);
+            $andamentoEn->setDestino($destino);
+            $andamentoEn->setDthAndamento(new \DateTime());
+            $andamentoEn->setObservacao($observacao);
+            $andamentoEn->setErrNumber($errNumber);
+            $andamentoEn->setTrace($trace);
+            if ($sucess != "S") {
+                $andamentoEn->setQuery($query);
+            }
+            $this->_em->persist($andamentoEn);
+            $this->_em->flush();
         }
 
         try {
@@ -329,7 +345,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->beginTransaction();
             $iniciouBeginTransaction = true;
 
-            if (($tipoExecucao == "E") ) {
+            if (($tipoExecucao == "E") || ($dados == null)) {
                 /*
                  * Gravo o log apenas se estiver executando uma operação de inserção no banco de dados, seja tabela temporaria ou de produção
                  * Caso esteja inserindo na tabela temporaria, significa que fiz uma consulta no ERP, então gravo o log
