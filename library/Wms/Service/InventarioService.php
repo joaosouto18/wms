@@ -141,11 +141,13 @@ class InventarioService extends AbstractService
             /** @var InventarioNovo\InventarioEndProd $produto */
             $produto = $inventarioEndProdRepo->find($id);
 
+            /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
+            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+            $ordemServicoRepo->buscaOsProdutoExcluidoDoInventario($produto->getInventarioEndereco()->getId(), $id, $produto->getGrade(), $produto->getLote());
+
             //exclusão lógica
             $produto->setAtivo(false);
-
             $this->em->persist($produto);
-
             $this->em->flush();
 
             // se nao existir mais produtos no endereço, cancela o endereço
@@ -178,10 +180,12 @@ class InventarioService extends AbstractService
             /** @var InventarioNovo\InventarioEnderecoNovo $endereco */
             $endereco = $inventarioEnderecoRepo->find($id);
 
+            /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
+            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+            $ordemServicoRepo->buscaOsEnderecoExcluidoDoInventario($id);
+
             $endereco->setAtivo(false);
-
             $this->em->persist($endereco);
-
             $this->em->flush();
 
             // se nao existir mais endereços ativos nesse inventario, cancela o mesmo
@@ -937,11 +941,7 @@ class InventarioService extends AbstractService
 
             /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
             $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
-
-            if($invEn->getCriterio() == 'E')
-                $ordemServicoRepo->excluiOsInventarioPorEnderecoInterrompido($id);
-            else
-                $ordemServicoRepo->excluiOsInventarioPorProdutoInterrompido($id);
+            $ordemServicoRepo->excluiOs($id);
 
             $invEn->interromper();
             $this->em->persist($invEn);
