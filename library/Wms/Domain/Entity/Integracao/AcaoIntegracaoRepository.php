@@ -242,7 +242,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             //pegar os ID's das tabelas temporárias das triggers
-            if (count($result) && !is_null($acaoEn->getTabelaReferencia())) {
+            if (count($result) && !is_null($acaoEn->getTabelaReferencia()) && is_null($acaoEn->getIdAcaoRelacionada())) {
                 $idTabelaTemp = $result;
             }
 
@@ -374,14 +374,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $ids = array();
                         foreach ($idTabelaTemp as $key => $value){
                             $ids[] = $value['ID'];
-                            if(count($ids) == $max){
-                                $ids = implode(',',$ids);
-                                $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-                                $this->_em->getConnection()->query($query)->execute();
-                                unset($ids);
-                            }
                         }
-                        if(count($ids) < $max){
+                        if(count($ids) <= $max){
                             $ids = implode(',',$ids);
                             $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
                             $this->_em->getConnection()->query($query)->execute();
