@@ -280,7 +280,10 @@ class AcaoIntegracaoRepository extends EntityRepository
                             'dados'=>$result));
                     $result = $integracaoService->processaAcao();
 
-                    if (is_string($result)) $observacao = $result; $sucess = "N";
+                    if (is_string($result)) {
+                        $observacao = $result;
+                        $sucess = "N";
+                    }
                 }
 
             }
@@ -378,10 +381,12 @@ class AcaoIntegracaoRepository extends EntityRepository
                         foreach ($idTabelaTemp as $key => $value){
                             $ids[] = $value['ID'];
                             if(count($ids) == $max){
-                                $ids = implode(',',$ids);
-                                $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-                                $this->_em->getConnection()->query($query)->execute();
-                                unset($ids);
+                                if (!is_string($result)) {
+                                    $ids = implode(',',$ids);
+                                    $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                                    $this->_em->getConnection()->query($query)->execute();
+                                    unset($ids);
+                                }
                             }
                         }
                         if(count($ids) < $max){
