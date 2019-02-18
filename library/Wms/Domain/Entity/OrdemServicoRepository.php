@@ -414,7 +414,7 @@ class OrdemServicoRepository extends EntityRepository
         return $ordemServicoEn;
     }
 
-    public function buscaOsProdutoExcluidoDoInventario($idEndereco, $idProduto, $grade, $lote){
+    public function buscaOsProdutoExcluidoDoInventario($idEndereco, $idProduto, $grade, $lote, $volume){
         $sql = "select 
                       os.cod_os codOs
                       from ordem_servico os            
@@ -428,8 +428,16 @@ class OrdemServicoRepository extends EntityRepository
 
                         if(!empty($grade))
                             $sql .= " and icep.dsc_grade = $grade";
+                        else
+                            $sql .= " and icep.dsc_grade = null";
                         if(!empty($lote))
                             $sql .= " and icep.dsc_lote = '$lote'";
+                        else
+                            $sql .= " and icep.dsc_lote = null";
+                        if(!empty($volume))
+                            $sql .= " and icep.cod_produto_volume = $volume";
+                        else
+                            $sql .= " and icep.cod_produto_volume = null";
 
         $idOs = $this->getEntityManager()->getConnection()->query($sql)->execute();
 
