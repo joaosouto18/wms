@@ -944,6 +944,7 @@ class Importacao
             $produtoRepo->atualizaPesoProduto($idProduto,$grade);
             return true;
         }catch (\Exception $e){
+            var_dump($e->getMessage().'-');exit;
             throw new \Exception($e->getMessage());
         }
     }

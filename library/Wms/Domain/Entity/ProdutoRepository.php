@@ -562,7 +562,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 $peso = null;
             }
         } catch (\Exception $e) {
-            var_dump($e->getMessage());exit;
             throw new \Exception($e->getMessage());
         }
 
