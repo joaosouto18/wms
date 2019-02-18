@@ -217,6 +217,7 @@ class Integracao {
                     return $this->processaPedidoAcumulado($this->_dados);
             }
         } catch (\Exception $e) {
+            var_dump($e->getMessage().'-_');exit;
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
         }
     }
@@ -937,7 +938,6 @@ class Integracao {
             $this->_em->clear();
             return true;
         } catch (\Exception $e) {
-            var_dump($e->getMessage().'-_-');exit;
             throw new \Exception($e->getMessage());
         }
     }
