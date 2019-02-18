@@ -326,9 +326,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $this->_em->flush();
             }
 
-//            $this->_em->beginTransaction();
-            $iniciouBeginTransaction = true;
-
             if (($tipoExecucao == "E") || ($dados == null)) {
                 /*
                  * Gravo o log apenas se estiver executando uma operação de inserção no banco de dados, seja tabela temporaria ou de produção
@@ -355,6 +352,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             }
 
+            $this->_em->beginTransaction();
+            $iniciouBeginTransaction = true;
 
             if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
                 /*
@@ -399,7 +398,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         } catch (\Exception $e) {
             if ($iniciouBeginTransaction == true) {
-//                $this->_em->rollback();
+                $this->_em->rollback();
             }
             throw new \Exception($e->getMessage());
 
