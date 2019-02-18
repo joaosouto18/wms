@@ -329,7 +329,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->beginTransaction();
             $iniciouBeginTransaction = true;
 
-            if (($tipoExecucao == "E") || ($dados == null)) {
+            if (($tipoExecucao == "E") ) {
                 /*
                  * Gravo o log apenas se estiver executando uma operação de inserção no banco de dados, seja tabela temporaria ou de produção
                  * Caso esteja inserindo na tabela temporaria, significa que fiz uma consulta no ERP, então gravo o log
@@ -352,7 +352,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                     $this->_em->persist($andamentoEn);
                     $this->_em->flush();
-                    $this->_em->commit();
                 }
             }
 
@@ -394,6 +393,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             $this->_em->flush();
+            $this->_em->commit();
             $this->_em->clear();
 
         } catch (\Exception $e) {
