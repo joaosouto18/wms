@@ -869,8 +869,14 @@ class PaleteRepository extends EntityRepository {
             $recebido = $qtdRecebida[$key];
             if ($recebido['COD_NORMA_PALETIZACAO'] == $enderecado['COD_NORMA_PALETIZACAO']
                 && $recebido["LOTE"] == $enderecado["LOTE"]){
-                $qtdRecebida[$key]['QTD'] = $recebido['QTD'] - $enderecado['QTD'];
-                $qtdRecebida[$key]['PESO'] = $recebido['PESO'] - $enderecado['PESO'];
+                $qtd = Math::subtrair($recebido['QTD'], $enderecado['QTD']);
+                $peso = Math::subtrair($recebido['PESO'], $enderecado['PESO']);
+                if ($qtd > 0 || $peso > 0) {
+                    $qtdRecebida[$key]['QTD'] = $qtd;
+                    $qtdRecebida[$key]['PESO'] = $peso;
+                } else {
+                    unset($qtdRecebida[$key]);
+                }
             }
         }
 
