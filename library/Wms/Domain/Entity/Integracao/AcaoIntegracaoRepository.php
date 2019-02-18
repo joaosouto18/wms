@@ -291,6 +291,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $query = "";
         } catch (\Exception $e) {
 
+            var_dump($e->getMessage().'-_-_-');exit;
             $observacao = $e->getMessage();
             $sucess = "N";
 
