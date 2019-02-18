@@ -937,6 +937,7 @@ class Integracao {
             $this->_em->clear();
             return true;
         } catch (\Exception $e) {
+            var_dump($e->getMessage().'-_-');exit;
             throw new \Exception($e->getMessage());
         }
     }
