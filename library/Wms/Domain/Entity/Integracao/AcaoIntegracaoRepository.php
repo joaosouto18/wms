@@ -279,11 +279,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                             'tipoExecucao' => $tipoExecucao,
                             'dados'=>$result));
                     $result = $integracaoService->processaAcao();
-
-                    if (is_string($result)) {
-                        $observacao = $result;
-                        $sucess = "N";
-                    }
                 }
 
             }
@@ -381,21 +376,21 @@ class AcaoIntegracaoRepository extends EntityRepository
                         foreach ($idTabelaTemp as $key => $value){
                             $ids[] = $value['ID'];
                             if(count($ids) == $max){
-                                if ($sucess == 'S') {
+//                                if ($sucess == 'S') {
                                     $ids = implode(',',$ids);
                                     $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
                                     $this->_em->getConnection()->query($query)->execute();
                                     unset($ids);
-                                }
+//                                }
                             }
                         }
                         if(count($ids) < $max){
-                            if ($sucess == 'S') {
+//                            if ($sucess == 'S') {
                                 $ids = implode(',',$ids);
                                 $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
                                 $this->_em->getConnection()->query($query)->execute();
                                 unset($ids);
-                            }
+//                            }
                         }
                     }
                 }

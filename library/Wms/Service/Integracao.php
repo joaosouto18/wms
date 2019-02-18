@@ -932,9 +932,6 @@ class Integracao {
                     }
                 }
                 $result = $importacaoService->saveProdutoWs($this->_em, $repositorios, $produto['codProduto'], $produto['dscProduto'], $produto['dscGrade'], $produto['codFabricante'], '1', $produto['codClasse'], $produto['indPesoVariavel'], $embalagensObj, $produto['refFornecedor'], $produto['possuiValidade'], $produto['diasVidaUtil']);
-
-                if (is_string($result)) return $result;
-
             }
             $this->_em->flush();
             $this->_em->clear();
