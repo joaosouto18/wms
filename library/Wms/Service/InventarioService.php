@@ -146,6 +146,7 @@ class InventarioService extends AbstractService
             $ordemServicoRepo->buscaOsProdutoExcluidoDoInventario($produto->getInventarioEndereco()->getId(), $id, $produto->getGrade(), $produto->getLote());
 
             //exclusão lógica
+
             $produto->setAtivo(false);
             $this->em->persist($produto);
             $this->em->flush();

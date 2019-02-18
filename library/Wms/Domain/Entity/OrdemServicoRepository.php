@@ -428,7 +428,6 @@ class OrdemServicoRepository extends EntityRepository
 
                         if(!empty($grade))
                             $sql .= " and icep.dsc_grade = $grade";
-
                         if(!empty($lote))
                             $sql .= " and icep.dsc_lote = '$lote'";
 
