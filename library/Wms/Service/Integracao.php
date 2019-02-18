@@ -456,7 +456,7 @@ class Integracao {
             $valorEstoque = array_change_key_case($valorEstoque, CASE_UPPER);
             $qtdIteracoes = $qtdIteracoes + 1;
 
-            $codProduto = utf8_encode($valorEstoque['COD_PRODUTO']);
+            $codProduto = trim(utf8_encode($valorEstoque['COD_PRODUTO']));
             $grade = "UNICA";
 
             if (isset($valorEstoque['GRADE'])) {
@@ -931,7 +931,10 @@ class Integracao {
                         $embalagensObj[] = $emb;
                     }
                 }
-                $importacaoService->saveProdutoWs($this->_em, $repositorios, $produto['codProduto'], $produto['dscProduto'], $produto['dscGrade'], $produto['codFabricante'], '1', $produto['codClasse'], $produto['indPesoVariavel'], $embalagensObj, $produto['refFornecedor'], $produto['possuiValidade'], $produto['diasVidaUtil']);
+                $result = $importacaoService->saveProdutoWs($this->_em, $repositorios, $produto['codProduto'], $produto['dscProduto'], $produto['dscGrade'], $produto['codFabricante'], '1', $produto['codClasse'], $produto['indPesoVariavel'], $embalagensObj, $produto['refFornecedor'], $produto['possuiValidade'], $produto['diasVidaUtil']);
+
+                if (is_string($result)) return $result;
+
             }
             $this->_em->flush();
             $this->_em->clear();

@@ -325,7 +325,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                             $arrItens[] = "item $produto[idProduto] / $produto[grade] ($produto[dsc_elemento])";
                         }
                         $str = implode(", ", $arrItens);
-                        throw new \Exception("O codigo de barras $codigoBarras já está cadastrado: $str");
+                        return "O codigo de barras $codigoBarras já está cadastrado: $str";
                     }
                 }
 

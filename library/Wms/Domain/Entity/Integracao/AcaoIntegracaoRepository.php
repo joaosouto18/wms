@@ -247,7 +247,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             if ($acaoEn->getidAcaoRelacionada() != null) {
-                if (count($result) >0) {
+                if (count($result) > 0) {
 
                     $acaoRelacionadaEn = $this->find($acaoEn->getidAcaoRelacionada());
 
@@ -263,11 +263,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
 
                     }
-
-
-//                    $options = array();
-//                    $options[] = implode(",", $dadosFiltrar);
-//                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
                 } else {
                     $result = true;
                 }
@@ -284,6 +279,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                             'tipoExecucao' => $tipoExecucao,
                             'dados'=>$result));
                     $result = $integracaoService->processaAcao();
+
+                    if (is_string($result)) $observacao = $result; $sucess = "N";
                 }
 
             }

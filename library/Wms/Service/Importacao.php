@@ -938,7 +938,8 @@ class Importacao
                 }
 
                 $embalagensPersistir = array('embalagens'=>$embalagensArray);
-                $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true, false,$repositorios);
+                $result = $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true, false,$repositorios);
+                if (is_string($result)) return $result;
             }
 
             $produtoRepo->atualizaPesoProduto($idProduto,$grade);
