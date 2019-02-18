@@ -394,7 +394,6 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             $this->_em->flush();
-            $this->_em->commit();
             $this->_em->clear();
 
         } catch (\Exception $e) {
