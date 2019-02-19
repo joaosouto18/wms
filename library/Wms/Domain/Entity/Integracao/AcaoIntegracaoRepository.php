@@ -315,8 +315,8 @@ class AcaoIntegracaoRepository extends EntityRepository
             $errNumber = $e->getCode();
             $result = $e->getMessage();
 
-            $this->_em->rollback();
-            $this->_em->clear();
+//            $this->_em->rollback();
+//            $this->_em->clear();
 
 
         }
@@ -354,7 +354,6 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && count($erros) > 0) {
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
-//                unset($erros);
             }
 
             if (($tipoExecucao == "E") || ($dados == null)) {
