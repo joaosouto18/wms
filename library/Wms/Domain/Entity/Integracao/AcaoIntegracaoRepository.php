@@ -334,7 +334,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $this->_em->beginTransaction();
 
-            if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados)) {
+            if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && count($erros) > 0) {
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
                 unset($erros);
             }
