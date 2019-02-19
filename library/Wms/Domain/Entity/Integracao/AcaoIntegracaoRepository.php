@@ -324,6 +324,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $acaoEn->setIndExecucao("N");
                 $this->_em->persist($acaoEn);
                 $this->_em->flush();
+                $this->_em->commit();
             }
 
             if (($tipoExecucao == "E") || ($dados == null)) {
