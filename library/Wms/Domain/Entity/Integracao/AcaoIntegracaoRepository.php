@@ -315,8 +315,11 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->rollback();
             $this->_em->clear();
 
-            $erros = array();
 
+        }
+
+        try {
+            $erros = array();
             if (!is_null($options)) {
                 foreach ($options as $chave => $codigo) {
                     $erros[$chave]['codigo']    = $codigo;
@@ -329,9 +332,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $erros[$chave]['trace']     = $trace;
                 }
             }
-        }
-
-        try {
 
             $iniciouBeginTransaction = false;
             if ($this->_em->isOpen() == false) {
