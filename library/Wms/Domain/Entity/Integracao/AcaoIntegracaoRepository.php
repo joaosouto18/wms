@@ -302,9 +302,6 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $result = $e->getMessage();
 
-            $this->_em->rollback();
-            $this->_em->clear();
-
             $erros = array();
             foreach ($options as $codigo) {
                 $erros[]['codigo']    = $codigo;
@@ -324,16 +321,34 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             }
 
+            $this->_em->rollback();
+            $this->_em->clear();
+
         }
 
-        if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados)) {
-            $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
-            unset($erros);
+        try {
+
+            $this->_em->beginTransaction();
+
+            if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados)) {
+                $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
+                unset($erros);
+            }
+
+            $this->_em->commit();
+            $this->_em->clear();
+
+        } catch (\Exception $e) {
+
+            $this->_em->rollback();
+            $this->_em->clear();
+            
         }
 
-        if (is_null($acaoEn->getIdAcaoRelacionada())) {
+
+//        if (is_null($acaoEn->getIdAcaoRelacionada())) {
 //            self::setTabelasTemporarias($acaoEn,$erros);
-        }
+//        }
 
         return $result;
     }
