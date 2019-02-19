@@ -202,7 +202,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         try {
 
-//            $this->_em->beginTransaction();
+            $this->_em->beginTransaction();
 
             if ($existeOutraTransacaoAtiva == 'S') {
                 throw new \Exception("Integração em andamento em outro processo");
@@ -284,8 +284,8 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             $this->_em->flush();
-//            $this->_em->commit();
-//            $this->_em->clear();
+            $this->_em->commit();
+            $this->_em->clear();
             $errNumber = "";
             $trace = "";
             $query = "";
@@ -307,8 +307,8 @@ class AcaoIntegracaoRepository extends EntityRepository
             $errNumber = $e->getCode();
             $result = $e->getMessage();
 
-//            $this->_em->rollback();
-//            $this->_em->clear();
+            $this->_em->rollback();
+            $this->_em->clear();
         }
 
         try {
@@ -354,14 +354,14 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             }
 
-            foreach ($idTabelaTemp as $key => $value) {
-                foreach ($options as $codigo) {
-                    if ($sucess == 'N' && $options == $value) {
-                        unset($idTabelaTemp[$key]);
-                    }
-
-                }
-            }
+//            foreach ($idTabelaTemp as $key => $value) {
+//                foreach ($options as $codigo) {
+//                    if ($sucess == 'N' && $options == $value) {
+//                        unset($idTabelaTemp[$key]);
+//                    }
+//
+//                }
+//            }
 
 
             if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
