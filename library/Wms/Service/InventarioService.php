@@ -143,7 +143,7 @@ class InventarioService extends AbstractService
 
             /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
             $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
-            $ordemServicoRepo->buscaOsProdutoExcluidoDoInventario($produto->getInventarioEndereco()->getId(), $id, $produto->getGrade(), $produto->getLote());
+            $ordemServicoRepo->buscaOsProdutoExcluidoDoInventario($produto->getInventarioEndereco()->getId(), $id, $produto->getGrade(), $produto->getLote(), $produto->getProdutoVolume()->getId());
 
             //exclusão lógica
 
