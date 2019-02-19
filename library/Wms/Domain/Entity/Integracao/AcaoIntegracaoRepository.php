@@ -265,8 +265,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
 
                     }
-                    exit;
-
 
 //                    $options = array();
 //                    $options[] = implode(",", $dadosFiltrar);
@@ -316,9 +314,10 @@ class AcaoIntegracaoRepository extends EntityRepository
             $errNumber = $e->getCode();
             $result = $e->getMessage();
 
-            $this->_em->rollback();
-            $this->_em->clear();
-
+            if (is_null($acaoEn->getIdAcaoRelacionada())) {
+                $this->_em->rollback();
+                $this->_em->clear();
+            }
 
         }
 
