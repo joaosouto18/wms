@@ -178,6 +178,8 @@ class AcaoIntegracaoRepository extends EntityRepository
         $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltroRepository $acaoFiltroRepo */
         $acaoFiltroRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracaoFiltro');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoAndamentoRepository $acaoAndamentoRepo */
+        $acaoAndamentoRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracaoAndamento');
         $idAcao = $acaoEn->getId();
 
         $this->_em->clear();
@@ -190,6 +192,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $existeOutraTransacaoAtiva = "N";
         $iniciouTransacaoAtual = 'N';
         $integracaoService = null;
+        $erros = array();
 
         if ($acaoEn->getIndExecucao() == 'S') {
             $existeOutraTransacaoAtiva = "S";
@@ -257,12 +260,11 @@ class AcaoIntegracaoRepository extends EntityRepository
                             $dadosFiltrar[] = $row['COD_PRODUTO'];
                         }
                     }
+
                     foreach ($dadosFiltrar as $value) {
                         $options = array();
                         $options[] = $value;
                         $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
-                        var_dump($result);
-
                     }
                 } else {
                     $result = true;
@@ -292,35 +294,26 @@ class AcaoIntegracaoRepository extends EntityRepository
             $query = "";
         } catch (\Exception $e) {
 
-            $observacao = $e->getMessage();
-            $sucess = "N";
-
-            var_dump($observacao); exit;
-            $prev = $e->getPrevious();
-            if ( !empty($prev) ) {
-                while ($prev != null) {
-                    $prev = $prev->getPrevious();
-                    if ($prev != null) {
-                        $trace = $prev->getTraceAsString();
+            $erros = array();
+            foreach ($options as $codigo) {
+                $erros[]['codigo']    = $codigo;
+                $erros[]['message']   = $e->getMessage();
+                $erros[]['success']   = 'N';
+                $erros[]['previous']  = $e->getPrevious();
+                $erros[]['errNumber'] = $e->getCode();
+                $erros[]['destino']   = $destino;
+                $erros[]['query']     = $query;
+                if (!empty($e->getPrevious())) {
+                    while (null !== $e->getPrevious()) {
+                        $prev = $prev->getPrevious();
+                        if ($prev != null) {
+                            $erros[]['trace'] = $prev->getTraceAsString();
+                        }
                     }
                 }
             }
 
-            $errNumber = $e->getCode();
             $result = $e->getMessage();
-
-            $this->_em->rollback();
-            $this->_em->clear();
-        }
-
-        try {
-
-            $iniciouBeginTransaction = false;
-            if ($this->_em->isOpen() == false) {
-                $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
-            }
-
-            $acaoEn = $this->_em->find("wms:Integracao\AcaoIntegracao",$idAcao);
 
             if ($iniciouTransacaoAtual == "S") {
                 $acaoEn->setIndExecucao("N");
@@ -328,29 +321,33 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $this->_em->flush();
             }
 
-            if (($tipoExecucao == "E") || ($dados == null)) {
-                /*
-                 * Gravo o log apenas se estiver executando uma operação de inserção no banco de dados, seja tabela temporaria ou de produção
-                 * Caso esteja inserindo na tabela temporaria, significa que fiz uma consulta no ERP, então gravo o log
-                 * Caso esteja inserindo nas tabelas de produção, sinifica que ou estou gravando um dado em tempo real, ou fiz uma consulta no ERP, então preciso gravar log
-                 * Ações de listagem de resumo aonde os dados ja são informados, não é necessario gravar log
-                 */
-                if ($acaoEn->getIndUtilizaLog() == 'S') {
-                    $url = $_SERVER['REQUEST_URI'];
-                    $andamentoEn = new AcaoIntegracaoAndamento();
-                    $andamentoEn->setAcaoIntegracao($acaoEn);
-                    $andamentoEn->setIndSucesso($sucess);
-                    $andamentoEn->setUrl($url);
-                    $andamentoEn->setDestino($destino);
-                    $andamentoEn->setDthAndamento(new \DateTime());
-                    $andamentoEn->setObservacao($observacao);
-                    $andamentoEn->setErrNumber($errNumber);
-                    $andamentoEn->setTrace($trace);
-                    if ($sucess != "S") {
-                        $andamentoEn->setQuery($query);
-                    }
-                    $this->_em->persist($andamentoEn);
-                }
+            $this->_em->rollback();
+            $this->_em->clear();
+        }
+
+        if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados)) {
+            $acaoAndamentoRepo->setAcaoIntegracaoAndamento($acaoEn,$erros);
+            unset($erros);
+        }
+
+        if (is_null($acaoEn->getIdAcaoRelacionada())) {
+//            self::setTabelasTemporarias($acaoEn,$erros);
+        }
+
+        return $result;
+    }
+
+
+
+
+
+    private function setTabelasTemporarias($acaoEn,$erros)
+    {
+        try {
+
+            $iniciouBeginTransaction = false;
+            if ($this->_em->isOpen() == false) {
+                $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
             }
 
             $this->_em->beginTransaction();
@@ -398,8 +395,6 @@ class AcaoIntegracaoRepository extends EntityRepository
             throw new \Exception($e->getMessage());
 
         }
-
-        return $result;
     }
 
 }
