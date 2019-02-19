@@ -305,19 +305,19 @@ class AcaoIntegracaoRepository extends EntityRepository
             $erros = array();
 
             if (!is_null($options)) {
-                foreach ($options as $codigo) {
-                    $erros[]['codigo']    = $codigo;
-                    $erros[]['message']   = $e->getMessage();
-                    $erros[]['success']   = 'N';
-                    $erros[]['previous']  = $e->getPrevious();
-                    $erros[]['errNumber'] = $e->getCode();
-                    $erros[]['destino']   = $destino;
-                    $erros[]['query']     = $query;
+                foreach ($options as $chave => $codigo) {
+                    $erros[$chave]['codigo']    = $codigo;
+                    $erros[$chave]['message']   = $e->getMessage();
+                    $erros[$chave]['success']   = 'N';
+                    $erros[$chave]['previous']  = $e->getPrevious();
+                    $erros[$chave]['errNumber'] = $e->getCode();
+                    $erros[$chave]['destino']   = $destino;
+                    $erros[$chave]['query']     = $query;
                     if (!empty($e->getPrevious())) {
                         while (null !== $e->getPrevious()) {
                             $prev = $prev->getPrevious();
                             if ($prev != null) {
-                                $erros[]['trace'] = $prev->getTraceAsString();
+                                $erros[$chave]['trace'] = $prev->getTraceAsString();
                             }
                         }
                     }

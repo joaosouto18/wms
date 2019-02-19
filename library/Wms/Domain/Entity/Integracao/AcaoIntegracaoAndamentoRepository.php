@@ -35,7 +35,6 @@ class AcaoIntegracaoAndamentoRepository extends EntityRepository
          * Ações de listagem de resumo aonde os dados ja são informados, não é necessario gravar log
          */
 
-        var_dump($erros); exit;
         $acaoEn = $this->_em->find("wms:Integracao\AcaoIntegracao", $idAcao);
         foreach ($erros as $erro) {
             if ($acaoEn->getIndUtilizaLog() == 'S') {
