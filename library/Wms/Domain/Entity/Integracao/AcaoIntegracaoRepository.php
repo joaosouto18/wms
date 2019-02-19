@@ -178,6 +178,8 @@ class AcaoIntegracaoRepository extends EntityRepository
         $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltroRepository $acaoFiltroRepo */
         $acaoFiltroRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracaoFiltro');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoAndamentoRepository $acaoAndamentoRepo */
+        $acaoAndamentoRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracaoAndamento');
         $idAcao = $acaoEn->getId();
 
         $this->_em->clear();
@@ -294,6 +296,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $errNumber = "";
             $trace = "";
             $query = "";
+            $prev = "";
         } catch (\Exception $e) {
 
             $observacao = $e->getMessage();
