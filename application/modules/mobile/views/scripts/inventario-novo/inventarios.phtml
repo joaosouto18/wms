@@ -522,7 +522,7 @@
                 });
             }
 
-            if (contSelecioando.vazio) {
+            if (contEndSelecionado.vazio) {
                 $("#btn-finalizar").text("Finalizar Endereço Vazio")
             } else {
                 $("#btn-finalizar").text("Finalizar Endereço")
@@ -725,6 +725,7 @@
                 }
             ).done(function( result ) {
                 if (result.status === "ok") {
+                    contEndSelecionado.vazio = false;
                     notificar("success", result.response);
                 } else {
                     notificar("error", result.exception)

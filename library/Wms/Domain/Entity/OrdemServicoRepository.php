@@ -439,7 +439,7 @@ class OrdemServicoRepository extends EntityRepository
                         else
                             $sql .= " and icep.cod_produto_volume = null";
 
-        $idOs = $this->getEntityManager()->getConnection()->query($sql)->execute();
+        $idOs = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         if(!empty($idOs))
             $this->excluiOs($idOs);
@@ -450,17 +450,17 @@ class OrdemServicoRepository extends EntityRepository
                     from ordem_servico os            
                       inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os
                       inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end                                        
-                    where ice.cod_inventario_endereco_novo = $idEndereco                      
+                    where ice.cod_inventario_endereco = $idEndereco                      
                       and os.dth_final_atividade is null";
 
-        $idOs = $this->getEntityManager()->getConnection()->query($sql)->execute();
+        $idOs = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         if(!empty($idOs))
             $this->excluiOs($idOs);
     }
 
     public function excluiOsInventarioCancelado($idInventario){
-        $sql = "select os.cod_os 
+        $sql = "select os.cod_os codOs
                     from ordem_servico os            
                       inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os
                       inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end 
@@ -468,7 +468,7 @@ class OrdemServicoRepository extends EntityRepository
                     where ien.cod_inventario = $idInventario
                       and os.dth_final_atividade is null";
 
-        $idOs = $this->getEntityManager()->getConnection()->query($sql)->execute();
+        $idOs = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         if(!empty($idOs))
             $this->excluiOs($idOs);
@@ -477,7 +477,7 @@ class OrdemServicoRepository extends EntityRepository
     public function excluiOs($idOs){
         $codigos = array();
         foreach ($idOs as $item) {
-            $codigos[] = $item['OS'];
+            $codigos[] = $item['CODOS'];
         }
 
         $sql = "delete from inventario_cont_end_os where cod_os in (" . implode(",", $codigos).")";
