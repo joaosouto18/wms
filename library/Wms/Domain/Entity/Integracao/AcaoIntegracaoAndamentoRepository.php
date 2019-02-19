@@ -25,7 +25,7 @@ class AcaoIntegracaoAndamentoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function setAcaoIntegracaoAndamento($acaoEn,$erros)
+    public function setAcaoIntegracaoAndamento($idAcao, $erros)
     {
 
         /*
@@ -34,6 +34,8 @@ class AcaoIntegracaoAndamentoRepository extends EntityRepository
          * Caso esteja inserindo nas tabelas de produção, sinifica que ou estou gravando um dado em tempo real, ou fiz uma consulta no ERP, então preciso gravar log
          * Ações de listagem de resumo aonde os dados ja são informados, não é necessario gravar log
          */
+
+        $acaoEn = $this->_em->find("wms:Integracao\AcaoIntegracao", $idAcao);
         foreach ($erros as $erro) {
             if ($acaoEn->getIndUtilizaLog() == 'S') {
                 $url = $_SERVER['REQUEST_URI'];

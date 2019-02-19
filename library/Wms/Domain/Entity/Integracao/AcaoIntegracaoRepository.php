@@ -294,6 +294,17 @@ class AcaoIntegracaoRepository extends EntityRepository
             $query = "";
         } catch (\Exception $e) {
 
+            if ($iniciouTransacaoAtual == "S") {
+                $acaoEn->setIndExecucao("N");
+                $this->_em->persist($acaoEn);
+                $this->_em->flush();
+            }
+
+            $result = $e->getMessage();
+
+            $this->_em->rollback();
+            $this->_em->clear();
+
             $erros = array();
             foreach ($options as $codigo) {
                 $erros[]['codigo']    = $codigo;
@@ -313,20 +324,10 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             }
 
-            $result = $e->getMessage();
-
-            if ($iniciouTransacaoAtual == "S") {
-                $acaoEn->setIndExecucao("N");
-                $this->_em->persist($acaoEn);
-                $this->_em->flush();
-            }
-
-            $this->_em->rollback();
-            $this->_em->clear();
         }
 
         if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados)) {
-            $acaoAndamentoRepo->setAcaoIntegracaoAndamento($acaoEn,$erros);
+            $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             unset($erros);
         }
 
