@@ -261,6 +261,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $options = array();
                         $options[] = $value;
                         $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+                        var_dump($result);
 
                     }
                 } else {
@@ -294,6 +295,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $observacao = $e->getMessage();
             $sucess = "N";
 
+            var_dump($observacao); exit;
             $prev = $e->getPrevious();
             if ( !empty($prev) ) {
                 while ($prev != null) {
@@ -324,7 +326,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $acaoEn->setIndExecucao("N");
                 $this->_em->persist($acaoEn);
                 $this->_em->flush();
-                $this->_em->commit();
             }
 
             if (($tipoExecucao == "E") || ($dados == null)) {
@@ -349,7 +350,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $andamentoEn->setQuery($query);
                     }
                     $this->_em->persist($andamentoEn);
-                    $this->_em->flush();
                 }
             }
 
