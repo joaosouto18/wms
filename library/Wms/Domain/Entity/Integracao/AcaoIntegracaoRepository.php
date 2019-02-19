@@ -204,7 +204,10 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         try {
 
-            $this->_em->beginTransaction();
+            if (is_null($acaoEn->getIdAcaoRelacionada())) {
+                $this->_em->beginTransaction();
+            }
+
 
             if ($existeOutraTransacaoAtiva == 'S') {
                 throw new \Exception("Integração em andamento em outro processo");
@@ -289,9 +292,12 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             }
 
-            $this->_em->flush();
-            $this->_em->commit();
-            $this->_em->clear();
+            if (is_null($acaoEn->getIdAcaoRelacionada())) {
+                $this->_em->flush();
+                $this->_em->commit();
+                $this->_em->clear();
+            }
+
             $errNumber = "";
             $trace = "";
             $query = "";
@@ -317,6 +323,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             if (is_null($acaoEn->getIdAcaoRelacionada())) {
                 $this->_em->rollback();
                 $this->_em->clear();
+
             }
 
         }
