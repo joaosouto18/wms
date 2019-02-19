@@ -294,12 +294,6 @@ class AcaoIntegracaoRepository extends EntityRepository
             $query = "";
         } catch (\Exception $e) {
 
-            if ($iniciouTransacaoAtual == "S") {
-//                $acaoEn->setIndExecucao("N");
-//                $this->_em->persist($acaoEn);
-//                $this->_em->flush();
-            }
-
             $result = $e->getMessage();
 
             $erros = array();
@@ -331,6 +325,12 @@ class AcaoIntegracaoRepository extends EntityRepository
         }
 
         try {
+
+            if ($iniciouTransacaoAtual == "S") {
+                $acaoEn->setIndExecucao("N");
+                $this->_em->persist($acaoEn);
+                $this->_em->flush();
+            }
 
             $this->_em->beginTransaction();
 
