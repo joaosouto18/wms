@@ -330,7 +330,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         try {
             $erros = array();
-            if (!is_null($options)) {
+            if (!is_null($options) && $sucess == 'N') {
                 foreach ($options as $chave => $codigo) {
                     $erros[$chave]['codigo']    = $codigo;
                     $erros[$chave]['message']   = $observacao;
