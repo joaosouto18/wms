@@ -343,6 +343,9 @@ class Mobile_Enderecamento_ManualController extends Action
                 $paleteRepo->alocaEnderecoPalete($paleteEn->getId(),$idEndereco);
                 $paleteRepo->finalizar(array($paleteEn->getId()), $idPessoa, null, $dataValidade);
 
+                $this->getServiceLocator()->getService("Palete")->removerSaldoRealocado($idRecebimento, $paleteEn);
+
+                $this->em->flush();
                 $this->addFlashMessage('success', 'Palete ' . $paleteEn->getId() . ' criado e endereçado com sucesso');
 
             } elseif (isset($params['reservas']) && !empty($params['reservas'])) {
