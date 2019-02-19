@@ -295,31 +295,35 @@ class AcaoIntegracaoRepository extends EntityRepository
         } catch (\Exception $e) {
 
             if ($iniciouTransacaoAtual == "S") {
-                $acaoEn->setIndExecucao("N");
-                $this->_em->persist($acaoEn);
-                $this->_em->flush();
+//                $acaoEn->setIndExecucao("N");
+//                $this->_em->persist($acaoEn);
+//                $this->_em->flush();
             }
 
             $result = $e->getMessage();
 
             $erros = array();
-            foreach ($options as $codigo) {
-                $erros[]['codigo']    = $codigo;
-                $erros[]['message']   = $e->getMessage();
-                $erros[]['success']   = 'N';
-                $erros[]['previous']  = $e->getPrevious();
-                $erros[]['errNumber'] = $e->getCode();
-                $erros[]['destino']   = $destino;
-                $erros[]['query']     = $query;
-                if (!empty($e->getPrevious())) {
-                    while (null !== $e->getPrevious()) {
-                        $prev = $prev->getPrevious();
-                        if ($prev != null) {
-                            $erros[]['trace'] = $prev->getTraceAsString();
+
+            if (!is_null($options)) {
+                foreach ($options as $codigo) {
+                    $erros[]['codigo']    = $codigo;
+                    $erros[]['message']   = $e->getMessage();
+                    $erros[]['success']   = 'N';
+                    $erros[]['previous']  = $e->getPrevious();
+                    $erros[]['errNumber'] = $e->getCode();
+                    $erros[]['destino']   = $destino;
+                    $erros[]['query']     = $query;
+                    if (!empty($e->getPrevious())) {
+                        while (null !== $e->getPrevious()) {
+                            $prev = $prev->getPrevious();
+                            if ($prev != null) {
+                                $erros[]['trace'] = $prev->getTraceAsString();
+                            }
                         }
                     }
                 }
             }
+
 
             $this->_em->rollback();
             $this->_em->clear();
@@ -342,7 +346,7 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $this->_em->rollback();
             $this->_em->clear();
-            
+
         }
 
 
