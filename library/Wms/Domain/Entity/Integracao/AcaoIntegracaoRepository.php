@@ -317,7 +317,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         while (null !== $e->getPrevious()) {
                             $prev = $prev->getPrevious();
                             if ($prev != null) {
-                                $erros[$chave]['trace'] = $prev->getTraceAsString();
+                                $erros[$chave]['trace'] = ($prev->getTraceAsString() != null) ?  $prev->getTraceAsString() : null;
                             }
                         }
                     }

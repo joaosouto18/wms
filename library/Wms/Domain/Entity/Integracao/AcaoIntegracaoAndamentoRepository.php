@@ -48,9 +48,7 @@ class AcaoIntegracaoAndamentoRepository extends EntityRepository
                 $andamentoEn->setObservacao($erro['message']);
                 $andamentoEn->setErrNumber($erro['errNumber']);
                 $andamentoEn->setTrace($erro['trace']);
-                if ($sucess != "S") {
-                    $andamentoEn->setQuery($erro['query']);
-                }
+                $andamentoEn->setQuery($erro['query']);
                 $this->_em->persist($andamentoEn);
                 $this->_em->flush();
             }
