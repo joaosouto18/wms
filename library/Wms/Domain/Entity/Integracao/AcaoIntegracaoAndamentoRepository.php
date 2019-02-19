@@ -50,7 +50,7 @@ class AcaoIntegracaoAndamentoRepository extends EntityRepository
 //                $andamentoEn->setTrace($erro['trace']);
                 $andamentoEn->setQuery($erro['query']);
                 $this->_em->persist($andamentoEn);
-                $this->_em->flush();
+//                $this->_em->flush();
             }
         }
         return true;

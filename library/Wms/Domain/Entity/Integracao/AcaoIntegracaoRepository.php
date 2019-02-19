@@ -314,6 +314,21 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             $this->_em->rollback();
             $this->_em->clear();
+
+            $erros = array();
+
+            if (!is_null($options)) {
+                foreach ($options as $chave => $codigo) {
+                    $erros[$chave]['codigo']    = $codigo;
+                    $erros[$chave]['message']   = $observacao;
+                    $erros[$chave]['success']   = $sucess;
+                    $erros[$chave]['previous']  = $prev;
+                    $erros[$chave]['errNumber'] = $errNumber;
+                    $erros[$chave]['destino']   = $destino;
+                    $erros[$chave]['query']     = $query;
+                    $erros[$chave]['trace']     = $trace;
+                }
+            }
         }
 
         try {
@@ -334,6 +349,11 @@ class AcaoIntegracaoRepository extends EntityRepository
             $this->_em->beginTransaction();
             $iniciouBeginTransaction = true;
 
+            if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && count($erros) > 0) {
+                $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
+//                unset($erros);
+            }
+
             if (($tipoExecucao == "E") || ($dados == null)) {
                 /*
                  * Gravo o log apenas se estiver executando uma operação de inserção no banco de dados, seja tabela temporaria ou de produção
@@ -341,22 +361,22 @@ class AcaoIntegracaoRepository extends EntityRepository
                  * Caso esteja inserindo nas tabelas de produção, sinifica que ou estou gravando um dado em tempo real, ou fiz uma consulta no ERP, então preciso gravar log
                  * Ações de listagem de resumo aonde os dados ja são informados, não é necessario gravar log
                  */
-                if ($acaoEn->getIndUtilizaLog() == 'S') {
-                    $url = $_SERVER['REQUEST_URI'];
-                    $andamentoEn = new AcaoIntegracaoAndamento();
-                    $andamentoEn->setAcaoIntegracao($acaoEn);
-                    $andamentoEn->setIndSucesso($sucess);
-                    $andamentoEn->setUrl($url);
-                    $andamentoEn->setDestino($destino);
-                    $andamentoEn->setDthAndamento(new \DateTime());
-                    $andamentoEn->setObservacao($observacao);
-                    $andamentoEn->setErrNumber($errNumber);
-                    $andamentoEn->setTrace($trace);
-                    if ($sucess != "S") {
-                        $andamentoEn->setQuery($query);
-                    }
-                    $this->_em->persist($andamentoEn);
-                }
+//                if ($acaoEn->getIndUtilizaLog() == 'S') {
+//                    $url = $_SERVER['REQUEST_URI'];
+//                    $andamentoEn = new AcaoIntegracaoAndamento();
+//                    $andamentoEn->setAcaoIntegracao($acaoEn);
+//                    $andamentoEn->setIndSucesso($sucess);
+//                    $andamentoEn->setUrl($url);
+//                    $andamentoEn->setDestino($destino);
+//                    $andamentoEn->setDthAndamento(new \DateTime());
+//                    $andamentoEn->setObservacao($observacao);
+//                    $andamentoEn->setErrNumber($errNumber);
+//                    $andamentoEn->setTrace($trace);
+//                    if ($sucess != "S") {
+//                        $andamentoEn->setQuery($query);
+//                    }
+//                    $this->_em->persist($andamentoEn);
+//                }
             }
 
 
