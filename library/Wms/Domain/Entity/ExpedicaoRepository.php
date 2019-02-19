@@ -1808,14 +1808,8 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
-                $statusAntigo = $expedicaoEn->getStatus();
-                $statusEmFinalizacao = $this->getEntityManager()->getRepository('wms:Util\Sigla')->findOneBy(array('id' => Expedicao::STATUS_EM_FINALIZACAO));
-
-                $expedicaoEn->setStatus($statusEmFinalizacao);
-                $expedicaoEn->setCodStatus($statusEmFinalizacao->getId());
-
-                $this->getEntityManager()->persist($expedicaoEn);
-                $this->getEntityManager()->flush();
+                $statusAntigo = $expedicaoEn->getCodStatus();
+                $this->changeStatusExpedicao($expedicaoEn->getId(), $statusAntigo);
             }
 
             $codCargaExterno = $this->validaCargaFechada($idExpedicao);
@@ -1945,13 +1939,7 @@ class ExpedicaoRepository extends EntityRepository {
             if ($transacao == true) $this->getEntityManager()->rollback();
 
             if ($statusAntigo != null) {
-
-                $expedicaoEn->setStatus($statusAntigo);
-                $expedicaoEn->setCodStatus($statusAntigo->getId());
-
-                $this->getEntityManager()->persist($expedicaoEn);
-                $this->getEntityManager()->flush();
-
+                $this->changeStatusExpedicao($expedicaoEn->getId(), $statusAntigo);
             }
 
             return $e->getMessage();
@@ -4791,8 +4779,13 @@ class ExpedicaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function changeStatusExpedicao($idsExpedicoes, $processando = 'N') {
+    public function changeSituacaoExpedicao($idsExpedicoes, $processando = 'N') {
         $sql = "UPDATE EXPEDICAO SET IND_PROCESSANDO = '$processando' WHERE COD_EXPEDICAO IN ($idsExpedicoes)";
+        $this->_em->getConnection()->query($sql)->execute();
+    }
+
+    public function changeStatusExpedicao($expedicao, $codStatus) {
+        $sql = "UPDATE EXPEDICAO SET COD_STATUS = $codStatus WHERE COD_EXPEDICAO = $expedicao";
         $this->_em->getConnection()->query($sql)->execute();
     }
 

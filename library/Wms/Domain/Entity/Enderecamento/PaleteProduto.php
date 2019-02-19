@@ -183,7 +183,7 @@ class PaleteProduto
     }
 
     /**
-     * @param mixed $uma
+     * @param Palete $uma
      */
     public function setUma($uma)
     {
@@ -191,7 +191,7 @@ class PaleteProduto
     }
 
     /**
-     * @return mixed
+     * @return Palete
      */
     public function getUma()
     {

@@ -92,7 +92,7 @@ class Expedicao_OndaRessuprimentoController extends Action
             $expedicoesSelecionadas = $expedicoes;
             $result = $expedicaoRepo->verificaDisponibilidadeEstoquePedido($expedicoesSelecionadas, true);
 
-            $expedicaoRepo->changeStatusExpedicao($expedicoes, 'S');
+            $expedicaoRepo->changeSituacaoExpedicao($expedicoes, 'S');
 
             $this->em->beginTransaction();
             if (count($result) > 0) {
@@ -193,7 +193,7 @@ class Expedicao_OndaRessuprimentoController extends Action
             $return['response'][] = ['msg' => "Falha gerando ressuprimento. " . $e->getMessage(), 'link' => null];
             $return['expedicoes'] = null;
         }
-        $expedicaoRepo->changeStatusExpedicao($expedicoesSelecionadas, 'N');
+        $expedicaoRepo->changeSituacaoExpedicao($expedicoesSelecionadas, 'N');
         $this->_helper->json($return);
     }
 

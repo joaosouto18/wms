@@ -2004,4 +2004,22 @@ class PaleteRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
     }
 
+    public function getPaletesByStatus($recebimento, $produto, $grade, $volume = null, $lote = null, $status = Palete::STATUS_RECEBIDO)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("pp")
+            ->from("wms:Enderecamento\PaleteProduto", "pp")
+            ->innerJoin("pp.uma", "p")
+            ->where("p.recebimento = $recebimento")
+            ->andWhere("pp.codProduto = '$produto'")
+            ->andWhere("pp.grade = '$grade'")
+            ->andWhere("p.status = $status");
+
+        if (!empty($volume)) $dql->andWhere("pp.volume = $volume");
+        if (!empty($lote)) $dql->andWhere("pp.lote = '$lote'");
+
+        $dql->orderBy("p.id", "DESC");
+
+        return $dql->getQuery()->getResult();
+    }
 }
