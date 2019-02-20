@@ -363,6 +363,9 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             }
 
+            if (!isset($codigoNaoAtualizar)) {
+                $codigoNaoAtualizar = array();
+            }
             if (!is_null($erros)) {
                 foreach ($erros as $erro) {
                     if (!in_array($erro['codigo'], $codigoNaoAtualizar)) {
@@ -372,7 +375,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
-                var_dump($codigosNaoAtualizar);
+                var_dump($codigoNaoAtualizar);
                 var_dump($idTabelaTemp);
                 exit;
 
