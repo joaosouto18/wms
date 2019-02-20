@@ -343,7 +343,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $naoAtualizar[] = $codigo;
                 }
             }
-            apc_store($naoAtualizar);
+            apc_store(0, $naoAtualizar);
 
             $iniciouBeginTransaction = false;
             if ($this->_em->isOpen() == false) {
