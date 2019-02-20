@@ -65,7 +65,7 @@ class Web_ImprimirController extends Action
     {
         $quantidadeByPage = null;
         $unico = false;
-        if (($modelo == 4) || ($modelo == 6) || $modelo == 12) {
+        if (($modelo == 4) || ($modelo == 6) || $modelo == 13) {
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(110, 60));
         } elseif ($modelo == 7) {
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(100, 75));
