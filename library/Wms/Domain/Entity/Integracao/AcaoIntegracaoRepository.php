@@ -340,6 +340,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $erros[$chave]['destino']   = $destino;
                     $erros[$chave]['query']     = $query;
                     $erros[$chave]['trace']     = $trace;
+
+                    $naoAtualizar[] = $codigo;
                 }
             }
 
@@ -363,21 +365,16 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             }
 
-//            if (!isset($codigoNaoAtualizar)) {
-//                $codigoNaoAtualizar = array();
-//            }
-//            if (!is_null($erros)) {
-//                foreach ($erros as $erro) {
-//                    if (!in_array($erro['codigo'], $codigoNaoAtualizar)) {
-//                        $codigoNaoAtualizar[] = $erro['codigo'];
-//                    }
-//                }
-//            }
-
-            if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
-
-//                self::setTabelasTemporarias($acaoEn,$codigosNaoAtualizar,$idTabelaTemp);
+            if (isset($naoAtualizar)) {
+                if ($tipoExecucao == 'E' && $destino == 'P' && $acaoEn->getTipoControle() == 'F') {
+                    if (is_array($naoAtualizar)) {
+                        self::setTabelasTemporarias($acaoEn,$naoAtualizar,$idTabelaTemp);
+                        unset($naoAtualizar);
+                    }
+                }
             }
+
+
 
             if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
                 /*
@@ -392,7 +389,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             }
-            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+/*            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
                 if ($sucess == 'S') {
                     if(!empty($idTabelaTemp)) {
 
@@ -415,7 +412,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         }
                     }
                 }
-            }
+            }*/
 
             $this->_em->flush();
             $this->_em->commit();
@@ -432,15 +429,6 @@ class AcaoIntegracaoRepository extends EntityRepository
         return $result;
     }
 
-
-
-
-
-
-
-
-
-
     private function setTabelasTemporarias($acaoEn,$codigoNaoAtualizar,$idTabelaTemp)
     {
         try {
@@ -455,26 +443,26 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             if(!empty($idTabelaTemp)) {
 
-//                $naoIraoAtualizar = array();
-//                if (!is_null($codigoNaoAtualizar)) {
-//                    $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigoNaoAtualizar) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-//                    $naoIraoAtualizar = $this->_em->getConnection()->query($query)->fetchAll();
-//                }
+                $codigoNaoAtualizar = implode(',',$codigoNaoAtualizar);
 
+                $naoIraoAtualizar = array();
+                if (!is_null($codigoNaoAtualizar)) {
+                    $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigoNaoAtualizar) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                    $naoIraoAtualizar = $this->_em->getConnection()->query($query)->fetchAll();
+                }
 
                 $max = 900;
                 $ids = array();
                 foreach ($idTabelaTemp as $key => $value){
-                    $ids[] = $value['ID'];
+                    foreach ($naoIraoAtualizar as $idNaoAtualizar) {
+                        if ($value['ID'] == $idNaoAtualizar['ID']) {
+                            unset($value['ID']);
+                        }
+                    }
+                    if (isset($value['ID'])) {
+                        $ids[] = $value['ID'];
+                    }
                 }
-
-//                foreach ($ids as $key => $id) {
-//                    foreach ($naoIraoAtualizar as $idNaoAtualizar) {
-//                        if ($id == $idNaoAtualizar['ID']) {
-//                            unset($ids[$key]);
-//                        }
-//                    }
-//                }
 
                 if(count($ids) <= $max){
                     $ids = implode(',',$ids);
@@ -496,8 +484,4 @@ class AcaoIntegracaoRepository extends EntityRepository
 
         }
     }
-
-
-
-
 }
