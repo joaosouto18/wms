@@ -413,7 +413,7 @@ class EtiquetaEndereco extends Pdf
 
         $this->SetFont('Arial', 'B', $tamanhoCodigo);
 //        $this->Cell(30,13,"",0,0, 'C');
-        $this->Cell(0,13,reset($produto)['codProduto'] . ' - ' . reset($produto['descricao']) ,0,1, 'C');
+        $this->Cell(0,13,reset($produto)['codProduto'] . ' - ' . reset($produto)['descricao'] ,0,1, 'C');
         $this->Cell(17,13,"",0,0);
         $this->SetFont('Arial', 'B', 12);
         $this->Cell($wRua,13,utf8_decode("RUA"),0,0);
