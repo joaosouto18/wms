@@ -454,7 +454,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             if(!empty($idTabelaTemp)) {
 
                 $naoIraoAtualizar = array();
-                if (is_null($codigoNaoAtualizar)) {
+                if (!is_null($codigoNaoAtualizar)) {
                     $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigoNaoAtualizar) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
                     $naoIraoAtualizar = $this->_em->getConnection()->query($query)->fetchAll();
                 }
