@@ -364,14 +364,14 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             }
 
-            if (isset($naoAtualizar)) {
+            /*if (isset($naoAtualizar)) {
                 if ($tipoExecucao == 'E' && $destino == 'P' && $acaoEn->getTipoControle() == 'F') {
                     if (is_array($naoAtualizar)) {
                         self::setTabelasTemporarias($acaoEn,$naoAtualizar,$idTabelaTemp);
                         unset($naoAtualizar);
                     }
                 }
-            }
+            }*/
 
 
 
@@ -388,7 +388,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             }
-/*            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
                 if ($sucess == 'S') {
                     if(!empty($idTabelaTemp)) {
 
@@ -411,7 +411,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         }
                     }
                 }
-            }*/
+            }
 
             $this->_em->flush();
             $this->_em->commit();
