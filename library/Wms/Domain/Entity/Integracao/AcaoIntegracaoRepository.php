@@ -366,7 +366,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             if ($tipoExecucao == 'E' && $destino == 'P' && $acaoEn->getTipoControle() == 'F') {
-                var_dump(apc_fetch($naoAtualizar));
+                var_dump(apc_fetch($naoAtualizar)); exit;
             }
 
             if (isset($naoAtualizar)) {
