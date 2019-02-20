@@ -365,10 +365,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             }
 
-            if ($tipoExecucao == 'E' && $destino == 'P' && $acaoEn->getTipoControle() == 'F') {
-                var_dump($naoAtualizar);exit;
-            }
-            
             if (isset($naoAtualizar)) {
                 if ($tipoExecucao == 'E' && $destino == 'P' && $acaoEn->getTipoControle() == 'F') {
                     if (is_array($naoAtualizar)) {
