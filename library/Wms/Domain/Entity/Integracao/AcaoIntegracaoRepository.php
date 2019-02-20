@@ -363,31 +363,19 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             }
 
-            if (($tipoExecucao == "E") || ($dados == null)) {
-                /*
-                 * Gravo o log apenas se estiver executando uma operação de inserção no banco de dados, seja tabela temporaria ou de produção
-                 * Caso esteja inserindo na tabela temporaria, significa que fiz uma consulta no ERP, então gravo o log
-                 * Caso esteja inserindo nas tabelas de produção, sinifica que ou estou gravando um dado em tempo real, ou fiz uma consulta no ERP, então preciso gravar log
-                 * Ações de listagem de resumo aonde os dados ja são informados, não é necessario gravar log
-                 */
-//                if ($acaoEn->getIndUtilizaLog() == 'S') {
-//                    $url = $_SERVER['REQUEST_URI'];
-//                    $andamentoEn = new AcaoIntegracaoAndamento();
-//                    $andamentoEn->setAcaoIntegracao($acaoEn);
-//                    $andamentoEn->setIndSucesso($sucess);
-//                    $andamentoEn->setUrl($url);
-//                    $andamentoEn->setDestino($destino);
-//                    $andamentoEn->setDthAndamento(new \DateTime());
-//                    $andamentoEn->setObservacao($observacao);
-//                    $andamentoEn->setErrNumber($errNumber);
-//                    $andamentoEn->setTrace($trace);
-//                    if ($sucess != "S") {
-//                        $andamentoEn->setQuery($query);
-//                    }
-//                    $this->_em->persist($andamentoEn);
-//                }
+            if (!is_null($erros)) {
+                $codigoNaoAtualizar = array();
+                foreach ($erros as $erro) {
+                    if (!in_array($erro['codigo'], $codigoNaoAtualizar)) {
+                        $codigoNaoAtualizar[] = $erro['codigo'];
+                    }
+                }
+                $codigoNaoAtualizar = implode(',',$codigoNaoAtualizar);
             }
 
+            if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+                self::setTabelasTemporarias($acaoEn,$codigoNaoAtualizar);
+            }
 
             if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
                 /*
@@ -401,22 +389,90 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $this->_em->persist($acaoEn);
                     }
                 }
-            } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+            }
+//            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+//                if ($sucess == 'S') {
+//                    if(!empty($idTabelaTemp)) {
+//
+//                        $max = 900;
+//                        $ids = array();
+//                        foreach ($idTabelaTemp as $key => $value){
+//                            $ids[] = $value['ID'];
+//                            if(count($ids) == $max){
+//                                $ids = implode(',',$ids);
+//                                $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+//                                $this->_em->getConnection()->query($query)->execute();
+//                                unset($ids);
+//                            }
+//                        }
+//                        if(count($ids) < $max){
+//                            $ids = implode(',',$ids);
+//                            $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+//                            $this->_em->getConnection()->query($query)->execute();
+//                            unset($ids);
+//                        }
+//                    }
+//                }
+//            }
+
+            $this->_em->flush();
+            $this->_em->commit();
+            $this->_em->clear();
+
+        } catch (\Exception $e) {
+            if ($iniciouBeginTransaction == true) {
+                $this->_em->rollback();
+            }
+            throw new \Exception($e->getMessage());
+
+        }
+
+        return $result;
+    }
+
+
+
+
+
+
+
+
+
+
+    private function setTabelasTemporarias($acaoEn,$codigoNaoAtualizar)
+    {
+        try {
+
+            $iniciouBeginTransaction = false;
+            if ($this->_em->isOpen() == false) {
+                $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
+            }
+
+            $this->_em->beginTransaction();
+            $iniciouBeginTransaction = true;
+
+            if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
                 if ($sucess == 'S') {
                     if(!empty($idTabelaTemp)) {
+
+                        $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigoNaoAtualizar) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                        $naoIraoAtualizar = $this->_em->getConnection()->query($query)->fetchAll();
 
                         $max = 900;
                         $ids = array();
                         foreach ($idTabelaTemp as $key => $value){
                             $ids[] = $value['ID'];
-                            if(count($ids) == $max){
-                                $ids = implode(',',$ids);
-                                $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-                                $this->_em->getConnection()->query($query)->execute();
-                                unset($ids);
+                        }
+
+                        foreach ($ids as $key => $id) {
+                            foreach ($naoIraoAtualizar as $idNaoAtualizar) {
+                                if ($id == $idNaoAtualizar['ID']) {
+                                    unset($ids[$key]);
+                                }
                             }
                         }
-                        if(count($ids) < $max){
+
+                        if(count($ids) <= $max){
                             $ids = implode(',',$ids);
                             $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
                             $this->_em->getConnection()->query($query)->execute();
@@ -437,8 +493,9 @@ class AcaoIntegracaoRepository extends EntityRepository
             throw new \Exception($e->getMessage());
 
         }
-
-        return $result;
     }
+
+
+
 
 }
