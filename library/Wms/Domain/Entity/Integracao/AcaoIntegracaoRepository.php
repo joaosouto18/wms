@@ -453,6 +453,10 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                 $max = 900;
                 $ids = array();
+
+                var_dump($naoIraoAtualizar);
+                var_dump($idTabelaTemp);
+
                 foreach ($idTabelaTemp as $key => $value){
                     foreach ($naoIraoAtualizar as $idNaoAtualizar) {
                         if ($value['ID'] == $idNaoAtualizar['ID']) {
@@ -463,6 +467,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $ids[] = $value['ID'];
                     }
                 }
+                var_dump($ids);exit;
 
                 if(count($ids) <= $max){
                     $ids = implode(',',$ids);
