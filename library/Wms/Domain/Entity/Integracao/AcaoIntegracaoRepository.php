@@ -375,6 +375,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+                var_dump($erros);
                 var_dump($codigoNaoAtualizar);
                 var_dump($idTabelaTemp);
                 exit;
