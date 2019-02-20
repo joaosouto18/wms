@@ -370,7 +370,9 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $codigoNaoAtualizar[] = $erro['codigo'];
                     }
                 }
-                $codigosNaoAtualizar = implode(',',$codigoNaoAtualizar);
+                if (is_array($codigoNaoAtualizar)) {
+                    $codigosNaoAtualizar = implode(',',$codigoNaoAtualizar);
+                }
             }
 
             if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
