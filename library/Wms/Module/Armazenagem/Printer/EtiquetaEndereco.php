@@ -76,6 +76,9 @@ class EtiquetaEndereco extends Pdf
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo6($produtos,$codBarras);
                     break;
+                case 12:
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
+                    $this->layoutModelo12($produtos,$codBarras);
                 case 7:
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo7($produto,$codBarras);
@@ -392,8 +395,8 @@ class EtiquetaEndereco extends Pdf
 //        $this->Cell(95,10," ",0,1);
 
     }
-/*
-    public function layoutModelo6 ($produto, $codBarras){
+
+    public function layoutModelo12 ($produto, $codBarras){
         $this->Cell(5,3,"",0,1);
         $arrEndereco = Endereco::separar($codBarras);
         $codBarras = implode('.',$arrEndereco);
@@ -437,7 +440,7 @@ class EtiquetaEndereco extends Pdf
 //        $this->Cell(95,10," ",0,1);
 
     }
-*/
+
     public function layoutModelo7($produto, $codBarras)
     {
         $this->SetFont('Arial', 'B', 12);

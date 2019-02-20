@@ -363,16 +363,16 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             }
 
-            if (!isset($codigoNaoAtualizar)) {
-                $codigoNaoAtualizar = array();
-            }
-            if (!is_null($erros)) {
-                foreach ($erros as $erro) {
-                    if (!in_array($erro['codigo'], $codigoNaoAtualizar)) {
-                        $codigoNaoAtualizar[] = $erro['codigo'];
-                    }
-                }
-            }
+//            if (!isset($codigoNaoAtualizar)) {
+//                $codigoNaoAtualizar = array();
+//            }
+//            if (!is_null($erros)) {
+//                foreach ($erros as $erro) {
+//                    if (!in_array($erro['codigo'], $codigoNaoAtualizar)) {
+//                        $codigoNaoAtualizar[] = $erro['codigo'];
+//                    }
+//                }
+//            }
 
             if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
 
