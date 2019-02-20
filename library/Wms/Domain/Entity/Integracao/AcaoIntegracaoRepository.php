@@ -364,20 +364,20 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             }
 
-            if (!is_null($erros)) {
-                foreach ($erros as $erro) {
-                    if (!in_array($erro['codigo'], $codigoNaoAtualizar)) {
-                        $codigoNaoAtualizar[] = $erro['codigo'];
-                    }
-                }
-                if (is_array($codigoNaoAtualizar)) {
-                    $codigosNaoAtualizar = implode(',',$codigoNaoAtualizar);
-                }
-            }
+//            if (!is_null($erros)) {
+//                foreach ($erros as $erro) {
+//                    if (!in_array($erro['codigo'], $codigoNaoAtualizar)) {
+//                        $codigoNaoAtualizar[] = $erro['codigo'];
+//                    }
+//                }
+//                if (is_array($codigoNaoAtualizar)) {
+//                    $codigosNaoAtualizar = implode(',',$codigoNaoAtualizar);
+//                }
+//            }
 
-            if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
-                self::setTabelasTemporarias($acaoEn,$codigosNaoAtualizar,$idTabelaTemp);
-            }
+//            if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+//                self::setTabelasTemporarias($acaoEn,$codigosNaoAtualizar,$idTabelaTemp);
+//            }
 
             if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
                 /*
@@ -392,30 +392,30 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             }
-//            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
-//                if ($sucess == 'S') {
-//                    if(!empty($idTabelaTemp)) {
-//
-//                        $max = 900;
-//                        $ids = array();
-//                        foreach ($idTabelaTemp as $key => $value){
-//                            $ids[] = $value['ID'];
-//                            if(count($ids) == $max){
-//                                $ids = implode(',',$ids);
-//                                $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-//                                $this->_em->getConnection()->query($query)->execute();
-//                                unset($ids);
-//                            }
-//                        }
-//                        if(count($ids) < $max){
-//                            $ids = implode(',',$ids);
-//                            $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-//                            $this->_em->getConnection()->query($query)->execute();
-//                            unset($ids);
-//                        }
-//                    }
-//                }
-//            }
+            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+                if ($sucess == 'S') {
+                    if(!empty($idTabelaTemp)) {
+
+                        $max = 900;
+                        $ids = array();
+                        foreach ($idTabelaTemp as $key => $value){
+                            $ids[] = $value['ID'];
+                            if(count($ids) == $max){
+                                $ids = implode(',',$ids);
+                                $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                                $this->_em->getConnection()->query($query)->execute();
+                                unset($ids);
+                            }
+                        }
+                        if(count($ids) < $max){
+                            $ids = implode(',',$ids);
+                            $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                            $this->_em->getConnection()->query($query)->execute();
+                            unset($ids);
+                        }
+                    }
+                }
+            }
 
             $this->_em->flush();
             $this->_em->commit();
@@ -455,11 +455,11 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             if(!empty($idTabelaTemp)) {
 
-                $naoIraoAtualizar = array();
-                if (!is_null($codigoNaoAtualizar)) {
-                    $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigoNaoAtualizar) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-                    $naoIraoAtualizar = $this->_em->getConnection()->query($query)->fetchAll();
-                }
+//                $naoIraoAtualizar = array();
+//                if (!is_null($codigoNaoAtualizar)) {
+//                    $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigoNaoAtualizar) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+//                    $naoIraoAtualizar = $this->_em->getConnection()->query($query)->fetchAll();
+//                }
 
 
                 $max = 900;
@@ -468,13 +468,13 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $ids[] = $value['ID'];
                 }
 
-                foreach ($ids as $key => $id) {
-                    foreach ($naoIraoAtualizar as $idNaoAtualizar) {
-                        if ($id == $idNaoAtualizar['ID']) {
-                            unset($ids[$key]);
-                        }
-                    }
-                }
+//                foreach ($ids as $key => $id) {
+//                    foreach ($naoIraoAtualizar as $idNaoAtualizar) {
+//                        if ($id == $idNaoAtualizar['ID']) {
+//                            unset($ids[$key]);
+//                        }
+//                    }
+//                }
 
                 if(count($ids) <= $max){
                     $ids = implode(',',$ids);
