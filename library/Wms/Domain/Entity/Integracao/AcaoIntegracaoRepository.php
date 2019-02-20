@@ -192,7 +192,6 @@ class AcaoIntegracaoRepository extends EntityRepository
         $existeOutraTransacaoAtiva = "N";
         $iniciouTransacaoAtual = 'N';
         $integracaoService = null;
-        $codigosNaoAtualizar = "";
 
         if ($acaoEn->getIndExecucao() == 'S') {
             $existeOutraTransacaoAtiva = "S";
@@ -364,20 +363,21 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             }
 
-//            if (!is_null($erros)) {
-//                foreach ($erros as $erro) {
-//                    if (!in_array($erro['codigo'], $codigoNaoAtualizar)) {
-//                        $codigoNaoAtualizar[] = $erro['codigo'];
-//                    }
-//                }
-//                if (is_array($codigoNaoAtualizar)) {
-//                    $codigosNaoAtualizar = implode(',',$codigoNaoAtualizar);
-//                }
-//            }
+            if (!is_null($erros)) {
+                foreach ($erros as $erro) {
+                    if (!in_array($erro['codigo'], $codigoNaoAtualizar)) {
+                        $codigoNaoAtualizar[] = $erro['codigo'];
+                    }
+                }
+            }
 
-//            if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+            if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+                var_dump($codigosNaoAtualizar);
+                var_dump($idTabelaTemp);
+                exit;
+
 //                self::setTabelasTemporarias($acaoEn,$codigosNaoAtualizar,$idTabelaTemp);
-//            }
+            }
 
             if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
                 /*
@@ -392,7 +392,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             }
-            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+/*            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
                 if ($sucess == 'S') {
                     if(!empty($idTabelaTemp)) {
 
@@ -415,7 +415,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         }
                     }
                 }
-            }
+            }*/
 
             $this->_em->flush();
             $this->_em->commit();
