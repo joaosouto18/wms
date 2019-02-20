@@ -192,6 +192,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $existeOutraTransacaoAtiva = "N";
         $iniciouTransacaoAtual = 'N';
         $integracaoService = null;
+        $codigosNaoAtualizar = "";
 
         if ($acaoEn->getIndExecucao() == 'S') {
             $existeOutraTransacaoAtiva = "S";
@@ -364,17 +365,16 @@ class AcaoIntegracaoRepository extends EntityRepository
             }
 
             if (!is_null($erros)) {
-                $codigoNaoAtualizar = array();
                 foreach ($erros as $erro) {
                     if (!in_array($erro['codigo'], $codigoNaoAtualizar)) {
                         $codigoNaoAtualizar[] = $erro['codigo'];
                     }
                 }
-                $codigoNaoAtualizar = implode(',',$codigoNaoAtualizar);
+                $codigosNaoAtualizar = implode(',',$codigoNaoAtualizar);
             }
 
             if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
-                self::setTabelasTemporarias($acaoEn,$codigoNaoAtualizar,$idTabelaTemp);
+                self::setTabelasTemporarias($acaoEn,$codigosNaoAtualizar,$idTabelaTemp);
             }
 
             if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
@@ -453,8 +453,12 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             if(!empty($idTabelaTemp)) {
 
-                $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigoNaoAtualizar) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-                $naoIraoAtualizar = $this->_em->getConnection()->query($query)->fetchAll();
+                $naoIraoAtualizar = array();
+                if (is_null($codigoNaoAtualizar)) {
+                    $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigoNaoAtualizar) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                    $naoIraoAtualizar = $this->_em->getConnection()->query($query)->fetchAll();
+                }
+
 
                 $max = 900;
                 $ids = array();
