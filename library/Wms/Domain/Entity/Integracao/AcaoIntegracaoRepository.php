@@ -343,7 +343,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $naoAtualizar[] = $codigo;
                 }
             }
-            apc_store(0, $naoAtualizar);
 
             $iniciouBeginTransaction = false;
             if ($this->_em->isOpen() == false) {
@@ -363,10 +362,6 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && count($erros) > 0) {
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
-            }
-
-            if ($tipoExecucao == 'E' && $destino == 'P' && $acaoEn->getTipoControle() == 'F') {
-                var_dump(apc_fetch($naoAtualizar)); exit;
             }
 
             if (isset($naoAtualizar)) {
