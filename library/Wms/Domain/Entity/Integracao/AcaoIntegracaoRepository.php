@@ -381,7 +381,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             }
-            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+/*            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
                 if ($sucess == 'S') {
                     if(!empty($idTabelaTemp)) {
 
@@ -405,7 +405,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             }
-
+*/
             $this->_em->flush();
             $this->_em->commit();
             $this->_em->clear();
