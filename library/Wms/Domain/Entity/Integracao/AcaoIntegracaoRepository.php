@@ -363,20 +363,9 @@ class AcaoIntegracaoRepository extends EntityRepository
             if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && count($erros) > 0) {
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             }
-//            else if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && $destino == 'P') {
-//                self::setTabelasTemporarias($acaoEn,$naoAtualizar,$idTabelaTemp);
-//            }
-
-
-            /*if (isset($naoAtualizar)) {
-                if ($tipoExecucao == 'E' && $destino == 'P' && $acaoEn->getTipoControle() == 'F') {
-                    if (is_array($naoAtualizar)) {
-                        self::setTabelasTemporarias($acaoEn,$naoAtualizar,$idTabelaTemp);
-                        unset($naoAtualizar);
-                    }
-                }
-            }*/
-
+            else if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && $destino == 'P' && $sucess == 'S') {
+                self::setTabelasTemporarias($acaoEn,$options);
+            }
 
 
             if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
@@ -432,7 +421,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         return $result;
     }
 
-    private function setTabelasTemporarias($acaoEn,$codigoNaoAtualizar,$idTabelaTemp)
+    private function setTabelasTemporarias($acaoEn,$options)
     {
         try {
 
@@ -446,32 +435,15 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             if(!empty($idTabelaTemp)) {
 
-                $codigoNaoAtualizar = implode(',',$codigoNaoAtualizar);
+                $codigo = implode(',',$options);
 
                 $naoIraoAtualizar = array();
                 if (!is_null($codigoNaoAtualizar)) {
-                    $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigoNaoAtualizar) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-                    $naoIraoAtualizar = $this->_em->getConnection()->query($query)->fetchAll();
+                    $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigo) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                    $ids = $this->_em->getConnection()->query($query)->fetchAll();
                 }
 
                 $max = 900;
-                $ids = array();
-
-                var_dump($naoIraoAtualizar);
-                var_dump($idTabelaTemp);
-
-                foreach ($idTabelaTemp as $key => $value){
-                    foreach ($naoIraoAtualizar as $idNaoAtualizar) {
-                        if ($value['ID'] == $idNaoAtualizar['ID']) {
-                            unset($value['ID']);
-                        }
-                    }
-                    if (isset($value['ID'])) {
-                        $ids[] = $value['ID'];
-                    }
-                }
-                var_dump($ids);exit;
-
                 if(count($ids) <= $max){
                     $ids = implode(',',$ids);
                     $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
