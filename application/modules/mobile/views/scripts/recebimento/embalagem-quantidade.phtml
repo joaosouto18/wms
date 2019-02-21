@@ -162,6 +162,30 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             }
         });
 
+        $("#qtdConferida-0").focusout(function () {
+            $("#totalQuantidade").text($(this).val() * $("#unidadePorEmbalagem").val());
+        });
+
+        var calcTotalLote = function () {
+            var inputQtd, inputLote = null;
+            var sumTotal = 0;
+            var rows = $(".input-row");
+            for(var k = 0; k < rows.length; k++){
+                if (!isEmpty($("#row-inputs-"+k))) {
+                    inputQtd = $("#qtdConferida-" + k);
+                    inputLote = $("#lote-" + k);
+                    if (!isEmpty(inputQtd.val()) && !isEmpty(inputLote.val())) {
+                        sumTotal += parseInt(inputQtd.val());
+                    }
+                }
+            }
+            $("#totalQuantidade").text(sumTotal);
+        };
+
+        $(".lote-input").live("focusout", function () {
+            calcTotalLote();
+        });
+
         var addNewRow = function (lastId) {
             var nextId = (lastId + 1);
             var newRow = $(
@@ -182,6 +206,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             var id = $(this).attr("id");
             $("#row-inputs-"+id).remove();
             alert("Removeu o lote na linha " + (parseInt(id)+1));
+            calcTotalLote();
         });
 
         var checkInputs = function (toNext) {
@@ -219,7 +244,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                         }
                     }
                 }
-                if (result && !toNext) {
+                if (result && !toNext && isEmpty(inputLote.val())) {
                     rows.last().remove();
                 }
             } else {
