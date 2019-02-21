@@ -362,9 +362,10 @@ class AcaoIntegracaoRepository extends EntityRepository
 
             if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && count($erros) > 0) {
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
-            } else if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && $destino == 'P') {
-                self::setTabelasTemporarias($acaoEn,$naoAtualizar,$idTabelaTemp);
             }
+//            else if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && $destino == 'P') {
+//                self::setTabelasTemporarias($acaoEn,$naoAtualizar,$idTabelaTemp);
+//            }
 
 
             /*if (isset($naoAtualizar)) {
