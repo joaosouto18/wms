@@ -437,7 +437,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             $codigo = implode(',',$options);
 
             $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigo) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-            $ids = $this->_em->getConnection()->query($query)->fetchAll();
+            $ids = $this->_em->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
             $max = 900;
             if(count($ids) <= $max){
