@@ -437,11 +437,15 @@ class AcaoIntegracaoRepository extends EntityRepository
             $codigo = implode(',',$options);
 
             $query = "SELECT ID FROM " . $acaoEn->getTabelaReferencia() . " WHERE COD_PRODUTO IN ($codigo) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-            $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
+            $ids = $this->getEntityManager()->getConnection()->query($query)->fetchAll(\PDO::FETCH_ASSOC);
 
+            $idAtualizar = array();
+            foreach ($ids as $id) {
+                $idAtualizar[] = $id['ID'];
+            }
             $max = 900;
             if(count($ids) <= $max){
-                $ids = implode(',',$ids);
+                $ids = implode(',',$idAtualizar);
                 $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
                 $this->_em->getConnection()->query($query)->execute();
                 unset($ids);
