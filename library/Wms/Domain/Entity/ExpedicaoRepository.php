@@ -1008,7 +1008,7 @@ class ExpedicaoRepository extends EntityRepository {
                                     }
 
                                     foreach ($idsElementos as $id) {
-                                        $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar] = array(
+                                        $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$loteReservar][$id] = array(
                                             'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
                                             'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
                                             'codProduto' => $codProduto,
@@ -1184,7 +1184,7 @@ class ExpedicaoRepository extends EntityRepository {
                             }
 
                             foreach ($idsElementos as $id) {
-                                $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$id][$loteReservar] = array(
+                                $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$loteReservar][$id] = array(
                                     'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
                                     'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
                                     'codProduto' => $codProduto,
@@ -4662,7 +4662,7 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function getCortePedido($expedicao) {
         $SQL = "SELECT 
-                    PP.COD_PEDIDO AS PEDIDO, 
+                    P.COD_EXTERNO AS PEDIDO, 
                     PR.COD_PRODUTO AS PRODUTO, 
                     PR.DSC_PRODUTO AS DESCRICAO, 
                     PR.DSC_GRADE AS GRADE, 

@@ -62,19 +62,32 @@ class EstoqueRepository extends EntityRepository
         $endereco = $enderecoEn->getId();
         $controlaLote = $produtoEn->getIndControlaLote();
 
-        $qtdReserva = 0;
+        $usuarioEn = null;
+        if (isset($params['usuario']) and !is_null($params['usuario'])) {
+            $usuarioEn = $params['usuario'];
+        } else {
+            $auth = \Zend_Auth::getInstance();
+            $usuarioSessao = $auth->getIdentity();
+            $pessoaRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+            $usuarioEn = $pessoaRepo->find($usuarioSessao->getId());
+        }
 
         if ($controlaLote == 'S' && ((!isset($params['lote']) || empty($params['lote'])) && empty($idInventario))) {
             throw new \Exception('Informe o Lote.');
         } elseif($controlaLote == 'S' && isset($params['lote']) && !empty($params['lote'])){
             /** @var LoteRepository $loteRepository */
             $loteRepository = $em->getRepository('wms:Produto\Lote');
-            $loteEntity = $loteRepository->verificaLote($params['lote'], $codProduto, $grade);
+            if (empty($codProduto))
+                throw new \Exception("O código do produto não foi informado!");
+            
+            $loteEntity = $loteRepository->verificaLote($params['lote'], $codProduto, $grade, $usuarioEn->getId(), (in_array($params['tipo'],[ HistoricoEstoque::TIPO_MOVIMENTACAO, HistoricoEstoque::TIPO_INVENTARIO]) && $qtd > 0));
             if(empty($loteEntity)){
                 throw new \Exception('O lote '.$params['lote'].' não pertence ao produto '.$codProduto);
             }
         }
 
+
+        $qtdReserva = 0;
         if ($saidaProduto == true) {
             $dql = "SELECT SUM(REP.QTD_RESERVADA) QTD_RESERVADA
                         FROM RESERVA_ESTOQUE RE
@@ -95,16 +108,6 @@ class EstoqueRepository extends EntityRepository
             if (count($resultado) > 0) {
                 $qtdReserva = $resultado[0]['QTD_RESERVADA'];
             }
-        }
-
-        $usuarioEn = null;
-        if (isset($params['usuario']) and !is_null($params['usuario'])) {
-            $usuarioEn = $params['usuario'];
-        } else {
-            $auth = \Zend_Auth::getInstance();
-            $usuarioSessao = $auth->getIdentity();
-            $pessoaRepo = $this->getEntityManager()->getRepository("wms:Usuario");
-            $usuarioEn = $pessoaRepo->find($usuarioSessao->getId());
         }
 
         $argsConsultaEstoque = [
