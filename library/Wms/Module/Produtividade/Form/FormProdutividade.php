@@ -44,7 +44,7 @@ class FormProdutividade extends Form
                     'DESCARREGAMENTO' => 'DESCARREGAMENTO',
                     'ENDERECAMENTO' => 'ENDERECAMENTO',
                     'RESSUPRIMENTO' => 'RESSUPRIMENTO',
-                    'SEPARACAO' => 'SEPARACAO',
+                    'SEPARACAO' => 'SEPARACAO'
                 )
             ))
             ->addElement('date', 'dataInicio', array(

@@ -240,7 +240,7 @@ class ApontamentoMapaRepository extends EntityRepository {
         }
 
         if (isset($atividade) && !empty($atividade)) {
-            $andWhere .= " AND DSC_ATIVIDADE LIKE '$atividade'";
+            $andWhere .= " AND DSC_ATIVIDADE LIKE '%$atividade%'";
         }
         if (isset($idIdentidade) && !empty($idIdentidade)) {
             $andWhere .= " AND IDENTIDADE = $idIdentidade";
