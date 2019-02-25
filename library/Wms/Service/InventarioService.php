@@ -895,6 +895,7 @@ class InventarioService extends AbstractService
      * @param $qtd
      * @param $validade
      * @param $dthEntrada
+     * @throws \Exception
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
@@ -909,7 +910,7 @@ class InventarioService extends AbstractService
         $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
 
         if ($produtoEn->getIndControlaLote() == "S" and !empty($lote) and !empty($dthEntrada)) {
-            if (empty($loteRepo->verificaLote($lote, $produtoEn->getId(), $produtoEn->getGrade(), $idUsuario)))
+            if (empty($loteRepo->verificaLote($lote, $produtoEn->getId(), $produtoEn->getGrade(), $idUsuario, true)))
                 $loteRepo->save($produtoEn->getId(), $produtoEn->getGrade(), $lote, $idUsuario);
         }
 
