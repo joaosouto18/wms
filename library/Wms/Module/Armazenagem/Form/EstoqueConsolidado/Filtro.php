@@ -8,6 +8,7 @@ class Filtro extends Form
 
     public function init()
     {
+        $repoFabricante = $this->getEm()->getRepository('wms:Fabricante');
         $repoLinhaSeparacao = $this->getEm()->getRepository('wms:Armazenagem\LinhaSeparacao');
 
         $this
@@ -15,6 +16,11 @@ class Filtro extends Form
                     'method' => 'get',
                     'class' => 'filtro',
                     'id' => 'filtro-inventario-por-rua',
+                ))
+                ->addElement('multiselect', 'fabricante', array(
+                    'label' => 'Fabricante',
+                    'style' => 'height:auto; width:100%',
+                    'multiOptions' => $repoFabricante->getIdValue()
                 ))
                ->addElement('multiselect', 'grandeza', array(
                     'label' => 'Linha Separação',
@@ -31,7 +37,7 @@ class Filtro extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
             ))
-                ->addDisplayGroup(array('grandeza', 'submit', 'exportPdf'), 'identificacao', array('legend' => 'Busca'));
+                ->addDisplayGroup(array('fabricante','grandeza', 'submit', 'exportPdf'), 'identificacao', array('legend' => 'Busca'));
     }
 
 }
