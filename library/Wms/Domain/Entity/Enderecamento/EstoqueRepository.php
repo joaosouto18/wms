@@ -908,7 +908,7 @@ class EstoqueRepository extends EntityRepository
 
         $SQLOrder = " ORDER BY LS.DSC_LINHA_SEPARACAO, P.DSC_PRODUTO";
 
-        $SQLWhere = "E.QTD > 0";
+        $SQLWhere = "WHERE E.QTD > 0";
         if (isset($params['grandeza'])) {
             $grandeza = $params['grandeza'];
             if (!empty($grandeza)) {
