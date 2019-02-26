@@ -84,6 +84,8 @@ class Expedicao_OndaRessuprimentoController extends Action
         $idsExpedicoes = $this->_getParam("expedicao");
         $expedicoes = null;
         $return = [];
+
+        $hasTransaction = false;
         try {
             if (empty($idsExpedicoes))
                 throw new \Exception("Nenhuma expedição selecionada");
@@ -95,6 +97,7 @@ class Expedicao_OndaRessuprimentoController extends Action
             $expedicaoRepo->changeSituacaoExpedicao($expedicoes, 'S');
 
             $this->em->beginTransaction();
+            $hasTransaction = true;
             if (count($result) > 0) {
                 $cortarAutomatico = $this->getSystemParameterValue("PERMISSAO_CORTE_AUTOMATICO");
 
@@ -188,7 +191,7 @@ class Expedicao_OndaRessuprimentoController extends Action
             $this->em->flush();
             $this->em->commit();
         } catch (\Exception $e) {
-            $this->em->rollback();
+            if ($hasTransaction) $this->em->rollback();
             $return['status'] = 'Error';
             $return['response'][] = ['msg' => "Falha gerando ressuprimento. " . $e->getMessage(), 'link' => null];
             $return['expedicoes'] = null;
