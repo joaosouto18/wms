@@ -1012,11 +1012,8 @@ class InventarioService extends AbstractService
                 $ends[] = $conf['DSC_DEPOSITO_ENDERECO'];
             }
 
-            if (!isset($result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['conferencias']))
-                $result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['conferencias'] = [];
-
             $result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['status'] = InventarioNovo\InventarioEnderecoNovo::$tipoStatus[$conf['COD_STATUS']];
-            array_unshift($result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['conferencias'], [
+            $result[$conf['NUM_RUA']]['enderecos'][$conf['DSC_DEPOSITO_ENDERECO']]['conferencias'][] = [
                 "contagem" => "$conf[NUM_CONTAGEM]ª Cont." . (($conf['IND_CONTAGEM_DIVERGENCIA'] == 'S') ? ' Divergência' : ''),
                 "conferente" => $conf['NOM_PESSOA'],
                 "codProduto" => $conf['COD_PRODUTO'],
@@ -1027,7 +1024,7 @@ class InventarioService extends AbstractService
                 "qtdContada" => $conf['QTD_CONTADA'],
                 "dthValidade" => $conf['DTH_VALIDADE'],
                 "dthConferencia" => $conf['DTH_CONFERENCIA']
-            ]);
+            ];
         }
 
         return $result;

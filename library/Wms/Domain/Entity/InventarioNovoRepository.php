@@ -471,7 +471,7 @@ class InventarioNovoRepository extends EntityRepository
          LEFT JOIN PRODUTO P ON P.COD_PRODUTO = ICEP.COD_PRODUTO AND P.DSC_GRADE = ICEP.DSC_GRADE
             
              WHERE INVN.COD_INVENTARIO = $idInventario
-          ORDER BY DE.NUM_RUA, ICE.NUM_SEQUENCIA, ICEP.COD_PRODUTO, ICEP.DSC_GRADE";
+          ORDER BY DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_APARTAMENTO, ICE.NUM_SEQUENCIA, ICEP.DTH_CONTAGEM, ICEP.COD_PRODUTO, ICEP.DSC_GRADE";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
