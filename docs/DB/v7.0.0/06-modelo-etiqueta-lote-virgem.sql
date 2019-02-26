@@ -1,7 +1,7 @@
 /* 
  * SCRIPT PARA: Parametro de modelo e dimensões de etiqueta
  * DATA DE CRIAÇÃO: 08/01/2019 
- * CRIADO POR: tarci
+ * CRIADO POR: tarcisio cesar
  *
  */
 DECLARE

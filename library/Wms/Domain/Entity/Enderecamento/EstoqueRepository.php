@@ -877,11 +877,12 @@ class EstoqueRepository extends EntityRepository
 
     public function getEstoqueConsolidado($params)
     {
-        $SQL = 'SELECT LS.DSC_LINHA_SEPARACAO as "Linha Separacao",
+        $SQL = 'SELECT LS.DSC_LINHA_SEPARACAO as "Linha de separação",
                        E.COD_PRODUTO as "Codigo",
                        E.DSC_GRADE as "Grade",
-                       SubSTR(P.DSC_PRODUTO,0,60) as "Descricao",
-                       MIN(E.QTD) as "Qtd"
+                       SubSTR(P.DSC_PRODUTO,0,60) as "Descrição",
+                       F.NOM_FABRICANTE as "Fabricante",
+                       MIN(E.QTD) as "Quantidade"
                   FROM (SELECT PROD.COD_PRODUTO,
                                PROD.DSC_GRADE,
                                NVL(QTD.QTD,0) as QTD
@@ -897,20 +898,29 @@ class EstoqueRepository extends EntityRepository
                            AND QTD.VOLUME = PROD.VOLUME) E
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE
                   LEFT JOIN LINHA_SEPARACAO LS ON LS.COD_LINHA_SEPARACAO = P.COD_LINHA_SEPARACAO
+                  INNER JOIN FABRICANTE F ON F.COD_FABRICANTE = P.COD_FABRICANTE
         ';
         $SQLGroup = " GROUP BY E.COD_PRODUTO,
                             E.DSC_GRADE,
                             P.DSC_PRODUTO,
+                            F.NOM_FABRICANTE,
                             LS.DSC_LINHA_SEPARACAO";
 
         $SQLOrder = " ORDER BY LS.DSC_LINHA_SEPARACAO, P.DSC_PRODUTO";
 
-        $SQLWhere = "";
+        $SQLWhere = "WHERE E.QTD > 0";
         if (isset($params['grandeza'])) {
             $grandeza = $params['grandeza'];
             if (!empty($grandeza)) {
                 $grandeza = implode(',', $grandeza);
-                $SQLWhere = " WHERE P.COD_LINHA_SEPARACAO IN ($grandeza) ";
+                $SQLWhere .= " AND P.COD_LINHA_SEPARACAO IN ($grandeza) ";
+            }
+        }
+        if (isset($params['fabricante'])) {
+            $fabricante = $params['fabricante'];
+            if (!empty($fabricante)) {
+                $fabricante = implode(',', $fabricante);
+                $SQLWhere .= " AND F.COD_FABRICANTE IN ($fabricante) ";
             }
         }
 
