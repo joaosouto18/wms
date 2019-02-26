@@ -61,7 +61,7 @@
                                 <?php
 
                                 foreach ($this->qtd as $qtds) {
-                                    if (count($this->qtd) == 1) {
+                                    if (!is_array($qtds)) {
                                         ?><div class="row"><?php echo $qtds; ?></div><?php
                                     } else {
                                         foreach ($qtds as $qtd) {
