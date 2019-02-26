@@ -56,7 +56,7 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
              ON de.cod_deposito_endereco = v.cod_deposito_endereco
            INNER JOIN pedido ped
              ON ped.cod_pedido = es.cod_pedido
-           INNER JOIN itinerario i
+            LEFT JOIN itinerario i
              ON i.cod_itinerario = ped.cod_itinerario
            INNER JOIN cliente
              ON cliente.cod_pessoa = ped.cod_pessoa
@@ -70,7 +70,7 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
              ON c.cod_carga = ped.cod_carga
            INNER JOIN sigla
              ON sigla.cod_sigla = c.cod_tipo_carga
-           INNER JOIN tipo_pedido_expedicao tpe
+            LEFT JOIN tipo_pedido_expedicao tpe
              ON tpe.COD_TIPO_PEDIDO_EXPEDICAO = ped.cod_tipo_pedido
     UNION
     SELECT es.cod_etiqueta_separacao AS codBarras,
@@ -118,7 +118,7 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
              ON de.cod_deposito_endereco = e.cod_deposito_endereco
            INNER JOIN pedido ped
              ON ped.cod_pedido = es.cod_pedido
-           INNER JOIN itinerario i
+           LEFT JOIN itinerario i
              ON i.cod_itinerario = ped.cod_itinerario
            INNER JOIN cliente
              ON cliente.cod_pessoa = ped.cod_pessoa
@@ -132,5 +132,5 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
              ON c.cod_carga = ped.cod_carga
            INNER JOIN sigla
              ON sigla.cod_sigla = c.cod_tipo_carga
-           INNER JOIN tipo_pedido_expedicao tpe
+            LEFT JOIN tipo_pedido_expedicao tpe
              ON tpe.COD_TIPO_PEDIDO_EXPEDICAO = ped.cod_tipo_pedido;
