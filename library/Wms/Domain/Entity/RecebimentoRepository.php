@@ -269,7 +269,7 @@ class RecebimentoRepository extends EntityRepository {
 
                     foreach ($qtdConferidasVolumes as $lote => $volumes) {
                         //Pega a menor quantidade de produtos completos
-                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
+                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade'], $item['produto'], $item['grade']);
                     }
 
                     if (!isset($qtdConferidas)) {
@@ -1393,25 +1393,36 @@ class RecebimentoRepository extends EntityRepository {
         return $qtdTotal;
     }
 
-    public function buscarVolumeMinimoConferidoPorProduto(array $volumesConferidos, $qtdNf) {
+    public function buscarVolumeMinimoConferidoPorProduto(array $volumesConferidos, $qtdNf, $codProduto, $gradeBuscar) {
         //Garantia de que vai retornar a menor quantidade conferida
         $minimo = 9999999999;
         $maximo = 0;
 
-        foreach ($volumesConferidos as $idProduto => $grades) {
-            foreach ($grades as $grade => $qtdConferidas) {
-                foreach ($qtdConferidas as $volume => $lotes) {
-                    foreach ($lotes as $lote => $qtd) {
-                        if ($minimo > $qtd) {
-                            $minimo = $qtd;
-                        }
+        if ($codProduto == 20009) {
+            $teste = "A";
+        }
 
-                        if ($maximo < $qtd) {
-                            $maximo = $qtd;
+        foreach ($volumesConferidos as $idProduto => $grades) {
+
+                foreach ($grades as $grade => $qtdConferidas) {
+                    if ($grade == $codProduto) {
+                        foreach ($qtdConferidas as $volume => $lotes) {
+                            if ($volume == $gradeBuscar) {
+                                foreach ($lotes as $lote => $qtd) {
+
+                                    if ($minimo > $qtd) {
+                                        $minimo = $qtd;
+                                    }
+
+                                    if ($maximo < $qtd) {
+                                        $maximo = $qtd;
+                                    }
+
+                                }
+                            }
                         }
                     }
                 }
-            }
         }
 
         //Verifica se o valor da divergência está maior que a quantidade informada na nf
