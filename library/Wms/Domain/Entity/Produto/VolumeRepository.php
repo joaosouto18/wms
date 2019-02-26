@@ -121,19 +121,23 @@ class VolumeRepository extends EntityRepository
         return $result;
     }
 
-    public function getProdutosVolumesByNorma($codNormaPaletizacao, $codProduto, $grade, $codDepositoEndereco = null) {
+    public function getProdutosVolumesByNorma($codNormaPaletizacao, $codProduto, $grade, $codDepositoEndereco = null, $returnEntity = false) {
+
+        $select = (!$returnEntity) ? "v.id COD_PRODUTO_VOLUME" : "v";
+
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select("v.id COD_PRODUTO_VOLUME")
+            ->select($select)
             ->from("wms:Produto\Volume",'v')
             ->innerJoin("v.normaPaletizacao",'np')
             ->where("v.codProduto = '$codProduto'")
             ->andWhere("v.grade = '$grade'")
-            ->andWhere("np.id = '$codNormaPaletizacao'");
+            ->andWhere("np.id = '$codNormaPaletizacao'")
+            ->andWhere('v.dataInativacao IS NULL');
         if($codDepositoEndereco != null){
             $dql->andWhere("v.endereco = '$codDepositoEndereco'");
         }
-        $result = $dql->getQuery()->getResult();
-        return $result;
+
+        return $dql->getQuery()->getResult();
     }
 
     /**
