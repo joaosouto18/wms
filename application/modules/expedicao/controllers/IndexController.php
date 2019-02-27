@@ -274,7 +274,7 @@ class Expedicao_IndexController extends Action {
                 /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
                 $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
                 $pedidos = $pedidoRepo->findBy(array('codCarga' => $cargaEn->getId()));
-                $mapaSeparacaoCargas = $ExpedicaoRepo->getMapaSeparacaoCargasByExpedicao($idExpedicao);
+                $mapaSeparacaoCargas = $ExpedicaoRepo->getMapaSeparacaoCargasByExpedicao($idExpedicao, $idCarga);
                 $codMapaSeparacaoAnterior = null;
                 $codCargaAnterior = null;
 
