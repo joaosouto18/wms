@@ -111,7 +111,7 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function getPedidoProdutoSemOnda($expedicoes, $filialExterno)
     {
-        /*$Query = "SELECT
+        $Query = "SELECT
                     E.COD_EXPEDICAO,
                     C.COD_CARGA,
                     P.COD_PEDIDO,
@@ -144,48 +144,48 @@ class ExpedicaoRepository extends EntityRepository {
                           NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0) END) > 0
                     AND E.COD_EXPEDICAO IN ($expedicoes)
                     AND P.CENTRAL_ENTREGA = $filialExterno
-                    AND P.DTH_CANCELAMENTO IS NULL";*/
+                    AND P.DTH_CANCELAMENTO IS NULL";
 
 /*CASE WHEN (ppl.lote IS NOT NULL) THEN
                 (NVL(ppl.quantidade, 0) - NVL(ppl.qtdCorte, 0))
             ELSE
                 (NVL(pp.quantidade, 0) - NVL(pp.qtdCortada, 0))
             END QTD*/
-        $dql = $this->_em->createQueryBuilder();
-        $dql->select(
-            "e.id COD_EXPEDICAO,
-                    c.id COD_CARGA,
-                    p.id COD_PEDIDO,
-                    tp.id TIPO_PEDIDO,
-                    p.codExterno COD_PED_EXT,
-                    cl.id COD_CLIENTE,
-                    pes.nome NOM_PESSOA,
-                    pr.id COD_PRACA,
-                    rt.id COD_ROTA,
-                    pp.id COD_PEDIDO_PRODUTO,
-                    CASE WHEN (ppl.lote IS NOT NULL) THEN
-                        ppl.quantidade - ppl.qtdCorte
-                    ELSE
-                        pp.quantidade - pp.qtdCortada
-                    END QTD,
-                    pp.grade DSC_GRADE,
-                    pp.codProduto COD_PRODUTO,
-                    ppl.lote DSC_LOTE,
-                    pp.fatorEmbalagemVenda FATOR_EMB_VEND")
-            ->from("wms:Expedicao\PedidoProduto", "pp")
-            ->leftJoin("wms:Expedicao\PedidoProdutoLote", "ppl", "WITH", "ppl.pedidoProduto = pp")
-            ->innerJoin("pp.pedido", "p")
-            ->innerJoin("p.tipoPedido", "tp")
-            ->innerJoin("p.carga", "c")
-            ->innerJoin("c.expedicao", "e")
-            ->innerJoin("p.pessoa", "cl")
-            ->innerJoin("cl.pessoa", "pes")
-            ->leftJoin("cl.praca", "pr")
-            ->leftJoin("cl.rota", "rt")
-            ->where("e.id IN ($expedicoes) and p.dataCancelamento is null and p.centralEntrega = $filialExterno");
+//        $dql = $this->_em->createQueryBuilder();
+//        $dql->select(
+//            "e.id COD_EXPEDICAO,
+//                    c.id COD_CARGA,
+//                    p.id COD_PEDIDO,
+//                    tp.id TIPO_PEDIDO,
+//                    p.codExterno COD_PED_EXT,
+//                    cl.id COD_CLIENTE,
+//                    pes.nome NOM_PESSOA,
+//                    pr.id COD_PRACA,
+//                    rt.id COD_ROTA,
+//                    pp.id COD_PEDIDO_PRODUTO,
+//                    CASE WHEN (ppl.lote IS NOT NULL) THEN
+//                        ppl.quantidade - ppl.qtdCorte
+//                    ELSE
+//                        pp.quantidade - NVLpp.qtdCortada
+//                    END QTD,
+//                    pp.grade DSC_GRADE,
+//                    pp.codProduto COD_PRODUTO,
+//                    ppl.lote DSC_LOTE,
+//                    pp.fatorEmbalagemVenda FATOR_EMB_VEND")
+//            ->from("wms:Expedicao\PedidoProduto", "pp")
+//            ->leftJoin("wms:Expedicao\PedidoProdutoLote", "ppl", "WITH", "ppl.pedidoProduto = pp")
+//            ->innerJoin("pp.pedido", "p")
+//            ->innerJoin("p.tipoPedido", "tp")
+//            ->innerJoin("p.carga", "c")
+//            ->innerJoin("c.expedicao", "e")
+//            ->innerJoin("p.pessoa", "cl")
+//            ->innerJoin("cl.pessoa", "pes")
+//            ->leftJoin("cl.praca", "pr")
+//            ->leftJoin("cl.rota", "rt")
+//            ->where("e.id IN ($expedicoes) and p.dataCancelamento is null and p.centralEntrega = $filialExterno");
+//        return $dql->getQuery()->getResult();
 
-        //$result = $this->getEntityManager()->getConnection()->query($Query)->fetchAll(\PDO::FETCH_ASSOC);
-        return $dql->getQuery()->getResult();
+        $result = $this->getEntityManager()->getConnection()->query($Query)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
