@@ -166,7 +166,7 @@ class ExpedicaoRepository extends EntityRepository {
 //                    CASE WHEN (ppl.lote IS NOT NULL) THEN
 //                        ppl.quantidade - ppl.qtdCorte
 //                    ELSE
-//                        pp.quantidade - NVLpp.qtdCortada
+//                        pp.quantidade - pp.qtdCortada
 //                    END QTD,
 //                    pp.grade DSC_GRADE,
 //                    pp.codProduto COD_PRODUTO,
@@ -185,7 +185,7 @@ class ExpedicaoRepository extends EntityRepository {
 //            ->where("e.id IN ($expedicoes) and p.dataCancelamento is null and p.centralEntrega = $filialExterno");
 //        return $dql->getQuery()->getResult();
 
-        $result = $this->getEntityManager()->getConnection()->query($Query)->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->getEntityManager()->getConnection()->query($Query)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
