@@ -111,7 +111,7 @@ class ExpedicaoRepository extends EntityRepository {
 
     public function getPedidoProdutoSemOnda($expedicoes, $filialExterno)
     {
-        $Query = "SELECT 
+        $Query = "SELECT
                     E.COD_EXPEDICAO,
                     C.COD_CARGA,
                     P.COD_PEDIDO,
@@ -146,8 +146,46 @@ class ExpedicaoRepository extends EntityRepository {
                     AND P.CENTRAL_ENTREGA = $filialExterno
                     AND P.DTH_CANCELAMENTO IS NULL";
 
-        $result = $this->getEntityManager()->getConnection()->query($Query)->fetchAll(\PDO::FETCH_ASSOC);
-        return $result;
+/*CASE WHEN (ppl.lote IS NOT NULL) THEN
+                (NVL(ppl.quantidade, 0) - NVL(ppl.qtdCorte, 0))
+            ELSE
+                (NVL(pp.quantidade, 0) - NVL(pp.qtdCortada, 0))
+            END QTD*/
+//        $dql = $this->_em->createQueryBuilder();
+//        $dql->select(
+//            "e.id COD_EXPEDICAO,
+//                    c.id COD_CARGA,
+//                    p.id COD_PEDIDO,
+//                    tp.id TIPO_PEDIDO,
+//                    p.codExterno COD_PED_EXT,
+//                    cl.id COD_CLIENTE,
+//                    pes.nome NOM_PESSOA,
+//                    pr.id COD_PRACA,
+//                    rt.id COD_ROTA,
+//                    pp.id COD_PEDIDO_PRODUTO,
+//                    CASE WHEN (ppl.lote IS NOT NULL) THEN
+//                        ppl.quantidade - ppl.qtdCorte
+//                    ELSE
+//                        pp.quantidade - pp.qtdCortada
+//                    END QTD,
+//                    pp.grade DSC_GRADE,
+//                    pp.codProduto COD_PRODUTO,
+//                    ppl.lote DSC_LOTE,
+//                    pp.fatorEmbalagemVenda FATOR_EMB_VEND")
+//            ->from("wms:Expedicao\PedidoProduto", "pp")
+//            ->leftJoin("wms:Expedicao\PedidoProdutoLote", "ppl", "WITH", "ppl.pedidoProduto = pp")
+//            ->innerJoin("pp.pedido", "p")
+//            ->innerJoin("p.tipoPedido", "tp")
+//            ->innerJoin("p.carga", "c")
+//            ->innerJoin("c.expedicao", "e")
+//            ->innerJoin("p.pessoa", "cl")
+//            ->innerJoin("cl.pessoa", "pes")
+//            ->leftJoin("cl.praca", "pr")
+//            ->leftJoin("cl.rota", "rt")
+//            ->where("e.id IN ($expedicoes) and p.dataCancelamento is null and p.centralEntrega = $filialExterno");
+//        return $dql->getQuery()->getResult();
+
+        return $this->getEntityManager()->getConnection()->query($Query)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -4238,20 +4276,29 @@ class ExpedicaoRepository extends EntityRepository {
             $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
             $resto = 0;
-            foreach ($result as $pedProd) {
+            foreach ($result as $key => $pedProd) {
                 //Identifica a proporção à ser cortada de cada pedido que tem o item.
                 $proporcao = Math::multiplicar(Math::dividir($pedProd['QUANTIDADE'], $dados['somatorio']), ($dados['qtdCortar']));
                 if ((end($result) == $pedProd)) {
                     //Soma à proporção do maior pedido, o somatório de frações dos outros pedidos
                     $qtdCortar =  round(Math::adicionar($proporcao, $resto));
+
+                    if (Math::compare($qtdCortar, $pedProd['QUANTIDADE'], '>')) {
+                        $qtdRealocar = Math::subtrair($qtdCortar, $pedProd['QUANTIDADE']);
+                        $qtdCortar = $pedProd['QUANTIDADE'];
+                        $itemAnterior = $result[$key-1];
+                        $bkp = $arrResult[$itemAnterior['COD_PEDIDO']][$itemAnterior['COD_PRODUTO']][$itemAnterior['DSC_GRADE']];
+                        $arrResult[$itemAnterior['COD_PEDIDO']][$itemAnterior['COD_PRODUTO']][$itemAnterior['DSC_GRADE']] = Math::adicionar($bkp, $qtdRealocar);
+                    }
                 } else {
                     //Recupera a fração da proporção
-                    $fracao = Math::subtrair($proporcao, (int)$proporcao);
+                    $fracao = Math::subtrair($proporcao, intval(strval($proporcao)));
                     //Para cortar apenas o valor inteiro dos pedidos menores
                     $qtdCortar =  Math::subtrair($proporcao, $fracao);
                     //Incrementa as frações para somar ao ultimo pedido
                     $resto = Math::adicionar($fracao, $resto);
                 }
+
                 $arrResult[$pedProd['COD_PEDIDO']][$pedProd['COD_PRODUTO']][$pedProd['DSC_GRADE']] = $qtdCortar;
             }
         }

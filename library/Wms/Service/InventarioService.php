@@ -271,11 +271,7 @@ class InventarioService extends AbstractService
                 if (json_decode($inventario['volumesSeparadamente']))
                     $elements[] = $this->em->getReference("wms:Produto\Volume", $produto['idVolume']);
                 else
-                    $elements = $this->em->getRepository("wms:Produto\Volume")->findBy([
-                        "id" => $produto['idProduto'],
-                        "grade" => $produto['grade'],
-                        "dataInativacao" => null
-                    ]);
+                    $elements = $this->em->getRepository("wms:Produto\Volume")->getProdutosVolumesByNorma($produto['norma'],  $produto['idProduto'], $produto['grade'], null, true);
             }
             elseif (isset($produto['idEmbalagem']) && !empty(json_decode($produto['idEmbalagem']))) {
                 $isEmb = true;
@@ -535,7 +531,7 @@ class InventarioService extends AbstractService
                         $estoque->getCodProduto(),
                         $estoque->getGrade(),
                         $estoque->getLote(),
-                        $estoque->getProdutoVolume()
+                        $estoque->getProdutoVolume()->getId()
                     ];
                     $elemCount = [
                         $estoque->getQtd(),
@@ -572,7 +568,7 @@ class InventarioService extends AbstractService
                         "codProduto" => $estoque->getCodProduto(),
                         "grade" => $estoque->getGrade(),
                         "lote" => $estoque->getLote(),
-                        "idVolume" => $estoque->getProdutoVolume()
+                        "idVolume" => $estoque->getProdutoVolume()->getId()
                     ];
                     $elemCount = [
                         0,

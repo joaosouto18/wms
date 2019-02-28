@@ -89,6 +89,15 @@ VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
          'Interromper inventário'
        );
 
+/* CRIAÇÃO DE ACTION DE CANCELAR DE INVENTARIO */
+
+INSERT INTO recurso_acao ( cod_recurso_acao, cod_recurso, cod_acao, dsc_recurso_acao )
+VALUES ( SQ_RECURSO_ACAO_01.NEXTVAL,
+         (SELECT COD_RECURSO FROM RECURSO WHERE NOM_RECURSO = 'inventario_novo:index'),
+         (SELECT COD_ACAO FROM ACAO WHERE NOM_ACAO = 'cancelar'),
+         'Cancelar inventário'
+       );
+
 /* CRIAÇÃO DE MODELOS DE INVENTÁRIO */
 
 INSERT INTO RECURSO (COD_RECURSO, DSC_RECURSO, COD_RECURSO_PAI, NOM_RECURSO)
