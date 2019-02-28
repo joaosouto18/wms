@@ -2016,7 +2016,7 @@ class PaleteRepository extends EntityRepository {
             ->andWhere("p.status = $status")
             ->andWhere("p.impresso = 'N'");
 
-        if (!empty($volume)) $dql->andWhere("pp.volume = $volume");
+        if (!empty($volume)) $dql->andWhere("pp.codProdutoVolume = $volume");
         if (!empty($lote)) $dql->andWhere("pp.lote = '$lote'");
 
         $dql->orderBy("p.id", "DESC");
