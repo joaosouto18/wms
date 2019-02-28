@@ -472,6 +472,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         if (isset($profundidade) && !empty($profundidade)) {
                             $embalagemEntity->setProfundidade($profundidade);
                         }
+
+                        $cubagem = str_replace('.', ',', Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
                         if (isset($cubagem) && !empty($cubagem)) {
                             $embalagemEntity->setCubagem($cubagem);
                         }
