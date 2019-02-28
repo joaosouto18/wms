@@ -154,7 +154,13 @@ class ExpedicaoRepository extends EntityRepository {
 
             if ($acaoEn == null) return false;
 
+            $cargasEn = $expedicaoEn->getCarga();
+
             $params = $acaoEn->getParametros();
+
+            if (empty($params)) {
+                return true;
+            }
 
             foreach ($cargasEn as $cargaEn) {
 
@@ -2057,6 +2063,19 @@ class ExpedicaoRepository extends EntityRepository {
 
             if ($acaoConferenciaEn == null) {
                 throw new \Exception("Ação de Verificação de Conferencia não encontrada no sistema");
+            }
+
+            $expedicaoEn = $this->find($idExpedicao);
+
+            /*
+             * Trecho de código para executar a integração apenas se estiver configurado para o tipo de pedido correto
+             */
+            if (!$this->verificaViabilidadeIntegracaoExpedicao($expedicaoEn, $acaoResumoEn)) {
+                return true;
+            }
+
+            if (!$this->verificaViabilidadeIntegracaoExpedicao($expedicaoEn, $acaoConferenciaEn)) {
+                return true;
             }
 
             foreach ($cargas as $cargaEn) {

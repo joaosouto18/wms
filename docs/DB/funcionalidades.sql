@@ -517,4 +517,5 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (518, '7.3.0', 'Melhoria: Implantação do conceito de cross-docking', '07-cross-docking.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '7.x.x', 'Correção: Sistema voltando o item para não expedir multiplo da embalagem de venda automaticamente', '', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '7.x.x', 'Melhoria: Disparando integração de cancelamento de carga em servidores diferentes', '', SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '7.x.x', 'Melhoria: Permitindo integração de comparativo de pedidos entre WMS x ERP com dois ERPs diferentes', '', SYSDATE);
 
