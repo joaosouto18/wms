@@ -4209,23 +4209,32 @@ class ExpedicaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getMapaSeparacaoCargasByExpedicao($codExpedicao, $codCarga = null)
+    public function getMapaSeparacaoCargasByExpedicao($codExpedicao, $codCarga, $qtdCargas = 1)
     {
-        $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('ms.id codMapaSeparacao, c.id codCarga')
-            ->from('wms:Expedicao\MapaSeparacao', 'ms')
-            ->innerJoin('wms:Expedicao\MapaSeparacaoPedido', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
-            ->innerJoin('msp.pedidoProduto', 'pp')
-            ->innerJoin('pp.pedido', 'p')
-            ->innerJoin('p.carga', 'c')
-            ->innerJoin('c.expedicao', 'e')
-            ->where("e.id = $codExpedicao")
-            ->groupBy('ms.id,c.id')
-            ->orderBy('ms.id', 'ASC');
-        if (isset($codCarga) && !empty($codCarga)) {
-            $sql->andWhere("c.id = $codCarga");
-        }
-        return $sql->getQuery()->getResult();
+        $SQL = "SELECT DISTINCT 
+                       MS.COD_MAPA_SEPARACAO,
+                       QTD.QTD_CARGA
+                  FROM MAPA_SEPARACAO MS
+                 INNER JOIN MAPA_SEPARACAO_PEDIDO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                 INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                 INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                 INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                 INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO  
+                  LEFT JOIN (SELECT MS.COD_MAPA_SEPARACAO, 
+                                    COUNT(DISTINCT C.COD_CARGA) as QTD_CARGA
+                               FROM MAPA_SEPARACAO MS
+                              INNER JOIN MAPA_SEPARACAO_PEDIDO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                              INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                              INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                              INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                              INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO  
+                              WHERE E.COD_EXPEDICAO = $codExpedicao
+                              GROUP BY MS.COD_MAPA_SEPARACAO
+                              ORDER BY MS.COD_MAPA_SEPARACAO) QTD ON QTD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                 WHERE E.COD_EXPEDICAO = $codExpedicao
+                   AND C.COD_CARGA = $codCarga
+                   AND NVL(QTD.QTD_CARGA,0) >= $qtdCargas";
+        return $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function getExpedicoesPD(){
