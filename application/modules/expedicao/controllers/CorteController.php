@@ -207,7 +207,6 @@ class Expedicao_CorteController extends Action {
 
                 ));
 
-                $embalagemEn = null;
                 if ($idEmbalagem >0 ) {
                     $embalagemEn = $embalagemRepo->find($idEmbalagem);
                     if ($embalagemEn == null) {

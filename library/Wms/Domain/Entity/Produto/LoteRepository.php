@@ -199,21 +199,21 @@ class LoteRepository extends EntityRepository
         }
 
         /* REPLICA O LOTE INTERNO CASO ESTEJA VINCULADO À MAIS DE 1 PRODUTO */
-//        foreach ($arrLotes as $lote => $produtos) {
-//            $loteEn = $this->findOneBy(["descricao" => $lote, "codProduto" => null, "grade" => null]);
-//            end($produtos);
-//            $last = key($produtos);
-//            reset($produtos);
-//            foreach ($produtos as $prodGrade => $var) {
-//                list($codigo, $grade) = explode($strLink, $prodGrade);
-//                if ($prodGrade == $last) {
-//                    $loteEn->setCodProduto($codigo)->setGrade($grade);
-//                    $this->_em->persist($loteEn);
-//                } else {
-//                    self::save($codigo, $grade, $lote, $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
-//                }
-//            }
-//        }
+        foreach ($arrLotes as $lote => $produtos) {
+            $loteEn = $this->findOneBy(["descricao" => $lote, "codProduto" => null, "grade" => null, 'origem', Lote::INTERNO]);
+            end($produtos);
+            $last = key($produtos);
+            reset($produtos);
+            foreach ($produtos as $prodGrade => $var) {
+                list($codigo, $grade) = explode($strLink, $prodGrade);
+                if ($prodGrade == $last) {
+                    $loteEn->setCodProduto($codigo)->setGrade($grade);
+                    $this->_em->persist($loteEn);
+                } else {
+                    self::save($codigo, $grade, $lote, $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
+                }
+            }
+        }
 
         /* PERSISTE OS REGISTROS DE ITENS DAS NFS VINCULADOS AOS RESPECTIVOS LOTES RECEBIDOS*/
         /** @var NotaFiscalItemLoteRepository $notaItemLoteRepo */
