@@ -86,7 +86,10 @@ class Web_ImprimirController extends Action
              * porem precisa imprimir apenas uma etiqueta
              */
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(85, 30));
-        }else {
+        } elseif ($modelo == 13) {
+            $etiqueta = new EtiquetaEndereco("L", 'mm',  array(100, 37));
+        }
+        else {
             $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
         }
         $etiqueta->imprimir($enderecos, $modelo, $unico, $quantidadeByPage);

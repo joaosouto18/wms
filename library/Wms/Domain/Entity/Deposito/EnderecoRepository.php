@@ -1083,17 +1083,6 @@ class EnderecoRepository extends EntityRepository {
                     $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()] = $produto;
                 }
             }
-            if (!empty($itensPickingVol)) {
-                /**
-                 * @var int $key
-                 * @var Produto\Volume $itemPinckingVol
-                 */
-                foreach ($itensPickingVol as $key => $itemPinckingVol) {
-                    $produtoEn = $itemPinckingVol->getProduto();
-                    $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()."-".$itemPinckingVol->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                        'desc' => $produtoEn->getDescricao() . " - (" . $itemPinckingVol->getDescricao() . ")", 'qtd' => 0);
-                }
-            }
 
             if (!empty($itens)) {
                 /**
