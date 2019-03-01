@@ -30,11 +30,17 @@ class Web_LoteVirgemController extends Action{
         $loteRepository = $this->_em->getRepository('wms:Produto\Lote');
         $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
         $qtd = $this->_getParam('qtdLote');
+        $loteInicio = $loteFim = null;
         for($i = 0; $i < $qtd; $i++) {
-            $loteRepository->save(null, null, null, $idPessoa, \Wms\Domain\Entity\Produto\Lote::INTERNO);
+            $lote = $loteRepository->save(null, null, null, $idPessoa, \Wms\Domain\Entity\Produto\Lote::INTERNO);
+            if ($i == 0) {
+                $loteInicio = $lote;
+            } else {
+                $loteFim = $lote;
+            }
         }
         $this->_em->flush();
-        $this->_helper->json(array('success' => 'success'));
+        $this->_helper->json(array('success' => 'success', 'loteInicio' => $loteInicio->getDescricao(), 'loteFim' => $loteFim->getDescricao()));
     }
 
     public function imprimirAjaxAction()

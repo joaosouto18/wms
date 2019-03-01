@@ -68,21 +68,26 @@ echo $this->form;
                                 title: 'Sucesso',
                                 msg: 'Lote(s) gerado(s).'
                             });
+                            $('#cadastro-movimentacao').resetForm();
+                            $("#tipoLote").val("I");
+                            $("#loteLimpo").attr('checked','checked');
+                            $("#loteInicio").val(data.loteInicio);
+                            $("#loteFim").val(data.loteFim);
+                            $('#cadastro-movimentacao').submit();
+                            $.ajax({
+                                url: URL_MODULO + '/lote-virgem/list-ajax/',
+                                type: 'post',
+                                dataType: 'html',
+                                data: $('form').serialize(),
+                                success: function (data) {
+                                    $('#estoque').html(data);
+                                    $("#imprimir").click(function () {
+                                        $('#cadastro-movimentacao').submit();
+                                        return false;
+                                    });
+                                }
+                            });
                         }
-                        $('#cadastro-movimentacao').submit();
-                        $.ajax({
-                            url: URL_MODULO + '/lote-virgem/list-ajax/',
-                            type: 'post',
-                            dataType: 'html',
-                            data: $('form').serialize(),
-                            success: function (data) {
-                                $('#estoque').html(data);
-                                $("#imprimir").click(function () {
-                                    $('#cadastro-movimentacao').submit();
-                                    return false;
-                                });
-                            }
-                        });
                     }
                 });
             }else{
