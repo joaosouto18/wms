@@ -369,7 +369,7 @@ class PaleteRepository extends EntityRepository {
                    FROM PALETE_PRODUTO GROUP BY UMA) PPL ON PPL.UMA = P.UMA                   
                    INNER JOIN PALETE_PRODUTO PP ON PP.UMA = P.UMA
                    INNER JOIN PRODUTO ON PRODUTO.COD_PRODUTO = PP.COD_PRODUTO AND PP.DSC_GRADE = PRODUTO.DSC_GRADE
-                   INNER JOIN (SELECT SUM(PP.QTD) as QTD, UMA FROM PALETE_PRODUTO PP GROUP BY UMA) QTD ON QTD.UMA = P.UMA
+                   INNER JOIN (SELECT (SUM(PP.QTD) / COUNT(DISTINCT NVL(COD_PRODUTO_VOLUME,1))) as QTD, UMA FROM PALETE_PRODUTO PP GROUP BY UMA) QTD ON QTD.UMA = P.UMA
                     LEFT JOIN (SELECT COUNT(COD_PRODUTO_VOLUME) QTD, COD_NORMA_PALETIZACAO
                                  FROM PRODUTO_VOLUME
                                 GROUP BY COD_NORMA_PALETIZACAO) QTD_VOL ON QTD_VOL.COD_NORMA_PALETIZACAO = PP.COD_NORMA_PALETIZACAO
@@ -954,19 +954,19 @@ class PaleteRepository extends EntityRepository {
         $pesoTotal = 0;
         $arrayTemp = array();
         foreach ($qtdRecebida as $key => $dados){
-            if(isset($arrayTemp[0]['QTD'])) {
-                $arrayTemp[0]['QTD'] = Math::adicionar($dados['QTD'], $arrayTemp[0]['QTD']);
-                $arrayTemp[0]['PESO'] = Math::adicionar($dados['PESO'], $arrayTemp[0]['PESO']);
+            if(isset($arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['QTD'])) {
+                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['QTD'] = Math::adicionar($dados['QTD'], $arrayTemp[0]['QTD']);
+                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['PESO'] = Math::adicionar($dados['PESO'], $arrayTemp[0]['PESO']);
             }else{
-                $arrayTemp[0]['QTD'] = $dados['QTD'];
-                $arrayTemp[0]['PESO'] = $dados['PESO'];
+                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['QTD'] = $dados['QTD'];
+                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['PESO'] = $dados['PESO'];
             }
-            $arrayTemp[0]['COD_NORMA_PALETIZACAO'] = $dados['COD_NORMA_PALETIZACAO'];
-            $arrayTemp[0]['NUM_NORMA'] = $dados['NUM_NORMA'];
-            $arrayTemp[0]['COD_UNITIZADOR'] = $dados['COD_UNITIZADOR'];
+            $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['COD_NORMA_PALETIZACAO'] = $dados['COD_NORMA_PALETIZACAO'];
+            $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['NUM_NORMA'] = $dados['NUM_NORMA'];
+            $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['COD_UNITIZADOR'] = $dados['COD_UNITIZADOR'];
             if(isset($dados['LOTE'])) {
-                $arrayTemp[0]['LOTE'][$key]['LOTE'] = $dados['LOTE'];
-                $arrayTemp[0]['LOTE'][$key]['QTD'] = $dados['QTD'];
+                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['LOTE'][$key]['LOTE'] = $dados['LOTE'];
+                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['LOTE'][$key]['QTD'] = $dados['QTD'];
             }
         }
         foreach ($arrayTemp as $unitizador) {
