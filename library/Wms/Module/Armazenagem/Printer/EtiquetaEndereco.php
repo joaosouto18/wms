@@ -193,6 +193,7 @@ class EtiquetaEndereco extends Pdf
     }
 
     public function layoutModelo13($codBarras){
+        $this->InFooter = true;
         $this->Cell(5,13,"",0,0);
         $this->SetFont('Arial', 'B', 8);
 
