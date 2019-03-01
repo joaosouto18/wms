@@ -152,9 +152,8 @@ class Enderecamento_ProdutoController extends Action
 
         /** @var \Wms\Domain\Entity\Recebimento\VQtdRecebimento $recebimentoEn */
         $recebimentoEn = $this->getEntityManager()->getRepository("wms:Recebimento\VQtdRecebimento")->findOneBy(array('codRecebimento' => $idRecebimento, 'codProduto'=>$codProduto, 'grade'=>$grade));
-        $conferenciaEn = $conferenciaRepo->findOneBy(array('recebimento'=> $idRecebimento,'codProduto'=>$codProduto,'grade'=>$grade));
 
-        if (($recebimentoEn == NULL) || ($conferenciaEn == NULL)){
+        if (empty($recebimentoEn)){
             $this->addFlashMessage('error',"Nenhuma quantidade conferida para o produto $codProduto, grade $grade");
             $this->_redirect('enderecamento/produto/index/id/'.$idRecebimento);
         }
