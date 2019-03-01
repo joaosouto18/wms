@@ -197,6 +197,7 @@ class MapaSeparacao extends eFPDF {
             $cubagemTotal = 0.0;
             /** @var Expedicao\MapaSeparacaoProduto $produto */
             foreach ($produtos as $produto) {
+                $produto = reset($produto);
                 $dscEndereco = "";
                 $embalagem = $produto->getProdutoEmbalagem();
                 $codProduto = $produto->getCodProduto();
