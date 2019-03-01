@@ -7,8 +7,13 @@
 <script>
 
     function playSound(soundfile) {
-        document.getElementById("bgSoundId").src = soundfile;
+        document.getElementById("dummy").innerHTML=
+            "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
     }
+
+    // function playSound(soundfile) {
+    //     document.getElementById("bgSoundId").src = soundfile;
+    // }
 
     function selecionar() {
         $('#qtd').select();

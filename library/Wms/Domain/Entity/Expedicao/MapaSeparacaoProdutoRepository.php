@@ -352,10 +352,12 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
     public function getMapaProduto($idMapa)
     {
+        //COUNT((CASE WHEN Bundle\Entity\Poi p.image = 1 then 1 ELSE NULL END)) AS num
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('msp')
+            ->select("msp")
             ->from('wms:Expedicao\MapaSeparacaoProduto', 'msp')
             ->leftJoin('msp.depositoEndereco', 'de')
+            ->leftJoin('wms:Deposito\Endereco\SentidoRua', 'sr', 'WITH', 'sr.rua = de.rua AND sr.deposito = de.deposito')
             ->where("msp.mapaSeparacao = $idMapa")
             ->orderBy('de.rua, de.predio, de.nivel, de.apartamento, msp.numCaixaInicio, msp.numCaixaFim');
 
