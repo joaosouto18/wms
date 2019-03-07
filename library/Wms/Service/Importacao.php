@@ -938,6 +938,7 @@ class Importacao
                 }
 
                 $embalagensPersistir = array('embalagens'=>$embalagensArray);
+                var_dump($embalagensPersistir);exit;
                 $result = $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true, false,$repositorios);
             }
 
