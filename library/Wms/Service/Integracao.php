@@ -814,10 +814,10 @@ class Integracao {
                 $indPesoVariavel = $linha['PESO_VARIAVEL'];
                 $qtdEmbalagem = $linha['QTD_EMBALAGEM'];
                 $codBarras = $linha['COD_BARRAS'];
-                $pesoEmbalagem = $linha['PESO_BRUTO_EMBALAGEM'];
-                $alturaEmbalagem = $linha['ALTURA_EMBALAGEM'];
-                $larguraEmbalagem = $linha['LARGURA_EMBALAGEM'];
-                $profundidadeEmbalagem = $linha['PROFUNDIDADE_EMBALAGEM'];
+                $pesoEmbalagem = number_format($linha['PESO_BRUTO_EMBALAGEM'],3);
+                $alturaEmbalagem = number_format($linha['ALTURA_EMBALAGEM'],3);
+                $larguraEmbalagem = number_format($linha['LARGURA_EMBALAGEM'],3);
+                $profundidadeEmbalagem = number_format($linha['PROFUNDIDADE_EMBALAGEM'],3);
                 $cubagemEmbalagem = $linha['CUBAGEM_EMBALAGEM'];
                 $embalagemAtiva = $linha['EMBALAGEM_ATIVA'];
                 $possuiValidade = (isset($linha['POSSUI_VALIDADE'])) ? $linha['POSSUI_VALIDADE'] : null;
@@ -923,10 +923,10 @@ class Integracao {
                         $emb->qtdEmbalagem = $embalagem['qtdEmbalagem'];
                         $emb->descricao = $embalagem['dscEmbalagem'];
 
-                        $emb->largura = number_format(Math::dividir(number_format($embalagem['largura'],3),1),3);
-                        $emb->altura = number_format(Math::dividir(number_format($embalagem['altura'],3),1),3);
-                        $emb->peso = number_format(Math::dividir(Math::multiplicar(number_format($pesoUnitário,3),$emb->qtdEmbalagem),1),3);
-                        $emb->profundidade = number_format(Math::dividir(Math::multiplicar(number_format($profundidadeUnitario,3), $emb->qtdEmbalagem),1),3) ;
+                        $emb->largura = number_format(Math::dividir($embalagem['largura'],1000),3);
+                        $emb->altura = number_format(Math::dividir($embalagem['altura'],1000),3);
+                        $emb->peso = number_format(Math::dividir(Math::multiplicar($pesoUnitário,$emb->qtdEmbalagem),1000),3);
+                        $emb->profundidade = number_format(Math::dividir(Math::multiplicar($profundidadeUnitario, $emb->qtdEmbalagem),1000),3) ;
 
                         $embalagensObj[] = $emb;
                     }
