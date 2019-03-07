@@ -200,6 +200,7 @@ class LoteRepository extends EntityRepository
 
         /* REPLICA O LOTE INTERNO CASO ESTEJA VINCULADO À MAIS DE 1 PRODUTO */
         foreach ($arrLotes as $lote => $produtos) {
+            /** @var Lote $loteEn */
             $loteEn = $this->findOneBy(["descricao" => $lote, "codProduto" => null, "grade" => null, 'origem' => Lote::INTERNO]);
             end($produtos);
             $last = key($produtos);
@@ -207,7 +208,8 @@ class LoteRepository extends EntityRepository
             foreach ($produtos as $prodGrade => $var) {
                 list($codigo, $grade) = explode($strLink, $prodGrade);
                 if ($prodGrade == $last) {
-                    $loteEn->setCodProduto($codigo)->setGrade($grade);
+                    $ref = $this->_em->getReference("wms:Produto", ['id' => $codigo, 'grade' => $grade]);
+                    $loteEn->setProduto($ref)->setCodProduto($codigo)->setGrade($grade);
                     $this->_em->persist($loteEn);
                 } else {
                     self::save($codigo, $grade, $lote, $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
