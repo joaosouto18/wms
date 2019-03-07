@@ -923,14 +923,15 @@ class Integracao {
                         $emb->qtdEmbalagem = $embalagem['qtdEmbalagem'];
                         $emb->descricao = $embalagem['dscEmbalagem'];
 
-                        $emb->largura = number_format(Math::dividir($embalagem['largura'],1),3);
-                        $emb->altura = number_format(Math::dividir($embalagem['altura'],1),3);
-                        $emb->peso = number_format(Math::dividir(Math::multiplicar($pesoUnitário,$emb->qtdEmbalagem),1),3);
-                        $emb->profundidade = number_format(Math::dividir(Math::multiplicar($profundidadeUnitario, $emb->qtdEmbalagem),1),3) ;
+                        $emb->largura = number_format(Math::dividir(number_format($embalagem['largura'],3),1),3);
+                        $emb->altura = number_format(Math::dividir(number_format($embalagem['altura'],3),1),3);
+                        $emb->peso = number_format(Math::dividir(Math::multiplicar(number_format($pesoUnitário,3),$emb->qtdEmbalagem),1),3);
+                        $emb->profundidade = number_format(Math::dividir(Math::multiplicar(number_format($profundidadeUnitario,3), $emb->qtdEmbalagem),1),3) ;
 
                         $embalagensObj[] = $emb;
                     }
                 }
+                var_dump($embalagensObj);exit;
                 $result = $importacaoService->saveProdutoWs($this->_em, $repositorios, $produto['codProduto'], $produto['dscProduto'], $produto['dscGrade'], $produto['codFabricante'], '1', $produto['codClasse'], $produto['indPesoVariavel'], $embalagensObj, $produto['refFornecedor'], $produto['possuiValidade'], $produto['diasVidaUtil']);
             }
             $this->_em->flush();
