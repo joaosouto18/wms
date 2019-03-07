@@ -461,16 +461,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setCodigoBarras(trim($codigoBarras));
 
                         if (isset($largura) && !empty($largura)) {
-                            $embalagemEntity->setLargura($largura);
+                            $embalagemEntity->setLargura(str_replace(',','.',$largura));
                         }
                         if (isset($altura) && !empty($altura)) {
-                            $embalagemEntity->setAltura($altura);
+                            $embalagemEntity->setAltura(str_replace(',','.',$altura));
                         }
                         if (isset($peso) && !empty($peso)) {
                             $embalagemEntity->setPeso($peso);
                         }
                         if (isset($profundidade) && !empty($profundidade)) {
-                            $embalagemEntity->setProfundidade($profundidade);
+                            $embalagemEntity->setProfundidade(str_replace(',','.',$profundidade));
                         }
 
                         $cubagem = str_replace('.', ',', Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
