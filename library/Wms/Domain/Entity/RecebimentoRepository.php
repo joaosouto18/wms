@@ -653,6 +653,16 @@ class RecebimentoRepository extends EntityRepository {
                 /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
                 $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
 
+                /** @var RecebimentoEntity\ConferenciaRepository $conferenciaRepo */
+                $conferenciaRepo = $this->_em->getRepository("wms:Recebimento\Conferencia");
+
+                $conferenciasOk = $conferenciaRepo->getProdutosConferidosLoteInterno($idRecebimento);
+
+                /** @var ProdutoEntity\LoteRepository $loteRepo */
+                $loteRepo = $this->_em->getRepository("wms:Produto\Lote");
+
+                $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $conferenciasOk);
+
                 /** @var \Wms\Domain\Entity\Enderecamento\Palete $palete */
                 foreach ($paletes as $key => $palete) {
                     /** @var \Wms\Domain\Entity\OrdemServico $osEn */
@@ -664,16 +674,6 @@ class RecebimentoRepository extends EntityRepository {
                     $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId(), false, $dataValidade);
                     $em->flush();
                 }
-
-                /** @var RecebimentoEntity\ConferenciaRepository $conferenciaRepo */
-                $conferenciaRepo = $this->_em->getRepository("wms:Recebimento\Conferencia");
-
-                $conferenciasOk = $conferenciaRepo->getProdutosConferidosLoteInterno($idRecebimento);
-
-                /** @var ProdutoEntity\LoteRepository $loteRepo */
-                $loteRepo = $this->_em->getRepository("wms:Produto\Lote");
-
-                $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $conferenciasOk);
 
                 $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
                 if($controleProprietario == 'S') {

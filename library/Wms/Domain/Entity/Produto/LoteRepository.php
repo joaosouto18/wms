@@ -200,7 +200,7 @@ class LoteRepository extends EntityRepository
 
         /* REPLICA O LOTE INTERNO CASO ESTEJA VINCULADO À MAIS DE 1 PRODUTO */
         foreach ($arrLotes as $lote => $produtos) {
-            $loteEn = $this->findOneBy(["descricao" => $lote, "codProduto" => null, "grade" => null, 'origem', Lote::INTERNO]);
+            $loteEn = $this->findOneBy(["descricao" => $lote, "codProduto" => null, "grade" => null, 'origem' => Lote::INTERNO]);
             end($produtos);
             $last = key($produtos);
             reset($produtos);
