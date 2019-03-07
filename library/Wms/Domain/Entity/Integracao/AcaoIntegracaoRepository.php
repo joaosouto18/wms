@@ -597,7 +597,9 @@ class AcaoIntegracaoRepository extends EntityRepository
             if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && count($erros) > 0) {
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             }
-            else if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && $destino == 'P' && $sucess == 'S') {
+            var_dump('abc');
+            if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && $destino == 'P' && $sucess == 'S') {
+                var_dump($sucess); exit;
                 $this->setTabelasTemporarias($acaoEn,$options);
             }
 
