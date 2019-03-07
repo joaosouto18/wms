@@ -170,7 +170,244 @@ class AcaoIntegracaoRepository extends EntityRepository
      *              R => Resumo do resultado
      * Destino => (P => Produção, T => Tabela temporária)
      */
+
     public function processaAcao($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null, $filtro = AcaoIntegracaoFiltro::DATA_ESPECIFICA, $insertAll = false) {
+        ini_set('max_execution_time', '-1');
+        ini_set('memory_limit', '-1');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
+        /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
+        $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltroRepository $acaoFiltroRepo */
+        $acaoFiltroRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracaoFiltro');
+        $idAcao = $acaoEn->getId();
+
+        $this->_em->clear();
+        $acaoEn = $this->findOneBy(array('id'=>$idAcao));
+
+        $sucess = "S";
+        $observacao = "";
+        $trace = "";
+        $query = "";
+        $existeOutraTransacaoAtiva = "N";
+        $iniciouTransacaoAtual = 'N';
+        $integracaoService = null;
+
+        if ($acaoEn->getIndExecucao() == 'S') {
+            $existeOutraTransacaoAtiva = "S";
+        } else {
+            $iniciouTransacaoAtual = 'S';
+            $acaoEn->setIndExecucao("S");
+            $this->_em->persist($acaoEn);
+            $this->_em->flush();
+        }
+
+        try {
+
+            $this->_em->beginTransaction();
+
+            if ($existeOutraTransacaoAtiva == 'S') {
+                throw new \Exception("Integração em andamento em outro processo");
+            }
+
+            $conexaoEn = $acaoEn->getConexao();
+
+            $data = $acaoEn->getDthUltimaExecucao();
+
+            if (!empty($data)) {
+                if ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
+                    if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
+                        $options[] = $data->format("Y-m-d");
+                    } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE) {
+                        $options[] = $data->format("d/m/Y H:i:s");
+                    } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MSSQL
+                        || $conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_SQLSRV) {
+                        $options[] = $data->format("Y-m-d H:i:s");
+                    }
+                }
+            }
+
+            //STRING DA QUERY DE INTEGRAÇÃO
+            if($insertAll === true){
+                $insertAll = $conexaoEn->getProvedor();
+            }
+            $query = $acaoFiltroRepo->getQuery($acaoEn, $options, $filtro, $data, $insertAll);
+            if ($dados == null) {
+                $words = explode(" ",trim($query));
+                $update = true;
+                if (strtoupper($words[0]) == "SELECT") {
+                    $update = false;
+                }
+                $result = $conexaoRepo->runQuery($query, $conexaoEn, $update);
+            } else {
+                $result = $dados;
+            }
+
+            if ($acaoEn->getidAcaoRelacionada() != null) {
+                if (count($result) >0) {
+
+                    $acaoRelacionadaEn = $this->find($acaoEn->getidAcaoRelacionada());
+
+                    $dadosFiltrar = array();
+                    foreach ($result as $row) {
+                        $dadosFiltrar[] = $row['ID'];
+                    }
+                    $options = array();
+                    $options[] = implode(",", $dadosFiltrar);
+                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+                } else {
+                    $result = true;
+                }
+            } else {
+                if (($tipoExecucao == "E") && ($destino == "T")) {
+                    $integracaoService = new Integracao($this->getEntityManager(),
+                        array('acao'=>$acaoEn,
+                            'dados'=>$result));
+                    $result = $integracaoService->salvaTemporario();
+                } else {
+                    //pegar os ID's das tabelas temporárias das triggers
+                    if (count($result) && !is_null($acaoEn->getTabelaReferencia())) {
+                        $idTabelaTemp = $result;
+                    }
+
+                    $integracaoService = new Integracao($this->getEntityManager(),
+                        array('acao'=>$acaoEn,
+                            'options'=>$options,
+                            'tipoExecucao' => $tipoExecucao,
+                            'dados'=>$result));
+                    $result = $integracaoService->processaAcao();
+                }
+
+            }
+
+            $this->_em->flush();
+            $this->_em->commit();
+            $this->_em->clear();
+            $errNumber = "";
+            $trace = "";
+            $query = "";
+        } catch (\Exception $e) {
+
+            $observacao = $e->getMessage();
+            $sucess = "N";
+
+            $prev = $e->getPrevious();
+            if ( !empty($prev) ) {
+                while ($prev != null) {
+                    $prev = $prev->getPrevious();
+                    if ($prev != null) {
+                        $trace = $prev->getTraceAsString();
+                    }
+                }
+            }
+
+            $errNumber = $e->getCode();
+            $result = $e->getMessage();
+
+            $this->_em->rollback();
+            $this->_em->clear();
+        }
+
+        try {
+
+            $iniciouBeginTransaction = false;
+            if ($this->_em->isOpen() == false) {
+                $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
+            }
+
+            $acaoEn = $this->_em->find("wms:Integracao\AcaoIntegracao",$idAcao);
+
+            if ($iniciouTransacaoAtual == "S") {
+                $acaoEn->setIndExecucao("N");
+                $this->_em->persist($acaoEn);
+                $this->_em->flush();
+            }
+
+            $this->_em->beginTransaction();
+            $iniciouBeginTransaction = true;
+
+            if (($tipoExecucao == "E") || ($dados == null)) {
+                /*
+                 * Gravo o log apenas se estiver executando uma operação de inserção no banco de dados, seja tabela temporaria ou de produção
+                 * Caso esteja inserindo na tabela temporaria, significa que fiz uma consulta no ERP, então gravo o log
+                 * Caso esteja inserindo nas tabelas de produção, sinifica que ou estou gravando um dado em tempo real, ou fiz uma consulta no ERP, então preciso gravar log
+                 * Ações de listagem de resumo aonde os dados ja são informados, não é necessario gravar log
+                 */
+                if ($acaoEn->getIndUtilizaLog() == 'S') {
+                    $url = $_SERVER['REQUEST_URI'];
+                    $andamentoEn = new AcaoIntegracaoAndamento();
+                    $andamentoEn->setAcaoIntegracao($acaoEn);
+                    $andamentoEn->setIndSucesso($sucess);
+                    $andamentoEn->setUrl($url);
+                    $andamentoEn->setDestino($destino);
+                    $andamentoEn->setDthAndamento(new \DateTime());
+                    $andamentoEn->setObservacao($observacao);
+                    $andamentoEn->setErrNumber($errNumber);
+                    $andamentoEn->setTrace($trace);
+                    if ($sucess != "S") {
+                        $andamentoEn->setQuery($query);
+                    }
+                    $this->_em->persist($andamentoEn);
+                }
+            }
+
+
+            if (($tipoExecucao == "E") && ($destino == "P") && ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) && $acaoEn->getTipoControle() == 'D') {
+                /*
+                 * Se estiver salvando os dados ja nas tabelas de produção, atualizo a data da ultima execução indicando que a operação foi finalizada para aquela data
+                 * Caso estja salvando em tabelas temporarias (com o fim de listagem e validação), a data da ultima execução não deve ser alterada dois a operação ainda não foi concluida
+                 */
+                if ($sucess=="S") {
+                    $maxDate = $integracaoService->getMaxDate();
+                    if (!empty($maxDate)) {
+                        $acaoEn->setDthUltimaExecucao($maxDate);
+                        $this->_em->persist($acaoEn);
+                    }
+                }
+            } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+                if ($sucess == 'S') {
+                    if(!empty($idTabelaTemp)) {
+
+                        $max = 900;
+                        $ids = array();
+                        foreach ($idTabelaTemp as $key => $value){
+                            $ids[] = $value['ID'];
+                            if(count($ids) == $max){
+                                $ids = implode(',',$ids);
+                                $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                                $this->_em->getConnection()->query($query)->execute();
+                                unset($ids);
+                            }
+                        }
+                        if(count($ids) < $max){
+                            $ids = implode(',',$ids);
+                            $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                            $this->_em->getConnection()->query($query)->execute();
+                            unset($ids);
+                        }
+                    }else{
+                        $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
+                        $this->_em->getConnection()->query($query)->execute();
+                    }
+                }
+            }
+
+            $this->_em->flush();
+            $this->_em->commit();
+            $this->_em->clear();
+
+        } catch (\Exception $e) {
+            if ($iniciouBeginTransaction == true) {
+                $this->_em->rollback();
+            }
+            throw new \Exception($e->getMessage());
+
+        }
+
+        return $result;
+    }
+
+
+    public function processaAcaoProduto ($acaoEn, $options = null, $tipoExecucao = "E", $destino = "P", $dados = null, $filtro = AcaoIntegracaoFiltro::DATA_ESPECIFICA, $insertAll = false) {
         ini_set('max_execution_time', '-1');
         ini_set('memory_limit', '-1');
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracao $acaoEn */
@@ -269,9 +506,6 @@ class AcaoIntegracaoRepository extends EntityRepository
 
                     }
 
-//                    $options = array();
-//                    $options[] = implode(",", $dadosFiltrar);
-//                    $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
                 } else {
                     $result = true;
                 }
@@ -364,7 +598,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $acaoAndamentoRepo->setAcaoIntegracaoAndamento($idAcao, $erros);
             }
             else if (is_null($acaoEn->getIdAcaoRelacionada()) && $tipoExecucao == 'E' && is_null($dados) && $destino == 'P' && $sucess == 'S') {
-               $this->setTabelasTemporarias($acaoEn,$options);
+                $this->setTabelasTemporarias($acaoEn,$options);
             }
 
 
@@ -381,31 +615,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             }
-/*            else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
-                if ($sucess == 'S') {
-                    if(!empty($idTabelaTemp)) {
-
-                        $max = 900;
-                        $ids = array();
-                        foreach ($idTabelaTemp as $key => $value){
-                            $ids[] = $value['ID'];
-                            if(count($ids) == $max){
-                                $ids = implode(',',$ids);
-                                $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-                                $this->_em->getConnection()->query($query)->execute();
-                                unset($ids);
-                            }
-                        }
-                        if(count($ids) < $max){
-                            $ids = implode(',',$ids);
-                            $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
-                            $this->_em->getConnection()->query($query)->execute();
-                            unset($ids);
-                        }
-                    }
-                }
-            }
-*/
             $this->_em->flush();
             $this->_em->commit();
             $this->_em->clear();
