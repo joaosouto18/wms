@@ -814,11 +814,11 @@ class Integracao {
                 $indPesoVariavel = $linha['PESO_VARIAVEL'];
                 $qtdEmbalagem = $linha['QTD_EMBALAGEM'];
                 $codBarras = $linha['COD_BARRAS'];
-                $pesoEmbalagem = number_format($linha['PESO_BRUTO_EMBALAGEM'],3);
-                $alturaEmbalagem = number_format($linha['ALTURA_EMBALAGEM'],3);
-                $larguraEmbalagem = number_format($linha['LARGURA_EMBALAGEM'],3);
-                $profundidadeEmbalagem = number_format($linha['PROFUNDIDADE_EMBALAGEM'],3);
-                $cubagemEmbalagem = $linha['CUBAGEM_EMBALAGEM'];
+                $pesoEmbalagem = (isset($linha['PESO_BRUTO_EMBALAGEM'])) ? number_format($linha['PESO_BRUTO_EMBALAGEM'],3) : null;
+                $alturaEmbalagem = (isset($linha['ALTURA_EMBALAGEM'])) ? number_format($linha['ALTURA_EMBALAGEM'],3) : null;
+                $larguraEmbalagem = (isset($linha['LARGURA_EMBALAGEM'])) ? number_format($linha['LARGURA_EMBALAGEM'],3) : null;
+                $profundidadeEmbalagem = (isset($linha['PROFUNDIDADE_EMBALAGEM'])) ? number_format($linha['PROFUNDIDADE_EMBALAGEM'],3) : null;
+                $cubagemEmbalagem = (isset($linha['CUBAGEM_EMBALAGEM'])) ? number_format($linha['CUBAGEM_EMBALAGEM'],3) : null;
                 $embalagemAtiva = $linha['EMBALAGEM_ATIVA'];
                 $possuiValidade = (isset($linha['POSSUI_VALIDADE'])) ? $linha['POSSUI_VALIDADE'] : null;
                 $diasVidaUtil = (isset($linha['DIAS_VIDA_UTIL'])) ? (int) $linha['DIAS_VIDA_UTIL'] : null;
