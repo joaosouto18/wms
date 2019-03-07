@@ -814,11 +814,11 @@ class Integracao {
                 $indPesoVariavel = $linha['PESO_VARIAVEL'];
                 $qtdEmbalagem = $linha['QTD_EMBALAGEM'];
                 $codBarras = $linha['COD_BARRAS'];
-                $pesoEmbalagem = (isset($linha['PESO_BRUTO_EMBALAGEM'])) ? number_format($linha['PESO_BRUTO_EMBALAGEM'],3,',','') : null;
-                $alturaEmbalagem = (isset($linha['ALTURA_EMBALAGEM'])) ? number_format($linha['ALTURA_EMBALAGEM'],3,',','') : null;
-                $larguraEmbalagem = (isset($linha['LARGURA_EMBALAGEM'])) ? number_format($linha['LARGURA_EMBALAGEM'],3,',','') : null;
-                $profundidadeEmbalagem = (isset($linha['PROFUNDIDADE_EMBALAGEM'])) ? number_format($linha['PROFUNDIDADE_EMBALAGEM'],3,',','') : null;
-                $cubagemEmbalagem = (isset($linha['CUBAGEM_EMBALAGEM'])) ? number_format($linha['CUBAGEM_EMBALAGEM'],3,',','') : null;
+                $pesoEmbalagem = $linha['PESO_BRUTO_EMBALAGEM'];
+                $alturaEmbalagem = $linha['ALTURA_EMBALAGEM'];
+                $larguraEmbalagem = $linha['LARGURA_EMBALAGEM'];
+                $profundidadeEmbalagem = $linha['PROFUNDIDADE_EMBALAGEM'];
+                $cubagemEmbalagem = $linha['CUBAGEM_EMBALAGEM'];
                 $embalagemAtiva = $linha['EMBALAGEM_ATIVA'];
                 $possuiValidade = (isset($linha['POSSUI_VALIDADE'])) ? $linha['POSSUI_VALIDADE'] : null;
                 $diasVidaUtil = (isset($linha['DIAS_VIDA_UTIL'])) ? (int) $linha['DIAS_VIDA_UTIL'] : null;
@@ -846,10 +846,10 @@ class Integracao {
                     'qtdEmbalagem' => $qtdEmbalagem,
                     'codBarras' => $codBarras,
                     'peso' => $pesoEmbalagem,
-                    'altura' => $alturaEmbalagem,
-                    'largura' => $larguraEmbalagem,
-                    'profundidade' => $profundidadeEmbalagem,
-                    'cubagem' => $cubagemEmbalagem,
+                    'altura'       => str_replace(',','.',$alturaEmbalagem),
+                    'largura'      => str_replace(',','.',$larguraEmbalagem) ,
+                    'profundidade' => str_replace(',','.',$profundidadeEmbalagem),
+                    'cubagem'      => str_replace(',','.',$cubagemEmbalagem),
                     'ativa' => $embalagemAtiva);
 
                 if (!array_key_exists($codFabricante, $arrayFabricantes)) {
@@ -923,10 +923,10 @@ class Integracao {
                         $emb->qtdEmbalagem = $embalagem['qtdEmbalagem'];
                         $emb->descricao = $embalagem['dscEmbalagem'];
 
-                        $emb->largura = number_format(Math::dividir($embalagem['largura'],1000),3);
-                        $emb->altura = number_format(Math::dividir($embalagem['altura'],1000),3);
-                        $emb->peso = number_format(Math::dividir(Math::multiplicar($pesoUnitário,$emb->qtdEmbalagem),1000),3);
-                        $emb->profundidade = number_format(Math::dividir(Math::multiplicar($profundidadeUnitario, $emb->qtdEmbalagem),1000),3) ;
+                        $emb->largura = number_format(Math::dividir($embalagem['largura'],1),3);
+                        $emb->altura = number_format(Math::dividir($embalagem['altura'],1),3);
+                        $emb->peso = number_format(Math::dividir(Math::multiplicar($pesoUnitário,$emb->qtdEmbalagem),1),3);
+                        $emb->profundidade = number_format(Math::dividir(Math::multiplicar($profundidadeUnitario, $emb->qtdEmbalagem),1),3) ;
 
                         $embalagensObj[] = $emb;
                     }
