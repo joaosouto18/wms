@@ -662,6 +662,7 @@ class RecebimentoRepository extends EntityRepository {
                 $loteRepo = $this->_em->getRepository("wms:Produto\Lote");
 
                 $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $conferenciasOk);
+                $em->flush();
 
                 /** @var \Wms\Domain\Entity\Enderecamento\Palete $palete */
                 foreach ($paletes as $key => $palete) {
@@ -672,7 +673,6 @@ class RecebimentoRepository extends EntityRepository {
                     $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, null, $getProduto[0]['codProduto'], $getProduto[0]['grade']);
 
                     $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId(), false, $dataValidade);
-                    $em->flush();
                 }
 
                 $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
