@@ -931,6 +931,7 @@ class Integracao {
                         $embalagensObj[] = $emb;
                     }
                 }
+                var_dump($embalagensObj);exit;
                 $result = $importacaoService->saveProdutoWs($this->_em, $repositorios, $produto['codProduto'], $produto['dscProduto'], $produto['dscGrade'], $produto['codFabricante'], '1', $produto['codClasse'], $produto['indPesoVariavel'], $embalagensObj, $produto['refFornecedor'], $produto['possuiValidade'], $produto['diasVidaUtil']);
             }
             $this->_em->flush();
