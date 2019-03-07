@@ -44,7 +44,7 @@ class Web_ProdutoController extends Crud {
             $acaoIntegracaoRepository = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
             foreach ($explodeIntegracoes as $codIntegracao) {
                 $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
-                $acaoIntegracaoRepository->processaAcaoProduto($acaoIntegracaoEntity);
+                $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity);
             }
         }
 
