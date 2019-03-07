@@ -923,10 +923,10 @@ class Integracao {
                         $emb->qtdEmbalagem = $embalagem['qtdEmbalagem'];
                         $emb->descricao = $embalagem['dscEmbalagem'];
 
-                        $emb->largura = number_format(Math::dividir($embalagem['largura'],1000),3);
-                        $emb->altura = number_format(Math::dividir($embalagem['altura'],1000),3);
-                        $emb->peso = number_format(Math::dividir(Math::multiplicar($pesoUnitário,$emb->qtdEmbalagem),1000),3);
-                        $emb->profundidade = number_format(Math::dividir(Math::multiplicar($profundidadeUnitario, $emb->qtdEmbalagem),1000),3) ;
+                        $emb->largura = number_format(Math::dividir($embalagem['largura'],1),3);
+                        $emb->altura = number_format(Math::dividir($embalagem['altura'],1),3);
+                        $emb->peso = number_format(Math::dividir(Math::multiplicar($pesoUnitário,$emb->qtdEmbalagem),1),3);
+                        $emb->profundidade = number_format(Math::dividir(Math::multiplicar($profundidadeUnitario, $emb->qtdEmbalagem),1),3) ;
 
                         $embalagensObj[] = $emb;
                     }
