@@ -464,7 +464,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                             $embalagemEntity->setLargura(str_replace(',','.',$largura));
                         }
                         if (isset($altura) && !empty($altura)) {
-                            $embalagemEntity->setAltura(str_replace(',','.',$altura));
+                            $altura = str_replace(',','.',$altura);
+                            $embalagemEntity->setAltura($altura);
                         }
                         if (isset($peso) && !empty($peso)) {
                             $embalagemEntity->setPeso($peso);
