@@ -197,10 +197,10 @@ class EtiquetaEndereco extends Pdf
         $this->Cell(5,13,"",0,0);
         $this->SetFont('Arial', 'B', 8);
 
-        $this->Cell(22,6,utf8_decode("RUA"),0,0);
-        $this->Cell(25,6,utf8_decode("PREDIO"),0,0);
-        $this->Cell(24,6,utf8_decode("NIVEL"),0,0);
-        $this->Cell(0,6,utf8_decode("APTO"),0,1);
+        $this->Cell(22,12,utf8_decode("RUA"),0,0);
+        $this->Cell(25,12,utf8_decode("PREDIO"),0,0);
+        $this->Cell(24,12,utf8_decode("NIVEL"),0,0);
+        $this->Cell(0,12,utf8_decode("APTO"),0,1);
 
         $this->SetFont('Arial', 'B', 41);
         $this->Cell(0,10,$codBarras,0,0);
