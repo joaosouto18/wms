@@ -423,8 +423,8 @@ class OrdemServicoRepository extends EntityRepository
                         inner join inventario_cont_end_prod icep on icep.cod_inv_cont_end = ice.cod_inv_cont_end  
                         inner join inventario_endereco_novo ien on ien.cod_inventario_endereco = ice.cod_inventario_endereco                      
                       where ien.cod_inventario_endereco = $idEndereco                        
-                        and icep.cod_produto = $idProduto                        
-                        and icep.dsc_grade = $grade                        
+                        and icep.cod_produto = '$idProduto'                        
+                        and icep.dsc_grade = '$grade'                        
                         and os.dth_final_atividade is null";
 
         $idOs = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);

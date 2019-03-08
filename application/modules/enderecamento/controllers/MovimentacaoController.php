@@ -282,7 +282,7 @@ class Enderecamento_MovimentacaoController extends Action
                 $data['endereco'] = $enderecoEn;
                 $data['qtd'] = $data['quantidade'] * -1;
                 $data['observacoes'] = "Transferencia de Estoque - Destino: ".$enderecoDestinoEn->getDescricao();
-                $estoqueRepo->movimentaEstoque($data);
+                $estoqueRepo->movimentaEstoque($data, true, true);
 
                 //ENTRADA NO ENDEREÇO DE DESTINO
                 $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
@@ -324,7 +324,7 @@ class Enderecamento_MovimentacaoController extends Action
                     $data['qtd'] = $data['quantidade'] * -1;
                     $data['volume'] = $volume;
                     $data['observacoes'] = "Transferencia de Estoque - Destino: ".$enderecoDestinoEn->getDescricao();
-                    $estoqueRepo->movimentaEstoque($data);
+                    $estoqueRepo->movimentaEstoque($data, true, true);
                     $data['endereco'] = $enderecoRepo->findOneBy(array('rua' => $data['ruaDestino'], 'predio' => $data['predioDestino'], 'nivel' => $data['nivelDestino'], 'apartamento' => $data['aptoDestino']));
                     $data['qtd'] = $data['quantidade'];
                     $data['observacoes'] = "Transferencia de Estoque - Origem: ".$enderecoEn->getDescricao();

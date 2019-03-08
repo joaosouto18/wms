@@ -4325,12 +4325,16 @@ class ExpedicaoRepository extends EntityRepository {
      * @param $grade
      * @param $qtdCortar
      * @param $motivo
-     * @param null $corteAutomatico
+     * @param $corteAutomatico
+     * @param $idMotivo
+     * @param $mapa
+     * @param $idEmbalagem
+     * @param $forcarEmbVendaDefault
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null, $idMotivo = null) {
+    public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null, $idMotivo = null, $mapa = null, $idEmbalagem = null, $forcarEmbVendaDefault = null) {
 
         /** @var Expedicao\AndamentoRepository $expedicaoAndamentoRepo */
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
@@ -4413,19 +4417,34 @@ class ExpedicaoRepository extends EntityRepository {
         $this->getEntityManager()->persist($pedidoProdutoEn);
 
         //Seta na mapa_separacao_pedido a quantidade cortada baseada na quantia já cortada mais a nova qtd
+        $args = ["pedidoProduto" => $pedidoProdutoEn];
+        if (!empty($mapa) && $mapa != "-") $args['mapaSeparacao'] = $mapa;
         /** @var Expedicao\MapaSeparacaoPedido $mapaSeparacaoPedido */
-        $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(array("pedidoProduto" => $pedidoProdutoEn));
+        $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy($args);
         if (!empty($mapaSeparacaoPedido)) {
             $mapaSeparacaoPedido->addCorte($qtdCortar);
             $this->getEntityManager()->persist($mapaSeparacaoPedido);
         }
 
         if (!empty($mapaSeparacaoPedido)) {
-            $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy(array('mapaSeparacao' => $mapaSeparacaoPedido->getMapaSeparacao(),
+            $args = [
+                'mapaSeparacao' => $mapaSeparacaoPedido->getMapaSeparacao(),
                 'codProduto' => $codProduto,
-                'dscGrade' => $grade));
+                'dscGrade' => $grade
+            ];
+            if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))
+                $args['produtoEmbalagem'] = $idEmbalagem;
+
+            $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy($args);
 
             if (!empty($entidadeMapaProduto)) {
+
+                usort($entidadeMapaProduto,function ($itemA, $itemB) {
+                    $qtdA = Math::multiplicar($itemA->getQtdEmbalagem(), $itemA->getQtdSeparar());
+                    $qtdB = Math::multiplicar($itemB->getQtdEmbalagem(), $itemB->getQtdSeparar());
+                    return $qtdA > $qtdB;
+                });
+
                 /** @var Expedicao\MapaSeparacaoProduto $itemMapa */
                 $qtd = $qtdCortar;
                 foreach ($entidadeMapaProduto as $itemMapa) {
@@ -4509,34 +4528,33 @@ class ExpedicaoRepository extends EntityRepository {
         if ($apenasProdutosCortados == true)
             $where .= " HAVING (SUM(NVL(PP.QTD_CORTADA,0)) > 0)";
 
-        $sqlCampoQuantidadePedido = " NVL((PP.QUANTIDADE),0) as QTD, ";
-        $sqlCampoQuantidadeCortada = " NVL((PP.QTD_CORTADA),0) as QTD_CORTADA,";
-        if ($this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO') == 'S') {
-            $sqlCampoQuantidadePedido = "CASE WHEN (PROD.COD_TIPO_COMERCIALIZACAO = 1) THEN PP.QTD_EMBALAGEM_VENDA ||' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE PP.QUANTIDADE || '' END as QTD , ";
-            $sqlCampoQuantidadeCortada = "CASE WHEN (PROD.COD_TIPO_COMERCIALIZACAO = 1) AND (NVL(PP.QTD_CORTADA,0) > 0) THEN (NVL(PP.QTD_CORTADA,0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' ELSE NVL(PP.QTD_CORTADA,0) || '' END as QTD_CORTADA , ";
-        }
-
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
                        PROD.DSC_PRODUTO,
-                       $sqlCampoQuantidadePedido
-                       $sqlCampoQuantidadeCortada
+                       CASE WHEN NVL(PROD.IND_FORCA_EMB_VENDA, MS.IND_FORCA_EMB_VENDA) = 'S' AND (PROD.COD_TIPO_COMERCIALIZACAO = 1) THEN 
+                          CONCAT(PP.QUANTIDADE / PP.FATOR_EMBALAGEM_VENDA, CONCAT(' ',CONCAT( NVL(PE.DSC_EMBALAGEM,''), CONCAT( '(' , CONCAT( PP.FATOR_EMBALAGEM_VENDA , ')'))))) 
+                         ELSE TO_CHAR(NVL(PP.QUANTIDADE,0)) END as QTD,
+                       CASE WHEN NVL(PROD.IND_FORCA_EMB_VENDA, MS.IND_FORCA_EMB_VENDA) = 'S' AND (PROD.COD_TIPO_COMERCIALIZACAO = 1) AND (NVL(PP.QTD_CORTADA,0) > 0) THEN 
+                          (NVL(PP.QTD_CORTADA,0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' 
+                         ELSE TO_CHAR(NVL(PP.QTD_CORTADA,0)) END QTD_CORTADA,
                        PP.COD_PEDIDO,
                        C.COD_CARGA_EXTERNO
-                  FROM PEDIDO_PRODUTO PP
-                  LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
-                  LEFT JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
-                  LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
-                  LEFT JOIN (SELECT QTD_EMBALAGEM, 
-                                    COD_PRODUTO,
-                                    DSC_GRADE,
-                                    MAX(COD_PRODUTO_EMBALAGEM) as COD_PRODUTO_EMBALAGEM
-                               FROM PRODUTO_EMBALAGEM 
-                              WHERE DTH_INATIVACAO IS NULL
-                              GROUP BY QTD_EMBALAGEM, COD_PRODUTO, DSC_GRADE) MP
-                         ON MP.COD_PRODUTO = PP.COD_PRODUTO
-                        AND MP.DSC_GRADE = PP.DSC_GRADE
-                        AND MP.QTD_EMBALAGEM = PP.FATOR_EMBALAGEM_VENDA
+                FROM PEDIDO_PRODUTO PP
+                  INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+                  INNER JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
+                  INNER JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                  INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+                  INNER JOIN MODELO_SEPARACAO MS ON MS.COD_MODELO_SEPARACAO = NVL(E.COD_MODELO_SEPARACAO, (SELECT DSC_VALOR_PARAMETRO FROM PARAMETRO WHERE DSC_PARAMETRO = 'MODELO_SEPARACAO_PADRAO'))
+                  LEFT JOIN (SELECT QTD_EMBALAGEM,
+                                COD_PRODUTO,
+                                DSC_GRADE,
+                                MAX(COD_PRODUTO_EMBALAGEM) as COD_PRODUTO_EMBALAGEM
+                  FROM PRODUTO_EMBALAGEM
+                  WHERE DTH_INATIVACAO IS NULL
+                  GROUP BY QTD_EMBALAGEM, COD_PRODUTO, DSC_GRADE) MP
+                  ON MP.COD_PRODUTO = PP.COD_PRODUTO
+                  AND MP.DSC_GRADE = PP.DSC_GRADE
+                  AND MP.QTD_EMBALAGEM = PP.FATOR_EMBALAGEM_VENDA
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MP.COD_PRODUTO_EMBALAGEM
                  WHERE 1 = 1 $where
                  ORDER BY COD_PRODUTO, DSC_GRADE";

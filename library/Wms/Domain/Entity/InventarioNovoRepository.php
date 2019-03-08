@@ -135,7 +135,7 @@ class InventarioNovoRepository extends EntityRepository
                 $arrWhere[] = "LOWER(INVN.DSC_INVENTARIO) like '%$descricao%'";
             }
 
-            $where = "WHERE 1 = 1 AND IEN.IND_ATIVO = 'S' AND " . implode(" AND ", $arrWhere);
+            $where = "WHERE 1 = 1 AND " . implode(" AND ", $arrWhere);
         }
 
 
