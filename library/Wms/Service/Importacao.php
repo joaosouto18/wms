@@ -894,7 +894,7 @@ class Importacao
                     $alturaEmbalagem = str_replace(',','.',$embalagemWs->altura);
                     $profundidadeEmbalagem = str_replace(',','.',$embalagemWs->profundidade);
                     $larguraEmbalagem = str_replace(',','.',$embalagemWs->largura);
-                    
+
                     foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
                             $encontrouEmbalagem = true;
