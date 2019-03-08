@@ -887,15 +887,15 @@ class Importacao
                 foreach ($embalagens as $embalagemWs) {
 
                     $encontrouEmbalagem = false;
+
+                    $descricaoEmbalagem =  $embalagemWs->descricao;
+                    $fator = str_replace(',','.',$embalagemWs->qtdEmbalagem);
+                    $pesoEmbalagem = str_replace(',','.',$embalagemWs->peso);
+                    $alturaEmbalagem = str_replace(',','.',$embalagemWs->altura);
+                    $profundidadeEmbalagem = str_replace(',','.',$embalagemWs->profundidade);
+                    $larguraEmbalagem = str_replace(',','.',$embalagemWs->largura);
+                    
                     foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
-
-                        $descricaoEmbalagem =  $embalagemWs->descricao;
-                        $fator = str_replace(',','.',$embalagemWs->qtdEmbalagem);
-                        $pesoEmbalagem = str_replace(',','.',$embalagemWs->peso);
-                        $alturaEmbalagem = str_replace(',','.',$embalagemWs->altura);
-                        $profundidadeEmbalagem = str_replace(',','.',$embalagemWs->profundidade);
-                        $larguraEmbalagem = str_replace(',','.',$embalagemWs->largura);
-
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
                             $encontrouEmbalagem = true;
                             continue;
