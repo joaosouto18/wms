@@ -371,8 +371,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         if (isset($profundidade) && !empty($profundidade)) {
                             $embalagemEntity->setProfundidade(number_format($profundidade,3,',',''));
                         }
+                        $cubagem = str_replace('.', ',', Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
                         if (isset($cubagem) && !empty($cubagem)) {
-                            $embalagemEntity->setCubagem(number_format($cubagem,3,',',''));
+                            $embalagemEntity->setCubagem($cubagem);
                         }
 
                         //valida o endereco informado
