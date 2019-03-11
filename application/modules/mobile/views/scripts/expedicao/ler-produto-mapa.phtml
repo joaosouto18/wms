@@ -1,14 +1,13 @@
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js'));
     $temLote = $this->temLote;
 ?>
-<span id="dummy"></span>
-<bgsound id="bgSoundId" loop="0" volume="100" />
+<div id="dummy"></div>
 
 <script>
 
     function playSound(soundfile) {
-        document.getElementById("dummy").innerHTML=
-            "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+        var dummy = '<embed src="/alarme.mp3" hidden="true" autostart="true" loop="false" />';
+        $('#dummy').html(dummy);
     }
 
     // function playSound(soundfile) {
@@ -342,10 +341,12 @@
                         try {
                             playSound(song);
                         } catch (e) {
+                            playSound(song);
                             alert(message);
                         }
 
                         if (data.retorno.resposta == 'error') {
+                            playSound(song);
                             alert(error);
                         }
 
