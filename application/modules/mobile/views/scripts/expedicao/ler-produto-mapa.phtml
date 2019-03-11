@@ -6,7 +6,7 @@
 <script>
 
     function playSound(soundfile) {
-        var dummy = '<embed src="/alarme.mp3" hidden="true" autostart="true" loop="false" />';
+        var dummy = '<embed src="/alarme.mp3" autostart="true" loop="false" />';
         $('#dummy').html(dummy);
     }
 
@@ -341,12 +341,10 @@
                         try {
                             playSound(song);
                         } catch (e) {
-                            playSound(song);
                             alert(message);
                         }
 
                         if (data.retorno.resposta == 'error') {
-                            playSound(song);
                             alert(error);
                         }
 
