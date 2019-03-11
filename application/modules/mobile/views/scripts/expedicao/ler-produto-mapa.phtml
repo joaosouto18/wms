@@ -6,7 +6,8 @@
 <script>
 
     function playSound(soundfile) {
-        var dummy = '<embed src="/alarme.mp3" autostart="true" loop="false" />';
+        var dummy = '<audio autoplay> <source src="/alarme.mp3" type="audio/mp3">' +
+            '<source src="/alarme.mp3" type="audio/mpeg"></audio>';
         $('#dummy').html(dummy);
     }
 
