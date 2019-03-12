@@ -16,23 +16,48 @@ class Web_EmailController extends Action
     {
         $request = $this->getRequest();
 
-        if ($request->isPost()) {
+        if ($request->isPost() and isset($request->submit)) {
             $params = $this->getRequest()->getParams();
-            $emailCadastrado = $this->getSystemParameterValue('EMAIL_CHAMADOS');
 
-            $to      = 'rodrigodantley@gmail.com';
-            $subject = $params['assunto'];
-            $message = 'Email de: '.$params['nome'].' - '.$params['mensagem'];
-            $headers = 'From: '. $emailCadastrado . "\r\n" .
-                'Reply-To: '. $emailCadastrado . "\r\n" .
-                'X-Mailer: PHP/' . phpversion();
+            try {
 
-            mail($to, $subject, $message, $headers);
+                // busco as configurações no ini
+                $objCfg = new Zend_Config_Ini(APPLICATION_PATH . '/configs/smtp.ini', 'smtp');
+                $arrCfg = $objCfg->toArray();
+
+// configuro o cliente SMTP
+                $config = array('auth'     => $arrCfg['smtp']['auth'],
+                                'username' => $arrCfg['smtp']['usuario'],
+                                'password' => $arrCfg['smtp']['senha'],
+                                'smtp'     => $arrCfg['smtp']['host'],
+                                'ssl'      => $arrCfg['smtp']['seguranca'],
+                                'port'     => $arrCfg['smtp']['porta']);
+
+// instancio o cliente SMTP
+                $smtp = new Zend_Mail_Transport_Smtp($config['smtp'], $config);
+
+// instancio o cliente de e-mail e tento enviar a mensagem
+                $mail = new Zend_Mail();
+                $mail->setFrom($arrCfg['smtp']['usuario'], $arrCfg['smtp']['titulo'])
+                    ->setReplyTo($arrCfg['smtp']['usuario'], $arrCfg['smtp']['titulo'])
+                    ->addTo('suporte@imperiumsistemas.com.br')
+                    ->setBodyHtml($params['mensagem'])
+                    ->setSubject($params['nome'].' - '.$params['assunto']);
+
+                if ($mail->send($smtp)) {
+                    $this->addFlashMessage('info', 'E-mail Enviado com Sucesso. Acompanhe seu chamado no link fornecido');
+                    $this->_redirect($_SERVER['HTTP_REFERER']);
+                }
+
+// desconecto do host smtp
+                $smtp->getConnection()->disconnect();
+
+            } catch (Exception $erro) {
+                $this->addFlashMessage("Error", "Erro no envio de e-mail: " . $erro->getMessage() .' -- '. $erro->getTraceAsString());
+                $this->_redirect($_SERVER['HTTP_REFERER']);
+            }
 
         }
-
-
-
 
     }
 

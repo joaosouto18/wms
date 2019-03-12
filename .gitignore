@@ -16,6 +16,7 @@ data/log/
 .DS_Store
 application.ini
 webservices.ini
+smtp.ini
 library/zendframework
 library/composer
 library/autoload.php
