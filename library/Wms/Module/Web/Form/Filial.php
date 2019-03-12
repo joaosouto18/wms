@@ -25,6 +25,8 @@ class Filial extends Form
 	$formPessoa->addElement('hidden', 'tipo', array(
 	    'value' => 'J'
 	));
+
+
 	$formPessoa->removeSubForm('fisica');
 	
 	$this->prepareFormIntegracao($formPessoa);
