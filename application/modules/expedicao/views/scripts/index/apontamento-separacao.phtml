@@ -291,7 +291,9 @@
                         result.pessoa = data.pessoa;
                         addRow(result);
                         if($("#qtdFuncMapa").val() == $("[value='"+result.mapa+"']").size()){
-                            $('.save').click();
+                            if (data.pendenteFechamento == 'N') {
+                                $('.save').click();
+                            }
                         }
                     } else if (data.result = 'Error') {
                         alert(data.msg);
@@ -666,6 +668,7 @@
                     }
                 });
             });
+
         });
 
         $(".removeRow").live('click', function () {

@@ -390,4 +390,18 @@ class ApontamentoMapaRepository extends EntityRepository {
                 WHERE COD_MAPA_SEPARACAO = $mapa";
         return $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
     }
+
+    public function verificaApontamentoMapaUsuarioPendenteFechamento($mapa, $usuario) {
+        $sql = "SELECT COUNT(COD_MAPA_SEPARACAO) AS QTD
+                FROM APONTAMENTO_SEPARACAO_MAPA
+                WHERE COD_MAPA_SEPARACAO = $mapa
+                  AND COD_USUARIO = $usuario
+                  AND DTH_FIM_CONFERENCIA IS NULL";
+        $result =  $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
+
+        if ($result['QTD'] >0) {
+            return true;
+        }
+        return false;
+    }
 }
