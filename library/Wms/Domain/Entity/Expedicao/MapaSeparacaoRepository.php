@@ -1428,7 +1428,7 @@ class MapaSeparacaoRepository extends EntityRepository {
             $where .= " AND MS.COD_MAPA_SEPARACAO = $codMapaSeparacao ";
         }
 
-        $query = "SELECT MS.COD_MAPA_SEPARACAO,
+        $sql = "SELECT MS.COD_MAPA_SEPARACAO,
                     MSP.COD_PRODUTO,
                     MSP.DSC_GRADE,
                     MSP.QTD_SEPARAR as QTD_TOTAL,
