@@ -75,6 +75,11 @@ class FiltroExpedicaoMercadoria extends \Wms\Module\Web\Form
                     'label' => 'Pedido',
                     'decorators' => array('ViewHelper'),
                 ))
+                ->addElement('text', 'produto', array(
+                    'size' => 10,
+                    'label' => 'Produto',
+                    'decorators' => array('ViewHelper'),
+                ))
                 ->addElement('hidden', 'control', array(
                     'value' => 'roll',
                     'label' => $label,

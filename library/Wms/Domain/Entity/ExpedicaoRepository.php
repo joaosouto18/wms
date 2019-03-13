@@ -4007,6 +4007,11 @@ class ExpedicaoRepository extends EntityRepository {
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
             $where = " AND C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
         }
+
+        if (isset($parametros['produto']) && !empty($parametros['produto'])) {
+            $where = " AND P.COD_PEDIDO IN ( SELECT PP.COD_PEDIDO FROM PEDIDO_PRODUTO PP WHERE PP.COD_PRODUTO = ". $parametros['produto']. ")";
+        }
+
         $SQL = "
         SELECT
                 CASE WHEN NUM_SEQUENCIAL > 1 
