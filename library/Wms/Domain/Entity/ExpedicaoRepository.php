@@ -1924,6 +1924,12 @@ class ExpedicaoRepository extends EntityRepository {
                     throw new \Exception($result);
                 }
             }
+
+            // Valida se existe separação ao término da conferência
+            if ($this->getSystemParameterValue('ATIVIDADE_SEPARACAO_OBRIGATORIA') == 'S') {
+                $resultAcao = $this->validaSeparacao($idExpedicao, $expedicaoEn);
+            }
+
             if ($this->validaPedidosImpressos($idExpedicao) == false) {
                 throw new \Exception('Existem produtos sem etiquetas impressas');
             }
