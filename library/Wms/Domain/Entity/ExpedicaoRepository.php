@@ -1924,6 +1924,22 @@ class ExpedicaoRepository extends EntityRepository {
                     throw new \Exception($result);
                 }
             }
+
+            // Valida se existe separação ao término da conferência
+            if ($this->getSystemParameterValue('ATIVIDADE_SEPARACAO_OBRIGATORIA') == 'S') {
+                $result = $MapaSeparacaoRepo->getMapaPendenteSeparacao($idExpedicao, null);
+
+                if(!empty($result)) {
+                    $cont = 0;
+                    foreach ($result as $item) {
+                        if($item['PERCENTUAL_SEPARACAO'] != '100%')
+                            $cont++;
+                    }
+                    if($cont > 0)
+                        throw new \Exception('Existe(m) ' . $cont . ' produtos(s) sem separação que impedem a finalização da expedição ' . $idExpedicao . '.');
+                } 
+            }
+
             if ($this->validaPedidosImpressos($idExpedicao) == false) {
                 throw new \Exception('Existem produtos sem etiquetas impressas');
             }
