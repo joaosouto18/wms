@@ -58,6 +58,7 @@ class EmbalagemRepository extends EntityRepository {
         }
 
         $embalagemEntities = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getCodProduto(), 'grade' => $embalagemEn->getGrade()));
+        $capacidadePicking = $capacidadePicking * $embalagemEn->getQuantidade();
 
         foreach ($embalagemEntities as $embalagem) {
             $embalagem->setEndereco($enderecoEn);

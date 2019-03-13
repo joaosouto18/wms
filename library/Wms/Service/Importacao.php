@@ -806,14 +806,13 @@ class Importacao
                     $fator = $embalagemCadastrada->getQuantidade();
                     foreach ($embalagens as $embalagemWs) {
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
-                            $encontrouEmbalagem = true;
                             $descricaoEmbalagem =  $embalagemWs->descricao;
                             $fator = str_replace(',','.',$embalagemWs->qtdEmbalagem);
-
                             $pesoEmbalagem = str_replace(',','.',$embalagemWs->peso);
                             $alturaEmbalagem = str_replace(',','.',$embalagemWs->altura);
                             $profundidadeEmbalagem = str_replace(',','.',$embalagemWs->profundidade);
                             $larguraEmbalagem = str_replace(',','.',$embalagemWs->largura);
+                            $encontrouEmbalagem = true;
                             continue;
                         }
                     }
@@ -885,6 +884,12 @@ class Importacao
                 foreach ($embalagens as $embalagemWs) {
 
                     $encontrouEmbalagem = false;
+
+                    $pesoEmbalagem = str_replace(',','.',$embalagemWs->peso);
+                    $alturaEmbalagem = str_replace(',','.',$embalagemWs->altura);
+                    $profundidadeEmbalagem = str_replace(',','.',$embalagemWs->profundidade);
+                    $larguraEmbalagem = str_replace(',','.',$embalagemWs->largura);
+
                     foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
                         if (trim($embalagemWs->codBarras) == trim($embalagemCadastrada->getCodigoBarras())) {
                             $encontrouEmbalagem = true;
@@ -937,7 +942,7 @@ class Importacao
                 }
 
                 $embalagensPersistir = array('embalagens'=>$embalagensArray);
-                $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true, false,$repositorios);
+                $result = $produtoRepo->persistirEmbalagens($produto, $embalagensPersistir,true, false,$repositorios);
             }
 
             $produtoRepo->atualizaPesoProduto($idProduto,$grade);

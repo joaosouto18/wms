@@ -76,6 +76,10 @@ class EtiquetaEndereco extends Pdf
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo6($produtos,$codBarras);
                     break;
+                case 13:
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
+                    $this->layoutModelo13($produtos,$codBarras);
+                    break;
                 case 7:
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo7($produto,$codBarras);
@@ -410,6 +414,40 @@ class EtiquetaEndereco extends Pdf
         }
 //        $this->Cell(95,10," ",0,1);
 
+    }
+
+    public function layoutModelo13 ($produto, $codBarras){
+        $this->Cell(5,3,"",0,1);
+        $arrEndereco = Endereco::separar($codBarras);
+        $codBarras = implode('.',$arrEndereco);
+        $this->SetX(5);
+        $wRua = 19;
+        $wPredio = 22;
+        $wNivel = 18;
+        $wApto = 23;
+        $wTotal = $wRua + $wPredio + $wNivel + $wApto;
+        if (strlen(reset($produto)['codProduto']) <= 8)
+            $tamanhoCodigo = 15;
+        else
+            $tamanhoCodigo = 15;
+
+        $this->SetFont('Arial', 'B', $tamanhoCodigo);
+        $this->Cell(0,13, substr(reset($produto)['codProduto'].' - '.reset($produto)['descricao'],0,30),0,1,'C');
+        $this->Cell(17,13,"",0,0);
+        $this->SetFont('Arial', 'B', 12);
+        $this->Cell($wRua,13,utf8_decode("RUA"),0,0);
+        $this->Cell($wPredio,13,utf8_decode("PREDIO"),0,0);
+        $this->Cell($wNivel,13,utf8_decode("NIVEL"),0,0);
+        $this->Cell($wApto,13,utf8_decode("APTOO"),0,1);
+        $this->SetFont('Arial', 'B', 18);
+        $this->Cell(0,0," ",0,1);
+        $this->SetX(17);
+        $count = strlen(str_replace('.','',$codBarras));
+        $fX = ($wTotal / $count) * 4.12;
+        $this->SetFont('Arial', 'B', $fX);
+        $this->Cell($wTotal,8,$codBarras,0,1);
+
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 14, $this->GetY()+3 , 90);
     }
 
     public function layoutModelo7($produto, $codBarras)

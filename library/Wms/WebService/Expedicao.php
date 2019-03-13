@@ -1030,6 +1030,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $produtosCorte = $this->_em->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
                 $novoSequencial = $PedidoRepo->comparaPedidos($pedido['produtos'], $produtosCorte);
                 $countProdutosPendentesCorte = count($produtosCorte);
+                $novoSequencial = false;
 
                 if (($statusExpedicao->getId() == Expedicao::STATUS_INTEGRADO) ||
                     ($resetaExpedicao && $statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||

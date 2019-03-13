@@ -1437,8 +1437,8 @@ class Mobile_EnderecamentoController extends Action
         $capacidadePicking = $this->_getParam('capacidade');
         $embalado = $this->_getParam('embalado');
         $isEmbalagem = $this->_getParam('isEmbalagem');
-        $lastro = $this->_getParam('lastro');
-        $camada = $this->_getParam('camada');
+        $lastro = $this->_getParam('lastro',0);
+        $camada = $this->_getParam('camada',0);
         $unitizador = $this->_getParam('unitizador');
 
         $this->view->unitizadores = $unitizadores = $this->getEntityManager()->getRepository('wms:Armazenagem\Unitizador')->getIdDescricaoAssoc();
@@ -1502,9 +1502,9 @@ class Mobile_EnderecamentoController extends Action
         } elseif (!empty($embalagemEn)) {
             $enderecoEmbalagem = $embalagemEn->getEndereco();
             $status = 'ok';
-            $result['endereco'] = (!empty($enderecoEmbalagem)) ? $enderecoEmbalagem->getDescricao() : null;
+            $result['endereco'] = (!empty($enderecoEmbalagem)) ? $enderecoEmbalagem->getDescricao().'0' : null;
             $result['isEmbalagem'] = true;
-            $result['capacidade'] = $embalagemEn->getCapacidadePicking();
+            $result['capacidade'] = $embalagemEn->getCapacidadePicking() / $embalagemEn->getQuantidade();
             $result['embalado']   = $embalagemEn->getEmbalado();
             $result['referencia'] = $embalagemEn->getProduto()->getReferencia();
             $result['descricao']  = $embalagemEn->getProduto()->getDescricao();

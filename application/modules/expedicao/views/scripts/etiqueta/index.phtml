@@ -2,14 +2,31 @@
     margin: 5px;
     margin-bottom: 0px;
     font-size: 14px;">
-    Expedição: <?php echo $this->expedicao ?>
+    Expedição: <?php echo $this->expedicao->getId() ?>
 </h2>
+<?php
+    $boxPreDefinido = '';
+    $idBoxSelecionado = null;
+    if (!is_null($this->expedicao->getBox())) :
+        $boxPreDefinido = 'disabled';
+        $idBoxSelecionado = $this->expedicao->getBox()->getId();
+    endif;
+?>
 <div class="padding-top">
     <?php if ($this->cargas) : ?>
         <fieldset id="fieldset-identification" rowspan="2">
             <legend>Selecione as cargas</legend>
             <div class="field" style="padding: 12px;">
                 <b><label><input style="vertical-align: middle" type="checkbox" id="todos"> Selecione Todas</label></b>
+
+                <select name="id-box" id="id-box" <?php echo $boxPreDefinido ?> >
+                    <option value="">Selecione</option>
+                    <?php foreach ($this->boxes as $box) : ?>
+                        <?php $selected = ($box->getId() == $idBoxSelecionado) ? 'selected' : '' ?>
+                        <option <?php echo $selected ?> value="<?php echo $box->getId() ?>"><?php echo $box->getDescricao() ?></option>
+                    <?php endforeach; ?>
+                </select>
+
             </div>
             <div id="cargas">
                 <b>
@@ -27,7 +44,9 @@
                             </label>
                         </div>
                     <?php endforeach ?>
-                </b>
+
+
+
             </div>
         </fieldset>
     <?php endif; ?>
@@ -86,7 +105,7 @@
                 })
             }
             $.ajax({
-                url: URL_MODULO + '/etiqueta/imprimir/id/<?php echo $this->expedicao ?>/central/' + element.attr('data-id'),
+                url: URL_MODULO + '/etiqueta/imprimir/id/<?php echo $this->expedicao->getId() ?>/central/' + element.attr('data-id'),
                 type: 'POST',
                 data: { cargas: arr },
                 success: function(data){
@@ -108,28 +127,28 @@
                         $.wmsDialogAjax({
                             width: 750,
                             height: 450,
-                            url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>/return/view',
+                            url: '/expedicao/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao->getId() ?>/return/view/box/'+document.getElementById('id-box').value,
                             title: 'Mapas/Etiquetas Pendentes de Impressão'
                         });
                         lockUnlockBtn(false);
                     } else {
                         $.ajax({
-                            url: URL_MODULO + '/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao ?>/return/json',
+                            url: URL_MODULO + '/etiqueta/listar-mapas-quebra-ajax/id/<?php echo $this->expedicao->getId() ?>/return/json/box/'+document.getElementById('id-box').value,
                             type: 'GET',
                             success: function (data) {
                                 if (option === "printAll") {
                                     if (data.mapas.length > 0) {
-                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+ data.mapas , '_blank');
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+ data.mapas + '/box/' + document.getElementById('id-box').value, '_blank');
                                     }
                                     if (data.etiquetas.length > 0) {
-                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+ data.etiquetas, '_blank');
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+ data.etiquetas + '/box/' + document.getElementById('id-box').value, '_blank');
                                     }
                                     if (data.temReentrega === "S") {
-                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/reentrega/idExpedicao/<?php echo $this->idExpedicao; ?>/todas/N/', '_blank');
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/reentrega/idExpedicao/<?php echo $this->expedicao->getId(); ?>/todas/N/box/' + document.getElementById('id-box').value, '_blank');
                                     }
                                 } else {
                                     if (data.mapas.length > 0) {
-                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/conf/1/idMapa/' + data.mapas, '_blank');
+                                        window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/conf/1/idMapa/' + data.mapas + '/box/' + document.getElementById('id-box').value, '_blank');
                                     } else {
                                         $.wmsDialogAlert({
                                             title: 'Falha no procedimento',

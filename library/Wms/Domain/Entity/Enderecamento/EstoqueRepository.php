@@ -580,6 +580,7 @@ class EstoqueRepository extends EntityRepository
             $SQLOrderBy = " ORDER BY ESTQ.DTH_VALIDADE, P.COD_PRODUTO, P.DSC_GRADE, NORMA, VOLUME, C.COD_CARACTERISTICA_ENDERECO, DTH_PRIMEIRA_MOVIMENTACAO, LOTE";
         }
 
+        $SQLgroupBy = " GROUP BY DE.DSC_DEPOSITO_ENDERECO, DE.COD_DEPOSITO_ENDERECO, C.DSC_CARACTERISTICA_ENDERECO, P.COD_PRODUTO, P.DSC_PRODUTO, P.DSC_GRADE, PV.DSC_VOLUME, NVL(PV.COD_PRODUTO_VOLUME,0), NVL(PV.COD_NORMA_PALETIZACAO,0), ESTQ.DTH_VALIDADE, NVL(ESTQ.LOTE, NVL(RE.LOTE, RS.LOTE))";
         if ($returnQuery == true) {
             return $SQL . $SQLWhere . $SQLgroupBy . $SQLOrderBy;
         }
@@ -950,6 +951,7 @@ class EstoqueRepository extends EntityRepository
                 ->leftJoin("wms:Produto\Embalagem", "pe", "WITH", "de.id = pe.endereco")
                 ->leftJoin("p.recebimento", "r")
                 ->leftJoin("p.status", "s")
+                ->andWhere("de.situacao <> 'B'")
                 ->distinct(true)
                 ->orderBy("de.descricao");
 

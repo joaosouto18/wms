@@ -20,8 +20,10 @@ class Expedicao_EtiquetaController  extends Action
         if ($showCarga) {
             $this->view->cargas          = $ExpedicaoRepo->getCodCargasExterno($idExpedicao);
         }
+        $expedicaoEntity = $ExpedicaoRepo->findOneBy(array('id' => $idExpedicao));
 
-        $this->view->expedicao       = $idExpedicao;
+        $this->view->expedicao = $expedicaoEntity;
+        $this->view->boxes     = $this->_em->getRepository('wms:Deposito\Box')->findAll();
     }
 
     public function imprimirAction()
@@ -128,6 +130,7 @@ class Expedicao_EtiquetaController  extends Action
         $idExpedicao = $this->_getParam('id',0);
         $return = $this->_getParam('return', 'view');
 
+        $this->view->box = $this->_getParam('box');
         $this->view->idExpedicao = $idExpedicao;
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
@@ -177,7 +180,8 @@ class Expedicao_EtiquetaController  extends Action
         $idMapa            = $this->getRequest()->getParam('idMapa');
         $central           = $this->getRequest()->getParam('central');
         $idEtiquetaMae     = $this->getRequest()->getParam('idEtiqueta');
-        $conf     = $this->getRequest()->getParam('conf');
+        $conf              = $this->getRequest()->getParam('conf');
+        $idBox             = $this->getRequest()->getParam('box');
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
@@ -203,7 +207,7 @@ class Expedicao_EtiquetaController  extends Action
                         $modelo = $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO');
                     }
 
-                    $mapa->layoutMapa($idExpedicao, $modelo, $idMapa, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO);
+                    $mapa->layoutMapa($idExpedicao, $modelo, $idMapa, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $idBox);
                     /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                     $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
                     $andamentoRepo->save('Mapas Impressos', $idExpedicao);
@@ -229,7 +233,7 @@ class Expedicao_EtiquetaController  extends Action
                     $this->addFlashMessage('info', 'Todas as etiquetas já foram impressas');
                     $this->_redirect('/expedicao');
                 } else {
-                    $Etiqueta->imprimir(array('idExpedicao' => $idExpedicao, 'central' => $central, 'idEtiquetaMae' => $idEtiquetaMae), $modelo);
+                    $Etiqueta->imprimir(array('idExpedicao' => $idExpedicao, 'central' => $central, 'idEtiquetaMae' => $idEtiquetaMae), $modelo, $idBox);
                     /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
                     $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
                     $andamentoRepo->save('Etiquetas Impressas', $idExpedicao);
@@ -256,8 +260,15 @@ class Expedicao_EtiquetaController  extends Action
             /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
             $ExpedicaoEntity = $ExpedicaoRepo->find($idExpedicao);
             if ($ExpedicaoEntity->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_INTEGRADO) {
+
                 $statusEntity = $this->getEntityManager()->getReference('wms:Util\Sigla', \Wms\Domain\Entity\Expedicao::STATUS_EM_SEPARACAO);
                 $ExpedicaoEntity->setStatus($statusEntity);
+
+                if (!is_null($idBox)) {
+                    $boxEntity = $this->getEntityManager()->getReference('wms:Deposito\Box', $idBox);
+                    $ExpedicaoEntity->setBox($boxEntity);
+                }
+
                 $this->getEntityManager()->persist($ExpedicaoEntity);
             }
 

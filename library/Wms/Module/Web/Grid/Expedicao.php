@@ -273,10 +273,10 @@ class Expedicao extends Grid
                 'label' => 'Relatório de Produtos',
                 'target' => '_blank',
                 'modelName' => 'expedicao',
-                'controllerName' => 'etiqueta',
+                'controllerName' => 'relatorio_produtos-expedicao',
                 'actionName' => 'index',
-                'params' => array('urlAction' => 'index', 'urlController' => 'relatorio_produtos-expedicao', 'sc' => true),
-                'cssClass' => 'dialogAjax pdf',
+                'params' => array('central' => 1),
+                'cssClass' => 'pdf',
                 'pkIndex' => 'id'
             ))
             ->addAction(array(

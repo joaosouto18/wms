@@ -456,7 +456,7 @@ class Integracao {
             $valorEstoque = array_change_key_case($valorEstoque, CASE_UPPER);
             $qtdIteracoes = $qtdIteracoes + 1;
 
-            $codProduto = utf8_encode($valorEstoque['COD_PRODUTO']);
+            $codProduto = trim(utf8_encode($valorEstoque['COD_PRODUTO']));
             $grade = "UNICA";
 
             if (isset($valorEstoque['GRADE'])) {
@@ -566,7 +566,6 @@ class Integracao {
                         'linhaEntrega' => $row['DSC_ROTA'],
                         'tipoPedido' => $tipoPedido,
                         'codProprietario' => null
-
                     );
 
                     $pedidos[] = $pedido;
@@ -847,10 +846,10 @@ class Integracao {
                     'qtdEmbalagem' => $qtdEmbalagem,
                     'codBarras' => $codBarras,
                     'peso' => $pesoEmbalagem,
-                    'altura' => $alturaEmbalagem,
-                    'largura' => $larguraEmbalagem,
-                    'profundidade' => $profundidadeEmbalagem,
-                    'cubagem' => $cubagemEmbalagem,
+                    'altura'       => str_replace(',','.',$alturaEmbalagem),
+                    'largura'      => str_replace(',','.',$larguraEmbalagem) ,
+                    'profundidade' => str_replace(',','.',$profundidadeEmbalagem),
+                    'cubagem'      => str_replace(',','.',$cubagemEmbalagem),
                     'ativa' => $embalagemAtiva);
 
                 if (!array_key_exists($codFabricante, $arrayFabricantes)) {
@@ -924,15 +923,15 @@ class Integracao {
                         $emb->qtdEmbalagem = $embalagem['qtdEmbalagem'];
                         $emb->descricao = $embalagem['dscEmbalagem'];
 
-                        $emb->largura = number_format(($embalagem['largura']) /1000,3);
-                        $emb->altura = number_format(($embalagem['altura'])/1000,3);
-                        $emb->peso = number_format(($pesoUnitário * $emb->qtdEmbalagem)/1000,3) ;
-                        $emb->profundidade = number_format(($profundidadeUnitario * $emb->qtdEmbalagem)/1000,3) ;
+                        $emb->largura = number_format(Math::dividir($embalagem['largura'],1),3);
+                        $emb->altura = number_format(Math::dividir($embalagem['altura'],1),3);
+                        $emb->peso = number_format(Math::dividir(Math::multiplicar($pesoUnitário,$emb->qtdEmbalagem),1),3);
+                        $emb->profundidade = number_format(Math::dividir(Math::multiplicar($profundidadeUnitario, $emb->qtdEmbalagem),1),3) ;
 
                         $embalagensObj[] = $emb;
                     }
                 }
-                $importacaoService->saveProdutoWs($this->_em, $repositorios, $produto['codProduto'], $produto['dscProduto'], $produto['dscGrade'], $produto['codFabricante'], '1', $produto['codClasse'], $produto['indPesoVariavel'], $embalagensObj, $produto['refFornecedor'], $produto['possuiValidade'], $produto['diasVidaUtil']);
+                $result = $importacaoService->saveProdutoWs($this->_em, $repositorios, $produto['codProduto'], $produto['dscProduto'], $produto['dscGrade'], $produto['codFabricante'], '1', $produto['codClasse'], $produto['indPesoVariavel'], $embalagensObj, $produto['refFornecedor'], $produto['possuiValidade'], $produto['diasVidaUtil']);
             }
             $this->_em->flush();
             $this->_em->clear();

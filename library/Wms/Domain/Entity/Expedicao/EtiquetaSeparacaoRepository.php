@@ -311,15 +311,29 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     es.grade, es.lote, es.fornecedor, es.tipoComercializacao, es.linhaSeparacao, ' . $origemEstoque . ' es.codExpedicao,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, etq.codEtiquetaMae,
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia, 
-                    p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial
+                    p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial, de.idCaracteristica
                 ')
             ->addSelect("
                         (
                             SELECT COUNT(et.id)
                             FROM wms:Expedicao\EtiquetaSeparacao et
-                            WHERE et.pedido = p.id AND et.codProduto = es.codProduto AND et.dscGrade = es.grade
+                            INNER JOIN wms:Expedicao\Pedido pedi WITH pedi.id = et.pedido
+                            INNER JOIN wms:Expedicao\Carga carg WITH carg.id = pedi.codCarga
+                            INNER JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco
+                            WHERE et.codProduto = es.codProduto AND et.dscGrade = es.grade AND es.codExpedicao = carg.codExpedicao
+                                AND ender.idCaracteristica = de.idCaracteristica
                         )
                          AS qtdProdDist
+                        ")
+            ->addSelect("
+                        (
+                            SELECT COUNT(sep.id)
+                            FROM wms:Expedicao\Carga carga
+                            INNER JOIN wms:Expedicao\Pedido ped WITH ped.codCarga = carga.id
+                            INNER JOIN wms:Expedicao\EtiquetaSeparacao sep WITH sep.pedido = ped.id
+                            WHERE es.codCargaExterno = carga.codCargaExterno
+                        )
+                         AS qtdCargaDist
                         ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
@@ -469,15 +483,29 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codBarrasProduto, c.sequencia, p.id pedido,
 					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, p.numSequencial,
-					de.descricao endereco
+					de.descricao endereco, de.idCaracteristica
                 ')
             ->addSelect("
                         (
                             SELECT COUNT(et.id)
                             FROM wms:Expedicao\EtiquetaSeparacao et
-                            WHERE et.pedido = p.id AND et.codProduto = es.codProduto AND et.dscGrade = es.grade
+                            INNER JOIN wms:Expedicao\Pedido pedi WITH pedi.id = et.pedido
+                            INNER JOIN wms:Expedicao\Carga carg WITH carg.id = pedi.codCarga
+                            INNER JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco                            
+                            WHERE et.codProduto = es.codProduto AND et.dscGrade = es.grade AND es.codExpedicao = carg.codExpedicao
+                                AND ender.idCaracteristica = de.idCaracteristica
                         )
                          AS qtdProdDist
+                        ")
+            ->addSelect("
+                        (
+                            SELECT COUNT(sep.id)
+                            FROM wms:Expedicao\Carga carga
+                            INNER JOIN wms:Expedicao\Pedido ped WITH ped.codCarga = carga.id
+                            INNER JOIN wms:Expedicao\EtiquetaSeparacao sep WITH sep.pedido = ped.id
+                            WHERE es.codCargaExterno = carga.codCargaExterno
+                        )
+                         AS qtdCargaDist
                         ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')

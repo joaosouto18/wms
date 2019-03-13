@@ -1,3 +1,4 @@
+<?php $idBox = $this->box; ?>
 <script>
     $(document).ready(function(){
         $('#seleciona-todos-mapas').live('click',function(){
@@ -21,7 +22,8 @@
             for (var i = 0; i < $('input[name="etiquetas"]:checked').length; i++) {
                 arr[i] = $('input[name="etiquetas"]:checked')[i].value;
             }
-            window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+arr, '_blank');
+
+            window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/etiqueta/idEtiqueta/'+arr+'/box/'+String('<?php echo $idBox ?>'), '_blank');
         });
 
         $('.imprimir-mapa').click(function (a) {
@@ -35,7 +37,7 @@
                     msg: 'Selecione pelo menos um mapa.'
                 });
             }else{
-                window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+arr, '_blank');
+                window.open('/expedicao/etiqueta/gerar-pdf-ajax/tipo/mapa/idMapa/'+arr+'/box/'+String('<?php echo $idBox ?>'), '_blank');
             }
 
         });

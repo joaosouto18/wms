@@ -1401,7 +1401,7 @@ class ExpedicaoRepository extends EntityRepository {
                                               CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END END_CROSSDOCKING
                                         FROM ESTOQUE E
                                        INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
-                                       WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . "
+                                       WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . " AND DE.IND_SITUACAO <> 'B'
                                        GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0), CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END) E
                                   ON E.COD_PRODUTO = P.COD_PRODUTO
                                  AND E.DSC_GRADE = P.DSC_GRADE
@@ -2325,7 +2325,7 @@ class ExpedicaoRepository extends EntityRepository {
         $central = $deposito->getFilial()->getCodExterno();
         $statusFinalizado = Expedicao::STATUS_FINALIZADO;
         $statusCancelada = Expedicao::STATUS_CANCELADO;
-        $SQLOrder = " ORDER BY E.COD_EXPEDICAO ";
+        $SQLOrder = " ORDER BY E.COD_EXPEDICAO DESC";
         $idModeloDefault = $this->getSystemParameterValue('MODELO_SEPARACAO_PADRAO');
 
         $Query = "SELECT DISTINCT E.COD_EXPEDICAO,
@@ -2525,10 +2525,14 @@ class ExpedicaoRepository extends EntityRepository {
                 ->leftJoin('nfsp.notaFiscalSaida', 'nfs')
                 ->leftJoin('wms:Expedicao\NotaFiscalSaidaProduto', 'nfsprod', 'WITH', 'nfsprod.notaFiscalSaida = nfs.id')
                 ->leftJoin('wms:Expedicao\Reentrega', 'r', 'WITH', 'r.codNotaFiscalSaida = nfs.id')
-//            ->leftJoin('wms:Expedicao\EtiquetaSeparacao', 'es', 'WITH', 'es.codReentrega = r.id')
-                ->where('rp.codExpedicao in (' . $idExpedicao . ')')
-                ->andWhere('rp.centralEntrega = :centralEntrega')
+                ->where('rp.codExpedicao in (' . $idExpedicao . ')');
+
+
+        if (isset($central)) {
+            $source->andWhere('rp.centralEntrega = :centralEntrega')
                 ->setParameter('centralEntrega', $central);
+        }
+
 
         if (!is_null($linhaSeparacao)) {
             $source->andWhere("p.linhaSeparacao = $linhaSeparacao");

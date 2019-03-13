@@ -25,8 +25,7 @@ class MapaSeparacao extends eFPDF {
     protected $math;
 
 
-//($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null)
-    public function layoutMapa($expedicao, $modelo, $codBarras = null, $status) {
+    public function layoutMapa($expedicao, $modelo, $codBarras = null, $status, $idBox = null) {
 
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
@@ -62,11 +61,11 @@ class MapaSeparacao extends eFPDF {
                 $this->layoutModelo9($expedicao, $status, $codBarras);
                 break;
             default:
-                $this->layoutModelo1($expedicao, $status, $codBarras);
+                $this->layoutModelo1($expedicao, $status, $codBarras, $idBox);
         }
     }
 
-    private function layoutModelo1($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null) {
+    private function layoutModelo1($idExpedicao, $status = \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $codBarras = null, $idBox) {
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
         if ($codBarras == null) {
@@ -74,6 +73,13 @@ class MapaSeparacao extends eFPDF {
         } else {
             $mapaSeparacao = $em->getRepository('wms:Expedicao\MapaSeparacao')->getMapaSeparacaoById($codBarras);
         }
+
+        $dscBox = null;
+        if (!is_null($idBox)) {
+            $boxEntity = $em->getReference('wms:Deposito\Box',$idBox);
+            $dscBox = $boxEntity->getDescricao();
+        }
+
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
@@ -141,6 +147,10 @@ class MapaSeparacao extends eFPDF {
             $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
             $this->SetFont('Arial', null, 10);
             $this->Cell(20, 4, utf8_decode($this->quebrasEtiqueta), 0, 1);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(20, 4, utf8_decode("BOX: "), 0, 0);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell(20, 4, $dscBox, 0, 1);
             $this->Cell(20, 4, "", 0, 1);
 
             $this->SetFont('Arial', 'B', 9);
@@ -187,6 +197,7 @@ class MapaSeparacao extends eFPDF {
             $cubagemTotal = 0.0;
             /** @var Expedicao\MapaSeparacaoProduto $produto */
             foreach ($produtos as $produto) {
+                $produto = reset($produto);
                 $dscEndereco = "";
                 $embalagem = $produto->getProdutoEmbalagem();
                 $codProduto = $produto->getCodProduto();

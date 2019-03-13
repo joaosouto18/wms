@@ -360,17 +360,18 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setIsEmbFracionavelDefault((isset($isEmbFracionavelDefault) && !empty($isEmbFracionavelDefault))?$isEmbFracionavelDefault: 'N');
 
                         if (isset($largura) && !empty($largura)) {
-                            $embalagemEntity->setLargura($largura);
+                            $embalagemEntity->setLargura(number_format($largura,3,',',''));
                         }
                         if (isset($altura) && !empty($altura)) {
-                            $embalagemEntity->setAltura($altura);
+                            $embalagemEntity->setAltura(number_format($altura,3,',',''));
                         }
                         if (isset($peso) && !empty($peso)) {
-                            $embalagemEntity->setPeso($peso);
+                            $embalagemEntity->setPeso(number_format($peso,3,',',''));
                         }
                         if (isset($profundidade) && !empty($profundidade)) {
-                            $embalagemEntity->setProfundidade($profundidade);
+                            $embalagemEntity->setProfundidade(number_format($profundidade,3,',',''));
                         }
+                        $cubagem = str_replace('.', ',', Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
                         if (isset($cubagem) && !empty($cubagem)) {
                             $embalagemEntity->setCubagem($cubagem);
                         }
@@ -461,17 +462,19 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setCodigoBarras(trim($codigoBarras));
 
                         if (isset($largura) && !empty($largura)) {
-                            $embalagemEntity->setLargura($largura);
+                            $embalagemEntity->setLargura(number_format($largura,3,',',''));
                         }
                         if (isset($altura) && !empty($altura)) {
-                            $embalagemEntity->setAltura($altura);
+                            $embalagemEntity->setAltura(number_format($altura,3,',',''));
                         }
                         if (isset($peso) && !empty($peso)) {
-                            $embalagemEntity->setPeso($peso);
+                            $embalagemEntity->setPeso(number_format($peso,3,',',''));
                         }
                         if (isset($profundidade) && !empty($profundidade)) {
-                            $embalagemEntity->setProfundidade($profundidade);
+                            $embalagemEntity->setProfundidade(number_format($profundidade,3,',',''));
                         }
+
+                        $cubagem = str_replace('.', ',', Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
                         if (isset($cubagem) && !empty($cubagem)) {
                             $embalagemEntity->setCubagem($cubagem);
                         }

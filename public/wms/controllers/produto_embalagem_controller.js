@@ -24,6 +24,23 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                             grade: grade
                                         }, this.callback('list'));
                                     }
+
+                                    var permiteAlterarcao = true;
+                                    $.ajax({
+                                        url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                                        type: 'post',
+                                        async: false,
+                                        dataType: 'json',
+                                        success: function (data) {
+                                            if (data === 'N') {
+                                                permiteAlterarcao = false;
+                                            }
+                                        }
+                                    });
+
+                                    if (!permiteAlterarcao) {
+                                        $("#fieldset-embalagem").hide();
+                                    }
                                 }
                             },
 
@@ -113,6 +130,24 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     return false
                                 }
                                 ev.preventDefault();
+
+                                var permiteAlterarcao = true;
+                                $.ajax({
+                                    url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
+                                    type: 'post',
+                                    async: false,
+                                    dataType: 'json',
+                                    success: function (data) {
+                                        if (data === 'N') {
+                                            permiteAlterarcao = false;
+                                        }
+                                    }
+                                });
+
+                                if (!permiteAlterarcao) {
+                                    $("#fieldset-embalagem").hide();
+                                }
+
                             },
 
                             salvarDadosEmbalagem: function (valores) {
@@ -162,18 +197,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                              * @param {Event} ev A jQuery event whose default action is prevented.
                              */
                             '.btn-editar-embalagem click': function (el, ev) {
-                                $.ajax({
-                                    url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',
-                                    type: 'post',
-                                    dataType: 'json',
-                                    success: function (data) {
-                                        if (data === 'N') {
-                                            $('#fieldset-embalagem #embalagem-codigoBarras').attr("disabled", true);
-                                            $('#fieldset-embalagem #embalagem-quantidade').attr("disabled", true);
-                                        }
-                                    }
-                                });
-
+                                $("#fieldset-embalagem").show();
                                 var permiteAlterarcao = true;
                                 $.ajax({
                                     url: URL_MODULO + '/produto/verificar-parametro-codigo-barras-ajax',

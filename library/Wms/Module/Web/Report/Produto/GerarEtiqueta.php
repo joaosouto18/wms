@@ -190,6 +190,7 @@ class GerarEtiqueta extends eFPDF
                 $this->SetFont('Arial', 'B', 8);
 
                 $this->layout6($produto, $tipo);
+                break;
             case "recebimento":
                 $this->SetMargins(0, 1);
                 $this->SetFont('Arial', 'B', 8);
@@ -453,14 +454,15 @@ class GerarEtiqueta extends eFPDF
     {
         $codigo = $produto['codigoBarras'];
         $this->AddPage();
-        $this->MultiCell(100, 2.7, utf8_decode($produto['idProduto']) . ' - ' . substr(utf8_decode($produto['dscProduto']), 0, 30), 0, "L");
+        $this->SetFont('Arial', 'B', 12);
+        $this->MultiCell(110,2.7,utf8_decode($produto['idProduto']) . ' - ' . substr(utf8_decode($produto['dscProduto']), 0, 30),0,"C");
         $this->Ln(1.5);
-        $this->MultiCell(100, 2.7, substr(utf8_decode($produto['dscProduto']), 30, 200), 0, "L");
+        $this->MultiCell(110,2.7, substr(utf8_decode($produto['dscProduto']), 30, 200),0,"C");
         $this->Ln(5);
 
         if ($produto['idEmbalagem'] != null) {
             $this->Ln(3);
-            $this->Cell(100, 0, 'Embalagem: ' . utf8_decode($produto['dscEmbalagem']) . " (" . $produto['quantidade'] . ") ", 0, 0);
+            $this->Cell(100, 0, 'Embalagem: ' . utf8_decode($produto['dscEmbalagem'])  . " (".$produto['quantidade'].") ", 0, 0,'C');
         }
 
         if ($produto['idVolume'] != null) {
@@ -469,16 +471,17 @@ class GerarEtiqueta extends eFPDF
         }
 
 
-        $x = 33;
-        $y = 35;
-        $height = 8;
-        $angle = 0;
-        $type = 'code128';
-        $black = '000000';
-        $data = Barcode::fpdf($this, $black, $x, $y, $angle, $type, array('code' => $codigo), 0.45, 15);
+        $x        = 60;
+        $y        = 35;
+        $height   = 8;
+        $angle    = 0;
+        $type     = 'code128';
+        $black    = '000000';
+        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.70,15);
         $len = $this->GetStringWidth($data['hri']);
 
-        $this->Text(($x - $height) + (($height - $len) / 2) + 3, $y + 11, $codigo);
+        $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 11,$codigo);
+
     }
 
     public function layoutEtiquetaRecebimento($produto, $tipo)

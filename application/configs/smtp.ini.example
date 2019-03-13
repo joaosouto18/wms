@@ -1,0 +1,8 @@
+[smtp]
+smtp.titulo  = Casa do Confeiteiro
+smtp.usuario = rodrigodantley@gmail.com
+smtp.senha   = durateston
+smtp.host    = smtp.gmail.com
+smtp.porta   = 587
+smtp.seguranca = tls
+smtp.auth    = login

@@ -352,12 +352,26 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
     public function getMapaProduto($idMapa)
     {
+
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('msp')
+            ->select("msp")
+            ->addSelect("CASE WHEN sr.sentido = 'C' THEN de.predio ELSE 1 end as crescente")
+            ->addSelect("CASE WHEN sr.sentido = 'D' THEN de.predio ELSE 1 end as decrescente")
+
+            ->addSelect("CASE WHEN sr.sentido = 'C' THEN de.apartamento ELSE 1 end as crescenteApto")
+            ->addSelect("CASE WHEN sr.sentido = 'D' THEN de.apartamento ELSE 1 end as decrescenteApto")
+
             ->from('wms:Expedicao\MapaSeparacaoProduto', 'msp')
             ->leftJoin('msp.depositoEndereco', 'de')
+            ->leftJoin('wms:Deposito\Endereco\SentidoRua', 'sr', 'WITH', 'sr.rua = de.rua AND sr.deposito = de.deposito')
             ->where("msp.mapaSeparacao = $idMapa")
-            ->orderBy('de.rua, de.predio, de.nivel, de.apartamento, msp.numCaixaInicio, msp.numCaixaFim');
+            ->orderBy("de.rua",'ASC')
+            ->addOrderBy("crescente",'ASC')
+            ->addOrderBy("decrescente", 'DESC')
+            ->addOrderBy('de.nivel','ASC')
+            ->addOrderBy('crescenteApto','ASC')
+            ->addOrderBy('decrescenteApto','DESC')
+            ->addOrderBy('msp.numCaixaInicio, msp.numCaixaFim','ASC');
 
         return $sql->getQuery()->getResult();
     }

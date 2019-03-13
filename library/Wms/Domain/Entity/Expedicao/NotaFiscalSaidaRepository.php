@@ -34,7 +34,7 @@ class NotaFiscalSaidaRepository extends EntityRepository {
         if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
             $sql->andWhere("nfs.numeroNf IN (".$data['notaFiscal'].")");
         } elseif (isset($data['carga']) && !empty($data['carga'])) {
-            $sql->andWhere("c.codCargaExterno = $data[carga]");
+            $sql->andWhere("c.codCargaExterno = ('". $data['carga'] ."')");
         }
 
         if (isset($data['codEtiqueta']) && !empty($data['codEtiqueta'])) {
@@ -48,9 +48,10 @@ class NotaFiscalSaidaRepository extends EntityRepository {
         if ($recursive == false) {
             if (count($result) == 0) {
                 if ($this->getSystemParameterValue('IND_UTILIZA_INTEGRACAO_NF_SAIDA') == 'S') {
-                    if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
+                    if ((isset($data['notaFiscal']) && !empty($data['notaFiscal'])) || (!empty($data['carga']) && isset($data['carga']))) {
                         $options = array();
-                        $options[] = $data['notaFiscal'];
+                        $options[] = self::nvl($data['notaFiscal']);
+                        $options[] = self::nvl($data['carga']);
 
                         $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_NOTA_FISCAL_SAIDA');
 
@@ -67,6 +68,11 @@ class NotaFiscalSaidaRepository extends EntityRepository {
         }
 
         return $result;
+    }
+
+    function nvl(&$var, $default = "")
+    {
+        return isset($var) ? $var : $default;
     }
 
     public function getQtdProdutoDivergentesByNota($data) {
