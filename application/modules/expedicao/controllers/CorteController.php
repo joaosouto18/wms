@@ -176,6 +176,7 @@ class Expedicao_CorteController extends Action {
         $grade = $this->_getParam('grade');
         $idMotivo = $this->_getParam('motivo');
         $cortes = $this->_getParam('cortes');
+        $embVendaDefault = $this->_getParam('embVendaDefault');
 
         try {
             $this->getEntityManager()->beginTransaction();
@@ -199,6 +200,7 @@ class Expedicao_CorteController extends Action {
                 $codPedido = $corte[0];
                 $idEmbalagem = $corte[1];
                 $quantidadeCortada = $corte[2];
+                $idMapa = $corte[3];
 
                 $pedidoProdutoEn = $pedidoProdutoRepo->findOneBy(array(
                     'codPedido' => $codPedido,
@@ -207,7 +209,6 @@ class Expedicao_CorteController extends Action {
 
                 ));
 
-                $embalagemEn = null;
                 if ($idEmbalagem >0 ) {
                     $embalagemEn = $embalagemRepo->find($idEmbalagem);
                     if ($embalagemEn == null) {
@@ -231,7 +232,7 @@ class Expedicao_CorteController extends Action {
 
                 $motivo = $motivoEn->getDscMotivo();
 
-                $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo);
+                $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault);
 
             }
 
@@ -260,22 +261,12 @@ class Expedicao_CorteController extends Action {
         $actionAjax = $this->_getParam('acao');
 
         try {
-            $permiteCortes = $this->getSystemParameterValue('PERMITE_REALIZAR_CORTES_WMS');
-            $this->view->permiteCortes = $permiteCortes;
-
-            $corteEmbalagemVenda = $this->getSystemParameterValue('MOVIMENTA_EMBALAGEM_VENDA_PEDIDO');
-
-            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-            $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+            $this->view->permiteCortes = $this->getSystemParameterValue('PERMITE_REALIZAR_CORTES_WMS');
+            /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
+            $modeloSeparacaoEn = $this->em->getRepository("wms:Expedicao\ModeloSeparacao")->getModeloSeparacao($id);
+            $this->view->forcaEmbVenda = $forcaEmbVenda = $modeloSeparacaoEn->getForcarEmbVenda();
 
             if (($codProduto != null) && ($grade != null)) {
-                $pedidos = $pedidoRepo->getPedidoByExpedicao($id, $codProduto, $grade, true);
-
-                $grid = new \Wms\Module\Web\Grid\Expedicao\CorteProduto();
-                $grid = $grid->init($pedidos, $id, $codProduto, $grade, $corteEmbalagemVenda);
-
-                $this->arrCortes = $pedidos;
-                $this->view->grid = $grid;
 
                 $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id'=> $codProduto, 'grade' => $grade));
 
@@ -288,6 +279,17 @@ class Expedicao_CorteController extends Action {
                 $formMotivo->setProduto($produtoEn);
                 $this->view->formMotivo = $formMotivo;
 
+
+                /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+                $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+                $pedidos = $pedidoRepo->getPedidoByExpedicao($id, $codProduto, $grade, true);
+
+                $grid = new \Wms\Module\Web\Grid\Expedicao\CorteProduto();
+
+                $grid = $grid->init($pedidos, $codProduto, $grade, (!empty($produtoEn->getForcarEmbVenda()) ? $produtoEn->getForcarEmbVenda() : $forcaEmbVenda));
+
+                $this->arrCortes = $pedidos;
+                $this->view->grid = $grid;
             }
 
             $form = new \Wms\Module\Web\Form\CortePedido();
@@ -381,8 +383,11 @@ class Expedicao_CorteController extends Action {
         $this->view->expedicao = $expedicao = $this->_getParam('expedicao');
         $this->view->origin = $origin = $this->_getParam('origin');
         $quantidade = $this->_getParam('quantidade');
+        $this->view->mapaPreSelected = $mapaPreSelected = $this->_getParam('COD_MAPA_SEPARACAO', null);
         $motivo = $this->_getParam('motivoCorte', null);
-
+        $mapa = $this->_getParam('mapa', null);
+        $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+        $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($pedido);
         $senha = $this->_getParam('senha');
 
         if (isset($senha) && !empty($senha) && isset($quantidade) && !empty($quantidade) && isset($motivo) && !empty($motivo)) {
@@ -397,34 +402,33 @@ class Expedicao_CorteController extends Action {
                 if ($senha != $senhaSistema)
                     throw new \Exception("Senha Informada Inválida");
 
-                $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-                $pedido = $pedidoRepo->getMaxCodPedidoByCodExterno($pedido);
+
                 /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
                 $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
                 $pedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
-                        ->findOneBy(array('codPedido' => $pedido, 'codProduto' => $produto, 'grade' => $grade));
+                        ->findOneBy(array('codPedido' => $idPedido, 'codProduto' => $produto, 'grade' => $grade));
 
                 if (!isset($pedidoProduto) || empty($pedidoProduto))
                     throw new \Exception("Produto $produto grade $grade não encontrado para o pedido $pedido");
 
-                $expedicaoRepo->cortaPedido($pedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $motivo, null, $idMotivo);
+                $expedicaoRepo->cortaPedido($idPedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $motivo, null, $idMotivo, (!empty($mapa))? $mapa : $mapaPreSelected);
 
                 $this->getEntityManager()->flush();
                 $this->getEntityManager()->commit();
                 $this->addFlashMessage('success', 'Produto ' . $produto . ' grade ' . $grade . ' pedido ' . $pedido . ' cortado com Sucesso');
+                if (empty($mapaPreSelected)) {
+                    $this->redirect("index", "index", "expedicao");
+                } else {
+                    $this->redirect("index", "os", "expedicao", ["id"=> $expedicao]);
+                }
             } catch (\Exception $e) {
                 $this->getEntityManager()->rollback();
                 $this->addFlashMessage('error', $e->getMessage());
             }
 
-            /*
-                if ($origin == 'ressuprimento') {
-                    $this->_redirect("/expedicao/corte/corte-pedido/id/$expedicao/origin/ressuprimento");
-                } else {
-                    $this->_redirect('/expedicao');
-                }
-            */
-
+        } else {
+            if (empty($mapaPreSelected))
+                $this->view->mapas = $this->em->getRepository("wms:Expedicao\MapaSeparacaoPedido")->getMapaByPedidoProduto($idPedido, $produto, $grade);
         }
     }
 

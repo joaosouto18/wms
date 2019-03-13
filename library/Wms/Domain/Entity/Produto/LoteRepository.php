@@ -51,22 +51,22 @@ class LoteRepository extends EntityRepository
      * @param $idProduto
      * @param $grade
      * @param null $codPessoaNovaCriacao
+     * @param boolean $cine Create If Not Exist
      * @return Lote|null
      * @throws \Exception
      */
-    public function verificaLote($lote, $idProduto, $grade, $codPessoaNovaCriacao = null){
+    public function verificaLote($lote, $idProduto, $grade, $codPessoaNovaCriacao = null, $cine = false){
         /** @var Lote $loteEn */
-        $loteEn = $this->findOneBy(['descricao' => $lote]);
-        if (!empty($loteEn)) {
-            if ($loteEn->getCodProduto() == $idProduto && $loteEn->getGrade() == $grade) {
-                return $loteEn;
-            } elseif ($loteEn->getOrigem() == Lote::INTERNO && empty($loteEn->getCodProduto()) && empty($loteEn->getGrade())) {
-                $loteEn->setCodProduto($idProduto)->setGrade($grade);
-                $this->_em->persist($loteEn);
-                return $loteEn;
-            } elseif ($loteEn->getOrigem() == Lote::INTERNO && ($loteEn->getCodProduto() != $idProduto || $loteEn->getGrade() != $grade)) {
-                return self::save($idProduto, $grade, $lote, (!empty($codPessoaNovaCriacao)) ? $codPessoaNovaCriacao : $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
-            }
+        $loteEn = $this->findOneBy(['descricao' => $lote, 'codProduto' => [$idProduto, null], 'grade' => [$grade, null]]);
+
+        if (!empty($loteEn) && !empty($loteEn->getCodProduto())) {
+            return $loteEn;
+        } elseif (!empty($loteEn) && $loteEn->getOrigem() == Lote::INTERNO && empty($loteEn->getCodProduto()) && $cine) {
+            $loteEn->setCodProduto($idProduto)->setGrade($grade);
+            $this->_em->persist($loteEn);
+            return $loteEn;
+        } elseif (!empty($loteEn) && $loteEn->getOrigem() == Lote::INTERNO && $cine && ($loteEn->getCodProduto() != $idProduto || $loteEn->getGrade() != $grade)) {
+            return self::save($idProduto, $grade, $lote, (!empty($codPessoaNovaCriacao)) ? $codPessoaNovaCriacao : $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
         }
 
         return null;
@@ -163,7 +163,6 @@ class LoteRepository extends EntityRepository
                 "grade" => $grade])->getQuery()->getResult();
 
             foreach ($lotes as $lote => $qtdConferida) {
-                /** @var Lote $loteEn */
                 $restante = $qtdConferida;
                 foreach ($itensNf as $item) {
                     $idItemNF = $item->getId();
@@ -201,14 +200,16 @@ class LoteRepository extends EntityRepository
 
         /* REPLICA O LOTE INTERNO CASO ESTEJA VINCULADO À MAIS DE 1 PRODUTO */
         foreach ($arrLotes as $lote => $produtos) {
-            $loteEn = $this->findOneBy(["descricao" => $lote, "codProduto" => null, "grade" => null]);
+            /** @var Lote $loteEn */
+            $loteEn = $this->findOneBy(["descricao" => $lote, "codProduto" => null, "grade" => null, 'origem' => Lote::INTERNO]);
             end($produtos);
             $last = key($produtos);
             reset($produtos);
             foreach ($produtos as $prodGrade => $var) {
                 list($codigo, $grade) = explode($strLink, $prodGrade);
                 if ($prodGrade == $last) {
-                    $loteEn->setCodProduto($codigo)->setGrade($grade);
+                    $ref = $this->_em->getReference("wms:Produto", ['id' => $codigo, 'grade' => $grade]);
+                    $loteEn->setProduto($ref)->setCodProduto($codigo)->setGrade($grade);
                     $this->_em->persist($loteEn);
                 } else {
                     self::save($codigo, $grade, $lote, $loteEn->getCodPessoaCriacao(), Lote::INTERNO);

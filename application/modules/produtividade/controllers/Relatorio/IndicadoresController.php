@@ -50,7 +50,7 @@ class Produtividade_Relatorio_IndicadoresController extends Action {
 
         $SQLWHere = "";
         if (isset($params['atividade']) && !empty($params['atividade'])) {
-            $SQLWHere = " AND DSC_ATIVIDADE = '" . $params['atividade'] . "'";
+            $SQLWHere = " AND DSC_ATIVIDADE LIKE '%" . $params['atividade'] . "%'";
         }
 
         $sql = "SELECT ";

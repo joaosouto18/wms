@@ -515,9 +515,10 @@ INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE,
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (516, '7.3.0', 'Melhoria: Novo Módulo de inventário', '05-novo-inventario.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (517, '7.3.0', 'Melhoria: Modelo de etiqueta de lote virgem', '06-modelo-etiqueta-lote-virgem.sql', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (518, '7.3.0', 'Melhoria: Implantação do conceito de cross-docking', '07-cross-docking.sql', SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (519, '7.3.0', 'Melhoria: Possibilidade de endereçamento manual mesmo com itens já alocados em UMAs não endereçadas ou impressas', null, SYSDATE);
+INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (520, '7.3.0', 'Correção: Correção no fechamento da produtividade do ultimo mapa', null, SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '7.x.x', 'Correção: Sistema voltando o item para não expedir multiplo da embalagem de venda automaticamente', '', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '7.x.x', 'Melhoria: Disparando integração de cancelamento de carga em servidores diferentes', '', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '7.x.x', 'Melhoria: Permitindo integração de comparativo de pedidos entre WMS x ERP com dois ERPs diferentes', '', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '7.x.x', 'Correção: Correção na cosulta de pesos do produto via WebService', '', SYSDATE);
 INSERT INTO FUNCIONALIDADES (COD_FUNCIONALIDADE, COD_VERSAO, DSC_FUNCIONALIDADE, SCRIPT, DTH_ATUALIZACAO) VALUES (xxx, '7.x.x', 'Melhoria: Inclusão do código de barras base na consulta via WebService', '', SYSDATE);
-

@@ -14,10 +14,9 @@ use Wms\Module\Web\Grid,
 class CorteProduto extends Grid
 {
     /**
-     * @param $idExpedicao
      * @return $this|void
      */
-    public function init($pedidos,$idExpedicao,$codProduto,$grade, $corteEmbalagemVenda)
+    public function init($pedidos,$codProduto,$grade, $corteEmbalagemVenda)
     {
 
         $enabled = true;
@@ -50,6 +49,10 @@ class CorteProduto extends Grid
                 ->addColumn(array(
                     'label' => 'Pedido',
                     'index' => 'id',
+                ))
+                ->addColumn(array(
+                    'label' => 'Mapa',
+                    'index' => 'mapa',
                 ))
                 ->addColumn(array(
                     'label' => 'Cod.Cliente',
@@ -86,8 +89,11 @@ class CorteProduto extends Grid
                     'index' => 'permiteCorte',
                     'render' => 'inputText',
                 ))->addColumn(array(
-                    'label' => 'Qtd.Cortada',
+                    'label' => 'Qtd.Corte/Mapa',
                     'index' => 'qtdCortada',
+                ))->addColumn(array(
+                    'label' => 'Qtd.Cortada Total',
+                    'index' => 'qtdCorteTotal',
                 ));
 
         $this->setShowPager(true);

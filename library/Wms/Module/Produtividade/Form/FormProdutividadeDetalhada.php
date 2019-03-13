@@ -70,11 +70,15 @@ class FormProdutividadeDetalhada extends Form {
             'multiOptions' => array(
                 'CARREGAMENTO' => 'CARREGAMENTO',
                 'CONF. RECEBIMENTO' => 'CONF. RECEBIMENTO',
-                'CONF. SEPARACAO' => 'CONF. SEPARACAO',
+                'CONF. SEPARACAO' => 'CONF. SEPARACAO (TODAS)',
+                'CONF. SEPARACAO - PADRAO' => '- CONF. SEPARACAO (PADRAO)',
+                'CONF. SEPARACAO - EMBALADO' => '- CONF. SEPARACAO (EMBALADO)',
                 'DESCARREGAMENTO' => 'DESCARREGAMENTO',
                 'ENDERECAMENTO' => 'ENDERECAMENTO',
                 'RESSUPRIMENTO' => 'RESSUPRIMENTO',
-                'SEPARACAO' => 'SEPARACAO',
+                'SEPARACAO' => 'SEPARACAO (TODAS)',
+                'SEPARACAO - PADRAO' => '- SEPARACAO (PADRAO)',
+                'SEPARACAO - EMBALADO' => '- SEPARACAO (EMBALADO)',
             ),
             'decorators' => array('ViewHelper'),
         ));

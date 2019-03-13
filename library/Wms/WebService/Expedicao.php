@@ -273,16 +273,16 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $pedido['codProprietario'] = $codProprietario;
             $pedido['tipoPedido'] = (isset($pedidoWs->tipo) && !empty($pedidoWs->tipo)) ? $pedidoWs->tipo : "ENTREGA";
 
-            if (($pedidoWs->centralEntrega == null) || ($pedidoWs->centralEntrega == "")) {
-                $pedido['centralEntrega'] = "1";
-            } else {
+            if (isset($pedidoWs->centralEntrega) && !empty($pedidoWs->centralEntrega)) {
                 $pedido['centralEntrega'] = $pedidoWs->centralEntrega;
+            } else {
+                $pedido['centralEntrega'] = "1";
             }
 
-            if (($pedidoWs->pontoTransbordo == null) || ($pedidoWs->pontoTransbordo == "")) {
-                $pedido['pontoTransbordo'] = "1";
-            } else {
+            if (isset($pedidoWs->pontoTransbordo) && !empty($pedidoWs->pontoTransbordo)) {
                 $pedido['pontoTransbordo'] = $pedidoWs->pontoTransbordo;
+            } else {
+                $pedido['pontoTransbordo'] = "1";
             }
 
             $pedidosArray[] = $pedido;

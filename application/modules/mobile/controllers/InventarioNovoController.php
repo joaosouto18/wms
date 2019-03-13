@@ -18,7 +18,7 @@ class Mobile_InventarioNovoController extends Action
         $arrMasc = \Wms\Util\Endereco::separar($mascara, $arrQtdDigitos);
         $arrMasc["mask"] = $mascara;
         $this->view->endConfig = json_encode($arrMasc);
-        $this->renderScript('inventario-novo\inventarios.phtml');
+        $this->renderScript('inventario-novo' . DIRECTORY_SEPARATOR .'inventarios.phtml');
     }
 
     public function getInventariosAction()
@@ -78,10 +78,16 @@ class Mobile_InventarioNovoController extends Action
     public function getInfoProdutoAction()
     {
         try {
+
+            $elemento = $this->_em->getRepository('wms:Produto')->getEmbalagemByCodBarras($this->_getParam("codbarras"))[0];
+
+            if (empty($elemento))
+                throw new Exception("Nenhuma embalagem/volume ativo foi encontrado com esse código de barras ". $this->_getParam("codbarras"));
+
             $this->_helper->json([
                     "status" => "ok",
                     "response" => [
-                        "produto" => $this->_em->getRepository('wms:Produto')->getEmbalagemByCodBarras($this->_getParam("codbarras"), $this->_getParam("conEnd"))[0]
+                        "produto" => $elemento
                     ]
                 ]
             );

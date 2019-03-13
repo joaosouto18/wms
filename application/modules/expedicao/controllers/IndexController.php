@@ -399,7 +399,7 @@ class Expedicao_IndexController extends Action {
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
                 ),array(
                     'label' => 'Fechar Mapa',
-                    'cssClass' => 'btn updateSeparacao',
+                        'cssClass' => 'btn updateSeparacao',
                     'style' => 'margin-top: 15px; margin-right: 10px ;  height: 20px;'
                 ),
                 array(
@@ -593,6 +593,8 @@ class Expedicao_IndexController extends Action {
         $cpf = str_replace(array('.', '-'), '', $params['cpf']);
         $codMapa = 0;
         $erro = '';
+        $pendenteFechamento = 'N';
+
         /** @var \Wms\Domain\Entity\UsuarioRepository $usuarioRepo */
         $usuarioRepo = $this->getEntityManager()->getRepository('wms:Usuario');
         $pessoaFisicaRepo = $this->getEntityManager()->getRepository('wms:Pessoa\Fisica');
@@ -668,8 +670,14 @@ class Expedicao_IndexController extends Action {
                         $qtdMax = $this->getSystemParameterValue('MAX_PRODUTIVIDADE_MAPA');
                         $qtdMapa = $apontamentoMapaRepository->getQtdApontamentoMapa($mapa);
                         if ($qtdMapa['QTD'] >= $qtdMax) {
-                            $erro = 'Quantidade máxima de funcionários já vinculadas a esse mapa';
-                            $salvar = false;
+
+                            if ($apontamentoMapaRepository->verificaApontamentoMapaUsuarioPendenteFechamento($mapa,$usuario[0]['COD_PESSOA'])) {
+                                $pendenteFechamento = 'S';
+                            } else {
+                                $erro = 'Quantidade máxima de funcionários já vinculadas a esse mapa';
+                                $salvar = false;
+                            }
+
                         }
                     }
                     /** @var Expedicao\MapaSeparacao $mapaEn */
@@ -685,7 +693,7 @@ class Expedicao_IndexController extends Action {
 
 
         if (empty($erro) && $salvar == true) {
-            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA'], 'mapa' => $codMapa, 'expedicao' => $expedicaoIni['COD_EXPEDICAO'], 'dth_vinculo' => date('d/m/Y'));
+            $response = array('result' => 'Ok', 'pessoa' => $usuario[0]['NOM_PESSOA'], 'mapa' => $codMapa, 'expedicao' => $expedicaoIni['COD_EXPEDICAO'], 'dth_vinculo' => date('d/m/Y'), 'pendenteFechamento' => $pendenteFechamento);
         } elseif($salvar == false && empty($erro)) {
             $response = array('result' => 'Error', 'msg' => "Intervalo já bipado para ".$usuario[0]['NOM_PESSOA']);
         }else{

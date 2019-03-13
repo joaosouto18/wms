@@ -141,11 +141,14 @@ class InventarioService extends AbstractService
             /** @var InventarioNovo\InventarioEndProd $produto */
             $produto = $inventarioEndProdRepo->find($id);
 
+            /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
+            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+            $ordemServicoRepo->buscaOsProdutoExcluidoDoInventario($produto->getInventarioEndereco()->getId(), $produto->getCodProduto(), $produto->getGrade());
+
             //exclusão lógica
+
             $produto->setAtivo(false);
-
             $this->em->persist($produto);
-
             $this->em->flush();
 
             // se nao existir mais produtos no endereço, cancela o endereço
@@ -178,10 +181,12 @@ class InventarioService extends AbstractService
             /** @var InventarioNovo\InventarioEnderecoNovo $endereco */
             $endereco = $inventarioEnderecoRepo->find($id);
 
+            /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
+            $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
+            $ordemServicoRepo->buscaOsEnderecoExcluidoDoInventario($id);
+
             $endereco->setAtivo(false);
-
             $this->em->persist($endereco);
-
             $this->em->flush();
 
             // se nao existir mais endereços ativos nesse inventario, cancela o mesmo
@@ -266,11 +271,7 @@ class InventarioService extends AbstractService
                 if (json_decode($inventario['volumesSeparadamente']))
                     $elements[] = $this->em->getReference("wms:Produto\Volume", $produto['idVolume']);
                 else
-                    $elements = $this->em->getRepository("wms:Produto\Volume")->findBy([
-                        "id" => $produto['idProduto'],
-                        "grade" => $produto['grade'],
-                        "dataInativacao" => null
-                    ]);
+                    $elements = $this->em->getRepository("wms:Produto\Volume")->getProdutosVolumesByNorma($produto['norma'],  $produto['idProduto'], $produto['grade'], null, true);
             }
             elseif (isset($produto['idEmbalagem']) && !empty(json_decode($produto['idEmbalagem']))) {
                 $isEmb = true;
@@ -530,7 +531,7 @@ class InventarioService extends AbstractService
                         $estoque->getCodProduto(),
                         $estoque->getGrade(),
                         $estoque->getLote(),
-                        $estoque->getProdutoVolume()
+                        $estoque->getProdutoVolume()->getId()
                     ];
                     $elemCount = [
                         $estoque->getQtd(),
@@ -567,7 +568,7 @@ class InventarioService extends AbstractService
                         "codProduto" => $estoque->getCodProduto(),
                         "grade" => $estoque->getGrade(),
                         "lote" => $estoque->getLote(),
-                        "idVolume" => $estoque->getProdutoVolume()
+                        "idVolume" => $estoque->getProdutoVolume()->getId()
                     ];
                     $elemCount = [
                         0,
@@ -617,7 +618,6 @@ class InventarioService extends AbstractService
                 $this->updateFlagContagensProdutos($invContEnd, $prodX[0], $prodX[1], $prodX[2], $prodX[3], $divergente);
             }
 
-            ;
             if ($temDivergencia || (empty($count) && $invContEnd->getSequencia() < $inventario['numContagens'])) {
                 $contDiverg = ($invContEnd->getSequencia() >= $inventario['numContagens']);
                 $this->addNovaContagem(
@@ -649,7 +649,9 @@ class InventarioService extends AbstractService
 
             if (isset($produto["idVolume"]) && !empty($produto["idVolume"])) {
                 $isEmb = false;
-                $elements[] = $produto["idVolume"];
+                $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
+                $volumeEn = $produtoVolumeRepo->find($produto["idVolume"]);
+                $elements[] = $volumeEn;
             } else {
                 $isEmb = true;
                 $elements[] = null;
@@ -890,6 +892,7 @@ class InventarioService extends AbstractService
      * @param $qtd
      * @param $validade
      * @param $dthEntrada
+     * @throws \Exception
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Doctrine\ORM\TransactionRequiredException
@@ -904,7 +907,7 @@ class InventarioService extends AbstractService
         $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
 
         if ($produtoEn->getIndControlaLote() == "S" and !empty($lote) and !empty($dthEntrada)) {
-            if (empty($loteRepo->verificaLote($lote, $produtoEn->getId(), $produtoEn->getGrade(), $idUsuario)))
+            if (empty($loteRepo->verificaLote($lote, $produtoEn->getId(), $produtoEn->getGrade(), $idUsuario, true)))
                 $loteRepo->save($produtoEn->getId(), $produtoEn->getGrade(), $lote, $idUsuario);
         }
 
@@ -937,8 +940,7 @@ class InventarioService extends AbstractService
 
             /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
             $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
-
-            $ordemServicoRepo->excluiOsInventarioInterrompido($id);
+            $ordemServicoRepo->excluiOs($id);
 
             $invEn->interromper();
             $this->em->persist($invEn);
@@ -1052,7 +1054,7 @@ class InventarioService extends AbstractService
         $filename = "Exp_Inventario($codInvErp).txt";
         $file = fopen($filename, 'w');
 
-        $contagens = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd")->getResultInventario(implode(',', $inventarios), true);
+        $contagens = $this->em->getRepository("wms:InventarioNovo")->getResultInventario(implode(',', $inventarios), true);
         $inventario = array();
 
         foreach ($contagens as $contagem) {

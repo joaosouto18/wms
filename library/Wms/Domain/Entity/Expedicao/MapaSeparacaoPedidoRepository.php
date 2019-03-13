@@ -35,4 +35,16 @@ class MapaSeparacaoPedidoRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
+
+    public function getMapaByPedidoProduto ($pedido, $codProduto, $grade)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("ms.id")
+            ->from("wms:Expedicao\MapaSeparacaoPedido", "msp")
+            ->innerJoin("msp.mapaSeparacao", "ms")
+            ->innerJoin("msp.pedidoProduto", "pp")
+            ->where("pp.codPedido = $pedido AND pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
+
+        return $dql->getQuery()->getResult();
+    }
 }

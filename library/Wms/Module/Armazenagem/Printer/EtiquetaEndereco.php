@@ -152,6 +152,10 @@ class EtiquetaEndereco extends Pdf
                     $this->layoutModelo11($produtos,$codBarras);
 
                     break;
+                case 13:
+                    if($key > 0) $this->AddPage();
+                        $this->layoutModelo13($codBarras);
+                    break;
                 default:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras, false);
                     if (count($produtos) <= 0){
@@ -177,6 +181,7 @@ class EtiquetaEndereco extends Pdf
         $this->Cell(24,13,utf8_decode("NIVEL"),0,0);
         $this->Cell(23,13,utf8_decode("APTO"),0,1);
 
+
         $this->SetFont('Arial', 'B', 18);
         $this->Cell(0,0," ",0,1);
 
@@ -185,6 +190,20 @@ class EtiquetaEndereco extends Pdf
         $this->Cell(95,8,$codBarras,0,0);
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 5, 28 , 100);
+    }
+
+    public function layoutModelo13($codBarras){
+        $this->InFooter = true;
+        $this->Cell(5,13,"",0,0);
+        $this->SetFont('Arial', 'B', 8);
+
+        $this->Cell(22,12,utf8_decode("RUA"),0,0);
+        $this->Cell(25,12,utf8_decode("PREDIO"),0,0);
+        $this->Cell(24,12,utf8_decode("NIVEL"),0,0);
+        $this->Cell(0,12,utf8_decode("APTO"),0,1);
+
+        $this->SetFont('Arial', 'B', 41);
+        $this->Cell(0,10,$codBarras,0,0);
     }
 
     /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */

@@ -414,31 +414,65 @@ class OrdemServicoRepository extends EntityRepository
         return $ordemServicoEn;
     }
 
-    public function excluiOsInventarioInterrompido($idInventario) {
+    public function buscaOsProdutoExcluidoDoInventario($idEndereco, $idProduto, $grade){
         $sql = "select 
-                    os.cod_os os                    
+                      os.cod_os codOs
+                      from ordem_servico os            
+                        inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os      
+                        inner join inventario_cont_end ice on ice.cod_inv_cont_end = iceo.cod_inv_cont_end
+                        inner join inventario_cont_end_prod icep on icep.cod_inv_cont_end = ice.cod_inv_cont_end  
+                        inner join inventario_endereco_novo ien on ien.cod_inventario_endereco = ice.cod_inventario_endereco                      
+                      where ien.cod_inventario_endereco = $idEndereco                        
+                        and icep.cod_produto = '$idProduto'                        
+                        and icep.dsc_grade = '$grade'                        
+                        and os.dth_final_atividade is null";
+
+        $idOs = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if(!empty($idOs))
+            $this->excluiOs($idOs);
+    }
+
+    public function buscaOsEnderecoExcluidoDoInventario($idEndereco){
+        $sql = "select os.cod_os 
                     from ordem_servico os            
                       inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os
-                      inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end
-                      inner join inventario_endereco_novo ien on ien.cod_inventario_endereco = ice.cod_inventario_endereco                      
+                      inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end                                        
+                    where ice.cod_inventario_endereco = $idEndereco                      
+                      and os.dth_final_atividade is null";
+
+        $idOs = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if(!empty($idOs))
+            $this->excluiOs($idOs);
+    }
+
+    public function excluiOsInventarioCancelado($idInventario){
+        $sql = "select os.cod_os codOs
+                    from ordem_servico os            
+                      inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os
+                      inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end 
+                      inner join inventario_endereco_novo ien on ien.cod_inventario_endereco = ice.cod_inventario_endereco                                      
                     where ien.cod_inventario = $idInventario
                       and os.dth_final_atividade is null";
 
-       $resultado = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        $idOs = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-       if(!empty($resultado)){
+        if(!empty($idOs))
+            $this->excluiOs($idOs);
+    }
 
-            $codigos = array();
-           foreach ($resultado as $item) {
-               $codigos[] = $item['OS'];
-            }
-
-            $sql = "delete from inventario_cont_end_os where cod_os in (" . implode(",", $codigos).")";
-            $this->getEntityManager()->getConnection()->query($sql)->execute();
-
-            $sql = "delete from ordem_servico where cod_os in (" . implode(",", $codigos).")";
-            $this->getEntityManager()->getConnection()->query($sql)->execute();
+    public function excluiOs($idOs){
+        $codigos = array();
+        foreach ($idOs as $item) {
+            $codigos[] = $item['CODOS'];
         }
+
+        $sql = "delete from inventario_cont_end_os where cod_os in (" . implode(",", $codigos).")";
+        $this->getEntityManager()->getConnection()->query($sql)->execute();
+
+        $sql = "delete from ordem_servico where cod_os in (" . implode(",", $codigos).")";
+        $this->getEntityManager()->getConnection()->query($sql)->execute();
     }
 }
 

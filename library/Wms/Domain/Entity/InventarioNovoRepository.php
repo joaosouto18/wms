@@ -135,7 +135,7 @@ class InventarioNovoRepository extends EntityRepository
                 $arrWhere[] = "LOWER(INVN.DSC_INVENTARIO) like '%$descricao%'";
             }
 
-            $where = "WHERE 1 = 1 AND IEN.IND_ATIVO = 'S' AND " . implode(" AND ", $arrWhere);
+            $where = "WHERE 1 = 1 AND " . implode(" AND ", $arrWhere);
         }
 
 
@@ -406,24 +406,25 @@ class InventarioNovoRepository extends EntityRepository
 
         $sql = "
             SELECT DISTINCT
-                ICEP.COD_PRODUTO,
-                ICEP.DSC_GRADE,
-                ICEP.COD_PRODUTO_VOLUME,
-                ICEP.DSC_LOTE,
-                IEN.COD_DEPOSITO_ENDERECO,
-                ICEP.DTH_VALIDADE,
-                SUM(ICEP.QTD_EMBALAGEM * ICEP.QTD_CONTADA) $sumCondition QTD,
-                NVL(E.QTD, 0) POSSUI_SALDO
-            FROM INVENTARIO_NOVO INV
+                    NVL(ICEP.COD_PRODUTO, E.COD_PRODUTO) COD_PRODUTO,
+                    NVL(ICEP.DSC_GRADE, E.DSC_GRADE) DSC_GRADE,
+                    NVL(ICEP.COD_PRODUTO_VOLUME, E.COD_PRODUTO_VOLUME) COD_PRODUTO_VOLUME,
+                    NVL(ICEP.DSC_LOTE, E.DSC_LOTE) DSC_LOTE,
+                    IEN.COD_DEPOSITO_ENDERECO,
+                    NVL(ICEP.DTH_VALIDADE, E.DTH_VALIDADE) DTH_VALIDADE,
+                    SUM(NVL(ICEP.QTD_EMBALAGEM,0) * NVL(ICEP.QTD_CONTADA,0)) $sumCondition QTD,
+                    NVL(E.QTD, 0) POSSUI_SALDO
+             FROM INVENTARIO_NOVO INV
             INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on INV.COD_INVENTARIO = IEN.COD_INVENTARIO AND IEN.IND_ATIVO = 'S'
             INNER JOIN INVENTARIO_CONT_END ICE on IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
-            INNER JOIN INVENTARIO_CONT_END_PROD ICEP on ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END AND ICEP.IND_DIVERGENTE = 'N'
-             LEFT JOIN ESTOQUE E 
-               ON E.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO 
-              AND E.COD_PRODUTO = ICEP.COD_PRODUTO 
-              AND E.DSC_GRADE = ICEP.DSC_GRADE 
-              AND NVL(E.DSC_LOTE, 0) = NVL(ICEP.DSC_LOTE, 0)
-              AND NVL(E.COD_PRODUTO_VOLUME, 0) = NVL(ICEP.COD_PRODUTO_VOLUME, 0)
+             LEFT JOIN INVENTARIO_CONT_END_PROD ICEP on ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END AND ICEP.IND_DIVERGENTE = 'N'
+             LEFT JOIN ESTOQUE E ON E.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO 
+              AND CASE WHEN ICEP.COD_INV_CONT_END_PROD IS NULL THEN 1 ELSE
+                    CASE WHEN ( E.COD_PRODUTO = ICEP.COD_PRODUTO 
+                          AND E.DSC_GRADE = ICEP.DSC_GRADE 
+                          AND NVL(E.DSC_LOTE, 0) = NVL(ICEP.DSC_LOTE, 0)
+                          AND NVL(E.COD_PRODUTO_VOLUME, 0) = NVL(ICEP.COD_PRODUTO_VOLUME, 0)) THEN 1 ELSE 0 END 
+                  END = 1
             WHERE INV.COD_INVENTARIO $condition
                   AND NOT EXISTS(
                   SELECT 'x' FROM INVENTARIO_END_PROD IEP 
@@ -432,7 +433,11 @@ class InventarioNovoRepository extends EntityRepository
                     AND IEP.DSC_GRADE = ICEP.DSC_GRADE 
                     AND IEP.IND_ATIVO = 'N'
             )
-            GROUP BY ICEP.COD_PRODUTO, ICEP.DSC_GRADE, ICEP.COD_PRODUTO_VOLUME, ICEP.DSC_LOTE, IEN.COD_DEPOSITO_ENDERECO, ICEP.DTH_VALIDADE, E.QTD";
+            GROUP BY NVL(ICEP.COD_PRODUTO, E.COD_PRODUTO), 
+                     NVL(ICEP.DSC_GRADE, E.DSC_GRADE), 
+                     NVL(ICEP.COD_PRODUTO_VOLUME, E.COD_PRODUTO_VOLUME),
+                     NVL(ICEP.DSC_LOTE, E.DSC_LOTE), IEN.COD_DEPOSITO_ENDERECO, 
+                     NVL(ICEP.DTH_VALIDADE, E.DTH_VALIDADE), E.QTD";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
@@ -471,7 +476,7 @@ class InventarioNovoRepository extends EntityRepository
          LEFT JOIN PRODUTO P ON P.COD_PRODUTO = ICEP.COD_PRODUTO AND P.DSC_GRADE = ICEP.DSC_GRADE
             
              WHERE INVN.COD_INVENTARIO = $idInventario
-          ORDER BY DE.NUM_RUA, ICE.NUM_SEQUENCIA, ICEP.COD_PRODUTO, ICEP.DSC_GRADE";
+          ORDER BY DE.NUM_RUA, DE.NUM_PREDIO, DE.NUM_NIVEL, DE.NUM_APARTAMENTO, ICE.NUM_SEQUENCIA, ICEP.DTH_CONTAGEM, ICEP.COD_PRODUTO, ICEP.DSC_GRADE";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }

@@ -269,7 +269,7 @@ class RecebimentoRepository extends EntityRepository {
 
                     foreach ($qtdConferidasVolumes as $lote => $volumes) {
                         //Pega a menor quantidade de produtos completos
-                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
+                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade'], $item['produto'], $item['grade']);
                     }
 
                     if (!isset($qtdConferidas)) {
@@ -653,18 +653,6 @@ class RecebimentoRepository extends EntityRepository {
                 /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
                 $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
 
-                /** @var \Wms\Domain\Entity\Enderecamento\Palete $palete */
-                foreach ($paletes as $key => $palete) {
-                    /** @var \Wms\Domain\Entity\OrdemServico $osEn */
-                    $osEn = $osRepo->findOneBy(array('idEnderecamento' => $palete->getId()));
-                    //checando Validade
-                    $getProduto = $palete->getProdutosArray();
-                    $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, null, $getProduto[0]['codProduto'], $getProduto[0]['grade']);
-
-                    $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId(), false, $dataValidade);
-                    $em->flush();
-                }
-
                 /** @var RecebimentoEntity\ConferenciaRepository $conferenciaRepo */
                 $conferenciaRepo = $this->_em->getRepository("wms:Recebimento\Conferencia");
 
@@ -674,6 +662,18 @@ class RecebimentoRepository extends EntityRepository {
                 $loteRepo = $this->_em->getRepository("wms:Produto\Lote");
 
                 $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $conferenciasOk);
+                $em->flush();
+
+                /** @var \Wms\Domain\Entity\Enderecamento\Palete $palete */
+                foreach ($paletes as $key => $palete) {
+                    /** @var \Wms\Domain\Entity\OrdemServico $osEn */
+                    $osEn = $osRepo->findOneBy(array('idEnderecamento' => $palete->getId()));
+                    //checando Validade
+                    $getProduto = $palete->getProdutosArray();
+                    $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, null, $getProduto[0]['codProduto'], $getProduto[0]['grade']);
+
+                    $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId(), false, $dataValidade);
+                }
 
                 $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
                 if($controleProprietario == 'S') {
@@ -1396,25 +1396,36 @@ class RecebimentoRepository extends EntityRepository {
         return $qtdTotal;
     }
 
-    public function buscarVolumeMinimoConferidoPorProduto(array $volumesConferidos, $qtdNf) {
+    public function buscarVolumeMinimoConferidoPorProduto(array $volumesConferidos, $qtdNf, $codProduto, $gradeBuscar) {
         //Garantia de que vai retornar a menor quantidade conferida
         $minimo = 9999999999;
         $maximo = 0;
 
-        foreach ($volumesConferidos as $idProduto => $grades) {
-            foreach ($grades as $grade => $qtdConferidas) {
-                foreach ($qtdConferidas as $volume => $lotes) {
-                    foreach ($lotes as $lote => $qtd) {
-                        if ($minimo > $qtd) {
-                            $minimo = $qtd;
-                        }
+        if ($codProduto == 20009) {
+            $teste = "A";
+        }
 
-                        if ($maximo < $qtd) {
-                            $maximo = $qtd;
+        foreach ($volumesConferidos as $idProduto => $grades) {
+
+                foreach ($grades as $grade => $qtdConferidas) {
+                    if ($grade == $codProduto) {
+                        foreach ($qtdConferidas as $volume => $lotes) {
+                            if ($volume == $gradeBuscar) {
+                                foreach ($lotes as $lote => $qtd) {
+
+                                    if ($minimo > $qtd) {
+                                        $minimo = $qtd;
+                                    }
+
+                                    if ($maximo < $qtd) {
+                                        $maximo = $qtd;
+                                    }
+
+                                }
+                            }
                         }
                     }
                 }
-            }
         }
 
         //Verifica se o valor da divergência está maior que a quantidade informada na nf
@@ -1480,7 +1491,7 @@ class RecebimentoRepository extends EntityRepository {
                 ->andWhere('os.dataFinal is not NULL ')
                 ->setParameter(1, $idRecebimento);
 
-        $ordensServico = $dql->getQuery()->getOneOrNullResult();
+        $ordensServico = $dql->getQuery()->getFirstResult();
 
         if ($ordensServico) {
             return array(
@@ -1880,7 +1891,7 @@ class RecebimentoRepository extends EntityRepository {
                                 FROM PALETE P
                                 LEFT JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
                                 LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = PP.COD_PRODUTO AND PV.DSC_GRADE = PP.DSC_GRADE
-                               WHERE P.COD_STATUS IN (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_ENDERECAMENTO.",".Palete::STATUS_RECEBIDO.") OR P.IND_IMPRESSO = 'S')
+                               WHERE P.COD_STATUS IN (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_ENDERECAMENTO.") OR P.IND_IMPRESSO = 'S')
                        GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_NORMAS, DSC_LOTE) P
                   ON P.COD_RECEBIMENTO = V.COD_RECEBIMENTO
                  AND P.COD_PRODUTO = V.COD_PRODUTO
