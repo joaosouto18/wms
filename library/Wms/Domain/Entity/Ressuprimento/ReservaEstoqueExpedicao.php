@@ -15,12 +15,14 @@ class ReservaEstoqueExpedicao
     const SAIDA_PICKING = 1;
     const SAIDA_SEPARACAO_AEREA = 2;
     const SAIDA_PULMAO_DOCA = 3;
+    const SAIDA_CROSS_DOCKING = 4;
 
     public static $tipoSaidaTxt = array(
         self::SAIDA_SEM_CONTROLE_ESTOQUE => "SEM CONTROLE DE ESTOQUE",
         self::SAIDA_PICKING => "PICKING",
         self::SAIDA_SEPARACAO_AEREA => "SEPARAÇÃO AÉREA",
-        self::SAIDA_PULMAO_DOCA => "PULMÃO-DOCA"
+        self::SAIDA_PULMAO_DOCA => "PULMÃO-DOCA",
+        self::SAIDA_CROSS_DOCKING => "CROSS-DOCKING"
     );
 
     /**

@@ -15,6 +15,15 @@ use Wms\Math;
 
 class LoteRepository extends EntityRepository
 {
+    /**
+     * @param $codProduto
+     * @param $grade
+     * @param $dsc
+     * @param $codPessoa
+     * @param string $origem
+     * @return Lote
+     * @throws \Exception
+     */
     public function save($codProduto, $grade, $dsc, $codPessoa, $origem = Lote::EXTERNO) {
 
         $lote = new Lote();
@@ -37,7 +46,15 @@ class LoteRepository extends EntityRepository
         return $lote;
     }
 
-    public function verificaLote($lote, $idProduto, $grade){
+    /**
+     * @param $lote
+     * @param $idProduto
+     * @param $grade
+     * @param null $codPessoaNovaCriacao
+     * @return Lote|null
+     * @throws \Exception
+     */
+    public function verificaLote($lote, $idProduto, $grade, $codPessoaNovaCriacao = null){
         /** @var Lote $loteEn */
         $loteEn = $this->findOneBy(['descricao' => $lote]);
         if (!empty($loteEn)) {
@@ -48,7 +65,7 @@ class LoteRepository extends EntityRepository
                 $this->_em->persist($loteEn);
                 return $loteEn;
             } elseif ($loteEn->getOrigem() == Lote::INTERNO && ($loteEn->getCodProduto() != $idProduto || $loteEn->getGrade() != $grade)) {
-                return self::save($idProduto, $grade, $lote, $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
+                return self::save($idProduto, $grade, $lote, (!empty($codPessoaNovaCriacao)) ? $codPessoaNovaCriacao : $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
             }
         }
 
@@ -80,6 +97,9 @@ class LoteRepository extends EntityRepository
         }
         if (isset($parametros['dataFim']) && !empty($parametros['dataFim'])) {
             $where .= " AND L.DTH_CRIACAO <= TO_DATE('".$parametros['dataFim']." 23:59','DD-MM-YYYY HH24:MI')";
+        }
+        if (isset($parametros['loteLimpo']) && !empty($parametros['loteLimpo'])) {
+            $where .= " AND L.COD_PRODUTO IS NULL";
         }
         if(isset($parametros['qtdLote']) && !empty($parametros['qtdLote'])){
             $sql = "SELECT L.*, PE.NOM_PESSOA , TO_CHAR(L.DTH_CRIACAO,'DD/MM/YYYY HH24:MI:SS') as CRIACAO, '' AS DSC_PRODUTO FROM LOTE L

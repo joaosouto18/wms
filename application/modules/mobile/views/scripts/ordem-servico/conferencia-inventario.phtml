@@ -5,7 +5,7 @@
     <?php endif; ?>
     <?php foreach ($this->inventarios as $inventario): ?>
         <div class="row">
-            <a class="btn gradientBtn" href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'seleciona-contagem', 'idInventario' => $inventario['id'])); ?>" title="<?php echo $inventario['id'] ?>" >Cod. Inv. <?php echo $inventario['id'] ?> </a>
+            <a class="btn gradientBtn" href="<?php echo $this->url(array('controller' => 'inventario', 'action' => 'seleciona-contagem', 'idInventario' => $inventario['id'])); ?>" title="<?php echo $inventario['id'] ?>" >Cod. Inv. <?php echo $inventario['id']; ?></a>
         </div>
     <?php endforeach; ?>
     <br>

@@ -170,7 +170,7 @@
 				'signed-decimal'                : { mask : '99,999.999.999.999', type : 'reverse', defaultValue : '+000' },
 				'signed-decimal-us'             : { mask : '99,999.999.999.999', type : 'reverse', defaultValue : '+000' },
 				'placaVeiculo'                  : { mask : 'aaa9999' },
-				'endereco'                      : { mask : '99.99.999.99', type : 'reverse'}
+				'endereco'                      : { mask : '99.999.99.99'}
 			},
 			
 			init : function(){

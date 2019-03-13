@@ -64,7 +64,7 @@ $attribs = $grid->getAttribs();
         $.fn.countCheckedCbx = function() {
             $('span.check-selected-counter')
                 .html( $('input.massaction-check-opt:checked').size() );
-        }
+        };
         
         // button mass action
         $('button.massaction-button').click(function() {
@@ -217,7 +217,7 @@ $attribs = $grid->getAttribs();
                 <?php } ?>
                 <?php foreach ($grid->getColumns() as $column) { ?>
                 <?php
-                    $style = 'style="text-align:<?php echo $column->getAlign(false); ?>"';
+                    $style = 'style="text-align:' . $column->getAlign(false) . '"';
                     if ($column->getVisible() == false) {
                         $style = 'style="display:none;"';
                     }

@@ -17,8 +17,8 @@ class Mobile_EnderecamentoController extends Action
         $form->init();
         $this->view->form = $form;
         $codigoBarrasEndereco = $this->_getParam('codigoBarras');
-        $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
-        $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING_DINAMICO;
+        $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::PICKING;
+        $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::PICKING_DINAMICO;
 
         if ($codigoBarrasEndereco) {
             try {
@@ -170,8 +170,8 @@ class Mobile_EnderecamentoController extends Action
                 $this->createXml('error', 'Nenhum Endereço Informado');
             }
 
-            $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
-            $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING_DINAMICO;
+            $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::PICKING;
+            $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::PICKING_DINAMICO;
 
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
@@ -269,8 +269,8 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
         $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
 
-        $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
-        $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING_DINAMICO;
+        $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::PICKING;
+        $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::PICKING_DINAMICO;
 
         //Se for picking do produto entao o nivel poderá ser escolhido
         //@TODO Validar se existe Picking Rotativo cadastrado para o produto.
@@ -323,8 +323,8 @@ class Mobile_EnderecamentoController extends Action
             $enderecoAntigo = $paleteEn->getDepositoEndereco();
             $qtdAdjacente = $paleteEn->getUnitizador()->getQtdOcupacao();
             $unitizadorEn = $paleteEn->getUnitizador();
-            $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
-            $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING_DINAMICO;
+            $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::PICKING;
+            $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::PICKING_DINAMICO;
 
             if ($enderecoEn->getIdCaracteristica() == $idCaracteristicaPicking || $enderecoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
                 if ($paleteEn->getRecebimento()->getStatus()->getId() != \wms\Domain\Entity\Recebimento::STATUS_FINALIZADO) {
@@ -425,7 +425,7 @@ class Mobile_EnderecamentoController extends Action
         if (isset($validade) && !empty($validade) && !is_null($validade))
             $dataValidade['dataValidade'] = $paleteProdutoEn->getValidade()->format('Y-m-d');
 
-        if ($enderecoEn->getIdCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco\Caracteristica::PICKING) {
+        if ($enderecoEn->getIdCaracteristica() == \Wms\Domain\Entity\Deposito\Endereco::PICKING) {
 
             $pickingProduto = $produtoRepo->getEnderecoPicking($paleteProdutoEn->getProduto(),"ID");
             $pickingCorreto = false;
@@ -993,8 +993,8 @@ class Mobile_EnderecamentoController extends Action
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
         $volumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
 
-        $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
-        $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING_DINAMICO;
+        $idCaracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::PICKING;
+        $idCaracteristicaPickingRotativo = \Wms\Domain\Entity\Deposito\Endereco::PICKING_DINAMICO;
 
         try {
 

@@ -53,7 +53,7 @@ class Web_ConfiguracaoController extends Action
         $mascara = \Wms\Util\Endereco::mascara($arrQtdDigitos,'9');
         $arrMasc = \Wms\Util\Endereco::separar($mascara, $arrQtdDigitos);
 
-        $mask = implode('.', array_reverse($arrMasc,true));
+        $mask = implode('.', $arrMasc);
 
         $result = array(
             'mask' => $mask,

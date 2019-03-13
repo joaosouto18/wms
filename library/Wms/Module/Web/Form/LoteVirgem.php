@@ -22,7 +22,7 @@ class LoteVirgem extends Form {
             'size' => 8,
             'label' => 'Lote Inicio',
             'class' => 'ctrSize',
-        ))
+            ))
             ->addElement('text', 'loteFim', array(
                 'size' => 8,
                 'label' => 'Lote Fim',
@@ -47,6 +47,9 @@ class LoteVirgem extends Form {
                 'size' => 8,
                 'label' => 'Lote'
             ))
+            ->addElement('checkbox', 'loteLimpo', array(
+                'label' => 'Apenas lotes vazios'
+            ))
             ->addElement('text', 'qtdLote', array(
                 'size' => 3,
                 'label' => 'Quantidade de Lotes',
@@ -68,7 +71,7 @@ class LoteVirgem extends Form {
                 'class' => 'btn buscar',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('codProduto','lote','tipoLote', 'loteInicio', 'loteFim', 'codLote', 'dataIncio', 'dataFim','codLote', 'buscar'), 'identificacao', array('legend' => 'Filtros'))
+            ->addDisplayGroup(array('codProduto','lote','tipoLote', 'loteLimpo', 'loteInicio', 'loteFim', 'codLote', 'dataIncio', 'dataFim','codLote', 'buscar'), 'identificacao', array('legend' => 'Filtros'))
             ->addDisplayGroup(array('qtdLote', 'gerar'), 'tranferencia', array('legend' => 'Gerar Lotes Virgens'));
     }
 

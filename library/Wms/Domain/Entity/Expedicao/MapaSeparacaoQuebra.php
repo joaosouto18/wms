@@ -18,6 +18,7 @@ class MapaSeparacaoQuebra
     const QUEBRA_REENTREGA = "RE";
     const QUEBRA_PULMAO_DOCA = "PD";
     const QUEBRA_ROTA = 'RT';
+    const QUEBRA_CROSS_DOCKING = 'CD';
 
     /**
      * @Id

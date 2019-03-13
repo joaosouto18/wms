@@ -2,6 +2,7 @@
 namespace Wms\Domain\Entity\Produto;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Wms\Domain\Configurator;
 
 /**
  * @Table(name="PRODUTO_CLASSE")
@@ -99,4 +100,8 @@ class Classe
         return $this;
     }
 
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
+    }
 }

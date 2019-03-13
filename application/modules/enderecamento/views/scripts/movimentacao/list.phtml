@@ -44,8 +44,9 @@
             if (($codProdutoAnterior != $endereco['COD_PRODUTO']) || ($gradeAnterior != $endereco['DSC_GRADE']) || ($codVolumeAnterior != $endereco['COD_VOLUME'])) {
 
                 if ($codProdutoAnterior != NULL) {
-                    ?><tr >
-                        <td colspan="5"><b>Total</b></td>
+                    ?>
+                    <tr>
+                        <td colspan="<?php echo $colspan + 2 ?>" style="text-align: center"><b>Total</b></td>
                         <td><b><?php echo $qtdReservaEntrada ?></b></td>
                         <td><b><?php echo $qtdReservaSaida ?></b></td>
                         <td><b><?php echo $qtdEstoque ?></b></td>
@@ -75,12 +76,9 @@
                     <td><b>Endereço</b></td>
                     <td><b>Tipo</b></td>
                     <?php
-                    if($this->controlaLote == 'S'){
-                        ?>
-                        <td><b>Lote</b></td>
-                        <?php
-                    }
-                    ?>
+                    if($this->controlaLote == 'S'){ ?>
+                    <td><b>Lote</b></td>
+                    <?php } ?>
                     <td><b>Data de Entrada</b></td>
                     <td><b>U.M.A.</b></td>
                     <td><b>Unitizador</b></td>
@@ -119,7 +117,7 @@
                     }
                     ?></td>
                 <td><?php if (($endereco['RESERVA_SAIDA'] != 0) || ($endereco['RESERVA_ENTRADA'] != 0)) { ?>
-                        <a rel="modal" class="btn" <?php echo 'href="/enderecamento/movimentacao/consultar/idVolume/' . $endereco['COD_VOLUME'] . '/idProduto/' . $endereco['COD_PRODUTO'] . '/grade/' . urlencode($endereco['DSC_GRADE']) . '/idEndereco/' . $endereco['COD_ENDERECO'] . '"'; ?> >Mais</a>
+                        <a rel="modal" class="btn" <?php echo 'href="/enderecamento/movimentacao/consultar/idVolume/' . $endereco['COD_VOLUME'] . '/idProduto/' . $endereco['COD_PRODUTO'] . '/grade/' . urlencode($endereco['DSC_GRADE']) . '/idEndereco/' . $endereco['COD_ENDERECO']  . '/dscLote/' . $endereco['LOTE']. '"'; ?> >Mais</a>
                     <?php
                     } else {
                         echo "<p style='text-align: center;'> - </p>";

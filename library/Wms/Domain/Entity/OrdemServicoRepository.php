@@ -5,12 +5,35 @@ namespace Wms\Domain\Entity;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity,
     Wms\Domain\Entity\Atividade as AtividadeEntity;
+use Wms\Domain\Configurator;
 
 /**
  * Deposito
  */
 class OrdemServicoRepository extends EntityRepository
 {
+
+    /**
+     * @param $params
+     * @param bool $executeFlush
+     * @return OrdemServico
+     * @throws \Exception
+     */
+    public function addNewOs($params, $executeFlush = true)
+    {
+        try {
+            /** @var OrdemServico $entity */
+            $entity = Configurator::configure(new $this->_entityName, $params);
+
+            $this->_em->persist($entity);
+            if ($executeFlush) $this->_em->flush();
+
+            return $entity;
+
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
 
     /**
      *
@@ -109,18 +132,22 @@ class OrdemServicoRepository extends EntityRepository
     /**
      * Finaliza uma ordem de serviço setando os parametros
      *
-     * @param integer $idOrdemServico
-     * @return boolean
+     * @param $idOrdemServico
+     * @param string $observacao
+     * @param null $ordemServicoEntity
+     * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function finalizar($idOrdemServico, $observacao='Recebimento Finalizado.')
+    public function finalizar($idOrdemServico, $observacao='Recebimento Finalizado.', $ordemServicoEntity = null, $flush = true)
     {
-        $ordemServicoEntity = $this->find($idOrdemServico);
+        if (empty($ordemServicoEntity))
+            $ordemServicoEntity = $this->find($idOrdemServico);
 
         $ordemServicoEntity->setDscObservacao($observacao)
             ->setDataFinal(new \DateTime());
 
         $this->getEntityManager()->persist($ordemServicoEntity);
-        $this->getEntityManager()->flush();
+        if ($flush) $this->getEntityManager()->flush();
 
         return true;
     }
@@ -385,8 +412,33 @@ class OrdemServicoRepository extends EntityRepository
         $this->_em->flush();
 
         return $ordemServicoEn;
-
     }
 
+    public function excluiOsInventarioInterrompido($idInventario) {
+        $sql = "select 
+                    os.cod_os os                    
+                    from ordem_servico os            
+                      inner join inventario_cont_end_os iceo on iceo.cod_os = os.cod_os
+                      inner join inventario_cont_end ice on ice.COD_INV_CONT_END = iceo.cod_inv_cont_end
+                      inner join inventario_endereco_novo ien on ien.cod_inventario_endereco = ice.cod_inventario_endereco                      
+                    where ien.cod_inventario = $idInventario
+                      and os.dth_final_atividade is null";
+
+       $resultado = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+       if(!empty($resultado)){
+
+            $codigos = array();
+           foreach ($resultado as $item) {
+               $codigos[] = $item['OS'];
+            }
+
+            $sql = "delete from inventario_cont_end_os where cod_os in (" . implode(",", $codigos).")";
+            $this->getEntityManager()->getConnection()->query($sql)->execute();
+
+            $sql = "delete from ordem_servico where cod_os in (" . implode(",", $codigos).")";
+            $this->getEntityManager()->getConnection()->query($sql)->execute();
+        }
+    }
 }
 

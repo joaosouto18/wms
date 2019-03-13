@@ -52,8 +52,8 @@ class Wms_WebService_Fornecedor extends Wms_WebService
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
-        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
-        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
+        /** @var \Wms\Service\FornecedorService $fornecedorSvc */
+        $fornecedorSvc = $this->__getServiceLocator()->getService('Fornecedor');
         $pessoaJuridica = $em->getRepository('wms:Pessoa\Juridica')->findOneBy(array('cnpj' => str_replace(array('.', '-', '/'), '', $cnpj)));
 
         if ($pessoaJuridica == null)
@@ -71,7 +71,7 @@ class Wms_WebService_Fornecedor extends Wms_WebService
                 ->setIdExterno($idFornecedor)
                 ->setId($pessoaJuridica->getId());
         
-        if (!$fornecedorSvc->insert($fornecedorEntity))
+        if (!$fornecedorSvc->save($fornecedorEntity))
             throw new \Exception('Houve um erro ao inserir um novo fornecedor');
 
         return true;
@@ -91,8 +91,8 @@ class Wms_WebService_Fornecedor extends Wms_WebService
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
-        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
-        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
+        /** @var \Wms\Service\FornecedorService $fornecedorSvc */
+        $fornecedorSvc = $this->__getServiceLocator()->getService('Fornecedor');
 
         /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity */
         $fornecedorEntity = $fornecedorSvc->findOneBy(array('idExterno' => $idFornecedor));
@@ -109,11 +109,8 @@ class Wms_WebService_Fornecedor extends Wms_WebService
         $fornecedorEntity->setPessoa($pessoaJuridica)
                 ->setIdExterno($idFornecedor)
                 ->setId($pessoaJuridica->getId());
-
-        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
-        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
         
-        if (!$fornecedorSvc->insert($fornecedorEntity))
+        if (!$fornecedorSvc->save($fornecedorEntity))
             throw new \Exception('Houve um erro ao alterar um novo fornecedor');
 
         return true;
@@ -135,13 +132,11 @@ class Wms_WebService_Fornecedor extends Wms_WebService
         $insc = trim($insc);
         $nome = trim($nome);
 
-        $em = $this->__getDoctrineContainer()->getEntityManager();
-
-        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
-        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
+        /** @var \Bisna\Base\Domain\Entity\EntityService $fornecedorServc */
+        $fornecedorServc = $this->__getServiceLocator()->getService('Fornecedor');
 
         /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity */
-        $fornecedorEntity = $fornecedorSvc->findOneBy(array('idExterno' => $idFornecedor));
+        $fornecedorEntity = $fornecedorServc->findOneBy(array('idExterno' => $idFornecedor));
 
         //novo fornecedor
         $op = ($fornecedorEntity == null) ? $this->inserir($idFornecedor, $cnpj, $insc, $nome) :
@@ -165,8 +160,8 @@ class Wms_WebService_Fornecedor extends Wms_WebService
 
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
-        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
-        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
+        /** @var \Wms\Service\FornecedorService $fornecedorSvc */
+        $fornecedorSvc = $this->__getServiceLocator()->getService('Fornecedor');
 
         /** @var \Wms\Domain\Entity\Pessoa\Papel\Fornecedor $fornecedorEntity */
         $fornecedorEntity = $fornecedorSvc->findOneBy(array('idExterno' => $idFornecedor));
@@ -186,10 +181,9 @@ class Wms_WebService_Fornecedor extends Wms_WebService
      */
     public function listar()
     {
-        $em = $this->__getDoctrineContainer()->getEntityManager();
 
-        /** @var \Wms\Service\Fornecedor $fornecedorSvc */
-        $fornecedorSvc = new \Wms\Service\Fornecedor($em);
+        /** @var \Wms\Service\FornecedorService $fornecedorSvc */
+        $fornecedorSvc = $this->__getServiceLocator()->getService('Fornecedor');
 
         $fornecedores = $fornecedorSvc->findAll();
 

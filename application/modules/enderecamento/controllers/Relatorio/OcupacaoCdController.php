@@ -27,7 +27,7 @@ class Enderecamento_Relatorio_OcupacaoCdController extends \Wms\Controller\Actio
         {
             $ruaInicial = $values['ruaInicial'];
             $ruaFinal   = $values['ruaFinal'];
-            $caracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::ENDERECO_PICKING;
+            $caracteristicaPicking = \Wms\Domain\Entity\Deposito\Endereco::PICKING;
 
             $sqlWhere = " AND DE.COD_CARACTERISTICA_ENDERECO <> " . $caracteristicaPicking;
             if ($ruaFinal != "") {

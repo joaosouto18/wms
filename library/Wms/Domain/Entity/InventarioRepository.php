@@ -166,8 +166,8 @@ class InventarioRepository extends EntityRepository {
                                 NVL(QTD_IE.QTD,0) as QTD_END_TOTAL,
                                 NVL(QTD_DIV.QTD,0) as QTD_DIV_TOTAL,
                                 NVL(QTD_INV.QTD,0) as QTD_INV_TOTAL,
-                                TO_CHAR(I.DTH_INICIO,'DD-MM-YYYY-HH24-MI') as DTH_INICIO ,
-                                TO_CHAR(I.DTH_FINALIZACAO,'DD-MM-YYYY-HH24-MI') as DTH_FINALIZACAO,
+                                TO_CHAR(I.DTH_INICIO,'DD/MM/YYYY HH24:MI') as DTH_INICIO ,
+                                TO_CHAR(I.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI') as DTH_FINALIZACAO,
                                 I.COD_INVENTARIO_ERP
                             FROM 
                                 INVENTARIO I
@@ -223,28 +223,16 @@ class InventarioRepository extends EntityRepository {
             }
             if ($row['STATUS'] == 'FINALIZADO')
                 $andamento = 1;
-            $dataInicioBanco = explode('-', $row['DTH_INICIO']);
-            $dataInicio = new \DateTime();
-            $dataInicio->setDate($dataInicioBanco[2], $dataInicioBanco[1], $dataInicioBanco[0]);
-            $dataInicio->setTime($dataInicioBanco[3], $dataInicioBanco[4]);
-
-            $dataFinal = null;
-            if ($row['DTH_FINALIZACAO'] != "") {
-                $dataFinalBanco = explode('-', $row['DTH_FINALIZACAO']);
-                $dataFinal = new \DateTime();
-                $dataFinal->setDate($dataFinalBanco[2], $dataFinalBanco[1], $dataFinalBanco[0]);
-                $dataFinal->setTime($dataFinalBanco[3], $dataFinalBanco[4]);
-            }
 
             $andamento = number_format($andamento, 2) * 100;
             $values = array(
                 'id' => $row['COD_INVENTARIO'],
                 'qtdEndereco' => $row['QTD_END_TOTAL'],
                 'qtdDivergencia' => $row['QTD_DIV_TOTAL'],
-                'qtdInvetariado' => $row['QTD_INV_TOTAL'],
+                'qtdInventariado' => $row['QTD_INV_TOTAL'],
                 'andamento' => $andamento,
-                'dataInicio' => $dataInicio,
-                'dataFinalizacao' => $dataFinal,
+                'dataInicio' => $row['DTH_INICIO'],
+                'dataFinalizacao' => $row['DTH_FINALIZACAO'],
                 'status' => $row['STATUS'],
                 'codInvERP' => $row['COD_INVENTARIO_ERP']);
             $result[] = $values;
@@ -652,7 +640,7 @@ class InventarioRepository extends EntityRepository {
 
         $inventarioEndsEn = $inventarioEndRepo->findBy(array('inventario' => $id));
         foreach ($inventarioEndsEn as $invEndEn) {
-            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getID(), 'S');
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco(), 'S');
         }
         $this->_em->flush();
     }
@@ -665,7 +653,7 @@ class InventarioRepository extends EntityRepository {
 
         $inventarioEndsEn = $inventarioEndRepo->findBy(array('inventario' => $id));
         foreach ($inventarioEndsEn as $invEndEn) {
-            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco()->getId(), 'N', false);
+            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco(), 'N', false);
         }
         $this->_em->flush();
 
@@ -793,39 +781,36 @@ class InventarioRepository extends EntityRepository {
      * Layout de exportação definido para o Winthor
      */
     public function exportaInventarioModelo01($id) {
-        /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
-        $inventarioEn = $this->_em->find('wms:Inventario', $id);
 
         /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->_em->getRepository('wms:Inventario\Endereco');
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
         $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
-        $inventarioRepo = $this->_em->getRepository('wms:Inventario');
+        $codInvErp = $this->_em->find('wms:Inventario', $id)->getCodInventarioERP();
 
-        $codInvErp = $inventarioEn->getCodInventarioERP();
         if (empty($codInvErp)){
             throw new \Exception("Este inventário não tem o código do inventário respectivo no ERP");
         }
-        $inventariosByErp = $inventarioRepo->findBy(array('codInventarioERP' => $codInvErp));
-        foreach ($inventariosByErp as $inventarios) {
-            $inventario[] = $inventarios->getId();
+
+        $inventariosByErp = $this->_em->getRepository('wms:Inventario')->findBy(array('codInventarioERP' => $codInvErp));
+
+        foreach ($inventariosByErp as $inventario) {
+            $inventarios[] = $inventario->getId();
         }
-        $codInventarios = implode(',', $inventario);
 
         $filename = "Exp_Inventario($codInvErp).txt";
         $file = fopen($filename, 'w');
 
-        $invEnderecosEn = $enderecoRepo->getComContagem($codInventarios);
+        $invEnderecosEn = $enderecoRepo->getComContagem(implode(',', $inventarios));
         $qtdTotal = 0;
         $produtoAnterior = null;
         $inventario = array();
         foreach ($invEnderecosEn as $invEnderecoEn) {
             $codInventarioEnderecos[] = $invEnderecoEn->getId();
         }
-        $codInventarioEndereco = implode(',',$codInventarioEnderecos);
 
-        $contagemEndEnds = $enderecoRepo->getUltimaContagem($codInventarioEndereco);
+        $contagemEndEnds = $enderecoRepo->getUltimaContagem(implode(',',$codInventarioEnderecos));
         foreach ($contagemEndEnds as $contagemEndEn) {
             $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $contagemEndEn->getCodProduto(), 'grade' => $contagemEndEn->getGrade()), array('quantidade' => 'ASC'));
             if (!$embalagemEntity) continue;
@@ -847,7 +832,7 @@ class InventarioRepository extends EntityRepository {
             $txtCodBarras = str_pad($produto['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
             $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 10, '0', STR_PAD_LEFT);
             $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
-            $linha = "$txtCodInventario"."$txtContagem"."$txtLocal"."$txtCodBarras"."$txtQtd"."$txtCodProduto"."\r\n";
+            $linha = $txtCodInventario.$txtContagem.$txtLocal.$txtCodBarras.$txtQtd.$txtCodProduto."\r\n";
             fwrite($file, $linha, strlen($linha));
         }
 
@@ -925,4 +910,105 @@ class InventarioRepository extends EntityRepository {
         fclose($file);
     }
 
+    public function exportaInventarioModelo03($id)
+    {
+        /** @var \Wms\Domain\Entity\Inventario $inventarioEn */
+        $inventarioEn = $this->_em->find('wms:Inventario', $id);
+        $codInvErp = $inventarioEn->getCodInventarioERP();
+
+
+        if (empty($codInvErp)) {
+            throw new \Exception("Este inventário não tem o código do inventário respectivo no ERP");
+        }
+
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $embalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
+
+
+        $filename = "Exp_Inventario($codInvErp).txt";
+        $file = fopen($filename, 'w');
+
+
+        $SQL = "SELECT P.COD_PRODUTO, P.DSC_GRADE, NVL(ESTQ.QTD,0) as QTD
+                  FROM PRODUTO P
+                  LEFT JOIN (SELECT E.COD_PRODUTO,
+                                    E.DSC_GRADE, 
+                                    MIN(QTD) as QTD
+                               FROM (SELECT E.COD_PRODUTO,
+                                            E.DSC_GRADE,
+                                            SUM(E.QTD) as QTD,
+                                            NVL(E.COD_PRODUTO_VOLUME,0) as ID_VOLUME
+                                       FROM ESTOQUE E
+                                            GROUP BY E.COD_PRODUTO, E.DSC_GRADE,NVL(E.COD_PRODUTO_VOLUME,0)) E
+                              GROUP BY COD_PRODUTO, DSC_GRADE) ESTQ
+                    ON ESTQ.COD_PRODUTO = P.COD_PRODUTO
+                   AND ESTQ.DSC_GRADE = P.DSC_GRADE 
+                 INNER JOIN (SELECT DISTINCT 
+                                    ICE.COD_PRODUTO,
+                                    ICE.DSC_GRADE
+                               FROM INVENTARIO_ENDERECO IE
+                               LEFT JOIN INVENTARIO I ON I.COD_INVENTARIO = IE.COD_INVENTARIO
+                               LEFT JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+                              WHERE I.COD_INVENTARIO_ERP = $codInvErp AND ICE.CONTAGEM_INVENTARIADA = 1 AND ICE.DIVERGENCIA IS NULL
+                              GROUP BY ICE.COD_PRODUTO,
+                                       ICE.DSC_GRADE) I
+                    ON I.COD_PRODUTO = P.COD_PRODUTO
+                   AND I.DSC_GRADE = P.DSC_GRADE";
+        $produtos = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $inventario = array();
+        foreach ($produtos as $produto) {
+            $embalagemEntity = $embalagemRepo->findBy(array('codProduto' => $produto['COD_PRODUTO'],
+                'grade' => $produto['DSC_GRADE'],
+                'dataInativacao' => null),
+                array('quantidade' => 'ASC'));
+
+            if (!$embalagemEntity) continue;
+
+            $inventario[$produto['COD_PRODUTO']]['QUANTIDADE'] = $produto['QTD'];
+            $inventario[$produto['COD_PRODUTO']]['NUM_CONTAGEM'] = 1;
+            $inventario[$produto['COD_PRODUTO']]['COD_BARRAS'] = reset($embalagemEntity)->getCodigoBarras();
+            $inventario[$produto['COD_PRODUTO']]['FATOR'] = reset($embalagemEntity)->getQuantidade();
+        }
+        foreach ($inventario as $key => $produto) {
+            $txtCodInventario = str_pad($codInvErp, 4, '0', STR_PAD_LEFT);
+            $txtContagem = '001';
+            $txtLocal = '001';
+            $txtCodBarras = str_pad($produto['COD_BARRAS'], 14, '0', STR_PAD_LEFT);
+
+            if ($produto["FATOR"] == 0) {
+                $produto["FATOR"] = 1;
+            }
+
+            /*
+            $txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, '', ''), 9, '0', STR_PAD_LEFT);
+            $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
+            $linha = "$txtCodInventario;" . "$txtContagem;" . "$txtCodProduto;" . "$txtCodBarras;" . "$txtQtd" . "\r\n";
+            */
+            $txtQtd = $produto["QUANTIDADE"] / $produto["FATOR"];
+
+            //$txtQtd = str_pad(number_format($produto["QUANTIDADE"] / $produto["FATOR"], 3, ',', ''), 9, '0', STR_PAD_LEFT);
+            $txtCodProduto = str_pad($key, 6, '0', STR_PAD_LEFT);
+            $txtFator = $produto["FATOR"];
+            $linha = "$txtCodInventario;" . "$txtContagem;" . "$txtCodProduto;" . "$txtCodBarras;" . "$txtQtd;" . $txtFator . "\r\n";
+
+            fwrite($file, $linha, strlen($linha));
+        }
+
+        fclose($file);
+
+        header("Content-Type: application/force-download");
+        header("Content-type: application/octet-stream;");
+        header("Content-disposition: attachment; filename=" . $filename);
+        header("Expires: 0");
+        header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+        header("Pragma: no-cache");
+
+        readfile($filename);
+        flush();
+
+        unlink($filename);
+        exit;
+
+    }
 }

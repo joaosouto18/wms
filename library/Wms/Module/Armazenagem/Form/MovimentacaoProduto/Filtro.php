@@ -57,9 +57,9 @@ class Filtro extends Form
         ->addElement('select', 'tipoEndereco', array(
             'label' => 'Tipo Endereço',
             'multiOptions' => array('firstOpt' => 'Ambos', 'options' => array(
-                Endereco::ENDERECO_PICKING => Endereco::$tiposEndereco[Endereco::ENDERECO_PICKING],
-                Endereco::ENDERECO_PULMAO => Endereco::$tiposEndereco[Endereco::ENDERECO_PULMAO],
-                Endereco::ENDERECO_PICKING_DINAMICO => Endereco::$tiposEndereco[Endereco::ENDERECO_PICKING_DINAMICO],
+                Endereco::PICKING => Endereco::$tiposEndereco[Endereco::PICKING],
+                Endereco::PULMAO => Endereco::$tiposEndereco[Endereco::PULMAO],
+                Endereco::PICKING_DINAMICO => Endereco::$tiposEndereco[Endereco::PICKING_DINAMICO],
             ))
         ))
         ->addElement('select', 'ordem', array(

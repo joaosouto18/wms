@@ -27,17 +27,15 @@ class EstoqueProprietarioRepository extends EntityRepository
     }
 
     public function buildMovimentacaoEstoque($codProduto, $grade, $qtd, $operacao, $codPessoa, $codOperacao = null, $codOperacaoDetalhe = null, $cnpjGrupoExcluir = array()){
-
+        
+        $saldo = $this->getSaldoProp($codProduto, $grade, $codPessoa);
+        $saldoFinal = $saldo + $qtd;
         /**
          * Verifica se é uma operação credito ou debito do estoque
          */
         if($qtd > 0){
             $this->save($codProduto, $grade, $qtd, $operacao, $saldoFinal, $codPessoa, $codOperacao, $codOperacaoDetalhe);
         }else{
-
-            $saldo = $this->getSaldoProp($codProduto, $grade, $codPessoa);
-            $saldoFinal = $saldo + $qtd;
-
             /**
              * Verifica se esse proprietario tem saldo suficiente para atender o solicitado
              */
@@ -72,17 +70,20 @@ class EstoqueProprietarioRepository extends EntityRepository
                  * Caso o grupo nao tenha atendido por completo o solicitado
                  * passa para o proximo grupo seguindo a ordem de prioridade
                  */
-                if($qtd < 0) {
+                while($qtd < 0) {
                     $proximoCnpj = $this->getProprietarioProximoGrupo($cnpjGrupoExcluir);
                     if (!empty($proximoCnpj)) {
                         $cnpjGrupoExcluir[] = $proximoCnpj;
                         $vetProprietario = $this->getSaldoGrupo($proximoCnpj, $propExclui, $codProduto, $grade);
+                        if (empty($vetProprietario))
+                            continue;
                         /*
                          * Chama a função de forma recursiva
                          */
                         $this->buildMovimentacaoEstoque($codProduto, $grade, $qtd, $operacao, $vetProprietario[0]['COD_PESSOA'], $codOperacao, $codOperacaoDetalhe, $cnpjGrupoExcluir);
+                        break;
                     }else{
-                        throw new \Exception('Estoque Proprietario insuficiente.');
+                        throw new \Exception('Estoque Proprietario insuficiente.'.$codProduto);
                     }
                 }
             }
@@ -108,7 +109,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                   ESTOQUE_PROPRIETARIO EP 
                   INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
                 WHERE 
-//                  NUM_CNPJ  LIKE '$cnpj%' AND
+                  NUM_CNPJ  LIKE '$cnpj%' AND
                   EP.COD_PRODUTO = $codProduto AND
                   EP.DSC_GRADE = '$grade' AND
                   EP.SALDO_FINAL > 0 AND
@@ -140,10 +141,17 @@ class EstoqueProprietarioRepository extends EntityRepository
 
     public function getSaldoProp($codProduto, $grade, $codPessoa){
         $sql = "SELECT * FROM ESTOQUE_PROPRIETARIO 
-                WHERE COD_PRODUTO = $codProduto AND DSC_GRADE = '$grade' AND COD_PESSOA = $codPessoa AND ROWNUM = 1
+                WHERE COD_PRODUTO = $codProduto 
+                  AND DSC_GRADE = '$grade' 
+                  AND COD_PESSOA = $codPessoa 
                 ORDER BY COD_ESTOQUE_PROPRIETARIO DESC";
-        $result = $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
-        return $result['SALDO_FINAL'];
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($result) >0) {
+            return reset($result)['SALDO_FINAL'];
+        } else {
+            return 0;
+        }
     }
 
     public function efetivaEstoquePropRecebimento($idRecebimento){
@@ -164,51 +172,27 @@ class EstoqueProprietarioRepository extends EntityRepository
         }
     }
 
-    public function verificaProprietarioExistente($cnpj, $inserir = true){
+    public function verificaProprietarioExistente($cnpj, $dadosFilial = []){
         $cnpj = str_replace(array('.','-','/'),'',$cnpj);
         $empresa = $this->findEmpresaProprietario($cnpj);
-        if(empty($empresa)){
+        if (empty($empresa)) {
             return false;
-        }else{
+        } else {
             $entityPJ = $this->getEntityManager()->getRepository('wms:Pessoa\Juridica')->findOneBy(array('cnpj' => $cnpj));
-            if(empty($entityPJ)){
-                if($inserir == true) {
-                    $entityPJ = $this->insereFilialEmpresa($cnpj, $empresa);
-                }else{
-                    return false;
-                }
-            }else{
+
+            if (empty($entityPJ) && empty($dadosFilial)) {
+                return false;
+            } else if (empty($entityPJ)) {
+                $entityPJ = $this->inserirFilial(null, $cnpj, $dadosFilial);
+            } else {
                 $entityFilial = $this->getEntityManager()->getRepository('wms:Filial')->findOneBy(array('juridica' => $entityPJ->getId()));
                 if(empty($entityFilial)){
-                    $this->inserirFilial($entityPJ->getId());
+                    $this->inserirFilial($entityPJ);
                 }
             }
             $idPessoa = $entityPJ->getId();
         }
         return $idPessoa;
-    }
-
-    public function insereFilialEmpresa($cnpj, $empresa){
-        $filial['pessoa']['juridica']['dataAbertura'] = date('d/m/Y');
-        $filial['pessoa']['juridica']['cnpj'] = $cnpj;
-        $filial['pessoa']['juridica']['idTipoOrganizacao'] = 114;
-        $filial['pessoa']['juridica']['idRamoAtividade'] = null;
-        $filial['pessoa']['juridica']['nome'] = $empresa['NOM_EMPRESA'];
-        $filial['pessoa']['tipo'] = 'J';
-
-        $entityFilial  = new Filial();
-        $entityPessoa = $this->getEntityManager()->getRepository('wms:Filial')->persistirAtor($entityFilial, $filial);
-        $entityFilial->setId($entityPessoa->getId());
-        $entityFilial->setIdExterno(null);
-        $entityFilial->setCodExterno(null);
-        $entityFilial->setIndLeitEtqProdTransbObg('N');
-        $entityFilial->setIndUtilizaRessuprimento('N');
-        $entityFilial->setIndRecTransbObg('N');
-        $entityFilial->setIsAtivo('S');
-
-        $this->_em->persist($entityFilial);
-        $this->_em->flush();
-        return $entityPessoa;
     }
 
     public function findEmpresaProprietario($cnpj){
@@ -232,7 +216,9 @@ class EstoqueProprietarioRepository extends EntityRepository
                   EP.DSC_GRADE = '$grade' AND
                   EP.COD_ESTOQUE_PROPRIETARIO IN (
                       SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO 
-                      WHERE COD_PESSOA = $idProprietario
+                      WHERE COD_PESSOA = $idProprietario AND
+                            COD_PRODUTO = $codProduto AND
+                            DSC_GRADE = '$grade'
                       GROUP BY COD_PESSOA)
                   GROUP BY 
                     EP.COD_PESSOA, EP.SALDO_FINAL 
@@ -278,16 +264,30 @@ class EstoqueProprietarioRepository extends EntityRepository
         return $result;
     }
 
-    public function inserirFilial($idPessoa){
+    public function inserirFilial($pj, $novoCnpj = null, $empresa = []){
         $entityFilial  = new Filial();
-        $entityFilial->setId($idPessoa);
-        $entityFilial->setIdExterno(null);
-        $entityFilial->setCodExterno(null);
+
+        if (!empty($novoCnpj) && !empty($empresa)) {
+            $filial['pessoa']['juridica']['dataAbertura'] = date('d/m/Y');
+            $filial['pessoa']['juridica']['cnpj'] = $novoCnpj;
+            $filial['pessoa']['juridica']['idTipoOrganizacao'] = 114;
+            $filial['pessoa']['juridica']['idRamoAtividade'] = null;
+            $filial['pessoa']['juridica']['nome'] = $empresa['nome'];
+            $filial['pessoa']['tipo'] = 'J';
+            $pj = $this->getEntityManager()->getRepository('wms:Filial')->persistirAtor($entityFilial, $filial);
+        }
+
+        $entityFilial->setId($pj->getId());
+        $entityFilial->setJuridica($pj);
+        $entityFilial->setIdExterno($pj->getId());
+        $entityFilial->setCodExterno($pj->getId());
         $entityFilial->setIndLeitEtqProdTransbObg('N');
         $entityFilial->setIndUtilizaRessuprimento('N');
         $entityFilial->setIndRecTransbObg('N');
         $entityFilial->setIsAtivo('S');
         $this->_em->persist($entityFilial);
         $this->_em->flush();
+
+        return $entityPessoa;
     }
 }

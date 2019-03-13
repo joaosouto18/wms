@@ -100,7 +100,7 @@ class Expedicao_OndaRessuprimentoController extends Action
 
                 if ($cortarAutomatico == 'S') {
 
-                    $idMotivoCorte = $this->getEntityManager('COD_MOTIVO_CORTE_AUTOMATICO');
+                    $idMotivoCorte = $this->getSystemParameterValue('COD_MOTIVO_CORTE_AUTOMATICO');
                     if ($idMotivoCorte == null) throw new \Exception("Parametro COD_MOTIVO_CORTE_AUTOMATICO Não encontrado");
 
                     $motivoEn = $repoMotivos->find($idMotivoCorte);
@@ -168,7 +168,7 @@ class Expedicao_OndaRessuprimentoController extends Action
 
             if (count($idsExpedicoes) > 0) {
                 $expedicoes = implode(',', $idsExpedicoes);
-                $result = $expedicaoRepo->gerarOnda($expedicoes);
+                $result = $expedicaoRepo->gerarOnda($expedicoes, $this->getServiceLocator()->getService("OndaRessuprimento"));
             } else {
                 throw new Exception("Todas as expedições selecionadas estão com saldo insuficiente em ao menos 1 item!");
             }
@@ -176,6 +176,9 @@ class Expedicao_OndaRessuprimentoController extends Action
             ini_set('max_execution_time', 30);
 
             if ($result['resultado'] == false) {
+                if (isset($result['impedimentos']) && !empty($result['impedimentos'])) {
+                    $return['impedimentos'] = $result['impedimentos'];
+                }
                 throw new Exception($result['observacao']);
             } else {
                 $return['status'] = 'Ok';

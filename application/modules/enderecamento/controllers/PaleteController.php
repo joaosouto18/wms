@@ -141,6 +141,8 @@ class Enderecamento_PaleteController extends Action
             $paleteEn = $PaleteRepository->find($paleteId);
             $dadosPalete = array();
             $dadosPalete['idUma'] = $paleteId;
+            $dadosPalete['lotes'] = [];
+            $dadosPalete['qtd'] = 0;
             if ($paleteEn->getDepositoEndereco() != null) {
                 $dadosPalete['endereco'] = $paleteEn->getDepositoEndereco()->getDescricao();
             } else {
@@ -148,33 +150,38 @@ class Enderecamento_PaleteController extends Action
             }
 
             if (empty($produtoEn)) {
-                $prods = $paleteEn->getProdutos();
-                /** @var \Wms\Domain\Entity\Enderecamento\PaleteProduto $paleteProd */
-                $paleteProd = $prods[0];
-                $produtoEn = $paleteProd->getProduto();
+                /** @var \Wms\Domain\Entity\Produto $produtoEn */
+                $produtoEn = $paleteEn->getProdutos()[0]->getProduto();
             }
             //$produtoEn = $produtoRepo->findOneBy(array('id' => $params['codigo'], 'grade' => $params['grade']));
 
             //SE O PRODUTO TIVER PESO VARIAVEL CONSIDERA O PESO DO PALETE
             if ($produtoEn->getPossuiPesoVariavel() == 'S') {
                 $dadosPalete['qtd'] = str_replace('.',',',$paleteEn->getPeso(). ' kg');
-                $paleteEn = $paleteEn->getProdutos();
+                $paletesEn = $paleteEn->getProdutos()->toArray();
             } else {
-                $paleteEn = $paleteEn->getProdutos();
-                $dadosPalete['qtd'] = $paleteEn[0]->getQtd();
+                $paletesEn = $paleteEn->getProdutos()->toArray();
+                if ($produtoEn->getIndControlaLote() == 'S') {
+                    /** @var \Wms\Domain\Entity\Enderecamento\PaleteProduto $umaProd */
+                    foreach ($paletesEn as $umaProd){
+                        $dadosPalete['qtd'] += $umaProd->getQtd();
+                        $dadosPalete['lotes'][] = $umaProd->getLote();
+                    }
+                } else {
+                    $dadosPalete['qtd'] = $paletesEn[0]->getQtd();
+                }
             }
 
-            if (($paleteEn[0]->getCodProdutoEmbalagem() == NULL)) {
-                $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoVolume()));
+            if (($paletesEn[0]->getCodProdutoEmbalagem() == NULL)) {
+                $embalagemEn = $volumeRepo->findOneBy(array('id'=> $paletesEn[0]->getCodProdutoVolume()));
             } else {
-                $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $paleteEn[0]->getCodProdutoEmbalagem()));
+                $embalagemEn = $embalagemRepo->findOneBy(array('id'=> $paletesEn[0]->getCodProdutoEmbalagem()));
                 $dadosPalete['unMedida'] = $embalagemEn->getDescricao();
                 $dadosPalete['qtdEmbalagem'] = $embalagemEn->getQuantidade();
             }
             if ($embalagemEn->getEndereco() != null) {
                 $dadosPalete['picking'] = $embalagemEn->getEndereco()->getDescricao();
             }
-
             $paletesArray[] = $dadosPalete;
         }
 

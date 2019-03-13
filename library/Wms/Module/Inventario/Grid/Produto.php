@@ -12,7 +12,7 @@ class Produto extends DadoLogistico {
     public function init(array $params = array()) {
         extract($params);
 
-        $tipoPicking = Endereco::ENDERECO_PICKING;
+        $tipoPicking = Endereco::PICKING;
 
         /** @var EntityManager $em */
         $em = $this->getEntityManager();

@@ -29,7 +29,7 @@ class Wms_WebService_Fabricante extends Wms_WebService
     {
         $idFabricante = trim($idFabricante);
 
-        $fabricanteEntity = $this->__getServiceLocator()->getService('Fabricante')->get($idFabricante);
+        $fabricanteEntity = $this->__getServiceLocator()->getService('Fabricante')->find($idFabricante);
 
         if ($fabricanteEntity == null)
             throw new \Exception('Fabricante não encontrado');
@@ -84,7 +84,7 @@ class Wms_WebService_Fabricante extends Wms_WebService
         
         try {
             $service = $this->__getServiceLocator()->getService('Fabricante');
-            $fabricante = $service->get($idFabricante);
+            $fabricante = $service->find($idFabricante);
 
             $fabricante->setId($idFabricante)
                     ->setNome($nome);
@@ -114,7 +114,7 @@ class Wms_WebService_Fabricante extends Wms_WebService
         $nome = trim($nome);
 
         $service = $this->__getServiceLocator()->getService('Fabricante');
-        $entity = $service->get($idFabricante);
+        $entity = $service->find($idFabricante);
         //novo Fabricante
         $op = ($entity == null) ? $this->inserir($idFabricante, $nome) :
                 $this->alterar($idFabricante, $nome);
@@ -140,7 +140,7 @@ class Wms_WebService_Fabricante extends Wms_WebService
         
         try {
             $service = $this->__getServiceLocator()->getService('Fabricante');
-            $fabricante = $service->get($idFabricante);
+            $fabricante = $service->find($idFabricante);
             
             
             

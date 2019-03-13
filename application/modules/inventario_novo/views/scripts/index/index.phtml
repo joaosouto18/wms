@@ -1,0 +1,183 @@
+<span ng-controller="listGridInventarioCtrl">
+    <script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/listGridCtrl.js') ?>"></script>
+    <form id="cadastro-movimentacao" class="filtro">
+        <dt id="identificacao-label">&nbsp;</dt>
+        <dd id="identificacao-element" >
+            <fieldset id="fieldset-identificacao"><legend>Filtros</legend>
+                <dl rowspan="2">
+                    <div class="field"><label for="rua" class="field optional">Rua Inicio</label>
+                        <input type="text" ng-model="criterioForm.rua" id="rua" size="3" alt="enderecoRua" class=" ctrSize"></div>
+                    <div class="field"><label for="predio" class="field optional">Predio Inicio</label>
+                        <input type="text" ng-model="criterioForm.predio" id="predio" size="3" alt="enderecoPredio" class=" ctrSize"></div>
+                    <div class="field"><label for="nivel" class="field optional">Nivel Inicio</label>
+                        <input type="text" ng-model="criterioForm.nivel" id="nivel" size="3" alt="enderecoNivel" class=" ctrSize"></div>
+                    <div class="field"><label for="apto" class="field optional">Apto Inicio</label>
+                        <input type="text" ng-model="criterioForm.apto" id="apto" size="3" alt="enderecoApartamento" class=" ctrSize"></div>
+                    <div class="field"><label for="dataInicial1" class="field optional">Data Inicio</label>
+                        <input type="text" ng-model="criterioForm.dataInicial1" size="11" alt="date" class="date hasDatepicker">
+                        <span> a </span>
+                        <input type="text" ng-model="criterioForm.dataInicial2" size="11" alt="date" class="date hasDatepicker">
+                    </div>
+                    <div class="field">
+                    </div>
+                    <div class="field"><label for="dataFinal1" class="field optional">Data Finalização</label>
+                        <input type="text" ng-model="criterioForm.dataFinal1" name="dataFinal1" id="dataFinal1" size="11" alt="date" class="date hasDatepicker">
+                        <span> a </span>
+                        <input type="text" ng-model="criterioForm.dataFinal2" id="dataFinal2" size="11" alt="date" class="date  hasDatepicker">
+                    </div>
+                    <div class="field">
+                    </div>
+                    <div class="field"><label for="status" class="field optional">Status</label>
+                        <select ng-model="criterioForm.status" id="status" ng-options="index as status for (index, status) in statusArr">
+                            <option value="" label="Selecione...">Selecione...</option>
+                        </select>
+                    </div>
+                    <div class="field" style="clear: both;"><label for="ruaFinal" class="field optional">Rua Final</label>
+                        <input type="text" ng-model="criterioForm.ruaFinal" id="ruaFinal" value="" size="3" alt="enderecoRua" class=" ctrSize"></div>
+                    <div class="field"><label for="predioFinal" class="field optional">Predio Final</label>
+                        <input type="text" ng-model="criterioForm.predioFinal" id="predioFinal" value="" size="3" alt="enderecoPredio" class=" ctrSize"></div>
+                    <div class="field"><label for="nivelFinal" class="field optional">Nivel Final</label>
+                        <input type="text" ng-model="criterioForm.nivelFinal" id="nivelFinal" value="" size="3" alt="enderecoNivel" class=" ctrSize"></div>
+                    <div class="field"><label for="aptoFinal" class="field optional">Apto Final</label>
+                        <input type="text" ng-model="criterioForm.aptoFinal" id="aptoFinal" value="" size="3" alt="enderecoApartamento" class=" ctrSize"></div>
+                    <div class="field"><label for="produto" class="field optional">Cod. Produto</label>
+                        <input type="text" ng-model="criterioForm.produto" id="produto" value="" alt="number" size="15" class=" ctrSize"></div>
+                    <?php if ($this->usaGrade) : ?>
+                    <div class="field"><label for="grade" class="field optional">Grade</label>
+                        <input type="text" ng-model="criterioForm.grade" id="grade" value="" size="15" class="ctrSize"></div>
+                    <?php endif; ?>
+                    <div class="field"><label for="inventario" class="field optional">Inventário</label>
+                        <input type="text" ng-model="criterioForm.inventario" id="inventario" value="" alt="number" size="15" class=" ctrSize"></div>
+                    <div class="field"><label for="descricao" class="field optional">Descrição</label>
+                        <input type="text" ng-model="criterioForm.descricao" id="descricao" value="" size="45" class=" ctrSize"></div>
+                    <div class="field">
+                        <input type="button" ng-click="requestForm()" value="Buscar" class="btn">
+                    </div>
+                    <div class="field">
+                        <input type="button" ng-click="clearForm()" value="Limpar campos" class="btn">
+                    </div>
+                </dl>
+            </fieldset>
+        </dd>
+    </form>
+    <form>
+        <div id="monitoramento-inventario" class="grid">
+            <div class="gControl">
+                <div class="gPager">
+                    <a href=""><img src="/img/admin/pager_arrow_left.gif" alt="<" width="15px" height="15px" ng-click="changePage(-1)"></a>
+                    <select title="Página atual" name="page" ng-model="paginator.actPage" style="text-align: center;" ng-options="pagina.label for pagina in paginator.pages"></select>
+                    <a href=""><img src="/img/admin/pager_arrow_right.gif" alt="<" width="15px" height="15px" ng-click="changePage(1)"></a>
+                    <span>de {{paginator.size}} página(s) </span>
+                    <span>por página</span>
+                    <span>|</span>
+                    <span>Total de {{inventarios.length}} registros encontrados.</span>
+                </div>
+            </div>
+
+            <!--  MASS ACTION -->
+            <div class="gMassAction">
+                <form id="invetGridForm" method="post"></form>
+                <div class="gSelect">
+                    <label for="checkAllGrid" id="checkAllGridLbl">
+                        <input name="checkAllGrid" id="checkAllGrid" type="checkbox" ng-model="paginator.actPage.selectedAll" ng-change="selectAllPage()" style="float: left; margin-right: 2px;">Todos da página</label>
+                    <span class="massDelimiter">|</span>
+                    <span><span class="check-selected-counter">{{ (inventarios | filter:{checked: true }).length }}</span>selecionados</span>
+                </div>
+                <div class="gAction">
+                    <span>Mass Action: </span>
+                    <select ng-model="massActionRoute" >
+                        <option value=""></option>
+                        <option value="index/relatorio">Movimentações no Estoque (xls)</option>
+                    </select>
+                    <button type="button" ng-click="massActionRequest()"><span>Executar</span></button>
+                    <input type="hidden" value="" name="hiddenId">
+                </div>
+                <input type="hidden" value="" class="massaction-values">
+            </div>
+
+            <table class="gTable ">
+                <tbody >
+                <tr class="gTTitle">
+                    <td colspan="2"></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('id')"><span>Cod</span></a></td>
+                    <td><a href="" title="Descrição do inventário" class="sort" ng-click="ordenarPor('dscInventario')"><span>Descrição</span></a></td>
+                    <?php if($this->showCodInvErp):?>
+                    <td width=""><a href="" title="" class="sort" ng-click="ordenarPor('qtdEndereco')"><span>Código no ERP</span></a></td>
+                    <?php endif;?>
+                    <td><a href="" title="Quantidade de endereços deste inventário" class="sort" ng-click="ordenarPor('qtdEndereco')"><span>Qtd End.</span></a></td>
+                    <td><a href="" title="Quantidade de divergências" class="sort" ng-click="ordenarPor('qtdDivergente')"><span>Qtd. Diverg.</span></a></td>
+                    <td><a href="" title="Endereços inventariados" class="sort" ng-click="ordenarPor('qtdInventariado')"><span>End. Invt.</span></a></td>
+                    <td><a href="" title="Data de criação" class="sort" ng-click="ordenarPor('dthCriacao')"><span>Dt. Criação</span></a></td>
+                    <td><a href="" title="Data de início" class="sort" ng-click="ordenarPor('dthInicio')"><span>Dt. Início</span></a></td>
+                    <td><a href="" title="Data de finalização" class="sort" ng-click="ordenarPor('dthFinalizacao')"><span>Dt. Finalização</span></a></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('andamento')"><span>%</span></a></td>
+                    <td><a href="" title="" class="sort" ng-click="ordenarPor('status')"><span>Status</span></a></td>
+                </tr>
+                <tr ng-show="showLoading">
+                    <td colspan="100%" align="center">
+                        <img height="150%" src="/img/ajax-bar-loader.gif" width="50%">
+                    </td>
+                </tr>
+                <tr ng-show="showNoResults">
+                    <td colspan="100%" align="center">
+                        <span>Nenhum registro foi encontrado</span>
+                    </td>
+                </tr>
+                <tr ng-show="showList" class="gTResultSet " ng-repeat="inventario in inventarios | interval:{start: paginator.actPage.indexStart, end:paginator.actPage.indexEnd} | orderBy:tbOrderBy:direction:typeSensitiveComparator">
+                    <td class="gRowCheck"><input type="checkbox" name="mass-id[]" ng-checked="inventario.checked" ng-click="checkSelected(inventario)" value="{{inventario.id}}"></td>
+                    <td class="gTdOpcRow">
+                        <div class="gOpcRow">
+                            <ul>
+                                <li><img src="/img/admin/icon_opc.gif" alt="Opções">
+                                    <ul>
+                                        <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_GERADO ?>"><a href="/inventario_novo/index/liberar/id/{{inventario.id}}" >Liberar</a></li>
+                                        <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CONCLUIDO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_INTERROMPIDO ?>] | contains:inventario.status"><a href="/inventario_novo/index/atualizar/id/{{inventario.id}}" class="" title="Atualizar estoque baseado neste inventário" target="_self">Atualizar Estoque</a></li>
+                                        <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO ?>] | contains:inventario.status"><a href="/inventario_novo/index/interromper/id/{{inventario.id}}" class="" title="Interromper este inventário" target="_self">Interromper Inventário</a></li>
+                                        <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>] | contains:inventario.status:true"><a href="/inventario_novo/index/cancelar/id/{{inventario.id}}" class="confirm" title="Cancelar inventário" target="_self">Cancelar</a></li>
+<!--                                        <li ng-if="inventario.status != --><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_GERADO ?><!--"><a href="/inventario_novo/relatorio-divergencia/index/id/{{inventario.id}}" class="pdf" title="" target="_self">Relatório Divergências</a></li>-->
+<!--                                        <li ng-if="[--><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?><!--, --><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?><!--] | contains:inventario.status:true"><a href="/inventario/parcial/endereco/id/{{inventario.id}}" class="confirm" title="Adicionar novos endereços" target="_self">Adicionar endereços</a></li>-->
+                                        <li ><a href="/inventario_novo/index/view-andamento-ajax/id/{{inventario.id}}" class="view-andamento dialogAjax" data-dialog-width="75%" title="Andamento do Inventário" target="_self">Visualizar Andamento</a></li>
+                                        <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>"><a href="/inventario_novo/index/view-movimentacoes-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações no estoque" target="_self">Movimentações no Estoque</a></li>
+                                        <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>] | contains:inventario.status:true">
+                                            <a ng-if="inventario.criterio == 'P'" href="/inventario_novo/index/list-produtos-ajax/id/{{inventario.id}}" class="dialogAjax" title="Produtos deste inventário" target="_self">Remover Produtos</a>
+                                            <a ng-if="inventario.criterio == 'E'" href="/inventario_novo/index/list-enderecos-ajax/id/{{inventario.id}}" class="dialogAjax" title="Endereços deste inventário" target="_self">Remover Endereços</a>
+                                        </li>
+<!--                                        <li ng-if="inventario.status == --><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO ?><!--"><a href="/inventario_novo/index/imprimir-enderecos-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações por Produto" target="_self">Imprimir Endereços</a></li>-->
+                                        <?php if($this->showCodInvErp):?>
+                                        <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>"><a href="/inventario_novo/index/export-inventario-ajax/id/{{inventario.id}}" class="" title="" target="_self">Exportar Inventario</a></li>
+                                        <li ><a href="/inventario_novo/index/view-vincular-cod-erp-ajax/id/{{inventario.id}}" class="view-andamento dialogAjax" title="" target="_self">Vincular inventário do ERP</a></li>
+                                        <?php endif;?>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td>{{inventario.id}}</td>
+                    <td>{{inventario.descricao}}</td>
+                    <?php if($this->showCodInvErp):?>
+                    <td>{{inventario.codInvERP}}</td>
+                    <?php endif;?>
+                    <td>{{inventario.qtdEndereco}}</td>
+                    <td>{{inventario.qtdDivergencia}}</td>
+                    <td>{{inventario.qtdInventariado}}</td>
+                    <td>{{inventario.dataCriacao}}</td>
+                    <td>{{inventario.dataInicio}}</td>
+                    <td>{{inventario.dataFinalizacao}}</td>
+                    <td><div style="float:right;">{{inventario.andamento}}%</div></td>
+                    <td>{{statusArr[inventario.status]}}</td>
+                </tr>
+
+                </tbody>
+            </table>
+            <div class="gPager">
+                <a href=""><img src="/img/admin/pager_arrow_left.gif" alt="<" width="15px" height="15px" ng-click="changePage(-1)"></a>
+                <select title="Página atual" name="page" ng-model="paginator.actPage" style="text-align: center;" ng-options="pagina.label for pagina in paginator.pages"></select>
+                <a href=""><img src="/img/admin/pager_arrow_right.gif" alt="<" width="15px" height="15px" ng-click="changePage(1)"></a>
+                <span>de {{paginator.size}} página(s) </span>
+                <span>por página</span>
+                <span>|</span>
+                <span>Total de {{inventarios.length}} registros encontrados.</span>
+            </div>
+        </div>
+    </form>
+</span>

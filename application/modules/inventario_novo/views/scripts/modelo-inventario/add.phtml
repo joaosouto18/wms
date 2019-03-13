@@ -1,0 +1,79 @@
+<style>
+    <!--
+    fieldset#fieldset-modelo{
+        display: inline;
+        width: 947px;
+    }
+
+    div.checkboxes {
+        margin-bottom: 10px;
+    }
+
+    div.fieldsets {
+        width: 650px;
+    }
+
+    div.fieldset-left {
+        width: 320px;
+        float: left;
+    }
+
+    div.fieldset-right {
+        width: 320px;
+        float: right;
+    }
+
+    #fieldset-modelo input.error {
+        border-color: #F00;
+    }
+    #fieldset-modelo select.error {
+        border-color: #F00;
+    }
+    #fieldset-modelo label.error {
+        display:none !important;
+    }
+
+    form fieldset div.field {
+        display: block;
+        float: none;
+        margin-right: 20px;
+        min-height: auto;
+    }
+
+    form fieldset div.checkbox {
+        display: inline-block;
+        float: none;
+    }
+
+    form fieldset div.checkbox label {
+        margin: 0 0 0 5px;
+    }
+    -->
+</style>
+<form id="modelo-inventario-form" class="saveForm" method="post" action="" enctype="application/x-www-form-urlencoded" novalidate="novalidate">
+    <fieldset id="fieldset-modelo">
+        <legend>Cadastro</legend>
+        <div>
+            <?php echo $this->form->getElement('descricao'); ?>
+        </div>
+        <div>
+            <?php echo $this->form->getElement('numContagens'); ?>
+        </div>
+
+        <div class="fieldsets">
+            <div class="fieldset-left">
+                <div class="checkboxes">
+                    <?php echo $this->form->getElement('ativo'); ?><br />
+                    <?php echo $this->form->getElement('default'); ?><br />
+                    <?php echo $this->form->getElement('itemAItem'); ?><br />
+                    <?php echo $this->form->getElement('controlaValidade'); ?><br />
+                    <?php echo $this->form->getElement('exigeUMA'); ?><br />
+                    <?php echo $this->form->getElement('comparaEstoque'); ?><br />
+                    <?php echo $this->form->getElement('usuarioNContagens'); ?><br />
+                    <?php echo $this->form->getElement('contarTudo'); ?><br />
+                    <?php echo $this->form->getElement('volumesSeparadamente'); ?><br />
+                </div>
+            </div>
+
+    </fieldset>
+</form>

@@ -1,0 +1,134 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: tarci
+ * Date: 11/01/2019
+ * Time: 16:34
+ */
+?>
+
+<link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl('css/admin/accordion.css'); ?>" />
+<div>
+    <div class="accordion" id="accordion-master"></div>
+</div>
+<script>
+    $(function() {
+        var arrAndamento = <?php echo $this->andamentos; ?> ;
+
+        $(document).ready(function () {
+            if (Object.keys(arrAndamento).length > 0) {
+                $.each(arrAndamento, function (k, rua) {
+
+                    let accordionRua = $('<div class="accordion"></div>');
+
+                    $.each(rua.enderecos, function (k, end) {
+                        let tableConf = prepareGridConf(end.conferencias);
+                        accordionRua.append(
+                            newAccordionGroup(k, end, tableConf, true)
+                        )
+                    });
+
+                    $("#accordion-master").append(
+                        newAccordionGroup(k, rua, accordionRua)
+                    )
+                })
+            }
+
+            $(".accordion")
+                .accordion({
+                    active: false,
+                    header: "> div > h3",
+                    autoHeight: false,
+                    fillHeight: true,
+                    collapsible: true,
+                    icons: {
+                        header: "ui-icon-accordion-header",
+                        headerSelected: "ui-icon-accordion-active"
+                    }
+                })
+                .sortable({
+                    axis: "y",
+                    handle: "h3",
+                    stop: function( event, ui ) {
+                        // IE doesn't register the blur when sorting
+                        // so trigger focusout handlers to remove .ui-state-focus
+                        ui.item.children( "h3" ).triggerHandler( "focusout" );
+
+                        // Refresh accordion to handle new order
+                        $( this ).accordion( "refresh" );
+                    }
+                });
+        });
+
+        var prepareGridConf = function (conferencias) {
+            let tBody = $('<tbody>');
+            tBody.append('<tr class="gTTitle">' +
+                '<td>Nº.</td>' +
+                '<td>Conferente</td>' +
+                '<td>Código</td>' +
+                '<td>Produto</td>' +
+                '<td>Grade</td>' +
+                '<td>Lote</td>' +
+                '<td>Unid</td>' +
+                '<td>Qtd Conferida</td>' +
+                '<td>Dth Validade</td>' +
+                '<td>Dth Conferencia</td>' +
+                '</tr>');
+
+            $.each(conferencias, function (k, conf) {
+                tBody.append('<tr class="gTResultSet ">' +
+                    '<td>'+conf.contagem+'</td>' +
+                    '<td>'+conf.conferente+'</td>' +
+                    '<td>'+conf.codProduto+'</td>' +
+                    '<td>'+conf.dscProd+'</td>' +
+                    '<td>'+conf.grade+'</td>' +
+                    '<td>'+conf.lote+'</td>' +
+                    '<td>'+conf.dscEmbVol+'</td>' +
+                    '<td>'+conf.qtdContada+'</td>' +
+                    '<td>'+conf.dthValidade+'</td>' +
+                    '<td>'+conf.dthConferencia+'</td>' +
+                    '</tr>');
+            });
+
+            return $('<table class="gTable">').append(tBody);
+        };
+
+        var newAccordionGroup = function (index, accTitle, dataBody, subAcc) {
+            let divGroupAcc = $('<div class="group"></div>');
+            let accHeader = null;
+
+            if (!subAcc) {
+                let title = '' +
+                    '<table width="100%">' +
+                        '<thead>' +
+                            '<tr>' +
+                                '<td class="accordion-master-head">Rua: '+index+'</td>' +
+                                '<td class="accordion-master-head" width="15%">Endereços: '+Object.keys(accTitle.enderecos).length+'</td>' +
+                                '<td class="accordion-master-head" width="15%">Pendentes: '+accTitle.divergentes+'</td>' +
+                                '<td class="accordion-master-head" width="15%">Conferência: '+accTitle.conferencia+'</td>' +
+                                '<td class="accordion-master-head" width="15%">Divergentes: '+accTitle.divergentes+'</td>' +
+                                '<td class="accordion-master-head" width="15%">Finalizados: '+accTitle.finalizados+'</td>' +
+                            '</tr>' +
+                        '</thead>' +
+                    '</table>';
+                accHeader = $('<h3 class="accordion-header">' + title + '</h3>');
+            }
+            else {
+                let title = '' +
+                    '<table width="100%">' +
+                        '<thead>' +
+                            '<tr>' +
+                                '<td class="accordion-master-head" width="30%">Endereço '+index+'</td>' +
+                                '<td class="accordion-master-head" >Situação: '+accTitle.status+'</td>' +
+                            '</tr>' +
+                        '</thead>' +
+                    '</table>';
+                accHeader = $('<h3 class="accordion-header">' + title + '</h3>');
+            }
+
+            let divAccBody = $('<div class="accordion-body"></div>');
+
+            return divGroupAcc.append(accHeader).append(divAccBody.append(dataBody));
+        };
+    });
+</script>

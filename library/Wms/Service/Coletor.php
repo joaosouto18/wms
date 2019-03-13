@@ -13,7 +13,7 @@ class Coletor
 
         $codigoBarras = trim($codigoBarras);
         
-        if(substr($codigoBarras, 0, 4) == '(01)' || substr($codigoBarras, 0, 4) == '(02)') {
+        if(substr($codigoBarras, 0, 4) == '(01)') {
             return substr($codigoBarras, 4, 18);
         }
 
@@ -58,9 +58,13 @@ class Coletor
 
 
         // Se o código começa com "8006", o sistema considera o código da posição 5 até 22.
-        if(substr($codigoBarras, 0, 2) == '01' || substr($codigoBarras, 0, 2) == '02') {
+        if(substr($codigoBarras, 0, 2) == '01') {
             return substr($codigoBarras, 3, 13);
         }
+
+        //if(substr($codigoBarras, 0, 2) == '01' || substr($codigoBarras, 0, 2) == '02') {
+        //    return substr($codigoBarras, 3, 13);
+        //}
 
         if (substr($codigoBarras, 0, 3) == '856') {
             return substr($codigoBarras, 0, 14);

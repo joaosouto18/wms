@@ -241,54 +241,55 @@ class RecebimentoRepository extends EntityRepository {
             switch ($item['idTipoComercializacao']) {
                 case ProdutoEntity::TIPO_COMPOSTO:
 
-                        $volumes = $produtoVolumeRepo->findBy(array('codProduto' => $item['produto'], 'grade' => $item['grade']));
+                    $volumes = $produtoVolumeRepo->findBy(array('codProduto' => $item['produto'], 'grade' => $item['grade']));
 
-                        if (empty($volumes)) {
-                            return array('message' => null,
-                                'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
-                                'concluido' => false);
-                        }
+                    if (empty($volumes)) {
+                        return array('message' => null,
+                            'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
+                            'concluido' => false);
+                    }
 
-                        foreach ($volumes as $volume) {
-                            //verifica se o volume foi conferido.
-                            $qtdConferida = $this->buscarConferenciaPorVolume($item['produto'], $item['grade'], $volume->getId(), $idOrdemServico);
+                    foreach ($volumes as $volume) {
+                        //verifica se o volume foi conferido.
+                        $qtdConferida = $this->buscarConferenciaPorVolume($item['produto'], $item['grade'], $volume->getId(), $idOrdemServico);
 
-                            //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
+                        //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
 
-                            foreach ($qtdConferida as $lote => $value) {
-                                if ($value == 0) {
-                                    if ($lote == 0) {
-                                        $lote = null;
-                                    }
-                                    $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null,null,null, $volume, $lote);
-                                } else {
-                                    $qtdConferidasVolumes[$lote][$item['produto']][$item['grade']][$volume->getId()] = $value;
+                        foreach ($qtdConferida as $lote => $value) {
+                            if ($value == 0) {
+                                if ($lote == 0) {
+                                    $lote = null;
                                 }
+                                $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null,null,null, $volume, $lote);
+                            } else {
+                                $qtdConferidasVolumes[$lote][$item['produto']][$item['grade']][$volume->getId()] = $value;
                             }
                         }
+                    }
 
-                        foreach ($qtdConferidasVolumes as $lote => $volumes) {
-                            //Pega a menor quantidade de produtos completos
-                            $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
-                        }
+                    foreach ($qtdConferidasVolumes as $lote => $volumes) {
+                        //Pega a menor quantidade de produtos completos
+                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
+                    }
 
-                        if (!isset($qtdConferidas)) {
-                            return array('message' => null,
-                                'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
-                                'concluido' => false);
-                        }
-                        break;
-                    case ProdutoEntity::TIPO_UNITARIO:
+                    if (!isset($qtdConferidas)) {
+                        return array('message' => null,
+                            'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
+                            'concluido' => false);
+                    }
+                    break;
+                case ProdutoEntity::TIPO_UNITARIO:
 
-                        $qtdConferida = $this->buscarConferenciaPorEmbalagem($item['produto'], $item['grade'], $idOrdemServico);
-                        foreach ($qtdConferida as $lote => $value) {
-                            $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
-                        }
+                    $qtdConferida = $this->buscarConferenciaPorEmbalagem($item['produto'], $item['grade'], $idOrdemServico);
+                    foreach ($qtdConferida as $lote => $value) {
+                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
+                    }
 
-                        break;
-                    default:
-                        break;
-                }
+                    break;
+                default:
+                    break;
+            }
+
             if ((!empty($item['lote']) && !isset($qtdConferidas[$item['produto']][$item['grade']][$item['lote']]))
                 || !isset($qtdConferidas[$item['produto']][$item['grade']])) {
                 $qtdConferidas[$item['produto']][$item['grade']][$item['lote']] = 0;
@@ -402,12 +403,10 @@ class RecebimentoRepository extends EntityRepository {
         $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
         $arrayDivergencia = $this->getDivergenciaByProduto($qtdConferidas, $qtdAvarias, $qtdNFs);
 
-        $arrDivergLoteInterno = [];
         foreach ($qtdConferidas as $idProduto => $grades) {
             foreach ($grades as $grade => $lotes) {
                 /** @var Produto $produtoEn */
                 $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
-                $qtdJaConferido = 0;
                 foreach ($lotes as $lote => $qtdConferida) {
                     if (isset($numPeso[$idProduto][$grade][$lote]) && !empty($numPeso[$idProduto][$grade][$lote]))
                         $numPeso = (float)str_replace(',', '.', $numPeso[$idProduto][$grade][$lote]);
@@ -419,7 +418,7 @@ class RecebimentoRepository extends EntityRepository {
                     }
 
                     $qtdConferida = (float)$qtdConferida;
-                    $qtdAvaria = (float)$qtdAvarias[$idProduto][$grade][$lote];
+                    $qtdAvaria = (float)0;//$qtdAvarias[$idProduto][$grade][$lote];
 
                     $numPecas = 0;
                     if ($produtoEn->getIndFracionavel() == "S"
@@ -682,6 +681,9 @@ class RecebimentoRepository extends EntityRepository {
                         $em->getRepository("wms:Enderecamento\EstoqueProprietario")->efetivaEstoquePropRecebimento($recebimentoEntity->getId());
                     }
                 }
+
+                $this->atualizaRecebimentoBenner($idRecebimento);
+
                 $em->flush();
                 $em->commit();
                 return array('exception' => null);
@@ -923,7 +925,6 @@ class RecebimentoRepository extends EntityRepository {
         }
 
         $em->persist($recebimentoEmbalagemEntity);
-        $em->flush();
     }
 
     /**
@@ -1241,7 +1242,8 @@ class RecebimentoRepository extends EntityRepository {
                               GROUP BY NFI.COD_PRODUTO, NFI.DSC_GRADE,P.IND_POSSUI_PESO_VARIAVEL) NOTAFISCAL
                     ON NOTAFISCAL.COD_PRODUTO = V.COD_PRODUTO
                    AND NOTAFISCAL.DSC_GRADE = V.DSC_GRADE
-                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = V.COD_PRODUTO AND P.DSC_GRADE = V.DSC_GRADE";
+                  LEFT JOIN PRODUTO P ON P.COD_PRODUTO = V.COD_PRODUTO AND P.DSC_GRADE = V.DSC_GRADE
+                  ORDER BY V.COD_PRODUTO, V.DSC_GRADE";
         $resultado = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
 
@@ -1619,6 +1621,7 @@ class RecebimentoRepository extends EntityRepository {
                 }
             }
         }
+        $this->_em->flush();
     }
 
     public function alteraNormaPaletizacaoRecebimento($codRecebimento, $codProduto, $grade, $codOs, $idNorma) {
@@ -1665,8 +1668,7 @@ class RecebimentoRepository extends EntityRepository {
                 $conferenciaEn = $conferenciaRepo->findOneBy(array('recebimento' => $codRecebimento, 'codProduto' => $codProduto, 'grade' => $grade, 'ordemServico' => $codOs));
                 $qtd = $conferenciaEn->getQtdConferida();
                 $numPcs = $conferenciaEn->getNumPecas();
-
-            $this->gravarRecebimentoEmbalagemVolume($codProduto, $grade, $conferenciaEn->getProduto(), $qtd, $numPcs, $codRecebimento, $codOs);
+                $this->gravarRecebimentoEmbalagemVolume($codProduto, $grade, $conferenciaEn->getProduto(), $qtd, $numPcs, $codRecebimento, $codOs);
             }
         }
 
@@ -1817,7 +1819,7 @@ class RecebimentoRepository extends EntityRepository {
                                   AND (QTD_DIVERGENCIA = 0 OR COD_NOTA_FISCAL IS NOT NULL)
                              ) V ON V.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                 LEFT JOIN (SELECT COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, SUM(QTD) as QTD
-                            FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD
+                            FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, PP.DSC_LOTE
                                   FROM PALETE P
                                   INNER JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
                                   WHERE P.COD_RECEBIMENTO = $idRecebimento AND P.COD_STATUS = 536)
@@ -1851,10 +1853,10 @@ class RecebimentoRepository extends EntityRepository {
                 }
             }
             $sqlRecebimentosConferencia = "
-                SELECT V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE, SUM(V.QTD) as QTD
+                SELECT V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE, SUM(V.QTD) as QTD, NVL(V.DSC_LOTE,'NCL') DSC_LOTE
                   FROM V_QTD_RECEBIMENTO V
                  WHERE V.COD_RECEBIMENTO IN ($ids)
-                 GROUP BY V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE
+                 GROUP BY V.COD_RECEBIMENTO, V.COD_PRODUTO, V.DSC_GRADE, V.DSC_LOTE
                  UNION
             ";
         }
@@ -1867,22 +1869,23 @@ class RecebimentoRepository extends EntityRepository {
                 F.FORNECEDOR as NOM_FANTASIA
            FROM RECEBIMENTO R
            LEFT JOIN ($sqlRecebimentosConferencia
-                      SELECT RC.COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_CONFERIDA as QTD
+                      SELECT RC.COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_CONFERIDA as QTD, NVL(RC.DSC_LOTE,'NCL') DSC_LOTE
                         FROM RECEBIMENTO_CONFERENCIA RC
                         LEFT JOIN RECEBIMENTO R ON RC.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                        WHERE R.COD_STATUS = 457
-                         AND (QTD_DIVERGENCIA = 0 OR COD_NOTA_FISCAL IS NOT NULL)) V
+                         AND ((QTD_DIVERGENCIA = 0 AND 'S' NOT IN (IND_DIVERG_LOTE,IND_DIVERG_VOLUMES,IND_DIVERGENCIA_PESO)) OR COD_NOTA_FISCAL IS NOT NULL)) V
                   ON V.COD_RECEBIMENTO = R.COD_RECEBIMENTO
-           LEFT JOIN (SELECT COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, SUM(QTD) / QTD_NORMAS as QTD
-                        FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, NVL(QTD_NORMAS,1) as QTD_NORMAS
+           LEFT JOIN (SELECT COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, SUM(QTD) / QTD_NORMAS as QTD, NVL(DSC_LOTE,'NCL') DSC_LOTE
+                        FROM (SELECT DISTINCT P.UMA, P.COD_RECEBIMENTO, PP.COD_PRODUTO, PP.DSC_GRADE, PP.QTD, NVL(QTD_NORMAS,1) as QTD_NORMAS, PP.DSC_LOTE
                                 FROM PALETE P
                                 LEFT JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
                                 LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = PP.COD_PRODUTO AND PV.DSC_GRADE = PP.DSC_GRADE
                                WHERE P.COD_STATUS IN (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_ENDERECAMENTO.",".Palete::STATUS_RECEBIDO.") OR P.IND_IMPRESSO = 'S')
-                       GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_NORMAS) P
+                       GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_NORMAS, DSC_LOTE) P
                   ON P.COD_RECEBIMENTO = V.COD_RECEBIMENTO
                  AND P.COD_PRODUTO = V.COD_PRODUTO
-                    AND P.DSC_GRADE = V.DSC_GRADE
+                 AND P.DSC_GRADE = V.DSC_GRADE
+                 AND P.DSC_LOTE = V.DSC_LOTE
            LEFT JOIN BOX B ON R.COD_BOX = B.COD_BOX
            LEFT JOIN (SELECT COD_RECEBIMENTO, MAX(FORNECEDOR) as FORNECEDOR
                         FROM (SELECT DISTINCT
@@ -1975,7 +1978,7 @@ class RecebimentoRepository extends EntityRepository {
                      FROM 
                        NOTA_FISCAL NF2 INNER JOIN 
                        NOTA_FISCAL_ITEM NFI on (NF2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) LEFT JOIN
-                       PRODUTO_EMBALAGEM PE ON (NFI.COD_PRODUTO = PE.COD_PRODUTO)
+                       PRODUTO_EMBALAGEM PE ON (NFI.COD_PRODUTO = PE.COD_PRODUTO AND PE.DTH_INATIVACAO IS NULL)
                      WHERE 
                        NF2.COD_RECEBIMENTO = R.COD_RECEBIMENTO
                      GROUP BY 
@@ -2224,6 +2227,41 @@ class RecebimentoRepository extends EntityRepository {
         }
 
         return $produtos;
+    }
+
+    public function atualizaRecebimentoBenner ($idRecebimento) {
+        $sql = "SELECT DISTINCT TR.RECEBIMENTOFISICOBENNER
+                  FROM NOTA_FISCAL NF
+                  LEFT JOIN FORNECEDOR F ON F.COD_FORNECEDOR = NF.COD_FORNECEDOR
+                 INNER JOIN TR_NOTA_FISCAL_ENTRADA TR 
+                    ON NF.NUM_NOTA_FISCAL = TR.NUM_NOTA_FISCAL
+                   AND NF.COD_SERIE_NOTA_FISCAL = TR.COD_SERIE_NOTA_FISCAL
+                   AND F.COD_EXTERNO = TR.COD_FORNECEDOR
+                   AND TR.RECEBIMENTOFISICOBENNER IS NOT NULL
+                 WHERE NF.COD_RECEBIMENTO = " . $idRecebimento;
+        $idsBenner = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $idsArray = array();
+        foreach ($idsBenner as $id) {
+            $idsArray[] = $id['RECEBIMENTOFISICOBENNER'];
+        }
+
+        if (count($idsArray) >0) {
+            $ids = implode(",", $idsArray);
+
+            /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
+            $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
+            $conexaoEn = $conexaoRepo->find(10);
+
+            $UPDATE01 = "UPDATE CP_RECEBIMENTOFISICO SET STATUS = 6 WHERE HANDLE IN ($ids)";
+
+            $UPDATE02 = "UPDATE CP_RECEBIMENTOFISICOPAI SET STATUS = 6 WHERE HANDLE IN (
+                        SELECT RECEBIMENTOFISICOPAI FROM CP_RECEBIMENTOFISICO WHERE HANDLE IN ($ids))";
+
+            $conexaoRepo->runQuery($UPDATE01, $conexaoEn,true);
+
+            $conexaoRepo->runQuery($UPDATE02, $conexaoEn,true);
+        }
     }
 
 }

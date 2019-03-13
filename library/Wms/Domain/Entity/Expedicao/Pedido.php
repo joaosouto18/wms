@@ -28,8 +28,9 @@ class Pedido
     protected $numSequencial;
 
     /**
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\Util\Sigla")
-     * @JoinColumn(name="COD_TIPO_PEDIDO", referencedColumnName="COD_SIGLA")
+     * @var TipoPedido
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\TipoPedido")
+     * @JoinColumn(name="COD_TIPO_PEDIDO", referencedColumnName="COD_TIPO_PEDIDO_EXPEDICAO")
      */
     protected $tipoPedido;
 

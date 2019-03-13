@@ -127,7 +127,7 @@ class DadoLogistico extends Grid
                 ->addAction(array(
                     'label' => 'Imprimir etiqueta avulsa',
                     'controllerName' => 'produto',
-                    'actionName' => 'gerar-etiqueta-pdf',
+                    'actionName' => 'gerar-etiqueta',
                     'pkIndex' => array('id', 'grade'),
                     'cssClass' => 'dialogAjax',
                     'condition' => function ($row) {
@@ -137,7 +137,7 @@ class DadoLogistico extends Grid
                 ->addAction(array(
                     'label' => 'Imprimir etiqueta avulsa',
                     'controllerName' => 'produto',
-                    'actionName' => 'gerar-etiqueta-pdf',
+                    'actionName' => 'gerar-etiqueta',
                     'pkIndex' => array('id', 'grade'),
                     'cssClass' => 'pdf',
                     'condition' => function ($row) {

@@ -444,8 +444,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $temTransacao = true;
 
                 $idConferente = $this->getRequest()->getParam('idPessoa');
-                //$qtdNFs = $this->getRequest()->getParam('qtdNF');
-                //$qtdAvarias = $this->getRequest()->getParam('qtdAvaria');
                 $qtdConferidas = $this->getRequest()->getParam('qtdConferida');
                 $qtdUnidFracionavel = $this->getRequest()->getParam('qtdUnidFracionavel');
                 $embalagem = $this->getRequest()->getParam('embalagem');
@@ -1343,7 +1341,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(120, 70));
                 break;
             case "recebimento":
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(60, 50));
+                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(50, 28));
+		        $gerarEtiqueta->SetAutoPageBreak(false);
                 break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
@@ -1353,34 +1352,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $gerarEtiqueta->init(array('idRecebimento' => $params['id']), null, $modelo, $target, false, $arrProdutos);
 
     }
-
-    /*
-    public function gerarEtiquetaPdfAction() {
-        $idRecebimento = $this->getRequest()->getParam('id');
-        $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PRODUTO");
-        $target = $this->getSystemParameterValue("IMPRESSAO_PRODUTO_RECEBIMENTO");
-
-        switch ($modelo) {
-            case 2:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 60));
-                break;
-            case 3:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(50, 30));
-                break;
-            case 4:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(113, 70));
-                break;
-            case 5:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(120, 70));
-                break;
-            default:
-                $gerarEtiqueta = new \Wms\Module\Web\Report\Produto\GerarEtiqueta("P", 'mm', array(110, 50));
-                break;
-        }
-
-        $gerarEtiqueta->init(array('idRecebimento' => $idRecebimento), null, $modelo, $target);
-    }*/
-
+    
     public function __call($methodName, $args) {
         parent::__call($methodName, $args);
     }

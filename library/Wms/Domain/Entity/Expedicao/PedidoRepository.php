@@ -23,15 +23,14 @@ class PedidoRepository extends EntityRepository
         try {
             $enPedido = new Pedido;
 
-            $SiglaRepo      = $em->getRepository('wms:Util\Sigla');
-            $entitySigla    = $SiglaRepo->findOneBy(array('sigla' => $pedido['tipoPedido']));
+            $tipoPedEn = $em->getRepository('wms:Expedicao\TipoPedido')->findOneBy(['codExterno' => $pedido['tipoPedido']]);
 
-            if ($entitySigla == null) {
-                throw new \Exception('O tipo de pedido '.$pedido['tipoPedido'].' não esta cadastrado');
+            if (empty($tipoPedEn)) {
+                throw new \Exception('O tipo de pedido '.$pedido['tipoPedido'].' não está cadastrado');
             }
             $numSequencial = $this->getMaxCodPedidoByCodExterno($pedido['codPedido'], true);
             $enPedido->setCodExterno($pedido['codPedido']);
-            $enPedido->setTipoPedido($entitySigla);
+            $enPedido->setTipoPedido($tipoPedEn);
             $enPedido->setLinhaEntrega($pedido['linhaEntrega']);
             $enPedido->setCentralEntrega($pedido['centralEntrega']);
             $enPedido->setCarga($pedido['carga']);

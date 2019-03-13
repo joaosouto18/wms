@@ -234,6 +234,10 @@ button, .btn, button.back, .btnBack, .btnAjuda, .btnAlert {
     display: inline-block;   
 }
 
+button.btn-grid{
+    margin-top: 5px;
+}
+
 button.back span, .btnBack span {
     background: no-repeat url(../../img/admin/icon_btn_back.gif) left top;
     padding-left:18px;

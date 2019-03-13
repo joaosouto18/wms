@@ -1329,13 +1329,12 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             SELECT PE.COD_BARRAS,
                    PE.DSC_EMBALAGEM,
                    PE.QTD_EMBALAGEM,
-                   NVL(PDL.NUM_ALTURA,0) as NUM_ALTURA,
-                   NVL(PDL.NUM_LARGURA,0) as NUM_LARGURA,
-                   NVL(PDL.NUM_PROFUNDIDADE,0) as NUM_PROFUNDIDADE,
-                   NVL(PDL.NUM_CUBAGEM,0) as NUM_CUBAGEM,
-                   NVL(PDL.NUM_PESO,0) as NUM_PESO
+                   NVL(PE.NUM_ALTURA,0) as NUM_ALTURA,
+                   NVL(PE.NUM_LARGURA,0) as NUM_LARGURA,
+                   NVL(PE.NUM_PROFUNDIDADE,0) as NUM_PROFUNDIDADE,
+                   NVL(PE.NUM_CUBAGEM,0) as NUM_CUBAGEM,
+                   NVL(PE.NUM_PESO,0) as NUM_PESO
               FROM PRODUTO_EMBALAGEM PE
-              LEFT JOIN PRODUTO_DADO_LOGISTICO PDL ON PDL.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
              WHERE PE.COD_PRODUTO = '$codProduto'
                AND PE.DSC_GRADE = '$grade'";
         $embalagens = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
@@ -1626,8 +1625,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         pe.id idEmbalagem, pv.id idVolume, p.numVolumes,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                         NVL(pe.descricao, pv.descricao) descricaoEmbalagem,
-                        NVL(pe.quantidade, \'0\') quantidadeEmbalagem,
-                        p.indControlaLote'
+                        NVL(pe.quantidade, 1) quantidadeEmbalagem,
+                        p.indControlaLote, p.indFracionavel, p.validade controlaValidade'
                 )
                 ->from('wms:Produto', 'p')
                 ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
@@ -1802,8 +1801,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $where .= "AND LOWER(PES.NOM_PESSOA) LIKE LOWER('%$params[fornecedor]%') ";
         }
 
-        $picking = Endereco::ENDERECO_PICKING;
-        $pulmao = Endereco::ENDERECO_PULMAO;
+        $picking = Endereco::PICKING;
+        $pulmao = Endereco::PULMAO;
         if (isset($params['endereco']) && !empty($params['endereco'])) {
             if ($params['endereco'] == $picking) {
                 $where .= "AND DE.COD_CARACTERISTICA_ENDERECO = $picking";

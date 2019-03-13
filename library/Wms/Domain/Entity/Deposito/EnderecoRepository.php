@@ -184,7 +184,7 @@ class EnderecoRepository extends EntityRepository {
 
     public function getPicking() {
         $em = $this->getEntityManager();
-        $tipoPicking = Endereco::ENDERECO_PICKING;
+        $tipoPicking = Endereco::PICKING;
 
         $dql = $em->createQueryBuilder()
                 ->select('e.descricao as DESCRICAO, MOD(e.predio,2) as lado')
@@ -349,7 +349,7 @@ class EnderecoRepository extends EntityRepository {
             ->where("de.descricao = '$endereco'");
 
         if ($picking) {
-            $dql->andWhere('de.idCaracteristica =' . Endereco::ENDERECO_PICKING);
+            $dql->andWhere('de.idCaracteristica =' . Endereco::PICKING);
         }
 
         if ($unico == true) {
@@ -363,7 +363,7 @@ class EnderecoRepository extends EntityRepository {
     }
 
     public function getEnderecoesDisponivesByParam($params) {
-        $idCaracteristicaEndereco = Endereco::ENDERECO_PICKING;
+        $idCaracteristicaEndereco = Endereco::PICKING;
         $estruturaBlocado = \Wms\Domain\Entity\Armazenagem\Estrutura\Tipo::BLOCADO;
 
         extract($params);
@@ -721,7 +721,7 @@ class EnderecoRepository extends EntityRepository {
         $dataFinal = $params['dataInicial2'];
         $ruaInicial = $params['ruaInicial'];
         $ruaFinal = $params['ruaFinal'];
-        $tipoPicking = Endereco::ENDERECO_PICKING;
+        $tipoPicking = Endereco::PICKING;
 
         $sqlWhere = "";
         if (isset($ruaInicial) && !empty($ruaFinal)) {
@@ -966,12 +966,11 @@ class EnderecoRepository extends EntityRepository {
     }
 
     /**
-     * @param $codDepositoEndereco
+     * @param $enderecoEn EnderecoEntity
      * @param string $opcao | S or N
      */
-    public function bloqueiaOuDesbloqueiaInventario($codDepositoEndereco, $opcao = 'S', $flush = true) {
-        $enderecoEn = $this->find($codDepositoEndereco);
-        $enderecoEn->setinventarioBloqueado($opcao);
+    public function bloqueiaOuDesbloqueiaInventario($enderecoEn, $opcao = 'S', $flush = true) {
+        $enderecoEn->setInventarioBloqueado($opcao);
         $this->_em->persist($enderecoEn);
         if ($flush == true) {
             $this->_em->flush();
@@ -1050,13 +1049,18 @@ class EnderecoRepository extends EntityRepository {
                       WHERE PE.COD_BARRAS = '$codbarras' OR PV.COD_BARRAS = '$codbarras'";
 
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        //var_dump($array);
         return $array;
 
     }
 
-        public function getProdutoPorEndereco($endereco) {
+    public function getProdutoPorEndereco($endereco)
+    {
 
         $enderecoEn = $this->findOneBy(array('descricao' => $endereco));
+
+        $usaGrade = ($this->getSystemParameterValue("UTILIZA_GRADE") == "S");
+
         if (!isset($enderecoEn) || empty($enderecoEn)) {
             throw new \Exception("Endereço não encontrado");
         } else {
@@ -1076,7 +1080,7 @@ class EnderecoRepository extends EntityRepository {
                     $produtoEn = $itemPinckingEmb->getProduto();
                     $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
                         'desc' => $produtoEn->getDescricao(), 'qtd' => 0);
-                    $result[$produtoEn->getId()] = $produto;
+                    $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()] = $produto;
                 }
             }
             if (!empty($itensPickingVol)) {
@@ -1086,7 +1090,7 @@ class EnderecoRepository extends EntityRepository {
                  */
                 foreach ($itensPickingVol as $key => $itemPinckingVol) {
                     $produtoEn = $itemPinckingVol->getProduto();
-                    $result[$produtoEn->getId()."-".$itemPinckingVol->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
+                    $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()."-".$itemPinckingVol->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
                         'desc' => $produtoEn->getDescricao() . " - (" . $itemPinckingVol->getDescricao() . ")", 'qtd' => 0);
                 }
             }
@@ -1101,16 +1105,19 @@ class EnderecoRepository extends EntityRepository {
                     $dataValidade = !is_null($item->getValidade()) ? $item->getValidade()->format('d/m/Y') : null;
                     if ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO) {
                         $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $item->getQtd());
-                        $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                            'desc' => $produtoEn->getDescricao(), 'qtd' => implode(' + ', $vetEmbalagens),
-                            'dataValidade' => $dataValidade);
-                        $result[$produtoEn->getId()] = $produto;
+                        $produto = array('produto' => $produtoEn->getId(),
+                            'desc' => (!$usaGrade) ? $produtoEn->getDescricao() : $produtoEn->getDescricao() . " ( " .$produtoEn->getGrade() . " ) ",
+                            'qtd' => implode(' + ', $vetEmbalagens),
+                            'dataValidade' => $dataValidade, 'lote' => $item->getLote());
+                        $result[$produtoEn->getId() . "---" . $produtoEn->getGrade() . "---" .$item->getLote()] = $produto;
                     } elseif ($produtoEn->getTipoComercializacao()->getId() == Produto::TIPO_COMPOSTO) {
                         /** @var Produto\Volume $volumeEn */
                         $volumeEn = $item->getProdutoVolume();
-                        $result[$produtoEn->getId()."-".$volumeEn->getId()] = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                            'desc' => $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ")", 'qtd' => $item->getQtd(),
-                            'dataValidade' => $dataValidade);
+                        $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()."-".$volumeEn->getId(). "---" .$item->getLote()] = array('produto' => $produtoEn->getId(),
+                            'desc' => (!$usaGrade) ? $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ")" :
+                                $produtoEn->getDescricao() . " - (" . $volumeEn->getDescricao() . ") ( " .$produtoEn->getGrade() . " ) ",
+                            'qtd' => $item->getQtd(),
+                            'dataValidade' => $dataValidade, 'lote' => $item->getLote());
                     }
                 }
             }

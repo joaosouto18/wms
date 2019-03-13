@@ -24,6 +24,7 @@ class NotaFiscalRepository extends EntityRepository {
             ->distinct(true)
             ->from('wms:NotaFiscal\Item', 'nfi')
             ->innerJoin('nfi.notaFiscal', 'nf')
+            ->innerJoin('wms:Recebimento\VQtdRecebimento', 'vr', 'WITH', 'vr.codRecebimento = nf.recebimento and nfi.codProduto = vr.codProduto and nfi.grade = vr.grade')
             ->where('nf.recebimento = :recebimento')
             ->setParameter(':recebimento', $idRecebimento);
 
@@ -672,7 +673,7 @@ class NotaFiscalRepository extends EntityRepository {
         }
 
         if (isset($estoquePulmao) && !empty($estoquePulmao) && !($estoquePulmao == 'T')) {
-            $caracteristicaPicking = Endereco::ENDERECO_PICKING;
+            $caracteristicaPicking = Endereco::PICKING;
             if ($estoquePulmao == 'S') {
                 $sql .= " AND (EXISTS (SELECT 'X'
                                          FROM ESTOQUE EX
@@ -1259,7 +1260,7 @@ class NotaFiscalRepository extends EntityRepository {
                     NOTA_FISCAL NF2 INNER JOIN 
                     NOTA_FISCAL_ITEM NFI on (NF2.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL) INNER JOIN 
                     PRODUTO PR ON (NFI.COD_PRODUTO = PR.COD_PRODUTO) INNER JOIN 
-                    PRODUTO_EMBALAGEM PE ON (PR.COD_PRODUTO = PE.COD_PRODUTO)
+                    PRODUTO_EMBALAGEM PE ON (PR.COD_PRODUTO = PE.COD_PRODUTO AND PE.DTH_INATIVACAO IS NULL)
                 WHERE 
                     NF2.COD_NOTA_FISCAL = $idNota
                 GROUP BY 

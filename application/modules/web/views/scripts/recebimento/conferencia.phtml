@@ -173,9 +173,6 @@
                     </td>
                     <td colspan="2">
                         <button type="button" id="enviar" class="btn" style="margin-top: 0;">Salvar e Finalizar</button>
-                        <?php
-                        echo $this->formSubmit("submit", "Salvar e Finalizar", array('id' => 'btnCconferencia', 'class' => 'btn', 'style' => 'margin-top: 0; display:none;'));
-                        ?>
                     </td>
                 </tr>
             </tbody>
@@ -385,7 +382,7 @@
                             if (data.result === true) {
                                 modal.dialog("close");
                                 $("#form-autorizacao").resetForm();
-                                $("#btnCconferencia").trigger('click');
+                                $("#form-recebimento-conferencia").submit()
                             } else {
                                 alert("Senha incorreta!!!");
                                 $("#form-autorizacao").resetForm();
@@ -416,11 +413,11 @@
                         }
                     })
                 } else {
-                    $("#btnCconferencia").trigger('click');
+                    $("#form-recebimento-conferencia").submit()
                 }
             });
         } else {
-            $("#btnCconferencia").trigger('click');
+            $("#form-recebimento-conferencia").submit()
         }
     })
 </script>

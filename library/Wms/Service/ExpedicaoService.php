@@ -17,12 +17,6 @@ use Wms\Domain\Entity\Pessoa\Juridica;
 class ExpedicaoService extends AbstractService
 {
 
-    public function __construct(EntityManager $em)
-    {
-        parent::__construct($em);
-        $this->entity = "wms:Expedicao";
-    }
-
     public function createCargaReentrega(NotaFiscalSaida $nfSaida) {
         $wsExpedicao = new \Wms_WebService_Expedicao();
         /** @var Juridica $pessoa */
@@ -30,7 +24,7 @@ class ExpedicaoService extends AbstractService
         $serieNFS = $nfSaida->getSerieNf();
 
         /** @var Expedicao $expedicaoEn */
-        $expedicaoEn = $this->em->getRepository($this->entity)->save($numNFS);
+        $expedicaoEn = $this->em->getRepository($this->entityName)->save($numNFS);
         $tipoCarga = $this->em->getRepository('wms:Util\Sigla')->findOneBy(array('tipo' => 69,'referencia'=> "C"));
         $cargaEntities = $this->em->getRepository('wms:Expedicao\Carga')->findBy(array('codCargaExterno' => trim($numNFS)));
         $qtd = count($cargaEntities);

@@ -67,6 +67,8 @@ class produto {
     public $embalagens = array();
     /** @var volume[] */
     public $volumes = array();
+    /** @var string */
+    public $codigoBarrasBase;
 
 }
 
@@ -126,6 +128,7 @@ class Wms_WebService_Produto extends Wms_WebService {
             $prod->estoqueDisponivel = 0;
             $prod->cubagem = $dadosProduto['NUM_CUBAGEM'];
             $prod->peso = $dadosProduto['NUM_PESO'];
+            $prod->codigoBarrasBase = (int) $produto->getCodigoBarrasBase();
 
             foreach ($dadosProduto['EMBALAGENS'] as $embalagem) {
                 $emb = new embalagem();
@@ -167,7 +170,7 @@ class Wms_WebService_Produto extends Wms_WebService {
     private function getFabricante($idFabricante) {
         $fabricante = $this->__getServiceLocator()
             ->getService('Fabricante')
-            ->get($idFabricante);
+            ->find($idFabricante);
 
         return ($fabricante == null) ? false : $fabricante;
     }
@@ -181,7 +184,7 @@ class Wms_WebService_Produto extends Wms_WebService {
     private function getClasse($idClasse) {
         $classe = $this->__getServiceLocator()
             ->getService('Produto\Classe')
-            ->get($idClasse);
+            ->find($idClasse);
 
         return ($classe == null) ? false : $classe;
     }
@@ -256,14 +259,17 @@ class Wms_WebService_Produto extends Wms_WebService {
                 ->setFabricante($fabricante)
                 ->setClasse($classe)
                 ->setReferencia($referencia)
-                ->setPossuiPesoVariavel($possuiPesoVariavel)
-                ->setIndControlaLote((isset($indControlaLote) && !empty($indControlaLote)) ? $indControlaLote : 'N');
+                ->setPossuiPesoVariavel($possuiPesoVariavel);
 
             if ($produtoNovo == true) {
                 $produto
                     ->setTipoComercializacao($tipoComercializacaoEntity)
                     ->setNumVolumes($numVolumes)
-                    ->setIndFracionavel('N');
+                    ->setIndFracionavel('N')
+                    ->setIndControlaLote((isset($indControlaLote) && !empty($indControlaLote)) ? $indControlaLote : 'N');
+            } else {
+                $valorAtual = $produto->getIndControlaLote();
+                $produto->setIndControlaLote((isset($indControlaLote) && !empty($indControlaLote)) ? $indControlaLote : $valorAtual);
             }
 
             $em->persist($produto);
@@ -436,7 +442,7 @@ class Wms_WebService_Produto extends Wms_WebService {
         $em = $this->__getDoctrineContainer()->getEntityManager();
 
         $result = $em->createQueryBuilder()
-            ->select('p.id as idProduto, p.descricao, p.grade, f.id as idFabricante, t.id as tipo, c.id as idClasse, f.nome as nomeFabricante')
+            ->select('p.id as idProduto, p.descricao, p.grade, f.id as idFabricante, t.id as tipo, c.id as idClasse, f.nome as nomeFabricante, p.codigoBarrasBase')
             ->from('wms:Produto', 'p')
             ->innerJoin('p.fabricante', 'f')
             ->innerJoin('p.classe', 'c')
@@ -465,6 +471,8 @@ class Wms_WebService_Produto extends Wms_WebService {
             $produto->estoqueDisponivel = 0;
             $produto->cubagem = $dadosProduto['NUM_CUBAGEM'];
             $produto->peso = $dadosProduto['NUM_PESO'];
+            $produto->codigoBarrasBase = (int) $line['codigoBarrasBase'];
+
             foreach ($dadosProduto['EMBALAGENS'] as $embalagem) {
                 $emb = new embalagem();
                 $emb->altura = $embalagem['NUM_ALTURA'];

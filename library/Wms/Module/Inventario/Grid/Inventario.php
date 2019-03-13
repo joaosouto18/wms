@@ -43,17 +43,15 @@ class Inventario extends Grid
             ))
             ->addColumn(array(
                 'label' => 'Qtd Inventariado',
-                'index' => 'qtdInvetariado',
+                'index' => 'qtdInventariado',
             ))
             ->addColumn(array(
                 'label' => 'Dt. Início',
-                'index' => 'dataInicio',
-                'render' => 'DataTime',
+                'index' => 'dataInicio'
             ))
             ->addColumn(array(
                 'label' => 'Dt. Finalização',
-                'index' => 'dataFinalizacao',
-                'render' => 'DataTime',
+                'index' => 'dataFinalizacao'
             ))
             ->addColumn(array(
                 'label' => 'Andamento (%)',
@@ -83,7 +81,7 @@ class Inventario extends Grid
                 'cssClass' => '',
                 'pkIndex' => 'id',
                 'condition' => function ($row) {
-                    return $row['status'] == "CONCLUIDO" && $row['qtdInvetariado'] > 0 && $row['qtdDivergencia'] == 0;
+                    return $row['status'] == "CONCLUIDO" && $row['qtdInventariado'] > 0 && $row['qtdDivergencia'] == 0;
                 },
             ))
             ->addAction(array(
