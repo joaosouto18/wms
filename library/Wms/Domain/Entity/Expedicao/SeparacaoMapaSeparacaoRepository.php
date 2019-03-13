@@ -22,6 +22,32 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
                 $this->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $embalagem[0]['id'], $embalagem[0]['quantidade'], null, $lote);
             }
         }
+        $this->geraProdutividadeSeparacao($codOs, $codMapaSeparacao);
+
+    }
+
+    private function geraProdutividadeSeparacao($codOs, $codMapaSeparacao)
+    {
+        $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico',$codOs);
+        $pessoaEntity = $ordemServicoEntity->getPessoa();
+
+        $mapaSeparacaoEntity = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao',$codMapaSeparacao);
+
+        if (isset($pessoaEntity) && isset($mapaSeparacaoEntity)) {
+            $apontamentoMapaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+            $apontamentoMapaEntity = $apontamentoMapaRepository->findOneBy(array('usuario' => $pessoaEntity, 'mapaSeparacao' => $mapaSeparacaoEntity));
+
+            if (!$apontamentoMapaEntity) {
+                $apontamentoMapaEntity = new ApontamentoMapa();
+                $apontamentoMapaEntity->setMapaSeparacao($mapaSeparacaoEntity);
+                $apontamentoMapaEntity->setUsuario($pessoaEntity);
+                $apontamentoMapaEntity->setDataConferencia(new \DateTime());
+            }
+
+        }
+
+
+
     }
 
     public function verificaProdutoSeparar($codProduto, $grade, $codMapaSeparacao, $codDepositoEndereco, $qtdSeparar, $lote = null){
