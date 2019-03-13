@@ -18,7 +18,7 @@ class Mobile_InventarioNovoController extends Action
         $arrMasc = \Wms\Util\Endereco::separar($mascara, $arrQtdDigitos);
         $arrMasc["mask"] = $mascara;
         $this->view->endConfig = json_encode($arrMasc);
-        $this->renderScript('inventario-novo\inventarios.phtml');
+        $this->renderScript('inventario-novo' . DIRECTORY_SEPARATOR .'inventarios.phtml');
     }
 
     public function getInventariosAction()

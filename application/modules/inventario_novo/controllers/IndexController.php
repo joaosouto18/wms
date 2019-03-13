@@ -146,7 +146,7 @@ class Inventario_Novo_IndexController  extends Action
 
                 $this->view->grid = $grid->init($result[0], $direction);
                 $this->addFlashMessage("warning", "Estes elementos impedem de liberar o inventário $id");
-                $this->renderScript('index\impedimentos.phtml');
+                $this->renderScript('index'. DIRECTORY_SEPARATOR . 'impedimentos.phtml');
             } else {
                 $this->addFlashMessage("success", "Inventário $id liberado com sucesso");
                 $this->redirect();
@@ -160,14 +160,14 @@ class Inventario_Novo_IndexController  extends Action
     {
         $grid = new \Wms\Module\InventarioNovo\Grid\EnderecosGrid();
         $this->view->grid = $grid->init($this->_em->getRepository('wms:InventarioNovo')->listEnderecos($this->getRequest()->getParam('id')));
-        $this->renderScript('index\generic-grid-view.phtml');
+        $this->renderScript('index' . DIRECTORY_SEPARATOR . 'generic-grid-view.phtml');
     }
 
     public function listProdutosAjaxAction()
     {
         $grid = new \Wms\Module\InventarioNovo\Grid\ProdutosGrid();
         $this->view->grid = $grid->init($this->_em->getRepository('wms:InventarioNovo')->listProdutos($this->getRequest()->getParam('id')));
-        $this->renderScript('index\generic-grid-view.phtml');
+        $this->renderScript('index' . DIRECTORY_SEPARATOR . 'generic-grid-view.phtml');
     }
 
     public function removerEnderecoAction()

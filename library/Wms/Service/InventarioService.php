@@ -618,7 +618,6 @@ class InventarioService extends AbstractService
                 $this->updateFlagContagensProdutos($invContEnd, $prodX[0], $prodX[1], $prodX[2], $prodX[3], $divergente);
             }
 
-            ;
             if ($temDivergencia || (empty($count) && $invContEnd->getSequencia() < $inventario['numContagens'])) {
                 $contDiverg = ($invContEnd->getSequencia() >= $inventario['numContagens']);
                 $this->addNovaContagem(
@@ -650,7 +649,9 @@ class InventarioService extends AbstractService
 
             if (isset($produto["idVolume"]) && !empty($produto["idVolume"])) {
                 $isEmb = false;
-                $elements[] = $produto["idVolume"];
+                $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
+                $volumeEn = $produtoVolumeRepo->find($produto["idVolume"]);
+                $elements[] = $volumeEn;
             } else {
                 $isEmb = true;
                 $elements[] = null;
