@@ -1428,12 +1428,13 @@ class MapaSeparacaoRepository extends EntityRepository {
             $where .= " AND MS.COD_MAPA_SEPARACAO = $codMapaSeparacao ";
         }
 
-        $query = "SELECT MS.COD_MAPA_SEPARACAO,
+        $sql = "SELECT MS.COD_MAPA_SEPARACAO,
                     MSP.COD_PRODUTO,
                     MSP.DSC_GRADE,
                     MSP.QTD_SEPARAR as QTD_TOTAL,
                     CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL_SEPARACAO,
-                    MS.COD_EXPEDICAO
+                    MS.COD_EXPEDICAO,
+                    NVL(CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)),0) as PERCENTUAL
                  FROM MAPA_SEPARACAO MS
                 LEFT JOIN (SELECT MSP.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM)- MSP.QTD_CORTADO) as QTD_SEPARAR
                              FROM MAPA_SEPARACAO MS

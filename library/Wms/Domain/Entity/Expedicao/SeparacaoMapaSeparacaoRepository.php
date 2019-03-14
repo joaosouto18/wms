@@ -21,8 +21,8 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
             }else {
                 $this->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $embalagem[0]['id'], $embalagem[0]['quantidade'], null, $lote);
             }
+            $this->geraProdutividadeSeparacao($codOs, $codMapaSeparacao);
         }
-        $this->geraProdutividadeSeparacao($codOs, $codMapaSeparacao);
 
     }
 
@@ -42,12 +42,48 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
                 $apontamentoMapaEntity->setMapaSeparacao($mapaSeparacaoEntity);
                 $apontamentoMapaEntity->setUsuario($pessoaEntity);
                 $apontamentoMapaEntity->setDataConferencia(new \DateTime());
+
+                $this->_em->persist($apontamentoMapaEntity);
             }
 
+            $mapaSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+            $conferenciaPendentes = $mapaSeparacaoRepository->getMapaPendenteSeparacao(null,$codMapaSeparacao);
+
+            $tudoConferido = true;
+            foreach ($conferenciaPendentes as $conferencia) {
+                if ($conferencia['PERCENTUAL'] < 100) {
+                    $tudoConferido = false; break;
+                }
+            }
+
+            if ($tudoConferido) {
+                $apontamentoMapaEntities = $apontamentoMapaRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEntity));
+                $separacaoMapaEntities = $this->getMaxData($codMapaSeparacao);
+
+                foreach ($apontamentoMapaEntities as $apontamentoMapaEntity) {
+                    foreach ($separacaoMapaEntities as $separacaoMapaEntity) {
+                        if ((int)$separacaoMapaEntity['COD_PESSOA'] == $apontamentoMapaEntity->getCodUsuario()) {
+                            $dataSeparacao = new \DateTime($separacaoMapaEntity['DTH_SEPARACAO']);
+                            $apontamentoMapaEntity->setDataFimConferencia($dataSeparacao);
+                            $this->_em->persist($apontamentoMapaEntity);
+                            break;
+                        }
+                    }
+                }
+            }
+            $this->_em->flush();
         }
+    }
 
+    private function getMaxData($codMapaSeparacao)
+    {
+        $sql = "select to_date(to_char(max(dth_separacao),'dd/mm/yyyy hh24:mi:ss'),'dd/mm/yyyy hh24:mi:ss') dth_separacao, os.cod_pessoa
+                    from separacao_mapa_separacao msp
+                    inner join ordem_servico os on os.cod_os = msp.cod_os
+                where cod_mapa_separacao = $codMapaSeparacao
+                group by os.cod_pessoa";
 
-
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function verificaProdutoSeparar($codProduto, $grade, $codMapaSeparacao, $codDepositoEndereco, $qtdSeparar, $lote = null){
@@ -110,6 +146,7 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
     }
 
     public function getQtdSeparadaProduto($codProduto, $grade, $codMapaSeparacao, $lote = null){
+        $where = '';
         if(!empty($lote)){
             $where = " AND SMS.DSC_LOTE = '".$lote."'";
         }
