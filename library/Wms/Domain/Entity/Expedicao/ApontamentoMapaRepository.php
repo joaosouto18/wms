@@ -369,7 +369,7 @@ class ApontamentoMapaRepository extends EntityRepository {
 
         $result[$qtdRows]['NOM_PESSOA'] = 'TOTAIS';
         $result[$qtdRows]['IDENTIDADE'] = '-';
-        $result[$qtdRows]['QTD_PESO'] = $pesoTotal;//number_format($pesoTotal, 2, ',', '.');
+        $result[$qtdRows]['QTD_PESO'] = number_format($pesoTotal, 2, ',', '.');
         $result[$qtdRows]['QTD_VOLUMES'] = number_format($volumeTotal, 2, ',', '.');
         $result[$qtdRows]['QTD_PRODUTOS'] = number_format($quantidadeTotal, 2, ',', '.');
         $result[$qtdRows]['QTD_CUBAGEM'] = number_format($cubagemTotal, 2, ',', '.');
