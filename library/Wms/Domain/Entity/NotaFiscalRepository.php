@@ -1127,14 +1127,15 @@ class NotaFiscalRepository extends EntityRepository {
         foreach ($itens as $key => $item){
             if(isset($arrayItens[$item['idProduto']])){
                 if($arrayItens[$item['idProduto']]['grade'] == $item['grade']) {
-                    $arrayItens[$item['idProduto']]['quantidade'] = Math::adicionar($itens[$key]['quantidade'], $arrayItens[$item['idProduto']]['quantidade']);
-                    $arrayItens[$item['idProduto']]['peso'] = Math::adicionar($itens[$key]['peso'], $arrayItens[$item['idProduto']]['peso']);
+                   $arrayItens[$item['idProduto']]['quantidade'] = Math::adicionar($itens[$key]['quantidade'], $arrayItens[$item['idProduto']]['quantidade']);
+                   $arrayItens[$item['idProduto']]['peso'] = Math::adicionar($itens[$key]['peso'], $arrayItens[$item['idProduto']]['peso']);
                 }
             }else {
-                $arrayItens[$item['idProduto']]['idProduto'] = $item['idProduto'];
+                $arrayItens[$item['idProduto']]['idProduto']  = $item['idProduto'];
                 $arrayItens[$item['idProduto']]['quantidade'] = $item['quantidade'];
-                $arrayItens[$item['idProduto']]['grade'] = $item['grade'];
-                $arrayItens[$item['idProduto']]['peso'] = $item['peso'];
+                $arrayItens[$item['idProduto']]['grade']      = $item['grade'];
+                if(isset($item['peso']) || !empty($item['peso']) )
+                   $arrayItens[$item['idProduto']]['peso'] = $item['peso'];
             }
         }
         foreach ($arrayLotes as $keyLote => $itemLote){
@@ -1151,7 +1152,8 @@ class NotaFiscalRepository extends EntityRepository {
                 $arrayTemp[$itemLote['idProduto']][$lote]['lote'] = $lote;
                 $arrayTemp[$itemLote['idProduto']][$lote]['quantidade'] = $itemLote['quantidade'];
                 $arrayTemp[$itemLote['idProduto']][$lote]['grade'] = $itemLote['grade'];
-                $arrayTemp[$itemLote['idProduto']][$lote]['peso'] = $itemLote['peso'];
+                if(isset($itemLote['peso']) || !empty($itemLote['peso']) )
+                    $arrayTemp[$itemLote['idProduto']][$lote]['peso']   = $itemLote['peso'];
             }
             if(isset($arrayItens[$itemLote['idProduto']])){
                 $arrayItens[$itemLote['idProduto']]['lote'] = $arrayTemp[$itemLote['idProduto']];
@@ -1159,7 +1161,6 @@ class NotaFiscalRepository extends EntityRepository {
         }
         return $arrayItens;
     }
-
 
     public function getObservacoesNotasByProduto($codRecebimento, $codProduto, $grade) {
         $SQL = "SELECT DISTINCT DSC_OBSERVACAO
