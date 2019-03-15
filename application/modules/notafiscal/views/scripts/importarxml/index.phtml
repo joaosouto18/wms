@@ -1,27 +1,75 @@
-<?php
-  // print form
-  echo $this->form;
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Abertura de Chamados</title>
 
-if ($this->isValid == false) {?>
-    <div id="quantidade-grid" class="grid">
-        <table class="gTable " style="margin-top: 20px">
-            <tbody>
-            <tr class ="gTTitle">
-                <td>Falhas importando a nota fiscal</td>
-            </tr>
-            <?php
-            foreach ($this->falhas as $falha): $this->color = !($this->color);?>
-                <tr class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
-                    <td><?php echo $falha ?></td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
-        <div class = "gPager">
-            <span>
-                <?php echo count($this->falhas) . " falha(s) encontrados"?>
-            </span>
-        </div>
-    </div>
-<?php
-}?>
+    <script type="text/javascript">
+        function exibir_ocultar(val) {
+            if(val.value == 1) {
+                document.getElementById('placa').style.display = 'none';
+            }
+            else {
+                document.getElementById('placa').style.display = 'block';
+            }
+        };
+
+        $(document).ready(function(){
+            $("#placa").inputmask({mask: 'AAA-9999'});
+        });
+    </script>
+
+</head>
+
+<body>
+<div class="container">
+
+    <form class="form-horizontal" id="notafiscal-importarxml-form" name="logo" method="POST" action="<?php echo '/notafiscal/importarxml/index' ?>" enctype="multipart/form-data">
+        <fieldset>
+
+            <!-- Título do formulário -->
+            <legend>Importar XML</legend>
+
+            <!-- Campo: tipo -->
+            <div class="form-group">
+                <label>Tipo</label><br>
+                <select id="tipo" name="tipo" class="form-group" onchange="exibir_ocultar(this)">
+                    <option value = "1">Entrada</option>
+                    <option value = "2">Saída</option>
+                    <option value = "3">Entrada/Saída</option>
+                </select>
+            </div>
+
+            <!-- Campo: placa -->
+            <div class="form-group" id="placa" style="display:none">
+                <br>
+                <label>Placa</label><br>
+                <input size="30" id="placa" name="placa" maxlength="7" class="input-file" type="text" placeholder="Ex.: AAA0000">
+            </div>
+            <br>
+
+            <!-- Campo: logomarca -->
+            <div class="form-group">
+                <label>Escolha o arquivo XML:</label>
+                <div class="col-md-4">
+                    <input size="60" id="arquivo_xml" name="arquivo_xml" class="input-file" type="file">
+                </div>
+            </div>
+
+            <!-- Botão Enviar -->
+            <div class="form-group">
+                <label class="col-md-4 control-label" for="submit"></label>
+                <div class="col-md-4">
+                    <button type="submit" name="submit" class="btn btn-inverse">Enviar</button>
+                </div>
+            </div>
+
+        </fieldset>
+    </form>
+
+</div>
+</body>
+</html>
+

@@ -19,3 +19,4 @@ function Zend_ProgressBar_Finish()
     document.getElementById('pg-text-2').innerHTML = 'Demo done';
 }
 
+

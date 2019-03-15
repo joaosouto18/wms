@@ -999,6 +999,9 @@ class NotaFiscalRepository extends EntityRepository {
         try {
             $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
 
+            if ($fornecedorEntity == null)
+                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+
             // VALIDO SE OS PRODUTOS EXISTEM NO SISTEMA
             if (count($itens) > 0) {
                 foreach ($itens as $item) {
@@ -1012,8 +1015,6 @@ class NotaFiscalRepository extends EntityRepository {
                         throw new \Exception('Produto de código ' . $idProduto . ' e grade ' . $grade . ' não encontrado');
                 }
             }
-            if ($fornecedorEntity == null)
-                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
             // caso haja um veiculo vinculado a placa
             if (empty($placa) || (strlen($placa) != 7))
