@@ -4,15 +4,22 @@ namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
+use Wms\Domain\Entity\Atividade;
+use Wms\Domain\Entity\OrdemServico;
+use Wms\Math;
 
 class ApontamentoMapaRepository extends EntityRepository {
 
     public function save($mapaSeparacao, $codUsuario) {
+
         $em = $this->getEntityManager();
+        $usuarioEn = $em->getReference('wms:Usuario',$codUsuario);
+
         $apontamentoEn = new ApontamentoMapa();
         $apontamentoEn->setDataConferencia(new \DateTime());
         $apontamentoEn->setCodMapaSeparacao($mapaSeparacao->getId());
         $apontamentoEn->setCodUsuario($codUsuario);
+        $apontamentoEn->setUsuario($usuarioEn);
         $apontamentoEn->setMapaSeparacao($mapaSeparacao);
 
         $apontamentosByUsuario = $this->findBy(array('codUsuario' => $codUsuario, 'dataFimConferencia' => null), array('id' => 'DESC'));
@@ -399,9 +406,70 @@ class ApontamentoMapaRepository extends EntityRepository {
                   AND DTH_FIM_CONFERENCIA IS NULL";
         $result =  $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
 
-        if ($result['QTD'] >0) {
+        if ($result['QTD'] > 0) {
             return true;
         }
         return false;
     }
+
+    public function geraAtividadeSeparacao($mapaSeparacaoEn, $codUsuario)
+    {
+        /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepository */
+        $ordemServicoRepository = $this->getEntityManager()->getRepository('wms:OrdemServico');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepository */
+        $mapaSeparacaoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        /** @var \Wms\Domain\Entity\Expedicao\SeparacaoMapaSeparacao $separacaoMapaSeparacaoRepository */
+        $separacaoMapaSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\SeparacaoMapaSeparacao');
+
+        $usuarioEn = $this->getEntityManager()->getReference('wms:Usuario',$codUsuario);
+        $mapaSeparacaoProdutoEntities = $mapaSeparacaoProdutoRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEn));
+
+        $mapasApontados = $this->findBy(array('mapaSeparacao' => $mapaSeparacaoEn));
+        if (count($mapasApontados)) {
+            //verifica se existem mapas com a coluna dth_fim_conferencia como null e retorna falso
+            foreach ($mapasApontados as $mapaAberto) {
+                if (is_null($mapaAberto->getDataFimConferencia()))
+                    return false;
+            }
+            $array = array();
+            $ordemServicoEntities = array();
+            foreach ($mapasApontados as $mapaFechado) {
+                $array['identificacao']['idExpedicao'] = $mapaSeparacaoEn->getCodExpedicao();
+                $array['identificacao']['tipoOrdem'] = 'expedicao';
+                $array['identificacao']['idAtividade'] = Atividade::SEPARACAO;
+                $array['identificacao']['idPessoa'] = $mapaFechado->getCodUsuario();
+                $array['identificacao']['formaConferencia'] = 'D';
+
+                $ordemEntity = $ordemServicoRepository->findOneBy(array(
+                    'idExpedicao' => $mapaSeparacaoEn->getCodExpedicao(),
+                    'atividade' => Atividade::SEPARACAO,
+                    'pessoa' => $mapaFechado->getCodUsuario(),
+                    'formaConferencia' => 'D'));
+
+                if (isset($ordemEntity)) {
+                    continue;
+                }
+
+                $ordemServicoEntities[] = $ordemServicoRepository->save(new OrdemServico(), $array, true, 'entity');
+            }
+
+            $contador = 0;
+            foreach ($ordemServicoEntities as $i => $ordemServicoEntity) {
+                $qtdPorPessoa = (floor(Math::dividir(count($mapaSeparacaoProdutoEntities), count($ordemServicoEntities)))) * ($i + 1);
+                while ($contador <= $qtdPorPessoa) {
+                    $produtoEn = $mapaSeparacaoProdutoEntities[$contador]->getProduto();
+                    $codMapaSeparacao = $mapaSeparacaoEn->getId();
+                    $codOs = $ordemServicoEntity->getId();
+                    $qtdSeparar = $mapaSeparacaoProdutoEntities[$contador]->getQtdSeparar();
+                    $idEmbalagem = $mapaSeparacaoProdutoEntities[$contador]->getProdutoEmbalagem()->getId();
+                    $qtdEmb = $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem();
+                    $separacaoMapaSeparacaoEntity = $separacaoMapaSeparacaoRepository->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $idEmbalagem, $qtdEmb, $idVol = null, $lote = null);
+
+                    $contador = $contador + 1;
+                }
+            }
+        }
+    }
+
+
 }
