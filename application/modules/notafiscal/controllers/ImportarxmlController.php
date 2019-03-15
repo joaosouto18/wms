@@ -125,21 +125,55 @@ class Notafiscal_ImportarxmlController extends Crud
         }
     }
 
-    private function salvarNotaSaida($result, $placa){
+    private function salvarNotaSaida($result, $placaExpedicao){
         try {
-            $idFornecedor  = trim($result['NotaFiscal']['COD_FORNECEDOR']);
-            $numero        = trim($result['NotaFiscal']['NUM_NOTA_FISCAL']);
-            $serie         = trim($result['NotaFiscal']['COD_SERIE_NOTA_FISCAL']);
-            $dataEmissao   = trim($result['NotaFiscal']['DTH_ENTRADA']);
-            $placa_veiculo = trim($result['NotaFiscal']['DSC_PLACA_VEICULO']);
-            $bonificacao   = 'N';
-            $itens         = $result['NotaFiscalItem'];
+            $expedicao = new Wms_WebService_Expedicao();
 
+            $cliente = new cliente();
+            $cliente->bairro      = $result['NotaFiscal']['BAIRRO_CLIENTE'];
+            $cliente->cidade      = $result['NotaFiscal']['CIDADE_CLIENTE'];
+            $cliente->codCliente  = $result['NotaFiscal']['CNPJ_CPF_CLIENTE'];
+            $cliente->complemento = $result['NotaFiscal']['COMPLEMENTO_CLIENTE'];
+            $cliente->cpf_cnpj    = $result['NotaFiscal']['CNPJ_CPF_CLIENTE'];
+            $cliente->logradouro  = $result['NotaFiscal']['LOGRADOURO_CLIENTE'];
+            $cliente->nome        = $result['NotaFiscal']['NOME_CLIENTE'];
+            $cliente->referencia  = $result['NotaFiscal']['REFERENCIA_CLIENTE'];
+            $cliente->numero      = $result['NotaFiscal']['NUMERO_CLIENTE'];
+            $cliente->tipoPessoa  = $result['NotaFiscal']['TIPO_CLIENTE'];
+            $cliente->uf          = $result['NotaFiscal']['UF_CLIENTE'];
+            $cliente->insc        = $result['NotaFiscal']['INSC_CLIENTE'];
 
-            //$expedicaoWebService = $this->_em->getRepository(wms:Wms_WebService_Expedicao::);
+            $itinerario = new itinerario();
+            $itinerario->idItinerario   = 99;
+            $itinerario->nomeItinerario = $result['NotaFiscal']['UF_CLIENTE'];
 
+            $codPedido = $result['NotaFiscal']['NUM_NOTA_FISCAL'];
 
-            //$expedicaoWebService->enviarPedidos($codCarga, $placa, $placaExpedicao, $itens);
+            $pedido = new pedido();
+            $pedido->codPedido = $codPedido;
+            $pedido->cliente = $cliente;
+            $pedido->itinerario = $itinerario;
+            $pedido->linhaEntrega = "";
+
+            $itens    = $result['NotaFiscalItem'];
+            $produtos = array();
+            foreach ($itens as $item) {
+                $produto = new produto();
+                $produto->codProduto = $item['idProduto'];
+                $produto->grade = $item['grade'];
+                $produto->quantidade = $item['quantidade'];
+                $produtos[] = $produto;
+            }
+
+            $pedido->produtos = $produtos;
+
+            $arrPed = array();
+            $arrPed[] = $pedido;
+
+            $pedidos  = new pedidos();
+            $pedidos->pedidos = $arrPed;
+
+            $expedicao->enviarPedidos($codPedido, $placaExpedicao, $placaExpedicao, $pedidos);
         } catch (Exception $e) {
             $this->addFlashMessage("error", "Não foi possível importar a nota fiscal");
             $this->isValid = false;
@@ -262,38 +296,33 @@ class Notafiscal_ImportarxmlController extends Crud
             $this->falhas[] = "CNPJ Inválido | CNPJ: " . $dados["NFe"]["infNFe"]['emit']['CNPJ'];
         }
 
+
+        // pega as informações do destinatário para notas do tipo SAÍDA
         if ( !empty($dados["NFe"]["infNFe"]['dest']['CNPJ']) ){
 
-
-            $sql = "
-                SELECT c.COD_CLIENTE_EXTERNO AS COD_CLIENTE
-                    FROM CLIENTE c 
-                    INNER JOIN pessoa_juridica p ON (c.COD_PESSOA = p.COD_PESSOA)
-                    WHERE (
-                          p.NUM_CNPJ='".$dados["NFe"]["infNFe"]['dest']['CNPJ']."'
-                        )
-                   GROUP BY c.COD_CLIENTE_EXTERNO";
-            /*
-            $sql = "
-                SELECT c.COD_CLIENTE_EXTERNO AS COD_CLIENTE
-                    FROM cliente c
-                    INNER JOIN pessoa_fisica p ON (c.COD_PESSOA = p.COD_PESSOA)
-                    WHERE (
-                          p.NUM_CPF='".$dados["NFe"]["infNFe"]['dest']['CPF']."'
-                        )
-                   GROUP BY c.COD_CLIENTE_EXTERNO";
-            */
-
-            $array = $this->em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
-            if ( !empty($array[0]['COD_CLIENTE']) ){
-                $arrayRetorno['NotaFiscal']['COD_CLIENTE']=$array[0]['COD_CLIENTE'];
-            } else {
-                $this->isValid=false;
-                $arrayRetorno['NotValid']['tags'][]='CNPJ';
-                $arrayRetorno['NotValid']['valores']['CNPJ']=$dados["NFe"]["infNFe"]['dest']['CNPJ'];
-                $this->falhas[] = "Não foi possível encontrar nenhum cliente com o CNPJ informado | CNPJ :" . $dados["NFe"]["infNFe"]['dest']['CNPJ'];
+            if( (isset($dados["NFe"]["infNFe"]['dest']['CNPJ'])) && (!empty($dados["NFe"]["infNFe"]['dest']['CNPJ']))) {
+                $documento = $dados["NFe"]["infNFe"]['dest']['CNPJ'];
+                $tipoPessoa = 'J';
             }
+            elseif( (isset($dados["NFe"]["infNFe"]['dest']['CPF'])) && (!empty($dados["NFe"]["infNFe"]['dest']['CPF']))) {
+                $documento = $dados["NFe"]["infNFe"]['dest']['CNPJ'];
+                $tipoPessoa = 'F';
+            }
+
+            $arrayRetorno['NotaFiscal']['NOME_CLIENTE']        = $dados["NFe"]["infNFe"]['dest']['xNome'];
+            $arrayRetorno['NotaFiscal']['LOGRADOURO_CLIENTE']  = $dados["NFe"]["infNFe"]['dest']['enderDest']['xLgr'];
+            $arrayRetorno['NotaFiscal']['NUMERO_CLIENTE']      = $dados["NFe"]["infNFe"]['dest']['enderDest']['nro'];
+            $arrayRetorno['NotaFiscal']['COMPLEMENTO_CLIENTE'] = $dados["NFe"]["infNFe"]['dest']['enderDest']['xCpl'];
+            $arrayRetorno['NotaFiscal']['BAIRRO_CLIENTE']      = $dados["NFe"]["infNFe"]['dest']['enderDest']['xBairro'];
+            $arrayRetorno['NotaFiscal']['CIDADE_CLIENTE']      = $dados["NFe"]["infNFe"]['dest']['enderDest']['xMun'];
+            $arrayRetorno['NotaFiscal']['UF_CLIENTE']          = $dados["NFe"]["infNFe"]['dest']['enderDest']['UF'];
+            $arrayRetorno['NotaFiscal']['CEP_CLIENTE']         = $dados["NFe"]["infNFe"]['dest']['enderDest']['CEP'];
+            $arrayRetorno['NotaFiscal']['PAIS_CLIENTE']        = $dados["NFe"]["infNFe"]['dest']['enderDest']['xPais'];
+            $arrayRetorno['NotaFiscal']['EMAIL_CLIENTE']       = $dados["NFe"]["infNFe"]['dest']['email'];
+            $arrayRetorno['NotaFiscal']['INSC_CLIENTE']        = $dados["NFe"]["infNFe"]['dest']['IE'];
+            $arrayRetorno['NotaFiscal']['TIPO_CLIENTE']        = $tipoPessoa;
+            $arrayRetorno['NotaFiscal']['CNPJ_CPF_CLIENTE']    = $documento;
+            $arrayRetorno['NotaFiscal']['REFERENCIA_CLIENTE']  = '';
 
         } else {
             $this->isValid=false;
