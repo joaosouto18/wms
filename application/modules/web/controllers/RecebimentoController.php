@@ -1574,9 +1574,6 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
 
     public function visualizarRecebimentosBloqueadosAction()
     {
-        //$form = new RecebimentoForm\RecebimentosBloqueados();
-        //$this->view->form = $form;
-
         $grid = new RecebimentoGrid\RecebimentoBloqueado();
         $this->view->grid = $grid->init()->render();
     }
