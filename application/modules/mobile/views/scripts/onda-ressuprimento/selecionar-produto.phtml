@@ -41,9 +41,13 @@
                     <td><B>Grade:</B> <div class="row"><?php echo $this->grade ?></div></td>
                     <td style="font-size: 12px"><B>Qtd:</B>
                         <?php foreach ($this->qtd as $qtds) {
-                            foreach ($qtds as $qtd) { ?>
-                                <div class="row"><?php echo $qtd; ?></div>
-                            <?php }
+                            if (!is_array($qtds)) {
+                                ?><div class="row"><?php echo $qtds; ?></div><?php
+                            } else {
+                                foreach ($qtds as $qtd) {
+                                    ?><div class="row"><?php echo $qtd; ?></div><?php
+                                }
+                            }
                         } ?>
                     </td>
                 </tr>
