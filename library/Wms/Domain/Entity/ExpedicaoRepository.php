@@ -1792,8 +1792,18 @@ class ExpedicaoRepository extends EntityRepository {
 
         if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
             $qtdEtiquetasPendenteReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA, $central);
-            if (count($qtdEtiquetasPendenteReentrega) >0) {
+            $qtdEtiquetasPendenteImpressao = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $central);
+
+            if (count($qtdEtiquetasPendenteReentrega) > 0) {
                 $msgErro = 'Existem etiquetas de reentrega pendentes de conferência nesta expedição';
+            }
+            if (count($qtdEtiquetasPendenteImpressao) > 0) {
+                $msgErro = 'Existem etiquetas de reentrega pendentes de impressão nesta expedição';
+            }
+
+            $etiquetaPendenteGeracao = $this->getReentregaSemEtiqueta($expedicaoEn->getId());
+            if (count($etiquetaPendenteGeracao) > 0) {
+                $msgErro = 'Existem etiquetas de reentrega não geradas nesta expedição';
             }
         }
 
@@ -1801,6 +1811,20 @@ class ExpedicaoRepository extends EntityRepository {
             return $msgErro;
         }
 
+    }
+
+    public function getReentregaSemEtiqueta($idExpedicao) {
+        $SQL = "
+        SELECT R.COD_REENTREGA
+         FROM REENTREGA R
+         LEFT JOIN CARGA C ON C.COD_CARGA = R.COD_CARGA
+         WHERE 1 = 1
+           AND C.COD_EXPEDICAO = $idExpedicao
+           AND R.IND_ETIQUETA_MAPA_GERADO = 'N'
+        ";
+
+        $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
     }
 
     public function importaCortesERP($idExpedicao) {
