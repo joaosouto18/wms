@@ -171,7 +171,7 @@ class Notafiscal_ImportarxmlController extends Crud
 
         if ( !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) || !empty($dados["NFe"]["infNFe"]['ide']['dhEmi']) ){
             $dEmi = !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) ? $dados["NFe"]["infNFe"]['ide']['dEmi'] : $dados["NFe"]["infNFe"]['ide']['dhEmi'];
-            $dataEmissao=  date_create_from_format(DATE_W3C, $dEmi);
+            $dataEmissao=  date_create_from_format('Y-m-d', $dEmi);
             $arrayRetorno['NotaFiscal']['DAT_EMISSAO'] =$dataEmissao->format('d/m/Y');
         }
         else {
