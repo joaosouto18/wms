@@ -390,6 +390,11 @@ class GerarEtiqueta extends eFPDF
             $dataValidade = new \DateTime($produto['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->Cell(100, 0, 'Data Validade: ' . utf8_decode($dataValidade), 0, 0);
+        } else {
+            $this->Ln(6);
+            $dataImpressao = new \DateTime();
+            $dataImpressao = $dataImpressao->format('d/m/Y');
+            $this->Cell(100, 0, 'Data Impressao: ' . utf8_decode($dataImpressao), 0, 0);
         }
 
         $x        = 55;
