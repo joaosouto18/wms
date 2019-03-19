@@ -1306,73 +1306,71 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                 $nfEn = $nfRepo->findOneBy(array('numeroNf' => $notaFiscal->numeroNf, 'serieNf' => $notaFiscal->serieNf, 'codPessoa'=> $pessoaEn->getId()));
 
-                if ($nfEn != null) {
-                    return true;
-                    //throw new \Exception('Nota Fiscal número '.$notaFiscal->numeroNf.', série '.$notaFiscal->serieNf.', emitente: ' . $pessoaEn->getNomeFantasia() . ', cnpj ' . $notaFiscal->cnpjEmitente . ' já existe no sistema!');
-                }
+                if ($nfEn == null) {
 
-                $statusEn = $this->_em->getReference('wms:Util\Sigla', (int) Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
+                    $statusEn = $this->_em->getReference('wms:Util\Sigla', (int) Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA);
 
-                $nfEntity = new Expedicao\NotaFiscalSaida();
-                $nfEntity->setNumeroNf($notaFiscal->numeroNf);
-                $nfEntity->setCodPessoa($pessoaEn->getId());
-                $nfEntity->setPessoa($pessoaEn);
-                $nfEntity->setSerieNf($notaFiscal->serieNf);
-                $nfEntity->setValorTotal($notaFiscal->valorVenda);
-                $nfEntity->setStatus($statusEn);
-                $this->_em->persist($nfEntity);
+                    $nfEntity = new Expedicao\NotaFiscalSaida();
+                    $nfEntity->setNumeroNf($notaFiscal->numeroNf);
+                    $nfEntity->setCodPessoa($pessoaEn->getId());
+                    $nfEntity->setPessoa($pessoaEn);
+                    $nfEntity->setSerieNf($notaFiscal->serieNf);
+                    $nfEntity->setValorTotal($notaFiscal->valorVenda);
+                    $nfEntity->setStatus($statusEn);
+                    $this->_em->persist($nfEntity);
 
-                $andamentoNFRepo->save($nfEntity, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true);
+                    $andamentoNFRepo->save($nfEntity, Expedicao\NotaFiscalSaida::NOTA_FISCAL_EMITIDA, true);
 
-                if ((count($notaFiscal->pedidos) == 0) || ($notaFiscal->pedidos == null)) {
-                    throw new \Exception("Nenhuma pedido informado na nota fiscal " .$notaFiscal->numeroNf . " / " . $notaFiscal->serieNf);
-                }
-
-                /* @var pedidoFaturado $pedidoNf */
-                foreach ($notaFiscal->pedidos as $pedidoNf) {
-                    $nfPedidoEntity = new Expedicao\NotaFiscalSaidaPedido();
-                    $nfPedidoEntity->setNotaFiscalSaida($nfEntity);
-                    $nfPedidoEntity->setCodNotaFiscalSaida($nfEntity->getId());
-                    $codPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($pedidoNf->codPedido);
-                    $pedidoEn = $pedidoRepo->findOneBy(array('id' => $codPedido));
-
-                    if ($pedidoEn == null) {
-                        throw new \Exception('Pedido '.$pedidoNf->codPedido . ' - ' . $pedidoNf->tipoPedido . ' - ' . ' não encontrado!');
+                    if ((count($notaFiscal->pedidos) == 0) || ($notaFiscal->pedidos == null)) {
+                        throw new \Exception("Nenhuma pedido informado na nota fiscal " .$notaFiscal->numeroNf . " / " . $notaFiscal->serieNf);
                     }
 
-                    $nfPedidoEntity->setCodPedido($pedidoEn->getId());
-                    $nfPedidoEntity->setPedido($pedidoEn);
-                    $this->_em->persist($nfPedidoEntity);
-                }
+                    /* @var pedidoFaturado $pedidoNf */
+                    foreach ($notaFiscal->pedidos as $pedidoNf) {
+                        $nfPedidoEntity = new Expedicao\NotaFiscalSaidaPedido();
+                        $nfPedidoEntity->setNotaFiscalSaida($nfEntity);
+                        $nfPedidoEntity->setCodNotaFiscalSaida($nfEntity->getId());
+                        $codPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($pedidoNf->codPedido);
+                        $pedidoEn = $pedidoRepo->findOneBy(array('id' => $codPedido));
 
-                if ((count($notaFiscal->itens) == 0) || ($notaFiscal->itens == null)) {
-                    throw new \Exception("Nenhuma produto informado na nota fiscal " .$notaFiscal->numeroNf . " / " . $notaFiscal->serieNf);
-                }
+                        if ($pedidoEn == null) {
+                            throw new \Exception('Pedido '.$pedidoNf->codPedido . ' - ' . $pedidoNf->tipoPedido . ' - ' . ' não encontrado!');
+                        }
 
-                /* @var notaFiscalProduto $itemNotaFiscal */
-                foreach ($notaFiscal->itens as $itemNotaFiscal) {
-                    $itemNfEntity = new Expedicao\NotaFiscalSaidaProduto();
-
-                    $idProduto = $itemNotaFiscal->codProduto;
-                    $idProduto = ProdutoUtil::formatar($idProduto);
-                    $parametroEntity = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
-                    $grade = ($parametroEntity->getValor() == 'N') ? 'UNICA' : trim($itemNotaFiscal->grade);
-
-                    $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
-
-                    if ($produtoEn == null) {
-                        throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$grade.' não encontrado!');
+                        $nfPedidoEntity->setCodPedido($pedidoEn->getId());
+                        $nfPedidoEntity->setPedido($pedidoEn);
+                        $this->_em->persist($nfPedidoEntity);
                     }
 
-                    $itemNfEntity->setCodProduto($produtoEn->getId());
-                    $itemNfEntity->setGrade($produtoEn->getGrade());
-                    $itemNfEntity->setProduto($produtoEn);
-                    $itemNfEntity->setCodNotaFiscalSaida($nfEntity->getId());
-                    $itemNfEntity->setNotaFiscalSaida($nfEntity);
-                    $itemNfEntity->setValorVenda($itemNotaFiscal->valorVenda);
-                    $itemNfEntity->setQuantidade($itemNotaFiscal->qtd);
+                    if ((count($notaFiscal->itens) == 0) || ($notaFiscal->itens == null)) {
+                        throw new \Exception("Nenhuma produto informado na nota fiscal " .$notaFiscal->numeroNf . " / " . $notaFiscal->serieNf);
+                    }
 
-                    $this->_em->persist($itemNfEntity);
+                    /* @var notaFiscalProduto $itemNotaFiscal */
+                    foreach ($notaFiscal->itens as $itemNotaFiscal) {
+                        $itemNfEntity = new Expedicao\NotaFiscalSaidaProduto();
+
+                        $idProduto = $itemNotaFiscal->codProduto;
+                        $idProduto = ProdutoUtil::formatar($idProduto);
+                        $parametroEntity = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
+                        $grade = ($parametroEntity->getValor() == 'N') ? 'UNICA' : trim($itemNotaFiscal->grade);
+
+                        $produtoEn = $produtoRepo->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+
+                        if ($produtoEn == null) {
+                            throw new \Exception('PRODUTO '.$idProduto.' GRADE '.$grade.' não encontrado!');
+                        }
+
+                        $itemNfEntity->setCodProduto($produtoEn->getId());
+                        $itemNfEntity->setGrade($produtoEn->getGrade());
+                        $itemNfEntity->setProduto($produtoEn);
+                        $itemNfEntity->setCodNotaFiscalSaida($nfEntity->getId());
+                        $itemNfEntity->setNotaFiscalSaida($nfEntity);
+                        $itemNfEntity->setValorVenda($itemNotaFiscal->valorVenda);
+                        $itemNfEntity->setQuantidade($itemNotaFiscal->qtd);
+
+                        $this->_em->persist($itemNfEntity);
+                    }
                 }
             }
             $this->_em->flush();
