@@ -897,21 +897,19 @@ class Mobile_ExpedicaoController extends Action {
         $nfSaidaPedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\NotaFiscalSaidaPedido");
         $esReentregaRepo = $this->getEntityManager()->getRepository("wms:Expedicao\EtiquetaSeparacaoReentrega");
 
+        $esReentregaEn = $esReentregaRepo->findOneBy(array('codEtiquetaSeparacao' => $etiqueta[0]['codBarras'],
+            'codReentrega' => $etiqueta[0]['codReentrega']));
+
         if ($this->getSystemParameterValue('CONFERE_RECEBIMENTO_REENTREGA') == 'S') {
-            $etiquetaEn = $etiquetaRepo->findOneBy(array('id' => $etiqueta[0]['codBarras']));
-            $pedido = $etiquetaEn->getPedido();
-            $nfSaidaPedidoPedido = $nfSaidaPedidoRepo->findBy(array('codPedido' => $pedido->getId()));
-            foreach ($nfSaidaPedidoPedido as $nfSaida) {
-                $nfSaidaEn = $nfSaida->getNotaFiscalSaida();
-                $statusNf = $nfSaidaEn->getStatus()->getId();
-                if ($statusNf != Expedicao\NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA) {
-                    return array('result' => false, 'msg' => "Nota Fiscal de reentrega" . $nfSaidaEn->getNumeroNf() . "/" . $nfSaidaEn->getSerieNf() . " ainda não foi recebida");
-                }
+
+            $reentregaEn = $esReentregaEn->getReentrega();
+            $nfSaidaEn = $reentregaEn->getNotaFiscalSaida();
+            $statusNf = $nfSaidaEn->getStatus()->getId();
+            if ($statusNf != Expedicao\NotaFiscalSaida::DEVOLVIDO_PARA_REENTREGA) {
+                return array('result' => false, 'msg' => "Nota Fiscal de reentrega" . $nfSaidaEn->getNumeroNf() . "/" . $nfSaidaEn->getSerieNf() . " ainda não foi recebida");
             }
         }
 
-        $esReentregaEn = $esReentregaRepo->findOneBy(array('codEtiquetaSeparacao' => $etiqueta[0]['codBarras'],
-            'codReentrega' => $etiqueta[0]['codReentrega']));
 
         if ($esReentregaEn->getCodStatus() != EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA) {
             return array('result' => false, 'msg' => "Etiqueta de Separação de Reentrega" . $etiqueta[0]['codBarras'] . " já foi conferida");
