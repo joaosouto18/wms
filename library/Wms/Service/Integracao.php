@@ -911,8 +911,13 @@ class Integracao {
                     if ($embalagem['ativa'] == 'S') {
 
                         if ($pesoUnitário == null) {
-                            $pesoUnitário = $embalagem['peso'] / $embalagem['qtdEmbalagem'];
-                            $profundidadeUnitario = $embalagem['profundidade'] / $embalagem['qtdEmbalagem'];
+                            $peso = str_replace(',','.',$embalagem['peso']);
+                            $profundidade = str_replace(',','.',$embalagem['profundidade']);
+                            $fator = str_replace(',','.',$embalagem['qtdEmbalagem']);
+
+                            $pesoUnitário = $peso / $fator;
+                            $profundidadeUnitario = $profundidade / $fator;
+
                             $alturaProduto = $embalagem['altura'];
                             $larguraProduto = $embalagem['largura'];
                         }
