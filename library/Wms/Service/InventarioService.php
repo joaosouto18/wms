@@ -659,6 +659,7 @@ class InventarioService extends AbstractService
 
             $produto["qtd"] = 0;
             $produto["validade"] = null;
+            $produto['lote'] = null;
 
             $this->registrarConferencia(
                 $elements,

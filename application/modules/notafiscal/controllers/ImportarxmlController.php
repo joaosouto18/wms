@@ -144,15 +144,15 @@ class Notafiscal_ImportarxmlController extends Crud
             $cliente->insc        = $result['NotaFiscal']['INSC_CLIENTE'];
 
             $itinerario = new itinerario();
-            $itinerario->idItinerario   = 99;
+            $itinerario->idItinerario   = 9999; // ETINERARIO PADRAO
             $itinerario->nomeItinerario = $result['NotaFiscal']['UF_CLIENTE'];
 
             $codPedido = $result['NotaFiscal']['NUM_NOTA_FISCAL'];
 
             $pedido = new pedido();
-            $pedido->codPedido = $codPedido;
-            $pedido->cliente = $cliente;
-            $pedido->itinerario = $itinerario;
+            $pedido->codPedido    = $codPedido;
+            $pedido->cliente      = $cliente;
+            $pedido->itinerario   = $itinerario;
             $pedido->linhaEntrega = "";
 
             $itens    = $result['NotaFiscalItem'];
@@ -173,7 +173,10 @@ class Notafiscal_ImportarxmlController extends Crud
             $pedidos  = new pedidos();
             $pedidos->pedidos = $arrPed;
 
-            $expedicao->enviarPedidos($codPedido, $placaExpedicao, $placaExpedicao, $pedidos);
+            $result = $expedicao->enviarPedidos($codPedido, $placaExpedicao, $placaExpedicao, $pedidos);
+            if($result)
+                $this->addFlashMessage("success", "Expedição gerada com sucesso");
+
         } catch (Exception $e) {
             $this->addFlashMessage("error", "Não foi possível importar a nota fiscal");
             $this->isValid = false;
