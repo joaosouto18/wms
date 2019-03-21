@@ -148,7 +148,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                             addNewRow($(this).parent().parent().data("id"));
                             $("#qtdConferida-" + $(this).parent().parent().data("id")).removeAttr("style");
                         } else {
-                            alert("O Lote do ultimo campo não foi informado");
+                            alert("O Lote do último campo não foi informado");
                             $(this).focus();
                         }
                     } else {
@@ -175,7 +175,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     inputQtd = $("#qtdConferida-" + k);
                     inputLote = $("#lote-" + k);
                     if (!isEmpty(inputQtd.val()) && !isEmpty(inputLote.val())) {
-                        sumTotal += parseInt(inputQtd.val());
+                        sumTotal += parseFloat(inputQtd.val());
                     }
                 }
             }

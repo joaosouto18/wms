@@ -4191,7 +4191,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
-            $where = " AND C.COD_CARGA_EXTERNO = " . $parametros['codCargaExterno'] . "";
+            $where = " AND C.COD_CARGA_EXTERNO = '" . $parametros['codCargaExterno'] . "'";
         }
 
         if (isset($parametros['produto']) && !empty($parametros['produto'])) {
