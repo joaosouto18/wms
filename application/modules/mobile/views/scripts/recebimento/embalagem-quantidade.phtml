@@ -175,7 +175,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     inputQtd = $("#qtdConferida-" + k);
                     inputLote = $("#lote-" + k);
                     if (!isEmpty(inputQtd.val()) && !isEmpty(inputLote.val())) {
-                        sumTotal += parseInt(inputQtd.val());
+                        sumTotal += parseFloat(inputQtd.val());
                     }
                 }
             }
