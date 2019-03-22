@@ -2601,6 +2601,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setLote((!in_array($lote, [Produto\Lote::NCL, Produto\Lote::LND])) ? $lote : null);
             if (!empty($arrPedidoProduto)) {
                 $pedidoproduto = reset($arrPedidoProduto);
+                $pedidoproduto = reset($pedidoproduto);
                 $mapaProduto->setCodPedidoProduto($pedidoproduto->getId());
                 $mapaProduto->setPedidoProduto($pedidoproduto);
             }
