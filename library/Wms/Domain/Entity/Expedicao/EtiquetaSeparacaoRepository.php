@@ -2599,11 +2599,11 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setQtdSeparar($quantidadePedido);
             $mapaProduto->setQtdEmbalagem($quantidadeEmbalagem);
             $mapaProduto->setLote((!in_array($lote, [Produto\Lote::NCL, Produto\Lote::LND])) ? $lote : null);
-//            if (!empty($arrPedidoProduto)) {
-//                $pedidoproduto = reset($arrPedidoProduto);
-//                $mapaProduto->setCodPedidoProduto($pedidoproduto->getId());
-//                $mapaProduto->setPedidoProduto($pedidoproduto);
-//            }
+            if (!empty($arrPedidoProduto)) {
+                $pedidoproduto = reset($arrPedidoProduto);
+                $mapaProduto->setCodPedidoProduto($pedidoproduto->getId());
+                $mapaProduto->setPedidoProduto($pedidoproduto);
+            }
 
             $mapaProduto->setQtdCortado(0);
             $mapaProduto->setIndConferido('N');
