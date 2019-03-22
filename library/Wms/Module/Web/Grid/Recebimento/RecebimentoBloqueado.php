@@ -43,6 +43,18 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                 'label' => 'Qtd. Bloqueada',
                 'index' => 'qtdBloqueada'
             ))
+            ->addColumn(array(
+                'label' => 'Data Maxima',
+                'index' => 'diasVidaUtil'
+            ))
+            ->addColumn(array(
+                'label' => 'Dias Vida Util',
+                'index' => 'diasValidos'
+            ))
+            ->addColumn(array(
+                'label' => 'Percentual Vida Util',
+                'index' => 'percentualVidaUtil'
+            ))
             ->addAction(array(
                 'label' => 'ACEITAR data de validade',
                 'controllerName' => 'recebimento',
