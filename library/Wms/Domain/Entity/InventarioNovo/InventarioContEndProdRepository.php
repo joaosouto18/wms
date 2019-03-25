@@ -140,7 +140,7 @@ class InventarioContEndProdRepository extends EntityRepository
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 
-    public function getContagemFinalizada($contEnd, $produto){
+    public function getContagemFinalizada($contEnd, $produto, $volSeparadamente){
         $end   = $contEnd['idInvEnd'];
         $prod  = $produto['idProduto'];
         $grade = $produto['grade'];
