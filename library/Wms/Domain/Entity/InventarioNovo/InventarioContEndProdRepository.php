@@ -158,6 +158,13 @@ class InventarioContEndProdRepository extends EntityRepository
         {
             $volume = $produto['idVolume'];
             $dql .= " AND ICEP.COD_PRODUTO_VOLUME = $volume";
+
+            if (!$volSeparadamente) {
+                $dql .= " AND NOT EXISTS (SELECT 'X' FROM INVENTARIO_CONT_END_PROD ICEP2 
+                            WHERE ICEP2.COD_INV_CONT_END = ICE.COD_INV_CONT_END AND ICEP2.IND_DIVERGENTE = 'S' AND COD_PRODUTO_VOLUME IN ( 
+                            SELECT COD_PRODUTO_VOLUME FROM PRODUTO_VOLUME WHERE COD_NORMA_PALETIZACAO IN (
+                            SELECT COD_NORMA_PALETIZACAO FROM PRODUTO_VOLUME WHERE COD_PRODUTO_VOLUME = $volume )))";
+            }
         }
         if (isset($conferencia['lote']) && !empty($conferencia['lote']))
         {

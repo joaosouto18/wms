@@ -961,7 +961,7 @@ class InventarioService extends AbstractService
 
             /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
             $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
-            $ordemServicoRepo->excluiOs($id);
+            $ordemServicoRepo->excluiOsInventarioCancelado($id);
 
             $invEn->interromper();
             $this->em->persist($invEn);

@@ -464,7 +464,7 @@ class OrdemServicoRepository extends EntityRepository
             $this->excluiOs($idOs);
     }
 
-    public function excluiOs($idOs){
+    private function excluiOs($idOs){
         $codigos = array();
         foreach ($idOs as $item) {
             $codigos[] = $item['CODOS'];
