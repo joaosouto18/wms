@@ -1401,7 +1401,7 @@ class ExpedicaoRepository extends EntityRepository {
                                               CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END END_CROSSDOCKING
                                         FROM ESTOQUE E
                                        INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
-                                       WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . " AND DE.IND_SITUACAO <> 'B'
+                                       WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . " 
                                        GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0), CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END) E
                                   ON E.COD_PRODUTO = P.COD_PRODUTO
                                  AND E.DSC_GRADE = P.DSC_GRADE
