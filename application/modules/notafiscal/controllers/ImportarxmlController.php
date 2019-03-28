@@ -258,7 +258,7 @@ class Notafiscal_ImportarxmlController extends Crud
 
         if ( !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) || !empty($dados["NFe"]["infNFe"]['ide']['dhEmi']) ){
             $dEmi = !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) ? $dados["NFe"]["infNFe"]['ide']['dEmi'] : $dados["NFe"]["infNFe"]['ide']['dhEmi'];
-            $dataEmissao=  date_create_from_format('Y-m-d', $dEmi);
+            $dataEmissao=  date_create_from_format('Y-m-d', substr($dEmi,0,10));
             $arrayRetorno['NotaFiscal']['DAT_EMISSAO'] = $dataEmissao->format('d/m/Y');
         }
         else {
@@ -315,13 +315,13 @@ class Notafiscal_ImportarxmlController extends Crud
             $arrayRetorno['NotaFiscal']['NOME_CLIENTE']        = $dados["NFe"]["infNFe"]['dest']['xNome'];
             $arrayRetorno['NotaFiscal']['LOGRADOURO_CLIENTE']  = $dados["NFe"]["infNFe"]['dest']['enderDest']['xLgr'];
             $arrayRetorno['NotaFiscal']['NUMERO_CLIENTE']      = $dados["NFe"]["infNFe"]['dest']['enderDest']['nro'];
-            $arrayRetorno['NotaFiscal']['COMPLEMENTO_CLIENTE'] = $dados["NFe"]["infNFe"]['dest']['enderDest']['xCpl'];
+            $arrayRetorno['NotaFiscal']['COMPLEMENTO_CLIENTE'] = ""; //$dados["NFe"]["infNFe"]['dest']['enderDest']['xCpl'];
             $arrayRetorno['NotaFiscal']['BAIRRO_CLIENTE']      = $dados["NFe"]["infNFe"]['dest']['enderDest']['xBairro'];
             $arrayRetorno['NotaFiscal']['CIDADE_CLIENTE']      = $dados["NFe"]["infNFe"]['dest']['enderDest']['xMun'];
             $arrayRetorno['NotaFiscal']['UF_CLIENTE']          = $dados["NFe"]["infNFe"]['dest']['enderDest']['UF'];
             $arrayRetorno['NotaFiscal']['CEP_CLIENTE']         = $dados["NFe"]["infNFe"]['dest']['enderDest']['CEP'];
             $arrayRetorno['NotaFiscal']['PAIS_CLIENTE']        = $dados["NFe"]["infNFe"]['dest']['enderDest']['xPais'];
-            $arrayRetorno['NotaFiscal']['EMAIL_CLIENTE']       = $dados["NFe"]["infNFe"]['dest']['email'];
+            $arrayRetorno['NotaFiscal']['EMAIL_CLIENTE']       = ""; //$dados["NFe"]["infNFe"]['dest']['email'];
             $arrayRetorno['NotaFiscal']['INSC_CLIENTE']        = $dados["NFe"]["infNFe"]['dest']['IE'];
             $arrayRetorno['NotaFiscal']['TIPO_CLIENTE']        = $tipoPessoa;
             $arrayRetorno['NotaFiscal']['CNPJ_CPF_CLIENTE']    = $documento;

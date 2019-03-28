@@ -156,7 +156,7 @@ class EtiquetaEndereco extends Pdf
                     $this->layoutModelo11($produtos,$codBarras);
 
                     break;
-                case 13:
+                case 14:
                     if($key > 0) $this->AddPage();
                         $this->layoutModelo13($codBarras);
                     break;
@@ -196,7 +196,7 @@ class EtiquetaEndereco extends Pdf
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 5, 28 , 100);
     }
 
-    public function layoutModelo13($codBarras){
+    public function layoutModelo14($codBarras){
         $this->InFooter = true;
         $this->Cell(5,13,"",0,0);
         $this->SetFont('Arial', 'B', 8);
