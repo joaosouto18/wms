@@ -105,8 +105,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
             ->innerJoin("icep.inventarioContEnd", "ice", "WITH", "ice.sequencia = ($sequencia - 1)")
             ->innerJoin("ice.inventarioEndereco", "ie", "WITH", "ie.ativo = 'S' and ie.inventario = $idInventario and ie.depositoEndereco = $endereco")
             ->innerJoin("icep.produto", "p")
-            ->leftJoin("p.embalagens", "e", "WITH", "e.codigoBarras IS NOT NULL")
-            ->leftJoin("p.volumes", "v", "WITH", "v.codigoBarras IS NOT NULL")
+            ->leftJoin("icep.produtoEmbalagem", "e")
+            ->leftJoin("icep.produtoVolume", "v")
             ->where("icep.divergente = 'S'")
             ->andWhere("NOT EXISTS(
                     SELECT 'x'

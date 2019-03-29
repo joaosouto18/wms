@@ -266,9 +266,10 @@ class InventarioService extends AbstractService
         try {
             $elements = [];
             $isEmb = false;
+            $volSeparadamente = json_decode($inventario['volumesSeparadamente']);
             if (isset($produto['idVolume']) && !empty(json_decode($produto['idVolume']))) {
                 $isEmb = false;
-                if (json_decode($inventario['volumesSeparadamente']))
+                if ($volSeparadamente)
                     $elements[] = $this->em->getReference("wms:Produto\Volume", $produto['idVolume']);
                 else
                     $elements = $this->em->getRepository("wms:Produto\Volume")->getProdutosVolumesByNorma($produto['norma'],  $produto['idProduto'], $produto['grade'], null, true);
@@ -281,7 +282,7 @@ class InventarioService extends AbstractService
 
             /** @var InventarioNovo\InventarioContEndProdRepository $inventContEndProdRepo */
             $inventContEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd");
-            $resultado = $inventContEndProdRepo->getContagemFinalizada($contEnd, $produto);
+            $resultado = $inventContEndProdRepo->getContagemFinalizada($contEnd, $produto, $volSeparadamente);
 
             if(empty($resultado)) {
 
@@ -496,20 +497,32 @@ class InventarioService extends AbstractService
 
             $contados = $contEndProdRepo->getContagensProdutos($invContEnd->getId());
 
+            $volSeparados = json_decode($inventario["volumesSeparadamente"]);
+
+            $volsFaltantes = [];
+
             foreach ($contados as $contagem) {
                 $estoque = null;
                 if (!empty($estoques)) {
                     for ($i = 0; $i < count($estoques); $i++) {
+                        $idVolEstoque = $estoques[$i]->getProdutoVolume()->getId();
                         if ($contagem["COD_PRODUTO"] != $estoques[$i]->getCodProduto() ||
                             $contagem["DSC_GRADE"] != $estoques[$i]->getGrade() ||
                             $contagem["DSC_LOTE"] != $estoques[$i]->getLote() ||
-                            (json_decode($inventario["volumesSeparadamente"]) && !empty($contagem["COD_PRODUTO_VOLUME"]) &&
-                                $contagem["COD_PRODUTO_VOLUME"] != $estoques[$i]->getProdutoVolume()->getId())
+                            ($volSeparados && !empty($contagem["COD_PRODUTO_VOLUME"]) &&
+                                $contagem["COD_PRODUTO_VOLUME"] != $idVolEstoque)
                         ) {
+                            if ($invPorProduto) {
+                                $volsFaltantes[$idVolEstoque] = $estoques[$i];
+                            }
                             continue;
                         }
+
                         $estoque = $estoques[$i];
                         unset($estoques[$i]);
+                        if (isset($volsFaltantes[$idVolEstoque])) {
+                            unset($volsFaltantes[$idVolEstoque]);
+                        }
                         $estoques = array_values($estoques);
                         break;
                     }
@@ -562,8 +575,15 @@ class InventarioService extends AbstractService
                 }
             }
 
-            if ($invContEnd->getContagemDivergencia() == 'N' && !$invPorProduto && json_decode($inventario['contarTudo'])) {
-                foreach ($estoques as $estoque) {
+            if ($invContEnd->getContagemDivergencia() == 'N' && json_decode($inventario['contarTudo']) && (!$invPorProduto || ($invPorProduto && !empty($volsFaltantes)))) {
+
+                $matriz = $estoques;
+
+                if ($invPorProduto && !empty($volsFaltantes)) {
+                    $matriz = $volsFaltantes;
+                }
+
+                foreach ($matriz as $estoque) {
                     $prod = [
                         "codProduto" => $estoque->getCodProduto(),
                         "grade" => $estoque->getGrade(),
@@ -941,7 +961,7 @@ class InventarioService extends AbstractService
 
             /** @var \Wms\Domain\Entity\OrdemServicoRepository $ordemServicoRepo */
             $ordemServicoRepo = $this->em->getRepository('wms:OrdemServico');
-            $ordemServicoRepo->excluiOs($id);
+            $ordemServicoRepo->excluiOsInventarioCancelado($id);
 
             $invEn->interromper();
             $this->em->persist($invEn);

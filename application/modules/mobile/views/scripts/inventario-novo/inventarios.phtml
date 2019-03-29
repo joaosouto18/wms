@@ -584,7 +584,7 @@
 
         var processProduto = function (codBarras) {
             var liberado = true;
-            if (produtos.length) {
+            if (invSelecioando.criterio === 'P' && produtos.length) {
                 var encontrou = false;
                 $.each(produtos, function (k,produto) {
                     if (myIndexOf(produto.codBarras, codBarras) >= 0) encontrou = true;
