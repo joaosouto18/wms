@@ -70,6 +70,8 @@ class ConexaoIntegracaoRepository extends EntityRepository {
     private function mssqlQuery($query, $conexao) {
         try {
             ini_set('memory_limit', '-1');
+            ini_set('mssql.timeout', 60 * 10);
+
             $usuario = $conexao->getUsuario();
             $senha = trim($conexao->getSenha());
             $servidor = $conexao->getServidor();
