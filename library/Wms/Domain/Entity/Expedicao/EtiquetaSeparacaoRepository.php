@@ -319,9 +319,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             FROM wms:Expedicao\EtiquetaSeparacao et
                             INNER JOIN wms:Expedicao\Pedido pedi WITH pedi.id = et.pedido
                             INNER JOIN wms:Expedicao\Carga carg WITH carg.id = pedi.codCarga
-                            INNER JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco
+                            LEFT JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco
                             WHERE et.codProduto = es.codProduto AND et.dscGrade = es.grade AND es.codExpedicao = carg.codExpedicao
-                                AND ender.idCaracteristica = de.idCaracteristica
                         )
                          AS qtdProdDist
                         ")
@@ -331,7 +330,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             FROM wms:Expedicao\Carga carga
                             INNER JOIN wms:Expedicao\Pedido ped WITH ped.codCarga = carga.id
                             INNER JOIN wms:Expedicao\EtiquetaSeparacao sep WITH sep.pedido = ped.id
-                            WHERE es.codCargaExterno = carga.codCargaExterno
                         )
                          AS qtdCargaDist
                         ")
@@ -491,7 +489,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             FROM wms:Expedicao\EtiquetaSeparacao et
                             INNER JOIN wms:Expedicao\Pedido pedi WITH pedi.id = et.pedido
                             INNER JOIN wms:Expedicao\Carga carg WITH carg.id = pedi.codCarga
-                            INNER JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco                            
+                            LEFT JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco                            
                             WHERE et.codProduto = es.codProduto AND et.dscGrade = es.grade AND es.codExpedicao = carg.codExpedicao
                                 AND ender.idCaracteristica = de.idCaracteristica
                         )
