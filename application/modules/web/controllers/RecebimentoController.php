@@ -1316,7 +1316,11 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         $arrProdutos = array();
         foreach ($params['produtos'] as $key => $prodGrade) {
             list($codProduto, $grade) = explode('*-*', $prodGrade);
-            $arrProdutos[] = ['codProduto' => $codProduto, 'grade' => $grade ];
+            $arg = ['codProduto' => $codProduto, 'grade' => $grade];
+            if (isset($params['emb'][$codProduto][$grade])) {
+                $arg['emb'] = $params['emb'][$codProduto][$grade];
+            }
+            $arrProdutos[] = $arg;
         }
 
         if ($params['tipo'] == 'recebimento') {

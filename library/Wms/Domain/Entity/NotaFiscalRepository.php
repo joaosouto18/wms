@@ -857,10 +857,11 @@ class NotaFiscalRepository extends EntityRepository {
      * Busca os produtos com impressão automática do código de barras
      * @param int $idRecebimento
      */
-    public function buscarProdutosImprimirCodigoBarras($idRecebimento, $codProduto = null, $grade = null) {
+    public function buscarProdutosImprimirCodigoBarras($idRecebimento, $codProduto = null, $grade = null, $emb = null) {
+        $str = (!empty($emb)) ? "nfi.quantidade / pe.quantidade" : "nfi.quantidade";
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('nf.numero as numNota, nf.serie,
-                          nfi.id as idNotaFiscalItem, nfi.quantidade as qtdItem,
+                ->select("nf.numero as numNota, nf.serie,
+                          nfi.id as idNotaFiscalItem, $str as qtdItem,
                           pj.nomeFantasia as fornecedor,
                           p.id as idProduto, p.grade, p.descricao as dscProduto, p.validade,
                           ls.descricao as dscLinhaSeparacao,
@@ -869,7 +870,7 @@ class NotaFiscalRepository extends EntityRepository {
                           r.dataInicial as dataRecebimento,
                           pe.id as idEmbalagem, pe.descricao as dscEmbalagem, pe.quantidade,
                           pv.id as idVolume, pv.codigoSequencial as codSequencialVolume, pv.descricao as dscVolume,
-                          NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras')
+                          NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras")
                 ->from('wms:NotaFiscal', 'nf')
                 ->leftJoin('nf.recebimento', 'r')
                 ->innerJoin('nf.itens', 'nfi')
@@ -892,6 +893,10 @@ class NotaFiscalRepository extends EntityRepository {
                 ->andWhere('p.grade = :grade')
                 ->setParameter('codProduto', $codProduto)
                 ->setParameter('grade', $grade);
+            if (!empty($emb)) {
+                $dql->andWhere("pe.id = :idEmb")
+                    ->setParameter("idEmb", $emb);
+            }
         }
 
         return $dql->getQuery()->getResult();

@@ -50,7 +50,8 @@ class GerarEtiqueta extends eFPDF
                 foreach ($produtosRecebimento as $produto) {
                     $codProduto = $produto['codProduto'];
                     $grade = $produto['grade'];
-                    $result = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento, $codProduto, $grade);
+                    $emb = (isset($produto['emb'])) ? $produto['emb'] : null;
+                    $result = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento, $codProduto, $grade, $emb);
                     $produtosEn[] = $result[0];
                 }
             } else {
@@ -86,7 +87,8 @@ class GerarEtiqueta extends eFPDF
             if ($target == Recebimento::TARGET_IMPRESSAO_PRODUTO) {
                 self::createEtiqueta($produto, $tipo, $modelo);
             } else {
-                for ($i = 0; $i < $produto['qtdItem']; $i++) {
+                $qtd = floor($produto['qtdItem']);
+                for ($i = 0; $i < $qtd; $i++) {
                     self::createEtiqueta($produto, $tipo, $modelo);
                 }
             }

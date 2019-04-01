@@ -16,6 +16,7 @@
                 <td>Grade</td>
                 <td>Produto</td>
                 <td>Quantidade</td>
+                <td>UND</td>
             </tr>
             <?php
             foreach ($this->produtos as $produto):
@@ -27,11 +28,26 @@
                 }
                 $this->color = !($this->color);?>
                 <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
-                    <td><input name="produtos[]" value="<?php echo $produto['COD_PRODUTO'] . '*-*' . $produto['DSC_GRADE'] ?>" type="checkbox" <?php echo $checked?> /></td>
+                    <td><input name="produtos[]" value="<?php echo $produto['COD_PRODUTO'] . '*-*' . $produto['DSC_GRADE'] ?>" type="checkbox" <?php echo $checked?> <?php echo ($produto['TIPO'] == \Wms\Domain\Entity\Produto::TIPO_UNITARIO && empty($produto['elements']))? "disabled" : ""?>/></td>
                     <td><?php echo $produto['COD_PRODUTO'] ?></td>
                     <td><?php echo $produto['DSC_GRADE'] ?></td>
                     <td><?php echo $produto['DSC_PRODUTO'] ?></td>
-                    <td><?php echo $produto['QTD'] ?></td>
+                    <td><?php echo $produto['QTD_ITEM'] ?></td>
+                    <?php if ($produto['TIPO'] == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) :?>
+                        <?php if (!empty($produto['elements'])) :?>
+                            <td>
+                                <select name="<?php echo "emb[$produto[COD_PRODUTO]][$produto[DSC_GRADE]]" ?>" >
+                                    <?php foreach ($produto['elements'] as $idEmb => $emb) : ?>
+                                        <option value="<?php echo $idEmb?>" <?php echo ($emb['isDef'])? "selected":"" ?>><?php echo $emb['dsc']?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                        <?php else : ?>
+                            <td><?php echo $produto['error'] ?></td>
+                        <?php endif ?>
+                    <?php else : ?>
+                        <td>VOLUMES</td>
+                    <?php endif ?>
                 </tr>
             <?php endforeach; ?>
             </tbody>

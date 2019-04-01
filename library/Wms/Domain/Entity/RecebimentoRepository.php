@@ -2212,7 +2212,7 @@ class RecebimentoRepository extends EntityRepository {
                        P.DSC_GRADE,
                        P.DSC_PRODUTO,
                        SUM(NFI.QTD_ITEM) as QTD_ITEM,
-                       SUM(NFI.QTD_ITEM) as QTD,
+                       P.COD_TIPO_COMERCIALIZACAO TIPO,
                        CASE WHEN I.COD_PRODUTO IS NOT NULL THEN 'S' ELSE 'N' END as IMPRIMIR
                   FROM NOTA_FISCAL NF
                   LEFT JOIN NOTA_FISCAL_ITEM NFI ON NF.COD_NOTA_FISCAL = NFI.COD_NOTA_FISCAL
@@ -2227,17 +2227,32 @@ class RecebimentoRepository extends EntityRepository {
                  GROUP BY P.COD_PRODUTO,
                        P.DSC_GRADE,
                        P.DSC_PRODUTO,
-                       I.COD_PRODUTO
+                       I.COD_PRODUTO, 
+                       P.COD_TIPO_COMERCIALIZACAO
                  ORDER BY P.COD_PRODUTO, P.DSC_GRADE";
         $produtos = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
 
         foreach ($produtos as $key => $produto) {
-            $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($produto['COD_PRODUTO'], $produto['DSC_GRADE'], $produto['QTD']);
-            if (is_array($vetEmbalagens)) {
-                $embalagem = implode(' + ',$vetEmbalagens);
+            if ($produto['TIPO'] == Produto::TIPO_UNITARIO) {
+                $elements = [];
+                /** @var ProdutoEntity\Embalagem[] $embs */
+                $embs = $embalagemRepo->findBy(['codProduto'=> $produto['COD_PRODUTO'], 'grade' => $produto['DSC_GRADE'], 'dataInativacao' => null, 'imprimirCB' => 'S']);
+
+                foreach ($embs as $embalagem){
+                    if (!empty($embalagem->getCodigoBarras()))
+                        $elements[$embalagem->getId()] = [
+                            'dsc' => $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")",
+                            'isDef' => ($embalagem->getIsPadrao() == 'S')
+                        ];
+                }
+
+                if (empty($elements)) {
+                    $produtos[$key]['error'] = 'Sem embalagem válida';
+                } else {
+                    $produtos[$key]['elements'] = $elements;
+                }
             }
-            $produtos[$key]['QTD'] = $embalagem;
         }
 
         return $produtos;
