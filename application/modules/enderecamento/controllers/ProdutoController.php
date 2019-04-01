@@ -38,6 +38,8 @@ class Enderecamento_ProdutoController extends Action
         $recebimentoRepo      = $this->getEntityManager()->getRepository('wms:Recebimento');
         $this->view->produtos = $recebimentoRepo->getProdutosByRecebimento($idRecebimento);
         $this->view->repository = $this->getEntityManager()->getRepository('wms:Produto');
+        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+        $this->view->embalagemRepository = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
     }
 
     public function enderecamentoPickingAction(){

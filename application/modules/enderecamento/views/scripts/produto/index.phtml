@@ -31,7 +31,7 @@ if (count($this->produtos) > 0):
             </tr>
             <?php foreach ($this->produtos as $key => $produto) :
             $produtoRepo = $this->repository;
-            $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['id'], 'grade' => $produto['grade']))
+            $produtoEntity = $produtoRepo->findOneBy(array('id' => $produto['id'], 'grade' => $produto['grade']));
 
             ?>
             <?php $gRowColor = !($key % 2) ? '' : 'gRowColor'; ?>
@@ -62,12 +62,20 @@ if (count($this->produtos) > 0):
                 <td style="text-align:left"><?php echo $produto['codigo'] ?></td>
                 <td style="text-align:left"><?php echo $produto['produto'] ?></td>
                 <td style="text-align:left"><?php echo $produto['grade'] ?></td>
-                <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdItensNf'], 1) != 0)? (float)$produto['qtdItensNf'] : $produto['qtdItensNf'] ?></td>
-                <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdRecebimento'], 1) != 0)? (float)$produto['qtdRecebimento'] : $produto['qtdRecebimento']  ?></td>
-                <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdRecebida'], 1) != 0)? (float)$produto['qtdRecebida'] : $produto['qtdRecebida']  ?></td>
-                <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdEnderecamento'], 1) != 0)? (float)$produto['qtdEnderecamento'] : $produto['qtdEnderecamento']  ?></td>
-                <td style="text-align:left"><?php echo (\Wms\Math::resto($produto['qtdEnderecada'], 1) != 0)? (float)$produto['qtdEnderecada'] : $produto['qtdEnderecada']  ?></td>
-                <td style="text-align:left"><?php echo $produto['qtdTotal'] ?></td>
+                <?php
+                $quantidadeNotaFiscal    = $this->embalagemRepository->getQtdEmbalagensProduto($produto['id'], $produto['grade'], $produto['qtdItensNf']);
+                $quantidadeRecebimento   = $this->embalagemRepository->getQtdEmbalagensProduto($produto['id'], $produto['grade'], $produto['qtdRecebimento']);
+                $quantidadeRecebida      = $this->embalagemRepository->getQtdEmbalagensProduto($produto['id'], $produto['grade'], $produto['qtdRecebida']);
+                $quantidadeEnderecamento = $this->embalagemRepository->getQtdEmbalagensProduto($produto['id'], $produto['grade'], $produto['qtdEnderecamento']);
+                $quantidadeEnderecada    = $this->embalagemRepository->getQtdEmbalagensProduto($produto['id'], $produto['grade'], $produto['qtdEnderecada']);
+                $quantidadeTotal         = $this->embalagemRepository->getQtdEmbalagensProduto($produto['id'], $produto['grade'], $produto['qtdTotal']);
+                ?>
+                <td style="text-align:left"><?php echo implode('<br />', $quantidadeNotaFiscal) ?></td>
+                <td style="text-align:left"><?php echo implode('<br />', $quantidadeRecebimento) ?></td>
+                <td style="text-align:left"><?php echo implode('<br />', $quantidadeRecebida) ?></td>
+                <td style="text-align:left"><?php echo implode('<br />', $quantidadeEnderecamento) ?></td>
+                <td style="text-align:left"><?php echo implode('<br />', $quantidadeEnderecada) ?></td>
+                <td style="text-align:left"><?php echo implode('<br />', $quantidadeTotal) ?></td>
                 <?php endforeach; ?>
             </tr>
         </table>
