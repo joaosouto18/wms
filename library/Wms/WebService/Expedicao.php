@@ -1044,6 +1044,18 @@ class Wms_WebService_Expedicao extends Wms_WebService
                        $statusExpedicao->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO)){
                         return true;
                     }else{
+
+                        /*
+                         * @ToDo Rodrigo
+                         * Se o parametro para permitir alteração = true então
+                         * Não pode ter alteração de carga, criar método para alterar o pedido
+                         *      Dentro do método, alterar a quantidade do pedido, modificar o mapa e modificar a reserva
+                         *      MAPA_SEPARACAO_PEDIDO
+                         *      RESERVA_ESTOQUE
+                         *      PEDIDO_PRODUTO
+                         * Só vai fazer alteração para os produtos que tiver a quantidade maior que a original (alteração para cima)
+                         */
+
                         if ($qtdTotal != $qtdCortadas && ($statusExpedicao->getId() == Expedicao::STATUS_EM_CONFERENCIA || $statusExpedicao->getId() == Expedicao::STATUS_EM_SEPARACAO)) {
                             if (!$isIntegracaoSQL) {
                                 throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
