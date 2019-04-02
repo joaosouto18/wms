@@ -505,7 +505,7 @@ class InventarioService extends AbstractService
                 $estoque = null;
                 if (!empty($estoques)) {
                     for ($i = 0; $i < count($estoques); $i++) {
-                        $idVolEstoque = $estoques[$i]->getProdutoVolume()->getId();
+                        $idVolEstoque = (!empty($estoques[$i]->getProdutoVolume())) ? $estoques[$i]->getProdutoVolume()->getId() : null;
                         if ($contagem["COD_PRODUTO"] != $estoques[$i]->getCodProduto() ||
                             $contagem["DSC_GRADE"] != $estoques[$i]->getGrade() ||
                             $contagem["DSC_LOTE"] != $estoques[$i]->getLote() ||
@@ -544,7 +544,7 @@ class InventarioService extends AbstractService
                         $estoque->getCodProduto(),
                         $estoque->getGrade(),
                         $estoque->getLote(),
-                        $estoque->getProdutoVolume()->getId()
+                        (!empty($estoque->getProdutoVolume()))? $estoque->getProdutoVolume()->getId() : null
                     ];
                     $elemCount = [
                         $estoque->getQtd(),
@@ -588,7 +588,7 @@ class InventarioService extends AbstractService
                         "codProduto" => $estoque->getCodProduto(),
                         "grade" => $estoque->getGrade(),
                         "lote" => $estoque->getLote(),
-                        "idVolume" => $estoque->getProdutoVolume()->getId()
+                        "idVolume" => (!empty($estoque->getProdutoVolume()))? $estoque->getProdutoVolume()->getId() : null
                     ];
                     $elemCount = [
                         0,
