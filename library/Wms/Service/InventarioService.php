@@ -826,6 +826,7 @@ class InventarioService extends AbstractService
     {
         $this->em->beginTransaction();
         try{
+            $produto["idVolume"] = json_decode($produto["idVolume"]);
             $this->zerarProduto(
                 $this->getOsUsuarioContagem( $contEnd, $inventario, $tipoConferencia, true)->getInvContEnd(),
                 $produto,
