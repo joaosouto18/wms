@@ -133,8 +133,6 @@ class MapaSeparacao extends eFPDF {
                 }
             }
 
-//Select Arial bold 8
-
             $this->SetFont('Arial', 'B', 10);
             $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1, "C");
             $this->Cell(20, 1, "__________________________________________________________________________________________________", 0, 1);

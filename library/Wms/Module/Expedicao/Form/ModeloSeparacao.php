@@ -39,6 +39,9 @@ class ModeloSeparacao extends Form
         ))->addElement('checkbox', 'forcarEmbVenda', array(
             'label' => 'Utilizar embalagem de venda por padrão',
             'checkedValue' => 'S',
+        ))->addElement('checkbox', 'quebraUnidFracionavel', array(
+            'label' => 'Quebrar em mapa exclusivo e não agrupar unidades fracionáveis',
+            'checkedValue' => 'S',
         ))->addElement('select', 'quebraPulmaDoca', array(
             'label' => 'Quebra no processo Pulmão-Doca',
             'multiOptions' => array(
@@ -123,6 +126,7 @@ class ModeloSeparacao extends Form
             'utilizaEtiquetaMae',
             'utilizaVolumePatrimonio',
             'forcarEmbVenda',
+            'quebraUnidFracionavel',
             'produtoInventario',
             'imprimeEtiquetaPatrimonio',
             'quebraPulmaDoca',
