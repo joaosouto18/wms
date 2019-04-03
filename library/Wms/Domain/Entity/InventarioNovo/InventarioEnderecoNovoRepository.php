@@ -37,6 +37,10 @@ class InventarioEnderecoNovoRepository extends EntityRepository
         $sql = "SELECT DISTINCT
                     DE.DSC_DEPOSITO_ENDERECO,
                     DE.COD_DEPOSITO_ENDERECO,
+                    DE.NUM_RUA,
+                    DE.NUM_PREDIO,
+                    DE.NUM_NIVEL,
+                    DE.NUM_APARTAMENTO,
                     ICE.COD_INV_CONT_END,
                     ICE.IND_CONTAGEM_DIVERGENCIA,
                     ICE.NUM_CONTAGEM,
@@ -62,6 +66,11 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                                 SELECT 'x' FROM INVENTARIO_CONT_END ICE2
                                 WHERE ICE2.NUM_SEQUENCIA > $sequencia AND IEN.COD_INVENTARIO_ENDERECO = ICE2.COD_INVENTARIO_ENDERECO
                               )
+                ORDER BY 
+                    TO_NUMBER(DE.NUM_RUA),
+                    TO_NUMBER(DE.NUM_PREDIO),
+                    TO_NUMBER(DE.NUM_NIVEL),
+                    TO_NUMBER(DE.NUM_APARTAMENTO)
         ";
 
         $result = [];
@@ -105,8 +114,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
             ->innerJoin("icep.inventarioContEnd", "ice", "WITH", "ice.sequencia = ($sequencia - 1)")
             ->innerJoin("ice.inventarioEndereco", "ie", "WITH", "ie.ativo = 'S' and ie.inventario = $idInventario and ie.depositoEndereco = $endereco")
             ->innerJoin("icep.produto", "p")
-            ->leftJoin("p.embalagens", "e", "WITH", "e.codigoBarras IS NOT NULL")
-            ->leftJoin("p.volumes", "v", "WITH", "v.codigoBarras IS NOT NULL")
+            ->leftJoin("icep.produtoEmbalagem", "e")
+            ->leftJoin("icep.produtoVolume", "v")
             ->where("icep.divergente = 'S'")
             ->andWhere("NOT EXISTS(
                     SELECT 'x'

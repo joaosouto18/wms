@@ -1417,4 +1417,37 @@ class MapaSeparacaoRepository extends EntityRepository {
         }
         return $return;
     }
+
+    public function getMapaPendenteSeparacao($codExpedicao = null, $codMapaSeparacao = null)
+    {
+        $where = '';
+        if (!is_null($codExpedicao)) {
+            $where .= " AND MS.COD_EXPEDICAO = $codExpedicao ";
+        }
+        if (!is_null($codMapaSeparacao)) {
+            $where .= " AND MS.COD_MAPA_SEPARACAO = $codMapaSeparacao ";
+        }
+
+        $sql = "SELECT MS.COD_MAPA_SEPARACAO,
+                    MSP.COD_PRODUTO,
+                    MSP.DSC_GRADE,
+                    MSP.QTD_SEPARAR as QTD_TOTAL,
+                    CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL_SEPARACAO,
+                    MS.COD_EXPEDICAO,
+                    NVL(CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)),0) as PERCENTUAL
+                 FROM MAPA_SEPARACAO MS
+                LEFT JOIN (SELECT MSP.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM)- MSP.QTD_CORTADO) as QTD_SEPARAR
+                             FROM MAPA_SEPARACAO MS
+                            INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                            GROUP BY MSP.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, SUM(QTD_SEPARADA * QTD_EMBALAGEM) AS TOTAL_SEPARADO, COD_MAPA_SEPARACAO
+                            FROM  SEPARACAO_MAPA_SEPARACAO  GROUP BY  COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) SMS
+                            ON SMS.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                           AND SMS.COD_PRODUTO = MSP.COD_PRODUTO
+                           AND SMS.DSC_GRADE = MSP.DSC_GRADE
+                WHERE 1 = 1 $where
+                ORDER BY MS.COD_MAPA_SEPARACAO";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

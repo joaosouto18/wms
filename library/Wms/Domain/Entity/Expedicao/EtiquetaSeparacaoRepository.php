@@ -319,9 +319,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             FROM wms:Expedicao\EtiquetaSeparacao et
                             INNER JOIN wms:Expedicao\Pedido pedi WITH pedi.id = et.pedido
                             INNER JOIN wms:Expedicao\Carga carg WITH carg.id = pedi.codCarga
-                            INNER JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco
+                            LEFT JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco
                             WHERE et.codProduto = es.codProduto AND et.dscGrade = es.grade AND es.codExpedicao = carg.codExpedicao
-                                AND ender.idCaracteristica = de.idCaracteristica
                         )
                          AS qtdProdDist
                         ")
@@ -331,7 +330,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             FROM wms:Expedicao\Carga carga
                             INNER JOIN wms:Expedicao\Pedido ped WITH ped.codCarga = carga.id
                             INNER JOIN wms:Expedicao\EtiquetaSeparacao sep WITH sep.pedido = ped.id
-                            WHERE es.codCargaExterno = carga.codCargaExterno
                         )
                          AS qtdCargaDist
                         ")
@@ -491,7 +489,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             FROM wms:Expedicao\EtiquetaSeparacao et
                             INNER JOIN wms:Expedicao\Pedido pedi WITH pedi.id = et.pedido
                             INNER JOIN wms:Expedicao\Carga carg WITH carg.id = pedi.codCarga
-                            INNER JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco                            
+                            LEFT JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco                            
                             WHERE et.codProduto = es.codProduto AND et.dscGrade = es.grade AND es.codExpedicao = carg.codExpedicao
                                 AND ender.idCaracteristica = de.idCaracteristica
                         )
@@ -1689,7 +1687,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 if (isset($arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()])) {
                     $qtdAtual = $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'];
                     $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'] = Math::adicionar($qtdAtual, $qtdMapa);
-                    $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd] = [$pedidoProdutoEn->getId() => ['entity' => $pedidoProdutoEn, 'qtd' => $qtdMapa]];
                     if (isset($arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$pedidoProdutoEn->getId()])) {
                         $qtdPedProdAtual = $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$pedidoProdutoEn->getId()]['qtd'];
                         $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$pedidoProdutoEn->getId()]['qtd'] = Math::adicionar($qtdPedProdAtual, $qtdMapa);
@@ -2599,11 +2596,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $mapaProduto->setQtdSeparar($quantidadePedido);
             $mapaProduto->setQtdEmbalagem($quantidadeEmbalagem);
             $mapaProduto->setLote((!in_array($lote, [Produto\Lote::NCL, Produto\Lote::LND])) ? $lote : null);
-//            if (!empty($arrPedidoProduto)) {
-//                $pedidoproduto = reset($arrPedidoProduto);
-//                $mapaProduto->setCodPedidoProduto($pedidoproduto->getId());
-//                $mapaProduto->setPedidoProduto($pedidoproduto);
-//            }
+            if (!empty($arrPedidoProduto)) {
+                $pedidoproduto = reset($arrPedidoProduto);
+                $pedidoproduto = reset($pedidoproduto);
+                $mapaProduto->setCodPedidoProduto($pedidoproduto->getId());
+                $mapaProduto->setPedidoProduto($pedidoproduto);
+            }
 
             $mapaProduto->setQtdCortado(0);
             $mapaProduto->setIndConferido('N');

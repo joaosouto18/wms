@@ -52,7 +52,7 @@ class OrdemServicoRepository extends EntityRepository
 
         switch($tipoOrdem) {
             case 'expedicao' :
-                $expedicaoEntity = $em->getReference('wms:Recebimento', $idExpedicao);
+                $expedicaoEntity = $em->getReference('wms:Expedicao', $idExpedicao);
                 $ordemServicoEntity->setExpedicao($expedicaoEntity);
                 break;
 
@@ -464,7 +464,7 @@ class OrdemServicoRepository extends EntityRepository
             $this->excluiOs($idOs);
     }
 
-    public function excluiOs($idOs){
+    private function excluiOs($idOs){
         $codigos = array();
         foreach ($idOs as $item) {
             $codigos[] = $item['CODOS'];

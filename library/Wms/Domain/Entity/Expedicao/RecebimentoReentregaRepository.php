@@ -63,7 +63,7 @@ class RecebimentoReentregaRepository extends EntityRepository
         return $recebimentoReentregaEn;
     }
 
-    public function finalizarConferencia($data)
+    public function finalizarConferencia($data, $expedicaoService)
     {
         try {
             $falha = true;
@@ -81,8 +81,6 @@ class RecebimentoReentregaRepository extends EntityRepository
             $recebimentoReentregaNotaRepo = $this->_em->getRepository('wms:Expedicao\RecebimentoReentregaNota');
             /** @var ParametroRepository $sisParamRepo */
             $sisParamRepo = $this->_em->getRepository('wms:Sistema\Parametro');
-
-            $expedicaoService = new ExpedicaoService($this->_em);
 
             $recebimentoReentregaEn = $recebimentoReentregaRepo->findOneBy(array('id' => $data['id']));
 

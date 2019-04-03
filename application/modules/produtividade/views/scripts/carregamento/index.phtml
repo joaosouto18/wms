@@ -1,6 +1,45 @@
-<div>
-    <h2>Realizar vinculo de operadores da equipe de carregamento a expedição: <?php echo $this->expedicao ?></h2>
+<div class="row">
+    <form id="formGrid" method="post" action="">
+
+        <table class="gTable" >
+            <tbody>
+            <tr>
+                <td colspan="1"></td>
+            </tr>
+            <tr class="gTTitle">
+                <td colspan="1"></td>
+                <td width=""><span>Nome Usuario</span></td>
+            </tr>
+
+            <?php $encontrou = true; ?>
+            <?php foreach ($this->operadores as $operador) : ?>
+
+                <?php
+
+                if ($encontrou == true) {
+                    $class = "gTResultSet";
+                } else {
+                    $class = "gTResultSet gRowColor";
+                }
+                $encontrou = !$encontrou;
+                ?>
+
+                <tr class="<?php echo $class; ?>" style="height: 30px" >
+                    <?php $operadorChecked = $this->equipe->findOneBy(array('usuario' => $operador['id'], 'expedicao' => $this->idExpedicao)); ?>
+                    <?php if (count($operadorChecked) > 0) : ?>
+                        <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]" checked></td>
+                    <?php else : ?>
+                        <td><input type="checkbox" value="<?php echo $operador['id'] ?>" name="mass-id[]"></td>
+                    <?php endif; ?>
+                    <td style="text-align:left">&nbsp;<?php echo $operador['nome'] ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <input type="submit" name="submit" id="submit" value="Vincular/Iniciar" class="btn">
+        <br>
+        <input type="submit" name="submit" id="submit" value="Finalizar" class="btn">
+        <input type="hidden" value="<?php echo $this->idExpedicao ?>" name="idExpedicao"/>
+    </form>
 </div>
-<?php
-echo $this->grid;
-?>

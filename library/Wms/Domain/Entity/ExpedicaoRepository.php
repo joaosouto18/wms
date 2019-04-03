@@ -1401,7 +1401,7 @@ class ExpedicaoRepository extends EntityRepository {
                                               CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END END_CROSSDOCKING
                                         FROM ESTOQUE E
                                        INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
-                                       WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . " AND DE.IND_SITUACAO <> 'B'
+                                       WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . "
                                        GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0), CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END) E
                                   ON E.COD_PRODUTO = P.COD_PRODUTO
                                  AND E.DSC_GRADE = P.DSC_GRADE
@@ -1550,7 +1550,7 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         
-        $query = "SELECT pp
+/*        $query = "SELECT pp
                         FROM wms:Expedicao\PedidoProduto pp
                         INNER JOIN pp.produto p
                          LEFT JOIN p.linhaSeparacao ls
@@ -1566,20 +1566,20 @@ class ExpedicaoRepository extends EntityRepository {
                           AND ped.centralEntrega = '$central'
                           AND ped.dataCancelamento is null
                         ";
-          
+          */
 
-//        $query = "SELECT pp
-//                        FROM wms:Expedicao\PedidoProduto pp
-//                        INNER JOIN pp.produto p
-//                         LEFT JOIN p.linhaSeparacao ls
-//                        INNER JOIN pp.pedido ped
-//                        INNER JOIN wms:Expedicao\VProdutoEndereco e WITH p.id = e.codProduto AND p.grade = e.grade
-//                        INNER JOIN ped.carga c
-//                        WHERE ped.indEtiquetaMapaGerado != 'S'
-//                          $whereCargas
-//                          AND ped.centralEntrega = '$central'
-//                          AND ped.dataCancelamento is null
-//                        ";
+        $query = "SELECT pp
+                        FROM wms:Expedicao\PedidoProduto pp
+                        INNER JOIN pp.produto p
+                         LEFT JOIN p.linhaSeparacao ls
+                        INNER JOIN pp.pedido ped
+                        INNER JOIN wms:Expedicao\VProdutoEndereco e WITH p.id = e.codProduto AND p.grade = e.grade
+                        INNER JOIN ped.carga c
+                        WHERE ped.indEtiquetaMapaGerado != 'S'
+                          $whereCargas
+                          AND ped.centralEntrega = '$central'
+                          AND ped.dataCancelamento is null
+                        ";
 
         switch ($sequencia) {
             case 3:
@@ -1792,8 +1792,18 @@ class ExpedicaoRepository extends EntityRepository {
 
         if ($this->getSystemParameterValue('CONFERE_EXPEDICAO_REENTREGA') == 'S') {
             $qtdEtiquetasPendenteReentrega = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), EtiquetaSeparacao::STATUS_PENDENTE_REENTREGA, $central);
-            if (count($qtdEtiquetasPendenteReentrega) >0) {
+            $qtdEtiquetasPendenteImpressao = $EtiquetaRepo->getEtiquetasReentrega($expedicaoEn->getId(), EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $central);
+
+            if (count($qtdEtiquetasPendenteReentrega) > 0) {
                 $msgErro = 'Existem etiquetas de reentrega pendentes de conferência nesta expedição';
+            }
+            if (count($qtdEtiquetasPendenteImpressao) > 0) {
+                $msgErro = 'Existem etiquetas de reentrega pendentes de impressão nesta expedição';
+            }
+
+            $etiquetaPendenteGeracao = $this->getReentregaSemEtiqueta($expedicaoEn->getId());
+            if (count($etiquetaPendenteGeracao) > 0) {
+                $msgErro = 'Existem etiquetas de reentrega não geradas nesta expedição';
             }
         }
 
@@ -1801,6 +1811,20 @@ class ExpedicaoRepository extends EntityRepository {
             return $msgErro;
         }
 
+    }
+
+    public function getReentregaSemEtiqueta($idExpedicao) {
+        $SQL = "
+        SELECT R.COD_REENTREGA
+         FROM REENTREGA R
+         LEFT JOIN CARGA C ON C.COD_CARGA = R.COD_CARGA
+         WHERE 1 = 1
+           AND C.COD_EXPEDICAO = $idExpedicao
+           AND R.IND_ETIQUETA_MAPA_GERADO = 'N'
+        ";
+
+        $result =  $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
     }
 
     public function importaCortesERP($idExpedicao) {
@@ -1927,7 +1951,17 @@ class ExpedicaoRepository extends EntityRepository {
 
             // Valida se existe separação ao término da conferência
             if ($this->getSystemParameterValue('ATIVIDADE_SEPARACAO_OBRIGATORIA') == 'S') {
-                $resultAcao = $this->validaSeparacao($idExpedicao, $expedicaoEn);
+                $result = $MapaSeparacaoRepo->getMapaPendenteSeparacao($idExpedicao, null);
+
+                if(!empty($result)) {
+                    $cont = 0;
+                    foreach ($result as $item) {
+                        if($item['PERCENTUAL_SEPARACAO'] != '100%')
+                            $cont++;
+                    }
+                    if($cont > 0)
+                        throw new \Exception('Existe(m) ' . $cont . ' produtos(s) sem separação que impedem a finalização da expedição ' . $idExpedicao . '.');
+                } 
             }
 
             if ($this->validaPedidosImpressos($idExpedicao) == false) {

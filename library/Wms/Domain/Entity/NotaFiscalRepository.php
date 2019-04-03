@@ -857,10 +857,11 @@ class NotaFiscalRepository extends EntityRepository {
      * Busca os produtos com impressão automática do código de barras
      * @param int $idRecebimento
      */
-    public function buscarProdutosImprimirCodigoBarras($idRecebimento, $codProduto = null, $grade = null) {
+    public function buscarProdutosImprimirCodigoBarras($idRecebimento, $codProduto = null, $grade = null, $emb = null) {
+        $str = (!empty($emb)) ? "nfi.quantidade / pe.quantidade" : "nfi.quantidade";
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('nf.numero as numNota, nf.serie,
-                          nfi.id as idNotaFiscalItem, nfi.quantidade as qtdItem,
+                ->select("nf.numero as numNota, nf.serie,
+                          nfi.id as idNotaFiscalItem, $str as qtdItem,
                           pj.nomeFantasia as fornecedor,
                           p.id as idProduto, p.grade, p.descricao as dscProduto, p.validade,
                           ls.descricao as dscLinhaSeparacao,
@@ -869,7 +870,7 @@ class NotaFiscalRepository extends EntityRepository {
                           r.dataInicial as dataRecebimento,
                           pe.id as idEmbalagem, pe.descricao as dscEmbalagem, pe.quantidade,
                           pv.id as idVolume, pv.codigoSequencial as codSequencialVolume, pv.descricao as dscVolume,
-                          NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras')
+                          NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras")
                 ->from('wms:NotaFiscal', 'nf')
                 ->leftJoin('nf.recebimento', 'r')
                 ->innerJoin('nf.itens', 'nfi')
@@ -892,6 +893,10 @@ class NotaFiscalRepository extends EntityRepository {
                 ->andWhere('p.grade = :grade')
                 ->setParameter('codProduto', $codProduto)
                 ->setParameter('grade', $grade);
+            if (!empty($emb)) {
+                $dql->andWhere("pe.id = :idEmb")
+                    ->setParameter("idEmb", $emb);
+            }
         }
 
         return $dql->getQuery()->getResult();
@@ -999,6 +1004,9 @@ class NotaFiscalRepository extends EntityRepository {
         try {
             $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
 
+            if ($fornecedorEntity == null)
+                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
+
             // VALIDO SE OS PRODUTOS EXISTEM NO SISTEMA
             if (count($itens) > 0) {
                 foreach ($itens as $item) {
@@ -1012,8 +1020,6 @@ class NotaFiscalRepository extends EntityRepository {
                         throw new \Exception('Produto de código ' . $idProduto . ' e grade ' . $grade . ' não encontrado');
                 }
             }
-            if ($fornecedorEntity == null)
-                throw new \Exception('Fornecedor código ' . $idFornecedor . ' não encontrado');
 
             // caso haja um veiculo vinculado a placa
             if (empty($placa) || (strlen($placa) != 7))
@@ -1126,14 +1132,15 @@ class NotaFiscalRepository extends EntityRepository {
         foreach ($itens as $key => $item){
             if(isset($arrayItens[$item['idProduto']])){
                 if($arrayItens[$item['idProduto']]['grade'] == $item['grade']) {
-                    $arrayItens[$item['idProduto']]['quantidade'] = Math::adicionar($itens[$key]['quantidade'], $arrayItens[$item['idProduto']]['quantidade']);
-                    $arrayItens[$item['idProduto']]['peso'] = Math::adicionar($itens[$key]['peso'], $arrayItens[$item['idProduto']]['peso']);
+                   $arrayItens[$item['idProduto']]['quantidade'] = Math::adicionar($itens[$key]['quantidade'], $arrayItens[$item['idProduto']]['quantidade']);
+                   $arrayItens[$item['idProduto']]['peso'] = Math::adicionar($itens[$key]['peso'], $arrayItens[$item['idProduto']]['peso']);
                 }
             }else {
-                $arrayItens[$item['idProduto']]['idProduto'] = $item['idProduto'];
+                $arrayItens[$item['idProduto']]['idProduto']  = $item['idProduto'];
                 $arrayItens[$item['idProduto']]['quantidade'] = $item['quantidade'];
-                $arrayItens[$item['idProduto']]['grade'] = $item['grade'];
-                $arrayItens[$item['idProduto']]['peso'] = $item['peso'];
+                $arrayItens[$item['idProduto']]['grade']      = $item['grade'];
+                if(isset($item['peso']) || !empty($item['peso']) )
+                   $arrayItens[$item['idProduto']]['peso'] = $item['peso'];
             }
         }
         foreach ($arrayLotes as $keyLote => $itemLote){
@@ -1150,7 +1157,8 @@ class NotaFiscalRepository extends EntityRepository {
                 $arrayTemp[$itemLote['idProduto']][$lote]['lote'] = $lote;
                 $arrayTemp[$itemLote['idProduto']][$lote]['quantidade'] = $itemLote['quantidade'];
                 $arrayTemp[$itemLote['idProduto']][$lote]['grade'] = $itemLote['grade'];
-                $arrayTemp[$itemLote['idProduto']][$lote]['peso'] = $itemLote['peso'];
+                if(isset($itemLote['peso']) || !empty($itemLote['peso']) )
+                    $arrayTemp[$itemLote['idProduto']][$lote]['peso']   = $itemLote['peso'];
             }
             if(isset($arrayItens[$itemLote['idProduto']])){
                 $arrayItens[$itemLote['idProduto']]['lote'] = $arrayTemp[$itemLote['idProduto']];
@@ -1158,7 +1166,6 @@ class NotaFiscalRepository extends EntityRepository {
         }
         return $arrayItens;
     }
-
 
     public function getObservacoesNotasByProduto($codRecebimento, $codProduto, $grade) {
         $SQL = "SELECT DISTINCT DSC_OBSERVACAO

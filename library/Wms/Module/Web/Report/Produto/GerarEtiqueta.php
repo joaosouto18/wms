@@ -50,7 +50,8 @@ class GerarEtiqueta extends eFPDF
                 foreach ($produtosRecebimento as $produto) {
                     $codProduto = $produto['codProduto'];
                     $grade = $produto['grade'];
-                    $result = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento, $codProduto, $grade);
+                    $emb = (isset($produto['emb'])) ? $produto['emb'] : null;
+                    $result = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento, $codProduto, $grade, $emb);
                     $produtosEn[] = $result[0];
                 }
             } else {
@@ -86,7 +87,8 @@ class GerarEtiqueta extends eFPDF
             if ($target == Recebimento::TARGET_IMPRESSAO_PRODUTO) {
                 self::createEtiqueta($produto, $tipo, $modelo);
             } else {
-                for ($i = 0; $i < $produto['qtdItem']; $i++) {
+                $qtd = floor($produto['qtdItem']);
+                for ($i = 0; $i < $qtd; $i++) {
                     self::createEtiqueta($produto, $tipo, $modelo);
                 }
             }
@@ -390,6 +392,11 @@ class GerarEtiqueta extends eFPDF
             $dataValidade = new \DateTime($produto['dataValidade']);
             $dataValidade = $dataValidade->format('d/m/Y');
             $this->Cell(100, 0, 'Data Validade: ' . utf8_decode($dataValidade), 0, 0);
+        } else {
+            $this->Ln(6);
+            $dataImpressao = new \DateTime();
+            $dataImpressao = $dataImpressao->format('d/m/Y');
+            $this->Cell(100, 0, 'Data Impressao: ' . utf8_decode($dataImpressao), 0, 0);
         }
 
         $x        = 55;

@@ -438,7 +438,7 @@
                 changeViewer("bipagem-endereco");
                 $("#cod-barras-end").focus();
             } else {
-                notificar("warning", "Este inventário já foi finalizado!");
+                notificar("warning", "A " + contSelecioando.dsc + " não tem mais endereços! Selecione outra.");
                 getContagens();
             }
         };
@@ -584,7 +584,7 @@
 
         var processProduto = function (codBarras) {
             var liberado = true;
-            if (produtos.length) {
+            if (invSelecioando.criterio === 'P' && produtos.length) {
                 var encontrou = false;
                 $.each(produtos, function (k,produto) {
                     if (myIndexOf(produto.codBarras, codBarras) >= 0) encontrou = true;
@@ -746,7 +746,7 @@
                 if (result.status === "ok") {
                     notificar("success", result.response.msg);
                     if (result.response.code !== 4) {
-                        getContagens();
+                        getEnderecos();
                     } else if (result.response.code === 4) {
                         getInventarios();
                     }

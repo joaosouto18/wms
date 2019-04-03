@@ -19,6 +19,12 @@ class ApontamentoMapa
     protected $id;
 
     /**
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario")
+     * @JoinColumn(name="COD_USUARIO", referencedColumnName="COD_USUARIO")
+     */
+    protected $usuario;
+
+    /**
      * @Column(name="COD_USUARIO", type="integer", nullable=false)
      */
     protected $codUsuario;
@@ -139,5 +145,23 @@ class ApontamentoMapa
     {
         $this->dataFimConferencia = $dataFimConferencia;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getUsuario()
+    {
+        return $this->usuario;
+    }
+
+    /**
+     * @param mixed $usuario
+     */
+    public function setUsuario($usuario)
+    {
+        $this->usuario = $usuario;
+    }
+
+
 
 }

@@ -183,7 +183,12 @@ angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filt
         let count = 0;
         angular.forEach($filter("filter")( $scope.resultForm, {checked: true} ), function (obj) {
             obj.checked = false;
-            if (!$filter("filter")($scope.elements, {id: obj.id}, true).length) {
+            let arg = {id: obj.id};
+            if ($scope.criterio === 'P' ) {
+                arg.codProduto = obj.codProduto;
+                arg.grade = obj.grade;
+            }
+            if (!$filter("filter")($scope.elements, arg, true).length) {
                 $scope.elements.unshift(angular.copy(obj));
                 ++count;
             }

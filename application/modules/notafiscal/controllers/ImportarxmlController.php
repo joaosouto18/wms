@@ -47,52 +47,141 @@ class Notafiscal_ImportarxmlController extends Crud
 
     public function indexAction()
     {
-        $this->isValid = true;
-        $this->falhas = array();
-
-        $form = new Wms\Module\Web\Form\NotaFiscal\Importarxml;
-
         //Seta os botões padrões
         $this->configure();
 
+        $this->isValid = true;
+        $this->falhas = array();
+
         $post = $this->getRequest()->getPost();
-       // Verifica se existe um post
+
         if ( !empty($post) ) {
 
-            // Define um método de transporte
-            $upload = new Zend_File_Transfer_Adapter_Http();
-            $upload->setDestination(APPLICATION_PATH.'/../data/xml/');
+            if( $_POST['tipo'] != 1 && $_POST['placa'] == "")
+                $this->addFlashMessage("error","Importação do tipo SAÍDA ou ENTRADA/SAÍDA, informe também a placa.");
+            else {
 
-            try {
-                // Recebe o arquivo de upload
-                $upload->receive();
-                $result=$this->validarNota($upload);
+                /*
+                 * tipo 1 = ENTRADA
+                 * tipo 2 = SAÍDA
+                 * tipo 3 = ENTRADA/SAÍDA
+                 */
+                $tipo  = $_POST['tipo'];
+                $placa = $_POST['placa'];
 
-                if ($this->isValid) {
-                    /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-                    $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
-                    $idFornecedor = trim($result['NotaFiscal']['COD_FORNECEDOR']);
-                    $numero = trim($result['NotaFiscal']['NUM_NOTA_FISCAL']);
-                    $serie = trim($result['NotaFiscal']['COD_SERIE_NOTA_FISCAL']);
-                    $dataEmissao = trim($result['NotaFiscal']['DTH_ENTRADA']);
-                    $placa = trim($result['NotaFiscal']['DSC_PLACA_VEICULO']);
-                    $bonificacao = 'N';
-                    $itens = $result['NotaFiscalItem'];
-                    $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao, null, 0);
-                    $this->addFlashMessage("success","Nota Fiscal $numero / $serie importada com sucesso");
-                } else {
-                    $this->addFlashMessage("error","Falhas importando nota fiscal");
+                // Define um método de transporte
+                $upload = new Zend_File_Transfer_Adapter_Http();
+                $upload->setDestination(APPLICATION_PATH . '/../data/xml/');
+
+                try {
+                    // Recebe o arquivo de upload
+                    $upload->receive();
+                    $result = $this->validarNota($upload);
+
+                    if ($this->isValid) {
+                        if ($tipo == "1" || $tipo == "3")
+                            $this->salvarNotaEntrada($result);
+                        if ($tipo == "2" || $tipo == "3")
+                            $this->salvarNotaSaida($result, $placa);
+                    } else {
+                        $this->addFlashMessage("error", "Existe(m) problema(s) na importação da nota fiscal: ");
+                    }
+                } catch (Exception $e) {
+                    $this->addFlashMessage("error", "Existe(m) problema(s) na importação da nota fiscal: ");
+                    $this->isValid = false;
+                    $this->falhas[] = $e->getMessage();
                 }
-            } catch (Exception $e) {
-                $this->addFlashMessage("error","Falhas importando nota fiscal");
-                $this->isValid = false;
-                $this->falhas[] = $e->getMessage();
             }
         }
         $this->view->isValid = $this->isValid;
-        $this->view->falhas = $this->falhas;
+        if(!empty($this->falhas)){
+            foreach ($this->falhas as $falha) {
+                //echo $falha;
+                $this->addFlashMessage("error", $falha);
+            }
+        }
+            //$this->addFlashMessage("error", $this->falhas);
+            //$this->view->falhas = $this->falhas;
+    }
 
-        $this->view->form = $form;
+    private function salvarNotaEntrada($result){
+        try {
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+            $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
+            $idFornecedor   = trim($result['NotaFiscal']['COD_FORNECEDOR']);
+            $numero         = trim($result['NotaFiscal']['NUM_NOTA_FISCAL']);
+            $serie          = trim($result['NotaFiscal']['COD_SERIE_NOTA_FISCAL']);
+            $dataEmissao    = trim($result['NotaFiscal']['DTH_ENTRADA']);
+            $placa          = trim($result['NotaFiscal']['DSC_PLACA_VEICULO']);
+            $bonificacao    = 'N';
+            $itens          = $result['NotaFiscalItem'];
+            $notaFiscalRepo->salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, null, 0);
+            $this->addFlashMessage("success", "Nota Fiscal $numero / $serie importada com sucesso");
+
+        } catch (Exception $e) {
+            $this->addFlashMessage("error", "Não foi possível importar a nota fiscal");
+            $this->isValid = false;
+            $this->falhas[] = $e->getMessage();
+        }
+    }
+
+    private function salvarNotaSaida($result, $placaExpedicao){
+        try {
+            $expedicao = new Wms_WebService_Expedicao();
+
+            $cliente = new cliente();
+            $cliente->bairro      = $result['NotaFiscal']['BAIRRO_CLIENTE'];
+            $cliente->cidade      = $result['NotaFiscal']['CIDADE_CLIENTE'];
+            $cliente->codCliente  = $result['NotaFiscal']['CNPJ_CPF_CLIENTE'];
+            $cliente->complemento = $result['NotaFiscal']['COMPLEMENTO_CLIENTE'];
+            $cliente->cpf_cnpj    = $result['NotaFiscal']['CNPJ_CPF_CLIENTE'];
+            $cliente->logradouro  = $result['NotaFiscal']['LOGRADOURO_CLIENTE'];
+            $cliente->nome        = $result['NotaFiscal']['NOME_CLIENTE'];
+            $cliente->referencia  = $result['NotaFiscal']['REFERENCIA_CLIENTE'];
+            $cliente->numero      = $result['NotaFiscal']['NUMERO_CLIENTE'];
+            $cliente->tipoPessoa  = $result['NotaFiscal']['TIPO_CLIENTE'];
+            $cliente->uf          = $result['NotaFiscal']['UF_CLIENTE'];
+            $cliente->insc        = $result['NotaFiscal']['INSC_CLIENTE'];
+
+            $itinerario = new itinerario();
+            $itinerario->idItinerario   = 9999; // ETINERARIO PADRAO
+            $itinerario->nomeItinerario = $result['NotaFiscal']['UF_CLIENTE'];
+
+            $codPedido = $result['NotaFiscal']['NUM_NOTA_FISCAL'];
+
+            $pedido = new pedido();
+            $pedido->codPedido    = $codPedido;
+            $pedido->cliente      = $cliente;
+            $pedido->itinerario   = $itinerario;
+            $pedido->linhaEntrega = "";
+
+            $itens    = $result['NotaFiscalItem'];
+            $produtos = array();
+            foreach ($itens as $item) {
+                $produto = new produto();
+                $produto->codProduto = $item['idProduto'];
+                $produto->grade = $item['grade'];
+                $produto->quantidade = $item['quantidade'];
+                $produtos[] = $produto;
+            }
+
+            $pedido->produtos = $produtos;
+
+            $arrPed = array();
+            $arrPed[] = $pedido;
+
+            $pedidos  = new pedidos();
+            $pedidos->pedidos = $arrPed;
+
+            $result = $expedicao->enviarPedidos($codPedido, $placaExpedicao, $placaExpedicao, $pedidos);
+            if($result)
+                $this->addFlashMessage("success", "Expedição gerada com sucesso");
+
+        } catch (Exception $e) {
+            $this->addFlashMessage("error", "Não foi possível importar a nota fiscal");
+            $this->isValid = false;
+            $this->falhas[] = $e->getMessage();
+        }
     }
 
     /*
@@ -103,10 +192,10 @@ class Notafiscal_ImportarxmlController extends Crud
     private function validarNota($upload){
 
             //define um array para retorno
-            $arrayRetorno=array();
+            $arrayRetorno = array();
 
             // Pega o cabeçalho de informações do arquivo
-            $arquivo=$upload->getFileInfo();
+            $arquivo = $upload->getFileInfo();
 
             /*
             //Pega o conteúdo do Arquivo
@@ -115,7 +204,7 @@ class Notafiscal_ImportarxmlController extends Crud
 
             //Converte o arquivo XML para um array encadeado
             $config = new Zend_Config_Xml($arquivo['arquivo_xml']['tmp_name']);
-            $dados=$config->toArray();
+            $dados  = $config->toArray();
 
             /*
             * testa a variável dados
@@ -132,23 +221,21 @@ class Notafiscal_ImportarxmlController extends Crud
                 }
             }
 
-            $versao=$dados["NFe"]["infNFe"]['versao'];
+            $versao = $dados["NFe"]["infNFe"]['versao'];
 
             //verificação se o XML é uma NF-e
             if ( !empty($versao) ){
 
                 //dados de identificação
                 if ( !empty ($dados["NFe"]["infNFe"]['ide']) ){
-                    $arrayRetorno=array_merge($arrayRetorno,$this->getDadosNota($dados));
+                    $arrayRetorno = array_merge($arrayRetorno,$this->getDadosNota($dados));
 
                     //dados do produto
                     if ( !empty($dados["NFe"]["infNFe"]['det']) ){
-                        $arrayRetorno=array_merge($arrayRetorno,$this->getDadosProduto($dados));
+                        $arrayRetorno = array_merge($arrayRetorno,$this->getDadosProduto($dados));
                     }
                 }
             }
-
-
             return $arrayRetorno;
     }
 
@@ -171,8 +258,8 @@ class Notafiscal_ImportarxmlController extends Crud
 
         if ( !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) || !empty($dados["NFe"]["infNFe"]['ide']['dhEmi']) ){
             $dEmi = !empty($dados["NFe"]["infNFe"]['ide']['dEmi']) ? $dados["NFe"]["infNFe"]['ide']['dEmi'] : $dados["NFe"]["infNFe"]['ide']['dhEmi'];
-            $dataEmissao=  date_create_from_format('Y-m-d', $dEmi);
-            $arrayRetorno['NotaFiscal']['DAT_EMISSAO'] =$dataEmissao->format('d/m/Y');
+            $dataEmissao=  date_create_from_format('Y-m-d', substr($dEmi,0,10));
+            $arrayRetorno['NotaFiscal']['DAT_EMISSAO'] = $dataEmissao->format('d/m/Y');
         }
         else {
             $this->isValid=false;
@@ -210,6 +297,41 @@ class Notafiscal_ImportarxmlController extends Crud
             $arrayRetorno['NotValid']['tags'][]='CNPJ';
             $arrayRetorno['NotValid']['valores']['CNPJ']=$dados["NFe"]["infNFe"]['emit']['CNPJ'];
             $this->falhas[] = "CNPJ Inválido | CNPJ: " . $dados["NFe"]["infNFe"]['emit']['CNPJ'];
+        }
+
+
+        // pega as informações do destinatário para notas do tipo SAÍDA
+        if ( !empty($dados["NFe"]["infNFe"]['dest']['CNPJ']) ){
+
+            if( (isset($dados["NFe"]["infNFe"]['dest']['CNPJ'])) && (!empty($dados["NFe"]["infNFe"]['dest']['CNPJ']))) {
+                $documento = $dados["NFe"]["infNFe"]['dest']['CNPJ'];
+                $tipoPessoa = 'J';
+            }
+            elseif( (isset($dados["NFe"]["infNFe"]['dest']['CPF'])) && (!empty($dados["NFe"]["infNFe"]['dest']['CPF']))) {
+                $documento = $dados["NFe"]["infNFe"]['dest']['CNPJ'];
+                $tipoPessoa = 'F';
+            }
+
+            $arrayRetorno['NotaFiscal']['NOME_CLIENTE']        = $dados["NFe"]["infNFe"]['dest']['xNome'];
+            $arrayRetorno['NotaFiscal']['LOGRADOURO_CLIENTE']  = $dados["NFe"]["infNFe"]['dest']['enderDest']['xLgr'];
+            $arrayRetorno['NotaFiscal']['NUMERO_CLIENTE']      = $dados["NFe"]["infNFe"]['dest']['enderDest']['nro'];
+            $arrayRetorno['NotaFiscal']['COMPLEMENTO_CLIENTE'] = ""; //$dados["NFe"]["infNFe"]['dest']['enderDest']['xCpl'];
+            $arrayRetorno['NotaFiscal']['BAIRRO_CLIENTE']      = $dados["NFe"]["infNFe"]['dest']['enderDest']['xBairro'];
+            $arrayRetorno['NotaFiscal']['CIDADE_CLIENTE']      = $dados["NFe"]["infNFe"]['dest']['enderDest']['xMun'];
+            $arrayRetorno['NotaFiscal']['UF_CLIENTE']          = $dados["NFe"]["infNFe"]['dest']['enderDest']['UF'];
+            $arrayRetorno['NotaFiscal']['CEP_CLIENTE']         = $dados["NFe"]["infNFe"]['dest']['enderDest']['CEP'];
+            $arrayRetorno['NotaFiscal']['PAIS_CLIENTE']        = $dados["NFe"]["infNFe"]['dest']['enderDest']['xPais'];
+            $arrayRetorno['NotaFiscal']['EMAIL_CLIENTE']       = ""; //$dados["NFe"]["infNFe"]['dest']['email'];
+            $arrayRetorno['NotaFiscal']['INSC_CLIENTE']        = $dados["NFe"]["infNFe"]['dest']['IE'];
+            $arrayRetorno['NotaFiscal']['TIPO_CLIENTE']        = $tipoPessoa;
+            $arrayRetorno['NotaFiscal']['CNPJ_CPF_CLIENTE']    = $documento;
+            $arrayRetorno['NotaFiscal']['REFERENCIA_CLIENTE']  = '';
+
+        } else {
+            $this->isValid=false;
+            $arrayRetorno['NotValid']['tags'][]='CNPJ';
+            $arrayRetorno['NotValid']['valores']['CNPJ']=$dados["NFe"]["infNFe"]['dest']['CNPJ'];
+            $this->falhas[] = "CNPJ Inválido | CNPJ: " . $dados["NFe"]["infNFe"]['dest']['CNPJ'];
         }
 
         $arrayRetorno['NotaFiscal']['NUM_NOTA_FISCAL']=$dados["NFe"]["infNFe"]['ide']['nNF'];
@@ -378,7 +500,6 @@ class Notafiscal_ImportarxmlController extends Crud
                 $arrayRetorno['NotValid']['valores']['qCom'][]=$dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
                 $this->falhas[] = "Quantidade não informada | Qtd: " . $dados["NFe"]["infNFe"]['det'][$qtdProduto]['prod']['qCom'];
             }
-
         }
 
         return $arrayRetorno;
