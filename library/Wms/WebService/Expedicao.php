@@ -1040,6 +1040,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     || ($statusExpedicao->getId() == Expedicao::STATUS_CANCELADO)) {
                     $PedidoRepo->removeReservaEstoque($idPedido,false);
                     $PedidoRepo->remove($PedidoEntity,false);
+                    $retorno = true;
                 } else {
                     if($novoSequencial == true &&
                       ($statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO ||
@@ -1047,34 +1048,21 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         $retorno = true;
                     }else{
 
-                        if ($codCargaExternoIntegracao == $PedidoEntity->getCarga()->getCodCargaExterno())
+                        if ($codCargaExternoIntegracao == $PedidoEntity->getCarga()->getCodCargaExterno()) {
                             $PedidoRepo->permiteAlterarPedidos($pedido, $PedidoEntity);
-
-
-                        /*
-                         * @ToDo Rodrigo
-                         * Se o parametro para permitir alteração = true então
-                         * Não pode ter alteração de carga,
-                         *
-                         * criar método para alterar o pedido
-                         *      Dentro do método, alterar a quantidade do pedido, modificar o mapa e modificar a reserva
-                         *      MAPA_SEPARACAO_PEDIDO
-                         *      RESERVA_ESTOQUE
-                         *      PEDIDO_PRODUTO
-                         * Só vai fazer alteração para os produtos que tiver a quantidade maior que a original (alteração para cima)
-                         */
+                            $retorno = false;
+                        }
 
                         if ($qtdTotal != $qtdCortadas && ($statusExpedicao->getId() == Expedicao::STATUS_EM_CONFERENCIA || $statusExpedicao->getId() == Expedicao::STATUS_EM_SEPARACAO)) {
                             if (!$isIntegracaoSQL) {
-//                                throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
-                                $retorno = "Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ";
+                                throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
                             } else {
                                 $retorno = false;
                             }
                         }
+
                         if (!$isIntegracaoSQL) {
-//                            throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower($statusExpedicao->getSigla()));
-                            $retorno = "Pedido " . $pedido['codPedido'] . " se encontra " . strtolower($statusExpedicao->getSigla());
+                            throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower($statusExpedicao->getSigla()));
                         } else {
                             $retorno = false;
                         }
@@ -1082,6 +1070,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 }
             }
         }
+
         return $retorno;
     }
 

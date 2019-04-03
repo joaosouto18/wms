@@ -955,8 +955,10 @@ class PedidoRepository extends EntityRepository
                             $novaQuantidade = $novaQuantidade * -1;
                             //localiza as reservas de estoque
                             $reservaEstoqueProdutoEntity = $reservaEstoqueProdutoRepository->getReservaEstoqueProduto($PedidoEntity->getId(), $produto['codProduto'], $produto['grade']);
-                            $reservaEstoqueProdutoEntity->setQtd(Math::adicionar($reservaEstoqueProdutoEntity->getQtd(), $novaQuantidade));
-                            $this->getEntityManager()->persist($reservaEstoqueProdutoEntity);
+                            if ($reservaEstoqueProdutoEntity != null) {
+                                $reservaEstoqueProdutoEntity[0]->setQtd(Math::adicionar($reservaEstoqueProdutoEntity->getQtd(), $novaQuantidade));
+                                $this->getEntityManager()->persist($reservaEstoqueProdutoEntity);
+                            }
                         }
                     }
                 }

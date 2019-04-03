@@ -15,9 +15,8 @@ class ReservaEstoqueProdutoRepository extends EntityRepository
             ->innerJoin('ree.reservaEstoque', 're')
             ->innerJoin('wms:Ressuprimento\ReservaEstoqueProduto', 'rep', 'WITH', 're.id = rep.reservaEstoque')
             ->where("ree.pedido = $pedido")
-            ->andWhere("rep.codProduto = $codProduto AND rep.grade = $dscGrade");
+            ->andWhere("rep.codProduto = '$codProduto' AND rep.grade = '$dscGrade'");
 
-        return $sql->getQuery()->getSingleScalarResult();
-
+        $result = $sql->getQuery()->getResult();
     }
 }
