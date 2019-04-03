@@ -565,7 +565,8 @@ class Integracao {
                         'produtos' => $produtos,
                         'linhaEntrega' => $row['DSC_ROTA'],
                         'tipoPedido' => $tipoPedido,
-                        'codProprietario' => null
+                        'codProprietario' => null,
+                        'idCarga' => $idCarga
                     );
 
                     $pedidos[] = $pedido;

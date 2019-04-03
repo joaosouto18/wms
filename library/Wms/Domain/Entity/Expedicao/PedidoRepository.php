@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity\Expedicao;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
+use Wms\Math;
 use Zend\Stdlib\Configurator;
 
 class PedidoRepository extends EntityRepository
@@ -902,6 +903,70 @@ class PedidoRepository extends EntityRepository
             }
         }
         return true;
+    }
+
+    public function permiteAlterarPedidos($pedidoIntegracao, $PedidoEntity)
+    {
+        $permiteAlterarPedidos = $this->getSystemParameterValue('PERMITIR_ALTERAR_PEDIDOS');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoProdutoRepository $pedidoProdutoRepository */
+        $pedidoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoPedidoRepositoty */
+        $mapaSeparacaoPedidoRepositoty = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+        /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepository */
+        $mapaSeparacaoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+        /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProdutoRepository $reservaEstoqueProdutoRepository */
+        $reservaEstoqueProdutoRepository = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
+
+        try {
+            if ($permiteAlterarPedidos === 'S') {
+                foreach ($pedidoIntegracao['produtos'] as $produto) {
+                    //localiza o produto alterado no pedido
+                    $pedidoProdutoEntity = $pedidoProdutoRepository->findOneBy(array('codPedido' => $PedidoEntity->getId(), 'codProduto' => $produto['codProduto'], 'grade' => $produto['grade']));
+                    if (isset($pedidoProdutoEntity)) {
+                        //verifica se a nova quantidade é maior do que a quantidade existente
+                        if ($produto['quantidade'] > $pedidoProdutoEntity->getQuantidade()) {
+                            //altera a PEDIDO_PRODUTO com a nova quantidade bruta
+                            $pedidoProdutoEntity->setQuantidade($produto['quantidade']);
+                            $this->getEntityManager()->persist($pedidoProdutoEntity);
+
+                            //localiza todos os MAPA_SEPARACAO_PEDIDO
+                            $mapaSeparacaoPedidoEntities = $mapaSeparacaoPedidoRepositoty->findBy(array('pedidoProduto' => $pedidoProdutoEntity));
+                            //soma as quantidades existentes nos MAPA_SEPARACAO_PEDIDO antes de fazer alteração
+                            $quantidadeExistente = 0;
+                            foreach ($mapaSeparacaoPedidoEntities as $k => $mapaSeparacaoPedidoEntity) {
+                                $quantidadeExistente = $quantidadeExistente + $mapaSeparacaoPedidoEntity->getQtd();
+                                if ($mapaSeparacaoPedidoEntity === reset($mapaSeparacaoPedidoEntities)) {
+                                    $mapaPedidoEntity = $mapaSeparacaoPedidoEntity;
+                                }
+                            }
+                            //subtrai a nova quantidade bruta da quantidade que ja existia nos MAPA_SEPARACAO_PEDIDO para saber a quantidade q será inserida em um unico mapa
+                            $novaQuantidade = Math::subtrair($produto['quantidade'], $quantidadeExistente);
+                            //atualiza o MAPA_SEPARACAO_PEDIDO inserindo a nova qunatidade somado a quantidade do primeiro MAPA_SEPARACAO_PEDIDO encontrado
+                            $mapaPedidoEntity->setQtd(Math::adicionar($mapaPedidoEntity->getQtd(), $novaQuantidade));
+                            $this->getEntityManager()->persist($mapaPedidoEntity);
+
+                            //localiza o MAPA_SEPARACAO_PRODUTO baseando no MAPA_SEPARACAO_PEDIDO e no produto alterado
+                            $mapaSeparacaoProdutoEntity = $mapaSeparacaoProdutoRepository->findOneBy(array('mapaSeparacao' => $mapaSeparacaoPedidoEntity->getMapaSeparacao(), 'codProduto' => $produto['codProduto'], 'dscGrade' => $produto['grade']));
+                            //atualiza o MAPA_SEPARACAO_PRODUTO inserindo a nova quantidade somado ao que ja existia
+                            $mapaSeparacaoProdutoEntity->setQtdSeparar(Math::adicionar($mapaSeparacaoProdutoEntity->getQtdSeparar(), $novaQuantidade));
+                            $this->getEntityManager()->persist($mapaSeparacaoProdutoEntity);
+
+                            //altero a nova quantidade para valor negativo por se tratar de saída de estoque
+                            $novaQuantidade = $novaQuantidade * -1;
+                            //localiza as reservas de estoque
+                            $reservaEstoqueProdutoEntity = $reservaEstoqueProdutoRepository->getReservaEstoqueProduto($PedidoEntity->getId(), $produto['codProduto'], $produto['grade']);
+                            $reservaEstoqueProdutoEntity->setQtd(Math::adicionar($reservaEstoqueProdutoEntity->getQtd(), $novaQuantidade));
+                            $this->getEntityManager()->persist($reservaEstoqueProdutoEntity);
+                        }
+                    }
+                }
+                $this->getEntityManager()->flush();
+            }
+        } catch (\Exception $e) {
+            throw new \Exception ($e->getMessage());
+        }
+
+
     }
 
 }
