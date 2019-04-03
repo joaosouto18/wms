@@ -1047,8 +1047,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         $retorno = true;
                     }else{
 
-                        if ($codCargaExternoIntegracao == $PedidoEntity->getCarga()->getCodCargaExterno())
-                            $PedidoRepo->permiteAlterarPedidos($pedido, $PedidoEntity);
+//                        if ($codCargaExternoIntegracao == $PedidoEntity->getCarga()->getCodCargaExterno())
+//                            $PedidoRepo->permiteAlterarPedidos($pedido, $PedidoEntity);
 
 
                         /*
