@@ -1,0 +1,60 @@
+<script>
+    function nextInput(event) {
+        if (event.which == 13 || event.keyCode == 13) {
+            if (document.getElementById('codigoBarras').value != "") {
+                nivel = document.getElementById('nivel');
+                if (nivel) {
+                    nivel.focus();
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+</script>
+
+<div class="row" >
+    <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="<?php echo $this->url(array('controller' => 'onda-ressuprimento', 'action' => 'retorno-ressuprimento')) ?>" method="post">
+        <div class="table-responsive">
+            <table class="gTable table-condensed" style="width: 100%">
+                <tbody>
+                    <tr>
+                        <td><h3>Retorno do Ressuprimento <?php echo $this->idOnda ?> </h3></td>
+                    </tr>
+                    <tr>
+                        <td><B>Código do produto:</B> <?php echo $this->codProduto ?> </td>
+                    </tr>
+                    <tr>
+                        <td><B>Descrição:</B> <?php echo $this->descricao ?> </td>
+                    </tr>
+                    <tr>
+                        <td><B>Quantidade de resíduo:</B> <?php echo $this->qtd ?> </td>
+                    </tr>
+                    <tr>
+                        <td><B>Endereço de origem:</B> <?php echo $this->enderecoOrigem ?>  <br></td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+        <div class="wrapper">
+            <div class="content-main"><label>Endereço de destino:</label>
+                <input class="focus form-control" type="text" name="enderecoDestino" required id="enderecoDestino" onkeydown="nextInput(event)" /></div>
+            <div class="content-secondary"><label>Nível:</label>
+                <input class="form-control" type="text" name="nivel" id="nivel" value="" required/>
+            </div>
+        </div>
+        <br />
+        <div class="row" >
+            <input type="submit" name="submit" class="btn gradientBtn" id="submit" value="Finalizar" />
+        </div>
+        <input type="hidden" name="idOnda" id="idOnda" value="<?php echo $this->idOnda ?>"/>
+        <input type="hidden" name="enderecoOrigem" id="enderecoOrigem" value="<?php echo $this->enderecoOrigem ?>"/>
+        <input type="hidden" name="codProduto" id="codProduto" value="<?php echo $this->codProduto ?>"/>
+        <input type="hidden" name="qtd" id="qtd" value="<?php echo $this->qtd ?>"/>
+    </form>
+</div>
