@@ -561,7 +561,7 @@ class InventarioService extends AbstractService
                 ]);
                 $elemCount = [
                     $contagem['QTD_CONTAGEM'],
-                    $contagem['VALIDADE']
+                    ($validaValidade) ? $contagem['VALIDADE'] : null
                 ];
                 $countQtdsIguais[$strProd][implode($strConcat, $elemCount)][] = $contagem['NUM_SEQUENCIA'];
 
@@ -569,7 +569,7 @@ class InventarioService extends AbstractService
                     $contagem['COD_PRODUTO'], $contagem['DSC_GRADE'], $contagem['DSC_LOTE'], $contagem['COD_PRODUTO_VOLUME']) as $contAnterior) {
                     $elemCount = [
                         $contAnterior['QTD_CONTAGEM'],
-                        $contAnterior['VALIDADE']
+                        ($validaValidade) ? $contAnterior['VALIDADE'] : null
                     ];
                     $countQtdsIguais[$strProd][implode($strConcat, $elemCount)][] = $contAnterior['NUM_SEQUENCIA'];
                 }
@@ -1059,7 +1059,7 @@ class InventarioService extends AbstractService
     /*
      * Layout de exportação definido para o Winthor
      */
-    public function exportaInventarioModelo01($id)
+    public function exportaInventarioModelo1($id)
     {
 
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
@@ -1124,7 +1124,7 @@ class InventarioService extends AbstractService
     /*
      * Layout de exportação definido para a SonosShow
      */
-    public function exportaInventarioModelo02($idInventario = null) {
+    public function exportaInventarioModelo2($idInventario = null) {
         /*
          * Nome do arquivo solicitado pela sonoshow como aammddhh.min
          */
@@ -1152,7 +1152,7 @@ class InventarioService extends AbstractService
             $SQL .= " INNER JOIN (SELECT DISTINCT ICEP.COD_PRODUTO,
                                     ICEP.DSC_GRADE
                                FROM INVENTARIO_ENDERECO_NOVO IEN
-                               INNER JOIN INVENTARIO_NOVO INVN ON INVN.COD_INVENATRIO = IEN.COD_INVENTARIO
+                               INNER JOIN INVENTARIO_NOVO INVN ON INVN.COD_INVENTARIO = IEN.COD_INVENTARIO
                                INNER JOIN INVENTARIO_CONT_END ICE ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
                                LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
                               WHERE IE.COD_INVENTARIO = $idInventario AND INVN.COD_STATUS = $statusFinalizado AND ICEP.IND_DIVERGENTE = 'N') I
