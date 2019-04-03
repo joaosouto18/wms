@@ -12,6 +12,7 @@ class Mobile_InventarioNovoController extends Action
 {
     public function listagemInventariosAction()
     {
+        $this->view->desconsideraZeroEsquerda = true; ($this->getSystemParameterValue("DESCONSIDERA_ZERO_ESQUERDA") == "S");
         $this->view->usaGrade = ($this->getSystemParameterValue("UTILIZA_GRADE") == "S");
         $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
         $mascara = \Wms\Util\Endereco::mascara($arrQtdDigitos,'0');

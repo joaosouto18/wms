@@ -163,6 +163,7 @@
 
         $("#validade").mask('00/00/0000');
 
+        var desconsideraZeroEsquerda = <?php echo ($this->desconsideraZeroEsquerda) ? "true" : "false"; ?>;
         var inventarios = [];
         var invSelecioando = {};
         var contagens = [];
@@ -584,6 +585,9 @@
 
         var processProduto = function (codBarras) {
             var liberado = true;
+            if (desconsideraZeroEsquerda) {
+                codBarras = Number(codBarras).toString();
+            }
             if (invSelecioando.criterio === 'P' && produtos.length) {
                 var encontrou = false;
                 $.each(produtos, function (k,produto) {
