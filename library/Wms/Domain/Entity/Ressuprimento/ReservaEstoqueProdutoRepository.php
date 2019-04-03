@@ -17,7 +17,6 @@ class ReservaEstoqueProdutoRepository extends EntityRepository
             ->where("ree.pedido = $pedido")
             ->andWhere("rep.codProduto = '$codProduto' AND rep.grade = '$dscGrade'");
 
-        return $sql->getQuery()->getSingleScalarResult();
-
+        $result = $sql->getQuery()->getResult();
     }
 }
