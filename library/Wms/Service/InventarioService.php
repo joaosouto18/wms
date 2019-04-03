@@ -778,11 +778,15 @@ class InventarioService extends AbstractService
      * @param $isDiverg
      * @param $endereco
      * @return array
+     * @throws \Exception
      */
     public function getInfoEndereco($idInventario, $sequencia, $isDiverg, $endereco)
     {
         /** @var InventarioNovo\InventarioEnderecoNovoRepository $invEndRepo */
         $invEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo");
+        $check = $invEndRepo->checkContEndOsFinalizada($idInventario, $sequencia, $endereco, \Zend_Auth::getInstance()->getIdentity()->getId());
+        if (!empty($check)) throw new \Exception("Este usuário já finalizou essa contagem neste endereço");
+
         if ($isDiverg == "S") {
             $result = $invEndRepo->getItensDiverg($idInventario, $sequencia, $endereco);
         } else {

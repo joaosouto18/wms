@@ -136,4 +136,17 @@ class InventarioEnderecoNovoRepository extends EntityRepository
 
         return $dql->getQuery()->getResult();
     }
+
+    public function checkContEndOsFinalizada($idInventario, $sequencia, $endereco, $idUsuario)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("iceos")
+            ->from("wms:InventarioNovo\inventarioContEndOs", "iceos")
+            ->innerJoin("iceos.invContEnd", "ice", "WITH", "ice.sequencia = $sequencia")
+            ->innerJoin("ice.inventarioEndereco", "ie", "WITH", "ie.ativo = 'S' and ie.inventario = $idInventario and ie.depositoEndereco = $endereco")
+            ->innerJoin("iceos.ordemServico", "os", "WITH", "os.pessoa = $idUsuario and os.dataFinal IS NOT NULL")
+            ->distinct(true);
+
+        return $dql->getQuery()->getResult();
+    }
 }
