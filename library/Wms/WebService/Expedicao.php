@@ -1007,10 +1007,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $PedidoRepo */
         $PedidoRepo = $repositorios['pedidoRepo'];
 
+        $retorno = true;
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $repositorios['etiquetaRepo'];
         $PedidoRepo = $repositorios['pedidoRepo'];
         foreach ($pedidos as $pedido) {
+            $codCargaExternoIntegracao = $pedido['idCarga'];
             $idPedido = $PedidoRepo->getMaxCodPedidoByCodExterno($pedido['codPedido']);
             $PedidoEntity = null;
             if(!empty($idPedido)){
@@ -1042,13 +1044,19 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     if($novoSequencial == true &&
                       ($statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO ||
                        $statusExpedicao->getId() == Expedicao::STATUS_PARCIALMENTE_FINALIZADO)){
-                        return true;
+                        $retorno = true;
                     }else{
+
+                        if ($codCargaExternoIntegracao == $PedidoEntity->getCarga()->getCodCargaExterno())
+                            $PedidoRepo->permiteAlterarPedidos($pedido, $PedidoEntity);
+
 
                         /*
                          * @ToDo Rodrigo
                          * Se o parametro para permitir alteração = true então
-                         * Não pode ter alteração de carga, criar método para alterar o pedido
+                         * Não pode ter alteração de carga,
+                         *
+                         * criar método para alterar o pedido
                          *      Dentro do método, alterar a quantidade do pedido, modificar o mapa e modificar a reserva
                          *      MAPA_SEPARACAO_PEDIDO
                          *      RESERVA_ESTOQUE
@@ -1058,21 +1066,23 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
                         if ($qtdTotal != $qtdCortadas && ($statusExpedicao->getId() == Expedicao::STATUS_EM_CONFERENCIA || $statusExpedicao->getId() == Expedicao::STATUS_EM_SEPARACAO)) {
                             if (!$isIntegracaoSQL) {
-                                throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+//                                throw new Exception("Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ");
+                                $retorno = "Pedido $pedido[codPedido] possui etiquetas que precisam ser cortadas - Cortadas: ";
                             } else {
-                                return false;
+                                $retorno = false;
                             }
                         }
                         if (!$isIntegracaoSQL) {
-                            throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower($statusExpedicao->getSigla()));
+//                            throw new Exception("Pedido " . $pedido['codPedido'] . " se encontra " . strtolower($statusExpedicao->getSigla()));
+                            $retorno = "Pedido " . $pedido['codPedido'] . " se encontra " . strtolower($statusExpedicao->getSigla());
                         } else {
-                            return false;
+                            $retorno = false;
                         }
                     }
                 }
             }
         }
-        return true;
+        return $retorno;
     }
 
     /**
