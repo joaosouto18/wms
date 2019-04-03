@@ -78,6 +78,7 @@
     }
 </style>
 
+<div id="dummyy"></div>
 <span id="dummy"></span>
 <bgsound id="bgSoundId" loop="0" volume="100" />
 
@@ -163,6 +164,7 @@
 
         $("#validade").mask('00/00/0000');
 
+        var desconsideraZeroEsquerda = <?php echo ($this->desconsideraZeroEsquerda) ? "true" : "false"; ?>;
         var inventarios = [];
         var invSelecioando = {};
         var contagens = [];
@@ -187,6 +189,11 @@
                 }
             }
         }
+        function playSound(soundfile) {
+            var dummyy = '<audio autoplay> <source src=' + soundfile + ' type="audio/mp3">' +
+                '<source src="' + soundfile + '" type="audio/mpeg"></audio>';
+            $('#dummyy').html(dummyy);
+        }
 
         $(document).ready(function () {
             getInventarios();
@@ -208,7 +215,8 @@
                 songFile = "/warning.mp3";
             }
 
-            $("#dummy").html('<embed src="' + songFile + '" hidden="true" autostart="true" loop="false" />');
+            playSound(songFile);
+            /* $("#dummy").html('<embed src="' + songFile + '" hidden="true" autostart="true" loop="false" />'); */
         };
 
         var notificar = function (type, msg, instantShowed) {
@@ -473,7 +481,7 @@
                 $("#lbl-endereco").text(endFormated);
                 openEndereco()
             } else {
-                notificar("warning", "Este endereço "+endFormated+" não está no inventário", true);
+                notificar("warning", "O endereço "+endFormated+" não está nesta contagem", true);
                 input.focus();
             }
 
@@ -584,6 +592,9 @@
 
         var processProduto = function (codBarras) {
             var liberado = true;
+            if (desconsideraZeroEsquerda) {
+                codBarras = Number(codBarras).toString();
+            }
             if (invSelecioando.criterio === 'P' && produtos.length) {
                 var encontrou = false;
                 $.each(produtos, function (k,produto) {
