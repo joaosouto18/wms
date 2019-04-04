@@ -1,6 +1,7 @@
 <?php
 
 namespace Wms\Domain\Entity\Expedicao;
+use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Produto\Embalagem;
 use Wms\Domain\Entity\Produto\Volume;
 
@@ -37,6 +38,7 @@ class MapaSeparacaoProduto
     protected $dscGrade;
 
     /**
+     * @var Produto
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Produto")
      * @JoinColumns({
      *  @JoinColumn(name="COD_PRODUTO", referencedColumnName="COD_PRODUTO"),
@@ -88,6 +90,7 @@ class MapaSeparacaoProduto
     protected $codPedidoProduto;
 
     /**
+     * @var PedidoProduto
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\PedidoProduto")
      * @JoinColumn(name="COD_PEDIDO_PRODUTO", referencedColumnName="COD_PEDIDO_PRODUTO")
      */
@@ -209,7 +212,7 @@ class MapaSeparacaoProduto
     }
 
     /**
-     * @return mixed
+     * @return Produto
      */
     public function getProduto()
     {
@@ -377,7 +380,7 @@ class MapaSeparacaoProduto
     }
 
     /**
-     * @return mixed
+     * @return PedidoProduto
      */
     public function getPedidoProduto()
     {

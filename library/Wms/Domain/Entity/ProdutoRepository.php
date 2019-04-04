@@ -340,7 +340,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                             $altura = !empty($altura) ? $altura : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getAltura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
                             $largura = !empty($largura) ? $largura : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getLargura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
                             $profundidade = !empty($profundidade) ? $profundidade : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getProfundidade()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
-                            $cubagem = str_replace('.', ',', Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
                             $peso = !empty($peso) ? $peso : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getPeso()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
                         }
 
@@ -352,12 +351,18 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setIsPadrao($isPadrao);
                         $embalagemEntity->setCBInterno($CBInterno);
                         $embalagemEntity->setImprimirCB($imprimirCB);
-                        $embalagemEntity->setCodigoBarras(trim($codigoBarras));
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
                         $embalagemEntity->setIsEmbExpDefault((isset($isEmbExpDefault) && !empty($isEmbExpDefault))?$isEmbExpDefault: 'N');
                         $embalagemEntity->setIsEmbFracionavelDefault((isset($isEmbFracionavelDefault) && !empty($isEmbFracionavelDefault))?$isEmbFracionavelDefault: 'N');
+
+                        if (isset($isEmbFracionavelDefault) && $isEmbFracionavelDefault == "S") {
+                            $codigoBarras = $produtoEntity->getId();
+                        } elseif ($CBInterno == 'S') {
+                            $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20" . $embalagemEntity->getId());
+                        }
+                        $embalagemEntity->setCodigoBarras(trim($codigoBarras));
 
                         if (isset($largura) && !empty($largura)) {
                             $embalagemEntity->setLargura(number_format($largura,3,',',''));
@@ -420,14 +425,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
                         $values['embalagens'][$id]['id'] = $embalagemEntity->getId();
 
-                        if ($CBInterno == 'S') {
-                            if (isset($isEmbFracionavelDefault) && $isEmbFracionavelDefault == "S") {
-                                $codigoBarras = $produtoEntity->getId();
-                            } else {
-                                $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20" . $embalagemEntity->getId());
-                            }
-                            $embalagemEntity->setCodigoBarras(trim($codigoBarras));
-                        }
+
 
                         break;
                     case 'alterar':
