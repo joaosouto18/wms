@@ -667,7 +667,7 @@ class InventarioService extends AbstractService
     {
         try {
 
-            if (isset($produto["idVolume"]) && !empty($produto["idVolume"])) {
+            if (isset($produto["idVolume"]) && ($produto["idVolume"] != 'null') ) {
                 $isEmb = false;
                 $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
                 $volumeEn = $produtoVolumeRepo->find($produto["idVolume"]);
