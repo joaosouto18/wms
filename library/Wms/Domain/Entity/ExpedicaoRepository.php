@@ -226,7 +226,7 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
-        $ids = explode(',', $idsIntegracao);
+        $ids = explode(',', $idIntegracao);
         sort($ids);
 
         $cargasEn = $expedicaoEn->getCarga();
