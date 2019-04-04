@@ -27,8 +27,6 @@ class ModeloInventarioService extends AbstractService
             $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
             $pessoaEntity = $this->em->getReference('wms:Usuario', $idPessoa);
 
-            echo $data['$exigeUMA'];
-
             if (empty($default) && $data['default'] !== 'S') {
 
                 $data['default'] = 'S';
@@ -53,7 +51,6 @@ class ModeloInventarioService extends AbstractService
 
             $modeloEn = parent::save(Configurator::configure($entity, $data), false);
 
-            $this->em->persist($modeloEn);
             $this->em->flush();
             $this->em->commit();
 
@@ -96,7 +93,6 @@ class ModeloInventarioService extends AbstractService
             unset($removed['dthCriacao']);
             parent::save(Configurator::configure($entity, $removed), false);
 
-            $this->em->persist($entity);
             $this->em->flush();
             $this->em->commit();
         } catch (\Exception $e) {

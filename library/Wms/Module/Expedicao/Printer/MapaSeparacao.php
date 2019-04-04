@@ -462,7 +462,7 @@ class MapaSeparacao extends eFPDF {
                 $codigoBarras = '';
                 $embalagem = '';
 
-                if (isset($embalagemEn) && !empty($embalagemEn)) {
+                if (!empty($embalagemEn)) {
                     $embalagem = $produto->getProdutoEmbalagem();
                     if ($embalagem->getQuantidade() == $embalagemEn->getQuantidade()) {
                         $embalagem = $embalagemEn->getDescricao() . "(" . $embalagemEn->getQuantidade() . ")";
@@ -1928,7 +1928,9 @@ class MapaSeparacao extends eFPDF {
             $codProduto = $mapaProduto->getCodProduto();
             $grade = $mapaProduto->getDscGrade();
             $descricao = utf8_decode($mapaProduto->getProduto()->getDescricao());
-            $nomCliente = $mapaProduto->getPedidoProduto()->getPedido()->getPessoa()->getPessoa()->getNome();
+            $cliente = $mapaProduto->getPedidoProduto()->getPedido()->getPessoa();
+            $nomCliente = $cliente->getPessoa()->getNome();
+            $codCliente = $cliente->getCodClienteExterno();
 
             /** @var Produto\Embalagem|Produto\Volume $elemento */
             $elemento = null;
@@ -1967,8 +1969,8 @@ class MapaSeparacao extends eFPDF {
             }
 
             $this->Cell($arrWidthCols[4], 6, $dscElemento, 0, 0);
-            $this->Cell($arrWidthCols[5], 6, $quantidade, 0, 0, 'C');
-            $this->Cell($arrWidthCols[6], 6, $this->SetStringByMaxWidth($nomCliente, 98), 0, 1, 'C');
+            $this->Cell($arrWidthCols[5], 6, $quantidade, 0, 0);
+            $this->Cell($arrWidthCols[6], 6, $this->SetStringByMaxWidth("$codCliente  -  $nomCliente", $arrWidthCols[6]-2), 0, 1);
 
             $this->Cell(20, 2, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
             $this->Cell(20, 1, "", 0, 1);

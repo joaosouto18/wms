@@ -320,7 +320,7 @@ class ModeloInventarioLog
      */
     public function setItemAItemAntes($itemAItemAntes)
     {
-        $this->itemAItemAntes = ((is_bool($itemAItemDepois) && $itemAItemDepois) || (is_string($itemAItemDepois) && $itemAItemDepois == 'S') ) ? 'S' : 'N';
+        $this->itemAItemAntes = ((is_bool($itemAItemAntes) && $itemAItemAntes) || (is_string($itemAItemAntes) && $itemAItemAntes == 'S') ) ? 'S' : 'N';
     }
 
     /**
@@ -448,7 +448,7 @@ class ModeloInventarioLog
      */
     public function setComparaEstoqueAntes($comparaEstoqueAntes)
     {
-        $this->comparaEstoqueAntes = ((is_bool($comparaEstoqueDepois) && $comparaEstoqueDepois) || (is_string($comparaEstoqueDepois) && $comparaEstoqueDepois == 'S') ) ? 'S' : 'N';
+        $this->comparaEstoqueAntes = ((is_bool($comparaEstoqueAntes) && $comparaEstoqueAntes) || (is_string($comparaEstoqueAntes) && $comparaEstoqueAntes == 'S') ) ? 'S' : 'N';
     }
 
     /**
