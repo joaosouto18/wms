@@ -148,6 +148,11 @@ class ModeloSeparacao
     protected $produtoInventario;
 
     /**
+     * @Column(name="QUEBRA_UNID_FRACIONAVEL", type="string", nullable=false)
+     */
+    protected $quebraUnidFracionavel;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -497,6 +502,22 @@ class ModeloSeparacao
     public function setProdutoInventario($produtoInventario)
     {
         $this->produtoInventario = $produtoInventario;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQuebraUnidFracionavel()
+    {
+        return $this->quebraUnidFracionavel;
+    }
+
+    /**
+     * @param mixed $quebraUnidFracionavel
+     */
+    public function setQuebraUnidFracionavel($quebraUnidFracionavel)
+    {
+        $this->quebraUnidFracionavel = $quebraUnidFracionavel;
     }
 
 }
