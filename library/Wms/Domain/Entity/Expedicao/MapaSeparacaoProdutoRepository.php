@@ -185,6 +185,8 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                         $observacao = 'Produto '. $idProduto.' Grade '.$dscGrade.' referente ao pedido '.$idPedido.' cortado com a quantidade '. $qtdCortar . '- motivo: '. 'Cortes importados via integração';
                         $andamentoRepo->save($observacao, $idExpedicao);
 
+                        if ($idEndereco == null) $idEndereco = 0;
+                        
                         $SQL = "SELECT REE.COD_RESERVA_ESTOQUE
                                   FROM RESERVA_ESTOQUE_EXPEDICAO REE
                                   LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
