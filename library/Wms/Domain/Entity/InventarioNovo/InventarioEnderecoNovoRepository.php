@@ -68,8 +68,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                               )
                 ORDER BY 
                     TO_NUMBER(DE.NUM_RUA),
-                    TO_NUMBER(DE.NUM_PREDIO),
                     TO_NUMBER(DE.NUM_NIVEL),
+                    TO_NUMBER(DE.NUM_PREDIO),
                     TO_NUMBER(DE.NUM_APARTAMENTO)
         ";
 

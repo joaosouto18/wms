@@ -186,7 +186,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                         $andamentoRepo->save($observacao, $idExpedicao);
 
                         if ($idEndereco == null) $idEndereco = 0;
-                        
+
                         $SQL = "SELECT REE.COD_RESERVA_ESTOQUE
                                   FROM RESERVA_ESTOQUE_EXPEDICAO REE
                                   LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
