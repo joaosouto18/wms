@@ -67,6 +67,8 @@ class EstoqueReport extends Pdf
         $gradeAnterior = null;
         $volumeAnterior = null;
 
+        $embalagemRepo = $em->getRepository("wms:Produto\Embalagem");
+
         $qtdEstoque = 0;
         $qtdReservaEntrada = 0;
         $qtdReservaSaida = 0;
@@ -79,6 +81,14 @@ class EstoqueReport extends Pdf
 
                 if ($produto != $estoqueReport[0]) {
                     //TOTALIZADOR
+
+                    $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($produto['COD_PRODUTO'], $produto['DSC_GRADE'], $qtdEstoque);
+                    if(is_array($vetEstoque)) {
+                        $qtdEstoqueP = implode(' + ', $vetEstoque);
+                    }else{
+                        $qtdEstoqueP = $vetEstoque;
+                    }
+
                     $this->SetFont('Arial','' , 8);
                     $this->Cell(93, 5, "Total", 1, 0);
                     $this->Cell(20, 5, $qtdReservaEntrada, 1, 0,'C');
@@ -117,12 +127,20 @@ class EstoqueReport extends Pdf
             }
 
             //CORPO DO RELATÓRIO
+
+            $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($produto['COD_PRODUTO'], $produto['DSC_GRADE'], $produto['QTD']);
+            if(is_array($vetEstoque)) {
+                $qtdEstoqueP = implode(' + ', $vetEstoque);
+            }else{
+                $qtdEstoqueP = $vetEstoque;
+            }
+
             $this->SetFont('Arial','' , 8);
             $this->Cell(33, 5, $produto['ENDERECO'], 1, 0);
             $this->Cell(60, 5, utf8_decode($produto['TIPO']), 1, 0);
             $this->Cell(20, 5, $produto['RESERVA_ENTRADA'], 1, 0,'C');
             $this->Cell(20, 5, $produto['RESERVA_SAIDA'], 1, 0,'C');
-            $this->Cell(20, 5, $produto['QTD'], 1, 0,'C');
+            $this->Cell(20, 5, $qtdEstoqueP, 1, 0,'C');
             $this->Cell(40, 5, $produto['DTH_PRIMEIRA_MOVIMENTACAO'], 1, 1,'R');
 
             $qtdEstoque = $qtdEstoque + $produto['QTD'];
@@ -130,11 +148,19 @@ class EstoqueReport extends Pdf
             $qtdReservaSaida   = $qtdReservaSaida   + $produto['RESERVA_SAIDA'];
 
             if ($produto == $estoqueReport[count($estoqueReport)-1]) {
+
+                $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($produto['COD_PRODUTO'], $produto['DSC_GRADE'], $qtdEstoque);
+                if(is_array($vetEstoque)) {
+                    $qtdEstoqueP = implode(' + ', $vetEstoque);
+                }else{
+                    $qtdEstoqueP = $vetEstoque;
+                }
+
                 $this->SetFont('Arial','' , 8);
                 $this->Cell(93, 5, "Total", 1, 0);
                 $this->Cell(20, 5, $qtdReservaEntrada, 1, 0,'C');
                 $this->Cell(20, 5, $qtdReservaSaida, 1, 0,'C');
-                $this->Cell(20, 5, $qtdEstoque, 1, 0,'C');
+                $this->Cell(20, 5, $qtdEstoqueP, 1, 0,'C');
                 $this->Cell(40, 5,"", 1, 1,'R');
 
                 $this->Ln();
