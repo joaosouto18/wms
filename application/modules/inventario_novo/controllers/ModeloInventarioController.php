@@ -34,7 +34,7 @@
             $this->configurePage($buttons);
 
             /** @var \Wms\Domain\Entity\InventarioNovo\ModeloInventarioRepository $modeloRepo */
-            $modeloRepo = $this->em->getRepository('wms:inventarioNovo\ModeloInventario');
+            $modeloRepo = $this->em->getRepository('wms:InventarioNovo\ModeloInventario');
 
             /*
              * chama a função que busca os modelos de inventarios e converte os objetos encontrados em arrays

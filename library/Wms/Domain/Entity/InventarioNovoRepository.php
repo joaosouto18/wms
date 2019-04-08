@@ -285,6 +285,7 @@ class InventarioNovoRepository extends EntityRepository
             ->innerJoin('p.classe', 'cl')
             ->innerJoin('p.fabricante', 'f')
             ->innerJoin('de.caracteristica', 'c')
+            ->innerJoin('p.linhaSeparacao', 'ls')
         ;
 
         $query->distinct(true);

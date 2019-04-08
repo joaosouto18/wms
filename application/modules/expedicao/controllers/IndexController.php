@@ -827,6 +827,16 @@ class Expedicao_IndexController extends Action {
         $ReentregaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Reentrega');
 
         $expedicaoEn = $expedicaoRepository->find($idExpedicao);
+
+        /*
+         * Cancela Carga no ERP
+         */
+        if ($this->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S') {
+            $expedicaoRepository->executaIntegracaoBDCancelamentoCarga($expedicaoEn);
+        }
+
+
+        $expedicaoEn = $expedicaoRepository->find($idExpedicao);
         $cargasEn = $expedicaoEn->getCarga();
 
         foreach ($cargasEn as $key => $cargaEn) {
@@ -842,13 +852,6 @@ class Expedicao_IndexController extends Action {
             $cargaRepository->removeCarga($cargaEn->getId());
 
             $expedicaoAndamentoRepository->save("carga $codCargaExterno removida da expedicao $idExpedicao", $idExpedicao);
-        }
-
-        /*
-         * Cancela Carga no ERP
-         */
-        if ($this->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S') {
-            $expedicaoRepository->executaIntegracaoBDCancelamentoCarga($expedicaoEn);
         }
 
         $expedicaoRepository->alteraStatus($expedicaoEn, Expedicao::STATUS_CANCELADO);
