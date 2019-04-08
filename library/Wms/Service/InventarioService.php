@@ -137,7 +137,7 @@ class InventarioService extends AbstractService
         try {
             //exclusao logica do produto
             /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEndProdRepository $inventarioEndProdRepo */
-            $inventarioEndProdRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEndProd');
+            $inventarioEndProdRepo = $this->em->getRepository('wms:InventarioNovo\InventarioEndProd');
             /** @var InventarioNovo\InventarioEndProd $produto */
             $produto = $inventarioEndProdRepo->find($id);
 
@@ -177,7 +177,7 @@ class InventarioService extends AbstractService
         try {
             //exclusao logica do endereço
             /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo */
-            $inventarioEnderecoRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
+            $inventarioEnderecoRepo = $this->em->getRepository('wms:InventarioNovo\InventarioEnderecoNovo');
             /** @var InventarioNovo\InventarioEnderecoNovo $endereco */
             $endereco = $inventarioEnderecoRepo->find($id);
 
