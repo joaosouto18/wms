@@ -206,12 +206,12 @@ class InventarioNovoRepository extends EntityRepository
             $query->andWhere(implode(" AND ", $condition));
         }
 
-        if (!empty($params['nivelInicial']) || !empty($params['nivelFinal'])) {
+        if (isset($params['nivelInicial']) || isset($params['nivelFinal'])) {
             $condition = [];
-            if (!empty($params['nivelInicial'])) {
+            if (isset($params['nivelInicial'])) {
                 $condition[] = "de.nivel >= $params[nivelInicial]";
             }
-            if (!empty($params['nivelFinal'])) {
+            if (isset($params['nivelFinal'])) {
                 $condition[] = "de.nivel <= $params[nivelFinal]";
             }
             $query->andWhere(implode(" AND ", $condition));
