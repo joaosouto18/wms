@@ -1,7 +1,7 @@
 [smtp]
-smtp.titulo  = Casa do Confeiteiro
-smtp.usuario = rodrigodantley@gmail.com
-smtp.senha   = durateston
+smtp.titulo  = Nome do Cliente
+smtp.usuario = email@dominio.com
+smtp.senha   = senha_email
 smtp.host    = smtp.gmail.com
 smtp.porta   = 587
 smtp.seguranca = tls
