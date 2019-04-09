@@ -65,7 +65,7 @@ class Web_ImprimirController extends Action
     {
         $quantidadeByPage = null;
         $unico = false;
-        if (($modelo == 4) || ($modelo == 6) || $modelo == 13) {
+        if (($modelo == 4) || ($modelo == 6)|| $modelo == 13) {
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(110, 60));
         } elseif ($modelo == 7) {
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(100, 75));
@@ -86,7 +86,7 @@ class Web_ImprimirController extends Action
              * porem precisa imprimir apenas uma etiqueta
              */
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(85, 30));
-        } elseif ($modelo == 13) {
+        } elseif ($modelo == 14) {
             $etiqueta = new EtiquetaEndereco("L", 'mm',  array(100, 27));
         }
         else {
@@ -94,5 +94,20 @@ class Web_ImprimirController extends Action
         }
         $etiqueta->imprimir($enderecos, $modelo, $unico, $quantidadeByPage);
         return $etiqueta;
+    }
+
+    public function printEtiquetasAjaxAction()
+    {
+        $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PICKING");
+        $txt = str_replace("\r","",str_replace("\n","",file_get_contents('enderecos.txt')));
+        $array = explode(";", $txt);
+
+        $enderecos = [];
+        foreach ($array as $ends){
+            $enderecos[] = ['DESCRICAO' => $ends];
+        }
+
+        $pdf = self::gerarEtiquetasPdf($enderecos, $modelo);
+        $pdf->Output('Etiquetas-enderecos-txt.pdf', 'D');
     }
 }

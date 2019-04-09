@@ -1841,6 +1841,11 @@ class ExpedicaoRepository extends EntityRepository {
         $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
         $acaoVerificaCargaFinalizadaEn = $acaoIntRepo->find($idIntegracaoVerificaCargaFinalizada);
 
+        $expedicaoEn = $this->find($idExpedicao);
+        if (!$this->verificaViabilidadeIntegracaoExpedicao($expedicaoEn,$acaoCorteEn)) {
+            return true;
+        }
+
         $cargaEntities = $cargaRepository->findBy(array('codExpedicao' => $idExpedicao));
         $cargas = array();
         foreach ($cargaEntities as $cargaEntity) {
