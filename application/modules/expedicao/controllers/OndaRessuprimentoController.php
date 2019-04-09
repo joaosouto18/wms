@@ -12,12 +12,79 @@ class Expedicao_OndaRessuprimentoController extends Action
     {
         $em = $this->getEntityManager();
         $parametroPedidosTelaExpedicao = $this->getSystemParameterValue('COD_INTEGRACAO_PEDIDOS_TELA_EXP');
+
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
+        $acaoIntegracaoRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\Expedicao\TriggerCancelamentoCargaRepository $triggerCancelamentoCargaRepository */
+        $triggerCancelamentoCargaRepository = $em->getRepository('wms:Expedicao\TriggerCancelamentoCarga');
+        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
+        $cargaRepository = $em->getRepository('wms:Expedicao\Carga');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
+        $pedidoRepository = $em->getRepository('wms:Expedicao\Pedido');
+        /** @var \Wms\Domain\Entity\Expedicao\ReentregaRepository $ReentregaRepository */
+        $ReentregaRepository = $em->getRepository('wms:Expedicao\Reentrega');
+        /** @var \Wms\Domain\Entity\Expedicao\NotaFiscalSaidaRepository $NotaFiscalSaidaRepository */
+        $NotaFiscalSaidaRepository = $em->getRepository('wms:Expedicao\NotaFiscalSaida');
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepository */
+        $expedicaoAndamentoRepository = $em->getRepository('wms:Expedicao\Andamento');
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
+        $expedicaoRepository = $em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
+        $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
+
+        //CANCELAR CARGAS NO WMS JA CANCELADAS NO ERP
+        if ($this->getSystemParameterValue('REPLICAR_CANCELAMENTO_CARGA') == 'S') {
+            $acaoEn = $acaoIntRepo->find(24);
+            $cargasCanceladasEntities = $acaoIntRepo->processaAcao($acaoEn, null, 'L');
+            foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
+                $cargaEntity = $cargaRepository->findOneBy(array('codCargaExterno' => $cargaCanceladaEntity['COD_CARGA_EXTERNO']));
+                if(!empty($cargaEntity)) {
+                    if ($cargaEntity->getExpedicao()->getCodStatus() == Expedicao::STATUS_FINALIZADO) {
+                        $expedicaoAndamentoRepository->save('Tentativa de cancelamento da carga ' . $cargaEntity->getCodCargaExterno() . ', porém não cancelada', $cargaEntity->getCodExpedicao(), false, false);
+                        continue;
+                    }
+                }
+                if (!$cargaEntity && $cargaCanceladaEntity) {
+                    $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($cargaCanceladaEntity[ID]) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                    $update = true;
+                    $conexaoEn = $acaoEn->getConexao();
+                    $conexaoRepo->runQuery($query, $conexaoEn, $update);
+                    $em->flush();
+                }
+                if ($cargaEntity != null) {
+                    $pedidosEn = $pedidoRepository->findBy(['codCarga' => $cargaEntity->getId()]);
+                    foreach ($pedidosEn as $pedidoEntity) {
+                        $pedidoRepository->removeReservaEstoque($pedidoEntity->getId(), false);
+                        $pedidoRepository->remove($pedidoEntity, false);
+                    }
+
+                    $ReentregaRepository->removeReentrega($cargaEntity->getId());
+                    $NotaFiscalSaidaRepository->atualizaStatusNota($cargaEntity->getCodCargaExterno());
+                    $cargaRepository->removeCarga($cargaEntity->getId());
+
+                    $cargasByExpedicao = $cargaRepository->findOneBy(array('codExpedicao' => $cargaEntity->getCodExpedicao()));
+                    if (!$cargasByExpedicao)
+                        $expedicaoRepository->alteraStatus($cargaEntity->getExpedicao(), Expedicao::STATUS_CANCELADO);
+
+                    $expedicaoAndamentoRepository->save('carga ' . $cargaEntity->getCodCargaExterno() . ' removida', $cargaEntity->getCodExpedicao(), false, false);
+
+                    if ($cargaCanceladaEntity) {
+                        $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($cargaCanceladaEntity[ID]) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                        $update = true;
+                        $conexaoEn = $acaoEn->getConexao();
+                        $conexaoRepo->runQuery($query, $conexaoEn, $update);
+                    }
+                    $em->flush();
+                }
+            }
+        }
+
         //INTEGRAR CARGAS NO MOMENTO Q ENTRAR NA TELA DE EXPEDICAO
         if (isset($parametroPedidosTelaExpedicao) && !empty($parametroPedidosTelaExpedicao)) {
             $explodeIntegracoes = explode(',', $parametroPedidosTelaExpedicao);
 
-            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepository */
-            $acaoIntegracaoRepository = $em->getRepository('wms:Integracao\AcaoIntegracao');
             foreach ($explodeIntegracoes as $codIntegracao) {
                 $acaoIntegracaoEntity = $acaoIntegracaoRepository->find($codIntegracao);
                 $acaoIntegracaoRepository->processaAcao($acaoIntegracaoEntity,null,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::DATA_ESPECIFICA);

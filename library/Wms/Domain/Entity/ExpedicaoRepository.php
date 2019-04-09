@@ -2380,10 +2380,26 @@ class ExpedicaoRepository extends EntityRepository {
                                   '' as ITINERARIO,
                                   '' as CARGA,
                                   S.DSC_SIGLA as STATUS,
+                                  TIPO_PEDIDO.TIPO_PEDIDO,
                                   E.DSC_PLACA_EXPEDICAO as PLACA,
                                   MS.COD_MODELO_SEPARACAO || ' - ' || MS.DSC_MODELO_SEPARACAO as MODELO
                     FROM PEDIDO P
                     LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                    LEFT JOIN (SELECT PED.COD_EXPEDICAO,
+                                      LISTAGG (TPE.COD_EXTERNO,', ') WITHIN GROUP (ORDER BY TPE.COD_EXTERNO) TIPO_PEDIDO
+                                 FROM TIPO_PEDIDO_EXPEDICAO TPE
+                                INNER JOIN (
+                                        SELECT CASE WHEN REENTREGA.COD_CARGA IS NOT NULL THEN " . Expedicao\TipoPedido::REENTREGA . " ELSE P.COD_TIPO_PEDIDO END COD_TIPO_PEDIDO, C.COD_EXPEDICAO 
+                                        FROM CARGA C
+                                        LEFT JOIN PEDIDO P ON C.COD_CARGA = P.COD_CARGA 
+                                        LEFT JOIN (
+                                          SELECT R.COD_CARGA, C.COD_EXPEDICAO 
+                                          FROM REENTREGA R
+                                          INNER JOIN CARGA C ON R.COD_CARGA = C.COD_CARGA
+                                        ) REENTREGA ON REENTREGA.COD_EXPEDICAO = C.COD_EXPEDICAO AND REENTREGA.COD_CARGA = C.COD_CARGA
+                                        GROUP BY P.COD_TIPO_PEDIDO, C.COD_EXPEDICAO, REENTREGA.COD_CARGA 
+                                      ) PED ON PED.COD_TIPO_PEDIDO = TPE.COD_TIPO_PEDIDO_EXPEDICAO
+                                      GROUP BY PED.COD_EXPEDICAO) TIPO_PEDIDO ON TIPO_PEDIDO.COD_EXPEDICAO = C.COD_EXPEDICAO                    
                     LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                     LEFT JOIN (SELECT C.COD_EXPEDICAO,
                                       SUM(NVL(PESO.NUM_PESO,0) * (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0))) as NUM_PESO,
