@@ -41,7 +41,7 @@ class Expedicao_OndaRessuprimentoController extends Action
             foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
                 $cargaEntity = $cargaRepository->findOneBy(array('codCargaExterno' => $cargaCanceladaEntity['COD_CARGA_EXTERNO']));
                 if(!empty($cargaEntity)) {
-                    if ($cargaEntity->getExpedicao()->getCodStatus() == Expedicao::STATUS_FINALIZADO) {
+                    if ($cargaEntity->getExpedicao()->getCodStatus() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
                         $expedicaoAndamentoRepository->save('Tentativa de cancelamento da carga ' . $cargaEntity->getCodCargaExterno() . ', porém não cancelada', $cargaEntity->getCodExpedicao(), false, false);
                         continue;
                     }
