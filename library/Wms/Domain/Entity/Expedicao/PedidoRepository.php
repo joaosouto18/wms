@@ -971,4 +971,22 @@ class PedidoRepository extends EntityRepository
 
     }
 
+    public function getClienteByExpedicao($idExpedicao)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('pessoa.nome, nvl(pj.cnpj, pf.cpf) documento, pe.descricao, pe.bairro, pe.localidade, pe.cep, pe.numero, s.sigla')
+//            ->select('e.id')
+            ->from('wms:Expedicao','e')
+            ->innerJoin('wms:Expedicao\Carga','c','WITH','c.codExpedicao = e.id')
+            ->innerJoin('wms:Expedicao\Pedido', 'p', 'WITH', 'p.codCarga = c.id')
+            ->innerJoin('wms:Expedicao\PedidoEndereco', 'pe', 'WITH', 'pe.codPedido = p.id')
+            ->innerJoin('wms:Pessoa', 'pessoa', 'WITH', 'pessoa.id = p.pessoa')
+            ->leftJoin('wms:Pessoa\Juridica', 'pj', 'WITH', 'pj.id = pessoa.id')
+            ->leftJoin('wms:Pessoa\Fisica', 'pf', 'WITH', 'pf.id = pessoa.id')
+            ->innerJoin('wms:Util\Sigla', 's', 'WITH', 'pe.uf = s.id')
+            ->where("e.id = $idExpedicao");
+
+        return $sql->getQuery()->getResult();
+    }
+
 }

@@ -746,6 +746,7 @@ class Importacao
                 $produto->setId($idProduto);
                 $produto->setIndControlaLote("N");
                 $produto->setGrade($grade);
+                $produto->setIndFracionavel("N");
                 $produto->setTipoComercializacao($tipoComercializacaoEntity);
                 $produto->setNumVolumes(1);
                 $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_01",1);
@@ -756,7 +757,6 @@ class Importacao
                     ->setFabricante($fabricante)
                     ->setClasse($classe)
                     ->setReferencia($referencia)
-                    ->setIndFracionavel("N")
                     ->setPossuiPesoVariavel($indPesoVariavel);
 
             if (is_null($possuiValidade)) {
