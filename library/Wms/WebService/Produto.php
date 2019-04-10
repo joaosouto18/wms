@@ -285,6 +285,10 @@ class Wms_WebService_Produto extends Wms_WebService {
                 //PRIMEIRO INATIVA AS EMBALAGENS NÃO ENVIADAS
                 /** @var ProdutoEntity\Embalagem $embalagemCadastrada */
                 foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
+
+                    if ($embalagemCadastrada->isEmbFracionavelDefault() == 'S')
+                        continue;
+
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
 

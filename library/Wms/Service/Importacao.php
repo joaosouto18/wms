@@ -792,7 +792,12 @@ class Importacao
                 $embalagensArray = array();
 
                 //PRIMEIRO INATIVA AS EMBALAGENS NÃO ENVIADAS
+                /** @var Produto\Embalagem $embalagemCadastrada */
                 foreach ($produto->getEmbalagens() as $embalagemCadastrada) {
+
+                    if ($embalagemCadastrada->isEmbFracionavelDefault() == 'S')
+                        continue;
+
                     $descricaoEmbalagem = null;
                     $encontrouEmbalagem = false;
 
