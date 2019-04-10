@@ -16,6 +16,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\CodigoFornecedor\Referencia,
     Wms\Domain\Entity\Deposito\Endereco,
     Wms\Domain\Entity\Produto\Embalagem;
+use Wms\Domain\Configurator;
 use Wms\Math;
 
 /**
@@ -432,7 +433,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
                         $embalagemEntity = $em->getReference('wms:Produto\Embalagem', $id);
 
-                        \Zend\Stdlib\Configurator::configure($embalagemEntity, $itemEmbalagem);
+                        Configurator::configure($embalagemEntity, $itemEmbalagem);
 
                         $embalagemEntity->setEndereco(null);
 
