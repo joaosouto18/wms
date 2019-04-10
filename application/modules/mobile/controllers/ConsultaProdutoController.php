@@ -15,6 +15,8 @@ class Mobile_ConsultaProdutoController extends Action
         $form->init();
         $this->view->form = $form;
 
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+
         $codigoBarras = $this->_getParam('codigoBarras');
 
         $this->view->exibe = false;
@@ -66,12 +68,62 @@ class Mobile_ConsultaProdutoController extends Action
 
             /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
             $estoqueRepo   = $this->_em->getRepository('wms:Enderecamento\Estoque');
-            $this->view->pulmoes = $estoqueRepo->getEstoqueAndVolumeByParams($params, null, true, "ORDER BY ESTQ.DTH_VALIDADE, C.COD_CARACTERISTICA_ENDERECO, DE.DSC_DEPOSITO_ENDERECO", false);
+            $endPulmoes = $estoqueRepo->getEstoqueAndVolumeByParams($params, null, true, "ORDER BY ESTQ.DTH_VALIDADE, C.COD_CARACTERISTICA_ENDERECO, DE.DSC_DEPOSITO_ENDERECO", false);
 
             /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
             $reservaEstoqueRepo   = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoque');
-            $this->view->reservas = $reservaEstoqueRepo->getResumoReservasNaoAtendidasByParams($params);
+            $reservas = $reservaEstoqueRepo->getResumoReservasNaoAtendidasByParams($params);
 
+            foreach ($endPulmoes as $key => $pulmao) {
+                $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($params['idProduto'], $params['grade'], $pulmao['QTD']);
+                if(is_array($vetEstoque)) {
+                    $qtdEstoque = implode(' + ', $vetEstoque);
+                }else{
+                    $qtdEstoque = $vetEstoque;
+                }
+                $endPulmoes[$key]['QTD'] = $qtdEstoque;
+            }
+
+            $totalEntrada = 0;
+            $totalSaida = 0;
+
+            foreach ($reservas as $key => $reserva) {
+                if ($reserva['QTD_RESERVADA'] > 0) {
+                    $totalEntrada = $totalEntrada + $reserva['QTD_RESERVADA'];
+                } else {
+                    $totalSaida = $totalSaida + $reserva['QTD_RESERVADA'];
+                }
+
+                $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($params['idProduto'], $params['grade'], $reserva['QTD_RESERVADA']);
+                if(is_array($vetEstoque)) {
+                    $qtdEstoque = implode(' + ', $vetEstoque);
+                }else{
+                    $qtdEstoque = $vetEstoque;
+                }
+                $reservas[$key]['QTD_RESERVADA'] = $qtdEstoque;
+            }
+
+            $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($params['idProduto'], $params['grade'], $totalEntrada);
+            if(is_array($vetEstoque)) {
+                $qtdEstoque = implode(' + ', $vetEstoque);
+            }else{
+                $qtdEstoque = $vetEstoque;
+            }
+            $totalEntrada = $qtdEstoque;
+
+            $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($params['idProduto'], $params['grade'], $totalSaida);
+            if(is_array($vetEstoque)) {
+                $qtdEstoque = implode(' + ', $vetEstoque);
+            }else{
+                $qtdEstoque = $vetEstoque;
+            }
+            $totalSaida = $qtdEstoque;
+
+
+            $this->view->reservas = $reservas;
+            $this->view->pulmoes = $endPulmoes;
+            $this->view->totalEntrada = $totalEntrada;
+            $this->view->totalSaida = $totalSaida;
 
         }
 
