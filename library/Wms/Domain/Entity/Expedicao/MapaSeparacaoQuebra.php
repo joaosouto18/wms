@@ -19,6 +19,7 @@ class MapaSeparacaoQuebra
     const QUEBRA_PULMAO_DOCA = "PD";
     const QUEBRA_ROTA = 'RT';
     const QUEBRA_CROSS_DOCKING = 'CD';
+    const QUEBRA_UNID_FRACIONAVEL = 'UF';
 
     /**
      * @Id

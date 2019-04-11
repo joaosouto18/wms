@@ -152,6 +152,7 @@ class Notafiscal_ImportarxmlController extends Crud
             $pedido = new pedido();
             $pedido->codPedido    = $codPedido;
             $pedido->cliente      = $cliente;
+            $pedido->tipo         = 'CROSS_DOCKING';
             $pedido->itinerario   = $itinerario;
             $pedido->linhaEntrega = "";
 

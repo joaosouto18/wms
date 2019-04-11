@@ -9,6 +9,7 @@
 namespace Wms\Domain\Entity\InventarioNovo;
 
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Usuario;
 
 /**
  * @Table(name="MODELO_INVENTARIO")
@@ -114,6 +115,10 @@ class ModeloInventario
      */
     protected $default;
 
+    /**
+     * ModeloInventario constructor.
+     * @throws \Exception
+     */
     public function __construct()
     {
         self::setDthCriacao();
@@ -193,13 +198,16 @@ class ModeloInventario
 
     /**
      * @param $toString boolean Converter para String a data
-     * @return \DateTime
+     * @return \DateTime | string
      */
     public function getDthCriacao($toString = false)
     {
         return ($toString && !empty($this->dthCriacao)) ? $this->dthCriacao->format('d/m/Y H:i:s') : $this->dthCriacao ;
     }
 
+    /**
+     * @throws \Exception
+     */
     private function setDthCriacao()
     {
         $this->dthCriacao = new \DateTime();
@@ -422,6 +430,10 @@ class ModeloInventario
         return ($param === 'S');
     }
 
+    /**
+     * @return array
+     * @throws \Exception
+     */
     public function toArray()
     {
         return Configurator::configureToArray($this);

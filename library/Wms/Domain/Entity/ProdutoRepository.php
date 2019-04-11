@@ -312,6 +312,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             //embalagens do produto
             if (!(isset($values['embalagens']) && (count($values['embalagens']) > 0)))
                 return false;
+
+            $embsEditadas = [];
+            $arrItens = [];
             foreach ($values['embalagens'] as $id => $itemEmbalagem) {
                 if (isset($itemEmbalagem['quantidade']))
                     $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
@@ -321,15 +324,15 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 if ($itemEmbalagem['acao'] != 'excluir') {
                     $check = self::checkCodBarrasRepetido($codigoBarras, Produto::TIPO_UNITARIO, $id);
                     if (!empty($check)) {
-                        $arrItens = [];
                         foreach ($check as $produto) {
-                            $arrItens[] = "item $produto[idProduto] / $produto[grade] ($produto[dsc_elemento])";
+                            if (!isset($embsEditadas[$produto['id_emb']]) || (isset($embsEditadas[$produto['id_emb']]) && $embsEditadas[$produto['id_emb']] == $codigoBarras))
+                                $arrItens[$produto['id_emb']][$codigoBarras][] = "item $produto[idProduto] / $produto[grade] ($produto[dsc_elemento])";
                         }
-                        $str = implode(", ", $arrItens);
-                        throw new \Exception("O codigo de barras $codigoBarras já está cadastrado: $str");
+                    } elseif (isset($arrItens[$id]) && !isset($arrItens[$id][$codigoBarras])) {
+                        unset($arrItens[$id]);
                     }
                 }
-
+                $embalagemEntity = null;
                 switch ($itemEmbalagem['acao']) {
                     case 'incluir':
                         $dadosEmbalagem = $embalagemRepo->findOneBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
@@ -341,7 +344,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                             $altura = !empty($altura) ? $altura : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getAltura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
                             $largura = !empty($largura) ? $largura : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getLargura()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
                             $profundidade = !empty($profundidade) ? $profundidade : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getProfundidade()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
-                            $cubagem = str_replace('.', ',', Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
                             $peso = !empty($peso) ? $peso : str_replace('.', ',', Math::multiplicar(Math::dividir(str_replace(',', '.', $dadosEmbalagem->getPeso()), str_replace(',', '.', $dadosEmbalagem->getQuantidade())), str_replace(',', '.', $quantidade)));
                         }
 
@@ -353,12 +355,18 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setIsPadrao($isPadrao);
                         $embalagemEntity->setCBInterno($CBInterno);
                         $embalagemEntity->setImprimirCB($imprimirCB);
-                        $embalagemEntity->setCodigoBarras(trim($codigoBarras));
                         $embalagemEntity->setEmbalado($embalado);
                         $embalagemEntity->setCapacidadePicking($capacidadePicking);
                         $embalagemEntity->setPontoReposicao($pontoReposicao);
                         $embalagemEntity->setIsEmbExpDefault((isset($isEmbExpDefault) && !empty($isEmbExpDefault))?$isEmbExpDefault: 'N');
                         $embalagemEntity->setIsEmbFracionavelDefault((isset($isEmbFracionavelDefault) && !empty($isEmbFracionavelDefault))?$isEmbFracionavelDefault: 'N');
+
+                        if (isset($isEmbFracionavelDefault) && $isEmbFracionavelDefault == "S") {
+                            $codigoBarras = $produtoEntity->getId();
+                        } elseif ($CBInterno == 'S') {
+                            $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20" . $embalagemEntity->getId());
+                        }
+                        $embalagemEntity->setCodigoBarras(trim($codigoBarras));
 
                         if (isset($largura) && !empty($largura)) {
                             $embalagemEntity->setLargura(number_format($largura,3,',',''));
@@ -421,14 +429,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
                         $values['embalagens'][$id]['id'] = $embalagemEntity->getId();
 
-                        if ($CBInterno == 'S') {
-                            if (isset($isEmbFracionavelDefault) && $isEmbFracionavelDefault == "S") {
-                                $codigoBarras = $produtoEntity->getId();
-                            } else {
-                                $codigoBarras = CodigoBarras::formatarCodigoEAN128Embalagem("20" . $embalagemEntity->getId());
-                            }
-                            $embalagemEntity->setCodigoBarras(trim($codigoBarras));
-                        }
+
 
                         break;
                     case 'alterar':
@@ -559,11 +560,28 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $em->persist($embalagemEntity);
                         break;
                 }
+
+                if ($itemEmbalagem['acao'] != 'excluir') {
+                    $embsEditadas[$embalagemEntity->getId()] = $embalagemEntity->getCodigoBarras();
+                }
+
                 $altura = null;
                 $largura = null;
                 $profundidade = null;
                 $cubagem = null;
                 $peso = null;
+            }
+            if (!empty($arrItens)) {
+                $arrStr = [];
+                foreach($arrItens as $cods) {
+                    foreach ($cods as $codigoBarras => $eStr) {
+                        $arrStr[] = "O codigo de barras $codigoBarras já está cadastrado: " . implode(", ", $eStr);
+                    }
+                }
+
+                if (!empty($arrStr)) {
+                    throw new \Exception("Houve os seguintes problemas: " . implode(", ", $arrStr));
+                }
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
@@ -1984,7 +2002,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     public function checkCodBarrasRepetido($codigoBarras, $tipoComercializacao, $idElemento){
         $dql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id idProduto, p.grade, NVL(pe.descricao, pv.descricao) dsc_elemento')
+            ->select('p.id idProduto, p.grade, NVL(pe.descricao, pv.descricao) dsc_elemento, pe.id id_emb, pv.id id_vol')
             ->from('wms:Produto', 'p')
             ->leftJoin('p.embalagens', 'pe')
             ->leftJoin('p.volumes', 'pv')

@@ -277,7 +277,7 @@ class Expedicao_EtiquetaController  extends Action
                 exit;
             }
         } catch (Exception $e) {
-            $this->addFlashMessage("Error", "Erro na geração do PDF: " . $e->getMessage());
+            $this->addFlashMessage("error", "Erro na geração do PDF: " . $e->getMessage());
             $this->_redirect('/expedicao');
         }
     }

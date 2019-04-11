@@ -137,7 +137,7 @@ class InventarioService extends AbstractService
         try {
             //exclusao logica do produto
             /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEndProdRepository $inventarioEndProdRepo */
-            $inventarioEndProdRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEndProd');
+            $inventarioEndProdRepo = $this->em->getRepository('wms:InventarioNovo\InventarioEndProd');
             /** @var InventarioNovo\InventarioEndProd $produto */
             $produto = $inventarioEndProdRepo->find($id);
 
@@ -177,7 +177,7 @@ class InventarioService extends AbstractService
         try {
             //exclusao logica do endereço
             /** @var \Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovoRepository $inventarioEnderecoRepo */
-            $inventarioEnderecoRepo = $this->em->getRepository('wms:inventarioNovo\InventarioEnderecoNovo');
+            $inventarioEnderecoRepo = $this->em->getRepository('wms:InventarioNovo\InventarioEnderecoNovo');
             /** @var InventarioNovo\InventarioEnderecoNovo $endereco */
             $endereco = $inventarioEnderecoRepo->find($id);
 
@@ -561,7 +561,7 @@ class InventarioService extends AbstractService
                 ]);
                 $elemCount = [
                     $contagem['QTD_CONTAGEM'],
-                    $contagem['VALIDADE']
+                    ($validaValidade) ? $contagem['VALIDADE'] : null
                 ];
                 $countQtdsIguais[$strProd][implode($strConcat, $elemCount)][] = $contagem['NUM_SEQUENCIA'];
 
@@ -569,7 +569,7 @@ class InventarioService extends AbstractService
                     $contagem['COD_PRODUTO'], $contagem['DSC_GRADE'], $contagem['DSC_LOTE'], $contagem['COD_PRODUTO_VOLUME']) as $contAnterior) {
                     $elemCount = [
                         $contAnterior['QTD_CONTAGEM'],
-                        $contAnterior['VALIDADE']
+                        ($validaValidade) ? $contAnterior['VALIDADE'] : null
                     ];
                     $countQtdsIguais[$strProd][implode($strConcat, $elemCount)][] = $contAnterior['NUM_SEQUENCIA'];
                 }
@@ -667,7 +667,7 @@ class InventarioService extends AbstractService
     {
         try {
 
-            if (isset($produto["idVolume"]) && !empty($produto["idVolume"])) {
+            if (isset($produto["idVolume"]) && ($produto["idVolume"] != 'null') ) {
                 $isEmb = false;
                 $produtoVolumeRepo = $this->getEntityManager()->getRepository('wms:Produto\Volume');
                 $volumeEn = $produtoVolumeRepo->find($produto["idVolume"]);
@@ -778,11 +778,15 @@ class InventarioService extends AbstractService
      * @param $isDiverg
      * @param $endereco
      * @return array
+     * @throws \Exception
      */
     public function getInfoEndereco($idInventario, $sequencia, $isDiverg, $endereco)
     {
         /** @var InventarioNovo\InventarioEnderecoNovoRepository $invEndRepo */
         $invEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo");
+        $check = $invEndRepo->checkContEndOsFinalizada($idInventario, $sequencia, $endereco, \Zend_Auth::getInstance()->getIdentity()->getId());
+        if (!empty($check)) throw new \Exception("Este usuário já finalizou essa contagem neste endereço");
+
         if ($isDiverg == "S") {
             $result = $invEndRepo->getItensDiverg($idInventario, $sequencia, $endereco);
         } else {
@@ -822,6 +826,7 @@ class InventarioService extends AbstractService
     {
         $this->em->beginTransaction();
         try{
+            $produto["idVolume"] = json_decode($produto["idVolume"]);
             $this->zerarProduto(
                 $this->getOsUsuarioContagem( $contEnd, $inventario, $tipoConferencia, true)->getInvContEnd(),
                 $produto,
@@ -1055,7 +1060,7 @@ class InventarioService extends AbstractService
     /*
      * Layout de exportação definido para o Winthor
      */
-    public function exportaInventarioModelo01($id)
+    public function exportaInventarioModelo1($id)
     {
 
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
@@ -1120,7 +1125,7 @@ class InventarioService extends AbstractService
     /*
      * Layout de exportação definido para a SonosShow
      */
-    public function exportaInventarioModelo02($idInventario = null) {
+    public function exportaInventarioModelo2($idInventario = null) {
         /*
          * Nome do arquivo solicitado pela sonoshow como aammddhh.min
          */
@@ -1148,7 +1153,7 @@ class InventarioService extends AbstractService
             $SQL .= " INNER JOIN (SELECT DISTINCT ICEP.COD_PRODUTO,
                                     ICEP.DSC_GRADE
                                FROM INVENTARIO_ENDERECO_NOVO IEN
-                               INNER JOIN INVENTARIO_NOVO INVN ON INVN.COD_INVENATRIO = IEN.COD_INVENTARIO
+                               INNER JOIN INVENTARIO_NOVO INVN ON INVN.COD_INVENTARIO = IEN.COD_INVENTARIO
                                INNER JOIN INVENTARIO_CONT_END ICE ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
                                LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
                               WHERE IE.COD_INVENTARIO = $idInventario AND INVN.COD_STATUS = $statusFinalizado AND ICEP.IND_DIVERGENTE = 'N') I

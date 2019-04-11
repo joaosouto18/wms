@@ -68,8 +68,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                               )
                 ORDER BY 
                     TO_NUMBER(DE.NUM_RUA),
-                    TO_NUMBER(DE.NUM_PREDIO),
                     TO_NUMBER(DE.NUM_NIVEL),
+                    TO_NUMBER(DE.NUM_PREDIO),
                     TO_NUMBER(DE.NUM_APARTAMENTO)
         ";
 
@@ -132,6 +132,19 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                          and NVL(icep2.lote,0) = NVL(icep.lote,0) and NVL(icep2.produtoVolume,0) = NVL(icep.produtoVolume,0) 
                          and icep2.qtdContada = 0
                 )")
+            ->distinct(true);
+
+        return $dql->getQuery()->getResult();
+    }
+
+    public function checkContEndOsFinalizada($idInventario, $sequencia, $endereco, $idUsuario)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("iceos")
+            ->from("wms:InventarioNovo\InventarioContEndOs", "iceos")
+            ->innerJoin("iceos.invContEnd", "ice", "WITH", "ice.sequencia = $sequencia")
+            ->innerJoin("ice.inventarioEndereco", "ie", "WITH", "ie.ativo = 'S' and ie.inventario = $idInventario and ie.depositoEndereco = $endereco")
+            ->innerJoin("iceos.ordemServico", "os", "WITH", "os.pessoa = $idUsuario and os.dataFinal IS NOT NULL")
             ->distinct(true);
 
         return $dql->getQuery()->getResult();

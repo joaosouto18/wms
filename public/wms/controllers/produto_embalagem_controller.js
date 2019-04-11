@@ -1000,7 +1000,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
 
                             createEmbFracionavel: function (produto) {
                                 var embFracionavelDefault = {
-                                    CBInterno: "S",
+                                    CBInterno: "N",
                                     acao: "incluir",
                                     codigoBarras: "",
                                     codigoBarrasAntigo: "",

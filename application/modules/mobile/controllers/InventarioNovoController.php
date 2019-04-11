@@ -79,7 +79,7 @@ class Mobile_InventarioNovoController extends Action
     {
         try {
 
-            $elemento = $this->_em->getRepository('wms:Produto')->getEmbalagemByCodBarras($this->_getParam("codbarras"))[0];
+            $elemento = $this->_em->getRepository('wms:Produto')->getEmbalagemByCodBarras($this->_getParam("codbarras"));
 
             if (empty($elemento))
                 throw new Exception("Nenhuma embalagem/volume ativo foi encontrado com esse código de barras ". $this->_getParam("codbarras"));
@@ -87,7 +87,7 @@ class Mobile_InventarioNovoController extends Action
             $this->_helper->json([
                     "status" => "ok",
                     "response" => [
-                        "produto" => $elemento
+                        "produto" => $elemento[0]
                     ]
                 ]
             );
