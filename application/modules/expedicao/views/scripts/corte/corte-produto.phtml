@@ -117,12 +117,12 @@ if ($this->permiteCortes == 'S') {
         for(var i = 0 ; i < rows.length ; i++) {
             var columns = rows[i].getElementsByTagName('td');
 
-            var fatorCorte     = rowsCorte[i].getElementsByTagName('td').item(10).innerHTML;
+            var fatorCorte     = rowsCorte[i].getElementsByTagName('td').item(11).innerHTML;
 
-            var qtdPedidoUnit  = rowsCorte[i].getElementsByTagName('td').item(14).innerHTML;
+            var qtdPedidoUnit  = rowsCorte[i].getElementsByTagName('td').item(15).innerHTML;
 
-            var qtdCortadaUnit = rowsCorte[i].getElementsByTagName('td').item(15).innerHTML;
-            var idEmbalagem    = rowsCorte[i].getElementsByTagName('td').item(16).innerHTML;
+            var qtdCortadaUnit = rowsCorte[i].getElementsByTagName('td').item(16).innerHTML;
+            var idEmbalagem    = rowsCorte[i].getElementsByTagName('td').item(17).innerHTML;
 
             var qtdCortar = (qtdPedidoUnit - qtdCortadaUnit) / fatorCorte;
 
@@ -132,9 +132,9 @@ if ($this->permiteCortes == 'S') {
 
     }
 
-    $('#btnSubmit').click(function () {
+    function executeRequest() {
         $.ajax({
-            url:  URL_MODULO + '/corte/corte-produto/',
+            url: URL_MODULO + '/corte/corte-produto/',
             type: 'post',
             data: {
                 id: $('#id').val(),
@@ -164,5 +164,20 @@ if ($this->permiteCortes == 'S') {
                 }
             }
         });
+    }
+
+    $('#btnSubmit').click(function () {
+        executeRequest();
+    });
+
+    $("input#codProduto, input#grade").keypress(function( event ) {
+        if ((event.which === 13 || event.keyCode === 13)) {
+            if (!isEmpty($("input#codProduto").val())){
+                executeRequest();
+            }
+            else {
+                $.wmsDialogAlert({title: "Alerta", msg: "Informe o código do produto!"});
+            }
+        }
     });
 </script>
