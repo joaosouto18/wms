@@ -1,6 +1,6 @@
 /* 
  * SCRIPT PARA: Incluir possibilidade de quebra por unidade fracionável
- * DATA DE CRIAÇÃO: 03/04/2019 
+ * DATA DE CRIAÇÃO: 03/04/2019
  * CRIADO POR: Tarcísio César
  *
  */
