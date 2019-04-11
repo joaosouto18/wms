@@ -345,6 +345,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $parametro = $parametroRepo->findOneBy(array('constante' => "REENTREGA_RESETANDO_EXPEDICAO"));
             $resetaExpedicao = (!empty($parametro) && $parametro->getValor() == "S");
 
+            $parametro = $parametroRepo->findOneBy(array('constante' => "PERMITIR_ALTERAR_PEDIDOS"));
+            $permiteAlterarPedidos = (!empty($parametro) && $parametro->getValor() == "S");
+
             foreach($cargas as $k1 => $carga) {
                 foreach ($carga['pedidos'] as $k2 => $pedido) {
                     foreach ($pedido['produtos'] as $k3 => $produto){
@@ -355,6 +358,17 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 }
                 $this->checkProductsExists($repositorios, $carga['pedidos']);
                 $result = $this->checkPedidosExists($repositorios, $carga['pedidos'], $isIntegracaoSQL, $resetaExpedicao);
+
+                /*
+                 * Só faz esta validação caso permita alterar os pedidos
+                 * Pois na simonetti eles fazem o envio dos pedidos de forma incremental, ou seja
+                 * Após o primeiro envio da carga, podem ser enviados pedidos em uma carga ja existente
+                 * Desta forma existiriam envios apenas dos novos pedidos na Simonetti.
+                 * Situação contrária que acontece na Wilso/CDC/Rover/Planeta aonde se envia a carga inteira uma unica vez
+                 */
+                if ($permiteAlterarPedidos) {
+                    $this->checkPedidosNotExists($repositorios, $carga['idCarga'],$carga['pedidos']);
+                }
 
                 if ($result) {
                     $this->_em->flush();
@@ -995,6 +1009,55 @@ class Wms_WebService_Expedicao extends Wms_WebService
     }
 
     /**
+     * @param array $repositorios
+     * @param array $pedidos
+     * @param bool $isIntegracaoSQL
+     * @param bool $resetaExpedicao
+     * @return bool
+     * @throws Exception
+     */
+    protected function checkPedidosNotExists($repositorios, $idCarga, array $pedidos) {
+
+        $cargaRepository = $repositorios['cargaRepo'];
+        $pedidoRepo = $repositorios['pedidoRepo'];
+
+        $cargaEn = $cargaRepository->findOneBy(array('codCargaExterno'=>$idCarga));
+
+        //Indica que é uma carga nova pois não existe no sistema
+        if ($cargaEn == null) {
+            return false;
+        }
+
+        //Só verifica alterações se o pedido estiver como INTEGRADO
+        if ($cargaEn->getExpedicao()->getStatus()->getId() != Wms\Domain\Entity\Expedicao::STATUS_INTEGRADO) {
+            return false;
+        }
+
+        //Percorre todos os pedidos que existem no WMS para a determinada carga e verifica se existem no array enviado pelo ERP
+        $pedidosWMS = $cargaEn->getPedido();
+        foreach ($pedidosWMS as $pedidoWMS) {
+            $idPedido = $pedidoWMS->getId();
+            $codPedidoWMS = $pedidoWMS->getCodExterno();
+            $encontrouPedido = false;
+            foreach ($pedidos as $pedidoERP) {
+                $codPedidoERP = $pedidoERP['codPedido'];
+                if ($codPedidoERP == $codPedidoWMS) {
+                    $encontrouPedido = true;
+                }
+            }
+
+            //Se o pedido não existe no array enviado pelo ERP, então remove o mesmo do WMS;
+            if ($encontrouPedido == false) {
+                $PedidoEntity = $pedidoRepo->find($idPedido);
+                $pedidoRepo->removeReservaEstoque($idPedido,false);
+                $pedidoRepo->remove($PedidoEntity,false);
+            }
+        }
+
+    }
+
+
+        /**
      * @param array $repositorios
      * @param array $pedidos
      * @param bool $isIntegracaoSQL
