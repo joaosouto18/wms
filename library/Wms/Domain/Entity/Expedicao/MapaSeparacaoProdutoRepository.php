@@ -373,7 +373,8 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->addOrderBy('de.nivel','ASC')
             ->addOrderBy('crescenteApto','ASC')
             ->addOrderBy('decrescenteApto','DESC')
-            ->addOrderBy('msp.numCaixaInicio, msp.numCaixaFim','ASC');
+            ->addOrderBy('msp.numCaixaInicio, msp.numCaixaFim','ASC')
+            ->addOrderBy('msp.codProduto', 'ASC');
 
         return $sql->getQuery()->getResult();
     }

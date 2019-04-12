@@ -1629,7 +1629,7 @@ class MapaSeparacao extends eFPDF {
                 /**
                  * Cria rodape
                  */
-                $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total);
+                $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, $arrDataCargas);
                 $total = 0;
                 /**
                  * Cria cabeçalho
@@ -1644,9 +1644,11 @@ class MapaSeparacao extends eFPDF {
             $embalagem = '';
 
             $embalagemEn = $produto->getProdutoEmbalagem();
+            $qtdEmbalagem = 1;
             if (isset($embalagemEn) && !empty($embalagemEn)) {
                 $codigoBarras = '...' . substr($embalagemEn->getCodigoBarras(), -5);
                 $embalagem = $embalagemEn->getDescricao() . ' (' . $embalagemEn->getQuantidade() . ')';
+                $qtdEmbalagem = $embalagemEn->getQuantidade();
             }
 
             $endereco = $produto->getDepositoEndereco();
@@ -1661,8 +1663,8 @@ class MapaSeparacao extends eFPDF {
                 $dscEndereco = $endereco->getDescricao();
 
             if (isset($pesoProduto) && !empty($pesoProduto)) {
-                $pesoTotal += ($pesoProduto->getPeso() * $quantidade);
-                $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;
+                $pesoTotal += ($pesoProduto->getPeso() * $quantidade * $qtdEmbalagem);
+                $cubagemTotal += $pesoProduto->getCubagem() * $quantidade * $qtdEmbalagem;
             }
 
             if ($tipoQuebra) {
@@ -1694,7 +1696,7 @@ class MapaSeparacao extends eFPDF {
          * Cria rodape
          */
         if ($contadorPg > 0) {
-            $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, 'teste');
+            $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, $arrDataCargas);
         }
 
     }
@@ -1964,7 +1966,7 @@ class MapaSeparacao extends eFPDF {
         return $object;
     }
 
-    public function buildFooter($object, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total) {
+    public function buildFooter($object, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, $carga = null) {
         $this->currentPage += 1;
 
         $object->SetFont('Arial', null, 10);
@@ -1985,7 +1987,12 @@ class MapaSeparacao extends eFPDF {
         $object->SetFont('Arial', 'B', 10);
         $object->Cell(23, 6, utf8_decode("ITINERARIO: "), 0, 0);
         $object->SetFont('Arial', null, 10);
-        $object->Cell(120, 6, self::SetStringByMaxWidth(utf8_decode($this->itinerarios), 120), 0, 1);
+        $object->Cell(117, 6, self::SetStringByMaxWidth(utf8_decode($this->itinerarios), 120), 0, 0);
+        $txtCarga = "";
+        if ($carga != null) {
+            $txtCarga = $carga['txt'] . ': ' . $carga['str'];
+        }
+        $object->Cell($wPage * 3,6,$txtCarga,0,1);
 
         $object->SetFont('Arial', 'B', 10);
         $object->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
@@ -2002,6 +2009,7 @@ class MapaSeparacao extends eFPDF {
         $object->Cell($wPage * 3, 6, $this->currentPage . "/" . $this->countPages, 0, 1);
 
         $object->Image($imgCodBarras, 143, 280, 50);
+
         $object->InFooter = false;
 
         return $object;
