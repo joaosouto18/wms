@@ -739,7 +739,7 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                     var capacidadeReal = produto_embalagem[0].capacidadePicking;
                                     var pontoReal = produto_embalagem[0].pontoReposicao;
                                     if(capacidadeReal != 0){
-                                        capacidadeReal = parseFloat(produto_embalagem[0].capacidadePicking.replace(',', '.')).toFixed(3);
+                                        capacidadeReal = parseFloat(produto_embalagem[0].capacidadePicking.toString().replace(',', '.')).toFixed(3);
                                     }
                                     if(pontoReal != 0){
                                         pontoReal = parseFloat(produto_embalagem[0].pontoReposicao).toFixed(3);
