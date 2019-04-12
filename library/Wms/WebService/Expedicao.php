@@ -516,14 +516,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $parametroEntity = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
         $pedidoRepository = $this->_em->getRepository('wms:Expedicao\Pedido');
-        $repoMotivos = $this->getEntityManager()->getRepository('wms:Expedicao\MotivoCorte');
+        $repoMotivos = $this->_em->getRepository('wms:Expedicao\MotivoCorte');
 
         try {
             $this->_em->beginTransaction();
             $idPedido = $pedidoRepository->getMaxCodPedidoByCodExterno($idPedido);
             $ppCortados = array();
 
-            $parametroRepo = $this->getEntityManager()->getRepository('wms:Sistema\Parametro');
+            $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
             $parametro = $parametroRepo->findOneBy(array('constante' => "COD_MOTIVO_CORTE_INTEGRACAO"));
 
             if ($parametro == NULL) {

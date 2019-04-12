@@ -387,7 +387,7 @@ class Embalagem {
      * @return mixed
      */
     public function getCapacidadePicking() {
-        return str_replace('.', ',', $this->capacidadePicking);
+        return (float)str_replace('.', ',', $this->capacidadePicking);
     }
 
     /**
