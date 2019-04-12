@@ -375,7 +375,15 @@ class ReservaEstoqueRepository extends EntityRepository
                 $reservaEstoqueProduto->setCodProdutoVolume($produto['codProdutoVolume']);
             }
             if (isset($produto['validade']) && !empty($produto['validade'])){
-                $dataValidade = date_create_from_format('d/m/Y',$produto['validade']);
+                $arg = explode(" ", $produto['validade']);
+                $arrDateISO = explode("-",$arg[0]);
+                $arrDateABNT = explode("/",$arg[0]);
+                $dataValidade = null;
+                if (count($arrDateISO) == 3) {
+                    $dataValidade = new \DateTime($produto['validade'], new \DateTimeZone('America/Sao_Paulo'));
+                } elseif (count($arrDateABNT) == 3) {
+                    $dataValidade = date_create_from_format('d/m/Y',$produto['validade']);
+                }
                 if ($dataValidade) $reservaEstoqueProduto->setValidade($dataValidade);
             }
             if (isset($produto['lote']) && !empty($produto['lote']) && !in_array($produto['lote'], [Produto\Lote::NCL, Produto\Lote::LND])){

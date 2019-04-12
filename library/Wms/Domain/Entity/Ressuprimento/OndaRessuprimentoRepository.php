@@ -546,7 +546,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $qtdRessuprimentos = 0;
         $arrErroCapacidade = [];
         $arrErroVolSemPicking = [];
-        foreach ($produtosRessuprir as $produto) {
+        foreach ($produtosRessuprir as $key => $produto) {
             $codProduto = $produto['codProduto'];
             $grade = $produto['grade'];
 
@@ -567,7 +567,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
                 if (empty($capacidadePicking)) {
                     $arrErroCapacidade[] = "Código $codProduto grade $grade";
-                    continue;
+                    if ($key < (count($produtosRessuprir) -1 ))
+                        continue;
                 }
 
                 $picking['capacidadePicking'] = $capacidadePicking;
@@ -594,7 +595,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
                         if (empty($pickingEn)) {
                             $arrErroVolSemPicking[$codProduto][$grade]['txt'] = "Código $codProduto grade $grade";
-                            continue;
+                            if ($key < (count($produtosRessuprir) -1 ))
+                                continue;
                         }
 
                         $picking['volumes'][] = $volumeEn->getId();
@@ -603,7 +605,8 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
                         if (empty($capacidadePicking)) {
                             $arrErroCapacidade[] = "Código $codProduto grade $grade";
-                            continue;
+                            if ($key < (count($produtosRessuprir) -1 ))
+                                continue;
                         }
 
                         $picking['capacidadePicking'] = $capacidadePicking;
