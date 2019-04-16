@@ -8,12 +8,10 @@ class AcaoIntegracaoAndamentoRepository extends EntityRepository
 {
     public function getStatusAcaoIntegracao()
     {
-        $sql = "SELECT TO_CHAR(AIA.DTH_ANDAMENTO,'DD/MM/YYYY HH24:MI:SS') as DTH_ANDAMENTO,
-                      AIA.COD_ACAO_INTEGRACAO,
-                      AIA.IND_SUCESSO,
-                      SUBSTR(AIA.DSC_OBSERVACAO,0,80) DSC_OBSERVACAO,
-                      AI.DSC_ACAO_INTEGRACAO
-                 FROM ACAO_INTEGRACAO_ANDAMENTO AIA
+        $sql = "SELECT TO_CHAR(AIA.DTH_ANDAMENTO,'DD/MM/YYYY HH24:MI:SS') as DATA,
+                       AIA.COD_ACAO_INTEGRACAO || ' - ' || NVL(AI.DSC_ACAO_INTEGRACAO, '') as INTEGRACAO,
+                       SUBSTR(AIA.DSC_OBSERVACAO,0,80) OBSERVACAO
+                  FROM ACAO_INTEGRACAO_ANDAMENTO AIA
                  INNER JOIN (SELECT MAX(COD_ACAO_INTEGRACAO_ANDAMENTO) as COD_ACAO_INTEGRACAO_ANDAMENTO,
                                     COD_ACAO_INTEGRACAO
                                FROM ACAO_INTEGRACAO_ANDAMENTO
