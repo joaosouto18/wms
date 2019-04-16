@@ -17,7 +17,7 @@ class MapaSeparacao extends eFPDF {
     private $idMapa;
     private $idExpedicao;
     private $quebrasEtiqueta;
-    private $pesoTotal, $cubagemTotal, $mapa, $imgCodBarras, $total;
+    private $pesoTotal, $cubagemTotal, $mapa, $imgCodBarras, $total, $pesoCarga;
     private $itinerarios;
 
     /** @var $em EntityManager */
@@ -71,10 +71,25 @@ class MapaSeparacao extends eFPDF {
         }
 
         $qtdProdPorMapa = array();
+        $peso = 0;
         foreach ($mapaSeparacao as $mapa) {
             $qtdProdutos = $this->mapaSeparacaoProdRepo->findBy(array('mapaSeparacao' => $mapa->getId()));
             $qtdProdPorMapa[] = array('idMapa' => $mapa->getId(), 'qtdProd' => count($qtdProdutos));
+
+            foreach ($qtdProdutos as $prod) {
+                $qtdEmbalagem = $prod->getQtdEmbalagem();
+                $quantidade = $prod->getQtdSeparar();
+                $codProduto = $prod->getCodProduto();
+                $grade = $prod->getDscGrade();
+
+                $pesoProduto = $this->pesoProdutoRepo->findOneBy(array('produto' => $codProduto, 'grade' => $grade));
+
+                if (isset($pesoProduto) && !empty($pesoProduto))
+                    $peso += ($pesoProduto->getPeso() * $quantidade * $qtdEmbalagem);
+            }
         }
+
+        $this->pesoCarga = $peso;
 
         if (($modelo == 11) || ($modelo == 5)){
             if ($modelo == 11) $limitPg = 30;
@@ -1620,6 +1635,8 @@ class MapaSeparacao extends eFPDF {
         $totalPg = ceil(count($produtos) / $limitPg);
         $pgAtual = 1;
         $this->buildHead($this, $imgCodBarras, $tipoQuebra, $arrDataCargas, '1 de ' . $totalPg);
+        $qtdProdutos = 0;
+        $codProdutoAnterior = "";
         foreach ($produtos as $produto) {
             $produto = reset($produto);
             $contadorPg++;
@@ -1629,8 +1646,10 @@ class MapaSeparacao extends eFPDF {
                 /**
                  * Cria rodape
                  */
-                $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, $arrDataCargas);
+                $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, $arrDataCargas, $qtdProdutos);
                 $total = 0;
+                $qtdProdutos = 0;
+                $codProdutoAnterior = "";
                 /**
                  * Cria cabeçalho
                  */
@@ -1690,13 +1709,18 @@ class MapaSeparacao extends eFPDF {
             $this->SetFont('Arial', null, 9);
             $total += $quantidade;
             $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
+
+            if ($codProduto != $codProdutoAnterior) {
+              $qtdProdutos += 1;
+            }
+            $codProdutoAnterior = $codProduto;
         }
         //FOOTER PASSADO PARA ESSA LINHA ADIANTE DEVIDO PROBLEMAS COM O CODIGO DE BARRAS DO NUMERO DO MAPA
         /**
          * Cria rodape
          */
         if ($contadorPg > 0) {
-            $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, $arrDataCargas);
+            $this->buildFooter($this, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, $arrDataCargas, $qtdProdutos);
         }
 
     }
@@ -1966,7 +1990,7 @@ class MapaSeparacao extends eFPDF {
         return $object;
     }
 
-    public function buildFooter($object, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, $carga = null) {
+    public function buildFooter($object, $imgCodBarras, $cubagemTotal, $pesoTotal, $mapa, $total, $carga = null, $qtdProdutos = null) {
         $this->currentPage += 1;
 
         $object->SetFont('Arial', null, 10);
@@ -1983,30 +2007,51 @@ class MapaSeparacao extends eFPDF {
         $pageSizeA4 = $object->_getpagesize();
         $wPage = $pageSizeA4[0] / 12;
 
-        $object->SetY(-28);
-        $object->SetFont('Arial', 'B', 10);
-        $object->Cell(23, 6, utf8_decode("ITINERARIO: "), 0, 0);
-        $object->SetFont('Arial', null, 10);
-        $object->Cell(117, 6, self::SetStringByMaxWidth(utf8_decode($this->itinerarios), 120), 0, 0);
-        $txtCarga = "";
-        if ($carga != null) {
-            $txtCarga = $carga['txt'] . ': ' . $carga['str'];
-        }
-        $object->Cell($wPage * 3,6,$txtCarga,0,1);
+        $object->SetY(-38);
 
         $object->SetFont('Arial', 'B', 10);
-        $object->Cell(20, 6, utf8_decode("QUEBRAS: "), 0, 0);
+        $object->Cell(20, 6, "_______________________________________________________________________________________________", 0, 1);
+
+        $txtCarga = "";
+        $txtCodCarga = "";
+        if ($carga != null) {
+            $txtCodCarga = $carga['str'];
+            $txtCarga = $carga['txt'] . ': ';
+        }
+
+        $object->SetFont('Arial', 'B', 10);
+        $object->Cell(15,5,$txtCarga,0,0);
         $object->SetFont('Arial', null, 10);
-        $object->Cell(120, 6, self::SetStringByMaxWidth(utf8_decode($this->quebrasEtiqueta), 120), 0, 0);
-        $object->Cell($wPage * 11, 6, utf8_decode("TOTAL À SEPARAR : $this->total"), 0, 1);
+        $object->Cell(119,5,$txtCodCarga,0,0);
+
+        $object->SetFont('Arial', null, 9);
+        $object->Cell($wPage * 11, 5, utf8_decode("PESO MAPA: " . number_format($this->pesoTotal,2,",",".")), 0, 1);
+
+        $object->SetFont('Arial', 'B', 10);
+        $object->Cell(23, 5, utf8_decode("ITINERARIO: "), 0, 0);
+        $object->SetFont('Arial', null, 10);
+        $object->Cell(111, 5, self::SetStringByMaxWidth(utf8_decode($this->itinerarios), 120), 0, 0);
+
+        $object->SetFont('Arial', null, 9);
+        $object->Cell($wPage * 11, 5, utf8_decode("QTD. VOLUMES: $this->total"), 0, 1);
+
+        $object->SetFont('Arial', 'B', 10);
+        $object->Cell(20, 5, utf8_decode("QUEBRAS: "), 0, 0);
+        $object->SetFont('Arial', null, 10);
+        $object->Cell(114, 5, utf8_decode($this->quebrasEtiqueta), 0, 0);
+
+        $object->SetFont('Arial', null, 9);
+        $txtProduto = "";
+        if ($qtdProdutos != null) $txtProduto = utf8_decode("QTD. PRODUTOS: $qtdProdutos");
+        $object->Cell($wPage * 11, 5, $txtProduto , 0, 1);
 
         $object->SetFont('Arial', 'B', 9);
-        $object->Cell($wPage * 3, 6, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
-        $object->Cell($wPage * 2.5, 6, utf8_decode("EXPEDIÇÃO: " . $this->idExpedicao), 0, 0);
-        $object->Cell($wPage * 3, 6, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
-        $object->Cell($wPage * 3, 6, utf8_decode("CUBAGEM TOTAL " .  number_format($this->cubagemTotal, 2, ',', '.')), 0, 0);
-        $object->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . number_format($this->pesoTotal, 2, ',', '.')), 0, 0);
-        $object->Cell($wPage * 3, 6, $this->currentPage . "/" . $this->countPages, 0, 1);
+        $object->Cell($wPage * 3.2, 5, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 0);
+        $object->Cell($wPage * 2.2, 5, utf8_decode("EXPEDIÇÃO: " . $this->idExpedicao), 0, 0);
+        $object->Cell($wPage * 3, 5, utf8_decode(date('d/m/Y') . " às " . date('H:i')), 0, 1);
+        $object->Cell($wPage * 3.2, 5, utf8_decode("CUBAGEM TOTAL " .  number_format($this->cubagemTotal, 2, ',', '.')), 0, 0);
+        $object->Cell($wPage * 2.9, 5, utf8_decode("PESO TOTAL " . number_format($this->pesoCarga, 2, ',', '.')), 0, 0);
+        $object->Cell($wPage * 3, 5, $this->currentPage . "/" . $this->countPages, 0, 1);
 
         $object->Image($imgCodBarras, 143, 280, 50);
 
