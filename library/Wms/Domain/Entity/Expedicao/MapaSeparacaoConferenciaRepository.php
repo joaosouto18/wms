@@ -361,6 +361,14 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
             $quantidade = Math::adicionar($quantidade, Math::multiplicar($mapaSeparacaoConferenciaEntity->getQtdConferida(), $mapaSeparacaoConferenciaEntity->getQtdEmbalagem()));
             $this->getEntityManager()->remove($mapaSeparacaoConferenciaEntity);
         }
+
+        if ($mapaSeparacaoEntity->getStatus()->getId() == EtiquetaSeparacao::STATUS_CONFERIDO) {
+            $statusEn = $this->getEntityManager()->getRepository("wms:Util\Sigla")->findOneBy(array('id'=>EtiquetaSeparacao::STATUS_ETIQUETA_GERADA));
+            $mapaSeparacaoEntity->setStatus($statusEn);
+            $mapaSeparacaoEntity->setCodStatus($statusEn->getId());
+            $this->getEntityManager()->persist($mapaSeparacaoEntity);
+        }
+
         $expedicaoAndamentoRepository->save("Conferência do produto $codProduto grade $grade com quantidade de $quantidade no mapa de separação $codMapaSeparacao foi reiniciada", $mapaSeparacaoEntity->getCodExpedicao());
         $this->getEntityManager()->flush();
         return array(
