@@ -175,6 +175,8 @@ class EmbalagemRepository extends EntityRepository {
                         $arrayQtds[$key]['dsc'] = $embalagem->getDescricao();
                         $arrayQtds[$key]['qtdEmbalagem'] = $embalagem->getQuantidade();
                     }
+                } elseif ($qtd == 0) {
+                    $arrayQtds[$embalagem->getId()] = 0; break;
                 }
             }
             if (!empty($qtdRestante) && !empty($embFracDefault)) {
