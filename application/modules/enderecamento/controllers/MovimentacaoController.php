@@ -500,6 +500,10 @@ class Enderecamento_MovimentacaoController extends Action
                 }
             }
         }
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+
+        $this->view->embalagemRepo = $embalagemRepo;
+        $this->view->em = $this->getEntityManager();
         $this->view->controlaLote = $controlaLote;
         $this->view->endPicking = $endPicking;
         $this->view->enderecos = $enderecos;
@@ -550,6 +554,11 @@ class Enderecamento_MovimentacaoController extends Action
         /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
         $reservaEstoqueRepo   = $this->_em->getRepository('wms:Ressuprimento\ReservaEstoque');
         $reservas = $reservaEstoqueRepo->getResumoReservasNaoAtendidasByParams($this->_getAllParams());
+
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+
+        $this->view->embalagemRepo = $embalagemRepo;
+        $this->view->em = $this->getEntityManager();
 
         $this->view->reservas = $reservas;
 

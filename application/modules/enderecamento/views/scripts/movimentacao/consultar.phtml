@@ -33,7 +33,15 @@
             <td><?php echo $reserva['ORIGEM']?></td>
             <td><?php echo $reserva['DTH_RESERVA']?></td>
             <td><?php echo $reserva['TIPO']?></td>
-            <td><?php echo $reserva['QTD_RESERVADA']?></td>
+            <td><?php
+                $vetEstoque = $this->embalagemRepo->getQtdEmbalagensProduto($this->idProduto, $this->grade , $reserva['QTD_RESERVADA']);
+                if(is_array($vetEstoque)) {
+                    $qtdEstoque = implode(' + ', $vetEstoque);
+                }else{
+                    $qtdEstoque = $vetEstoque;
+                }
+                echo $qtdEstoque
+                ?></td>
         </tr>
     <?php
         if ($reserva['QTD_RESERVADA'] > 0) {
@@ -46,11 +54,31 @@
     <tr class="bottom">
         <td colspan="2" style="padding-top: 20px"></td>
         <td style="padding-top: 20px"><b>Total Entradas</b></td>
-        <td style="padding-top: 20px"><b><?php echo $qtdEntrada?></b></td>
+        <td style="padding-top: 20px"><b><?php
+                if ($qtdEntrada != 0) {
+                    $vetEstoque = $this->embalagemRepo->getQtdEmbalagensProduto($this->idProduto, $this->grade , $qtdEntrada);
+                    if(is_array($vetEstoque)) {
+                        $qtdEntrada = implode(' + ', $vetEstoque);
+                    }else{
+                        $qtdEntrada = $vetEstoque;
+                    }
+                }
+                echo $qtdEntrada
+                ?></b></td>
     </tr>
     <tr>
         <td colspan="2"></td>
         <td><b>Total Saídas</b></td>
-        <td><b><?php echo $qtdSaida?></b></td>
+        <td><b><?php
+                if ($qtdSaida != 0) {
+                    $vetEstoque = $this->embalagemRepo->getQtdEmbalagensProduto($this->idProduto, $this->grade , $qtdSaida);
+                    if(is_array($vetEstoque)) {
+                        $qtdSaida = implode(' + ', $vetEstoque);
+                    }else{
+                        $qtdSaida = $vetEstoque;
+                    }
+                }
+                echo $qtdSaida
+                ?></b></td>
     </tr>
 </table>

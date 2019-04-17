@@ -104,8 +104,8 @@
                 <td><?php echo $endereco['DTH_PRIMEIRA_MOVIMENTACAO'] ?></td>
                 <td><?php echo $endereco['UMA'] ?></td>
                 <td><?php echo $endereco['UNITIZADOR'] ?></td>
-                <td><?php echo $endereco['RESERVA_ENTRADA'] ?></td>
-                <td><?php echo $endereco['RESERVA_SAIDA'] ?></td>
+                <td><?php echo $endereco['RE_EMBALAGEM'] ?></td>
+                <td><?php echo $endereco['RS_EMBALAGEM'] ?></td>
                 <td><?php echo $endereco['QTD_EMBALAGEM'] ?></td>
                 <td><?php
                     if (isset($endereco['DTH_VALIDADE']) && !empty($endereco['DTH_VALIDADE'])) {
@@ -135,9 +135,33 @@
             if ($endereco == $this->enderecos[count($this->enderecos) - 1]) {
                 ?><tr>
                     <td colspan="<?php echo $colspan + 2 ?>" style="text-align: center"><b>Total</b></td>
-                    <td><b><?php echo $qtdReservaEntrada ?></b></td>
-                    <td><b><?php echo $qtdReservaSaida ?></b></td>
-                    <td><b><?php echo $qtdEstoque ?></b></td>
+                    <td><b><?php
+                            $vetEstoque = $this->embalagemRepo->getQtdEmbalagensProduto($endereco['COD_PRODUTO'], $endereco['DSC_GRADE'], $qtdReservaEntrada);
+                            if(is_array($vetEstoque)) {
+                                $qtdReservaEntrada = implode(' + ', $vetEstoque);
+                            }else{
+                                $qtdReservaEntrada = $vetEstoque;
+                            }
+                            echo $qtdReservaEntrada;
+                            ?></b></td>
+                    <td><b><?php
+                            $vetEstoque = $this->embalagemRepo->getQtdEmbalagensProduto($endereco['COD_PRODUTO'], $endereco['DSC_GRADE'], $qtdReservaSaida);
+                            if(is_array($vetEstoque)) {
+                                $qtdReservaSaida = implode(' + ', $vetEstoque);
+                            }else{
+                                $qtdReservaSaida = $vetEstoque;
+                            }
+                            echo $qtdReservaSaida
+                            ?></b></td>
+                    <td><b><?php
+                            $vetEstoque = $this->embalagemRepo->getQtdEmbalagensProduto($endereco['COD_PRODUTO'], $endereco['DSC_GRADE'], $qtdEstoque);
+                            if(is_array($vetEstoque)) {
+                                $qtdEstoque = implode(' + ', $vetEstoque);
+                            }else{
+                                $qtdEstoque = $vetEstoque;
+                            }
+                            echo $qtdEstoque
+                            ?></b></td>
                     <td colspan="2"></td>
                 </tr><?php
             }

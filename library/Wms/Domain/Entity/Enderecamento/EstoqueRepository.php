@@ -618,6 +618,24 @@ class EstoqueRepository extends EntityRepository
                 }
             }
         }
+
+        $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        foreach ($result as $key => $value) {
+            $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['RESERVA_ENTRADA']);
+            if(is_array($vetEstoque)) {
+                $result[$key]['RE_EMBALAGEM'] = implode('<br />', $vetEstoque);
+            }else{
+                $result[$key]['RE_EMBALAGEM'] = $vetEstoque;
+            }
+
+            $vetEstoque = $embalagemRepo->getQtdEmbalagensProduto($value['COD_PRODUTO'], $value['DSC_GRADE'], $value['RESERVA_SAIDA']);
+            if(is_array($vetEstoque)) {
+                $result[$key]['RS_EMBALAGEM'] = implode('<br />', $vetEstoque);
+            }else{
+                $result[$key]['RS_EMBALAGEM'] = $vetEstoque;
+            }
+        }
+
         return $result;
     }
 
