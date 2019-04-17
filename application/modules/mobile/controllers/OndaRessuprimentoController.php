@@ -316,7 +316,7 @@ class Mobile_OndaRessuprimentoController extends Action
 
             if($controlaRetornoRessup == 'S') {
                 $qtd_ressuprimento = $ondaRepo->getQtdProdutoRessuprimento($idOnda, $codProduto, $grade);
-                $qtd_ressuprimento = 6;
+                //$qtd_ressuprimento = 6;
 
                 if (empty($qtd_ressuprimento)) {
                     throw new \Exception("Ressuprimento não encontrado.");
@@ -446,8 +446,6 @@ class Mobile_OndaRessuprimentoController extends Action
                     $params['tipo']        = 'R';
                     $params['dthEntrada']  = new DateTime('now');
                     $params['os']          = $os->getId();
-                    //$params['uma']         = $uma;
-                    //$params['validade']    = $validade;
 
                     $estoqueRepo->movimentaEstoque($params, false, true);
 
@@ -474,8 +472,8 @@ class Mobile_OndaRessuprimentoController extends Action
 
                 $ondaRepo->finalizaOnda($ondaOsEn);
 
-                //$this->getEntityManager()->flush();
-                //$this->getEntityManager()->commit();
+                $this->getEntityManager()->flush();
+                $this->getEntityManager()->commit();
 
                 $urlRedirect = '/mobile/onda-ressuprimento/listar-ondas';
                 $this->addFlashMessage("success", "Os Finalizada com sucesso");
