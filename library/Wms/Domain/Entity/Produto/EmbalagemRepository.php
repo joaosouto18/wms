@@ -62,10 +62,10 @@ class EmbalagemRepository extends EntityRepository {
 
         foreach ($embalagemEntities as $embalagem) {
             $embalagem->setEndereco($enderecoEn);
+            $embalagem->setCapacidadePicking($capacidadePicking);
             $this->getEntityManager()->persist($embalagemEn);
         }
 
-        $embalagemEn->setCapacidadePicking($capacidadePicking);
         $embalagemEn->setEmbalado($embalado);
         $this->getEntityManager()->persist($embalagemEn);
         $this->getEntityManager()->flush();
