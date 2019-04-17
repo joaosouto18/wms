@@ -76,10 +76,6 @@ class EtiquetaEndereco extends Pdf
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo6($produtos,$codBarras);
                     break;
-                case 13:
-                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
-                    $this->layoutModelo13($produtos,$codBarras);
-                    break;
                 case 7:
                     $produto = $enderecoRepo->getProdutoByEndereco($codBarras);
                     $this->layoutModelo7($produto,$codBarras);
@@ -160,6 +156,10 @@ class EtiquetaEndereco extends Pdf
                     if($key > 0) $this->AddPage();
                         $this->layoutModelo14($codBarras);
                     break;
+                case 14:
+                    if($key > 0) $this->AddPage();
+                    $this->layoutModelo14($codBarras);
+                    break;
                 default:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras, false);
                     if (count($produtos) <= 0){
@@ -207,7 +207,7 @@ class EtiquetaEndereco extends Pdf
         $this->Cell(0,12,utf8_decode("APTO"),0,1);
 
         $this->SetFont('Arial', 'B', 41);
-        $this->Cell(0,10,$codBarras,0,0);
+        $this->Cell(22,10,$codBarras,0,0);
     }
 
     /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
@@ -416,7 +416,7 @@ class EtiquetaEndereco extends Pdf
 
     }
 
-    public function layoutModelo13 ($produto, $codBarras){
+    public function layoutModelo14 ($produto, $codBarras){
         $this->Cell(5,3,"",0,1);
         $arrEndereco = Endereco::separar($codBarras);
         $codBarras = implode('.',$arrEndereco);

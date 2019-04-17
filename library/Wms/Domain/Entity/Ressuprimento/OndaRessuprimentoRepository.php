@@ -209,7 +209,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
             $codProduto = $result[0]['COD_PRODUTO'];
             $dscGrade = $result[0]['DSC_GRADE'];
 
-            $msg = "O Endereço $endereco com o produto $codProduto/$dscGrade - $dscProduto, está em uso por um processo de finalização das expedições $expedicao. Aguarde alguns seguntos e tente novamente";
+            $msg = "O Endereço $endereco com o produto $codProduto/$dscGrade - $dscProduto, está em uso por um processo de finalização das expedições $expedicao. Aguarde alguns segundos e tente novamente";
 
             throw new \Exception($msg);
         }
@@ -1189,6 +1189,19 @@ class OndaRessuprimentoRepository extends EntityRepository {
         }
 
         return $arr;
+    }
+
+    public function getQtdProdutoRessuprimento($idOnda, $codProduto, $grade){
+
+        $sql = "select qtd from onda_ressuprimento_os_produto 
+                  where cod_produto = '.$codProduto.' and dsc_grade = '.$grade.'
+                    and cod_onda_ressuprimento_os in ( 
+                        select cod_onda_ressuprimento_os from onda_ressuprimento_os 
+                            where cod_onda_ressuprimento in (
+                                select cod_onda_ressuprimento from onda_ressuprimento 
+                                where cod_onda_ressuprimento = '.$idOnda.'))";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 
 }

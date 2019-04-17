@@ -576,6 +576,10 @@ class Web_EnderecoController extends Crud
         if ($modelo == 4) {
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(110, 60));
         }
+        else
+            if ($modelo == 13) {
+                $etiqueta = new EtiquetaEndereco("L", 'mm', array(100, 27));
+            }
         else{
             $etiqueta = new EtiquetaEndereco("P", 'mm', "A4");
         }

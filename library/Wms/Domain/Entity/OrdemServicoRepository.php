@@ -476,5 +476,26 @@ class OrdemServicoRepository extends EntityRepository
         $sql = "delete from ordem_servico where cod_os in (" . implode(",", $codigos).")";
         $this->getEntityManager()->getConnection()->query($sql)->execute();
     }
+
+    public function saveRetornoRessuprimento()
+    {
+        $em = $this->getEntityManager();
+
+        $idPessoa = (isset($idPessoa)) ? $idPessoa : \Zend_Auth::getInstance()->getIdentity()->getId();
+        $pessoaEntity = $em->getReference('wms:Pessoa', $idPessoa);
+        $atividadeEntity = $em->getReference('wms:Atividade', AtividadeEntity::RETORNO_RESSUPRIMENTO);
+
+        $ordemServicoEn = new OrdemServico();
+        $ordemServicoEn->setDataInicial(new \DateTime());
+        $ordemServicoEn->setAtividade($atividadeEntity);
+        $ordemServicoEn->setDscObservacao('Retorno de ressuprimento');
+        $ordemServicoEn->setPessoa($pessoaEntity);
+        $ordemServicoEn->setFormaConferencia('C');
+
+        $this->_em->persist($ordemServicoEn);
+        $this->_em->flush();
+
+        return $ordemServicoEn;
+    }
 }
 
