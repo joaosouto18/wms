@@ -510,9 +510,9 @@ class EstoqueRepository extends EntityRepository
                                       WHERE IND_ATENDIDA = 'N'
                                         AND TIPO_RESERVA = 'E') R
                                 GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE) RE
-                               ON ESTQ.COD_PRODUTO = RE.COD_PRODUTO
+                                  ON ESTQ.COD_PRODUTO = RE.COD_PRODUTO
                                  AND ESTQ.DSC_GRADE = RE.DSC_GRADE
-                                 AND ESTQ.VOLUME = RE.VOLUME
+                                 AND NVL(ESTQ.VOLUME,0) = NVL(RE.VOLUME,0)
                                  AND NVL(ESTQ.LOTE, '$loteNd') = NVL(RE.LOTE, '$loteNd')
                                  AND ESTQ.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO
                 FULL OUTER JOIN (SELECT SUM(R.QTD_RESERVADA) as QTD_RESERVADA, R.COD_DEPOSITO_ENDERECO, R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE
@@ -524,7 +524,7 @@ class EstoqueRepository extends EntityRepository
                                 GROUP BY R.COD_DEPOSITO_ENDERECO,R.COD_PRODUTO, R.DSC_GRADE, R.VOLUME, R.LOTE) RS
                                ON ESTQ.COD_PRODUTO = RS.COD_PRODUTO
                                  AND ESTQ.DSC_GRADE = RS.DSC_GRADE
-                                 AND ESTQ.VOLUME = RS.VOLUME
+                                 AND NVL(ESTQ.VOLUME,0) = NVL(RS.VOLUME,0)
                                  AND NVL(ESTQ.LOTE, '$loteNd') = NVL(RS.LOTE, '$loteNd')
                                  AND ESTQ.COD_DEPOSITO_ENDERECO = RS.COD_DEPOSITO_ENDERECO
                 LEFT JOIN PRODUTO_VOLUME PV ON (PV.COD_PRODUTO_VOLUME = ESTQ.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RE.VOLUME) OR (PV.COD_PRODUTO_VOLUME = RS.VOLUME)
