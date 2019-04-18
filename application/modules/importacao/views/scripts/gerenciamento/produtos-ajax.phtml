@@ -1,0 +1,22 @@
+<form id="enderecamento-form" method="post" class="saveForm" action="">
+    <div id="quantidade-grid" class="grid">
+        <table class="gTable ">
+            <caption>Produtos pendentes de integração</caption>
+            <tbody>
+            <tr class ="gTTitle">
+                <td>Produto</td>
+                <td>Integrar</td>
+            </tr>
+        <?php
+            foreach ($this->produtos as $produto):
+                $fontColor = "black";
+                $this->color = !($this->color);?>
+                <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                    <td><?php echo $produto['PRODUTO'] ?></td>
+                    <td><a class="btn reader button" href="<?php echo "/importacao/gerenciamento/integrar-produto-ajax/id/".$produto['PRODUTO']?>">Integrar</a></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</form>

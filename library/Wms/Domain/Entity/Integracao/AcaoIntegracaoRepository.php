@@ -9,6 +9,16 @@ use Wms\Service\Integracao;
 class AcaoIntegracaoRepository extends EntityRepository
 {
 
+    public function getProdutosPendentes () {
+        $SQL = "SELECT DISTINCT PRODUTO FROM (
+                   SELECT PRODUTO FROM TR_PEDIDO WHERE (IND_PROCESSADO = 'N' OR IND_PROCESSADO IS NULL)
+                   UNION
+                   SELECT COD_PRODUTO FROM TR_NOTA_FISCAL_ENTRADA WHERE (IND_PROCESSADO = 'N' OR IND_PROCESSADO IS NULL))
+                WHERE PRODUTO NOT IN (SELECT COD_PRODUTO FROM PRODUTO)";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result;
+    }
+
     private function validaAcoesMesmoTipo($acoes) {
         if (count($acoes) == 0) {
             throw new \Exception ("Nenhuma ação foi definida para ser executada");

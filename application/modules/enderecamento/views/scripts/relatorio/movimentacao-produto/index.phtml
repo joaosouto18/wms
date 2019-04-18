@@ -1,3 +1,58 @@
 <?php
 echo $this->form;
+
+    if (isset($this->movimentacoes)) {?>
+
+        <div id="quantidade-grid" class="grid">
+            <table class="gTable ">
+                <caption>Movimentações</caption>
+                <tbody>
+                <tr class ="gTTitle">
+                    <td>Data Mov.</td>
+                    <td>Endereço</td>
+                    <td>Tipo Mov.</td>
+                    <td>Cód.Prod.</td>
+                    <?php if ($this->utilizaGrade == 'S'): ?>
+                        <td>Grade</td>
+                    <?php endif; ?>
+                    <td>Produto</td>
+                    <td>Usuário</td>
+                    <td>Validade</td>
+                    <td>Observacao</td>
+                    <td>Saldo Ant.</td>
+                    <td>Qtd. Mov</td>
+                    <td>Saldo Final</td>
+                </tr>
+                <?php
+                foreach ($this->movimentacoes as $movimentacao):
+                    $fontColor = "black";
+                    $this->color = !($this->color);?>
+                    <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                        <?php
+                            $dataValidade = (isset($movimentacao['validade']) && !empty($movimentacao['validade'])) ? new \DateTime($movimentacao['validade']) : null;
+                            $validade = (!is_null($dataValidade)) ? $dataValidade->format('d/m/Y') : "-";
+                        ?>
+                        <td><?php echo $movimentacao['data']->format('d/m/Y H:i:s') ?></td>
+                        <td><?php echo $movimentacao['descricao'] ?></td>
+                        <td><?php echo $movimentacao['tipo'] ?></td>
+                        <td><?php echo $movimentacao['codProduto'] ?></td>
+                        <?php if ($this->utilizaGrade == 'S'): ?>
+                            <td><?php echo $movimentacao['grade'] ?></td>
+                        <?php endif; ?>
+                        <td><?php echo $movimentacao['nomeProduto'] ?></td>
+                        <td><?php echo $movimentacao['nomePessoa'] ?></td>
+                        <td><?php echo $validade ?></td>
+                        <td><?php echo $movimentacao['observacao'] ?></td>
+                        <td><?php echo $movimentacao['saldoAnterior'] ?></td>
+                        <td><?php echo $movimentacao['qtd'] ?></td>
+                        <td><?php echo $movimentacao['saldoFinal'] ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+
+    <?php
+    }
+
 ?>

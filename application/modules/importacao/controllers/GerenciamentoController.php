@@ -8,6 +8,54 @@ use \Wms\Domain\Entity\Integracao\AcaoIntegracao as AcaoIntegracao;
 class Importacao_GerenciamentoController extends Action
 {
 
+    public function produtosAjaxAction() {
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+        $produtosPendentes = $acaoIntRepo->getProdutosPendentes();
+        $this->view->produtos = $produtosPendentes;
+
+        if (count($produtosPendentes) == 0) {
+            $this->_redirect("/");
+        }
+    }
+
+    public function integrarProdutoAjaxAction()
+    {
+        $request = $this->getRequest();
+        $params = $request->getParams();
+        $idProduto = $params['id'];
+
+        try {
+
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+            $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+            $idIntegracao = $this->getSystemParameterValue("ID_INTEGRACAO_PRODUTOS");
+            if ($idIntegracao == "") {
+                throw new \Exception("Integração de Produtos não configurada");
+            }
+
+            $acaoEn = $acaoIntRepo->find($idIntegracao);
+            if ($acaoEn->getIdAcaoRelacionada() != null ) {
+                $idIntegracao = $acaoEn->getIdAcaoRelacionada();
+                $acaoEn = $acaoIntRepo->find($idIntegracao);
+            }
+            $options = explode(",",$idProduto);
+
+            $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E','P',null, \Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
+            if (!empty($result)) {
+                throw new \Exception($result);
+            }
+
+        } catch (\Exception $e) {
+            $this->addFlashMessage("error", $e->getMessage());
+        }
+
+        $this->redirect("produtos-ajax");
+
+    }
+
     public function indexAction()
     {
         $request = $this->getRequest();
