@@ -523,6 +523,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $idPedido = $pedidoRepository->getMaxCodPedidoByCodExterno($idPedido);
             $ppCortados = array();
 
+            if (($produtosCortados == null) || (count($produtosCortados) == 0)) {
+                throw new \Exception("Nenhum corte informado para o pedido " . $idPedido);
+            }
+
             $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
             $parametro = $parametroRepo->findOneBy(array('constante' => "COD_MOTIVO_CORTE_INTEGRACAO"));
 
