@@ -53,7 +53,7 @@ class Web_EmailController extends Action
                 $smtp->getConnection()->disconnect();
 
             } catch (Exception $erro) {
-                $this->addFlashMessage("Error", "Erro no envio de e-mail: " . $erro->getMessage() .' -- '. $erro->getTraceAsString());
+                $this->addFlashMessage("error", "Erro no envio de e-mail: " . $erro->getMessage() .' -- '. $erro->getTraceAsString());
                 $this->_redirect($_SERVER['HTTP_REFERER']);
             }
 
