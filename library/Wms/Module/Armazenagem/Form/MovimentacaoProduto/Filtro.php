@@ -92,7 +92,12 @@ class Filtro extends Form
             'class' => 'btn',
             'decorators' => array('ViewHelper'),
         ))
-        ->addDisplayGroup(array('idProduto',  'grade', 'dataInicial', 'dataFim', 'tipoMovimentacao', 'rua', 'predio', 'nivel', 'apto', 'tipoOperacao','ordem','tipoEndereco', 'submit'), 'identificacao', array('legend' => 'Filtro'));
+        ->addElement('submit', 'submitPDF', array(
+            'label' => 'PDF',
+            'class' => 'btn modal',
+            'decorators' => array('ViewHelper'),
+        ))
+        ->addDisplayGroup(array('idProduto',  'grade', 'dataInicial', 'dataFim', 'tipoMovimentacao', 'rua', 'predio', 'nivel', 'apto', 'tipoOperacao','ordem','tipoEndereco', 'submit', 'submitPDF'), 'identificacao', array('legend' => 'Filtro'));
     }
 /**
      *
