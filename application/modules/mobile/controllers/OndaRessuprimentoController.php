@@ -316,11 +316,6 @@ class Mobile_OndaRessuprimentoController extends Action
 
             if($controlaRetornoRessup == 'S') {
                 $qtd_ressuprimento = $ondaRepo->getQtdProdutoRessuprimento($idOnda, $codProduto, $grade);
-                //$qtd_ressuprimento = 6;
-
-                if (empty($qtd_ressuprimento)) {
-                    throw new \Exception("Ressuprimento não encontrado.");
-                }
             }
 
             // verifica existencia de residuo no endereço de pulmao
