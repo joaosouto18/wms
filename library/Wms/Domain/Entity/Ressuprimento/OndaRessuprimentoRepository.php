@@ -1199,7 +1199,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                         select cod_onda_ressuprimento_os from onda_ressuprimento_os 
                             where cod_onda_ressuprimento in (
                                 select cod_onda_ressuprimento from onda_ressuprimento 
-                                where cod_onda_ressuprimento = '.$idOnda.'))";
+                                where cod_onda_ressuprimento = $idOnda))";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
