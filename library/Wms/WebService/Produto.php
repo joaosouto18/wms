@@ -289,7 +289,7 @@ class Wms_WebService_Produto extends Wms_WebService {
                     if ($embalagemCadastrada->isEmbFracionavelDefault() == 'S')
                         continue;
 
-                    $descricaoEmbalagem = null;
+                    $descricaoEmbalagem = $embalagemCadastrada->getDescricao();
                     $encontrouEmbalagem = false;
 
                     $fator = $embalagemCadastrada->getQuantidade();
