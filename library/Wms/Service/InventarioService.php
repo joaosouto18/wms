@@ -58,12 +58,16 @@ class InventarioService extends AbstractService
             }
 
             foreach ($params['selecionados'] as $item) {
-                $inventarioEnderecoEn = $inventarioEnderecoRepo->save([
-                    'inventario' => $inventarioEn,
-                    'depositoEndereco' => $this->em->getReference('wms:Deposito\Endereco', $item['id']),
-                    'contagem' => 1,
-                    'ativo' => 'S'
-                ]);
+                $inventarioEnderecoEn = $inventarioEnderecoRepo->findOneBy(['inventario' => $inventarioEn, 'depositoEndereco' => $item['id']]);
+
+                if (empty($inventarioEnderecoEn))
+                    $inventarioEnderecoEn = $inventarioEnderecoRepo->save([
+                        'inventario' => $inventarioEn,
+                        'depositoEndereco' => $this->em->getReference('wms:Deposito\Endereco', $item['id']),
+                        'contagem' => 1,
+                        'ativo' => 'S'
+                    ]);
+
                 if ($inventarioEn->isPorProduto()) {
                     $invEndProdRepod->save([
                         'inventarioEndereco' => $inventarioEnderecoEn,
