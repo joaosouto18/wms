@@ -9,6 +9,7 @@ namespace Wms\Domain\Entity\Enderecamento;
 
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Filial;
+use Wms\Math;
 
 class EstoqueProprietarioRepository extends EntityRepository
 {
@@ -91,10 +92,58 @@ class EstoqueProprietarioRepository extends EntityRepository
         }
     }
 
-    public function selectProprietario($orderAsc, $propAnterior = null)
+    private function selectSaldoProprietario($codProduto, $grade, $incluir, $propsDebitados = [])
     {
-        $ordenacao = ($orderAsc) ? "ASC" : "DESC";
+        $where = "" ;
+        if (!empty($propsDebitados)) {
+            $strIds = implode(", ", $propsDebitados);
+            $where = "WHERE E.COD_EMPRESA NOT IN ($strIds)";
+        }
 
+        $ordenacao = ($incluir) ? "ASC" : "DESC";
+
+        $sql = "SELECT NVL(ESTQ.SALDO_FINAL, 0) SALDO, PJ.COD_PESSOA, E.COD_EMPRESA
+                FROM EMPRESA E
+                INNER JOIN PESSOA_JURIDICA PJ ON E.IDENTIFICACAO = PJ.NUM_CNPJ
+                LEFT JOIN (SELECT EP.SALDO_FINAL, EP.COD_PESSOA
+                           FROM ESTOQUE_PROPRIETARIO EP
+                           INNER JOIN (SELECT MAX(COD_ESTOQUE_PROPRIETARIO) LAST_MOV, COD_PESSOA
+                                       FROM ESTOQUE_PROPRIETARIO
+                                       WHERE COD_PRODUTO = '$codProduto' AND DSC_GRADE = '$grade'
+                                       GROUP BY COD_PESSOA) IDEP ON IDEP.LAST_MOV = EP.COD_ESTOQUE_PROPRIETARIO
+                           WHERE EP.SALDO_FINAL > 0) ESTQ ON ESTQ.COD_PESSOA = PJ.COD_PESSOA
+                $where
+                ORDER BY E.PRIORIDADE_ESTOQUE $ordenacao";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return [$result[0]['SALDO'], $result[0]['COD_PESSOA'], $result[0]['COD_EMPRESA']];
+    }
+
+    public function updateSaldoByInventario($codProduto, $grade, $qtd, $idInventario)
+    {
+
+        if ($qtd > 0) {
+            list( $saldo, $codPessoa ) = self::selectSaldoProprietario($codProduto, $grade, true);
+            $saldoFinal = Math::adicionar($saldo, $qtd);
+            $this->save($codProduto, $grade, $qtd, EstoqueProprietario::INVENTARIO, $saldoFinal, $codPessoa, $idInventario);
+        } else {
+            $qtd = $qtd * -1;
+            $propsDebitados = [];
+            while ($qtd != 0) {
+                list( $saldoDisponivel, $codPessoa , $propsDebitados[]) = self::selectSaldoProprietario($codProduto, $grade, false, $propsDebitados);
+
+                if (empty($codPessoa)) break;
+
+                if (Math::compare($qtd, $saldoDisponivel, "<")) {
+                    $qtdMov = $qtd;
+                } else {
+                    $qtdMov = $saldoDisponivel;
+                }
+                $saldoFinal = Math::subtrair($saldoDisponivel ,$qtdMov);
+                $this->save($codProduto, $grade, $qtdMov, EstoqueProprietario::INVENTARIO, $saldoFinal, $codPessoa, $idInventario);
+                $qtd = Math::subtrair($qtd, $qtdMov);
+            }
+        }
     }
 
     public function getProprietarioProximoGrupo($cnpj){

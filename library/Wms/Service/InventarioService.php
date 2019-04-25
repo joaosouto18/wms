@@ -1140,12 +1140,13 @@ class InventarioService extends AbstractService
     /*
      * Layout de exportação definido para a SonosShow
      */
-    public function exportaInventarioModelo2($idInventario = null) {
+    public function exportarInventarioModelo2($idInventario = null, $caminho = null) {
         /*
          * Nome do arquivo solicitado pela sonoshow como aammddhh.min
          */
+
         $nomeArquivo = date("ymdH.0i");
-        $arquivo = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO") . DIRECTORY_SEPARATOR. $nomeArquivo;
+        $arquivo = $caminho . DIRECTORY_SEPARATOR . $nomeArquivo;
 
         $statusFinalizado = InventarioNovo::STATUS_FINALIZADO;
 
@@ -1171,7 +1172,7 @@ class InventarioService extends AbstractService
                                INNER JOIN INVENTARIO_NOVO INVN ON INVN.COD_INVENTARIO = IEN.COD_INVENTARIO
                                INNER JOIN INVENTARIO_CONT_END ICE ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
                                LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
-                              WHERE IE.COD_INVENTARIO = $idInventario AND INVN.COD_STATUS = $statusFinalizado AND ICEP.IND_DIVERGENTE = 'N') I
+                              WHERE IEN.COD_INVENTARIO = $idInventario AND INVN.COD_STATUS = $statusFinalizado AND ICEP.IND_DIVERGENTE = 'N') I
                     ON (I.COD_PRODUTO = P.COD_PRODUTO)
                    AND (I.DSC_GRADE = P.DSC_GRADE)";
         }

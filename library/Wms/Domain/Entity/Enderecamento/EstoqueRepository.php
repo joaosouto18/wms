@@ -255,7 +255,7 @@ class EstoqueRepository extends EntityRepository
         $em->persist($historico);
         $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         if($controleProprietario == 'S') {
-            if (!empty($params['codProprietario'])) {
+            if (!empty($params['codProprietario']) && in_array($tipo,[HistoricoEstoque::TIPO_MOVIMENTACAO, HistoricoEstoque::TIPO_EXPEDICAO])) {
                 $operacao = null;
                 $arg = null;
                 if ($tipo == HistoricoEstoque::TIPO_MOVIMENTACAO) {
@@ -264,14 +264,12 @@ class EstoqueRepository extends EntityRepository
                 } elseif($tipo == HistoricoEstoque::TIPO_EXPEDICAO){
                     $operacao = EstoqueProprietario::EXPEDICAO;
                     $arg = $params['codPedido'];
-                } elseif ($tipo == HistoricoEstoque::TIPO_INVENTARIO) {
-                    $operacao = EstoqueProprietario::INVENTARIO;
-                    $arg = $idInventario;
                 }
-
-                if (!empty($operacao) and !empty($arg)) {
+                if (!empty($operacao)) {
                     $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->buildMovimentacaoEstoque($produtoEn->getId(), $produtoEn->getGrade(), $qtd, $operacao, $params['codProprietario'], $arg);
                 }
+            } elseif ($tipo == HistoricoEstoque::TIPO_INVENTARIO && !empty($idInventario)) {
+                $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->updateSaldoByInventario($codProduto, $grade, $qtd, $idInventario);
             } else {
                 throw new \Exception('Selecione um proprietário.');
             }
