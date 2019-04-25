@@ -1494,4 +1494,20 @@ class EstoqueRepository extends EntityRepository
         return true;
     }
 
+    public function getEstoqueToInventario($idEndereco, $idInventario = null)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("e")
+            ->from("wms:Enderecamento\Estoque", "e")
+            ->where("e.depositoEndereco = $idEndereco");
+
+        if (!empty($idInventario)) {
+            $dql->innerJoin("wms:InventarioNovo\InventarioEndProd", "iep", "WITH", "iep.codProduto = e.codProduto and iep.grade = e.grade and iep.ativo = 'S'")
+                ->innerJoin("iep.inventarioEndereco", "ien", "WITH", "ien.depositoEndereco = $idEndereco")
+                ->andWhere("ien.inventario = $idInventario");
+        }
+
+        return $dql->getQuery()->getResult();
+    }
+
 }

@@ -266,29 +266,51 @@ class InventarioService extends AbstractService
      */
     public function novaConferencia($inventario, $contEnd, $produto, $conferencia, $tipoConferencia)
     {
+        /** @var InventarioNovo\InventarioContEndProdRepository $contEndProdRepo */
+        $contEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd");
+
         $this->em->beginTransaction();
         try {
-            $elements = [];
-            $isEmb = false;
             $volSeparadamente = json_decode($inventario['volumesSeparadamente']);
-            if (isset($produto['idVolume']) && !empty(json_decode($produto['idVolume']))) {
-                $isEmb = false;
-                if ($volSeparadamente)
-                    $elements[] = $this->em->getReference("wms:Produto\Volume", $produto['idVolume']);
-                else
-                    $elements = $this->em->getRepository("wms:Produto\Volume")->getProdutosVolumesByNorma($produto['norma'],  $produto['idProduto'], $produto['grade'], null, true);
-            }
-            elseif (isset($produto['idEmbalagem']) && !empty(json_decode($produto['idEmbalagem']))) {
-                $isEmb = true;
-                $elements[] = $this->em->getReference("wms:Produto\Embalagem", $produto['idEmbalagem']);
-            }
-            $conferencia["validade"] = (!empty($conferencia['validade'])) ? date_create_from_format("d/m/Y", $conferencia['validade']) : null;
 
             /** @var InventarioNovo\InventarioContEndProdRepository $inventContEndProdRepo */
             $inventContEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd");
             $resultado = $inventContEndProdRepo->getContagemFinalizada($contEnd, $produto, $volSeparadamente);
 
             if(empty($resultado)) {
+
+                $elements = [];
+                $isEmb = false;
+                if (isset($produto['idVolume']) && !empty(json_decode($produto['idVolume']))) {
+                    $isEmb = false;
+                    if ($volSeparadamente)
+                        $elements[] = $this->em->getReference("wms:Produto\Volume", $produto['idVolume']);
+                    else {
+                        /** @var Produto\Volume[] $elements */
+                        $elements = $this->em->getRepository("wms:Produto\Volume")->getProdutosVolumesByNorma($produto['norma'], $produto['idProduto'], $produto['grade'], null, true);
+                        $finalizados = $contEndProdRepo->getProdutosContagemFinalizada($contEnd['idInvEnd'], $contEnd['sequencia']);
+                        if (!empty($elements) && !empty($finalizados)) {
+                            $loteConf = json_decode($conferencia['lote']);
+                            foreach ($elements as $k => $vol) {
+                                foreach ($finalizados as $elem) {
+                                    if ($vol->getCodProduto() == $elem['COD_PRODUTO'] &&
+                                        $vol->getGrade() == $elem['DSC_GRADE'] &&
+                                        $loteConf == $elem['DSC_LOTE'] &&
+                                        $vol->getId() == $elem['COD_PRODUTO_VOLUME']) {
+                                            unset($elements[$k]);
+                                            break;
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                elseif (isset($produto['idEmbalagem']) && !empty(json_decode($produto['idEmbalagem']))) {
+                    $isEmb = true;
+                    $elements[] = $this->em->getReference("wms:Produto\Embalagem", $produto['idEmbalagem']);
+                }
+                $conferencia["validade"] = (!empty($conferencia['validade'])) ? date_create_from_format("d/m/Y", $conferencia['validade']) : null;
 
                 $this->registrarConferencia(
                     $elements,
@@ -434,7 +456,7 @@ class InventarioService extends AbstractService
             $result = ["code" => 1, "msg" => "Ordem de serviço finalizada com sucesso"];
 
             if (empty($outrasOs)) {
-                $result = $contMaiorAcerto = $this->compararContagens(
+                $result = $this->compararContagens(
                     $this->em->find("wms:InventarioNovo\InventarioContEnd", $contEnd['idContEnd']),
                     $inventario);
             }
@@ -476,9 +498,10 @@ class InventarioService extends AbstractService
             /** @var \Wms\Domain\Entity\Enderecamento\Estoque[] $estoques */
             $estoques = [];
             if (json_decode($inventario['comparaEstoque'])) {
-                $estoques = $this->em->getRepository("wms:Enderecamento\Estoque")->findBy([
-                    "depositoEndereco" => $invContEnd->getInventarioEndereco()->getDepositoEndereco()
-                ]);
+                $estoques = $this->em->getRepository("wms:Enderecamento\Estoque")->getEstoqueToInventario(
+                    $invContEnd->getInventarioEndereco()->getDepositoEndereco()->getId(),
+                    ($invPorProduto) ? $inventario['id'] : null
+                );
             }
 
             $finalizados = $contEndProdRepo->getProdutosContagemFinalizada($invContEnd->getInventarioEndereco()->getId(), $invContEnd->getSequencia());
@@ -503,8 +526,6 @@ class InventarioService extends AbstractService
 
             $volSeparados = json_decode($inventario["volumesSeparadamente"]);
 
-            $volsFaltantes = [];
-
             foreach ($contados as $contagem) {
                 $estoque = null;
                 if (!empty($estoques)) {
@@ -513,20 +534,14 @@ class InventarioService extends AbstractService
                         if ($contagem["COD_PRODUTO"] != $estoques[$i]->getCodProduto() ||
                             $contagem["DSC_GRADE"] != $estoques[$i]->getGrade() ||
                             $contagem["DSC_LOTE"] != $estoques[$i]->getLote() ||
-                            ($volSeparados && !empty($contagem["COD_PRODUTO_VOLUME"]) &&
-                                $contagem["COD_PRODUTO_VOLUME"] != $idVolEstoque)
+                            ($volSeparados && !empty($contagem["COD_PRODUTO_VOLUME"]) && $contagem["COD_PRODUTO_VOLUME"] != $idVolEstoque)
                         ) {
-                            if ($invPorProduto) {
-                                $volsFaltantes[$idVolEstoque] = $estoques[$i];
-                            }
                             continue;
                         }
 
                         $estoque = $estoques[$i];
                         unset($estoques[$i]);
-                        if (isset($volsFaltantes[$idVolEstoque])) {
-                            unset($volsFaltantes[$idVolEstoque]);
-                        }
+
                         $estoques = array_values($estoques);
                         break;
                     }
@@ -579,15 +594,9 @@ class InventarioService extends AbstractService
                 }
             }
 
-            if ($invContEnd->getContagemDivergencia() == 'N' && json_decode($inventario['contarTudo']) && (!$invPorProduto || ($invPorProduto && !empty($volsFaltantes)))) {
+            if ($invContEnd->getContagemDivergencia() == 'N' && json_decode($inventario['contarTudo']) && !empty($estoques)) {
 
-                $matriz = $estoques;
-
-                if ($invPorProduto && !empty($volsFaltantes)) {
-                    $matriz = $volsFaltantes;
-                }
-
-                foreach ($matriz as $estoque) {
+                foreach ($estoques as $estoque) {
                     $prod = [
                         "codProduto" => $estoque->getCodProduto(),
                         "grade" => $estoque->getGrade(),
