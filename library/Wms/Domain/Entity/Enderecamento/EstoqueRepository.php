@@ -255,14 +255,25 @@ class EstoqueRepository extends EntityRepository
         $em->persist($historico);
         $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
         if($controleProprietario == 'S') {
-            if($tipo == 'M') {
-                if (!empty($params['codProprietario'])) {
-                    $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->buildMovimentacaoEstoque($produtoEn->getId(), $produtoEn->getGrade(), $qtd, EstoqueProprietarioEntity::MOVIMENTACAO, $params['codProprietario'], $idUma);
-                } else {
-                    throw new \Exception('Selecione um proprietário.');
+            if (!empty($params['codProprietario'])) {
+                $operacao = null;
+                $arg = null;
+                if ($tipo == HistoricoEstoque::TIPO_MOVIMENTACAO) {
+                    $operacao = EstoqueProprietario::MOVIMENTACAO;
+                    $arg = $idUma;
+                } elseif($tipo == HistoricoEstoque::TIPO_EXPEDICAO){
+                    $operacao = EstoqueProprietario::EXPEDICAO;
+                    $arg = $params['codPedido'];
+                } elseif ($tipo == HistoricoEstoque::TIPO_INVENTARIO) {
+                    $operacao = EstoqueProprietario::INVENTARIO;
+                    $arg = $idInventario;
                 }
-            }elseif($tipo == 'S'){
-                $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->buildMovimentacaoEstoque($produtoEn->getId(), $produtoEn->getGrade(), $qtd, EstoqueProprietarioEntity::EXPEDICAO, $params['codProprietario'], $params['codPedido']);
+
+                if (!empty($operacao) and !empty($arg)) {
+                    $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->buildMovimentacaoEstoque($produtoEn->getId(), $produtoEn->getGrade(), $qtd, $operacao, $params['codProprietario'], $arg);
+                }
+            } else {
+                throw new \Exception('Selecione um proprietário.');
             }
         }
         //VERIFICA SE O ENDERECO VAI ESTAR DISPONIVEL OU NÃO PARA ENDEREÇAMENTO

@@ -91,6 +91,12 @@ class EstoqueProprietarioRepository extends EntityRepository
         }
     }
 
+    public function selectProprietario($orderAsc, $propAnterior = null)
+    {
+        $ordenacao = ($orderAsc) ? "ASC" : "DESC";
+
+    }
+
     public function getProprietarioProximoGrupo($cnpj){
         foreach ($cnpj as $value){
             $vetWhere[] = "IDENTIFICACAO NOT LIKE '$value%'";
@@ -289,6 +295,6 @@ class EstoqueProprietarioRepository extends EntityRepository
         $this->_em->persist($entityFilial);
         $this->_em->flush();
 
-        return $entityPessoa;
+        return $entityFilial;
     }
 }

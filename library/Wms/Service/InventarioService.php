@@ -950,12 +950,14 @@ class InventarioService extends AbstractService
                 $loteRepo->save($produtoEn->getId(), $produtoEn->getGrade(), $lote, $idUsuario);
         }
 
+        $elemType = ($tipo == Produto::TIPO_UNITARIO) ? "embalagem" : "volume";
+
         $estoqueRepo->movimentaEstoque([
             "idInventario" => $idInventario,
             "endereco" => $this->em->find("wms:Deposito\Endereco", $endereco),
             "produto" => $produtoEn,
             "lote" => $lote,
-            ($tipo == Produto::TIPO_UNITARIO) ? "embalagem" : "volume" => $elem,
+            $elemType => $elem,
             "qtd" => $qtd,
             "observacoes" => "Mov. correção inventário $idInventario",
             "usuario" => $this->em->getReference('wms:Usuario', $idUsuario),
@@ -1073,7 +1075,7 @@ class InventarioService extends AbstractService
     /*
      * Layout de exportação definido para o Winthor
      */
-    public function exportaInventarioModelo1($id)
+    public function exportarInventarioModelo1($id)
     {
 
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
