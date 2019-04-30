@@ -194,6 +194,7 @@ class AcaoIntegracaoRepository extends EntityRepository
         $this->_em->clear();
         $acaoEn = $this->findOneBy(array('id'=>$idAcao));
 
+        $encontrouRegistro = false;
         $sucess = "S";
         $observacao = "";
         $trace = "";
@@ -280,9 +281,13 @@ class AcaoIntegracaoRepository extends EntityRepository
                             'dados'=>$result));
                     $result = $integracaoService->salvaTemporario();
                 } else {
+
                     //pegar os ID's das tabelas temporárias das triggers
-                    if (count($result) && !is_null($acaoEn->getTabelaReferencia())) {
-                        $idTabelaTemp = $result;
+                    if (count($result)) {
+                        $encontrouRegistro = true;
+                        if (!is_null($acaoEn->getTabelaReferencia())) {
+                            $idTabelaTemp = $result;
+                        }
                     }
 
                     $integracaoService = new Integracao($this->getEntityManager(),
@@ -381,28 +386,29 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
                 if ($sucess == 'S') {
-                    if(!empty($idTabelaTemp)) {
-
-                        $max = 900;
-                        $ids = array();
-                        foreach ($idTabelaTemp as $key => $value){
-                            $ids[] = $value['ID'];
-                            if(count($ids) == $max){
+                    if ($encontrouRegistro == true) {
+                        if(!empty($idTabelaTemp)) {
+                            $max = 900;
+                            $ids = array();
+                            foreach ($idTabelaTemp as $key => $value){
+                                $ids[] = $value['ID'];
+                                if(count($ids) == $max){
+                                    $ids = implode(',',$ids);
+                                    $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                                    $this->_em->getConnection()->query($query)->execute();
+                                    unset($ids);
+                                }
+                            }
+                            if(count($ids) < $max){
                                 $ids = implode(',',$ids);
                                 $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
                                 $this->_em->getConnection()->query($query)->execute();
                                 unset($ids);
                             }
-                        }
-                        if(count($ids) < $max){
-                            $ids = implode(',',$ids);
-                            $query = "UPDATE " . $acaoEn->getTabelaReferencia() . " SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE ID IN ($ids) AND (IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N')";
+                        }else{
+                            $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
                             $this->_em->getConnection()->query($query)->execute();
-                            unset($ids);
                         }
-                    }else{
-                        $query = "UPDATE ".$acaoEn->getTabelaReferencia()." SET IND_PROCESSADO = 'S', DTH_PROCESSAMENTO = SYSDATE WHERE IND_PROCESSADO IS NULL OR IND_PROCESSADO = 'N'";
-                        $this->_em->getConnection()->query($query)->execute();
                     }
                 }
             }
