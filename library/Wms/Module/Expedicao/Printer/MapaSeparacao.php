@@ -974,24 +974,24 @@ class MapaSeparacao extends eFPDF {
             }
 
             if ($tipoQuebra) {
-                $this->Cell(21, 6, $dscEndereco, 0, 0);
-                $this->Cell(13, 6, $codProduto, 0, 0);
-                $this->Cell(90, 6, $descricao, 0, 0);
-                $this->Cell(20, 6, $codigoBarras, 0, 0);
-                $this->Cell(25, 6, $referencia, 0, 0);
-                $this->Cell(10, 6, $embalagem, 0, 0);
+                $this->Cell(21, 4, $dscEndereco, 0, 0);
+                $this->Cell(13, 4, $codProduto, 0, 0);
+                $this->Cell(90, 4, $descricao, 0, 0);
+                $this->Cell(20, 4, $codigoBarras, 0, 0);
+                $this->Cell(25, 4, $referencia, 0, 0);
+                $this->Cell(10, 4, $embalagem, 0, 0);
                 $this->SetFont('Arial', "B", 10);
-                $this->Cell(15, 6, $quantidade, 0, 0);
-                $this->Cell(15, 6, $caixas, 0, 1, 'C');
+                $this->Cell(15, 4, $quantidade, 0, 0);
+                $this->Cell(15, 4, $caixas, 0, 1, 'C');
             } else {
-                $this->Cell(21, 6, $dscEndereco, 0, 0);
-                $this->Cell(13, 6, $codProduto, 0, 0);
-                $this->Cell(90, 6, $descricao, 0, 0);
-                $this->Cell(20, 6, $codigoBarras, 0, 0);
-                $this->Cell(25, 6, $referencia, 0, 0);
-                $this->Cell(10, 6, $embalagem, 0, 0);
+                $this->Cell(21, 4, $dscEndereco, 0, 0);
+                $this->Cell(13, 4, $codProduto, 0, 0);
+                $this->Cell(90, 4, $descricao, 0, 0);
+                $this->Cell(20, 4, $codigoBarras, 0, 0);
+                $this->Cell(25, 4, $referencia, 0, 0);
+                $this->Cell(10, 4, $embalagem, 0, 0);
                 $this->SetFont('Arial', "B", 10);
-                $this->Cell(15, 6, $quantidade, 0, 1, 'C');
+                $this->Cell(15, 4, $quantidade, 0, 1, 'C');
             }
             $this->SetFont('Arial', null, 8);
             $total += $quantidade;
