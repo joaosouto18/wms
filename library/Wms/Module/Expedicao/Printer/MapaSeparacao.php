@@ -93,7 +93,7 @@ class MapaSeparacao extends eFPDF {
 
         if (($modelo == 11) || ($modelo == 5)){
             if ($modelo == 11) $limitPg = 30;
-            if ($modelo == 5)  $limitPg = 45;
+            if ($modelo == 5)  $limitPg = 42;
 
             $qtdPag = 0;
             foreach ($qtdProdPorMapa as $mapa) {
@@ -925,7 +925,7 @@ class MapaSeparacao extends eFPDF {
         $this->Cell(20, 1, "", 0, 1);
         $total = 0;
         $contadorPg = 0;
-        $limitPg = 45;
+        $limitPg = 42;
         $totalPg = ceil(count($produtos) / $limitPg);
         $pgAtual = 1;
         $this->buildHead($this, $imgCodBarras, $tipoQuebra, $arrDataCargas, '1 de ' . $totalPg);
@@ -974,24 +974,24 @@ class MapaSeparacao extends eFPDF {
             }
 
             if ($tipoQuebra) {
-                $this->Cell(21, 6, $dscEndereco, 0, 0);
-                $this->Cell(13, 6, $codProduto, 0, 0);
-                $this->Cell(90, 6, $descricao, 0, 0);
-                $this->Cell(20, 6, $codigoBarras, 0, 0);
-                $this->Cell(25, 6, $referencia, 0, 0);
-                $this->Cell(10, 6, $embalagem, 0, 0);
+                $this->Cell(21, 4, $dscEndereco, 0, 0);
+                $this->Cell(13, 4, $codProduto, 0, 0);
+                $this->Cell(90, 4, $descricao, 0, 0);
+                $this->Cell(20, 4, $codigoBarras, 0, 0);
+                $this->Cell(25, 4, $referencia, 0, 0);
+                $this->Cell(10, 4, $embalagem, 0, 0);
                 $this->SetFont('Arial', "B", 10);
-                $this->Cell(15, 6, $quantidade, 0, 0);
-                $this->Cell(15, 6, $caixas, 0, 1, 'C');
+                $this->Cell(15, 4, $quantidade, 0, 0);
+                $this->Cell(15, 4, $caixas, 0, 1, 'C');
             } else {
-                $this->Cell(21, 6, $dscEndereco, 0, 0);
-                $this->Cell(13, 6, $codProduto, 0, 0);
-                $this->Cell(90, 6, $descricao, 0, 0);
-                $this->Cell(20, 6, $codigoBarras, 0, 0);
-                $this->Cell(25, 6, $referencia, 0, 0);
-                $this->Cell(10, 6, $embalagem, 0, 0);
+                $this->Cell(21, 4, $dscEndereco, 0, 0);
+                $this->Cell(13, 4, $codProduto, 0, 0);
+                $this->Cell(90, 4, $descricao, 0, 0);
+                $this->Cell(20, 4, $codigoBarras, 0, 0);
+                $this->Cell(25, 4, $referencia, 0, 0);
+                $this->Cell(10, 4, $embalagem, 0, 0);
                 $this->SetFont('Arial', "B", 10);
-                $this->Cell(15, 6, $quantidade, 0, 1, 'C');
+                $this->Cell(15, 4, $quantidade, 0, 1, 'C');
             }
             $this->SetFont('Arial', null, 8);
             $total += $quantidade;
