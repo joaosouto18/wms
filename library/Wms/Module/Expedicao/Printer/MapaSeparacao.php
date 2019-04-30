@@ -93,7 +93,7 @@ class MapaSeparacao extends eFPDF {
 
         if (($modelo == 11) || ($modelo == 5)){
             if ($modelo == 11) $limitPg = 30;
-            if ($modelo == 5)  $limitPg = 45;
+            if ($modelo == 5)  $limitPg = 42;
 
             $qtdPag = 0;
             foreach ($qtdProdPorMapa as $mapa) {
@@ -925,7 +925,7 @@ class MapaSeparacao extends eFPDF {
         $this->Cell(20, 1, "", 0, 1);
         $total = 0;
         $contadorPg = 0;
-        $limitPg = 45;
+        $limitPg = 42;
         $totalPg = ceil(count($produtos) / $limitPg);
         $pgAtual = 1;
         $this->buildHead($this, $imgCodBarras, $tipoQuebra, $arrDataCargas, '1 de ' . $totalPg);
