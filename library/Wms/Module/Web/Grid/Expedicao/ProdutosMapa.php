@@ -4,6 +4,7 @@ namespace Wms\Module\Web\Grid\Expedicao;
 
 
 use Core\Grid\Pager;
+use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
 use Wms\Module\Web\Grid,
     Wms\Domain\Entity\Recebimento;
@@ -18,6 +19,8 @@ class ProdutosMapa extends Grid
     {
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaRepo */
         $mapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+        /** @var Expedicao $expedicao */
+        $expedicao = $this->getEntityManager()->find("wms:Expedicao", $idExpedicao);
         $array = $mapaRepo->getResumoConferenciaMapaProduto($idMapa);
         $this->setShowExport(false);
         $this->setShowPager(true);
@@ -67,14 +70,18 @@ class ProdutosMapa extends Grid
                 'actionName' => 'conferencia',
                 'cssClass' => 'inside-modal',
                 'pkIndex' => array('COD_PRODUTO','DSC_GRADE','NUM_CONFERENCIA')
-            ))
-            ->addAction(array(
+            ));
+
+        if ($expedicao->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) {
+
+            $this->addAction(array(
                 'label' => 'Reiniciar Contagem',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'mapa',
                 'actionName' => 'desfazer-conferencia-ajax',
                 'pkIndex' => array('COD_PRODUTO','DSC_GRADE')
             ));
+        }
 
 
         return $this;
