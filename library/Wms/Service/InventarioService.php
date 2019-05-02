@@ -14,6 +14,7 @@ use Doctrine\Common\Collections\Criteria;
 use Wms\Domain\Entity\Atividade;
 use Wms\Domain\Entity\Enderecamento\EstoqueRepository;
 use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
+use Wms\Domain\Entity\Inventario;
 use Wms\Domain\Entity\InventarioNovo;
 use Wms\Domain\Entity\InventarioNovoRepository;
 use Wms\Domain\Entity\OrdemServico;
@@ -77,6 +78,7 @@ class InventarioService extends AbstractService
                 }
             }
 
+            self::newLog($inventarioEn,InventarioNovo\InventarioAndamento::STATUS_GERADO);
             $this->em->flush();
             $this->em->commit();
             return $inventarioEn;
@@ -120,6 +122,7 @@ class InventarioService extends AbstractService
                 }
 
                 $this->em->persist($inventarioEn);
+                self::newLog($inventarioEn,InventarioNovo\InventarioAndamento::STATUS_LIBERADO);
                 $this->em->flush();
                 $this->em->commit();
                 return true;
@@ -153,6 +156,7 @@ class InventarioService extends AbstractService
 
             $produto->setAtivo(false);
             $this->em->persist($produto);
+            self::newLog($produto->getInventarioEndereco()->getInventario(),InventarioNovo\InventarioAndamento::REMOVER_PRODUTO, null, $produto->getCodProduto() . " - " . $produto->getGrade());
             $this->em->flush();
 
             // se nao existir mais produtos no endereço, cancela o endereço
@@ -191,6 +195,8 @@ class InventarioService extends AbstractService
 
             $endereco->setAtivo(false);
             $this->em->persist($endereco);
+
+            self::newLog($endereco->getInventario(),InventarioNovo\InventarioAndamento::REMOVER_ENDERECO, null, $endereco->getDepositoEndereco()->getDescricao());
             $this->em->flush();
 
             // se nao existir mais endereços ativos nesse inventario, cancela o mesmo
@@ -200,9 +206,7 @@ class InventarioService extends AbstractService
             {
                 /** @var \Wms\Domain\Entity\InventarioNovo $inventarioEn */
                 $inventarioEn = $endereco->getInventario();
-                $inventarioEn->cancelar();
-                $this->em->persist($inventarioEn);
-                $this->em->flush();
+                self::cancelarInventario($inventarioEn->getId(), $inventarioEn);
             }
 
             $this->em->commit();
@@ -779,6 +783,7 @@ class InventarioService extends AbstractService
         try {
             $inventario->concluir();
             $this->em->persist($inventario);
+            self::newLog($inventario,InventarioNovo\InventarioAndamento::STATUS_CONCLUIDO);
             return ["code" => 4, "msg" => "Inventário concluído com sucesso"];
         } catch (\Exception $e) {
             throw $e;
@@ -912,6 +917,7 @@ class InventarioService extends AbstractService
 
             $invEn->finalizar();
             $this->em->persist($invEn);
+            self::newLog($invEn,InventarioNovo\InventarioAndamento::STATUS_FINALIZADO);
 
             $this->em->flush();
             $this->em->commit();
@@ -985,6 +991,7 @@ class InventarioService extends AbstractService
 
             $invEn->interromper();
             $this->em->persist($invEn);
+            self::newLog($invEn,InventarioNovo\InventarioAndamento::STATUS_INTERROMPIDO);
 
             $this->em->flush();
             $this->em->commit();
@@ -996,14 +1003,17 @@ class InventarioService extends AbstractService
 
     /**
      * @param $id
+     * @param $invEn InventarioNovo
      * @throws \Exception
      */
-    public function cancelarInventario($id)
+    public function cancelarInventario($id, $invEn = null)
     {
         $this->em->beginTransaction();
         try{
-            /** @var InventarioNovo $invEn */
-            $invEn = $this->find($id);
+            if (empty($inventario) && !empty($id)) {
+                /** @var InventarioNovo $invEn */
+                $invEn = $this->find($id);
+            }
 
             if ($invEn->isCancelado()) throw new \Exception("Este inventário $id já está cancelado");
             if ($invEn->isFinalizado()) throw new \Exception("Este inventário $id não pode mais ser cancelado, pois já foi aplicado ao estoque");
@@ -1015,6 +1025,7 @@ class InventarioService extends AbstractService
 
             $invEn->cancelar();
             $this->em->persist($invEn);
+            self::newLog($invEn,InventarioNovo\InventarioAndamento::STATUS_CANCELADO);
 
             $this->em->flush();
             $this->em->commit();
@@ -1207,5 +1218,51 @@ class InventarioService extends AbstractService
         } else {
             throw new \Exception("Nenhum inventário encontrado com o código $idInventario!");
         }
+    }
+
+    private function newLog($inventario, $acao, $usuario = null, $arg = null)
+    {
+        if (empty($usuario)) {
+            /** @var Usuario $usuario */
+            $usuario = $this->em->getReference('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId());
+        }
+
+        /** @var InventarioNovo\InventarioAndamentoRepository $logRepo */
+        $logRepo = $this->em->getRepository("wms:InventarioNovo\InventarioAndamento");
+
+        $dscAcao = "";
+        switch ($acao){
+            case InventarioNovo\InventarioAndamento::STATUS_GERADO:
+                $dscAcao = "Inventario gerado";
+                break;
+            case InventarioNovo\InventarioAndamento::STATUS_LIBERADO:
+                $dscAcao = "Inventario liberado";
+                break;
+            case InventarioNovo\InventarioAndamento::STATUS_CONCLUIDO:
+                $dscAcao = "Inventario concluido";
+                break;
+            case InventarioNovo\InventarioAndamento::STATUS_FINALIZADO:
+                $dscAcao = "Inventario finalizado";
+                break;
+            case InventarioNovo\InventarioAndamento::STATUS_INTERROMPIDO:
+                $dscAcao = "Inventario interrompido";
+                break;
+            case InventarioNovo\InventarioAndamento::STATUS_CANCELADO:
+                $dscAcao = "Inventario cancelado";
+                break;
+            case InventarioNovo\InventarioAndamento::REMOVER_ENDERECO:
+                $dscAcao = "Endereço $arg removido";
+                break;
+            case InventarioNovo\InventarioAndamento::REMOVER_PRODUTO:
+                $dscAcao = "Produto $arg removido";
+                break;
+        }
+
+        $logRepo->save([
+            "inventario" => $inventario,
+            "usuario" => $usuario,
+            "codAcao" => $acao,
+            "descricao" => $dscAcao
+        ]);
     }
 }
