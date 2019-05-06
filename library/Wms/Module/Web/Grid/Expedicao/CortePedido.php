@@ -19,12 +19,16 @@ class CortePedido extends Grid
      */
     public function init($pedidos,$idExpedicao)
     {
+
+        $permissaoEn = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'PERMITE_REALIZAR_CORTES_WMS'));
+        $permite = (!empty($permissaoEn) && $permissaoEn->getValor() == "N") ? false : true;
+
         $this->showPager = false;
         $this->showExport = false;
-        $this->setSource(new \Core\Grid\Source\ArraySource($pedidos))
+        $source = $this->setSource(new \Core\Grid\Source\ArraySource($pedidos))
                 ->setId('expedicao-mapas-grid')
                 ->setAttrib('class', 'grid-expedicao-pendencias')
-                ->setAttrib('caption', 'Pedidos para Corte')
+                ->setAttrib('caption', 'Pedidos')
                 ->addColumn(array(
                     'label' => 'Cod.',
                     'index' => 'id',
@@ -36,16 +40,18 @@ class CortePedido extends Grid
                 ->addColumn(array(
                     'label' => 'Itinerario.',
                     'index' => 'itinerario',
-                ))
-                ->addAction(array(
-                    'label' => 'Cortar Itens',
-                    'moduleName' => 'expedicao',
-                    'controllerName' => 'corte',
-                    'actionName' => 'list',
-                    'cssClass' => 'inside-modal',
-                    'params' => array('expedicao' => $idExpedicao),
-                    'pkIndex' => 'id'
-                ))
+                ));
+        if ($permite) {
+            $source->
+            addAction(array(
+                'label' => 'Cortar Itens',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'corte',
+                'actionName' => 'list',
+                'cssClass' => 'inside-modal',
+                'params' => array('expedicao' => $idExpedicao),
+                'pkIndex' => 'id'
+            ))
                 ->addAction(array(
                     'label' => 'Cortar Pedido',
                     'moduleName' => 'expedicao',
@@ -55,6 +61,7 @@ class CortePedido extends Grid
                     'params' => array('expedicao' => $idExpedicao),
                     'pkIndex' => 'id'
                 ));
+        }
         $this->setShowPager(true);
         $pager = new \Core\Grid\Pager(count($pedidos),1,2000);
         $this->setpager($pager);

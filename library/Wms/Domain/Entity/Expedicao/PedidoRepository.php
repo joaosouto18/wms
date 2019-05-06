@@ -727,9 +727,8 @@ class PedidoRepository extends EntityRepository
 
         try {
             $sqlCampos = "p.codExterno as id, cli.codClienteExterno codcli, pe.nome cliente, NVL(i.descricao,'PADRAO') as itinerario, p.numSequencial";
-            if (isset($codProduto) && !empty($codProduto)) {
+            if (!empty($codProduto)) {
                 $sqlCampos = "p.id as ID, 
-                '' as VALUE, 
                 p.codExterno as id, 
                 cli.codClienteExterno codcli, 
                 ms.id mapa, 
@@ -765,7 +764,8 @@ class PedidoRepository extends EntityRepository
             }
 
             if (isset($codProduto) && !empty($codProduto)) {
-                $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'");
+                $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'")
+                    ->groupBy('p.codExterno, pe.nome, i.descricao, p.numSequencial, cli.codClienteExterno');
             } else {
                 $sql->groupBy('p.codExterno, pe.nome, i.descricao, p.numSequencial, cli.codClienteExterno');
             }

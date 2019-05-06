@@ -67,7 +67,8 @@ class CorteProduto extends Grid
                     'index' => 'itinerario',
                 ))->addColumn(array(
                     'label' => 'Qtd.Pedido',
-                    'index' => 'quantidade'));
+                    'index' => 'quantidade'
+                ));
 
                 if ($embalagensEn == null) {
                     $this->addColumn(array(
@@ -82,7 +83,6 @@ class CorteProduto extends Grid
                         'values' => $values,
                         'enabled' => $enabled));
                 }
-
 
                 $this->addColumn(array(
                     'label' => 'Qtd.Cortar',

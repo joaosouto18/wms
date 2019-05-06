@@ -11,8 +11,8 @@
      */
     $.wmsDialogAlert = function(settings, callbackFnk){
         var config = {
-            'title': settings.title,
             'msg': settings.msg,
+            'title': (!!settings.title)? settings.title : "-- Sistema --",
             'width': (!!settings.width)? settings.width : 350,
             'height': (!!settings.height)? settings.height : 'auto',
             'resizable': (!!settings.resizable)? settings.resizable : false,
