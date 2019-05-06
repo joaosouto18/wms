@@ -196,7 +196,7 @@ class EtiquetaEndereco extends Pdf
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 5, 28 , 100);
     }
 
-    public function layoutModelo14($codBarras){
+    public function layoutModelo13($codBarras){
         $this->InFooter = true;
         $this->Cell(5,13,"",0,0);
         $this->SetFont('Arial', 'B', 8);
