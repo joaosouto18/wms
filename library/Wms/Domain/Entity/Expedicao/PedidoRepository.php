@@ -726,51 +726,59 @@ class PedidoRepository extends EntityRepository
     {
 
         try {
-            $sqlCampos = "p.codExterno as id, cli.codClienteExterno codcli, pe.nome cliente, NVL(i.descricao,'PADRAO') as itinerario, p.numSequencial";
-            if (!empty($codProduto)) {
-                $sqlCampos = "p.id as ID, 
-                p.codExterno as id, 
-                cli.codClienteExterno codcli, 
-                ms.id mapa, 
-                pe.nome cliente, 
-                NVL(i.descricao,'PADRAO') as itinerario, 
-                p.numSequencial, 
-                NVL(msped.qtd, pp.quantidade) quantidade, 
-                NVL(msped.qtdCortada,0) qtdCortada, 
-                NVL(pp.qtdCortada,0) as qtdCorteTotal, 
-                pp.fatorEmbalagemVenda, 
-                CASE WHEN pp.quantidade > NVL(pp.qtdCortada,0) THEN 'S' ELSE 'N' AS permiteCorte, 
-                e.id as idExpedicao, 
-                c.codCargaExterno as carga ";
+            $sqlCampos = "
+                    P.COD_EXTERNO as \"id\",
+                    CL.COD_CLIENTE_EXTERNO as \"codcli\",
+                    MS.COD_MAPA_SEPARACAO as \"mapa\",
+                    PE.NOM_PESSOA as \"cliente\",
+                    NVL(I.DSC_ITINERARIO,'PADRAO') as \"itinerario\",
+                    P.NUM_SEQUENCIAL as \"numSequencial\"";
+            if (isset($codProduto) && !empty($codProduto)) {
+                $sqlCampos = "
+                    P.COD_PEDIDO as \"ID\",
+                    P.COD_EXTERNO as \"id\",
+                    CL.COD_CLIENTE_EXTERNO as \"codcli\",
+                    MS.COD_MAPA_SEPARACAO as \"mapa\",
+                    PE.NOM_PESSOA as \"cliente\",
+                    NVL(I.DSC_ITINERARIO,'PADRAO') as \"itinerario\",
+                    P.NUM_SEQUENCIAL as \"numSequencial\",
+                    NVL(MSP.QTD, PP.QUANTIDADE) as \"quantidade\",
+                    NVL(MSP.QTD_CORTADA,0) as \"qtdCortada\",
+                    NVL(MSC.QTD_CONFERIDA,0) as \"qtdConf\",
+                    NVL(PP.QTD_CORTADA,0) as \"qtdCorteTotal\",
+                    PP.FATOR_EMBALAGEM_VENDA as \"fatorEmbalagemVenda\",
+                    C.COD_CARGA_EXTERNO as \"carga\"";
             }
 
+            $sql = "FROM PEDIDO_PRODUTO PP
+              INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+              INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+              INNER JOIN PESSOA PE ON PE.COD_PESSOA = P.COD_PESSOA
+              INNER JOIN CLIENTE CL ON P.COD_PESSOA = CL.COD_PESSOA
+               LEFT JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO
+               LEFT JOIN MAPA_SEPARACAO_PEDIDO MSP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+               LEFT JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+               LEFT JOIN (SELECT M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) QTD_CONFERIDA
+                            FROM MAPA_SEPARACAO_CONFERENCIA MSC2 INNER JOIN MAPA_SEPARACAO M on MSC2.COD_MAPA_SEPARACAO = M.COD_MAPA_SEPARACAO
+                           WHERE M.COD_EXPEDICAO in ($idExpedicao)
+                           GROUP BY M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSC
+                         ON MS.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = PP.COD_PRODUTO AND MSC.DSC_GRADE = PP.DSC_GRADE
+                   ";
 
-            $sql = $this->getEntityManager()->createQueryBuilder()
-                ->select($sqlCampos)
-                ->from('wms:Expedicao\Pedido', 'p')
-                ->innerJoin('p.pessoa', 'cli')
-                ->innerJoin('wms:Expedicao\PedidoProduto', 'pp', 'WITH', 'p.id = pp.codPedido')
-                ->leftJoin("wms:Expedicao\MapaSeparacaoPedido", "msped", "WITH", "msped.pedidoProduto = pp")
-                ->leftJoin("msped.mapaSeparacao", "ms")
-                ->innerJoin('wms:Pessoa', 'pe', 'WITH', 'pe.id = p.pessoa')
-                ->leftJoin('wms:Expedicao\Itinerario', 'i', 'WITH', 'i.id = p.itinerario')
-                ->innerJoin('p.carga', 'c')
-                ->innerJoin('c.expedicao', 'e')
-                ->where("e.id IN ($idExpedicao) ")
-                ->orderBy('p.codExterno', 'asc');
+            $where = "WHERE C.COD_EXPEDICAO in($idExpedicao)";
 
             if ($todosProdutos == false) {
-                $sql->andWhere("pp.quantidade > NVL(pp.qtdCortada,0)");
+                $where .= " AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA, 0)";
             }
 
+            $groupBy = "";
             if (isset($codProduto) && !empty($codProduto)) {
-                $sql->andWhere("pp.codProduto = '$codProduto' AND pp.grade = '$grade'")
-                    ->groupBy('p.codExterno, pe.nome, i.descricao, p.numSequencial, cli.codClienteExterno');
+                $where .= " AND pp.codProduto = '$codProduto' AND pp.grade = '$grade'";
             } else {
-                $sql->groupBy('p.codExterno, pe.nome, i.descricao, p.numSequencial, cli.codClienteExterno');
+                $groupBy = 'GROUP BY P.COD_EXTERNO, PE.NOM_PESSOA, I.DSC_ITINERARIO, P.NUM_SEQUENCIAL, CL.COD_CLIENTE_EXTERNO';
             }
 
-            $result = $sql->getQuery()->getResult();
+            $result = $this->_em->getConnection()->query($sql.$where.$groupBy)->fetchAll();
 
             if (isset($codProduto) && !empty($codProduto)) {
                 $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
@@ -839,9 +847,7 @@ class PedidoRepository extends EntityRepository
                         } else {
                             $result[$key]['qtdCortada'] = "";
                         }
-
                     }
-
                 }
             }
 
