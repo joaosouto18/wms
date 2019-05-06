@@ -156,10 +156,6 @@ class EtiquetaEndereco extends Pdf
                     if($key > 0) $this->AddPage();
                         $this->layoutModelo14($codBarras);
                     break;
-                case 14:
-                    if($key > 0) $this->AddPage();
-                    $this->layoutModelo14($codBarras);
-                    break;
                 default:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras, false);
                     if (count($produtos) <= 0){
