@@ -20,10 +20,11 @@
                             <td><span>Mapa</span></td>
                             <td><span>Cod.Cliente</span></td>
                             <td><span>Cliente</span></td>
-                            <td><span>Itinerario.</span></td>
+                            <td><span>Itinerario</span></td>
                             <td><span>Qtd.Pedido</span></td>
                             <td><span>Emb.Corte</span></td>
                             <td><span>Qtd.Cortar</span></td>
+                            <td><span>Qtd.Conf</span></td>
                             <td><span>Qtd.Corte/Mapa</span></td>
                             <td><span>Qtd.Cortada Total</span></td>
                         </tr>
@@ -42,55 +43,97 @@
     ?>
 </div>
 
-
-<input type="hidden" name="id" id="id" value="<?php echo $this->id ?>">
-
 <script>
 
     let itens = [];
-    let forcarEmbVenda = <?php echo ($this->forcaEmbVenda == "S") ?>;
-    
+    let embs = [];
+    let forcarEmbVenda = <?php echo ($this->forcaEmbVenda == "S") ? "true": "false" ?>;
+    let idExpedicao = <?php echo $this->id ?>;
+
+    function testShowGrid() {
+        let grid = $("#gridCorte");
+        if (!isEmpty(itens)) {
+            grid.show();
+        } else {
+            grid.hide();
+        }
+    }
+
     function updateList()
     {
         let newTd = function (content) {
             return $("<td style='text-align:left'></td>").append( content );
         };
         let tbody = $("#result-list");
-        tbody.clear();
+        tbody.html("");
 
         $.each(itens, function (i, item) {
             let newRow = $("<tr class='gTResultSet' id='row-item-" + i + "' >");
 
-            newRow.append( newTd( item.expedicao ) );
+            newRow.append( newTd( idExpedicao ) );
             newRow.append( newTd( item.carga ) );
+            newRow.append( newTd( item.id ) );
             newRow.append( newTd( item.mapa ) );
+            newRow.append( newTd( item.codcli ) );
             newRow.append( newTd( item.cliente ) );
-            newRow.append( newTd( item.dscCliente ) );
             newRow.append( newTd( item.itinerario ) );
-            newRow.append( newTd( item.qtdPedido ) );
-
-            if (!isEmpty(item.embs)) {
-                let newEmbSelector = $("<select id='emb-" + i + "' ></select>");
-                $.each(item.embs, function (l, emb) {
-                    let selecionado = (emb.isEmbVenda) ? "selected='selected'" : "";
-                    let enabled = (!forcarEmbVenda) ? "disabled=disabled" : "";
-                    newEmbSelector.append("<option " + selecionado + " " + enabled + " value='" + emb.id + "'>" + emb.dscEmb + "</option>")
+            newRow.append( newTd( item.quantidadeUnitaria ) );
+            let newEmbSelector = "";
+            if (!isEmpty(embs)) {
+                newEmbSelector = $("<select id='emb-" + i + "' data-index='" + i + "' class='qtdCortar' ></select>");
+                if (forcarEmbVenda) newEmbSelector.prop("disabled", true);
+                $.each(embs, function (l, emb) {
+                    let selecionado = (forcarEmbVenda && (emb.fator == item.fatorEmbalagemVenda)) ? "selected" : "";
+                    newEmbSelector.append("<option " + selecionado + " value='" + emb.id + "' data-index='" + l + "'>" + emb.dscEmb + "</option>");
                 });
-                newRow.append(newTd(newEmbSelector));
-            } else {
-                newRow.append(newTd(""));
             }
-
+            newRow.append( newTd( newEmbSelector ) );
             newRow.append( newTd( $("<input style='width:40px;' type='text' class='qtdCortar' id='qtdCortar-" + i + "' data-index='" + i + "'>") ) );
-            newRow.append( newTd( item.qtdCortadoMapa ) );
-            newRow.append( newTd( item.qtdCortadoTotal ) );
+            newRow.append( newTd( item.qtdConf ) );
+            newRow.append( newTd( item.qtdCortada ) );
+            newRow.append( newTd( item.qtdCorteTotal ) );
+
+            if ( getSaldoCorte(item) <= 0 ) newRow.find("input, select").prop("disabled", true);
 
             tbody.append(newRow);
         })
     }
+
+    function getSaldoCorte(item) {
+        let qtdCortada = parseFloat((!isEmpty(item.qtdCortadaUnitaria)) ? item.qtdCortadaUnitaria : item.qtdCorteTotalUnitaria);
+        let qtdConferida = parseFloat(item.qtdConf);
+        let qtdPedido = parseFloat(item.quantidadeUnitaria);
+        let fator = parseFloat(embs[0].fator);
+        return parseFloat((qtdPedido - parseFloat(qtdCortada + qtdConferida)) / fator);
+    }
+
+    function calculaCorte(input) {
+        let index = input.data("index");
+        let indexEmb = $("#emb-"+index).find(":selected").data("index");
+        let inputQtd = $("#qtdCortar-"+index);
+        let qtd = inputQtd.val();
+        let item = itens[index];
+        let qtdCortarUn = parseFloat(qtd * embs[indexEmb].fator);
+        let saldo = getSaldoCorte(item);
+        if ( qtdCortarUn > saldo ) {
+            $.wmsDialogAlert({msg: "A quantidade excede o saldo disponível para corte! <br> Utilize uma embalagem menor ou reduza a quantidade!"},
+                function (objInput) {
+                    console.log(objInput);
+                    objInput.inputQtd.val("");
+                    objInput.inputEven.focus();
+                },
+                {inputQtd: inputQtd, inputEven: input}
+            );
+        }
+    }
+
+    $(".qtdCortar").live("focusout", function () {
+        calculaCorte($(this));
+    });
     
     function confirmaCorte()
     {
+        event.preventDefault();
 
         let cortes = [];
 
@@ -98,7 +141,7 @@
             let qtdCortar = $("#qtdCortar-" + i).val();
             if (!isEmpty(qtdCortar)) {
                 var corte = [];
-                corte[0] = item.codPedido;
+                corte[0] = item.ID;
                 corte[1] = $("#emb-" + i).val();
                 corte[2] = qtdCortar;
                 corte[3] = item.mapa;
@@ -132,37 +175,40 @@
                 } else {
                     $.wmsDialogAlert({msg:"Produto cortado com sucesso"});
                     itens = [];
-                    $("#result-list").clear()
+                    $("#result-list").html("");
+                    $("#motivoCorte").html("");
                 }
             }
         });
     }
 
-    $("#corteTotal").click( function() {
+    $("#corteTotal").click( function(e) {
+        e.preventDefault();
         $.each(itens, function (i, item) {
-            let qtdCortada = (!isEmpty(item.qtdCortadoMapa)) ? item.qtdCortadoMapa : item.qtdCortadoTotal;
-            let qtdConferida = (!isEmpty(item.qtdConferidaMapa)) ? item.qtdConferidaMapa : item.qtdConferidaTotal;
-            $("#qtdCortar-"+i).val((item.qtdPedido - (qtdCortada + qtdConferida)) / item.embs[0].fator);
+            calculaCorte(i);
+            $("#qtdCortar-"+i).val(getSaldoCorte(item));
         });
     });
 
     function executeRequest() {
         $.ajax({
-            url: URL_MODULO + '/corte/corte-produto/',
+            url: URL_MODULO + '/corte/get-data-produto-corte-ajax/',
             type: 'post',
             data: {
-                id: $('#id').val(),
+                id: idExpedicao,
                 codProduto: $('#codProduto').val(),
                 grade: $('#grade').val()
             },
             success: function (data) {
-                if (data.error) {
+                if (data.status === "error") {
                     $("#motivoCorte").html("");
-                    $.wmsDialogAlert({msg:data.error});
+                    $.wmsDialogAlert({msg: data.msg});
                 } else {
                     itens = data.itens;
+                    embs = data.embs;
                     updateList();
-                    $("#motivoCorte").html(data.resultForm);
+                    $("#motivoCorte").html(data.formMotivo);
+                    testShowGrid();
                 }
             }
         });
@@ -188,10 +234,5 @@
         }
     }
 
-    $(".qtdCortar").live("focusout", function () {
-        var input = $(this);
-        var tbody = input.parent().parent().parent();
-        console.log(tbody);
-        console.log(input.parent().parentNode);
-    })
+    testShowGrid();
 </script>

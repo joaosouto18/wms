@@ -256,51 +256,14 @@ class Expedicao_CorteController extends Action {
 
     public function corteProdutoAction() {
         $this->view->id = $id = $this->_getParam('id');
-        $grade = $this->_getParam('grade');
-        $codProduto = $this->_getParam('codProduto');
-        $actionAjax = $this->_getParam('acao');
 
         try {
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $this->em->getRepository("wms:Expedicao\ModeloSeparacao")->getModeloSeparacao($id);
-            $this->view->forcaEmbVenda = $forcaEmbVenda = $modeloSeparacaoEn->getForcarEmbVenda();
-
-            if (($codProduto != null) && ($grade != null)) {
-
-                $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id'=> $codProduto, 'grade' => $grade));
-
-                if ($produtoEn == null) {
-                    throw new \Exception("Produto não encontrado");
-                }
-
-                $formMotivo = new \Wms\Module\Expedicao\Form\CorteProduto();
-                $formMotivo->init();
-                $formMotivo->setProduto($produtoEn);
-                $this->view->formMotivo = $formMotivo;
-
-
-                /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-                $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-                $pedidos = $pedidoRepo->getPedidoByExpedicao($id, $codProduto, $grade, true);
-
-//                $grid = new \Wms\Module\Web\Grid\Expedicao\CorteProduto();
-//
-//                $grid = $grid->init($pedidos, $codProduto, $grade, (!empty($produtoEn->getForcarEmbVenda()) ? $produtoEn->getForcarEmbVenda() : $forcaEmbVenda));
-//
-//                $this->arrCortes = $pedidos;
-//                $this->view->grid = $grid;
-            }
-
-            $form = new \Wms\Module\Web\Form\CortePedido();
-            $this->view->form = $form;
-
+            $this->view->forcaEmbVenda = $modeloSeparacaoEn->getForcarEmbVenda();
+            $this->view->form = new \Wms\Module\Web\Form\CortePedido();
         } catch (\Exception $e) {
-            if (!empty($actionAjax)) {
-                $this->_helper->json(array(
-                    'error' => $e->getMessage()
-                ));
-            }
-            return;
+            $this->addFlashMessage("error", $e->getMessage());
         }
     }
 
@@ -311,15 +274,47 @@ class Expedicao_CorteController extends Action {
             $grade = $this->_getParam('grade');
             $codProduto = $this->_getParam('codProduto');
 
+            /** @var \Wms\Domain\Entity\Produto $produtoEn */
             $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $codProduto, 'grade' => $grade));
 
             if ($produtoEn == null) {
                 throw new \Exception("Produto não encontrado");
             }
 
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+            $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true);
+
+            $values = array();
+            if ($produtoEn->isUnitario()) {
+                $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+                $embalagens = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'ASC'));
+
+                if (empty($embalagens)) throw new Exception("O produto não tem embalagem ativa!");
+
+                /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
+                foreach ($embalagens as $embalagemEn) {
+                    $values[] = [
+                        "id" => $embalagemEn->getId(),
+                        "fator" => $embalagemEn->getQuantidade(),
+                        "dscEmb" => $embalagemEn->getDescricao() . "(" . $embalagemEn->getQuantidade() . ")"
+                    ];
+                }
+            }
+
             $formMotivo = new \Wms\Module\Expedicao\Form\CorteProduto();
             $formMotivo->init();
             $formMotivo->setProduto($produtoEn);
+
+            $result = [
+                "status" => "ok",
+                "itens" => $pedidos,
+                "embs" => $values,
+                "formMotivo" => $formMotivo->render()
+            ];
+
+            $this->_helper->json($result);
+
         } catch (Exception $e) {
             $this->_helper->json(["status"=>"error", "msg"=>$e->getMessage()]);
         }

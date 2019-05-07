@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity\Expedicao;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
+use Wms\Domain\Entity\Produto\Embalagem;
 use Wms\Math;
 use Zend\Stdlib\Configurator;
 
@@ -750,7 +751,7 @@ class PedidoRepository extends EntityRepository
                     C.COD_CARGA_EXTERNO as \"carga\"";
             }
 
-            $sql = "FROM PEDIDO_PRODUTO PP
+            $sql = "SELECT $sqlCampos FROM PEDIDO_PRODUTO PP
               INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
               INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
               INNER JOIN PESSOA PE ON PE.COD_PESSOA = P.COD_PESSOA
@@ -773,7 +774,7 @@ class PedidoRepository extends EntityRepository
 
             $groupBy = "";
             if (isset($codProduto) && !empty($codProduto)) {
-                $where .= " AND pp.codProduto = '$codProduto' AND pp.grade = '$grade'";
+                $where .= " AND PP.COD_PRODUTO = '$codProduto' AND PP.DSC_GRADE = '$grade'";
             } else {
                 $groupBy = 'GROUP BY P.COD_EXTERNO, PE.NOM_PESSOA, I.DSC_ITINERARIO, P.NUM_SEQUENCIAL, CL.COD_CLIENTE_EXTERNO';
             }
@@ -792,6 +793,7 @@ class PedidoRepository extends EntityRepository
                     foreach ($result as $key => $value) {
                         $result[$key]['quantidadeUnitaria'] = $value['quantidade'];
                         $result[$key]['qtdCortadaUnitaria'] = $value['qtdCortada'];
+                        $result[$key]['qtdCorteTotalUnitaria'] = $value['qtdCorteTotal'];
 
                         if ($embalagemEn == null) {
                             $result[$key]['fatorEmbalagemVenda'] = 1;
@@ -814,6 +816,14 @@ class PedidoRepository extends EntityRepository
                             $embalagem = $vetEmbalagens;
                         }
                         $result[$key]['qtdCortada'] = $embalagem;
+
+                        $vetEmbalagens = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $grade, $value['qtdCorteTotal']);
+                        if (is_array($vetEmbalagens)) {
+                            $embalagem = implode(' + ', $vetEmbalagens);
+                        } else {
+                            $embalagem = $vetEmbalagens;
+                        }
+                        $result[$key]['qtdCorteTotal'] = $embalagem;
 
                         if ($embalagemEn == null) {
                             $result[$key]['idEmbalagem'] = "";
