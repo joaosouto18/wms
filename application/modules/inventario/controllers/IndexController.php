@@ -65,7 +65,7 @@ class Inventario_IndexController  extends Action
                 $inventarioEn = $inventarioRepo->find($id);
                 $inventarioRepo->adicionaEstoqueContagemInicial($inventarioEn); //@ToDo APAGAR SE DER PROBELMA
                 $inventarioRepo->alteraStatus($inventarioEn, \Wms\Domain\Entity\Inventario::STATUS_LIBERADO);
-                $inventarioRepo->bloqueiaEnderecos($id);
+                //$inventarioRepo->bloqueiaEnderecos($id);
                 $this->_helper->messenger('success', 'Inventário liberado com sucesso');
                 $this->redirect();
             }

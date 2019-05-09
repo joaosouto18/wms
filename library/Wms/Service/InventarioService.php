@@ -110,15 +110,14 @@ class InventarioService extends AbstractService
             } else {
                 $inventarioEn->liberar();
 
-                /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-                $enderecoRepo = $this->em->getRepository('wms:Deposito\Endereco');
+                /** @var InventarioNovo\InventarioEnderecoNovo[] $invEnds */
+                $invEnds = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->findBy(["inventario" => $inventarioEn]);
 
-                /** @var InventarioNovo\InventarioEnderecoNovo[] $enderecos */
-                $enderecos = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->findBy(["inventario" => $inventarioEn]);
-
-                foreach ($enderecos as $endereco) {
-                    $this->addNovaContagem($endereco);
-                    $enderecoRepo->bloqueiaOuDesbloqueiaInventario($endereco->getDepositoEndereco(), 'S', false);
+                foreach ($invEnds as $invEnd) {
+                    $this->addNovaContagem($invEnd);
+                    $depEndEn = $invEnd->getDepositoEndereco();
+                    $depEndEn->setInventarioBloqueado("S");
+                    $this->em->persist($depEndEn);
                 }
 
                 $this->em->persist($inventarioEn);
@@ -195,6 +194,10 @@ class InventarioService extends AbstractService
 
             $endereco->setAtivo(false);
             $this->em->persist($endereco);
+
+            $depEndEn = $endereco->getDepositoEndereco();
+            $depEndEn->setInventarioBloqueado("N");
+            $this->em->persist($depEndEn);
 
             self::newLog($endereco->getInventario(),InventarioNovo\InventarioAndamento::REMOVER_ENDERECO, null, $endereco->getDepositoEndereco()->getDescricao());
             $this->em->flush();
@@ -861,19 +864,19 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $idInventario
+     * @param $id
      * @throws \Exception
      */
-    public function finalizarInventario($idInventario)
+    public function finalizarInventario($id)
     {
         $this->em->beginTransaction();
         try {
             /** @var InventarioNovo $invEn */
-            $invEn = $this->find($idInventario);
+            $invEn = $this->find($id);
 
-            if (!($invEn->isConcluido() || $invEn->isInterrompido())) throw new \Exception("Impossível finalizar este inventário $idInventario pois está: " . $invEn->getDscStatus());
+            if (!($invEn->isConcluido() || $invEn->isInterrompido())) throw new \Exception("Impossível finalizar este inventário $id pois está: " . $invEn->getDscStatus());
 
-            $resultInv = $this->getRepository()->getResultInventario($idInventario);
+            $resultInv = $this->getRepository()->getResultInventario($id);
 
             foreach ($resultInv as $item) {
                 if ($item["QTD"] != 0 || !empty($item["DTH_VALIDADE"])) {
@@ -902,7 +905,7 @@ class InventarioService extends AbstractService
                     }
 
                     $this->atualizarEstoque(
-                        $idInventario,
+                        $id,
                         $item["COD_DEPOSITO_ENDERECO"],
                         $produtoEn,
                         $item["DSC_LOTE"],
@@ -921,6 +924,9 @@ class InventarioService extends AbstractService
 
             $this->em->flush();
             $this->em->commit();
+
+            $this->em->getRepository("wms:Deposito\Endereco")->desbloquearByInventario($id);
+
         } catch (\Exception $e) {
             $this->em->rollback();
             throw $e;
@@ -1029,6 +1035,8 @@ class InventarioService extends AbstractService
 
             $this->em->flush();
             $this->em->commit();
+
+            $this->em->getRepository("wms:Deposito\Endereco")->desbloquearByInventario($id);
         } catch (\Exception $e) {
             $this->em->rollback();
             throw $e;

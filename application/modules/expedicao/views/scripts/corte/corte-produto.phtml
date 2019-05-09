@@ -118,7 +118,6 @@
         if ( qtdCortarUn > saldo ) {
             $.wmsDialogAlert({msg: "A quantidade excede o saldo disponível para corte! <br> Utilize uma embalagem menor ou reduza a quantidade!"},
                 function (objInput) {
-                    console.log(objInput);
                     objInput.inputQtd.val("");
                     objInput.inputEven.focus();
                 },
