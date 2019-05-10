@@ -26,6 +26,7 @@ class EtiquetaEndereco extends Pdf
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $this->SetMargins(3, 0, 3);
+        $this->SetAutoPageBreak(false);
         $this->AddPage();
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo   = $em->getRepository('wms:Deposito\Endereco');
@@ -34,8 +35,6 @@ class EtiquetaEndereco extends Pdf
         $this->y=0;
         $this->count = 0;
         $qtd = 0;
-        $arrPares = array();
-
         $arrPares = array();
 
         foreach($enderecos as $key => $endereco) {
@@ -151,6 +150,10 @@ class EtiquetaEndereco extends Pdf
                     }
                     $this->layoutModelo11($produtos,$codBarras);
 
+                    break;
+                case 15:
+                    $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
+                    $this->layoutModelo15($produtos,$codBarras);
                     break;
                 case 14:
                     if($key > 0) $this->AddPage();
@@ -666,6 +669,64 @@ class EtiquetaEndereco extends Pdf
             $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$endereco)) , $wDscEndereco, 15  + $fator, $wCdoBarrasEnd, 12);
 
         }
+    }
+
+    public function layoutModelo15 ($produto, $codBarras){
+        $this->Cell(5,3,"",0,1);
+        $arrEndereco = Endereco::separar($codBarras);
+        $codBarras = implode('.',$arrEndereco);
+        $this->SetX(5);
+        $wRua = 19;
+        $wPredio = 22;
+        $wNivel = 18;
+        $wApto = 23;
+        $wTotal = $wRua + $wPredio + $wNivel + $wApto;
+
+        $tamanhoCodigo = 15;
+
+        $this->SetFont('Arial', 'B', $tamanhoCodigo);
+//        $this->Cell(30,13,"",0,0, 'C');
+        $this->Cell(0,13,reset($produto)['codProduto'],0,1, 'C');
+        $this->Cell(17,13,"",0,0);
+        $this->SetFont('Arial', 'B', 18);
+        $this->Cell(0,0," ",0,1);
+        $this->SetX(17);
+        $count = strlen(str_replace('.','',$codBarras));
+        $fX = ($wTotal / $count) * 3.8;
+
+        $this->SetFont('Arial', 'B', $fX);
+        $this->Cell($wTotal,2.5,$codBarras,0,1);
+
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        $dadosLogisticos = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => reset($produto)['codigoBarras']));
+
+
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 14, $this->GetY()+3, 90);
+        $this->Cell(10,0," ",0,1);
+
+        if (substr($arrEndereco['nivel'], -1) == 0) {
+            $this->Image(APPLICATION_PATH . '/../data/seta1.png', 0, $this->GetY()-4,13,20);
+        } else {
+            $this->Image(APPLICATION_PATH . '/../data/seta2.png', 0, $this->GetY()-4, 13,20);
+        }
+
+        $this->SetY(0);
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(10,25,"",0,1);
+        $this->Cell($wRua,35,utf8_decode("ALT"),0,0);
+        $this->Cell($wPredio,35,utf8_decode("LARG"),0,0);
+        $this->Cell($wNivel,35,utf8_decode("PROF"),0,0);
+        $this->Cell($wApto,35,utf8_decode("PESO"),0,0);
+        $this->Cell($wApto,35,utf8_decode("CAP. (CX)"),0,1);
+
+        $this->SetY(25);
+        $this->Cell($wRua,45,utf8_decode($dadosLogisticos->getAltura()),0,0);
+        $this->Cell($wPredio,45,utf8_decode($dadosLogisticos->getLargura()),0,0);
+        $this->Cell($wNivel,45,utf8_decode($dadosLogisticos->getProfundidade()),0,0);
+        $this->Cell($wApto,45,utf8_decode($dadosLogisticos->getPeso()),0,0);
+        $this->Cell($wApto,45,utf8_decode($dadosLogisticos->getCapacidadePicking()),0,1);
+
     }
 
 }
