@@ -723,21 +723,21 @@ class PedidoRepository extends EntityRepository
 
     }
 
-    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA', $todosProdutos = false)
+    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA', $todosProdutos = false, $idPedido = null)
     {
 
         try {
             $sqlCampos = "
                     P.COD_EXTERNO as \"id\",
                     CL.COD_CLIENTE_EXTERNO as \"codcli\",
-                    MS.COD_MAPA_SEPARACAO as \"mapa\",
                     PE.NOM_PESSOA as \"cliente\",
                     NVL(I.DSC_ITINERARIO,'PADRAO') as \"itinerario\",
                     P.NUM_SEQUENCIAL as \"numSequencial\"";
-            if (isset($codProduto) && !empty($codProduto)) {
+            if (!empty($codProduto)) {
                 $sqlCampos = "
                     P.COD_PEDIDO as \"ID\",
                     P.COD_EXTERNO as \"id\",
+                    CL.COD_PESSOA as \"idCliente\",
                     CL.COD_CLIENTE_EXTERNO as \"codcli\",
                     MS.COD_MAPA_SEPARACAO as \"mapa\",
                     PE.NOM_PESSOA as \"cliente\",
@@ -756,8 +756,10 @@ class PedidoRepository extends EntityRepository
               INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
               INNER JOIN PESSOA PE ON PE.COD_PESSOA = P.COD_PESSOA
               INNER JOIN CLIENTE CL ON P.COD_PESSOA = CL.COD_PESSOA
-               LEFT JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO
-               LEFT JOIN MAPA_SEPARACAO_PEDIDO MSP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+               LEFT JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO";
+
+            if (!empty($codProduto)) {
+                $sql .= "LEFT JOIN MAPA_SEPARACAO_PEDIDO MSP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
                LEFT JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
                LEFT JOIN (SELECT M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) QTD_CONFERIDA
                             FROM MAPA_SEPARACAO_CONFERENCIA MSC2 INNER JOIN MAPA_SEPARACAO M on MSC2.COD_MAPA_SEPARACAO = M.COD_MAPA_SEPARACAO
@@ -765,11 +767,16 @@ class PedidoRepository extends EntityRepository
                            GROUP BY M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSC
                          ON MS.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = PP.COD_PRODUTO AND MSC.DSC_GRADE = PP.DSC_GRADE
                    ";
+            }
 
-            $where = "WHERE C.COD_EXPEDICAO in($idExpedicao)";
+            $where = " WHERE C.COD_EXPEDICAO in($idExpedicao)";
 
             if ($todosProdutos == false) {
                 $where .= " AND PP.QUANTIDADE > NVL(PP.QTD_CORTADA, 0)";
+            }
+
+            if (!empty($idPedido)) {
+                $where .= " AND P.COD_PEDIDO = $idPedido";
             }
 
             $groupBy = "";

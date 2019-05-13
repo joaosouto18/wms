@@ -377,6 +377,7 @@ class Expedicao_CorteController extends Action {
         $this->view->mapaPreSelected = $mapaPreSelected = $this->_getParam('COD_MAPA_SEPARACAO', null);
         $motivo = $this->_getParam('motivoCorte', null);
         $mapa = $this->_getParam('mapa', null);
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
         $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($pedido);
         $senha = $this->_getParam('senha');
@@ -418,8 +419,16 @@ class Expedicao_CorteController extends Action {
             }
 
         } else {
-            if (empty($mapaPreSelected))
-                $this->view->mapas = $this->em->getRepository("wms:Expedicao\MapaSeparacaoPedido")->getMapaByPedidoProduto($idPedido, $produto, $grade);
+            $pedProds = $pedidoRepo->getPedidoByExpedicao($expedicao, $produto, $grade, false, $idPedido);
+            $response = [];
+            foreach ($pedProds as $pedProd) {
+                $index = "$pedProds[ID]";
+                if (!isset($pe)){
+
+                }
+            }
+//            if (empty($mapaPreSelected))
+//                $this->view->mapas = $this->em->getRepository("wms:Expedicao\MapaSeparacaoPedido")->getMapaByPedidoProduto($idPedido, $produto, $grade);
         }
     }
 
