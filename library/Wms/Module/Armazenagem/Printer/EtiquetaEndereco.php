@@ -26,8 +26,7 @@ class EtiquetaEndereco extends Pdf
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
 
         $this->SetMargins(3, 0, 3);
-        $this->SetAutoPageBreak(false);
-        $this->AddPage();
+//        $this->AddPage();
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo   = $em->getRepository('wms:Deposito\Endereco');
 
@@ -153,6 +152,8 @@ class EtiquetaEndereco extends Pdf
                     break;
                 case 15:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
+                    $this->SetAutoPageBreak(false);
+                    $this->AddPage();
                     $this->layoutModelo15($produtos,$codBarras);
                     break;
                 case 14:
@@ -682,14 +683,14 @@ class EtiquetaEndereco extends Pdf
         $wApto = 23;
         $wTotal = $wRua + $wPredio + $wNivel + $wApto;
 
-        $tamanhoCodigo = 15;
+        $tamanhoCodigo = 20;
 
         $this->SetFont('Arial', 'B', $tamanhoCodigo);
-//        $this->Cell(30,13,"",0,0, 'C');
+        $this->Cell(30,3,"",0,1, 'C');
         $this->Cell(0,13,reset($produto)['codProduto'],0,1, 'C');
         $this->Cell(17,13,"",0,0);
         $this->SetFont('Arial', 'B', 18);
-        $this->Cell(0,0," ",0,1);
+        $this->Cell(1.5,0," ",0,1);
         $this->SetX(17);
         $count = strlen(str_replace('.','',$codBarras));
         $fX = ($wTotal / $count) * 3.8;
@@ -699,10 +700,10 @@ class EtiquetaEndereco extends Pdf
 
         /** @var \Doctrine\ORM\EntityManager $em */
         $em = \Zend_Registry::get('doctrine')->getEntityManager();
-        $dadosLogisticos = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('codigoBarras' => reset($produto)['codigoBarras']));
+        $dadosLogisticos = $em->getRepository('wms:Produto\Embalagem')->findBy(array('codProduto' => reset($produto)['codProduto']), array('quantidade' => 'desc'));
+        $dadosLogisticos = reset($dadosLogisticos);
 
-
-        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 14, $this->GetY()+3, 90);
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 14, $this->GetY()+5, 90);
         $this->Cell(10,0," ",0,1);
 
         if (substr($arrEndereco['nivel'], -1) == 0) {
@@ -711,21 +712,37 @@ class EtiquetaEndereco extends Pdf
             $this->Image(APPLICATION_PATH . '/../data/seta2.png', 0, $this->GetY()-4, 13,20);
         }
 
-        $this->SetY(0);
+        $this->SetY(2);
         $this->SetFont('Arial', 'B', 10);
-        $this->Cell(10,25,"",0,1);
-        $this->Cell($wRua,35,utf8_decode("ALT"),0,0);
-        $this->Cell($wPredio,35,utf8_decode("LARG"),0,0);
-        $this->Cell($wNivel,35,utf8_decode("PROF"),0,0);
-        $this->Cell($wApto,35,utf8_decode("PESO"),0,0);
-        $this->Cell($wApto,35,utf8_decode("CAP. (CX)"),0,1);
+        $this->Cell(10,27,"",0,1);
+        $this->Cell($wRua,35,"ALT",0,0);
+        $this->Cell($wPredio,35,"LARG",0,0);
+        $this->Cell($wNivel,35,"PROF",0,0);
+        $this->Cell($wApto,35,"PESO",0,0);
+        $this->Cell($wApto,35,"CAP. (CX)",0,1);
 
-        $this->SetY(25);
-        $this->Cell($wRua,45,utf8_decode($dadosLogisticos->getAltura()),0,0);
-        $this->Cell($wPredio,45,utf8_decode($dadosLogisticos->getLargura()),0,0);
-        $this->Cell($wNivel,45,utf8_decode($dadosLogisticos->getProfundidade()),0,0);
-        $this->Cell($wApto,45,utf8_decode($dadosLogisticos->getPeso()),0,0);
-        $this->Cell($wApto,45,utf8_decode($dadosLogisticos->getCapacidadePicking()),0,1);
+        $this->SetY(27);
+
+        $altura = '0,00';
+        $largura = '0,00';
+        $profundidade = '0,00';
+        $peso = '0,00';
+        $capacidade = '0,00';
+
+        if (is_object($dadosLogisticos)) {
+            $altura = $dadosLogisticos->getAltura();
+            $largura = $dadosLogisticos->getLargura();
+            $profundidade = $dadosLogisticos->getProfundidade();
+            $peso = $dadosLogisticos->getPeso();
+            $capacidade = $dadosLogisticos->getCapacidadePicking() / $dadosLogisticos->getQuantidade();
+            $quantidade = $dadosLogisticos->getQuantidade();
+        }
+
+        $this->Cell($wRua,45,$altura,0,0);
+        $this->Cell($wPredio,45,$largura,0,0);
+        $this->Cell($wNivel,45,$profundidade,0,0);
+        $this->Cell($wApto,45,$peso,0,0);
+        $this->Cell($wApto+3,45,$capacidade,0,1);
 
     }
 
