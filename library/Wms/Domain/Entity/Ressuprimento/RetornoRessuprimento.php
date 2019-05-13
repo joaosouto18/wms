@@ -32,7 +32,7 @@ class RetornoRessuprimento
 {
     /**
      * @Id
-     * @Column(name="NUM_SEQUENCIA", type="integer", nullable=false)
+     * @Column(name="COD_RETORNO_RESSUPRIMENTO", type="integer", nullable=false)
      * @GeneratedValue(strategy="SEQUENCE")
      * @SequenceGenerator(sequenceName="SQ_RETORNO_RESSUPRIMENTO_01", allocationSize=1, initialValue=1)
      */

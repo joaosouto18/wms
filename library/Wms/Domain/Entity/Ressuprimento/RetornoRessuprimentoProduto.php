@@ -32,7 +32,7 @@ class RetornoRessuprimentoProduto
 {
     /**
      * @Id
-     * @Column(name="NUM_SEQUENCIA", type="integer", nullable=false)
+     * @Column(name="COD_RETORNO_RESSUP_PROD", type="integer", nullable=false)
      * @GeneratedValue(strategy="SEQUENCE")
      * @SequenceGenerator(sequenceName="SQ_RETORNO_RESSUP_PROD_01", allocationSize=1, initialValue=1)
      */
@@ -72,7 +72,7 @@ class RetornoRessuprimentoProduto
     protected $produtoVolume;
 
     /**
-     * @Column(name="DTH_MOVIMENTACAO", type="datetime", nullable=false)
+     * @Column(name="QTD", type="decimal", nullable=false)
      */
     protected $qtd;
 
@@ -82,49 +82,56 @@ class RetornoRessuprimentoProduto
      */
     protected $lote;
 
-
     /**
-     * @param mixed $retornoRessuprimento
+     * @return mixed
      */
-    public function setRetornoRessuprimento($retornoRessuprimento)
+    public function getId()
     {
-        $this->retornoRessuprimetno = $retornoRessuprimento;
+        return $this->id;
     }
 
     /**
-     * @return mixed
+     * @param mixed $id
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @return RetornoRessuprimento
      */
     public function getRetornoRessuprimento()
     {
-        return $this->retornoRessuprimetno;
+        return $this->retornoRessuprimento;
     }
 
     /**
-     * @param mixed $produto
+     * @param RetornoRessuprimento $retornoRessuprimento
      */
-    public function setProduto($produto)
+    public function setRetornoRessuprimento($retornoRessuprimento)
     {
-        $this->produto = $produto;
+        $this->retornoRessuprimento = $retornoRessuprimento;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getProduto()
+    public function getCodProduto()
     {
-        return $this->produto;
+        return $this->codProduto;
     }
 
     /**
-     * @param mixed $grade
+     * @param string $codProduto
      */
-    public function setGrade($grade)
+    public function setCodProduto($codProduto)
     {
-        $this->grade = $grade;
+        $this->codProduto = $codProduto;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getGrade()
     {
@@ -132,15 +139,15 @@ class RetornoRessuprimentoProduto
     }
 
     /**
-     * @param mixed $produtoEmbalagem
+     * @param string $grade
      */
-    public function setProdutoEmbalagem($produtoEmbalagem)
+    public function setGrade($grade)
     {
-        $this->produtoEmbalagem = $produtoEmbalagem;
+        $this->grade = $grade;
     }
 
     /**
-     * @return mixed
+     * @return Produto\Embalagem
      */
     public function getProdutoEmbalagem()
     {
@@ -148,15 +155,15 @@ class RetornoRessuprimentoProduto
     }
 
     /**
-     * @param mixed $produtoVolume
+     * @param Produto\Embalagem $produtoEmbalagem
      */
-    public function setProdutoVolume($produtoVolume)
+    public function setProdutoEmbalagem($produtoEmbalagem)
     {
-        $this->produtoVolume = $produtoVolume;
+        $this->produtoEmbalagem = $produtoEmbalagem;
     }
 
     /**
-     * @return mixed
+     * @return Produto\Volume
      */
     public function getProdutoVolume()
     {
@@ -164,11 +171,11 @@ class RetornoRessuprimentoProduto
     }
 
     /**
-     * @param mixed $qtd
+     * @param Produto\Volume $produtoVolume
      */
-    public function setQtd($qtd)
+    public function setProdutoVolume($produtoVolume)
     {
-        $this->qtd = $qtd;
+        $this->produtoVolume = $produtoVolume;
     }
 
     /**
@@ -180,36 +187,27 @@ class RetornoRessuprimentoProduto
     }
 
     /**
-     * @param mixed $lote
+     * @param mixed $qtd
      */
-    public function setLote($lote)
+    public function setQtd($qtd)
     {
-        $this->lote = $lote;
+        $this->qtd = $qtd;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getLote()
     {
         return $this->lote;
     }
 
-
     /**
-     * @param mixed $id
+     * @param string $lote
      */
-    public function setId($id)
+    public function setLote($lote)
     {
-        $this->id = $id;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getId()
-    {
-        return $this->id;
+        $this->lote = $lote;
     }
 
     public function toArray()

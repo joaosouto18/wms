@@ -1193,15 +1193,20 @@ class OndaRessuprimentoRepository extends EntityRepository {
 
     public function getQtdProdutoRessuprimento($idOnda, $codProduto, $grade){
 
-        $sql = "select qtd from onda_ressuprimento_os_produto 
-                  where cod_produto = '.$codProduto.' and dsc_grade = '.$grade.'
-                    and cod_onda_ressuprimento_os in ( 
-                        select cod_onda_ressuprimento_os from onda_ressuprimento_os 
-                            where cod_onda_ressuprimento in (
-                                select cod_onda_ressuprimento from onda_ressuprimento 
-                                where cod_onda_ressuprimento = $idOnda))";
+        $sql = "select qtd 
+                  from onda_ressuprimento_os_produto 
+                 where cod_produto = '$codProduto' 
+                   and dsc_grade = '$grade'
+                   and cod_onda_ressuprimento_os = $idOnda";
 
-        return $this->_em->getConnection()->query($sql)->fetchAll();
+        $result = $this->_em->getConnection()->query($sql)->fetchAll();
+
+        $qtd = 0;
+        if (($result != null) && (count($result)>0)) {
+            $qtd = $result[0]['QTD'];
+        }
+
+        return $qtd;
     }
 
 }

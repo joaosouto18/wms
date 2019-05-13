@@ -3,7 +3,7 @@
 namespace Wms\Domain\Entity\Ressuprimento;
 /**
  * @Table(name="ONDA_RESSUPRIMENTO_OS_PRODUTO")
- * @Entity(repositoryClass="Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoProdutoOsRepository")
+ * @Entity(repositoryClass="Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOsProdutoRepository")
  */
 class OndaRessuprimentoOsProduto
 {

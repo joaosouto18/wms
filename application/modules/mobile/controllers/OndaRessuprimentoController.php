@@ -306,7 +306,7 @@ class Mobile_OndaRessuprimentoController extends Action
             $grade          = $result[0]['GRADE'];
             $descricao      = $result[0]['DESCRICAO'];
             $enderecoOrigem = $result[0]['ENDERECO'];
-            $qtd            = $result[0]['QTD'];
+            $qtd            = $result[0]['QTD_UNIT'];
             $lote           = $result[0]['LOTE'];
             $produtosOnda   = $ondaOsEn->getProdutos();
 
@@ -353,6 +353,16 @@ class Mobile_OndaRessuprimentoController extends Action
             $enderecoOrigem = $this->_getParam("enderecoOrigem");
             $qtd            = $this->_getParam("qtd");
 
+            /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
+            $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+
+
+            /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */
+            $volumeRepo    = $this->getEntityManager()->getRepository("wms:Produto\Volume");
+
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
+            $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
+
             $this->view->idOnda         = $idOnda;
             $this->view->codProduto     = $codProduto;
             $this->view->grade          = $grade;
@@ -360,6 +370,7 @@ class Mobile_OndaRessuprimentoController extends Action
             $this->view->descricao      = $descricao;
             $this->view->enderecoOrigem = $enderecoOrigem;
             $this->view->qtd            = $qtd;
+            $this->view->qtdEmb = $embalagemRepo->getQtdEmbalagensProduto($codProduto, $grade,$qtd);
 
             if( isset($_POST['enderecoDestino']) && !empty($_POST['enderecoDestino']) && isset($_POST['nivel']) && !empty($_POST['nivel'])) {
 
@@ -390,72 +401,89 @@ class Mobile_OndaRessuprimentoController extends Action
 
                 // Criar um registro na tabela RETORNO_RESSUPRIMENTO
                 /** @var \Wms\Domain\Entity\Ressuprimento\RetornoRessuprimento $retornoRessuprimento */
-                $retornoRessuprimento = $this->em->getRepository('wms:Ressuprimento\RetornoRessuprimento');
-                $retornoRessuprimento->setOndaRessuprimentoOs($idOnda);
-                $retornoRessuprimento->setCodOs($os->getId());
-                $retornoRessuprimento->setDepositoEndereco($enderecoDestinoEn->getId());
+                $retornoRessuprimento = new \Wms\Domain\Entity\Ressuprimento\RetornoRessuprimento();
+
+                $retornoRessuprimento->setOndaRessuprimentoOs($ondaOsEn);
+                $retornoRessuprimento->setCodOs($os);
+                $retornoRessuprimento->setDepositoEndereco($enderecoDestinoEn);
                 $retornoRessuprimento->setDataMovimentacao(new DateTime('now'));
 
                 $this->getEntityManager()->persist($retornoRessuprimento);
-                $produtoVolume = '';
+                $this->getEntityManager()->flush();
 
-                $volumeEn = $em->getRepository('wms:Produto\Volume')->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade));
-                if (isset($volumeEn) && !empty($volumeEn)) {
-                    $produtoVolume = $volumeEn->getId();
-                }
-
-                $produtoEmbalagem = '';
-                $embalagemEn = $em->getRepository('wms:Produto\Embalagem')->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade));
-                if (isset($embalagemEn) && !empty($embalagemEn)) {
-                    $produtoEmbalagem = $embalagemEn->getId();
-                }
+                $ondaOsProdutoRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimentoOsProduto");
+                $ondaOsProdutos = $ondaOsProdutoRepo->findBy(array('ondaRessuprimentoOs'=>$idOnda));
 
                 // Criar registros na tabela RETORNO_RESSUPRIMENTO_PRODUTO
-                /** @var \Wms\Domain\Entity\Ressuprimento\RetornoRessuprimentoProduto $retornoRessuprimentoProduto */
-                $retornoRessuprimentoProduto = $this->em->getRepository('wms:Ressuprimento\RetornoRessuprimentoProduto');
-                $retornoRessuprimentoProduto->setRetornoRessuprimento($retornoRessuprimento);
-                $retornoRessuprimentoProduto->setProduto($codProduto);
-                $retornoRessuprimentoProduto->setGrade($grade);
-                $retornoRessuprimentoProduto->setProdutoEmbalagem($produtoEmbalagem);
-                $retornoRessuprimentoProduto->setProdutoVolume($produtoVolume);
-                $retornoRessuprimentoProduto->setQtd($qtd);
-                $retornoRessuprimentoProduto->setLote($lote);
+                foreach ($ondaOsProdutos as $ondaProduto) {
 
-                $this->getEntityManager()->persist($retornoRessuprimentoProduto);
+                    $volumeEn = null;
+                    $embalagemEn = null;
+
+                    if ($ondaProduto->getCodProdutoEmbalagem() != null) {
+                        $embalagemEn = $embalagemRepo->find($ondaProduto->getCodProdutoEmbalagem());
+                    }
+
+                    if ($ondaProduto->getCodProdutoVolume() != null) {
+                        $volumeEn = $volumeRepo->find($ondaProduto->getCodProdutoVolume());
+                    }
+
+                    /** @var \Wms\Domain\Entity\Ressuprimento\RetornoRessuprimentoProduto $retornoRessuprimentoProduto */
+                    $retornoRessuprimentoProduto = new \Wms\Domain\Entity\Ressuprimento\RetornoRessuprimentoProduto();
+                        $retornoRessuprimentoProduto->setRetornoRessuprimento($retornoRessuprimento);
+                        $retornoRessuprimentoProduto->setCodProduto($codProduto);
+                        $retornoRessuprimentoProduto->setGrade($grade);
+                        $retornoRessuprimentoProduto->setProdutoEmbalagem($embalagemEn);
+                        $retornoRessuprimentoProduto->setProdutoVolume($volumeEn);
+                        $retornoRessuprimentoProduto->setQtd($qtd);
+                        $retornoRessuprimentoProduto->setLote($lote);
+                    $this->getEntityManager()->persist($retornoRessuprimentoProduto);
+                }
 
                 // ressuprimento em outro endereço
                 if( $_POST['enderecoOrigem'] != $enderecoDestino ){
-                    /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $estoqueRepo */
-                    $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Estoque');
 
                     $produtoEn = $em->getRepository('wms:Produto')->findOneBy(array('id' => $codProduto, 'grade' => $grade));
 
-                    //saida
-                    $params['endereco']    = $enderecoOrigemEn; // buscar o codigo do endereço
-                    $params['produto']     = $produtoEn;
-                    $params['qtd']         = $qtd; // buscar valor correto
-                    $params['grade']       = $grade;
-                    $params['volume']      = $volumeEn;
-                    $params['lote']        = $lote;
-                    $params['embalagem']   = $produtoEmbalagem;
-                    $params['tipo']        = 'R';
-                    $params['dthEntrada']  = new DateTime('now');
-                    $params['os']          = $os->getId();
+                    foreach ($ondaOsProdutos as $ondaProduto) {
+                        $volumeEn = null;
+                        $embalagemEn = null;
 
-                    $estoqueRepo->movimentaEstoque($params, false, true);
+                        if ($ondaProduto->getCodProdutoEmbalagem() != null) {
+                            $embalagemEn = $embalagemRepo->find($ondaProduto->getCodProdutoEmbalagem());
+                        }
 
-                    //entrada
-                    $params['endereco']    = $enderecoDestinoEn;
-                    $params['produto']     = $produtoEn;
-                    $params['qtd']         = $qtd;
-                    $params['volume']      = $volumeEn;
-                    $params['lote']        = $lote;
-                    $params['embalagem']   = $produtoEmbalagem;
-                    $params['tipo']        = 'R';
-                    $params['dthEntrada']  = new DateTime('now');
-                    $params['os']          = $os->getId();
+                        if ($ondaProduto->getCodProdutoVolume() != null) {
+                            $volumeEn = $volumeRepo->find($ondaProduto->getCodProdutoVolume());
+                        }
 
-                    $estoqueRepo->movimentaEstoque($params, false, false);
+                        //saida
+                        $params['endereco']    = $enderecoOrigemEn; // buscar o codigo do endereço
+                        $params['produto']     = $produtoEn;
+                        $params['qtd']         = $qtd; // buscar valor correto
+                        $params['grade']       = $grade;
+                        $params['volume']      = $volumeEn;
+                        $params['lote']        = $lote;
+                        $params['embalagem']   = $embalagemEn;
+                        $params['tipo']        = 'R';
+                        $params['dthEntrada']  = new DateTime('now');
+                        $params['os']          = $os->getId();
+
+                        $estoqueRepo->movimentaEstoque($params, false, true);
+
+                        //entrada
+                        $params['endereco']    = $enderecoDestinoEn;
+                        $params['produto']     = $produtoEn;
+                        $params['qtd']         = $qtd;
+                        $params['volume']      = $volumeEn;
+                        $params['lote']        = $lote;
+                        $params['embalagem']   = $embalagemEn;
+                        $params['tipo']        = 'R';
+                        $params['dthEntrada']  = new DateTime('now');
+                        $params['os']          = $os->getId();
+
+                        $estoqueRepo->movimentaEstoque($params, false, false);
+                    }
                 }
 
                 // finalizar onda
@@ -475,6 +503,7 @@ class Mobile_OndaRessuprimentoController extends Action
                 $this->_redirect($urlRedirect);
             }
         } catch (\Exception $e) {
+            $this->addFlashMessage('error',$e->getMessage());
             $this->getEntityManager()->rollback();
         }
     }

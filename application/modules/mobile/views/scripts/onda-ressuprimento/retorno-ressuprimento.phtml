@@ -32,7 +32,16 @@
                         <td><B>Descrição:</B> <?php echo $this->descricao ?> </td>
                     </tr>
                     <tr>
-                        <td><B>Quantidade de resíduo:</B> <?php echo $this->qtd ?> </td>
+                        <td><B>Quantidade de resíduo:</B>
+                            <?php foreach ($this->qtdEmb as $qtds) {
+                                if (!is_array($qtds)) {
+                                    ?><div class="row"><?php echo $qtds; ?></div><?php
+                                } else {
+                                    foreach ($qtds as $qtd) {
+                                        ?><div class="row"><?php echo $qtd; ?></div><?php
+                                    }
+                                }
+                            } ?>
                     </tr>
                     <tr>
                         <td><B>Endereço de origem:</B> <?php echo $this->enderecoOrigem ?>  <br></td>
