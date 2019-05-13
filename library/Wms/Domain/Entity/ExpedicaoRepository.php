@@ -4770,8 +4770,10 @@ class ExpedicaoRepository extends EntityRepository {
                                LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                                LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                                LEFT JOIN PEDIDO_PRODUTO PP ON P.COD_PEDIDO = PP.COD_PEDIDO
-                               LEFT JOIN NOTA_FISCAL_SAIDA_PEDIDO NFSPED ON NFSPED.COD_PEDIDO = P.COD_PEDIDO
-                               LEFT JOIN NOTA_FISCAL_SAIDA NFS ON NFS.COD_NOTA_FISCAL_SAIDA = NFSPED.COD_NOTA_FISCAL_SAIDA
+                               LEFT JOIN (SELECT COD_PEDIDO, SUM(VALOR_TOTAL_NF) as VALOR_TOTAL_NF
+                                            FROM NOTA_FISCAL_SAIDA_PEDIDO NFSPED
+                                            LEFT JOIN NOTA_FISCAL_SAIDA NFS ON NFS.COD_NOTA_FISCAL_SAIDA = NFSPED.COD_NOTA_FISCAL_SAIDA
+                                           GROUP BY COD_PEDIDO) NFS ON NFS.COD_PEDIDO = P.COD_PEDIDO
                                LEFT JOIN PRODUTO_PESO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                               WHERE 1 = 1
                                 AND E.DTH_FINALIZACAO >= TO_DATE('$dataInicial','DD/MM/YYYY HH24:MI')
