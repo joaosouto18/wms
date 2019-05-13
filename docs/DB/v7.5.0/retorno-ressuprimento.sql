@@ -1,4 +1,4 @@
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.0.0', '04-tabelas-lote.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.5.0', 'retorno-ressuprimento.sql');
 
 INSERT INTO ATIVIDADE (COD_ATIVIDADE, DSC_ATIVIDADE, COD_SETOR_OPERACIONAL) VALUES (17, 'RETORNO DE RESSUPRIMENTO', 1);
 
@@ -67,3 +67,6 @@ ALTER TABLE RETORNO_RESSUPRIMENTO_PRODUTO
       NOT DEFERRABLE;
 
 -------------------------------------------------------------------------------
+
+insert into parametro (cod_parametro,cod_contexto_parametro,dsc_parametro,dsc_titulo_parametro,ind_parametro_sistema,cod_tipo_atributo,dsc_valor_parametro)
+    values (sq_parametro_01.nextval, (select cod_contexto_parametro from contexto_parametro where dsc_contexto_parametro = 'EXPEDIÇÃO'), 'CONTROLA_RETORNO_RESSUPRIMENTO','Verifica se controla o resíduo de um ressuprimento','S','A','N');
