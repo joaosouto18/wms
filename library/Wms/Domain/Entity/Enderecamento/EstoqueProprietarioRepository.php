@@ -92,7 +92,7 @@ class EstoqueProprietarioRepository extends EntityRepository
         }
     }
 
-    private function selectSaldoProprietario($codProduto, $grade, $incluir, $propsDebitados = [])
+    private function selectSaldoProprietario($codProduto, $incluir = true, $propsDebitados = [])
     {
         $where = "" ;
         if (!empty($propsDebitados)) {
@@ -109,7 +109,7 @@ class EstoqueProprietarioRepository extends EntityRepository
                            FROM ESTOQUE_PROPRIETARIO EP
                            INNER JOIN (SELECT MAX(COD_ESTOQUE_PROPRIETARIO) LAST_MOV, COD_PESSOA
                                        FROM ESTOQUE_PROPRIETARIO
-                                       WHERE COD_PRODUTO = '$codProduto' AND DSC_GRADE = '$grade'
+                                       WHERE COD_PRODUTO = '$codProduto'
                                        GROUP BY COD_PESSOA) IDEP ON IDEP.LAST_MOV = EP.COD_ESTOQUE_PROPRIETARIO
                            WHERE EP.SALDO_FINAL > 0) ESTQ ON ESTQ.COD_PESSOA = PJ.COD_PESSOA
                 $where
@@ -119,31 +119,56 @@ class EstoqueProprietarioRepository extends EntityRepository
         return [$result[0]['SALDO'], $result[0]['COD_PESSOA'], $result[0]['COD_EMPRESA']];
     }
 
-    public function updateSaldoByInventario($codProduto, $grade, $qtd, $idInventario)
+    public function updateSaldoByInventario($codProduto, $idInventario)
     {
-
+        $qtd = self::getDiffEstoqueProduto($codProduto);
         if ($qtd > 0) {
-            list( $saldo, $codPessoa ) = self::selectSaldoProprietario($codProduto, $grade, true);
+            list( $saldo, $codPessoa ) = self::selectSaldoProprietario($codProduto);
             $saldoFinal = Math::adicionar($saldo, $qtd);
-            $this->save($codProduto, $grade, $qtd, EstoqueProprietario::INVENTARIO, $saldoFinal, $codPessoa, $idInventario);
+            $this->save($codProduto, "UNICA", $qtd, EstoqueProprietario::INVENTARIO, $saldoFinal, $codPessoa, $idInventario);
         } else {
             $qtd = $qtd * -1;
             $propsDebitados = [];
             while ($qtd != 0) {
-                list( $saldoDisponivel, $codPessoa , $propsDebitados[]) = self::selectSaldoProprietario($codProduto, $grade, false, $propsDebitados);
+                list( $saldoDisponivel, $codPessoa , $propsDebitados[]) = self::selectSaldoProprietario($codProduto, false, $propsDebitados);
 
-                if (empty($codPessoa)) break;
+                if ($saldoDisponivel > 0) {
+                    if (empty($codPessoa)) break;
 
-                if (Math::compare($qtd, $saldoDisponivel, "<")) {
-                    $qtdMov = $qtd;
-                } else {
-                    $qtdMov = $saldoDisponivel;
+                    if (Math::compare($qtd, $saldoDisponivel, "<")) {
+                        $qtdMov = $qtd;
+                    } else {
+                        $qtdMov = $saldoDisponivel;
+                    }
+                    $saldoFinal = Math::subtrair($saldoDisponivel, $qtdMov);
+                    $this->save($codProduto, "UNICA", $qtdMov, EstoqueProprietario::INVENTARIO, $saldoFinal, $codPessoa, $idInventario);
+                    $qtd = Math::subtrair($qtd, $qtdMov);
                 }
-                $saldoFinal = Math::subtrair($saldoDisponivel ,$qtdMov);
-                $this->save($codProduto, $grade, $qtdMov, EstoqueProprietario::INVENTARIO, $saldoFinal, $codPessoa, $idInventario);
-                $qtd = Math::subtrair($qtd, $qtdMov);
             }
         }
+    }
+
+    private function getDiffEstoqueProduto($codProduto)
+    {
+        $sql = "select 
+                    est.cod_produto, 
+                    est.saldo estoque, 
+                    estp.saldo saldo_proprietario, 
+                    NVL(est.saldo,0) - NVL(estp.saldo,0) diff
+                from (select cod_produto, sum(qtd) saldo from estoque group by cod_produto) est
+                left join (select esp.cod_produto, sum(saldo_final) saldo
+                           from estoque_proprietario esp
+                           inner join (select max(cod_estoque_proprietario) id, cod_produto, cod_pessoa
+                                       from estoque_proprietario group by cod_produto, cod_pessoa) last_mov on last_mov.id = esp.cod_estoque_proprietario
+                                       group by esp.cod_produto) estp on estp.cod_produto = est.cod_produto
+                where est.cod_produto = '$codProduto'";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll();
+
+        if (!empty($result))
+            return $result[0]['DIFF'];
+        else
+            return null;
     }
 
     public function getProprietarioProximoGrupo($cnpj){

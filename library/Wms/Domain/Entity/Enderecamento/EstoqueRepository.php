@@ -268,8 +268,6 @@ class EstoqueRepository extends EntityRepository
                 if (!empty($operacao)) {
                     $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->buildMovimentacaoEstoque($produtoEn->getId(), $produtoEn->getGrade(), $qtd, $operacao, $params['codProprietario'], $arg);
                 }
-            } elseif ($tipo == HistoricoEstoque::TIPO_INVENTARIO && !empty($idInventario)) {
-                $this->getEntityManager()->getRepository("wms:Enderecamento\EstoqueProprietario")->updateSaldoByInventario($codProduto, $grade, $qtd, $idInventario);
             } elseif (empty($params['codProprietario']) && in_array($tipo,[HistoricoEstoque::TIPO_MOVIMENTACAO, HistoricoEstoque::TIPO_EXPEDICAO])) {
                 throw new \Exception('Selecione um proprietário.');
             }

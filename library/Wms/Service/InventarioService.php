@@ -12,6 +12,7 @@ namespace Wms\Service;
 use Bisna\Base\Domain\Entity\EntityService;
 use Doctrine\Common\Collections\Criteria;
 use Wms\Domain\Entity\Atividade;
+use Wms\Domain\Entity\Enderecamento\EstoqueProprietarioRepository;
 use Wms\Domain\Entity\Enderecamento\EstoqueRepository;
 use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
 use Wms\Domain\Entity\Inventario;
@@ -878,7 +879,21 @@ class InventarioService extends AbstractService
 
             $resultInv = $this->getRepository()->getResultInventario($id);
 
+            $controlaProprietario = ($this->getRepository()->getSystemParameterValue("CONTROLE_PROPRIETARIO") == "S");
+
+            if ($controlaProprietario) {
+                /** @var EstoqueProprietarioRepository $estoqueProprietarioRepo */
+                $estoqueProprietarioRepo = $this->em->getRepository("wms:Enderecamento\EstoqueProprietario");
+                $produtos = [];
+            }
+
             foreach ($resultInv as $item) {
+                if ($controlaProprietario) {
+                    if (!isset($produtos[$item['COD_PRODUTO']])) {
+                        $produtos[ $item['COD_PRODUTO'] ] = [ "codProduto" => $item["COD_PRODUTO"] ];
+                    }
+                }
+
                 if ($item["QTD"] != 0 || !empty($item["DTH_VALIDADE"])) {
                     /** @var Produto $produtoEn */
                     $produtoEn = $this->em->getRepository("wms:Produto")->find(["id"=> $item["COD_PRODUTO"], "grade" => $item["DSC_GRADE"]]);
@@ -915,6 +930,14 @@ class InventarioService extends AbstractService
                         ["dataValidade" => $item["DTH_VALIDADE"]],
                         (empty($item["POSSUI_SALDO"])) ? new \DateTime() : null
                     );
+                }
+            }
+
+            $this->em->flush();
+
+            if ($controlaProprietario) {
+                foreach ($produtos as $produto) {
+                    $estoqueProprietarioRepo->updateSaldoByInventario($produto["codProduto"], $id);
                 }
             }
 
