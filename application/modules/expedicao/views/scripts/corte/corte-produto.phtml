@@ -77,7 +77,7 @@
             newRow.append( newTd( item.codcli ) );
             newRow.append( newTd( item.cliente ) );
             newRow.append( newTd( item.itinerario ) );
-            newRow.append( newTd( item.quantidadeUnitaria ) );
+            newRow.append( newTd( item.quantidade ) );
             let newEmbSelector = "";
             if (!isEmpty(embs)) {
                 newEmbSelector = $("<select id='emb-" + i + "' data-index='" + i + "' class='qtdCortar' ></select>");
@@ -126,7 +126,7 @@
         }
     }
 
-    $(".qtdCortar").live("focusout", function () {
+    $("select.qtdCortar, input.qtdCortar").live("focusout", function () {
         calculaCorte($(this));
     });
     
@@ -172,10 +172,14 @@
                 if (data.error) {
                     $.wmsDialogAlert({msg:data.error});
                 } else {
-                    $.wmsDialogAlert({msg:"Produto cortado com sucesso"});
                     itens = [];
+                    testShowGrid();
                     $("#result-list").html("");
                     $("#motivoCorte").html("");
+                    $.wmsDialogAlert({msg:"Produto cortado com sucesso"}, function () {
+                        $('#grade').val("UNICA");
+                        $('#codProduto').val("").focus();
+                    });
                 }
             }
         });
@@ -184,7 +188,7 @@
     $("#corteTotal").click( function(e) {
         e.preventDefault();
         $.each(itens, function (i, item) {
-            calculaCorte(i);
+            $("#emb-"+i).val($("emb-"+i+" option:first").val());
             $("#qtdCortar-"+i).val(getSaldoCorte(item));
         });
     });

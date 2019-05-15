@@ -6,9 +6,18 @@ use Wms\Module\Web\Form;
 
 class CortePedido extends Form
 {
+    private $idExp;
+
+    public function __construct($options = null, $idExp = null)
+    {
+        $this->idExp = $idExp;
+        parent::__construct($options);
+    }
 
     public function init()
     {
+        //$pedidos = $this->getEm()->getRepository("wms:Expedicao")->getPedidosByExpedicao($this->idExp);
+
         $this
             ->addElement('text', 'codProduto', array(
                 'label' => 'Cod. Produto',
@@ -18,6 +27,16 @@ class CortePedido extends Form
                 'label' => 'Grade',
                 'value' => 'UNICA'
             ))
+            ->addElement('text', 'grade', array(
+                'label' => 'Grade',
+                'value' => 'UNICA'
+            ))
+//            ->addElement('select', 'idPedido', array(
+//                'mostrarSelecione' => true,
+//                'class' => 'medio',
+//                'label' => 'Pedido',
+//                'multiOptions' => $pedidos
+//            ))
             ->addElement('button', 'btnSubmit', array(
                 'class' => 'btn',
                 'label' => 'Buscar',

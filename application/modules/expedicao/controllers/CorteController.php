@@ -261,7 +261,8 @@ class Expedicao_CorteController extends Action {
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $this->em->getRepository("wms:Expedicao\ModeloSeparacao")->getModeloSeparacao($id);
             $this->view->forcaEmbVenda = $modeloSeparacaoEn->getForcarEmbVenda();
-            $this->view->form = new \Wms\Module\Web\Form\CortePedido();
+            $form = new \Wms\Module\Web\Form\CortePedido(null, $id);
+            $this->view->form = $form;
         } catch (\Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
         }
@@ -273,17 +274,20 @@ class Expedicao_CorteController extends Action {
             $idExpedicao = $this->_getParam('id');
             $grade = $this->_getParam('grade');
             $codProduto = $this->_getParam('codProduto');
+            $idPedido = $this->_getParam('idPedido');
 
-            /** @var \Wms\Domain\Entity\Produto $produtoEn */
-            $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+            if (!empty($codProduto)){
+                /** @var \Wms\Domain\Entity\Produto $produtoEn */
+                $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $codProduto, 'grade' => $grade));
 
-            if ($produtoEn == null) {
-                throw new \Exception("Produto não encontrado");
+                if ($produtoEn == null) {
+                    throw new \Exception("Produto não encontrado");
+                }
             }
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
             $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true);
+            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true, $idPedido);
 
             $values = array();
             if ($produtoEn->isUnitario()) {

@@ -4486,6 +4486,7 @@ class ExpedicaoRepository extends EntityRepository {
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
         $reservaEstoqueProdutoRepo = $this->getEntityManager()->getRepository('wms:Ressuprimento\ReservaEstoqueProduto');
         $mapaSeparacaoPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
+        $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $mapaConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
 
@@ -4567,17 +4568,22 @@ class ExpedicaoRepository extends EntityRepository {
         if (!empty($mapa) && $mapa != "-") $args['mapaSeparacao'] = $mapa;
         /** @var Expedicao\MapaSeparacaoPedido $mapaSeparacaoPedido */
         $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy($args);
+
         if (!empty($mapaSeparacaoPedido)) {
             $mapaSeparacaoPedido->addCorte($qtdCortar);
             $this->getEntityManager()->persist($mapaSeparacaoPedido);
-        }
 
-        if (!empty($mapaSeparacaoPedido)) {
             $args = [
                 'mapaSeparacao' => $mapaSeparacaoPedido->getMapaSeparacao(),
                 'codProduto' => $codProduto,
                 'dscGrade' => $grade
             ];
+
+            $quebra = $mapaSeparacaoQuebraRepo->findOneBy(["mapaSeparacao" => $mapa, "tipoQuebra" => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO]);
+            if (!empty($quebra)) {
+                $args["pedidoProduto"] = $pedidoProdutoEn;
+            }
+
             if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))
                 $args['produtoEmbalagem'] = $idEmbalagem;
 
@@ -4743,7 +4749,7 @@ class ExpedicaoRepository extends EntityRepository {
     }
 
     public function getCargasFechadasByData($dataInicial, $dataFinal) {
-        $SQLn = "SELECT C.COD_CARGA_EXTERNO,
+        $SQL = "SELECT C.COD_CARGA_EXTERNO,
                        C.DSC_PLACA_EXPEDICAO,
                        '' as MOTORISTA,
                        L.DSC_LINHA_ENTREGA,
@@ -5524,4 +5530,21 @@ class ExpedicaoRepository extends EntityRepository {
         }
     }
 
+    public function getPedidosByExpedicao($idExpedicao)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("p")
+            ->from("wms:Expedicao\Pedido", 'p')
+            ->innerJoin("p.carga", "c")
+            ->innerJoin("c.expedicao", 'e')
+            ->where("e.id = $idExpedicao");
+
+        $arrIdPed = [];
+
+        foreach ($dql->getQuery()->getResult() as $pedido) {
+            $arrIdPed[$pedido->getId()] = $pedido->getCodExterno();
+        }
+
+        return $arrIdPed;
+    }
 }
