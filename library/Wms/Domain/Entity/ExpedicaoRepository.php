@@ -144,7 +144,11 @@ class ExpedicaoRepository extends EntityRepository {
                           NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0) END) > 0
                     AND E.COD_EXPEDICAO IN ($expedicoes)
                     AND P.CENTRAL_ENTREGA = $filialExterno
-                    AND P.DTH_CANCELAMENTO IS NULL";
+                    AND P.DTH_CANCELAMENTO IS NULL
+                ORDER BY TO_NUMBER(CASE WHEN (PPL.DSC_LOTE IS NOT NULL) THEN
+                      NVL(PPL.QUANTIDADE,0) - NVL(PPL.QTD_CORTE,0)
+                     ELSE 
+                      NVL(PP.QUANTIDADE,0) - NVL(PP.QTD_CORTADA,0) END) DESC, P.COD_PEDIDO ASC";
 
 /*CASE WHEN (ppl.lote IS NOT NULL) THEN
                 (NVL(ppl.quantidade, 0) - NVL(ppl.qtdCorte, 0))
