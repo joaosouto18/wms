@@ -266,6 +266,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
             $pedido = array();
             $pedido['codPedido'] = $pedidoWs->codPedido;
+            $pedido['idCarga'] = $codCarga;
             $pedido['cliente'] = $cliente;
             $pedido['itinerario'] = $itinerario;
             $pedido['produtos'] = $produtos;

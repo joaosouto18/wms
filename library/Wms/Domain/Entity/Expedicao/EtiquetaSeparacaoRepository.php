@@ -899,6 +899,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $pedProdLoteRepo = $this->getEntityManager()->getRepository("wms:Expedicao\PedidoProdutoLote");
         /** @var Produto\EmbalagemRepository $embalagemRepo */
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        /** @var \Wms\Domain\Entity\Produto\DadoLogisticoRepository $dadoLogisticoRepo */
+        $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
 
         /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoRepo */
         if (isset($arrayRepositorios['expedicaoRepo'])) {
@@ -962,11 +964,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $quebrasEmbalado = $modeloSeparacaoRepo->getQuebraEmbalado($idModeloSeparacao);
             $forcarEmbVendaDefault = $modeloSeparacaoEn->getForcarEmbVenda();
             $quebraUnidFracionavel = ($modeloSeparacaoEn->getQuebraUnidFracionavel() == 'S');
-
-            $cubagemPedidos = 0;
-            if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
-                $cubagemPedidos = $this->getCubagemPedidos($pedidosProdutos, $modeloSeparacaoEn);
-            }
 
             $etiquetaMaePadrao = null;
 
@@ -1430,8 +1427,27 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                     $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_UNID_FRACIONAVEL;
                                     $fracionavel = 'S';
                                 }
-                                elseif (isset($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()]) && !empty($cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()])) {
-                                    $cubagem = $cubagemPedidos[$pedidoEntity->getId()][$embalagemAtual->getId()];
+                                elseif ($embalado) {
+                                    $cubagemProduto = $this->tofloat($embalagemAtual->getCubagem());
+                                    if (empty($cubagemProduto)) {
+                                        $dadoLogisticoEn = $dadoLogisticoRepo->findOneBy(array('embalagem' => $embalagemAtual->getId()));
+                                        if (!empty($dadoLogisticoEn)) {
+                                            $numAltura       = $this->tofloat($dadoLogisticoEn->getAltura());
+                                            $numLargura      = $this->tofloat($dadoLogisticoEn->getLargura());
+                                            $numProfundidade = $this->tofloat($dadoLogisticoEn->getProfundidade());
+                                            $cubagemProduto  = $this->tofloat($numAltura * $numLargura * $numProfundidade);
+                                        }
+                                    }
+                                    $cubagemProduto = (!empty($cubagemProduto)) ? $cubagemProduto : $this->tofloat(0.001);
+
+                                    $cubagem = number_format(
+                                        Math::multiplicar(
+                                            $cubagemProduto, Math::dividir(
+                                            $qtdSepararEmbalagemAtual, number_format(
+                                                $embalagemAtual->getQuantidade(),3,'.','')
+                                        )
+                                        ),8);
+
                                     $quebras = $quebrasEmbalado;
                                     $quebras[]['tipoQuebra'] = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
                                     $consolidado = 'S';

@@ -278,11 +278,12 @@ class Inventario_Novo_IndexController  extends Action
         try {
 
             $modelo = $this->getSystemParameterValue("MODELO_EXPORTACAO_INVENTARIO");
+            $caminho = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO");
 
             if ($modelo == 1) {
-                $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo1($idInventario);
+                $this->getServiceLocator()->getService("Inventario")->exportaInventarioModelo1($idInventario);
             } else {
-                $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo2($idInventario);
+                $this->getServiceLocator()->getService("Inventario")->exportarInventarioModelo2($idInventario, $caminho);
             }
             $this->addFlashMessage('success', "Inventário $idInventario exportado com sucesso");
 

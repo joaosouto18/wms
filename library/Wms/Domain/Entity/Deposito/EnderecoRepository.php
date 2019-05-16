@@ -966,15 +966,15 @@ class EnderecoRepository extends EntityRepository {
     }
 
     /**
-     * @param $enderecoEn EnderecoEntity
-     * @param string $opcao | S or N
+     * @param $idInventario
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function bloqueiaOuDesbloqueiaInventario($enderecoEn, $opcao = 'S', $flush = true) {
-        $enderecoEn->setInventarioBloqueado($opcao);
-        $this->_em->persist($enderecoEn);
-        if ($flush == true) {
-            $this->_em->flush();
-        }
+    public function desbloquearByInventario($idInventario)
+    {
+        $sql = "UPDATE DEPOSITO_ENDERECO SET IND_INVENTARIO_BLOQUEADO = 'N' WHERE COD_DEPOSITO_ENDERECO IN (
+                    SELECT COD_DEPOSITO_ENDERECO FROM INVENTARIO_ENDERECO_NOVO WHERE COD_INVENTARIO = $idInventario
+                )";
+        $this->getEntityManager()->getConnection()->query($sql)->execute();
     }
 
 

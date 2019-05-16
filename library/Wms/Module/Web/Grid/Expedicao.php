@@ -23,6 +23,8 @@ class Expedicao extends Grid
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+        $permissaoEn = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'PERMITE_REALIZAR_CORTES_WMS'));
+        $permite = (!empty($permissaoEn) && $permissaoEn->getValor() == "N") ? false : true;
 
         $sessao = new \Zend_Session_Namespace('deposito');
         $params['centrais'] = $sessao->centraisPermitidas;
@@ -140,8 +142,9 @@ class Expedicao extends Grid
                 'actionName' => 'index',
                 'cssClass' => 'dialogAjax',
                 'pkIndex' => 'id'
-            ))
-            ->addAction(array(
+            ));
+        if ($permite) {
+            $source->addAction(array(
                 'label' => 'Cortar Etiqueta',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'corte',
@@ -152,7 +155,7 @@ class Expedicao extends Grid
                     return $row['status'] != "FINALIZADO" AND $row['status'] != "INTEGRADO";
                 }
             ))
-            ->addAction(array(
+                ->addAction(array(
                 'label' => 'Cortar Pedido',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'corte',
@@ -161,10 +164,9 @@ class Expedicao extends Grid
                 'params' => array('origin' => 'expedicao'),
                 'cssClass' => 'dialogAjax',
                 'condition' => function ($row) {
-                        return $row['status'] != "FINALIZADO";
-                    }
-            ))
-            ->addAction(array(
+                    return $row['status'] != "FINALIZADO";
+                }
+            ))->addAction(array(
                 'label' => 'Cortar Produto',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'corte',
@@ -175,8 +177,9 @@ class Expedicao extends Grid
                 'condition' => function ($row) {
                     return $row['status'] != "FINALIZADO";
                 }
-            ))
-            ->addAction(array(
+            ));
+        }
+        $source->addAction(array(
                 'label' => 'Imprimir',
                 'modelName' => 'expedicao',
                 'controllerName' => 'etiqueta',

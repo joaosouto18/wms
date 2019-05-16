@@ -622,28 +622,11 @@ class RecebimentoRepository extends EntityRepository {
 
         if (!$this->checarConferenciaComDivergencia($idRecebimento)) {
             try {
-                $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_FINALIZADO);
 
                 $msg = 'Recebimento finalizado pelo WMS.';
                 if ($divergencia) {
                     $msg = 'Recebimento finalizado e aceito com divergência.';
                 }
-
-                $recebimentoEntity->setDataFinal(new \DateTime)
-                        ->setStatus($statusEntity)
-                        ->addAndamento(RecebimentoEntity::STATUS_FINALIZADO, false, $msg);
-
-                $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_RECEBIDA);
-
-                foreach ($recebimentoEntity->getNotasFiscais() as $notaFiscalEntity) {
-                    if ($notaFiscalEntity->getStatus()->getId() != NotaFiscalEntity::STATUS_EM_RECEBIMENTO)
-                        continue;
-
-                    $notaFiscalEntity->setStatus($statusEntity);
-                    $em->persist($notaFiscalEntity);
-                }
-
-                $em->persist($recebimentoEntity);
 
                 /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueRepository $reservaEstoqueRepo */
                 $reservaEstoqueRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\ReservaEstoque");
@@ -682,7 +665,25 @@ class RecebimentoRepository extends EntityRepository {
                     }
                 }
 
-                $this->atualizaRecebimentoBenner($idRecebimento);
+                $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_FINALIZADO);
+
+                $recebimentoEntity->setDataFinal(new \DateTime)
+                    ->setStatus($statusEntity)
+                    ->addAndamento(RecebimentoEntity::STATUS_FINALIZADO, false, $msg);
+
+                $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscal::STATUS_RECEBIDA);
+
+                foreach ($recebimentoEntity->getNotasFiscais() as $notaFiscalEntity) {
+                    if ($notaFiscalEntity->getStatus()->getId() != NotaFiscalEntity::STATUS_EM_RECEBIMENTO)
+                        continue;
+
+                    $notaFiscalEntity->setStatus($statusEntity);
+                    $em->persist($notaFiscalEntity);
+                }
+
+                $em->persist($recebimentoEntity);
+
+                //$this->atualizaRecebimentoBenner($idRecebimento);
 
                 $em->flush();
                 $em->commit();

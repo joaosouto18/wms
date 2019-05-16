@@ -7,11 +7,11 @@
 DECLARE
   CHECK_RESULT VARCHAR2(100);
 BEGIN
-  SELECT FUNC_CHECK_SCRIPT('quebra-unidade-fracionavel.sql', '') INTO CHECK_RESULT FROM DUAL;
+  SELECT FUNC_CHECK_SCRIPT('4-quebra-unidade-fracionavel.sql', '7.5.0') INTO CHECK_RESULT FROM DUAL;
   IF (CHECK_RESULT <> 'TRUE') THEN
     DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
   ELSE
-    INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.5', 'quebra-unidade-fracionavel.sql');
+    INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.5.0', '4-quebra-unidade-fracionavel.sql');
     /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/

@@ -256,75 +256,72 @@ class Expedicao_CorteController extends Action {
 
     public function corteProdutoAction() {
         $this->view->id = $id = $this->_getParam('id');
-        $grade = $this->_getParam('grade');
-        $codProduto = $this->_getParam('codProduto');
-        $actionAjax = $this->_getParam('acao');
 
         try {
-            $this->view->permiteCortes = $this->getSystemParameterValue('PERMITE_REALIZAR_CORTES_WMS');
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $this->em->getRepository("wms:Expedicao\ModeloSeparacao")->getModeloSeparacao($id);
-            $this->view->forcaEmbVenda = $forcaEmbVenda = $modeloSeparacaoEn->getForcarEmbVenda();
+            $this->view->forcaEmbVenda = $modeloSeparacaoEn->getForcarEmbVenda();
+            $form = new \Wms\Module\Web\Form\CortePedido(null, $id);
+            $this->view->form = $form;
+        } catch (\Exception $e) {
+            $this->addFlashMessage("error", $e->getMessage());
+        }
+    }
 
-            if (($codProduto != null) && ($grade != null)) {
+    public function getDataProdutoCorteAjaxAction()
+    {
+        try {
+            $idExpedicao = $this->_getParam('id');
+            $grade = $this->_getParam('grade');
+            $codProduto = $this->_getParam('codProduto');
+            $idPedido = $this->_getParam('idPedido');
 
-                $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id'=> $codProduto, 'grade' => $grade));
+            if (!empty($codProduto)){
+                /** @var \Wms\Domain\Entity\Produto $produtoEn */
+                $produtoEn = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $codProduto, 'grade' => $grade));
 
                 if ($produtoEn == null) {
                     throw new \Exception("Produto não encontrado");
                 }
-
-                $formMotivo = new \Wms\Module\Expedicao\Form\CorteProduto();
-                $formMotivo->init();
-                $formMotivo->setProduto($produtoEn);
-                $this->view->formMotivo = $formMotivo;
-
-
-                /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-                $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-                $pedidos = $pedidoRepo->getPedidoByExpedicao($id, $codProduto, $grade, true);
-
-                $grid = new \Wms\Module\Web\Grid\Expedicao\CorteProduto();
-
-                $grid = $grid->init($pedidos, $codProduto, $grade, (!empty($produtoEn->getForcarEmbVenda()) ? $produtoEn->getForcarEmbVenda() : $forcaEmbVenda));
-
-                $this->arrCortes = $pedidos;
-                $this->view->grid = $grid;
             }
 
-            $form = new \Wms\Module\Web\Form\CortePedido();
-            $this->view->form = $form;
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+            $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true, $idPedido);
 
-        } catch (\Exception $e) {
-            if (!empty($actionAjax)) {
-                $this->_helper->json(array(
-                    'error' => $e->getMessage()
-                ));
+            $values = array();
+            if ($produtoEn->isUnitario()) {
+                $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
+                $embalagens = $embalagemRepo->findBy(array('codProduto' => $codProduto, 'grade' => $grade, 'dataInativacao' => null), array('quantidade' => 'ASC'));
+
+                if (empty($embalagens)) throw new Exception("O produto não tem embalagem ativa!");
+
+                /** @var \Wms\Domain\Entity\Produto\Embalagem $embalagemEn */
+                foreach ($embalagens as $embalagemEn) {
+                    $values[] = [
+                        "id" => $embalagemEn->getId(),
+                        "fator" => $embalagemEn->getQuantidade(),
+                        "dscEmb" => $embalagemEn->getDescricao() . "(" . $embalagemEn->getQuantidade() . ")"
+                    ];
+                }
             }
-            return;
-        }
 
-        if (!empty($actionAjax)) {
-            $this->_helper->json(array(
-                'resultGrid' => $grid->render(),
-                'resultForm' => $formMotivo->render(),
-                'pedidos' => $this->html_table($pedidos)
-            ));
-        }
-    }
+            $formMotivo = new \Wms\Module\Expedicao\Form\CorteProduto();
+            $formMotivo->init();
+            $formMotivo->setProduto($produtoEn);
 
-    function html_table($data = array())
-    {
-        $rows = array();
-        foreach ($data as $row) {
-            $cells = array();
-            foreach ($row as $cell) {
-                $cells[] = "<td>{$cell}</td>";
-            }
-            $rows[] = "<tr class='grid-corte-resumo' style='display:none' >" . implode('', $cells) . "</tr>";
+            $result = [
+                "status" => "ok",
+                "itens" => $pedidos,
+                "embs" => $values,
+                "formMotivo" => $formMotivo->render()
+            ];
 
+            $this->_helper->json($result);
+
+        } catch (Exception $e) {
+            $this->_helper->json(["status"=>"error", "msg"=>$e->getMessage()]);
         }
-        return "<table class='hci-table'>" . implode('', $rows) . "</table>";
     }
 
     public function cortePedidoAction() {
@@ -334,8 +331,6 @@ class Expedicao_CorteController extends Action {
         $codProduto = $this->_getParam('codProduto');
         $actionAjax = $this->_getParam('acao');
 
-        $permiteCortes = $this->getSystemParameterValue('PERMITE_REALIZAR_CORTES_WMS');
-        $this->view->permiteCortes = $permiteCortes;
         $this->view->idMapa = $idMapa = $this->_getParam('COD_MAPA_SEPARACAO', null);
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoPedidoRepository $mapaSeparacaoRepo */
@@ -386,6 +381,7 @@ class Expedicao_CorteController extends Action {
         $this->view->mapaPreSelected = $mapaPreSelected = $this->_getParam('COD_MAPA_SEPARACAO', null);
         $motivo = $this->_getParam('motivoCorte', null);
         $mapa = $this->_getParam('mapa', null);
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
         $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($pedido);
         $senha = $this->_getParam('senha');
@@ -427,8 +423,16 @@ class Expedicao_CorteController extends Action {
             }
 
         } else {
-            if (empty($mapaPreSelected))
-                $this->view->mapas = $this->em->getRepository("wms:Expedicao\MapaSeparacaoPedido")->getMapaByPedidoProduto($idPedido, $produto, $grade);
+            $pedProds = $pedidoRepo->getPedidoByExpedicao($expedicao, $produto, $grade, false, $idPedido);
+            $response = [];
+            foreach ($pedProds as $pedProd) {
+                $index = "$pedProds[ID]";
+                if (!isset($pe)){
+
+                }
+            }
+//            if (empty($mapaPreSelected))
+//                $this->view->mapas = $this->em->getRepository("wms:Expedicao\MapaSeparacaoPedido")->getMapaByPedidoProduto($idPedido, $produto, $grade);
         }
     }
 

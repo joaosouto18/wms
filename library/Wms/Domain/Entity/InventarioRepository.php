@@ -646,16 +646,16 @@ class InventarioRepository extends EntityRepository {
     }
 
     public function desbloqueiaEnderecos($id) {
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-        $enderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
-        /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
-        $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
-
-        $inventarioEndsEn = $inventarioEndRepo->findBy(array('inventario' => $id));
-        foreach ($inventarioEndsEn as $invEndEn) {
-            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco(), 'N', false);
-        }
-        $this->_em->flush();
+//        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+//        $enderecoRepo = $this->_em->getRepository('wms:Deposito\Endereco');
+//        /** @var \Wms\Domain\Entity\Inventario\EnderecoRepository $inventarioEndRepo */
+//        $inventarioEndRepo = $this->_em->getRepository('wms:Inventario\Endereco');
+//
+//        $inventarioEndsEn = $inventarioEndRepo->findBy(array('inventario' => $id));
+//        foreach ($inventarioEndsEn as $invEndEn) {
+//            $enderecoRepo->bloqueiaOuDesbloqueiaInventario($invEndEn->getDepositoEndereco(), 'N', false);
+//        }
+//        $this->_em->flush();
 
         $sql = "UPDATE DEPOSITO_ENDERECO SET IND_DISPONIVEL = 'S'
                  WHERE COD_DEPOSITO_ENDERECO IN (

@@ -1,81 +1,161 @@
 <?php
-if ($this->permiteCortes == 'S') {
     echo $this->form;
-} else {
-    echo "Corte Desabilitado no WMS";
-    echo "<script>alert('Os cortes foram desabilitados no WMS'); </script>";
-}
-
 ?>
-
 <div id="gridCorte">
-    <?php
-    if ($this->permiteCortes == 'S') {
-        echo $this->grid;
-    }
-    ?>
+    <fieldset>
+        <legend>Pedidos</legend>
+        <form style="margin-bottom: -15px">
+            <div align="right" class="gMassAction">
+                <input style="margin: 5px 15px 5px 10px; width: 130px;" type="submit" name="total" id="corteTotal" value="Corte Total" class="btn">
+            </div>
+        </form>
+        <form id="formGrid" action="?" method="post">
+            <div id="expedicao-corte-produtos-grid" class="grid">
+                <table class="gTable expedicao-corte-produtos-grid">
+                    <tbody>
+                        <tr class="gTTitle">
+                            <td><span>Expedicao</span></td>
+                            <td><span>Carga</span></td>
+                            <td><span>Pedido</span></td>
+                            <td><span>Mapa</span></td>
+                            <td><span>Cod.Cliente</span></td>
+                            <td><span>Cliente</span></td>
+                            <td><span>Itinerario</span></td>
+                            <td><span>Qtd.Pedido</span></td>
+                            <td><span>Emb.Corte</span></td>
+                            <td><span>Qtd.Cortar</span></td>
+                            <td><span>Qtd.Conf</span></td>
+                            <td><span>Qtd.Corte/Mapa</span></td>
+                            <td><span>Qtd.Cortada Total</span></td>
+                        </tr>
+                    </tbody>
+                    <tbody id="result-list">
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </fieldset>
 </div>
 
 <div id="motivoCorte">
     <?php
-    if ($this->permiteCortes == 'S') {
         echo $this->formMotivo;
-    }
     ?>
 </div>
-
-
-<div id="arrCortes">
-    <?php
-        echo $this->pedidos;
-    ?>
-</div>
-
-
-<input type="hidden" name="id" id="id" value="<?php echo $this->id ?>">
 
 <script>
 
-    function confirmaCorte() {
+    let itens = [];
+    let embs = [];
+    let forcarEmbVenda = <?php echo ($this->forcaEmbVenda == "S") ? "true": "false" ?>;
+    let idExpedicao = <?php echo $this->id ?>;
+
+    function testShowGrid() {
+        let grid = $("#gridCorte");
+        if (!isEmpty(itens)) {
+            grid.show();
+        } else {
+            grid.hide();
+        }
+    }
+
+    function updateList()
+    {
+        let newTd = function (content) {
+            return $("<td style='text-align:left'></td>").append( content );
+        };
+        let tbody = $("#result-list");
+        tbody.html("");
+
+        $.each(itens, function (i, item) {
+            let newRow = $("<tr class='gTResultSet' id='row-item-" + i + "' >");
+
+            newRow.append( newTd( idExpedicao ) );
+            newRow.append( newTd( item.carga ) );
+            newRow.append( newTd( item.id ) );
+            newRow.append( newTd( item.mapa ) );
+            newRow.append( newTd( item.codcli ) );
+            newRow.append( newTd( item.cliente ) );
+            newRow.append( newTd( item.itinerario ) );
+            newRow.append( newTd( item.quantidade ) );
+            let newEmbSelector = "";
+            if (!isEmpty(embs)) {
+                newEmbSelector = $("<select id='emb-" + i + "' data-index='" + i + "' class='qtdCortar' ></select>");
+                if (forcarEmbVenda) newEmbSelector.prop("disabled", true);
+                $.each(embs, function (l, emb) {
+                    let selecionado = (forcarEmbVenda && (emb.fator == item.fatorEmbalagemVenda)) ? "selected" : "";
+                    newEmbSelector.append("<option " + selecionado + " value='" + emb.id + "' data-index='" + l + "'>" + emb.dscEmb + "</option>");
+                });
+            }
+            newRow.append( newTd( newEmbSelector ) );
+            newRow.append( newTd( $("<input style='width:40px;' type='text' class='qtdCortar' id='qtdCortar-" + i + "' data-index='" + i + "'>") ) );
+            newRow.append( newTd( item.qtdConf ) );
+            newRow.append( newTd( item.qtdCortada ) );
+            newRow.append( newTd( item.qtdCorteTotal ) );
+
+            if ( getSaldoCorte(item) <= 0 ) newRow.find("input, select").prop("disabled", true);
+
+            tbody.append(newRow);
+        })
+    }
+
+    function getSaldoCorte(item) {
+        let qtdCortada = parseFloat((!isEmpty(item.qtdCortadaUnitaria)) ? item.qtdCortadaUnitaria : item.qtdCorteTotalUnitaria);
+        let qtdConferida = parseFloat(item.qtdConf);
+        let qtdPedido = parseFloat(item.quantidadeUnitaria);
+        let fator = parseFloat(embs[0].fator);
+        return parseFloat((qtdPedido - parseFloat(qtdCortada + qtdConferida)) / fator);
+    }
+
+    function calculaCorte(input) {
+        let index = input.data("index");
+        let indexEmb = $("#emb-"+index).find(":selected").data("index");
+        let inputQtd = $("#qtdCortar-"+index);
+        let qtd = inputQtd.val();
+        let item = itens[index];
+        let qtdCortarUn = parseFloat(qtd * embs[indexEmb].fator);
+        let saldo = getSaldoCorte(item);
+        if ( qtdCortarUn > saldo ) {
+            $.wmsDialogAlert({msg: "A quantidade excede o saldo disponível para corte! <br> Utilize uma embalagem menor ou reduza a quantidade!"},
+                function (objInput) {
+                    objInput.inputQtd.val("");
+                    objInput.inputEven.focus();
+                },
+                {inputQtd: inputQtd, inputEven: input}
+            );
+        }
+    }
+
+    $("select.qtdCortar, input.qtdCortar").live("focusout", function () {
+        calculaCorte($(this));
+    });
+    
+    function confirmaCorte()
+    {
         event.preventDefault();
 
-        var table = document.getElementsByClassName("expedicao-corte-produtos-grid");
-        var rows = table[0].getElementsByClassName("gTResultSet");
-        var rowsCorte = document.getElementsByClassName("grid-corte-resumo");
+        let cortes = [];
 
-        var cortes = [];
-
-        for(var i = 0 ; i < rows.length ; i++) {
-            var columns = rows[i].getElementsByTagName('td');
-            var idEmbalagem;
-            var codPedido   = rowsCorte[i].getElementsByTagName('td').item(0).innerHTML;
-            var qtdCortar   = columns[9].children.item(0).value;
-            var mapa        = $(columns[3]).text();
-
-            if (columns[8].children.item(0).tagName == "SELECT") {
-                idEmbalagem = columns[8].children.item(0).value;
-            } else {
-                idEmbalagem = "-1"
-            }
-
-            if (qtdCortar >0) {
+        $.each(itens, function (i, item) {
+            let qtdCortar = $("#qtdCortar-" + i).val();
+            if (!isEmpty(qtdCortar)) {
                 var corte = [];
-                corte[0] = codPedido;
-                corte[1] = idEmbalagem;
+                corte[0] = item.ID;
+                corte[1] = $("#emb-" + i).val();
                 corte[2] = qtdCortar;
-                corte[3] = mapa;
+                corte[3] = item.mapa;
 
                 cortes[cortes.length] = corte;
             }
-        }
+        });
 
         if (cortes.length <= 0) {
-            alert("Selecione ao menos um pedido para cortar");
+            $.wmsDialogAlert({msg:"Selecione ao menos um pedido para cortar"});
             return;
         }
 
         if ($('#motivo').val() == "") {
-            alert("Selecione um motivo de corte");
+            $.wmsDialogAlert({msg:"Selecione um motivo de corte"});
             return;
         }
 
@@ -87,97 +167,75 @@ if ($this->permiteCortes == 'S') {
                 grade: $('#grade').val(),
                 motivo: $('#motivo').val(),
                 cortes: cortes,
-                embVendaDefault: '<?php echo $this->forcaEmbVenda?>'
             },
             success: function (data) {
                 if (data.error) {
-                    alert(data.error);
+                    $.wmsDialogAlert({msg:data.error});
                 } else {
-                    alert("Produto cortado com sucesso");
-                    $("#gridCorte").html("");
+                    itens = [];
+                    testShowGrid();
+                    $("#result-list").html("");
                     $("#motivoCorte").html("");
-                    $("#arrCortes").html("");
+                    $.wmsDialogAlert({msg:"Produto cortado com sucesso"}, function () {
+                        $('#grade').val("UNICA");
+                        $('#codProduto').val("").focus();
+                    });
                 }
             }
         });
-
     }
 
-    function corteTotal() {
-        event.preventDefault();
-
-
-        //var rows = document.getElementsByClassName("gTResultSet");
-        //var rows = document.getElementsByTagName("tr");
-
-        var table = document.getElementsByClassName("expedicao-corte-produtos-grid");
-        var rows = table[0].getElementsByClassName("gTResultSet");
-        var rowsCorte = document.getElementsByClassName("grid-corte-resumo");
-
-        for(var i = 0 ; i < rows.length ; i++) {
-            var columns = rows[i].getElementsByTagName('td');
-
-            var fatorCorte     = rowsCorte[i].getElementsByTagName('td').item(11).innerHTML;
-
-            var qtdPedidoUnit  = rowsCorte[i].getElementsByTagName('td').item(15).innerHTML;
-
-            var qtdCortadaUnit = rowsCorte[i].getElementsByTagName('td').item(16).innerHTML;
-            var idEmbalagem    = rowsCorte[i].getElementsByTagName('td').item(17).innerHTML;
-
-            var qtdCortar = (qtdPedidoUnit - qtdCortadaUnit) / fatorCorte;
-
-            columns[8].children.item(0).value = idEmbalagem;
-            columns[9].children.item(0).value = qtdCortar;
-        }
-
-    }
+    $("#corteTotal").click( function(e) {
+        e.preventDefault();
+        $.each(itens, function (i, item) {
+            $("#emb-"+i).val($("emb-"+i+" option:first").val());
+            $("#qtdCortar-"+i).val(getSaldoCorte(item));
+        });
+    });
 
     function executeRequest() {
         $.ajax({
-            url: URL_MODULO + '/corte/corte-produto/',
+            url: URL_MODULO + '/corte/get-data-produto-corte-ajax/',
             type: 'post',
             data: {
-                id: $('#id').val(),
+                id: idExpedicao,
                 codProduto: $('#codProduto').val(),
-                grade: $('#grade').val(),
-                acao: 'buscar'
+                grade: $('#grade').val()
             },
             success: function (data) {
-                if (data.error) {
-                    $("#gridCorte").html("");
+                if (data.status === "error") {
                     $("#motivoCorte").html("");
-                    $("#arrCortes").html("");
-                    alert(data.error);
+                    $.wmsDialogAlert({msg: data.msg});
                 } else {
-                    $("#gridCorte").html(
-                        "<fieldset>" +
-                        "<legend>Pedidos</legend>" +
-                        "<form style='margin-bottom: -15px'> " +
-                        "   <div align='right' class='gMassAction'>\n" +
-                        "       <input onclick='corteTotal()' style='margin: 5px 15px 5px 10px; width: 130px;' type='submit' name='total' id='total' value='Corte Total' class='btn'>" +
-                        "   </div>\n" +
-                        "</form>"
-                        + data.resultGrid +
-                        "</legend>");
-                    $("#motivoCorte").html(data.resultForm);
-                    $("#arrCortes").html(data.pedidos);
+                    itens = data.itens;
+                    embs = data.embs;
+                    updateList();
+                    $("#motivoCorte").html(data.formMotivo);
+                    testShowGrid();
                 }
             }
         });
     }
 
     $('#btnSubmit').click(function () {
-        executeRequest();
+        validate();
     });
 
     $("input#codProduto, input#grade").keypress(function( event ) {
         if ((event.which === 13 || event.keyCode === 13)) {
-            if (!isEmpty($("input#codProduto").val())){
-                executeRequest();
-            }
-            else {
-                $.wmsDialogAlert({title: "Alerta", msg: "Informe o código do produto!"});
-            }
+            validate();
         }
     });
+
+    function validate()
+    {
+        if (!isEmpty($("input#codProduto").val())){
+            executeRequest();
+        }
+        else {
+            $.wmsDialogAlert({msg: "Informe o código do produto!"});
+        }
+    }
+
+    testShowGrid();
 </script>

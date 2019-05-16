@@ -9,10 +9,10 @@
     /**
      * Method to load a message by dialog
      */
-    $.wmsDialogAlert = function(settings, callbackFnk){
+    $.wmsDialogAlert = function(settings, callbackFnk, params){
         var config = {
-            'title': settings.title,
             'msg': settings.msg,
+            'title': (!!settings.title)? settings.title : "-- Sistema --",
             'width': (!!settings.width)? settings.width : 350,
             'height': (!!settings.height)? settings.height : 'auto',
             'resizable': (!!settings.resizable)? settings.resizable : false,
@@ -22,7 +22,7 @@
                 "Ok": function () {
                     // now we are calling our own callback function
                     if($.isFunction(callbackFnk)){
-                        callbackFnk.call(this);
+                        callbackFnk.call(this, params);
                     }
                     $(this).remove();
                 }
