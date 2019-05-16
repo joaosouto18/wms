@@ -9,6 +9,7 @@ namespace Wms\Domain\Entity\Enderecamento;
 
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Filial;
+use Wms\Math;
 
 class EstoqueProprietarioRepository extends EntityRepository
 {
@@ -89,6 +90,85 @@ class EstoqueProprietarioRepository extends EntityRepository
                 }
             }
         }
+    }
+
+    private function selectSaldoProprietario($codProduto, $incluir = true, $propsDebitados = [])
+    {
+        $where = "" ;
+        if (!empty($propsDebitados)) {
+            $strIds = implode(", ", $propsDebitados);
+            $where = "WHERE E.COD_EMPRESA NOT IN ($strIds)";
+        }
+
+        $ordenacao = ($incluir) ? "ASC" : "DESC";
+
+        $sql = "SELECT NVL(ESTQ.SALDO_FINAL, 0) SALDO, PJ.COD_PESSOA, E.COD_EMPRESA
+                FROM EMPRESA E
+                INNER JOIN PESSOA_JURIDICA PJ ON E.IDENTIFICACAO = PJ.NUM_CNPJ
+                LEFT JOIN (SELECT EP.SALDO_FINAL, EP.COD_PESSOA
+                           FROM ESTOQUE_PROPRIETARIO EP
+                           INNER JOIN (SELECT MAX(COD_ESTOQUE_PROPRIETARIO) LAST_MOV, COD_PESSOA
+                                       FROM ESTOQUE_PROPRIETARIO
+                                       WHERE COD_PRODUTO = '$codProduto'
+                                       GROUP BY COD_PESSOA) IDEP ON IDEP.LAST_MOV = EP.COD_ESTOQUE_PROPRIETARIO
+                           WHERE EP.SALDO_FINAL > 0) ESTQ ON ESTQ.COD_PESSOA = PJ.COD_PESSOA
+                $where
+                ORDER BY E.PRIORIDADE_ESTOQUE $ordenacao";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        return [$result[0]['SALDO'], $result[0]['COD_PESSOA'], $result[0]['COD_EMPRESA']];
+    }
+
+    public function updateSaldoByInventario($codProduto, $idInventario)
+    {
+        $qtd = self::getDiffEstoqueProduto($codProduto);
+        if ($qtd > 0) {
+            list( $saldo, $codPessoa ) = self::selectSaldoProprietario($codProduto);
+            $saldoFinal = Math::adicionar($saldo, $qtd);
+            $this->save($codProduto, "UNICA", $qtd, EstoqueProprietario::INVENTARIO, $saldoFinal, $codPessoa, $idInventario);
+        } else {
+            $qtd = $qtd * -1;
+            $propsDebitados = [];
+            while ($qtd != 0) {
+                list( $saldoDisponivel, $codPessoa , $propsDebitados[]) = self::selectSaldoProprietario($codProduto, false, $propsDebitados);
+
+                if ($saldoDisponivel > 0) {
+                    if (empty($codPessoa)) break;
+
+                    if (Math::compare($qtd, $saldoDisponivel, "<")) {
+                        $qtdMov = $qtd;
+                    } else {
+                        $qtdMov = $saldoDisponivel;
+                    }
+                    $saldoFinal = Math::subtrair($saldoDisponivel, $qtdMov);
+                    $this->save($codProduto, "UNICA", $qtdMov, EstoqueProprietario::INVENTARIO, $saldoFinal, $codPessoa, $idInventario);
+                    $qtd = Math::subtrair($qtd, $qtdMov);
+                }
+            }
+        }
+    }
+
+    private function getDiffEstoqueProduto($codProduto)
+    {
+        $sql = "select 
+                    est.cod_produto, 
+                    est.saldo estoque, 
+                    estp.saldo saldo_proprietario, 
+                    NVL(est.saldo,0) - NVL(estp.saldo,0) diff
+                from (select cod_produto, sum(qtd) saldo from estoque group by cod_produto) est
+                left join (select esp.cod_produto, sum(saldo_final) saldo
+                           from estoque_proprietario esp
+                           inner join (select max(cod_estoque_proprietario) id, cod_produto, cod_pessoa
+                                       from estoque_proprietario group by cod_produto, cod_pessoa) last_mov on last_mov.id = esp.cod_estoque_proprietario
+                                       group by esp.cod_produto) estp on estp.cod_produto = est.cod_produto
+                where est.cod_produto = '$codProduto'";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll();
+
+        if (!empty($result))
+            return $result[0]['DIFF'];
+        else
+            return null;
     }
 
     public function getProprietarioProximoGrupo($cnpj){
@@ -289,6 +369,6 @@ class EstoqueProprietarioRepository extends EntityRepository
         $this->_em->persist($entityFilial);
         $this->_em->flush();
 
-        return $entityPessoa;
+        return $entityFilial;
     }
 }

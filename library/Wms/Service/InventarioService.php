@@ -12,8 +12,10 @@ namespace Wms\Service;
 use Bisna\Base\Domain\Entity\EntityService;
 use Doctrine\Common\Collections\Criteria;
 use Wms\Domain\Entity\Atividade;
+use Wms\Domain\Entity\Enderecamento\EstoqueProprietarioRepository;
 use Wms\Domain\Entity\Enderecamento\EstoqueRepository;
 use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
+use Wms\Domain\Entity\Inventario;
 use Wms\Domain\Entity\InventarioNovo;
 use Wms\Domain\Entity\InventarioNovoRepository;
 use Wms\Domain\Entity\OrdemServico;
@@ -77,6 +79,7 @@ class InventarioService extends AbstractService
                 }
             }
 
+            self::newLog($inventarioEn,InventarioNovo\InventarioAndamento::STATUS_GERADO);
             $this->em->flush();
             $this->em->commit();
             return $inventarioEn;
@@ -108,18 +111,18 @@ class InventarioService extends AbstractService
             } else {
                 $inventarioEn->liberar();
 
-                /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-                $enderecoRepo = $this->em->getRepository('wms:Deposito\Endereco');
+                /** @var InventarioNovo\InventarioEnderecoNovo[] $invEnds */
+                $invEnds = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->findBy(["inventario" => $inventarioEn]);
 
-                /** @var InventarioNovo\InventarioEnderecoNovo[] $enderecos */
-                $enderecos = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->findBy(["inventario" => $inventarioEn]);
-
-                foreach ($enderecos as $endereco) {
-                    $this->addNovaContagem($endereco);
-                    $enderecoRepo->bloqueiaOuDesbloqueiaInventario($endereco->getDepositoEndereco(), 'S', false);
+                foreach ($invEnds as $invEnd) {
+                    $this->addNovaContagem($invEnd);
+                    $depEndEn = $invEnd->getDepositoEndereco();
+                    $depEndEn->setInventarioBloqueado("S");
+                    $this->em->persist($depEndEn);
                 }
 
                 $this->em->persist($inventarioEn);
+                self::newLog($inventarioEn,InventarioNovo\InventarioAndamento::STATUS_LIBERADO);
                 $this->em->flush();
                 $this->em->commit();
                 return true;
@@ -153,6 +156,7 @@ class InventarioService extends AbstractService
 
             $produto->setAtivo(false);
             $this->em->persist($produto);
+            self::newLog($produto->getInventarioEndereco()->getInventario(),InventarioNovo\InventarioAndamento::REMOVER_PRODUTO, null, $produto->getCodProduto() . " - " . $produto->getGrade());
             $this->em->flush();
 
             // se nao existir mais produtos no endereço, cancela o endereço
@@ -191,6 +195,12 @@ class InventarioService extends AbstractService
 
             $endereco->setAtivo(false);
             $this->em->persist($endereco);
+
+            $depEndEn = $endereco->getDepositoEndereco();
+            $depEndEn->setInventarioBloqueado("N");
+            $this->em->persist($depEndEn);
+
+            self::newLog($endereco->getInventario(),InventarioNovo\InventarioAndamento::REMOVER_ENDERECO, null, $endereco->getDepositoEndereco()->getDescricao());
             $this->em->flush();
 
             // se nao existir mais endereços ativos nesse inventario, cancela o mesmo
@@ -200,9 +210,7 @@ class InventarioService extends AbstractService
             {
                 /** @var \Wms\Domain\Entity\InventarioNovo $inventarioEn */
                 $inventarioEn = $endereco->getInventario();
-                $inventarioEn->cancelar();
-                $this->em->persist($inventarioEn);
-                $this->em->flush();
+                self::cancelarInventario($inventarioEn->getId(), $inventarioEn);
             }
 
             $this->em->commit();
@@ -266,29 +274,51 @@ class InventarioService extends AbstractService
      */
     public function novaConferencia($inventario, $contEnd, $produto, $conferencia, $tipoConferencia)
     {
+        /** @var InventarioNovo\InventarioContEndProdRepository $contEndProdRepo */
+        $contEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd");
+
         $this->em->beginTransaction();
         try {
-            $elements = [];
-            $isEmb = false;
             $volSeparadamente = json_decode($inventario['volumesSeparadamente']);
-            if (isset($produto['idVolume']) && !empty(json_decode($produto['idVolume']))) {
-                $isEmb = false;
-                if ($volSeparadamente)
-                    $elements[] = $this->em->getReference("wms:Produto\Volume", $produto['idVolume']);
-                else
-                    $elements = $this->em->getRepository("wms:Produto\Volume")->getProdutosVolumesByNorma($produto['norma'],  $produto['idProduto'], $produto['grade'], null, true);
-            }
-            elseif (isset($produto['idEmbalagem']) && !empty(json_decode($produto['idEmbalagem']))) {
-                $isEmb = true;
-                $elements[] = $this->em->getReference("wms:Produto\Embalagem", $produto['idEmbalagem']);
-            }
-            $conferencia["validade"] = (!empty($conferencia['validade'])) ? date_create_from_format("d/m/Y", $conferencia['validade']) : null;
 
             /** @var InventarioNovo\InventarioContEndProdRepository $inventContEndProdRepo */
             $inventContEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd");
             $resultado = $inventContEndProdRepo->getContagemFinalizada($contEnd, $produto, $volSeparadamente);
 
             if(empty($resultado)) {
+
+                $elements = [];
+                $isEmb = false;
+                if (isset($produto['idVolume']) && !empty(json_decode($produto['idVolume']))) {
+                    $isEmb = false;
+                    if ($volSeparadamente)
+                        $elements[] = $this->em->getReference("wms:Produto\Volume", $produto['idVolume']);
+                    else {
+                        /** @var Produto\Volume[] $elements */
+                        $elements = $this->em->getRepository("wms:Produto\Volume")->getProdutosVolumesByNorma($produto['norma'], $produto['idProduto'], $produto['grade'], null, true);
+                        $finalizados = $contEndProdRepo->getProdutosContagemFinalizada($contEnd['idInvEnd'], $contEnd['sequencia']);
+                        if (!empty($elements) && !empty($finalizados)) {
+                            $loteConf = json_decode($conferencia['lote']);
+                            foreach ($elements as $k => $vol) {
+                                foreach ($finalizados as $elem) {
+                                    if ($vol->getCodProduto() == $elem['COD_PRODUTO'] &&
+                                        $vol->getGrade() == $elem['DSC_GRADE'] &&
+                                        $loteConf == $elem['DSC_LOTE'] &&
+                                        $vol->getId() == $elem['COD_PRODUTO_VOLUME']) {
+                                            unset($elements[$k]);
+                                            break;
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                elseif (isset($produto['idEmbalagem']) && !empty(json_decode($produto['idEmbalagem']))) {
+                    $isEmb = true;
+                    $elements[] = $this->em->getReference("wms:Produto\Embalagem", $produto['idEmbalagem']);
+                }
+                $conferencia["validade"] = (!empty($conferencia['validade'])) ? date_create_from_format("d/m/Y", $conferencia['validade']) : null;
 
                 $this->registrarConferencia(
                     $elements,
@@ -434,7 +464,7 @@ class InventarioService extends AbstractService
             $result = ["code" => 1, "msg" => "Ordem de serviço finalizada com sucesso"];
 
             if (empty($outrasOs)) {
-                $result = $contMaiorAcerto = $this->compararContagens(
+                $result = $this->compararContagens(
                     $this->em->find("wms:InventarioNovo\InventarioContEnd", $contEnd['idContEnd']),
                     $inventario);
             }
@@ -476,9 +506,10 @@ class InventarioService extends AbstractService
             /** @var \Wms\Domain\Entity\Enderecamento\Estoque[] $estoques */
             $estoques = [];
             if (json_decode($inventario['comparaEstoque'])) {
-                $estoques = $this->em->getRepository("wms:Enderecamento\Estoque")->findBy([
-                    "depositoEndereco" => $invContEnd->getInventarioEndereco()->getDepositoEndereco()
-                ]);
+                $estoques = $this->em->getRepository("wms:Enderecamento\Estoque")->getEstoqueToInventario(
+                    $invContEnd->getInventarioEndereco()->getDepositoEndereco()->getId(),
+                    ($invPorProduto) ? $inventario['id'] : null
+                );
             }
 
             $finalizados = $contEndProdRepo->getProdutosContagemFinalizada($invContEnd->getInventarioEndereco()->getId(), $invContEnd->getSequencia());
@@ -503,8 +534,6 @@ class InventarioService extends AbstractService
 
             $volSeparados = json_decode($inventario["volumesSeparadamente"]);
 
-            $volsFaltantes = [];
-
             foreach ($contados as $contagem) {
                 $estoque = null;
                 if (!empty($estoques)) {
@@ -513,20 +542,14 @@ class InventarioService extends AbstractService
                         if ($contagem["COD_PRODUTO"] != $estoques[$i]->getCodProduto() ||
                             $contagem["DSC_GRADE"] != $estoques[$i]->getGrade() ||
                             $contagem["DSC_LOTE"] != $estoques[$i]->getLote() ||
-                            ($volSeparados && !empty($contagem["COD_PRODUTO_VOLUME"]) &&
-                                $contagem["COD_PRODUTO_VOLUME"] != $idVolEstoque)
+                            ($volSeparados && !empty($contagem["COD_PRODUTO_VOLUME"]) && $contagem["COD_PRODUTO_VOLUME"] != $idVolEstoque)
                         ) {
-                            if ($invPorProduto) {
-                                $volsFaltantes[$idVolEstoque] = $estoques[$i];
-                            }
                             continue;
                         }
 
                         $estoque = $estoques[$i];
                         unset($estoques[$i]);
-                        if (isset($volsFaltantes[$idVolEstoque])) {
-                            unset($volsFaltantes[$idVolEstoque]);
-                        }
+
                         $estoques = array_values($estoques);
                         break;
                     }
@@ -579,15 +602,9 @@ class InventarioService extends AbstractService
                 }
             }
 
-            if ($invContEnd->getContagemDivergencia() == 'N' && json_decode($inventario['contarTudo']) && (!$invPorProduto || ($invPorProduto && !empty($volsFaltantes)))) {
+            if ($invContEnd->getContagemDivergencia() == 'N' && json_decode($inventario['contarTudo']) && !empty($estoques)) {
 
-                $matriz = $estoques;
-
-                if ($invPorProduto && !empty($volsFaltantes)) {
-                    $matriz = $volsFaltantes;
-                }
-
-                foreach ($matriz as $estoque) {
+                foreach ($estoques as $estoque) {
                     $prod = [
                         "codProduto" => $estoque->getCodProduto(),
                         "grade" => $estoque->getGrade(),
@@ -770,6 +787,7 @@ class InventarioService extends AbstractService
         try {
             $inventario->concluir();
             $this->em->persist($inventario);
+            self::newLog($inventario,InventarioNovo\InventarioAndamento::STATUS_CONCLUIDO);
             return ["code" => 4, "msg" => "Inventário concluído com sucesso"];
         } catch (\Exception $e) {
             throw $e;
@@ -847,21 +865,35 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $idInventario
+     * @param $id
      * @throws \Exception
      */
-    public function finalizarInventario($idInventario)
+    public function finalizarInventario($id)
     {
         $this->em->beginTransaction();
         try {
             /** @var InventarioNovo $invEn */
-            $invEn = $this->find($idInventario);
+            $invEn = $this->find($id);
 
-            if (!($invEn->isConcluido() || $invEn->isInterrompido())) throw new \Exception("Impossível finalizar este inventário $idInventario pois está: " . $invEn->getDscStatus());
+            if (!($invEn->isConcluido() || $invEn->isInterrompido())) throw new \Exception("Impossível finalizar este inventário $id pois está: " . $invEn->getDscStatus());
 
-            $resultInv = $this->getRepository()->getResultInventario($idInventario);
+            $resultInv = $this->getRepository()->getResultInventario($id);
+
+            $controlaProprietario = ($this->getRepository()->getSystemParameterValue("CONTROLE_PROPRIETARIO") == "S");
+
+            if ($controlaProprietario) {
+                /** @var EstoqueProprietarioRepository $estoqueProprietarioRepo */
+                $estoqueProprietarioRepo = $this->em->getRepository("wms:Enderecamento\EstoqueProprietario");
+                $produtos = [];
+            }
 
             foreach ($resultInv as $item) {
+                if ($controlaProprietario) {
+                    if (!isset($produtos[$item['COD_PRODUTO']])) {
+                        $produtos[ $item['COD_PRODUTO'] ] = [ "codProduto" => $item["COD_PRODUTO"] ];
+                    }
+                }
+
                 if ($item["QTD"] != 0 || !empty($item["DTH_VALIDADE"])) {
                     /** @var Produto $produtoEn */
                     $produtoEn = $this->em->getRepository("wms:Produto")->find(["id"=> $item["COD_PRODUTO"], "grade" => $item["DSC_GRADE"]]);
@@ -888,7 +920,7 @@ class InventarioService extends AbstractService
                     }
 
                     $this->atualizarEstoque(
-                        $idInventario,
+                        $id,
                         $item["COD_DEPOSITO_ENDERECO"],
                         $produtoEn,
                         $item["DSC_LOTE"],
@@ -901,11 +933,23 @@ class InventarioService extends AbstractService
                 }
             }
 
+            $this->em->flush();
+
+            if ($controlaProprietario) {
+                foreach ($produtos as $produto) {
+                    $estoqueProprietarioRepo->updateSaldoByInventario($produto["codProduto"], $id);
+                }
+            }
+
             $invEn->finalizar();
             $this->em->persist($invEn);
+            self::newLog($invEn,InventarioNovo\InventarioAndamento::STATUS_FINALIZADO);
 
             $this->em->flush();
             $this->em->commit();
+
+            $this->em->getRepository("wms:Deposito\Endereco")->desbloquearByInventario($id);
+
         } catch (\Exception $e) {
             $this->em->rollback();
             throw $e;
@@ -941,12 +985,14 @@ class InventarioService extends AbstractService
                 $loteRepo->save($produtoEn->getId(), $produtoEn->getGrade(), $lote, $idUsuario);
         }
 
+        $elemType = ($tipo == Produto::TIPO_UNITARIO) ? "embalagem" : "volume";
+
         $estoqueRepo->movimentaEstoque([
             "idInventario" => $idInventario,
             "endereco" => $this->em->find("wms:Deposito\Endereco", $endereco),
             "produto" => $produtoEn,
             "lote" => $lote,
-            ($tipo == Produto::TIPO_UNITARIO) ? "embalagem" : "volume" => $elem,
+            $elemType => $elem,
             "qtd" => $qtd,
             "observacoes" => "Mov. correção inventário $idInventario",
             "usuario" => $this->em->getReference('wms:Usuario', $idUsuario),
@@ -974,6 +1020,7 @@ class InventarioService extends AbstractService
 
             $invEn->interromper();
             $this->em->persist($invEn);
+            self::newLog($invEn,InventarioNovo\InventarioAndamento::STATUS_INTERROMPIDO);
 
             $this->em->flush();
             $this->em->commit();
@@ -985,14 +1032,17 @@ class InventarioService extends AbstractService
 
     /**
      * @param $id
+     * @param $invEn InventarioNovo
      * @throws \Exception
      */
-    public function cancelarInventario($id)
+    public function cancelarInventario($id, $invEn = null)
     {
         $this->em->beginTransaction();
         try{
-            /** @var InventarioNovo $invEn */
-            $invEn = $this->find($id);
+            if (empty($inventario) && !empty($id)) {
+                /** @var InventarioNovo $invEn */
+                $invEn = $this->find($id);
+            }
 
             if ($invEn->isCancelado()) throw new \Exception("Este inventário $id já está cancelado");
             if ($invEn->isFinalizado()) throw new \Exception("Este inventário $id não pode mais ser cancelado, pois já foi aplicado ao estoque");
@@ -1004,9 +1054,12 @@ class InventarioService extends AbstractService
 
             $invEn->cancelar();
             $this->em->persist($invEn);
+            self::newLog($invEn,InventarioNovo\InventarioAndamento::STATUS_CANCELADO);
 
             $this->em->flush();
             $this->em->commit();
+
+            $this->em->getRepository("wms:Deposito\Endereco")->desbloquearByInventario($id);
         } catch (\Exception $e) {
             $this->em->rollback();
             throw $e;
@@ -1064,7 +1117,7 @@ class InventarioService extends AbstractService
     /*
      * Layout de exportação definido para o Winthor
      */
-    public function exportaInventarioModelo1($id)
+    public function exportarInventarioModelo1($id)
     {
 
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
@@ -1129,12 +1182,13 @@ class InventarioService extends AbstractService
     /*
      * Layout de exportação definido para a SonosShow
      */
-    public function exportaInventarioModelo2($idInventario = null) {
+    public function exportarInventarioModelo2($idInventario = null, $caminho = null) {
         /*
          * Nome do arquivo solicitado pela sonoshow como aammddhh.min
          */
+
         $nomeArquivo = date("ymdH.0i");
-        $arquivo = $this->getSystemParameterValue("DIRETORIO_IMPORTACAO") . DIRECTORY_SEPARATOR. $nomeArquivo;
+        $arquivo = $caminho . DIRECTORY_SEPARATOR . $nomeArquivo;
 
         $statusFinalizado = InventarioNovo::STATUS_FINALIZADO;
 
@@ -1160,7 +1214,7 @@ class InventarioService extends AbstractService
                                INNER JOIN INVENTARIO_NOVO INVN ON INVN.COD_INVENTARIO = IEN.COD_INVENTARIO
                                INNER JOIN INVENTARIO_CONT_END ICE ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
                                LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
-                              WHERE IE.COD_INVENTARIO = $idInventario AND INVN.COD_STATUS = $statusFinalizado AND ICEP.IND_DIVERGENTE = 'N') I
+                              WHERE IEN.COD_INVENTARIO = $idInventario AND INVN.COD_STATUS = $statusFinalizado AND ICEP.IND_DIVERGENTE = 'N') I
                     ON (I.COD_PRODUTO = P.COD_PRODUTO)
                    AND (I.DSC_GRADE = P.DSC_GRADE)";
         }
@@ -1195,5 +1249,51 @@ class InventarioService extends AbstractService
         } else {
             throw new \Exception("Nenhum inventário encontrado com o código $idInventario!");
         }
+    }
+
+    private function newLog($inventario, $acao, $usuario = null, $arg = null)
+    {
+        if (empty($usuario)) {
+            /** @var Usuario $usuario */
+            $usuario = $this->em->getReference('wms:Usuario', \Zend_Auth::getInstance()->getIdentity()->getId());
+        }
+
+        /** @var InventarioNovo\InventarioAndamentoRepository $logRepo */
+        $logRepo = $this->em->getRepository("wms:InventarioNovo\InventarioAndamento");
+
+        $dscAcao = "";
+        switch ($acao){
+            case InventarioNovo\InventarioAndamento::STATUS_GERADO:
+                $dscAcao = "Inventario gerado";
+                break;
+            case InventarioNovo\InventarioAndamento::STATUS_LIBERADO:
+                $dscAcao = "Inventario liberado";
+                break;
+            case InventarioNovo\InventarioAndamento::STATUS_CONCLUIDO:
+                $dscAcao = "Inventario concluido";
+                break;
+            case InventarioNovo\InventarioAndamento::STATUS_FINALIZADO:
+                $dscAcao = "Inventario finalizado";
+                break;
+            case InventarioNovo\InventarioAndamento::STATUS_INTERROMPIDO:
+                $dscAcao = "Inventario interrompido";
+                break;
+            case InventarioNovo\InventarioAndamento::STATUS_CANCELADO:
+                $dscAcao = "Inventario cancelado";
+                break;
+            case InventarioNovo\InventarioAndamento::REMOVER_ENDERECO:
+                $dscAcao = "Endereço $arg removido";
+                break;
+            case InventarioNovo\InventarioAndamento::REMOVER_PRODUTO:
+                $dscAcao = "Produto $arg removido";
+                break;
+        }
+
+        $logRepo->save([
+            "inventario" => $inventario,
+            "usuario" => $usuario,
+            "codAcao" => $acao,
+            "descricao" => $dscAcao
+        ]);
     }
 }

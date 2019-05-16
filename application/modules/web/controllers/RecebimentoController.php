@@ -749,8 +749,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                         }
 
                         //recebimento para o status finalizado
-                        $this->em->getRepository('wms:Recebimento')->finalizar($idRecebimento, true);
-
+                        $result = $this->em->getRepository('wms:Recebimento')->finalizar($idRecebimento, true);
+                        if (isset($result['exception']) && !empty($result['exception'])) throw $result['exception'];
                         $this->addFlashMessage('success', 'Recebimento finalizado com divergencias.');
 
                         $this->redirect('index');

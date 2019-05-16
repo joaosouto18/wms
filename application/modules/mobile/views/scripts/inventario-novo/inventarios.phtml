@@ -594,10 +594,7 @@
 
         var processProduto = function (codBarras) {
             var liberado = true;
-            if (desconsideraZeroEsquerda) {
-                codBarras = Number(codBarras).toString();
-            }
-            if (invSelecioando.criterio === 'P' && produtos.length) {
+            /*if (invSelecioando.criterio === 'P' && produtos.length) {
                 var encontrou = false;
                 $.each(produtos, function (k,produto) {
                     if (myIndexOf(produto.codBarras, codBarras) >= 0) encontrou = true;
@@ -606,7 +603,7 @@
                     liberado = false;
                     notificar("warning", "Este código de barras " + codBarras + " não pertence à nenhum produto esperado neste endereço", true)
                 }
-            }
+            }*/
 
             if (!liberado) {
                 return;

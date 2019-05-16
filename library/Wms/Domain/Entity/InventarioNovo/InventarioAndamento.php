@@ -9,6 +9,8 @@
 namespace Wms\Domain\Entity\InventarioNovo;
 
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Inventario;
+use Wms\Domain\Entity\Usuario;
 
 /**
  * @Table(name="INVENTARIO_ANDAMENTO")
@@ -22,6 +24,8 @@ class InventarioAndamento
     const STATUS_FINALIZADO   = 3;
     const STATUS_INTERROMPIDO = 4;
     const STATUS_CANCELADO    = 5;
+    const REMOVER_ENDERECO    = 6;
+    const REMOVER_PRODUTO     = 7;
 
     public static $tipoStatus = array(
         self::STATUS_GERADO => "GERADO",
@@ -29,7 +33,9 @@ class InventarioAndamento
         self::STATUS_CONCLUIDO => "CONCLUIDO",
         self::STATUS_FINALIZADO => "FINALIZADO",
         self::STATUS_INTERROMPIDO => "INTERROMPIDO",
-        self::STATUS_CANCELADO => "CANCELADO"
+        self::STATUS_CANCELADO => "CANCELADO",
+        self::REMOVER_ENDERECO => "ENDEREÇO REMOVIDO",
+        self::REMOVER_PRODUTO => "PRODUTO REMOVIDO"
     );
 
     /**
@@ -41,18 +47,18 @@ class InventarioAndamento
     protected $id;
 
     /**
-     * @var codUsuario
+     * @var Inventario
      * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo")
      * @JoinColumn(name="COD_INVENTARIO", referencedColumnName="COD_INVENTARIO")
      */
-    protected $codInventario;
+    protected $inventario;
 
     /**
-     * @var codUsuario
+     * @var Usuario
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Usuario")
      * @JoinColumn(name="COD_USUARIO", referencedColumnName="COD_USUARIO")
      */
-    protected $codUsuario;
+    protected $usuario;
 
     /**
      * @var string $descricao
@@ -72,8 +78,10 @@ class InventarioAndamento
      */
     protected $codAcao;
 
-
-
+    public function __construct()
+    {
+        self::setDthAcao();
+    }
 
     /**
      * @return mixed
@@ -117,32 +125,13 @@ class InventarioAndamento
         return ($toString && !empty($this->dthAcao)) ? $this->dthAcao->format('d/m/Y H:i:s') : $this->dthAcao ;
     }
 
-    /**
-     * @param \DateTime $dthAcao
-     */
-    public function setDthAcao($dthAcao)
+    private function setDthAcao()
     {
-        $this->dthAcao = $dthAcao;
+        $this->dthAcao = new \DateTime();
     }
 
     /**
-     * @return mixed
-     */
-    public function geUsuario()
-    {
-        return $this->usuario;
-    }
-
-    /**
-     * @param mixed $usuario
-     */
-    public function setUsuario($usuario)
-    {
-        $this->usuario = $usuario;
-    }
-
-    /**
-     * @return mixed
+     * @return Inventario
      */
     public function getInventario()
     {
@@ -150,7 +139,7 @@ class InventarioAndamento
     }
 
     /**
-     * @param mixed $inventario
+     * @param Inventario $inventario
      */
     public function setInventario($inventario)
     {
@@ -158,20 +147,37 @@ class InventarioAndamento
     }
 
     /**
-     * @return mixed
+     * @return Usuario
      */
-    public function getAcao()
+    public function getUsuario()
     {
-        return $this->Acao;
+        return $this->usuario;
     }
 
     /**
-     * @param mixed $acao
+     * @param Usuario $usuario
      */
-    public function setAcao($acao)
+    public function setUsuario($usuario)
     {
-        $this->acao = $acao;
+        $this->usuario = $usuario;
     }
+
+    /**
+     * @return \DateTime
+     */
+    public function getCodAcao()
+    {
+        return $this->codAcao;
+    }
+
+    /**
+     * @param \DateTime $codAcao
+     */
+    public function setCodAcao($codAcao)
+    {
+        $this->codAcao = $codAcao;
+    }
+
 
     public function toArray()
     {

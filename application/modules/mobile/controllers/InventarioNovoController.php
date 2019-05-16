@@ -79,8 +79,8 @@ class Mobile_InventarioNovoController extends Action
     public function getInfoProdutoAction()
     {
         try {
-
-            $elemento = $this->_em->getRepository('wms:Produto')->getEmbalagemByCodBarras($this->_getParam("codbarras"));
+			$codbarras = \Wms\Util\Coletor::adequaCodigoBarras($this->_getParam("codbarras"));
+            $elemento = $this->_em->getRepository('wms:Produto')->getEmbalagemByCodBarras($codbarras);
 
             if (empty($elemento))
                 throw new Exception("Nenhuma embalagem/volume ativo foi encontrado com esse código de barras ". $this->_getParam("codbarras"));

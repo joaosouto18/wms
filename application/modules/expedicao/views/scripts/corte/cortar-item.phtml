@@ -28,6 +28,7 @@
     <input type="hidden" name="COD_PRODUTO" id="COD_PRODUTO" value="<?php echo $this->produto; ?>">
     <input type="hidden" name="DSC_GRADE" id="DSC_GRADE" value="<?php echo $this->grade; ?>">
     <input type="hidden" name="expedicao" id="expedicao" value="<?php echo $this->expedicao; ?>">
+    <input type="hidden" name="qtdConf" id="qtdConf" value="<?php echo $this->qtdConf; ?>">
     <?php if (isset($this->mapaPreSelected) && !empty($this->mapaPreSelected) ):?>
         <input type="hidden" name="COD_MAPA_SEPARACAO" id="COD_MAPA_SEPARACAO" value="<?php echo $this->mapaPreSelected; ?>">
     <?php endif ?>
