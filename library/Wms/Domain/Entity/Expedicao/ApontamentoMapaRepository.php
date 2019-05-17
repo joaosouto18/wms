@@ -456,7 +456,7 @@ class ApontamentoMapaRepository extends EntityRepository {
             $contador = 0;
             foreach ($ordemServicoEntities as $i => $ordemServicoEntity) {
                 $qtdPorPessoa = (floor(Math::dividir(count($mapaSeparacaoProdutoEntities), count($ordemServicoEntities)))) * ($i + 1);
-                while ($contador <= $qtdPorPessoa) {
+                while ($contador < $qtdPorPessoa) {
                     $produtoEn = $mapaSeparacaoProdutoEntities[$contador]->getProduto();
                     $codMapaSeparacao = $mapaSeparacaoEn->getId();
                     $codOs = $ordemServicoEntity->getId();
