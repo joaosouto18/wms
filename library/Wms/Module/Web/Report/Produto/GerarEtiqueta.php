@@ -191,13 +191,19 @@ class GerarEtiqueta extends eFPDF
                 $this->SetMargins(4, 5);
                 $this->SetFont('Arial', 'B', 8);
 
-                $this->layout6($produto, $tipo);
+                $this->layout6($produto);
                 break;
             case "recebimento":
                 $this->SetMargins(0, 1);
                 $this->SetFont('Arial', 'B', 8);
 
                 $this->layoutEtiquetaRecebimento($produto, $tipo);
+                break;
+            case 7:
+                $this->SetMargins(6, 4, 0);
+                $this->SetFont('Arial', 'B', 10);
+
+                $this->layout7($produto, $tipo);
                 break;
             default:
                 $this->SetMargins(7, 5, 0);
@@ -516,5 +522,40 @@ class GerarEtiqueta extends eFPDF
 
         $this->Cell(50,2.7,"NF: " . utf8_decode($notaFiscal) .  "/" .  substr(utf8_decode($fornecedor),0,15) ,0,1,"C");
     }
+
+    public function layout7($produto, $tipo)
+    {
+        $codigo = $produto['codigoBarras'];
+
+        $this->AddPage();
+        $this->SetFont('Arial', 'B', 16);
+        $this->MultiCell(90, 4, utf8_decode($produto['idProduto']),0);
+        $this->Ln(2);
+        $this->MultiCell(90, 4, utf8_decode($produto['dscProduto']),0);
+        $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
+        $this->Ln(4);
+        $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fabricante: $produto[fabricante]"), 100), 0, 0);
+        if ($tipo == "NF") {
+            $this->Ln(3);
+            $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[fornecedor]"), 100), 0, 0);
+        }
+
+        if ($produto['idEmbalagem'] != null) {
+            $this->Ln(4);
+            $this->Cell(100, 0, 'Embalagem: com ' . utf8_decode($produto['quantidade']). ' unidades', 0, 0);
+        }
+
+        $x        = 55;
+        $y        = 42;
+        $height   = 12;
+        $angle    = 0;
+        $type     = 'code128';
+        $black    = '000000';
+        $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$codigo),0.5,12);
+        $len = $this->GetStringWidth($data['hri']);
+
+        $this->Text(($x-$height) + (($height - $len)/2) + 3,$y + 12,$codigo);
+    }
+
 
 }
