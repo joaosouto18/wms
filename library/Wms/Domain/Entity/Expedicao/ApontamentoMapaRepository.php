@@ -42,7 +42,14 @@ class ApontamentoMapaRepository extends EntityRepository {
         $em = $this->getEntityManager();
         $apontamentoMapaEn->setDataFimConferencia(new \DateTime());
         $em->persist($apontamentoMapaEn);
+
         $em->flush();
+
+        /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
+        $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+        $apontamentoMapaRepo->geraAtividadeSeparacao($apontamentoMapaEn->getMapaSeparacao(), $apontamentoMapaEn->getUsuario()->getId());
+
+
         return true;
     }
 
