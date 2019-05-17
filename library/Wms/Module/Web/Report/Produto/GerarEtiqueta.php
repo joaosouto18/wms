@@ -535,7 +535,7 @@ class GerarEtiqueta extends eFPDF
         $this->MultiCell(90, 8, substr(trim(utf8_decode($produto['dscProduto'])),0,44),0,'C');
         if ($produto['idEmbalagem'] != null) {
             $this->Ln(3);
-            $this->Cell(90, 0, trim('Embalagem: com ' . utf8_decode($produto['quantidade']). ' unidades'), 0, 0,'C');
+            $this->Cell(90, 0, trim('Embalagem: '. utf8_decode($produto['dscEmbalagem']) . ' ' . utf8_decode($produto['quantidade']). ' unidades'), 0, 0,'C');
         }
 
         $x        = 55;
