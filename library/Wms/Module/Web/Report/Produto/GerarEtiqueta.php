@@ -523,7 +523,7 @@ class GerarEtiqueta extends eFPDF
         $this->Cell(50,2.7,"NF: " . utf8_decode($notaFiscal) .  "/" .  substr(utf8_decode($fornecedor),0,15) ,0,1,"C");
     }
 
-    public function layout7($produto, $tipo)
+    public function layout7($produto)
     {
         $codigo = $produto['codigoBarras'];
 
@@ -532,14 +532,6 @@ class GerarEtiqueta extends eFPDF
         $this->MultiCell(90, 4, utf8_decode($produto['idProduto']),0);
         $this->Ln(2);
         $this->MultiCell(90, 4, utf8_decode($produto['dscProduto']),0);
-        $this->Cell(100, 0, 'Grade: ' . utf8_decode($produto['grade']) . utf8_decode(' - Comercialização: ') . utf8_decode($produto['dscTipoComercializacao']), 0, 0);
-        $this->Ln(4);
-        $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fabricante: $produto[fabricante]"), 100), 0, 0);
-        if ($tipo == "NF") {
-            $this->Ln(3);
-            $this->Cell(100, 0, self::SetStringByMaxWidth(utf8_decode("Fornecedor: $produto[fornecedor]"), 100), 0, 0);
-        }
-
         if ($produto['idEmbalagem'] != null) {
             $this->Ln(4);
             $this->Cell(100, 0, 'Embalagem: com ' . utf8_decode($produto['quantidade']). ' unidades', 0, 0);
