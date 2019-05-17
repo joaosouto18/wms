@@ -528,7 +528,6 @@ class GerarEtiqueta extends eFPDF
         $codigo = $produto['codigoBarras'];
 
         $this->AddPage();
-        $this->Ln(2);
         $this->SetFont('Arial', 'B', 20);
         $this->MultiCell(90, 4, trim(utf8_decode($produto['idProduto'])),0,'C');
         $this->Ln(2);
