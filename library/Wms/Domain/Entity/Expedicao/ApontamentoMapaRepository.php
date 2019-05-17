@@ -26,6 +26,10 @@ class ApontamentoMapaRepository extends EntityRepository {
         if (count($apontamentosByUsuario) > 0) {
             $ultimoApontamentoByUsuario = $apontamentosByUsuario[0];
             $ultimoApontamentoByUsuario->setDataFimConferencia(new \DateTime());
+
+            /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
+            $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+            $apontamentoMapaRepo->geraAtividadeSeparacao($mapaSeparacao, $usuarioEn->getId());
         }
 
         $em->persist($apontamentoEn);
@@ -456,7 +460,7 @@ class ApontamentoMapaRepository extends EntityRepository {
             $contador = 0;
             foreach ($ordemServicoEntities as $i => $ordemServicoEntity) {
                 $qtdPorPessoa = (floor(Math::dividir(count($mapaSeparacaoProdutoEntities), count($ordemServicoEntities)))) * ($i + 1);
-                while ($contador <= $qtdPorPessoa) {
+                while ($contador < $qtdPorPessoa) {
                     $produtoEn = $mapaSeparacaoProdutoEntities[$contador]->getProduto();
                     $codMapaSeparacao = $mapaSeparacaoEn->getId();
                     $codOs = $ordemServicoEntity->getId();
