@@ -29,7 +29,7 @@ class ApontamentoMapaRepository extends EntityRepository {
 
             /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
             $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-            $apontamentoMapaRepo->geraAtividadeSeparacao($mapaSeparacao, $usuarioEn->getId());
+            $apontamentoMapaRepo->geraAtividadeSeparacao($ultimoApontamentoByUsuario->getMapaSeparacao(), $usuarioEn->getId());
         }
 
         $em->persist($apontamentoEn);
@@ -432,7 +432,6 @@ class ApontamentoMapaRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Expedicao\SeparacaoMapaSeparacao $separacaoMapaSeparacaoRepository */
         $separacaoMapaSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\SeparacaoMapaSeparacao');
 
-        $usuarioEn = $this->getEntityManager()->getReference('wms:Usuario',$codUsuario);
         $mapaSeparacaoProdutoEntities = $mapaSeparacaoProdutoRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEn));
 
         $mapasApontados = $this->findBy(array('mapaSeparacao' => $mapaSeparacaoEn));

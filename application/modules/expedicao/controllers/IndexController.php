@@ -542,8 +542,6 @@ class Expedicao_IndexController extends Action {
         if (isset($apontamentoMapaEn) && !empty($apontamentoMapaEn)) {
             $result = $apontamentoMapaRepo->update($apontamentoMapaEn);
 
-            $apontamentoMapaRepo->geraAtividadeSeparacao($mapaSeparacaoEn, $usuarioEn->getId());
-
             if ($result == true) {
                 $response = array('result' => 'success', 'msg' => "Apontamento finalizado com sucesso!");
                 $this->_helper->json($response);
