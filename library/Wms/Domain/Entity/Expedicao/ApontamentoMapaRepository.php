@@ -26,6 +26,10 @@ class ApontamentoMapaRepository extends EntityRepository {
         if (count($apontamentosByUsuario) > 0) {
             $ultimoApontamentoByUsuario = $apontamentosByUsuario[0];
             $ultimoApontamentoByUsuario->setDataFimConferencia(new \DateTime());
+
+            /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
+            $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+            $apontamentoMapaRepo->geraAtividadeSeparacao($mapaSeparacao, $usuarioEn->getId());
         }
 
         $em->persist($apontamentoEn);
