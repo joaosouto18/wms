@@ -67,33 +67,37 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                             este.dialogAlert("Não é permitido ativar/inativar embalagens no WMS");
                                             return false;
                                         } else {
-                                            if (check.is(":checked") === true) {
-                                                if (date.text() === "EMB. ATIVA") {
-                                                    var today = new Date();
-                                                    var dd = today.getDate();
-                                                    var mm = today.getMonth() + 1;
-                                                    var yyyy = today.getFullYear();
-
-                                                    if (dd < 10) {
-                                                        dd = '0' + dd
-                                                    }
-                                                    if (mm < 10) {
-                                                        mm = '0' + mm
-                                                    }
-                                                    today = dd + '/' + mm + '/' + yyyy;
-
-                                                    date.text(today);
-                                                    model.dataInativacao = today;
-                                                }
-                                                div.css("color", "red");
-                                            } else {
-                                                date.text("EMB. ATIVA");
-                                                div.css("color", "green");
-                                                model.dataInativacao = "EMB. ATIVA";
-                                            }
+                                            este.changeStatus(div, check, date, model);
                                         }
                                     }
                                 });
+                            },
+
+                            changeStatus: function (div, check, date, model) {
+                                if (check.is(":checked") === true) {
+                                    if (date.text() === "EMB. ATIVA") {
+                                        var today = new Date();
+                                        var dd = today.getDate();
+                                        var mm = today.getMonth() + 1;
+                                        var yyyy = today.getFullYear();
+
+                                        if (dd < 10) {
+                                            dd = '0' + dd
+                                        }
+                                        if (mm < 10) {
+                                            mm = '0' + mm
+                                        }
+                                        today = dd + '/' + mm + '/' + yyyy;
+
+                                        date.text(today);
+                                        model.dataInativacao = today;
+                                    }
+                                    div.css("color", "red");
+                                } else {
+                                    date.text("EMB. ATIVA");
+                                    div.css("color", "green");
+                                    model.dataInativacao = "EMB. ATIVA";
+                                }
                             },
 
                             /**
@@ -303,6 +307,18 @@ $.Controller.extend('Wms.Controllers.ProdutoEmbalagem',
                                 if (id.indexOf('-new') !== -1) {
                                     //se for apenas objeto js remove direto
                                     this.deleteConfirmed(model);
+                                    return true;
+                                } else if (model.isEmbFracionavelDefault === 'S') {
+                                    var element = $(".wms_models_produto_embalagem_"+model.id);
+                                    var date = element.find('.dataInativacao');
+                                    var check = element.find('.ativarDesativar');
+                                    check.prop("checked", true);
+                                    var div = date.parent('div').parent('td');
+                                    model.codigoBarras = null;
+                                    model.isEmbFracionavelDefault = 'N';
+                                    model.ativarDesativar = ' checked ';
+                                    este.changeStatus(div, check, date, model);
+                                    este.salvarDadosEmbalagem(model);
                                     return true;
                                 }
 

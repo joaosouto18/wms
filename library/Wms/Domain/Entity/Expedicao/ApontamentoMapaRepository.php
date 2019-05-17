@@ -26,6 +26,10 @@ class ApontamentoMapaRepository extends EntityRepository {
         if (count($apontamentosByUsuario) > 0) {
             $ultimoApontamentoByUsuario = $apontamentosByUsuario[0];
             $ultimoApontamentoByUsuario->setDataFimConferencia(new \DateTime());
+
+            /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
+            $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+            $apontamentoMapaRepo->geraAtividadeSeparacao($ultimoApontamentoByUsuario->getMapaSeparacao(), $usuarioEn->getId());
         }
 
         $em->persist($apontamentoEn);
@@ -38,7 +42,14 @@ class ApontamentoMapaRepository extends EntityRepository {
         $em = $this->getEntityManager();
         $apontamentoMapaEn->setDataFimConferencia(new \DateTime());
         $em->persist($apontamentoMapaEn);
+
         $em->flush();
+
+        /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
+        $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+        $apontamentoMapaRepo->geraAtividadeSeparacao($apontamentoMapaEn->getMapaSeparacao(), $apontamentoMapaEn->getUsuario()->getId());
+
+
         return true;
     }
 
@@ -421,7 +432,6 @@ class ApontamentoMapaRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Expedicao\SeparacaoMapaSeparacao $separacaoMapaSeparacaoRepository */
         $separacaoMapaSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\SeparacaoMapaSeparacao');
 
-        $usuarioEn = $this->getEntityManager()->getReference('wms:Usuario',$codUsuario);
         $mapaSeparacaoProdutoEntities = $mapaSeparacaoProdutoRepository->findBy(array('mapaSeparacao' => $mapaSeparacaoEn));
 
         $mapasApontados = $this->findBy(array('mapaSeparacao' => $mapaSeparacaoEn));
@@ -456,7 +466,7 @@ class ApontamentoMapaRepository extends EntityRepository {
             $contador = 0;
             foreach ($ordemServicoEntities as $i => $ordemServicoEntity) {
                 $qtdPorPessoa = (floor(Math::dividir(count($mapaSeparacaoProdutoEntities), count($ordemServicoEntities)))) * ($i + 1);
-                while ($contador <= $qtdPorPessoa) {
+                while ($contador < $qtdPorPessoa) {
                     $produtoEn = $mapaSeparacaoProdutoEntities[$contador]->getProduto();
                     $codMapaSeparacao = $mapaSeparacaoEn->getId();
                     $codOs = $ordemServicoEntity->getId();
