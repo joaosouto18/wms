@@ -12,6 +12,7 @@ class ApontamentoMapaRepository extends EntityRepository {
 
     public function save($mapaSeparacao, $codUsuario) {
 
+        $apontar = false;
         $em = $this->getEntityManager();
         $usuarioEn = $em->getReference('wms:Usuario',$codUsuario);
 
@@ -26,14 +27,19 @@ class ApontamentoMapaRepository extends EntityRepository {
         if (count($apontamentosByUsuario) > 0) {
             $ultimoApontamentoByUsuario = $apontamentosByUsuario[0];
             $ultimoApontamentoByUsuario->setDataFimConferencia(new \DateTime());
+            $em->persist($ultimoApontamentoByUsuario);
 
-            /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
-            $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
-            $apontamentoMapaRepo->geraAtividadeSeparacao($ultimoApontamentoByUsuario->getMapaSeparacao(), $usuarioEn->getId());
+            $apontar = true;
         }
 
         $em->persist($apontamentoEn);
         $em->flush();
+
+        if ($apontar) {
+            /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
+            $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
+            $apontamentoMapaRepo->geraAtividadeSeparacao($ultimoApontamentoByUsuario->getMapaSeparacao(), $usuarioEn->getId());
+        }
 
         return $apontamentoEn;
     }
@@ -42,13 +48,11 @@ class ApontamentoMapaRepository extends EntityRepository {
         $em = $this->getEntityManager();
         $apontamentoMapaEn->setDataFimConferencia(new \DateTime());
         $em->persist($apontamentoMapaEn);
-
         $em->flush();
 
         /** @var \Wms\Domain\Entity\Expedicao\ApontamentoMapaRepository $apontamentoMapaRepo */
         $apontamentoMapaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ApontamentoMapa');
         $apontamentoMapaRepo->geraAtividadeSeparacao($apontamentoMapaEn->getMapaSeparacao(), $apontamentoMapaEn->getUsuario()->getId());
-
 
         return true;
     }
@@ -457,6 +461,7 @@ class ApontamentoMapaRepository extends EntityRepository {
                     'formaConferencia' => 'D'));
 
                 if (isset($ordemEntity)) {
+                    $ordemServicoEntities[] = $ordemEntity;
                     continue;
                 }
 
@@ -470,7 +475,7 @@ class ApontamentoMapaRepository extends EntityRepository {
                     $produtoEn = $mapaSeparacaoProdutoEntities[$contador]->getProduto();
                     $codMapaSeparacao = $mapaSeparacaoEn->getId();
                     $codOs = $ordemServicoEntity->getId();
-                    $qtdSeparar = $mapaSeparacaoProdutoEntities[$contador]->getQtdSeparar();
+                    $qtdSeparar = (($mapaSeparacaoProdutoEntities[$contador]->getQtdSeparar() * $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem()) - $mapaSeparacaoProdutoEntities[$contador]->getQtdCortado()) / $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem();
                     $idEmbalagem = $mapaSeparacaoProdutoEntities[$contador]->getProdutoEmbalagem()->getId();
                     $qtdEmb = $mapaSeparacaoProdutoEntities[$contador]->getQtdEmbalagem();
                     $separacaoMapaSeparacaoEntity = $separacaoMapaSeparacaoRepository->save($produtoEn, $codMapaSeparacao, $codOs, $qtdSeparar, $idEmbalagem, $qtdEmb, $idVol = null, $lote = null);
