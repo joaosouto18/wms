@@ -203,7 +203,7 @@ class GerarEtiqueta extends eFPDF
                 $this->SetMargins(6, 4, 0);
                 $this->SetFont('Arial', 'B', 10);
 
-                $this->layout7($produto, $tipo);
+                $this->layout7($produto);
                 break;
             default:
                 $this->SetMargins(7, 5, 0);
@@ -531,7 +531,8 @@ class GerarEtiqueta extends eFPDF
         $this->SetFont('Arial', 'B', 20);
         $this->MultiCell(90, 4, trim(utf8_decode($produto['idProduto'])),0,'C');
         $this->Ln(2);
-        $this->MultiCell(90, 8, trim(utf8_decode($produto['dscProduto'])),0,'C');
+        $this->SetFont('Arial', 'B', 16);
+        $this->MultiCell(90, 8, substr(trim(utf8_decode($produto['dscProduto'])),0,44),0,'C');
         if ($produto['idEmbalagem'] != null) {
             $this->Ln(3);
             $this->Cell(90, 0, trim('Embalagem: com ' . utf8_decode($produto['quantidade']). ' unidades'), 0, 0,'C');
