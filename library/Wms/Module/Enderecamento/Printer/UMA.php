@@ -338,7 +338,7 @@ class UMA extends Pdf {
         if (isset($palete['endereco']) && !empty($palete['endereco'])) {
             $this->Cell(95, 27, $palete['endereco'], 0, 1);
         } else {
-            $this->Cell(95, 27, '',0, 1);
+            $this->Cell(95, 27, '--.---.--.--', 0, 1);
         }
 
         $this->SetFont('Arial', 'B', 32);
