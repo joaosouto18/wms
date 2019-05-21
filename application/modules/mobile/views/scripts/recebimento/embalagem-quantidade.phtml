@@ -157,7 +157,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                 } else if ($(this).hasClass("qtd-input")) {
                     $("#lote-" + $(this).parent().parent().data("id")).focus();
                 } else if ($(this).hasClass("validade-input")) {
-                    $("#qtdConferida-" + $(this).parent().parent().data("id")).focus();
+                    $("#qtdConferida-0").focus();
                 } else if (!checkInputs(true) ) {
                     $("#recebimento-embalagem-quantidade-form").submit();
                 }
