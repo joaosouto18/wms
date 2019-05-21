@@ -1169,6 +1169,11 @@ class ExpedicaoRepository extends EntityRepository {
             if ($forcarSairDoPicking) {
                 $estoquePicking = 0;
                 $qtdReservarPicking = $qtdRestante;
+
+                if($enderecoPicking == null) {
+                    throw new \Exception("Ocorreram problemas na geração do ressuprimento do produto $codProduto. O ressuprimento precisa sair do picking porém o produto está sem picking definido");
+                }
+
                 $idEndereco = $enderecoPicking->getId();
 
                 if ($controlaLote == 'S') {
