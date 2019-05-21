@@ -33,7 +33,6 @@ class NotaFiscalSaidaRepository extends EntityRepository {
                     $options[] = 0;
                 }
 
-
                 if (isset($data['carga']) && !is_null($data['carga'])) {
                     $options[] = $data['carga'];
                 } else {
