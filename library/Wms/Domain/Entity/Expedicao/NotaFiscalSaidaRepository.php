@@ -27,14 +27,13 @@ class NotaFiscalSaidaRepository extends EntityRepository {
             if ((isset($data['notaFiscal']) && !empty($data['notaFiscal'])) || (!empty($data['carga']) && isset($data['carga']))) {
                 $options = array();
 
-                if (!is_null($data['notaFiscal'])) {
+                if (isset($data['notaFiscal']) && !empty($data['notaFiscal'])) {
                     $options[] = $data['notaFiscal'];
                 } else {
                     $options[] = 0;
                 }
 
-
-                if (!is_null($data['carga'])) {
+                if (isset($data['carga']) && !empty($data['carga'])) {
                     $options[] = $data['carga'];
                 } else {
                     $options[] = 0;
