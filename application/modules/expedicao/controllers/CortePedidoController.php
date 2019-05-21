@@ -113,6 +113,7 @@ class Expedicao_CortePedidoController  extends Action
 
                 $andamentoRepo->save("Pedido $codExterno cortado - motivo: ".$this->_getParam('motivoCorte',null), $idExpedicao, false, true, null, null, false);
 
+                $this->getEntityManager()->flush();
                 $this->getEntityManager()->commit();
                 $this->addFlashMessage('success','Pedido '.$codExterno.' Cortado com Sucesso');
                 $this->_redirect('/expedicao');

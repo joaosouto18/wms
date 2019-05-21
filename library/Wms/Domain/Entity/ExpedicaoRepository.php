@@ -4433,7 +4433,13 @@ class ExpedicaoRepository extends EntityRepository {
             $resto = 0;
             foreach ($result as $key => $pedProd) {
                 //Identifica a proporção à ser cortada de cada pedido que tem o item.
-                $proporcao = Math::multiplicar(Math::dividir($pedProd['QUANTIDADE'], $dados['somatorio']), ($dados['qtdCortar']));
+                //Caso qtdCortar for igual o somatorio de todos os pedidos o corte é total do pedido atual
+                if (Math::compare($dados['somatorio'], $dados['qtdCortar'], "==")) {
+                    $proporcao = $pedProd['QUANTIDADE'];
+                } else {
+                    // Caso qtdCortar não for igual proporção é a fração percentual do pedido em relação ao somatorio dos pedidos
+                    $proporcao = Math::multiplicar(Math::dividir($pedProd['QUANTIDADE'], $dados['somatorio']), ($dados['qtdCortar']));
+                }
                 if ((end($result) == $pedProd)) {
                     //Soma à proporção do maior pedido, o somatório de frações dos outros pedidos
                     $qtdCortar =  round(Math::adicionar($proporcao, $resto));
@@ -4471,6 +4477,7 @@ class ExpedicaoRepository extends EntityRepository {
                 }
             }
         }
+        $this->getEntityManager()->flush();
     }
 
     /**
@@ -4640,8 +4647,6 @@ class ExpedicaoRepository extends EntityRepository {
         $codExterno = $pedidoEn->getCodExterno();
         $observacao = "Item $codProduto - $grade do pedido $codExterno teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
         $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
-
-        $this->getEntityManager()->flush();
 
     }
 
@@ -5518,6 +5523,7 @@ class ExpedicaoRepository extends EntityRepository {
 
             $this->cortaPedido($codigoPedidoInterno, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, null, $idMotivo);
         }
+        $this->getEntityManager()->flush();
 
     }
 
