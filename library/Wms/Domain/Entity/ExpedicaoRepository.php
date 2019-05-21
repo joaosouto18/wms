@@ -4425,34 +4425,26 @@ class ExpedicaoRepository extends EntityRepository {
 
             $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-            $resto = 0;
+            $fracao = 0;
             foreach ($result as $key => $pedProd) {
                 //Identifica a proporção à ser cortada de cada pedido que tem o item.
-                //Caso qtdCortar for igual o somatorio de todos os pedidos o corte é total do pedido atual
-                if (Math::compare($dados['somatorio'], $dados['qtdCortar'], "==")) {
-                    $proporcao = $pedProd['QUANTIDADE'];
+                if ($dados['somatorio'] == $dados['qtdCortar']) {
+                    //Caso qtdCortar for igual o somatorio de todos os pedidos o corte é total do pedido
+                    $qtdCortar = $pedProd['QUANTIDADE'];
                 } else {
                     // Caso qtdCortar não for igual proporção é a fração percentual do pedido em relação ao somatorio dos pedidos
-                    $proporcao = Math::multiplicar(Math::dividir($pedProd['QUANTIDADE'], $dados['somatorio']), ($dados['qtdCortar']));
-                }
-                if ((end($result) == $pedProd)) {
-                    //Soma à proporção do maior pedido, o somatório de frações dos outros pedidos
-                    $qtdCortar =  round(Math::adicionar($proporcao, $resto));
-
-                    if (Math::compare($qtdCortar, $pedProd['QUANTIDADE'], '>')) {
-                        $qtdRealocar = Math::subtrair($qtdCortar, $pedProd['QUANTIDADE']);
-                        $qtdCortar = $pedProd['QUANTIDADE'];
-                        $itemAnterior = $result[$key-1];
-                        $bkp = $arrResult[$itemAnterior['COD_PEDIDO']][$itemAnterior['COD_PRODUTO']][$itemAnterior['DSC_GRADE']];
-                        $arrResult[$itemAnterior['COD_PEDIDO']][$itemAnterior['COD_PRODUTO']][$itemAnterior['DSC_GRADE']] = Math::adicionar($bkp, $qtdRealocar);
+                    $proporcao = Math::multiplicar(Math::dividir($pedProd['QUANTIDADE'], $dados['somatorio']), $dados['qtdCortar']);
+                    // Soma à proporção a fração restante do pedido anterior
+                    $qtdBase = Math::adicionar($proporcao, $fracao);
+                    if ($key == (count($result)-1)) {
+                        //Recupera a fração da proporção
+                        $qtdCortar = round($qtdBase);
+                    } else {
+                        //Recupera a fração da proporção
+                        $fracao = Math::subtrair($qtdBase, intval(strval($qtdBase)));
+                        //Para cortar apenas o valor inteiro dos pedidos menores
+                        $qtdCortar = Math::subtrair($qtdBase, $fracao);
                     }
-                } else {
-                    //Recupera a fração da proporção
-                    $fracao = Math::subtrair($proporcao, intval(strval($proporcao)));
-                    //Para cortar apenas o valor inteiro dos pedidos menores
-                    $qtdCortar =  Math::subtrair($proporcao, $fracao);
-                    //Incrementa as frações para somar ao ultimo pedido
-                    $resto = Math::adicionar($fracao, $resto);
                 }
 
                 $arrResult[$pedProd['COD_PEDIDO']][$pedProd['COD_PRODUTO']][$pedProd['DSC_GRADE']] = $qtdCortar;
