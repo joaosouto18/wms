@@ -27,16 +27,17 @@ class NotaFiscalSaidaRepository extends EntityRepository {
             if ((isset($data['notaFiscal']) && !empty($data['notaFiscal'])) || (!empty($data['carga']) && isset($data['carga']))) {
                 $options = array();
 
-                if (is_null($data['notaFiscal'])) {
-                    $options[] = 0;
+                if (isset($data['notaFiscal']) && !is_null($data['notaFiscal'])) {
+                    $options[] = $data['notaFiscal'];
                 } else {
-                    $options[] = self::nvl($data['notaFiscal'],0);
+                    $options[] = 0;
                 }
 
-                if (is_null($data['carga'])) {
-                    $options[] = 0;
+
+                if (isset($data['carga']) && !is_null($data['carga'])) {
+                    $options[] = $data['carga'];
                 } else {
-                    $options[] = self::nvl($data['carga'],0);
+                    $options[] = 0;
                 }
 
                 $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_NOTA_FISCAL_SAIDA');
