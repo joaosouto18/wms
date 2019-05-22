@@ -203,3 +203,5 @@ database.viewErp.dbname = 192.168.0.144/WINT
 database.viewErp.user = othon
 database.viewErp.password = othon
 database.viewErp.characterSet = WE8ISO8859P1
+
+browser.isOldBrowserVersion=N
