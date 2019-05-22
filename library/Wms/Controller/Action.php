@@ -57,9 +57,19 @@ class Action extends \Core\Controller\Action
     public function postDispatch()
     {
         parent::postDispatch();
+
+        $config = \Zend_Registry::get('config');
+        $isOldBrowserVersion = $config->browser->isOldBrowserVersion;
+
+        if ($isOldBrowserVersion == null) {
+            $isOldBrowserVersion = 'S';
+        }
+
         $this->_endTime = (float) array_sum(explode(' ',microtime()));
         $this->_totalTime = $this->_endTime - $this->_startTime;
         $this->view->totalTimePage = $this->_totalTime;
+        $this->view->isOldBrowserVersion = "'$isOldBrowserVersion'";
+
     }
 
     public function createXml($resposta, $message, $redirectUrl = null, $elements = array())
