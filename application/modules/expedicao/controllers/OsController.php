@@ -453,4 +453,69 @@ class Expedicao_OsController extends Action
         $this->exportCSV($result,"produtos-conferidos");
     }
 
+    public function consultarAction () {
+        $form = new \Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria();
+        $this->view->form = $form;
+        $params = $this->_getAllParams();
+
+
+        ini_set('max_execution_time', 3000);
+
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
+        $dataI1 = new \DateTime;
+
+        if (!empty($params)) {
+
+            if (!empty($params['idExpedicao']) || !empty($params['codCargaExterno']) || !empty($params['pedido'])) {
+                $idExpedicao = null;
+                $idCarga = null;
+                $pedido = null;
+
+                if (!empty($params['idExpedicao']))
+                    $idExpedicao = $params['idExpedicao'];
+
+
+                if (!empty($params['codCargaExterno']))
+                    $idCarga = $params['codCargaExterno'];
+
+                if (!empty($params['pedido']))
+                    $pedido = $params['pedido'];
+
+                $params = array();
+                $params['idExpedicao'] = $idExpedicao;
+                $params['codCargaExterno'] = $idCarga;
+                $params['pedido'] = $pedido;
+            } else {
+                if (empty($params['dataInicial1'])) {
+                    $params['dataInicial1'] = $dataI1->format('d/m/Y');
+                }
+            }
+            if (!empty($params['control']))
+                $this->view->control = $params['control'];
+
+
+            unset($params['control']);
+        } else {
+            $dataI1 = new \DateTime;
+            $dataI2 = new \DateTime;
+
+            $params = array(
+                'dataInicial1' => $dataI1->format('d/m/Y'),
+                'dataInicial2' => $dataI2->format('d/m/Y')
+            );
+            unset($params['control']);
+        }
+
+        $form->populate($params);
+
+        /*
+        $Grid = new ExpedicaoGrid();
+        $this->view->grid = $Grid->init($params)
+            ->render();
+        */
+
+    }
+
 }
