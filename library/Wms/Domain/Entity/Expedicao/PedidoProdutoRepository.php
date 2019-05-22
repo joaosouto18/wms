@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity\Expedicao;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao\PedidoProduto;
 use Wms\Domain\Entity\Expedicao;
+use Wms\Math;
 
 class PedidoProdutoRepository extends EntityRepository
 {
@@ -21,6 +22,14 @@ class PedidoProdutoRepository extends EntityRepository
                                            'grade'=>$grade));
             $expedicaoEn = $ppEn->getPedido()->getCarga()->getExpedicao();
             $idExpedicao = $expedicaoEn->getId();
+
+            $qtdCortada = $ppEn->getQtdCortada();
+            $qtdPedido = $ppEn->getQuantidade();
+            $corteTotal = Math::adicionar($qtdCortada, $qtd);
+
+            if (Math::compare($corteTotal, $qtdPedido, ">")) {
+                throw new \Exception("A quantidade já cortada de $qtdCortada mais a solicitação atual de ($qtd) excede o saldo do pedido de $qtdPedido");
+            }
 
             if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_FINALIZADO) {
                 throw new \Exception('Não pode ter novos cortes em expedição finalizada!');
