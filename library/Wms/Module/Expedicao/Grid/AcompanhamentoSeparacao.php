@@ -23,125 +23,59 @@ class AcompanhamentoSeparacao extends Grid
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
-        $permissaoEn = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'PERMITE_REALIZAR_CORTES_WMS'));
-        $permite = (!empty($permissaoEn) && $permissaoEn->getValor() == "N") ? false : true;
 
         $sessao = new \Zend_Session_Namespace('deposito');
         $params['centrais'] = $sessao->centraisPermitidas;
 
-        $result = $expedicaoRepo->buscar($params, $sessao->codFilialExterno);
+        $result = $expedicaoRepo->getAcompanhamentoSeparacao($params, $sessao->codFilialExterno);
 
         $this->setAttrib('title','Expedição');
         $source = $this->setSource(new \Core\Grid\Source\ArraySource($result));
-        $source->setId('expedicao-index-grid')
-            ->setAttrib('class', 'grid-expedicao')
+        $source->setId('expedicao-acompanhamento-grid')
+            ->setAttrib('class', 'grid-acompanhamento-separacao')
             ->addColumn(array(
                 'label' => 'Expedição',
-                'index' => 'id',
-            ))
-            ->addColumn(array(
-                'label' => 'Cargas',
-                'index' => 'carga',
-            ))
-            ->addColumn(array(
-                'label' => 'Tipo Pedido',
-                'index' => 'tipopedido',
-            ))
-            ->addColumn(array(
+                'index' => 'COD_EXPEDICAO',
+            ))->addColumn(array(
+                'label' => 'Mapa',
+                'index' => 'COD_MAPA_SEPARACAO',
+            ))->addColumn(array(
+                'label' => 'Quebra',
+                'index' => 'QUEBRA',
+            ))->addColumn(array(
+                'label' => 'Qtd.Prod.',
+                'index' => 'QTD_PRODUTOS',
+            ))->addColumn(array(
                 'label' => 'Cubagem',
-                'index' => 'cubagem',
+                'index' => 'QTD_CUBAGEM',
                 'render' => 'N3'
-            ))
-            ->addColumn(array(
+            ))->addColumn(array(
                 'label' => 'Peso',
-                'index' => 'peso',
+                'index' => 'QTD_PESO',
                 'render' => 'N3'
-            ))
-            ->addColumn(array(
-                'label' => 'Qtd.Ped.',
-                'index' => 'qtdPedidos',
-                'render' => 'N0'
-            ))
-            ->addColumn(array(
-                'label' => 'Placa',
-                'index' => 'placaExpedicao'
-            ))
-
-            ->addColumn(array(
-                'label' => 'Itinerarios',
-                'index' => 'itinerario',
-            ))
-            ->addColumn(array(
-                'label' => 'Motorista',
-                'index' => 'motorista',
-            ))
-            ->addColumn(array(
-                'label' => 'Data Inicial',
-                'index' => 'dataInicio',
-            ))
-            ->addColumn(array(
-                'label' => 'Data Final',
-                'index' => 'dataFinalizacao',
-            ))
-            ->addColumn(array(
-                'label' => 'Imprimir',
-                'index' => 'imprimir',
-            ))
-            ->addColumn(array(
-                'label' => '% Conferência',
-                'index' => 'PercConferencia',
-            ))
-            ->addColumn(array(
+            ))->addColumn(array(
+                'label' => '% Conf.',
+                'index' => 'PERCENTUAL_CONFERENCIA',
+            ))->addColumn(array(
+                'label' => '% Sep.',
+                'index' => 'PERCENTUAL_SEPARACAO',
+            ))->addColumn(array(
+                'label' => 'Produtividade',
+                'index' => 'PRODUTIVIDADE_SEPARACAO',
+            ))->addColumn(array(
                 'label' => 'Status',
-                'index' => 'status',
+                'index' => 'STATUS_EXPEDICAO',
             ));
 
         $source->setShowExport(true)
-            ->setShowMassActions($params);
+               ->setShowMassActions($params);
+
+
+        $pager = new \Core\Grid\Pager(count($result), $this->getPage(), count($result));
+        $this->setPager($pager);
+
 
         return $this;
-    }
-
-    /**
-     * @param $result
-     * @param $expedicaoRepo
-     * @return mixed
-     */
-    public function formatItinerarios($result, $expedicaoRepo)
-    {
-        $colItinerario = array();
-        foreach ($result as $key => $expedicao) {
-            $itinerarios = $expedicaoRepo->getItinerarios($result[$key]['id']);
-            foreach ($itinerarios as $itinerario) {
-                if (!is_numeric($itinerario['id'])) {
-                    $colItinerario[] = '(' . $itinerario['id'] . ')' . $itinerario['descricao'];
-                } else {
-                    $colItinerario[] = $itinerario['descricao'];
-                }
-            }
-            $result[$key]['itinerario'] = implode(', ', $colItinerario);
-            unset($colItinerario);
-        }
-        return $result;
-    }
-
-    /**
-     * @param $result
-     * @param $expedicaoRepo
-     * @return mixed
-     */
-    public function formataCargas($result, $expedicaoRepo)
-    {
-        $colCarga = array();
-        foreach ($result as $key => $expedicao) {
-            $cargas = $expedicaoRepo->getCargas($result[$key]['id']);
-            foreach ($cargas as $carga) {
-                $colCarga[] = $carga->getCodCargaExterno();
-            }
-            $result[$key]['carga'] = implode(', ', $colCarga);
-            unset($colCarga);
-        }
-        return $result;
     }
 
 }

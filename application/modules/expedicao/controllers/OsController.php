@@ -510,11 +510,11 @@ class Expedicao_OsController extends Action
 
         $form->populate($params);
 
-        /*
-        $Grid = new ExpedicaoGrid();
-        $this->view->grid = $Grid->init($params)
+
+        $grid = new \Wms\Module\Expedicao\Grid\AcompanhamentoSeparacao();
+        $this->view->grid = $grid->init($params)
             ->render();
-        */
+
 
     }
 
