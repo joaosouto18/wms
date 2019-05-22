@@ -1,19 +1,14 @@
 <?php $this->headScript()->appendFile($this->baseUrl('coletor/expedicao.js'));
     $temLote = $this->temLote;
 ?>
-<div id="dummy"></div>
+<span id="dummy"></span>
+<bgsound id="bgSoundId" loop="0" volume="100" />
 
 <script>
 
     function playSound(soundfile) {
-        var dummy = '<audio autoplay> <source src=' + soundfile + ' type="audio/mp3">' +
-            '<source src="' + soundfile + '" type="audio/mpeg"></audio>';
-        $('#dummy').html(dummy);
+        document.getElementById("bgSoundId").src = soundfile;
     }
-
-/*     function playSound(soundfile) {
-         document.getElementById("bgSoundId").src = soundfile;
-     }*/
 
     function selecionar() {
         $('#qtd').select();
