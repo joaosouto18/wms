@@ -59,11 +59,11 @@ class Action extends \Core\Controller\Action
         parent::postDispatch();
 
         $config = \Zend_Registry::get('config');
-        $isOldBrowserVersion = $config->browser->isOldBrowserVersion;
 
-        if ($isOldBrowserVersion == null) {
-            $isOldBrowserVersion = 'S';
-        }
+        $isOldBrowserVersion = null;
+        $browserTag = $isOldBrowserVersion = $config->browser;
+            if ($browserTag != null) $isOldBrowserVersion = $config->browser->isOldBrowserVersion;
+            if ($isOldBrowserVersion == null) $isOldBrowserVersion = 'S';
 
         $this->_endTime = (float) array_sum(explode(' ',microtime()));
         $this->_totalTime = $this->_endTime - $this->_startTime;
