@@ -68,7 +68,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             <div class="col-xs-10">
                 <label class="required" for="dataValidade">
                     <b>Data Validade: </b>
-                    <input type="text" placeholder="dd/mm/yy" maxlength="8" size="6" class="required" id="dataValidade" name="dataValidade"/>
+                    <input type="text" placeholder="dd/mm/yy" maxlength="8" size="6" class="required validade-input" id="dataValidade" name="dataValidade"/>
                 </label>
             </div>
         </div>
@@ -156,6 +156,8 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     }
                 } else if ($(this).hasClass("qtd-input")) {
                     $("#lote-" + $(this).parent().parent().data("id")).focus();
+                } else if ($(this).hasClass("validade-input")) {
+                    $("#qtdConferida-0").focus();
                 } else if (!checkInputs(true) ) {
                     $("#recebimento-embalagem-quantidade-form").submit();
                 }
