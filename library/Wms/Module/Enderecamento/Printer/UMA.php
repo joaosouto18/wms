@@ -148,12 +148,14 @@ class UMA extends Pdf {
 
             if ($modelo == 1) {
                 $this->layout01($palete, $produtoEn, $font_size, $line_width, $picking, $params);
-            } else if ($modelo == 2 || $modelo == 6) {
+            } else if ($modelo == 2) {
                 $this->layout02($palete, $produtoEn, $font_size, $line_width, $picking, $params);
             } else if ($modelo == 4) {
                 $this->layout04($palete, $produtoEn, $font_size, $line_width, $picking);
             } elseif ($modelo == 5) {
                 $this->layout05($palete, $produtoEn, $font_size, $line_width, $params);
+            } elseif ($modelo == 6) {
+                $this->layout06($palete, $produtoEn, $font_size, $line_width, $params);
             } else {
                 $this->layout03($palete, $produtoEn, $font_size, $line_width, $params);
             }
@@ -512,4 +514,118 @@ class UMA extends Pdf {
         $this->Cell(1, 20, utf8_decode("Endereço 01.001.00.01"), 0, 1);
     }
 
+    // Layout etiqueta com lote (Cliente que utiliza: Hidrau)
+    public function layout06($palete, $produtoEn, $font_size, $line_width, $enderecoPicking, $params = null) {
+        $this->AddPage();
+
+        $codigoProduto = $produtoEn->getId();
+        $descricaoProduto = $produtoEn->getDescricao();
+
+        if (strlen($descricaoProduto) >= 42) {
+            $font_size = 36;
+        } else if (strlen($descricaoProduto) >= 20) {
+            $font_size = 40;
+        }
+
+        $this->SetFont('Arial', 'B', $font_size);
+        $this->MultiCell($line_width, 15, $descricaoProduto, 0, 'C');
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->Cell(35, 40, "", 0, 0);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(30, 35);
+        if (isset($params['dataValidade']) && !is_null($params['dataValidade']['dataValidade'])) {
+            $dataValidade = new \DateTime($params['dataValidade']['dataValidade']);
+            $dataValidade = $dataValidade->format('d/m/Y');
+            $this->Cell(75, 20, utf8_decode("Picking $enderecoPicking - Validade $dataValidade"), 0, 1);
+        } else {
+            $this->Cell(75, 20, utf8_decode("Picking $enderecoPicking"), 0, 1);
+        }
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(10, 55);
+        $this->Cell(55, 20, utf8_decode("Endereço"), 0, 0);
+
+        $this->SetFont('Arial', 'B', 55);
+        $this->SetXY(10, 70);
+        if (isset($palete['endereco']) && !empty($palete['endereco'])) {
+            $this->Cell(95, 27, $palete['endereco'], 0, 1);
+        } else {
+            $this->Cell(95, 27, '--.---.--.--', 0, 1);
+        }
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(145, 55);
+        $this->Cell(25, 20, 'Nota', 0, 1);
+
+        if ((isset($params['notaFiscal'])) && ($params['notaFiscal'] != null)) {
+            $this->SetFont('Arial', 'B', 55);
+            $this->SetXY(173, 55);
+            $this->Cell(25, 20, $params['notaFiscal']->getNumero(), 0, 1);
+        }
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(145, 77);
+        $this->Cell(25, 20, 'Entrada da Nota', 0, 1);
+
+        if ((isset($params['notaFiscal'])) && ($params['notaFiscal'] != null)) {
+            $this->SetFont('Arial', 'B', 32);
+            $this->SetXY(235, 77);
+            $this->Cell(25, 20, $params['notaFiscal']->getDataEntrada()->format('d/m/Y'), 0, 1);
+        }
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(210, 110);
+        $this->Cell(-15, 30, "", 0, 0);
+
+        $embalagemRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository("wms:Produto\Embalagem");
+        $vetQtd = $embalagemRepo->getQtdEmbalagensProduto($produtoEn->getId(), $produtoEn->getGrade(), $palete['qtd']);
+        if(is_array($vetQtd)) {
+            $qtd = implode(' - ', $vetQtd);
+        }else{
+            $qtd = $vetQtd;
+        }
+        $size = 60;
+        if(strlen ($qtd) > 15){
+            $size = 50;
+        }
+        if(strlen ($qtd) >= 18){
+            $size = 40;
+        }
+        if(strlen ($qtd) >= 25){
+            $size = 30;
+        }
+
+        $this->SetFont('Arial', 'B', $size);
+        $this->SetXY(145, 95);
+        $this->Cell(-15, 30, $qtd, 0, 1);
+
+        $this->SetFont('Arial', 'B', 32);
+        $this->SetXY(10, 95);
+        $this->Cell(35, 30, utf8_decode("Prod"), 0, 0);
+
+        $this->SetFont('Arial', 'B', 70);
+        $this->Cell(40, 30, $codigoProduto, 0, 1);
+
+        if (!empty($palete["lotes"])) {
+            $this->SetFont('Arial', 'B', 40);
+            $this->SetXY(10, 125);
+            $this->Cell(55, 20, utf8_decode("LOTES:"), 0, 0);
+            $strLotesWidth = 220;
+            while (!empty($palete["lotes"])) {
+                $strLotes = "";
+                foreach ($palete["lotes"] as $key => $lote) {
+                    if (Math::compare(Math::adicionar($this->GetStringWidth($strLotes), $this->GetStringWidth($lote)), $strLotesWidth, "<=")) {
+                        $strLotes = (empty($strLotes)) ? $lote : "$strLotes, $lote";
+                        unset($palete["lotes"][$key]);
+                    } else {
+                        break;
+                    }
+                }
+                $this->SetX(65);
+                $this->Cell($strLotesWidth, 20, $strLotes,0,1);
+            }
+        }
+    }
 }
