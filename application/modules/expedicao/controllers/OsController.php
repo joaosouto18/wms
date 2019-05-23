@@ -455,7 +455,10 @@ class Expedicao_OsController extends Action
 
     public function consultarAction () {
         $form = new \Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria();
+        $form->init(null,true);
         $this->view->form = $form;
+
+
         $params = $this->_getAllParams();
 
 
@@ -468,14 +471,14 @@ class Expedicao_OsController extends Action
 
         if (!empty($params)) {
 
-            if (!empty($params['idExpedicao']) || !empty($params['codCargaExterno']) || !empty($params['pedido'])) {
+            if (!empty($params['idExpedicao']) || !empty($params['codCargaExterno']) || !empty($params['pedido']) || !empty($params['produtividade'])) {
                 $idExpedicao = null;
                 $idCarga = null;
                 $pedido = null;
+                $produtividade = null;
 
                 if (!empty($params['idExpedicao']))
                     $idExpedicao = $params['idExpedicao'];
-
 
                 if (!empty($params['codCargaExterno']))
                     $idCarga = $params['codCargaExterno'];
@@ -483,7 +486,11 @@ class Expedicao_OsController extends Action
                 if (!empty($params['pedido']))
                     $pedido = $params['pedido'];
 
+                if (!empty($params['produtividade']))
+                    $produtividade = $params['produtividade'];
+
                 $params = array();
+                $params['produtividade'] = $produtividade;
                 $params['idExpedicao'] = $idExpedicao;
                 $params['codCargaExterno'] = $idCarga;
                 $params['pedido'] = $pedido;

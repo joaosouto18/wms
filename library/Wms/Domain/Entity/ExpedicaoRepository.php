@@ -2700,6 +2700,8 @@ class ExpedicaoRepository extends EntityRepository {
     public function getAcompanhamentoSeparacao($parametros, $idDepositoLogado = null) {
 
         $where = "";
+        $wherePrincipal = "";
+
         if (isset($idDepositoLogado)) {
             $where = " AND P.CENTRAL_ENTREGA = '$idDepositoLogado' ";
         }
@@ -2731,6 +2733,12 @@ class ExpedicaoRepository extends EntityRepository {
 
         if (isset($parametros['status']) && (!empty($parametros['status']))) {
             $where .= " AND (E.COD_STATUS = " . $parametros['status'] . ")";
+        }
+
+        if (isset($parametros['produtividade']) && (!empty($parametros['produtividade']))) {
+            if ($parametros['produtividade'] == 'INICIADO') $wherePrincipal .= ' AND PRD.APONTADO = 0 ';
+            if ($parametros['produtividade'] == 'FINALIZADO') $wherePrincipal .= ' AND PRD.APONTADO = 1 ';;
+            if ($parametros['produtividade'] == 'SEM_APONTAMENTO') $wherePrincipal .= ' AND PRD.APONTADO IS NULL ';;
         }
 
         if (isset($parametros['idExpedicao']) && !empty($parametros['idExpedicao'])) {
@@ -2782,7 +2790,8 @@ class ExpedicaoRepository extends EntityRepository {
                   LEFT JOIN (SELECT COD_MAPA_SEPARACAO, MIN(CASE WHEN DTH_FIM_CONFERENCIA IS NULL THEN 0 ELSE 1 END) AS APONTADO 
                               FROM APONTAMENTO_SEPARACAO_MAPA GROUP BY COD_MAPA_SEPARACAO) PRD ON PRD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
-                 INNER JOIN ($sqlInner) FILTRO ON FILTRO.COD_EXPEDICAO = E.COD_EXPEDICAO 
+                 INNER JOIN ($sqlInner) FILTRO ON FILTRO.COD_EXPEDICAO = E.COD_EXPEDICAO
+                 WHERE 1 = 1 $wherePrincipal 
                  ORDER BY MS.COD_MAPA_SEPARACAO";
 
         $result = \Wms\Domain\EntityRepository::nativeQuery($sql);

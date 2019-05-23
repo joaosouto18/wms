@@ -13,7 +13,7 @@ use Wms\Domain\Entity\Util\SiglaRepository,
 class FiltroExpedicaoMercadoria extends \Wms\Module\Web\Form
 {
 
-    public function init($action = "/expedicao")
+    public function init($action = "/expedicao",$showProdutividade = false)
     {
         //$s = new Zend_Session_Namespace('sessionUrl');
         $label=$action;
@@ -91,11 +91,16 @@ class FiltroExpedicaoMercadoria extends \Wms\Module\Web\Form
                     'decorators' => array('ViewHelper'),
                 ));
 
-        $this->addElement('text', 'produtividade', array(
-            'size' => 10,
-            'label' => 'produtividade',
-            'decorators' => array('ViewHelper'),
-        ));
+        if ($showProdutividade == true) {
+            $this->addElement('select', 'produtividade', array(
+                'label' => 'produtividade',
+                'multiOptions' => array('firstOpt' => 'Todos',
+                    'options' => array('INICIADO'=> 'APONTAMENTO INICIADO',
+                                       'FINALIZADO'=> 'APONTAMENTO FINALIZADO',
+                                       'SEM_APONTAMENTO'=> 'SEM APONTAMENTO')),
+                'decorators' => array('ViewHelper'),
+            ));
+        }
 
         $this->addDisplayGroup($this->getElements(), 'identificacao', array('legend' => 'Busca'));
 
