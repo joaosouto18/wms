@@ -70,10 +70,8 @@ class AcompanhamentoSeparacao extends Grid
         $source->setShowExport(true)
                ->setShowMassActions($params);
 
-
         $pager = new \Core\Grid\Pager(count($result), $this->getPage(), count($result));
         $this->setPager($pager);
-
 
         return $this;
     }

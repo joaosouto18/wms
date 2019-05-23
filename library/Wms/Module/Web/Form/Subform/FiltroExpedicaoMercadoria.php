@@ -89,9 +89,15 @@ class FiltroExpedicaoMercadoria extends \Wms\Module\Web\Form
                     'label' => 'Buscar',
                     'class' => 'btn',
                     'decorators' => array('ViewHelper'),
-                ))
-                ->addDisplayGroup($this->getElements(), 'identificacao', array('legend' => 'Busca')
-        );
+                ));
+
+        $this->addElement('text', 'produtividade', array(
+            'size' => 10,
+            'label' => 'produtividade',
+            'decorators' => array('ViewHelper'),
+        ));
+
+        $this->addDisplayGroup($this->getElements(), 'identificacao', array('legend' => 'Busca'));
 
         $this->setDecorators(array(array('ViewScript', array('viewScript' => 'index/filtro.phtml'))));
     }
