@@ -471,14 +471,23 @@ class Expedicao_OsController extends Action
 
         if (!empty($params)) {
 
-            if (!empty($params['idExpedicao']) || !empty($params['codCargaExterno']) || !empty($params['pedido']) || !empty($params['produtividade'])) {
+            if (!empty($params['idExpedicao']) ||
+                !empty($params['codCargaExterno']) ||
+                !empty($params['pedido']) ||
+                !empty($params['produto']) ||
+                !empty($params['produtividade'])) {
+
                 $idExpedicao = null;
                 $idCarga = null;
                 $pedido = null;
                 $produtividade = null;
+                $produto = null;
 
                 if (!empty($params['idExpedicao']))
                     $idExpedicao = $params['idExpedicao'];
+
+                if (!empty($params['produto']))
+                    $produto = $params['produto'];
 
                 if (!empty($params['codCargaExterno']))
                     $idCarga = $params['codCargaExterno'];
@@ -494,6 +503,7 @@ class Expedicao_OsController extends Action
                 $params['idExpedicao'] = $idExpedicao;
                 $params['codCargaExterno'] = $idCarga;
                 $params['pedido'] = $pedido;
+                $params['produto'] = $produto;
             } else {
                 if (empty($params['dataInicial1'])) {
                     $params['dataInicial1'] = $dataI1->format('d/m/Y');

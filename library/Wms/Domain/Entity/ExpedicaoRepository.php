@@ -2701,6 +2701,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         $where = "";
         $wherePrincipal = "";
+        $innerJoinProduto = "";
 
         if (isset($idDepositoLogado)) {
             $where = " AND P.CENTRAL_ENTREGA = '$idDepositoLogado' ";
@@ -2753,6 +2754,13 @@ class ExpedicaoRepository extends EntityRepository {
             $where = " AND P.COD_EXTERNO = '" . $parametros['pedido'] . "'";
         }
 
+        if (isset($parametros['produto']) && !empty($parametros['produto'])) {
+            $innerJoinProduto = " INNER JOIN (SELECT DISTINCT MSP.COD_MAPA_SEPARACAO
+                                            FROM MAPA_SEPARACAO_PRODUTO MSP 
+                                           WHERE MSP.COD_PRODUTO = '" . $parametros['produto'] . "') FP ON FP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO ";
+        }
+
+
         $sqlInner = " SELECT DISTINCT E.COD_EXPEDICAO
                         FROM EXPEDICAO E 
                         LEFT JOIN CARGA C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
@@ -2773,7 +2781,7 @@ class ExpedicaoRepository extends EntityRepository {
                        END as PRODUTIVIDADE_SEPARACAO,
                        S.DSC_SIGLA as STATUS_EXPEDICAO
                   FROM MAPA_SEPARACAO MS
-                  LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = MS.COD_EXPEDICAO
+                 INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = MS.COD_EXPEDICAO
                   LEFT JOIN (SELECT MSP.COD_MAPA_SEPARACAO, 
                                     SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM)- MSP.QTD_CORTADO) as QTD_SEPARAR,
                                     SUM(NVL(NVL(SPP.NUM_CUBAGEM, PV.NUM_CUBAGEM), 0) * (MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) - NVL(MSP.QTD_CORTADO,0)) as QTD_CUBAGEM,
@@ -2789,8 +2797,9 @@ class ExpedicaoRepository extends EntityRepository {
                                FROM  SEPARACAO_MAPA_SEPARACAO  GROUP BY  COD_MAPA_SEPARACAO) SMS ON SMS.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                   LEFT JOIN (SELECT COD_MAPA_SEPARACAO, MIN(CASE WHEN DTH_FIM_CONFERENCIA IS NULL THEN 0 ELSE 1 END) AS APONTADO 
                               FROM APONTAMENTO_SEPARACAO_MAPA GROUP BY COD_MAPA_SEPARACAO) PRD ON PRD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                  LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS
+                  LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS                  
                  INNER JOIN ($sqlInner) FILTRO ON FILTRO.COD_EXPEDICAO = E.COD_EXPEDICAO
+                 $innerJoinProduto
                  WHERE 1 = 1 $wherePrincipal 
                  ORDER BY MS.COD_MAPA_SEPARACAO";
 
