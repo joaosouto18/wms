@@ -32,9 +32,17 @@ class Acesso extends \Core\Form\SubForm {
             'value' => 'S',
             'separator' => ''
         ));
+
+        $this->addElement('text', 'percentReceb', array(
+            'label' => 'Percentual para liberação de recebimentos',
+            'maxlength' => 3,
+            'alt' => 'number',
+            'size' => 5
+        ));
         
         $this->addDisplayGroup(array(
             'login',
+            'percentReceb',
             'perfis',
             'isAtivo',
                 ), 'identificacao', array('legend' => 'Identificação'
@@ -57,6 +65,7 @@ class Acesso extends \Core\Form\SubForm {
         $values = array(
             'id' => $usuario->getId(),
             'login' => $usuario->getLogin(),
+            'percentReceb' => $usuario->getPercentReceb(),
             'depositos' => $usuario->getIdsDepositos(),
             'perfis' => $usuario->getIdsPerfis(),
             'isAtivo' => $usuario->getIsAtivo(),

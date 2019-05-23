@@ -34,9 +34,15 @@ class Perfil extends Form {
                     'maxlength' => 60,
                     'required' => true
                 ))
+                ->addElement('text', 'percentReceb', array(
+                    'label' => 'Percentual para liberação de recebimentos',
+                    'maxlength' => 3,
+                    'alt' => 'number',
+                    'size' => 8,
+                ))
                 ->addDisplayGroup(
                         array(
-                    'nome', 'descricao'
+                    'nome', 'descricao', 'percentReceb'
                         ), 'identificacao', array('legend' => 'Identificação')
         );
 
@@ -54,6 +60,7 @@ class Perfil extends Form {
         $values = array(
             'id' => $perfil->getId(),
             'nome' => $perfil->getNome(),
+            'percentReceb' => $perfil->getPercentReceb(),
             'descricao' => $perfil->getDescricao(),
         );
 

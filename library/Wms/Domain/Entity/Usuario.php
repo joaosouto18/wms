@@ -65,6 +65,12 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
      * @var ArrayCollection
      */
     protected $perfis;
+
+    /**
+     * @var int $percentReceb
+     * @Column(name="PERCENT_RECEB", type="integer", length=3)
+     */
+    protected $percentReceb;
     
 
     public function __construct()
@@ -261,6 +267,22 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
             $ids[] = $perfil->getId();
         }
         return $ids;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPercentReceb()
+    {
+        return $this->percentReceb;
+    }
+
+    /**
+     * @param int $percentReceb
+     */
+    public function setPercentReceb($percentReceb)
+    {
+        $this->percentReceb = $percentReceb;
     }
 
 

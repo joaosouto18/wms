@@ -19,8 +19,15 @@
 <fieldset id="fieldset-identificacao">
     <legend>Identificação</legend>
     <?php
-    echo $this->element->login;
-    echo $this->element->isAtivo;
+    echo $this->element->login; ?>
+    <br/>
+    <div class="field">
+    <?php
+    echo $this->element->isAtivo; ?>
+    </div>
+    <br/>
+    <?php
+    echo $this->element->percentReceb;
     ?>
 </fieldset>
 <fieldset id="fieldset-perfis">
