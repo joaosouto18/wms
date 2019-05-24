@@ -283,7 +283,9 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     return false;
                 } else {
                     if (checkValidade()) {
-                        var quantidade = document.getElementById('qtdConferida');
+                        var quantidade = document.getElementById('qtdConferida-0');
+                        quantidade.focus();
+                        event.preventDefault();
                         if (quantidade) {
                             quantidade.focus();
                             if (event.preventDefault) {
