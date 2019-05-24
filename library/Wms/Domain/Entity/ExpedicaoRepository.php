@@ -1170,7 +1170,7 @@ class ExpedicaoRepository extends EntityRepository {
                 $estoquePicking = 0;
                 $qtdReservarPicking = $qtdRestante;
 
-                if($enderecoPicking == null) {
+                if(empty($enderecoPicking)) {
                     throw new \Exception("Ocorreram problemas na geração do ressuprimento do produto $codProduto. O ressuprimento precisa sair do picking porém o produto está sem picking definido");
                 }
 
@@ -1305,7 +1305,7 @@ class ExpedicaoRepository extends EntityRepository {
             foreach ($tipoSaida['enderecos'] as $codEndereco => $pedidos) {
                 foreach ($pedidos as $codPedido => $elementos) {
                     foreach ($elementos as $lotes) {
-                        foreach ($lotes as $itens) {
+                        foreach ($lotes as $lote => $itens) {
                             $itensReservados
                             [$idExpedicao]
                             [$codProduto]

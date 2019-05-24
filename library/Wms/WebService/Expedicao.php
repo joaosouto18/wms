@@ -937,6 +937,9 @@ class Wms_WebService_Expedicao extends Wms_WebService
         /** @var Expedicao\PedidoProdutoLoteRepository $pedProdLoteRepo */
         $pedProdLoteRepo = $this->_em->getRepository('wms:Expedicao\PedidoProdutoLote');
 
+        $valParamExigelote = $PedidoProdutoRepo->getSystemParameterValue("LOTE_EXIGIDO_ERP");
+        $exigeLoteErp = (!empty($valParamExigelote) && $valParamExigelote == "S") ;
+
         $prod = array();
         foreach ($produtos as $produto) {
             $idProduto = ProdutoUtil::formatar(trim($produto['codProduto']));
@@ -950,18 +953,20 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
 
             $fatorEmbalagemVenda = (isset($produto['fatorEmbalagemVenda']) && !empty($produto['fatorEmbalagemVenda'])) ? $produto['fatorEmbalagemVenda'] : 1;
+            $grade = $produto['grade'];
+            $lote = $produto['lote'];
+            $codPedido = $enPedido->getCodExterno();
 
-            if ($produtoEn->getIndControlaLote() == 'S' && !empty($produto['lote'])) {
+            if ($produtoEn->getIndControlaLote() == 'S' && !empty($lote)) {
                 /** @var \Wms\Domain\Entity\Produto\Lote $loteEn */
-                $loteEn = $loteRepo->findOneBy(['descricao' => $produto['lote'], 'codProduto' => $idProduto, 'grade' => $produto['grade']]);
+                $loteEn = $loteRepo->findOneBy(['descricao' => $lote, 'codProduto' => $idProduto, 'grade' => $grade]);
 
                 if (empty($loteEn))
-                    throw new Exception("Não consta no WMS o lote '$produto[lote]' para o produto $idProduto grade $produto[grade].");
+                    throw new Exception("Não consta no WMS o lote '$lote' para o produto $idProduto grade $grade.");
             } elseif ($produtoEn->getIndControlaLote() == 'N' && !empty($produto['lote'])) {
-                $grade = $produto['grade'];
-                $lote = $produto['lote'];
-                $codPedido = $enPedido->getCodExterno();
                 throw new Exception("No pedido ($codPedido) o produto $idProduto - $grade solicita o lote '$lote', mas no WMS este produto não é controlado por lote!");
+            } elseif ($produtoEn->getIndControlaLote() == 'S' && empty($produto['lote']) && $exigeLoteErp) {
+                throw new Exception("No pedido ($codPedido) o produto $idProduto - $grade não teve o lote definido pelo ERP");
             }
 
             $strConcat = "$idProduto--$produto[grade]";
