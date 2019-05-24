@@ -154,7 +154,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     } else {
                         $(".lote-input").last().focus();
                     }
-                } else if ($(this).hasClass("qtd-input")) {
+                } else if ($(this).hasClass("qtd-input") && controlaLote) {
                     $("#lote-" + $(this).parent().parent().data("id")).focus();
                 } else if ($(this).hasClass("validade-input")) {
                     $("#qtdConferida-0").focus();
@@ -283,7 +283,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     return false;
                 } else {
                     if (checkValidade()) {
-                        var quantidade = document.getElementById('qtdConferida');
+                        var quantidade = document.getElementById('qtdConferida-0');
                         if (quantidade) {
                             quantidade.focus();
                             if (event.preventDefault) {
