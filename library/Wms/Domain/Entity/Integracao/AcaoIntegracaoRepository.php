@@ -281,7 +281,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                             'dados'=>$result));
                     $result = $integracaoService->salvaTemporario();
                 } else {
-
+                    $log = "Ação='countResult'; Integração='" . $acaoEn->getId() . "'; countResult='" . count($result) . "';".
                     //pegar os ID's das tabelas temporárias das triggers
                     if (count($result)) {
                         $encontrouRegistro = true;
@@ -394,7 +394,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $v = "null";
                 }
 
-                $log = "Integração=" . $acaoEn->getId(). "; success='" . $sucess . "'; encontrouRegistro='" . $v . "';";
+                $log = "Ação: UPDATE; Integração=" . $acaoEn->getId(). "; success='" . $sucess . "'; encontrouRegistro='" . $v . "';";
                 var_dump($log);
 
                 if ($sucess == 'S') {
