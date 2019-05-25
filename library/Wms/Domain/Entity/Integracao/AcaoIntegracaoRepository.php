@@ -258,7 +258,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                 if (count($result) >0) {
 
                     $acaoRelacionadaEn = $this->find($acaoEn->getidAcaoRelacionada());
-                    $resOld = $result;
+                    $idsProcessados = $result;
+
                     $dadosFiltrar = array();
                     foreach ($result as $row) {
                         if (!in_array($row['COD_PRODUTO'],$dadosFiltrar)) {
@@ -269,25 +270,15 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $options = array();
                         $options[] = $value;
                         $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
-
-                        if ($result === true) {
-                            $v = "S";
-                        } else if ($result ===false) {
-                            $v = "N";
-                        } else {
-                            $v = "other";
-                        }
-                        $log = "Ação='relacionada'; Integração='" . $acaoEn->getId() . "'; result='" . $v . "';";
-                        //var_dump($log);
-
-                        if ($result === true) {
-                            var_dump($resOld);
-                        }
-                        if (!is_null($acaoEn->getTabelaReferencia())) {
-                            $idTabelaTemp = $result;
-                        }
                     }
 
+                    if ($result === true) {
+                        $encontrouRegistro = true;
+                        if (!is_null($acaoEn->getTabelaReferencia())) {
+                            $idTabelaTemp = $idsProcessados;
+                        }
+                    }
+                    
                 } else {
                     $result = true;
                 }
