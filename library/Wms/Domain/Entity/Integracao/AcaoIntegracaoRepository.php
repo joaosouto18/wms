@@ -253,6 +253,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $result = $dados;
             }
 
+            var_dump('teste ' . $acaoEn->getId());
+
             if ($acaoEn->getidAcaoRelacionada() != null) {
                 if (count($result) >0) {
 
@@ -281,7 +283,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                             'dados'=>$result));
                     $result = $integracaoService->salvaTemporario();
                 } else {
-                    var_dump($acaoEn->getId());
 
                     $log = "Ação='countResult'; Integração='" . $acaoEn->getId() . "'; countResult='" . count($result) . "';";
                     var_dump($log);
