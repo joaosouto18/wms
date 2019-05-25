@@ -154,8 +154,8 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     } else {
                         $(".lote-input").last().focus();
                     }
-                } else if ($(this).hasClass("qtd-input")) {
-                    $("#recebimento-embalagem-quantidade-form").submit();
+                } else if ($(this).hasClass("qtd-input") && controlaLote) {
+                    $("#lote-" + $(this).parent().parent().data("id")).focus();
                 } else if ($(this).hasClass("validade-input")) {
                     $("#qtdConferida-0").focus();
                 } else if (!checkInputs(true) ) {
@@ -284,8 +284,6 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                 } else {
                     if (checkValidade()) {
                         var quantidade = document.getElementById('qtdConferida-0');
-                        quantidade.focus();
-                        event.preventDefault();
                         if (quantidade) {
                             quantidade.focus();
                             if (event.preventDefault) {
