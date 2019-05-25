@@ -385,9 +385,18 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
-                $log = "Integração=" . $acaoEn->getId(). "; success='" . $sucess . "'; encontrouRegistro='" . $encontrouRegistro . "';";
+
+                if ($encontrouRegistro == true) {
+                    $v = "S";
+                } else if ($encontrouRegistro == false) {
+                    $v = "N";
+                } else {
+                    $v = "null";
+                }
+
+                $log = "Integração=" . $acaoEn->getId(). "; success='" . $sucess . "'; encontrouRegistro='" . $v . "';";
                 var_dump($log);
-                 
+
                 if ($sucess == 'S') {
                     if ($encontrouRegistro == true) {
                         if(!empty($idTabelaTemp)) {
