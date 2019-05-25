@@ -253,7 +253,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $result = $dados;
             }
 
-
             if ($acaoEn->getidAcaoRelacionada() != null) {
                 if (count($result) >0) {
 
@@ -272,13 +271,14 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
                     }
 
+                    //CASO TENHA DADO SUCESSO NA INTEGRAÇÃO RELACIONADA, ENTÃO PEGA OS IDS PARA SETAR COMO PROCESSADOS
                     if ($result === true) {
                         $encontrouRegistro = true;
                         if (!is_null($acaoEn->getTabelaReferencia())) {
                             $idTabelaTemp = $idsProcessados;
                         }
                     }
-                    
+
                 } else {
                     $result = true;
                 }
@@ -290,8 +290,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                     $result = $integracaoService->salvaTemporario();
                 } else {
 
-                    $log = "Ação='countResult'; Integração='" . $acaoEn->getId() . "'; countResult='" . count($result) . "';";
-                    //var_dump($log);
                     //pegar os ID's das tabelas temporárias das triggers
                     if (count($result)) {
                         $encontrouRegistro = true;
@@ -403,9 +401,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                 } else {
                     $v = "null";
                 }
-
-                $log = "Ação: UPDATE; Integração=" . $acaoEn->getId(). "; success='" . $sucess . "'; encontrouRegistro='" . $v . "';";
-                //var_dump($log);
 
                 if ($sucess == 'S') {
                     if ($encontrouRegistro == true) {
