@@ -387,7 +387,7 @@ class AcaoIntegracaoRepository extends EntityRepository
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
                 $log = "Integração=" . $acaoEn->getId(). "; success='" . $sucess . "'; encontrouRegistro='" . $encontrouRegistro . "';";
                 var_dump($log);
-                
+                 
                 if ($sucess == 'S') {
                     if ($encontrouRegistro == true) {
                         if(!empty($idTabelaTemp)) {
