@@ -253,7 +253,6 @@ class AcaoIntegracaoRepository extends EntityRepository
                 $result = $dados;
             }
 
-            var_dump('teste ' . $acaoEn->getId());
 
             if ($acaoEn->getidAcaoRelacionada() != null) {
                 if (count($result) >0) {
@@ -270,7 +269,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $options = array();
                         $options[] = $value;
                         $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
-
+                        $log = "Ação='countResult'; Integração='" . $acaoEn->getId() . "'; result='" . $result . "';";
+                        var_dump($log);
                     }
 
                 } else {
