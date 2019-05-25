@@ -258,7 +258,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 if (count($result) >0) {
 
                     $acaoRelacionadaEn = $this->find($acaoEn->getidAcaoRelacionada());
-
+                    $resOld = $result;
                     $dadosFiltrar = array();
                     foreach ($result as $row) {
                         if (!in_array($row['COD_PRODUTO'],$dadosFiltrar)) {
@@ -278,7 +278,14 @@ class AcaoIntegracaoRepository extends EntityRepository
                             $v = "other";
                         }
                         $log = "Ação='relacionada'; Integração='" . $acaoEn->getId() . "'; result='" . $v . "';";
-                        var_dump($log);
+                        //var_dump($log);
+
+                        if ($result === true) {
+                            var_dump($resOld);
+                        }
+                        if (!is_null($acaoEn->getTabelaReferencia())) {
+                            $idTabelaTemp = $result;
+                        }
                     }
 
                 } else {
@@ -293,7 +300,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 } else {
 
                     $log = "Ação='countResult'; Integração='" . $acaoEn->getId() . "'; countResult='" . count($result) . "';";
-                    var_dump($log);
+                    //var_dump($log);
                     //pegar os ID's das tabelas temporárias das triggers
                     if (count($result)) {
                         $encontrouRegistro = true;
@@ -407,7 +414,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 }
 
                 $log = "Ação: UPDATE; Integração=" . $acaoEn->getId(). "; success='" . $sucess . "'; encontrouRegistro='" . $v . "';";
-                var_dump($log);
+                //var_dump($log);
 
                 if ($sucess == 'S') {
                     if ($encontrouRegistro == true) {
