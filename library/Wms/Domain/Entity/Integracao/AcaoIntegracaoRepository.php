@@ -269,7 +269,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $options = array();
                         $options[] = $value;
                         $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
-                        $log = "Ação='countResult'; Integração='" . $acaoEn->getId() . "'; result='" . $result . "';";
+                        $log = "Ação='relacionada'; Integração='" . $acaoEn->getId() . "'; result='" . $result . "';";
                         var_dump($log);
                     }
 
