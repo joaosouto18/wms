@@ -10,6 +10,11 @@ class EstoqueErpRepository extends EntityRepository
     public function getProdutosDivergentesByInventario($idInventario,$params) {
 
         $where = '';
+        $inventarioComparar = 'A';
+
+        if (isset($params['modeloInventario']) && !empty($params['modeloInventario'])) {
+            $inventarioComparar = $params['modeloInventario'];
+        }
 
         $fieldEstoqueERP = 'NVL(ERP.ESTOQUE_GERENCIAL,0)';
         if ($params['deduzirAvaria'] == 'S') {
@@ -82,16 +87,28 @@ class EstoqueErpRepository extends EntityRepository
 
 
         if ($idInventario != null) {
-            $sql .= "         
-           INNER JOIN (SELECT ICE.COD_PRODUTO,
-                            ICE.DSC_GRADE
-                       FROM INVENTARIO_ENDERECO IE
-                       LEFT JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
-                      WHERE COD_INVENTARIO = $idInventario AND ICE.CONTAGEM_INVENTARIADA = 1 AND ICE.DIVERGENCIA IS NULL
-                      GROUP BY ICE.COD_PRODUTO,
-                            ICE.DSC_GRADE) I
-              ON (I.COD_PRODUTO = ERP.COD_PRODUTO AND I.DSC_GRADE = ERP.DSC_GRADE)
-              OR (I.COD_PRODUTO = WMS.COD_PRODUTO AND I.DSC_GRADE = WMS.DSC_GRADE)";
+            if ($inventarioComparar == 'A') {
+                $sql .= " INNER JOIN (SELECT ICE.COD_PRODUTO,
+                                             ICE.DSC_GRADE
+                                        FROM INVENTARIO_ENDERECO IE
+                                   LEFT JOIN INVENTARIO_CONTAGEM_ENDERECO ICE ON ICE.COD_INVENTARIO_ENDERECO = IE.COD_INVENTARIO_ENDERECO
+                                       WHERE COD_INVENTARIO = $idInventario AND ICE.CONTAGEM_INVENTARIADA = 1 AND ICE.DIVERGENCIA IS NULL
+                                       GROUP BY ICE.COD_PRODUTO,
+                                         ICE.DSC_GRADE) I
+                             ON (I.COD_PRODUTO = ERP.COD_PRODUTO AND I.DSC_GRADE = ERP.DSC_GRADE)
+                             OR (I.COD_PRODUTO = WMS.COD_PRODUTO AND I.DSC_GRADE = WMS.DSC_GRADE)";
+            } else {
+                $sql .= " INNER JOIN (SELECT DISTINCT
+                                             ICEP.COD_PRODUTO,
+                                             ICEP.DSC_GRADE
+                                        FROM INVENTARIO_NOVO INVN
+                                       INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON IEN.COD_INVENTARIO = INVN.COD_INVENTARIO
+                                       INNER JOIN INVENTARIO_CONT_END ICE ON IEN.COD_INVENTARIO_ENDERECO = ICE.COD_INVENTARIO_ENDERECO
+                                       INNER JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
+                                       WHERE INVN.COD_INVENTARIO = $idInventario) I
+                             ON (I.COD_PRODUTO = ERP.COD_PRODUTO AND I.DSC_GRADE = ERP.DSC_GRADE)
+                             OR (I.COD_PRODUTO = WMS.COD_PRODUTO AND I.DSC_GRADE = WMS.DSC_GRADE)";
+            }
         }
 
         $sql.= " WHERE 1 = 1
