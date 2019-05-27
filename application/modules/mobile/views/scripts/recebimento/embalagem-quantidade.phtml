@@ -155,7 +155,11 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                         $(".lote-input").last().focus();
                     }
                 } else if ($(this).hasClass("qtd-input")) {
-                    $("#lote-" + $(this).parent().parent().data("id")).focus();
+                    if (controlaLote) {
+                        $("#lote-" + $(this).parent().parent().data("id")).focus();
+                    } else {
+                        $("#recebimento-embalagem-quantidade-form").submit();
+                    }
                 } else if ($(this).hasClass("validade-input")) {
                     $("#qtdConferida-0").focus();
                 } else if (!checkInputs(true) ) {
@@ -283,7 +287,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     return false;
                 } else {
                     if (checkValidade()) {
-                        var quantidade = document.getElementById('qtdConferida');
+                        var quantidade = document.getElementById('qtdConferida-0');
                         if (quantidade) {
                             quantidade.focus();
                             if (event.preventDefault) {

@@ -461,11 +461,22 @@ class Expedicao_EtiquetaController  extends Action
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaRepo */
         $mapaRepo = $this->_em->getRepository('wms:Expedicao\MapaSeparacao');
+
+        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+        $expedicaoRepo = $this->_em->getRepository('wms:Expedicao');
+
         $mapaSeparacao = $mapaRepo->getMapaSeparacaoByExpedicao($idExpedicao);
         $this->view->mapaSeparacao = $mapaSeparacao;
         $reimprimirTodos = $this->_getParam('btnReimpressao');
         $reimprimirByCodBarras = $this->_getParam('btnConfirmacao');
         $reimprimirConf = $this->_getParam('btnReimpressaoConf');
+
+        $expedicaoEn = $expedicaoRepo->find($idExpedicao);
+        $idBox = null;
+        if ($expedicaoEn->getBox() != null){
+            $boxEn = $expedicaoEn->getBox();
+            $idBox = $boxEn->getId();
+        }
 
         $mapa = new MapaSeparacao;
 
@@ -474,7 +485,7 @@ class Expedicao_EtiquetaController  extends Action
                 \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA,
                 \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_CONFERIDO
             ];
-            $mapa->layoutMapa($idExpedicao, $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), null, $arrStatus);
+            $mapa->layoutMapa($idExpedicao, $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), null, $arrStatus, $idBox);
         } elseif (isset($reimprimirByCodBarras) && $reimprimirByCodBarras != null) {
             $codBarra    = $request->getParam('codBarra');
             if (!$codBarra) {
@@ -486,13 +497,13 @@ class Expedicao_EtiquetaController  extends Action
                 $this->addFlashMessage('error', "Mapa $codBarra não encontrado");
                 $this->_redirect('/expedicao/etiqueta/reimprimir-mapa/id/'.$idExpedicao);
             }
-            $mapa->layoutMapa($idExpedicao, $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), $codBarra, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
+            $mapa->layoutMapa($idExpedicao, $this->getSystemParameterValue('MODELO_MAPA_SEPARACAO'), $codBarra, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA, $idBox);
 
             /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
             $andamentoRepo  = $this->_em->getRepository('wms:Expedicao\Andamento');
             $andamentoRepo->save('Reimpressão do Mapa:'.$codBarra, $idExpedicao, false, true, $codBarra);
         }elseif (isset($reimprimirConf) && $reimprimirConf != null) {
-            $mapa->layoutMapa($idExpedicao, 6, null, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA);
+            $mapa->layoutMapa($idExpedicao, 6, null, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_ETIQUETA_GERADA, $idBox);
         }
     }
 

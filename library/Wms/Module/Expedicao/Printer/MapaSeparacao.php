@@ -180,7 +180,7 @@ class MapaSeparacao extends eFPDF {
                             $this->Cell(200, 3, utf8_decode("MAPA DE CONFERENCIA - EXPEDIÇÃO " . $expedicao), 0, 1, "C");
                             $count = 0;
                         }
-                        $this->layoutModelo6($mapa, ['txt' => $txtCarga, 'str' => $stringCargas]);
+                        $this->layoutModelo6($mapa, ['txt' => $txtCarga, 'str' => $stringCargas], $dscBox);
                         $count++;
                         break;
                     case 7:
@@ -1006,7 +1006,7 @@ class MapaSeparacao extends eFPDF {
         }
     }
 
-    private function layoutModelo6($mapa, $arrDataCargas) {
+    private function layoutModelo6($mapa, $arrDataCargas, $dscBox = null) {
 
         $this->idMapa = $mapa->getId();
 
@@ -1020,7 +1020,8 @@ class MapaSeparacao extends eFPDF {
 
         $this->SetFont('Arial', 'B', 9);
 
-        $this->Cell(4, 10, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
+        $this->Cell(4, 5, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1);
+        $this->Cell(4, 5, utf8_decode("BOX: " . $dscBox), 0, 1);
         $this->SetFont('Arial', 'B', 7);
 //Go to 1.5 cm from bottom
 

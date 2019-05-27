@@ -278,6 +278,8 @@ class Enderecamento_MovimentacaoController extends Action
                     $this->_redirect('/enderecamento/movimentacao');
                 }
 
+                $data['dthEntrada'] = $estoqueEn->getDtPrimeiraEntrada();
+
                 //SAIDA DO ENDEREÇO DE ORIGEM
                 $data['endereco'] = $enderecoEn;
                 $data['qtd'] = $data['quantidade'] * -1;

@@ -257,6 +257,7 @@ class AcaoIntegracaoRepository extends EntityRepository
                 if (count($result) >0) {
 
                     $acaoRelacionadaEn = $this->find($acaoEn->getidAcaoRelacionada());
+                    $idsProcessados = $result;
 
                     $dadosFiltrar = array();
                     foreach ($result as $row) {
@@ -268,7 +269,14 @@ class AcaoIntegracaoRepository extends EntityRepository
                         $options = array();
                         $options[] = $value;
                         $result = $this->processaAcao($acaoRelacionadaEn,$options,"E","P",null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
+                    }
 
+                    //CASO TENHA DADO SUCESSO NA INTEGRAÇÃO RELACIONADA, ENTÃO PEGA OS IDS PARA SETAR COMO PROCESSADOS
+                    if ($result === true) {
+                        $encontrouRegistro = true;
+                        if (!is_null($acaoEn->getTabelaReferencia())) {
+                            $idTabelaTemp = $idsProcessados;
+                        }
                     }
 
                 } else {
@@ -385,6 +393,15 @@ class AcaoIntegracaoRepository extends EntityRepository
                     }
                 }
             } else if (($tipoExecucao == 'E') && ($destino == 'P') && $acaoEn->getTipoControle() == 'F') {
+
+                if ($encontrouRegistro == true) {
+                    $v = "S";
+                } else if ($encontrouRegistro == false) {
+                    $v = "N";
+                } else {
+                    $v = "null";
+                }
+
                 if ($sucess == 'S') {
                     if ($encontrouRegistro == true) {
                         if(!empty($idTabelaTemp)) {

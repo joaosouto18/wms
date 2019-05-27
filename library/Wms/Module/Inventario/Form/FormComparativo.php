@@ -48,6 +48,10 @@ class FormComparativo extends Form
             'S' => 'SIM',
             'N' => 'NÃO'
         );
+        $modeloInventario = array(
+            'A' => 'Antigo',
+            'N' => 'Novo'
+        );
 
         $this->setAction(
             $this->getView()->url(array(
@@ -97,13 +101,18 @@ class FormComparativo extends Form
                 'label' => 'Buscar',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper'),
+
+            ))
+            ->addElement('select', 'modeloInventario', array(
+                'label' => 'Tipo.Inventário',
+                'multiOptions' =>$modeloInventario
             ))
             ->addElement('submit', 'gerarPdf', array(
                 'label' => 'Gerar relatório',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'deduzirAvaria', 'fabricante', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
+            ->addDisplayGroup(array('modeloInventario','inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'deduzirAvaria', 'fabricante', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
         );
     }
 }

@@ -798,7 +798,7 @@ class Importacao
                     if ($embalagemCadastrada->isEmbFracionavelDefault() == 'S')
                         continue;
 
-                    $descricaoEmbalagem = null;
+                    $descricaoEmbalagem = $embalagemCadastrada->getDescricao();
                     $encontrouEmbalagem = false;
 
                     $pesoEmbalagem = null;
