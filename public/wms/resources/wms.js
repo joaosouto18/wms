@@ -10,6 +10,12 @@
      * Method to load a message by dialog
      */
     $.wmsDialogAlert = function(settings, callbackFnk, params){
+        if (typeof settings === "string") {
+            var msg = settings;
+            settings = {};
+            settings.msg = msg;
+        }
+
         var config = {
             'msg': settings.msg,
             'title': (!!settings.title)? settings.title : "-- Sistema --",

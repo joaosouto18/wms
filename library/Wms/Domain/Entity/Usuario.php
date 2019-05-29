@@ -1,6 +1,7 @@
 <?php
 namespace Wms\Domain\Entity;
 
+use Wms\Domain\Entity\Acesso\Perfil;
 use Wms\Domain\Entity\Pessoa as Pessoa,
     Doctrine\Common\Collections\ArrayCollection,
     Wms\Domain\Entity\Ator;
@@ -62,7 +63,7 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
      *      joinColumns={@JoinColumn(name="COD_USUARIO", referencedColumnName="COD_USUARIO")},
      *      inverseJoinColumns={@JoinColumn(name="COD_PERFIL_USUARIO", referencedColumnName="COD_PERFIL_USUARIO", unique=true)}
      * )
-     * @var ArrayCollection
+     * @var Perfil[]
      */
     protected $perfis;
 
@@ -285,5 +286,14 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
         $this->percentReceb = $percentReceb;
     }
 
+    public function getMaxPercentRecebPerfis()
+    {
+        $maxPercent = 0;
+        foreach ($this->perfis as $perfi) {
+            $percentPerfil = $perfi->getPercentReceb();
+            $maxPercent = ($percentPerfil > $maxPercent) ? $percentPerfil : $maxPercent;
+        }
 
+        return $maxPercent;
+    }
 }

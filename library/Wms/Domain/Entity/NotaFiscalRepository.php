@@ -67,14 +67,14 @@ class NotaFiscalRepository extends EntityRepository {
         if ($serie)
             $dql->andWhere("nf.serie = '" . $serie . "'");
 
-        if ($dataEntradaInicial) {
+        if ($dataEntradaInicial && (!isset($numero) || (isset($numero) && empty($numero))) )  {
             $dataEntradaInicial = new \DateTime(str_replace("/", "-", $dataEntradaInicial));
 
             $dql->andWhere("TRUNC(nf.dataEntrada) >= ?2")
                     ->setParameter(2, $dataEntradaInicial);
         }
 
-        if ($dataEntradaFinal) {
+        if ($dataEntradaFinal && (!isset($numero) || (isset($numero) && empty($numero))) ) {
             $dataEntradaFinal = new \DateTime(str_replace("/", "-", $dataEntradaFinal));
 
             $dql->andWhere("TRUNC(nf.dataEntrada) <= ?3")

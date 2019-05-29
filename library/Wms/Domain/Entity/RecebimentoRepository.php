@@ -2161,7 +2161,7 @@ class RecebimentoRepository extends EntityRepository {
                         re.id codRecebEmbalagem, rv.id codRecebVolume, p.descricao, p.id codProduto, p.grade, 
                         TO_CHAR(NVL(re.dataValidade, rv.dataValidade),'DD/MM/YYYY') dataValidade, p.diasVidaUtil,
                         TO_CHAR(NVL(((re.dataValidade) - (re.dataConferencia)), ((rv.dataValidade) - (rv.dataConferencia))), '999999') diasValidos,
-                        (p.diasVidaUtil - TO_CHAR(NVL(((re.dataValidade) - (re.dataConferencia)), ((rv.dataValidade) - (rv.dataConferencia))), '999999')) / 100 percentualVidaUtil
+                        ROUND(((TO_CHAR( NVL( ((re.dataValidade) - (re.dataConferencia)), ((rv.dataValidade) - (rv.dataConferencia)) ), '999999') / p.diasVidaUtil) * 100) , 2) percentualVidaUtil
                         ")
             ->from('wms:Recebimento', 'r')
             ->leftJoin('wms:Recebimento\Embalagem','re','WITH','re.recebimento = r.id')
