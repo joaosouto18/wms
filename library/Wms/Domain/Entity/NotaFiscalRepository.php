@@ -586,10 +586,12 @@ class NotaFiscalRepository extends EntityRepository {
                            NVL(PV.CAPACIDADE_PICKING, PE.CAPACIDADE_PICKING) CAPACIDADE,
                            NVL(PV.PONTO_REPOSICAO, PE.PONTO_REPOSICAO) PONTO_REPOSICAO,
                            NVL(PV.COD_BARRAS, PE.COD_BARRAS) COD_BARRAS,
-                           NVL(PV.NUM_ALTURA, PDL.NUM_ALTURA) ALTURA,
-                           NVL(PV.NUM_LARGURA, PDL.NUM_LARGURA) LARGURA,
-                           NVL(PV.NUM_PESO, PDL.NUM_PESO) PESO,
-                           NVL(PV.NUM_PROFUNDIDADE, PDL.NUM_PROFUNDIDADE) PROFUNDIDADE,
+                           
+                           NVL(PV.NUM_ALTURA, NVL(PE.NUM_ALTURA, PDL.NUM_ALTURA)) ALTURA, 
+                           NVL(PV.NUM_LARGURA, NVL(PE.NUM_LARGURA,PDL.NUM_LARGURA)) LARGURA, 
+                           NVL(PV.NUM_PESO, NVL(PE.NUM_PESO,PDL.NUM_PESO)) PESO, 
+                           NVL(PV.NUM_PROFUNDIDADE, NVL(PE.NUM_PROFUNDIDADE,PDL.NUM_PROFUNDIDADE)) PROFUNDIDADE,
+                           
                            NVL(PV.COD_NORMA_PALETIZACAO, PDL.COD_NORMA_PALETIZACAO) COD_NORMA,
                            NVL(U1.DSC_UNITIZADOR, U2.DSC_UNITIZADOR) UNITIZADOR,
                            NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME) DESCRICAO,
@@ -616,10 +618,12 @@ class NotaFiscalRepository extends EntityRepository {
                            NVL(PV.CAPACIDADE_PICKING, PE.CAPACIDADE_PICKING) CAPACIDADE,
                            NVL(PV.PONTO_REPOSICAO, PE.PONTO_REPOSICAO) PONTO_REPOSICAO,
                            NVL(PV.COD_BARRAS, PE.COD_BARRAS) COD_BARRAS,
-                           NVL(PV.NUM_ALTURA, PDL.NUM_ALTURA) ALTURA,
-                           NVL(PV.NUM_LARGURA, PDL.NUM_LARGURA) LARGURA,
-                           NVL(PV.NUM_PESO, PDL.NUM_PESO) PESO,
-                           NVL(PV.NUM_PROFUNDIDADE, PDL.NUM_PROFUNDIDADE) PROFUNDIDADE,
+                           
+                           NVL(PV.NUM_ALTURA, NVL(PE.NUM_ALTURA, PDL.NUM_ALTURA)) ALTURA, 
+                           NVL(PV.NUM_LARGURA, NVL(PE.NUM_LARGURA,PDL.NUM_LARGURA)) LARGURA, 
+                           NVL(PV.NUM_PESO, NVL(PE.NUM_PESO,PDL.NUM_PESO)) PESO, 
+                           NVL(PV.NUM_PROFUNDIDADE, NVL(PE.NUM_PROFUNDIDADE,PDL.NUM_PROFUNDIDADE)) PROFUNDIDADE,
+
                            NVL(PV.COD_NORMA_PALETIZACAO, PDL.COD_NORMA_PALETIZACAO) COD_NORMA,
                            NVL(U1.DSC_UNITIZADOR, U2.DSC_UNITIZADOR) UNITIZADOR,
                            NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME) DESCRICAO,
@@ -707,11 +711,16 @@ class NotaFiscalRepository extends EntityRepository {
                                                        AND (PDLX.NUM_CUBAGEM <> 0 OR PDLX.NUM_PESO <> 0)))";
             } else {
                 //produtos sem dados logisticos - embalagem e volumes
-                $sql .= " AND ((PDL.NUM_CUBAGEM = 0 OR PDL.NUM_PESO = 0) OR (PDL.NUM_CUBAGEM IS NULL OR PDL.NUM_PESO IS NULL))
+                $sql .= " AND (((NVL(PDL.NUM_CUBAGEM,PE.NUM_CUBAGEM) = 0 OR NVL(PDL.NUM_PESO,PE.NUM_PESO) = 0) AND PE.IND_PADRAO = 'S') 
+                            OR (NVL(PDL.NUM_CUBAGEM,PE.NUM_CUBAGEM) IS NULL OR NVL(PDL.NUM_PESO,PE.NUM_PESO) IS NULL) AND PE.IND_PADRAO = 'S')
+
                           AND ((PV.NUM_CUBAGEM = 0 OR PV.NUM_PESO = 0) OR (PV.NUM_CUBAGEM IS NULL OR PV.NUM_PESO IS NULL))
                           GROUP BY P.COD_PRODUTO, P.DSC_GRADE, P.DSC_PRODUTO,
-                              NVL(PV.COD_BARRAS, PE.COD_BARRAS), NVL(PV.NUM_ALTURA, PDL.NUM_ALTURA),
-                              NVL(PV.NUM_LARGURA, PDL.NUM_LARGURA), NVL(PV.NUM_PESO, PDL.NUM_PESO), NVL(PV.NUM_PROFUNDIDADE, PDL.NUM_PROFUNDIDADE),
+                              NVL(PV.COD_BARRAS, PE.COD_BARRAS), 
+                              NVL(PV.NUM_ALTURA, NVL(PE.NUM_ALTURA, PDL.NUM_ALTURA)), 
+                              NVL(PV.NUM_LARGURA, NVL(PE.NUM_LARGURA,PDL.NUM_LARGURA)), 
+                              NVL(PV.NUM_PESO, NVL(PE.NUM_PESO,PDL.NUM_PESO)), 
+                              NVL(PV.NUM_PROFUNDIDADE, NVL(PE.NUM_PROFUNDIDADE,PDL.NUM_PROFUNDIDADE)),
                               NVL(PV.COD_NORMA_PALETIZACAO, PDL.COD_NORMA_PALETIZACAO), NVL(U1.DSC_UNITIZADOR, U2.DSC_UNITIZADOR),
                               NVL(PE.DSC_EMBALAGEM,PV.DSC_VOLUME), NVL(NP1.NUM_CAMADAS, NP2.NUM_CAMADAS), NVL(NP1.NUM_LASTRO, NP2.NUM_LASTRO),
                               DE.DSC_DEPOSITO_ENDERECO, PV.CAPACIDADE_PICKING, PE.CAPACIDADE_PICKING, PV.PONTO_REPOSICAO, PE.PONTO_REPOSICAO";
