@@ -4573,7 +4573,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         //Seta na mapa_separacao_pedido a quantidade cortada baseada na quantia já cortada mais a nova qtd
         $args = ["pedidoProduto" => $pedidoProdutoEn];
-        if (!empty($mapa) && $mapa != "-") $args['mapaSeparacao'] = $mapa;
+        if (isset($mapa) && !empty($mapa) && $mapa != "-") $args['mapaSeparacao'] = $mapa;
         /** @var Expedicao\MapaSeparacaoPedido $mapaSeparacaoPedido */
         $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy($args);
 
