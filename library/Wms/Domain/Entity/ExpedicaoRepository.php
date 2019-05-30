@@ -2273,11 +2273,15 @@ class ExpedicaoRepository extends EntityRepository {
         $usuarioEn = $usuarioRepo->find($idUsuario);
         $arrayFlush = array();
 
+        $utilizaProprietario = $this->getSystemParameterValue('CONTROLE_PROPRIETARIO');
+
         $produtosExpedicao = array();
 
         foreach ($reservaEstoqueArray as $re) {
             $pedido['codPedido'] = $re->getPedido()->getId();
-            $pedido['codProprietario'] = $re->getPedido()->getProprietario();
+            $pedido['codProprietario'] = null;
+                if ($utilizaProprietario == 'S') $pedido['codProprietario'] = $re->getPedido()->getProprietario();
+
             $reservaEstoqueEn = $re->getReservaEstoque();
             if ($reservaEstoqueEn->getAtendida() == 'N') {
                 $arrayFlush = $reservaEstoqueRepo->efetivaReservaByReservaEntity($estoqueRepo, $reservaEstoqueEn, "E", $idExpedicao, $usuarioEn, null, null, null, $pedido, $arrayFlush);
