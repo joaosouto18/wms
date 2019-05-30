@@ -1741,20 +1741,29 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $qtd = Math::multiplicar($qtdMapa, $embalagemEn->getQuantidade());
 
             if ($element['fracionavel'] == 'S') {
-                $enderecoId = (!empty($element['enderecoEn'])) ? $element['enderecoEn']->getId() : null;
-                $newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['expedicaoEn'] = $element['expedicaoEn'];
-                $newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['enderecos'][$enderecoId][$embalagemEn->getId()] = array(
-                    'qtd' => $qtdMapa,
-                    'lote' => $element['lote'],
-                    'consolidado' => "N",
-                    'cubagem' => null,
-                    'arrPedProd' => [$idPedProd => ['entity' => $pedidoProdutoEn, 'qtd' => $qtdMapa]],
-                    'embalagemEn' => $embalagemEn,
-                    'produtoEn' => $produtoEn,
-                    'pedidoEn' => null,
-                    'quebras' => $element['quebras'],
-                    'enderecoEn' => $element['enderecoEn']);
-
+                if (isset($newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['enderecos'][$enderecoId][$embalagemEn->getId()])) {
+                    $qtdAtual = $newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'];
+                    $newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'] = Math::adicionar($qtdAtual, $qtd);
+                    if (isset($newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd])) {
+                        $qtdPedProdAtual = $newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd]['qtd'];
+                        $newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd]['qtd'] = Math::adicionar($qtdPedProdAtual, $qtd);
+                    } else {
+                        $newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd] = ['entity' => $pedidoProdutoEn, 'qtd' => $qtd];
+                    }
+                } else {
+                    $newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['expedicaoEn'] = $element['expedicaoEn'];
+                    $newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['enderecos'][$enderecoId][$embalagemEn->getId()] = array(
+                        'qtd' => $qtdMapa,
+                        'lote' => $element['lote'],
+                        'consolidado' => "N",
+                        'cubagem' => null,
+                        'arrPedProd' => [$idPedProd => ['entity' => $pedidoProdutoEn, 'qtd' => $qtdMapa]],
+                        'embalagemEn' => $embalagemEn,
+                        'produtoEn' => $produtoEn,
+                        'pedidoEn' => null,
+                        'quebras' => $element['quebras'],
+                        'enderecoEn' => $element['enderecoEn']);
+                }
                 continue;
             }
 
