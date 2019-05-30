@@ -9,6 +9,17 @@ use Wms\Service\Integracao;
 class AcaoIntegracaoRepository extends EntityRepository
 {
 
+    public function getExisteIntegracao() {
+        $SQL = "SELECT * FROM ACAO_INTEGRACAO";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($result) > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public function getProdutosPendentes () {
         $SQL = "SELECT DISTINCT PRODUTO FROM (
                    SELECT PRODUTO FROM TR_PEDIDO WHERE (IND_PROCESSADO = 'N' OR IND_PROCESSADO IS NULL)
