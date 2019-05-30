@@ -87,20 +87,24 @@ class Web_IndexController extends Wms\Module\Web\Controller\Action {
             $this->addFlashMessage("info","Existe(m) " . count ($produtosSemCapacidade) . " produtos no estoque sem capacidade de picking definida " . $link);
         }
 
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoAndamentoRepository $integracaoAndamentoRepository */
-        $integracaoAndamentoRepository = $this->em->getRepository('wms:Integracao\AcaoIntegracaoAndamento');
-        $integracaoError = $integracaoAndamentoRepository->getStatusAcaoIntegracao();
-        if (count($integracaoError) > 0) {
-            $link = '<a href="/integracao/index/integracao-error-ajax" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
-            $this->addFlashMessage("info","Existe(m) " . count($integracaoError) . " integrações com erro. " . $link);
-        }
 
         /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
         $acaoIntRepo = $this->em->getRepository('wms:Integracao\AcaoIntegracao');
-        $produtosPendentes = $acaoIntRepo->getProdutosPendentes();
-        if (count($produtosPendentes) >0) {
-            $link = '<a href="/importacao/gerenciamento/produtos-ajax" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/application_form_add.png') . '" alt="#" /> Integrar Produtos</a>';
-            $this->addFlashMessage("info","Existe(m) " . count($produtosPendentes) . " produtos pendentes de integração " . $link);
+
+        if ($acaoIntRepo->getExisteIntegracao()) {
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoAndamentoRepository $integracaoAndamentoRepository */
+            $integracaoAndamentoRepository = $this->em->getRepository('wms:Integracao\AcaoIntegracaoAndamento');
+            $integracaoError = $integracaoAndamentoRepository->getStatusAcaoIntegracao();
+            if (count($integracaoError) > 0) {
+                $link = '<a href="/integracao/index/integracao-error-ajax" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/page_white_acrobat.png') . '" alt="#" /> Imprimir Relatório</a>';
+                $this->addFlashMessage("info","Existe(m) " . count($integracaoError) . " integrações com erro. " . $link);
+            }
+
+            $produtosPendentes = $acaoIntRepo->getProdutosPendentes();
+            if (count($produtosPendentes) >0) {
+                $link = '<a href="/importacao/gerenciamento/produtos-ajax" target="_blank" ><img style="vertical-align: middle" src="' . $this->view->baseUrl('img/icons/application_form_add.png') . '" alt="#" /> Integrar Produtos</a>';
+                $this->addFlashMessage("info","Existe(m) " . count($produtosPendentes) . " produtos pendentes de integração " . $link);
+            }
         }
 
         $params = array(
