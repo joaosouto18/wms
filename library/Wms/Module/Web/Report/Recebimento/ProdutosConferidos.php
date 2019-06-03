@@ -21,6 +21,7 @@ class ProdutosConferidos extends Report
         $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
         $parametro = $parametroRepo->findOneBy(array('constante' => 'CONTROLE_VALIDADE'));
 
+        $parametroGrade = $parametroRepo->findOneBy(array('constante' => 'UTILIZA_GRADE'));
         //busca a placa de uma nota deste recebimento, pois os recebimentos sao feitos de apenas um veiculo, entao todas as notas sao do mesmo veiculo
         $notaFiscalRepo = $em->getRepository('wms:NotaFiscal');
         $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
@@ -64,16 +65,26 @@ class ProdutosConferidos extends Report
 
         $pdf->addLabel(0, 190, '', 0, 1, 'L');
 
-        $pdf->addLabel(1, 15, 'Codigo', 'B', 0, 'L');
+        if ($parametroGrade->getValor() == 'S') {
+            $pdf->addLabel(1, 15, 'Codigo', 'B', 0, 'L');
+        } else
+            $pdf->addLabel(1, 30, 'Codigo', 'B', 0, 'L');
+
         $pdf->addLabel(1, 2, '', '', 0, 'L');
         $pdf->addLabel(2, 83, 'Produto', 'B', 0, 'L');
         $pdf->addLabel(2, 2, '', '', 0, 'L');
+
+
         if ($parametro->getValor() == 'S') {
-            $pdf->addLabel(3, 20, 'Grade', 'B', 0, 'L');
-            $pdf->addLabel(3, 2, '', '', 0, 'L');
+            if ($parametroGrade->getValor() == 'S') {
+                $pdf->addLabel(3, 20, 'Grade', 'B', 0, 'L');
+                $pdf->addLabel(3, 2, '', '', 0, 'L');
+            }
         } else {
-            $pdf->addLabel(3, 50, 'Grade', 'B', 0, 'L');
-            $pdf->addLabel(3, 2, '', '', 0, 'L');
+            if ($parametro->getValor() == 'S') {
+                $pdf->addLabel(3, 50, 'Grade', 'B', 0, 'L');
+                $pdf->addLabel(3, 2, '', '', 0, 'L');
+            }
         }
 
         $pdf->addLabel(4, 25, 'Data Conf.', 'B', 0, 'L');
@@ -125,12 +136,20 @@ class ProdutosConferidos extends Report
                 $codigoGradeTmp = $codigoGrade;
 
             //$pdf->addCol(1, 279, $notaFiscal, $borderNF, 1, 'L');
-            $pdf->addCol(3, 17, $item['COD_PRODUTO'], $border, 0, 'L');
+            if ($parametroGrade->getValor() == 'S') {
+                $pdf->addCol(3, 17, $item['COD_PRODUTO'], $border, 0, 'L');
+            } else {
+                $pdf->addCol(3, 32, $item['COD_PRODUTO'], $border, 0, 'L');
+            }
             $pdf->addCol(4, 85, utf8_decode(substr($item['DSC_PRODUTO'], 0, 40)), $border, 0, 'L');
             if ($parametro->getValor() == 'S') {
-                $pdf->addCol(5, 22, $item['DSC_GRADE'], $border, 0, 'L');
+                if ($parametroGrade->getValor() == 'S') {
+                    $pdf->addCol(5, 22, $item['DSC_GRADE'], $border, 0, 'L');
+                }
             } else {
-                $pdf->addCol(5, 50, $item['DSC_GRADE'], $border, 0, 'L');
+                if ($parametroGrade->getValor() == 'S') {
+                    $pdf->addCol(5, 50, $item['DSC_GRADE'], $border, 0, 'L');
+                }
             }
             $pdf->addCol(6, 27, $dataConf->format('d/m/y H:i'), $border, 0, 'L');
             $pdf->addCol(7, 28, $item['QTD_CONFERIDA'], $border, 0, 'C');
