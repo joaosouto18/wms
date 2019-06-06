@@ -901,6 +901,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
         /** @var \Wms\Domain\Entity\Produto\DadoLogisticoRepository $dadoLogisticoRepo */
         $dadoLogisticoRepo = $this->getEntityManager()->getRepository('wms:Produto\DadoLogistico');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+        $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
 
         /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoRepo */
         if (isset($arrayRepositorios['expedicaoRepo'])) {
@@ -1587,6 +1589,14 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $qtdMapa = $resultadoConsistencia[0]['QTD_MAPA'];
                     $qtdPedido = $resultadoConsistencia[0]['QTD_PEDIDO'];
                     $msg = "Existe problemas com a geração dos mapas, entre em contato com o suporte! - Produto: $produto  Qtd.Pedido: $qtdPedido Qtd.Gerado: $qtdMapa";
+                    throw new WMS_Exception($msg);
+                }
+
+                $resultadoConsistencia = $pedidoRepo->getReservasSemPedidosByExpedicao($idExpedicao);
+                if (count($resultadoConsistencia) > 0) {
+                    $pedidoInterno = $resultadoConsistencia[0]['COD_PEDIDO'];
+                    $idReserva = $resultadoConsistencia[0]['COD_RESERVA_ESTOQUE'];
+                    $msg = "Existem reservas de estoque sem pedidos no WMS - Reserva:$idReserva Pedido (Interno): $pedidoInterno";
                     throw new WMS_Exception($msg);
                 }
             }

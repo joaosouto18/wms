@@ -1026,4 +1026,14 @@ class PedidoRepository extends EntityRepository
         return $sql->getQuery()->getResult();
     }
 
+    public function getReservasSemPedidosByExpedicao ($idEdpexicao) {
+
+        $sql = "SELECT * FROM RESERVA_ESTOQUE_EXPEDICAO 
+                 WHERE COD_EXPEDICAO = $idEdpexicao
+                   AND COD_PEDIDO NOT IN (SELECT COD_PEDIDO FROM PEDIDO)";
+
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+
 }
