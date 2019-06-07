@@ -1111,9 +1111,16 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     ($resetaExpedicao && $statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO) ||
                     ($countProdutosPendentesCorte == 0)
                     || ($statusExpedicao->getId() == Expedicao::STATUS_CANCELADO)) {
-                    $PedidoRepo->removeReservaEstoque($idPedido,false);
-                    $PedidoRepo->remove($PedidoEntity,false);
-                    $retorno = true;
+
+                    //Verifico se a expedição está em processo de geração de ressuprimento, se estiver então aborto a integração
+                    if ($PedidoEntity->getCarga()->getExpedicao()->getIndProcessando() == 'N') {
+                        $PedidoRepo->removeReservaEstoque($idPedido,false);
+                        $PedidoRepo->remove($PedidoEntity,false);
+                        $retorno = true;
+                    } else {
+                        throw new Exception("O Pedido $pedido[codPedido] se encontra em processo de geração de ressuprimento dentro do WMS");
+                    }
+
                 } else {
                     if($novoSequencial == true &&
                       ($statusExpedicao->getId() == Expedicao::STATUS_FINALIZADO ||
