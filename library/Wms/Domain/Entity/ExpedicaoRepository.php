@@ -1948,7 +1948,7 @@ class ExpedicaoRepository extends EntityRepository {
 
             if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
                 $statusAntigo = $expedicaoEn->getCodStatus();
-                $this->changeStatusExpedicao($expedicaoEn->getId(), $statusAntigo);
+                $this->changeStatusExpedicao($expedicaoEn->getId(), Expedicao::STATUS_EM_FINALIZACAO);
             }
 
             $codCargaExterno = $this->validaCargaFechada($idExpedicao);
