@@ -1118,7 +1118,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                         $PedidoRepo->remove($PedidoEntity,false);
                         $retorno = true;
                     } else {
-                        throw new Exception("O Pedido $pedido[codPedido] se encontra em processo de geração de ressuprimento dentro do WMS");
+                        throw new Exception("O Pedido $pedido[codPedido] se encontra em processo de geração de ressuprimento ou emissão de Mapas/Etiquetas dentro do WMS");
                     }
 
                 } else {

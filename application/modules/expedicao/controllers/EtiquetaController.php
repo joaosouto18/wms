@@ -62,9 +62,19 @@ class Expedicao_EtiquetaController  extends Action
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
-
+        $hasTransaction = false;
+        $updateStatus = false;
         try {
+            $expedicaoEn = $ExpedicaoRepo->find($idExpedicao);
+            if ($expedicaoEn == null) throw new \Exception("Expedição $idExpedicao não encontrada");
+
+            if ($expedicaoEn->getIndProcessando() == 'S') throw new \Wms\Util\WMS_Exception("A Expedição $idExpedicao se encontra em processamento por outro usuário");
+
+            $ExpedicaoRepo->changeSituacaoExpedicao($idExpedicao, 'S');
+            $updateStatus = true;
+
             $this->getEntityManager()->beginTransaction();
+            $hasTransaction = true;
 
             if (!isset($cargas)) {
                 $msg = "É Necessário informar uma carga";
@@ -110,15 +120,21 @@ class Expedicao_EtiquetaController  extends Action
                 }
             }
             $this->getEntityManager()->commit();
+            $ExpedicaoRepo->changeSituacaoExpedicao($idExpedicao, 'N');
 
             $this->_helper->json(array('status' => 'success'));
         } catch (\Wms\Util\WMS_Exception $e) {
-            $this->getEntityManager()->rollback();
+            if ($hasTransaction) $this->getEntityManager()->rollback();
+            if ($updateStatus) $ExpedicaoRepo->changeSituacaoExpedicao($idExpedicao, 'N');
+
             $this->_helper->json(array('status' => 'error', 'msg' => $e->getMessage(), 'link' => $e->getLink()));
         } catch (\Exception $e) {
-            $this->getEntityManager()->rollback();
+            if ($hasTransaction) $this->getEntityManager()->rollback();
+            if ($updateStatus) $ExpedicaoRepo->changeSituacaoExpedicao($idExpedicao, 'N');
+
             $this->_helper->json(array('status' => 'error', 'msg' => $e->getMessage(), 'link' => ''));
         }
+
 
     }
 
