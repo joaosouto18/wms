@@ -864,6 +864,33 @@ class InventarioService extends AbstractService
         return;
     }
 
+    public function getResultadoInventario($id)
+    {
+        $results = $this->getRepository()->getResultInventario($id, false, true);
+
+        foreach ($results as $result) {
+            $obj = new \stdClass;
+            $obj->endereco         = $result["DSC_DEPOSITO_ENDERECO"];
+            $obj->rua              = $result["NUM_RUA"];
+            $obj->predio           = $result["NUM_PREDIO"];
+            $obj->nivel            = $result["NUM_NIVEL"];
+            $obj->apto             = $result["NUM_APARTAMENTO"];
+            $obj->codProduto       = $result["COD_PRODUTO"];
+            $obj->dscProduto       = $result["DSC_PRODUTO"];
+            $obj->grade            = $result["DSC_GRADE"];
+            $obj->elemento         = $result["ELEMENTO"];
+            $obj->lote             = (empty($result["DSC_LOTE"])) ? "--" : $result["DSC_LOTE"];
+            $obj->validade         = (empty($result["DTH_VALIDADE"])) ? "--" : $result["DTH_VALIDADE"]->format("d/m/Y");
+            $obj->qtdInventariada  = $result["QTD_INVENTARIADA"];
+            $obj->qtdDiff          = $result["QTD"];
+            $obj->qtdEstoque       = $result["POSSUI_SALDO"];
+            $return[] = $obj;
+        }
+
+        return $return;
+
+    }
+
     /**
      * @param $id
      * @throws \Exception

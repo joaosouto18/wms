@@ -2182,12 +2182,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ];
         }
 
-        $quebrasConcat = "";
+        $quebrasConcat = [];
         foreach ($arrQuebras as $tipoQuebra => $quebra) {
             $quebrasConcat[] = "$tipoQuebra:$quebra[codQuebra]";
         }
-        $strQuebrasConcat = implode("_", $quebrasConcat);
-
+        if (!empty($quebrasConcat)) {
+            $strQuebrasConcat = implode("_", $quebrasConcat);
+        } else {
+            $strQuebrasConcat = "SEM_QUEBRAS";
+        }
         return array($strQuebrasConcat, $arrQuebras);
     }
 

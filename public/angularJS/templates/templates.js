@@ -9,11 +9,10 @@ templates.push({
     template: '<div id="wms-dialog-msg" style="font-size: 12px;">{{model.msg}}</div>'
 });
 
-
 templates.push({
     name: 'previewer-inventario.html',
     template:
-        '<div id="wms-dialog-modal" ng-controller="previewerCtrl" style="font-size: 12px;" class="ui-dialog-content ui-widget-content">' +
+        '<div id="wms-dialog-modal" ng-controller="previewerInventarioCtrl" style="font-size: 12px;" class="ui-dialog-content ui-widget-content">' +
         '<form id="mainForm" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post">' +
         '<div>' +
         '<fieldset id="fieldset-Buscar">' +
@@ -80,6 +79,78 @@ templates.push({
         '<td ng-repeat="column in gridColumns" width="{{column.width}}">' +
         '<div ng-if="column.type === \'ordenator\'">{{item[column.name]}}</div>' +
         '<div ng-if="column.type === \'dropAction\'" align="center"><img alt="remover" style="cursor: pointer" ng-click="drop(item)" src="/img/icons/cancel.png"></div>' +
+        '</td>' +
+        '</tr>' +
+        '</table>' +
+        '</div>' +
+        '</div>' +
+        '</fieldset>' +
+        '</div>'
+});
+
+templates.push({
+    name: 'previewer-result-inventario.html',
+    template:
+        '<div id="wms-dialog-modal" ng-controller="previewerResultInventarioCtrl" ng-init="prepare()" style="font-size: 12px;" class="ui-dialog-content ui-widget-content">' +
+        '<form id="mainForm" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="">' +
+        '<div>' +
+        '<fieldset id="fieldset-Buscar">' +
+        '<legend>Resultado do inventário {{inventario.id}} ({{inventario.descricao}})</legend>' +
+        '<div class="field" style="margin: 0; padding-top: 10px">' +
+        '<table>' +
+        '<thead>' +
+        '<tr>' +
+        '<th>Controlar validade?</th>' +
+        '<th>Número mínimo de contagens iguais?</th>' +
+        '<th>Comparar com estoque atual?</th>' +
+        '<th>Permitir mesmo usuário em N contagens?</th>' +
+        '<th>Forçar contagem de todos os itens no endereço?</th>' +
+        '<th>Contar volumes individualmente?</th>' +
+        '</tr>' +
+        '</thead>' +
+        '<tbody>' +
+        '<tr>' +
+        '<td valign="center" align="center">{{inventario.controlaValidadeLbl}}</td>' +
+        '<td valign="center" align="center">{{inventario.numContagens}}</td>' +
+        '<td valign="center" align="center"><img ng-if="inventario.comparaEstoque" alt="Sim" src="/img/icons/tick.png"><img ng-if="!inventario.comparaEstoque" alt="Não" src="/img/icons/cross.png"></td>' +
+        '<td valign="center" align="center"><img ng-if="inventario.usuarioNContagens" alt="Sim" src="/img/icons/tick.png"><img ng-if="!inventario.usuarioNContagens" alt="Não" src="/img/icons/cross.png"></td>' +
+        '<td valign="center" align="center"><img ng-if="inventario.contarTudo" alt="Sim" src="/img/icons/tick.png"><img ng-if="!inventario.contarTudo" alt="Não" src="/img/icons/cross.png"></td>' +
+        '<td valign="center" align="center"><img ng-if="inventario.volumesSeparadamente" alt="Sim" src="/img/icons/tick.png"><img ng-if="!inventario.volumesSeparadamente" alt="Não" src="/img/icons/cross.png"></td>' +
+        '</tr>' +
+        '</tbody>' +
+        '</table>' +
+        '</div>' +
+        '</fieldset>' +
+        '</div>' +
+        '</form>' +
+        '<fieldset id="fs-grid-selected">' +
+        '<legend>Resultado</legend>' +
+        '<div class="grid">' +
+        '<div class="gMassAction">' +
+        '<div class="gAction">' +
+        '<button type="button" class="btn-grid" ng-click="atualizar()"><span>Atualizar o estoque</span></button>' +
+        '</div>' +
+        '</div>' +
+        '<table class="gTable" style="width:1007px!important">' +
+        '<tbody >' +
+        '<tr class="gTTitle">' +
+        '<td ng-repeat="column in gridColumns" width="{{column.width}}">' +
+        '<div><a href="" title="" class="sort" ng-click="ordenarPor(column.name)"><span>{{column.label}}</span></a></div>' +
+        '<div align="center" class="field"><input ng-if="column.filter" type="text" ng-model="objectFilter[column.name]" ng-attr-ui-mask="{{column.filter.masked && column.filter.maskFilter || \'\'}}" ng-attr-model-view-value="{{column.filter.masked && true || false}}" size="{{column.filter.size}}" class=""></div>' +
+        '</td>' +
+        '</tr>' +
+        '</tbody>' +
+        '</table>' +
+        '<div style="overflow-y:scroll; max-height: 340px" >' +
+        '<table class="gTable">' +
+        '<tr ng-show="showLoading">' +
+        '<td colspan="100%" align="center">' +
+        '<img height="150%" src="/img/ajax-bar-loader.gif" width="50%">' +
+        '</td>' +
+        '</tr>' +
+        '<tr class="gTResultSet" ng-repeat="result in results | filter:objectFilter | orderBy:tbOrderBy:direction:typeSensitiveComparator">' +
+        '<td ng-repeat="column in gridColumns" width="{{column.width}}">' +
+        '<div>{{result[column.name]}}</div>' +
         '</td>' +
         '</tr>' +
         '</table>' +

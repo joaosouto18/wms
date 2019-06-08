@@ -239,11 +239,42 @@ class EstoqueProprietarioRepository extends EntityRepository
         $nfRepository = $this->getEntityManager()->getRepository('wms:NotaFiscal');
         $nfVetEntity = $nfRepository->findBy(array('recebimento' => $idRecebimento));
         if(!empty($nfVetEntity)){
-            foreach ($nfVetEntity as $nf){
+            foreach ($nfVetEntity as $key => $nf){
                 $itemsNF = $nfRepository->getConferencia($nf->getFornecedor()->getId(), $nf->getNumero(), $nf->getSerie(), '', 16);
                 if(!empty($itemsNF)){
                     foreach ($itemsNF as $itens){
-                        $saldo = $this->getSaldoProp($itens['COD_PRODUTO'], $itens['DSC_GRADE'], $nf->getCodPessoaProprietario());
+                        $saldo = 0;
+                        $codProprietario = $nf->getCodPessoaProprietario();
+                        if ($key == 0) {
+                            $saldo = $this->getSaldoProp($itens['COD_PRODUTO'], $itens['DSC_GRADE'], $codProprietario);
+                        } else {
+                            $itensInserting = $this->_em->getUnitOfWork()->getScheduledEntityInsertions();
+
+                            $arrCriterio = array(
+                                'codPessoa' => $codProprietario,
+                                'codProduto' => $itens['COD_PRODUTO'],
+                                'grade' => $itens['DSC_GRADE']
+                            );
+
+                            $found = [];
+                            foreach ($itensInserting as $entity) {
+                                if (is_a($entity, "Wms\Domain\Entity\Enderecamento\EstoqueProprietario")) {
+                                    foreach ($arrCriterio as $prop => $value) {
+                                        $method = "get" . ucfirst($prop);
+                                        if (method_exists($entity, $method) && (call_user_func(array($entity, $method)) != $value))  break;
+                                        if ('grade' == $prop) $found[] = $entity;
+                                    }
+                                }
+                            }
+
+                            if (!empty($found)) {
+
+                                /** @var EstoqueProprietario $saldoAnterior */
+                                $saldoAnterior = end($found);
+                                $saldo = $saldoAnterior->getSaldoFinal();
+
+                            }
+                        }
                         $saldoFinal = $saldo + $itens['QTD_CONFERIDA'];
                         $this->save($itens['COD_PRODUTO'], $itens['DSC_GRADE'],$itens['QTD_CONFERIDA'], EstoqueProprietario::RECEBIMENTO, $saldoFinal, $nf->getCodPessoaProprietario(), $idRecebimento, $nf->getId());
                     }

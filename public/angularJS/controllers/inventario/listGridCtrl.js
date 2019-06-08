@@ -1,4 +1,4 @@
-angular.module("wms").controller("listGridInventarioCtrl", function($scope, $http, $filter, uiDialogService){
+angular.module("wms").controller("listGridInventarioCtrl", function($scope, $http, $filter, $window, uiDialogService, shareDataService){
     $scope.maxPerPage = 15;
     $scope.inventarios = [];
     $scope.showLoading = true;
@@ -154,6 +154,29 @@ angular.module("wms").controller("listGridInventarioCtrl", function($scope, $htt
                 $scope.inventarios[k].checked = page.selectedAll;
             }
         })
+    };
+
+    $scope.interromper = function (idInventario) {
+        uiDialogService.dialogConfirm("O inventário será INTERROMPIDO, todos os produtos/endereços não inventariados serão desconsiderados. Deseja relamente prosseguir?", "ATENÇÃO - AÇÃO IRREVERSÍVEL", "Sim", "Não", function () {
+            $window.location.href = URL_MODULO + "/index/interromper/id/" + idInventario;
+        });
+    };
+
+    $scope.cancelar = function (idInventario) {
+        uiDialogService.dialogConfirm("O inventário será CANCELADO, todo o processo executado será desconsiderado. Deseja relamente prosseguir?", "ATENÇÃO - AÇÃO IRREVERSÍVEL", "Sim", "Não", function () {
+            $window.location.href = URL_MODULO + "/index/cancelar/id/" + idInventario;
+        });
+    };
+
+    $scope.atualizar = function (idInventario) {
+        uiDialogService.dialogConfirm("O inventário será APLICADO ao estoque. Deseja relamente prosseguir?", "ATENÇÃO - AÇÃO IRREVERSÍVEL", "Sim", "Não", function () {
+            $window.location.href = URL_MODULO + "/index/atualizar/id/" + idInventario;
+        });
+    };
+
+    $scope.showPreviewerResult = function (id) {
+        shareDataService.addNewData("idInventario", id);
+        uiDialogService.dialogModal("previewer-result-inventario.html", true, "Resultado do inventário",1080,null,'false',['center', 80]);
     };
 
     getInventarios({});

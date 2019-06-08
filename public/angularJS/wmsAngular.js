@@ -1,4 +1,4 @@
-angular.module("wms", ['uiDialogService'])
+angular.module("wms", ['uiDialogService', 'ui.mask'])
     .filter("interval", function () {
     return function (input, interval) {
         if (input.length > 0) {
@@ -8,7 +8,7 @@ angular.module("wms", ['uiDialogService'])
         }
     }
 }).filter('contains', function() {
-    return function (array, needle, notContains) {
+    return function (array, needle, notContains, like) {
         if (Number.isInteger(needle)) needle = parseInt(needle);
         else if (!isNaN(needle)) needle = parseFloat(needle);
 

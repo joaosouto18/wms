@@ -304,7 +304,6 @@ class Inventario_Novo_IndexController  extends Action
             $form->setDefault('id', $id);
 
             if (!empty($codInventarioErp)) {
-                /** @var \Wms\Domain\Entity\InventarioRepository $inventarioRepo */
                 $this->getServiceLocator()->getService("Inventario")->setCodInventarioERP($id, $codInventarioErp);
                 $this->addFlashMessage('success', 'Código vinculado com sucesso!');
                 $this->redirect('index');
@@ -317,18 +316,20 @@ class Inventario_Novo_IndexController  extends Action
         }
     }
 
-    public function imprimirEnderecosAjaxAction()
+    public function getPreviewResultAjaxAction()
     {
-        $this->view->form = $form = new FiltroEnderecoForm();
-        $values = $form->getParams();
         $idInventario = $this->_getParam('id');
+        /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
+        $inventarioRepo = $this->getEntityManager()->getRepository('wms:InventarioNovo');
+        $stdClassInventario = $inventarioRepo->getInventarios('stdClass', [ "id" => $idInventario ])[0];
+        /** @var \Wms\Service\InventarioService $inventarioService */
+        $inventarioService =  $this->getServiceLocator()->getService("Inventario");
 
-        if ($values) {
-            /** @var \Wms\Domain\Entity\InventarioRepository $InventarioRepo */
-            $InventarioRepo = $this->_em->getRepository('wms:Inventario');
-            $result = $InventarioRepo->impressaoInventarioByEndereco($values['identificacao'], $idInventario);
-            $this->exportPDF($result, 'Relatório Inventário', 'Inventário', 'P');
-        }
+        $results = $inventarioService->getResultadoInventario($idInventario);
+
+        $mask = \Wms\Util\Endereco::mascara(null, '9');
+
+        $this->_helper->json(["inventario" => $stdClassInventario, "results" => $results, "mask" => $mask]);
     }
 
     public function digitacaoInventarioAjaxAction()

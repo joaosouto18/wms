@@ -62,7 +62,9 @@ class Expedicao_IndexController extends Action {
             foreach ($cargasCanceladasEntities as $cargaCanceladaEntity) {
                 $cargaEntity = $cargaRepository->findOneBy(array('codCargaExterno' => $cargaCanceladaEntity['COD_CARGA_EXTERNO']));
                 if(!empty($cargaEntity)) {
-                    if ($cargaEntity->getExpedicao()->getCodStatus() == Expedicao::STATUS_FINALIZADO) {
+                    /** @var Expedicao $expedicao */
+                    $expedicao = $cargaEntity->getExpedicao();
+                    if ($expedicao->getCodStatus() == Expedicao::STATUS_FINALIZADO || $expedicao->getIndProcessando() == 'S') {
                         $expedicaoAndamentoRepository->save('Tentativa de cancelamento da carga ' . $cargaEntity->getCodCargaExterno() . ', porém não cancelada', $cargaEntity->getCodExpedicao(), false, false);
                         continue;
                     }
@@ -271,9 +273,6 @@ class Expedicao_IndexController extends Action {
             try {
                 /** @var \Wms\Domain\Entity\Expedicao\Carga $cargaEn */
                 $cargaEn = $CargaRepo->findOneBy(array('id' => $idCarga));
-                /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
-                $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
-                $pedidos = $pedidoRepo->findBy(array('codCarga' => $cargaEn->getId()));
 
                 $mapaSeparacaoCargas = $ExpedicaoRepo->getMapaSeparacaoCargasByExpedicao($idExpedicao, $idCarga,2);
 
@@ -302,6 +301,10 @@ class Expedicao_IndexController extends Action {
                 if (count($cargas) <= 1) {
                     throw new \Exception('A Expedição não pode ficar sem cargas');
                 }
+
+                /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
+                $pedidoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\Pedido");
+                $pedidos = $pedidoRepo->findBy(array('codCarga' => $cargaEn->getId()));
                 foreach ($pedidos as $pedido) {
                     $pedidoRepo->removeReservaEstoque($pedido->getId(), false);
                     $pedido->setIndEtiquetaMapaGerado('N');

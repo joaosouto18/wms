@@ -1,4 +1,4 @@
-angular.module("wms").controller("previewerCtrl", function ($scope, $http, $window, shareDataService, uiDialogService) {
+angular.module("wms").controller("previewerInventarioCtrl", function ($scope, $http, $window, shareDataService, uiDialogService) {
 
     $scope.modelos = [];
 

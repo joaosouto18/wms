@@ -400,10 +400,24 @@ class InventarioNovoRepository extends EntityRepository
         return $dql->getQuery()->getResult();
     }
 
-    public function getResultInventario($idInventario, $toExport = false)
+    public function getResultInventario($idInventario, $toExport = false, $preview = false)
     {
         $condition = ($toExport) ? "IN ($idInventario)" : " = $idInventario";
         $sumCondition = ($toExport) ? "" : " - NVL(E.QTD,0)";
+        $colunas = "";
+        $joins = "";
+        if ($preview) {
+            $colunas = "DE.DSC_DEPOSITO_ENDERECO,
+                        DE.NUM_RUA,
+                        DE.NUM_PREDIO,
+                        DE.NUM_NIVEL,
+                        DE.NUM_APARTAMENTO,
+                        NVL(PV.DSC_VOLUME, 'UN') ELEMENTO, 
+                        P.DSC_PRODUTO,";
+            $joins = "INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = I.COD_DEPOSITO_ENDERECO
+                      INNER JOIN PRODUTO P ON P.COD_PRODUTO = I.COD_PRODUTO AND P.DSC_GRADE = I.DSC_GRADE
+                      LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = I.COD_PRODUTO_VOLUME";
+        }
 
         $sql = "
                 SELECT NVL(I.COD_PRODUTO, E.COD_PRODUTO) COD_PRODUTO,
@@ -411,8 +425,10 @@ class InventarioNovoRepository extends EntityRepository
                        NVL(I.COD_PRODUTO_VOLUME, E.COD_PRODUTO_VOLUME) COD_PRODUTO_VOLUME,
                        NVL(I.DSC_LOTE, E.DSC_LOTE) DSC_LOTE,
                        I.COD_DEPOSITO_ENDERECO,
+                       $colunas
                        NVL(I.DTH_VALIDADE, E.DTH_VALIDADE) DTH_VALIDADE,
-                       NVL(I.QTD,0) $sumCondition QTD,
+                       NVL(I.QTD, 0) QTD_INVENTARIADA,
+                       NVL(I.QTD, 0) $sumCondition QTD,
                        NVL(E.QTD, 0) POSSUI_SALDO
                   FROM (
                   SELECT ICEP.COD_PRODUTO,
@@ -439,6 +455,7 @@ class InventarioNovoRepository extends EntityRepository
                            ICEP.COD_PRODUTO_VOLUME,
                            ICEP.DSC_LOTE,
                            IEN.COD_DEPOSITO_ENDERECO) I
+                   $joins
                    LEFT JOIN ESTOQUE E ON E.COD_DEPOSITO_ENDERECO = I.COD_DEPOSITO_ENDERECO
                     AND CASE WHEN I.COD_PRODUTO IS NULL THEN 1 ELSE
                         CASE WHEN (E.COD_PRODUTO = I.COD_PRODUTO 

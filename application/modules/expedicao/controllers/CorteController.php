@@ -398,7 +398,6 @@ class Expedicao_CorteController extends Action {
                 if ($senha != $senhaSistema)
                     throw new \Exception("Senha Informada Inválida");
 
-
                 /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
                 $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
                 $pedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
@@ -423,14 +422,12 @@ class Expedicao_CorteController extends Action {
             }
 
         } else {
-            $pedProds = $pedidoRepo->getPedidoByExpedicao($expedicao, $produto, $grade, false, $idPedido);
-            $response = [];
-            foreach ($pedProds as $pedProd) {
-                $index = "$pedProds[ID]";
-                if (!isset($pe)){
+            $inputs= [];
+            if (empty($senha)) $inputs[] = "Senha";
+            if (empty($quantidade)) $inputs[] = "Quantidade";
+            if (empty($motivo)) $inputs[] = "Motivo";
 
-                }
-            }
+            throw new Exception("Campos não informados: " . implode(", ", $inputs) . "!");
 //            if (empty($mapaPreSelected))
 //                $this->view->mapas = $this->em->getRepository("wms:Expedicao\MapaSeparacaoPedido")->getMapaByPedidoProduto($idPedido, $produto, $grade);
         }

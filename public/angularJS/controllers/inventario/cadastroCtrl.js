@@ -1,4 +1,4 @@
-angular.module("wms").controller("inventarioCtrl", function($scope, $http, $filter, uiDialogService, shareDataService){
+angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $http, $filter, uiDialogService, shareDataService){
     $scope.maxPerPage = 15;
     $scope.showLoading = false;
     $scope.showList = false;
