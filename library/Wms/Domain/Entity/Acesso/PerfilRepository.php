@@ -19,7 +19,8 @@ class PerfilRepository extends EntityRepository {
     {
         extract($values['identificacao']);
         $perfil->setNome($nome)
-                ->setDescricao($descricao);
+                ->setDescricao($descricao)
+                ->setPercentReceb($percentReceb);
 
         // removo todas as acoes do perfil
         $perfil->getAcoes()->clear();

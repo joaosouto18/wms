@@ -47,8 +47,8 @@ class LpadFunction extends FunctionNode
         $this->firstExpression = $parser->StringPrimary(); // (4)
         $parser->match(Lexer::T_COMMA); // (5)
         $this->secondExpression = $parser->ArithmeticPrimary(); // (6)
-	$parser->match(Lexer::T_COMMA); // (5)
-	$this->thirdExpression = $parser->ArithmeticPrimary(); // (6)
+        $parser->match(Lexer::T_COMMA); // (5)
+        $this->thirdExpression = $parser->ArithmeticPrimary(); // (6)
         $parser->match(Lexer::T_CLOSE_PARENTHESIS); // (3)
     }
 
@@ -56,8 +56,8 @@ class LpadFunction extends FunctionNode
     {
         return 'LPAD(' .
             $this->firstExpression->dispatch($sqlWalker) . ', ' .
-	    $this->secondExpression->dispatch($sqlWalker) . ', ' .
-	    $this->thirdExpression->dispatch($sqlWalker) .
+            $this->secondExpression->dispatch($sqlWalker) . ', ' .
+            $this->thirdExpression->dispatch($sqlWalker) .
             //$this->thirdExpression->dispatch($sqlWalker) .
         ')'; // (7)
     }

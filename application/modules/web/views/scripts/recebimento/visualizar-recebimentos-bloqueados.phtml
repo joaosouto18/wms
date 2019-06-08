@@ -2,4 +2,9 @@
 echo $this->form;
 echo $this->grid;
 ?>
-
+<script>
+    $("a.link-blocked").click(function (e) {
+        e.preventDefault();
+        $.wmsDialogAlert("Percentual de vida util deste produto está abaixo do permitido à este usuário")
+    })
+</script>

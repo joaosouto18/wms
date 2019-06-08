@@ -41,6 +41,12 @@ class Perfil
      */
     protected $usuarios;
 
+    /**
+     * @var int $percentReceb
+     * @Column(name="PERCENT_RECEB", type="integer", length=3)
+     */
+    protected $percentReceb;
+
     public function __construct()
     {
 	$this->acoes = new ArrayCollection;
@@ -100,6 +106,22 @@ class Perfil
     {
 	$this->acoes = $acoes;
         return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPercentReceb()
+    {
+        return $this->percentReceb;
+    }
+
+    /**
+     * @param int $percentReceb
+     */
+    public function setPercentReceb($percentReceb)
+    {
+        $this->percentReceb = $percentReceb;
     }
 
 }

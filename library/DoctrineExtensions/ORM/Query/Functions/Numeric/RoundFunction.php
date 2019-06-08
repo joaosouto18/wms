@@ -1,15 +1,15 @@
 <?php
 
-namespace DoctrineExtensions\ORM\Query\Functions\String;
+namespace DoctrineExtensions\ORM\Query\Functions\Numeric;
 
 use Doctrine\ORM\Query\Lexer,
     Doctrine\ORM\Query\AST\Functions\FunctionNode;
 use Doctrine\ORM\Query\QueryException;
 
 /**
- * "TRUNC" "(" StringPrimary [, StringSecondary] ")"
+ * "ROUND" "(" StringPrimary [, StringSecondary] ")"
  */
-class TruncFunction extends FunctionNode
+class RoundFunction extends FunctionNode
 {
     // (1)
     public $firstExpression = null;
@@ -19,18 +19,18 @@ class TruncFunction extends FunctionNode
     {
         $parser->match(Lexer::T_IDENTIFIER); // (2)
         $parser->match(Lexer::T_OPEN_PARENTHESIS); // (3)
-        $this->firstExpression = $parser->StringPrimary(); // (4)
+        $this->firstExpression = $parser->ArithmeticPrimary(); // (4)
         try {
             $parser->match(Lexer::T_COMMA); // (3)
             $this->secondExpression = $parser->ArithmeticPrimary(); // (4)
-        } catch (QueryException $e) {}
-
+        } catch (QueryException $e) {
+        }
         $parser->match(Lexer::T_CLOSE_PARENTHESIS); // (5)
     }
 
     public function getSql(\Doctrine\ORM\Query\SqlWalker $sqlWalker)
     {
-        $args[] = "TRUNC(";
+        $args[] = "ROUND(";
         $args[] = $this->firstExpression->dispatch($sqlWalker);
         if (!empty($this->secondExpression)) {
             $args[] = ",";

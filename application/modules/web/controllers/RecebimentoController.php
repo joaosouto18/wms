@@ -1253,8 +1253,9 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
         }
 
         if ($params) {
-            $entityNotaFiscal = $this->getEntityManager()->getRepository('wms:NotaFiscal');
-            $resultSet = $entityNotaFiscal->search($params);
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+            $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+            $resultSet = $notaFiscalRepo->search($params);
 
             $data = array();
 
@@ -1269,7 +1270,7 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                 $data[$key]['dataEntrada'] = $dataEntrada;
                 $data[$key]['fornecedor'] = substr($row['fornecedor'], 0, 45);
                 $data[$key]['status'] = $row[0]->getStatus()->getSigla();
-                $vetEmbalagens = $entityNotaFiscal->getTotalPorEmbalagemNota($row[0]->getId());
+                $vetEmbalagens = $notaFiscalRepo->getTotalPorEmbalagemNota($row[0]->getId());
                 $data[$key]['qtdProdutoMaior'] = (int) $vetEmbalagens[0]['QTDMAIOR'];
                 $data[$key]['qtdProdutoMenor'] = (int) $vetEmbalagens[0]['QTDMENOR'];
             }
@@ -1579,7 +1580,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
     public function visualizarRecebimentosBloqueadosAction()
     {
         $grid = new RecebimentoGrid\RecebimentoBloqueado();
-        $this->view->grid = $grid->init()->render();
+        $user = \Zend_Auth::getInstance()->getIdentity();
+        $this->view->grid = $grid->init($user)->render();
     }
 
     public function liberarRecusarRecebimentosAjaxAction()

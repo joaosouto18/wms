@@ -2,18 +2,26 @@
 
 namespace Wms\Module\Web\Grid\Recebimento;
 
+use Wms\Domain\Entity\Usuario;
+use Wms\Module\Web\Grid;
+
 class RecebimentoBloqueado extends \Wms\Module\Web\Grid
 {
 
     /**
      *
-     * @param array $params 
+     * @param Usuario $user
+     * @return Grid
      */
-    public function init()
+    public function init($user = null)
     {
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepository */
         $recebimentoRepository = $this->getEntityManager()->getRepository('wms:Recebimento');
         $result = $recebimentoRepository->getQuantidadeConferidaBloqueada();
+
+        $percentUser = $user->getPercentReceb();
+        $percentPerfil = $user->getMaxPercentRecebPerfis();
+        $percent = ($percentUser > $percentPerfil) ? $percentUser : $percentPerfil;
 
         $this->setAttrib('title','Recebimento Bloqueado');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))
@@ -44,11 +52,11 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                 'index' => 'qtdBloqueada'
             ))
             ->addColumn(array(
-                'label' => 'Data Maxima',
+                'label' => 'Min. Dias Vida Util',
                 'index' => 'diasVidaUtil'
             ))
             ->addColumn(array(
-                'label' => 'Dias Vida Util',
+                'label' => 'Dias Vida Util Conf',
                 'index' => 'diasValidos'
             ))
             ->addColumn(array(
@@ -73,6 +81,9 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                     'liberar' => true,
                     'observacao' => 'Contagem Liberada com Sucesso'
                 ),
+                'condition' => function ($item) use ($percent){
+                    return ($item["percentualVidaUtil"] >= $percent);
+                }
             ))
             ->addAction(array(
                 'label' => 'RECUSAR data de validade',
@@ -92,6 +103,17 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                     'liberar' => false,
                     'observacao' => 'Contagem Rejeitada'
                 ),
+                'condition' => function ($item) use ($percent){
+                    return ($item["percentualVidaUtil"] >= $percent);
+                }
+            ))
+            ->addAction(array(
+                'label' => 'Acesso Negado',
+                'title' => 'Percentual de vida util abaixo do permitido à este usuário',
+                'cssClass' => "link-blocked",
+                'condition' => function ($item) use ($percent){
+                    return ($item["percentualVidaUtil"] < $percent);
+                }
             ))
 
             ->setShowExport(false);

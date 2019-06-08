@@ -6,7 +6,7 @@ use Doctrine\ORM\Query\Lexer,
     Doctrine\ORM\Query\AST\Functions\FunctionNode;
 
 /**
- * "TO_CHAR" "(" StringPrimary "," StringPrimary ")" 
+ * "TO_CHAR" "(" StringPrimary "," StringSecondary ")"
  */
 class ToCharFunction extends FunctionNode
 {

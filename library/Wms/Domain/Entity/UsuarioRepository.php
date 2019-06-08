@@ -85,6 +85,7 @@ class UsuarioRepository extends AtorRepository {
 
         $usuario->setLogin($login);
         $usuario->setIsAtivo($isAtivo);
+        $usuario->setPercentReceb($percentReceb);
         $em->persist($usuario);
     }
 
