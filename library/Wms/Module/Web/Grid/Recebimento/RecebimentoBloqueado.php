@@ -19,11 +19,15 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
         $recebimentoRepository = $this->getEntityManager()->getRepository('wms:Recebimento');
         $result = $recebimentoRepository->getQuantidadeConferidaBloqueada();
 
-        $percentUser = $user->getPercentReceb();
-        $percentUser = (!empty($percentUser)) ? $percentUser : 0;
-        $percentPerfil = $user->getMaxPercentRecebPerfis();
-        $percentPerfil = (!empty($percentPerfil)) ? $percentPerfil : 0;
-        $percent = ($percentUser > $percentPerfil) ? $percentUser : $percentPerfil;
+        $percent = 0;
+        if ($recebimentoRepository->getSystemParameterValue("HABILITA_PERC_RECEB") == "S") {
+            $percentUser = $user->getPercentReceb();
+            $percent = (!empty($percentUser)) ? $percentUser : 0;
+            if (empty($percent)) {
+                $percentPerfil = $user->getMaxPercentRecebPerfis();
+                $percent = (!empty($percentPerfil)) ? $percentPerfil : 0;
+            }
+        }
 
         $this->setAttrib('title','Recebimento Bloqueado');
         $this->setSource(new \Core\Grid\Source\ArraySource($result))

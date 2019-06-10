@@ -19,6 +19,10 @@ BEGIN
         EXECUTE IMMEDIATE 'ALTER TABLE USUARIO ADD (PERCENT_RECEB NUMBER(3,0))';
         EXECUTE IMMEDIATE 'ALTER TABLE PERFIL_USUARIO ADD (PERCENT_RECEB NUMBER(3,0))';
 
+        insert into parametro (cod_parametro,cod_contexto_parametro,dsc_parametro,dsc_titulo_parametro,ind_parametro_sistema,cod_tipo_atributo,dsc_valor_parametro)
+        values (sq_parametro_01.nextval, (select cod_contexto_parametro from contexto_parametro where dsc_contexto_parametro = 'PARÂMETROS DE RECEBIMENTO'), 'HABILITA_PERC_RECEB','Restringir por nível de acesso percentual de permissão para liberar recebimento','S','A','N');
+
+
 /************************************************************************
 **                 NÃO ALTERAR ABAIXO DESTA REGIÃO                     **
 ************************************************************************/
