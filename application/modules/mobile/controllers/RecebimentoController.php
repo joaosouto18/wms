@@ -381,14 +381,19 @@ class Mobile_RecebimentoController extends Action
                 }
             }
 
-            if ($dataValidadeValida)
-                $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
+
 
             $this->em->flush();
             $this->em->commit();
 
+            $args = ["idRecebimento" => $idRecebimento];
+            if ($dataValidadeValida) {
+                $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
+            } else {
+                $args['dataValidadeInvalida'] = $dataValidadeValida;
+            }
             // tudo certo, redireciono para a nova leitura
-            $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento, 'dataValidadeInvalida' => !$dataValidadeValida));
+            $this->redirect('ler-codigo-barras', 'recebimento', null, $args);
         } catch (\Exception $e) {
             $this->em->rollback();
             $this->_helper->messenger('error', $e->getMessage());

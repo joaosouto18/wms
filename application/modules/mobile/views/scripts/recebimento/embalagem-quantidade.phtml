@@ -141,6 +141,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
         });
 
         $("input:text").live("keyup", function ( event ) {
+            event.preventDefault();
             if ( event.which === 13  || event.keyCode === 13 ) {
                 if ($(this).hasClass("lote-input")) {
                     if ($(this).parent().parent().data("id") === $(".input-row").last().data("id")) {
@@ -157,7 +158,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                 } else if ($(this).hasClass("qtd-input")) {
                     if (controlaLote) {
                         $("#lote-" + $(this).parent().parent().data("id")).focus();
-                    } else {
+                    } else if (!checkInputs(true) ) {
                         $("#recebimento-embalagem-quantidade-form").submit();
                     }
                 } else if ($(this).hasClass("validade-input")) {

@@ -232,12 +232,12 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $cliente['codCliente'] = $pedidoWs->cliente->codCliente;
             $cliente['bairro'] = $pedidoWs->cliente->bairro;
             $cliente['cidade'] = $pedidoWs->cliente->cidade;
-            $cliente['complemento'] = $pedidoWs->cliente->complemento;
+            $cliente['complemento'] = (isset($pedidoWs->cliente->complemento) && !empty($pedidoWs->cliente->complemento)) ? trim($pedidoWs->cliente->complemento) : null;
             $cliente['cpf_cnpj'] = $pedidoWs->cliente->cpf_cnpj;
-            $cliente['logradouro'] = $pedidoWs->cliente->logradouro;
+            $cliente['logradouro'] = (isset($pedidoWs->cliente->logradouro) && !empty($pedidoWs->cliente->logradouro)) ? trim($pedidoWs->cliente->logradouro) : null;
             $cliente['nome'] = $pedidoWs->cliente->nome;
-            $cliente['numero'] = $pedidoWs->cliente->numero;
-            $cliente['referencia'] = $pedidoWs->cliente->referencia;
+            $cliente['numero'] = (isset($pedidoWs->cliente->numero) && !empty($pedidoWs->cliente->numero)) ? trim($pedidoWs->cliente->numero) : null;
+            $cliente['referencia'] = (isset($pedidoWs->cliente->referencia) && !empty($pedidoWs->cliente->referencia)) ? trim($pedidoWs->cliente->referencia) : null;
             $cliente['tipoPessoa'] = $pedidoWs->cliente->tipoPessoa;
             $cliente['uf'] = $pedidoWs->cliente->uf;
 

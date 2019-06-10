@@ -20,7 +20,9 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
         $result = $recebimentoRepository->getQuantidadeConferidaBloqueada();
 
         $percentUser = $user->getPercentReceb();
+        $percentUser = (!empty($percentUser)) ? $percentUser : 0;
         $percentPerfil = $user->getMaxPercentRecebPerfis();
+        $percentPerfil = (!empty($percentPerfil)) ? $percentPerfil : 0;
         $percent = ($percentUser > $percentPerfil) ? $percentUser : $percentPerfil;
 
         $this->setAttrib('title','Recebimento Bloqueado');
