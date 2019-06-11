@@ -1900,13 +1900,17 @@ class ExpedicaoRepository extends EntityRepository {
 
         $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
         $cargaEntities = $this->getProdutosExpedicaoCorteToIntegracao(null,$idExpedicao,true);
-
+        
         foreach ($cargaEntities as $cargaEntity) {
             $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
-                0 => $cargaEntity['COD_CARGA_EXTERNO'],
-                1 => $cargaEntity['COD_PRODUTO'],
-                2 => $cargaEntity['DSC_GRADE'],
-                3 => $cargaEntity['QTD_CORTADA']), 'E', 'P');
+                0 => $cargaEntity['DTH_CORTE'],
+                1 => $cargaEntity['USUARIO_CORTE'],
+                2 => $cargaEntity['COD_CARGA_EXTERNO'],
+                3 => $cargaEntity['COD_PRODUTO'],
+                4 => $cargaEntity['DSC_GRADE'],
+                5 => $cargaEntity['QTD_ATENDIDA'],
+                6 => $cargaEntity['DSC_MOTIVO_CORTE'],
+                7 => $cargaEntity['COD_PEDIDO_EXTERNO']), 'E', 'P');
             if (is_string($result)) {
                 return $result;
             } else {
@@ -4646,20 +4650,26 @@ class ExpedicaoRepository extends EntityRepository {
         if ($apenasProdutosCortados == true)
             $having .= ' HAVING (NVL(SUM(PP.QTD_CORTADA),0) > 0) ';
 
-        $SQL = "SELECT PP.COD_PRODUTO,
-                       PP.DSC_GRADE,
-                       PROD.DSC_PRODUTO,
-                       NVL(SUM(PP.QUANTIDADE),0) as QTD,
-                       NVL(SUM(PP.QTD_CORTADA),0) as QTD_CORTADA,
-                       PP.COD_PEDIDO,
-                       C.COD_CARGA_EXTERNO
+        $SQL = "SELECT 
+                    TO_CHAR(SYSDATE,'DD/MM/YYYY HH24:MI:SS') DTH_CORTE,
+                    PP.COD_PRODUTO,
+                    PP.DSC_GRADE,
+                    NVL(SUM(PP.QTD_ATENDIDA),0) QTD_ATENDIDA,
+                    NVL(SUM(PP.QUANTIDADE),0) QTD_TOTAL,
+                    NVL(SUM(PP.QTD_CORTADA),0) as QTD_CORTADA,
+                    MC.DSC_MOTIVO_CORTE,
+                    P.COD_EXTERNO COD_PEDIDO_EXTERNO,
+                    600 USUARIO_CORTE,
+                    C.COD_CARGA_EXTERNO,
+                    PROD.DSC_PRODUTO
                   FROM PEDIDO_PRODUTO PP
                   LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
                   LEFT JOIN CARGA C ON C.COD_CARGA  = P.COD_CARGA
                   LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
+                  LEFT JOIN MOTIVO_CORTE MC ON MC.COD_MOTIVO_CORTE = PP.COD_MOTIVO_CORTE  
                  WHERE 1 = 1 $where
-                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, PP.COD_PEDIDO, C.COD_CARGA_EXTERNO
-                 $having
+                 GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, PROD.DSC_PRODUTO, P.COD_EXTERNO, C.COD_CARGA_EXTERNO, MC.DSC_MOTIVO_CORTE
+                  $having 
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
