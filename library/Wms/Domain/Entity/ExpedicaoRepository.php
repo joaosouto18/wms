@@ -1946,6 +1946,10 @@ class ExpedicaoRepository extends EntityRepository {
                 throw new \Exception("Expedição ja se encontra finalizada");
             }
 
+            if ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_FINALIZACAO) {
+                throw new \Exception("Expedição ja se encontra em finalização por outro operador");
+            }
+
             if (($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_CONFERENCIA) || ($expedicaoEn->getCodStatus() == Expedicao::STATUS_EM_SEPARACAO)) {
                 $statusAntigo = $expedicaoEn->getCodStatus();
                 $this->changeStatusExpedicao($expedicaoEn->getId(), Expedicao::STATUS_EM_FINALIZACAO);
