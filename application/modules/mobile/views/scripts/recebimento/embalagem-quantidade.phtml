@@ -158,12 +158,12 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                 } else if ($(this).hasClass("qtd-input")) {
                     if (controlaLote) {
                         $("#lote-" + $(this).parent().parent().data("id")).focus();
-                    } else if (!checkInputs(true) ) {
+                    } else if (checkInputs(true) ) {
                         $("#recebimento-embalagem-quantidade-form").submit();
                     }
                 } else if ($(this).hasClass("validade-input")) {
                     $("#qtdConferida-0").focus();
-                } else if (!checkInputs(true) ) {
+                } else if (checkInputs(true) ) {
                     $("#recebimento-embalagem-quantidade-form").submit();
                 }
             }
