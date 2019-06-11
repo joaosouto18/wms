@@ -141,8 +141,8 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
         });
 
         $("input:text").live("keyup", function ( event ) {
-            event.preventDefault();
             if ( event.which === 13  || event.keyCode === 13 ) {
+                event.preventDefault();
                 if ($(this).hasClass("lote-input")) {
                     if ($(this).parent().parent().data("id") === $(".input-row").last().data("id")) {
                         if (!isEmpty($(this).val())) {
