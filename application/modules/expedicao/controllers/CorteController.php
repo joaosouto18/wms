@@ -377,6 +377,7 @@ class Expedicao_CorteController extends Action {
         $this->view->grade = $grade = $this->_getParam('DSC_GRADE', 0);
         $this->view->expedicao = $expedicao = $this->_getParam('expedicao');
         $this->view->origin = $origin = $this->_getParam('origin');
+        $submit = $this->_getParam('submit');
         $quantidade = $this->_getParam('quantidade');
         $this->view->mapaPreSelected = $mapaPreSelected = $this->_getParam('COD_MAPA_SEPARACAO', null);
         $motivo = $this->_getParam('motivoCorte', null);
@@ -386,50 +387,51 @@ class Expedicao_CorteController extends Action {
         $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($pedido);
         $senha = $this->_getParam('senha');
 
-        if (isset($senha) && !empty($senha) && isset($quantidade) && !empty($quantidade) && isset($motivo) && !empty($motivo)) {
+        if ($submit == "Confirmar Cortes") {
+            if (isset($senha) && !empty($senha) && isset($quantidade) && !empty($quantidade) && isset($motivo) && !empty($motivo)) {
+                try {
+                    $motivoEn = $repoMotivos->find($motivo);
+                    $motivo = $motivoEn->getDscMotivo();
+                    $idMotivo = $motivoEn->getId();
 
-            try {
-                $motivoEn = $repoMotivos->find($motivo);
-                $motivo = $motivoEn->getDscMotivo();
-                $idMotivo = $motivoEn->getId();
+                    $this->getEntityManager()->beginTransaction();
+                    $senhaSistema = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
+                    if ($senha != $senhaSistema)
+                        throw new \Exception("Senha Informada Inválida");
 
-                $this->getEntityManager()->beginTransaction();
-                $senhaSistema = $this->getSystemParameterValue('SENHA_AUTORIZAR_DIVERGENCIA');
-                if ($senha != $senhaSistema)
-                    throw new \Exception("Senha Informada Inválida");
-
-                /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
-                $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
-                $pedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
+                    /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+                    $expedicaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao');
+                    $pedidoProduto = $this->getEntityManager()->getRepository('wms:Expedicao\PedidoProduto')
                         ->findOneBy(array('codPedido' => $idPedido, 'codProduto' => $produto, 'grade' => $grade));
 
-                if (!isset($pedidoProduto) || empty($pedidoProduto))
-                    throw new \Exception("Produto $produto grade $grade não encontrado para o pedido $pedido");
+                    if (!isset($pedidoProduto) || empty($pedidoProduto))
+                        throw new \Exception("Produto $produto grade $grade não encontrado para o pedido $pedido");
 
-                $expedicaoRepo->cortaPedido($idPedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $motivo, null, $idMotivo, (!empty($mapa))? $mapa : $mapaPreSelected);
+                    $expedicaoRepo->cortaPedido($idPedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $motivo, null, $idMotivo, (!empty($mapa)) ? $mapa : $mapaPreSelected);
 
-                $this->getEntityManager()->flush();
-                $this->getEntityManager()->commit();
-                $this->addFlashMessage('success', 'Produto ' . $produto . ' grade ' . $grade . ' pedido ' . $pedido . ' cortado com Sucesso');
-                if (empty($mapaPreSelected)) {
-                    $this->redirect("index", "index", "expedicao");
-                } else {
-                    $this->redirect("index", "os", "expedicao", ["id"=> $expedicao]);
+                    $this->getEntityManager()->flush();
+                    $this->getEntityManager()->commit();
+                    $this->addFlashMessage('success', 'Produto ' . $produto . ' grade ' . $grade . ' pedido ' . $pedido . ' cortado com Sucesso');
+
+                } catch (\Exception $e) {
+                    $this->getEntityManager()->rollback();
+                    $this->addFlashMessage('error', $e->getMessage());
                 }
-            } catch (\Exception $e) {
-                $this->getEntityManager()->rollback();
-                $this->addFlashMessage('error', $e->getMessage());
+
+            } else {
+                $inputs = [];
+                if (empty($senha)) $inputs[] = "Senha";
+                if (empty($quantidade)) $inputs[] = "Quantidade";
+                if (empty($motivo)) $inputs[] = "Motivo";
+
+                $this->addFlashMessage('error', "Campos não informados: " . implode(", ", $inputs) . "!");
             }
 
-        } else {
-            $inputs= [];
-            if (empty($senha)) $inputs[] = "Senha";
-            if (empty($quantidade)) $inputs[] = "Quantidade";
-            if (empty($motivo)) $inputs[] = "Motivo";
-
-            throw new Exception("Campos não informados: " . implode(", ", $inputs) . "!");
-//            if (empty($mapaPreSelected))
-//                $this->view->mapas = $this->em->getRepository("wms:Expedicao\MapaSeparacaoPedido")->getMapaByPedidoProduto($idPedido, $produto, $grade);
+            if (empty($mapaPreSelected)) {
+                $this->redirect("index", "index", "expedicao");
+            } else {
+                $this->redirect("index", "os", "expedicao", ["id" => $expedicao]);
+            }
         }
     }
 
