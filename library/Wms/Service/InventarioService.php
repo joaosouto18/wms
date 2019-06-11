@@ -880,7 +880,7 @@ class InventarioService extends AbstractService
             $obj->grade            = $result["DSC_GRADE"];
             $obj->elemento         = $result["ELEMENTO"];
             $obj->lote             = (empty($result["DSC_LOTE"])) ? "--" : $result["DSC_LOTE"];
-            $obj->validade         = (empty($result["DTH_VALIDADE"])) ? "--" : $result["DTH_VALIDADE"]->format("d/m/Y");
+            $obj->validade         = (empty($result["DTH_VALIDADE"])) ? "--" : $result["DTH_VALIDADE"];
             $obj->qtdInventariada  = $result["QTD_INVENTARIADA"];
             $obj->qtdDiff          = $result["QTD"];
             $obj->qtdEstoque       = $result["POSSUI_SALDO"];
