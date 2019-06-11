@@ -140,9 +140,12 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             }
         });
 
+        $("#recebimento-embalagem-quantidade-form").submit(function (event) {
+            event.preventDefault();
+        });
+
         $("input:text").live("keyup", function ( event ) {
             if ( event.which === 13  || event.keyCode === 13 ) {
-                event.preventDefault();
                 if ($(this).hasClass("lote-input")) {
                     if ($(this).parent().parent().data("id") === $(".input-row").last().data("id")) {
                         if (!isEmpty($(this).val())) {
@@ -159,12 +162,12 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                     if (controlaLote) {
                         $("#lote-" + $(this).parent().parent().data("id")).focus();
                     } else if (checkInputs(false) ) {
-                        $("#recebimento-embalagem-quantidade-form").submit();
+                        $("#recebimento-embalagem-quantidade-form").off('submit').trigger('submit');
                     }
                 } else if ($(this).hasClass("validade-input")) {
                     $("#qtdConferida-0").focus();
                 } else if (checkInputs(true) ) {
-                    $("#recebimento-embalagem-quantidade-form").submit();
+                    $("#recebimento-embalagem-quantidade-form").off('submit').trigger('submit');
                 }
             }
         });
@@ -305,7 +308,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
 
         $("#submitBtn").click(function () {
             if (!checkInputs() || !checkValidade()) return false;
-            $("#recebimento-embalagem-quantidade-form").submit();
+            $("#recebimento-embalagem-quantidade-form").off('submit').trigger('submit');
         });
 
         function checkValidade() {
