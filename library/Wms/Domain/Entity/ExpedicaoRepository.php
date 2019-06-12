@@ -1892,7 +1892,7 @@ class ExpedicaoRepository extends EntityRepository {
         $qtdPedidos = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
         if (count($qtdPedidos) <= 0) {
-            return true;
+            //return true;
         }
         /*
          * Fim remover
@@ -1900,7 +1900,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
         $cargaEntities = $this->getProdutosExpedicaoCorteToIntegracao(null,$idExpedicao,true);
-        
+
         foreach ($cargaEntities as $cargaEntity) {
             $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
                 0 => $cargaEntity['DTH_CORTE'],
@@ -4659,7 +4659,7 @@ class ExpedicaoRepository extends EntityRepository {
                     NVL(SUM(PP.QTD_CORTADA),0) as QTD_CORTADA,
                     MC.DSC_MOTIVO_CORTE,
                     P.COD_EXTERNO COD_PEDIDO_EXTERNO,
-                    600 USUARIO_CORTE,
+                    'PCADMIN' USUARIO_CORTE,
                     C.COD_CARGA_EXTERNO,
                     PROD.DSC_PRODUTO
                   FROM PEDIDO_PRODUTO PP
