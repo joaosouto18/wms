@@ -317,6 +317,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
             $embsEditadas = [];
             $arrItens = [];
+
+            $removeExponential = function ($val) {
+                $exponentialPos = strpos($val, "E-");
+                if ($exponentialPos) {
+                    $exp = substr($val, ( $exponentialPos + 2));
+                    return number_format($val, $exp, ",", ".");
+                } else  {
+                    return str_replace(".", ",", floatval(number_format($val, 11)));
+                }
+            };
+
             foreach ($values['embalagens'] as $id => $itemEmbalagem) {
                 if (isset($itemEmbalagem['quantidade']))
                     $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
@@ -374,20 +385,20 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setCodigoBarras(trim($codigoBarras));
 
                         if (isset($largura) && !empty($largura)) {
-                            $embalagemEntity->setLargura($largura);
+                            $embalagemEntity->setLargura($removeExponential($largura));
                         }
                         if (isset($altura) && !empty($altura)) {
-                            $embalagemEntity->setAltura($altura);
+                            $embalagemEntity->setAltura($removeExponential($altura));
                         }
                         if (isset($peso) && !empty($peso)) {
-                            $embalagemEntity->setPeso($peso);
+                            $embalagemEntity->setPeso($removeExponential($peso));
                         }
                         if (isset($profundidade) && !empty($profundidade)) {
-                            $embalagemEntity->setProfundidade($profundidade);
+                            $embalagemEntity->setProfundidade($removeExponential($profundidade));
                         }
-                        $cubagem = str_replace('.', ',', Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
+                        $cubagem = Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade));
                         if (isset($cubagem) && !empty($cubagem)) {
-                            $embalagemEntity->setCubagem($cubagem);
+                            $embalagemEntity->setCubagem($removeExponential($cubagem));
                         }
 
                         //valida o endereco informado
@@ -469,22 +480,22 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $embalagemEntity->setCodigoBarras(trim($codigoBarras));
 
                         if (isset($largura) && !empty($largura)) {
-                            $embalagemEntity->setLargura(number_format($largura,3,',',''));
+                            $embalagemEntity->setLargura($removeExponential($largura));
                         }
                         if (isset($altura) && !empty($altura)) {
-                            $embalagemEntity->setAltura(number_format($altura,3,',',''));
+                            $embalagemEntity->setAltura($removeExponential($altura));
                         }
                         if (isset($peso) && !empty($peso)) {
-                            $embalagemEntity->setPeso(number_format($peso,3,',',''));
+                            $embalagemEntity->setPeso($removeExponential($peso));
                         }
                         if (isset($profundidade) && !empty($profundidade)) {
-                            $embalagemEntity->setProfundidade(number_format($profundidade,3,',',''));
+                            $embalagemEntity->setProfundidade($removeExponential($profundidade));
                         }
 
                         if (isset($largura) && isset($altura) && isset($peso) && isset($profundidade)) {
-                            $cubagem = str_replace('.', ',', Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade)));
-                            if (isset($cubagem) && !empty($cubagem)) {
-                                $embalagemEntity->setCubagem($cubagem);
+                            $cubagem = Math::multiplicar(Math::multiplicar(str_replace(',', '.', $altura), str_replace(',', '.', $largura)), str_replace(',', '.', $profundidade));
+                            if (!empty($cubagem)) {
+                                $embalagemEntity->setCubagem($removeExponential($cubagem));
                             }
                         }
 
