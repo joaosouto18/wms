@@ -361,6 +361,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         }
 
                         $embalagemEntity = new EmbalagemEntity;
+                        $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_EMBALAGEM_01", 1);
+                        $embalagemEntity->setId($sqcGenerator->generate($em, $embalagemEntity));
                         $embalagemEntity->setProduto($produtoEntity);
                         $embalagemEntity->setGrade($produtoEntity->getGrade());
                         $embalagemEntity->setDescricao($descricao);

@@ -20,9 +20,9 @@ class Embalagem {
     /**
      * @Id
      * @Column(name="COD_PRODUTO_EMBALAGEM", type="integer", nullable=false)
-     * @GeneratedValue(strategy="SEQUENCE")
-     * @SequenceGenerator(sequenceName="SQ_PRODUTO_EMBALAGEM_01", allocationSize=1, initialValue=1)
      */
+    // @GeneratedValue(strategy="SEQUENCE")
+    // @SequenceGenerator(sequenceName="SQ_PRODUTO_EMBALAGEM_01", allocationSize=1, initialValue=1)
     protected $id;
 
     /**
@@ -186,6 +186,15 @@ class Embalagem {
     }
 
     /**
+     * Define o id da embalagem
+     * @return Embalagem
+     */
+    public function setId($id) {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
      * Retorna o produto que esta embalagem pertence
      * @return Produto
      */
@@ -195,7 +204,9 @@ class Embalagem {
 
     /**
      * Informa qual o produto que esta embalagem pertence
-     * @param Produto $produto 
+     * @param Produto $produto
+     * @return Embalagem
+     * @throws \Exception
      */
     public function setProduto(Produto $produto) {
         $andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
