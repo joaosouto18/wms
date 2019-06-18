@@ -70,13 +70,56 @@ if (count($this->produtos) > 0):
                 $quantidadeEnderecada    = $this->embalagemRepository->getQtdEmbalagensProduto($produto['id'], $produto['grade'], $produto['qtdEnderecada']);
                 $quantidadeTotal         = $this->embalagemRepository->getQtdEmbalagensProduto($produto['id'], $produto['grade'], $produto['qtdTotal']);
                 ?>
-                <td style="text-align:left"><?php echo implode('<br />', $quantidadeNotaFiscal) ?></td>
-                <td style="text-align:left"><?php echo implode('<br />', $quantidadeRecebimento) ?></td>
-                <td style="text-align:left"><?php echo implode('<br />', $quantidadeRecebida) ?></td>
-                <td style="text-align:left"><?php echo implode('<br />', $quantidadeEnderecamento) ?></td>
-                <td style="text-align:left"><?php echo implode('<br />', $quantidadeEnderecada) ?></td>
-                <td style="text-align:left"><?php echo implode('<br />', $quantidadeTotal) ?></td>
+                <td style="text-align:left"><?php
+                    if (!is_array($quantidadeNotaFiscal))  {
+                        echo $produto['qtdItensNf'];
+                    } else {
+                        echo implode('<br />', $quantidadeNotaFiscal);
+                    }
+                    ?></td>
+
+                <td style="text-align:left"><?php
+                    if (!is_array($quantidadeRecebimento))  {
+                        echo $produto['qtdRecebimento'];
+                    } else {
+                        echo implode('<br />', $quantidadeRecebimento);
+                    }
+                    ?></td>
+
+                <td style="text-align:left"><?php
+                    if (!is_array($quantidadeRecebida)) {
+                        echo $produto['qtdRecebida'];
+                    } else {
+                        echo implode('<br />', $quantidadeRecebida) ;
+                    }
+                    ?></td>
+
+                <td style="text-align:left"><?php
+                    if (!is_array($quantidadeEnderecamento)) {
+                        echo $produto['qtdEnderecamento'];
+                    } else {
+                        echo implode('<br />', $quantidadeEnderecamento);
+                    }
+                    ?></td>
+
+                <td style="text-align:left"><?php
+                    if (!is_array($quantidadeEnderecada))  {
+                        echo $produto['qtdEnderecada'];
+                    } else {
+                        echo implode('<br />', $quantidadeEnderecada);
+                    }
+                    ?></td>
+
+                <td style="text-align:left"><?php
+                    if (!is_array($quantidadeTotal)) {
+                        echo $produto['qtdTotal'];
+                    } else {
+                        echo implode('<br />', $quantidadeTotal);
+                    }
+                    ?></td>
+
                 <?php endforeach; ?>
+
             </tr>
         </table>
     </form>
