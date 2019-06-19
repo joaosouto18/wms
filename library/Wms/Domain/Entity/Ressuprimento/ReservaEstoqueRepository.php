@@ -208,7 +208,11 @@ class ReservaEstoqueRepository extends EntityRepository
                 return false;
             }
         }elseif($reservaEstoqueEn->getAtendida() == 'S'){
-            throw new \Exception("Reserva já atendida - (".$reservaEstoqueEn->getId().")");
+            if ($throwException == true) {
+                throw new \Exception("Reserva já atendida - (".$reservaEstoqueEn->getId().")");
+            } else {
+                return false;
+            }
         }
 
         $usuarioEn = null;

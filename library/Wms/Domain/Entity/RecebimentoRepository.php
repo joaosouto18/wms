@@ -647,13 +647,23 @@ class RecebimentoRepository extends EntityRepository {
                 $loteRepo->reorderNFItensLoteByRecebimento($idRecebimento, $conferenciasOk);
                 $em->flush();
 
+                $paletesFlush = array();
+
                 /** @var \Wms\Domain\Entity\Enderecamento\Palete $palete */
                 foreach ($paletes as $key => $palete) {
                     /** @var \Wms\Domain\Entity\OrdemServico $osEn */
                     $osEn = $osRepo->findOneBy(array('idEnderecamento' => $palete->getId()));
                     //checando Validade
                     $getProduto = $palete->getProdutosArray();
-                    $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, null, $getProduto[0]['codProduto'], $getProduto[0]['grade']);
+                        $codProduto = $getProduto[0]['codProduto'];
+                        $grade = $getProduto[0]['grade'];
+                    $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, null, $codProduto, $grade);
+
+                    if (isset($paletesFlush[$codProduto][$grade])) {
+                        $paletesFlush = array();
+                        $this->getEntityManager()->flush();
+                    }
+                    $paletesFlush[$codProduto][$grade] = 1;
 
                     $reservaEstoqueRepo->efetivaReservaEstoque($palete->getDepositoEndereco()->getId(), $palete->getProdutosArray(), "E", "U", $palete->getId(), $osEn->getPessoa()->getId(), $osEn->getId(), $palete->getUnitizador()->getId(), false, $dataValidade);
                 }
