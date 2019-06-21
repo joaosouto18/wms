@@ -43,7 +43,7 @@ class Web_ImprimirController extends Action
             $EnderecoRepository = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
             $enderecos = $EnderecoRepository->getImprimirEndereco($codEndereco);
 
-            if ($tipo == Endereco::PICKING || $tipo == Endereco::PICKING_DINAMICO) {
+            if ($tipo == Endereco::PICKING || $tipo == Endereco::PICKING_DINAMICO || $tipo == Endereco::CROSS_DOCKING) {
 
                 $modelo = $this->getSystemParameterValue("MODELO_ETIQUETA_PICKING");
                 $pdf = self::gerarEtiquetasPdf($enderecos, $modelo);
