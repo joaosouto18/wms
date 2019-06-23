@@ -740,6 +740,7 @@ class PedidoRepository extends EntityRepository
                     CL.COD_PESSOA as \"idCliente\",
                     CL.COD_CLIENTE_EXTERNO as \"codcli\",
                     MS.COD_MAPA_SEPARACAO as \"mapa\",
+                    MSQ.COD_MAPA_SEPARACAO as \"consolidado\",
                     PE.NOM_PESSOA as \"cliente\",
                     NVL(I.DSC_ITINERARIO,'PADRAO') as \"itinerario\",
                     P.NUM_SEQUENCIAL as \"numSequencial\",
@@ -761,11 +762,13 @@ class PedidoRepository extends EntityRepository
             if (!empty($codProduto)) {
                 $sql .= "LEFT JOIN MAPA_SEPARACAO_PEDIDO MSP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
                LEFT JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
-               LEFT JOIN (SELECT M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) QTD_CONFERIDA
+               LEFT JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MSQ.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSQ.IND_TIPO_QUEBRA = '" . MapaSeparacaoQuebra::QUEBRA_CARRINHO . "'
+               LEFT JOIN (SELECT M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM(QTD_EMBALAGEM * QTD_CONFERIDA) QTD_CONFERIDA, NVL(MSC2.COD_PESSOA, 0) COD_CLIENTE
                             FROM MAPA_SEPARACAO_CONFERENCIA MSC2 INNER JOIN MAPA_SEPARACAO M on MSC2.COD_MAPA_SEPARACAO = M.COD_MAPA_SEPARACAO
                            WHERE M.COD_EXPEDICAO in ($idExpedicao)
-                           GROUP BY M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSC
+                           GROUP BY M.COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, NVL(MSC2.COD_PESSOA, 0)) MSC
                          ON MS.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = PP.COD_PRODUTO AND MSC.DSC_GRADE = PP.DSC_GRADE
+                         AND CASE WHEN MSC.COD_CLIENTE = 0 THEN 1 ELSE CASE WHEN MSC.COD_CLIENTE = P.COD_PESSOA THEN 1 ELSE 0 END END = 1                          
                    ";
             }
 

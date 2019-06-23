@@ -206,10 +206,9 @@ class Expedicao_CorteController extends Action {
                     'codPedido' => $codPedido,
                     'codProduto' => $idProduto,
                     'grade' => $grade
-
                 ));
 
-                if ($idEmbalagem >0 ) {
+                if ($idEmbalagem > 0 ) {
                     $embalagemEn = $embalagemRepo->find($idEmbalagem);
                     if ($embalagemEn == null) {
                         throw new \Exception("Embalagem id $idEmbalagem não encontrada");
@@ -233,10 +232,9 @@ class Expedicao_CorteController extends Action {
                 $motivo = $motivoEn->getDscMotivo();
 
                 $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault);
-
+                $this->getEntityManager()->flush();
             }
 
-            $this->getEntityManager()->flush();
             $this->getEntityManager()->commit();
 
         } catch (\Exception $e) {

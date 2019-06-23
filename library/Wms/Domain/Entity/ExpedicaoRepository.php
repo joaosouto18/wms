@@ -4504,7 +4504,8 @@ class ExpedicaoRepository extends EntityRepository {
         $mapaSeparacaoPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-        $mapaConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+        /** @var Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
 
         if (empty($pedidoProdutoEn)) {
             /** @var Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
@@ -4579,11 +4580,26 @@ class ExpedicaoRepository extends EntityRepository {
 
         $this->getEntityManager()->persist($pedidoProdutoEn);
 
+        $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
+
         //Seta na mapa_separacao_pedido a quantidade cortada baseada na quantia já cortada mais a nova qtd
         $args = ["pedidoProduto" => $pedidoProdutoEn];
-        if (isset($mapa) && !empty($mapa) && $mapa != "-") $args['mapaSeparacao'] = $mapa;
+        $idMapa = null;
+        if (!empty($mapa) && $mapa != "-") {
+            $args['mapaSeparacao'] = $mapa;
+            $idMapa = $mapa;
+        }
         /** @var Expedicao\MapaSeparacaoPedido $mapaSeparacaoPedido */
         $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy($args);
+
+        $mapasProdutos = $mapaSeparacaoRepo->getResumoConferencia($expedicaoEn->getId(), $codProduto, $grade, $idMapa);
+
+        foreach ($mapasProdutos as $msProd) {
+            $qtdSaldo = Math::subtrair($msProd['QTD_SEPARAR'], $msProd['QTD_CONF']);
+            if (!empty($idMapa) && $msProd['COD_MAPA_SEPARACAO'] == $idMapa && $qtdCortar > $qtdSaldo) {
+                throw new \Exception("A quantidade já conferida/cortada mais este corte excede a quantidade do mapa, reinicie a conferência do item e tente novamente!");
+            }
+        }
 
         if (!empty($mapaSeparacaoPedido)) {
             $mapaSeparacaoPedido->addCorte($qtdCortar);
@@ -4600,7 +4616,7 @@ class ExpedicaoRepository extends EntityRepository {
                 $args["pedidoProduto"] = $pedidoProdutoEn;
             }
 
-            if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))
+            if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || (empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S')))
                 $args['produtoEmbalagem'] = $idEmbalagem;
 
             $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy($args);
@@ -4627,13 +4643,25 @@ class ExpedicaoRepository extends EntityRepository {
                             $itemMapa->setQtdCortado($qtdSeparar);
                             $qtd = Math::subtrair($qtd, $qtdSeparar);
                         }
-                        $result = Math::subtrair($qtdSeparar, $itemMapa->getQtdCortado());
-                        if (empty($result)) {
-                            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('codMapaSeparacao' => $itemMapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
-                            foreach ($mapaConferenciaEn as $conferencia) {
-                                $this->getEntityManager()->remove($conferencia);
-                            }
-                        }
+//                        $result = Math::subtrair($qtdSeparar, $itemMapa->getQtdCortado());
+//                        if (empty($result)) {
+//                            $params = array(
+//                                'codMapaSeparacao' => $itemMapa->getMapaSeparacao()->getId(),
+//                                'codProduto' => $codProduto,
+//                                'dscGrade' => $grade
+//                            );
+//                            if (!empty($quebra)) {
+//                                $params['codPessoa'] = $pedidoEn->getPessoa()->getId();
+//                            }
+//                            /** @var Expedicao\MapaSeparacaoConferencia[] $mapaConferencias */
+//                            $mapaConferencias = $mapaConferenciaRepo->findBy($params);
+//                            $totalConferido = 0;
+//                            foreach ($mapaConferencias as $itemConferido) {
+//                                $totalConferido += Math::multiplicar($itemConferido->getQtdConferida(), $itemConferido->getQtdEmbalagem());
+//                            }
+//                            //$qtdLivreConferencia = Math::subtrair()
+//                            //if (!empty($mapaConferenciaEn)) throw new \Exception("")
+//                        }
                         $this->getEntityManager()->persist($itemMapa);
                     }
                     if (empty($qtd)) {
@@ -4643,7 +4671,6 @@ class ExpedicaoRepository extends EntityRepository {
             }
         }
 
-        $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
         $codExterno = $pedidoEn->getCodExterno();
         $observacao = "Item $codProduto - $grade do pedido $codExterno teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
         $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);

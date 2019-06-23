@@ -19,7 +19,8 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
         $recebimentoRepository = $this->getEntityManager()->getRepository('wms:Recebimento');
         $result = $recebimentoRepository->getQuantidadeConferidaBloqueada();
 
-        $percent = 0;
+        $condicaoAcao = function (){return true;};
+        $condicaoMsg = function (){return false;};
         if ($recebimentoRepository->getSystemParameterValue("HABILITA_PERC_RECEB") == "S") {
             $percentUser = $user->getPercentReceb();
             $percent = (!empty($percentUser)) ? $percentUser : 0;
@@ -27,6 +28,12 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                 $percentPerfil = $user->getMaxPercentRecebPerfis();
                 $percent = (!empty($percentPerfil)) ? $percentPerfil : 0;
             }
+            $condicaoAcao = function ($item) use ($percent){
+                return ($item["percentualVidaUtil"] >= $percent);
+            };
+            $condicaoMsg = function ($item) use ($percent){
+                return ($item["percentualVidaUtil"] < $percent);
+            };
         }
 
         $this->setAttrib('title','Recebimento Bloqueado');
@@ -87,9 +94,7 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                     'liberar' => true,
                     'observacao' => 'Contagem Liberada com Sucesso'
                 ),
-                'condition' => function ($item) use ($percent){
-                    return ($item["percentualVidaUtil"] >= $percent);
-                }
+                'condition' => $condicaoAcao
             ))
             ->addAction(array(
                 'label' => 'RECUSAR data de validade',
@@ -109,17 +114,13 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
                     'liberar' => false,
                     'observacao' => 'Contagem Rejeitada'
                 ),
-                'condition' => function ($item) use ($percent){
-                    return ($item["percentualVidaUtil"] >= $percent);
-                }
+                'condition' => $condicaoAcao
             ))
             ->addAction(array(
                 'label' => 'Acesso Negado',
                 'title' => 'Percentual de vida util abaixo do permitido à este usuário',
                 'cssClass' => "link-blocked",
-                'condition' => function ($item) use ($percent){
-                    return ($item["percentualVidaUtil"] < $percent);
-                }
+                'condition' => $condicaoMsg
             ))
 
             ->setShowExport(false);

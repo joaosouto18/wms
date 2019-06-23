@@ -444,7 +444,7 @@
                     list.append('<div class="list-item">' + i + '</div>')
                 }
                 changeViewer("bipagem-endereco");
-                $("#cod-barras-end").focus();
+                setTimeout(function () {$("#cod-barras-end").focus()},1);
             } else {
                 notificar("warning", "A " + contSelecioando.dsc + " não tem mais endereços! Selecione outra.");
                 getContagens();
@@ -615,7 +615,7 @@
         var getInfoProduto = function (codBarras) {
             changeViewer("loader");
             $.ajax({
-                url: "/mobile/inventario-novo/get-info-produto/codbarras/" + codBarras ,
+                url: "/mobile/inventario-novo/get-info-produto/codbarras/" + encodeURIComponent(codBarras) ,
                 success: function (result) {
                     if (result.status === "ok") {
                         elemBipado = result.response.produto;
