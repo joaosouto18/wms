@@ -10,18 +10,6 @@
         ?>
     </select>
     <br />
-    <?php if (isset($this->mapas) && !empty($this->mapas) ):?>
-        <b>Mapa:</b>
-        <select name="mapa" id="mapa" required mostrarselecione="1">
-            <option value="" label="Selecione...">Selecione...</option>
-            <?php
-                foreach ($this->mapas as $mapa) {
-                    echo '<option value="' . $mapa['id'] . '" label="' .$mapa['id']. '">' . $mapa['id']. '</option>';
-                }
-            ?>
-        </select>
-        <br />
-    <?php endif ?>
 
     <input type="hidden" name="id" id="id" value="<?php echo $this->pedido; ?>">
     <input type="hidden" name="origin" id="origin" value="<?php echo $this->origin; ?>">
@@ -29,9 +17,7 @@
     <input type="hidden" name="DSC_GRADE" id="DSC_GRADE" value="<?php echo $this->grade; ?>">
     <input type="hidden" name="expedicao" id="expedicao" value="<?php echo $this->expedicao; ?>">
     <input type="hidden" name="qtdConf" id="qtdConf" value="<?php echo $this->qtdConf; ?>">
-    <?php if (isset($this->mapaPreSelected) && !empty($this->mapaPreSelected) ):?>
-        <input type="hidden" name="COD_MAPA_SEPARACAO" id="COD_MAPA_SEPARACAO" value="<?php echo $this->mapaPreSelected; ?>">
-    <?php endif ?>
+    <input type="hidden" name="COD_MAPA_SEPARACAO" id="COD_MAPA_SEPARACAO" value="<?php if (isset($this->mapaPreSelected) && !empty($this->mapaPreSelected) ) echo $this->mapaPreSelected; ?>">
     <b>Senha:</b>
     <input type="password" name="senha" id="senha" value="" size="11" title="senha" required style="margin-right: 25px">
     <br />

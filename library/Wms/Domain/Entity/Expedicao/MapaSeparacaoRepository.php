@@ -127,12 +127,11 @@ class MapaSeparacaoRepository extends EntityRepository {
         return $result;
     }
 
-    public function getResumoConferencia($idExpedicao, $codProduto, $grade, $idMapa = null)
+    public function getResumoConferencia($idExpedicao, $codProduto, $grade, $idMapa)
     {
-        $whereMapa = (!empty($idMapa)) ? "AND MS.COD_MAPA_SEPARACAO = $idMapa" : "";
         $tipoQuebraCarrinho = MapaSeparacaoQuebra::QUEBRA_CARRINHO;
 
-        $SQL = "SELECT MS.COD_MAPA_SEPARACAO, MSP.QTD_SEPARAR, NVL(MSC.QTD_CONF,0) as QTD_CONF, NVL(MSQC.QUEBRA, 0) CONSOLIDADO
+        $SQL = "SELECT MS.COD_MAPA_SEPARACAO, (MSP.QTD_SEPARAR - NVL(MSC.QTD_CONF,0)) as SALDO, MSQ.COD_MAPA_SEPARACAO_QUEBRA CONSOLIDADO
                 FROM MAPA_SEPARACAO MS
                 INNER JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM((QTD_SEPARAR * QTD_EMBALAGEM)- QTD_CORTADO) as QTD_SEPARAR
                              FROM MAPA_SEPARACAO_PRODUTO
@@ -142,9 +141,8 @@ class MapaSeparacaoRepository extends EntityRepository {
                              FROM MAPA_SEPARACAO_CONFERENCIA 
                             WHERE COD_PRODUTO = '$codProduto' AND DSC_GRADE = '$grade'
                             GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                LEFT JOIN (SELECT 1 AS QUEBRA FROM MAPA_SEPARACAO_QUEBRA MSQ WHERE MSQ.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSQ.IND_TIPO_QUEBRA = '$tipoQuebraCarrinho') MSQC
-                WHERE MS.COD_EXPEDICAO = $idExpedicao $whereMapa
-                ORDER BY MS.COD_MAPA_SEPARACAO";
+                LEFT JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MSQ.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSQ.IND_TIPO_QUEBRA = '$tipoQuebraCarrinho'
+                WHERE MS.COD_EXPEDICAO = $idExpedicao AND MS.COD_MAPA_SEPARACAO = $idMapa";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }

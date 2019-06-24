@@ -355,12 +355,13 @@ class Expedicao_CorteController extends Action {
 
     public function listAction() {
         $idExpedicao = $this->_getParam('expedicao');
+        $mapa = $this->_getParam('COD_MAPA_SEPARACAO');
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
         $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($this->_getParam('id', 0));
-        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($idPedido,null, false);
+        $produtos = $expedicaoRepo->getProdutosExpedicaoCorte($idPedido,null, false, $mapa);
 
         $grid = new \Wms\Module\Web\Grid\Expedicao\CorteAntecipado();
         $this->view->grid = $grid->init($produtos, $this->_getParam('id', 0), $idExpedicao);
@@ -377,9 +378,8 @@ class Expedicao_CorteController extends Action {
         $this->view->origin = $origin = $this->_getParam('origin');
         $submit = $this->_getParam('submit');
         $quantidade = $this->_getParam('quantidade');
-        $this->view->mapaPreSelected = $mapaPreSelected = $this->_getParam('COD_MAPA_SEPARACAO', null);
+        $this->view->mapaPreSelected = $mapa = $this->_getParam('COD_MAPA_SEPARACAO', null);
         $motivo = $this->_getParam('motivoCorte', null);
-        $mapa = $this->_getParam('mapa', null);
         /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
         $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
         $idPedido = $pedidoRepo->getMaxCodPedidoByCodExterno($pedido);
@@ -405,7 +405,7 @@ class Expedicao_CorteController extends Action {
                     if (!isset($pedidoProduto) || empty($pedidoProduto))
                         throw new \Exception("Produto $produto grade $grade não encontrado para o pedido $pedido");
 
-                    $expedicaoRepo->cortaPedido($idPedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $motivo, null, $idMotivo, (!empty($mapa)) ? $mapa : $mapaPreSelected);
+                    $expedicaoRepo->cortaPedido($idPedido, $pedidoProduto, $pedidoProduto->getCodProduto(), $pedidoProduto->getGrade(), $quantidade, $motivo, null, $idMotivo, $mapa);
 
                     $this->getEntityManager()->flush();
                     $this->getEntityManager()->commit();
@@ -425,7 +425,7 @@ class Expedicao_CorteController extends Action {
                 $this->addFlashMessage('error', "Campos não informados: " . implode(", ", $inputs) . "!");
             }
 
-            if (empty($mapaPreSelected)) {
+            if (empty($mapa)) {
                 $this->redirect("index", "index", "expedicao");
             } else {
                 $this->redirect("index", "os", "expedicao", ["id" => $expedicao]);
