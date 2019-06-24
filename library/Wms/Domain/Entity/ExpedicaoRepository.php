@@ -4584,9 +4584,15 @@ class ExpedicaoRepository extends EntityRepository {
 
         if (!empty($mapa)) {
 
-            $saldoPedidoConf = $mapaSeparacaoRepo->getResumoConferencia($expedicaoEn->getId(), $codProduto, $grade, $mapa);
+            $quebraConsolidado = $mapaSeparacaoQuebraRepo->findOneBy(["tipoQuebra" => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO, "mapaSeparacao" => $mapa]);
 
-            if (Math::compare($saldoPedidoConf['SALDO'], $qtdCortar, '<')) {
+            if (empty($quebraConsolidado)) {
+                $saldoLivreCorte = $mapaSeparacaoRepo->getSaldoConfConsolidado($pedidoProdutoEn->getId(), $codProduto, $grade, $mapa, $pedidoEn->getPessoa()->getId());
+            } else {
+                $saldoLivreCorte = $mapaSeparacaoRepo->getSaldoConfComum($expedicaoEn->getId(), $codProduto, $grade, $mapa);
+            }
+
+            if (Math::compare($saldoLivreCorte, $qtdCortar, '<')) {
                 throw new \Exception("A quantidade já conferida/cortada somada à este corte excede a quantidade do mapa, reinicie a conferência do item e tente novamente!");
             }
 
@@ -4601,7 +4607,7 @@ class ExpedicaoRepository extends EntityRepository {
                 'dscGrade' => $grade
             ];
 
-            if (!empty($saldoPedidoConf['CONSOLIDADO'])) {
+            if (!empty($quebraConsolidado)) {
                 $args["pedidoProduto"] = $pedidoProdutoEn;
             }
 
