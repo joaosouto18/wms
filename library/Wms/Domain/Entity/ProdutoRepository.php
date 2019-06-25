@@ -332,6 +332,10 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 if (isset($itemEmbalagem['quantidade']))
                     $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
 
+                $altura = 0;
+                $largura = 0;
+                $profundidade = 0;
+
                 extract($itemEmbalagem);
 
                 if ($itemEmbalagem['acao'] != 'excluir') {
@@ -349,10 +353,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 switch ($itemEmbalagem['acao']) {
                     case 'incluir':
                         $dadosEmbalagem = $embalagemRepo->findOneBy(array('codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade()));
-                        $altura = 0;
-                        $largura = 0;
-                        $profundidade = 0;
-                        
+
                         if(!empty($dadosEmbalagem)) {
                             $pontoReposicao = !empty($pontoReposicao) ? $pontoReposicao : $dadosEmbalagem->getPontoReposicao();
                             $capacidadePicking = !empty($capacidadePicking) ? $capacidadePicking : $dadosEmbalagem->getCapacidadePicking();
