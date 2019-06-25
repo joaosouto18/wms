@@ -179,23 +179,30 @@ class EmbalagemRepository extends EntityRepository {
                     $arrayQtds[$embalagem->getId()] = 0; break;
                 }
             }
-            if (!empty($qtdRestante) && !empty($embFracDefault)) {
-                if (isset($arrayQtds[$embFracDefault->getId()])) {
-                    $pref = $arrayQtds[$embFracDefault->getId()];
-                    $args = explode(' ', $pref);
-                    $args[0] = Math::adicionar($args[0], $qtdRestante) ;
-                    $arrayQtds[$embFracDefault->getId()] = implode(' ', $args);
-                } else {
-                    if ($embalagem->isEmbFracionavelDefault() != "S") {
-                        $fatorEmb = $embalagem->getDescricao(). "(" . $embalagem->getQuantidade() . ")";
+            if (!empty($qtdRestante)) {
+
+                if (!empty($embFracDefault)) {
+                    if (isset($arrayQtds[$embFracDefault->getId()])) {
+                        $pref = $arrayQtds[$embFracDefault->getId()];
+                        $args = explode(' ', $pref);
+                        $args[0] = Math::adicionar($args[0], $qtdRestante) ;
+                        $arrayQtds[$embFracDefault->getId()] = implode(' ', $args);
                     } else {
-                        $fatorEmb = Produto::$listaUnidadeMedida[$embalagem->getProduto()->getUnidadeFracao()] . "S";
+                        if ($embalagem->isEmbFracionavelDefault() != "S") {
+                            $fatorEmb = $embalagem->getDescricao(). "(" . $embalagem->getQuantidade() . ")";
+                        } else {
+                            $fatorEmb = Produto::$listaUnidadeMedida[$embalagem->getProduto()->getUnidadeFracao()] . "S";
+                        }
+                        if (Math::compare($qtdRestante, 1, '<')) {
+                            $qtdRestante = (float) $qtdRestante;
+                        }
+                        $arrayQtds[$embFracDefault->getId()] = $qtdRestante . ' ' . $fatorEmb;
                     }
-                    if (Math::compare($qtdRestante, 1, '<')) {
-                        $qtdRestante = (float) $qtdRestante;
-                    }
-                    $arrayQtds[$embFracDefault->getId()] = $qtdRestante . ' ' . $fatorEmb;
+                } else {
+                    $arrayQtds[0] = $qtdRestante . ' UN (1)';
                 }
+
+
             }
 
             $return = $arrayQtds;
