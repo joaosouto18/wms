@@ -93,12 +93,18 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getConferidosByExpedicao($idExpedicao,$idLinhaSeparacao)
+    public function getConferidosByExpedicao($idExpedicao,$idLinhaSeparacao,$modelo = 2)
     {
         $andWhere = '';
         if (isset($idLinhaSeparacao) && !empty($idLinhaSeparacao) && $idLinhaSeparacao != 'null') {
             $andWhere = " AND LS.COD_LINHA_SEPARACAO = $idLinhaSeparacao ";
         }
+
+        $fieldPedido = "";
+        if ($modelo == 2) {
+            $fieldPedido = ", COD_EXTERNO ";
+        }
+
         $sql = "SELECT SUM(P.QTD_SEPARAR - NVL(EMB.QTD_EMBALADO,0)) as QUANTIDADE_CONFERIDA,
                    P.SEQUENCIA,
                    E.DTH_INICIO,
@@ -106,16 +112,16 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                    PROD.DSC_GRADE,
                    PROD.DSC_PRODUTO,
                    LS.DSC_LINHA_SEPARACAO,
-                   E.DSC_PLACA_EXPEDICAO AS DSC_PLACA_CARGA,
-                   P.COD_EXTERNO
-              FROM (SELECT C.COD_EXPEDICAO, P.COD_EXTERNO, C.COD_CARGA, C.COD_CARGA_EXTERNO, P.SEQUENCIA,  P.COD_PESSOA, PP.COD_PRODUTO, PP.DSC_GRADE, SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) as QTD_SEPARAR
+                   E.DSC_PLACA_EXPEDICAO AS DSC_PLACA_CARGA
+                   $fieldPedido
+              FROM (SELECT C.COD_EXPEDICAO $fieldPedido, C.COD_CARGA, C.COD_CARGA_EXTERNO, P.SEQUENCIA,  P.COD_PESSOA, PP.COD_PRODUTO, PP.DSC_GRADE, SUM(PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) as QTD_SEPARAR
                       FROM PEDIDO P
                       LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO = P.COD_PEDIDO
                       LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                       LEFT JOIN PRODUTO PROD ON PROD.COD_PRODUTO = PP.COD_PRODUTO AND PROD.DSC_GRADE = PP.DSC_GRADE
                       LEFT JOIN LINHA_SEPARACAO LS ON LS.COD_LINHA_SEPARACAO = PROD.COD_LINHA_SEPARACAO
                      WHERE  C.COD_EXPEDICAO = $idExpedicao
-                     GROUP BY C.COD_EXPEDICAO, P.COD_EXTERNO, C.COD_CARGA, C.COD_CARGA_EXTERNO, P.SEQUENCIA, P.COD_PESSOA, PP.COD_PRODUTO, PP.DSC_GRADE) P
+                     GROUP BY C.COD_EXPEDICAO $fieldPedido, C.COD_CARGA, C.COD_CARGA_EXTERNO, P.SEQUENCIA, P.COD_PESSOA, PP.COD_PRODUTO, PP.DSC_GRADE) P
               LEFT JOIN (SELECT COD_EXPEDICAO, P.COD_CARGA, P.COD_PESSOA, MSP.COD_PRODUTO, MSP.DSC_GRADE, SUM((QTD_SEPARAR * QTD_EMBALAGEM) - QTD_CORTADO) as QTD_EMBALADO
                            FROM MAPA_SEPARACAO_PRODUTO MSP
                            LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
@@ -142,9 +148,9 @@ class MapaSeparacaoConferenciaRepository extends EntityRepository
                    PROD.DSC_GRADE,
                    PROD.DSC_PRODUTO,
                    LS.DSC_LINHA_SEPARACAO,
-                   E.DSC_PLACA_EXPEDICAO,
-                   P.COD_EXTERNO
-             ORDER BY P.SEQUENCIA, P.COD_EXTERNO, PROD.COD_PRODUTO";
+                   E.DSC_PLACA_EXPEDICAO
+                   $fieldPedido
+             ORDER BY P.SEQUENCIA $fieldPedido, PROD.COD_PRODUTO";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
