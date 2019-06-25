@@ -4523,7 +4523,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         //TRAVA PARA GARANTIR QUE NÃO CORTE QUANTIDADE MAIOR QUE TEM NO PEDIDO
         if (Math::compare(Math::adicionar($qtdCortar, $qtdCortada), $qtdPedido, '>')) {
-            $qtdCortar = Math::subtrair($qtdPedido, $qtdCortada);
+            throw new \Exception("A quantidade já cortada somada à este corte excede a quantidade do pedido!");
         }
 
         $produtoEn = $pedidoProdutoEn->getProduto();
@@ -4587,9 +4587,9 @@ class ExpedicaoRepository extends EntityRepository {
             $quebraConsolidado = $mapaSeparacaoQuebraRepo->findOneBy(["tipoQuebra" => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO, "mapaSeparacao" => $mapa]);
 
             if (empty($quebraConsolidado)) {
-                $saldoLivreCorte = $mapaSeparacaoRepo->getSaldoConfConsolidado($pedidoProdutoEn->getId(), $codProduto, $grade, $mapa, $pedidoEn->getPessoa()->getId());
-            } else {
                 $saldoLivreCorte = $mapaSeparacaoRepo->getSaldoConfComum($expedicaoEn->getId(), $codProduto, $grade, $mapa);
+            } else {
+                $saldoLivreCorte = $mapaSeparacaoRepo->getSaldoConfConsolidado($pedidoProdutoEn->getId(), $codProduto, $grade, $mapa, $pedidoEn->getPessoa()->getId());
             }
 
             if (Math::compare($saldoLivreCorte, $qtdCortar, '<')) {
@@ -4707,10 +4707,10 @@ class ExpedicaoRepository extends EntityRepository {
                        PROD.DSC_PRODUTO,
                        CASE WHEN NVL(PROD.IND_FORCA_EMB_VENDA, MS.IND_FORCA_EMB_VENDA) = 'S' AND (PROD.COD_TIPO_COMERCIALIZACAO = 1) THEN 
                           (NVL(MSP.QTD ,PP.QUANTIDADE) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' 
-                         ELSE TO_CHAR(NVL(PP.QUANTIDADE,0)) END as QTD,
+                         ELSE TO_CHAR(NVL(MSP.QTD ,PP.QUANTIDADE)) END as QTD,
                        CASE WHEN NVL(PROD.IND_FORCA_EMB_VENDA, MS.IND_FORCA_EMB_VENDA) = 'S' AND (PROD.COD_TIPO_COMERCIALIZACAO = 1) AND (NVL(PP.QTD_CORTADA,0) > 0) THEN 
                           (NVL(MSP.QTD_CORTADA, NVL(PP.QTD_CORTADA,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' 
-                         ELSE TO_CHAR(NVL(PP.QTD_CORTADA,0)) END QTD_CORTADA,
+                         ELSE TO_CHAR(NVL(MSP.QTD_CORTADA, NVL(PP.QTD_CORTADA,0))) END QTD_CORTADA,
                        PP.COD_PEDIDO,
                        MSP.COD_MAPA_SEPARACAO,
                        C.COD_CARGA_EXTERNO

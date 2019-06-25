@@ -361,8 +361,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         }
 
                         $embalagemEntity = new EmbalagemEntity;
-                        $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_EMBALAGEM_01", 1);
-                        $embalagemEntity->setId($sqcGenerator->generate($em, $embalagemEntity));
+                        $embalagemEntity->generateId($em);
                         $embalagemEntity->setProduto($produtoEntity);
                         $embalagemEntity->setGrade($produtoEntity->getGrade());
                         $embalagemEntity->setDescricao($descricao);
@@ -1037,15 +1036,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         }
 
         // clono os de origem
-        foreach ($embalagemsOrigem as $key => $embalagemEntity) {
+        foreach ($embalagemsOrigem as $embalagemEntity) {
             // novo embalagem
             $novoEmbalagemEntity = clone $embalagemEntity;
 
             // alterando dados do embalagem
-            $novoEmbalagemEntity->setGrade($produtoDestinoEntity->getGrade())
-                    ->setProduto($produtoDestinoEntity)
-                    ->setCodigoBarras('')
-                    ->setEndereco(null);
+            $novoEmbalagemEntity->generateId($em)
+                ->setGrade($produtoDestinoEntity->getGrade())
+                ->setProduto($produtoDestinoEntity)
+                ->setCodigoBarras('')
+                ->setEndereco(null);
 
             $em->persist($novoEmbalagemEntity);
 

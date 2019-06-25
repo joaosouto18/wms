@@ -138,7 +138,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                             GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSC ON MSC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
                 WHERE  MSP.COD_PEDIDO_PRODUTO = $idPedidoProduto AND MSP.COD_MAPA_SEPARACAO = $mapa";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        return $result['SALDO'];
+        return $result[0]['SALDO'];
     }
 
     public function getSaldoConfComum($idExpedicao, $codProduto, $grade, $idMapa)
@@ -156,7 +156,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                             GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                 WHERE MS.COD_EXPEDICAO = $idExpedicao AND MS.COD_MAPA_SEPARACAO = $idMapa";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
-        return $result['SALDO'];
+        return $result[0]['SALDO'];
     }
 
     /*

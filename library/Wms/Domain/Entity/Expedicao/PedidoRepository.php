@@ -789,7 +789,13 @@ class PedidoRepository extends EntityRepository
                 $groupBy = 'GROUP BY P.COD_EXTERNO, PE.NOM_PESSOA, I.DSC_ITINERARIO, P.NUM_SEQUENCIAL, CL.COD_CLIENTE_EXTERNO';
             }
 
-            $result = $this->_em->getConnection()->query($sql.$where.$groupBy)->fetchAll();
+            $orderBy = "ORDER BY CL.COD_CLIENTE_EXTERNO, P.COD_EXTERNO";
+
+            if (!empty($codProduto)) {
+                $orderBy .= ", MS.COD_MAPA_SEPARACAO";
+            }
+
+            $result = $this->_em->getConnection()->query("$sql $where $groupBy $orderBy")->fetchAll();
 
             if (isset($codProduto) && !empty($codProduto)) {
                 $embalagemRepo = $this->getEntityManager()->getRepository("wms:Produto\Embalagem");
