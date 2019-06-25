@@ -6,6 +6,7 @@
  Data        Autor       Modificação
  24/08/18   (Tarcísio)   Inclusão da descrição de LOTE
  22/01/19   (Tarcísio)   Alteração do vinculo TIPO_PEDIDO da tabela SIGLA para a tabela TIPO_PEDIDO_EXPEDICAO
+ 18/05/19   (Digão)      Alterar join entre TIPO_PEDIDO e SIGLA para LEFT
 
  */
 
@@ -132,5 +133,5 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
              ON c.cod_carga = ped.cod_carga
            INNER JOIN sigla
              ON sigla.cod_sigla = c.cod_tipo_carga
-            LEFT JOIN tipo_pedido_expedicao tpe
+           LEFT JOIN tipo_pedido_expedicao tpe
              ON tpe.COD_TIPO_PEDIDO_EXPEDICAO = ped.cod_tipo_pedido;
