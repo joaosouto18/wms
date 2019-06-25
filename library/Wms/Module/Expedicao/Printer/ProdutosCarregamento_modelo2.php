@@ -67,7 +67,7 @@ class ProdutosCarregamento_modelo2 extends Pdf
 
         /** @var Expedicao\MapaSeparacaoConferenciaRepository $mapaSeparacaoConferenciaRepo */
         $mapaSeparacaoConferenciaRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
-        $resultado = $mapaSeparacaoConferenciaRepo->getConferidosByExpedicao($idExpedicao,$idLinhaSeparacao);
+        $resultado = $mapaSeparacaoConferenciaRepo->getConferidosByExpedicao($idExpedicao,$idLinhaSeparacao, 2);
         $embalados = $mapaSeparacaoConferenciaRepo->getEmbaladosConferidosByExpedicao($idExpedicao,$idLinhaSeparacao);
         $produtoRepo = $em->getRepository('wms:Produto');
         $embalagemRepo = $em->getRepository('wms:Produto\Embalagem');
