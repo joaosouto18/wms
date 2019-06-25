@@ -802,7 +802,14 @@ class Expedicao_IndexController extends Action {
         $idExpedicao = $this->_getParam('id');
         $idLinhaSeparacao = $this->_getParam('idLinhaSeparacao');
 
-        $pdf = new \Wms\Module\Expedicao\Printer\ProdutosCarregamento();
+        $modeloRelatorioCarregamento = $this->getSystemParameterValue('MODELO_RELATORIO_CARREGAMENTO');
+
+        if ($modeloRelatorioCarregamento == 1) {
+            $pdf = new \Wms\Module\Expedicao\Printer\ProdutosCarregamento();
+        } else {
+            $pdf = new \Wms\Module\Expedicao\Printer\ProdutosCarregamento_modelo2();
+        }
+
         $pdf->imprimir($idExpedicao, $idLinhaSeparacao);
     }
 
