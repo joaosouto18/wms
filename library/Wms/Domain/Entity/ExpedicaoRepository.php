@@ -4504,7 +4504,8 @@ class ExpedicaoRepository extends EntityRepository {
         $mapaSeparacaoPedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoPedido');
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
         $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-        $mapaConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+        /** @var Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
+        $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
 
         if (empty($pedidoProdutoEn)) {
             /** @var Expedicao\PedidoProdutoRepository $pedidoProdutoRepo */
@@ -4522,7 +4523,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         //TRAVA PARA GARANTIR QUE NÃO CORTE QUANTIDADE MAIOR QUE TEM NO PEDIDO
         if (Math::compare(Math::adicionar($qtdCortar, $qtdCortada), $qtdPedido, '>')) {
-            $qtdCortar = Math::subtrair($qtdPedido, $qtdCortada);
+            throw new \Exception("A quantidade já cortada somada à este corte excede a quantidade do pedido!");
         }
 
         $produtoEn = $pedidoProdutoEn->getProduto();
@@ -4579,35 +4580,46 @@ class ExpedicaoRepository extends EntityRepository {
 
         $this->getEntityManager()->persist($pedidoProdutoEn);
 
-        //Seta na mapa_separacao_pedido a quantidade cortada baseada na quantia já cortada mais a nova qtd
-        $args = ["pedidoProduto" => $pedidoProdutoEn];
-        if (isset($mapa) && !empty($mapa) && $mapa != "-") $args['mapaSeparacao'] = $mapa;
-        /** @var Expedicao\MapaSeparacaoPedido $mapaSeparacaoPedido */
-        $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy($args);
+        $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
 
-        if (!empty($mapaSeparacaoPedido)) {
+        if (!empty($mapa)) {
+
+            $quebraConsolidado = $mapaSeparacaoQuebraRepo->findOneBy(["tipoQuebra" => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO, "mapaSeparacao" => $mapa]);
+
+            if (empty($quebraConsolidado)) {
+                $saldoLivreCorte = $mapaSeparacaoRepo->getSaldoConfComum($expedicaoEn->getId(), $codProduto, $grade, $mapa);
+            } else {
+                $saldoLivreCorte = $mapaSeparacaoRepo->getSaldoConfConsolidado($pedidoProdutoEn->getId(), $codProduto, $grade, $mapa, $pedidoEn->getPessoa()->getId());
+            }
+
+            if (Math::compare($saldoLivreCorte, $qtdCortar, '<')) {
+                throw new \Exception("A quantidade já conferida/cortada somada à este corte excede a quantidade do mapa, reinicie a conferência do item e tente novamente!");
+            }
+
+            /** @var Expedicao\MapaSeparacaoPedido $mapaSeparacaoPedido */
+            $mapaSeparacaoPedido = $mapaSeparacaoPedidoRepo->findOneBy(['mapaSeparacao' => $mapa, "pedidoProduto" => $pedidoProdutoEn]);
             $mapaSeparacaoPedido->addCorte($qtdCortar);
             $this->getEntityManager()->persist($mapaSeparacaoPedido);
 
             $args = [
-                'mapaSeparacao' => $mapaSeparacaoPedido->getMapaSeparacao(),
+                'mapaSeparacao' => $mapa,
                 'codProduto' => $codProduto,
                 'dscGrade' => $grade
             ];
 
-            $quebra = $mapaSeparacaoQuebraRepo->findOneBy(["mapaSeparacao" => $mapa, "tipoQuebra" => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO]);
-            if (!empty($quebra)) {
+            if (!empty($quebraConsolidado)) {
                 $args["pedidoProduto"] = $pedidoProdutoEn;
             }
 
-            if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))
+            if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || (empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))) {
                 $args['produtoEmbalagem'] = $idEmbalagem;
+            }
 
             $entidadeMapaProduto = $mapaSeparacaoProdutoRepo->findBy($args);
 
             if (!empty($entidadeMapaProduto)) {
 
-                usort($entidadeMapaProduto,function ($itemA, $itemB) {
+                usort($entidadeMapaProduto, function ($itemA, $itemB) {
                     $qtdA = Math::multiplicar($itemA->getQtdEmbalagem(), $itemA->getQtdSeparar());
                     $qtdB = Math::multiplicar($itemB->getQtdEmbalagem(), $itemB->getQtdSeparar());
                     return $qtdA > $qtdB;
@@ -4627,13 +4639,6 @@ class ExpedicaoRepository extends EntityRepository {
                             $itemMapa->setQtdCortado($qtdSeparar);
                             $qtd = Math::subtrair($qtd, $qtdSeparar);
                         }
-                        $result = Math::subtrair($qtdSeparar, $itemMapa->getQtdCortado());
-                        if (empty($result)) {
-                            $mapaConferenciaEn = $mapaConferenciaRepo->findBy(array('codMapaSeparacao' => $itemMapa->getMapaSeparacao()->getId(), 'codProduto' => $codProduto, 'dscGrade' => $grade));
-                            foreach ($mapaConferenciaEn as $conferencia) {
-                                $this->getEntityManager()->remove($conferencia);
-                            }
-                        }
                         $this->getEntityManager()->persist($itemMapa);
                     }
                     if (empty($qtd)) {
@@ -4643,7 +4648,6 @@ class ExpedicaoRepository extends EntityRepository {
             }
         }
 
-        $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
         $codExterno = $pedidoEn->getCodExterno();
         $observacao = "Item $codProduto - $grade do pedido $codExterno teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
         $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
@@ -4685,25 +4689,30 @@ class ExpedicaoRepository extends EntityRepository {
         return $result;
     }
 
-    public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null, $apenasProdutosCortados = true) {
+    public function getProdutosExpedicaoCorte($idPedido, $idExpedicao = null, $apenasProdutosCortados = true, $mapa = null) {
 
         $where = " AND PP.COD_PEDIDO = '$idPedido' ";
+        $having = "";
         if (!is_null($idExpedicao))
             $where = " AND C.COD_EXPEDICAO = $idExpedicao ";
 
+        if (!empty($mapa))
+            $where .= " AND MSP.COD_MAPA_SEPARACAO = $mapa";
+
         if ($apenasProdutosCortados == true)
-            $where .= " HAVING (SUM(NVL(PP.QTD_CORTADA,0)) > 0)";
+            $having = "HAVING (SUM(NVL(PP.QTD_CORTADA,0)) > 0)";
 
         $SQL = "SELECT PP.COD_PRODUTO,
                        PP.DSC_GRADE,
                        PROD.DSC_PRODUTO,
                        CASE WHEN NVL(PROD.IND_FORCA_EMB_VENDA, MS.IND_FORCA_EMB_VENDA) = 'S' AND (PROD.COD_TIPO_COMERCIALIZACAO = 1) THEN 
-                          CONCAT(PP.QUANTIDADE / PP.FATOR_EMBALAGEM_VENDA, CONCAT(' ',CONCAT( NVL(PE.DSC_EMBALAGEM,''), CONCAT( '(' , CONCAT( PP.FATOR_EMBALAGEM_VENDA , ')'))))) 
-                         ELSE TO_CHAR(NVL(PP.QUANTIDADE,0)) END as QTD,
+                          (NVL(MSP.QTD ,PP.QUANTIDADE) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' 
+                         ELSE TO_CHAR(NVL(MSP.QTD ,PP.QUANTIDADE)) END as QTD,
                        CASE WHEN NVL(PROD.IND_FORCA_EMB_VENDA, MS.IND_FORCA_EMB_VENDA) = 'S' AND (PROD.COD_TIPO_COMERCIALIZACAO = 1) AND (NVL(PP.QTD_CORTADA,0) > 0) THEN 
-                          (NVL(PP.QTD_CORTADA,0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' 
-                         ELSE TO_CHAR(NVL(PP.QTD_CORTADA,0)) END QTD_CORTADA,
+                          (NVL(MSP.QTD_CORTADA, NVL(PP.QTD_CORTADA,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)) || ' ' || NVL(PE.DSC_EMBALAGEM,'') || '(' || PP.FATOR_EMBALAGEM_VENDA || ')' 
+                         ELSE TO_CHAR(NVL(MSP.QTD_CORTADA, NVL(PP.QTD_CORTADA,0))) END QTD_CORTADA,
                        PP.COD_PEDIDO,
+                       MSP.COD_MAPA_SEPARACAO,
                        C.COD_CARGA_EXTERNO
                 FROM PEDIDO_PRODUTO PP
                   INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
@@ -4715,14 +4724,15 @@ class ExpedicaoRepository extends EntityRepository {
                                 COD_PRODUTO,
                                 DSC_GRADE,
                                 MAX(COD_PRODUTO_EMBALAGEM) as COD_PRODUTO_EMBALAGEM
-                  FROM PRODUTO_EMBALAGEM
-                  WHERE DTH_INATIVACAO IS NULL
-                  GROUP BY QTD_EMBALAGEM, COD_PRODUTO, DSC_GRADE) MP
-                  ON MP.COD_PRODUTO = PP.COD_PRODUTO
-                  AND MP.DSC_GRADE = PP.DSC_GRADE
-                  AND MP.QTD_EMBALAGEM = PP.FATOR_EMBALAGEM_VENDA
+                              FROM PRODUTO_EMBALAGEM
+                              WHERE DTH_INATIVACAO IS NULL
+                              GROUP BY QTD_EMBALAGEM, COD_PRODUTO, DSC_GRADE) MP
+                          ON MP.COD_PRODUTO = PP.COD_PRODUTO
+                          AND MP.DSC_GRADE = PP.DSC_GRADE
+                          AND MP.QTD_EMBALAGEM = PP.FATOR_EMBALAGEM_VENDA
                   LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_PRODUTO_EMBALAGEM = MP.COD_PRODUTO_EMBALAGEM
-                 WHERE 1 = 1 $where
+                  LEFT JOIN MAPA_SEPARACAO_PEDIDO MSP ON MSP.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
+                 WHERE 1 = 1 $where $having
                  ORDER BY COD_PRODUTO, DSC_GRADE";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 

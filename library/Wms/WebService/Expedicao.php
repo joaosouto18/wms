@@ -292,7 +292,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $carga = array();
         $carga['idCarga'] = $codCarga;
 
-        if (($placaExpedicao = "") || ($placaExpedicao = null) ) {
+        if (empty($placaExpedicao)) {
             $placaExpedicao = $placa;
         }
         $carga['placaExpedicao'] = $placaExpedicao;

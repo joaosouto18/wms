@@ -119,12 +119,44 @@ class MapaSeparacaoRepository extends EntityRepository {
                             GROUP BY MSP.COD_MAPA_SEPARACAO) MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                 LEFT JOIN (SELECT COD_MAPA_SEPARACAO, SUM(QTD_CONFERIDA * QTD_EMBALAGEM) AS QTD_CONF
                              FROM MAPA_SEPARACAO_CONFERENCIA GROUP BY COD_MAPA_SEPARACAO) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                 LEFT JOIN (SELECT SUM(QTD_SEPARADA * QTD_EMBALAGEM) AS TOTAL_SEPARADO, COD_MAPA_SEPARACAO
+                LEFT JOIN (SELECT SUM(QTD_SEPARADA * QTD_EMBALAGEM) AS TOTAL_SEPARADO, COD_MAPA_SEPARACAO
                             FROM  SEPARACAO_MAPA_SEPARACAO  GROUP BY  COD_MAPA_SEPARACAO) SMS ON SMS.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                 WHERE MS.COD_EXPEDICAO = $idExpedicao
                 ORDER BY MS.COD_MAPA_SEPARACAO";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
+    }
+
+    public function getSaldoConfConsolidado($idPedidoProduto, $codProduto, $grade, $mapa, $idCliente)
+    {
+
+        $SQL = "SELECT ((MSP.QTD - NVL(MSP.QTD_CORTADA,0)) - NVL(MSC.QTD_CONF,0)) as SALDO
+                FROM MAPA_SEPARACAO_PEDIDO MSP
+                LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM(QTD_CONFERIDA * QTD_EMBALAGEM) AS QTD_CONF
+                             FROM MAPA_SEPARACAO_CONFERENCIA
+                            WHERE COD_PRODUTO = '$codProduto' AND DSC_GRADE = '$grade' AND COD_PESSOA = $idCliente
+                            GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSC ON MSC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                WHERE  MSP.COD_PEDIDO_PRODUTO = $idPedidoProduto AND MSP.COD_MAPA_SEPARACAO = $mapa";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result[0]['SALDO'];
+    }
+
+    public function getSaldoConfComum($idExpedicao, $codProduto, $grade, $idMapa)
+    {
+
+        $SQL = "SELECT (MSP.QTD_SEPARAR - NVL(MSC.QTD_CONF,0)) as SALDO
+                FROM MAPA_SEPARACAO MS
+                INNER JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM((QTD_SEPARAR * QTD_EMBALAGEM)- QTD_CORTADO) as QTD_SEPARAR
+                             FROM MAPA_SEPARACAO_PRODUTO
+                            WHERE COD_PRODUTO = '$codProduto' AND DSC_GRADE = '$grade'
+                            GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                LEFT JOIN (SELECT COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE, SUM(QTD_CONFERIDA * QTD_EMBALAGEM) AS QTD_CONF
+                             FROM MAPA_SEPARACAO_CONFERENCIA 
+                            WHERE COD_PRODUTO = '$codProduto' AND DSC_GRADE = '$grade'
+                            GROUP BY COD_MAPA_SEPARACAO, COD_PRODUTO, DSC_GRADE) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                WHERE MS.COD_EXPEDICAO = $idExpedicao AND MS.COD_MAPA_SEPARACAO = $idMapa";
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        return $result[0]['SALDO'];
     }
 
     /*

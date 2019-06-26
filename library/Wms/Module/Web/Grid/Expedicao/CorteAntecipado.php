@@ -4,6 +4,7 @@ namespace Wms\Module\Web\Grid\Expedicao;
           
 
 use Wms\Domain\Entity\Expedicao\EtiquetaSeparacao;
+use Wms\Math;
 use Wms\Module\Web\Grid,
     Wms\Domain\Entity\Recebimento;
 
@@ -37,7 +38,11 @@ class CorteAntecipado extends Grid
                 ->addColumn(array(
                     'label' => 'Produto',
                     'index' => 'DSC_PRODUTO',
-                ))                
+                ))
+                ->addColumn(array(
+                    'label' => 'Mapa',
+                    'index' => 'COD_MAPA_SEPARACAO',
+                ))
                 ->addColumn(array(
                     'label' => 'Qtd. Pedido',
                     'index' => 'QTD',
@@ -53,9 +58,9 @@ class CorteAntecipado extends Grid
                     'actionName' => 'cortar-item',
                     'cssClass' => 'inside-modal',
                     'params' => array('expedicao' => $idExpedicao),
-                    'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE','COD_PEDIDO'),
+                    'pkIndex' => array('idProduto'=>'COD_PRODUTO','DSC_GRADE','COD_PEDIDO', 'COD_MAPA_SEPARACAO'),
                     'condition' => function ($row) {
-                        return $row['QTD_CORTADA'] != $row['QTD'];
+                        return Math::compare($row['QTD_CORTADA'], $row['QTD'], '<');
                     }
 
                 ));
