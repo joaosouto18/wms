@@ -359,11 +359,10 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->select("msp")
             ->addSelect("CASE WHEN sr.sentido = 'C' THEN de.predio ELSE 1 end as crescente")
             ->addSelect("CASE WHEN sr.sentido = 'D' THEN de.predio ELSE 1 end as decrescente")
-
             ->addSelect("CASE WHEN sr.sentido = 'C' THEN de.apartamento ELSE 1 end as crescenteApto")
             ->addSelect("CASE WHEN sr.sentido = 'D' THEN de.apartamento ELSE 1 end as decrescenteApto")
-
             ->from('wms:Expedicao\MapaSeparacaoProduto', 'msp')
+            ->innerJoin('wms:Produto','p', 'WITH', 'p.id = msp.codProduto and p.grade = msp.dscGrade')
             ->leftJoin('msp.depositoEndereco', 'de')
             ->leftJoin('wms:Deposito\Endereco\SentidoRua', 'sr', 'WITH', 'sr.rua = de.rua AND sr.deposito = de.deposito')
             ->where("msp.mapaSeparacao = $idMapa")
@@ -374,7 +373,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
             ->addOrderBy('crescenteApto','ASC')
             ->addOrderBy('decrescenteApto','DESC')
             ->addOrderBy('msp.numCaixaInicio, msp.numCaixaFim','ASC')
-            ->addOrderBy('msp.codProduto', 'ASC');
+            ->addOrderBy('p.descricao', 'ASC');
 
         return $sql->getQuery()->getResult();
     }
