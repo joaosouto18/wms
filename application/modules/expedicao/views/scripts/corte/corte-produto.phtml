@@ -44,8 +44,6 @@
 </div>
 
 <script>
-    $(function () {
-
     let itens = [];
     let embs = [];
     let forcarEmbVenda = <?php echo ($this->forcaEmbVenda == "S") ? "true": "false" ?>;
@@ -131,7 +129,10 @@
         })
     }
 
-    function getSaldoCorte(index) {
+    function getSaldoCorte(index, returnCorte) {
+
+        returnCorte = (!isEmpty(returnCorte)) ? returnCorte : false;
+
         let item = itens[index];
         let obj = {};
         let totalCorte = getCorte(index);
@@ -153,8 +154,12 @@
 
         let fator = parseFloat(embs[0].fator);
 
-        let saldo = parseFloat((obj.qtd - parseFloat(obj.corte + obj.conf)) / fator);
-        return (saldo > 0 && totalCorte <= saldo);
+        if (!returnCorte) {
+            let saldo = parseFloat((obj.qtd - parseFloat(obj.corte + obj.conf)) / fator);
+            return (saldo > 0 && totalCorte <= saldo);
+        } else {
+            return parseFloat(item.quantidadeUnitaria - item.qtdCorteTotalUnitaria);
+        }
     }
 
     function getCorte(i) {
@@ -182,15 +187,13 @@
         let input = $(this);
         let index = input.data("index");
         let inputQtd = $("#qtdCortar-"+index);
-        console.log("exibe");
         if (!getSaldoCorte(index))
         {
             msg(input, inputQtd);
         }
     });
 
-    function confirmaCorte()
-    {
+    $("#btnCortar").live("click", function (event) {
         event.preventDefault();
 
         let cortes = [];
@@ -242,9 +245,9 @@
                 }
             }
         });
-    }
+    });
 
-    $("#corteTotal").click( function(e) {
+    $("#corteTotal").live("click", function(e) {
         e.preventDefault();
         let temConf = false;
         $.each(itens, function (i, item) {
@@ -260,7 +263,7 @@
             }
             if (temConf) return false;
             $("#emb-"+i).val($("emb-"+i+" option:first").val());
-            $("#qtdCortar-"+i).val(getSaldoCorte(i));
+            $("#qtdCortar-"+i).val(getSaldoCorte(i, true));
         });
 
         if (temConf) {
@@ -313,5 +316,5 @@
     }
 
     testShowGrid();
-    })
+
 </script>
