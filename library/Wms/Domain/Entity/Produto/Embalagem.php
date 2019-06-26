@@ -4,10 +4,11 @@ namespace Wms\Domain\Entity\Produto;
 
 use Doctrine\Common\Collections\ArrayCollection,
     Wms\Domain\Entity\Produto;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Id\SequenceGenerator;
 use Wms\Domain\Configurator;
 use Wms\Domain\Entity\Deposito\Endereco;
 use Core\Util\Converter;
-$andamentoRepo = \Zend_Registry::get('doctrine')->getEntityManager()->getRepository('wms:Produto\Andamento');
 /**
  * Description of Embalagem
  * @Table(name="PRODUTO_EMBALAGEM")
@@ -187,10 +188,13 @@ class Embalagem {
 
     /**
      * Define o id da embalagem
+     * @param $em EntityManager
      * @return Embalagem
+     *
      */
-    public function setId($id) {
-        $this->id = $id;
+    public function generateId(EntityManager $em) {
+        $sqcGenerator = new SequenceGenerator("SQ_PRODUTO_EMBALAGEM_01", 1);
+        $this->id = $sqcGenerator->generate($em, $this);
         return $this;
     }
 

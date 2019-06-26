@@ -24,8 +24,8 @@
                             <td><span>Qtd.Pedido</span></td>
                             <td><span>Emb.Corte</span></td>
                             <td><span>Qtd.Cortar</span></td>
-                            <td><span>Qtd.Conf</span></td>
-                            <td><span>Qtd.Corte/Mapa</span></td>
+<!--                            <td><span>Qtd.Conf</span></td>-->
+<!--                            <td><span>Qtd.Corte/Mapa</span></td>-->
                             <td><span>Qtd.Cortada Total</span></td>
                         </tr>
                     </tbody>
@@ -44,11 +44,11 @@
 </div>
 
 <script>
-
     let itens = [];
     let embs = [];
     let forcarEmbVenda = <?php echo ($this->forcaEmbVenda == "S") ? "true": "false" ?>;
     let idExpedicao = <?php echo $this->id ?>;
+    let groups = {};
 
     function testShowGrid() {
         let grid = $("#gridCorte");
@@ -59,6 +59,36 @@
         }
     }
 
+    function agroupItens() {
+        groups = {maxByMap: [], maxByCli: []};
+        $.each(itens, function (i, item) {
+            if (isEmpty(item.consolidado)) {
+                if (item.mapa in groups.maxByMap) {
+                    groups.maxByMap[item.mapa].qtd += parseFloat(item.quantidadeUnitaria);
+                    groups.maxByMap[item.mapa].corte += parseFloat(item.qtdCortadaUnitaria);
+                } else {
+                    groups.maxByMap[item.mapa] = {
+                        qtd: parseFloat(item.quantidadeUnitaria),
+                        corte: parseFloat(item.qtdCortadaUnitaria),
+                        conf: parseFloat(item.qtdConf)
+                    };
+                }
+            } else {
+                let uniqIndex = item.codcli + "-*-" + item.mapa;
+                if (uniqIndex in groups.maxByCli) {
+                    groups.maxByCli[uniqIndex].qtd += parseFloat(item.quantidadeUnitaria);
+                    groups.maxByCli[uniqIndex].corte += parseFloat(item.qtdCortadaUnitaria);
+                } else {
+                    groups.maxByCli[uniqIndex] = {
+                        qtd: parseFloat(item.quantidadeUnitaria),
+                        corte: parseFloat(item.qtdCortadaUnitaria),
+                        conf: parseFloat(item.qtdConf)
+                    };
+                }
+            }
+        })
+    }
+
     function updateList()
     {
         let newTd = function (content) {
@@ -66,6 +96,8 @@
         };
         let tbody = $("#result-list");
         tbody.html("");
+
+        agroupItens();
 
         $.each(itens, function (i, item) {
             let newRow = $("<tr class='gTResultSet' id='row-item-" + i + "' >");
@@ -89,49 +121,79 @@
             }
             newRow.append( newTd( newEmbSelector ) );
             newRow.append( newTd( $("<input style='width:40px;' type='text' class='qtdCortar' id='qtdCortar-" + i + "' data-index='" + i + "'>") ) );
-            newRow.append( newTd( item.qtdConf ) );
-            newRow.append( newTd( item.qtdCortada ) );
+            // newRow.append( newTd( item.qtdConf ) );
+            // newRow.append( newTd( item.qtdCortada ) );
             newRow.append( newTd( item.qtdCorteTotal ) );
-
-            if ( getSaldoCorte(item) <= 0 ) newRow.find("input, select").prop("disabled", true);
 
             tbody.append(newRow);
         })
     }
 
-    function getSaldoCorte(item) {
-        let qtdCortada = parseFloat((!isEmpty(item.qtdCortadaUnitaria)) ? item.qtdCortadaUnitaria : item.qtdCorteTotalUnitaria);
-        let qtdConferida = parseFloat(item.qtdConf);
-        let qtdPedido = parseFloat(item.quantidadeUnitaria);
-        let fator = parseFloat(embs[0].fator);
-        return parseFloat((qtdPedido - parseFloat(qtdCortada + qtdConferida)) / fator);
-    }
+    function getSaldoCorte(index, returnCorte) {
 
-    function calculaCorte(input) {
-        let index = input.data("index");
-        let indexEmb = $("#emb-"+index).find(":selected").data("index");
-        let inputQtd = $("#qtdCortar-"+index);
-        let qtd = inputQtd.val();
+        returnCorte = (!isEmpty(returnCorte)) ? returnCorte : false;
+
         let item = itens[index];
-        let qtdCortarUn = parseFloat(qtd * embs[indexEmb].fator);
-        let saldo = getSaldoCorte(item);
-        if ( qtdCortarUn > saldo ) {
-            $.wmsDialogAlert({msg: "A quantidade excede o saldo disponível para corte! <br> Utilize uma embalagem menor ou reduza a quantidade!"},
-                function (objInput) {
-                    objInput.inputQtd.val("");
-                    objInput.inputEven.focus();
-                },
-                {inputQtd: inputQtd, inputEven: input}
-            );
+        let obj = {};
+        let totalCorte = getCorte(index);
+
+        if (parseFloat(item.quantidadeUnitaria - item.qtdCorteTotalUnitaria) < totalCorte) {
+            return false;
+        }
+
+        if (!isEmpty(item.consolidado)) {
+            obj = groups.maxByCli[item.codcli + "-*-" + item.mapa];
+        } else {
+            $.each(itens, function (i, itemList) {
+                if (item.mapa === itemList.mapa && item.id !== itemList.id) {
+                    totalCorte += getCorte(i);
+                }
+            });
+            obj = groups.maxByMap[item.mapa]
+        }
+
+        let fator = parseFloat(embs[0].fator);
+
+        if (!returnCorte) {
+            let saldo = parseFloat((obj.qtd - parseFloat(obj.corte + obj.conf)) / fator);
+            return (saldo > 0 && totalCorte <= saldo);
+        } else {
+            return parseFloat(item.quantidadeUnitaria - item.qtdCorteTotalUnitaria);
         }
     }
 
-    $("select.qtdCortar, input.qtdCortar").live("focusout", function () {
-        calculaCorte($(this));
+    function getCorte(i) {
+        let indexEmb = $("#emb-"+i).find(":selected").data("index");
+        let qtd = $("#qtdCortar-"+i).val();
+        return (indexEmb !== undefined && qtd !== undefined) ? parseFloat(qtd * embs[indexEmb].fator) : 0;
+    }
+
+    function msg(input, inputQtd) {
+        let funct = function (objInput) {
+            objInput.inputQtd.val("");
+            objInput.inputEven.focus();
+        };
+        let args = {inputQtd: inputQtd, inputEven: input};
+        let text = "A quantidade excede o saldo do mapa ou do pedido disponível para corte!";
+
+        $.wmsDialogAlert({msg: text + " <br><br> Para efetuar o corte: <br>Utilize uma embalagem menor, <br>Reduza a quantidade, <br> Ou reinicie a conferência do item!"},
+            funct ,
+            args
+        );
+    }
+
+    $("select.qtdCortar, input.qtdCortar").live("change", function () {
+        event.preventDefault();
+        let input = $(this);
+        let index = input.data("index");
+        let inputQtd = $("#qtdCortar-"+index);
+        if (!getSaldoCorte(index))
+        {
+            msg(input, inputQtd);
+        }
     });
-    
-    function confirmaCorte()
-    {
+
+    $("#btnCortar").live("click", function (event) {
         event.preventDefault();
 
         let cortes = [];
@@ -183,14 +245,30 @@
                 }
             }
         });
-    }
+    });
 
-    $("#corteTotal").click( function(e) {
+    $("#corteTotal").live("click", function(e) {
         e.preventDefault();
+        let temConf = false;
         $.each(itens, function (i, item) {
+            if (isEmpty(item.consolidado)) {
+                if (!isEmpty(groups.maxByMap[item.mapa].conf) && groups.maxByMap[item.mapa].conf > 0) {
+                    temConf = true;
+                }
+            } else {
+                let uniqIndex = item.codcli + "-*-" + item.mapa;
+                if (!isEmpty(groups.maxByCli[uniqIndex].conf) && groups.maxByCli[uniqIndex].conf > 0) {
+                    temConf = true;
+                }
+            }
+            if (temConf) return false;
             $("#emb-"+i).val($("emb-"+i+" option:first").val());
-            $("#qtdCortar-"+i).val(getSaldoCorte(item));
+            $("#qtdCortar-"+i).val(getSaldoCorte(i, true));
         });
+
+        if (temConf) {
+            $.wmsDialogAlert({msg: "O produto já teve conferências, o corte total não pode ser aplicado! <br> Reinicie a(s) conferência(s) e tente novamente!"});
+        }
     });
 
     function executeRequest() {
@@ -238,4 +316,5 @@
     }
 
     testShowGrid();
+
 </script>

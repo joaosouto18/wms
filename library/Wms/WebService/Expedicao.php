@@ -292,7 +292,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $carga = array();
         $carga['idCarga'] = $codCarga;
 
-        if (($placaExpedicao = "") || ($placaExpedicao = null) ) {
+        if (empty($placaExpedicao)) {
             $placaExpedicao = $placa;
         }
         $carga['placaExpedicao'] = $placaExpedicao;
@@ -542,6 +542,8 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $ppRepo->cortaItem($idPedido, $corte->codProduto, $grade, $corte->quantidadeCortada, $corte->motivoCorte, $motivoEn);
                 $ppCortados[$corte->codProduto][$grade] = $corte->quantidadeCortada;
             }
+            $this->_em->flush();
+
             $ppExistentes = $ppRepo->findBy(array('pedido' => $idPedido));
             $pedidoCortado = false;
             foreach ($ppExistentes as $item) {
@@ -556,8 +558,20 @@ class Wms_WebService_Expedicao extends Wms_WebService
                 $pedidoCortado = false;
                 break;
             }
-            if ($pedidoCortado)
-                $pedidoRepository->cancelar($idPedido);
+
+            if ($pedidoCortado) {
+                $cortado = true;
+                foreach ($ppExistentes as $ppEn) {
+                    $qtdCortada = $ppEn->getQtdCortada();
+                    $qtdPedido = $ppEn->getQuantidade();
+                    if (\Wms\Math::compare($qtdCortada, $qtdPedido, "<")) {
+                        $cortado = false;
+                        continue;
+                    }
+                }
+
+                if ($cortado ) $pedidoRepository->cancelar($idPedido);
+            }
 
             $this->_em->flush();
             $this->_em->commit();

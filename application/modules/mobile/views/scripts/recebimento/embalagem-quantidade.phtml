@@ -322,7 +322,9 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                 var hj = new Date();
                 var validade = gerarData(data);
                 if (validade <= hj) {
-                    alert("A data de validade não pode ser menor ou igual a data atual");
+                    var hjStr = hj.toLocaleDateString();
+                    var validadeStr = validade.toLocaleDateString();
+                    alert("A data de validade ("+validadeStr+") não pode ser menor ou igual a data atual ("+hjStr+")");
                     obj.val('');
                     return false;
                 }

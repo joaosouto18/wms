@@ -15,14 +15,15 @@ class PedidoProdutoRepository extends EntityRepository
             $andamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
             $mapaSeparacaoProdutoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
 
-            /* CORTA O PEDIDO */
             /** @var \Wms\Domain\Entity\Expedicao\PedidoProduto $ppEn */
+
             $ppEn = $this->findOneBy(array('codPedido'=>$codPedido,
                                            'codProduto'=>$codProduto,
                                            'grade'=>$grade));
             $expedicaoEn = $ppEn->getPedido()->getCarga()->getExpedicao();
             $idExpedicao = $expedicaoEn->getId();
 
+            /* Verificar se pode cortar o pedido */
             $qtdCortada = $ppEn->getQtdCortada();
             $qtdPedido = $ppEn->getQuantidade();
             $corteTotal = Math::adicionar($qtdCortada, $qtd);
@@ -34,12 +35,9 @@ class PedidoProdutoRepository extends EntityRepository
             if ($expedicaoEn->getStatus()->getId() == Expedicao::STATUS_FINALIZADO) {
                 throw new \Exception('Não pode ter novos cortes em expedição finalizada!');
             }
+            $idUsuario = $this->getSystemParameterValue('ID_USER_ERP');
 
-            $ppEn->setQtdCortada($ppEn->getQtdCortada() + $qtd);
-            $this->getEntityManager()->persist($ppEn);
-            $this->getEntityManager()->flush();
-
-            $andamentoRepo->save("Corte de $qtd qtd do produto $codProduto, grade $grade no pedido $codPedido - $motivo", $idExpedicao, false, false, null,null, true);
+            $andamentoRepo->save("Corte de $qtd qtd do produto $codProduto, grade $grade no pedido $codPedido - $motivo", $idExpedicao, $idUsuario, false, null,null, false);
 
             /* CORTA AS ETIQUETAS */
             $etiquetaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -52,24 +50,31 @@ class PedidoProdutoRepository extends EntityRepository
             foreach ($etiquetasEn as $etiquetaEn){
                 if ($qtdPendente <=0) continue;
                 if ($etiquetaEn->getQtdEmbalagem() > $qtdPendente) continue;
-                if (($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_CORTADO) || ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_CORTE)) continue;
+
+                if ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_CORTE) throw new \Exception('Existem etiquetas pendentes de corte nesta expedição! Corte-as primeiro antes de efetuar um novo corte');
+                if ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_CORTADO) continue;
+
+                $etiquetaRepo->alteraStatus($etiquetaEn,EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+                    $codBarrasEtiqueta = $etiquetaEn->getId();
+                    if ($etiquetaEn->getProdutoEmbalagem() != NULL) {
+                        $codBarrasProdutos = $etiquetaEn->getProdutoEmbalagem()->getCodigoBarras();
+                    } else {
+                        $codBarrasProdutos = $etiquetaEn->getProdutoVolume()->getCodigoBarras();
+                    }
+
+                $andamentoRepo->save("Etiqueta $codBarrasEtiqueta colocada em Pendencia de Corte via integração", $idExpedicao, $idUsuario, false, $codBarrasEtiqueta, $codBarrasProdutos, false);
 
                 $qtdPendente = $qtdPendente - $etiquetaEn->getQtdEmbalagem();
-
-                $etiquetaRepo->cortar($etiquetaEn, false, $motivoEn);
-
-                $codBarrasEtiqueta = $etiquetaEn->getId();
-                if ($etiquetaEn->getProdutoEmbalagem() != NULL) {
-                    $codBarrasProdutos = $etiquetaEn->getProdutoEmbalagem()->getCodigoBarras();
-                } else {
-                    $codBarrasProdutos = $etiquetaEn->getProdutoVolume()->getCodigoBarras();
-                }
-
-                $andamentoRepo->save("Etiqueta $codBarrasEtiqueta cortada", $idExpedicao, false, false, $codBarrasEtiqueta, $codBarrasProdutos, true);
             }
 
             /* CORTA OS MAPAS */
             if ($qtdPendente >0) {
+
+                /* CORTA O PEDIDO APENAS A QUANTIDADE QUE NÃO TEM ETIQUETA GERADA, POIS A ETIQUETA UTILIZA O CONCEITO DE PENDENCIA DE CORTE */
+                $ppEn->setQtdCortada($ppEn->getQtdCortada() + $qtdPendente);
+                $this->getEntityManager()->persist($ppEn);
+                $this->getEntityManager()->flush();
+
                 $corteMapa = array();
                 $corteMapa[] = array(
                     'carga' => $ppEn->getPedido()->getCarga()->getId(),
