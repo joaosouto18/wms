@@ -425,6 +425,7 @@ class EtiquetaEndereco extends Pdf
         $arrEndereco = Endereco::separar($codBarras);
         $codBarras = implode('.',$arrEndereco);
         $this->SetX(5);
+        $this->SetY(60);
         $wRua = 19;
         $wPredio = 22;
         $wNivel = 18;
@@ -436,7 +437,7 @@ class EtiquetaEndereco extends Pdf
             $tamanhoCodigo = 15;
 
         $this->SetFont('Arial', 'B', $tamanhoCodigo);
-        $this->Cell(0,13, substr(reset($produto)['codProduto'].' - '.reset($produto)['descricao'],0,30),0,1,'C');
+        $this->MultiCell(0,6, substr(reset($produto)['codProduto'].' - '.reset($produto)['descricao'],0,999),0,'C');
         $this->Cell(17,13,"",0,0);
         $this->SetFont('Arial', 'B', 12);
         $this->Cell($wRua,13,utf8_decode("RUA"),0,0);
