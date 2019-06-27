@@ -745,7 +745,8 @@ class PedidoRepository extends EntityRepository
                     NVL(I.DSC_ITINERARIO,'PADRAO') as \"itinerario\",
                     P.NUM_SEQUENCIAL as \"numSequencial\",
                     NVL(MSP.QTD, PP.QUANTIDADE) as \"quantidade\",
-                    NVL(MSP.QTD_CORTADA,0) as \"qtdCortada\",
+                    CASE WHEN MSP.COD_MAPA_SEPARACAO_PEDIDO IS NOT NULL 
+                    THEN NVL(MSP.QTD_CORTADA, 0) ELSE NVL(PP.QTD_CORTADA, 0) END as \"qtdCortada\",
                     NVL(MSC.QTD_CONFERIDA,0) as \"qtdConf\",
                     NVL(PP.QTD_CORTADA,0) as \"qtdCorteTotal\",
                     PP.FATOR_EMBALAGEM_VENDA as \"fatorEmbalagemVenda\",

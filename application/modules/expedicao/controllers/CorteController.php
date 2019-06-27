@@ -200,7 +200,7 @@ class Expedicao_CorteController extends Action {
                 $codPedido = $corte[0];
                 $idEmbalagem = $corte[1];
                 $quantidadeCortada = $corte[2];
-                $idMapa = $corte[3];
+                $idMapa = json_decode($corte[3]);
 
                 $pedidoProdutoEn = $pedidoProdutoRepo->findOneBy(array(
                     'codPedido' => $codPedido,
