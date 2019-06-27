@@ -202,6 +202,8 @@ class Expedicao_CorteController extends Action {
                 $quantidadeCortada = $corte[2];
                 $idMapa = $corte[3];
 
+                if ($idMapa == 'null') $idMapa = null;
+
                 $pedidoProdutoEn = $pedidoProdutoRepo->findOneBy(array(
                     'codPedido' => $codPedido,
                     'codProduto' => $idProduto,
