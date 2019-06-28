@@ -159,7 +159,7 @@ class UMA extends Pdf {
             } else if ($modelo == 7) {
                 $this->layout07($palete, $produtoEn, $font_size, $line_width, $picking, $params);
             } else {
-                $this->layout03($palete, $produtoEn, $font_size, $line_width, $params);
+                $this->layout03($palete, $produtoEn, $font_size, $line_width, $picking, $params);
             }
             $paleteEn = $PaleteRepository->find($palete['idUma']);
             if ($paleteEn != NULL) {
@@ -250,7 +250,7 @@ class UMA extends Pdf {
         $this->Cell(105, -115, '    ' . $palete['endereco'], 0, 1);
     }
 
-    public function layout03($palete, $produtoEn, $font_size, $line_width, $params) {
+    public function layout03($palete, $produtoEn, $font_size, $line_width, $picking, $params) {
         $this->AddPage();
 
         $codigoProduto = $produtoEn->getId();
@@ -295,8 +295,13 @@ class UMA extends Pdf {
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(55, -35, utf8_decode("Endereço "), 0, 0);
 
+        if (isset($palete['endereco']) && !is_null($palete['endereco']) && !empty($palete['endereco'])) {
+            $endereco = $palete['endereco'];
+        } else {
+            $endereco = $picking;
+        }
         $this->SetFont('Arial', 'B', 60);
-        $this->Cell(105, -35, $palete['endereco'], 0, 1);
+        $this->Cell(105, -35, $endereco, 0, 1);
 
         $this->SetFont('Arial', 'B', 32);
         $this->Cell(55, 90, utf8_decode("Prod/Ref.:"), 0, 0);
