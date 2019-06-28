@@ -55,7 +55,7 @@ function updateList()
     $.each(itens, function (i, item) {
         let newRow = $("<tr class='gTResultSet' id='row-item-" + i + "' >");
 
-        newRow.append( newTd( $("#idExpedicao").val() ) );
+        newRow.append( newTd( $("#gridCorte #idExpedicaoCorte").val() ) );
         newRow.append( newTd( item.carga ) );
         newRow.append( newTd( item.id ) );
         newRow.append( newTd( item.mapa ) );
@@ -146,7 +146,7 @@ $("select.qtdCortar, input.qtdCortar").live("change", function () {
     }
 });
 
-function cortar () {
+$("#btnCortar").live("click",function () {
     event.preventDefault();
 
     let cortes = [];
@@ -198,7 +198,7 @@ function cortar () {
             }
         }
     });
-}
+});
 
 $("#corteTotal").live("click", function  () {
     event.preventDefault();
