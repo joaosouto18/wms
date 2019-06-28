@@ -28,6 +28,7 @@ class CorteProduto extends Form
             ->addElement('submit', 'cortar', array(
                 'label' => 'Cortar',
                 'class' => 'btn',
+                'onClick' => 'cortar()',
                 'id' => "btnCortar",
                 'decorators' => array('ViewHelper'),
             ))
