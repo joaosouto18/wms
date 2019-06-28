@@ -335,6 +335,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 $altura = 0;
                 $largura = 0;
                 $profundidade = 0;
+                $peso = 0;
 
                 extract($itemEmbalagem);
 

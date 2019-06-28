@@ -971,8 +971,11 @@ class Zend_Soap_Server implements Zend_Server_Interface
         }
 
         $parametro = $parametroRepo->findOneBy(array('constante' => 'LOG_WS_FUNCTION_EXCLUSIVA'));
-        if (!empty($parametro) && !empty($parametro->getValor())) {
+        $strTargets = null;
+        if (!empty($parametro)) {
             $strTargets = $parametro->getValor();
+        }
+        if (!empty($strTargets)) {
             $class = explode("_", $this->_class)[2];
             $functionTargets = [];
             if (!empty($strTargets)) {

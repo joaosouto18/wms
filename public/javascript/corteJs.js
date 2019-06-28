@@ -229,7 +229,7 @@ function executeRequest() {
         url: URL_MODULO + '/corte/get-data-produto-corte-ajax/',
         type: 'post',
         data: {
-            id: $("#idExpedicao").val(),
+            id: $("#gridCorte #idExpedicaoCorte").val(),
             codProduto: $('#codProduto').val(),
             grade: $('#grade').val()
         },
