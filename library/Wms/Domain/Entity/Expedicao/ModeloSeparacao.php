@@ -2,8 +2,6 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
-use Doctrine\Common\Collections\ArrayCollection;
-
 /**
  *
  * @Table(name="MODELO_SEPARACAO")

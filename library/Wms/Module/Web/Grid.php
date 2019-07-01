@@ -2,6 +2,8 @@
 
 namespace Wms\Module\Web;
 
+use Doctrine\ORM\EntityManager;
+
 /**
  *  Generic
  *
@@ -14,7 +16,8 @@ class Grid extends \Core\Grid
      * Return an entityManager. 
      * 
      * @param string $em nome do entitymanager
-     * @return Doctrine\ORM\EntityManager 
+     * @return EntityManager
+     * @throws \Exception
      */
     public function getEntityManager($em = null)
     {
