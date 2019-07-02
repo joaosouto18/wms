@@ -282,7 +282,7 @@ class Expedicao_IndexController extends Action {
 
                 $mapasSeparacaoExcluir = $ExpedicaoRepo->getMapaSeparacaoCargasByExpedicao($idExpedicao, $idCarga);
                 foreach ($mapasSeparacaoExcluir as $mapaSeparacao) {
-                    $mapaSeparacaoEn = $mapaSeparacaoRepository->find($mapaSeparacao['codMapaSeparacao']);
+                    $mapaSeparacaoEn = $mapaSeparacaoRepository->find($mapaSeparacao['COD_MAPA_SEPARACAO']);
                     $this->_em->remove($mapaSeparacaoEn);
                 }
 
