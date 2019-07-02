@@ -573,7 +573,9 @@ class Web_EnderecoController extends Crud
             }
         }
 
-        if (($modelo == 4) || ($modelo == 6) || $modelo == 13 || $modelo == 15) {
+        if ($modelo == 14) {
+            $etiqueta = new EtiquetaEndereco("L", 'mm', array(115, 55));
+        } else if (($modelo == 4) || ($modelo == 6) || $modelo == 13 || $modelo == 15) {
             $etiqueta = new EtiquetaEndereco("L", 'mm', array(110, 60));
         } else
             if ($modelo == 13) {

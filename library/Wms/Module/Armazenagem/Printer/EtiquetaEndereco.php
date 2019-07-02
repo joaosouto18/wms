@@ -162,6 +162,7 @@ class EtiquetaEndereco extends Pdf
                     break;
                 case 14:
                     $produtos = $enderecoRepo->getProdutoByEndereco($codBarras);
+                    if($key > 0) $this->AddPage();
                     $this->layoutModelo14($produtos,$codBarras);
                     break;
                 default:
@@ -437,13 +438,13 @@ class EtiquetaEndereco extends Pdf
             $tamanhoCodigo = 15;
 
         $this->SetFont('Arial', 'B', $tamanhoCodigo);
-        $this->MultiCell(0,6, substr(reset($produto)['codProduto'].' - '.reset($produto)['descricao'],0,999),0,'C');
+        $this->MultiCell(0,6, reset($produto)['codProduto'].' - '.reset($produto)['descricao'],0,'C');
         $this->Cell(17,13,"",0,0);
         $this->SetFont('Arial', 'B', 12);
         $this->Cell($wRua,13,utf8_decode("RUA"),0,0);
         $this->Cell($wPredio,13,utf8_decode("PREDIO"),0,0);
         $this->Cell($wNivel,13,utf8_decode("NIVEL"),0,0);
-        $this->Cell($wApto,13,utf8_decode("APTOO"),0,1);
+        $this->Cell($wApto,13,utf8_decode("APTO"),0,1);
         $this->SetFont('Arial', 'B', 18);
         $this->Cell(0,0," ",0,1);
         $this->SetX(17);
