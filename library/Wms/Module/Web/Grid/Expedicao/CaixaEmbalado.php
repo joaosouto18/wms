@@ -13,7 +13,17 @@ class CaixaEmbalado extends Grid
     public function init()
     {
         $qb = $this->getEntityManager()->createQueryBuilder();
-        $qb->select("ce")->from("wms:Expedicao\CaixaEmbalado", "ce");
+        $qb->select("
+            ce.id, 
+            ce.descricao, 
+            ce.pesoMaximo, 
+            ce.cubagemMaxima, 
+            ce.mixMaximo, 
+            ce.unidadesMaxima, 
+            ce.isDefault, 
+            CASE WHEN ce.isDefault > 0 THEN 'SIM' ELSE '' END isDefaultStr")
+            ->from("wms:Expedicao\CaixaEmbalado", "ce")
+            ->where("ce.isAtiva > 0");
 
 
         $this->setId("grid-caixas-embalado")
@@ -45,7 +55,37 @@ class CaixaEmbalado extends Grid
                 'label' => 'Unidades',
                 'index' => 'unidadesMaxima'
             ])
-        ;
+            ->addColumn([
+                'label' => 'Padrão',
+                'index' => 'isDefaultStr'
+            ])
+            ->addAction([
+                'label' => 'Editar',
+                'moduleName' => 'web',
+                'controllerName' => 'caixa-embalado',
+                'actionName' => 'edit',
+                'pkIndex' => 'id'
+            ])
+            ->addAction([
+                'label' => 'Tornar Padrão',
+                'moduleName' => 'web',
+                'controllerName' => 'caixa-embalado',
+                'actionName' => 'setPadrao',
+                'pkIndex' => 'id',
+                'condition' => function ($row) {
+                    return empty($row['isDefault']);
+                }
+            ])
+            ->addAction([
+                'label' => 'Remover',
+                'moduleName' => 'web',
+                'controllerName' => 'caixa-embalado',
+                'actionName' => 'delete',
+                'pkIndex' => 'id'
+            ]);
+
+        $this->setShowExport(false);
+        return $this;
     }
 
 }

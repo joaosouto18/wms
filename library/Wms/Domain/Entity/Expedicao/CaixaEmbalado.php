@@ -3,6 +3,9 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
+use Core\Util\Converter;
+use Wms\Domain\Configurator;
+
 /**
  * Class CaixaEmbalado
  * @package Wms\Domain\Entity\Expedicao
@@ -61,14 +64,14 @@ class CaixaEmbalado
     /**
      * @var bool
      *
-     * @Column(name="IS_ATIVA", type="bool", nullable=false)
+     * @Column(name="IS_ATIVA", type="boolean", nullable=false)
      */
     protected $isAtiva;
 
     /**
      * @var bool
      *
-     * @Column(name="IS_DEFAULT", type="bool", nullable=false)
+     * @Column(name="IS_DEFAULT", type="boolean", nullable=false)
      */
     protected $isDefault;
 
@@ -80,7 +83,6 @@ class CaixaEmbalado
         self::setUnidadesMaxima(0);
         self::setUnidadesMaxima(0);
         self::setIsAtiva(true);
-        self::setIsDefault(true);
     }
 
     /**
@@ -133,7 +135,7 @@ class CaixaEmbalado
      */
     public function setPesoMaximo($pesoMaximo)
     {
-        $this->pesoMaximo = $pesoMaximo;
+        $this->pesoMaximo = Converter::brToEn($pesoMaximo, 4);
         return $this;
     }
 
@@ -151,7 +153,7 @@ class CaixaEmbalado
      */
     public function setCubagemMaxima($cubagemMaxima)
     {
-        $this->cubagemMaxima = $cubagemMaxima;
+        $this->cubagemMaxima = Converter::brToEn($cubagemMaxima, 4);
         return $this;
     }
 
@@ -225,5 +227,19 @@ class CaixaEmbalado
     {
         $this->isDefault = $isDefault;
         return $this;
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function toArray($formatFloats = false)
+    {
+        $arr = Configurator::configureToArray($this);
+        if ($formatFloats) {
+            $arr['cubagemMaxima'] = Converter::enToBr($arr['cubagemMaxima'], 3);
+            $arr['pesoMaximo'] = Converter::enToBr($arr['pesoMaximo'], 3);
+        }
+        return $arr;
     }
 }
