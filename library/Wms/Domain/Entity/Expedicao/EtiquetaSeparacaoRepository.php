@@ -1583,6 +1583,15 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
             $this->_em->flush();
 
+            if ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S') {
+                /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
+                $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+                $cubagemMax = $mapaSeparacaoProdutoRepo->getCubagemMaximaByConsolidado($idExpedicao);
+                $pesoMax = $mapaSeparacaoProdutoRepo->getPesoMaximoByConsolidado($idExpedicao);
+                $mixMax = $mapaSeparacaoProdutoRepo->getMixMaximoByConsolidado($idExpedicao);
+                $unidsMax = $mapaSeparacaoProdutoRepo->getUnidsMaximaByConsolidado($idExpedicao);
+            }
+
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');
             if ($parametroConsistencia == 'S') {
                 $resultadoConsistencia = $mapaSeparacaoRepo->verificaConsistenciaSeguranca($idExpedicao);

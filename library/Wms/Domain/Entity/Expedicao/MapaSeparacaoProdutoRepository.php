@@ -470,4 +470,89 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
 
         return [$temLote, $arr];
     }
+
+    public function getPesoMaximoByConsolidado($idExpedicao)
+    {
+        $sql = "SELECT SUM(MSP.QTD_SEPARAR * PE.NUM_PESO) AS PESO_MAX, P.COD_PESSOA
+                FROM MAPA_SEPARACAO MS
+                INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO AND MSQ.IND_TIPO_QUEBRA = 'T'
+                INNER JOIN PRODUTO_EMBALAGEM PE on MSP.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+                INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                INNER JOIN PEDIDO P ON PP.COD_PEDIDO = P.COD_PEDIDO
+                WHERE MS.COD_EXPEDICAO = $idExpedicao
+                GROUP BY P.COD_PESSOA";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $arr = [];
+        foreach ($result as $item) {
+            $arr[$item['COD_PESSOA']] = $item['PESO_MAX'];
+        }
+
+        return $arr;
+    }
+
+    public function getCubagemMaximaByConsolidado($idExpedicao)
+    {
+        $sql = "SELECT SUM(MSP.CUBAGEM_TOTAL) AS CUBAGEM_MAX, P.COD_PESSOA
+                FROM MAPA_SEPARACAO MS
+                INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO AND MSQ.IND_TIPO_QUEBRA = 'T'
+                INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                INNER JOIN PEDIDO P ON PP.COD_PEDIDO = P.COD_PEDIDO
+                WHERE MS.COD_EXPEDICAO = $idExpedicao
+                GROUP BY P.COD_PESSOA";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $arr = [];
+        foreach ($result as $item) {
+            $arr[$item['COD_PESSOA']] = $item['CUBAGEM_MAX'];
+        }
+
+        return $arr;
+    }
+
+    public function getMixMaximoByConsolidado($idExpedicao)
+    {
+        $sql = "SELECT COUNT(DISTINCT MSP.COD_PRODUTO || '-!-' || MSP.DSC_GRADE) AS MIX_MAX, P.COD_PESSOA
+                FROM MAPA_SEPARACAO MS
+                INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO AND MSQ.IND_TIPO_QUEBRA = 'T'
+                INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                INNER JOIN PEDIDO P ON PP.COD_PEDIDO = P.COD_PEDIDO
+                WHERE MS.COD_EXPEDICAO = $idExpedicao
+                GROUP BY P.COD_PESSOA";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $arr = [];
+        foreach ($result as $item) {
+            $arr[$item['COD_PESSOA']] = $item['MIX_MAX'];
+        }
+
+        return $arr;
+    }
+
+    public function getUnidsMaximaByConsolidado($idExpedicao)
+    {
+        $sql = "SELECT SUM(MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM) AS UNIDS_MAX, P.COD_PESSOA
+                FROM MAPA_SEPARACAO MS
+                INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO AND MSQ.IND_TIPO_QUEBRA = 'T'
+                INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                INNER JOIN PEDIDO P ON PP.COD_PEDIDO = P.COD_PEDIDO
+                WHERE MS.COD_EXPEDICAO = $idExpedicao
+                GROUP BY P.COD_PESSOA";
+
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        $arr = [];
+        foreach ($result as $item) {
+            $arr[$item['COD_PESSOA']] = $item['UNIDS_MAX'];
+        }
+
+        return $arr;
+    }
 }

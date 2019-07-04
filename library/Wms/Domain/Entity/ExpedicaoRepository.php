@@ -3627,7 +3627,7 @@ class ExpedicaoRepository extends EntityRepository {
                         INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
                         INNER JOIN SIGLA S ON E.COD_STATUS = S.COD_SIGLA
                         INNER JOIN PEDIDO P ON C.COD_CARGA = P.COD_CARGA
-                        INNER JOIN TIPO_PEDIDO_EXTERNO TPE ON TPE.COD_TIPO_PEDIDO_EXPEDICAO = P.COD_TIPO_PEDIDO
+                        INNER JOIN TIPO_PEDIDO_EXPEDICAO TPE ON TPE.COD_TIPO_PEDIDO_EXPEDICAO = P.COD_TIPO_PEDIDO
                         INNER JOIN ITINERARIO I ON P.COD_ITINERARIO = I.COD_ITINERARIO
                         INNER JOIN PEDIDO_PRODUTO PP ON P.COD_PEDIDO = PP.COD_PEDIDO
                          LEFT JOIN PRODUTO PROD ON PP.COD_PRODUTO = PROD.COD_PRODUTO AND PP.DSC_GRADE  = PROD.DSC_GRADE
@@ -4433,6 +4433,7 @@ class ExpedicaoRepository extends EntityRepository {
                 inner join pedido p on p.cod_carga = c.cod_carga
                 inner join pedido_produto pp on pp.cod_pedido = p.cod_pedido
                 where e.cod_expedicao in ($expedicoes) and (pp.cod_produto = '$codProduto' and dsc_grade = '$grade')
+                      and p.cod_pedido not in (select cod_pedido from onda_ressuprimento_pedido)
                 group by p.cod_pedido, pp.cod_produto, pp.dsc_grade
                 order by sum(pp.quantidade)";
 
