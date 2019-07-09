@@ -431,7 +431,7 @@ class Expedicao_EtiquetaController  extends Action
 
                         $arrEtiquetasEn[] = $etiquetaEntity;
                     }
-                    $Etiqueta->reimprimir($arrEtiquetasEn, $motivo, $modelo);
+                    $Etiqueta->reimprimir($arrEtiquetasEn, $motivo, $modelo, $idExpedicao);
                 } else {
                     $Etiqueta->imprimirReentrega($idExpedicao, null, $modelo,true,$etiqueta);
 

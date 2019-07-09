@@ -16,6 +16,7 @@ class ModeloSeparacaoRepository extends EntityRepository
         $entity->setUtilizaQuebraColetor($params['utilizaQuebraColetor']);
         $entity->setUtilizaEtiquetaMae($params['utilizaEtiquetaMae']);
         $entity->setUtilizaVolumePatrimonio($params['utilizaVolumePatrimonio']);
+        $entity->setAgrupContEtiquetas($params['agrupContEtiquetas']);
         $entity->setImprimeEtiquetaVolume($params['imprimeEtiquetaPatrimonio']);
         $entity->setQuebraPulmaDoca($params['quebraPulmaDoca']);
         $entity->setQuebraUnidFracionavel($params['quebraUnidFracionavel']);

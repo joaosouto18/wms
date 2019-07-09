@@ -160,6 +160,11 @@ class VEtiquetaSeparacao
     protected $lote;
 
     /**
+     * @Column(name="POSVOLUME", type="integer", nullable=false)
+     */
+    protected $posVolume;
+
+    /**
      * @param mixed $cliente
      */
     public function setCliente($cliente)
@@ -621,6 +626,22 @@ class VEtiquetaSeparacao
     public function setLote($lote)
     {
         $this->lote = $lote;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPosVolume()
+    {
+        return $this->posVolume;
+    }
+
+    /**
+     * @param mixed $posVolume
+     */
+    public function setPosVolume($posVolume)
+    {
+        $this->posVolume = $posVolume;
     }
 
 }

@@ -10,7 +10,7 @@
 
  */
 
-CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENTREGA", "CARGA", "LINHAENTREGA", "ITINERARIO", "CODCLIENTEEXTERNO", "CLIENTE", "CODPRODUTO", "PRODUTO", "GRADE", "FORNECEDOR", "TIPOCOMERCIALIZACAO", "ENDERECO", "LINHASEPARACAO", "ESTOQUE", "PONTOTRANSBORDO", "EXPEDICAO", "PLACAEXPEDICAO", "PLACACARGA", "CODTIPOCARGA", "TIPOCARGA", "CODCARGAEXTERNO", "CODTIPOPEDIDO", "DTHCONFERENCIA", "REIMPRESSAO", "TIPOPEDIDO", "CODBARRASPRODUTO", "CODEXTERNO", "LOTE")
+CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENTREGA", "CARGA", "LINHAENTREGA", "ITINERARIO", "CODCLIENTEEXTERNO", "CLIENTE", "CODPRODUTO", "PRODUTO", "GRADE", "FORNECEDOR", "TIPOCOMERCIALIZACAO", "ENDERECO", "LINHASEPARACAO", "ESTOQUE", "PONTOTRANSBORDO", "EXPEDICAO", "PLACAEXPEDICAO", "PLACACARGA", "CODTIPOCARGA", "TIPOCARGA", "CODCARGAEXTERNO", "CODTIPOPEDIDO", "DTHCONFERENCIA", "REIMPRESSAO", "TIPOPEDIDO", "CODBARRASPRODUTO", "CODEXTERNO", "LOTE", "POSVOLUME")
   AS
     SELECT es.cod_etiqueta_separacao AS codBarras,
            es.cod_status                  AS status,
@@ -46,7 +46,8 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
                 ELSE
                ped.cod_externo
                END as codExterno,
-           NVL(es.dsc_lote,0)             AS lote
+           NVL(es.dsc_lote,0)             AS lote,
+           es.pos_volume                  AS posVolume
     FROM etiqueta_separacao es
            INNER JOIN produto_volume v
              ON v.cod_produto_volume = es.cod_produto_volume
@@ -108,7 +109,8 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
                 ELSE
                ped.cod_externo
                END as codExterno,
-           NVL(es.dsc_lote,0)             AS lote
+           NVL(es.dsc_lote,0)             AS lote,
+           es.pos_volume                  AS posVolume
     FROM etiqueta_separacao es
            INNER JOIN produto_embalagem e
              ON e.cod_produto_embalagem = es.cod_produto_embalagem

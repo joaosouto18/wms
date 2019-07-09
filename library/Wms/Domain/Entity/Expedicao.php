@@ -99,6 +99,13 @@ class Expedicao
      */
     protected $modeloSeparacao;
 
+    /**
+     * @var int
+     *
+     * @Column(name="COUNT_VOLUMES", type="integer", nullable=true)
+     */
+    protected $countVolumes;
+
 
 	public function setCarga($carga)
     {
@@ -255,6 +262,24 @@ class Expedicao
     public function setModeloSeparacao($modeloSeparacao)
     {
         $this->modeloSeparacao = $modeloSeparacao;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCountVolumes()
+    {
+        return $this->countVolumes;
+    }
+
+    /**
+     * @param int $countVolumes
+     * @return Expedicao
+     */
+    public function setCountVolumes($countVolumes)
+    {
+        $this->countVolumes = $countVolumes;
+        return $this;
     }
 
 }

@@ -196,6 +196,13 @@ class EtiquetaSeparacao
      */
     protected $lote;
 
+    /**
+     * @var integer
+     *
+     * @Column(name="POS_VOLUME", type="integer", nullable=true)
+     */
+    protected $posVolume;
+
     public function setDataConferencia($dataConferencia)
     {
         $this->dataConferencia = $dataConferencia;
@@ -570,6 +577,22 @@ class EtiquetaSeparacao
     public function setLote($lote)
     {
         $this->lote = $lote;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPosVolume()
+    {
+        return $this->posVolume;
+    }
+
+    /**
+     * @param int $posVolume
+     */
+    public function setPosVolume($posVolume)
+    {
+        $this->posVolume = $posVolume;
     }
 
 }
