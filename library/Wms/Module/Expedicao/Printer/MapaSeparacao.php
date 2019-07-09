@@ -268,6 +268,22 @@ class MapaSeparacao extends eFPDF {
 
         $this->AddPage();
 
+        $codCargaExterno = explode(',', $arrDataCargas['str']);
+        $cargaEn = $this->cargaRepo->findOneBy(array('codCargaExterno' => array($codCargaExterno[0])));
+        $pedidosEntities = $this->pedidoRepo->findBy(array('carga' => $cargaEn->getId()), array('linhaEntrega' => 'ASC'));
+        $itinerarios = array();
+        $ultimaLinha = '';
+        foreach ($pedidosEntities as $key => $pedidosEntity) {
+
+            if ($ultimaLinha != $pedidosEntity->getLinhaEntrega()) {
+                $itinerarios[] = $pedidosEntity->getLinhaEntrega();
+            }
+
+            $ultimaLinha = $pedidosEntity->getLinhaEntrega();
+
+        }
+        $linhaSeparacao = implode(', ',$itinerarios);
+
         $this->SetFont('Arial', 'B', 10);
         $this->Cell(200, 3, utf8_decode("MAPA DE SEPARAÇÃO " . $this->idMapa), 0, 1, "C");
         $this->Cell(20, 1, "__________________________________________________________________________________________________", 0, 1);
@@ -275,7 +291,7 @@ class MapaSeparacao extends eFPDF {
         $this->SetFont('Arial', 'B', 10);
         $this->Cell(24, 4, utf8_decode("EXPEDIÇÃO: "), 0, 0);
         $this->SetFont('Arial', null, 10);
-        $this->Cell(4, 4, utf8_decode($this->idExpedicao) . " - $arrDataCargas[txt]: $arrDataCargas[str]", 0, 1);
+        $this->Cell(4, 4, utf8_decode($this->idExpedicao) . " - $arrDataCargas[txt]: $arrDataCargas[str] - $linhaSeparacao", 0, 1);
         $this->SetFont('Arial', 'B', 10);
         $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
         $this->SetFont('Arial', null, 10);
@@ -448,7 +464,7 @@ class MapaSeparacao extends eFPDF {
         $this->SetFont('Arial', 'B', 9);
         $this->Cell(14, 6, utf8_decode("$arrDataCargas[txt]: "), 0, 0);
         $this->SetFont('Arial', null, 10);
-        $this->Cell($wPage * 4, 6, $arrDataCargas['str'], 0, 1);
+        $this->Cell($wPage * 4, 6, $arrDataCargas['str'] . ' - ' . substr($linhaSeparacao,0,30), 0, 1);
         $this->SetFont('Arial', 'B', 9);
         $this->Cell($wPage * 3, 6, utf8_decode("CUBAGEM TOTAL " . $cubagemTotal), 0, 0);
         $this->Cell($wPage * 3, 6, utf8_decode("PESO TOTAL " . $pesoTotal), 0, 0);
