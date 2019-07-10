@@ -50,6 +50,13 @@ class MapaSeparacaoEmbalado
     protected $ultimoVolume;
 
     /**
+     * @var integer
+     *
+     * @Column(name="POS_VOLUME", type="integer", nullable=true)
+     */
+    protected $posVolume;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -143,6 +150,22 @@ class MapaSeparacaoEmbalado
     public function setUltimoVolume($ultimoVolume)
     {
         $this->ultimoVolume = $ultimoVolume;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPosVolume()
+    {
+        return $this->posVolume;
+    }
+
+    /**
+     * @param int $posVolume
+     */
+    public function setPosVolume($posVolume)
+    {
+        $this->posVolume = $posVolume;
     }
 
 }

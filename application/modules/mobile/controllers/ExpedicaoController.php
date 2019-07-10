@@ -172,6 +172,7 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->tipoDefaultEmbalado = $modeloSeparacaoEn->getTipoDefaultEmbalado();
             $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
             $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
+            $this->view->agrupContEtiquetas = $modeloSeparacaoEn->getAgrupContEtiquetas();
             $this->view->tipoQuebraVolume = $modeloSeparacaoEn->getTipoQuebraVolume();
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
@@ -219,7 +220,8 @@ class Mobile_ExpedicaoController extends Action {
         $paramsModeloSeparacao = array(
             'tipoDefaultEmbalado' => $this->_getParam("tipoDefaultEmbalado"),
             'utilizaQuebra' => $this->_getParam("utilizaQuebra"),
-            'utilizaVolumePatrimonio' => $this->_getParam("utilizaVolumePatrimonio")
+            'utilizaVolumePatrimonio' => $this->_getParam("utilizaVolumePatrimonio"),
+            'agrupContEtiquetas' => $this->_getParam("agrupContEtiquetas")
         );
 
         if (!empty($codBarras) && !empty($idMapa)) {
@@ -530,6 +532,13 @@ class Mobile_ExpedicaoController extends Action {
                 $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
                 /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
                 $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+                /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepository */
+                $modeloSeparacaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
+
+                //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+                $modeloSeparacaoEn = $modeloSeparacaoRepository->getModeloSeparacao($idExpedicao);
+
+                $paramsModelo = ['agrupContEtiquetas' => $modeloSeparacaoEn->getAgrupContEtiquetas()];
 
                 $embalagemEn = null;
                 $volumeEn = null;
@@ -551,9 +560,9 @@ class Mobile_ExpedicaoController extends Action {
 
                 if (isset($codPessoa) && !empty($codPessoa)) {
                     if (count($mapaSeparacaoEmbaladoEn) <= 0) {
-                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa);
+                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $paramsModelo);
                     } elseif ($mapaSeparacaoEmbaladoEn[0]->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO) {
-                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $mapaSeparacaoEmbaladoEn[0]);
+                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $paramsModelo, $mapaSeparacaoEmbaladoEn[0]);
                     }
                 }
 

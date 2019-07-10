@@ -15,6 +15,7 @@ use Wms\Domain\Entity\Produto\NormaPaletizacao;
 use Wms\Domain\Entity\Produto\Volume;
 use Wms\Domain\Entity\Produto\VolumeRepository;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao;
+use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto;
 use Wms\Math;
 use Wms\Module\Expedicao\Form\ModeloSeparacao;
 use Wms\Service\OndaRessuprimentoService;
@@ -4549,9 +4550,12 @@ class ExpedicaoRepository extends EntityRepository {
         foreach ($result as $item) {
             $check = Math::adicionar($qtdRemoveReserva, $item['QTD']);
             $entityReservaEstoqueProduto = $reservaEstoqueProdutoRepo->findBy(array('reservaEstoque' => $item['ID']));
+            /** @var ReservaEstoqueProduto $reservaEstoqueProduto */
             foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
                 if (Math::compare($check, 0, '>=')) {
-                    $this->getEntityManager()->remove($reservaEstoqueProduto);
+                    $reservaEstoque = $reservaEstoqueProduto->getReservaEstoque();
+                    $reservaEstoque->setAtendida('C');
+                    $this->getEntityManager()->persist($reservaEstoque);
                     $valToNext = $check;
                 } else {
                     $reservaEstoqueProduto->setQtd($check);

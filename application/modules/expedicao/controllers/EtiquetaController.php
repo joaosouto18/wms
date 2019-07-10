@@ -646,6 +646,10 @@ class Expedicao_EtiquetaController  extends Action
                     //LAYOUT HIDRAU
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
+                case 5:
+                    //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
                 default:
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(75,45));
                     break;

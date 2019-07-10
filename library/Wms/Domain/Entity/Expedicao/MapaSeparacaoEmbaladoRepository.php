@@ -9,7 +9,7 @@ use Wms\Domain\Entity\Expedicao;
 class MapaSeparacaoEmbaladoRepository extends EntityRepository
 {
 
-    public function save($idMapa, $codPessoa, $mapaSeparacaoEmbalado = null, $flush = true)
+    public function save($idMapa, $codPessoa, $paramsModeloSeparacao, $mapaSeparacaoEmbalado = null, $flush = true)
     {
         $pessoaEn = $this->getEntityManager()->getReference('wms:Pessoa',$codPessoa);
         $mapaSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao',$idMapa);
@@ -25,6 +25,16 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $mapaSeparacaoEmbalado->setSequencia($sequencia);
         $mapaSeparacaoEmbalado->setStatus($siglaEn);
         $mapaSeparacaoEmbalado->setUltimoVolume('N');
+
+        if ($paramsModeloSeparacao['agrupContEtiquetas'] == 'S') {
+            list($lastVol, $nVolsExp) = self::getCountVolumesEmbExpedicaoByMapa($idMapa);
+            if (empty($lastVol)) {
+                $mapaSeparacaoEmbalado->setPosVolume($nVolsExp + 1);
+            } else {
+                $mapaSeparacaoEmbalado->setPosVolume($lastVol + 1);
+            }
+        }
+
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
         $mapaSeparacaoEmbalado->setId('14'.$mapaSeparacaoEmbalado->getId());
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
@@ -115,6 +125,10 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 //LAYOUT HIDRAU
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                 break;
+            case 5:
+                //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
+                break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
@@ -173,7 +187,8 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                       I.DSC_ITINERARIO,  MAX(C.DSC_PLACA_CARGA) DSC_PLACA_CARGA, 
                       P.NOM_PESSOA, MSE.NUM_SEQUENCIA,  MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE,
                       PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, 
-                      SIGLA.COD_REFERENCIA_SIGLA, MIN(PED.COD_EXTERNO) AS COD_PEDIDO
+                      SIGLA.COD_REFERENCIA_SIGLA, MIN(PED.COD_EXTERNO) AS COD_PEDIDO,
+                      MSE.POS_VOLUME
                     FROM MAPA_SEPARACAO MS
                     LEFT JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                     INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
@@ -222,5 +237,17 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getCountVolumesEmbExpedicaoByMapa($idMapa)
+    {
+        $sql = "SELECT NVL(MAX(MSPEC.POS_VOLUME), 0) LAST_POS, MS.COD_EXPEDICAO, E.COUNT_VOLUMES
+                FROM MAPA_SEPARACAO_EMB_CLIENTE MSPEC
+                INNER JOIN MAPA_SEPARACAO MS ON MS.COD_MAPA_SEPARACAO = MSPEC.COD_MAPA_SEPARACAO
+                INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = MS.COD_EXPEDICAO
+                WHERE MS.COD_EXPEDICAO IN (SELECT COD_EXPEDICAO FROM MAPA_SEPARACAO MS2 WHERE MS2.COD_MAPA_SEPARACAO = $idMapa)
+                GROUP BY MS.COD_EXPEDICAO, E.COUNT_VOLUMES";
+
+        $result = $this->_em->getConnection()->query($sql)->fetchAll();
+        return [$result[0]['LAST_POS'], $result[0]['COUNT_VOLUMES']];
+    }
 }
 

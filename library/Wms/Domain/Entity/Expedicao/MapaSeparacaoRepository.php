@@ -1081,12 +1081,12 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
                 $mapaSeparacaoEmbaladoS = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
                 if (empty($mapaSeparacaoEmbaladoS)) {
-                    $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa . null, false);
+                    $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $paramsModeloSeparaco, null,false);
                 } else {
                     /** @var MapaSeparacaoEmbalado $firtsItem */
                     $firtsItem = $mapaSeparacaoEmbaladoS[0];
                     if ($firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
-                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $firtsItem);
+                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $paramsModeloSeparaco, $firtsItem);
                     } else {
                         $mapaSeparacaoEmbaladoEn = $firtsItem;
                     }

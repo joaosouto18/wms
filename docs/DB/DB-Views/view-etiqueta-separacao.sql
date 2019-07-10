@@ -7,6 +7,7 @@
  24/08/18   (Tarcísio)   Inclusão da descrição de LOTE
  22/01/19   (Tarcísio)   Alteração do vinculo TIPO_PEDIDO da tabela SIGLA para a tabela TIPO_PEDIDO_EXPEDICAO
  18/05/19   (Digão)      Alterar join entre TIPO_PEDIDO e SIGLA para LEFT
+ 08/07/19   (Tarcísio)   Inclusão da posição do volume no agrupamento de etiquetas
 
  */
 
