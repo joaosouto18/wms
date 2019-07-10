@@ -15,6 +15,7 @@ use Wms\Domain\Entity\Produto\NormaPaletizacao;
 use Wms\Domain\Entity\Produto\Volume;
 use Wms\Domain\Entity\Produto\VolumeRepository;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao;
+use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueProduto;
 use Wms\Math;
 use Wms\Module\Expedicao\Form\ModeloSeparacao;
 use Wms\Service\OndaRessuprimentoService;
@@ -4536,7 +4537,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         $SQL = "SELECT DISTINCT REE.COD_RESERVA_ESTOQUE ID, REP.QTD_RESERVADA QTD
                   FROM RESERVA_ESTOQUE_EXPEDICAO REE
-                  LEFT JOIN RESERVA_ESTOQUE_PRODUTO REP ON REE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
+                 INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
                  WHERE REE.COD_PEDIDO = '$codPedido'
                    AND REP.COD_PRODUTO = '$codProduto'
                    AND REP.DSC_GRADE = '$grade'
@@ -4548,9 +4549,12 @@ class ExpedicaoRepository extends EntityRepository {
         foreach ($result as $item) {
             $check = Math::adicionar($qtdRemoveReserva, $item['QTD']);
             $entityReservaEstoqueProduto = $reservaEstoqueProdutoRepo->findBy(array('reservaEstoque' => $item['ID']));
+            /** @var ReservaEstoqueProduto $reservaEstoqueProduto */
             foreach ($entityReservaEstoqueProduto as $reservaEstoqueProduto) {
                 if (Math::compare($check, 0, '>=')) {
-                    $this->getEntityManager()->remove($reservaEstoqueProduto);
+                    $reservaEstoque = $reservaEstoqueProduto->getReservaEstoque();
+                    $reservaEstoque->setAtendida('C');
+                    $this->getEntityManager()->persist($reservaEstoque);
                     $valToNext = $check;
                 } else {
                     $reservaEstoqueProduto->setQtd($check);
