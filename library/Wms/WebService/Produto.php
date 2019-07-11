@@ -530,18 +530,23 @@ class Wms_WebService_Produto extends Wms_WebService {
             $tipo = trim($tipo);
 
             $wsClasse = new Wms_WebService_ProdutoClasse();
-            foreach($classes as $classe)
-                $wsClasse->salvar(trim($classe['idClasse']), trim($classe['nome']), $classe['idClassePai']);
+            foreach($classes as $classeArr) {
+                $wsClasse->salvar(trim($classeArr[0]), trim($classeArr[1]) ,$classeArr[2] );
+            }
+
             unset($wsClasse);
 
             $wsFabricante  = new Wms_WebService_Fabricante();
-            $wsFabricante->salvar(trim($fabricante['idFabricante']), trim($fabricante['nome']));
+            $wsFabricante->salvar(trim($fabricante[0]), trim($fabricante[1]));
             unset($wsFabricante);
 
             if( empty($grades) )
                 throw new \Exception('O array de grades deve ser informado.');
-            foreach($grades as $grade)
+
+            foreach($grades as $grade) {
                 $this->salvar($idProduto, $descricao, trim($grade), $idFabricante, $tipo, $idClasse,null,'','N');
+            }
+
         } catch(\Exception $e) {
             throw new \Exception($e->getMessage());
         }
