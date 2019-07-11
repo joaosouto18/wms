@@ -890,11 +890,15 @@ class NotaFiscalRepository extends EntityRepository {
                 ->innerJoin('p.tipoComercializacao', 'tc')
                 ->leftJoin('p.linhaSeparacao', 'ls')
                 ->leftJoin('p.fabricante', 'fb')
-                ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.isPadrao = \'S\'')
-                ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade')
+                ->leftJoin('p.volumes', 'pv')
                 ->where('nf.recebimento = :idRecebimento')
                 ->setParameter('idRecebimento', $idRecebimento);
 
+        if (empty($emb)) {
+            $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.isPadrao = \'S\'');
+        } else {
+            $dql->leftJoin('p.embalagens', 'pe');
+        }
 
         if ($codProduto == null) {
             $dql->andWhere('(pe.imprimirCB = \'S\' OR pv.imprimirCB = \'S\')');
