@@ -163,12 +163,15 @@ class RecebimentoRepository extends EntityRepository {
                 $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
 
 
-                $acaoEn = $acaoIntRepo->find(9);
+                $parametroRecebimentoERP = $this->getSystemParameterValue('ID_INTEGRACAO_RECEBIMENTO_ERP');
+
+                $acaoEn = $acaoIntRepo->find($parametroRecebimentoERP);
                 $notaFiscal = $em->getReference('wms:NotaFiscal', $notasFiscais[0]);
                 $options = array(
                     0 => $notaFiscal->getFornecedor()->getIdExterno(),
                     1 => $notaFiscal->getSerie(),
                     2 => $notaFiscal->getNumero(),
+                    3 => $notaFiscal->getFornecedor()->getPessoa()->getCnpj()
                 );
                 $notasFiscaisErp = $acaoIntRepo->processaAcao($acaoEn, $options, "E","P",null,611);
                 $serviceIntegracao = new Integracao($em, array('acao' => $acaoEn,
