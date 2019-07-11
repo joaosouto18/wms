@@ -25,10 +25,12 @@
         var predio = document.getElementById('predio-nivel').value;
         var apartamento = document.getElementById('apartamento-nivel').value;
         var nivel = document.getElementById('nivel').value;
+        var uma = document.getElementById('uma-nivel').value;
+
         var capacidadePicking = '';
         if (nivel !== '' || nivel !== null) {
             $.ajax({
-                url: 'get-capacidade-picking-ajax/endereco/' + rua + '.' + predio + '.' + nivel + '.' + apartamento,
+                url: 'get-capacidade-picking-ajax/uma/' + uma + '/endereco/' + rua + '.' + predio + '.' + nivel + '.' + apartamento,
                 success: function (data) {
                     if (data.status == 'Ok') {
                         if (data.caracteristicaEndereco == 39) {

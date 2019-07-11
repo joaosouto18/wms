@@ -225,6 +225,7 @@ class Mobile_EnderecamentoController extends Action
             $idPalete = $this->_getParam("uma");
             $capacidadePicking = $this->_getParam('capacidadePicking');
 
+
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
             $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
 
@@ -238,9 +239,25 @@ class Mobile_EnderecamentoController extends Action
             /** @var \Wms\Domain\Entity\Enderecamento\Palete $paleteEn */
             $paleteEn = $paleteRepo->find($idPalete);
 
+            $ppEn = $paleteEn->getProdutos()[0];
+            if ($ppEn->getCodProdutoEmbalagem() != null) {
+                $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+
+                $embalagemEn = $embalagemRepo->findOneBy(array(
+                    'codProduto' => $ppEn->getCodProduto(),
+                    'grade'=> $ppEn->getGrade(),
+                    'isPadrao'=> 'S'
+                ));
+                if ($embalagemEn == null) {
+                    throw new \Exception("O produto desta UMA não possui embalagem padrão de recebimento cadastrada");
+                }
+                $capacidadePicking = $embalagemEn->getQuantidade() * $capacidadePicking;
+            }
+
+
             $enderecoReservado = null;
             if (isset($paleteEn) && !empty($paleteEn)) {
-                $this->validaEnderecoPicking($paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn);
+                $this->validaEnderecoPicking($paleteEn, $enderecoEn->getIdCaracteristica(), $enderecoEn, $capacidadePicking);
                 $enderecoReservado = $paleteEn->getDepositoEndereco();
             }
 
@@ -1413,21 +1430,52 @@ class Mobile_EnderecamentoController extends Action
 
     public function getCapacidadePickingAjaxAction()
     {
-        $dscEndereco = $this->_getParam('endereco');
+        try {
+            $dscEndereco = $this->_getParam('endereco');
+            $uma = $this->_getParam('uma');
 
-        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-        $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
-        /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $$embalagemRepo */
-        $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+            $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
 
-        $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => EnderecoUtil::formatar($dscEndereco)));
-        if (!empty($enderecoEn)) {
-            $embalagemEn = $embalagemRepo->findOneBy(array('endereco' => $enderecoEn));
-            if (!empty($embalagemEn)) {
-                $this->_helper->json(array('status' => 'Ok', 'caracteristicaEndereco' => $enderecoEn->getIdCaracteristica(), 'capacidadePicking' => $embalagemEn->getCapacidadePicking()));
+            $paleteRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\Palete');
+            $paleteEn = $paleteRepo->find($uma);
+
+            $capacidade = 0;
+
+            if ($paleteEn != null) {
+                $ppEn = $paleteEn->getProdutos()[0];
+
+                if ($ppEn->getCodProdutoVolume() != null) {
+                    $embalagemEn = $ppEn->getEmbalagemEn();
+                    $capacidade = $embalagemEn->getCapacidadePicking();
+                } else {
+                    $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
+
+                    $embalagemEn = $embalagemRepo->findOneBy(array(
+                        'codProduto' => $ppEn->getCodProduto(),
+                        'grade'=> $ppEn->getGrade(),
+                        'isPadrao'=> 'S'
+                    ));
+
+                    if ($embalagemEn == null) {
+                        throw new \Exception("O produto desta UMA não possui embalagem padrão de recebimento cadastrada");
+                    }
+
+                    $capacidade = round($embalagemEn->getCapacidadePicking() / $embalagemEn->getQuantidade(),3);
+                }
             }
+
+            $enderecoEn = $enderecoRepo->findOneBy(array('descricao' => EnderecoUtil::formatar($dscEndereco)));
+            if (empty($enderecoEn)) {
+                throw new \Exception("Endereço não encontrado");
+            }
+
+            $this->_helper->json(array('status' => 'Ok', 'caracteristicaEndereco' => $enderecoEn->getIdCaracteristica(), 'capacidadePicking' =>  $capacidade));
+
+        } catch (\Exception $e) {
+            $this->_helper->json(array('status' => 'Error', 'Msg' => $e->getMessage()));
         }
-        $this->_helper->json(array('status' => 'Error', 'Msg' => 'Endereço não encontrado'));
+
     }
 
     public function cadastroProdutoEnderecoAction()
