@@ -242,4 +242,25 @@ class CaixaEmbalado
         }
         return $arr;
     }
+
+    public static function calculaExpedicao ($caixaEn, $arrElements, $returnClient = null)
+    {
+        $arrVols = [];
+        foreach($arrElements as $idCliente => $elements) {
+            foreach ($elements as $target => $element) {
+                $getter = "get" . ucfirst($target);
+                $maxIndex = $caixaEn->$getter();
+                $nVols = ceil($element / $maxIndex);
+                if (!empty($arrVols[$idCliente])) {
+                    $atual = $arrVols[$idCliente];
+                    $arrVols[$idCliente] = (int)($atual > $nVols) ? $atual : $nVols;
+                } else {
+                    $arrVols[$idCliente] = (int)$nVols;
+                }
+            }
+        }
+
+        return (!empty($returnClient))? $arrVols[$returnClient] : $arrVols;
+    }
+
 }

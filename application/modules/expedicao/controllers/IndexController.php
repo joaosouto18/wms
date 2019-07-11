@@ -1,5 +1,8 @@
 <?php
 
+use Wms\Domain\Entity\Expedicao\CaixaEmbalado;
+use Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbalado;
+use Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository;
 use Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Grid\Expedicao as ExpedicaoGrid,
     Wms\Service\Coletor as LeituraColetor,
@@ -904,21 +907,17 @@ class Expedicao_IndexController extends Action {
 
     public function confirmarClienteAjaxAction() {
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-        $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa')), 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
+        $idMapaSeparacao = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'));
+        $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $idMapaSeparacao, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
 
-        if (!empty($mapaSeparacaoQuebraEn) && $mapaSeparacaoQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
-            $this->view->idMapa = $idMapaSeparacao = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'));
+        if (!empty($mapaSeparacaoQuebraEn)) {
+            $this->view->idMapa = $idMapaSeparacao;
             /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
             $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
             $clientes = $mapaSeparacaoRepo->getClientesByConferencia($idMapaSeparacao);
 
             if (empty($clientes)) {
-                $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-                $codBarras = ColetorUtil::retiraDigitoIdentificador($this->_getParam('codigoBarrasMapa'));
-                $mapaSeparacaoQuebraEn = $mapaSeparacaoQuebraRepo->findOneBy(array('mapaSeparacao' => $codBarras, 'tipoQuebra' => Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO));
-                if (!empty($mapaSeparacaoQuebraEn)) {
-                    $clientes = 'finalizar';
-                }
+                $clientes = 'finalizar';
             }
 
             $cargaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
@@ -937,6 +936,15 @@ class Expedicao_IndexController extends Action {
             $this->view->idExpedicao = $idExpedicao;
             $this->view->codMapa = $idMapaSeparacao;
         }
+    }
+
+    public function getCountVolumesConsolidadoAjaxAction()
+    {
+        $idMapa = $this->_getParam('idMapa');
+        $codPessoa = $this->_getParam('cliente');
+        $mapaSepEmbClienteRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+        $volsFechados = count($mapaSepEmbClienteRepo->findBy(['mapaSeparacao' => $idMapa, "pessoa" => $codPessoa]));
+        $this->_helper->json($volsFechados);
     }
 
     public function carregaMapaAjaxAction() {
@@ -1026,6 +1034,7 @@ class Expedicao_IndexController extends Action {
             }
 
             //OBTEM O MODELO DE SEPARACAO VINCULADO A EXPEDICAO
+            /** @var Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $modeloSeparacaoRepo->getModeloSeparacao($idExpedicao);
 
             /** VERIFICA E CONFERE DE ACORDO COM O PARAMETRO DE TIPO DE CONFERENCIA PARA EMBALADOS E NAO EMBALADOS */
@@ -1059,6 +1068,20 @@ class Expedicao_IndexController extends Action {
             $this->view->separacaoEmbalado = (empty($codPessoa)) ? false : true;
             $this->view->dscVolume = $dscVolume;
             $this->view->confereQtd = $confereQtd;
+
+            $this->view->agrupaVolumes = ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S');
+            if ($this->view->agrupaVolumes) {
+                $mapaSepEmbClienteRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
+                $volsCriados = count($mapaSepEmbClienteRepo->findBy(['mapaSeparacao' => $idMapa, "pessoa" => $codPessoa]));
+                /** @var CaixaEmbalado $caixaEn */
+                $caixaEn = $this->getEntityManager()->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
+
+                $arrElements = $mapaSepProdRepo->getMaximosByConsolidado($idExpedicao);
+
+                $this->view->MaxVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements, $codPessoa);
+                $this->view->indexVol = $volsCriados;
+            }
+
         } catch (\Exception $e) {
             $this->view->erro = $e->getMessage();
         }

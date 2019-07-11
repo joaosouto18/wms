@@ -1081,18 +1081,15 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
                 $mapaSeparacaoEmbaladoS = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
                 if (empty($mapaSeparacaoEmbaladoS)) {
-                    $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $paramsModeloSeparaco, null,false);
+                    $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  null,false);
                 } else {
                     /** @var MapaSeparacaoEmbalado $firtsItem */
                     $firtsItem = $mapaSeparacaoEmbaladoS[0];
                     if ($firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
-                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $paramsModeloSeparaco, $firtsItem);
+                        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $firtsItem, false);
                     } else {
                         $mapaSeparacaoEmbaladoEn = $firtsItem;
                     }
-                }
-                if (empty($mapaSeparacaoEmbaladoEn)) {
-                    $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
                 }
             }
 

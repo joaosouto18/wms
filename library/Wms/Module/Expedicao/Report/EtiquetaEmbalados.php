@@ -36,7 +36,7 @@ class EtiquetaEmbalados extends eFPDF
                 break;
             case 5:
                 //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
-                self::bodyExpedicaoModelo5($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
+                self::bodyExpedicaoModelo5($volumePatrimonio);
                 break;
             default:
                 self::bodyExpedicaoModelo1($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
@@ -262,16 +262,10 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
-    private function bodyExpedicaoModelo5($volumes,$mapaSeparacaoEmbaladoRepo)
+    private function bodyExpedicaoModelo5($volumes)
     {
 
         foreach ($volumes as $volume) {
-
-            $existeItensPendentes = true;
-            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('id' => $volume['COD_MAPA_SEPARACAO_EMB_CLIENTE'], 'ultimoVolume' => 'S'));
-            if (isset($mapaSeparacaoEmbaladoEn) && !empty($mapaSeparacaoEmbaladoEn)) {
-                $existeItensPendentes = false;
-            }
             $this->AddPage();
             //monta o restante dos dados da etiqueta
             $this->SetFont('Arial', '', 10);
@@ -291,12 +285,7 @@ class EtiquetaEmbalados extends eFPDF
             $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
             $this->SetFont('Arial', '', 7);
-
-            $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
-            if ($existeItensPendentes == false)
-                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
-
-            $this->MultiCell(110, 3.9, $impressao, 0, 'L');
+            $this->MultiCell(110, 3.9, "VOLUME: $volume[POS_VOLUME]/$volume[COUNT_VOLUMES]", 0, 'L');
 
             $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 6, 20 , 33, 9.5);
         }

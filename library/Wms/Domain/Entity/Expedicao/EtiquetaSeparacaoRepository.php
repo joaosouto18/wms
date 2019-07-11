@@ -1567,27 +1567,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
 
                 $arrElements = $mapaSeparacaoProdutoRepo->getMaximosByConsolidado($idExpedicao);
-
-                $processMinVolumes = function ($caixaEn, $arrVols, $idCliente, $elements) {
-                    foreach ($elements as $target => $element)
-                    {
-                        $getter = "get" . ucfirst($target);
-                        $maxIndex = $caixaEn->$getter();
-                        $nVols = ceil($element / $maxIndex);
-                        if (!empty($arrVols[$idCliente])) {
-                            $atual = $arrVols[$idCliente];
-                            $arrVols[$idCliente] = (int) ($atual > $nVols) ? $atual : $nVols;
-                        } else {
-                            $arrVols[$idCliente] = (int) $nVols;
-                        }
-                    }
-                    return $arrVols;
-                };
-
-                $minVols = [];
-                foreach($arrElements as $idCliente => $arr){
-                    $minVols = $processMinVolumes($caixaEn, $minVols, $idCliente, $arr);
-                }
+                $minVols = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements);
 
                 $counter = 0;
                 foreach ($minVols as $idCliente => $minVol) {
