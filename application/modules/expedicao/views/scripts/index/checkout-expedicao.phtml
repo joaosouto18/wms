@@ -9,17 +9,20 @@ $idPessoa = $this->pessoa;
 <bgsound id="bgSoundId" loop="0" volume="100" />
 <script>
     $('#codigoBarrasMapa').focus();
+    let reloadCliente = function(){return true};
 <?php
 if ($recarregar == 1) {
     ?>
         $(window).load(function () {
             $(".buscar-mapa").click();
+
+
             <?php
             if ($idPessoa > 0) {
                 ?>
-                        setTimeout(function () {
-                            $('input[cod_pessoa=<?php echo $idPessoa ?>]').click();
-                        }, 2000);
+            reloadCliente = function() {
+                $('input[cod_pessoa=<?php echo $idPessoa ?>]').click();
+            };
                 <?php
             }
             ?>
@@ -59,6 +62,9 @@ function playSound(soundfile) {
                     });
                     return false;
                 });
+            },
+            complete: function(){
+                reloadCliente();
             }
         });
         return false;

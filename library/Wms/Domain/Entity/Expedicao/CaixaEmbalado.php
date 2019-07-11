@@ -253,7 +253,7 @@ class CaixaEmbalado
                 $nVols = ceil($element / $maxIndex);
                 if (!empty($arrVols[$idCliente])) {
                     $atual = $arrVols[$idCliente];
-                    $arrVols[$idCliente] = (int)($atual > $nVols) ? $atual : $nVols;
+                    $arrVols[$idCliente] = ($atual > $nVols) ? (int) $atual : (int) $nVols;
                 } else {
                     $arrVols[$idCliente] = (int)$nVols;
                 }

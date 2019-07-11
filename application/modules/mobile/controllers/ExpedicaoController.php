@@ -392,8 +392,8 @@ class Mobile_ExpedicaoController extends Action {
                 $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements, $idPessoa);
                 $volumes = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa, "pessoa" => $idPessoa]));
 
-                if ($volumes == $arrElements[$idPessoa] && !empty($qtdPendenteConferencia)) {
-                    throw new Exception("Pelo calculo pre definido de volumes, este volume não pode ser fechado, pois ainda existem itens à serem conferidos deste cliente");
+                if ($volumes == $preCountVolCliente && !empty($qtdPendenteConferencia)) {
+                    throw new Exception("Pelo calculo pré definido de volumes, este volume não pode ser fechado, pois ainda existem itens à serem conferidos deste cliente");
                 } elseif (empty($mapaSeparacaoConferencias) && !empty($qtdPendenteConferencia)) {
                     throw new Exception("Não é possível fechar volume sem produtos conferidos!");
                 }
