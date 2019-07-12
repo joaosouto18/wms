@@ -4434,6 +4434,7 @@ class ExpedicaoRepository extends EntityRepository {
                 inner join pedido p on p.cod_carga = c.cod_carga
                 inner join pedido_produto pp on pp.cod_pedido = p.cod_pedido
                 where e.cod_expedicao in ($expedicoes) and (pp.cod_produto = '$codProduto' and dsc_grade = '$grade')
+                      and p.cod_pedido not in (select cod_pedido from onda_ressuprimento_pedido)
                 group by p.cod_pedido, pp.cod_produto, pp.dsc_grade
                 order by sum(pp.quantidade)";
 
