@@ -34,6 +34,10 @@ class EtiquetaEmbalados extends eFPDF
                 //LAYOUT HIDRAU
                 self::bodyExpedicaoModelo4($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
                 break;
+            case 5:
+                //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
+                self::bodyExpedicaoModelo5($volumePatrimonio);
+                break;
             default:
                 self::bodyExpedicaoModelo1($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
                 break;
@@ -255,6 +259,35 @@ class EtiquetaEmbalados extends eFPDF
             $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 40, 42 , 60, 16);
             $this->Image(APPLICATION_PATH . '/../public/img/logo_cliente.jpg', 75, 0, 23, 12);
 
+        }
+    }
+
+    private function bodyExpedicaoModelo5($volumes)
+    {
+
+        foreach ($volumes as $volume) {
+            $this->AddPage();
+            //monta o restante dos dados da etiqueta
+            $this->SetFont('Arial', '', 10);
+            $impressao = utf8_decode(substr($volume['NOM_PESSOA']."\n",0,20));
+            $this->MultiCell(110, 3.9, $impressao, 0, 'L');
+
+            $this->SetFont('Arial', '', 10);
+            $impressao = utf8_decode(substr('ROTA: '.$volume['DSC_ITINERARIO']."\n",0,20));
+            $this->MultiCell(110, 3.9, $impressao, 0, 'L');
+
+            $this->SetFont('Arial', '', 10);
+            $impressao = utf8_decode(substr('PLACA: '.$volume['DSC_PLACA_CARGA']."\n",0,20));
+            $this->MultiCell(110, 3.9, $impressao, 0, 'L');
+
+            $this->SetFont('Arial', '', 10);
+            $impressao = utf8_decode(substr('CARGA: '.$volume['COD_CARGA_EXTERNO']."\n",0,20));
+            $this->MultiCell(110, 3.9, $impressao, 0, 'L');
+
+            $this->SetFont('Arial', '', 7);
+            $this->MultiCell(110, 3.9, "VOLUME: $volume[POS_VOLUME]/$volume[COUNT_VOLUMES]", 0, 'L');
+
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 6, 20 , 33, 9.5);
         }
     }
 }

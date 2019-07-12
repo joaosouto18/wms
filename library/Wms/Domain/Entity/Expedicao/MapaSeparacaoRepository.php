@@ -905,8 +905,9 @@ class MapaSeparacaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function getClientesByConferencia($idMapaSeparacao) {
+    public function getClientesByConferencia($idMapaSeparacao, $agrupaEmbalado = false) {
         $statusEmbalado = MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO;
+        $where = (!$agrupaEmbalado) ? "MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0)" : "1 = 1";
 
         $sql = "SELECT P.NOM_PESSOA,
                        P.COD_PESSOA,
@@ -932,7 +933,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                        AND MSC.DSC_GRADE = MSP.DSC_GRADE
                        AND MSC.COD_PESSOA = P.COD_PESSOA
                  LEFT JOIN MAPA_SEPARACAO_EMB_CLIENTE MSEC ON MSEC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
-                 WHERE MSP.QTD_SEPARAR > NVL(MSC.QTD_CONFERIDA,0) OR MSEC.COD_STATUS = $statusEmbalado
+                 WHERE $where OR MSEC.COD_STATUS = $statusEmbalado
                  GROUP BY P.NOM_PESSOA, P.COD_PESSOA
                  ORDER BY MIN(MSP.NUM_CAIXA_PC_INI)";
 
@@ -1081,18 +1082,15 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
                 $mapaSeparacaoEmbaladoS = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
                 if (empty($mapaSeparacaoEmbaladoS)) {
-                    $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa . null, false);
+                    $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  null,false);
                 } else {
                     /** @var MapaSeparacaoEmbalado $firtsItem */
                     $firtsItem = $mapaSeparacaoEmbaladoS[0];
                     if ($firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
-                        $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $firtsItem);
+                        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $firtsItem, false);
                     } else {
                         $mapaSeparacaoEmbaladoEn = $firtsItem;
                     }
-                }
-                if (empty($mapaSeparacaoEmbaladoEn)) {
-                    $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa, 'status' => MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
                 }
             }
 
