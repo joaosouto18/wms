@@ -396,11 +396,13 @@ class Mobile_ExpedicaoController extends Action {
                     throw new Exception("Pelo calculo pré definido de volumes, este volume não pode ser fechado, pois ainda existem itens à serem conferidos deste cliente");
                 } elseif (empty($mapaSeparacaoConferencias) && !empty($qtdPendenteConferencia)) {
                     throw new Exception("Não é possível fechar volume sem produtos conferidos!");
+                } elseif ($volumes == $preCountVolCliente && empty($qtdPendenteConferencia)) {
+                    throw new Exception("Todos os volumes pré calculados para este cliente já foram fechados!");
                 }
 
                 $countEtiquetas = count($this->_em->getRepository("wms:Expedicao\VEtiquetaSeparacao")->findBy(['codExpedicao' => $idExpedicao]));
 
-                return $volumes + $countEtiquetas;
+                return ($volumes + 1 ) + $countEtiquetas;
             };
 
             /** @var Expedicao\MapaSeparacaoEmbalado $mapaSeparacaoEmbaladoEn */
