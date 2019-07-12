@@ -2706,6 +2706,117 @@ class ExpedicaoRepository extends EntityRepository {
         return $result;
     }
 
+    public function getAcompanhamentoSeparacao($parametros, $idDepositoLogado = null) {
+
+        $where = "";
+        $wherePrincipal = "";
+        $innerJoinProduto = "";
+
+        if (isset($idDepositoLogado)) {
+            $where = " AND P.CENTRAL_ENTREGA = '$idDepositoLogado' ";
+        }
+
+        if (is_array($parametros['centrais'])) {
+            $central = implode("','", $parametros['centrais']);
+            $central = "'" . $central . "'";
+            $where .= " AND (P.CENTRAL_ENTREGA in(" . $central . "))";
+        }
+
+        if (isset($parametros['placa']) && !empty($parametros['placa'])) {
+            $where .= " AND (E.DSC_PLACA_EXPEDICAO = '" . $parametros['placa'] . "')";
+        }
+
+        if (isset($parametros['dataInicial1']) && (!empty($parametros['dataInicial1']))) {
+            $where .= " AND (E.DTH_INICIO >= TO_DATE('" . $parametros['dataInicial1'] . " 00:00', 'DD-MM-YYYY HH24:MI'))";
+        }
+        if (isset($parametros['dataInicial2']) && (!empty($parametros['dataInicial2']))) {
+            $where .= " AND (E.DTH_INICIO <= TO_DATE('" . $parametros['dataInicial2'] . " 23:59', 'DD-MM-YYYY HH24:MI'))";
+        }
+
+        if (isset($parametros['dataFinal1']) && (!empty($parametros['dataFinal1']))) {
+            $where .= " AND (E.DTH_FINALIZACAO >= TO_DATE('" . $parametros['dataFinal1'] . " 00:00', 'DD-MM-YYYY HH24:MI'))";
+        }
+
+        if (isset($parametros['dataFinal2']) && (!empty($parametros['dataFinal2']))) {
+            $where .= " AND (E.DTH_FINALIZACAO <= TO_DATE('" . $parametros['dataFinal2'] . " 23:59', 'DD-MM-YYYY HH24:MI'))";
+        }
+
+        if (isset($parametros['status']) && (!empty($parametros['status']))) {
+            $where .= " AND (E.COD_STATUS = " . $parametros['status'] . ")";
+        }
+
+        if (isset($parametros['produtividade']) && (!empty($parametros['produtividade']))) {
+            if ($parametros['produtividade'] == 'INICIADO') $wherePrincipal .= ' AND PRD.APONTADO = 0 ';
+            if ($parametros['produtividade'] == 'FINALIZADO') $wherePrincipal .= ' AND PRD.APONTADO = 1 ';;
+            if ($parametros['produtividade'] == 'SEM_APONTAMENTO') $wherePrincipal .= ' AND PRD.APONTADO IS NULL ';;
+        }
+
+        if (isset($parametros['idExpedicao']) && !empty($parametros['idExpedicao'])) {
+            $where = " AND (E.COD_EXPEDICAO = " . $parametros['idExpedicao'] . ")";
+        }
+
+        if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
+            $where = " AND C.COD_CARGA_EXTERNO LIKE '%" . $parametros['codCargaExterno'] . "%'";
+        }
+
+        if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
+            $where = " AND P.COD_EXTERNO = '" . $parametros['pedido'] . "'";
+        }
+
+        if (isset($parametros['produto']) && !empty($parametros['produto'])) {
+            $innerJoinProduto = " INNER JOIN (SELECT DISTINCT MSP.COD_MAPA_SEPARACAO
+                                            FROM MAPA_SEPARACAO_PRODUTO MSP 
+                                           WHERE MSP.COD_PRODUTO = '" . $parametros['produto'] . "') FP ON FP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO ";
+        }
+
+
+        $sqlInner = " SELECT DISTINCT E.COD_EXPEDICAO
+                        FROM EXPEDICAO E 
+                        LEFT JOIN CARGA C ON C.COD_EXPEDICAO = E.COD_EXPEDICAO
+                        LEFT JOIN PEDIDO P ON P.COD_CARGA = C.COD_CARGA
+                       WHERE 1 = 1 " . $where;
+
+        $sql = "SELECT E.COD_EXPEDICAO,
+                       MS.COD_MAPA_SEPARACAO, 
+                       MS.DTH_CRIACAO, TRIM(MS.DSC_QUEBRA) as QUEBRA, 
+                       MSP.QTD_SEPARAR as QTD_PRODUTOS, 
+                       MSP.QTD_CUBAGEM as QTD_CUBAGEM, 
+                       MSP.QTD_PESO as QTD_PESO, 
+                       CAST((NVL(MSC.QTD_CONF,0)/NVL(MSP.QTD_SEPARAR,0)) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL_CONFERENCIA,
+                       CAST((NVL(SMS.TOTAL_SEPARADO,0)/NVL(MSP.QTD_SEPARAR,0)) * 100 as NUMBER(6,2)) || '%' as PERCENTUAL_SEPARACAO,
+                       CASE WHEN PRD.APONTADO = 1 THEN 'APONTAMENTO FINALIZADO'
+                            WHEN PRD.APONTADO = 0 THEN 'APONTAMENTO INICIADO'
+                            WHEN PRD.APONTADO IS NULL THEN 'SEM APONTAMENTO'
+                       END as PRODUTIVIDADE_SEPARACAO,
+                       S.DSC_SIGLA as STATUS_EXPEDICAO
+                  FROM MAPA_SEPARACAO MS
+                 INNER JOIN EXPEDICAO E ON E.COD_EXPEDICAO = MS.COD_EXPEDICAO
+                  LEFT JOIN (SELECT MSP.COD_MAPA_SEPARACAO, 
+                                    SUM((MSP.QTD_SEPARAR * MSP.QTD_EMBALAGEM)- MSP.QTD_CORTADO) as QTD_SEPARAR,
+                                    SUM(NVL(NVL(SPP.NUM_CUBAGEM, PV.NUM_CUBAGEM), 0) * (MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) - NVL(MSP.QTD_CORTADO,0)) as QTD_CUBAGEM,
+                                    SUM(NVL(NVL(SPP.NUM_PESO, PV.NUM_PESO), 0) * (MSP.QTD_EMBALAGEM * MSP.QTD_SEPARAR) - NVL(MSP.QTD_CORTADO,0)) as QTD_PESO
+                               FROM MAPA_SEPARACAO MS
+                              INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                               LEFT JOIN PRODUTO_PESO SPP ON MSP.COD_PRODUTO = SPP.COD_PRODUTO AND MSP.DSC_GRADE = SPP.DSC_GRADE
+                               LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME
+                              GROUP BY MSP.COD_MAPA_SEPARACAO) MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, SUM(QTD_CONFERIDA * QTD_EMBALAGEM) AS QTD_CONF
+                               FROM MAPA_SEPARACAO_CONFERENCIA GROUP BY COD_MAPA_SEPARACAO) MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                  LEFT JOIN (SELECT SUM(QTD_SEPARADA * QTD_EMBALAGEM) AS TOTAL_SEPARADO, COD_MAPA_SEPARACAO
+                               FROM  SEPARACAO_MAPA_SEPARACAO  GROUP BY  COD_MAPA_SEPARACAO) SMS ON SMS.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                  LEFT JOIN (SELECT COD_MAPA_SEPARACAO, MIN(CASE WHEN DTH_FIM_CONFERENCIA IS NULL THEN 0 ELSE 1 END) AS APONTADO 
+                              FROM APONTAMENTO_SEPARACAO_MAPA GROUP BY COD_MAPA_SEPARACAO) PRD ON PRD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+                  LEFT JOIN SIGLA S ON S.COD_SIGLA = E.COD_STATUS                  
+                 INNER JOIN ($sqlInner) FILTRO ON FILTRO.COD_EXPEDICAO = E.COD_EXPEDICAO
+                 $innerJoinProduto
+                 WHERE 1 = 1 $wherePrincipal 
+                 ORDER BY MS.COD_MAPA_SEPARACAO";
+
+        $result = \Wms\Domain\EntityRepository::nativeQuery($sql);
+        return $result;
+
+    }
+
     /**
      * @param $parametros
      * @return \Doctrine\ORM\QueryBuilder
