@@ -4225,19 +4225,19 @@ class ExpedicaoRepository extends EntityRepository {
             $where .= " AND S.COD_SIGLA = " . $parametros['status'] . "";
         }
         if (isset($parametros['idExpedicao']) && !empty($parametros['idExpedicao'])) {
-            $where = " AND E.COD_EXPEDICAO = " . $parametros['idExpedicao'] . "";
+            $where .= " AND E.COD_EXPEDICAO = " . $parametros['idExpedicao'] . "";
         }
 
         if (isset($parametros['pedido']) && !empty($parametros['pedido'])) {
-            $where = " AND P.COD_EXTERNO = '" . $parametros['pedido'] . "'";
+            $where .= " AND P.COD_EXTERNO = '" . $parametros['pedido'] . "'";
         }
 
         if (isset($parametros['codCargaExterno']) && !empty($parametros['codCargaExterno'])) {
-            $where = " AND C.COD_CARGA_EXTERNO = '" . $parametros['codCargaExterno'] . "'";
+            $where .= " AND C.COD_CARGA_EXTERNO = '" . $parametros['codCargaExterno'] . "'";
         }
 
         if (isset($parametros['produto']) && !empty($parametros['produto'])) {
-            $where = " AND P.COD_PEDIDO IN ( SELECT PP.COD_PEDIDO FROM PEDIDO_PRODUTO PP WHERE PP.COD_PRODUTO = ". $parametros['produto']. ")";
+            $where .= " AND P.COD_PEDIDO IN ( SELECT PP.COD_PEDIDO FROM PEDIDO_PRODUTO PP WHERE PP.COD_PRODUTO = ". $parametros['produto']. ")";
         }
 
         $SQL = "
