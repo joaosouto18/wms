@@ -1880,8 +1880,7 @@ class ExpedicaoRepository extends EntityRepository {
 
         $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
 
-        $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
-
+        $acaoCorteEntities = $acaoIntRepo->findBy(array('id' => $idIntegracaoCorte));
 
         $quantidade = $pedidoProdutoEn->getQuantidade();
         $quantidadeCortada = $pedidoProdutoEn->getQtdCortada();
@@ -1889,18 +1888,21 @@ class ExpedicaoRepository extends EntityRepository {
         $codCargaExterno = $pedidoProdutoEn->getPedido()->getCarga()->getCodCargaExterno();
         $codExpedicao = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao()->getId();
 
-        $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
-            0 => $codPedidoExterno,
-            1 => $codCargaExterno,
-            2 => $quantidade - $quantidadeCortada,
-            3 => $codProduto,
-            4 => $motivo), 'E', 'P',null,AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
+        foreach ($acaoCorteEntities as $acaoCorteEntity) {
+            $result = $acaoIntRepo->processaAcao($acaoCorteEntity, array(
+                0 => $codPedidoExterno,
+                1 => $codCargaExterno,
+                2 => $quantidade - $quantidadeCortada,
+                3 => $codProduto,
+                4 => $motivo), 'E', 'P',null,AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
 
-        if (is_string($result) && $result != 'OK') {
-            $andamentoRepo->save($result, $codExpedicao);
-        } else {
-            $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
+            if (is_string($result) && $result != 'OK') {
+                $andamentoRepo->save($result, $codExpedicao);
+            } else {
+                $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
+            }
         }
+
 
         return true;
     }
