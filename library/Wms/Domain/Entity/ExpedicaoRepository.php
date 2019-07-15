@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Expedicao\EtiquetaSeparacao as EtiquetaSeparacao,
     Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
 use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Domain\Entity\Integracao\AcaoIntegracaoFiltro;
 use Wms\Domain\Entity\Produto\Embalagem;
 use Wms\Domain\Entity\Produto\EmbalagemRepository;
 use Wms\Domain\Entity\Produto\Lote;
@@ -1885,15 +1886,15 @@ class ExpedicaoRepository extends EntityRepository {
         $quantidade = $pedidoProdutoEn->getQuantidade();
         $quantidadeCortada = $pedidoProdutoEn->getQtdCortada();
         $codPedidoExterno = $pedidoProdutoEn->getPedido()->getCodExterno();
-        $codCargaExterno = $pedidoProdutoEn-getPedido()->getCarga()->getCodCargaExterno();
-        $codExpedicao = $pedidoProdutoEn-getPedido()->getCarga()->getExpedicao()->getId();
+        $codCargaExterno = $pedidoProdutoEn->getPedido()->getCarga()->getCodCargaExterno();
+        $codExpedicao = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao()->getId();
 
         $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
             0 => $codPedidoExterno,
             1 => $codCargaExterno,
             2 => $quantidade - $quantidadeCortada,
             3 => $codProduto,
-            4 => $motivo), 'E', 'P');
+            4 => $motivo), 'E', 'P',null,AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
 
         if (is_string($result) && $result != 'OK') {
             $andamentoRepo->save($result, $codExpedicao);
