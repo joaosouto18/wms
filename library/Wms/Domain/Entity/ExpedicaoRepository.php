@@ -1878,9 +1878,6 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
         $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
 
-        $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
-
-        $acaoCorteEntities = $acaoIntRepo->findBy(array('id' => $idIntegracaoCorte));
 
         $quantidade = $pedidoProdutoEn->getQuantidade();
         $quantidadeCortada = $pedidoProdutoEn->getQtdCortada();
@@ -1888,7 +1885,12 @@ class ExpedicaoRepository extends EntityRepository {
         $codCargaExterno = $pedidoProdutoEn->getPedido()->getCarga()->getCodCargaExterno();
         $codExpedicao = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao()->getId();
 
-        foreach ($acaoCorteEntities as $acaoCorteEntity) {
+
+        $idsIntegracaoCorte = explode(',',$this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP'));
+
+        foreach ($idsIntegracaoCorte as $id) {
+            $acaoCorteEntity = $acaoIntRepo->find($id);
+
             $result = $acaoIntRepo->processaAcao($acaoCorteEntity, array(
                 0 => $codPedidoExterno,
                 1 => $codCargaExterno,
@@ -1902,7 +1904,6 @@ class ExpedicaoRepository extends EntityRepository {
                 $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
             }
         }
-
 
         return true;
     }
