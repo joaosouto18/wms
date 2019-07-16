@@ -141,6 +141,11 @@ class ModeloSeparacao
     protected $agrupContEtiquetas;
 
     /**
+     * @Column(name="CRIAR_VOLS_FINAL_CHECKOUT", type="string", nullable=true)
+     */
+    protected $criarVolsFinalCheckout;
+
+    /**
      * @Column(name="IND_FORCA_EMB_VENDA", type="string", nullable=true)
      */
     protected $forcarEmbVenda;
@@ -489,6 +494,22 @@ class ModeloSeparacao
     public function setAgrupContEtiquetas($agrupContEtiquetas)
     {
         $this->agrupContEtiquetas = $agrupContEtiquetas;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCriarVolsFinalCheckout()
+    {
+        return $this->criarVolsFinalCheckout;
+    }
+
+    /**
+     * @param mixed $criarVolsFinalCheckout
+     */
+    public function setCriarVolsFinalCheckout($criarVolsFinalCheckout)
+    {
+        $this->criarVolsFinalCheckout = $criarVolsFinalCheckout;
     }
 
     /**

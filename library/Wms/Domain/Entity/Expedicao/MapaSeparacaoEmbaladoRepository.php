@@ -9,7 +9,7 @@ use Wms\Domain\Entity\Expedicao;
 class MapaSeparacaoEmbaladoRepository extends EntityRepository
 {
 
-    public function save($idMapa, $codPessoa, $mapaSeparacaoEmbalado = null, $flush = true)
+    public function save($idMapa, $codPessoa, $os, $mapaSeparacaoEmbalado = null, $flush = true)
     {
         $pessoaEn = $this->getEntityManager()->getReference('wms:Pessoa',$codPessoa);
         $mapaSeparacaoEn = $this->getEntityManager()->getReference('wms:Expedicao\MapaSeparacao',$idMapa);
@@ -25,6 +25,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $mapaSeparacaoEmbalado->setPessoa($pessoaEn);
         $mapaSeparacaoEmbalado->setSequencia($sequencia);
         $mapaSeparacaoEmbalado->setStatus($siglaEn);
+        $mapaSeparacaoEmbalado->setOs($os);
         $mapaSeparacaoEmbalado->setUltimoVolume('N');
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
         if ($flush == true) {

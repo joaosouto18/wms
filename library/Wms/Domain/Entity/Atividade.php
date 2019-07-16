@@ -20,6 +20,7 @@ class Atividade
     const INVENTARIO = 14;
     const REABASTECIMENTO_MANUAL = 16;
     const RETORNO_RESSUPRIMENTO = 17;
+    const EMBALAGEM_EXPEDICAO = 18;
 
     /**
      * @Column(name="COD_ATIVIDADE", type="integer", nullable=false)

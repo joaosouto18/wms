@@ -4,6 +4,7 @@ namespace Wms\Domain\Entity\Expedicao;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\SequenceGenerator;
+use Wms\Domain\Entity\OrdemServico;
 
 /**
  *
@@ -58,6 +59,13 @@ class MapaSeparacaoEmbalado
      * @Column(name="POS_VOLUME", type="integer", nullable=true)
      */
     protected $posVolume;
+
+    /**
+     * @var OrdemServico
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
+     * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS")
+     */
+    protected $os;
 
     /**
      * Define o id da embalagem
@@ -181,5 +189,21 @@ class MapaSeparacaoEmbalado
     public function setPosVolume($posVolume)
     {
         $this->posVolume = $posVolume;
+    }
+
+    /**
+     * @return OrdemServico
+     */
+    public function getOs()
+    {
+        return $this->os;
+    }
+
+    /**
+     * @param OrdemServico $os
+     */
+    public function setOs($os)
+    {
+        $this->os = $os;
     }
 }
