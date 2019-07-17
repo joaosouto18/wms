@@ -1078,8 +1078,10 @@ class EnderecoRepository extends EntityRepository {
                  */
                 foreach ($itensPickingEmb as $key => $itemPinckingEmb) {
                     $produtoEn = $itemPinckingEmb->getProduto();
-                    $produto = array('produto' => $produtoEn->getId(), 'grade' => $produtoEn->getGrade(),
-                        'desc' => $produtoEn->getDescricao(), 'qtd' => 0);
+                    $produto = array(
+                        'produto' => $produtoEn->getId(),
+                        'desc' => (!$usaGrade) ? $produtoEn->getDescricao() : $produtoEn->getDescricao() . " ( " .$produtoEn->getGrade() . " ) ",
+                        'qtd' => 0);
                     $result[$produtoEn->getId() . "---" . $produtoEn->getGrade()] = $produto;
                 }
             }
