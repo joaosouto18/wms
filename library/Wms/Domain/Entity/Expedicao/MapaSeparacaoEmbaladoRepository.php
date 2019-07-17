@@ -253,15 +253,14 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
     /**
      * @param $cpfEmbalador
      * @param $idExpedicao
-     * @param bool $cine
+     * @param bool $cine (Create If Not Exist)
      * @return OrdemServico
      * @throws \Exception
      */
     public function getOsEmbalagem($cpfEmbalador, $idExpedicao, $cine = false)
     {
         /** @var UsuarioRepository $usuarioRepo */
-        $usuarioRepo = $this->_em->getRepository("wms:Usuario");
-        $pessoa = $usuarioRepo->getPessoaByCpf($cpfEmbalador);
+        $pessoa = $this->_em->getRepository("wms:Usuario")->getPessoaByCpf($cpfEmbalador);
         if (empty($pessoa)) throw new \Exception("Nenhum usuário encontrado com esse CPF: $cpfEmbalador");
 
         $idPessoa = $pessoa[0]['COD_PESSOA'];

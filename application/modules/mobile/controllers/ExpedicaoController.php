@@ -404,7 +404,7 @@ class Mobile_ExpedicaoController extends Action {
 
                 $countEtiquetas = count($this->_em->getRepository("wms:Expedicao\VEtiquetaSeparacao")->findBy(['codExpedicao' => $idExpedicao]));
 
-                return ($volumes + 1 ) + $countEtiquetas;
+                return $volumes + $countEtiquetas;
             };
 
             /**
@@ -441,7 +441,8 @@ class Mobile_ExpedicaoController extends Action {
                 if ($agrupaEtiquetas) {
                     $posVolume = ($agrupaEtiquetas) ? $checkAgrupamento() : null;
                     if (!empty($posVolume)) {
-                        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $idPessoa, null,false);
+                        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $idPessoa, null,true);
+                        $posVolume += 1;
                         $fechaEmbalado($mapaSeparacaoEmbaladoEn, $posVolume, $idPessoa);
                     }
                 }
