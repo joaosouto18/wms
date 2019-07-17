@@ -169,6 +169,8 @@ class Mobile_RecebimentoController extends Action
             $grade = $itemNF['grade'];
             $pesoVariavel = $itemNF['possuiPesoVariavel'];
 
+            $produtoEntity = $this->em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+
             $this->view->itemNF = $itemNF;
             $form->setDefault('idNormaPaletizacao', $itemNF['idNorma']);
 
@@ -197,8 +199,14 @@ class Mobile_RecebimentoController extends Action
                 $normasPaletizacao[$itemNF['idNorma']] = $itemNF["dscUnitizador"];
             }
 
+            if ($this->getSystemParameterValue('UTILIZA_GRADE') == 'S') {
+                $stringProduto = "O produto '$idProduto' grade '$grade'";
+            } else {
+                $stringProduto = "O produto '$idProduto' - " . $produtoEntity->getDescricao();
+            }
+
             if (empty($normasPaletizacao))
-                throw new Exception("O produto '$idProduto' grade '$grade' não tem nenhum dado logistico cadastrado");
+                throw new Exception("$stringProduto não tem nenhum dado logistico cadastrado");
 
             $this->view->normasPaletizacao = $normasPaletizacao;
 
@@ -382,11 +390,16 @@ class Mobile_RecebimentoController extends Action
             }
 
 
+            if ($this->getSystemParameterValue('UTILIZA_GRADE') == 'S') {
+                $stringProduto = "$idProduto - $grade.";
+            } else {
+                $stringProduto = "$idProduto - " . $produtoEn->getDescricao();
+            }
 
             $this->em->flush();
             $this->em->commit();
 
-            $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
+            $this->_helper->messenger('success', "Conferida Quantidade Embalagem do Produto $stringProduto");
             $args = ["idRecebimento" => $idRecebimento];
             if (!$dataValidadeValida) {
                 $args['dataValidadeInvalida'] = !$dataValidadeValida;
@@ -449,6 +462,14 @@ class Mobile_RecebimentoController extends Action
                 $idProduto = $params['idProduto'];
                 $grade = $params['grade'];
             }
+
+            $produtoEntity = $this->em->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
+            if ($this->getSystemParameterValue('UTILIZA_GRADE') == 'S') {
+                $stringProduto = "$idProduto - $grade.";
+            } else {
+                $stringProduto = "$idProduto - " . $produtoEntity->getDescricao();
+            }
+
             if ($submit == 'semConferencia' || $submit == 'Autorizar Recebimento') {
                 if ($senhaDigitada == $senhaAutorizacao) {
                     if ($params['conferenciaCega'] == true) {
@@ -472,7 +493,7 @@ class Mobile_RecebimentoController extends Action
                         $this->_helper->messenger('success', 'Conferida Quantidade Volume do Produto. ' . $idProduto . ' - ' . $grade . '.');
                     } elseif (isset($idProdutoEmbalagem)) {
                         $recebimentoRepo->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $qtdUnidFracionavel, $idNormaPaletizacao, $params);
-                        $this->_helper->messenger('success', 'Conferida Quantidade Embalagem do Produto. ' . $idProduto . ' - ' . $grade . '.');
+                        $this->_helper->messenger('success', "Conferida Quantidade Embalagem do Produto " . $stringProduto);
                     }
                     $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
                 } else {
