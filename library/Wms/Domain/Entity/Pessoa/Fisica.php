@@ -374,9 +374,10 @@ class Fisica extends Pessoa
         return $this;
     }
 
-    public function getCpf()
+    public function getCpf($maskOn = true)
     {
-        return \Core\Util\String::mask($this->cpf, '###.###.###-##');
+
+        return ($maskOn) ? \Core\Util\String::mask($this->cpf, '###.###.###-##'): $this->cpf;
     }
 
     public function setCpf($cpf)

@@ -203,8 +203,11 @@ class Mobile_ExpedicaoController extends Action {
         $idExpedicao = $this->_getParam("idExpedicao");
         $idVolume = $this->_getParam("idVolume");
         $checkout = $this->_getParam("chekcout");
+        $cpfEmbalador = "";
         if($checkout == 'chekcout'){
             $chekcout = true;
+            $cpfEmbalador = $this->_getParam("cpfEmbalador");
+            $cpfEmbalador = str_replace(array('.', '-'), '', $cpfEmbalador);
         }else{
             $chekcout = false;
         }
@@ -275,7 +278,7 @@ class Mobile_ExpedicaoController extends Action {
                         $volumePatrimonioEn = $volumePatrimonioRepo->find($idVolume);
                         $volume = ['idVolume' => $volumePatrimonioEn->getId(), 'dscVolume' => $volumePatrimonioEn->getDescricao()];
                     }
-                    $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa, null, $chekcout, $lote);
+                    $result = $mapaSeparacaoRepo->confereMapaProduto($paramsModeloSeparacao, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $cpfEmbalador, $codPessoa, null, $chekcout, $lote);
                     if(isset($result['checkout'])){
                         $msg['msg'] = 'checkout';
                         $msg['produto'] = $result['produto'];
@@ -371,6 +374,7 @@ class Mobile_ExpedicaoController extends Action {
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
         $mapaSeparacaoConferenciaRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoConferencia');
+        /** @var \Wms\Domain\Entity\OrdemServicoRepository $osRepo */
 
         /** @var Expedicao\ModeloSeparacao $modeloSeparacaoEn */
         $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->getModeloSeparacao($idExpedicao);
@@ -396,13 +400,26 @@ class Mobile_ExpedicaoController extends Action {
                     throw new Exception("Pelo calculo pré definido de volumes, este volume não pode ser fechado, pois ainda existem itens à serem conferidos deste cliente");
                 } elseif (empty($mapaSeparacaoConferencias) && !empty($qtdPendenteConferencia)) {
                     throw new Exception("Não é possível fechar volume sem produtos conferidos!");
-                } elseif ($volumes == $preCountVolCliente && empty($qtdPendenteConferencia)) {
-                    throw new Exception("Todos os volumes pré calculados para este cliente já foram fechados!");
                 }
 
                 $countEtiquetas = count($this->_em->getRepository("wms:Expedicao\VEtiquetaSeparacao")->findBy(['codExpedicao' => $idExpedicao]));
 
                 return ($volumes + 1 ) + $countEtiquetas;
+            };
+
+            /**
+             * @param $mapaSeparacaoEmbaladoEn Expedicao\MapaSeparacaoEmbalado
+             * @param $posVolume
+             * @param $idPessoa
+             */
+            $fechaEmbalado = function ($mapaSeparacaoEmbaladoEn, $posVolume, $idPessoa) use ($mapaSeparacaoEmbaladoRepo){
+                /** @var \Wms\Domain\Entity\OrdemServicoRepository $osRepo */
+                $osRepo = $this->getEntityManager()->getRepository('wms:OrdemServico');
+                $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume);
+                $os = $mapaSeparacaoEmbaladoEn->getOs();
+                $osRepo->finalizar($os->getId(), "Fechamento de Volume Embalado", $os);
+                $this->getEntityManager()->commit();
+                $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa);
             };
 
             /** @var Expedicao\MapaSeparacaoEmbalado $mapaSeparacaoEmbaladoEn */
@@ -419,18 +436,13 @@ class Mobile_ExpedicaoController extends Action {
                 }
 
                 $posVolume = ($agrupaEtiquetas) ? $checkAgrupamento($mapaSeparacaoConferencias) : null;
-
-                $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume);
-                $this->getEntityManager()->commit();
-                $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idMapa, $idPessoa);
+                $fechaEmbalado($mapaSeparacaoEmbaladoEn, $posVolume, $idPessoa);
             } else {
                 if ($agrupaEtiquetas) {
                     $posVolume = ($agrupaEtiquetas) ? $checkAgrupamento() : null;
                     if (!empty($posVolume)) {
                         $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $idPessoa, null,false);
-                        $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume);
-                        $this->getEntityManager()->commit();
-                        $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idMapa, $idPessoa);
+                        $fechaEmbalado($mapaSeparacaoEmbaladoEn, $posVolume, $idPessoa);
                     }
                 }
             }

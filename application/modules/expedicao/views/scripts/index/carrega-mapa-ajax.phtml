@@ -272,6 +272,7 @@ if ($this->erro) {
                 async: false,
                 type: 'post',
                 success: function (data) {
+                    console.log(data);
                     if (data.retorno.resposta.length > 0) {
                         inputCodBarras.val("").focus();
                         inputQtd.val(1);

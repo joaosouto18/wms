@@ -4,7 +4,12 @@ namespace Wms\Domain\Entity\Expedicao;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Id\SequenceGenerator;
 use Doctrine\ORM\Query;
+use Wms\Domain\Entity\Atividade;
 use Wms\Domain\Entity\Expedicao;
+use Wms\Domain\Entity\OrdemServico;
+use Wms\Domain\Entity\Pessoa;
+use Wms\Domain\Entity\Usuario;
+use Wms\Domain\Entity\UsuarioRepository;
 
 class MapaSeparacaoEmbaladoRepository extends EntityRepository
 {
@@ -87,7 +92,13 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return true;
     }
 
-    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$idMapa,$idPessoa)
+    /**
+     * @param $mapaSeparacaoEmbaladoEn MapaSeparacaoEmbalado
+     * @param $idMapa
+     * @param $idPessoa
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa)
     {
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
@@ -96,8 +107,8 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
             throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
         }
-
-        $qtdPendenteConferencia = $this->getProdutosConferidosByCliente($idMapa,$idPessoa);
+        $idMapa = $mapaSeparacaoEmbaladoEn->getMapaSeparacao()->getId();
+        $qtdPendenteConferencia = $this->getProdutosConferidosByCliente($idMapa, $idPessoa);
         if (count($qtdPendenteConferencia) <= 0) {
             $this->getEntityManager()->beginTransaction();
 
@@ -239,5 +250,58 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    /**
+     * @param $cpfEmbalador
+     * @param $idExpedicao
+     * @param bool $cine
+     * @return OrdemServico
+     * @throws \Exception
+     */
+    public function getOsEmbalagem($cpfEmbalador, $idExpedicao, $cine = false)
+    {
+        /** @var UsuarioRepository $usuarioRepo */
+        $usuarioRepo = $this->_em->getRepository("wms:Usuario");
+        $pessoa = $usuarioRepo->getPessoaByCpf($cpfEmbalador);
+        if (empty($pessoa)) throw new \Exception("Nenhum usuário encontrado com esse CPF: $cpfEmbalador");
+
+        $idPessoa = $pessoa[0]['COD_PESSOA'];
+        /** @var OrdemServico[] $arrOs */
+        $arrOs = $this->_em->getRepository("wms:OrdemServico")->findBy([
+            "pessoa" => $idPessoa,
+            "atividade" => Atividade::EMBALAGEM_EXPEDICAO,
+            "idExpedicao" => $idExpedicao], ['dataFinal'=> 'DESC']);
+
+        if (!empty($arrOs)) {
+            $lastOsFinalizacao = $arrOs[0]->getDataFinal();
+            if (empty($lastOsFinalizacao)) return $arrOs[0];
+        }
+
+        if ($cine) {
+            return self::addNewOsEmbalagem($idPessoa, $idExpedicao);
+        }
+
+        throw new \Exception("Nenhuma Ordem de Serviço aberta para embalamento de checkout foi encontrada para essa pessoa nessa expedição");
+    }
+
+    /**
+     * @param $idPessoa
+     * @param $idExpedicao
+     * @return OrdemServico
+     * @throws \Doctrine\ORM\ORMException
+     */
+    public function addNewOsEmbalagem($idPessoa, $idExpedicao)
+    {
+        /** @var OrdemServico $newOsEn */
+        $newOsEn = $this->_em->getRepository("wms:OrdemServico")->addNewOs([
+            "dataInicial" => new \DateTime(),
+            "pessoa" => $this->_em->getReference('wms:Pessoa', $idPessoa),
+            "atividade" => $this->_em->getReference('wms:Atividade', Atividade::EMBALAGEM_EXPEDICAO),
+            "formaConferencia" => OrdemServico::MANUAL,
+            "dscObservacao" => "Embalamento no Checkout",
+            "expedicao" => $this->_em->getReference('wms:Expedicao', $idExpedicao)
+        ], false);
+
+        return $newOsEn;
+    }
 }
 

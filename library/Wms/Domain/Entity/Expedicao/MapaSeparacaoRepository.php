@@ -1051,7 +1051,7 @@ class MapaSeparacaoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function confereMapaProduto($paramsModeloSeparaco, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $codPessoa = null, $ordemServicoId = null, $checkout = false, $lote = Lote::NCL) {
+    public function confereMapaProduto($paramsModeloSeparaco, $idExpedicao, $idMapa, $codBarras, $qtd, $volumePatrimonioEn, $cpfEmbalador, $codPessoa = null, $ordemServicoId = null, $checkout = false, $lote = Lote::NCL) {
 
         try {
             $idVolumePatrimonio = null;
@@ -1082,12 +1082,14 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
                 $mapaSeparacaoEmbaladoS = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
                 if (empty($mapaSeparacaoEmbaladoS)) {
-                    $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  null,false);
+                    $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
+                    $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $osEmbalamento, null,false);
                 } else {
                     /** @var MapaSeparacaoEmbalado $firtsItem */
                     $firtsItem = $mapaSeparacaoEmbaladoS[0];
                     if ($firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
-                        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $firtsItem, false);
+                        $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
+                        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $osEmbalamento, $firtsItem, false);
                     } else {
                         $mapaSeparacaoEmbaladoEn = $firtsItem;
                     }

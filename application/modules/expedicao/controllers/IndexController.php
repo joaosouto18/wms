@@ -899,6 +899,12 @@ class Expedicao_IndexController extends Action {
         $form = new \Wms\Module\Expedicao\Form\CheckoutExpedicao();
         $form->init();
         $data = $this->_getAllParams();
+        if (empty($data['cpfEmbalador'])) {
+            $userId = \Zend_Auth::getInstance()->getIdentity()->getId();
+            /** @var \Wms\Domain\Entity\Pessoa\Fisica $pf */
+            $pf = $this->_em->find("wms:Pessoa\Fisica", $userId);
+            $data['cpfEmbalador'] = $pf->getCPF(false);
+        }
         $form->populate($data);
         $this->view->recarregar = $this->_getParam("recarregar");
         $this->view->pessoa = $this->_getParam("pessoa");
