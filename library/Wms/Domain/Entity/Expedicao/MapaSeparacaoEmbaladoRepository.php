@@ -86,7 +86,13 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return true;
     }
 
-    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$idMapa,$idPessoa)
+    /**
+     * @param $mapaSeparacaoEmbaladoEn MapaSeparacaoEmbalado
+     * @param $idMapa
+     * @param $idPessoa
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa)
     {
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
@@ -95,8 +101,8 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
             throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
         }
-
-        $qtdPendenteConferencia = $this->getProdutosConferidosByCliente($idMapa,$idPessoa);
+        $idMapa = $mapaSeparacaoEmbaladoEn->getMapaSeparacao()->getId();
+        $qtdPendenteConferencia = $this->getProdutosConferidosByCliente($idMapa, $idPessoa);
         if (count($qtdPendenteConferencia) <= 0) {
             $this->getEntityManager()->beginTransaction();
 

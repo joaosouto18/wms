@@ -400,7 +400,18 @@ class Mobile_ExpedicaoController extends Action {
 
                 $countEtiquetas = count($this->_em->getRepository("wms:Expedicao\VEtiquetaSeparacao")->findBy(['codExpedicao' => $idExpedicao]));
 
-                return ($volumes + 1 ) + $countEtiquetas;
+                return $volumes + $countEtiquetas;
+            };
+
+            /**
+             * @param $mapaSeparacaoEmbaladoEn Expedicao\MapaSeparacaoEmbalado
+             * @param $posVolume
+             * @param $idPessoa
+             */
+            $fechaEmbalado = function ($mapaSeparacaoEmbaladoEn, $posVolume, $idPessoa) use ($mapaSeparacaoEmbaladoRepo){
+                $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume);
+                $this->getEntityManager()->commit();
+                $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa);
             };
 
             /** @var Expedicao\MapaSeparacaoEmbalado $mapaSeparacaoEmbaladoEn */
@@ -417,18 +428,14 @@ class Mobile_ExpedicaoController extends Action {
                 }
 
                 $posVolume = ($agrupaEtiquetas) ? $checkAgrupamento($mapaSeparacaoConferencias) : null;
-
-                $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume);
-                $this->getEntityManager()->commit();
-                $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idMapa, $idPessoa);
+                $fechaEmbalado($mapaSeparacaoEmbaladoEn, $posVolume, $idPessoa);
             } else {
                 if ($agrupaEtiquetas) {
                     $posVolume = ($agrupaEtiquetas) ? $checkAgrupamento() : null;
                     if (!empty($posVolume)) {
-                        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $idPessoa, null,false);
-                        $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume);
-                        $this->getEntityManager()->commit();
-                        $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idMapa, $idPessoa);
+                        $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $idPessoa, null,true);
+                        $posVolume += 1;
+                        $fechaEmbalado($mapaSeparacaoEmbaladoEn, $posVolume, $idPessoa);
                     }
                 }
             }
