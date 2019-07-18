@@ -337,7 +337,7 @@ class Expedicao_EtiquetaController  extends Action
 
     }
 
-    public function reimprimirAction()
+    public function  reimprimirAction()
     {
         Page::configure(array(
             'buttons' => array(
