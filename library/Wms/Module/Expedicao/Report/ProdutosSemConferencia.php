@@ -35,7 +35,7 @@ class ProdutosSemConferencia extends Pdf
         $this->Cell(0,15,utf8_decode('Página ').$this->PageNo(),0,0,'R');
     }
 
-    public function imprimir($idExpedicao, $produtos, $modelo = 1, $quebraCarga = "N", $placa = null)
+    public function imprimir($idExpedicao, $produtos, $modelo = 1, $quebraCarga = "N", $placa = null, $usaGrade = true)
     {
         $this->idExpedicao = $idExpedicao;
         $this->placa = $placa;
@@ -49,51 +49,75 @@ class ProdutosSemConferencia extends Pdf
 
        switch ($modelo) {
            case 2:
-               $this->layout2($produtos, $quebraCarga);
+               $this->layout2($produtos, $quebraCarga, $usaGrade);
                break;
            default:
-               $this->layout1($produtos, $quebraCarga);
+               $this->layout1($produtos, $quebraCarga, $usaGrade);
        }
 
         $this->Output('Produtos-Sem_Conferencia-'.$idExpedicao.'.pdf','D');
     }
 
-    private function layout1($produtos, $quebraCarga) {
+    private function layout1($produtos, $quebraCarga, $usaGrade = true) {
 
         $cargaAntiga = "";
         /** @var \Wms\Domain\Entity\Produto $produto */
         $this->AddPage();
+
+        if (!$usaGrade) {
+            $wCols['pedido'] = 20;
+            $wCols['etiqueta'] = 23;
+            $wCols['produto'] = 19;
+            $wCols['descricao'] = 100;
+            $wCols['volume'] = 23;
+            $wCols['cliente'] = 55;
+            $wCols['carga'] = 20;
+            $wCols['estoque'] = 20;
+        } else {
+            $wCols['pedido'] = 18;
+            $wCols['etiqueta'] = 15;
+            $wCols['produto'] = 14;
+            $wCols['descricao'] = 61;
+            $wCols['grade'] = 54;
+            $wCols['volume'] = 23;
+            $wCols['cliente'] = 55;
+            $wCols['carga'] = 20;
+            $wCols['estoque'] = 20;
+        }
+
         foreach($produtos as $key => $produto) {
             $novaCarga = utf8_decode($produto["codCargaExterno"]);
 
             if ($novaCarga != $cargaAntiga) {
                 $this->ln(2);
-                $this->Cell(18, 5, "Pedido", "TB");
-                $this->Cell(15, 5, "Etiqueta", "TB");
-                $this->Cell(14, 5, "Produto", "TB");
-                $this->Cell(61, 5, utf8_decode("Descrição"), "TB");
-                $this->Cell(54, 5, "Grade", "TB");
-                $this->Cell(23, 5, "Volume", "TB");
-                $this->Cell(55, 5, "Cliente", "TB");
-                $this->Cell(20, 5, "Carga", "TB");
-                $this->Cell(20, 5, "Estoque", "TB");
+                $this->Cell($wCols['pedido']   , 5, "Pedido", "TB");
+                $this->Cell($wCols['etiqueta'] , 5, "Etiqueta", "TB");
+                $this->Cell($wCols['produto']  , 5, "Produto", "TB");
+                $this->Cell($wCols['descricao'], 5, utf8_decode("Descrição"), "TB");
+                if ($usaGrade)
+                    $this->Cell($wCols['grade']    , 5, "Grade", "TB");
+                $this->Cell($wCols['volume']   , 5, "Volume", "TB");
+                $this->Cell($wCols['cliente']  , 5, "Cliente", "TB");
+                $this->Cell($wCols['carga']    , 5, "Carga", "TB");
+                $this->Cell($wCols['estoque']  , 5, "Estoque", "TB");
                 $this->Ln();
             }
 
-            $this->Cell(18, 5, utf8_decode($produto["pedido"]) , 0);
-            $this->Cell(15, 5, utf8_decode($produto["codBarras"]) , 0);
-            $this->Cell(14, 5, utf8_decode($produto["codProduto"])  , 0);
-            $this->Cell(61, 5, substr(utf8_decode($produto["produto"]),0,30), 0);
-            $this->Cell(54, 5, substr(utf8_decode($produto["grade"]),0,30), 0);
-            $this->Cell(23, 5, utf8_decode($produto["embalagem"])    , 0);
-            $this->Cell(55, 5, substr(utf8_decode($produto["cliente"]),0,30), 0);
-            $this->Cell(20, 5, utf8_decode($produto["codCargaExterno"])  , 0);
-            $this->Cell(20, 5, utf8_decode($produto["codEstoque"]), 0);
+            $this->Cell($wCols['pedido']   , 5, utf8_decode($produto["pedido"]) , 0);
+            $this->Cell($wCols['etiqueta'] , 5, utf8_decode($produto["codBarras"]) , 0);
+            $this->Cell($wCols['produto']  , 5, utf8_decode($produto["codProduto"])  , 0);
+            $this->Cell($wCols['descricao'], 5, substr(utf8_decode($produto["produto"]),0,30), 0);
+            if ($usaGrade)
+                $this->Cell($wCols['grade']    , 5, substr(utf8_decode($produto["grade"]),0,30), 0);
+            $this->Cell($wCols['volume']   , 5, utf8_decode($produto["embalagem"])    , 0);
+            $this->Cell($wCols['cliente']  , 5, substr(utf8_decode($produto["cliente"]),0,30), 0);
+            $this->Cell($wCols['carga']    , 5, utf8_decode($produto["codCargaExterno"])  , 0);
+            $this->Cell($wCols['estoque']  , 5, utf8_decode($produto["codEstoque"]), 0);
             $cargaAntiga = $novaCarga;
             $this->Ln();
         }
     }
-    private function layout2($produtos, $quebraCarga){
+    private function layout2($produtos, $quebraCarga, $usaGrade = true){
         $cargaAntiga = "";
 
         $this->AddPage();
