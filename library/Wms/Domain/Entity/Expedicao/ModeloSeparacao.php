@@ -2,8 +2,6 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
-use Doctrine\Common\Collections\ArrayCollection;
-
 /**
  *
  * @Table(name="MODELO_SEPARACAO")
@@ -136,6 +134,11 @@ class ModeloSeparacao
      * @Column(name="UTILIZA_VOLUME_PATRIMONIO", type="string", nullable=true)
      */
     protected $utilizaVolumePatrimonio;
+
+    /**
+     * @Column(name="AGRUP_CONT_ETIQUETAS", type="string", nullable=true)
+     */
+    protected $agrupContEtiquetas;
 
     /**
      * @Column(name="IND_FORCA_EMB_VENDA", type="string", nullable=true)
@@ -470,6 +473,22 @@ class ModeloSeparacao
     public function getTipoSeparacaoNaoFracionadoEmbalado()
     {
         return $this->tipoSeparacaoNaoFracionadoEmbalado;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAgrupContEtiquetas()
+    {
+        return $this->agrupContEtiquetas;
+    }
+
+    /**
+     * @param mixed $agrupContEtiquetas
+     */
+    public function setAgrupContEtiquetas($agrupContEtiquetas)
+    {
+        $this->agrupContEtiquetas = $agrupContEtiquetas;
     }
 
     /**

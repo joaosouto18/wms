@@ -337,7 +337,7 @@ class Expedicao_EtiquetaController  extends Action
 
     }
 
-    public function reimprimirAction()
+    public function  reimprimirAction()
     {
         Page::configure(array(
             'buttons' => array(
@@ -431,7 +431,7 @@ class Expedicao_EtiquetaController  extends Action
 
                         $arrEtiquetasEn[] = $etiquetaEntity;
                     }
-                    $Etiqueta->reimprimir($arrEtiquetasEn, $motivo, $modelo);
+                    $Etiqueta->reimprimir($arrEtiquetasEn, $motivo, $modelo, $idExpedicao);
                 } else {
                     $Etiqueta->imprimirReentrega($idExpedicao, null, $modelo,true,$etiqueta);
 
@@ -644,6 +644,10 @@ class Expedicao_EtiquetaController  extends Action
                     break;
                 case 4:
                     //LAYOUT HIDRAU
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
+                case 5:
+                    //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
                 default:

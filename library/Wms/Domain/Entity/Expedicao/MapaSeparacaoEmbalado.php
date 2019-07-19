@@ -2,6 +2,9 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Id\SequenceGenerator;
+
 /**
  *
  * @Table(name="MAPA_SEPARACAO_EMB_CLIENTE")
@@ -15,10 +18,10 @@ class MapaSeparacaoEmbalado
 
     /**
      * @Id
-     * @GeneratedValue(strategy="SEQUENCE")
      * @Column(name="COD_MAPA_SEPARACAO_EMB_CLIENTE", type="integer", nullable=false)
-     * @SequenceGenerator(sequenceName="SQ_MAPA_SEPARACAO_EMBALADO_01", initialValue=1, allocationSize=1)
      */
+    // * @GeneratedValue(strategy="SEQUENCE")
+    // * @SequenceGenerator(sequenceName="SQ_MAPA_SEPARACAO_EMBALADO_01", initialValue=1, allocationSize=1)
     protected $id;
 
     /**
@@ -48,6 +51,25 @@ class MapaSeparacaoEmbalado
      * @Column(name="IND_ULTIMO_VOLUME", type="string", nullable=true)
      */
     protected $ultimoVolume;
+
+    /**
+     * @var integer
+     *
+     * @Column(name="POS_VOLUME", type="integer", nullable=true)
+     */
+    protected $posVolume;
+
+    /**
+     * Define o id da embalagem
+     * @param $em EntityManager
+     * @return MapaSeparacaoEmbalado
+     *
+     */
+    public function generateId(EntityManager $em) {
+        $sqcGenerator = new SequenceGenerator("SQ_MAPA_SEPARACAO_EMBALADO_01", 1);
+        $this->id = "14".$sqcGenerator->generate($em, $this);
+        return $this;
+    }
 
     /**
      * @return mixed
@@ -145,4 +167,19 @@ class MapaSeparacaoEmbalado
         $this->ultimoVolume = $ultimoVolume;
     }
 
+    /**
+     * @return int
+     */
+    public function getPosVolume()
+    {
+        return $this->posVolume;
+    }
+
+    /**
+     * @param int $posVolume
+     */
+    public function setPosVolume($posVolume)
+    {
+        $this->posVolume = $posVolume;
+    }
 }

@@ -63,7 +63,7 @@ if ($this->erro) {
                 <a class="btn gradientBtn" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a>
             <?php endif; ?>
             <?php if ($this->separacaoEmbalado) : ?>
-                <input type="button" style="margin-top:20px" class="btn gradientBtn" onclick="window.open('<?php echo '/mobile/expedicao/fecha-mapa-embalado/checkout/1/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>', '_blanck')" value="Fechar Caixa" />
+                <input type="button" style="margin-top:20px" class="btn gradientBtn" id="btnFechaCaixa" value="Fechar Caixa" />
             <?php endif; ?>
 
         </fieldset>
@@ -311,6 +311,14 @@ if ($this->erro) {
                 }
             });
         }
+        <?php if ($this->agrupaVolumes) : ?>
+        $.ajax({
+            url: '<?php echo $this->url(array('module' => 'expedicao', 'controller' => 'index', 'action' => 'get-count-volumes-consolidado-ajax' )) . "/idMapa/". $this->idMapa . '/cliente/' . $this->idPessoa?>',
+            success: function (data) {
+                $("span#counterVols").text(data);
+            }
+        });
+        <?php endif; ?>
     }
 
     $('#buscar-submit').on('click', function (e) {
@@ -321,4 +329,12 @@ if ($this->erro) {
             return false;
         }
     });
+
+    $("#btnFechaCaixa").click(function () {
+        window.open('<?php echo '/mobile/expedicao/fecha-mapa-embalado/checkout/1/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>', '_blanck')
+    });
+
+    <?php if ($this->agrupaVolumes) : ?>
+    $('#info').append('<p style="font-size: 12px; margin-top: 10px;"><?php echo "Volume pré calculado (<span id=\"counterVols\">$this->indexVol</span> de $this->MaxVolCliente) " ?></p>');
+    <?php endif; ?>
 </script>

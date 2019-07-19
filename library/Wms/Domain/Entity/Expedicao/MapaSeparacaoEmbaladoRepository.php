@@ -20,25 +20,36 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         }
 
         $mapaSeparacaoEmbalado = new MapaSeparacaoEmbalado();
+        $mapaSeparacaoEmbalado->generateId($this->_em);
         $mapaSeparacaoEmbalado->setMapaSeparacao($mapaSeparacaoEn);
         $mapaSeparacaoEmbalado->setPessoa($pessoaEn);
         $mapaSeparacaoEmbalado->setSequencia($sequencia);
         $mapaSeparacaoEmbalado->setStatus($siglaEn);
         $mapaSeparacaoEmbalado->setUltimoVolume('N');
         $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
-        $mapaSeparacaoEmbalado->setId('14'.$mapaSeparacaoEmbalado->getId());
-        $this->getEntityManager()->persist($mapaSeparacaoEmbalado);
         if ($flush == true) {
             $this->getEntityManager()->flush();
         }
 
+        return $mapaSeparacaoEmbalado;
     }
 
     /** ocorre quando o conferente bipou os produtos do mapa e lacrou aquele determinado volume embalado */
-    public function fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn)
+    /**
+     * @param $mapaSeparacaoEmbaladoEn MapaSeparacaoEmbalado
+     * @param null $posVolume
+     * @return mixed
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume = null)
     {
         $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO);
         $mapaSeparacaoEmbaladoEn->setStatus($siglaEn);
+
+        if (!empty($posVolume)) {
+            $mapaSeparacaoEmbaladoEn->setPosVolume($posVolume);
+        }
 
         $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEn);
         $this->getEntityManager()->flush();
@@ -75,7 +86,13 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         return true;
     }
 
-    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn,$idMapa,$idPessoa)
+    /**
+     * @param $mapaSeparacaoEmbaladoEn MapaSeparacaoEmbalado
+     * @param $idMapa
+     * @param $idPessoa
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa)
     {
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
@@ -84,8 +101,8 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         if (!isset($etiqueta) || empty($etiqueta) || count($etiqueta) <= 0) {
             throw new \Exception(utf8_encode('Não existe produtos conferidos para esse volume embalado!'));
         }
-
-        $qtdPendenteConferencia = $this->getProdutosConferidosByCliente($idMapa,$idPessoa);
+        $idMapa = $mapaSeparacaoEmbaladoEn->getMapaSeparacao()->getId();
+        $qtdPendenteConferencia = $this->getProdutosConferidosByCliente($idMapa, $idPessoa);
         if (count($qtdPendenteConferencia) <= 0) {
             $this->getEntityManager()->beginTransaction();
 
@@ -114,6 +131,10 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
             case 4:
                 //LAYOUT HIDRAU
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                break;
+            case 5:
+                //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
@@ -173,7 +194,8 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                       I.DSC_ITINERARIO,  MAX(C.DSC_PLACA_CARGA) DSC_PLACA_CARGA, 
                       P.NOM_PESSOA, MSE.NUM_SEQUENCIA,  MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE,
                       PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, 
-                      SIGLA.COD_REFERENCIA_SIGLA, MIN(PED.COD_EXTERNO) AS COD_PEDIDO
+                      SIGLA.COD_REFERENCIA_SIGLA, MIN(PED.COD_EXTERNO) AS COD_PEDIDO,
+                      MSE.POS_VOLUME, E.COUNT_VOLUMES
                     FROM MAPA_SEPARACAO MS
                     LEFT JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                     INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
@@ -189,7 +211,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 $andWhere
                 AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE IS NOT NULL
                 GROUP BY E.COD_EXPEDICAO, I.DSC_ITINERARIO, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE,
-                PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA";
+                PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, MSE.POS_VOLUME, E.COUNT_VOLUMES";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }

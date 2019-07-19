@@ -48,23 +48,56 @@ class PedidoProdutoRepository extends EntityRepository
 
             $qtdPendente = $qtd;
             foreach ($etiquetasEn as $etiquetaEn){
-                if ($qtdPendente <=0) continue;
-                if ($etiquetaEn->getQtdEmbalagem() > $qtdPendente) continue;
 
                 if ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_PENDENTE_CORTE) throw new \Exception('Existem etiquetas pendentes de corte nesta expedição! Corte-as primeiro antes de efetuar um novo corte');
+
+                if ($qtdPendente <=0) continue;
+
+                /*
+                 * Com esta validação, só vai deduzir da quantidade pendente se estiver passando por uma etiqueta que seja:
+                 *  -> Etiqueta de Produto Unitário
+                 *  -> Etiqueta de Produto Volume que esteja sendo usado como referencia por todos os volumes
+                 *
+                 * Assim o sistema evita que a quantidade pendente seja incrementada para cada volume do produto
+                 */
+                if ($etiquetaEn->getProdutoVolume() != null AND $etiquetaEn->getCodReferencia() != null) continue;
+
+                if ($etiquetaEn->getQtdEmbalagem() > $qtdPendente) continue;
+
                 if ($etiquetaEn->getCodStatus() == EtiquetaSeparacao::STATUS_CORTADO) continue;
 
-                $etiquetaRepo->alteraStatus($etiquetaEn,EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
-                    $codBarrasEtiqueta = $etiquetaEn->getId();
-                    if ($etiquetaEn->getProdutoEmbalagem() != NULL) {
-                        $codBarrasProdutos = $etiquetaEn->getProdutoEmbalagem()->getCodigoBarras();
+                $qtdEmbVol = $etiquetaEn->getQtdEmbalagem();
+
+                $arrEtiquetas = array();
+                $arrEtiquetas[] = $etiquetaEn;
+
+                /*
+                 * Caso seja a etiqueta principal do grupo do volume, encontra todas as etiquetas vinculadas
+                 *  para que todas sejam colocadas como pendente de corte
+                 */
+                if ($etiquetaEn->getProdutoVolume() != null AND $etiquetaEn->getCodReferencia() == null) {
+                    $etiquetas = $etiquetaRepo->findBy(array('codReferencia' => $etiquetaEn->getId()));
+                    foreach ($etiquetas as $etqEn) {
+                        $arrEtiquetas[] = $etqEn;
+                    }
+                }
+
+                foreach ($arrEtiquetas as $etqEn) {
+
+                    if ($etqEn->getCodStatus() == EtiquetaSeparacao::STATUS_CORTADO) continue;
+
+                    $etiquetaRepo->alteraStatus($etqEn,EtiquetaSeparacao::STATUS_PENDENTE_CORTE);
+                    $codBarrasEtiqueta = $etqEn->getId();
+                    if ($etqEn->getProdutoEmbalagem() != NULL) {
+                        $codBarrasProdutos = $etqEn->getProdutoEmbalagem()->getCodigoBarras();
                     } else {
-                        $codBarrasProdutos = $etiquetaEn->getProdutoVolume()->getCodigoBarras();
+                        $codBarrasProdutos = $etqEn->getProdutoVolume()->getCodigoBarras();
                     }
 
-                $andamentoRepo->save("Etiqueta $codBarrasEtiqueta colocada em Pendencia de Corte via integração", $idExpedicao, $idUsuario, false, $codBarrasEtiqueta, $codBarrasProdutos, false);
+                    $andamentoRepo->save("Etiqueta $codBarrasEtiqueta colocada em Pendencia de Corte via integração", $idExpedicao, $idUsuario, false, $codBarrasEtiqueta, $codBarrasProdutos, false);
+                }
 
-                $qtdPendente = $qtdPendente - $etiquetaEn->getQtdEmbalagem();
+                $qtdPendente = $qtdPendente - $qtdEmbVol;
             }
 
             /* CORTA OS MAPAS */

@@ -453,4 +453,86 @@ class Expedicao_OsController extends Action
         $this->exportCSV($result,"produtos-conferidos");
     }
 
+    public function consultarAction () {
+        $form = new \Wms\Module\Web\Form\Subform\FiltroExpedicaoMercadoria();
+        $form->init(null,true);
+        $this->view->form = $form;
+
+
+        $params = $this->_getAllParams();
+
+
+        ini_set('max_execution_time', 3000);
+
+        unset($params['module']);
+        unset($params['controller']);
+        unset($params['action']);
+        $dataI1 = new \DateTime;
+
+        if (!empty($params)) {
+
+            if (!empty($params['idExpedicao']) ||
+                !empty($params['codCargaExterno']) ||
+                !empty($params['pedido']) ||
+                !empty($params['produto']) ||
+                !empty($params['produtividade'])) {
+
+                $idExpedicao = null;
+                $idCarga = null;
+                $pedido = null;
+                $produtividade = null;
+                $produto = null;
+
+                if (!empty($params['idExpedicao']))
+                    $idExpedicao = $params['idExpedicao'];
+
+                if (!empty($params['produto']))
+                    $produto = $params['produto'];
+
+                if (!empty($params['codCargaExterno']))
+                    $idCarga = $params['codCargaExterno'];
+
+                if (!empty($params['pedido']))
+                    $pedido = $params['pedido'];
+
+                if (!empty($params['produtividade']))
+                    $produtividade = $params['produtividade'];
+
+                $params = array();
+                $params['produtividade'] = $produtividade;
+                $params['idExpedicao'] = $idExpedicao;
+                $params['codCargaExterno'] = $idCarga;
+                $params['pedido'] = $pedido;
+                $params['produto'] = $produto;
+            } else {
+                if (empty($params['dataInicial1'])) {
+                    $params['dataInicial1'] = $dataI1->format('d/m/Y');
+                }
+            }
+            if (!empty($params['control']))
+                $this->view->control = $params['control'];
+
+
+            unset($params['control']);
+        } else {
+            $dataI1 = new \DateTime;
+            $dataI2 = new \DateTime;
+
+            $params = array(
+                'dataInicial1' => $dataI1->format('d/m/Y'),
+                'dataInicial2' => $dataI2->format('d/m/Y')
+            );
+            unset($params['control']);
+        }
+
+        $form->populate($params);
+
+
+        $grid = new \Wms\Module\Expedicao\Grid\AcompanhamentoSeparacao();
+        $this->view->grid = $grid->init($params)
+            ->render();
+
+
+    }
+
 }
