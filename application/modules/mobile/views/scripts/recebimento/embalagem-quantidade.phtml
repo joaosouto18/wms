@@ -172,7 +172,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             }
         });
 
-        $("#qtdConferida-0").focusout(function () {
+        $("#qtdConferida-0").keyup(function () {
             $("#totalQuantidade").text($(this).val() * $("#unidadePorEmbalagem").val());
         });
 
@@ -192,7 +192,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             $("#totalQuantidade").text(sumTotal);
         };
 
-        $(".lote-input").live("focusout", function () {
+        $(".lote-input").live("keyup", function () {
             calcTotalLote();
         });
 
