@@ -105,9 +105,10 @@ class Expedicao_PendenciaController extends Action
 
         $quebraRelatorio = $this->getSystemParameterValue("QUEBRA_CARGA_REL_PEND_EXP");
         $modeloRelatorio = $this->getSystemParameterValue("MODELO_RELATORIOS");
+        $usaGrade = ($this->getSystemParameterValue("UTILIZA_GRADE") == 'S');
         $ProdutosSemConferencia = new ProdutosSemConferenciaReport("L", "mm", "A4");
         $placaExpedicao = $expedicaoEn->getPlacaExpedicao();
-        $ProdutosSemConferencia->imprimir($idExpedicao, $result, $modeloRelatorio, $quebraRelatorio, $placaExpedicao);
+        $ProdutosSemConferencia->imprimir($idExpedicao, $result, $modeloRelatorio, $quebraRelatorio, $placaExpedicao, $usaGrade);
     }
 
     public function relatorioAction()
