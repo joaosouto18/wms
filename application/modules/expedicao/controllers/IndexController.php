@@ -1091,6 +1091,7 @@ class Expedicao_IndexController extends Action {
             $this->view->utilizaQuebra = $modeloSeparacaoEn->getUtilizaQuebraColetor();
             $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
             $this->view->tipoQuebraVolume = $modeloSeparacaoEn->getTipoQuebraVolume();
+            $this->view->criarVolsFinalCheckout = $modeloSeparacaoEn->getCriarVolsFinalCheckout();
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
             $this->view->idExpedicao = $idExpedicao;

@@ -20,6 +20,7 @@ if ($this->erro) {
                 <input type="hidden" name="utilizaQuebra" id="utilizaQuebra" value="<?php echo $this->utilizaQuebra ?>" >
                 <input type="hidden" name="utilizaVolumePatrimonio" id="utilizaVolumePatrimonio" value="<?php echo $this->utilizaVolumePatrimonio ?>" >
                 <input type="hidden" name="tipoQuebraVolume" id="tipoQuebraVolume" value="<?php echo $this->tipoQuebraVolume ?>" >
+                <input type="hidden" name="criarVolsFinalCheckout" id="tipoQuebraVolume" value="<?php echo $this->criarVolsFinalCheckout ?>" >
                 <input type="hidden" name="chekcout" id="chekcout" value="chekcout" >
             </div>
             <?php if ($this->confereQtd) : ?>
@@ -63,6 +64,12 @@ if ($this->erro) {
                 <a class="btn gradientBtn" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/' . $this->idVolume ?>" >Fechar</a>
             <?php endif; ?>
             <?php if ($this->separacaoEmbalado) : ?>
+                <?php if ($this->criarVolsFinalCheckout == 'S') : ?>
+                <div class="field" id="divNVols">
+                    <label for="nVols" class="field">Nº Volumes</label>
+                    <input type="text" id="nVols" alt="number" class="required" size="10">
+                </div>
+                <?php endif; ?>
                 <input type="button" style="margin-top:20px" class="btn gradientBtn" id="btnFechaCaixa" value="Fechar Caixa" />
             <?php endif; ?>
 
@@ -272,7 +279,6 @@ if ($this->erro) {
                 async: false,
                 type: 'post',
                 success: function (data) {
-                    console.log(data);
                     if (data.retorno.resposta.length > 0) {
                         inputCodBarras.val("").focus();
                         inputQtd.val(1);
@@ -304,6 +310,7 @@ if ($this->erro) {
                                 conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#fad0d0');
                             }
                             error = "";
+                            verifyShowNVals();
                         }
                         $("#error").html(error);
                         $("#success").html(success);
@@ -332,8 +339,46 @@ if ($this->erro) {
     });
 
     $("#btnFechaCaixa").click(function () {
-        window.open('<?php echo '/mobile/expedicao/fecha-mapa-embalado/checkout/1/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>', '_blanck')
+        let strNVols = "";
+        <?php if ($this->criarVolsFinalCheckout == 'S') : ?>
+        if (!checkTudoConferido()) {
+            $.wmsDialogAlert({msg: "O modelo de separação exige que confira todos os produtos antes de fechar os volumes"});
+            return false;
+        }
+
+        let nVols = $("#nVols").val();
+        if (isEmpty(nVols) || parseInt(nVols) === 0) {
+            $.wmsDialogAlert({msg: "Informe a quantidade de volumes que devem ser criados"});
+            return false;
+        }
+
+        strNVols = "/nVols/" + nVols;
+        <?php endif; ?>
+        let strCpfEmbalador = "/cpfEmbalador/" + $("#cpfEmbalador").val().replace(/\D+/g, '');
+        window.open('<?php echo '/mobile/expedicao/fecha-mapa-embalado/checkout/1/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>' + strCpfEmbalador + strNVols, '_blanck')
     });
+
+    <?php if ($this->criarVolsFinalCheckout == 'S') : ?>
+    function checkTudoConferido() {
+        let divConferir = $('#conferir');
+        let divLines = divConferir.find('p').size();
+        let divLinesHidded = divConferir.find('p:hidden').size();
+        return (divLines === divLinesHidded)
+    }
+
+    function verifyShowNVals() {
+        if (checkTudoConferido()) {
+            $("#nVols").val("");
+            $("#divNVols").show();
+        } else {
+            $("#divNVols").hide();
+        }
+    }
+
+    $(document).ready(function () {
+        verifyShowNVals();
+    });
+    <?php endif; ?>
 
     <?php if ($this->agrupaVolumes) : ?>
     $('#info').append('<p style="font-size: 12px; margin-top: 10px;"><?php echo "Volume pré calculado (<span id=\"counterVols\">$this->indexVol</span> de $this->MaxVolCliente) " ?></p>');

@@ -2,6 +2,8 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
+use Wms\Domain\Entity\Expedicao;
+
 /**
  *
  * @Table(name="MAPA_SEPARACAO")
@@ -18,6 +20,7 @@ class MapaSeparacao
     protected $id;
 
     /**
+     * @var Expedicao
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao")
      * @JoinColumn(name="COD_EXPEDICAO", referencedColumnName="COD_EXPEDICAO")
      */
@@ -111,7 +114,7 @@ class MapaSeparacao
     }
 
     /**
-     * @return mixed
+     * @return Expedicao
      */
     public function getExpedicao()
     {

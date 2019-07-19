@@ -55,7 +55,7 @@ class OrdemServico
     protected $dataFinal;
 
     /**
-     * @var Wms\Domain\Entity\Pessoa $pessoa
+     * @var Pessoa $pessoa
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa")
      * @JoinColumn(name="COD_PESSOA", referencedColumnName="COD_PESSOA") 
      */
@@ -177,6 +177,9 @@ class OrdemServico
         return $this;
     }
 
+    /**
+     * @return Pessoa
+     */
     public function getPessoa()
     {
         return $this->pessoa;

@@ -32,7 +32,12 @@ class ModeloSeparacao extends Form
             'checkedValue' => 'S'
         ))->addElement('checkbox', 'agrupContEtiquetas', array(
             'label' => 'Agrupar contagem de etiquetas de separação e embalados',
-            'checkedValue' => 'S'
+            'checkedValue' => 'S',
+            'class' => 'condicionalCheckout'
+        ))->addElement('checkbox', 'criarVolsFinalCheckout', array(
+            'label' => 'Fechar e definir quantidade de volumes no final da conferência',
+            'checkedValue' => 'S',
+            'class' => 'condicionalCheckout'
         ))->addElement('checkbox', 'imprimeEtiquetaPatrimonio', array(
             'label' => 'Imprime Etiqueta Volume Patrimonio',
             'checkedValue' => 'S',
@@ -129,6 +134,7 @@ class ModeloSeparacao extends Form
             'utilizaEtiquetaMae',
             'utilizaVolumePatrimonio',
             'agrupContEtiquetas',
+            'criarVolsFinalCheckout',
             'forcarEmbVenda',
             'quebraUnidFracionavel',
             'produtoInventario',

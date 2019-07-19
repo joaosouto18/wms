@@ -149,5 +149,16 @@
                 $("#fieldsetQuebraEmbalados").hide();
             }
         }
+
+        $(".condicionalCheckout").click(function () {
+            let atual = $(this);
+            let setTo = atual.prop('checked');
+            if (setTo) {
+                $(".condicionalCheckout").each(function () {
+                    $(this).prop('checked', false);
+                });
+            }
+            atual.prop('checked', setTo);
+        })
     })
 </script>

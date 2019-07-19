@@ -932,7 +932,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                        AND MSC.COD_PRODUTO = MSP.COD_PRODUTO
                        AND MSC.DSC_GRADE = MSP.DSC_GRADE
                        AND MSC.COD_PESSOA = P.COD_PESSOA
-                 LEFT JOIN MAPA_SEPARACAO_EMB_CLIENTE MSEC ON MSEC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO
+                 LEFT JOIN MAPA_SEPARACAO_EMB_CLIENTE MSEC ON MSEC.COD_MAPA_SEPARACAO = MSP.COD_MAPA_SEPARACAO AND MSEC.COD_PESSOA = PED.COD_PESSOA
                  WHERE $where OR MSEC.COD_STATUS = $statusEmbalado
                  GROUP BY P.NOM_PESSOA, P.COD_PESSOA
                  ORDER BY MIN(MSP.NUM_CAIXA_PC_INI)";
@@ -1080,13 +1080,13 @@ class MapaSeparacaoRepository extends EntityRepository {
             if ($codPessoa != null) {
                 /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
                 $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-                $mapaSeparacaoEmbaladoS = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
-                if (empty($mapaSeparacaoEmbaladoS)) {
+                $mapaSeparacaoEmbalados = $mapaSeparacaoEmbaladoRepo->findBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $codPessoa), array('id' => 'DESC'));
+                if (empty($mapaSeparacaoEmbalados)) {
                     $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
                     $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa,  $osEmbalamento, null,false);
                 } else {
                     /** @var MapaSeparacaoEmbalado $firtsItem */
-                    $firtsItem = $mapaSeparacaoEmbaladoS[0];
+                    $firtsItem = $mapaSeparacaoEmbalados[0];
                     if ($firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO || $firtsItem->getStatus()->getId() == Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FECHADO_FINALIZADO) {
                         $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
                         $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $codPessoa, $osEmbalamento, $firtsItem, false);
@@ -1116,7 +1116,7 @@ class MapaSeparacaoRepository extends EntityRepository {
                 $this->getEntityManager()->persist($novaConferencia);
             }
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            throw $e;
         }
 
         $this->getEntityManager()->flush();

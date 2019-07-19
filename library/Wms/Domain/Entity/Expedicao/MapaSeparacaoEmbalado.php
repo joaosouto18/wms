@@ -5,6 +5,7 @@ namespace Wms\Domain\Entity\Expedicao;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\SequenceGenerator;
 use Wms\Domain\Entity\OrdemServico;
+use Wms\Domain\Entity\Pessoa;
 
 /**
  *
@@ -26,12 +27,14 @@ class MapaSeparacaoEmbalado
     protected $id;
 
     /**
+     * @var Pessoa
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Pessoa")
      * @JoinColumn(name="COD_PESSOA", referencedColumnName="COD_PESSOA")
      */
     protected $pessoa;
 
     /**
+     * @var MapaSeparacao
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Expedicao\MapaSeparacao")
      * @JoinColumn(name="COD_MAPA_SEPARACAO", referencedColumnName="COD_MAPA_SEPARACAO")
      */
@@ -96,7 +99,7 @@ class MapaSeparacaoEmbalado
     }
 
     /**
-     * @return mixed
+     * @return Pessoa
      */
     public function getPessoa()
     {
@@ -112,7 +115,7 @@ class MapaSeparacaoEmbalado
     }
 
     /**
-     * @return mixed
+     * @return MapaSeparacao
      */
     public function getMapaSeparacao()
     {
