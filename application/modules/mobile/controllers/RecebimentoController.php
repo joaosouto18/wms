@@ -85,11 +85,11 @@ class Mobile_RecebimentoController extends Action
     public function lerCodigoBarrasAction()
     {
         try {
-            $dataValidadeInvalida = $this->getRequest()->getParam('dataValidadeInvalida',0);
+            $dataValidadeValida = $this->getRequest()->getParam('dataValidadeValida');
             $idRecebimento = $this->getRequest()->getParam('idRecebimento');
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
             $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
-            $this->view->dataValidadeInvalida = $dataValidadeInvalida;
+            $this->view->dataValidadeValida = $dataValidadeValida;
 
             $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
 
@@ -246,7 +246,7 @@ class Mobile_RecebimentoController extends Action
     {
         $params = $this->getRequest()->getParams();
         extract($params);
-        $dataValidadeValida = true;
+        $dataValidadeValida = 'true';
 
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
@@ -354,11 +354,15 @@ class Mobile_RecebimentoController extends Action
                     $objData = new Zend_Date($data);
                     if ($dateConf < $PeriodoUtil || $dateConf > $PeriodoUtilMax) {
                         if ($dateConf > $PeriodoUtilMax) {
+                            $dataValidadeValida = 'false';
                             throw new \Exception('Data de validade maior que a definida no cadastro.');
+                        } else if ($dateConf < $PeriodoUtil) {
+                            $qtdBloqueada = $qtdConferida;
+                            $qtdConferida = 0;
+                            $dataValidadeValida = 'false';
+                            $msgErro = 'Produto conferido com validade menor que a permitida. A autorização será obrigatória para finalização do recebimento';
                         }
-                        $qtdBloqueada = $qtdConferida;
-                        $qtdConferida = 0;
-                        $dataValidadeValida = false;
+
 
                         $recebimentoEmbalagemEntities = $recebimentoEmbalagemRepository->getEmbalagemByRecebimento($idRecebimento, $produtoEn->getId(), $produtoEn->getGrade(), true);
 
@@ -367,7 +371,7 @@ class Mobile_RecebimentoController extends Action
                             if ($recebimentoEmbalagemEntity->getQtdConferida() > 0 && date_create_from_format('Y-m-d', "$anoComp-$mesComp-$diaComp") == $dateConf) {
                                 $qtdConferida = $qtdBloqueada;
                                 $qtdBloqueada = 0;
-                                $dataValidadeValida = true;
+                                $dataValidadeValida = 'true';
                                 break;
                             }
                         }
@@ -396,20 +400,24 @@ class Mobile_RecebimentoController extends Action
                 $stringProduto = "$idProduto - " . $produtoEn->getDescricao();
             }
 
+            $mensagem = "Conferida Quantidade Embalagem do Produto $stringProduto";
+            if (isset($msgErro)) {
+                $mensagem = $msgErro;
+            }
+
             $this->em->flush();
             $this->em->commit();
 
-            $this->_helper->messenger('success', "Conferida Quantidade Embalagem do Produto $stringProduto");
+            $this->_helper->messenger('success', $mensagem);
             $args = ["idRecebimento" => $idRecebimento];
-            if (!$dataValidadeValida) {
-                $args['dataValidadeInvalida'] = !$dataValidadeValida;
-            }
+            $args['dataValidadeValida'] = $dataValidadeValida;
+
             // tudo certo, redireciono para a nova leitura
             $this->redirect('ler-codigo-barras', 'recebimento', null, $args);
         } catch (\Exception $e) {
             $this->em->rollback();
             $this->_helper->messenger('error', $e->getMessage());
-            $this->redirect('ler-codigo-barras', null, null, array('idRecebimento' => $idRecebimento, 'dataValidadeInvalida' => !$dataValidadeValida));
+            $this->redirect('ler-codigo-barras', null, null, array('idRecebimento' => $idRecebimento, 'dataValidadeValida' => $dataValidadeValida));
         }
     }
 

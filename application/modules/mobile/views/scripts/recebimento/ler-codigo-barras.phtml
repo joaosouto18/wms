@@ -1,6 +1,9 @@
 ﻿<?php echo $this->render('recebimento/detalhes.phtml'); ?>
 <?php echo $this->form; ?>
 
+<div id="dummy"></div>
+<bgsound id="bgSoundId" loop="0" volume="100" />
+
 <script type="text/javascript">
     $(document).ready(function () {
         $('#carousel').cycle({
@@ -9,15 +12,34 @@
             timeout: 0
         });
 
-        var dataValidadeInvalida = <?php echo $this->dataValidadeInvalida; ?>;
-        if (dataValidadeInvalida === 1) {
-            //var soundfile = '/alarme.mp3';
 
-            //document.getElementById("dummy").innerHTML= "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+        <?php if (isset($this->dataValidadeValida)) : ?>
+            <?php if ($this->dataValidadeValida === 'true') : ?>
+                var dataValidadeValida = 'true';
+            <?php else : ?>
+                var dataValidadeValida = 'false';
+            <?php endif; ?>
+        <?php else : ?>
+            var dataValidadeValida = 'noAudio';
+        <?php endif; ?>
 
-            alert('Produto conferido com validade menor que a permitida. A autorização será obrigatória para finalização do recebimento');
+        if (dataValidadeValida === 'false') {
+            playSound("/alarme.mp3");
+        } else if (dataValidadeValida === 'true'){
+            playSound("/confirm2.mp3");
         }
     });
+
+    function playSound(soundfile) {
+        if (<?php echo $this->isOldBrowserVersion ?> === 'S') {
+            document.getElementById("bgSoundId").src = soundfile;
+        } else {
+            var dummy = '<audio autoplay> <source src=' + soundfile + ' type="audio/mp3">' +
+                '<source src="' + soundfile + '" type="audio/mpeg"></audio>';
+            $('#dummy').html(dummy);
+
+        }
+    }
 
 </script>
 <span id="dummy"></span>
