@@ -82,7 +82,7 @@ class Coletor
             }
         }
 
-        // retorna o codigo todo caso nenhuma situacao anterior adequar
+        // retorna o codigo completo caso nenhuma situacao anterior adequar
         return $codigoBarras;
     }
 
