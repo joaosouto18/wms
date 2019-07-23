@@ -172,7 +172,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             }
         });
 
-        $("#qtdConferida-0").focusout(function () {
+        $("#qtdConferida-0").keyup(function () {
             $("#totalQuantidade").text($(this).val() * $("#unidadePorEmbalagem").val());
         });
 

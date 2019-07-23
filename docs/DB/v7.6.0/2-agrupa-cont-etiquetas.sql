@@ -102,7 +102,9 @@ EXECUTE IMMEDIATE 'ALTER TABLE MAPA_SEPARACAO_EMB_CLIENTE ADD (POS_VOLUME NUMBER
             (SELECT COD_RECURSO_ACAO FROM RECURSO_ACAO WHERE DSC_RECURSO_ACAO = 'Listar Caixas de Embalado'),
             (SELECT COD_MENU_ITEM FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Cadastros'),
             'Caixas de Embalados',
-            (SELECT NUM_PESO FROM MENU_ITEM WHERE DSC_MENU_ITEM = 'Volume Patrimonio'),
+            (SELECT NUM_PESO FROM MENU_ITEM WHERE TRANSLATE (DSC_MENU_ITEM,
+                                                             'ŠŽšžŸÁÇÉÍÓÚÀÈÌÒÙÂÊÎÔÛÃÕËÜÏÖÑÝåáçéíóúàèìòùâêîôûãõëüïöñýÿ',
+                                                             'SZszYACEIOUAEIOUAEIOUAOEUIONYaaceiouaeiouaeiouaoeuionyy') = 'Volume Patrimonio'),
             '#',
             '_self',
             'S'
