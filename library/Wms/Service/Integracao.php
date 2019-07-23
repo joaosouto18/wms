@@ -538,8 +538,10 @@ class Integracao {
                     $itinerario = array(
                         'idItinerario' => $row['COD_ROTA'],
                         'nomeItinerario' => $row['DSC_ROTA'],
+                        'seqRota' => (!empty($row['SEQ_ROTA'])) ? $row['SEQ_ROTA'] : null,
                         'idPraca' => $row['COD_PRACA'],
-                        'nomePraca' => $row['DSC_PRACA']
+                        'nomePraca' => $row['DSC_PRACA'],
+                        'seqPraca' => (!empty($row['SEQ_PRACA'])) ? $row['SEQ_PRACA'] : null
                     );
 
                     $cliente = array(

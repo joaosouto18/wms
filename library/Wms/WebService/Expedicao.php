@@ -906,8 +906,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $itinerario = array();
             $itinerario['idItinerario'] = "";
             $itinerario['nomeItinerario'] = "";
+            $itinerario['seqRota'] = null;
             $itinerario['idPraca'] = "";
             $itinerario['nomePraca'] = "";
+            $itinerario['setPraca'] = null;
             $pedido['itinerario'] = $itinerario;
         }
 
@@ -1618,10 +1620,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $rotaEntity = $repositorios['rotaRepo']->findOneBy(array('codRotaExterno' => $itinerario['idItinerario']));
             $pracaEntity = $repositorios['pracaRepo']->findOneBy(array('codPracaExterno' => $itinerario['idPraca']));
             if (!$rotaEntity) {
-                $rotaEntity = $repositorios['rotaRepo']->save($itinerario['idItinerario'], $itinerario['nomeItinerario']);
+                $rotaEntity = $repositorios['rotaRepo']->save($itinerario['idItinerario'], $itinerario['nomeItinerario'], $itinerario['seqRota']);
             }
             if (!$pracaEntity) {
-                $pracaEntity = $repositorios['pracaRepo']->save($itinerario['idPraca'], $itinerario['nomePraca']);
+                $pracaEntity = $repositorios['pracaRepo']->save($itinerario['idPraca'], $itinerario['nomePraca'], $itinerario['seqPraca']);
             }
             $rotaPracaEntity = $repositorios['rotaPracaRepo']->findOneBy(array('rota' => $rotaEntity, 'praca' => $pracaEntity));
             if (!$rotaPracaEntity) {

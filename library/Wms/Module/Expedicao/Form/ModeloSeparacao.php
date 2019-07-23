@@ -47,6 +47,9 @@ class ModeloSeparacao extends Form
         ))->addElement('checkbox', 'forcarEmbVenda', array(
             'label' => 'Utilizar embalagem de venda por padrão',
             'checkedValue' => 'S',
+        ))->addElement('checkbox', 'usaSequenciaRotaPraca', array(
+            'label' => 'Exibir sequência de ROTA/PRAÇA no mapa de separação',
+            'checkedValue' => 'S',
         ))->addElement('checkbox', 'quebraUnidFracionavel', array(
             'label' => 'Quebrar em mapa exclusivo e não agrupar unidades fracionáveis',
             'checkedValue' => 'S',
@@ -151,6 +154,7 @@ class ModeloSeparacao extends Form
             'tipoSeparacaoNaoFracionadoEmbalado',
             'quebraFracionados',
             'quebraNaoFracionados',
+            'usaSequenciaRotaPraca',
             'quebraEmbalados'), 'identificacao');
         $this->addSubFormTab("Identificação", $form, 'identificacao');
     }

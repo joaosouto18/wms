@@ -29,6 +29,12 @@ class Rota
      */
     protected $codRotaExterno;
 
+    /**
+     * @var integer
+     * @Column(name="NUM_SEQ", type="integer", length=3, nullable=true)
+     */
+    protected $numSeq;
+
     public function setNomeRota($nomeRota)
     {
         $this->nomeRota = $nomeRota;
@@ -66,6 +72,22 @@ class Rota
     public function setCodRotaExterno($codRotaExterno)
     {
         $this->codRotaExterno = $codRotaExterno;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNumSeq()
+    {
+        return $this->numSeq;
+    }
+
+    /**
+     * @param int $numSeq
+     */
+    public function setNumSeq($numSeq)
+    {
+        $this->numSeq = $numSeq;
     }
 
 }

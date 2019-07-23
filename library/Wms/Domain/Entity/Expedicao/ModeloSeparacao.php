@@ -161,6 +161,11 @@ class ModeloSeparacao
     protected $quebraUnidFracionavel;
 
     /**
+     * @Column(name="IND_SEQ_ROTA_PRACA", type="string", nullable=true)
+     */
+    protected $usaSequenciaRotaPraca;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -558,6 +563,22 @@ class ModeloSeparacao
     public function setQuebraUnidFracionavel($quebraUnidFracionavel)
     {
         $this->quebraUnidFracionavel = $quebraUnidFracionavel;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUsaSequenciaRotaPraca()
+    {
+        return $this->usaSequenciaRotaPraca;
+    }
+
+    /**
+     * @param mixed $usaSequenciaRotaPraca
+     */
+    public function setUsaSequenciaRotaPraca($usaSequenciaRotaPraca)
+    {
+        $this->usaSequenciaRotaPraca = $usaSequenciaRotaPraca;
     }
 
 }
