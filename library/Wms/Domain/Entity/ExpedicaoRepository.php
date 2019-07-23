@@ -4641,7 +4641,7 @@ class ExpedicaoRepository extends EntityRepository {
                             $qtd = 0;
                         } else {
                             $itemMapa->setQtdCortado($qtdSeparar);
-                            $qtd = Math::subtrair($qtd, $qtdSeparar);
+                            $qtd = Math::subtrair($qtd, $qtdDisponivelDeCorte);
                         }
                         $this->getEntityManager()->persist($itemMapa);
                     }
