@@ -996,7 +996,7 @@ class MapaSeparacao extends eFPDF {
                 $paginas = $pgAtual . ' de ' . $totalPg;
                 $this->buildHead($this, $imgCodBarras, $tipoQuebra, $arrDataCargas, $paginas);
             }
-            $this->SetFont('Arial', null, 8);
+
             $pesoProduto = $this->pesoProdutoRepo->findOneBy(array('produto' => $produto->getProduto()->getId(), 'grade' => $produto->getProduto()->getGrade()));
 
             $codigoBarras = '';
@@ -1010,7 +1010,7 @@ class MapaSeparacao extends eFPDF {
 
             $endereco = $produto->getDepositoEndereco();
             $codProduto = $produto->getCodProduto();
-            $descricao = self::SetStringByMaxWidth(utf8_decode($produto->getProduto()->getDescricao()), 90);
+            $descricao = utf8_decode($produto->getProduto()->getDescricao());
             $referencia = $produto->getProduto()->getReferencia();
             $quantidade = $produto->getQtdSeparar();
             $caixas = $produto->getNumCaixaInicio() . ' - ' . $produto->getNumCaixaFim();
@@ -1024,26 +1024,58 @@ class MapaSeparacao extends eFPDF {
                 $cubagemTotal += $pesoProduto->getCubagem() * $quantidade;
             }
 
-            if ($tipoQuebra) {
-                $this->Cell(21, 4, $dscEndereco, 0, 0);
-                $this->Cell(13, 4, $codProduto, 0, 0);
-                $this->Cell(90, 4, $descricao, 0, 0);
-                $this->Cell(20, 4, $codigoBarras, 0, 0);
-                $this->Cell(25, 4, $referencia, 0, 0);
-                $this->Cell(10, 4, $embalagem, 0, 0);
-                $this->SetFont('Arial', "B", 10);
-                $this->Cell(15, 4, $quantidade, 0, 0);
-                $this->Cell(15, 4, $caixas, 0, 1, 'C');
-            } else {
-                $this->Cell(21, 4, $dscEndereco, 0, 0);
-                $this->Cell(13, 4, $codProduto, 0, 0);
-                $this->Cell(90, 4, $descricao, 0, 0);
-                $this->Cell(20, 4, $codigoBarras, 0, 0);
-                $this->Cell(25, 4, $referencia, 0, 0);
-                $this->Cell(10, 4, $embalagem, 0, 0);
-                $this->SetFont('Arial', "B", 10);
-                $this->Cell(15, 4, $quantidade, 0, 1, 'C');
+            $addNewRow = function ($tipoQuebra, $dscEndereco, $codProduto, $descricao, $codigoBarras, $referencia, $embalagem, $quantidade, $caixas) {
+                $this->SetFont('Arial', null, 8);
+                if ($tipoQuebra) {
+                    $this->Cell(21, 4, $dscEndereco, 0, 0);
+                    $this->Cell(13, 4, $codProduto, 0, 0);
+                    $this->Cell(90, 4, $descricao, 0, 0);
+                    $this->Cell(20, 4, $codigoBarras, 0, 0);
+                    $this->Cell(25, 4, $referencia, 0, 0);
+                    $this->Cell(10, 4, $embalagem, 0, 0);
+                    $this->SetFont('Arial', "B", 10);
+                    $this->Cell(15, 4, $quantidade, 0, 0);
+                    $this->Cell(15, 4, $caixas, 0, 1, 'C');
+                } else {
+                    $this->Cell(21, 4, $dscEndereco, 0, 0);
+                    $this->Cell(13, 4, $codProduto, 0, 0);
+                    $this->Cell(90, 4, $descricao, 0, 0);
+                    $this->Cell(20, 4, $codigoBarras, 0, 0);
+                    $this->Cell(25, 4, $referencia, 0, 0);
+                    $this->Cell(10, 4, $embalagem, 0, 0);
+                    $this->SetFont('Arial', "B", 10);
+                    $this->Cell(15, 4, $quantidade, 0, 1, 'C');
+                }
+            };
+
+            $checkBreakLine = function ($str, $sizeCell, $arr) use (&$checkBreakLine){
+                // Máximo da string que cabe na célula
+                $strTrimmed = $this->SetStringByMaxWidth($str, $sizeCell, false);
+                // qtd de caracteres da string recortada
+                $lStr = strlen($strTrimmed);
+
+                if ($lStr < strlen($str)) {
+                    $arr[] = $strTrimmed;
+                    $arr = $checkBreakLine(substr($str, $lStr, strlen($str)), $sizeCell, $arr);
+                } else {
+                    $arr[] = $str;
+                }
+
+                return $arr;
+            };
+
+            $rowsDesc = $checkBreakLine($descricao, 90, []);
+
+            $nRows = count($rowsDesc);
+            for($i = 0; $i < $nRows; $i++) {
+                if ($i === 0) $addNewRow( $tipoQuebra, $dscEndereco, $codProduto, $rowsDesc[0], $codigoBarras, $referencia, $embalagem, $quantidade, $caixas);
+                else {
+                    $strDesc = (!empty($rowsDesc[$i])) ? $rowsDesc[$i] : "";
+                    $addNewRow( $tipoQuebra, "", "", $strDesc, "", "", "", "", "");
+                }
             }
+
+
             $this->SetFont('Arial', null, 8);
             $total += $quantidade;
             $this->Cell(20, 1, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -", 0, 1);
