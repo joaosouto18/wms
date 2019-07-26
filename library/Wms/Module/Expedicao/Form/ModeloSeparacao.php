@@ -49,12 +49,14 @@ class ModeloSeparacao extends Form
             'checkedValue' => 'S',
         ))->addElement('checkbox', 'usaSequenciaRotaPraca', array(
             'label' => 'Exibir sequência de ROTA/PRAÇA no mapa de separação',
+            'id' => 'usaSequenciaRotaPraca',
             'checkedValue' => 'S',
         ))->addElement('checkbox', 'quebraUnidFracionavel', array(
             'label' => 'Quebrar em mapa exclusivo e não agrupar unidades fracionáveis',
             'checkedValue' => 'S',
         ))->addElement('select', 'quebraPulmaDoca', array(
             'label' => 'Quebra no processo Pulmão-Doca',
+            'class' => 'disableSequenciaPraca',
             'multiOptions' => array(
                 'N' => 'Não utiliza',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::QUEBRA_PULMAO_DOCA_EXPEDICAO => 'Por Expedição',
@@ -109,6 +111,7 @@ class ModeloSeparacao extends Form
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_MAPA => 'Mapa',
                 \Wms\Domain\Entity\Expedicao\ModeloSeparacao::TIPO_SEPARACAO_ETIQUETA => 'Etiqueta'),
         ))->addElement('multiCheckbox', 'quebraFracionados', array(
+            'class' => 'disableSequenciaPraca',
             'multiOptions' => [
                 MapaSeparacaoQuebra::QUEBRA_RUA => 'Rua',
                 MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO => 'Linha de Separação',
@@ -117,6 +120,7 @@ class ModeloSeparacao extends Form
                 MapaSeparacaoQuebra::QUEBRA_CLIENTE => 'Cliente',
             ]
         ))->addElement('multiCheckbox', 'quebraNaoFracionados', array(
+            'class' => 'disableSequenciaPraca',
             'multiOptions' => [
                 MapaSeparacaoQuebra::QUEBRA_RUA => 'Rua',
                 MapaSeparacaoQuebra::QUEBRA_LINHA_SEPARACAO => 'Linha de Separação',
@@ -125,6 +129,7 @@ class ModeloSeparacao extends Form
                 MapaSeparacaoQuebra::QUEBRA_CLIENTE => 'Cliente',
             ]
         ))->addElement('multiCheckbox', 'quebraEmbalados', array(
+            'class' => 'disableSequenciaPraca',
             'multiOptions' => [
                 MapaSeparacaoQuebra::QUEBRA_PRACA => 'Praça',
                 MapaSeparacaoQuebra::QUEBRA_ROTA => 'Rota'

@@ -160,6 +160,32 @@
                 });
             }
             atual.prop('checked', setTo);
-        })
+        });
+
+        $("#usaSequenciaRotaPraca").change(function () {
+            if ($(this).prop("checked")) {
+                $.wmsDialogAlert('Este parâmetro exige quebra por PRAÇA!<br>Todas as quebras por PRAÇA serão selecionadas!');
+                $("#quebraFracionados-P").prop('checked', true);
+                $("#quebraNaoFracionados-P").prop('checked', true);
+                $("#quebraEmbalados-P").prop('checked', true);
+                $("#quebraPulmaDoca").val("P");
+            }
+        });
+
+        $(".disableSequenciaPraca").change(function () {
+            let checkSeqPraca = $("#usaSequenciaRotaPraca");
+
+            if (!checkSeqPraca.prop("checked")) return;
+
+            let checkSeqPracaDisabled = false;
+
+            if ((($(this).is("input[type='checkbox']") && $(this).prop("checked") === false && $(this).val() === "P") ||
+                ($(this).is("select")) && $(this).val() !== "P")) {
+                checkSeqPraca.prop("checked", false);
+                checkSeqPracaDisabled = true;
+            }
+
+            if (checkSeqPracaDisabled) $.wmsDialogAlert('A Sequencia ROTA/PRAÇA exige todas as quebras de praça! O parâmetro será desmarcado');
+        });
     })
 </script>

@@ -64,6 +64,12 @@
     };
 
     $.wmsDialogConfirm = function(settings, callback, params, returnFunction){
+        if (typeof settings === "string") {
+            var msg = settings;
+            settings = {};
+            settings.msg = msg;
+        }
+
         var buttons = {};
 
         var confirmBtnLbl = (!!settings.buttons && !!settings.buttons.confirm)? settings.buttons.confirm : "Confirmar";
