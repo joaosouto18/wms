@@ -7,11 +7,11 @@
 DECLARE
     CHECK_RESULT VARCHAR2(100);
 BEGIN
-    SELECT FUNC_CHECK_SCRIPT('x-sequencia-praca-rota.sql', '') INTO CHECK_RESULT FROM DUAL;
+    SELECT FUNC_CHECK_SCRIPT('2-sequencia-praca-rota.sql', '') INTO CHECK_RESULT FROM DUAL;
     IF (CHECK_RESULT <> 'TRUE') THEN
         DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
     ELSE
-        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.6', 'x-sequencia-praca-rota.sql');
+        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.7', '2-sequencia-praca-rota.sql');
         /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
