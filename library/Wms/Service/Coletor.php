@@ -12,6 +12,12 @@ class Coletor
     {
 
         $codigoBarras = trim($codigoBarras);
+
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        $parametroRepository = $em->getRepository('wms:Sistema\Parametro');
+        $parametroEntity = $parametroRepository->findOneBy(array('constante' => 'DESCONSIDERA_ZERO_ESQUERDA'));
         
         if(substr($codigoBarras, 0, 4) == '(01)') {
             return substr($codigoBarras, 4, 18);
@@ -70,8 +76,13 @@ class Coletor
             return substr($codigoBarras, 0, 14);
         }
 
+        if ($parametroEntity->getValor() == 'S') {
+            if ($codigoBarras[0] == '0') {
+                return substr($codigoBarras, 1);
+            }
+        }
 
-        // retorna o codigo todo caso nenhuma situacao anterior adequar
+        // retorna o codigo completo caso nenhuma situacao anterior adequar
         return $codigoBarras;
     }
 

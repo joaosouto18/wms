@@ -124,6 +124,9 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
     </form>
 </div>
 
+<div id="dummy"></div>
+<bgsound id="bgSoundId" loop="0" volume="100" />
+
 <script>
     $(function () {
         var controlaLote     = <?php echo ($this->controlaLote == 'S') ? "true" : "false"?>;
@@ -224,7 +227,10 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             var inputVal = $("#dataValidade");
 
             if ( controlaValidade && isEmpty(inputVal.val())) {
-                if (!toNext) alert("A data de validade não foi especificada");
+                if (!toNext) {
+                    playSound("/alarme.mp3");
+                    alert("A data de validade não foi especificada");
+                }
                 inputVal.focus();
                 return false;
             }
@@ -241,12 +247,14 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                         inputQtd = $("#qtdConferida-" + k);
                         inputLote = $("#lote-" + k);
                         if (isEmpty(inputQtd.val())) {
+                            playSound("/alarme.mp3");
                             msg = "A quantidade na linha " + (k + 1) + " não pode ser 0 ou nula";
                             inputQtd.focus();
                             result = false;
                             break;
                         }
                         if ((k < (rows.length - 1) || (k === 0 && rows.length === 1))&& isEmpty(inputLote.val())) {
+                            playSound("/alarme.mp3");
                             msg = "O lote na linha " + (k + 1) + " não pode ficar em branco";
                             inputLote.focus();
                             result = false;
@@ -260,6 +268,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             } else {
                 inputQtd = (!pesoVariavel) ? $("#qtdConferida-0") : $("#numPeso") ;
                 if (isEmpty(inputQtd.val())) {
+                    playSound("/alarme.mp3");
                     msg = "A quantidade não pode ser 0 ou nula";
                     inputQtd.focus();
                     result = false;
@@ -286,6 +295,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                 var strRegex = /^(((([0-2][0-8]|09|19)(-|\/)(0[1-9]|1[012]))|((29|30|31)(-|\/)(0[13578]|1[02]))|((29|30)(-|\/)(0[469]|11)))(-|\/)(\d{2}))|((29)(-|\/)(02)(-|\/)(([02468][048])|([13579][26])))$/;
                 var regexp = new RegExp(strRegex);
                 if (!regexp.test(v)) {
+                    playSound("/alarme.mp3");
                     alert('A data ' + v + ' é inválida');
                     $(this).val('');
                     return false;
@@ -316,6 +326,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             if (obj.length) {
                 var data = obj.val();
                 if (data.length < 8) {
+                    playSound("/alarme.mp3");
                     alert("O campo 'Data de validade' não foi preenchido corretamente!");
                     return false;
                 }
@@ -324,6 +335,7 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
                 if (validade <= hj) {
                     var hjStr = hj.toLocaleDateString();
                     var validadeStr = validade.toLocaleDateString();
+                    playSound("/alarme.mp3");
                     alert("A data de validade ("+validadeStr+") não pode ser menor ou igual a data atual ("+hjStr+")");
                     obj.val('');
                     return false;
@@ -336,5 +348,18 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
             var partes = str.split("/");
             return new Date("20" + partes[2], partes[1] - 1, partes[0]);
         }
+
+        function playSound(soundfile) {
+            if (<?php echo $this->isOldBrowserVersion ?> === 'S') {
+                document.getElementById("bgSoundId").src = soundfile;
+            } else {
+                var dummy = '<audio autoplay> <source src=' + soundfile + ' type="audio/mp3">' +
+                    '<source src="' + soundfile + '" type="audio/mpeg"></audio>';
+                $('#dummy').html(dummy);
+
+            }
+        }
+
     })
+
 </script>
