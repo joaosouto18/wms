@@ -1047,7 +1047,7 @@ class PedidoRepository extends EntityRepository
 
     public function getSeqRotaPracaByMapa($idMapa)
     {
-        $sql = "SELECT DISTINCT R.NUM_SEQ SEQ_ROTA, PR.NUM_SEQ SEQ_PRACA
+        $sql = "SELECT DISTINCT NVL(R.NUM_SEQ, '__') SEQ_ROTA, NVL(PR.NUM_SEQ, '__') SEQ_PRACA
                 FROM CLIENTE C
                 INNER JOIN PEDIDO P ON C.COD_PESSOA = P.COD_PESSOA
                 INNER JOIN PEDIDO_PRODUTO PP on P.COD_PEDIDO = PP.COD_PEDIDO

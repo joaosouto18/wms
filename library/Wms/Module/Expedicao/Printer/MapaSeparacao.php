@@ -1831,6 +1831,7 @@ class MapaSeparacao extends eFPDF {
         $cargaEn = $this->cargaRepo->findOneBy(array('codCargaExterno' => array($codCargaExterno[0])));
         $pedidosEntities = $this->pedidoRepo->findBy(array('carga' => $cargaEn->getId()), array('linhaEntrega' => 'ASC'));
         $seqRotaPraca = $this->pedidoRepo->getSeqRotaPracaByMapa($this->idMapa);
+        $strSeqRota = $seqRotaPraca[0]['SEQ_ROTA'].".".$seqRotaPraca[0]['SEQ_PRACA'];
         $itinerarios = array();
         $ultimaLinha = '';
         foreach ($pedidosEntities as $key => $pedidosEntity) {
@@ -1860,9 +1861,10 @@ class MapaSeparacao extends eFPDF {
         $this->Cell(25, 4, utf8_decode("PLACA/BOX: "), 0, 0);
         $this->SetFont('Arial', null, 10);
         $this->Cell(40, 4, $cargaEn->getPlacaCarga().'/'.$dscBox, 0, 0);
-        $this->Cell(25, 4, utf8_decode("SEQ-Rota/Praça: "), 0, 0);
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(34, 4, utf8_decode("SEQ-ROTA.PRACA:"), 0, 0);
         $this->SetFont('Arial', null, 10);
-        $this->Cell(20, 4, $cargaEn->getPlacaCarga().'/'.$dscBox, 0, 1);
+        $this->Cell(20, 4, $strSeqRota, 0, 1);
 
 
         $this->Cell(20, 4, "", 0, 1);
