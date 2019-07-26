@@ -1622,11 +1622,14 @@ class Mobile_ExpedicaoController extends Action {
 
     public function separacaoAjaxAction(){
         $mapa = $this->_getParam('mapa');
+        $pedido = $this->_getParam('pedido');
         $idExpedicao = $this->_getParam('expedicao');
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
+
         if(empty($mapa)) {
-            $this->view->mapas = $mapaSeparacaoRepo->findMapasSeparar();
+            $this->view->mapas = $mapaSeparacaoRepo->findMapasSeparar($pedido);
             $this->view->mapa = null;
+            $this->view->pedido = $pedido;
         }else {
             $ordemServicoRepo = $this->_em->getRepository('wms:OrdemServico');
             $idPessoa = (isset($idPessoa)) ? $idPessoa : \Zend_Auth::getInstance()->getIdentity()->getId();
@@ -1648,6 +1651,7 @@ class Mobile_ExpedicaoController extends Action {
                 $this->view->codOs = $osEn->getId();
             }
             $this->view->mapa = $mapa;
+            $this->view->pedido = $pedido;
             $this->view->idExpedicao = $idExpedicao;
             $this->view->enderecos = $mapaSeparacaoRepo->findEnderecosMapa($mapa);
         }

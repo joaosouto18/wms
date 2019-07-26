@@ -1370,8 +1370,22 @@ class MapaSeparacaoRepository extends EntityRepository {
         return $qtdConferenciaGravar;
     }
 
-    public function findMapasSeparar(){
-        $sql = "SELECT * FROM MAPA_SEPARACAO WHERE COD_STATUS = 523 ORDER BY COD_MAPA_SEPARACAO";
+    public function findMapasSeparar($pedido = null){
+
+        $sqlWhere = " ";
+        if ($pedido != null) {
+            $sqlWhere = " AND MS.COD_MAPA_SEPARACAO IN (
+            SELECT COD_MAPA_SEPARACAO
+              FROM MAPA_SEPARACAO_PEDIDO MSP
+              LEFT JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+              LEFT JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
+             WHERE P.COD_EXTERNO = '$pedido')";
+        }
+
+        $sql = "SELECT * 
+                  FROM MAPA_SEPARACAO MS 
+                 WHERE MS.COD_STATUS = 523 $sqlWhere
+                 ORDER BY MS.COD_MAPA_SEPARACAO";
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
