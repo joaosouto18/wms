@@ -1045,5 +1045,17 @@ class PedidoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function getSeqRotaPracaByMapa($idMapa)
+    {
+        $sql = "SELECT DISTINCT NVL(R.NUM_SEQ, '__') SEQ_ROTA, NVL(PR.NUM_SEQ, '__') SEQ_PRACA
+                FROM CLIENTE C
+                INNER JOIN PEDIDO P ON C.COD_PESSOA = P.COD_PESSOA
+                INNER JOIN PEDIDO_PRODUTO PP on P.COD_PEDIDO = PP.COD_PEDIDO
+                INNER JOIN MAPA_SEPARACAO_PEDIDO MSP on PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
+                INNER JOIN ROTA R ON R.COD_ROTA = C.COD_ROTA
+                INNER JOIN PRACA PR ON C.COD_PRACA = PR.COD_PRACA
+                WHERE MSP.COD_MAPA_SEPARACAO = $idMapa";
 
+        return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

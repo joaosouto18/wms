@@ -50,11 +50,12 @@ class RotaRepository extends EntityRepository
 
     }
 
-    public function save($idRota, $nomeRota)
+    public function save($idRota, $nomeRota, $seq)
     {
         $entity = new Rota();
         $entity->setNomeRota($nomeRota);
         $entity->setCodRotaExterno($idRota);
+        $entity->setNumSeq($seq);
 
         $this->getEntityManager()->persist($entity);
         $this->getEntityManager()->flush();

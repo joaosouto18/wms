@@ -29,6 +29,12 @@ class Praca
      */
     protected $codPracaExterno;
 
+    /**
+     * @var integer
+     * @Column(name="NUM_SEQ", type="integer", length=3, nullable=true)
+     */
+    protected $numSeq;
+
 
     public function setNomePraca($nomePraca)
     {
@@ -70,4 +76,19 @@ class Praca
         $this->codPracaExterno = $codPracaExterno;
     }
 
+    /**
+     * @return int
+     */
+    public function getNumSeq()
+    {
+        return $this->numSeq;
+    }
+
+    /**
+     * @param int $numSeq
+     */
+    public function setNumSeq($numSeq)
+    {
+        $this->numSeq = $numSeq;
+    }
 }

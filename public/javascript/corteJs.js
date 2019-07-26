@@ -63,12 +63,14 @@ function updateList()
         newRow.append( newTd( item.cliente ) );
         newRow.append( newTd( item.itinerario ) );
         newRow.append( newTd( item.quantidade ) );
+
+        let forcarEmbVenda = $("#forcarEmbVenda").val();
         let newEmbSelector = "";
         if (!isEmpty(embs)) {
             newEmbSelector = $("<select id='emb-" + i + "' data-index='" + i + "' class='qtdCortar' ></select>");
-            if ($("#forcarEmbVenda").val() === true) newEmbSelector.prop("disabled", true);
+            if (forcarEmbVenda === 'true') newEmbSelector.prop("disabled", true);
             $.each(embs, function (l, emb) {
-                let selecionado = (forcarEmbVenda && (emb.fator == item.fatorEmbalagemVenda)) ? "selected" : "";
+                let selecionado = (forcarEmbVenda === 'true' && (emb.fator == item.fatorEmbalagemVenda)) ? "selected" : "";
                 newEmbSelector.append("<option " + selecionado + " value='" + emb.id + "' data-index='" + l + "' >" + emb.dscEmb + "</option>");
             });
         }
