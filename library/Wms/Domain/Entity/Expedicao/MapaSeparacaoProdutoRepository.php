@@ -382,14 +382,17 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
     {
 
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id, p.grade, p.descricao, NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, NVL(pe.descricao, pv.descricao) unidadeMedida')
+            ->select('ms.id codMapa, ms.dscQuebra, p.id, p.grade, p.descricao, NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras, NVL(pe.descricao, pv.descricao) unidadeMedida')
+            ->distinct(true)
             ->from('wms:Expedicao\MapaSeparacao', 'ms')
             ->innerJoin('wms:Expedicao\MapaSeparacaoProduto', 'msp', 'WITH', 'msp.mapaSeparacao = ms.id')
             ->innerJoin('msp.produto', 'p')
             ->leftJoin('wms:Produto\Embalagem', 'pe', 'WITH', 'p.id = pe.codProduto AND p.grade = pe.grade AND msp.produtoEmbalagem = pe.id')
             ->leftJoin('wms:Produto\Volume', 'pv', 'WITH', 'p.id = pv.codProduto AND p.grade = pv.grade AND msp.produtoVolume = pv.id')
             ->where("ms.expedicao = $idExpedicao")
-            ->andWhere("pe.imprimirCB = 'S'");
+            ->andWhere("pe.imprimirCB = 'S'")
+            ->orderBy("ms.id, p.id, p.grade")
+        ;
 
         return $sql->getQuery()->getResult();
     }

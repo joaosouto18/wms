@@ -28,6 +28,7 @@ if(!empty($this->produtos)){
             <td><b>Produto</b></td>
             <td><b>Grade</b></td>
             <td><b>Qtd. Separar</b></td>
+            <td><b>Lote</b></td>
             <td><b>Embalagem</b></td>
         </tr>
         <?php
@@ -43,6 +44,7 @@ if(!empty($this->produtos)){
                 <td><?php echo $produto['COD_PRODUTO'].' - '.$produto['DSC_PRODUTO'] ?></td>
                 <td><?php echo $produto['DSC_GRADE'] ?></td>
                 <td><?php echo $produto['SEPARAR'] ?></td>
+                <td><?php echo $produto['DSC_LOTE'] ?></td>
                 <td><?php
                     if ($produto['DSC_EMBALAGEM'] != null && $produto['DSC_EMBALAGEM'] != '') {
                         echo $produto['DSC_EMBALAGEM'];

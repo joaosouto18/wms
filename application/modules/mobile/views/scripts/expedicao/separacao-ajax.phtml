@@ -14,8 +14,16 @@ if($this->mapa == null) {
             <dd id="identification-element">
                 <fieldset id="fieldset-identification">
                     <legend>Mapa</legend>
+                    <?php if ($this->pedido != null) {?>
+                        <div class="field" style="text-align: center">
+                            <label for="codigoBarras" class="field required">Mapas do Pedido: <?php echo $this->pedido ?></label>
+                            <input type="hidden" name="codigoBarras" id="codigoBarras" value="">
+                            <input class="btn gradientBtn text-center" codigoBarras="margin-top: 10px; text-align: center" type="submit" name="buscar" id="buscar" value="Voltar" class="btn gradientBtn">
+                        </div>
+                    <?php } else {?>
                     <dl>
-                        <div class="field" style="text-align: center"><label for="codigoBarras" class="field required">*Cód. Barras Mapa</label>
+                        <div class="field" style="text-align: center">
+                            <label for="codigoBarras" class="field required">Mapa de Separação/Pedido</label>
                             <input type="hidden" name="codMapa" id="codMapa" value="<?php echo $this->mapa ?>">
                             <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
                             <input type="hidden" name="codOs" id="codOs" value="<?php echo $this->codOs ?>">
@@ -23,12 +31,16 @@ if($this->mapa == null) {
                             <input class="btn gradientBtn text-center" style="margin-top: 10px; text-align: center" type="submit" name="buscar" id="buscar" value="Buscar" class="btn gradientBtn">
                         </div>
                     </dl>
+                    <?php }?>
                 </fieldset>
             </dd>
         </form>
         <br>
     </div>
     <?php
+    if (count($this->mapas) == 0) {
+        echo "Nenhum mapa encontrado";
+    }
     foreach ($this->mapas as $values) {
         ?>
         <div class="row">
@@ -101,12 +113,20 @@ if($this->mapa == null) {
     });
 
     $( "#form-mapa" ).submit(function( event ) {
-        var str = $('#codigoBarras').val().slice(0, -1);
-        var expedicao = $('#'+str).val();
-        var prefixo = str.substring(0,2);
-        if(prefixo == 12){
-            window.location = "/mobile/expedicao/separacao-ajax/mapa/"+str+"/expedicao/"+expedicao;
+
+        var inputVlr = $('#codigoBarras').val();
+        var codMapa = inputVlr.slice(0,-1);
+        var expedicao = $('#'+codMapa).val();
+
+        if (expedicao != null) {
+            //var prefixo = str.substring(0,2);
+            //if(prefixo == 12){
+                window.location = "/mobile/expedicao/separacao-ajax/mapa/"+codMapa+"/expedicao/"+expedicao;
+            //}
+        } else {
+            window.location = "/mobile/expedicao/separacao-ajax/pedido/"+inputVlr;
         }
+
         event.preventDefault();
         return false;
 

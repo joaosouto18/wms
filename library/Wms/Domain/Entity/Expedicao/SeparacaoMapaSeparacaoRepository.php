@@ -86,7 +86,44 @@ class SeparacaoMapaSeparacaoRepository extends EntityRepository{
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    public function verificaLoteSeparacao ($codProduto,$grade,$codMapaSeparacao, $codDepositoEndereco, $lote) {
+        $sql = "SELECT DISTINCT DSC_LOTE
+                  FROM MAPA_SEPARACAO_PRODUTO MPS 
+                 WHERE MPS.COD_PRODUTO = '$codProduto'
+                   AND MPS.DSC_GRADE = '$grade'
+                   AND MPS.COD_MAPA_SEPARACAO = '$codMapaSeparacao'
+                   AND MPS.COD_DEPOSITO_ENDERECO = '$codDepositoEndereco'
+                   AND MPS.DSC_LOTE IS NOT NULL";
+        $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($result) >0) {
+            if ($lote == null) {
+                throw new \Exception("Quantidade a separar para o produto exige que se informe um lote");
+            }
+
+            $encontrou = false;
+            foreach ($result as $mapaPedido) {
+                if ($mapaPedido['DSC_LOTE'] == $lote) {
+                    $encontrou = true;
+                    continue;
+                }
+            }
+
+            if ($encontrou == false) {
+                throw new \Exception("Lote informado não é o solicitado para o produto pelo mapa");
+            }
+
+        } else {
+            if ($lote != null) {
+                throw new \Exception("Quantidade a separar para o produto não exige lote");
+            }
+        }
+
+    }
+
     public function verificaProdutoSeparar($codProduto, $grade, $codMapaSeparacao, $codDepositoEndereco, $qtdSeparar, $lote = null){
+
+        $this->verificaLoteSeparacao($codProduto,$grade,$codMapaSeparacao,$codDepositoEndereco,$lote);
+
         $vetQtd = $this->getQtdSeparadaProduto($codProduto, $grade, $codMapaSeparacao, $lote);
         $qtdTotalSeparar = $vetQtd[0]['TOTAL'] * -1;
         $where = '';

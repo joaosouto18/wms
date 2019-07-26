@@ -5,6 +5,7 @@ namespace Wms\Module\Web\Report\Produto;
 
 use Wms\Util\Barcode\eFPDF,
     Wms\Util\Barcode\Barcode;
+use Wms\Util\CodigoBarras;
 
 class EtiquetaCodigoBarras extends eFPDF
 {
@@ -21,27 +22,44 @@ class EtiquetaCodigoBarras extends eFPDF
         $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
         $produtos = $mapaSeparacaoProdutoRepo->getMapaProdutoByExpedicao($idExpedicao);
 
-        $this->AddPage();
         $x = 175;
-        $y = 50;
-        $count = 1;
+        $height   = 8;
+        $angle    = 0;
+        $type     = 'code128';
+        $black    = '000000';
 
-        $this->Cell(20, 20, "CODIGO", 0, 0);
-        $this->Cell(20, 20, "GRADE", 0, 0);
-        $this->Cell(80, 20, "PRODUTO", 0, 0);
-        $this->Cell(15, 20, "UNID.MEDIDA", 0, 1);
+        $startPage = function ($idMapa, $quebrasEtiqueta) {
+            $this->AddPage();
+            $y = 50;
+            $count = 1;
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(20, 4, utf8_decode("MAPA: "), 0, 0);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell(20, 4, utf8_decode($idMapa), 0, 1);
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(20, 4, utf8_decode("QUEBRAS: "), 0, 0);
+            $this->SetFont('Arial', null, 10);
+            $this->Cell(20, 4, utf8_decode($quebrasEtiqueta), 0, 1);
+
+            $imgCodBarras = @CodigoBarras::gerarNovo($idMapa);
+            $this->Image($imgCodBarras, 150, 12, 50);
+
+            $this->SetFont('Arial', 'B', 10);
+            $this->Cell(20, 20, "CODIGO", 0, 0);
+            $this->Cell(20, 20, "GRADE", 0, 0);
+            $this->Cell(80, 20, "PRODUTO", 0, 0);
+            $this->Cell(15, 20, "UNID.MEDIDA", 0, 1);
+            return [$y, $count];
+        };
+
+        $lastMapa = null;
+        $count = 0;
 
         foreach ($produtos as $produto)
         {
-            $height   = 8;
-            $angle    = 0;
-            $type     = 'code128';
-            $black    = '000000';
-
-            if($count > 12){
-                $this->AddPage();
-                $count = 1;
-                $y = 50;
+            if($lastMapa != $produto['codMapa'] || $count > 11){
+                list($y, $count) = $startPage($produto['codMapa'], $produto['dscQuebra']);
+                $lastMapa = $produto['codMapa'];
             }
 
             $this->SetFont('Arial','',10);
@@ -49,8 +67,6 @@ class EtiquetaCodigoBarras extends eFPDF
             $this->Cell(20, 20, $this->SetStringByMaxWidth($produto['grade'],20), 0, 0);
             $this->Cell(80, 20, $this->SetStringByMaxWidth($produto['descricao'],80), 0, 0);
             $this->Cell(15, 20, $produto['unidadeMedida'], 0, 1, 'C');
-            //$this->Cell(20, 20, '', 0, 1);
-            //$this->Cell(20, 10, '', 0, 1,'C');
 
             $data = Barcode::fpdf($this,$black,$x,$y,$angle,$type,array('code'=>$produto['codigoBarras']),0.5,10);
             $len = $this->GetStringWidth($data['hri']);

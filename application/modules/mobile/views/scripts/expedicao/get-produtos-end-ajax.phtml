@@ -112,6 +112,7 @@ if(empty($this->error)) {
                 <td><b>Produto</b></td>
                 <td><b>Grade</b></td>
                 <td><b>Qtd. Separar</b></td>
+                <td><b>Lote</b></td>
                 <td><b>Embalagem</b></td>
             </tr>
             <?php
@@ -127,6 +128,7 @@ if(empty($this->error)) {
                     <td><?php echo $produto['COD_PRODUTO'].' - '.$produto['DSC_PRODUTO'] ?></td>
                     <td><?php echo $produto['DSC_GRADE'] ?></td>
                     <td><?php echo $produto['SEPARAR'] ?></td>
+                    <td><?php echo $produto['DSC_LOTE'] ?></td>
                     <td><?php
                         if ($produto['DSC_EMBALAGEM'] != null && $produto['DSC_EMBALAGEM'] != '') {
                             echo $produto['DSC_EMBALAGEM'];
@@ -224,6 +226,9 @@ if(empty($this->error)) {
                 if(data.dados.indControlaLote == 'S'){
                     $('.div-lote').show();
                     $('#controlaLote').val(1);
+                } else {
+                    $('.div-lote').hide();
+                    $('#controlaLote').val(0);
                 }
                 var qtdSeparar = $('#'+data.dados.idProduto).val();
                 var qtdEmb = data.dados.quantidadeEmbalagem;
@@ -232,9 +237,29 @@ if(empty($this->error)) {
                 $('#dsc-embalagem').text(data.dados.descricaoEmbalagem+' ('+qtdEmb+')');
             }
         });
-        $('#qtdSeparar').focus();
-        $('#qtdSeparar').select();
+
+        if ($('#controlaLote').val() == 1) {
+            $('#lote').focus();
+            $('#qtdSeparar').val('');
+        } else {
+            $('#qtdSeparar').focus();
+            $('#qtdSeparar').select();
+        }
+
         $('#enviar-form').val(0);
+    });
+
+    $('#lote').keydown(function (e) {
+        if ((e.which == 13) || (e.keyCode == 13)) {
+            $('#qtdSeparar').focus();
+            $('#qtdSeparar').select();
+            if (event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
+            return false;
+        }
     });
 
     $( "#form-endereco" ).submit(function( event ) {
@@ -255,7 +280,7 @@ if(empty($this->error)) {
 
     $( "#form-produto" ).submit(function( event ) {
         if($('#qtdSeparar').val() == ""){
-            $('#qtdSeparar').focus();
+            //$('#qtdSeparar').focus();
         }
         if($('#qtdSeparar').val() != "" && $('#codigoBarras').val() != "" && $('#enviar-form').val() == 1){
             $.ajax({
@@ -270,7 +295,7 @@ if(empty($this->error)) {
                     $('#codigoBarrasProd').val('');
                     $('#qtdSeparar').val('');
                     $('#lote').val('');
-                    $('#lote').hide();
+                    $('.div-lote').hide();
                 }
             });
         }
