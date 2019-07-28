@@ -310,7 +310,11 @@ if ($this->erro) {
                                 conferidos.find('p[produto="' + codGradeLote +'"]').css('background','#fad0d0');
                             }
                             error = "";
-                            verifyShowNVals();
+
+                            <?php if ($this->criarVolsFinalCheckout == 'S') : ?>
+                                verifyShowNVals();
+                            <?php endif; ?>
+
                         }
                         $("#error").html(error);
                         $("#success").html(success);
@@ -378,6 +382,7 @@ if ($this->erro) {
     $(document).ready(function () {
         verifyShowNVals();
     });
+
     <?php endif; ?>
 
     <?php if ($this->agrupaVolumes) : ?>
