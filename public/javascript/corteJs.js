@@ -42,7 +42,7 @@ function agroupItens() {
     })
 }
 
-function updateList()
+function updateList(showColEnd)
 {
     let newTd = function (content) {
         return $("<td style='text-align:left'></td>").append( content );
@@ -59,6 +59,7 @@ function updateList()
         newRow.append( newTd( item.carga ) );
         newRow.append( newTd( item.id ) );
         newRow.append( newTd( item.mapa ) );
+        if (showColEnd) newRow.append( newTd( item.dscEndereco ) );
         newRow.append( newTd( item.codcli ) );
         newRow.append( newTd( item.cliente ) );
         newRow.append( newTd( item.itinerario ) );
@@ -129,7 +130,7 @@ function msg(input, inputQtd) {
         objInput.inputEven.focus();
     };
     let args = {inputQtd: inputQtd, inputEven: input};
-    let text = "A quantidade excede o saldo do mapa ou do pedido disponível para corte!";
+    let text = "A quantidade excede o saldo disponível para corte do endereço, do mapa ou do pedido!";
 
     $.wmsDialogAlert({msg: text + " <br><br> Para efetuar o corte: <br>Utilize uma embalagem menor, <br>Reduza a quantidade, <br> Ou reinicie a conferência do item!"},
         funct ,
@@ -161,6 +162,7 @@ $("#btnCortar").live("click",function () {
             corte[1] = $("#emb-" + i).val();
             corte[2] = qtdCortar;
             corte[3] = item.mapa;
+            corte[4] = (!isEmpty(item.idEndereco)) ? item.idEndereco : null;
 
             cortes[cortes.length] = corte;
         }
@@ -227,13 +229,15 @@ $("#corteTotal").live("click", function  () {
 });
 
 function executeRequest() {
+    let checkQuebra = $("#quebraEndereco").prop("checked");
     $.ajax({
         url: URL_MODULO + '/corte/get-data-produto-corte-ajax/',
         type: 'post',
         data: {
             id: $("#gridCorte #idExpedicaoCorte").val(),
             codProduto: $('#codProduto').val(),
-            grade: $('#grade').val()
+            grade: $('#grade').val(),
+            quebraEndereco: checkQuebra
         },
         success: function (data) {
             if (data.status === "error") {
@@ -242,12 +246,17 @@ function executeRequest() {
             } else {
                 itens = data.itens;
                 embs = data.embs;
-                updateList();
+                updateList(checkQuebra);
                 $("#motivoCorte").html(data.formMotivo);
                 testShowGrid();
             }
         }
     });
+    if (checkQuebra) {
+        $("#colEnd").show();
+    } else {
+        $("#colEnd").hide();
+    }
 }
 
 $('#btnSubmit').live("click", function () {

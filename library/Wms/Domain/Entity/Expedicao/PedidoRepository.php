@@ -723,7 +723,7 @@ class PedidoRepository extends EntityRepository
 
     }
 
-    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA', $todosProdutos = false, $idPedido = null)
+    public function getPedidoByExpedicao($idExpedicao, $codProduto, $grade = 'UNICA', $todosProdutos = false, $idPedido = null, $quebraEndereco = false)
     {
 
         try {
@@ -744,13 +744,22 @@ class PedidoRepository extends EntityRepository
                     PE.NOM_PESSOA as \"cliente\",
                     NVL(I.DSC_ITINERARIO,'PADRAO') as \"itinerario\",
                     P.NUM_SEQUENCIAL as \"numSequencial\",
-                    NVL(MSP.QTD, PP.QUANTIDADE) as \"quantidade\",
-                    CASE WHEN MSP.COD_MAPA_SEPARACAO_PEDIDO IS NOT NULL 
-                    THEN NVL(MSP.QTD_CORTADA, 0) ELSE NVL(PP.QTD_CORTADA, 0) END as \"qtdCortada\",
                     NVL(MSC.QTD_CONFERIDA,0) as \"qtdConf\",
                     NVL(PP.QTD_CORTADA,0) as \"qtdCorteTotal\",
                     PP.FATOR_EMBALAGEM_VENDA as \"fatorEmbalagemVenda\",
-                    C.COD_CARGA_EXTERNO as \"carga\"";
+                    C.COD_CARGA_EXTERNO as \"carga\",";
+            }
+
+            if ($quebraEndereco) {
+                $sqlCampos .= "
+                    NVL((MSPROD.QTD_SEPARAR * MSPROD.QTD_EMBALAGEM), PP.QUANTIDADE) as \"quantidade\",
+                    NVL(MSPROD.QTD_CORTADO, NVL(PP.QTD_CORTADA, 0)) as \"qtdCortada\",
+                    DE.COD_DEPOSITO_ENDERECO as \"idEndereco\",
+                    DE.DSC_DEPOSITO_ENDERECO as \"dscEndereco\"";
+            } else {
+                $sqlCampos .= "
+                    NVL(MSP.QTD, PP.QUANTIDADE) as \"quantidade\",
+                    NVL(MSP.QTD_CORTADA, NVL(PP.QTD_CORTADA, 0)) as \"qtdCortada\"";
             }
 
             $sql = "SELECT $sqlCampos FROM PEDIDO_PRODUTO PP
@@ -771,6 +780,13 @@ class PedidoRepository extends EntityRepository
                          ON MS.COD_MAPA_SEPARACAO = MSC.COD_MAPA_SEPARACAO AND MSC.COD_PRODUTO = PP.COD_PRODUTO AND MSC.DSC_GRADE = PP.DSC_GRADE
                          AND CASE WHEN MSC.COD_CLIENTE = 0 THEN 1 ELSE CASE WHEN MSC.COD_CLIENTE = P.COD_PESSOA THEN 1 ELSE 0 END END = 1                          
                    ";
+            }
+
+            if ($quebraEndereco) {
+                $sql .= "
+               LEFT JOIN MAPA_SEPARACAO_PRODUTO MSPROD ON MSPROD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSPROD.COD_PRODUTO = '$codProduto' and MSPROD.DSC_GRADE = '$grade'
+               LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = MSPROD.COD_DEPOSITO_ENDERECO
+               ";
             }
 
             $where = " WHERE C.COD_EXPEDICAO in($idExpedicao)";
@@ -794,6 +810,7 @@ class PedidoRepository extends EntityRepository
 
             if (!empty($codProduto)) {
                 $orderBy .= ", MS.COD_MAPA_SEPARACAO";
+                if ($quebraEndereco) $orderBy .= ", DE.DSC_DEPOSITO_ENDERECO";
             }
 
             $result = $this->_em->getConnection()->query("$sql $where $groupBy $orderBy")->fetchAll();

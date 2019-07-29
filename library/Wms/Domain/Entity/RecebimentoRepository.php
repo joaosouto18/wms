@@ -1416,10 +1416,6 @@ class RecebimentoRepository extends EntityRepository {
         $minimo = 9999999999;
         $maximo = 0;
 
-        if ($codProduto == 20009) {
-            $teste = "A";
-        }
-
         foreach ($volumesConferidos as $idProduto => $grades) {
 
                 foreach ($grades as $grade => $qtdConferidas) {

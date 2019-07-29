@@ -158,7 +158,7 @@ class Mobile_ExpedicaoController extends Action {
             $conferenciaNaoEmbalado = $modeloSeparacaoEn->getTipoConferenciaNaoEmbalado();
             $conferenciaEmbalado = $modeloSeparacaoEn->getTipoConferenciaEmbalado();
 
-            if ($mapaQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+            if (!empty($mapaQuebraEn) && $mapaQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
                 if ($conferenciaEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
                     $confereQtd = true;
                 }

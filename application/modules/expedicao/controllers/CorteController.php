@@ -201,6 +201,7 @@ class Expedicao_CorteController extends Action {
                 $idEmbalagem = $corte[1];
                 $quantidadeCortada = $corte[2];
                 $idMapa = json_decode($corte[3]);
+                $idEndereco = json_decode($corte[4]);
 
                 if ($idMapa == 'null') $idMapa = null;
 
@@ -233,7 +234,7 @@ class Expedicao_CorteController extends Action {
 
                 $motivo = $motivoEn->getDscMotivo();
 
-                $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault);
+                $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault, $idEndereco);
                 $this->getEntityManager()->flush();
             }
 
@@ -275,6 +276,7 @@ class Expedicao_CorteController extends Action {
             $grade = $this->_getParam('grade');
             $codProduto = $this->_getParam('codProduto');
             $idPedido = $this->_getParam('idPedido');
+            $quebraEndereco = json_decode($this->_getParam('quebraEndereco'));
 
             if (!empty($codProduto)){
                 /** @var \Wms\Domain\Entity\Produto $produtoEn */
@@ -287,7 +289,7 @@ class Expedicao_CorteController extends Action {
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
             $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true, $idPedido);
+            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true, $idPedido, $quebraEndereco);
 
             $values = array();
             if ($produtoEn->isUnitario()) {
