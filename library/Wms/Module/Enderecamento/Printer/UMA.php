@@ -155,7 +155,7 @@ class UMA extends Pdf {
             } elseif ($modelo == 5) {
                 $this->layout05($palete, $produtoEn, $font_size, $line_width, $params);
             } elseif ($modelo == 6) {
-                $this->layout06($palete, $produtoEn, $font_size, $line_width, $params);
+                $this->layout06($palete, $produtoEn, $font_size, $line_width, $picking, $params);
             } else if ($modelo == 7) {
                 $this->layout07($palete, $produtoEn, $font_size, $line_width, $picking, $params);
             } else {
