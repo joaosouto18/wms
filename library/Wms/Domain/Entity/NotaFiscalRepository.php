@@ -785,6 +785,7 @@ class NotaFiscalRepository extends EntityRepository {
                         AND rc.qtdDivergencia = 0
                         AND (rc.divergenciaPeso = \'N\')
                         AND (rc.indDivergLote = \'N\')
+                        AND (rc.indDivergVolumes = \'N\')
                 )')
                 ->setParameters(
                 array(
@@ -854,7 +855,7 @@ class NotaFiscalRepository extends EntityRepository {
                     WHERE os.recebimento = nf.recebimento
                         AND rc.codProduto = nfi.codProduto
                         AND rc.grade = nfi.grade
-                        AND (rc.qtdDivergencia = 0 AND rc.divergenciaPeso = 'N' AND rc.indDivergLote = 'N')
+                        AND (rc.qtdDivergencia = 0 AND rc.divergenciaPeso = 'N' AND rc.indDivergLote = 'N' AND rc.indDivergVolumes = 'N')
                 )")
                 ->setParameter('idRecebimento', $idRecebimento)
                 ->groupBy('p.id, p.grade, p.descricao, tc.id, nfil.lote')
