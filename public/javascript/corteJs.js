@@ -77,9 +77,7 @@ function updateList(showColEnd)
         }
         newRow.append( newTd( newEmbSelector ) );
         newRow.append( newTd( $("<input style='width:40px;' type='text' class='qtdCortar' id='qtdCortar-" + i + "' data-index='" + i + "'>") ) );
-        // newRow.append( newTd( item.qtdConf ) );
-        // newRow.append( newTd( item.qtdCortada ) );
-        newRow.append( newTd( item.qtdCorteTotal ) );
+        newRow.append( newTd( item.qtdCortada ) );
 
         tbody.append(newRow);
     })
@@ -230,6 +228,8 @@ $("#corteTotal").live("click", function  () {
 
 function executeRequest() {
     let checkQuebra = $("#quebraEndereco").prop("checked");
+    itens = [];
+    testShowGrid();
     $.ajax({
         url: URL_MODULO + '/corte/get-data-produto-corte-ajax/',
         type: 'post',
