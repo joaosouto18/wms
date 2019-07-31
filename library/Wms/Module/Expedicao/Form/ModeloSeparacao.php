@@ -31,7 +31,7 @@ class ModeloSeparacao extends Form
             'label' => 'Utiliza Volume Patrimônio',
             'checkedValue' => 'S'
         ))->addElement('checkbox', 'agrupContEtiquetas', array(
-            'label' => 'Agrupar contagem de etiquetas de separação e embalados',
+            'label' => 'Agrupar sequenciamento de etiquetas de não embalados e embalados',
             'checkedValue' => 'S',
             'class' => 'condicionalCheckout'
         ))->addElement('checkbox', 'criarVolsFinalCheckout', array(
