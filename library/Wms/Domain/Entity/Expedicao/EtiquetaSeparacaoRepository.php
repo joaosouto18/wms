@@ -1957,6 +1957,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 foreach ($endereco as $produtoGradeLote => $embs) {
                     foreach ($embs as $idEmbalagem => $produto) {
                         $qtdTemp = $produto['qtd'];
+                        /** @var Produto $produtoEn */
+                        $produtoEn = $produto['produtoEn'];
 
                         if (!$produto['forcarEmbVenda']) {
                             $embsFiltered1 = array_filter($produto['embalagensDisponiveis'], function ($emb) {
