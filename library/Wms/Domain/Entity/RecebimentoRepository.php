@@ -967,6 +967,10 @@ class RecebimentoRepository extends EntityRepository {
             $validade = null;
         }
 
+        if ($idNormaPaletizacao == null) {
+            $idNormaPaletizacao = $produtoVolumeEntity->getNormaPaletizacao()->getId();
+        }
+
         $recebimentoVolumeEntity->setRecebimento($recebimentoEntity)
                 ->setOrdemServico($ordemServicoEntity)
                 ->setVolume($produtoVolumeEntity)
