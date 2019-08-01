@@ -762,7 +762,7 @@ class PedidoRepository extends EntityRepository
                     NVL(MSP.QTD_CORTADA, NVL(PP.QTD_CORTADA, 0)) as \"qtdCortada\"";
             }
 
-            $sql = "SELECT $sqlCampos FROM PEDIDO_PRODUTO PP
+            $sql = "SELECT DISTINCT $sqlCampos FROM PEDIDO_PRODUTO PP
               INNER JOIN PEDIDO P ON P.COD_PEDIDO = PP.COD_PEDIDO
               INNER JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
               INNER JOIN PESSOA PE ON PE.COD_PESSOA = P.COD_PESSOA
@@ -784,7 +784,7 @@ class PedidoRepository extends EntityRepository
 
             if ($quebraEndereco) {
                 $sql .= "
-               LEFT JOIN MAPA_SEPARACAO_PRODUTO MSPROD ON MSPROD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSPROD.COD_PRODUTO = '$codProduto' and MSPROD.DSC_GRADE = '$grade'
+               LEFT JOIN MAPA_SEPARACAO_PRODUTO MSPROD ON MSPROD.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSPROD.COD_PRODUTO = '$codProduto' AND MSPROD.DSC_GRADE = '$grade'  AND MSPROD.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
                LEFT JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = MSPROD.COD_DEPOSITO_ENDERECO
                ";
             }

@@ -2,6 +2,15 @@
 
 namespace Wms;
 
+/*
+ * Tratativas registradas:
+ *
+ * 01/08/19 Tarcísio César: Caso Math::resto(32.55, 1.05) [Valor esperado: 0; Valor obtido: 1.04]
+ *      passar multiplicações ($x * $quantidade) e ($y * $quantidade) pela função strval() nas funções de operações ficando
+ *      $x = strval($x * $quantidade);
+ *      $y = strval($y * $quantidade);
+ */
+
 Class Math
 {
     private static function maiorPrecisao($x, $y)
@@ -58,8 +67,8 @@ Class Math
         $quantidade = self::maiorPrecisao($x, $y);
         if ($quantidade == 0) return 0;
 
-        $x = $x * $quantidade;
-        $y = $y * $quantidade;
+        $x = strval($x * $quantidade);
+        $y = strval($y * $quantidade);
 
         if ($x == 0 || $y == 0)
             return 0;
@@ -74,8 +83,8 @@ Class Math
         
         $quantidade = self::maiorPrecisao($x,$y);
 
-        $x = $x * $quantidade;
-        $y = $y * $quantidade;
+        $x = strval($x * $quantidade);
+        $y = strval($y * $quantidade);
 
         return ($x + $y) / $quantidade;
     }
@@ -87,8 +96,8 @@ Class Math
         
         $quantidade = self::maiorPrecisao($x,$y);
 
-        $x = $x * $quantidade;
-        $y = $y * $quantidade;
+        $x = strval($x * $quantidade);
+        $y = strval($y * $quantidade);
 
         return ($x - $y) / $quantidade;
     }
@@ -100,26 +109,26 @@ Class Math
         
         $quantidade = self::maiorPrecisao($x,$y);
 
-        $x = $x * $quantidade;
-        $y = $y * $quantidade;
+        $x = strval($x * $quantidade);
+        $y = strval($y * $quantidade);
 
         return ($x * $y) / ($quantidade * $quantidade);
     }
 
     /**
-     * @param float|int $divisor
-     * @param float|int $dividendo
+     * @param float|int $x
+     * @param float|int $y
      * @return float|int
      */
-    public static function dividir($divisor, $dividendo)
+    public static function dividir($x, $y)
     {
-        $divisor = strval($divisor);
-        $dividendo = strval($dividendo);
+        $x = strval($x);
+        $y = strval($y);
 
-        $quantidade = self::maiorPrecisao($divisor, $dividendo);
+        $quantidade = self::maiorPrecisao($x, $y);
 
-        $x = $divisor * $quantidade;
-        $y = $dividendo * $quantidade;
+        $x = strval($x * $quantidade);
+        $y = strval($y * $quantidade);
 
         if ($x == 0 || $y == 0)
             return 0;
