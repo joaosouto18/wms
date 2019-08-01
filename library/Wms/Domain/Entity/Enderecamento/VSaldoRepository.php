@@ -13,11 +13,12 @@ class VSaldoRepository extends EntityRepository
         $tipoPickingRotativo = Endereco::PICKING_DINAMICO;
 
         $query = $this->getEntityManager()->createQueryBuilder()
-        ->select('s.codProduto, s.grade,s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, MOD(e.predio,2) as lado, e.id as idEndereco, s.codUnitizador, s.unitizador, s.volume, tp.descricao as tipoComercializacao')
+        ->select('s.codProduto, s.grade,s.dscLinhaSeparacao, s.qtd, p.descricao, s.dscEndereco, MOD(e.predio,2) as lado, e.id as idEndereco, s.codUnitizador, s.unitizador, s.volume, tp.descricao as tipoComercializacao, c.descricao caracteristica')
         ->from("wms:Enderecamento\VSaldo","s")
         ->leftJoin("s.produto","p")
         ->leftJoin('p.tipoComercializacao','tp')
         ->leftJoin("s.depositoEndereco", "e")
+        ->leftJoin('e.caracteristica', 'c')
         ->orderBy("e.rua, lado, e.nivel, e.predio, e.apartamento, s.codProduto, s.grade, s.volume");
 
         if (isset($params['grandeza']) && !empty($params['grandeza'])) {
