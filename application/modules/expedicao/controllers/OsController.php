@@ -473,9 +473,7 @@ class Expedicao_OsController extends Action
 
             if (!empty($params['idExpedicao']) ||
                 !empty($params['codCargaExterno']) ||
-                !empty($params['pedido']) ||
-                !empty($params['produto']) ||
-                !empty($params['produtividade'])) {
+                !empty($params['pedido'])) {
 
                 $idExpedicao = null;
                 $idCarga = null;
