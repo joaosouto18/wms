@@ -32,7 +32,7 @@ class ModeloInventarioService extends AbstractService
                 $data['default'] = 'S';
 
             } else if (!empty($default) && $data['default'] == 'S' &&
-                ((!isset($data['id']) || (isset($data['id']) && !empty($data['id']) && $data['id'] !== $default->getId())))) {
+                (!isset($data['id']) || (isset($data['id']) && !empty($data['id']) && $data['id'] !== $default->getId()))) {
 
                 $arr = $default->toArray();
                 $arr['default'] = false;

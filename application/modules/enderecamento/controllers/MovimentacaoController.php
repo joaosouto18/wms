@@ -19,15 +19,31 @@ class Enderecamento_MovimentacaoController extends Action
         $quantidade = str_replace(',','.',$this->_getParam('quantidade'));
         $this->view->controleProprietario = $controleProprietario;
 
-        $embalagem = (isset($data['embalagem'])) ? $data['embalagem'] : null;
-        $volumesParam = (isset($data['volumes'])) ? $data['volumes'] : null;
+        $params = array(
+            'idProduto' => (!empty($data['idProduto']))? $data['idProduto'] : null,
+            'grade' => (!empty($data['grade']))? $data['grade'] : null,
+            'embalagem' => (isset($data['embalagem'])) ? $data['embalagem'] : null,
+            'volumes' => (isset($data['volumes'])) ? $data['volumes'] : null,
+            'rua' => (!empty($data['rua']))? $data['rua'] : null,
+            'predio' => (!empty($data['predio']))? $data['predio'] : null,
+            'nivel' => (!empty($data['nivel']))? $data['nivel'] : null,
+            'apto' => (!empty($data['apto']))? $data['apto'] : null,
+            'validade' => (!empty($data['validade'])) ? str_replace('/', '-', $data['validade']) : null,
+            'quantidade' => $quantidade,
+            'lote' => (isset($data['lote']))? $data['lote'] : null,
+            'idNormaPaletizacao' => (!empty($data['idNormaPaletizacao']))? : null,
+            'codProprietario' => (isset($data['codPessoa']))? $data['codPessoa'] : null,
+            'obsUsuario' => (!empty($data['obsUsuario']))? $data['obsUsuario'] : null,
+            'idMotMov' => (!empty($data['idMotMov']))? $data['idMotMov'] : null
+        );
 
         //TRANSFERENCIA MANUAL
         if (isset($transferir) && !empty($transferir)) {
-            $this->redirect('transferir', 'movimentacao', 'enderecamento', array('idProduto' => $data['idProduto'], 'grade' => $data['grade'],
-                'embalagem' => $embalagem, 'volumes' => $volumesParam, 'rua' => $data['rua'], 'predio' => $data['predio'],
-                'nivel' => $data['nivel'], 'apto' => $data['apto'], 'ruaDestino' => $data['ruaDestino'], 'predioDestino' => $data['predioDestino'],
-                'nivelDestino' => $data['nivelDestino'], 'aptoDestino' => $data['aptoDestino'], 'validade' => $data['validade'], 'quantidade' => $quantidade, 'lote' => (isset($data['lote']))? $data['lote'] : null));
+            $params['ruaDestino'] = $data['ruaDestino'];
+            $params['predioDestino'] = $data['predioDestino'];
+            $params['nivelDestino'] = $data['nivelDestino'];
+            $params['aptoDestino'] = $data['aptoDestino'];
+            $this->redirect('transferir', 'movimentacao', 'enderecamento', $params);
         }
         if (isset($data['return'])) {
             /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
@@ -36,41 +52,17 @@ class Enderecamento_MovimentacaoController extends Action
             $idEndereco = $data['idEndereco'];
             /** @var \Wms\Domain\Entity\Deposito\Endereco $enderecoEn */
             $enderecoEn = $enderecoRepo->findOneBy(array('id'=>$idEndereco));
-            $data['rua'] = $enderecoEn->getRua();
-            $data['predio'] = $enderecoEn->getPredio();
-            $data['nivel'] = $enderecoEn->getNivel();
-            $data['apto'] = $enderecoEn->getApartamento();
+            $params['rua'] = $enderecoEn->getRua();
+            $params['predio'] = $enderecoEn->getPredio();
+            $params['nivel'] = $enderecoEn->getNivel();
+            $params['apto'] = $enderecoEn->getApartamento();
             if ($request->isPost() && empty($transferir) && $data['submit'] == 'Movimentar') {
-                $this->redirect('movimentar', 'movimentacao', 'enderecamento', array(
-                    'idProduto' => $data['idProduto'],
-                    'grade' => $data['grade'],
-                    'embalagem' => (isset($data['embalagem']) && !empty($data['embalagem']))? $data['embalagem'] : null,
-                    'volumes' => (isset($data['volumes']) && !empty($data['volumes']))? $data['volumes'] : null,
-                    'rua' => $data['rua'],
-                    'predio' => $data['predio'],
-                    'nivel' => $data['nivel'],
-                    'apto' => $data['apto'],
-                    'validade' => str_replace('/', '-', $data['validade']),
-                    'quantidade' => $quantidade,
-                    'idNormaPaletizacao' => $data['idNormaPaletizacao']));
+                $this->redirect('movimentar', 'movimentacao', 'enderecamento', $params);
             }
             $form->populate($data);
         } else {
             if ($request->isPost() && empty($transferir)) {
-                $this->redirect('movimentar', 'movimentacao', 'enderecamento', array(
-                    'idProduto' => $data['idProduto'],
-                    'grade' => $data['grade'],
-                    'embalagem' => (isset($data['embalagem']) && !empty($data['embalagem']))? $data['embalagem'] : null,
-                    'volumes' => (isset($data['volumes']) && !empty($data['volumes']))? $data['volumes'] : null,
-                    'rua' => $data['rua'],
-                    'predio' => $data['predio'],
-                    'nivel' => $data['nivel'],
-                    'apto' => $data['apto'],
-                    'validade' => str_replace('/', '-', $data['validade']),
-                    'quantidade' => $quantidade,
-                    'codProprietario' => (isset($data['codPessoa']))? $data['codPessoa'] : null,
-                    'lote' => (isset($data['lote']))? $data['lote'] : null,
-                    'idNormaPaletizacao' => $data['idNormaPaletizacao']));
+                $this->redirect('movimentar', 'movimentacao', 'enderecamento', $params);
             }
         }
         $this->view->form = $form;
@@ -163,6 +155,9 @@ class Enderecamento_MovimentacaoController extends Action
             }
 
             $EstoqueRepository->validaMovimentaçãoExpedicaoFinalizada($enderecoEn->getId(),$idProduto,$grade);
+
+            $params['obsUsuario'] = (!empty($data['obsUsuario'])) ? $data['obsUsuario'] : null;
+            $params['idMotMov'] = (!empty($data['idMotMov'])) ? $data['idMotMov'] : null;
 
             if ($produtoEn->getTipoComercializacao()->getId() == 1) {
                 $embalagensEn = $this->getEntityManager()->getRepository("wms:Produto\Embalagem")->findBy(array('codProduto'=>$idProduto,'grade'=>$grade),array('quantidade'=>'ASC'));

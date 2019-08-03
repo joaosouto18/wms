@@ -39,7 +39,7 @@ class MotivoCorte extends \Wms\Module\Web\Form {
 
     /**
      * Sets the values from entity
-     * @param \Wms\Entity\Expedicao/MotivoCorte
+     * @param \Wms\Domain\Entity\Expedicao\MotivoCorte
      */
     public function setDefaultsFromEntity(\Wms\Domain\Entity\Expedicao\MotivoCorte $motivoCorte)
     {

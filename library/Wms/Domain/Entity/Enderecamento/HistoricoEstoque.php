@@ -145,6 +145,20 @@ class HistoricoEstoque
     protected $validade;
 
     /**
+     * @var MotivoMovimentacao
+     *
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\Enderecamento\MotivoMovimentacao")
+     * @JoinColumn(name="COD_MOTIVO_MOVIMENTACAO", referencedColumnName="COD_MOTIVO_MOVIMENTACAO")
+     */
+    protected $motivoMovimentacao;
+
+    /**
+     * @var string
+     * @Column(name="OBS_USUARIO", type="string", nullable=true, length=200)
+     */
+    protected $obsUsuario;
+
+    /**
      * @return mixed
      */
     public function getValidade()
@@ -462,5 +476,37 @@ class HistoricoEstoque
     public function setSaldoFinal($saldoFinal)
     {
         $this->saldoFinal = $saldoFinal;
+    }
+
+    /**
+     * @return MotivoMovimentacao
+     */
+    public function getMotivoMovimentacao()
+    {
+        return $this->motivoMovimentacao;
+    }
+
+    /**
+     * @param MotivoMovimentacao $motivoMovimentacao
+     */
+    public function setMotivoMovimentacao($motivoMovimentacao)
+    {
+        $this->motivoMovimentacao = $motivoMovimentacao;
+    }
+
+    /**
+     * @return string
+     */
+    public function getObsUsuario()
+    {
+        return $this->obsUsuario;
+    }
+
+    /**
+     * @param string $obsUsuario
+     */
+    public function setObsUsuario($obsUsuario)
+    {
+        $this->obsUsuario = $obsUsuario;
     }
 }

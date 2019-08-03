@@ -13,6 +13,7 @@ class Cadastro extends Form
 
         $normasPaletizacao = $this->getEm()->getRepository('wms:Armazenagem\Unitizador')->getIdValue(true);
         $proprietario = $this->getEm()->getRepository('wms:Filial')->getIdValue(true);
+        $motivosMov = $this->getEm()->getRepository("wms:Enderecamento\MotivoMovimentacao")->getIdDescricao(['isAtivo' => true]);
         $placeholder = Endereco::mascara();
 
         $this
@@ -90,15 +91,20 @@ class Cadastro extends Form
                 'label' => 'Unitizador',
                 'mostrarSelecione' => true,
                 'multiOptions' => $normasPaletizacao,
-            ));
-        if($controleProprietario == 'S') {
-            $this->addElement('select', 'codPessoa', array(
-                'label' => 'Proprietário',
-                'mostrarSelecione' => true,
-                'multiOptions' => $proprietario,
-            ));
-        }
-        $this->addElement('submit', 'submit', array(
+            ))
+            ->addElement('textarea', 'obsUsuario', array(
+                'label' => 'Observações',
+                'rows' => 100,
+                'cols' => 100,
+                'style' => 'height: 40px; width: 300px;'
+            ))
+            ->addElement('select', 'idMotMov', array(
+                'label' => 'Motivo da movimentação',
+                'mostrarSelecione' => false,
+                'multiOptions' => $motivosMov,
+                'value' => 1,
+            ))
+            ->addElement('submit', 'submit', array(
                 'label' => 'Movimentar',
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
@@ -143,9 +149,14 @@ class Cadastro extends Form
                 'decorators' => array('ViewHelper')
             ));
         if($controleProprietario == 'S') {
-            $this->addDisplayGroup(array('idProduto', 'grade', 'volumes', 'embalagens','lote', 'validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade', 'idNormaPaletizacao', 'codPessoa', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'));
-        }else{
-            $this->addDisplayGroup(array('idProduto', 'grade', 'volumes', 'embalagens','lote', 'validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade', 'idNormaPaletizacao', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'));
+            $this->addElement('select', 'codPessoa', array(
+                'label' => 'Proprietário',
+                'mostrarSelecione' => true,
+                'multiOptions' => $proprietario,
+            ))
+            ->addDisplayGroup(array('idProduto', 'grade', 'volumes', 'embalagens','lote', 'validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade', 'idNormaPaletizacao', 'codPessoa', 'idMotMov', 'obsUsuario', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'));
+        } else {
+            $this->addDisplayGroup(array('idProduto', 'grade', 'volumes', 'embalagens','lote', 'validade', 'rua', 'predio', 'nivel', 'apto', 'quantidade', 'idNormaPaletizacao', 'idMotMov', 'obsUsuario', 'submit', 'buscarestoque'), 'identificacao', array('legend' => 'Movimentar'));
         }
         $this->addDisplayGroup(array('endereco_origem','ruaDestino', 'predioDestino', 'nivelDestino', 'aptoDestino', 'transferir'), 'tranferencia', array('legend' => 'Transferir'));
 
