@@ -19,6 +19,7 @@ class Enderecamento_MovimentacaoController extends Action
         $quantidade = str_replace(',','.',$this->_getParam('quantidade'));
         $this->view->controleProprietario = $controleProprietario;
 
+        $obsUserTrimmed = trim($data['obsUsuario']);
         $params = array(
             'idProduto' => (!empty($data['idProduto']))? $data['idProduto'] : null,
             'grade' => (!empty($data['grade']))? $data['grade'] : null,
@@ -33,7 +34,7 @@ class Enderecamento_MovimentacaoController extends Action
             'lote' => (isset($data['lote']))? $data['lote'] : null,
             'idNormaPaletizacao' => (!empty($data['idNormaPaletizacao']))? : null,
             'codProprietario' => (isset($data['codPessoa']))? $data['codPessoa'] : null,
-            'obsUsuario' => (!empty($data['obsUsuario']))? $data['obsUsuario'] : null,
+            'obsUsuario' => (!empty($obsUserTrimmed))? $obsUserTrimmed : null,
             'idMotMov' => (!empty($data['idMotMov']))? $data['idMotMov'] : null
         );
 

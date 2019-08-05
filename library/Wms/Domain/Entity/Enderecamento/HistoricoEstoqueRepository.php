@@ -23,11 +23,14 @@ class HistoricoEstoqueRepository extends EntityRepository {
                        un.id as Unitizador,
                        NVL(vol.descricao, 'PRODUTO UNITÁRIO') as volume,
                        NVL(hist.validade,e.validade) as validade,
-                       un.descricao as Norma")
+                       un.descricao as Norma,
+                       hist.obsUsuario,
+                       mm.descricao motivo")
                 ->from('wms:Enderecamento\HistoricoEstoque', 'hist')
                 ->innerJoin("hist.produto", "prod")
                 ->innerJoin("hist.depositoEndereco", "dep")
                 ->innerJoin("hist.usuario", "usu")
+                ->innerJoin("hist.motivoMovimentacao", "mm")
                 ->leftJoin("hist.unitizador", "un")
                 ->leftJoin("hist.produtoVolume", "vol")
                 ->leftJoin('wms:Enderecamento\Estoque', 'e', 'WITH', "e.codProduto = prod.id AND e.grade = prod.grade AND e.depositoEndereco = dep.id")
@@ -45,7 +48,9 @@ class HistoricoEstoqueRepository extends EntityRepository {
                         vol.descricao,
                         hist.validade,
                         e.validade,
-                        un.descricao");
+                        un.descricao,
+                        hist.obsUsuario,
+                        mm.descricao");
 
         if (isset($parametros['idProduto']) && !empty($parametros['idProduto'])) {
             $query->andWhere("hist.codProduto = '$parametros[idProduto]'");

@@ -51,6 +51,8 @@ BEGIN
                                         NOT DEFERRABLE
                             )';
 
+        UPDATE HISTORICO_ESTOQUE SET COD_MOTIVO_MOVIMENTACAO = 1 WHERE COD_MOTIVO_MOVIMENTACAO IS NULL;
+
         INSERT INTO RECURSO (COD_RECURSO, DSC_RECURSO, NOM_RECURSO, COD_RECURSO_PAI)
         VALUES (SQ_RECURSO_01.NEXTVAL, 'Motivo Movimentacao', 'motivo-movimentacao', 0);
 
