@@ -278,8 +278,8 @@ class Expedicao
                 $this->_expedicaoRepo->alteraStatus($this->_expedicaoEntity, ExpedicaoEntity::STATUS_EM_CONFERENCIA);
         }
 
-        if ($this->_expedicaoRepo->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S' ) {
-            $idIntegracao = $this->_expedicaoRepo->getSystemParameterValue('ID_INTEGRACAO_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS');
+        //if ($this->_expedicaoRepo->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S' ) {
+            $idIntegracao = 1;//$this->_expedicaoRepo->getSystemParameterValue('ID_INTEGRACAO_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS');
 
             /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
             $acaoIntRepo = $em->getRepository('wms:Integracao\AcaoIntegracao');
@@ -297,7 +297,7 @@ class Expedicao
             if (!$result === true) {
                 throw new \Wms\Util\WMS_Exception($result);
             }
-        }
+        //}
 
     }
 
