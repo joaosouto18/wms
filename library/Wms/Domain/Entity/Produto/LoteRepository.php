@@ -139,8 +139,9 @@ class LoteRepository extends EntityRepository
             ->where("nf.recebimento = :idRecebimento AND nfi.codProduto = :codProduto AND nfi.grade = :grade");
 
         $arrLotes = $arr = [];
-        $strLink = "$#$";
+        $strLink = "+#+";
         foreach ($itensConferidos as $item) {
+            if (empty($item['qtdConferida'])) continue;
             $codGrade = $item['codProduto'].$strLink.$item['grade'];
             $arr[$codGrade][$item['lote']] = $item['qtdConferida'];
             $arrLotes[$item['lote']][$codGrade] = true;
