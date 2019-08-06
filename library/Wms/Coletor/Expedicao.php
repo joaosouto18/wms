@@ -2,17 +2,25 @@
 
 namespace Wms\Coletor;
 
+use Doctrine\ORM\EntityManager;
 use Wms\Domain\Entity\Expedicao as ExpedicaoEntity;
+use Wms\Domain\Entity\ExpedicaoRepository;
 
 class Expedicao
 {
 
     protected $_request;
 
+    /**
+     * @var ExpedicaoRepository
+     */
     protected $_expedicaoRepo;
 
     protected $_sessaoColetor;
 
+    /**
+     * @var \Wms\Domain\Entity\Expedicao
+     */
     protected $_expedicaoEntity;
 
     protected $etiquetaSeparacao;
@@ -242,7 +250,13 @@ class Expedicao
         return $this->_tipoConferencia;
     }
 
-
+    /**
+     * Expedicao constructor.
+     * @param $request \Zend_Controller_Request_Abstract
+     * @param $em EntityManager
+     * @throws \Wms\Util\WMS_Exception
+     * @throws \Zend_Session_Exception
+     */
     public function __construct($request, $em)
     {
         $this->setRequest($request);
@@ -253,7 +267,6 @@ class Expedicao
 
         $this->_sessaoColetor = new \Zend_Session_Namespace('coletor');
 
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $this->_expedicaoRepo   = $em->getRepository('wms:Expedicao');
         $this->_expedicaoEntity = $this->getExpedicaoRepo()->find($this->getIdExpedicao());
 
@@ -263,6 +276,27 @@ class Expedicao
                 $this->_expedicaoRepo->alteraStatus($this->_expedicaoEntity, ExpedicaoEntity::STATUS_PRIMEIRA_CONFERENCIA);
             else
                 $this->_expedicaoRepo->alteraStatus($this->_expedicaoEntity, ExpedicaoEntity::STATUS_EM_CONFERENCIA);
+        }
+
+        if ($this->_expedicaoRepo->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S' ) {
+            $idIntegracao = $this->_expedicaoRepo->getSystemParameterValue('ID_INTEGRACAO_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS');
+
+            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+            $acaoIntRepo = $em->getRepository('wms:Integracao\AcaoIntegracao');
+            $acaoEn = $acaoIntRepo->find($idIntegracao);
+            $options = array();
+
+            $arrIds = [];
+            /** @var ExpedicaoEntity\Carga $carga */
+            foreach ($this->_expedicaoEntity->getCarga() as $carga) {
+                $arrIds[] = $carga->getCodCargaExterno();
+            }
+            $options[] = implode(',', $arrIds);
+
+            $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E',"P",null,612);
+            if (!$result === true) {
+                throw new \Wms\Util\WMS_Exception($result);
+            }
         }
 
     }

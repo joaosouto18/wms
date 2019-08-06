@@ -139,7 +139,7 @@ class LoteRepository extends EntityRepository
             ->where("nf.recebimento = :idRecebimento AND nfi.codProduto = :codProduto AND nfi.grade = :grade");
 
         $arrLotes = $arr = [];
-        $strLink = "$#$";
+        $strLink = "+#+";
         foreach ($itensConferidos as $item) {
             $codGrade = $item['codProduto'].$strLink.$item['grade'];
             $arr[$codGrade][$item['lote']] = $item['qtdConferida'];
@@ -192,7 +192,8 @@ class LoteRepository extends EntityRepository
                     if ($restante == 0) break;
                 }
                 if ($restante > 0) {
-                    $idItemIndex = key(end($itensVinculados));
+                    $keys = array_keys($itensVinculados);
+                    $idItemIndex = end($keys);
                     $itensVinculados[$idItemIndex]['qtdVinc'] = Math::adicionar($itensVinculados[$idItemIndex]['qtdVinc'], $restante);
                 }
             }
