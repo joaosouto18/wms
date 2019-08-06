@@ -192,7 +192,8 @@ class LoteRepository extends EntityRepository
                     if ($restante == 0) break;
                 }
                 if ($restante > 0) {
-                    $idItemIndex = key(end($itensVinculados));
+                    $keys = array_keys($itensVinculados);
+                    $idItemIndex = end($keys);
                     $itensVinculados[$idItemIndex]['qtdVinc'] = Math::adicionar($itensVinculados[$idItemIndex]['qtdVinc'], $restante);
                 }
             }
