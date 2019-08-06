@@ -180,7 +180,7 @@ class ConexaoIntegracaoRepository extends EntityRepository {
                 throw new \Exception($erro['message']);
             }
 
-            $e = oci_execute($res, OCI_NO_AUTO_COMMIT);
+            $e = oci_execute($res);
             if (!$e) {
                 $erro = oci_error($res);
                 oci_free_statement($res);
