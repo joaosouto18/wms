@@ -141,6 +141,7 @@ class LoteRepository extends EntityRepository
         $arrLotes = $arr = [];
         $strLink = "+#+";
         foreach ($itensConferidos as $item) {
+            if (empty($item['qtdConferida'])) continue;
             $codGrade = $item['codProduto'].$strLink.$item['grade'];
             $arr[$codGrade][$item['lote']] = $item['qtdConferida'];
             $arrLotes[$item['lote']][$codGrade] = true;
