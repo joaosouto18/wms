@@ -278,27 +278,9 @@ class Expedicao
                 $this->_expedicaoRepo->alteraStatus($this->_expedicaoEntity, ExpedicaoEntity::STATUS_EM_CONFERENCIA);
         }
 
-        //if ($this->_expedicaoRepo->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S' ) {
-            $idIntegracao = 1;//$this->_expedicaoRepo->getSystemParameterValue('ID_INTEGRACAO_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS');
-
-            /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-            $acaoIntRepo = $em->getRepository('wms:Integracao\AcaoIntegracao');
-            $acaoEn = $acaoIntRepo->find($idIntegracao);
-            $options = array();
-
-            $arrIds = [];
-            /** @var ExpedicaoEntity\Carga $carga */
-            foreach ($this->_expedicaoEntity->getCarga() as $carga) {
-                $arrIds[] = $carga->getCodCargaExterno();
-            }
-            $options[] = implode(',', $arrIds);
-
-            $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E',"P",null,612);
-            if (!$result === true) {
-                throw new \Wms\Util\WMS_Exception($result);
-            }
-        //}
-
+        if ($this->_expedicaoRepo->getSystemParameterValue('IND_INFORMA_ERP_INICIO_CONFERENCIA') == 'S' ) {
+            $this->_expedicaoRepo->executaIntegracaoBDInicioConferencia($this->_expedicaoEntity);
+        }
     }
 
     public function setLayout()

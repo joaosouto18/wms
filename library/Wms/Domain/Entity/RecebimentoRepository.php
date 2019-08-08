@@ -2297,9 +2297,9 @@ class RecebimentoRepository extends EntityRepository {
             $conexaoRepo = $this->_em->getRepository('wms:Integracao\ConexaoIntegracao');
             $conexaoEn = $conexaoRepo->find(10);
 
-            $UPDATE01 = "UPDATE CP_RECEBIMENTOFISICO SET STATUS = 6 WHERE HANDLE IN ($ids)";
+            $UPDATE01 = "UPDATE CP_RECEBIMENTOFISICO SET STATUS = 6 WHERE STATUS = 5 AND HANDLE IN ($ids)";
 
-            $UPDATE02 = "UPDATE CP_RECEBIMENTOFISICOPAI SET STATUS = 6 WHERE HANDLE IN (
+            $UPDATE02 = "UPDATE CP_RECEBIMENTOFISICOPAI SET STATUS = 6 WHERE STATUS = 5 AND HANDLE IN (
                         SELECT RECEBIMENTOFISICOPAI FROM CP_RECEBIMENTOFISICO WHERE HANDLE IN ($ids))";
 
             $conexaoRepo->runQuery($UPDATE01, $conexaoEn,true);
