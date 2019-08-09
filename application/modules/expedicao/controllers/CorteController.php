@@ -248,7 +248,7 @@ class Expedicao_CorteController extends Action {
             $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
             $andamentoEntity = $andamentoRepo->findOneBy(array('expedicao' => $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao()->getId(), 'erroProcessado' => 'N'));
 
-            $query = "UPDATE EXPEDICAO_ANDAMENTO SET IND_ERRO_PROCESSADO = 'S' WHERE NUM_SEQUENCIA = " . $andamentoEntity->getId();
+            $query = "UPDATE EXPEDICAO_ANDAMENTO SET IND_ERRO_PROCESSADO = 'S' WHERE COD_EXPEDICAO = " . $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao()->getId();
             $this->_em->getConnection()->query($query)->execute();
 
             $this->_helper->json(array(
