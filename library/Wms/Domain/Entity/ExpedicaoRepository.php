@@ -1908,17 +1908,10 @@ class ExpedicaoRepository extends EntityRepository {
             $andamentoEntity = $andamentoRepo->findOneBy(array('expedicao' => $codExpedicao, 'erroProcessado' => 'N'));
 
             if ($andamentoEntity) {
-                try {
-//                    $this->getEntityManager()->beginTransaction();
-                    $andamentoEntity->setErroProcessado('S');
-                    $this->getEntityManager()->persist($andamentoEntity);
-                    $this->getEntityManager()->flush();
-//                    $this->getEntityManager()->commit();
-                    return false;
-                } catch(\Exception $e) {
-//                    $this->getEntityManager()->rollback();
-                    return $e->getMessage();
-                }
+
+                $query = "UPDATE EXPEDICAO_ANDAMENTO SET IND_ERRO_PROCESSADO = 'S' WHERE NUM_SEQUENCIA = ".$andamentoEntity->getId();
+                $this->_em->getConnection()->query($query)->execute();
+                
             }
 
             $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
