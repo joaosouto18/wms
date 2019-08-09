@@ -4634,7 +4634,7 @@ class ExpedicaoRepository extends EntityRepository {
             $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
             if (!is_null($idIntegracaoCorte)) {
                 $resultAcao = $this->integraCortesERP($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo);
-                if (!$resultAcao)
+                if ($resultAcao == false)
                     throw new \Exception('Corte Não Efetuado no ERP! Verifique o log de erro');
             }
 
