@@ -66,6 +66,12 @@ class Andamento
     protected $codBarrasProduto;
 
     /**
+     * @Column(name="IND_ERRO_PROCESSADO", type="string")
+     * @var string
+     */
+    protected $erroProcessado;
+
+    /**
      * @param \DateTime $dataAndamento
      */
     public function setDataAndamento($dataAndamento)
@@ -174,5 +180,22 @@ class Andamento
     {
         $this->codBarrasProduto = $codBarrasProduto;
     }
-    
+
+    /**
+     * @return string
+     */
+    public function getErroProcessado()
+    {
+        return $this->erroProcessado;
+    }
+
+    /**
+     * @param string $erroProcessado
+     */
+    public function setErroProcessado($erroProcessado)
+    {
+        $this->erroProcessado = $erroProcessado;
+    }
+
+
 }

@@ -1894,7 +1894,7 @@ class ExpedicaoRepository extends EntityRepository {
         foreach ($idsIntegracaoCorte as $id) {
             $acaoCorteEntity = $acaoIntRepo->find($id);
 
-            $result = $acaoIntRepo->processaAcao($acaoCorteEntity, array(
+            $acaoIntRepo->processaAcao($acaoCorteEntity, array(
                 0 => $codPedidoExterno,
                 1 => $codCargaExterno,
                 2 => $quantidade - $quantidadeCortada,
@@ -1903,13 +1903,15 @@ class ExpedicaoRepository extends EntityRepository {
                 5 => $codExpedicao,
                 6 => $usuarioEn->getId()
                 ), 'E', 'P',null,AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
-/*
-            if (is_string($result) && $result != 'OK') {
-                $andamentoRepo->save($result, $codExpedicao);
-            } else {
-                $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
-            }
-            */
+
+
+            $andamentoEntity = $andamentoRepo->findOneBy(array('expedicao' => $codExpedicao, 'erroProcessado' => 'N'));
+
+            if ($andamentoEntity)
+                return false;
+
+            $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
+
         }
 
         return true;
@@ -4621,10 +4623,18 @@ class ExpedicaoRepository extends EntityRepository {
             }
         }
 
-        $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
-        if (!is_null($idIntegracaoCorte)) {
-            $resultAcao = $this->integraCortesERP($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo);
+        try {
+            $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
+            if (!is_null($idIntegracaoCorte)) {
+                $resultAcao = $this->integraCortesERP($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo);
+                if (!$resultAcao)
+                    throw new \Exception('Corte Não Efetuado no ERP! Verifique o log de erro');
+            }
+
+        } catch (\Exception $e) {
+            return $e->getMessage();
         }
+
 
         $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
         $codExterno = $pedidoEn->getCodExterno();
