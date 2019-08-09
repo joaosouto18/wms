@@ -1914,13 +1914,11 @@ class ExpedicaoRepository extends EntityRepository {
                     $this->getEntityManager()->persist($andamentoEntity);
                     $this->getEntityManager()->flush();
                     $this->getEntityManager()->commit();
+                    return false;
                 } catch(\Exception $e) {
                     $this->getEntityManager()->rollback();
                     return $e->getMessage();
                 }
-
-
-                return false;
             }
 
             $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
