@@ -232,7 +232,9 @@ class Expedicao_CorteController extends Action {
 
                 $motivo = $motivoEn->getDscMotivo();
 
-                $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault);
+                $retornoCorte = $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault);
+                if (is_string($retornoCorte))
+                    throw new \Exception($retornoCorte);
 
             }
 
