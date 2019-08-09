@@ -1907,8 +1907,15 @@ class ExpedicaoRepository extends EntityRepository {
 
             $andamentoEntity = $andamentoRepo->findOneBy(array('expedicao' => $codExpedicao, 'erroProcessado' => 'N'));
 
-            if ($andamentoEntity)
+            if ($andamentoEntity) {
+                $this->getEntityManager()->beginTransaction();
+                $andamentoEntity->setErroProcessado('S');
+                $this->getEntityManager()->persist($andamentoEntity);
+                $this->getEntityManager()->flush();
+                $this->getEntityManager()->commit();
+
                 return false;
+            }
 
             $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
 
@@ -2070,14 +2077,6 @@ class ExpedicaoRepository extends EntityRepository {
             if ($this->getSystemParameterValue('IND_FINALIZA_CONFERENCIA_ERP_INTEGRACAO') == 'S') {
                 $resultAcao = $this->executaIntegracaoBDFinalizacaoConferencia($expedicaoEn);
             }
-
-            //Executa Corte ERP
-//            if (!is_null($this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP'))) {
-//                $resultAcao = $this->integraCortesERP($idExpedicao);
-//                if (!$resultAcao === true) {
-//                    throw new \Exception($resultAcao);
-//                }
-//            }
 
             $this->getEntityManager()->commit();
             return $result;
