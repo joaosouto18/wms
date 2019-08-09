@@ -1906,12 +1906,7 @@ class ExpedicaoRepository extends EntityRepository {
 
             $andamentoEntity = $andamentoRepo->findOneBy(array('expedicao' => $codExpedicao, 'erroProcessado' => 'N'));
             if ($andamentoEntity) {
-                try {
-                    return false;
-                } catch(\Exception $e) {
-                    $this->getEntityManager()->rollback();
-                    return $e->getMessage();
-                }
+                return false;
             }
 
             $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
