@@ -1885,6 +1885,9 @@ class ExpedicaoRepository extends EntityRepository {
         $codCargaExterno = $pedidoProdutoEn->getPedido()->getCarga()->getCodCargaExterno();
         $codExpedicao = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao()->getId();
 
+        $usuarioRepo = $this->getEntityManager()->getRepository("wms:Usuario");
+        $idUsuario = \Zend_Auth::getInstance()->getIdentity()->getId();
+        $usuarioEn = $usuarioRepo->find($idUsuario);
 
         $idsIntegracaoCorte = explode(',',$this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP'));
 
@@ -1896,13 +1899,17 @@ class ExpedicaoRepository extends EntityRepository {
                 1 => $codCargaExterno,
                 2 => $quantidade - $quantidadeCortada,
                 3 => $codProduto,
-                4 => $motivo), 'E', 'P',null,AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
-
+                4 => $motivo,
+                5 => $codExpedicao,
+                6 => $usuarioEn->getId()
+                ), 'E', 'P',null,AcaoIntegracaoFiltro::CODIGO_ESPECIFICO);
+/*
             if (is_string($result) && $result != 'OK') {
                 $andamentoRepo->save($result, $codExpedicao);
             } else {
                 $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
             }
+            */
         }
 
         return true;
@@ -4614,18 +4621,17 @@ class ExpedicaoRepository extends EntityRepository {
             }
         }
 
+        $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
+        if (!is_null($idIntegracaoCorte)) {
+            $resultAcao = $this->integraCortesERP($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo);
+        }
+
         $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
         $codExterno = $pedidoEn->getCodExterno();
         $observacao = "Item $codProduto - $grade do pedido $codExterno teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
         $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
 
         $this->getEntityManager()->flush();
-
-        $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
-        if (!is_null($idIntegracaoCorte)) {
-            $resultAcao = $this->integraCortesERP($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo);
-        }
-
     }
 
     /**
