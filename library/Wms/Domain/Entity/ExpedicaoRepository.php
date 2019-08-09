@@ -1908,11 +1908,17 @@ class ExpedicaoRepository extends EntityRepository {
             $andamentoEntity = $andamentoRepo->findOneBy(array('expedicao' => $codExpedicao, 'erroProcessado' => 'N'));
 
             if ($andamentoEntity) {
-                $this->getEntityManager()->beginTransaction();
-                $andamentoEntity->setErroProcessado('S');
-                $this->getEntityManager()->persist($andamentoEntity);
-                $this->getEntityManager()->flush();
-                $this->getEntityManager()->commit();
+                try {
+                    $this->getEntityManager()->beginTransaction();
+                    $andamentoEntity->setErroProcessado('S');
+                    $this->getEntityManager()->persist($andamentoEntity);
+                    $this->getEntityManager()->flush();
+                    $this->getEntityManager()->commit();
+                } catch(\Exception $e) {
+                    $this->getEntityManager()->rollback();
+                    return $e->getMessage();
+                }
+
 
                 return false;
             }
