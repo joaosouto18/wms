@@ -221,7 +221,7 @@ class Mobile_Enderecamento_ManualController extends Action
             if ($qtd == 0)
                 $qtd = $params['qtd'];
 
-            if (!isset($params['reservas']) || empty($params['reservas'])) {
+            if (empty($params['reservas'])) {
 
                 $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
                 /** @var \Wms\Domain\Entity\Recebimento\VQtdRecebimentoRepository $qtdRecebimentoRepo */
@@ -348,7 +348,7 @@ class Mobile_Enderecamento_ManualController extends Action
                 $this->em->flush();
                 $this->addFlashMessage('success', 'Palete ' . $paleteEn->getId() . ' criado e endereçado com sucesso');
 
-            } elseif (isset($params['reservas']) && !empty($params['reservas'])) {
+            } elseif (!empty($params['reservas'])) {
                 /** @var \Wms\Domain\Entity\Ressuprimento\ReservaEstoqueEnderecamentoRepository $reservaEndRepo */
                 $reservaEndRepo = $this->em->getRepository('wms:Ressuprimento\ReservaEstoqueEnderecamento');
 

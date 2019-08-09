@@ -19,21 +19,21 @@ class Enderecamento_MovimentacaoController extends Action
         $quantidade = str_replace(',','.',$this->_getParam('quantidade'));
         $this->view->controleProprietario = $controleProprietario;
 
-        $obsUserTrimmed = trim($data['obsUsuario']);
+        $obsUserTrimmed = (!empty($data['obsUsuario'])) ? trim($data['obsUsuario']) : null;
         $params = array(
             'idProduto' => (!empty($data['idProduto']))? $data['idProduto'] : null,
             'grade' => (!empty($data['grade']))? $data['grade'] : null,
-            'embalagem' => (isset($data['embalagem'])) ? $data['embalagem'] : null,
-            'volumes' => (isset($data['volumes'])) ? $data['volumes'] : null,
+            'embalagem' => (!empty($data['embalagem'])) ? $data['embalagem'] : null,
+            'volumes' => (!empty($data['volumes'])) ? $data['volumes'] : null,
             'rua' => (!empty($data['rua']))? $data['rua'] : null,
             'predio' => (!empty($data['predio']))? $data['predio'] : null,
             'nivel' => (!empty($data['nivel']))? $data['nivel'] : null,
             'apto' => (!empty($data['apto']))? $data['apto'] : null,
             'validade' => (!empty($data['validade'])) ? str_replace('/', '-', $data['validade']) : null,
             'quantidade' => $quantidade,
-            'lote' => (isset($data['lote']))? $data['lote'] : null,
+            'lote' => (!empty($data['lote']))? $data['lote'] : null,
             'idNormaPaletizacao' => (!empty($data['idNormaPaletizacao']))? : null,
-            'codProprietario' => (isset($data['codPessoa']))? $data['codPessoa'] : null,
+            'codProprietario' => (!empty($data['codPessoa']))? $data['codPessoa'] : null,
             'obsUsuario' => (!empty($obsUserTrimmed))? $obsUserTrimmed : null,
             'idMotMov' => (!empty($data['idMotMov']))? $data['idMotMov'] : null
         );
