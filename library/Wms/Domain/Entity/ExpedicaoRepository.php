@@ -1909,14 +1909,14 @@ class ExpedicaoRepository extends EntityRepository {
 
             if ($andamentoEntity) {
                 try {
-                    $this->getEntityManager()->beginTransaction();
+//                    $this->getEntityManager()->beginTransaction();
                     $andamentoEntity->setErroProcessado('S');
                     $this->getEntityManager()->persist($andamentoEntity);
                     $this->getEntityManager()->flush();
-                    $this->getEntityManager()->commit();
+//                    $this->getEntityManager()->commit();
                     return false;
                 } catch(\Exception $e) {
-                    $this->getEntityManager()->rollback();
+//                    $this->getEntityManager()->rollback();
                     return $e->getMessage();
                 }
             }
