@@ -244,6 +244,14 @@ class Expedicao_CorteController extends Action {
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
 
+            /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+            $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
+            $andamentoEntity = $andamentoRepo->findOneBy(array('expedicao' => $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao()->getId(), 'erroProcessado' => 'N'));
+
+            $andamentoEntity->setErroProcessado('S');
+            $this->getEntityManager()->persist($andamentoEntity);
+            $this->getEntityManager()->flush();
+
             $this->_helper->json(array(
                 'error' => $e->getMessage()
             ));

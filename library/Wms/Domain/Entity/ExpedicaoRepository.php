@@ -1878,7 +1878,6 @@ class ExpedicaoRepository extends EntityRepository {
         /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
         $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
 
-
         $quantidade = $pedidoProdutoEn->getQuantidade();
         $quantidadeCortada = $pedidoProdutoEn->getQtdCortada();
         $codPedidoExterno = $pedidoProdutoEn->getPedido()->getCodExterno();
@@ -1906,13 +1905,13 @@ class ExpedicaoRepository extends EntityRepository {
 
 
             $andamentoEntity = $andamentoRepo->findOneBy(array('expedicao' => $codExpedicao, 'erroProcessado' => 'N'));
-
             if ($andamentoEntity) {
-
-                $query = "UPDATE EXPEDICAO_ANDAMENTO SET IND_ERRO_PROCESSADO = 'S' WHERE NUM_SEQUENCIA = ".$andamentoEntity->getId();
-                $this->_em->getConnection()->query($query)->execute();
-                return false;
-
+                try {
+                    return false;
+                } catch(\Exception $e) {
+                    $this->getEntityManager()->rollback();
+                    return $e->getMessage();
+                }
             }
 
             $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
