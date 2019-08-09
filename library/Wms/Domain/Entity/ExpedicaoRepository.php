@@ -1911,7 +1911,8 @@ class ExpedicaoRepository extends EntityRepository {
 
                 $query = "UPDATE EXPEDICAO_ANDAMENTO SET IND_ERRO_PROCESSADO = 'S' WHERE NUM_SEQUENCIA = ".$andamentoEntity->getId();
                 $this->_em->getConnection()->query($query)->execute();
-                
+                return false;
+
             }
 
             $andamentoRepo->save('Corte de ' .$qtdCortar . ' unidades do produto ' . $codProduto . ' na carga ' . $codCargaExterno . ' enviado para o ERP', $codExpedicao);
