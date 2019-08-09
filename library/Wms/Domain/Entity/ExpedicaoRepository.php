@@ -4623,6 +4623,13 @@ class ExpedicaoRepository extends EntityRepository {
             }
         }
 
+        $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
+        $codExterno = $pedidoEn->getCodExterno();
+        $observacao = "Item $codProduto - $grade do pedido $codExterno teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
+        $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
+
+        $this->getEntityManager()->flush();
+
         try {
             $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
             if (!is_null($idIntegracaoCorte)) {
@@ -4634,14 +4641,6 @@ class ExpedicaoRepository extends EntityRepository {
         } catch (\Exception $e) {
             return $e->getMessage();
         }
-
-
-        $expedicaoEn = $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao();
-        $codExterno = $pedidoEn->getCodExterno();
-        $observacao = "Item $codProduto - $grade do pedido $codExterno teve $qtdCortar item(ns) cortado(s). Motivo: $motivo";
-        $expedicaoAndamentoRepo->save($observacao, $expedicaoEn->getId(), false, false);
-
-        $this->getEntityManager()->flush();
     }
 
     /**
