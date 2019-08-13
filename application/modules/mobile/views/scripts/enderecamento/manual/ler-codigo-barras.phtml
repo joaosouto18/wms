@@ -40,7 +40,7 @@
     </form>
 </div>
 <script>
-    let controlaLote = false;
+    var controlaLote = false;
 
     $(function () {
         $("#efetivaEndPicking").live("click", function () {
@@ -56,11 +56,10 @@
     });
 
     function nextInput(input, event) {
-        let inputReservas= $("#reservas");
-        let inputEndereco = $("#endereco");
-        let inputQtd = $("#qtd");
-        let inputLote = $("#lote");
-        let cancelEvent = false;
+        var inputReservas= $("#reservas");
+        var inputEndereco = $("#endereco");
+        var inputQtd = $("#qtd");
+        var inputLote = $("#lote");
         if ((event.which === 13 || event.keyCode === 13) && !isEmpty(input.value)) {
             if (input.id === 'produto') {
                 consultar(input.value);
@@ -72,13 +71,13 @@
             } else if ((input.id === 'qtd' && !controlaLote) || (input.id === 'lote') || (input.id === 'endereco' && !isEmpty(inputReservas.val()))) {
                 validateToSubmit();
             }
-            cancelEvent = true;
+            if (event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
+            }
         } else if ((event.which === 13 || event.keyCode === 13) && isEmpty(input.value)) {
             alert("Este campo não pode ficar vazio");
-            cancelEvent = true;
-        }
-
-        if (cancelEvent) {
             if (event.preventDefault) {
                 event.preventDefault();
             } else {
