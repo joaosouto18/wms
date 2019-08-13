@@ -252,9 +252,11 @@ class RecebimentoRepository extends EntityRepository {
                             'concluido' => false);
                     }
 
+                    $qtdConferidasVolumes = [];
+
                     foreach ($volumes as $volume) {
                         //verifica se o volume foi conferido.
-                        $qtdConferida = $this->buscarConferenciaPorVolume($item['produto'], $item['grade'], $volume->getId(), $idOrdemServico);
+                        $qtdConferida = $this->buscarConferenciaPorVolume($volume->getId(), $idOrdemServico);
 
                         //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
 
@@ -264,22 +266,16 @@ class RecebimentoRepository extends EntityRepository {
                                     $lote = null;
                                 }
                                 $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null,null,null, $volume, $lote);
-                            } else {
-                                $qtdConferidasVolumes[$lote][$item['produto']][$item['grade']][$volume->getId()] = $value;
                             }
+                            $qtdConferidasVolumes[$lote][$volume->getId()] = $value;
                         }
                     }
 
                     foreach ($qtdConferidasVolumes as $lote => $volumes) {
                         //Pega a menor quantidade de produtos completos
-                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade'], $item['produto'], $item['grade']);
+                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
                     }
 
-                    if (!isset($qtdConferidas)) {
-                        return array('message' => null,
-                            'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
-                            'concluido' => false);
-                    }
                     break;
                 case ProdutoEntity::TIPO_UNITARIO:
 
@@ -990,7 +986,7 @@ class RecebimentoRepository extends EntityRepository {
         }
 
         $em->persist($recebimentoVolumeEntity);
-        $em->flush();
+        $em->flush($recebimentoVolumeEntity);
     }
 
     /**
@@ -1380,29 +1376,18 @@ class RecebimentoRepository extends EntityRepository {
     }
 
     /**
-     *
-     * @param int $produto
-     * @param int $grade
      * @param int $idOrdemServico
      * @param int $produtoVolume
      * @return array Quantidade de volumes conferidos por lote
      */
-    public function buscarConferenciaPorVolume($produto, $grade, $produtoVolume, $idOrdemServico) {
+    public function buscarConferenciaPorVolume($produtoVolume, $idOrdemServico) {
         // busca volumes
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('rv.qtdConferida, NVL(rv.lote, 0) lote')
-                ->from('wms:Produto\Volume', 'pv')
-                ->innerJoin('pv.recebimentoVolumes', 'rv')
-                ->where('pv.codProduto = :produto AND pv.grade = :grade')
-                ->andWhere('rv.ordemServico = ?1')
-                ->andWhere('pv.id = ?2')
-                ->setParameters(array(
-            1 => $idOrdemServico,
-            2 => $produtoVolume,
-            'produto' => $produto,
-            'grade' => $grade,
-                )
-        );
+                ->from('wms:Recebimento\Volume', 'rv')
+                ->where('rv.ordemServico = ?1 AND rv.volume = ?2')
+                ->setParameters([ 1 => $idOrdemServico, 2 => $produtoVolume ] );
+
         $volumes = $dql->getQuery()->getArrayResult();
         $qtdTotal = array();
         foreach ($volumes as $volume) {
@@ -1412,35 +1397,27 @@ class RecebimentoRepository extends EntityRepository {
             }
             $qtdTotal[$lote] = Math::adicionar($qtdTotal[$lote], $volume['qtdConferida']);
         }
+
+        if (empty($qtdTotal)) $qtdTotal[0] = 0;
+
         return $qtdTotal;
     }
 
-    public function buscarVolumeMinimoConferidoPorProduto(array $volumesConferidos, $qtdNf, $codProduto, $gradeBuscar) {
+    public function buscarVolumeMinimoConferidoPorProduto(array $volumesConferidos, $qtdNf) {
         //Garantia de que vai retornar a menor quantidade conferida
         $minimo = 9999999999;
         $maximo = 0;
 
-        foreach ($volumesConferidos as $idProduto => $grades) {
-
-                foreach ($grades as $grade => $qtdConferidas) {
-                    if ($grade == $codProduto) {
-                        foreach ($qtdConferidas as $volume => $lotes) {
-                            if ($volume == $gradeBuscar) {
-                                foreach ($lotes as $lote => $qtd) {
-
-                                    if ($minimo > $qtd) {
-                                        $minimo = $qtd;
-                                    }
-
-                                    if ($maximo < $qtd) {
-                                        $maximo = $qtd;
-                                    }
-
-                                }
-                            }
-                        }
-                    }
+        foreach ($volumesConferidos as $lote => $vols) {
+            foreach ($vols as $qtd) {
+                if ($minimo > $qtd) {
+                    $minimo = $qtd;
                 }
+
+                if ($maximo < $qtd) {
+                    $maximo = $qtd;
+                }
+            }
         }
 
         //Verifica se o valor da divergência está maior que a quantidade informada na nf
