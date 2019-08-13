@@ -125,6 +125,16 @@ class Pedido
     protected $referencia;
 
     /**
+     * @Column(name="TIPO_PEDIDO", type="string", nullable=true)
+     */
+    protected $tipoPedido;
+
+    /**
+     * @Column(name="NOM_MOTORISTA", type="string", nullable=true)
+     */
+    protected $motorista;
+
+    /**
      * @Column(name="QTD", type="decimal", length=8, nullable=true)
      */
     protected $qtd;
@@ -539,5 +549,39 @@ class Pedido
     {
         return $this->referencia;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getTipoPedido()
+    {
+        return $this->tipoPedido;
+    }
+
+    /**
+     * @param mixed $tipoPedido
+     */
+    public function setTipoPedido($tipoPedido)
+    {
+        $this->tipoPedido = $tipoPedido;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMotorista()
+    {
+        return $this->motorista;
+    }
+
+    /**
+     * @param mixed $motorista
+     */
+    public function setMotorista($motorista)
+    {
+        $this->motorista = $motorista;
+    }
+
+
 
 }

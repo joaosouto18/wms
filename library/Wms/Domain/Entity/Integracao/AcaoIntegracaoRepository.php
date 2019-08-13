@@ -98,8 +98,10 @@ class AcaoIntegracaoRepository extends EntityRepository
                                 CEP,
                                 PRODUTO,
                                 GRADE,
+                                TIPO_PEDIDO,
                                 QTD,
                                 VLR_VENDA,
+                                NOM_MOTORISTA,
                                 TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
                 FROM INTEGRACAO_PEDIDO 
                 ORDER by CARGA, PEDIDO, PRODUTO";
