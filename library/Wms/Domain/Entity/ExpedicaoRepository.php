@@ -1897,7 +1897,7 @@ class ExpedicaoRepository extends EntityRepository {
                       FROM PEDIDO P
                       LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
                       WHERE C.COD_EXPEDICAO = $idExpedicao
-                      AND P.COD_TIPO_PEDIDO IN (521,471)";
+                      AND P.COD_TIPO_PEDIDO IN (3, 14)";
 
         $qtdPedidos = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
