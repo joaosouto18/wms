@@ -1130,4 +1130,9 @@ class Expedicao_IndexController extends Action {
 
     }
 
+    public function relatorioReimpressaoEtiquetaAction()
+    {
+
+    }
+
 }

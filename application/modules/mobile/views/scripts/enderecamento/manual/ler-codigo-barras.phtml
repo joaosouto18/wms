@@ -60,6 +60,7 @@
         var inputEndereco = $("#endereco");
         var inputQtd = $("#qtd");
         var inputLote = $("#lote");
+        var cancelEvent = false;
         if ((event.which === 13 || event.keyCode === 13) && !isEmpty(input.value)) {
             if (input.id === 'produto') {
                 consultar(input.value);
@@ -71,13 +72,13 @@
             } else if ((input.id === 'qtd' && !controlaLote) || (input.id === 'lote') || (input.id === 'endereco' && !isEmpty(inputReservas.val()))) {
                 validateToSubmit();
             }
-            if (event.preventDefault) {
-                event.preventDefault();
-            } else {
-                event.returnValue = false;
-            }
+            cancelEvent = true;
         } else if ((event.which === 13 || event.keyCode === 13) && isEmpty(input.value)) {
             alert("Este campo não pode ficar vazio");
+            cancelEvent = true;
+        }
+
+        if (cancelEvent) {
             if (event.preventDefault) {
                 event.preventDefault();
             } else {

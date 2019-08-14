@@ -477,7 +477,7 @@ class Mobile_ExpedicaoController extends Action {
             $this->getEntityManager()->commit();
 
             $this->getEntityManager()->beginTransaction();
-            $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa, $fechaEmbaladosNoFinal, !($fechaEmbaladosNoFinal || $agrupaEtiquetas),  $isLast);
+            $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa, $fechaEmbaladosNoFinal, !($fechaEmbaladosNoFinal || $agrupaEtiquetas), $isLast);
             $this->getEntityManager()->commit();
         } catch (Exception $e) {
             $this->getEntityManager()->rollback();
