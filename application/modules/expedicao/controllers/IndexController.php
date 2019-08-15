@@ -1126,13 +1126,35 @@ class Expedicao_IndexController extends Action {
         $idExpedicao = $this->_getParam('id',0);
         $relatorioEmbalados = new \Wms\Module\Expedicao\Report\RelatorioEtiquetaEmbalados();
         $relatorioEmbalados->imprimirExpedicaoModelo($idExpedicao);
-
-
     }
 
     public function relatorioReimpressaoEtiquetaAction()
     {
+        $form = new \Wms\Module\Expedicao\Form\RelatorioReimpressaoEtiqueta();
+        $grid = new \Wms\Module\Expedicao\Grid\RelatorioReimpressaoEtiqueta();
 
+        $result = [];
+        if ($this->getRequest()->isPost()) {
+            $params = $this->getRequest()->getParams();
+
+            $result = $this->_em->getRepository("wms:Expedicao\VEtiquetaSeparacao")->getMotivoReimpressao($params);
+
+            if (empty($result)) {
+                $this->addFlashMessage("info", "Nenhuma etiqueta foi reimpressa com essas características!");
+            }
+
+            if (!empty($params['pdf']) && !empty($result)) {
+                $pdf = new \Wms\Module\Web\Report\Generico("L");
+                $pdf->init($result, "Motivo de Reimpressão de Etiqueta", "Relatório de Motivo de Reimpressão de Etiqueta");
+            } else {
+                $form->setDefaults($params);
+            }
+        }
+
+        $this->view->form = $form;
+
+        $grid->init($result);
+        $this->view->grid = $grid;
     }
 
 }
