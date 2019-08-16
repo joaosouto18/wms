@@ -1,0 +1,29 @@
+<form id="filtro-relatorio-motivo-reimpressao-etiqueta" class="filtro" action="" method="post">
+    <div>
+        <fieldset id="fieldset-busca">
+            <legend>Filtros</legend>
+            <table style="width:100%">
+                <tr>
+                    <td>Nº Etiqueta:</td>
+                    <td>Expedição:</td>
+                    <td>Carga:</td>
+                    <td>Pedido:</td>
+                    <td>Produto:</td>
+                    <td>Grade:</td>
+                    <td>Data Inicio da Expedição:</td>
+                    <td rowspan="2"><?php echo $this->element->submit; ?></td>
+                    <td rowspan="2"><?php echo $this->element->pdf; ?></td>
+                </tr>
+                <tr>
+                    <td><?php echo $this->element->idEtiqueta; ?></td>
+                    <td><?php echo $this->element->expedicao ; ?></td>
+                    <td><?php echo $this->element->codCargaExterno ; ?></td>
+                    <td><?php echo $this->element->codPedido ; ?></td>
+                    <td><?php echo $this->element->codProduto; ?></td>
+                    <td><?php echo $this->element->grade ; ?></td>
+                    <td><?php echo $this->element->dataInicial1; ?> a <?php echo $this->element->dataInicial2; ?></td>
+                </tr>
+            </table>
+        </fieldset>
+    </div>
+</form>

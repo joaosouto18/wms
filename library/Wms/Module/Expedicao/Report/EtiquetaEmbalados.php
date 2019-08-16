@@ -8,7 +8,7 @@ use Wms\Util\Barcode\eFPDF,
 class EtiquetaEmbalados extends eFPDF
 {
 
-    public function imprimirExpedicaoModelo($volumePatrimonio,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta)
+    public function imprimirExpedicaoModelo($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $modeloEtiqueta, $fechaEmbaladosNoFinal = false)
     {
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
@@ -20,26 +20,26 @@ class EtiquetaEmbalados extends eFPDF
         switch ($modeloEtiqueta) {
             case 1:
                 //LAYOUT CASA DO CONFEITEIRO
-                self::bodyExpedicaoModelo1($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
+                self::bodyExpedicaoModelo1($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
                 break;
             case 2:
                 //LAYOUT WILSO
-                self::bodyExpedicaoModelo2($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
+                self::bodyExpedicaoModelo2($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
                 break;
             case 3:
                 //LAYOUT ABRAFER
-                self::bodyExpedicaoModelo3($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
+                self::bodyExpedicaoModelo3($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
                 break;
             case 4:
                 //LAYOUT HIDRAU
-                self::bodyExpedicaoModelo4($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
+                self::bodyExpedicaoModelo4($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
                 break;
             case 5:
                 //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
                 self::bodyExpedicaoModelo5($volumePatrimonio);
                 break;
             default:
-                self::bodyExpedicaoModelo1($volumePatrimonio,$mapaSeparacaoEmbaladoRepo);
+                self::bodyExpedicaoModelo1($volumePatrimonio, $mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal);
                 break;
 
         }
@@ -47,8 +47,10 @@ class EtiquetaEmbalados extends eFPDF
         exit;
     }
 
-    private function bodyExpedicaoModelo1($volumes,$mapaSeparacaoEmbaladoRepo)
+    private function bodyExpedicaoModelo1($volumes,$mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal)
     {
+
+        $totalEtiquetas = count($volumes);
 
         foreach ($volumes as $volume) {
 
@@ -77,9 +79,12 @@ class EtiquetaEmbalados extends eFPDF
 
             $this->SetFont('Arial', '', 7);
 
-            $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
-            if ($existeItensPendentes == false)
+            if ($fechaEmbaladosNoFinal)
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$totalEtiquetas;
+            else if ($existeItensPendentes == false)
                 $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
+            else
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
 
             $this->MultiCell(110, 3.9, $impressao, 0, 'L');
 
@@ -87,7 +92,7 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
-    private function bodyExpedicaoModelo2($volumes,$mapaSeparacaoEmbaladoRepo)
+    private function bodyExpedicaoModelo2($volumes,$mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal)
     {
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -97,6 +102,8 @@ class EtiquetaEmbalados extends eFPDF
         $deposito = $em->getReference('wms:Deposito', (int) $sessao->idDepositoLogado);
         $filialEntity = $em->getReference('wms:Filial', (int) $deposito->getFilial()->getId());
         $pessoaEntity = $em->getReference('wms:Pessoa', (int) $filialEntity->getId());
+
+        $totalEtiquetas = count($volumes);
 
         foreach ($volumes as $volume) {
 
@@ -133,7 +140,14 @@ class EtiquetaEmbalados extends eFPDF
 
             $this->SetFont('Arial', '', 20);
             $this->MultiCell(110, 6, '', 0, 'L');
-            $impressao = $existeItensPendentes == false ? 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'] : 'VOLUME: '.$volume['NUM_SEQUENCIA'];
+
+            if ($fechaEmbaladosNoFinal)
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$totalEtiquetas;
+            else if ($existeItensPendentes == false)
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
+            else
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
+
             $this->MultiCell(110, 10, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 22);
@@ -147,7 +161,7 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
-    private function bodyExpedicaoModelo3($volumes,$mapaSeparacaoEmbaladoRepo)
+    private function bodyExpedicaoModelo3($volumes,$mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal)
     {
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -157,6 +171,8 @@ class EtiquetaEmbalados extends eFPDF
         $deposito = $em->getReference('wms:Deposito', (int) $sessao->idDepositoLogado);
         $filialEntity = $em->getReference('wms:Filial', (int) $deposito->getFilial()->getId());
         $pessoaEntity = $em->getReference('wms:Pessoa', (int) $filialEntity->getId());
+
+        $totalEtiquetas = count($volumes);
 
         foreach ($volumes as $volume) {
 
@@ -189,7 +205,14 @@ class EtiquetaEmbalados extends eFPDF
             $this->Line(0,30,110,30);
 
             $this->SetFont('Arial', '', 10);
-            $impressao = $existeItensPendentes == false ? 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'] : 'VOLUME: '.$volume['NUM_SEQUENCIA'];
+
+            if ($fechaEmbaladosNoFinal)
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$totalEtiquetas;
+            else if ($existeItensPendentes == false)
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
+            else
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
+
             $this->MultiCell(110, 10, $impressao, 0, 'L');
 
             $this->SetFont('Arial', 'B', 20);
@@ -206,7 +229,7 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
-    private function bodyExpedicaoModelo4($volumes,$mapaSeparacaoEmbaladoRepo)
+    private function bodyExpedicaoModelo4($volumes,$mapaSeparacaoEmbaladoRepo, $fechaEmbaladosNoFinal)
     {
 
         /** @var \Doctrine\ORM\EntityManager $em */
@@ -216,6 +239,8 @@ class EtiquetaEmbalados extends eFPDF
         $deposito = $em->getReference('wms:Deposito', (int) $sessao->idDepositoLogado);
         $filialEntity = $em->getReference('wms:Filial', (int) $deposito->getFilial()->getId());
         $pessoaEntity = $em->getReference('wms:Pessoa', (int) $filialEntity->getId());
+
+        $totalEtiquetas = count($volumes);
 
         foreach ($volumes as $volume) {
 
@@ -248,7 +273,14 @@ class EtiquetaEmbalados extends eFPDF
             $this->Line(0,30,110,30);
 
             $this->SetFont('Arial', '', 10);
-            $impressao = $existeItensPendentes == false ? 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'] : 'VOLUME: '.$volume['NUM_SEQUENCIA'];
+
+            if ($fechaEmbaladosNoFinal)
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$totalEtiquetas;
+            else if ($existeItensPendentes == false)
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'].'/'.$volume['NUM_SEQUENCIA'];
+            else
+                $impressao = 'VOLUME: '.$volume['NUM_SEQUENCIA'];
+
             $this->MultiCell(110, 10, $impressao, 0, 'L');
 
             $this->SetXY(2,39);

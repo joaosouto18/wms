@@ -400,6 +400,105 @@ class ExpedicaoRepository extends EntityRepository {
         return $resultAcao;
     }
 
+    /**
+     * @param $expedicaoEn
+     * @return array|bool|null|string|void
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Exception
+     */
+    public function executaIntegracaoBDInicioConferencia($expedicaoEn)
+    {
+        $idsIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_INFORMA_ERP_INICIO_CONFERENCIA');
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+
+        $ids = explode(',', $idsIntegracao);
+        sort($ids);
+
+        foreach ($ids as $idIntegracao) {
+            $acaoEn = $acaoIntRepo->find($idIntegracao);
+            $options = array();
+
+            if ($this->verificaViabilidadeIntegracaoExpedicao($expedicaoEn, $acaoEn) == true) {
+                $idTipoAcao = $acaoEn->getTipoAcao()->getId();
+
+                /*
+                 * Devolve o Retorno a integração com todas as cargas agrupadas
+                 *
+                 * ?1 - Código das Cargas presentes na Expedição
+                 */
+                if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_INICIO_CONFERENCIA_CARGAS) {
+                    $cargasEn = $expedicaoEn->getCarga();
+
+                    $cargas = array();
+                    foreach ($cargasEn as $cargaEn) {
+                        $cargas[] = $cargaEn->getCodCargaExterno();
+                    }
+
+                    if (!is_null($cargas) && is_array($cargas)) {
+                        $options[] = implode(',', $cargas);
+                    } else if (!is_null($cargas)) {
+                        $options = $cargas;
+                    }
+
+                    $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                    if (!$resultAcao === true) {
+                        throw new \Exception($resultAcao);
+                    }
+                }
+
+                /*
+                 * Devolve o Retorno a integração por carga
+                 *
+                 * ?1 - Código da Carga
+                 */
+                else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_INICIO_CONFERENCIA_CARGA) {
+                    $cargasEn = $expedicaoEn->getCarga();
+
+                    foreach ($cargasEn as $cargaEn) {
+                        $options = array();
+                        $options[] = $cargaEn->getCodCargaExterno();
+
+                        $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                        if (!$resultAcao === true) {
+                            throw new \Exception($resultAcao);
+                        }
+
+                    }
+                }
+
+                /*
+                 * Devolve o Retorno a integração por pedido
+                 *
+                 * ?1 - Código da Carga presentes na Expedição
+                 * ?2 - Código do Pedido
+                 * ?3 - Tipo de Pedido
+                 *
+                 */
+                else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_INICIO_CONFERENCIA_PEDIDO) {
+                    /** @var Expedicao\Carga $cargaEn */
+                    $cargasEn = $expedicaoEn->getCarga();
+
+                    foreach ($cargasEn as $cargaEn) {
+                        $pedidos = $cargaEn->getPedido();
+                        foreach ($pedidos as $pedidoEn) {
+                            $options = array();
+                            $options[] = $cargaEn->getCodCargaExterno();
+                            $options[] = $pedidoEn->getCodExterno();
+                            $options[] = $pedidoEn->getTipoPedido()->getCodExterno();
+
+                            $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                            if (!$resultAcao === true) {
+                                throw new \Exception($resultAcao);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $resultAcao;
+    }
+
     private function validaPickingProdutosByExpedicao($produtosRessuprir) {
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
@@ -4609,7 +4708,7 @@ class ExpedicaoRepository extends EntityRepository {
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null, $idMotivo = null, $mapa = null, $idEmbalagem = null, $forcarEmbVendaDefault = null) {
+    public function cortaPedido($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo, $corteAutomatico = null, $idMotivo = null, $mapa = null, $idEmbalagem = null, $forcarEmbVendaDefault = null, $idEndereco = null) {
 
         /** @var Expedicao\AndamentoRepository $expedicaoAndamentoRepo */
         $expedicaoAndamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
@@ -4647,14 +4746,18 @@ class ExpedicaoRepository extends EntityRepository {
             $ordenacao = "TO_NUMBER(REE.COD_RESERVA_ESTOQUE) DESC";
         }
 
+        $where = (!empty($idEndereco)) ? " AND RE.COD_DEPOSITO_ENDERECO = $idEndereco" : "";
+
+
         $SQL = "SELECT DISTINCT REE.COD_RESERVA_ESTOQUE ID, REP.QTD_RESERVADA QTD
                   FROM RESERVA_ESTOQUE_EXPEDICAO REE
                  INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
-                 INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REP.COD_RESERVA_ESTOQUE
+                 INNER JOIN RESERVA_ESTOQUE RE ON RE.COD_RESERVA_ESTOQUE = REE.COD_RESERVA_ESTOQUE
                  WHERE REE.COD_PEDIDO = '$codPedido'
                    AND REP.COD_PRODUTO = '$codProduto'
                    AND REP.DSC_GRADE = '$grade'
                    AND RE.IND_ATENDIDA = 'N'
+                   $where
                  ORDER BY $ordenacao";
         $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
 
@@ -4727,6 +4830,10 @@ class ExpedicaoRepository extends EntityRepository {
 
             if (!empty($quebraConsolidado)) {
                 $args["pedidoProduto"] = $pedidoProdutoEn;
+            }
+
+            if (!empty($idEndereco)) {
+                $args["depositoEndereco"] = $idEndereco;
             }
 
             if (!empty($idEmbalagem) && ($produtoEn->getForcarEmbVenda() == 'S' || (empty($produtoEn->getForcarEmbVenda()) && $forcarEmbVendaDefault == 'S'))) {

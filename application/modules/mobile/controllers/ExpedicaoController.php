@@ -158,7 +158,7 @@ class Mobile_ExpedicaoController extends Action {
             $conferenciaNaoEmbalado = $modeloSeparacaoEn->getTipoConferenciaNaoEmbalado();
             $conferenciaEmbalado = $modeloSeparacaoEn->getTipoConferenciaEmbalado();
 
-            if ($mapaQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
+            if (!empty($mapaQuebraEn) && $mapaQuebraEn->getTipoQuebra() == Expedicao\MapaSeparacaoQuebra::QUEBRA_CARRINHO) {
                 if ($conferenciaEmbalado == Expedicao\ModeloSeparacao::CONFERENCIA_ITEM_A_ITEM) {
                     $confereQtd = true;
                 }
@@ -477,7 +477,7 @@ class Mobile_ExpedicaoController extends Action {
             $this->getEntityManager()->commit();
 
             $this->getEntityManager()->beginTransaction();
-            $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa, $fechaEmbaladosNoFinal, !($fechaEmbaladosNoFinal || $agrupaEtiquetas),  $isLast);
+            $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa, $fechaEmbaladosNoFinal, !($fechaEmbaladosNoFinal || $agrupaEtiquetas), $isLast);
             $this->getEntityManager()->commit();
         } catch (Exception $e) {
             $this->getEntityManager()->rollback();

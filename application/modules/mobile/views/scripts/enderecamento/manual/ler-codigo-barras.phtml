@@ -9,7 +9,7 @@
                 <input type="hidden" id="controlaLote" name="controlaLote" value="0">
                 <div class="field">
                     <label>Produto:</label>
-                    <input style="width: 99%" maxlength="100" class="focus form-control" size="40" type="text" name="produto" id="produto" value="" onkeydown="nextInput(this, event)" />
+                    <input style="width: 99%" maxlength="100" class="focus form-control" size="40" type="text" name="produto" id="produto" value="" onkeydown="nextInput(this, event)"/>
                 </div>
                 <div class="field">
                     <label>Endereço:</label>
@@ -17,11 +17,11 @@
                 </div>
                 <div class="field">
                     <label>Qtd:</label>
-                    <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="qtd" id="qtd" value="" />
+                    <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="qtd" id="qtd" value="" onkeydown="nextInput(this, event)"/>
                 </div>
                 <div class="field div-lote" style="display: none">
                     <label>Lote:</label>
-                    <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="lote" id="lote" value="" />
+                    <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="lote" id="lote" value="" onkeydown="nextInput(this, event)"/>
                 </div>
                 <div id="inserir"></div>
                 <input class="btn gradientBtn lock-dbl-click" type="submit" name="submit" id="submit" value="Buscar" />
@@ -40,144 +40,136 @@
     </form>
 </div>
 <script>
+    var controlaLote = false;
+
     $(function () {
         $("#efetivaEndPicking").live("click", function () {
-            var reservas = $(this).data('reservas');
-            var qtdReservada = $(this).data('qtd');
-            $("#qtd").val(qtdReservada).prop('readonly', true);
+            $("#qtd").val($(this).data('qtd')).prop('readonly', true);
             $("#submit").val("Confirmar");
-            $("#reservas").val(reservas);
+            $("#reservas").val($(this).data('reservas'));
             $("#endereco").val('').focus();
         })
     });
 
-    function nextInput(input, event, id) {
+    $(".form-control").focus(function () {
+        $(this).select();
+    });
+
+    function nextInput(input, event) {
         var inputReservas= $("#reservas");
         var inputEndereco = $("#endereco");
         var inputQtd = $("#qtd");
-        if (event.which == 13 || event.keyCode == 13) {
-            if (input.value !== "" && input.id === 'produto' && (inputEndereco.val() === "" || inputEndereco.val() === null)) {
-                endereco = inputEndereco;
-                if (endereco) {
-                    consultar();
-                    endereco.focus();
+        var inputLote = $("#lote");
+        var cancelEvent = false;
+        if ((event.which === 13 || event.keyCode === 13) && !isEmpty(input.value)) {
+            if (input.id === 'produto') {
+                consultar(input.value);
+                inputEndereco.focus();
+            } else if (input.id === 'endereco' && isEmpty(inputReservas.val())) {
+                inputQtd.focus();
+            } else if (input.id === 'qtd' && controlaLote ) {
+                inputLote.focus();
+            } else if ((input.id === 'qtd' && !controlaLote) || (input.id === 'lote') || (input.id === 'endereco' && !isEmpty(inputReservas.val()))) {
+                validateToSubmit();
+            }
+            cancelEvent = true;
+        } else if ((event.which === 13 || event.keyCode === 13) && isEmpty(input.value)) {
+            alert("Este campo não pode ficar vazio");
+            cancelEvent = true;
+        }
 
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
-                    }
-                }
-            } else if (input.value !== "" && input.id === 'endereco' && (inputQtd.val() === "" || inputQtd.val() === null)) {
-                qtd = inputQtd;
-                if (qtd) {
-                    qtd.focus();
-                    if (event.preventDefault) {
-                        event.preventDefault();
-                    } else {
-                        event.returnValue = false;
-                    }
-                }
-            } else if (input.value !== "" && input.id === 'endereco'
-                && (inputQtd.val() !== "" || inputQtd.val() !== null
-                && inputReservas.val() !== "" || inputReservas.val() !== null)) {
-                $("#submit").focus();
-                if (event.preventDefault) {
-                    event.preventDefault();
-                } else {
-                    event.returnValue = false;
-                }
+        if (cancelEvent) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            } else {
+                event.returnValue = false;
             }
         }
+
         return true;
     }
 
-    function consultar() {
-        var codBarras = $('#produto');
+    function consultar(val) {
+        controlaLote = false;
+        $.ajax({
+            url: '/mobile/consulta-endereco/consultar/codigoBarras/' + val,
+            success: function (data) {
+                if (data.status === 'ok') {
 
-        var val = codBarras.val();
-        if (val != '') {
-            $.ajax({
-                url: '/mobile/consulta-endereco/consultar/codigoBarras/' + val,
-                success: function (data) {
-                    if (data.status === 'ok') {
+                    $("#reservas").val('');
+                    $("#submit").val("Buscar");
+                    $("#qtd").prop('readonly', false);
 
-                        $("#reservas").val('');
-                        $("#submit").val("Buscar");
-                        $("#qtd").val("").prop('readonly', false);
-                        $("#endereco").val('');
+                    var txt = '<fieldset id="fieldset-dadosProduto">';
+                    txt += '<legend>Endereços do produto</legend>' +
+                        '    <table class="gTable " style="width: 100%; border: 1px solid #E0E0E0;">' +
+                        '        <tbody>' +
+                        '        <tr class="gTTitle" style="background-color: #EDEDED; border-radius: 4px;\n' +
+                        '    border: 1px solid #E0E0E0;' +
+                        'line-height: 20px;">' +
+                        '            <td><b>Endereço</b></td>' +
+                        '            <td><b>Tipo</b></td>' +
+                        '            <td><b>Qtd.</b></td>' +
+                        '            <td><b>End. Pendente</b></td>' +
+                        '            <td><b>Ação</b></td>' +
+                        '        </tr>';
 
-                        var txt = '<fieldset id="fieldset-dadosProduto">'
-                        txt += '<legend>Endereços do produto</legend>' +
-                            '    <table class="gTable " style="width: 100%; border: 1px solid #E0E0E0;">' +
-                            '        <tbody>' +
-                            '        <tr class="gTTitle" style="background-color: #EDEDED; border-radius: 4px;\n' +
-                            '    border: 1px solid #E0E0E0;' +
-                            'line-height: 20px;">' +
-                            '            <td><b>Endereço</b></td>' +
-                            '            <td><b>Tipo</b></td>' +
-                            '            <td><b>Qtd.</b></td>' +
-                            '            <td><b>End. Pendente</b></td>' +
-                            '            <td><b>Ação</b></td>' +
-                            '        </tr>'
+                    var color = true;
 
-                        var color = true;
+                    if (data.result.length >0) {
 
-                        if (data.result.length >0) {
+                        $.each(data.result, function (key, value) {
+                            color = !color;
 
-                            $.each(data.result, function (key, value) {
-                                color = !color;
+                            if(value.IND_CONTROLA_LOTE == 'S'){
+                                //alert("linha 133");
+                                controlaLote = true;
+                                $('.div-lote').show();
+                                $('#controlaLote').val(1);
+                            }
+                            if (color == true) {
+                                txt += '<tr style="background-color: #EDEDED">'
+                            } else {
+                                txt += '<tr>'
+                            }
 
-                                if(value.IND_CONTROLA_LOTE == 'S'){
-                                    //alert("linha 133");
+                            txt += '   <td>' + value.ENDERECO + '</td>';
+                            txt += '   <td>' + value.TIPO + '</td>';
+                            txt += '   <td>' + value.QTD + '</td>';
 
-                                    $('.div-lote').show();
-                                    $('#controlaLote').val(1);
-                                }
-                                if (color == true) {
-                                    txt += '<tr style="background-color: #EDEDED">'
-                                } else {
-                                    txt += '<tr>'
-                                }
-
-                                txt += '   <td>' + value.ENDERECO + '</td>';
-                                txt += '   <td>' + value.TIPO + '</td>';
-                                txt += '   <td>' + value.QTD + '</td>';
-
-                                if (value.RESERVAS !== null) {
-                                    txt += '   <td>' + value.QTD_RESERVADA +'</td>';
-                                    txt += '   <td><button type="button" id="efetivaEndPicking" data-reservas="'+value.RESERVAS+'" data-qtd="'+ value.QTD_RESERVADA +'" class="btn gradientBtn lock-dbl-click">Efetivar</button></td>';
-                                } else {
-                                    txt += '   <td>-----</td>';
-                                    txt += '   <td>-----</td>';
-                                    txt += '</tr>'
-                                }
-
+                            if (value.RESERVAS !== null) {
+                                txt += '   <td>' + value.QTD_RESERVADA +'</td>';
+                                txt += '   <td><button type="button" id="efetivaEndPicking" data-reservas="'+value.RESERVAS+'" data-qtd="'+ value.QTD_RESERVADA +'" class="btn gradientBtn lock-dbl-click">Efetivar</button></td>';
+                            } else {
+                                txt += '   <td>-----</td>';
+                                txt += '   <td>-----</td>';
                                 txt += '</tr>'
+                            }
 
-                            });
-                        } else {
-                            txt += '<tr> <td colspan="3"> Produto não endereçado </td> </tr>'
-                        }
+                            txt += '</tr>'
 
-                        txt += '</tbody>' +
-                            '</table>';
-                        txt += '</fieldset>';
-                        $('#lista-endereco').html(txt);
+                        });
                     } else {
-                        showErro(data.msg)
+                        txt += '<tr> <td colspan="3"> Produto não endereçado </td> </tr>'
                     }
-                }
-            });
-        } else {
-            showErro("Informe um endereço");
-        }
 
+                    txt += '</tbody>' +
+                        '</table>';
+                    txt += '</fieldset>';
+                    $('#lista-endereco').html(txt);
+                } else {
+                    showErro(data.msg)
+                }
+            }
+        });
     }
 
     function showErro(msg) {
         $('#lista-endereco').text(msg)
     }
 
+    function validateToSubmit() {
+        $("#submit").click();
+    }
 
 </script>

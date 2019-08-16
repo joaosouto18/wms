@@ -252,6 +252,10 @@ class EstoqueRepository extends EntityRepository
         $historico->setProdutoEmbalagem($embalagemEn);
         $historico->setProdutoVolume($volumeEn);
         $historico->setValidade($validade);
+        $historico->setObsUsuario($params['obsUsuario']);
+
+        if (!empty($params['idMotMov']))
+            $historico->setMotivoMovimentacao($this->_em->getReference("wms:Enderecamento\MotivoMovimentacao", $params['idMotMov']));
 
         if(!empty($idInventario))
             $historico->setOperacao($idInventario);
