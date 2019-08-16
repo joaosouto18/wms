@@ -73,7 +73,7 @@ class Coletor
 //            return substr($codigoBarras, 3, 13);
 //        }
 
-        if(substr($codigoBarras, 0, 2) == '01') {
+        if(substr($codigoBarras, 0, 2) === '01') {
             return substr($codigoBarras, 3, 13);
         }
 
