@@ -497,6 +497,10 @@ class Web_EnderecoController extends Crud
             if ($id == null)
                 throw new \Exception('Id deve ser enviado pra desativar');
 
+            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+            $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
+            $enderecoRepo->validaInativacaoEndereco($id);
+
             $entity = $this->repository->findOneBy(array($this->pkField => $id));
             $entity->setAtivo('N');
             $this->em->persist($entity);

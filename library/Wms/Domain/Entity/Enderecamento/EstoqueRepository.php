@@ -57,6 +57,10 @@ class EstoqueRepository extends EntityRepository
             $idInventario = $params['idInventario'];
         }
 
+        if ($enderecoEn->getAtivo() == 'N') {
+            throw new \Exception("Não é permitido fazer movimentações em um endereço inativo - Endereço:" . $enderecoEn->getDescricao());
+        }
+
         $codProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
         $endereco = $enderecoEn->getId();

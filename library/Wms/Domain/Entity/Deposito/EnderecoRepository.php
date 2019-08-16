@@ -1119,4 +1119,22 @@ class EnderecoRepository extends EntityRepository {
         return $result;
     }
 
+    public function validaInativacaoEndereco ($idEndereco) {
+
+        if ($this->enderecoOcupado($idEndereco)) {
+            throw new \Exception("Endereço não pode ser inativado pois ainda contem produtos armazenados");
+        }
+
+        $SQL = " SELECT * 
+                   FROM RESERVA_ESTOQUE RE 
+                  WHERE RE.IND_ATENDIDA = 'N'
+                    AND RE.COD_DEPOSITO_ENDERECO = '" . $idEndereco . "'";
+
+        $result = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
+        if (count($result) > 0) {
+            throw new \Exception("Endereço não pode ser inativado pois ainda contem reservas de estoque com movimentações pendentes");
+        }
+
+        return true;
+    }
 }

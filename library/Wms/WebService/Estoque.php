@@ -7,9 +7,9 @@ class estoque {
     public $codProduto;
     /** @var string */
     public $grade;
-    /** @var int */
+    /** @var double */
     public $estoqueArmazenado;
-    /** @var int */
+    /** @var double */
     public $estoqueDisponivel;
 }
 

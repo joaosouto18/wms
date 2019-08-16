@@ -305,6 +305,33 @@ class Wms_WebService_Expedicao extends Wms_WebService
         return $this->enviar($cargas);
     }
 
+    private function verificaEstruturaCarga($cargas) {
+
+        $iCargas = array();
+        foreach ($cargas as $keyCarga => $carga) {
+            $pedidos = $carga['pedidos'];
+            if (isset($pedidos['pedido'])) {
+                if (!isset($pedidos['pedido']['tipoPedido'])) {
+                    $pedidos = $pedidos['pedido'];
+                    $cargas[$keyCarga]['pedidos'] = $pedidos;
+                }
+            }
+
+            foreach ($cargas[$keyCarga]['pedidos'] as $keyPedido => $pedido) {
+                $produtos = $pedido['produtos'];
+                if (isset($produtos['produto'])) {
+                    if (!isset($produtos['produto']['codProduto'])) {
+                        $produtos = $produtos['produto'];
+                        $cargas[$keyCarga]['pedidos'][$keyPedido]['produtos'] = $produtos;
+                    }
+                }
+
+            }
+
+        }
+
+        return $cargas;
+    }
 
     /**
      *  Recebe Carga com Placa da Expedição
@@ -317,7 +344,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
      */
     public function enviar($cargas, $isIntegracaoSQL = false)
     {
+        $cargas = json_decode(json_encode($cargas), True);
+        $cargas = $this->verificaEstruturaCarga($cargas);
         $cargas = $this->trimArray($cargas);
+
         ini_set('max_execution_time', -1);
         try {
             $this->_em->beginTransaction();
