@@ -1062,6 +1062,9 @@ class Mobile_EnderecamentoController extends Action
                     $params['embalagem'] = $embalagemEn = $estoque->getProdutoEmbalagem();
                     $params['volume'] = $volumeEn = $estoque->getProdutoVolume();
 
+                    if ($produtoEn->getIndControlaLote() == 'S') {
+                        $params['lote'] = $estoque->getLote();
+                    }
 
                     /*
                      * COMENTANDO REGRA DE TRANSFERENCIA PICKING -> PICKING
