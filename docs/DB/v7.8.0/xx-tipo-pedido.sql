@@ -27,5 +27,9 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('Script executado com sucesso');
     END IF;
 END;
- 
+
+Insert into PARAMETRO (COD_PARAMETRO,COD_CONTEXTO_PARAMETRO,DSC_PARAMETRO,DSC_TITULO_PARAMETRO,IND_PARAMETRO_SISTEMA,COD_TIPO_ATRIBUTO,DSC_VALOR_PARAMETRO)
+    values (sq_parametro_01.nextval,'2','TIPO_INTEGRACAO_CORTE','Momento que Dispara o Corte para o ERP (Instantâneo(I)/Finalização(F))','S','A',null);
+
+
  
