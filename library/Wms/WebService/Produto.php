@@ -690,7 +690,7 @@ class Wms_WebService_Produto extends Wms_WebService {
      * @param array $grades
      * @param array $classes
      * @param array $fabricante
-     * @return array
+     * @return boolean|Exception
      */
     public function salvarCompleto($idProduto, $descricao, $idFabricante, $tipo, $idClasse, array $grades, array $classes, array $fabricante)
     {
