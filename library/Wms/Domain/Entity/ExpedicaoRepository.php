@@ -4621,12 +4621,15 @@ class ExpedicaoRepository extends EntityRepository {
 
         $this->getEntityManager()->flush();
 
-        $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
-        if (!is_null($idIntegracaoCorte)) {
-            $resultAcao = $this->integraCortesERP($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo);
-            if ($resultAcao == false)
-                return 'Corte Não Efetuado no ERP! Verifique o log de erro';
+        if ($this->getSystemParameterValue('TIPO_INTEGRACAO_CORTE') == 'I') {
+            $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
+            if (!is_null($idIntegracaoCorte)) {
+                $resultAcao = $this->integraCortesERP($codPedido, $pedidoProdutoEn, $codProduto, $grade, $qtdCortar, $motivo);
+                if ($resultAcao == false)
+                    return 'Corte Não Efetuado no ERP! Verifique o log de erro';
+            }
         }
+
 
     }
 
