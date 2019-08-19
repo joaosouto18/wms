@@ -2138,7 +2138,7 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             //Executa Corte ERP
-            if ($this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP') == 'F') {
+            if ($this->getSystemParameterValue('TIPO_INTEGRACAO_CORTE') == 'F') {
                 if (!is_null($this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP'))) {
                     $resultAcao = $this->integraCortesERPFinalizacao($idExpedicao);
                     if (!$resultAcao === true) {
