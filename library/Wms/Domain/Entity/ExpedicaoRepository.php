@@ -1979,53 +1979,6 @@ class ExpedicaoRepository extends EntityRepository {
         return true;
     }
 
-    private function integraCortesERP($idExpedicao)
-    {
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
-        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
-        $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
-
-        $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
-
-        /*
-         * Remover pois foi feito exclusivo para edmil para não disparar nenhum retorno para a Benner
-         */
-
-        $sql = "SELECT COD_TIPO_PEDIDO
-                      FROM PEDIDO P
-                      LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
-                      WHERE C.COD_EXPEDICAO = $idExpedicao
-                      AND P.COD_TIPO_PEDIDO IN (3, 14)";
-
-        $qtdPedidos = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
-
-        if (count($qtdPedidos) <= 0) {
-            return true;
-        }
-        /*
-         * Fim remover
-         */
-
-        $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
-        $cargaEntities = $this->getProdutosExpedicaoCorteToIntegracao(null,$idExpedicao,true);
-
-        foreach ($cargaEntities as $cargaEntity) {
-            $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
-                0 => $cargaEntity['COD_CARGA_EXTERNO'],
-                1 => $cargaEntity['COD_PRODUTO'],
-                2 => $cargaEntity['DSC_GRADE'],
-                3 => $cargaEntity['QTD_CORTADA']), 'E', 'P');
-            if (is_string($result)) {
-                return $result;
-            } else {
-                $andamentoRepo->save('Corte de ' .$cargaEntity['QTD_CORTADA'] . ' unidades do produto ' . $cargaEntity['COD_PRODUTO'] . ' na carga ' . $cargaEntity['COD_CARGA_EXTERNO'] . ' enviado para o ERP', $idExpedicao);
-            }
-        }
-
-        return true;
-    }
-
     public function finalizarExpedicao($idExpedicao, $central, $validaStatusEtiqueta = true, $tipoFinalizacao = false, $idMapa = null, $idEmbalado = null, $motivo = '') {
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
@@ -2187,7 +2140,7 @@ class ExpedicaoRepository extends EntityRepository {
             //Executa Corte ERP
             if ($this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP') == 'F') {
                 if (!is_null($this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP'))) {
-                    $resultAcao = $this->integraCortesERP($idExpedicao);
+                    $resultAcao = $this->integraCortesERPFinalizacao($idExpedicao);
                     if (!$resultAcao === true) {
                         throw new \Exception($resultAcao);
                     }
@@ -5800,5 +5753,52 @@ class ExpedicaoRepository extends EntityRepository {
         }
 
         return $arrIdPed;
+    }
+
+    private function integraCortesERPFinalizacao($idExpedicao)
+    {
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+        $andamentoRepo = $this->_em->getRepository('wms:Expedicao\Andamento');
+
+        $idIntegracaoCorte = $this->getSystemParameterValue('COD_INTEGRACAO_CORTE_PARA_ERP');
+
+        /*
+         * Remover pois foi feito exclusivo para edmil para não disparar nenhum retorno para a Benner
+         */
+
+        $sql = "SELECT COD_TIPO_PEDIDO
+                      FROM PEDIDO P
+                      LEFT JOIN CARGA C ON C.COD_CARGA = P.COD_CARGA
+                      WHERE C.COD_EXPEDICAO = $idExpedicao
+                      AND P.COD_TIPO_PEDIDO IN (3, 14)";
+
+        $qtdPedidos = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+
+        if (count($qtdPedidos) <= 0) {
+            return true;
+        }
+        /*
+         * Fim remover
+         */
+
+        $acaoCorteEn = $acaoIntRepo->find($idIntegracaoCorte);
+        $cargaEntities = $this->getProdutosExpedicaoCorteToIntegracao(null,$idExpedicao,true);
+
+        foreach ($cargaEntities as $cargaEntity) {
+            $result = $acaoIntRepo->processaAcao($acaoCorteEn, array(
+                0 => $cargaEntity['COD_CARGA_EXTERNO'],
+                1 => $cargaEntity['COD_PRODUTO'],
+                2 => $cargaEntity['DSC_GRADE'],
+                3 => $cargaEntity['QTD_CORTADA']), 'E', 'P');
+            if (is_string($result)) {
+                return $result;
+            } else {
+                $andamentoRepo->save('Corte de ' .$cargaEntity['QTD_CORTADA'] . ' unidades do produto ' . $cargaEntity['COD_PRODUTO'] . ' na carga ' . $cargaEntity['COD_CARGA_EXTERNO'] . ' enviado para o ERP', $idExpedicao);
+            }
+        }
+
+        return true;
     }
 }
