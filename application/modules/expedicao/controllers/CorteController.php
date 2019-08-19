@@ -234,14 +234,22 @@ class Expedicao_CorteController extends Action {
 
                 $motivo = $motivoEn->getDscMotivo();
 
-                $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault, $idEndereco);
+                $retornoCorte = $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault, $idEndereco);
+                    if (is_string($retornoCorte)) {
+                        throw new \Exception($retornoCorte);
+                    }
                 $this->getEntityManager()->flush();
+
             }
 
             $this->getEntityManager()->commit();
 
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
+
+            $query = "UPDATE EXPEDICAO_ANDAMENTO SET IND_ERRO_PROCESSADO = 'S' WHERE COD_EXPEDICAO = " . $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao()->getId();
+            $this->getEntityManager()->getConnection()->query($query)->execute();
+            $this->getEntityManager()->flush();
 
             $this->_helper->json(array(
                 'error' => $e->getMessage()
