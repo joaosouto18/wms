@@ -295,7 +295,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                             FROM wms:Expedicao\EtiquetaSeparacao et
                             INNER JOIN wms:Expedicao\Pedido pedi WITH pedi.id = et.pedido
                             INNER JOIN wms:Expedicao\Carga carg WITH carg.id = pedi.codCarga
-                            LEFT JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco
+                            INNER JOIN wms:Deposito\Endereco ender WITH ender.id = et.depositoEndereco
                             WHERE et.codProduto = es.codProduto AND et.dscGrade = es.grade AND es.codExpedicao = carg.codExpedicao
                                 AND ender.idCaracteristica = de.idCaracteristica
                         )

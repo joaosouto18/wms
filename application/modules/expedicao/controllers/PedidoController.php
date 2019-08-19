@@ -27,10 +27,11 @@ class Expedicao_PedidoController  extends Action
 
         if ( !empty($params) ) {
 
-            if ( !empty($params['idExpedicao']) || !empty($params['pedido']) || !empty($params['codCargaExterno'])  ){
+            if ( !empty($params['idExpedicao']) || !empty($params['pedido']) || !empty($params['codCargaExterno']) || !empty($params['produto']) ){
                 $idExpedicao=null;
                 $idCarga=null;
                 $pedido=null;
+                $produto=null;
 
                 if (!empty($params['idExpedicao']) )
                     $idExpedicao=$params['idExpedicao'];
@@ -42,10 +43,14 @@ class Expedicao_PedidoController  extends Action
                 if (!empty($params['codCargaExterno']) )
                     $idCarga=$params['codCargaExterno'];
 
+                if (!empty($params['produto']) )
+                    $produto=$params['produto'];
+
                 $params=array();
                 $params['idExpedicao']=$idExpedicao;
                 $params['codCargaExterno']=$idCarga;
                 $params['pedido']=$pedido;
+                $params['produto']=$produto;
             } else {
                 if ( empty($params['dataInicial1']) ){
                     $params['dataInicial1']=$dataI1->format('d/m/Y');
