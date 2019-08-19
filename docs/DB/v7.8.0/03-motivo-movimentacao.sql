@@ -4,7 +4,7 @@
  * CRIADO POR: Tarcísio César
  *
  */
-INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.8', 'xx-motivo-movimentacao.sql');
+INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.8', '03-motivo-movimentacao.sql');
 
 CREATE TABLE MOTIVO_MOVIMENTACAO
 (
