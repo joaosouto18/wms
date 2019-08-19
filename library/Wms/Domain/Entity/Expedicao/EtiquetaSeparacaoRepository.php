@@ -1724,6 +1724,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             $idPedProd = $pedidoProdutoEn->getId();
             $idCliente = $pedidoProdutoEn->getPedido()->getPessoa()->getId();
 
+            $qtd = Math::multiplicar($qtdMapa, $embalagemEn->getQuantidade());
+
             if ($element['consolidado'] == 'S') {
 
                 if (isset($arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()])) {
@@ -1731,9 +1733,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                     $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['qtd'] = Math::adicionar($qtdAtual, $qtdMapa);
                     if (isset($arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd])) {
                         $qtdPedProdAtual = $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd]['qtd'];
-                        $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd]['qtd'] = Math::adicionar($qtdPedProdAtual, $qtdMapa);
+                        $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd]['qtd'] = Math::adicionar($qtdPedProdAtual, $qtd);
                     } else {
-                        $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd] = ['entity' => $pedidoProdutoEn, 'qtd' => $qtdMapa];
+                        $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemEn->getId()]['arrPedProd'][$idPedProd] = ['entity' => $pedidoProdutoEn, 'qtd' => $qtd];
                     }
                 } else {
                     $arrConsolidado[$strQuebrasConcat][$idCliente]['itens'][$produtoGradeLote]['expedicaoEn'] = $expedicaoEn;
@@ -1742,7 +1744,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         'lote' => $element['lote'],
                         'consolidado' => $element['consolidado'],
                         'cubagem' => $element['cubagem'],
-                        'arrPedProd' => [$idPedProd => ['entity' => $pedidoProdutoEn, 'qtd' => $qtdMapa]],
+                        'arrPedProd' => [$idPedProd => ['entity' => $pedidoProdutoEn, 'qtd' => $qtd]],
                         'pedidoEn' => $pedidoProdutoEn->getPedido(),
                         'produtoEn' => $produtoEn,
                         'quebras' => $quebras,
@@ -1751,8 +1753,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 }
                 continue;
             }
-
-            $qtd = Math::multiplicar($qtdMapa, $embalagemEn->getQuantidade());
 
             if ($element['fracionavel'] == 'S') {
                 if (isset($newArray[$strQuebrasConcat]["$idCliente-!-$produtoGradeLote"]['enderecos'][$enderecoId][$embalagemEn->getId()])) {
@@ -1771,7 +1771,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         'lote' => $element['lote'],
                         'consolidado' => "N",
                         'cubagem' => null,
-                        'arrPedProd' => [$idPedProd => ['entity' => $pedidoProdutoEn, 'qtd' => $qtdMapa]],
+                        'arrPedProd' => [$idPedProd => ['entity' => $pedidoProdutoEn, 'qtd' => $qtd]],
                         'embalagemEn' => $embalagemEn,
                         'produtoEn' => $produtoEn,
                         'pedidoEn' => null,
