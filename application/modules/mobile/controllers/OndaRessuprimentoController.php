@@ -315,12 +315,13 @@ class Mobile_OndaRessuprimentoController extends Action
             }
 
             if($controlaRetornoRessup == 'S') {
-                $qtd_ressuprimento = $ondaRepo->getQtdProdutoRessuprimento($idOnda, $codProduto, $grade);
+                $qtdRessuprimento = $ondaRepo->getQtdProdutoRessuprimento($idOnda, $codProduto, $grade);
+                $qtdResiduo = $qtd - $qtdRessuprimento;
             }
 
             // verifica existencia de residuo no endereço de pulmao
-            if( ($controlaRetornoRessup == 'S') && (!empty($qtd_ressuprimento)) && ($qtd - $qtd_ressuprimento > 0)){
-                $urlRedirect = '/mobile/onda-ressuprimento/retorno-ressuprimento/idOnda/' . $idOnda. '/codProduto/'.$codProduto.'/grade/'.$grade.'/qtd/'.$qtd_ressuprimento.'/lote/'.$lote.'/enderecoOrigem/'.$enderecoOrigem.'/descricao/'.$descricao;
+            if( ($controlaRetornoRessup == 'S') && ($qtdResiduo > 0)){
+                $urlRedirect = '/mobile/onda-ressuprimento/retorno-ressuprimento/idOnda/' . $idOnda. '/codProduto/'.$codProduto.'/grade/'.$grade.'/qtd/'.$qtdResiduo.'/lote/'.$lote.'/enderecoOrigem/'.$enderecoOrigem.'/descricao/'.$descricao;
                 $this->_redirect($urlRedirect);
             }
             else
@@ -460,14 +461,14 @@ class Mobile_OndaRessuprimentoController extends Action
                         //saida
                         $params['endereco']    = $enderecoOrigemEn; // buscar o codigo do endereço
                         $params['produto']     = $produtoEn;
-                        $params['qtd']         = $qtd; // buscar valor correto
+                        $params['qtd']         = $qtd * -1; // buscar valor correto
                         $params['grade']       = $grade;
                         $params['volume']      = $volumeEn;
                         $params['lote']        = $lote;
                         $params['embalagem']   = $embalagemEn;
                         $params['tipo']        = 'R';
                         $params['dthEntrada']  = new DateTime('now');
-                        $params['os']          = $os->getId();
+                        $params['os']          = $os;
 
                         $estoqueRepo->movimentaEstoque($params, false, true);
 
@@ -480,7 +481,7 @@ class Mobile_OndaRessuprimentoController extends Action
                         $params['embalagem']   = $embalagemEn;
                         $params['tipo']        = 'R';
                         $params['dthEntrada']  = new DateTime('now');
-                        $params['os']          = $os->getId();
+                        $params['os']          = $os;
 
                         $estoqueRepo->movimentaEstoque($params, false, false);
                     }
