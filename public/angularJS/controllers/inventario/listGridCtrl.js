@@ -1,4 +1,4 @@
-angular.module("wms").controller("listGridInventarioCtrl", function($scope, $http, $filter, $window, uiDialogService, shareDataService){
+angular.module("wms").controller("listGridInventarioCtrl", function($scope, $rootScope, $http, $filter, $window, uiDialogService, shareDataService){
     $scope.maxPerPage = 15;
     $scope.inventarios = [];
     $scope.showLoading = true;
@@ -181,5 +181,8 @@ angular.module("wms").controller("listGridInventarioCtrl", function($scope, $htt
 
     getInventarios({});
     $scope.ordenarPor("id");
-    
+
+    $rootScope.$on("CancelarInventario", function(event, id){
+        $scope.cancelar(id);
+    });
 });

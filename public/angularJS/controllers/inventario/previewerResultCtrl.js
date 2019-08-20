@@ -1,7 +1,8 @@
-angular.module("wms").controller("previewerResultInventarioCtrl", function ($scope, $http, $window, shareDataService, uiDialogService) {
+angular.module("wms").controller("previewerResultInventarioCtrl", function ($scope, $rootScope, $http, $window, shareDataService, uiDialogService) {
 
     $scope.inventario = {};
     $scope.results = [];
+    $scope.noResults = false;
     $scope.showLoading = true;
     $scope.objectFilter = {};
     let maskEndereco = "";
@@ -24,7 +25,11 @@ angular.module("wms").controller("previewerResultInventarioCtrl", function ($sco
     let getInventario = function(id) {
         $http.get(URL_MODULO + "/index/get-preview-result-ajax/id/" + id).then(function (response){
             $scope.inventario = response.data.inventario;
-            $scope.results = response.data.results;
+            if (isEmpty(response.data.results)) {
+                $scope.noResults = true;
+            } else {
+                $scope.results = response.data.results;
+            }
             maskEndereco = response.data.mask;
         }).then(function () {
             $scope.showLoading = false ;
@@ -47,4 +52,8 @@ angular.module("wms").controller("previewerResultInventarioCtrl", function ($sco
         });
     };
     $scope.ordenarPor("endereco");
+
+    $scope.cancelar = function () {
+        $rootScope.$emit("CancelarInventario", $scope.inventario.id);
+    }
 });

@@ -435,7 +435,7 @@ class InventarioNovoRepository extends EntityRepository
                          ICEP.DSC_GRADE,
                          ICEP.COD_PRODUTO_VOLUME,
                          ICEP.DSC_LOTE,
-                         MAX(ICEP.DTH_VALIDADE) as DTH_VALIDADE,
+                         MIN(ICEP.DTH_VALIDADE) as DTH_VALIDADE,
                          IEN.COD_DEPOSITO_ENDERECO,
                          SUM(NVL(ICEP.QTD_EMBALAGEM,0) * NVL(ICEP.QTD_CONTADA,0)) as QTD
                     FROM INVENTARIO_NOVO INV

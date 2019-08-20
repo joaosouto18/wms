@@ -575,7 +575,7 @@ class InventarioService extends AbstractService
                     ];
                     $elemCount = [
                         $estoque->getQtd(),
-                        (!empty($estoque->getValidade()) && $validaValidade) ? $estoque->getValidade()->format("d/m/Y") : ""
+                        (!empty($estoque->getValidade()) && $validaValidade) ? $estoque->getValidade()->format("d/m/Y") : null
                     ];
                     $countQtdsIguais[implode($strConcat, $prod)][implode($strConcat, $elemCount)][] = "estoque";
                 }
@@ -867,7 +867,7 @@ class InventarioService extends AbstractService
     public function getResultadoInventario($id)
     {
         $results = $this->getRepository()->getResultInventario($id, false, true);
-
+        $return = [];
         foreach ($results as $result) {
             $obj = new \stdClass;
             $obj->endereco         = $result["DSC_DEPOSITO_ENDERECO"];

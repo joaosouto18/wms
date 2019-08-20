@@ -128,7 +128,8 @@ templates.push({
         '<div class="grid">' +
         '<div class="gMassAction">' +
         '<div class="gAction">' +
-        '<button type="button" class="btn-grid" ng-click="atualizar()"><span>Atualizar o estoque</span></button>' +
+        '<button ng-show="results.length" type="button" class="btn-grid" ng-click="atualizar()"><span>Atualizar o estoque</span></button>' +
+        '<button ng-show="noResults" type="button" class="btn-grid" ng-click="cancelar()"><span>Cancelar Inventário</span></button>' +
         '</div>' +
         '</div>' +
         '<table class="gTable" style="width:1007px!important">' +
@@ -152,6 +153,9 @@ templates.push({
         '<td ng-repeat="column in gridColumns" width="{{column.width}}">' +
         '<div>{{result[column.name]}}</div>' +
         '</td>' +
+        '</tr>' +
+        '<tr>' +
+        '<td colspan="100%" align="center" ng-show="noResults" >Nenhum produto/endereço teve a contagem finalizada</td>' +
         '</tr>' +
         '</table>' +
         '</div>' +
