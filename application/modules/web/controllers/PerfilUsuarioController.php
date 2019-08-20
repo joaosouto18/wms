@@ -269,5 +269,126 @@ class Web_PerfilUsuarioController extends Crud
 
         $this->_helper->json($iteraArvore($recursos), true);
     }
-
+//    public function permissoesJsonAction()
+//    {
+//        $codPerfil = $this->getRequest()->getParam('codPerfil');
+//        $sql = "
+//            SELECT
+//                'F' AS \"TYPE\",
+//                (MI.COD_MENU_ITEM * -1) AS \"KEY\",
+//                (MI.COD_PAI * -1) AS \"COD_PAI\",
+//                MI.DSC_MENU_ITEM AS \"DESCRICAO\",
+//                A.NOM_ACAO,
+//                (
+//                    SELECT 1
+//                    FROM PERFIL_USUARIO_RECURSO_ACAO PURA
+//                    WHERE PURA.COD_PERFIL_USUARIO = " . (int) $codPerfil . "
+//                    AND PURA.COD_RECURSO_ACAO = RA.COD_RECURSO_ACAO
+//                ) AS FLAG,
+//                CASE WHEN (MI.COD_RECURSO_ACAO = 0) THEN 0 ELSE 1 END \"CHECKBOX\",
+//                MI.NUM_PESO
+//            FROM MENU_ITEM MI
+//            LEFT JOIN RECURSO_ACAO RA
+//                ON (RA.COD_RECURSO_ACAO = MI.COD_RECURSO_ACAO)
+//            LEFT JOIN RECURSO R
+//                ON (R.COD_RECURSO = RA.COD_RECURSO)
+//            LEFT JOIN ACAO A
+//                ON (A.COD_ACAO = RA.COD_ACAO)
+//
+//            UNION ALL
+//
+//            SELECT
+//                'P' AS \"TYPE\",
+//                RA2.COD_RECURSO_ACAO AS \"KEY\",
+//                (MI.COD_MENU_ITEM * -1) AS \"COD_PAI\",
+//                RA2.DSC_RECURSO_ACAO AS \"DESCRICAO\",
+//                A.NOM_ACAO,
+//                (
+//                    SELECT 1
+//                    FROM PERFIL_USUARIO_RECURSO_ACAO PURA
+//                    WHERE PURA.COD_PERFIL_USUARIO = " . (int) $codPerfil . "
+//                    AND PURA.COD_RECURSO_ACAO = RA2.COD_RECURSO_ACAO
+//                ) AS FLAG,
+//                1 AS \"CHECKBOX\",
+//                MI.NUM_PESO
+//            FROM MENU_ITEM MI
+//            LEFT JOIN RECURSO_ACAO RA
+//                ON (RA.COD_RECURSO_ACAO = MI.COD_RECURSO_ACAO)
+//            LEFT JOIN RECURSO_ACAO RA2
+//                ON (RA2.COD_RECURSO = RA.COD_RECURSO)
+//            LEFT JOIN RECURSO R
+//                ON (R.COD_RECURSO = RA2.COD_RECURSO)
+//            LEFT JOIN ACAO A
+//                ON (A.COD_ACAO = RA2.COD_ACAO)
+//            WHERE MI.COD_RECURSO_ACAO > 0
+//            ORDER BY COD_PAI ASC, DESCRICAO";
+//
+//        $stmt = $this->em->getConnection()->query("SELECT * FROM ($sql) ORDER BY TO_NUMBER(KEY)");
+//        $recursos = array();
+//
+//        //Agrupa todos os recursos principais com suas acoes: Recurso => [acao, acao, ...]
+//
+//        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+//        foreach ($result as $row) {
+//
+//            //Evita atribuir o mesmo recurso mais de uma vez
+//            $recursos[$row['KEY']] = array(
+//                'id' => $row['KEY'],
+//                'key' => ($row['TYPE'] == 'P') ? $row['KEY'] : $row['TYPE'],
+//                'parent_id' => $row['COD_PAI'],
+//                'select' => ($row['FLAG'] == 1) ? true : false,
+//                'title' => $row['DESCRICAO'],
+//                'isFolder' => true,
+//                //'expand' => true,
+//                'acao' => false,
+//                'hideCheckbox' => false,
+//                'peso' => $row['NUM_PESO']
+//            );
+//        }
+//
+//        //itere na matriz definindo elementos filhos e pais
+//        $iteraArvore = function ($arvore, $idPai = 0) use (&$iteraArvore) {
+//            $nos = array();
+//            foreach ($arvore as $no) {
+//                if ($no['parent_id'] == $idPai) {
+//                    $filhos = $iteraArvore($arvore, $no['id']);
+//
+//                    if (count($filhos) > 0) {
+//                        if (!isset($no['children'])) {
+//                            $no['children'] = $filhos;
+//                        } else {
+//                            if ($no['acao']) {
+//                                $no['children'][] = $filhos;
+//                            } else {
+//                                $no['children'] = $filhos;
+//                            }
+//                        }
+//                    }
+//
+//                    $nos[] = $no;
+//                }
+//            }
+//            return $nos;
+//        };
+//
+//        $arr = $iteraArvore($recursos);
+//
+//        $sort = function ($a, $b) {
+//            return ($a['peso'] > $b['peso']);
+//        };
+//
+//        $reorder = function ($arr) use ($sort, &$reorder){
+//            usort($arr, $sort);
+//            foreach ($arr as $key => $element) {
+//                if (!empty($element['children'])) {
+//                    $arr[$key]['children'] = $reorder($element['children']);
+//                }
+//            }
+//            return $arr;
+//        };
+//
+//        $arr = $reorder($arr);
+//
+//        $this->_helper->json($arr, true);
+//    }
 }
