@@ -441,10 +441,32 @@ class Mobile_OndaRessuprimentoController extends Action
                     $this->getEntityManager()->persist($retornoRessuprimentoProduto);
                 }
 
+                // finalizar onda
+                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
+                $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
+
+                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs $ondaOsEn */
+                $ondaOsEn = $ondaOsRepo->findOneBy(array('id'=>$idOnda));
+
+                $ondaRepo->finalizaOnda($ondaOsEn);
+
+                $this->getEntityManager()->flush();
+
                 // ressuprimento em outro endereço
                 if( $_POST['enderecoOrigem'] != $enderecoDestino ){
 
+
                     $produtoEn = $em->getRepository('wms:Produto')->findOneBy(array('id' => $codProduto, 'grade' => $grade));
+
+                    $estoqueOrigemEn = $estoqueRepo->findOneBy(array(
+                        'codProduto' => $produtoEn->getId(),
+                        'grade' => $produtoEn->getGrade(),
+                        'depositoEndereco' => $enderecoOrigemEn
+                    ));
+
+                    $unitizadorEn = $estoqueOrigemEn->getUnitizador();
+                    $uma = $estoqueOrigemEn->getUma();
+                    $dataValidade = $estoqueOrigemEn->getValidade();
 
                     foreach ($ondaOsProdutos as $ondaProduto) {
                         $volumeEn = null;
@@ -458,44 +480,39 @@ class Mobile_OndaRessuprimentoController extends Action
                             $volumeEn = $volumeRepo->find($ondaProduto->getCodProdutoVolume());
                         }
 
-                        //saida
-                        $params['endereco']    = $enderecoOrigemEn; // buscar o codigo do endereço
+                        $observacoes = "Mov. ref. Resíduo da Onda " . $ondaOsEn->getId() . ", OS: " . $os->getId();
+                        $tipo = \Wms\Domain\Entity\Enderecamento\HistoricoEstoque::TIPO_RESSUPRIMENTO;
+
                         $params['produto']     = $produtoEn;
-                        $params['qtd']         = $qtd * -1; // buscar valor correto
                         $params['grade']       = $grade;
-                        $params['volume']      = $volumeEn;
                         $params['lote']        = $lote;
-                        $params['embalagem']   = $embalagemEn;
-                        $params['tipo']        = 'R';
                         $params['dthEntrada']  = new DateTime('now');
                         $params['os']          = $os;
+                        $params['tipo'] = $tipo;
+                        $params['observacoes'] = $observacoes;
+                        $params['unitizador'] = $unitizadorEn;
+                        $params['uma'] = $uma;
 
-                        $estoqueRepo->movimentaEstoque($params, false, true);
+                        if ($dataValidade != null) {
+                            $params['validade'] = $dataValidade->format('d/m/Y');
+                        }
+
+
+                        //saida
+                        $params['endereco']    = $enderecoOrigemEn; // buscar o codigo do endereço
+                        $params['qtd']         = $qtd * -1; // buscar valor correto
+                        $params['volume']      = $volumeEn;
+                        $params['embalagem']   = $embalagemEn;
+                        $estoqueRepo->movimentaEstoque($params, false, true, null);
 
                         //entrada
                         $params['endereco']    = $enderecoDestinoEn;
-                        $params['produto']     = $produtoEn;
                         $params['qtd']         = $qtd;
                         $params['volume']      = $volumeEn;
-                        $params['lote']        = $lote;
                         $params['embalagem']   = $embalagemEn;
-                        $params['tipo']        = 'R';
-                        $params['dthEntrada']  = new DateTime('now');
-                        $params['os']          = $os;
-
-                        $estoqueRepo->movimentaEstoque($params, false, false);
+                        $estoqueRepo->movimentaEstoque($params, false, false, null);
                     }
                 }
-
-                // finalizar onda
-                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoRepository $ondaRepo */
-                $ondaRepo = $this->getEntityManager()->getRepository("wms:Ressuprimento\OndaRessuprimento");
-
-                /** @var \Wms\Domain\Entity\Ressuprimento\OndaRessuprimentoOs $ondaOsEn */
-                $ondaOsEn = $ondaOsRepo->findOneBy(array('id'=>$idOnda));
-
-                $ondaRepo->finalizaOnda($ondaOsEn);
-
                 $this->getEntityManager()->flush();
                 $this->getEntityManager()->commit();
 
