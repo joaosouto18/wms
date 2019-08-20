@@ -994,6 +994,8 @@ class Integracao {
                     $pedido->setCep($row['CEP']);
                     $pedido->setCodProduto($row['PRODUTO']);
                     $pedido->setGrade($row['GRADE']);
+                    $pedido->setMotorista($row['NOM_MOTORISTA']);
+                    $pedido->setTipoPedido((isset($row['TIPO_PEDIDO']) && !empty($row['TIPO_PEDIDO'])) ? $row['TIPO_PEDIDO'] : null);
                     $pedido->setQtd(str_replace(",", ".", $row['QTD']));
                     $pedido->setVlrVenda(str_replace(",", ".", $row['VLR_VENDA']));
                     $pedido->setDth(isset($row['DTH']) && !empty($row['DTH']) ? \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']): new \DateTime());

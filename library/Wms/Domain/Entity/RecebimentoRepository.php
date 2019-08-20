@@ -20,14 +20,16 @@ use Wms\Service\Integracao;
 /**
  * Deposito
  */
-class RecebimentoRepository extends EntityRepository {
+class RecebimentoRepository extends EntityRepository
+{
 
     /**
      *
      * @param RecebimentoEntity $recebimentoEntity
      * @param array $values
      */
-    public function save(RecebimentoEntity $recebimentoEntity, array $values) {
+    public function save(RecebimentoEntity $recebimentoEntity, array $values)
+    {
         extract($values);
 
         $em = $this->getEntityManager();
@@ -39,9 +41,9 @@ class RecebimentoRepository extends EntityRepository {
             $observacao = '<br />' . $observacao;
         }
         $recebimentoEntity->setId($id)
-                ->setBox($box)
-                ->setStatus($statusEntity)
-                ->addAndamento(RecebimentoEntity::STATUS_INICIADO, false, 'Recebimento iniciado pelo Usuário. ' . $observacao);
+            ->setBox($box)
+            ->setStatus($statusEntity)
+            ->addAndamento(RecebimentoEntity::STATUS_INICIADO, false, 'Recebimento iniciado pelo Usuário. ' . $observacao);
 
         $em->persist($recebimentoEntity);
 
@@ -54,7 +56,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param RecebimentoEntity $recebimentoEntity
      * @param string $observacao
      */
-    public function cancelar(RecebimentoEntity $recebimentoEntity, $observacao = '') {
+    public function cancelar(RecebimentoEntity $recebimentoEntity, $observacao = '')
+    {
         $em = $this->getEntityManager();
         $em->beginTransaction();
 
@@ -62,8 +65,8 @@ class RecebimentoRepository extends EntityRepository {
             $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_CANCELADO);
 
             $recebimentoEntity->setDataFinal(new \DateTime)
-                    ->setStatus($statusEntity)
-                    ->addAndamento(RecebimentoEntity::STATUS_CANCELADO, false, $observacao);
+                ->setStatus($statusEntity)
+                ->addAndamento(RecebimentoEntity::STATUS_CANCELADO, false, $observacao);
 
             $statusEntity = $em->getReference('wms:Util\Sigla', NotaFiscalEntity::STATUS_CANCELADA);
 
@@ -91,7 +94,8 @@ class RecebimentoRepository extends EntityRepository {
      * @return boolean
      * @throws Exception
      */
-    public function desfazer(RecebimentoEntity $recebimentoEntity, $observacao = '') {
+    public function desfazer(RecebimentoEntity $recebimentoEntity, $observacao = '')
+    {
         $em = $this->getEntityManager();
         $em->beginTransaction();
 
@@ -123,7 +127,7 @@ class RecebimentoRepository extends EntityRepository {
                     continue;
 
                 $ordemServicoEntity->setDataFinal(new \DateTime)
-                        ->setDscObservacao('Todas as notas fiscais foram canceladas');
+                    ->setDscObservacao('Todas as notas fiscais foram canceladas');
 
                 $em->persist($ordemServicoEntity);
             }
@@ -132,8 +136,8 @@ class RecebimentoRepository extends EntityRepository {
             $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_DESFEITO);
 
             $recebimentoEntity->setDataFinal(new \DateTime)
-                    ->setStatus($statusEntity)
-                    ->addAndamento(RecebimentoEntity::STATUS_DESFEITO, false, $observacao);
+                ->setStatus($statusEntity)
+                ->addAndamento(RecebimentoEntity::STATUS_DESFEITO, false, $observacao);
 
             $em->persist($recebimentoEntity);
             $em->flush();
@@ -151,7 +155,8 @@ class RecebimentoRepository extends EntityRepository {
      *
      * @param array $notasFiscais
      */
-    public function gerar(array $notasFiscais) {
+    public function gerar(array $notasFiscais)
+    {
         $em = $this->getEntityManager();
         $em->beginTransaction();
 
@@ -173,7 +178,7 @@ class RecebimentoRepository extends EntityRepository {
                     2 => $notaFiscal->getNumero(),
                     3 => $notaFiscal->getFornecedor()->getPessoa()->getCnpj()
                 );
-                $notasFiscaisErp = $acaoIntRepo->processaAcao($acaoEn, $options, "E","P",null,611);
+                $notasFiscaisErp = $acaoIntRepo->processaAcao($acaoEn, $options, "E", "P", null, 611);
                 $serviceIntegracao = new Integracao($em, array('acao' => $acaoEn,
                     'options' => null,
                     'tipoExecucao' => 'E'));
@@ -189,10 +194,10 @@ class RecebimentoRepository extends EntityRepository {
             $statusEntity = $em->getReference('wms:Util\Sigla', RecebimentoEntity::STATUS_CRIADO);
 
             $recebEntity->setStatus($statusEntity)
-                    ->setDeposito($deposito)
-                    ->setDataInicial(new \DateTime)
-                    ->setFilial($deposito->getFilial())
-                    ->addAndamento(RecebimentoEntity::STATUS_CRIADO, false, 'Recebimento gerado pelo WMS.');
+                ->setDeposito($deposito)
+                ->setDataInicial(new \DateTime)
+                ->setFilial($deposito->getFilial())
+                ->addAndamento(RecebimentoEntity::STATUS_CRIADO, false, 'Recebimento gerado pelo WMS.');
 
             $em->persist($recebEntity);
 
@@ -203,9 +208,9 @@ class RecebimentoRepository extends EntityRepository {
 
                 $notaFiscal = $em->getReference('wms:NotaFiscal', $nota);
                 $notaFiscal
-                        ->setRecebimento($recebEntity)
-                        ->setStatus($statusEntity)
-                        ->setCodRecebimentoErp($idRecebimentoErp);
+                    ->setRecebimento($recebEntity)
+                    ->setStatus($statusEntity)
+                    ->setCodRecebimentoErp($idRecebimentoErp);
 
                 $em->persist($notaFiscal);
             }
@@ -220,7 +225,8 @@ class RecebimentoRepository extends EntityRepository {
         }
     }
 
-    public function conferenciaColetor($idRecebimento, $idOrdemServico, $idConferente = null) {
+    public function conferenciaColetor($idRecebimento, $idOrdemServico, $idConferente = null)
+    {
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
         $produtoVolumeRepo = $this->_em->getRepository('wms:Produto\Volume');
@@ -252,9 +258,11 @@ class RecebimentoRepository extends EntityRepository {
                             'concluido' => false);
                     }
 
+                    $qtdConferidasVolumes = [];
+
                     foreach ($volumes as $volume) {
                         //verifica se o volume foi conferido.
-                        $qtdConferida = $this->buscarConferenciaPorVolume($item['produto'], $item['grade'], $volume->getId(), $idOrdemServico);
+                        $qtdConferida = $this->buscarConferenciaPorVolume($volume->getId(), $idOrdemServico);
 
                         //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
 
@@ -263,23 +271,17 @@ class RecebimentoRepository extends EntityRepository {
                                 if ($lote == 0) {
                                     $lote = null;
                                 }
-                                $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null,null,null, $volume, $lote);
-                            } else {
-                                $qtdConferidasVolumes[$lote][$item['produto']][$item['grade']][$volume->getId()] = $value;
+                                $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null, null, null, $volume, $lote);
                             }
+                            $qtdConferidasVolumes[$lote][$volume->getId()] = $value;
                         }
                     }
 
                     foreach ($qtdConferidasVolumes as $lote => $volumes) {
                         //Pega a menor quantidade de produtos completos
-                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade'], $item['produto'], $item['grade']);
+                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
                     }
 
-                    if (!isset($qtdConferidas)) {
-                        return array('message' => null,
-                            'exception' => new \Exception("Verifique o tipo de comercialização do produto " . $item['produto'] . ' ' . $item['grade']),
-                            'concluido' => false);
-                    }
                     break;
                 case ProdutoEntity::TIPO_UNITARIO:
 
@@ -302,7 +304,8 @@ class RecebimentoRepository extends EntityRepository {
         return $this->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, null, null, null, $idConferente);
     }
 
-    public function getDivergenciaByProduto ($qtdConferidas, $qtdAvarias, $qtdNFs) {
+    public function getDivergenciaByProduto($qtdConferidas, $qtdAvarias, $qtdNFs)
+    {
 
         $arrayQtdByProdNF = array();
 
@@ -332,10 +335,10 @@ class RecebimentoRepository extends EntityRepository {
         }
 
         $arrayDiv = array();
-        foreach ($arrayQtdByProd  as $idProduto => $grades) {
+        foreach ($arrayQtdByProd as $idProduto => $grades) {
             foreach ($grades as $grade => $qtd) {
                 $qtdDivergencia = Math::subtrair($qtd, $arrayQtdByProdNF[$idProduto][$grade]);
-                $arrayDiv[$idProduto][$grade] = ['qtd' => $qtdDivergencia, 'temDivergencia' => ($qtdDivergencia != 0) ];
+                $arrayDiv[$idProduto][$grade] = ['qtd' => $qtdDivergencia, 'temDivergencia' => ($qtdDivergencia != 0)];
             }
         }
 
@@ -364,7 +367,8 @@ class RecebimentoRepository extends EntityRepository {
      *  )
      * @param int $idConferente
      */
-    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas = null, $qtdUnidFracionavel = null, $embalagem = null, $idConferente = false, $unMedida = false, $dataValidade = null, $numPeso = null) {
+    public function executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $normas = null, $qtdUnidFracionavel = null, $embalagem = null, $idConferente = false, $unMedida = false, $dataValidade = null, $numPeso = null)
+    {
         $em = $this->_em;
         $ordemServicoRepo = $em->getRepository('wms:OrdemServico');
         $vQtdRecebimentoRepo = $em->getRepository('wms:Recebimento\VQtdRecebimento');
@@ -392,9 +396,9 @@ class RecebimentoRepository extends EntityRepository {
         $qtdBloqueada = $this->getQuantidadeConferidaBloqueada($idRecebimento);
         if (count($qtdBloqueada))
             return array(
-                        'message' => 'Existem itens bloqueados por validade! Não é possível finalizar',
-                        'exception' => null,
-                        'concluido' => false);
+                'message' => 'Existem itens bloqueados por validade! Não é possível finalizar',
+                'exception' => null,
+                'concluido' => false);
 
         // checo se recebimento ja n tem uma conferencia em andamento
         if ($this->checarConferenciaComDivergencia($idRecebimento))
@@ -547,7 +551,8 @@ class RecebimentoRepository extends EntityRepository {
         }
     }
 
-    public function getDivergenciaPesoVariavelByOs($idOS, $idRecebimento, $produtoEn, $repositorios) {
+    public function getDivergenciaPesoVariavelByOs($idOS, $idRecebimento, $produtoEn, $repositorios)
+    {
 
         $notaFiscalRepo = $repositorios['notaFiscalRepo'];
 
@@ -584,7 +589,8 @@ class RecebimentoRepository extends EntityRepository {
         );
     }
 
-    public function getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios) {
+    public function getDivergenciaPesoVariavel($idRecebimento, $produtoEn, $repositorios)
+    {
 
         $notaFiscalRepo = $repositorios['notaFiscalRepo'];
         $vQtdRecebimentoRepo = $repositorios['vQtdRecebimentoRepo'];
@@ -617,7 +623,8 @@ class RecebimentoRepository extends EntityRepository {
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Exception
      */
-    public function finalizar($idRecebimento, $divergencia = false) {
+    public function finalizar($idRecebimento, $divergencia = false)
+    {
         $em = $this->getEntityManager();
         $em->beginTransaction();
         ini_set('max_execution_time', 300);
@@ -658,8 +665,8 @@ class RecebimentoRepository extends EntityRepository {
                     $osEn = $osRepo->findOneBy(array('idEnderecamento' => $palete->getId()));
                     //checando Validade
                     $getProduto = $palete->getProdutosArray();
-                        $codProduto = $getProduto[0]['codProduto'];
-                        $grade = $getProduto[0]['grade'];
+                    $codProduto = $getProduto[0]['codProduto'];
+                    $grade = $getProduto[0]['grade'];
                     $dataValidade = $notaFiscalRepo->buscaRecebimentoProduto($idRecebimento, null, $codProduto, $grade);
 
                     if (isset($paletesFlush[$codProduto][$grade])) {
@@ -672,7 +679,7 @@ class RecebimentoRepository extends EntityRepository {
                 }
 
                 $controleProprietario = $this->getEntityManager()->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
-                if($controleProprietario == 'S') {
+                if ($controleProprietario == 'S') {
                     if (empty($result)) {
                         $em->getRepository("wms:Enderecamento\EstoqueProprietario")->efetivaEstoquePropRecebimento($recebimentoEntity->getId());
                     }
@@ -698,6 +705,10 @@ class RecebimentoRepository extends EntityRepository {
 
                 //$this->atualizaRecebimentoBenner($idRecebimento);
 
+                if ($this->getSystemParameterValue('UTILIZA_INTEGRACAO_RECEBIMENTO_ERP') == 'S') {
+                    $this->executaIntegracaoBDFinalizacaoConferencia($idRecebimento);
+                }
+
                 $em->flush();
                 $em->commit();
                 return array('exception' => null);
@@ -715,7 +726,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param RecebimentoEntity $recebimentoEntity
      * @param int $status
      */
-    public function updateStatus(RecebimentoEntity $recebimentoEntity, $status) {
+    public function updateStatus(RecebimentoEntity $recebimentoEntity, $status)
+    {
         $em = $this->getEntityManager();
 
         $statusEntity = $em->getReference('wms:Util\Sigla', $status);
@@ -730,7 +742,8 @@ class RecebimentoRepository extends EntityRepository {
      *
      * @return type
      */
-    public function buscarStatusIniciado() {
+    public function buscarStatusIniciado()
+    {
 
         $query = '
             SELECT r
@@ -745,10 +758,11 @@ class RecebimentoRepository extends EntityRepository {
             ORDER BY r.id ASC';
 
         return $this->getEntityManager()->createQuery($query)
-                        ->getResult();
+            ->getResult();
     }
 
-    public function getFornecedorbyRecebimento($idRecebimento) {
+    public function getFornecedorbyRecebimento($idRecebimento)
+    {
         $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
         $nf = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
         if (empty($nf)) return false;
@@ -761,7 +775,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param array $criteria
      * @return array
      */
-    public function buscarStatusEmConferenciaColetor(array $criteria = array()) {
+    public function buscarStatusEmConferenciaColetor(array $criteria = array())
+    {
         $usuarioSession = \Zend_Auth::getInstance()->getIdentity();
 
         $query = '
@@ -777,7 +792,7 @@ class RecebimentoRepository extends EntityRepository {
                 )';
 
         return $this->getEntityManager()->createQuery($query)
-                        ->getResult();
+            ->getResult();
     }
 
     /**
@@ -792,7 +807,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $qtdAvaria Quantidade avariada do produto
      * @return integer Quantidade de divergencias
      */
-    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEntity = null, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote = null, $arrPreConferencia = []) {
+    public function gravarConferenciaItem($idOrdemServico, $idProduto, $grade, $produtoEntity = null, $qtdNF, $qtdConferida, $numPecas, $qtdAvaria, $divergenciaPesoVariavel, $lote = null, $arrPreConferencia = [])
+    {
         $em = $this->getEntityManager();
 
         if (empty($produtoEntity)) {
@@ -872,7 +888,7 @@ class RecebimentoRepository extends EntityRepository {
         $conferenciaEntity->setDivergenciaPeso($divergenciaPesoVariavel);
         $conferenciaEntity->setDataValidade($dataValidade);
         $conferenciaEntity->setNumPecas($numPecas);
-        $conferenciaEntity->setLote((!empty($lote))? $lote : null);
+        $conferenciaEntity->setLote((!empty($lote)) ? $lote : null);
         $conferenciaEntity->setIndDivergLote($indDivergenciaLote);
 
         if ($temVolumesDivergentes) {
@@ -900,14 +916,15 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $idProdutoEmbalagem Codigo do Produto Embalagem
      * @param integer $qtdConferida Quantidade conferida do produto
      */
-    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = NULL, $params, $numPeso = null, $qtdBloqueada = null, $produtoEmbalagemEntity = null, $lote = null) {
+    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = NULL, $params, $numPeso = null, $qtdBloqueada = null, $produtoEmbalagemEntity = null, $lote = null)
+    {
         $em = $this->getEntityManager();
 
         $recebimentoEmbalagemEntity = new RecebimentoEmbalagemEntity;
 
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
-        if($produtoEmbalagemEntity == null) {
+        if ($produtoEmbalagemEntity == null) {
             $produtoEmbalagemEntity = $this->getEntityManager()->find('wms:Produto\Embalagem', $idProdutoEmbalagem);
         }
 
@@ -951,7 +968,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $idProdutoVolume Codigo do Produto Volume
      * @param integer $qtdConferida Quantidade conferida do produto
      */
-    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null, $produtoVolumeEntity = null, $lote = null) {
+    public function gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao = null, $params = null, $numPeso = null, $qtdBloqueada = null, $produtoVolumeEntity = null, $lote = null)
+    {
         $em = $this->getEntityManager();
 
         $recebimentoVolumeEntity = new RecebimentoVolumeEntity;
@@ -972,11 +990,11 @@ class RecebimentoRepository extends EntityRepository {
         }
 
         $recebimentoVolumeEntity->setRecebimento($recebimentoEntity)
-                ->setOrdemServico($ordemServicoEntity)
-                ->setVolume($produtoVolumeEntity)
-                ->setQtdConferida($qtdConferida)
-                ->setDataConferencia(new \DateTime)
-                ->setDataValidade($validade);
+            ->setOrdemServico($ordemServicoEntity)
+            ->setVolume($produtoVolumeEntity)
+            ->setQtdConferida($qtdConferida)
+            ->setDataConferencia(new \DateTime)
+            ->setDataValidade($validade);
         $recebimentoVolumeEntity->setNumPeso($numPeso);
         $recebimentoVolumeEntity->setQtdBloqueada($qtdBloqueada);
 
@@ -990,7 +1008,7 @@ class RecebimentoRepository extends EntityRepository {
         }
 
         $em->persist($recebimentoVolumeEntity);
-        $em->flush();
+        $em->flush($recebimentoVolumeEntity);
     }
 
     /**
@@ -998,7 +1016,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param integer $idRecebimento
      * @param string $observacao
      */
-    public function gravarAndamento($idRecebimento, $observacao) {
+    public function gravarAndamento($idRecebimento, $observacao)
+    {
         $em = $this->getEntityManager();
         $recebimentoEntity = $this->find($idRecebimento);
 
@@ -1014,24 +1033,25 @@ class RecebimentoRepository extends EntityRepository {
      * @param int $idRecebimento
      * @return boolean Caso ja esteja em
      */
-    public function checarConferenciaComDivergencia($idRecebimento, $returBool = true) {
+    public function checarConferenciaComDivergencia($idRecebimento, $returBool = true)
+    {
         $em = $this->getEntityManager();
 
         $dql = $em->createQueryBuilder()
-                ->select('os.id')
-                ->addSelect('
+            ->select('os.id')
+            ->addSelect('
                     (SELECT COUNT(rc)
                     FROM wms:Recebimento\Conferencia rc
                     WHERE rc.ordemServico = os.id
                     ) qtdConferencia')
-                ->from('wms:OrdemServico', 'os')
-                ->where('os.recebimento = ?1')
-                ->andWhere('os.dataFinal is NULL ')
-                ->setParameter(1, $idRecebimento);
+            ->from('wms:OrdemServico', 'os')
+            ->where('os.recebimento = ?1')
+            ->andWhere('os.dataFinal is NULL ')
+            ->setParameter(1, $idRecebimento);
 
         $ordensServico = $dql->getQuery()->getOneOrNullResult();
         if ($returBool)
-            return ($ordensServico && ((int) $ordensServico['qtdConferencia'] > 0));
+            return ($ordensServico && ((int)$ordensServico['qtdConferencia'] > 0));
         else
             return $ordensServico;
     }
@@ -1046,15 +1066,16 @@ class RecebimentoRepository extends EntityRepository {
      *   id (integer)       da Os,
      *   mensagem (string)  infomando o ocorrido
      */
-    public function checarOrdemServicoAberta($idRecebimento) {
+    public function checarOrdemServicoAberta($idRecebimento)
+    {
         $em = $this->getEntityManager();
 
         $dql = $em->createQueryBuilder()
-                ->select('os')
-                ->from('wms:OrdemServico', 'os')
-                ->where('os.recebimento = ?1')
-                ->andWhere('os.dataFinal is NULL ')
-                ->setParameter(1, $idRecebimento);
+            ->select('os')
+            ->from('wms:OrdemServico', 'os')
+            ->where('os.recebimento = ?1')
+            ->andWhere('os.dataFinal is NULL ')
+            ->setParameter(1, $idRecebimento);
 
         $ordensServico = $dql->getQuery()->getOneOrNullResult();
 
@@ -1081,15 +1102,16 @@ class RecebimentoRepository extends EntityRepository {
      * @param int $idRecebimento
      * @return boolean
      */
-    public function checarOsAnteriores($idRecebimento) {
+    public function checarOsAnteriores($idRecebimento)
+    {
         $em = $this->getEntityManager();
 
         $dql = $em->createQueryBuilder()
-                ->select('os')
-                ->from('wms:OrdemServico', 'os')
-                ->where('os.recebimento = ?1')
-                ->andWhere('os.dataFinal is NOT NULL ')
-                ->setParameter(1, $idRecebimento);
+            ->select('os')
+            ->from('wms:OrdemServico', 'os')
+            ->where('os.recebimento = ?1')
+            ->andWhere('os.dataFinal is NOT NULL ')
+            ->setParameter(1, $idRecebimento);
 
 
         $ordensServico = $dql->getQuery()->getResult();
@@ -1106,7 +1128,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param int $idRecebimento
      * @return Array
      */
-    public function listarProdutosPorOS($idRecebimento) {
+    public function listarProdutosPorOS($idRecebimento)
+    {
 
         $em = $this->getEntityManager();
 
@@ -1115,20 +1138,22 @@ class RecebimentoRepository extends EntityRepository {
         return $notaFiscalRepo->getItemConferencia($idRecebimento);
     }
 
-    public function getProdutosConferiodos($idRecebimento) {
+    public function getProdutosConferiodos($idRecebimento)
+    {
         $source = $this->getEntityManager()->createQueryBuilder()
-                ->select("c.codProduto as codigo, c.grade as grade,p.descricao as produto,c.qtdConferida as qtdRecebida")
-                ->from("wms:Recebimento\Conferencia", "c")
-                ->innerJoin('wms:Produto', 'p', 'WITH', 'c.codProduto = p.id AND c.grade = p.grade')
-                ->where("c.recebimento = $idRecebimento")
-                ->andWhere("(c.qtdDivergencia = 0 OR (c.qtdDivergencia != 0 AND NOT(c.notaFiscal IS NULL)))");
+            ->select("c.codProduto as codigo, c.grade as grade,p.descricao as produto,c.qtdConferida as qtdRecebida")
+            ->from("wms:Recebimento\Conferencia", "c")
+            ->innerJoin('wms:Produto', 'p', 'WITH', 'c.codProduto = p.id AND c.grade = p.grade')
+            ->where("c.recebimento = $idRecebimento")
+            ->andWhere("(c.qtdDivergencia = 0 OR (c.qtdDivergencia != 0 AND NOT(c.notaFiscal IS NULL)))");
 
         $result = $source->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
 
         return $result;
     }
 
-    public function getProdutosByRecebimento($idRecebimento) {
+    public function getProdutosByRecebimento($idRecebimento)
+    {
         $loteND = ProdutoEntity\Lote::LND;
 
         $SQL = "SELECT V.COD_PRODUTO,
@@ -1281,12 +1306,12 @@ class RecebimentoRepository extends EntityRepository {
                 'produto' => $row['DSC_PRODUTO'],
                 'grade' => $row['DSC_GRADE'],
                 'picking' => $picking,
-                'qtdItensNf' => round($row['QTD_NOTA_FISCAL'],5),
-                'qtdRecebimento' => round($row['QTD_RECEBIMENTO'],5),
-                'qtdRecebida' => round($row['QTD_RECEBIDA'],5),
-                'qtdEnderecamento' => round($row['QTD_ENDERECAMENTO'],5),
-                'qtdEnderecada' => round($row['QTD_ENDERECADA'],5),
-                'qtdTotal' => round($row['QTD_TOTAL'],5)
+                'qtdItensNf' => round($row['QTD_NOTA_FISCAL'], 5),
+                'qtdRecebimento' => round($row['QTD_RECEBIMENTO'], 5),
+                'qtdRecebida' => round($row['QTD_RECEBIDA'], 5),
+                'qtdEnderecamento' => round($row['QTD_ENDERECAMENTO'], 5),
+                'qtdEnderecada' => round($row['QTD_ENDERECADA'], 5),
+                'qtdTotal' => round($row['QTD_TOTAL'], 5)
             );
         }
 
@@ -1299,13 +1324,14 @@ class RecebimentoRepository extends EntityRepository {
      * @param array $params
      * @return type
      */
-    public function buscar(array $params = array()) {
+    public function buscar(array $params = array())
+    {
         extract($params);
 
         $source = $this->getEntityManager()->createQueryBuilder()
-                ->select('r, b.descricao as dscBox, b, s.sigla as status, s.id as idStatus, p.nome as fornecedor, os.id idOrdemServicoManual,
+            ->select('r, b.descricao as dscBox, b, s.sigla as status, s.id as idStatus, p.nome as fornecedor, os.id idOrdemServicoManual,
                     os2.id idOrdemServicoColetor, NVL(os.id, os2.id) idOrdemServico, \'S\' AS indImprimirCB')
-                ->addSelect("
+            ->addSelect("
                     (
                         SELECT COUNT(nf.id)
                         FROM wms:NotaFiscal nf
@@ -1313,7 +1339,7 @@ class RecebimentoRepository extends EntityRepository {
                     )
                     AS qtdNotaFiscal
                     ")
-                ->addSelect("
+            ->addSelect("
                     (
                         SELECT SUM(nfi.quantidade)
                         FROM wms:NotaFiscal nf2
@@ -1322,19 +1348,19 @@ class RecebimentoRepository extends EntityRepository {
                     )
                     AS qtdProduto
                     ")
-                ->from('wms:Recebimento', 'r')
-                ->innerJoin('r.status', 's')
-                ->leftJoin('r.box', 'b')
-                ->leftJoin('r.notasFiscais', 'nf3')
-                ->leftJoin('nf3.fornecedor', 'f')
-                ->leftJoin('f.pessoa', 'p')
-                ->leftJoin('r.ordensServicos', 'os', 'WITH', 'os.formaConferencia = :manual AND os.dataFinal IS NULL')
-                ->leftJoin('r.ordensServicos', 'os2', 'WITH', 'os2.formaConferencia = :coletor AND os2.dataFinal IS NULL')
-                ->orderBy('r.id')
-                ->setParameters(array(
-            'manual' => OrdemServicoEntity::MANUAL,
-            'coletor' => OrdemServicoEntity::COLETOR,
-        ));
+            ->from('wms:Recebimento', 'r')
+            ->innerJoin('r.status', 's')
+            ->leftJoin('r.box', 'b')
+            ->leftJoin('r.notasFiscais', 'nf3')
+            ->leftJoin('nf3.fornecedor', 'f')
+            ->leftJoin('f.pessoa', 'p')
+            ->leftJoin('r.ordensServicos', 'os', 'WITH', 'os.formaConferencia = :manual AND os.dataFinal IS NULL')
+            ->leftJoin('r.ordensServicos', 'os2', 'WITH', 'os2.formaConferencia = :coletor AND os2.dataFinal IS NULL')
+            ->orderBy('r.id')
+            ->setParameters(array(
+                'manual' => OrdemServicoEntity::MANUAL,
+                'coletor' => OrdemServicoEntity::COLETOR,
+            ));
 
         if (isset($dataInicial1) && (!empty($dataInicial1)) && (!empty($dataInicial2))) {
             $dataInicial1 = str_replace("/", "-", $dataInicial1);
@@ -1344,8 +1370,8 @@ class RecebimentoRepository extends EntityRepository {
             $dataI2 = new \DateTime($dataInicial2);
 
             $source->andWhere("((TRUNC(r.dataInicial) >= ?1 AND TRUNC(r.dataInicial) <= ?2) OR r.dataInicial IS NULL)")
-                    ->setParameter(1, $dataI1)
-                    ->setParameter(2, $dataI2);
+                ->setParameter(1, $dataI1)
+                ->setParameter(2, $dataI2);
         }
 
         if (isset($dataFinal1) && (!empty($dataFinal1)) && (!empty($dataFinal2))) {
@@ -1356,95 +1382,74 @@ class RecebimentoRepository extends EntityRepository {
             $dataF2 = new \DateTime($DataFinal2);
 
             $source->andWhere("((TRUNC(r.dataFinal) >= ?3 AND TRUNC(r.dataFinal) <= ?4) OR r.dataFinal IS NULL")
-                    ->setParameter(3, $dataF1)
-                    ->setParameter(4, $dataF2);
+                ->setParameter(3, $dataF1)
+                ->setParameter(4, $dataF2);
         }
 
         if (isset($status) && (!empty($status))) {
             $source->andWhere("r.status = ?5")
-                    ->setParameter(5, $status);
+                ->setParameter(5, $status);
         }
 
         if (isset($idRecebimento) && (!empty($idRecebimento))) {
             $source->andWhere("r.id = ?6")
-                    ->setParameter(6, $idRecebimento);
+                ->setParameter(6, $idRecebimento);
         }
 
 
         if (isset($uma) && (!empty($uma))) {
             $source->andWhere("r.id = ?7")
-                    ->setParameter(7, $uma);
+                ->setParameter(7, $uma);
         }
 
         return $source->getQuery()->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
     }
 
     /**
-     *
-     * @param int $produto
-     * @param int $grade
      * @param int $idOrdemServico
      * @param int $produtoVolume
      * @return array Quantidade de volumes conferidos por lote
      */
-    public function buscarConferenciaPorVolume($produto, $grade, $produtoVolume, $idOrdemServico) {
+
+    public function buscarConferenciaPorVolume($produtoVolume, $idOrdemServico) {
         // busca volumes
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('rv.qtdConferida, NVL(rv.lote, 0) lote')
-                ->from('wms:Produto\Volume', 'pv')
-                ->innerJoin('pv.recebimentoVolumes', 'rv')
-                ->where('pv.codProduto = :produto AND pv.grade = :grade')
-                ->andWhere('rv.ordemServico = ?1')
-                ->andWhere('pv.id = ?2')
-                ->setParameters(array(
-            1 => $idOrdemServico,
-            2 => $produtoVolume,
-            'produto' => $produto,
-            'grade' => $grade,
-                )
-        );
+                ->from('wms:Recebimento\Volume', 'rv')
+                ->where('rv.ordemServico = ?1 AND rv.volume = ?2')
+                ->setParameters([ 1 => $idOrdemServico, 2 => $produtoVolume ] );
+
         $volumes = $dql->getQuery()->getArrayResult();
         $qtdTotal = array();
         foreach ($volumes as $volume) {
             $lote = $volume['lote'];
-            if(!isset($qtdTotal[$lote])){
+            if (!isset($qtdTotal[$lote])) {
                 $qtdTotal[$lote] = 0;
             }
             $qtdTotal[$lote] = Math::adicionar($qtdTotal[$lote], $volume['qtdConferida']);
         }
+
+        if (empty($qtdTotal)) $qtdTotal[0] = 0;
+
         return $qtdTotal;
     }
 
-    public function buscarVolumeMinimoConferidoPorProduto(array $volumesConferidos, $qtdNf, $codProduto, $gradeBuscar) {
+
+    public function buscarVolumeMinimoConferidoPorProduto(array $volumesConferidos, $qtdNf) {
         //Garantia de que vai retornar a menor quantidade conferida
         $minimo = 9999999999;
         $maximo = 0;
 
-        if ($codProduto == 20009) {
-            $teste = "A";
-        }
-
-        foreach ($volumesConferidos as $idProduto => $grades) {
-
-                foreach ($grades as $grade => $qtdConferidas) {
-                    if ($grade == $codProduto) {
-                        foreach ($qtdConferidas as $volume => $lotes) {
-                            if ($volume == $gradeBuscar) {
-                                foreach ($lotes as $lote => $qtd) {
-
-                                    if ($minimo > $qtd) {
-                                        $minimo = $qtd;
-                                    }
-
-                                    if ($maximo < $qtd) {
-                                        $maximo = $qtd;
-                                    }
-
-                                }
-                            }
-                        }
-                    }
+        foreach ($volumesConferidos as $lote => $vols) {
+            foreach ($vols as $qtd) {
+                if ($minimo > $qtd) {
+                    $minimo = $qtd;
                 }
+
+                if ($maximo < $qtd) {
+                    $maximo = $qtd;
+                }
+            }
         }
 
         //Verifica se o valor da divergência está maior que a quantidade informada na nf
@@ -1461,28 +1466,29 @@ class RecebimentoRepository extends EntityRepository {
      * @param int $idOrdemServico
      * @return array Quantidade encontrada de embalagens
      */
-    public function buscarConferenciaPorEmbalagem($produto, $grade, $idOrdemServico) {
+    public function buscarConferenciaPorEmbalagem($produto, $grade, $idOrdemServico)
+    {
         // busca embalagens
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select("CASE WHEN p.indFracionavel != 'S' THEN pe.quantidade ELSE 1 END AS qtdEmbalagem, re.qtdConferida, NVL(re.lote, 0) lote")
-                ->from('wms:Produto\Embalagem', 'pe')
-                ->innerJoin('pe.recebimentoEmbalagens', 're')
-                ->innerJoin("pe.produto", "p")
-                ->where('pe.codProduto = :produto AND pe.grade = :grade')
-                ->andWhere('re.ordemServico = ?1')
-                ->setParameters(
+            ->select("CASE WHEN p.indFracionavel != 'S' THEN pe.quantidade ELSE 1 END AS qtdEmbalagem, re.qtdConferida, NVL(re.lote, 0) lote")
+            ->from('wms:Produto\Embalagem', 'pe')
+            ->innerJoin('pe.recebimentoEmbalagens', 're')
+            ->innerJoin("pe.produto", "p")
+            ->where('pe.codProduto = :produto AND pe.grade = :grade')
+            ->andWhere('re.ordemServico = ?1')
+            ->setParameters(
                 array(
                     1 => $idOrdemServico,
                     'produto' => $produto,
                     'grade' => $grade,
                 )
-        );
+            );
         $embalagens = $dql->getQuery()->getResult();
 
         $qtdTotal = array();
         $norma = null;
         foreach ($embalagens as $embalagem) {
-            if(!isset($qtdTotal[$embalagem['lote']])){
+            if (!isset($qtdTotal[$embalagem['lote']])) {
                 $qtdTotal[$embalagem['lote']] = 0;
             }
             $qtdTotal[$embalagem['lote']] = Math::adicionar($qtdTotal[$embalagem['lote']], Math::multiplicar($embalagem['qtdEmbalagem'], $embalagem['qtdConferida']));
@@ -1499,16 +1505,17 @@ class RecebimentoRepository extends EntityRepository {
      * @param int $idRecebimento
      * @return array | null
      */
-    public function checarStatusFinalizado($idRecebimento) {
+    public function checarStatusFinalizado($idRecebimento)
+    {
 
         $em = $this->getEntityManager();
 
         $dql = $em->createQueryBuilder()
-                ->select('os')
-                ->from('wms:OrdemServico', 'os')
-                ->where('os.recebimento = ?1')
-                ->andWhere('os.dataFinal is not NULL ')
-                ->setParameter(1, $idRecebimento);
+            ->select('os')
+            ->from('wms:OrdemServico', 'os')
+            ->where('os.recebimento = ?1')
+            ->andWhere('os.dataFinal is not NULL ')
+            ->setParameter(1, $idRecebimento);
 
         $ordensServico = $dql->getQuery()->getFirstResult();
 
@@ -1531,7 +1538,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param int $idRecebimento
      * @return array
      */
-    private function criarOrdemServico($idRecebimento) {
+    private function criarOrdemServico($idRecebimento)
+    {
 
         $em = $this->getEntityManager();
         $ordemServicoRepo = $em->getRepository('wms:OrdemServico');
@@ -1563,7 +1571,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param RecebimentoEntity $recebimentoEntity
      * @return array $recebimentoStatus
      */
-    public function buscarStatusSteps(RecebimentoEntity $recebimentoEntity) {
+    public function buscarStatusSteps(RecebimentoEntity $recebimentoEntity)
+    {
         $em = $this->getEntityManager();
         $recebimentoStatus = $em->getRepository('wms:Util\Sigla')->getReferenciaValor(array('tipo' => 50), array('referencia' => 'ASC'));
 
@@ -1579,7 +1588,8 @@ class RecebimentoRepository extends EntityRepository {
         return $recebimentoStatus;
     }
 
-    public function gravarRecebimentoEmbalagemVolume($idProduto, $grade, $produtoEntity = null, $qtd, $numPecas, $idRecebimento, $idOs, $norma = null, $idEmbalagem = null, $dataValidade = null, $numPeso = null, $lote = null) {
+    public function gravarRecebimentoEmbalagemVolume($idProduto, $grade, $produtoEntity = null, $qtd, $numPecas, $idRecebimento, $idOs, $norma = null, $idEmbalagem = null, $dataValidade = null, $numPeso = null, $lote = null)
+    {
         if (empty($produtoEntity))
             $produtoEntity = $this->getEntityManager()->getRepository('wms:Produto')->findOneBy(array('id' => $idProduto, 'grade' => $grade));
 
@@ -1607,7 +1617,8 @@ class RecebimentoRepository extends EntityRepository {
         }
     }
 
-    public function saveConferenciaCega($idRecebimento, $idOrdemServico, $qtdConferidas, $normas = null, $qtdUnidFracionavel = null, $embalagem = null, $unMedida = false, $dataValidade = null, $numPeso = null){
+    public function saveConferenciaCega($idRecebimento, $idOrdemServico, $qtdConferidas, $normas = null, $qtdUnidFracionavel = null, $embalagem = null, $unMedida = false, $dataValidade = null, $numPeso = null)
+    {
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->_em->getRepository('wms:Produto');
 
@@ -1654,16 +1665,17 @@ class RecebimentoRepository extends EntityRepository {
         $this->_em->flush();
     }
 
-    public function alteraNormaPaletizacaoRecebimento($codRecebimento, $codProduto, $grade, $codOs, $idNorma) {
+    public function alteraNormaPaletizacaoRecebimento($codRecebimento, $codProduto, $grade, $codOs, $idNorma)
+    {
 
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select("re")
-                ->from("wms:Recebimento\Embalagem", "re")
-                ->leftJoin("re.embalagem", "pe")
-                ->where("re.ordemServico = '$codOs'")
-                ->andWhere("pe.codProduto = '$codProduto'")
-                ->andWhere("pe.grade = '$grade'")
-                ->andWhere("re.recebimento = '$codRecebimento'");
+            ->select("re")
+            ->from("wms:Recebimento\Embalagem", "re")
+            ->leftJoin("re.embalagem", "pe")
+            ->where("re.ordemServico = '$codOs'")
+            ->andWhere("pe.codProduto = '$codProduto'")
+            ->andWhere("pe.grade = '$grade'")
+            ->andWhere("re.recebimento = '$codRecebimento'");
         $embalagens = $dql->getQuery()->getResult();
 
         if (!empty($embalagens)) {
@@ -1706,7 +1718,8 @@ class RecebimentoRepository extends EntityRepository {
         return true;
     }
 
-    public function getDadosRecebimento($params) {
+    public function getDadosRecebimento($params)
+    {
         $dataInicial = $params['dataInicial'];
         $dataFim = $params['dataFim'];
         $statusFinalizado = \Wms\Domain\Entity\Recebimento::STATUS_FINALIZADO;
@@ -1789,7 +1802,8 @@ class RecebimentoRepository extends EntityRepository {
         return $resultado;
     }
 
-    public function getUsuarioByRecebimento($id) {
+    public function getUsuarioByRecebimento($id)
+    {
         $sql = "SELECT R.COD_RECEBIMENTO RECEBIMENTO, P.NOM_PESSOA NOME, (SELECT SUM(PV.NUM_PESO)
                     FROM RECEBIMENTO_VOLUME RV
                     INNER JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = RV.COD_PRODUTO_VOLUME
@@ -1813,7 +1827,8 @@ class RecebimentoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function insertModeloInRecebimento($params) {
+    public function insertModeloInRecebimento($params)
+    {
         $idRecebimento = $params['id'];
 
         /** @var \Wms\Domain\Entity\Enderecamento\ModeloRepository $modeloEnderecamentoRepo */
@@ -1860,7 +1875,8 @@ class RecebimentoRepository extends EntityRepository {
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function naoEnderecadosByStatus($status = null) {
+    public function naoEnderecadosByStatus($status = null)
+    {
 
         $whereStatus = "";
         if ($status != null) {
@@ -1910,7 +1926,7 @@ class RecebimentoRepository extends EntityRepository {
                                 FROM PALETE P
                                 LEFT JOIN PALETE_PRODUTO PP ON P.UMA = PP.UMA
                                 LEFT JOIN (SELECT COUNT(DISTINCT COD_NORMA_PALETIZACAO) QTD_NORMAS, COD_PRODUTO, DSC_GRADE FROM PRODUTO_VOLUME PV GROUP BY COD_PRODUTO, DSC_GRADE) PV ON PV.COD_PRODUTO = PP.COD_PRODUTO AND PV.DSC_GRADE = PP.DSC_GRADE
-                               WHERE P.COD_STATUS IN (".Palete::STATUS_ENDERECADO.",".Palete::STATUS_EM_ENDERECAMENTO.") OR P.IND_IMPRESSO = 'S')
+                               WHERE P.COD_STATUS IN (" . Palete::STATUS_ENDERECADO . "," . Palete::STATUS_EM_ENDERECAMENTO . ") OR P.IND_IMPRESSO = 'S')
                        GROUP BY COD_RECEBIMENTO, COD_PRODUTO, DSC_GRADE, QTD_NORMAS, DSC_LOTE) P
                   ON P.COD_RECEBIMENTO = V.COD_RECEBIMENTO
                  AND P.COD_PRODUTO = V.COD_PRODUTO
@@ -1926,7 +1942,7 @@ class RecebimentoRepository extends EntityRepository {
                                 LEFT JOIN PESSOA PES ON PES.COD_PESSOA = NF.COD_FORNECEDOR)
                        GROUP BY COD_RECEBIMENTO) F ON F.COD_RECEBIMENTO = R.COD_RECEBIMENTO
           WHERE (NVL(V.QTD,0) - NVL(P.QTD,0) >0)
-            AND R.COD_STATUS NOT IN (".Recebimento::STATUS_DESFEITO.",".Recebimento::STATUS_CANCELADO.")
+            AND R.COD_STATUS NOT IN (" . Recebimento::STATUS_DESFEITO . "," . Recebimento::STATUS_CANCELADO . ")
             $whereStatus
           ORDER BY R.DTH_INICIO_RECEB DESC
  ";
@@ -1940,7 +1956,8 @@ class RecebimentoRepository extends EntityRepository {
      * @param array $params
      * @return type
      */
-    public function searchNew(array $params = array()) {
+    public function searchNew(array $params = array())
+    {
         extract($params);
 
         $where = " ";
@@ -2025,7 +2042,7 @@ class RecebimentoRepository extends EntityRepository {
                    LEFT JOIN ORDEM_SERVICO OS ON (NF.COD_RECEBIMENTO = OS.COD_RECEBIMENTO AND OS.COD_FORMA_CONFERENCIA = 'M' AND OS.DTH_FINAL_ATIVIDADE IS NULL)
                    LEFT JOIN ORDEM_SERVICO OS2 ON (NF.COD_RECEBIMENTO = OS2.COD_RECEBIMENTO AND OS2.COD_FORMA_CONFERENCIA = 'C' AND OS2.DTH_FINAL_ATIVIDADE IS NULL)
                  WHERE 
-                1 = 1 ".$where." ORDER BY TO_NUMBER(R.COD_RECEBIMENTO) DESC" ;
+                1 = 1 " . $where . " ORDER BY TO_NUMBER(R.COD_RECEBIMENTO) DESC";
         $result = $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
         foreach ($result as $key1 => $vet) {
             foreach ($vet as $key => $value) {
@@ -2055,7 +2072,8 @@ class RecebimentoRepository extends EntityRepository {
      * @return null|string
      * @throws \Doctrine\DBAL\DBALException
      */
-    private function checkPaletesProcessados($idRecebimento, $idOrdemServico) {
+    private function checkPaletesProcessados($idRecebimento, $idOrdemServico)
+    {
 
         $statusEnderecado = Palete::STATUS_ENDERECADO;
         $statusEmEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
@@ -2095,7 +2113,8 @@ class RecebimentoRepository extends EntityRepository {
         return $return;
     }
 
-    private function checkVolumesDivergentes($idRecebimento, $idOrdemServico, $idProduto, $dscGrade) {
+    private function checkVolumesDivergentes($idRecebimento, $idOrdemServico, $idProduto, $dscGrade)
+    {
         $sql = "SELECT DISTINCT PV.COD_PRODUTO, PV.DSC_GRADE
                 FROM (SELECT PV1.COD_PRODUTO_VOLUME, 
                              RV.COD_OS, 
@@ -2114,7 +2133,8 @@ class RecebimentoRepository extends EntityRepository {
         return (!empty($result));
     }
 
-    public function getProdutosRecebidosComSenha($values) {
+    public function getProdutosRecebidosComSenha($values)
+    {
 
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select("r.id COD_RECEBIMENTO, p.id COD_PRODUTO, p.descricao DESCRICAO_PRODUTO, p.grade DSC_GRADE,
@@ -2182,11 +2202,11 @@ class RecebimentoRepository extends EntityRepository {
                         FLOOR(((TO_CHAR( NVL( ((re.dataValidade) - (re.dataConferencia)), ((rv.dataValidade) - (rv.dataConferencia)) ), '999999') / p.diasVidaUtil) * 100)) percentualVidaUtil
                         ")
             ->from('wms:Recebimento', 'r')
-            ->leftJoin('wms:Recebimento\Embalagem','re','WITH','re.recebimento = r.id')
-            ->leftJoin('wms:Recebimento\Volume','rv','WITH','rv.recebimento = r.id')
+            ->leftJoin('wms:Recebimento\Embalagem', 're', 'WITH', 're.recebimento = r.id')
+            ->leftJoin('wms:Recebimento\Volume', 'rv', 'WITH', 'rv.recebimento = r.id')
             ->leftJoin('re.embalagem', 'pe')
             ->leftJoin('rv.volume', 'pv')
-            ->innerJoin('wms:Produto','p','WITH','(p.id = pe.codProduto AND p.grade = pe.grade) OR (p.id = pv.codProduto AND p.grade = pv.grade)')
+            ->innerJoin('wms:Produto', 'p', 'WITH', '(p.id = pe.codProduto AND p.grade = pe.grade) OR (p.id = pv.codProduto AND p.grade = pv.grade)')
             ->groupBy('r.id, re.id, rv.id, p.descricao, p.id, p.grade, re.dataValidade, rv.dataValidade, p.diasVidaUtil, re.dataConferencia, rv.dataConferencia')
             ->having('(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0) > 0)');
 
@@ -2226,7 +2246,8 @@ class RecebimentoRepository extends EntityRepository {
         }
     }
 
-    public function getProdutosImprimirByRecebimento ($idRecebimento) {
+    public function getProdutosImprimirByRecebimento($idRecebimento)
+    {
         $sql = "SELECT P.COD_PRODUTO,
                        P.DSC_GRADE,
                        P.DSC_PRODUTO,
@@ -2256,9 +2277,9 @@ class RecebimentoRepository extends EntityRepository {
             if ($produto['TIPO'] == Produto::TIPO_UNITARIO) {
                 $elements = [];
                 /** @var ProdutoEntity\Embalagem[] $embs */
-                $embs = $embalagemRepo->findBy(['codProduto'=> $produto['COD_PRODUTO'], 'grade' => $produto['DSC_GRADE'], 'dataInativacao' => null, 'imprimirCB' => 'S']);
+                $embs = $embalagemRepo->findBy(['codProduto' => $produto['COD_PRODUTO'], 'grade' => $produto['DSC_GRADE'], 'dataInativacao' => null, 'imprimirCB' => 'S']);
 
-                foreach ($embs as $embalagem){
+                foreach ($embs as $embalagem) {
                     if (!empty($embalagem->getCodigoBarras()))
                         $elements[$embalagem->getId()] = [
                             'dsc' => $embalagem->getDescricao() . "(" . $embalagem->getQuantidade() . ")",
@@ -2277,7 +2298,8 @@ class RecebimentoRepository extends EntityRepository {
         return $produtos;
     }
 
-    public function atualizaRecebimentoBenner ($idRecebimento) {
+    public function atualizaRecebimentoBenner($idRecebimento)
+    {
         $sql = "SELECT DISTINCT TR.RECEBIMENTOFISICOBENNER
                   FROM NOTA_FISCAL NF
                   LEFT JOIN FORNECEDOR F ON F.COD_FORNECEDOR = NF.COD_FORNECEDOR
@@ -2294,7 +2316,7 @@ class RecebimentoRepository extends EntityRepository {
             $idsArray[] = $id['RECEBIMENTOFISICOBENNER'];
         }
 
-        if (count($idsArray) >0) {
+        if (count($idsArray) > 0) {
             $ids = implode(",", $idsArray);
 
             /** @var \Wms\Domain\Entity\Integracao\ConexaoIntegracaoRepository $conexaoRepo */
@@ -2306,10 +2328,157 @@ class RecebimentoRepository extends EntityRepository {
             $UPDATE02 = "UPDATE CP_RECEBIMENTOFISICOPAI SET STATUS = 6 WHERE STATUS = 5 AND HANDLE IN (
                         SELECT RECEBIMENTOFISICOPAI FROM CP_RECEBIMENTOFISICO WHERE HANDLE IN ($ids))";
 
-            $conexaoRepo->runQuery($UPDATE01, $conexaoEn,true);
+            $conexaoRepo->runQuery($UPDATE01, $conexaoEn, true);
 
-            $conexaoRepo->runQuery($UPDATE02, $conexaoEn,true);
+            $conexaoRepo->runQuery($UPDATE02, $conexaoEn, true);
         }
     }
 
+    public function executaIntegracaoBDFinalizacaoConferencia($idRecebimento)
+    {
+
+        $idsIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_FINALIZA_RECEBIMENTO_ERP');
+
+        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
+        $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
+        /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepository */
+        $notaFiscalRepository = $this->getEntityManager()->getRepository('wms:NotaFiscal');
+
+        $ids = explode(',', $idsIntegracao);
+        sort($ids);
+
+        foreach ($ids as $idIntegracao) {
+            $acaoEn = $acaoIntRepo->find($idIntegracao);
+            $options = array();
+
+            $idTipoAcao = $acaoEn->getTipoAcao()->getId();
+            if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_RECEBIMENTO_RETORNO_RECEBIMENTO_ERP) {
+
+                /*
+                 * Devolve o Retorno a integração a nível de recebimento do ERP
+                 * ?1 - Código do Recebimento
+                 */
+
+                /** @var \Wms\Domain\Entity\NotaFiscal $notaFiscalEntity */
+                $notaFiscalEntity = $notaFiscalRepository->findOneBy(array('recebimento' => $idRecebimento));
+                $options = array(
+                    0 => $notaFiscalEntity->getCodRecebimentoErp()
+                );
+                $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                if (!$resultAcao === true) {
+                    throw new \Exception($resultAcao);
+                }
+
+            }
+            else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_RECEBIMENTO_RETORNO_NOTA_FISCAL) {
+
+                /*
+                 * Devolve o Retorno a integração a nível de recebimento do ERP
+                 * ?1 - Numero da Nota Fiscal
+                 * ?2 - Série da Nota Fiscal
+                 * ?3 - Código do Fornecedor
+                 * ?4 - CNPJ do Fornecedor
+                 * ?5 - Data de Emissão da Nota Fiscal
+                 * ?6 - Código do Recebimento no ERP da Nota Fiscal
+                 */
+
+                $nfsEntity = $notaFiscalRepository->findBy(array('recebimento' => $idRecebimento));
+                /** @var \Wms\Domain\Entity\NotaFiscal $notaFiscalEntity */
+                foreach ($nfsEntity as $notaFiscalEntity) {
+                    $options = array(
+                        0 => $notaFiscalEntity->getNumero(),
+                        1 => $notaFiscalEntity->getSerie(),
+                        2 => $notaFiscalEntity->getFornecedor()->getIdExterno(),
+                        3 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj(),
+                        4 => $notaFiscalEntity->getDataEmissao(),
+                        5 => $notaFiscalEntity->getCodRecebimentoErp()
+                    );
+                    $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                    if (!$resultAcao === true) {
+                        throw new \Exception($resultAcao);
+                    }
+                    unset($options);
+                }
+            }
+            else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_RECEBIMENTO_RETORNO_ITEM_RECEBIMENTO) {
+
+                /*
+                 * Devolve o Retorno a integração a nível de recebimento do ERP
+                 * ?1 - Código do Recebimento do ERP
+                 * ?2 - Série da Nota Fiscal
+                 * ?3 - Código do Fornecedor
+                 * ?4 - CNPJ do Fornecedor
+                 * ?5 - Data de Emissão da Nota Fiscal
+                 * ?6 - Código do Recebimento no ERP da Nota Fiscal
+                 */
+
+                /** @var \Wms\Domain\Entity\Recebimento\ConferenciaRepository $conferenciaRepository */
+                $conferenciaRepository = $this->getEntityManager()->getRepository('wms:Recebimento\Conferencia');
+                $produtosConferidos = $conferenciaRepository->getProdutosByRecebimento($idRecebimento);
+
+                foreach ($produtosConferidos as $produtoConferido) {
+                    $dataValidade = null;
+                    $dataConferencia = null;
+                    if (isset($produtoConferido['dataValidade']) && !empty($produtoConferido['dataValidade'])) {
+                        $dataValidade = $produtoConferido['dataValidade']->format('d/m/Y');
+                    }
+                    if (isset($produtoConferido['dataConferencia']) && !empty($produtoConferido['dataConferencia'])) {
+                        $dataConferencia = $produtoConferido['dataConferencia']->format('d/m/Y');
+                    }
+                    $options = array(
+                        0 => $codRecebimentoErp,
+                        1 => $produtoConferido['codProduto'],
+                        2 => $produtoConferido['quantidade'],
+                        3 => $produtoConferido['qtdDivergencia'],
+                        4 => $dataValidade,
+                        5 => $dataConferencia,
+                        6 => $produtoConferido['codigoBarras']
+                    );
+                    $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                    if (!$resultAcao === true) {
+                        throw new \Exception($resultAcao);
+                    }
+                    unset($options);
+                }
+            }
+            else if ($idTipoAcao == \Wms\Domain\Entity\Integracao\AcaoIntegracao::INTEGRACAO_FINALIZACAO_RECEBIMENTO_RETORNO_ITEM_NOTA_FISCAL) {
+                $nfsEntity = $notaFiscalRepository->findBy(array('recebimento' => $idRecebimento));
+                /** @var \Wms\Domain\Entity\NotaFiscal $notaFiscalEntity */
+                $wsNotaFiscal = new \Wms_WebService_NotaFiscal();
+
+                foreach ($nfsEntity as $notaFiscalEntity) {
+                    $nfResult = $wsNotaFiscal->buscarNf(
+                            $notaFiscalEntity->getFornecedor()->getIdExterno(),
+                            $notaFiscalEntity->getNumero(),
+                            $notaFiscalEntity->getSerie(),
+                            $notaFiscalEntity->getDataEmissao()
+                    );
+                    foreach ($nfResult->itens as $itemNf) {
+                        $options = array(
+                            0 => $notaFiscalEntity->getCodRecebimentoErp(),
+                            1 => $itemNf->idProduto,
+                            2 => $itemNf->grade,
+                            3 => $itemNf->lote,
+                            4 => $itemNf->quantidadeConferida,
+                            5 => $itemNf->qtd,
+                            6 => $itemNf->motivoDivergencia,
+                            7 => $notaFiscalEntity->getNumero(),
+                            8 => $notaFiscalEntity->getSerie(),
+                            9 => $notaFiscalEntity->getDataEmissao(),
+                            10 => $notaFiscalEntity->getFornecedor()->getIdExterno(),
+                            11 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj()
+                        );
+                        $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
+                        if (!$resultAcao === true) {
+                            throw new \Exception($resultAcao);
+                        }
+                        unset($options);
+                    }
+                }
+            }
+        }
+
+        return $resultAcao;
+
+    }
 }

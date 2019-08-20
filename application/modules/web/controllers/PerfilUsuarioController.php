@@ -157,7 +157,7 @@ class Web_PerfilUsuarioController extends Crud
             $this->repository->save($entity, $params);
             $this->em->flush();
             $this->_helper->messenger('success', 'Registro alterado com sucesso');
-            return $this->redirect('index');
+            $this->redirect('index');
         }
 
         $form->setDefaultsFromEntity($entity); // pass values to form
@@ -171,7 +171,6 @@ class Web_PerfilUsuarioController extends Crud
      */
     public function permissoesJsonAction()
     {
-        $conn = $this->em->getConnection();
         $codPerfil = $this->getRequest()->getParam('codPerfil');
         $sql = "
             SELECT 
@@ -222,7 +221,7 @@ class Web_PerfilUsuarioController extends Crud
             WHERE MI.COD_RECURSO_ACAO > 0
             ORDER BY COD_PAI ASC, DESCRICAO";
 
-        $stmt = $conn->query($sql);
+        $stmt = $this->em->getConnection()->query($sql);
         $recursos = array();
 
         //Agrupa todos os recursos principais com suas acoes: Recurso => [acao, acao, ...]

@@ -1,6 +1,7 @@
 <?php
 
 use Wms\Module\Web\Controller\Action\Crud;
+use Wms\Module\Web\Page;
 
 class Web_CaixaEmbaladoController extends Crud
 {
@@ -26,6 +27,40 @@ class Web_CaixaEmbaladoController extends Crud
             if (!empty($entity)) throw new Exception("Por momento o sistema permite apenas <strong>UMA</strong> caixa cadastrada");
 
             parent::addAction();
+            Page::configure(array(
+                'buttons' => array(
+                    array(
+                        'label' => 'Voltar',
+                        'cssClass' => 'btnBack',
+                        'urlParams' => array(
+                            'action' => 'index',
+                            'id' => null
+                        ),
+                        'tag' => 'a'
+                    ),
+                    array(
+                        'label' => 'Adicionar novo',
+                        'cssClass' => 'btnAdd',
+                        'urlParams' => array(
+                            'action' => 'add',
+                            'id' => null
+                        ),
+                        'tag' => 'a'
+                    ),
+                    array(
+                        'label' => 'Excluir',
+                        'cssClass' => 'btnDelete',
+                        'urlParams' => array(
+                            'action' => 'delete'
+                        ),
+                        'tag' => 'a'
+                    ),
+                    array(
+                        'label' => 'Salvar',
+                        'cssClass' => 'btnSave'
+                    )
+                )
+            ));
             $this->renderScript("caixa-embalado". DIRECTORY_SEPARATOR ."form.phtml");
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());

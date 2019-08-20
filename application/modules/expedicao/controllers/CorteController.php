@@ -201,6 +201,7 @@ class Expedicao_CorteController extends Action {
                 $idEmbalagem = $corte[1];
                 $quantidadeCortada = $corte[2];
                 $idMapa = json_decode($corte[3]);
+                $idEndereco = json_decode($corte[4]);
 
                 if ($idMapa == 'null') $idMapa = null;
 
@@ -233,14 +234,22 @@ class Expedicao_CorteController extends Action {
 
                 $motivo = $motivoEn->getDscMotivo();
 
-                $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault);
+                $retornoCorte = $expedicaoRepo->cortaPedido($codPedido, $pedidoProdutoEn, $idProduto, $grade, $qtdCortar, $motivo, NULL,$idMotivo, $idMapa, $idEmbalagem, $embVendaDefault, $idEndereco);
+                    if (is_string($retornoCorte)) {
+                        throw new \Exception($retornoCorte);
+                    }
                 $this->getEntityManager()->flush();
+
             }
 
             $this->getEntityManager()->commit();
 
         } catch (\Exception $e) {
             $this->getEntityManager()->rollback();
+
+            $query = "UPDATE EXPEDICAO_ANDAMENTO SET IND_ERRO_PROCESSADO = 'S' WHERE COD_EXPEDICAO = " . $pedidoProdutoEn->getPedido()->getCarga()->getExpedicao()->getId();
+            $this->getEntityManager()->getConnection()->query($query)->execute();
+            $this->getEntityManager()->flush();
 
             $this->_helper->json(array(
                 'error' => $e->getMessage()
@@ -275,6 +284,7 @@ class Expedicao_CorteController extends Action {
             $grade = $this->_getParam('grade');
             $codProduto = $this->_getParam('codProduto');
             $idPedido = $this->_getParam('idPedido');
+            $quebraEndereco = json_decode($this->_getParam('quebraEndereco'));
 
             if (!empty($codProduto)){
                 /** @var \Wms\Domain\Entity\Produto $produtoEn */
@@ -287,7 +297,7 @@ class Expedicao_CorteController extends Action {
 
             /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepo */
             $pedidoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true, $idPedido);
+            $pedidos = $pedidoRepo->getPedidoByExpedicao($idExpedicao, $codProduto, $grade, true, $idPedido, $quebraEndereco);
 
             $values = array();
             if ($produtoEn->isUnitario()) {

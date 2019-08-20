@@ -2,9 +2,6 @@
 
 namespace Wms\Domain\Entity\Expedicao;
 
-use Wms\Domain\Entity\Usuario,
-    Wms\Domain\Entity\Expedicao;
-
 /**
  * Andamento
  *
@@ -34,7 +31,7 @@ class MotivoCorte
 
     /**
      * @Column(name="COD_EXTERNO", type="string")
-     * @var integer
+     * @var string
      */
     protected $codExterno;
 
@@ -71,7 +68,7 @@ class MotivoCorte
     }
 
     /**
-     * @return int
+     * @return string
      */
     public function getCodExterno()
     {
@@ -79,7 +76,7 @@ class MotivoCorte
     }
 
     /**
-     * @param int $codExterno
+     * @param string $codExterno
      */
     public function setCodExterno($codExterno)
     {

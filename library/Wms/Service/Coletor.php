@@ -64,7 +64,7 @@ class Coletor
 
 
         // Se o código começa com "8006", o sistema considera o código da posição 5 até 22.
-        if(substr($codigoBarras, 0, 2) == '01') {
+        if(substr($codigoBarras, 0, 2) === '01') {
             return substr($codigoBarras, 3, 13);
         }
 

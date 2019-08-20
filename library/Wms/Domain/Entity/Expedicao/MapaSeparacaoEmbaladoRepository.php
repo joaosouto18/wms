@@ -95,17 +95,17 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
     /**
      * @param $mapaSeparacaoEmbaladoEn MapaSeparacaoEmbalado
      * @param $idPessoa
-     * @param $printAll bool
+     * @param $fechaEmbaladosNoFinal bool
      * @param $checkSetLast bool
      * @param $isLast bool
      * @throws \Exception
      */
-    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa, $printAll = false, $checkSetLast = true, $isLast = false)
+    public function imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa, $fechaEmbaladosNoFinal = false, $checkSetLast = true, $isLast = false)
     {
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-        if (!$printAll) {
+        if (!$fechaEmbaladosNoFinal) {
             $etiqueta = $this->getDadosEmbalado($mapaSeparacaoEmbaladoEn->getId());
         } else {
             $etiqueta = $this->getDadosEmbalado(null, $mapaSeparacaoEmbaladoEn->getMapaSeparacao()->getExpedicao()->getId(), $mapaSeparacaoEmbaladoEn->getPessoa()->getId());
@@ -121,8 +121,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         };
 
         if ($checkSetLast) {
-            $idMapa = $mapaSeparacaoEmbaladoEn->getMapaSeparacao()->getId();
-            $qtdPendenteConferencia = $this->getProdutosConferidosByCliente($idMapa, $idPessoa);
+            $qtdPendenteConferencia = $this->getProdutosConferidosByCliente($mapaSeparacaoEmbaladoEn->getMapaSeparacao()->getId(), $idPessoa);
             if (empty($qtdPendenteConferencia)) {
                 $setLastVol();
             }
@@ -151,14 +150,14 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                 break;
             case 5:
                 //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
-                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
+                $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                 break;
             default:
                 $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', array(105,75));
                 break;
 
         }
-        $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta);
+        $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta, $mapaSeparacaoEmbaladoRepo, $modeloEtiqueta, $fechaEmbaladosNoFinal);
 
     }
 

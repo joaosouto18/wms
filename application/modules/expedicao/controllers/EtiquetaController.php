@@ -103,22 +103,33 @@ class Expedicao_EtiquetaController  extends Action
             if ($this->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S' ) {
                 $idIntegracao = $this->getSystemParameterValue('ID_INTEGRACAO_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS');
 
+
                 /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntRepo */
                 $acaoIntRepo = $this->getEntityManager()->getRepository('wms:Integracao\AcaoIntegracao');
-                $acaoEn = $acaoIntRepo->find($idIntegracao);
-                $options = array();
 
-                if(!is_null($cargas) && is_array($cargas)) {
-                    $options[] = implode(',',$cargas);
-                } else if (!is_null($cargas)) {
-                    $options = $cargas;
-                }
+                $codIntegracoes = explode(',',$idIntegracao);
 
-                $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E',"P",null,612);
-                if (!$result === true) {
-                    throw new \Wms\Util\WMS_Exception($result);
+                foreach ($codIntegracoes as $codIntegracao) {
+
+                    $acaoEn = $acaoIntRepo->find($codIntegracao);
+                    if ($ExpedicaoRepo->verificaViabilidadeIntegracaoExpedicao($expedicaoEn, $acaoEn) == true) {
+
+                        $options = array();
+
+                        if(!is_null($cargas) && is_array($cargas)) {
+                            $options[] = implode(',',$cargas);
+                        } else if (!is_null($cargas)) {
+                            $options = $cargas;
+                        }
+
+                        $result = $acaoIntRepo->processaAcao($acaoEn,$options,'E',"P",null,612);
+                        if (!$result === true) {
+                            throw new \Wms\Util\WMS_Exception($result);
+                        }
+                    }
                 }
             }
+
             $this->getEntityManager()->commit();
             $ExpedicaoRepo->changeSituacaoExpedicao($idExpedicao, 'N');
 
@@ -615,11 +626,12 @@ class Expedicao_EtiquetaController  extends Action
     public function reimprimirEmbaladosAction()
     {
         $idExpedicao = $this->_getParam('id');
-        $existeItensPendentes = true;
 
         /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoEmbaladoRepository $mapaSeparacaoEmbaladoRepo */
         $mapaSeparacaoEmbaladoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoEmbalado');
-
+        /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
+        $modeloSeparacaoEn = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao")->getModeloSeparacao($idExpedicao);
+        $fechaEmbaladosNoFinal = ($modeloSeparacaoEn->getCriarVolsFinalCheckout() == 'S');
         try {
             $etiqueta = $mapaSeparacaoEmbaladoRepo->getDadosEmbalado(null,$idExpedicao);
             if (empty($etiqueta)) {
@@ -656,7 +668,7 @@ class Expedicao_EtiquetaController  extends Action
 
             }
 
-            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta);
+            $gerarEtiqueta->imprimirExpedicaoModelo($etiqueta,$mapaSeparacaoEmbaladoRepo,$modeloEtiqueta, $fechaEmbaladosNoFinal);
 
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());

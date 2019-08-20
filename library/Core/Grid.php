@@ -252,7 +252,7 @@ class Grid
      *
      * @param  string $key
      * @param  mixed $value
-     * @return Zend_Form
+     * @return Grid
      */
     public function setAttrib($key, $value)
     {
@@ -265,7 +265,7 @@ class Grid
      * Add multiple form attributes at once
      *
      * @param  array $attribs
-     * @return Zend_Form
+     * @return Grid
      */
     public function addAttribs(array $attribs)
     {
@@ -281,7 +281,7 @@ class Grid
      * Overwrites any previously set attributes.
      *
      * @param  array $attribs
-     * @return Zend_Form
+     * @return Grid
      */
     public function setAttribs(array $attribs)
     {
@@ -334,7 +334,7 @@ class Grid
     /**
      * Clear all form attributes
      *
-     * @return Zend_Form
+     * @return Grid
      */
     public function clearAttribs()
     {

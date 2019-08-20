@@ -1,6 +1,7 @@
 <?php 
 echo $this->form;
 ?>
+<script src="/javascript/corteJs.js"></script>
 <form id="relatorio-picking-listar" method="post" class="saveForm" action="<?php echo $this->url(array('module' => 'expedicao', 'controller' =>'onda-ressuprimento', 'action' =>'gerar' ))?>">
 <div id="quantidade-grid" class="grid">
     <input type="button" style="margin-bottom: 15px; display:none" name="busca" value="Gerar Onda" id="gerar" class="btn" >

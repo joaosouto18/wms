@@ -2,9 +2,7 @@
 
 namespace Wms\Module\Web\Grid\Enderecamento;
 
-use Wms\Module\Web\Grid,
-    Wms\Domain\Entity\Recebimento as RecebimentoEntity,
-    Wms\Domain\Entity\OrdemServico as OrdemServicoEntity;
+use Wms\Module\Web\Grid;
 
 /**
  * Description of DadoLogistico

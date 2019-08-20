@@ -81,6 +81,14 @@ class FormComparativo extends Form
                 'label' => 'Tipo Divergência',
                 'multiOptions' => $tipoDivergenciaArray
             ))
+            ->addElement('checkbox', 'considerarReservaSaida', array(
+                'label' => 'Considerar Reservas de Saída',
+                'checkedValue' => 'S'
+            ))
+            ->addElement('checkbox', 'considerarReservaEntrada', array(
+                'label' => 'Considerar Reservas de Entrada',
+                'checkedValue' => 'S'
+            ))
             ->addElement('select', 'linhaSeparacao', array(
                 'label' => 'Linha de separação',
                 'multiOptions' =>  $linhaSeparacaoArray,
@@ -112,7 +120,7 @@ class FormComparativo extends Form
                 'class' => 'btn',
                 'decorators' => array('ViewHelper')
             ))
-            ->addDisplayGroup(array('modeloInventario','inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'deduzirAvaria', 'fabricante', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
+            ->addDisplayGroup(array('modeloInventario','inventario', 'divergencia', 'tipoDivergencia', 'linhaSeparacao', 'estoqueWms', 'estoqueErp', 'deduzirAvaria', 'fabricante', 'considerarReservaEntrada', 'considerarReservaSaida', 'submit', 'gerarPdf'), 'apontamento', array('legend' => 'Relatório de comparativo de estoque ERP x WMS')
         );
     }
 }

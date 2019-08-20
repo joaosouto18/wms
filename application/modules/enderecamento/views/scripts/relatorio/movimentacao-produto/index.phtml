@@ -2,8 +2,25 @@
 echo $this->form;
 
     if (isset($this->movimentacoes)) {?>
+        <style>
+            tr.tooltip span
+            {
+                display: none
+            }
+            tr.tooltip:hover td span
+            {
+                display:block;
+                position:absolute;
+                color:#111;
+                border:1px solid #DCA;
+                padding: 8px;
+                background:#fffAF0;
+                max-width: 600px;
+                font-size: 14px;
+            }
+        </style>
 
-        <div id="quantidade-grid" class="grid">
+        <div id="quantidade-grid" style="width: 1200px" class="grid">
             <table class="gTable ">
                 <caption>Movimentações</caption>
                 <tbody>
@@ -11,6 +28,7 @@ echo $this->form;
                     <td>Data Mov.</td>
                     <td>Endereço</td>
                     <td>Tipo Mov.</td>
+                    <td>Motivo</td>
                     <td>Cód.Prod.</td>
                     <?php if ($this->utilizaGrade == 'S'): ?>
                         <td>Grade</td>
@@ -18,7 +36,7 @@ echo $this->form;
                     <td>Produto</td>
                     <td>Usuário</td>
                     <td>Validade</td>
-                    <td>Observacao</td>
+                    <td>Observação</td>
                     <td>Saldo Ant.</td>
                     <td>Qtd. Mov</td>
                     <td>Saldo Final</td>
@@ -27,14 +45,15 @@ echo $this->form;
                 foreach ($this->movimentacoes as $movimentacao):
                     $fontColor = "black";
                     $this->color = !($this->color);?>
-                    <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';}?>">
+                    <tr style="color: <?php echo ($fontColor)?>" class = "<?php if (!$this->color) {echo 'gTResultSet gRowColor';} else {echo 'gTResultSet';} ?> <?php if (!empty($movimentacao['obsUsuario'])) echo 'tooltip';?>">
                         <?php
                             $dataValidade = (isset($movimentacao['validade']) && !empty($movimentacao['validade'])) ? new \DateTime($movimentacao['validade']) : null;
                             $validade = (!is_null($dataValidade)) ? $dataValidade->format('d/m/Y') : "-";
                         ?>
-                        <td><?php echo $movimentacao['data']->format('d/m/Y H:i:s') ?></td>
+                        <td><?php echo $movimentacao['data']->format('d/m/Y H:i:s') ?> <?php if (!empty($movimentacao['obsUsuario']))  echo '<span><strong>Observações do Usuário:</strong> '.$movimentacao['obsUsuario'].'</span>'; ?></td>
                         <td><?php echo $movimentacao['descricao'] ?></td>
                         <td><?php echo $movimentacao['tipo'] ?></td>
+                        <td><?php echo $movimentacao['motivo'] ?></td>
                         <td><?php echo $movimentacao['codProduto'] ?></td>
                         <?php if ($this->utilizaGrade == 'S'): ?>
                             <td><?php echo $movimentacao['grade'] ?></td>

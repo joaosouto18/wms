@@ -57,6 +57,10 @@ class EstoqueRepository extends EntityRepository
             $idInventario = $params['idInventario'];
         }
 
+        if ($enderecoEn->getAtivo() == 'N') {
+            throw new \Exception("Não é permitido fazer movimentações em um endereço inativo - Endereço:" . $enderecoEn->getDescricao());
+        }
+
         $codProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
         $endereco = $enderecoEn->getId();
@@ -248,6 +252,10 @@ class EstoqueRepository extends EntityRepository
         $historico->setProdutoEmbalagem($embalagemEn);
         $historico->setProdutoVolume($volumeEn);
         $historico->setValidade($validade);
+        $historico->setObsUsuario($params['obsUsuario']);
+
+        if (!empty($params['idMotMov']))
+            $historico->setMotivoMovimentacao($this->_em->getReference("wms:Enderecamento\MotivoMovimentacao", $params['idMotMov']));
 
         if(!empty($idInventario))
             $historico->setOperacao($idInventario);

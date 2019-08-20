@@ -785,7 +785,7 @@ class NotaFiscalRepository extends EntityRepository {
                         AND rc.qtdDivergencia = 0
                         AND (rc.divergenciaPeso = \'N\')
                         AND (rc.indDivergLote = \'N\')
-                        AND (rc.indDivergVolumes = \'N\')
+			            AND (rc.indDivergVolumes = \'N\')
                 )')
                 ->setParameters(
                 array(
