@@ -35,9 +35,8 @@ class Web_LoteVirgemController extends Action{
             $lote = $loteRepository->save(null, null, null, $idPessoa, \Wms\Domain\Entity\Produto\Lote::INTERNO);
             if ($i == 0) {
                 $loteInicio = $lote;
-            } else {
-                $loteFim = $lote;
             }
+            $loteFim = $lote;
         }
         $this->_em->flush();
         $this->_helper->json(array('success' => 'success', 'loteInicio' => $loteInicio->getDescricao(), 'loteFim' => $loteFim->getDescricao()));
