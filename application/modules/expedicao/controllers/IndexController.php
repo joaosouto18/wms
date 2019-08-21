@@ -483,11 +483,11 @@ class Expedicao_IndexController extends Action {
                                 $equipeSeparacaoRepo->save($etiquetaInicial, $menorIntervalo - 1, $usuarioEn,$numFunc, false);
                             }
                             if ($etiquetaFinal > $final) {
-                                $equipeSeparacaoRepo->save($final + 1, $etiquetaFinal, $usuarioEn,$numFunc, false);
+                                $equipeSeparacaoRepo->save($final + 1, $etiquetaFinal, $usuarioEn, $numFunc, false);
                             }
                             $this->getEntityManager()->flush();
                         } else {
-                            $equipeSeparacaoRepo->save($etiquetaInicial, $etiquetaFinal, $usuarioEn,$numFunc);
+                            $equipeSeparacaoRepo->save($etiquetaInicial, $etiquetaFinal, $usuarioEn, $numFunc);
                         }
                     } elseif ($params['tipo'] == 'Mapa') {
                         $cpf = str_replace(array('.', '-'), '', $params['cpf']);

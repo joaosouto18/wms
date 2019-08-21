@@ -89,9 +89,9 @@
 
 <div id="messenger"></div>
 
-<!--<div style="display: none" id="divBtnBack">-->
-<!--    <button class="btn btnAlerta" id="btn-back-action">Voltar</button>-->
-<!--</div>-->
+<div style="display: none" id="divBtnBack">
+    <button class="btn gradientBtn btn-spacing" id="btn-back-action">Voltar</button>
+</div>
 
 <div id="headers" style="padding-top: 5px">
     <div class="lbl-headers" id="lbl-inventario"></div>
@@ -120,7 +120,7 @@
                 <input type="text" name="cod-barras-end" id="cod-barras-end" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
             </form>
         </div>
-        <button id="btn-consultar-endereco" class="btn btn-spacing">Buscar</button>
+        <button id="btn-consultar-endereco" class="btn gradientBtn btn-spacing">Buscar</button>
     </div>
     <div class="list-area" id="list-enderecos"></div>
 </div>
@@ -133,7 +133,7 @@
                 <input type="text" name="cod-barras-prod" id="cod-barras-prod" value="" class="required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
             </form>
         </div>
-        <button id="btn-consultar-produto" class="btn btn-spacing">Buscar</button><br>
+        <button id="btn-consultar-produto" class="btn gradientBtn btn-spacing">Buscar</button><br>
         <button id="btn-finalizar" class="btn btn-spacing gradientBtnSuccess"></button>
     </div>
     <div class="list-area" id="list-produtos"></div>
@@ -155,7 +155,7 @@
                 <input type="text" name="lote" id="lote" value="" size="10" maxlength="8" placeholder="Ex.: LI001">
             </div>
         </form>
-        <button id="btn-registrar" class="btn btn-spacing">Registrar</button>
+        <button id="btn-registrar" class="btn gradientBtn btn-spacing">Registrar</button>
     </div>
 </div>
 
@@ -284,6 +284,12 @@
 
             showing = myIndexOf(views, showTo);
 
+            if (showing > 1) {
+                $("#divBtnBack").show();
+            } else {
+                $("#divBtnBack").hide();
+            }
+
             $.each(headersArr, function (k,v) {
                 if ( k > (showing - 2))
                     $("#" + v).hide();
@@ -321,7 +327,7 @@
                         dsc = "Inv. " + v.id + " - " + v.descricao;
                     }
                     inventarios[k].dsc = dsc;
-                    var newRow = $('<div class="row"><button class="btn gradientBtn selectInv" data-key="'+k+'" title="'+v.id+'">'+dsc+'</button></div>');
+                    var newRow = $('<div class="row"><button class="btn gradientBtn btn-spacing selectInv" data-key="'+k+'" title="'+v.id+'">'+dsc+'</button></div>');
                     $("#list").append(newRow);
                 });
                 $("#list").show();
