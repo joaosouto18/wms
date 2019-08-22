@@ -90,8 +90,11 @@ class EquipeSeparacaoRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function getConferentesByEtiquetas()
+    public function getUltimoApontamento()
     {
+        $sql = "SELECT NVL(NUM_FUNCIONARIO, 1) NUM_FUNC FROM EQUIPE_SEPARACAO 
+                WHERE COD_EQUIPE_SEPARACAO = (SELECT MAX(COD_EQUIPE_SEPARACAO) FROM EQUIPE_SEPARACAO)";
 
+        return $this->getEntityManager()->getConnection()->query($sql)->fetch(\PDO::FETCH_ASSOC);
     }
 }

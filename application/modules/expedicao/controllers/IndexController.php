@@ -412,16 +412,11 @@ class Expedicao_IndexController extends Action {
         /** @var \Wms\Domain\Entity\Expedicao\EquipeSeparacaoRepository $equipeSeparacaoRepo */
         $equipeSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\EquipeSeparacao');
         $this->view->qtdFuncMapa = $this->getSystemParameterValue('MAX_PRODUTIVIDADE_MAPA');
-        $numFunc = $equipeSeparacaoRepo->findBy(array(),array('id'=>'DESC'));
-        if(empty($numFunc)){
+        $numFunc = $equipeSeparacaoRepo->getUltimoApontamento();
+        if (empty($numFunc)) {
             $func = 1;
-        }else{
-            if($numFunc[0]->getNumFuncionario() == 0 || $numFunc[0]->getNumFuncionario() == null){
-                $func = 1;
-            }else{
-                $func = $numFunc[0]->getNumFuncionario();
-            }
-
+        } else {
+            $func = $numFunc['NUM_FUNC'];
         }
 
         $form = new \Wms\Module\Produtividade\Form\EquipeSeparacao();
