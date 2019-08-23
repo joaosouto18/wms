@@ -23,11 +23,8 @@ class RecebimentoBloqueado extends \Wms\Module\Web\Grid
         $condicaoMsg = function (){return false;};
         if ($recebimentoRepository->getSystemParameterValue("HABILITA_PERC_RECEB") == "S") {
             $percentUser = $user->getPercentReceb();
-            $percent = (!empty($percentUser)) ? $percentUser : 0;
-            if (empty($percent)) {
-                $percentPerfil = $user->getMaxPercentRecebPerfis();
-                $percent = (!empty($percentPerfil)) ? $percentPerfil : 0;
-            }
+            $percent = (!empty($percentUser)) ? $percentUser : $user->getMaxPercentRecebPerfis();
+
             $condicaoAcao = function ($item) use ($percent){
                 return ($item["percentualVidaUtil"] >= $percent);
             };

@@ -288,10 +288,10 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
 
     public function getMaxPercentRecebPerfis()
     {
-        $maxPercent = 0;
+        $maxPercent = 100;
         foreach ($this->perfis as $perfi) {
             $percentPerfil = $perfi->getPercentReceb();
-            $maxPercent = ($percentPerfil > $maxPercent) ? $percentPerfil : $maxPercent;
+            $maxPercent = ($percentPerfil < $maxPercent) ? $percentPerfil : $maxPercent;
         }
 
         return $maxPercent;
