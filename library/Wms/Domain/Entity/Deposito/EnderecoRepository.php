@@ -1077,7 +1077,12 @@ class EnderecoRepository extends EntityRepository {
                  * @var Produto\Embalagem $itemPinckingEmb
                  */
                 foreach ($itensPickingEmb as $key => $itemPinckingEmb) {
+                    $temEstoque = false;
                     $produtoEn = $itemPinckingEmb->getProduto();
+                    foreach ($itens as $item) {
+                        if ($item->getProduto() == $produtoEn) $temEstoque = true;
+                    }
+                    if ($temEstoque) continue;
                     $produto = array(
                         'produto' => $produtoEn->getId(),
                         'desc' => (!$usaGrade) ? $produtoEn->getDescricao() : $produtoEn->getDescricao() . " ( " .$produtoEn->getGrade() . " ) ",
