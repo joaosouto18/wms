@@ -804,6 +804,7 @@ class Integracao {
              * Reorganiza os arrays
              */
             foreach ($dados as $linha) {
+                $linha = array_change_key_case($linha,CASE_UPPER);
                 $codProduto = $linha['COD_PRODUTO'];
                 $dscGrade = (isset($linha['DSC_GRADE'])) ? $linha['DSC_GRADE'] : 'UNICA';
                 $dscProduto = $linha['DESCRICAO_PRODUTO'];
