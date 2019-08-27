@@ -1482,6 +1482,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             foreach ( $arrEtqtPulmaoDoca as $etqt) {
                 $arrayEtiquetas[] = $etqt;
             }
+            foreach ( $arrEtqtCrossDocking as $etqt) {
+                $arrayEtiquetas[] = $etqt;
+            }
 
             $arrayGrupos = array();
             foreach ($arrayEtiquetas as $etiqueta) {
@@ -1566,23 +1569,22 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
                 $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
 
-                $arrElements = $mapaSeparacaoProdutoRepo->getMaximosByConsolidado($idExpedicao);
-                $minVols = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements);
+                $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
+                $minVolsExp = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements);
 
-                $counter = 0;
-                foreach ($minVols as $idCliente => $minVol) {
-                    $counter += $minVol;
+                $counterExp = 0;
+                foreach ($minVolsExp as $idCliente => $minVol) {
+                    $counterExp += $minVol;
                 }
 
                 $countEtiquetas = count($this->_em->getRepository("wms:Expedicao\VEtiquetaSeparacao")->findBy(['codExpedicao' => $idExpedicao]));
 
-                $totalEtiquetas = $counter + $countEtiquetas;
+                $totalEtiquetas = $counterExp + $countEtiquetas;
 
                 $expedicaoEntity->setCountVolumes($totalEtiquetas);
 
                 $this->_em->persist($expedicaoEntity);
                 $this->_em->flush($expedicaoEntity);
-
             }
 
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');

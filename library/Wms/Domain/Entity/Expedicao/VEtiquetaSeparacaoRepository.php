@@ -51,4 +51,16 @@ class VEtiquetaSeparacaoRepository extends EntityRepository
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }
+
+    public function getCountEtiquetasByCliente($idExpedicao)
+    {
+        $sql = "SELECT CODCLIENTEEXTERNO, COUNT(CODBARRAS) NUM FROM V_ETIQUETA_SEPARACAO WHERE EXPEDICAO = $idExpedicao GROUP BY CODCLIENTEEXTERNO";
+        $result = [];
+
+        foreach ($this->_em->getConnection()->query($sql)->fetchAll() as $item) {
+            $result[$item['CODCLIENTEEXTERNO']] = $item['NUM'];
+        }
+
+        return $result;
+    }
 }

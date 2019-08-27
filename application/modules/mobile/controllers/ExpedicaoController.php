@@ -395,7 +395,7 @@ class Mobile_ExpedicaoController extends Action {
 
                 /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
                 $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-                $arrElements = $mapaSeparacaoProdutoRepo->getMaximosByConsolidado($idExpedicao);
+                $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
                 $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements, $idPessoa);
                 $volumes = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa, "pessoa" => $idPessoa]));
 

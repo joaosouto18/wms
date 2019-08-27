@@ -6,6 +6,8 @@ use
     Core\Pdf,
     Wms\Util\CodigoBarras,
     Wms\Domain\Entity\Expedicao;
+use Wms\Domain\Entity\Expedicao\CaixaEmbalado;
+use Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository;
 use Wms\Domain\Entity\Expedicao\PedidoEndereco;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao;
 
@@ -138,10 +140,8 @@ class EtiquetaSeparacao extends Pdf
         $modeloSeparacaoRepo = $em->getRepository("wms:Expedicao\ModeloSeparacao");
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoEnderecoRepository $pedidoRepo */
-        $pedEndeRepo = $em->getRepository('wms:Expedicao\PedidoEndereco');
 
-        $etiquetas      = $EtiquetaRepo->getEtiquetasByExpedicao($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $centralEntregaPedido, null, $idEtiquetaMae);
+        $etiquetas = $EtiquetaRepo->getEtiquetasByExpedicao($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $centralEntregaPedido, null, $idEtiquetaMae);
 
         \Zend_Layout::getMvcInstance()->disableLayout(true);
         \Zend_Controller_Front::getInstance()->setParam('noViewRenderer', true);
@@ -170,24 +170,18 @@ class EtiquetaSeparacao extends Pdf
         $agroupEtiquetas = ($modeloSeparacaoEn->getAgrupContEtiquetas() == "S");
 
         $this->posVolume = count($etiquetas) + 1;
-
+        $preCountVolCliente = [];
         if ($agroupEtiquetas) {
             /** @var Expedicao $expedicaoEn */
             $expedicaoEn = $em->find("wms:Expedicao", $idExpedicao);
             $numEtiquetas = $expedicaoEn->getCountVolumes();
 
-            $countEntregas = [];
-            foreach ($etiquetas as $etiqueta) {
-                /** @var PedidoEndereco $endEntrega */
-                $endEntrega = $pedEndeRepo->find($etiqueta['pedido']);
-                $strEntrega = $endEntrega->convertToString();
-                if (isset($countEntregas[$strEntrega])) {
-                    $countEntregas[$strEntrega]['count']++;
-                    $countEntregas[$strEntrega]['pedidos'][$etiqueta['pedido']]++;
-                } else {
-                    $countEntregas[$strEntrega]['count'] = 1;
-                }
-            }
+            /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
+            $mapaSeparacaoProdutoRepo = $em->getRepository('wms:Expedicao\MapaSeparacaoProduto');
+            $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
+            /** @var CaixaEmbalado $caixaEn */
+            $caixaEn = $em->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
+            $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements);
         } else {
             $numEtiquetas = count($etiquetas);
         }

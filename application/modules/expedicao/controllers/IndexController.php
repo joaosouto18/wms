@@ -933,7 +933,7 @@ class Expedicao_IndexController extends Action {
 
                 /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
                 $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
-                $arrElements = $mapaSeparacaoProdutoRepo->getMaximosByConsolidado($idExpedicao);
+                $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
 
                 foreach ($clientes as $key => $cliente) {
                     $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements, $cliente['COD_PESSOA']);
@@ -1103,7 +1103,7 @@ class Expedicao_IndexController extends Action {
                 /** @var CaixaEmbalado $caixaEn */
                 $caixaEn = $this->getEntityManager()->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
 
-                $arrElements = $mapaSepProdRepo->getMaximosByConsolidado($idExpedicao);
+                $arrElements = $mapaSepProdRepo->getMaximosConsolidadoByCliente($idExpedicao);
 
                 $this->view->MaxVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements, $codPessoa);
                 $this->view->indexVol = $volsCriados;
