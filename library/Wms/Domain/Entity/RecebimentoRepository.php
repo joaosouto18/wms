@@ -2199,7 +2199,7 @@ class RecebimentoRepository extends EntityRepository
                         re.id codRecebEmbalagem, rv.id codRecebVolume, p.descricao, p.id codProduto, p.grade, 
                         TO_CHAR(NVL(re.dataValidade, rv.dataValidade),'DD/MM/YYYY') dataValidade, p.diasVidaUtil,
                         TO_CHAR(NVL(((re.dataValidade) - (re.dataConferencia)), ((rv.dataValidade) - (rv.dataConferencia))), '999999') diasValidos,
-                        FLOOR(((TO_CHAR( NVL( ((re.dataValidade) - (re.dataConferencia)), ((rv.dataValidade) - (rv.dataConferencia)) ), '999999') / p.diasVidaUtil) * 100)) percentualVidaUtil
+                        FLOOR(((TO_CHAR( NVL( ((re.dataValidade) - (re.dataConferencia)), ((rv.dataValidade) - (rv.dataConferencia)) ), '999999') / p.diasVidaUtilMax) * 100)) percentualVidaUtil
                         ")
             ->from('wms:Recebimento', 'r')
             ->leftJoin('wms:Recebimento\Embalagem', 're', 'WITH', 're.recebimento = r.id')
@@ -2207,7 +2207,7 @@ class RecebimentoRepository extends EntityRepository
             ->leftJoin('re.embalagem', 'pe')
             ->leftJoin('rv.volume', 'pv')
             ->innerJoin('wms:Produto', 'p', 'WITH', '(p.id = pe.codProduto AND p.grade = pe.grade) OR (p.id = pv.codProduto AND p.grade = pv.grade)')
-            ->groupBy('r.id, re.id, rv.id, p.descricao, p.id, p.grade, re.dataValidade, rv.dataValidade, p.diasVidaUtil, re.dataConferencia, rv.dataConferencia')
+            ->groupBy('r.id, re.id, rv.id, p.descricao, p.id, p.grade, re.dataValidade, rv.dataValidade, p.diasVidaUtil, p.diasVidaUtilMax, re.dataConferencia, rv.dataConferencia')
             ->having('(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0) > 0)');
 
         if ($idRecebimento)

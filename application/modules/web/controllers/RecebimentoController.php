@@ -1580,7 +1580,8 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
     public function visualizarRecebimentosBloqueadosAction()
     {
         $grid = new RecebimentoGrid\RecebimentoBloqueado();
-        $user = \Zend_Auth::getInstance()->getIdentity();
+        /** @var \Wms\Domain\Entity\Usuario $user */
+        $user = $this->em->find("wms:Usuario", \Zend_Auth::getInstance()->getIdentity()->getId());
         $this->view->grid = $grid->init($user)->render();
     }
 
