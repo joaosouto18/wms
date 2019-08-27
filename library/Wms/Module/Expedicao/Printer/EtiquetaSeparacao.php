@@ -6,6 +6,7 @@ use
     Core\Pdf,
     Wms\Util\CodigoBarras,
     Wms\Domain\Entity\Expedicao;
+use Wms\Domain\Entity\Expedicao\PedidoEndereco;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao;
 
 class EtiquetaSeparacao extends Pdf
@@ -136,9 +137,9 @@ class EtiquetaSeparacao extends Pdf
         /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacaoRepository $modeloSeparacaoRepo */
         $modeloSeparacaoRepo = $em->getRepository("wms:Expedicao\ModeloSeparacao");
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
-        $EtiquetaRepo   = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
-        /** @var \Wms\Domain\Entity\Sistema\ParametroRepository $parametroRepo */
-        $parametroRepo = $em->getRepository('wms:Sistema\Parametro');
+        $EtiquetaRepo = $em->getRepository('wms:Expedicao\EtiquetaSeparacao');
+        /** @var \Wms\Domain\Entity\Expedicao\PedidoEnderecoRepository $pedidoRepo */
+        $pedEndeRepo = $em->getRepository('wms:Expedicao\PedidoEndereco');
 
         $etiquetas      = $EtiquetaRepo->getEtiquetasByExpedicao($idExpedicao, \Wms\Domain\Entity\Expedicao\EtiquetaSeparacao::STATUS_PENDENTE_IMPRESSAO, $centralEntregaPedido, null, $idEtiquetaMae);
 
@@ -174,6 +175,19 @@ class EtiquetaSeparacao extends Pdf
             /** @var Expedicao $expedicaoEn */
             $expedicaoEn = $em->find("wms:Expedicao", $idExpedicao);
             $numEtiquetas = $expedicaoEn->getCountVolumes();
+
+            $countEntregas = [];
+            foreach ($etiquetas as $etiqueta) {
+                /** @var PedidoEndereco $endEntrega */
+                $endEntrega = $pedEndeRepo->find($etiqueta['pedido']);
+                $strEntrega = $endEntrega->convertToString();
+                if (isset($countEntregas[$strEntrega])) {
+                    $countEntregas[$strEntrega]['count']++;
+                    $countEntregas[$strEntrega]['pedidos'][$etiqueta['pedido']]++;
+                } else {
+                    $countEntregas[$strEntrega]['count'] = 1;
+                }
+            }
         } else {
             $numEtiquetas = count($etiquetas);
         }

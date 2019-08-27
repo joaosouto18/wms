@@ -1484,7 +1484,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             }
 
             $arrayGrupos = array();
-            foreach ($arrayEtiquetas as $i => $etiqueta) {
+            foreach ($arrayEtiquetas as $etiqueta) {
                 $grupo = $etiqueta['grupo'];
                 $etiquetaEn = $this->salvaNovaEtiqueta(
                     $etiqueta['statusEntity'],
