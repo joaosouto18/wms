@@ -14,7 +14,7 @@ use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao;
 class EtiquetaSeparacao extends Pdf
 {
     private $total;
-    private $currentEtq;
+    private $volEntrega;
     private $posVolume;
     private $strReimpressao;
     private $modelo;
@@ -51,7 +51,7 @@ class EtiquetaSeparacao extends Pdf
                     //Go to 1.5 cm from bottom
                     $this->SetY($this->footerPosition);
                     $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
-                    $this->Cell(20, 3, 'Etiqueta ' . $this->currentEtq . '/' . $this->total, 0, 1, "L");
+                    $this->Cell(20, 3, 'Etiqueta ' . (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total, 0, 1, "L");
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
                     break;
                 case 13:
@@ -61,7 +61,10 @@ class EtiquetaSeparacao extends Pdf
                     $this->SetY($this->footerPosition);
                     $this->Cell(20, 3, utf8_decode($this->strReimpressao), 0, 1, "L");
                     $this->Cell(20, 3, 'Etiqueta ' .  $this->posVolume  . '/' . $this->total, 0, 1, "L");
+                    $this->Cell(20, 3, 'Volume de Entrega', 0, 1, "L");
+                    $this->Cell(20, 3, $this->volEntrega['posEntrega']  . ' de ' . $this->volEntrega['totalEntrega'], 0, 1, "C");
                     $this->Cell(20, 3, utf8_decode(date('d/m/Y')." às ".date('H:i')), 0, 1, "L");
+                    $this->posVolume--;
                     break;
 
             }
@@ -169,8 +172,8 @@ class EtiquetaSeparacao extends Pdf
 
         $agroupEtiquetas = ($modeloSeparacaoEn->getAgrupContEtiquetas() == "S");
 
-        $this->posVolume = count($etiquetas) + 1;
-        $preCountVolCliente = [];
+        $this->posVolume = count($etiquetas);
+        $arrVolsEntrega = [];
         if ($agroupEtiquetas) {
             /** @var Expedicao $expedicaoEn */
             $expedicaoEn = $em->find("wms:Expedicao", $idExpedicao);
@@ -182,6 +185,24 @@ class EtiquetaSeparacao extends Pdf
             /** @var CaixaEmbalado $caixaEn */
             $caixaEn = $em->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
             $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements);
+            $countEtiquetasCliente = $em->getRepository('wms:Expedicao\VEtiquetaSeparacao')->getCountEtiquetasByCliente($idExpedicao);
+
+
+            while(!(empty($preCountVolCliente) && empty($countEtiquetasCliente))) {
+                if (!empty($countEtiquetasCliente)) {
+                    reset($countEtiquetasCliente);
+                    $idCliente = key($countEtiquetasCliente);
+                } else {
+                    reset($preCountVolCliente);
+                    $idCliente = key($preCountVolCliente);
+                }
+                $qtdVolEmb = (!empty($preCountVolCliente[$idCliente])) ? $preCountVolCliente[$idCliente] : 0;
+                $qtdEtiq = (!empty($countEtiquetasCliente[$idCliente])) ? $countEtiquetasCliente[$idCliente] : 0;
+                $arrVolsEntrega[$idCliente]['total'] = $qtdVolEmb + $qtdEtiq;
+                $arrVolsEntrega[$idCliente]['pos'] = $qtdEtiq;
+                unset($countEtiquetasCliente[$idCliente]);
+                unset($preCountVolCliente[$idCliente]);
+            }
         } else {
             $numEtiquetas = count($etiquetas);
         }
@@ -209,13 +230,17 @@ class EtiquetaSeparacao extends Pdf
             $etiqueta['dscBox'] = $dscBox;
             $etiqueta['contadorProdutos'] = $contadorProduto;
             $etiqueta['contadorCargas'] = $contadorCarga;
-            $this->layoutEtiqueta($etiqueta, $numEtiquetas,false, $modelo,false, $this->posVolume -1);
+            $this->layoutEtiqueta($etiqueta, $numEtiquetas,false, $modelo,false);
+
 
             if ($agroupEtiquetas && empty($etiqueta['posVolume'])) {
-                $this->posVolume--;
-                $EtiquetaRepo->savePosVolumeImpresso($etiqueta['id'], $this->posVolume);
+                $this->volEntrega = [
+                    'posEntrega' => $arrVolsEntrega[$etiqueta['codCliente']]['pos'],
+                    'totalEntrega' => $arrVolsEntrega[$etiqueta['codCliente']]['total']
+                ];
+                $EtiquetaRepo->savePosVolumeImpresso($etiqueta['id'], $this->posVolume, $this->volEntrega);
+                $arrVolsEntrega[$etiqueta['codCliente']]['pos']--;
             }
-
         }
         $this->Output('Etiquetas-expedicao-'.$idExpedicao.'-'.$centralEntregaPedido.'.pdf','D');
 
@@ -759,7 +784,7 @@ class EtiquetaSeparacao extends Pdf
         //$this->Cell(20, 3,  $etiqueta['sequencia'], 0, 1, "L");
     }
     
-    protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo, $reentrega = false, $posEtiqueta = null)
+    protected function layoutEtiqueta($etiqueta,$countEtiquetas,$reimpressao = false, $modelo, $reentrega = false)
     {
         switch ($modelo) {
             case 13:
@@ -769,7 +794,7 @@ class EtiquetaSeparacao extends Pdf
                 $this->layoutModelo11($etiqueta,$countEtiquetas,$reimpressao,$modelo,$reentrega);
                 break;
             case 12:
-                $this->layoutModelo12($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega, $posEtiqueta);
+                $this->layoutModelo12($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
                 break;
             case 10:
                 $this->layoutModelo10($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega);
@@ -1154,7 +1179,7 @@ class EtiquetaSeparacao extends Pdf
         }
     }
 
-    protected function layoutModelo12($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false, $posEtiqueta)
+    protected function layoutModelo12($etiqueta,$countEtiquetas,$reimpressao, $modelo, $reentrega = false)
     {
         $this->SetMargins(3, 1.5, 0);
 
@@ -1162,7 +1187,6 @@ class EtiquetaSeparacao extends Pdf
         if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
 
         $this->AddPage();
-        $this->currentEtq = $posEtiqueta;
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;
@@ -1176,7 +1200,7 @@ class EtiquetaSeparacao extends Pdf
         $impressao = "EXP: $etiqueta[codExpedicao]";
         $this->MultiCell(40, 5, $impressao, 1, 'L');
         $this->SetY($y1);
-        $impressao = $posEtiqueta . '/' . $this->total;
+        $impressao = (($this->PageNo() - 1 - $this->total)*-1) . '/' . $this->total;
         $this->SetX(70);
         $this->MultiCell(38, 5, $impressao, 1, 'L');
         $this->SetX(3);

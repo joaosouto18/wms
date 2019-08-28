@@ -198,10 +198,21 @@ class EtiquetaSeparacao
 
     /**
      * @var integer
-     *
      * @Column(name="POS_VOLUME", type="integer", nullable=true)
      */
     protected $posVolume;
+
+    /**
+     * @var integer
+     * @Column(name="POS_ENTREGA", type="integer", nullable=true)
+     */
+    protected $posEntrega;
+
+    /**
+     * @var integer
+     * @Column(name="TOTAL_ENTREGA", type="integer", nullable=true)
+     */
+    protected $totalEntrega;
 
     public function setDataConferencia($dataConferencia)
     {
@@ -593,6 +604,38 @@ class EtiquetaSeparacao
     public function setPosVolume($posVolume)
     {
         $this->posVolume = $posVolume;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPosEntrega()
+    {
+        return $this->posEntrega;
+    }
+
+    /**
+     * @param int $posEntrega
+     */
+    public function setPosEntrega($posEntrega)
+    {
+        $this->posEntrega = $posEntrega;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTotalEntrega()
+    {
+        return $this->totalEntrega;
+    }
+
+    /**
+     * @param int $totalEntrega
+     */
+    public function setTotalEntrega($totalEntrega)
+    {
+        $this->totalEntrega = $totalEntrega;
     }
 
 }
