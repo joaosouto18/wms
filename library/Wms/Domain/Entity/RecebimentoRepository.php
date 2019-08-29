@@ -268,25 +268,23 @@ class RecebimentoRepository extends EntityRepository
 
                         foreach ($qtdConferida as $lote => $value) {
                             if ($value == 0) {
-                                if ($lote == 0) {
-                                    $lote = null;
-                                }
-                                $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null, null, null, $volume, $lote);
+                                $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null, null, null, $volume);
                             }
                             $qtdConferidasVolumes[$lote][$volume->getId()] = $value;
                         }
                     }
 
-                    foreach ($qtdConferidasVolumes as $lote => $volumes) {
-                        //Pega a menor quantidade de produtos completos
-                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
-                    }
+                    $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
 
                     break;
                 case ProdutoEntity::TIPO_UNITARIO:
 
                     $qtdConferida = $this->buscarConferenciaPorEmbalagem($item['produto'], $item['grade'], $idOrdemServico);
                     foreach ($qtdConferida as $lote => $value) {
+                        //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
+                        if ($value == 0) {
+                            $this->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, null, $value);
+                        }
                         $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
                     }
 
@@ -916,7 +914,7 @@ class RecebimentoRepository extends EntityRepository
      * @param integer $idProdutoEmbalagem Codigo do Produto Embalagem
      * @param integer $qtdConferida Quantidade conferida do produto
      */
-    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = NULL, $params, $numPeso = null, $qtdBloqueada = null, $produtoEmbalagemEntity = null, $lote = null)
+    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = null, $params = [], $numPeso = null, $qtdBloqueada = null, $produtoEmbalagemEntity = null, $lote = null)
     {
         $em = $this->getEntityManager();
 
