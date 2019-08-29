@@ -703,13 +703,18 @@ class Wms_WebService_Produto extends Wms_WebService {
 
             $wsClasse = new Wms_WebService_ProdutoClasse();
             foreach($classes as $classeArr) {
-                $wsClasse->salvar(trim($classeArr[0]), trim($classeArr[1]) ,$classeArr[2] );
+                $idClasse = trim($classeArr[array_keys($classeArr)[0]]);
+                $nomeClasse = trim($classeArr[array_keys($classeArr)[1]]);
+                $idCLassePay = trim($classeArr[array_keys($classeArr)[2]]);
+                $wsClasse->salvar($idClasse, $nomeClasse, $idCLassePay);
             }
 
             unset($wsClasse);
 
             $wsFabricante  = new Wms_WebService_Fabricante();
-            $wsFabricante->salvar(trim($fabricante[0]), trim($fabricante[1]));
+            $idFabricante = trim($fabricante[array_keys($fabricante)[0]]);
+            $nomeFabricante = trim($fabricante[array_keys($fabricante)[1]]);
+            $wsFabricante->salvar($idFabricante, $nomeFabricante);
             unset($wsFabricante);
 
             if( empty($grades) )
