@@ -414,10 +414,10 @@ class Mobile_ExpedicaoController extends Action {
              * @param $mapaSeparacaoEmbaladoEn Expedicao\MapaSeparacaoEmbalado
              * @param $posVolume
              */
-            $fechaEmbalado = function ($mapaSeparacaoEmbaladoEn, $posVolume) use ($mapaSeparacaoEmbaladoRepo){
+            $fechaEmbalado = function ($mapaSeparacaoEmbaladoEn, $posVolume, $posEntrega, $totalEntrega) use ($mapaSeparacaoEmbaladoRepo){
                 /** @var \Wms\Domain\Entity\OrdemServicoRepository $osRepo */
                 $osRepo = $this->getEntityManager()->getRepository('wms:OrdemServico');
-                $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume);
+                $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume, $posEntrega, $totalEntrega);
                 $os = $mapaSeparacaoEmbaladoEn->getOs();
                 $osRepo->finalizar($os->getId(), "Fechamento de Volume Embalado", $os);
             };
@@ -429,10 +429,10 @@ class Mobile_ExpedicaoController extends Action {
              * @param null $lastEmbalado
              * @return Expedicao\MapaSeparacaoEmbalado
              */
-            $criarEmbaladoFechado = function ($idMapa, $idPessoa, $posVolume = null, $lastEmbalado = null) use ($mapaSeparacaoEmbaladoRepo, $fechaEmbalado, $idExpedicao, $cpfEmbalador){
+            $criarEmbaladoFechado = function ($idMapa, $idPessoa, $posVolume = null, $lastEmbalado = null, $posEntrega = null, $totalEntrega = null) use ($mapaSeparacaoEmbaladoRepo, $fechaEmbalado, $idExpedicao, $cpfEmbalador){
                 $osEmbalamento = $mapaSeparacaoEmbaladoRepo->getOsEmbalagem($cpfEmbalador, $idExpedicao, true);
                 $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->save($idMapa, $idPessoa, $osEmbalamento, $lastEmbalado,true);
-                $fechaEmbalado($mapaSeparacaoEmbaladoEn, $posVolume);
+                $fechaEmbalado($mapaSeparacaoEmbaladoEn, $posVolume, $posEntrega, $totalEntrega);
                 return $mapaSeparacaoEmbaladoEn;
             };
 

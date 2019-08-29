@@ -9,6 +9,7 @@ use
 use Wms\Domain\Entity\Expedicao\CaixaEmbalado;
 use Wms\Domain\Entity\Expedicao\MapaSeparacaoProdutoRepository;
 use Wms\Domain\Entity\Expedicao\PedidoEndereco;
+use Wms\Domain\Entity\ExpedicaoRepository;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoqueExpedicao;
 
 class EtiquetaSeparacao extends Pdf
@@ -187,7 +188,6 @@ class EtiquetaSeparacao extends Pdf
             $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements);
             $countEtiquetasCliente = $em->getRepository('wms:Expedicao\VEtiquetaSeparacao')->getCountEtiquetasByCliente($idExpedicao);
 
-
             while(!(empty($preCountVolCliente) && empty($countEtiquetasCliente))) {
                 if (!empty($countEtiquetasCliente)) {
                     reset($countEtiquetasCliente);
@@ -244,12 +244,12 @@ class EtiquetaSeparacao extends Pdf
         }
         $this->Output('Etiquetas-expedicao-'.$idExpedicao.'-'.$centralEntregaPedido.'.pdf','D');
 
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
+        /** @var ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo      = $em->getRepository('wms:Expedicao');
-        /** @var \Wms\Domain\Entity\Expedicao $ExpedicaoEntity */
+        /** @var Expedicao $ExpedicaoEntity */
         $ExpedicaoEntity    = $ExpedicaoRepo->find($idExpedicao);
 
-        if ($ExpedicaoEntity->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_INTEGRADO) {
+        if ($ExpedicaoEntity->getStatus()->getId() == Expedicao::STATUS_INTEGRADO) {
             $statusEntity = $em->getReference('wms:Util\Sigla', Expedicao::STATUS_EM_SEPARACAO);
             $ExpedicaoEntity->setStatus($statusEntity);
             $ExpedicaoEntity->setBox($boxEntity);
@@ -260,7 +260,7 @@ class EtiquetaSeparacao extends Pdf
         foreach($etiquetas as $etiqueta) {
             try {
                 $EtiquetaRepo->efetivaImpressao($etiqueta['codBarras'], $centralEntregaPedido);
-            } catch(Exception $e) {
+            } catch(\Exception $e) {
                 echo $e->getMessage();
             }
         }

@@ -17,6 +17,7 @@ BEGIN
 ************************************************************************/
 
         EXECUTE IMMEDIATE 'ALTER TABLE ETIQUETA_SEPARACAO ADD (POS_ENTREGA NUMBER(8), TOTAL_ENTREGA NUMBER(8))';
+        EXECUTE IMMEDIATE 'ALTER TABLE MAPA_SEPARACAO_EMB_CLIENTE ADD (POS_ENTREGA NUMBER(8), TOTAL_ENTREGA NUMBER(8))';
 
 /************************************************************************
 **                 NÃO ALTERAR ABAIXO DESTA REGIÃO                     **

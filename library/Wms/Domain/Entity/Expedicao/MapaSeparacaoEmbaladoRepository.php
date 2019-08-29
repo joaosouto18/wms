@@ -43,19 +43,21 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
     /** ocorre quando o conferente bipou os produtos do mapa e lacrou aquele determinado volume embalado */
     /**
      * @param $mapaSeparacaoEmbaladoEn MapaSeparacaoEmbalado
-     * @param null $posVolume
+     * @param int|null $posVolume
+     * @param int|null $posEntrega
+     * @param int|null $totalEntrega
      * @return mixed
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume = null)
+    public function fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume = null, $posEntrega = null, $totalEntrega= null)
     {
         $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO);
         $mapaSeparacaoEmbaladoEn->setStatus($siglaEn);
 
-        if (!empty($posVolume)) {
-            $mapaSeparacaoEmbaladoEn->setPosVolume($posVolume);
-        }
+        if (!empty($posVolume)) $mapaSeparacaoEmbaladoEn->setPosVolume($posVolume);
+        if (!empty($posEntrega)) $mapaSeparacaoEmbaladoEn->setPosEntrega($posEntrega);
+        if (!empty($totalEntrega)) $mapaSeparacaoEmbaladoEn->setTotalEntrega($totalEntrega);
 
         $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEn);
         $this->getEntityManager()->flush();
