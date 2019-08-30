@@ -7,11 +7,11 @@
 DECLARE
     CHECK_RESULT VARCHAR2(100);
 BEGIN
-    SELECT FUNC_CHECK_SCRIPT('xx-count-volumes-entrega.sql', '2-agrupa-cont-etiquetas.sql') INTO CHECK_RESULT FROM DUAL;
+    SELECT FUNC_CHECK_SCRIPT('06-count-volumes-entrega.sql', '2-agrupa-cont-etiquetas.sql') INTO CHECK_RESULT FROM DUAL;
     IF (CHECK_RESULT <> 'TRUE') THEN
         DBMS_OUTPUT.PUT_LINE(CHECK_RESULT);
     ELSE
-        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.9', 'xx-count-volumes-entrega.sql');
+        INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT) VALUES (SYSDATE, '7.8', '06-count-volumes-entrega.sql');
         /************************************************************************
 **        COLOQUE O SCRIPT À SER EXECUTADO ENTRE ESTA DEMARCAÇÃO       **
 ************************************************************************/
