@@ -43,19 +43,21 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
     /** ocorre quando o conferente bipou os produtos do mapa e lacrou aquele determinado volume embalado */
     /**
      * @param $mapaSeparacaoEmbaladoEn MapaSeparacaoEmbalado
-     * @param null $posVolume
+     * @param int|null $posVolume
+     * @param int|null $posEntrega
+     * @param int|null $totalEntrega
      * @return mixed
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume = null)
+    public function fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume = null, $posEntrega = null, $totalEntrega= null)
     {
         $siglaEn = $this->getEntityManager()->getReference('wms:Util\Sigla',MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_FINALIZADO);
         $mapaSeparacaoEmbaladoEn->setStatus($siglaEn);
 
-        if (!empty($posVolume)) {
-            $mapaSeparacaoEmbaladoEn->setPosVolume($posVolume);
-        }
+        if (!empty($posVolume)) $mapaSeparacaoEmbaladoEn->setPosVolume($posVolume);
+        if (!empty($posEntrega)) $mapaSeparacaoEmbaladoEn->setPosEntrega($posEntrega);
+        if (!empty($totalEntrega)) $mapaSeparacaoEmbaladoEn->setTotalEntrega($totalEntrega);
 
         $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEn);
         $this->getEntityManager()->flush();
@@ -117,7 +119,7 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
         $setLastVol = function () use ($mapaSeparacaoEmbaladoEn){
             $mapaSeparacaoEmbaladoEn->setUltimoVolume('S');
             $this->getEntityManager()->persist($mapaSeparacaoEmbaladoEn);
-            $this->getEntityManager()->flush();
+            $this->getEntityManager()->flush($mapaSeparacaoEmbaladoEn);
         };
 
         if ($checkSetLast) {
@@ -216,22 +218,22 @@ class MapaSeparacaoEmbaladoRepository extends EntityRepository
                       P.NOM_PESSOA, MSE.NUM_SEQUENCIA,  MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE,
                       PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, 
                       SIGLA.COD_REFERENCIA_SIGLA, MIN(PED.COD_EXTERNO) AS COD_PEDIDO,
-                      MSE.POS_VOLUME, E.COUNT_VOLUMES
-                    FROM MAPA_SEPARACAO MS
-                    INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
-                    INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
-                    INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
-                    INNER JOIN PEDIDO PED ON PED.COD_CARGA = C.COD_CARGA
-                    LEFT JOIN PEDIDO_ENDERECO PE ON PE.COD_PEDIDO = PED.COD_PEDIDO
-                    LEFT JOIN PESSOA ON PESSOA.COD_PESSOA = PED.COD_PESSOA
-                    LEFT JOIN SIGLA ON SIGLA.COD_SIGLA = PE.COD_UF
-                    LEFT JOIN ITINERARIO I ON PED.COD_ITINERARIO = I.COD_ITINERARIO
-                    LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = MSC.COD_MAPA_SEPARACAO_EMBALADO
-                    INNER JOIN PESSOA P ON P.COD_PESSOA = MSE.COD_PESSOA AND P.COD_PESSOA = PED.COD_PESSOA
+                      MSE.POS_VOLUME, E.COUNT_VOLUMES, MSE.POS_ENTREGA, MSE.TOTAL_ENTREGA
+                 FROM MAPA_SEPARACAO MS
+           INNER JOIN MAPA_SEPARACAO_EMB_CLIENTE MSE ON MSE.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
+           INNER JOIN EXPEDICAO E ON MS.COD_EXPEDICAO = E.COD_EXPEDICAO
+           INNER JOIN CARGA C ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
+           INNER JOIN PEDIDO PED ON PED.COD_CARGA = C.COD_CARGA
+           INNER JOIN PESSOA P ON P.COD_PESSOA = MSE.COD_PESSOA AND P.COD_PESSOA = PED.COD_PESSOA
+            LEFT JOIN PEDIDO_ENDERECO PE ON PE.COD_PEDIDO = PED.COD_PEDIDO
+            LEFT JOIN PESSOA ON PESSOA.COD_PESSOA = PED.COD_PESSOA
+            LEFT JOIN SIGLA ON SIGLA.COD_SIGLA = PE.COD_UF
+            LEFT JOIN ITINERARIO I ON PED.COD_ITINERARIO = I.COD_ITINERARIO
+            LEFT JOIN MAPA_SEPARACAO_CONFERENCIA MSC ON MSC.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO AND MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE = MSC.COD_MAPA_SEPARACAO_EMBALADO
                 WHERE $where
-                GROUP BY E.COD_EXPEDICAO, I.DSC_ITINERARIO, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE,
-                PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, MSE.POS_VOLUME, E.COUNT_VOLUMES
-                ORDER BY TO_NUMBER(MSE.NUM_SEQUENCIA), TO_NUMBER(NVL(MSE.POS_VOLUME, 0))";
+             GROUP BY E.COD_EXPEDICAO, I.DSC_ITINERARIO, P.NOM_PESSOA, MSE.NUM_SEQUENCIA, MSE.COD_MAPA_SEPARACAO_EMB_CLIENTE, MSE.POS_ENTREGA, MSE.TOTAL_ENTREGA,
+                      PE.DSC_ENDERECO, PE.NUM_ENDERECO, PE.NOM_BAIRRO, PE.NOM_LOCALIDADE, SIGLA.COD_REFERENCIA_SIGLA, MSE.POS_VOLUME, E.COUNT_VOLUMES
+             ORDER BY TO_NUMBER(MSE.NUM_SEQUENCIA), TO_NUMBER(NVL(MSE.POS_VOLUME, 0))";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }

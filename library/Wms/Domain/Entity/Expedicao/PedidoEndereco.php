@@ -274,4 +274,11 @@ class PedidoEndereco
         $this->codPedido = $codPedido;
     }
 
+    public function convertToString()
+    {
+        $strConcat = "*#*";
+
+        return $this->uf . $strConcat . $this->localidade . $strConcat . $this->bairro . $strConcat . $this->descricao . $this->numero;
+    }
+
 }

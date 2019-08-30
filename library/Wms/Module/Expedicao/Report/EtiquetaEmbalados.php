@@ -373,7 +373,10 @@ class EtiquetaEmbalados extends eFPDF
             $this->SetFont('Arial', '', 7);
             $this->MultiCell(110, 3.9, "VOLUME: $volume[POS_VOLUME]/$volume[COUNT_VOLUMES]", 0, 'L');
 
-            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 6, 20 , 33, 9.5);
+            $this->SetFont('Arial', '', 7);
+            $this->MultiCell(110, 3.9, "VOL. ENTREGA: $volume[POS_ENTREGA] de $volume[TOTAL_ENTREGA]", 0, 'L');
+
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 35, 20 , 33, 9.5);
         }
     }
 }
