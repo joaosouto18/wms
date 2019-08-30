@@ -387,9 +387,10 @@ class Mobile_ExpedicaoController extends Action {
 
         $returnToCliente = (!empty($qtdPendenteConferencia));
         try {
-            $this->getEntityManager()->beginTransaction();
+            /** @var Expedicao\MapaSeparacaoEmbalado $mapaSeparacaoEmbaladoEn */
+            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
 
-            $checkAgrupamento = function ($mapaSeparacaoConferencias = null) use ($mapaSeparacaoEmbaladoRepo, $idMapa, $idPessoa, $idExpedicao, $qtdPendenteConferencia) {
+            $checkAgrupamento = function ($mapaSeparacaoConferencias = null) use ($mapaSeparacaoEmbaladoRepo, $idMapa, $idPessoa, $idExpedicao, $qtdPendenteConferencia, $mapaSeparacaoEmbaladoEn) {
                 /** @var CaixaEmbalado $caixaEn */
                 $caixaEn = $this->getEntityManager()->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
 
@@ -397,24 +398,37 @@ class Mobile_ExpedicaoController extends Action {
                 $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
                 $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
                 $preCountVolCliente = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements, $idPessoa);
-                $volumes = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa, "pessoa" => $idPessoa]));
+                $countVolsEmbCliente = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa, "pessoa" => $idPessoa]));
+                $countVolsEmb = count($mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa]));
 
-                if ($volumes == $preCountVolCliente && !empty($qtdPendenteConferencia)) {
+                if ($countVolsEmbCliente == $preCountVolCliente && !empty($qtdPendenteConferencia)) {
                     throw new Exception("Pelo calculo pré definido de volumes, este volume não pode ser fechado, pois ainda existem itens à serem conferidos deste cliente");
                 } elseif (empty($mapaSeparacaoConferencias) && !empty($qtdPendenteConferencia)) {
                     throw new Exception("Não é possível fechar volume sem produtos conferidos!");
+                } elseif ($countVolsEmbCliente == $preCountVolCliente && empty($qtdPendenteConferencia) && empty($mapaSeparacaoEmbaladoEn)) {
+                    throw new Exception("O último volume já foi fechado e teve sua etiqueta gerada, para reimprimir vá nas opções desta expedição na tela 'Expedição Mercadorias'");
                 }
 
-                $countEtiquetas = count($this->_em->getRepository("wms:Expedicao\VEtiquetaSeparacao")->findBy(['codExpedicao' => $idExpedicao]));
+                /** @var Expedicao\VEtiquetaSeparacaoRepository $vEtiquetaSepRepo */
+                $vEtiquetaSepRepo = $this->_em->getRepository("wms:Expedicao\VEtiquetaSeparacao");
+                $countEtiquetasCliente = $vEtiquetaSepRepo->getCountEtiquetasByCliente($idExpedicao);
 
-                return [$volumes + $countEtiquetas, ($volumes == $preCountVolCliente)];
+                $totalEtqtCliente = (!empty($countEtiquetasCliente[$idPessoa])) ? $countEtiquetasCliente[$idPessoa] : 0;
+                $posEntrega = $totalEtqtCliente + $countVolsEmbCliente;
+                $totalEntrega = $preCountVolCliente + $totalEtqtCliente;
+
+                $countEtiquetas = count($vEtiquetaSepRepo->findBy(['codExpedicao' => $idExpedicao]));
+
+                return [$countVolsEmb + $countEtiquetas, ($countVolsEmbCliente == $preCountVolCliente), $posEntrega, $totalEntrega];
             };
 
             /**
              * @param $mapaSeparacaoEmbaladoEn Expedicao\MapaSeparacaoEmbalado
              * @param $posVolume
+             * @param $posEntrega
+             * @param $totalEntrega
              */
-            $fechaEmbalado = function ($mapaSeparacaoEmbaladoEn, $posVolume, $posEntrega, $totalEntrega) use ($mapaSeparacaoEmbaladoRepo){
+            $fechaEmbalado = function ($mapaSeparacaoEmbaladoEn, $posVolume = null, $posEntrega = null, $totalEntrega = null) use ($mapaSeparacaoEmbaladoRepo){
                 /** @var \Wms\Domain\Entity\OrdemServicoRepository $osRepo */
                 $osRepo = $this->getEntityManager()->getRepository('wms:OrdemServico');
                 $mapaSeparacaoEmbaladoRepo->fecharMapaSeparacaoEmbalado($mapaSeparacaoEmbaladoEn, $posVolume, $posEntrega, $totalEntrega);
@@ -425,8 +439,10 @@ class Mobile_ExpedicaoController extends Action {
             /**
              * @param $idMapa
              * @param $idPessoa
-             * @param null $posVolume
-             * @param null $lastEmbalado
+             * @param int|null $posVolume
+             * @param Expedicao\MapaSeparacaoEmbalado|null $lastEmbalado
+             * @param int|null $posEntrega
+             * @param int|null $totalEntrega
              * @return Expedicao\MapaSeparacaoEmbalado
              */
             $criarEmbaladoFechado = function ($idMapa, $idPessoa, $posVolume = null, $lastEmbalado = null, $posEntrega = null, $totalEntrega = null) use ($mapaSeparacaoEmbaladoRepo, $fechaEmbalado, $idExpedicao, $cpfEmbalador){
@@ -437,9 +453,7 @@ class Mobile_ExpedicaoController extends Action {
             };
 
             $isLast = false;
-
-            /** @var Expedicao\MapaSeparacaoEmbalado $mapaSeparacaoEmbaladoEn */
-            $mapaSeparacaoEmbaladoEn = $mapaSeparacaoEmbaladoRepo->findOneBy(array('mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa, 'status' => Expedicao\MapaSeparacaoEmbalado::CONFERENCIA_EMBALADO_INICIADO));
+            $this->getEntityManager()->beginTransaction();
             if (!empty($mapaSeparacaoEmbaladoEn)) {
                 $mapaSeparacaoConferencias = $mapaSeparacaoConferenciaRepo->findBy(array('mapaSeparacaoEmbalado' => $mapaSeparacaoEmbaladoEn));
                 if (empty($mapaSeparacaoConferencias) && !$agrupaEtiquetas) {
@@ -451,8 +465,13 @@ class Mobile_ExpedicaoController extends Action {
                     }
                 }
 
-                list($posVolume, $isLast) = ($agrupaEtiquetas && !$fechaEmbaladosNoFinal) ? $checkAgrupamento($mapaSeparacaoConferencias) : [null, false];
-                $fechaEmbalado($mapaSeparacaoEmbaladoEn, $posVolume);
+                $posVolume =  null;
+                $posEntrega =  null;
+                $totalEntrega =  null;
+                if ($agrupaEtiquetas && !$fechaEmbaladosNoFinal) {
+                    list($posVolume, $isLast, $posEntrega, $totalEntrega) = $checkAgrupamento($mapaSeparacaoConferencias);
+                }
+                $fechaEmbalado($mapaSeparacaoEmbaladoEn, $posVolume, $posEntrega, $totalEntrega);
 
                 if (!$agrupaEtiquetas && $fechaEmbaladosNoFinal) {
                     if (empty($nVols)) throw new Exception("O número de volumes à sere criados não foi definido");
@@ -467,18 +486,18 @@ class Mobile_ExpedicaoController extends Action {
                 }
             } else {
                 if ($agrupaEtiquetas) {
-                    list($posVolume, $isLast) = $checkAgrupamento();
+                    list($posVolume, $isLast, $posEntrega, $totalEntrega) = $checkAgrupamento();
                     if (!empty($posVolume)) {
                         $posVolume += 1;
-                        $mapaSeparacaoEmbaladoEn = $criarEmbaladoFechado($idMapa, $idPessoa, $posVolume, $mapaSeparacaoEmbaladoEn);
+                        $posEntrega += 1;
+                        $embalados = $mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa], ['sequencia' => 'DESC']);
+                        $mapaSeparacaoEmbaladoEn = $criarEmbaladoFechado($idMapa, $idPessoa, $posVolume, $embalados[0], $posEntrega, $totalEntrega);
                     }
                 }
             }
             $this->getEntityManager()->commit();
 
-            $this->getEntityManager()->beginTransaction();
             $mapaSeparacaoEmbaladoRepo->imprimirVolumeEmbalado($mapaSeparacaoEmbaladoEn, $idPessoa, $fechaEmbaladosNoFinal, !($fechaEmbaladosNoFinal || $agrupaEtiquetas), $isLast);
-            $this->getEntityManager()->commit();
         } catch (Exception $e) {
             $this->getEntityManager()->rollback();
             $this->_helper->messenger('error', $e->getMessage());
