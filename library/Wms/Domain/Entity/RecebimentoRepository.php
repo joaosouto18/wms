@@ -231,8 +231,12 @@ class RecebimentoRepository extends EntityRepository
         $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
         $produtoVolumeRepo = $this->_em->getRepository('wms:Produto\Volume');
 
-        /** @var \Wms\Domain\Entity\ProdutoRepository $notaFiscalRepo */
-        $produtoRepo = $this->_em->getRepository('wms:Produto');
+        $qtdBloqueada = $this->getQuantidadeConferidaBloqueada($idRecebimento);
+        if (count($qtdBloqueada))
+            return array(
+                'message' => 'Existem itens bloqueados por validade! Não é possível finalizar',
+                'exception' => null,
+                'concluido' => false);
 
         // buscar todos os itens das nfs do recebimento
         $itens = $notaFiscalRepo->buscarItensPorRecebimento($idRecebimento);
@@ -388,13 +392,6 @@ class RecebimentoRepository extends EntityRepository
         $check = $this->checkPaletesProcessados($idRecebimento, $idOrdemServico);
         if (!empty($check))
             return array('message' => $check,
-                'exception' => null,
-                'concluido' => false);
-
-        $qtdBloqueada = $this->getQuantidadeConferidaBloqueada($idRecebimento);
-        if (count($qtdBloqueada))
-            return array(
-                'message' => 'Existem itens bloqueados por validade! Não é possível finalizar',
                 'exception' => null,
                 'concluido' => false);
 
@@ -2200,16 +2197,17 @@ class RecebimentoRepository extends EntityRepository
                         FLOOR(((TO_CHAR( NVL( ((re.dataValidade) - (re.dataConferencia)), ((rv.dataValidade) - (rv.dataConferencia)) ), '999999') / p.diasVidaUtilMax) * 100)) percentualVidaUtil
                         ")
             ->from('wms:Recebimento', 'r')
-            ->leftJoin('wms:Recebimento\Embalagem', 're', 'WITH', 're.recebimento = r.id')
-            ->leftJoin('wms:Recebimento\Volume', 'rv', 'WITH', 'rv.recebimento = r.id')
+            ->leftJoin('wms:Recebimento\Embalagem', 're', 'WITH', 're.recebimento = r.id AND re.dataValidade IS NOT NULL')
+            ->leftJoin('wms:Recebimento\Volume', 'rv', 'WITH', 'rv.recebimento = r.id AND rv.dataValidade IS NOT NULL')
             ->leftJoin('re.embalagem', 'pe')
             ->leftJoin('rv.volume', 'pv')
             ->innerJoin('wms:Produto', 'p', 'WITH', '(p.id = pe.codProduto AND p.grade = pe.grade) OR (p.id = pv.codProduto AND p.grade = pv.grade)')
+            ->where("p.validade = 'S'")
             ->groupBy('r.id, re.id, rv.id, p.descricao, p.id, p.grade, re.dataValidade, rv.dataValidade, p.diasVidaUtil, p.diasVidaUtilMax, re.dataConferencia, rv.dataConferencia')
             ->having('(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0) > 0)');
 
         if ($idRecebimento)
-            $sql->where("r.id = $idRecebimento");
+            $sql->andWhere("r.id = $idRecebimento");
 
         return $sql->getQuery()->getResult();
     }
