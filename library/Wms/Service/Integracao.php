@@ -734,7 +734,7 @@ class Integracao {
         } else if ($this->getTipoExecucao() == "R") {
             foreach ($notasFiscais as $nf) {
                 $resumo[] = array(
-                    'check' => '<input class="check" name="check[]" value="' . $nf['id'] . '" type="checkbox" checked />',
+                    'check' => '<input class="check" name="check[]" value="' . trim($nf['numNota']) .'*-*'. trim($nf['serie']) .'*-*'. trim($nf['codFornecedor']) . '" type="checkbox" checked />',
                     'Numero NF' => $nf['numNota'],
                     'Serie' => $nf['serie'],
                     'Dt. Emissão' => $nf['dtEmissao'],
