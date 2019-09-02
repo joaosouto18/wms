@@ -285,9 +285,10 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select('etq.id, p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.lote, es.fornecedor, es.tipoComercializacao, es.linhaSeparacao, ' . $origemEstoque . ' es.codExpedicao,
-                    es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, etq.codEtiquetaMae, es.posVolume,
+                    es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, etq.codEtiquetaMae, es.posVolume, es.posEntrega, es.totalEntrega,
                     IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, p.id pedido, de.descricao endereco, c.sequencia, 
-                    p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial, de.idCaracteristica
+                    p.sequencia as sequenciaPedido, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, c.placaExpedicao, p.numSequencial, de.idCaracteristica,
+                    cl.id as codCliente
                 ')
             ->addSelect("
                         (
@@ -313,6 +314,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                         ")
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Expedicao\Pedido', 'p' , 'WITH', 'p.id = es.codEntrega')
+            ->innerJoin('p.pessoa', 'cl')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq' , 'WITH', 'etq.id = es.codBarras')
             ->leftJoin('wms:Expedicao\EtiquetaMae', 'em', 'WITH', 'em.id = etq.etiquetaMae')
             ->leftJoin('wms:Produto\Embalagem','pe','WITH','pe.id = etq.produtoEmbalagem')
@@ -380,7 +382,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
     {
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
-                    es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume,
+                    es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, p.id pedido, IDENTITY(etq.produtoEmbalagem) AS codProdutoEmbalagem, etq.qtdProduto')
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->leftJoin('wms:Expedicao\EtiquetaSeparacao','etq','WITH','etq.id = es.codBarras')
@@ -406,8 +408,8 @@ class EtiquetaSeparacaoRepository extends EntityRepository
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.codStatus, s.sigla status, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
-                    es.placaExpedicao, es.placaCarga, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codEstoque, es.pontoTransbordo,
-                    emb.embalado,
+                    es.placaExpedicao, es.placaCarga, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.pontoTransbordo,
+                    emb.embalado, es.posVolume, es.posEntrega, es.totalEntrega,
                     exp.id as reentregaExpedicao,
                     r.id as codReentrega,
                     CASE WHEN emb.descricao    IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
@@ -456,7 +458,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select(' p.codExterno as codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
-                    es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume,
+                    es.grade, es.fornecedor, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao, es.posVolume, es.posEntrega, es.totalEntrega,
                     es.placaExpedicao, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.codBarrasProduto, c.sequencia, p.id pedido,
 					IDENTITY(etq.produtoEmbalagem) as codProdutoEmbalagem, etq.qtdProduto, NVL(pe.quantidade,1) as quantidade, etq.tipoSaida, p.numSequencial,
 					de.descricao endereco, de.idCaracteristica
@@ -514,7 +516,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
 
     }
 
-    public function savePosVolumeImpresso($idEtiqueta, $posVolume)
+    public function savePosVolumeImpresso($idEtiqueta, $posVolume, $volEntrega)
     {
         $sql = "UPDATE ETIQUETA_SEPARACAO SET POS_VOLUME = $posVolume WHERE COD_ETIQUETA_SEPARACAO = $idEtiqueta";
         $this->_em->getConnection()->query($sql)->execute();
@@ -1482,9 +1484,12 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             foreach ( $arrEtqtPulmaoDoca as $etqt) {
                 $arrayEtiquetas[] = $etqt;
             }
+            foreach ( $arrEtqtCrossDocking as $etqt) {
+                $arrayEtiquetas[] = $etqt;
+            }
 
             $arrayGrupos = array();
-            foreach ($arrayEtiquetas as $i => $etiqueta) {
+            foreach ($arrayEtiquetas as $etiqueta) {
                 $grupo = $etiqueta['grupo'];
                 $etiquetaEn = $this->salvaNovaEtiqueta(
                     $etiqueta['statusEntity'],
@@ -1562,27 +1567,27 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             if ($modeloSeparacaoEn->getAgrupContEtiquetas() == 'S') {
                 /** @var CaixaEmbalado $caixaEn */
                 $caixaEn = $this->getEntityManager()->getRepository('wms:Expedicao\CaixaEmbalado')->findOneBy(['isAtiva' => true, 'isDefault' => true]);
+                if (empty($caixaEn)) throw new \Exception("O parâmetro de agrupamento de etiquetas está habilitado, para isso é obrigatório o cadastro de uma caixa de embalado!");
 
                 /** @var MapaSeparacaoProdutoRepository $mapaSeparacaoProdutoRepo */
                 $mapaSeparacaoProdutoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoProduto');
 
-                $arrElements = $mapaSeparacaoProdutoRepo->getMaximosByConsolidado($idExpedicao);
-                $minVols = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements);
+                $arrElements = $mapaSeparacaoProdutoRepo->getMaximosConsolidadoByCliente($idExpedicao);
+                $minVolsExp = CaixaEmbalado::calculaExpedicao($caixaEn, $arrElements);
 
-                $counter = 0;
-                foreach ($minVols as $idCliente => $minVol) {
-                    $counter += $minVol;
+                $counterExp = 0;
+                foreach ($minVolsExp as $idCliente => $minVol) {
+                    $counterExp += $minVol;
                 }
 
                 $countEtiquetas = count($this->_em->getRepository("wms:Expedicao\VEtiquetaSeparacao")->findBy(['codExpedicao' => $idExpedicao]));
 
-                $totalEtiquetas = $counter + $countEtiquetas;
+                $totalEtiquetas = $counterExp + $countEtiquetas;
 
                 $expedicaoEntity->setCountVolumes($totalEtiquetas);
 
                 $this->_em->persist($expedicaoEntity);
                 $this->_em->flush($expedicaoEntity);
-
             }
 
             $parametroConsistencia = $this->getSystemParameterValue('CONSISTENCIA_SEGURANCA');

@@ -474,7 +474,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
         return [$temLote, $arr];
     }
 
-    public function getMaximosByConsolidado($idExpedicao)
+    public function getMaximosConsolidadoByCliente($idExpedicao)
     {
         $sql = "SELECT 
                     SUM(MSP.QTD_SEPARAR * PE.NUM_PESO) AS PESO_MAX,
@@ -485,7 +485,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                 FROM MAPA_SEPARACAO MS
                 INNER JOIN MAPA_SEPARACAO_PRODUTO MSP ON MSP.COD_MAPA_SEPARACAO = MS.COD_MAPA_SEPARACAO
                 INNER JOIN MAPA_SEPARACAO_QUEBRA MSQ ON MS.COD_MAPA_SEPARACAO = MSQ.COD_MAPA_SEPARACAO AND MSQ.IND_TIPO_QUEBRA = 'T'
-                INNER JOIN PRODUTO_EMBALAGEM PE on MSP.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
+                INNER JOIN PRODUTO_EMBALAGEM PE ON MSP.COD_PRODUTO_EMBALAGEM = PE.COD_PRODUTO_EMBALAGEM
                 INNER JOIN PEDIDO_PRODUTO PP ON PP.COD_PEDIDO_PRODUTO = MSP.COD_PEDIDO_PRODUTO
                 INNER JOIN PEDIDO P ON PP.COD_PEDIDO = P.COD_PEDIDO
                 WHERE MS.COD_EXPEDICAO = $idExpedicao

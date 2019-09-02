@@ -64,6 +64,20 @@ class MapaSeparacaoEmbalado
     protected $posVolume;
 
     /**
+     * @var integer
+     *
+     * @Column(name="POS_ENTREGA", type="integer", nullable=true)
+     */
+    protected $posEntrega;
+
+    /**
+     * @var integer
+     *
+     * @Column(name="TOTAL_ENTREGA", type="integer", nullable=true)
+     */
+    protected $totalEntrega;
+
+    /**
      * @var OrdemServico
      * @ManyToOne(targetEntity="Wms\Domain\Entity\OrdemServico")
      * @JoinColumn(name="COD_OS", referencedColumnName="COD_OS")
@@ -209,4 +223,37 @@ class MapaSeparacaoEmbalado
     {
         $this->os = $os;
     }
+
+    /**
+     * @return int
+     */
+    public function getPosEntrega()
+    {
+        return $this->posEntrega;
+    }
+
+    /**
+     * @param int $posEntrega
+     */
+    public function setPosEntrega($posEntrega)
+    {
+        $this->posEntrega = $posEntrega;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTotalEntrega()
+    {
+        return $this->totalEntrega;
+    }
+
+    /**
+     * @param int $totalEntrega
+     */
+    public function setTotalEntrega($totalEntrega)
+    {
+        $this->totalEntrega = $totalEntrega;
+    }
+
 }

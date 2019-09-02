@@ -8,10 +8,11 @@
  22/01/19   (Tarcísio)   Alteração do vinculo TIPO_PEDIDO da tabela SIGLA para a tabela TIPO_PEDIDO_EXPEDICAO
  18/05/19   (Digão)      Alterar join entre TIPO_PEDIDO e SIGLA para LEFT
  08/07/19   (Tarcísio)   Inclusão da posição do volume no agrupamento de etiquetas
+ 28/08/19   (Tarcísio)   Inclusão da posição e totalizador do volume no agrupamento de etiquetas por entrega (cliente)
 
  */
 
-CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENTREGA", "CARGA", "LINHAENTREGA", "ITINERARIO", "CODCLIENTEEXTERNO", "CLIENTE", "CODPRODUTO", "PRODUTO", "GRADE", "FORNECEDOR", "TIPOCOMERCIALIZACAO", "ENDERECO", "LINHASEPARACAO", "ESTOQUE", "PONTOTRANSBORDO", "EXPEDICAO", "PLACAEXPEDICAO", "PLACACARGA", "CODTIPOCARGA", "TIPOCARGA", "CODCARGAEXTERNO", "CODTIPOPEDIDO", "DTHCONFERENCIA", "REIMPRESSAO", "TIPOPEDIDO", "CODBARRASPRODUTO", "CODEXTERNO", "LOTE", "POSVOLUME")
+CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENTREGA", "CARGA", "LINHAENTREGA", "ITINERARIO", "CODCLIENTEEXTERNO", "CLIENTE", "CODPRODUTO", "PRODUTO", "GRADE", "FORNECEDOR", "TIPOCOMERCIALIZACAO", "ENDERECO", "LINHASEPARACAO", "ESTOQUE", "PONTOTRANSBORDO", "EXPEDICAO", "PLACAEXPEDICAO", "PLACACARGA", "CODTIPOCARGA", "TIPOCARGA", "CODCARGAEXTERNO", "CODTIPOPEDIDO", "DTHCONFERENCIA", "REIMPRESSAO", "TIPOPEDIDO", "CODBARRASPRODUTO", "CODEXTERNO", "LOTE", "POSVOLUME", "POSENTREGA", "TOTALENTREGA")
   AS
     SELECT es.cod_etiqueta_separacao AS codBarras,
            es.cod_status                  AS status,
@@ -48,7 +49,9 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
                ped.cod_externo
                END as codExterno,
            NVL(es.dsc_lote,0)             AS lote,
-           es.pos_volume                  AS posVolume
+           es.pos_volume                  AS posVolume,
+           es.pos_entrega                 AS posEntrega,
+           es.total_entrega               AS totalEntrega
     FROM etiqueta_separacao es
            INNER JOIN produto_volume v
              ON v.cod_produto_volume = es.cod_produto_volume
@@ -111,7 +114,9 @@ CREATE OR REPLACE FORCE VIEW "V_ETIQUETA_SEPARACAO" ("CODBARRAS", "STATUS", "ENT
                ped.cod_externo
                END as codExterno,
            NVL(es.dsc_lote,0)             AS lote,
-           es.pos_volume                  AS posVolume
+           es.pos_volume                  AS posVolume,
+           es.pos_entrega                 AS posEntrega,
+           es.total_entrega               AS totalEntrega
     FROM etiqueta_separacao es
            INNER JOIN produto_embalagem e
              ON e.cod_produto_embalagem = es.cod_produto_embalagem
