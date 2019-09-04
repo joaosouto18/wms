@@ -23,7 +23,12 @@
         <input type="text" name="qtd_fake" id="qtd_fake" value="<?php echo $this->qtd ?>" />
         <input type="hidden" name="qtd" id="qtd" value="<?php echo $this->qtdReal ?>" />
     </div>
-
+    <?php if ($this->controlaLote) : ?>
+    <div>
+        <label>Lote:</label>
+        <input type="text" name="lote" id="lote" />
+    </div>
+    <?php endif; ?>
     <div>
         <label>Novo Endereço:</label>
         <input class="focus" type="text" name="novoEndereco" id="novoEndereco" onkeydown="nextInput(event)" />
@@ -48,6 +53,30 @@
         var qtdEmbalagem = <?php echo $this->qtdEmbalagem ?>;
         $('#qtd').val(qtdEmbalagem * $(this).val());
     });
+
+    $("input:text").keydown(function (e) {
+        if (e.which == 13 || e.keyCode == 13) {
+            var inptQtd = $("#qtd_fake");
+            var inptLote = $("#lote");
+            var inptNovoEndereco = $("#novoEndereco");
+            var inptNivel = $("#nivel");
+
+            if ($(this) === inptQtd)
+                if (inptLote)
+                    inptLote.select();
+                else
+                    inptNovoEndereco.select();
+            else if ($(this) === inptNovoEndereco)
+                inptNivel.select();
+
+            if (e.preventDefault) {
+                e.preventDefault();
+            } else {
+                e.returnValue = false;
+            }
+        }
+        return true;
+    })
 
 </script>
 
