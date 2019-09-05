@@ -2074,25 +2074,28 @@ class RecebimentoRepository extends EntityRepository
         $statusEmEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
 
         $sql = "SELECT DISTINCT PLT.COD_PRODUTO, 
-                       PLT.DSC_GRADE, 
+                       PLT.DSC_GRADE,  
+                       PLT.DSC_LOTE,
                        RC.QTD AS QTD_RECEBIDA, 
                        PLT.QTD_TOTAL AS QTD_PALETIZADA
                   FROM (SELECT DISTINCT (SUM(PP.QTD) / COUNT(DISTINCT NVL(PP.COD_PRODUTO_VOLUME, 1))) QTD_TOTAL, 
                                PP.COD_PRODUTO, 
                                PP.DSC_GRADE, 
-                               P.COD_RECEBIMENTO
+                               P.COD_RECEBIMENTO, 
+                               NVL(PP.DSC_LOTE,0) DSC_LOTE
                           FROM PALETE_PRODUTO PP
                          INNER JOIN PALETE P ON P.UMA = PP.UMA
                          WHERE P.COD_RECEBIMENTO = $idRecebimento 
                            AND (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN ($statusEmEnderecamento, $statusEnderecado))
-                         GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, P.COD_RECEBIMENTO) PLT
+                         GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, P.COD_RECEBIMENTO, NVL(PP.DSC_LOTE,0)) PLT
                  INNER JOIN (SELECT COD_PRODUTO, 
                                     DSC_GRADE, 
-                                    QTD
+                                    QTD, 
+                                    NVL(DSC_LOTE,0) DSC_LOTE
                                FROM V_QTD_RECEBIMENTO 
                               WHERE COD_OS = $idOrdemServico
                                 AND COD_RECEBIMENTO = $idRecebimento)RC 
-                    ON RC.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE
+                    ON RC.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE AND RC.DSC_LOTE = PLT.DSC_LOTE
                  WHERE PLT.QTD_TOTAL > RC.QTD ";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -2101,7 +2104,8 @@ class RecebimentoRepository extends EntityRepository
         if (!empty($result)) {
             $str = "";
             foreach ($result as $item) {
-                $str[] = "Produto: $item[COD_PRODUTO] Grade: $item[DSC_GRADE]";
+                $strLote = (!empty($item['DSC_LOTE'])) ? " Lote: $item[DSC_LOTE]" : "";
+                $str[] = "Produto: $item[COD_PRODUTO] Grade: $item[DSC_GRADE]$strLote";
             }
             $return = "Existe itens em U.M.A.'s impressas ou já endereçadas com quantidade superior ao recebido, desfaça estas U.M.A.'s antes de finalizar o recebimento: " . implode(", ", $str);
         }
