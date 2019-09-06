@@ -1360,7 +1360,8 @@ class EstoqueRepository extends EntityRepository
                   LEFT JOIN CARACTERISTICA_ENDERECO C ON C.COD_CARACTERISTICA_ENDERECO = DE.COD_CARACTERISTICA_ENDERECO
                   LEFT JOIN PRODUTO P ON P.COD_PRODUTO = E.COD_PRODUTO AND P.DSC_GRADE = E.DSC_GRADE";
 
-        $SQLWhere = " WHERE 1 = 1 ";
+        $SQLWhere = " WHERE DE.COD_CARACTERSITICA_ENDERECO != " . Endereco::CROSS_DOCKING;
+
         if (isset($parametros['tipoEndereco']) && !empty($parametros['tipoEndereco'])) {
             $SQLWhere .= " AND DE.COD_CARACTERISTICA_ENDERECO = " . $parametros['tipoEndereco'];
         }
