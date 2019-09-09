@@ -441,7 +441,7 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                   WHERE MS.COD_EXPEDICAO = $idExpedicao
                     AND MS.COD_MAPA_SEPARACAO NOT IN (SELECT COD_MAPA_SEPARACAO FROM MAPA_SEPARACAO_QUEBRA WHERE IND_TIPO_QUEBRA = 'RE')
                   GROUP BY MSP.COD_PRODUTO, MSP.DSC_GRADE, NVL(MSP.DSC_LOTE, '$naoControlaLote')) MSP ON MSP.COD_PRODUTO = PP.COD_PRODUTO AND MSP.DSC_GRADE = PP.DSC_GRADE AND MSP.DSC_LOTE = PP.DSC_LOTE
-                WHERE QTD_PEDIDO <> QTD_MAPA";
+                WHERE NVL(QTD_PEDIDO,0) <> NVL(QTD_MAPA,0)";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
