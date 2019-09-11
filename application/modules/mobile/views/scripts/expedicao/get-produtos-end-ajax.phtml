@@ -68,15 +68,12 @@ if(empty($this->error)) {
     <input type="hidden" id="enviar-form" value="0">
     <div class="row">
         <div id="div-busca">
-            <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post"
-                  id="form-produto">
-                <input type="hidden" id="controlaLote" name="controlaLote" value="0">
+            <form enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post" id="form-produto">
                 <input type="hidden" name="codMapaSeparacao" id="codMapaSeparacao" value="<?php echo $this->mapa ?>">
                 <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
                 <input type="hidden" name="codOs" id="codOs" value="<?php echo $this->codOs ?>">
                 <input type="hidden" name="endereco" id="endereco" value="<?php echo $this->endereco ?>">
-                <input type="hidden" name="codDepositoEndereco" id="codDepositoEndereco"
-                       value="<?php echo $this->codDepositoEndereco ?>">
+                <input type="hidden" name="codDepositoEndereco" id="codDepositoEndereco" value="<?php echo $this->codDepositoEndereco ?>">
                 <dt id="identification-label">&nbsp;</dt>
                 <dd id="identification-element">
                     <fieldset id="fieldset-identification">
@@ -87,7 +84,7 @@ if(empty($this->error)) {
                                 <input type="text" name="codigoBarrasProd" id="codigoBarrasProd" value="" class=" required focus" size="40" maxlength="100" style="width: 99%">
                                 <div class="div-lote" style="display:none">
                                     <label>Lote:</label>
-                                    <input style="width: 99%" class="form-control" maxlength="100" size="40" type="text" name="lote" id="lote" value="" />
+                                    <input style="width: 99%" class="required " maxlength="100" size="40" type="text" name="lote" id="lote" value="" />
                                 </div>
                                 <label for="codigoBarras" class="field required">*Quantidade Separada</label>
                                 <input type="text" name="qtdSeparar" id="qtdSeparar" value="" class="required" size="40" maxlength="100" style="width:70px; text-align: center;">
@@ -169,7 +166,7 @@ if(empty($this->error)) {
                                 <input type="hidden" name="codMapa" id="codMapa" value="<?php echo $this->mapa ?>">
                                 <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>">
                                 <input type="hidden" name="codOs" id="codOs" value="<?php echo $this->codOs ?>">
-                                <input class="btn gradientBtn text-center" style="text-align: center" type="submit" name="buscar" id="buscar" value="Buscar" class="btn gradientBtn">
+                                <input class="btn gradientBtn text-center" style="text-align: center" type="submit" name="buscar" id="buscar" value="Buscar">
                             </div>
                         </dl>
                     </fieldset>
@@ -202,6 +199,7 @@ if(empty($this->error)) {
 }
 ?>
 <script>
+    var controlaLote = false;
     $( "#fim-end" ).click(function( event ) {
         $.ajax({
             url: '/mobile/expedicao/finaliza-mapa-ajax',
@@ -223,36 +221,47 @@ if(empty($this->error)) {
             async: false,
             data: $('form').serialize(),
             success: function (data) {
-                if(data.dados.indControlaLote == 'S'){
-                    $('.div-lote').show();
-                    $('#controlaLote').val(1);
+                if (data.resposta === "success") {
+                    if (data.dados.indControlaLote == 'S') {
+                        $('.div-lote').show();
+                        controlaLote = true;
+                    } else {
+                        $('.div-lote').hide();
+                        controlaLote = false;
+                    }
+                    var qtdSeparar = $('#' + data.dados.idProduto).val();
+                    var qtdEmb = data.dados.quantidadeEmbalagem;
+                    var resto = Math.floor(qtdSeparar / qtdEmb);
+                    $('#qtdSeparar').val((qtdEmb * resto) / qtdEmb);
+                    $('#dsc-embalagem').text(data.dados.descricaoEmbalagem + ' (' + qtdEmb + ')');
+
+                    if (controlaLote) {
+                        $('#lote').val('').focus();
+                        $('#qtdSeparar').val('');
+                    } else {
+                        $('#qtdSeparar').focus();
+                    }
+
+                    $('#enviar-form').val(0);
                 } else {
-                    $('.div-lote').hide();
-                    $('#controlaLote').val(0);
+                    alert(data.msg);
+                    $('#codigoBarrasProd').focus().select();
                 }
-                var qtdSeparar = $('#'+data.dados.idProduto).val();
-                var qtdEmb = data.dados.quantidadeEmbalagem;
-                var resto = Math.floor(qtdSeparar / qtdEmb);
-                $('#qtdSeparar').val((qtdEmb * resto) / qtdEmb);
-                $('#dsc-embalagem').text(data.dados.descricaoEmbalagem+' ('+qtdEmb+')');
             }
         });
 
-        if ($('#controlaLote').val() == 1) {
-            $('#lote').focus();
-            $('#qtdSeparar').val('');
+        if (event.preventDefault) {
+            event.preventDefault();
         } else {
-            $('#qtdSeparar').focus();
-            $('#qtdSeparar').select();
+            event.returnValue = false;
         }
+        return false;
 
-        $('#enviar-form').val(0);
     });
 
     $('#lote').keydown(function (e) {
         if ((e.which == 13) || (e.keyCode == 13)) {
-            $('#qtdSeparar').focus();
-            $('#qtdSeparar').select();
+            $('#qtdSeparar').focus().select();
             if (event.preventDefault) {
                 event.preventDefault();
             } else {

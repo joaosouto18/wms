@@ -106,6 +106,7 @@ if($this->mapa == null) {
             async: false,
             data: $('#form-endereco').serialize(),
             success: function (data) {
+                alert("Separação finalizada com sucesso");
                 window.location = "/mobile/expedicao/separacao-ajax";
                 event.preventDefault();
             }

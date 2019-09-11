@@ -1795,9 +1795,14 @@ class Mobile_ExpedicaoController extends Action {
 
     public function getEmbalagemCodAjaxAction(){
         $codigoBarrasProd = $this->_getParam('codigoBarrasProd');
+        /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo = $this->getEntityManager()->getRepository("wms:Produto");
         $info = $produtoRepo->getEmbalagemByCodBarras($codigoBarrasProd);
-        $this->_helper->json(array('resposta' => 'success', 'dados' => $info[0]));
+        if (!empty($info)) {
+            $this->_helper->json(array('resposta' => 'success', 'dados' => $info[0]));
+        } else {
+            $this->_helper->json(array('resposta' => 'error', 'msg' => "Nenhum produto encontrado com esse código de barras $codigoBarrasProd"));
+        }
     }
 
 }
