@@ -27,7 +27,7 @@ class Enderecamento_MovimentacaoController extends Action
             'volumes' => (!empty($data['volumes'])) ? $data['volumes'] : null,
             'rua' => (!empty($data['rua']))? $data['rua'] : null,
             'predio' => (!empty($data['predio']))? $data['predio'] : null,
-            'nivel' => (!empty($data['nivel']))? $data['nivel'] : null,
+            'nivel' => (isset($data['nivel']) && !in_array($data['nivel'], [null, '']))? $data['nivel'] : null,
             'apto' => (!empty($data['apto']))? $data['apto'] : null,
             'validade' => (!empty($data['validade'])) ? str_replace('/', '-', $data['validade']) : null,
             'quantidade' => $quantidade,

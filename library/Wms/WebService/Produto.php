@@ -90,7 +90,8 @@ class grades {
 class Wms_WebService_Produto extends Wms_WebService {
 
     private function removeCaracteres($value) {
-        return strtr(utf8_decode($value), utf8_decode('ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ'),'SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOUUUUYsaaaaaaaceeeeiiiionoooooouuuuyy');
+        return strtr(utf8_decode($value), utf8_decode('ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ'),
+            'SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOUUUUYsaaaaaaaceeeeiiiionoooooouuuuyy');
     }
 
     /**
@@ -118,12 +119,12 @@ class Wms_WebService_Produto extends Wms_WebService {
 
             $prod = new produto();
             $prod->idProduto = $idProduto;
-            $prod->descricao = $this->removeCaracteres($produto->getDescricao());
+            $prod->descricao = $produto->getDescricao();
             $prod->grade = $produto->getGrade();
             $prod->idFabricante = $produto->getFabricante()->getId();
             $prod->tipo = $produto->getTipoComercializacao()->getId();
             $prod->idClasse = $produto->getClasse()->getId();
-            $prod->nomeFabricante = $this->removeCaracteres($produto->getFabricante()->getNome());
+            $prod->nomeFabricante = $produto->getFabricante()->getNome();
             $prod->estoqueArmazenado = 0;
             $prod->estoqueDisponivel = 0;
             $prod->cubagem = $dadosProduto['NUM_CUBAGEM'];
@@ -638,12 +639,12 @@ class Wms_WebService_Produto extends Wms_WebService {
 
             $produto = new produto();
             $produto->idProduto = $line['idProduto'];
-            $produto->descricao = $this->removeCaracteres($line['descricao']);
+            $produto->descricao = $line['descricao'];
             $produto->grade = $line['grade'];
             $produto->idFabricante = $line['idFabricante'];
             $produto->tipo = $line['tipo'];
             $produto->idClasse = $line['idClasse'];
-            $produto->nomeFabricante = $this->removeCaracteres($line['nomeFabricante']);
+            $produto->nomeFabricante = $line['nomeFabricante'];
             $produto->estoqueArmazenado = 0;
             $produto->estoqueDisponivel = 0;
             $produto->cubagem = $dadosProduto['NUM_CUBAGEM'];
