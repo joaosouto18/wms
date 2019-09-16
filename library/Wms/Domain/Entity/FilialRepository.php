@@ -5,6 +5,8 @@ namespace Wms\Domain\Entity;
 use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Filial as FilialEntity,
     Wms\Domain\Entity\AtorRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use mysql_xdevapi\Exception;
 
 /**
  * Filial
@@ -85,4 +87,27 @@ class FilialRepository extends AtorRepository
         return $filiais;
     }
 
+    /**
+     * @param $cnpj
+     * @return Filial
+     * @throws \Exception
+     */
+    public function getFilialByCnpj ($cnpj)
+    {
+        try {
+            $dql = $this->_em->createQueryBuilder();
+            $dql->select("f")
+                ->from("wms:Filial", "f")
+                ->innerJoin("f.juridica", "pj")
+                ->where("pj.cnpj = '$cnpj' and f.isAtivo = 'S'");
+
+            /** @var Filial $filial */
+            $filial = $dql->getQuery()->getOneOrNullResult();
+            if (empty($filial)) throw new \Exception("Nenhuma filial encontrada com esse CNPJ: $cnpj");
+
+            return $filial;
+        } catch (NonUniqueResultException $e) {
+            throw new \Exception("Existe mais de uma filial vinculada à esse CNPJ: $cnpj");
+        }
+    }
 }

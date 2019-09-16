@@ -124,6 +124,7 @@ class PaleteRepository extends EntityRepository {
                NVL(QTD_END.QTD,0) As QTD_ENDERECADA,
                ROUND(NVL(QTD_END.QTD,0)/NVL(QTD_TOTAL.QTD_TOTAL,1) * 100,2) as PERCENTUAL
           FROM RECEBIMENTO R
+          INNER JOIN DEPOSITO D ON D.COD_DEPOSITO = R.COD_DEPOSITO
           LEFT JOIN SIGLA S ON S.COD_SIGLA = R.COD_STATUS
           LEFT JOIN (SELECT SUM(QTD) as QTD_TOTAL, COD_RECEBIMENTO 
                        FROM (SELECT SUM (QTD) as QTD, COD_RECEBIMENTO
@@ -140,7 +141,7 @@ class PaleteRepository extends EntityRepository {
                            $whereCodRecebimento AND R.COD_STATUS = $stsPaleteEnderecado
                            GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, R.COD_RECEBIMENTO, PV.QTD_VOLUMES)
                      GROUP BY COD_RECEBIMENTO) QTD_END ON QTD_END.COD_RECEBIMENTO = R.COD_RECEBIMENTO";
-        $query = $query . $whereCodRecebimento;
+        $query = $query . $whereCodRecebimento . " AND NVL(D.IND_USA_ENDERECAMENTO, 'S') = 'S' ";
 
         if (isset($status) && (!empty($status))) {
             if ($status == $stsPaleteEnderecado) {

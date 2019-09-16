@@ -243,7 +243,7 @@ class Usuario implements \Zend_Acl_Role_Interface, Ator
     public function getIdsDepositos()
     {
 	$ids = array();
-	foreach ($this->getDepositos()->toArray() as $deposito) {
+	foreach ($this->getDepositos() as $deposito) {
 	    $ids[] = $deposito->getId();
 	}
 	return $ids;

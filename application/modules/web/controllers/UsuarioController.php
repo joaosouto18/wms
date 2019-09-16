@@ -38,6 +38,10 @@ class Web_UsuarioController extends Crud
                 $source->andWhere("p.id = " . $idPerfil);
             if (!empty($idDeposito))
                 $source->andWhere("d.id = " . $idDeposito);
+            if (!empty($nome)) {
+                $nomeUpp = strtoupper($nome);
+                $source->andWhere("UPPER(pf.nome) LIKE '%$nomeUpp%'");
+            }
 
             $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
             $grid->addColumn(array(

@@ -41,6 +41,9 @@ class NotaFiscalRepository extends EntityRepository {
     public function search(array $values = array()) {
         extract($values);
 
+        $sessao = new \Zend_Session_Namespace('deposito');
+        $idDeposito = $sessao->idDepositoLogado;
+
         $dql = $this->getEntityManager()->createQueryBuilder()
                 ->select('nf, p.nomeFantasia fornecedor')
                 ->addSelect("
@@ -55,8 +58,11 @@ class NotaFiscalRepository extends EntityRepository {
                 ->from('wms:NotaFiscal', 'nf')
                 ->leftJoin('nf.fornecedor', 'f')
                 ->leftJoin('f.pessoa', 'p')
+                ->leftJoin("nf.filial", "fl")
+                ->leftJoin("wms:Deposito", "dep", "WITH", "dep.filial = fl")
                 ->where('nf.recebimento IS NULL')
                 ->andWhere('nf.status = ?1')
+                ->andWhere("CASE WHEN fl.id is not null AND fl.isAtivo = 'S' THEN CASE WHEN dep.id = $idDeposito THEN 1 ELSE 0 END ELSE 1 END = 1")
                 ->setParameter(1, NotaFiscalEntity::STATUS_INTEGRADA)
                 ->orderBy('nf.placa, nf.dataEmissao, nf.numero');
 
@@ -1012,12 +1018,27 @@ class NotaFiscalRepository extends EntityRepository {
         return $entity;
     }
 
-    public function salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $codProprietario = null, $tipoNota = null) {
+    public function salvarNota($idFornecedor, $numero, $serie, $dataEmissao, $placa, $itens, $bonificacao, $observacao = null, $cnpjDestinatario = null, $tipoNota = null) {
 
         $em = $this->getEntityManager();
         $em->beginTransaction();
 
         try {
+
+            $codProprietario = null;
+            $filial = null;
+            $controleProprietario = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
+            if($controleProprietario == 'S'){
+                $cnpjDestinatario = trim($cnpjDestinatario);
+                $codProprietario = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjDestinatario);
+                if($codProprietario == false){
+                    throw new \Exception('CNPJ do destinatário não encontrado');
+                }
+            } elseif ($controleProprietario != 'S' && !empty($cnpjDestinatario)) {
+                $cnpj = str_replace(array(".", "-", "/"), "", $cnpjDestinatario);
+                $filial = $em->getRepository("wms:Filial")->getFilialByCnpj($cnpj);
+            }
+
             $fornecedorEntity = $em->getRepository('wms:Pessoa\Papel\Fornecedor')->findOneBy(array('idExterno' => $idFornecedor));
 
             if ($fornecedorEntity == null)
@@ -1067,9 +1088,8 @@ class NotaFiscalRepository extends EntityRepository {
             $notaFiscalEntity->setObservacao($observacao);
             $notaFiscalEntity->setPlaca($placa);
             $notaFiscalEntity->setCodPessoaProprietario($codProprietario);
+            $notaFiscalEntity->setFilial($filial);
             $notaFiscalEntity->setTipoNotaFiscal($tipoNotaEntiy);
-            /** @var ReferenciaRepository $fornRefRepo */
-            $fornRefRepo = $em->getRepository('wms:CodigoFornecedor\Referencia');
             $pesoTotal = 0;
             $itens = $this->unificarItens($itens);
             if (count($itens) > 0) {

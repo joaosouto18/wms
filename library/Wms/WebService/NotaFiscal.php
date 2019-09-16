@@ -393,16 +393,7 @@ class Wms_WebService_NotaFiscal extends Wms_WebService
 
 
             } else {
-                $codProprietario = null;
-                $controleProprietario = $em->getRepository('wms:Sistema\Parametro')->findOneBy(array('constante' => 'CONTROLE_PROPRIETARIO'))->getValor();
-                if($controleProprietario == 'S'){
-                    $cnpjDestinatario = trim($cnpjDestinatario);
-                    $codProprietario = $em->getRepository("wms:Enderecamento\EstoqueProprietario")->verificaProprietarioExistente($cnpjDestinatario);
-                    if($codProprietario == false){
-                        throw new \Exception('CNPJ do destinatário não encontrado');
-                    }
-                }
-                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$codProprietario,$tipoNota);
+                $notaFiscalRepo->salvarNota($idFornecedor,$numero,$serie,$dataEmissao,$placa,$itens,$bonificacao,$observacao,$cnpjDestinatario,$tipoNota);
             }
 
             $em->flush();

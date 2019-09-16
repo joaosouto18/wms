@@ -22,6 +22,7 @@ class DepositoRepository extends EntityRepository {
 
         $depositoEntity->setFilial($filial);
         $depositoEntity->setDescricao($descricao);
+        $depositoEntity->setUsaEnderecamento($usaEnderecamento);
         $depositoEntity->setIsAtivo($isAtivo);
 
         $em->persist($depositoEntity);

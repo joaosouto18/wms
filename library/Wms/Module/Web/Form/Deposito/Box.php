@@ -20,8 +20,8 @@ class Box extends Form
 	$em = $this->getEm();
 	$repoBox = $em->getRepository('wms:Deposito\Box');
 	$sessao = new \Zend_Session_Namespace('deposito');
-	$idDeposito = $sessao->idDepositoLogado;
-	$deposito = $em->find('wms:Deposito', $idDeposito);
+
+	$deposito = $em->find('wms:Deposito', $sessao->idDepositoLogado);
 	$boxesPai = $repoBox->getIdValue(array('idDeposito' => $sessao->idDepositoLogado));
 	$formIdentificacao = new SubForm;
 	

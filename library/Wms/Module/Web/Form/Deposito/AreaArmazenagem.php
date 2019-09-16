@@ -17,15 +17,10 @@ class AreaArmazenagem extends Form {
         //form's attr
         $this->setAttribs(array('id' => 'deposito-areaarmazenagem-form', 'class' => 'saveForm'));
 
-        $em = $this->getEm();
-
-        $sessao = new \Zend_Session_Namespace('deposito');
-        $idDeposito = $sessao->idDepositoLogado;
-
         $formIdentificacao = new SubForm;
 
         $formIdentificacao->addElement('hidden', 'idDeposito', array(
-                    'value' => $sessao->idDepositoLogado,
+                    'value' => (new \Zend_Session_Namespace('deposito'))->idDepositoLogado,
                 ))
                 ->addElement('text', 'id', array(
                     'label' => 'Código Interno',

@@ -16,11 +16,11 @@ class Web_DepositoController extends Crud
     public function indexAction()
     {
         $source = $this->em->createQueryBuilder()
-                ->select('d, f.id as idFilial, j.nomeFantasia')
+                ->select('d, f.id as idFilial, j.nomeFantasia, d.usaEnderecamento')
                 ->from('wms:Deposito', 'd')
                 ->innerJoin('d.filial', 'f')
                 ->innerJoin('f.juridica', 'j')
-                ->orderBy('d.descricao');
+                ->orderBy('d.id');
 
         $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
         $grid->setId('box-grid');
@@ -51,6 +51,19 @@ class Web_DepositoController extends Crud
                         'render' => array(
                             'type' => 'text',
                             'condition' => array('match' => array('fulltext'))
+                        ),
+                    ),
+                ))
+                ->addColumn(array(
+                    'label' => 'Usa Endereçamento',
+                    'index' => 'usaEnderecamento',
+                    'render' => 'SimOrNao',
+                    'filter' => array(
+                        'render' => array(
+                            'type' => 'select',
+                            'attributes' => array(
+                                'multiOptions' => array('SIM' => 'SIM', 'NÃO' => 'NÃO')
+                            )
                         ),
                     ),
                 ))

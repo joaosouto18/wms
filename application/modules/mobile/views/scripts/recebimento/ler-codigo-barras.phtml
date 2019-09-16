@@ -43,15 +43,16 @@
 
 </script>
 <span id="dummy"></span>
-<div id="footer" class="">
+<div id="footer">
     <a href="<?php echo "/mobile/recebimento/finalizar/id/" . $this->idRecebimento . "/os/" . $this->os ?>" style="   margin-right: 0px; margin-top: 7px; float: left" class="finalizar">
         Finalizar
     </a>
 
+    <?php if ($this->recebimento->getDeposito()->getUsaEnderecamento()) : ?>
     <a href="<?php echo "/mobile/enderecamento/listar-paletes/id/" . $this->idRecebimento . "/os/" . $this->os ?>" style="     margin-right: 1px;    margin-top: 7px;float: left" class="finalizarAmarelo">
         Endereçar
     </a>
-
+    <?php endif ?>
     <a href="<?php echo "/mobile/recebimento/observacoes-recebimento/id/" . $this->idRecebimento ?>" style="    margin-top: 7px;float: left" id="btnShowObs">
         Observações
     </a>

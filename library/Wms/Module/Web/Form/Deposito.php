@@ -35,6 +35,12 @@ class Deposito extends Form
                     'maxlength' => 40,
                     'required' => true
                 ))
+                ->addElement('select', 'usaEnderecamento', array(
+                    'mostrarSelecione' => false,
+                    'label' => 'Usa endereçamento',
+                    'multiOptions' => ["S" => "SIM", "N" => "NÃO"],
+                    'required' => true,
+                ))
                 ->addElement('select', 'idFilial', array(
                     'label' => 'Filial',
                     'multiOptions' => $repo->getIdValue(),
@@ -44,7 +50,7 @@ class Deposito extends Form
                     'label' => 'Ativo',
                     'class' => 'depositoAtivo',
                 ))
-                ->addDisplayGroup(array('id', 'descricao', 'idFilial', 'isAtivo'), 'identificacao');
+                ->addDisplayGroup(array('id', 'descricao', 'idFilial', 'usaEnderecamento', 'isAtivo'), 'identificacao');
 
         $this->addSubFormTab('Identificação', $formIdentificacao, 'identificacao');
     }
@@ -59,6 +65,7 @@ class Deposito extends Form
             'id' => $deposito->getId(),
             'idFilial' => $deposito->getIdFilial(),
             'descricao' => $deposito->getDescricao(),
+            'usaEnderecamento' => $deposito->getUsaEnderecamento(true),
             'isAtivo' => $deposito->getIsAtivo()
         );
 

@@ -186,7 +186,10 @@ class Recebimento extends Grid
                     'moduleName' => 'enderecamento',
                     'actionName' => 'index',
                     'controllerName' => "produto",
-                    'pkIndex' => 'id'
+                    'pkIndex' => 'id',
+                    'condition' => function($row) {
+                        return ($row['ENDERECA'] == 'S');
+                    }
                 ))
                 ->addAction(array(
                     'label' => 'Forçar Correção',
