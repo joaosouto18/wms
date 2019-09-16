@@ -2,6 +2,11 @@
 
 namespace Wms\Util;
 
+use Doctrine\ORM\EntityManager;
+use \Exception;
+use \Wms\Domain\Entity\Sistema\Parametro;
+use \Zend_Registry;
+
 /**
  * Description of Endereco
  *
@@ -26,10 +31,12 @@ class Endereco
      * retorno = array('rua' => 2, 'predio' => 3, 'nivel' => 2, 'apartamento' => 2)
      *
      * @return array
+     * @throws Exception
      */
     public static function getQtdDigitos()
     {
-        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+        /** @var EntityManager $em */
+        $em = Zend_Registry::get('doctrine')->getEntityManager();
 
         $arrCriterio = array('TAMANHO_CARACT_RUA', 'TAMANHO_CARACT_PREDIO', 'TAMANHO_CARACT_NIVEL', 'TAMANHO_CARACT_APARTAMENTO');
 
@@ -37,7 +44,7 @@ class Endereco
 
         $arrParams = array();
 
-        /** @var \Wms\Domain\Entity\Sistema\Parametro $param */
+        /** @var Parametro $param */
         foreach ($params as $param) {
             $arrParams[$param->getConstante()] = $param->getValor();
         }
@@ -56,6 +63,7 @@ class Endereco
      * @param null|array $qtdDigitos
      * @param bool $considerarSeparador
      * @return int
+     * @throws Exception
      */
     public static function getTotalDigitos($qtdDigitos = null, $considerarSeparador = false)
     {
@@ -85,9 +93,11 @@ class Endereco
      *
      * @param array $qtdDigitos
      * @param string $digito
-     * @return string Retorna o formato de acordo com as configurações de cada campo do endereço
+     * @param int $formato
+     * @return string|array Retorna o formato de acordo com as configurações de cada campo do endereço
+     * @throws Exception
      */
-    public static function mascara($qtdDigitos = null, $digito = '0')
+    public static function mascara($qtdDigitos = null, $digito = '0', $formato = self::FORMATO_DESCRICAO)
     {
         $qtdDigitos = (empty($qtdDigitos) || !is_array($qtdDigitos))? self::getQtdDigitos() : $qtdDigitos;
 
@@ -98,7 +108,15 @@ class Endereco
             'apartamento' => self::formatarApto($digito, $qtdDigitos['apartamento'], $digito)
         );
 
-        return implode('.', $arrParams);
+        if ($formato == self::FORMATO_DESCRICAO) {
+            return implode('.', $arrParams);
+        } elseif ($formato == self::FORMATO_COD_BARRAS) {
+            return implode('', $arrParams);
+        } elseif ($formato == self::FORMATO_MATRIZ_ASSOC) {
+            return $arrParams;
+        }
+
+        throw new Exception("Formato de retorno fora do padrão");
     }
 
     /**
@@ -115,7 +133,7 @@ class Endereco
      * @param string $endereco
      * @param array|null $qtdDigitos
      * @return array Matriz associativa de (rua, predio, nivel, apartamento)
-     * @throws \Exception
+     * @throws Exception
      */
     public static function separar($endereco, $qtdDigitos = null)
     {
@@ -148,7 +166,7 @@ class Endereco
             if (($totalDigtos - strlen($endereco)) == 1) {
                 $endereco = '0' . $endereco;
             } elseif (($totalDigtos - strlen($endereco)) > 1) {
-                throw new \Exception('Endereço não contém a quantidade mínima de dígitos');
+                throw new Exception('Endereço não contém a quantidade mínima de dígitos');
             }
 
             $result = array(
@@ -200,7 +218,7 @@ class Endereco
      * @param int $formato
      * @param array $qtdDigitos
      * @return string|array $dscEndereco
-     * @throws \Exception Caso $endereco seja passado faltando algum parametro
+     * @throws Exception Caso $endereco seja passado faltando algum parametro
      */
     public static function formatar($endereco, $formato = self::FORMATO_DESCRICAO , $qtdDigitos = null, $novoNivel = null, $dgtComplementar = '0')
     {
@@ -214,13 +232,13 @@ class Endereco
         if (isset($arrEndereco['rua'])) {
             $dscEndereco['rua'] = self::formatarRua($arrEndereco['rua'], (int)$qtdDigitos['rua'], $dgtComplementar);
         } else {
-            throw new \Exception('Elemento "rua" não definido');
+            throw new Exception('Elemento "rua" não definido');
         }
 
         if (isset($arrEndereco['predio'])) {
             $dscEndereco['predio'] = self::formatarPredio($arrEndereco['predio'], (int) $qtdDigitos['predio'], $dgtComplementar);
         } else {
-            throw new \Exception('Elemento "$predio" não definido');
+            throw new Exception('Elemento "$predio" não definido');
         }
 
         if (!empty($novoNivel)){
@@ -228,27 +246,25 @@ class Endereco
         } elseif (isset($arrEndereco['nivel'])) {
             $dscEndereco['nivel'] = self::formatarNivel($arrEndereco['nivel'], (int) $qtdDigitos['nivel'], $dgtComplementar);
         } else {
-            throw new \Exception('Elemento "nivel" não definido');
+            throw new Exception('Elemento "nivel" não definido');
         }
 
         if (isset($arrEndereco['apartamento'])) {
             $dscEndereco['apartamento'] = self::formatarApto($arrEndereco['apartamento'], (int) $qtdDigitos['apartamento'], $dgtComplementar);
         } else {
-            throw new \Exception('Elemento "apartamento" não definido');
+            throw new Exception('Elemento "apartamento" não definido');
         }
 
-        $result = null;
+
         if ($formato == self::FORMATO_DESCRICAO) {
-            $result = implode('.', $dscEndereco);
+            return implode('.', $dscEndereco);
         } elseif ($formato == self::FORMATO_COD_BARRAS){
-            $result = implode('', $dscEndereco);
+            return implode('', $dscEndereco);
         } elseif ($formato == self::FORMATO_MATRIZ_ASSOC){
-            $result = $dscEndereco;
-        } else {
-            throw new \Exception("Formato de retorno fora do padrão");
+            return $dscEndereco;
         }
 
-        return $result;
+        throw new Exception("Formato de retorno fora do padrão");
     }
 
     /**
@@ -276,6 +292,7 @@ class Endereco
      * @param int|null $qtdDigitos
      * @param string $dgtSuplementar
      * @return string
+     * @throws Exception
      */
     public static function formatarRua($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
@@ -312,6 +329,7 @@ class Endereco
      * @param int|null $qtdDigitos
      * @param string $dgtSuplementar
      * @return string
+     * @throws Exception
      */
     public static function formatarPredio($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
@@ -348,6 +366,7 @@ class Endereco
      * @param int|null $qtdDigitos
      * @param string $dgtSuplementar
      * @return string
+     * @throws Exception
      */
     public static function formatarNivel($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {
@@ -384,6 +403,7 @@ class Endereco
      * @param int|null $qtdDigitos
      * @param string $dgtSuplementar
      * @return string
+     * @throws Exception
      */
     public static function formatarApto($elemento, $qtdDigitos = null, $dgtSuplementar = '0')
     {

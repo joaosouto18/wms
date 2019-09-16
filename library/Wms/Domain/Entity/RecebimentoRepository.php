@@ -231,8 +231,12 @@ class RecebimentoRepository extends EntityRepository
         $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
         $produtoVolumeRepo = $this->_em->getRepository('wms:Produto\Volume');
 
-        /** @var \Wms\Domain\Entity\ProdutoRepository $notaFiscalRepo */
-        $produtoRepo = $this->_em->getRepository('wms:Produto');
+        $qtdBloqueada = $this->getQuantidadeConferidaBloqueada($idRecebimento);
+        if (count($qtdBloqueada))
+            return array(
+                'message' => 'Existem itens bloqueados por validade! Não é possível finalizar',
+                'exception' => null,
+                'concluido' => false);
 
         // buscar todos os itens das nfs do recebimento
         $itens = $notaFiscalRepo->buscarItensPorRecebimento($idRecebimento);
@@ -268,25 +272,23 @@ class RecebimentoRepository extends EntityRepository
 
                         foreach ($qtdConferida as $lote => $value) {
                             if ($value == 0) {
-                                if ($lote == 0) {
-                                    $lote = null;
-                                }
-                                $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null, null, null, $volume, $lote);
+                                $this->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $volume->getId(), $value, null, null, null, null, $volume);
                             }
                             $qtdConferidasVolumes[$lote][$volume->getId()] = $value;
                         }
                     }
 
-                    foreach ($qtdConferidasVolumes as $lote => $volumes) {
-                        //Pega a menor quantidade de produtos completos
-                        $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
-                    }
+                    $qtdConferidas[$item['produto']][$item['grade']][$lote] = $this->buscarVolumeMinimoConferidoPorProduto($qtdConferidasVolumes, $item['quantidade']);
 
                     break;
                 case ProdutoEntity::TIPO_UNITARIO:
 
                     $qtdConferida = $this->buscarConferenciaPorEmbalagem($item['produto'], $item['grade'], $idOrdemServico);
                     foreach ($qtdConferida as $lote => $value) {
+                        //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
+                        if ($value == 0) {
+                            $this->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, null, $value);
+                        }
                         $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
                     }
 
@@ -390,13 +392,6 @@ class RecebimentoRepository extends EntityRepository
         $check = $this->checkPaletesProcessados($idRecebimento, $idOrdemServico);
         if (!empty($check))
             return array('message' => $check,
-                'exception' => null,
-                'concluido' => false);
-
-        $qtdBloqueada = $this->getQuantidadeConferidaBloqueada($idRecebimento);
-        if (count($qtdBloqueada))
-            return array(
-                'message' => 'Existem itens bloqueados por validade! Não é possível finalizar',
                 'exception' => null,
                 'concluido' => false);
 
@@ -916,7 +911,7 @@ class RecebimentoRepository extends EntityRepository
      * @param integer $idProdutoEmbalagem Codigo do Produto Embalagem
      * @param integer $qtdConferida Quantidade conferida do produto
      */
-    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = NULL, $params, $numPeso = null, $qtdBloqueada = null, $produtoEmbalagemEntity = null, $lote = null)
+    public function gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $qtdConferida, $numPecas, $idNormaPaletizacao = null, $params = [], $numPeso = null, $qtdBloqueada = null, $produtoEmbalagemEntity = null, $lote = null)
     {
         $em = $this->getEntityManager();
 
@@ -2079,25 +2074,28 @@ class RecebimentoRepository extends EntityRepository
         $statusEmEnderecamento = Palete::STATUS_EM_ENDERECAMENTO;
 
         $sql = "SELECT DISTINCT PLT.COD_PRODUTO, 
-                       PLT.DSC_GRADE, 
+                       PLT.DSC_GRADE,  
+                       PLT.DSC_LOTE,
                        RC.QTD AS QTD_RECEBIDA, 
                        PLT.QTD_TOTAL AS QTD_PALETIZADA
                   FROM (SELECT DISTINCT (SUM(PP.QTD) / COUNT(DISTINCT NVL(PP.COD_PRODUTO_VOLUME, 1))) QTD_TOTAL, 
                                PP.COD_PRODUTO, 
                                PP.DSC_GRADE, 
-                               P.COD_RECEBIMENTO
+                               P.COD_RECEBIMENTO, 
+                               NVL(PP.DSC_LOTE,0) DSC_LOTE
                           FROM PALETE_PRODUTO PP
                          INNER JOIN PALETE P ON P.UMA = PP.UMA
                          WHERE P.COD_RECEBIMENTO = $idRecebimento 
                            AND (P.IND_IMPRESSO = 'S' OR P.COD_STATUS IN ($statusEmEnderecamento, $statusEnderecado))
-                         GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, P.COD_RECEBIMENTO) PLT
+                         GROUP BY PP.COD_PRODUTO, PP.DSC_GRADE, P.COD_RECEBIMENTO, NVL(PP.DSC_LOTE,0)) PLT
                  INNER JOIN (SELECT COD_PRODUTO, 
                                     DSC_GRADE, 
-                                    QTD
+                                    QTD, 
+                                    NVL(DSC_LOTE,0) DSC_LOTE
                                FROM V_QTD_RECEBIMENTO 
                               WHERE COD_OS = $idOrdemServico
                                 AND COD_RECEBIMENTO = $idRecebimento)RC 
-                    ON RC.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE
+                    ON RC.COD_PRODUTO = PLT.COD_PRODUTO AND RC.DSC_GRADE = PLT.DSC_GRADE AND RC.DSC_LOTE = PLT.DSC_LOTE
                  WHERE PLT.QTD_TOTAL > RC.QTD ";
 
         $result = $this->_em->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
@@ -2106,7 +2104,8 @@ class RecebimentoRepository extends EntityRepository
         if (!empty($result)) {
             $str = "";
             foreach ($result as $item) {
-                $str[] = "Produto: $item[COD_PRODUTO] Grade: $item[DSC_GRADE]";
+                $strLote = (!empty($item['DSC_LOTE'])) ? " Lote: $item[DSC_LOTE]" : "";
+                $str[] = "Produto: $item[COD_PRODUTO] Grade: $item[DSC_GRADE]$strLote";
             }
             $return = "Existe itens em U.M.A.'s impressas ou já endereçadas com quantidade superior ao recebido, desfaça estas U.M.A.'s antes de finalizar o recebimento: " . implode(", ", $str);
         }
@@ -2202,16 +2201,17 @@ class RecebimentoRepository extends EntityRepository
                         FLOOR(((TO_CHAR( NVL( ((re.dataValidade) - (re.dataConferencia)), ((rv.dataValidade) - (rv.dataConferencia)) ), '999999') / p.diasVidaUtilMax) * 100)) percentualVidaUtil
                         ")
             ->from('wms:Recebimento', 'r')
-            ->leftJoin('wms:Recebimento\Embalagem', 're', 'WITH', 're.recebimento = r.id')
-            ->leftJoin('wms:Recebimento\Volume', 'rv', 'WITH', 'rv.recebimento = r.id')
+            ->leftJoin('wms:Recebimento\Embalagem', 're', 'WITH', 're.recebimento = r.id AND re.dataValidade IS NOT NULL')
+            ->leftJoin('wms:Recebimento\Volume', 'rv', 'WITH', 'rv.recebimento = r.id AND rv.dataValidade IS NOT NULL')
             ->leftJoin('re.embalagem', 'pe')
             ->leftJoin('rv.volume', 'pv')
             ->innerJoin('wms:Produto', 'p', 'WITH', '(p.id = pe.codProduto AND p.grade = pe.grade) OR (p.id = pv.codProduto AND p.grade = pv.grade)')
+            ->where("p.validade = 'S'")
             ->groupBy('r.id, re.id, rv.id, p.descricao, p.id, p.grade, re.dataValidade, rv.dataValidade, p.diasVidaUtil, p.diasVidaUtilMax, re.dataConferencia, rv.dataConferencia')
             ->having('(NVL(SUM(re.qtdBloqueada),0) + NVL(SUM(rv.qtdBloqueada),0) > 0)');
 
         if ($idRecebimento)
-            $sql->where("r.id = $idRecebimento");
+            $sql->andWhere("r.id = $idRecebimento");
 
         return $sql->getQuery()->getResult();
     }

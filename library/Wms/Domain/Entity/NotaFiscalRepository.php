@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\NotaFiscal\Item as ItemNF,
     Wms\Domain\Entity\Recebimento as RecebimentoEntity,
     Core\Util\Produto as ProdutoUtil;
+use Doctrine\ORM\Query;
 use Wms\Domain\Entity\CodigoFornecedor\Referencia;
 use Wms\Domain\Entity\CodigoFornecedor\ReferenciaRepository;
 use Wms\Domain\Entity\Deposito\Endereco;
@@ -770,11 +771,11 @@ class NotaFiscalRepository extends EntityRepository {
                 ->leftJoin('pe.dadosLogisticos', 'dl')
                 ->leftJoin('dl.normaPaletizacao', 'np_embalagem')
                 ->leftJoin('np_embalagem.unitizador', 'unitizador_embalagem')
-                ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade and pv.dataInativacao IS NULL')
+                ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.dataInativacao IS NULL')
                 ->leftJoin('pv.normaPaletizacao', 'np_volume')
                 ->leftJoin('np_volume.unitizador', 'unitizador_volume')
                 ->where('nf.recebimento = ?1')
-                ->andWhere('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras)')
+                ->andWhere('pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras')
                 ->andWhere('NOT EXISTS(
                     SELECT \'x\'
                     FROM wms:OrdemServico os
@@ -794,7 +795,7 @@ class NotaFiscalRepository extends EntityRepository {
                 )
         );
 
-        return $dql->getQuery()->setMaxResults(1)->getOneOrNullResult();
+        return $dql->getQuery()->getSingleResult(Query::HYDRATE_ARRAY);
     }
 
     public function buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade, $lote = null) {

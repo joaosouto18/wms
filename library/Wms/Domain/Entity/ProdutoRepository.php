@@ -210,8 +210,6 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         $em->rollback();
                         return $result;
                     }
-                    // gravo dados logisticos
-                    $this->persistirDadosLogisticos($values, $produtoEntity);
 
                     //aguardando teste por parte da simonetti
                     //WebService da Simonetti para persistir os dados logisticos
@@ -608,6 +606,44 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                     throw new \Exception("Houve os seguintes problemas: " . implode(", ", $arrStr));
                 }
             }
+
+            // Se não vier dado logístico ou norma de paletizacao no array e não existir uma válida cadastrada cria uma padrão
+            if ((empty($values['normasPaletizacao']) || empty($values['dadosLogisticos']))
+                && empty($this->checkTemNormaAndDadoLogistico($produtoEntity->getId(), $produtoEntity->getGrade()))) {
+
+                $unitizador = $this->_em->getRepository("wms:Armazenagem\Unitizador")->findBy([], ['capacidade' => 'DESC'])[0];
+                if (empty($unitizador)) throw new \Exception("Não foi encontrado nenhum unitizador para o cadastro de dado logistico padrão");
+
+                $embalagemEntity = $embalagemRepo->findBy(['codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade(), 'dataInativacao' => null], ['quantidade' => 'ASC'])[0];
+
+                $idDefaultPDL = "-defaul" . time();
+                $idDefaultNP = "-defaul" . time();
+                $values['dadosLogisticos'][$idDefaultPDL] = [
+                    'acao' => 'incluir',
+                    'id' => $idDefaultPDL,
+                    'idEmbalagem' => $embalagemEntity->getId(),
+                    'qtdEmbalagem' => $embalagemEntity->getQuantidade(),
+                    'idNormaPaletizacao' => $idDefaultNP,
+                    'largura' => 0,
+                    'altura' => 0,
+                    'profundidade' => 0,
+                    'cubagem' => 0,
+                    'peso' => 0
+                ];
+                $values['normasPaletizacao'][$idDefaultNP] = [
+                    "acao" => "incluir",
+                    "id" => $idDefaultNP,
+                    "idUnitizadorTemp" => $unitizador->getId(),
+                    "idUnitizador" => $unitizador->getId(),
+                    'isPadrao' => "S",
+                    'numLastro' => 999,
+                    'numCamadas' => 999,
+                    'numNorma' => 998001,
+                    'numPeso' => 0
+                ];
+            }
+            // gravo dados logisticos
+            $this->persistirDadosLogisticos($values, $produtoEntity);
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
@@ -749,7 +785,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             foreach ($normasPaletizacao as $id => $normaPaletizacao) {
                 if(isset($arrayNP[$normaPaletizacao['id']])){
                     if($normaPaletizacao['acao'] != 'excluir'){
-                        unset($normaPaletizacao[$id]);
+                        unset($normasPaletizacao[$id]);
                     }
                 }else{
                     $arrayNP[$normaPaletizacao['id']] = 1;
@@ -828,10 +864,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             if (!empty($itemDadoLogistico['idNormaPaletizacao'])) {
                 $itemDadoLogistico['idNormaPaletizacao'] = $normasPaletizacao[$itemDadoLogistico['idNormaPaletizacao']]['id'];
             }
-            // pego id da embalagem
-            if (!empty($itemDadoLogistico['idEmbalagem'])) {
-                $itemDadoLogistico['idEmbalagem'] = $values['embalagens'][$itemDadoLogistico['idEmbalagem']]['id'];
-            }
+
             switch ($acao) {
                 case 'incluir':
                     if($normasPaletizacao[$itemDadoLogistico['idNormaPaletizacao']]['acao'] == 'incluir' xor
@@ -2042,6 +2075,18 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
             $dql->andWhere("pv.id != :idElemento")
                 ->setParameter('idElemento', $idElemento);
         }
+
+        return $dql->getQuery()->getResult();
+    }
+
+    public function checkTemNormaAndDadoLogistico($idProduto, $grade)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select('pdl')
+            ->from('wms:Produto\DadoLogistico', 'pdl')
+            ->innerJoin('pdl.embalagem', 'pe')
+            ->innerJoin('pdl.normaPaletizacao', 'np')
+            ->where("pe.codProduto = '$idProduto' AND pe.grade = '$grade'");
 
         return $dql->getQuery()->getResult();
     }

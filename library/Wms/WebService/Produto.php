@@ -90,7 +90,8 @@ class grades {
 class Wms_WebService_Produto extends Wms_WebService {
 
     private function removeCaracteres($value) {
-        return strtr(utf8_decode($value), utf8_decode('ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ'),'SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOUUUUYsaaaaaaaceeeeiiiionoooooouuuuyy');
+        return strtr(utf8_decode($value), utf8_decode('ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ'),
+            'SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOUUUUYsaaaaaaaceeeeiiiionoooooouuuuyy');
     }
 
     /**
@@ -118,12 +119,12 @@ class Wms_WebService_Produto extends Wms_WebService {
 
             $prod = new produto();
             $prod->idProduto = $idProduto;
-            $prod->descricao = $this->removeCaracteres($produto->getDescricao());
+            $prod->descricao = $produto->getDescricao();
             $prod->grade = $produto->getGrade();
             $prod->idFabricante = $produto->getFabricante()->getId();
             $prod->tipo = $produto->getTipoComercializacao()->getId();
             $prod->idClasse = $produto->getClasse()->getId();
-            $prod->nomeFabricante = $this->removeCaracteres($produto->getFabricante()->getNome());
+            $prod->nomeFabricante = $produto->getFabricante()->getNome();
             $prod->estoqueArmazenado = 0;
             $prod->estoqueDisponivel = 0;
             $prod->cubagem = $dadosProduto['NUM_CUBAGEM'];
@@ -638,12 +639,12 @@ class Wms_WebService_Produto extends Wms_WebService {
 
             $produto = new produto();
             $produto->idProduto = $line['idProduto'];
-            $produto->descricao = $this->removeCaracteres($line['descricao']);
+            $produto->descricao = $line['descricao'];
             $produto->grade = $line['grade'];
             $produto->idFabricante = $line['idFabricante'];
             $produto->tipo = $line['tipo'];
             $produto->idClasse = $line['idClasse'];
-            $produto->nomeFabricante = $this->removeCaracteres($line['nomeFabricante']);
+            $produto->nomeFabricante = $line['nomeFabricante'];
             $produto->estoqueArmazenado = 0;
             $produto->estoqueDisponivel = 0;
             $produto->cubagem = $dadosProduto['NUM_CUBAGEM'];
@@ -703,13 +704,18 @@ class Wms_WebService_Produto extends Wms_WebService {
 
             $wsClasse = new Wms_WebService_ProdutoClasse();
             foreach($classes as $classeArr) {
-                $wsClasse->salvar(trim($classeArr[0]), trim($classeArr[1]) ,$classeArr[2] );
+                $idClasse = trim($classeArr[array_keys($classeArr)[0]]);
+                $nomeClasse = trim($classeArr[array_keys($classeArr)[1]]);
+                $idCLassePay = trim($classeArr[array_keys($classeArr)[2]]);
+                $wsClasse->salvar($idClasse, $nomeClasse, $idCLassePay);
             }
 
             unset($wsClasse);
 
             $wsFabricante  = new Wms_WebService_Fabricante();
-            $wsFabricante->salvar(trim($fabricante[0]), trim($fabricante[1]));
+            $idFabricante = trim($fabricante[array_keys($fabricante)[0]]);
+            $nomeFabricante = trim($fabricante[array_keys($fabricante)[1]]);
+            $wsFabricante->salvar($idFabricante, $nomeFabricante);
             unset($wsFabricante);
 
             if( empty($grades) )

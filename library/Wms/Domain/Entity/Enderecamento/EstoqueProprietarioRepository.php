@@ -343,13 +343,13 @@ class EstoqueProprietarioRepository extends EntityRepository
     public function getHistoricoEstoqueProprietario($idProprietario, $codProduto, $grade){
         $args = [];
         if(!empty($idProprietario)){
-            $args[] = "COD_PESSOA = $idProprietario";
+            $args[] = "EP2.COD_PESSOA = $idProprietario";
         }
         if(!empty($codProduto)){
-            $args[] .= "EP.COD_PRODUTO = $codProduto";
+            $args[] .= "EP2.COD_PRODUTO = $codProduto";
         }
         if(!empty($grade)){
-            $args[] .= "EP.DSC_GRADE = '$grade'";
+            $args[] .= "EP2.DSC_GRADE = '$grade'";
         }
 
         $whereSub = (!empty($args)) ? "WHERE " . implode(" AND ", $args): "";
@@ -363,9 +363,9 @@ class EstoqueProprietarioRepository extends EntityRepository
                 FROM 
                   ESTOQUE_PROPRIETARIO EP 
                   INNER JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
-                WHERE 1 = 1 AND
+                WHERE EP.SALDO_FINAL IS NOT NULL AND EP.SALDO_FINAL > 0 AND
                   EP.COD_ESTOQUE_PROPRIETARIO IN (
-                      SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO 
+                      SELECT MAX(COD_ESTOQUE_PROPRIETARIO) FROM ESTOQUE_PROPRIETARIO EP2
                       $whereSub
                       GROUP BY COD_PESSOA, COD_PRODUTO, DSC_GRADE)
                   GROUP BY 

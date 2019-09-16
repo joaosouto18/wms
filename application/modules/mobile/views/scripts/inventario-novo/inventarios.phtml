@@ -6,8 +6,6 @@
  * Time: 10:51
  */
 ?>
-
-<script src="<?php echo $this->baseUrl('wms/jquery.mask.js') ?>"></script>
 <style>
     .btn {
         width: 95%;
@@ -142,17 +140,17 @@
 <div id="conferencia" style="display: none">
     <div class="input-area">
         <form>
-            <div class="field">
-                <label for="qtd" class="field required"><div class="lbl-headers">Quantidade</div></label>
-                <input type="text" name="qtd" id="qtd" value="" class="required focus" size="10" maxlength="15">
-            </div>
-            <div class="field" id="div-validade">
-                <label for="validade" class="field optional"><div class="lbl-headers">Validade</div></label>
-                <input type="text" name="validade" id="validade" size="10" maxlength="10" placeholder="dd/mm/aaaa" alt="date">
-            </div>
             <div class="field" id="div-lote">
                 <label for="lote" class="field optional"><div class="lbl-headers">Lote</div></label>
                 <input type="text" name="lote" id="lote" value="" size="10" maxlength="8" placeholder="Ex.: LI001">
+            </div>
+            <div class="field" id="div-validade">
+                <label for="validade" class="field optional"><div class="lbl-headers">Validade</div></label>
+                <input type="text" name="validade" id="validade" size="10" maxlength="8" placeholder="dd/mm/aa" alt="date">
+            </div>
+            <div class="field">
+                <label for="qtd" class="field required"><div class="lbl-headers">Quantidade</div></label>
+                <input type="text" name="qtd" id="qtd" value="" class="required focus" size="10" maxlength="15">
             </div>
         </form>
         <button id="btn-registrar" class="btn gradientBtn btn-spacing">Registrar</button>
@@ -162,7 +160,17 @@
 <script>
     $(function () {
 
-        $("#validade").mask('00/00/0000');
+        $("#validade").keyup(function () {
+
+            var v = $(this).val();
+
+            v = v.replace(/\D/g, "");
+            v = v.replace(/(\d{2})(\d)/, "$1/$2");
+            v = v.replace(/(\d{2})(\d)/, "$1/$2");
+            v = v.replace(/(\d{2})(\d{2})$/, "$1$2");
+
+            $(this).val(v);
+        });
 
         var desconsideraZeroEsquerda = <?php echo ($this->desconsideraZeroEsquerda) ? "true" : "false"; ?>;
         var inventarios = [];
@@ -646,22 +654,27 @@
 
             $("#lbl-embvol").text( elemBipado.descricaoEmbalagem + ((elemBipado.idEmbalagem !== null) ? "(" + elemBipado.quantidadeEmbalagem + ")" : "" ) );
 
-            if (controlaValidade()) {
-                $("#validade").val("");
-                $("#div-validade").show();
-            } else {
-                $("#div-validade").hide();
-            }
+            $("#qtd").val("").focus();
+            var focusOn = "qtd";
 
             if (controlaLote()) {
                 $("#lote").val("");
                 $("#div-lote").show();
+                focusOn = "lote";
             } else {
                 $("#div-lote").hide();
             }
 
+            if (controlaValidade()) {
+                $("#validade").val("");
+                $("#div-validade").show();
+                focusOn = "validade";
+            } else {
+                $("#div-validade").hide();
+            }
+
             changeViewer("conferencia");
-            $("#qtd").val("").focus();
+            $("#"+focusOn).focus();
         };
 
         $("#qtd, #validade, #lote").keypress(function( event ) {
@@ -686,12 +699,6 @@
             var inputVal = $("#validade");
             var inputLote = $("#lote");
 
-            if (isEmpty(inputQtd.val())) {
-                if (!toNext) notificar("warning", "A quantidade não foi informada", true);
-                inputQtd.focus();
-                return false;
-            }
-
             if ( controlaValidade()) {
                 if (isEmpty(inputVal.val())) {
                     if (!toNext) notificar("warning", "A validade não foi informada", true);
@@ -699,7 +706,7 @@
                     return false;
                 }
                 if (!isValidDate(inputVal.val())){
-                    if (!toNext) notificar("warning", "Esta data " + inputVal.val() + " não é válida" , true);
+                    notificar("warning", "Esta data " + inputVal.val() + " não é válida" , true);
                     inputVal.focus();
                     return false;
                 }
@@ -708,6 +715,12 @@
             if ( controlaLote() && isEmpty(inputLote.val())) {
                 if (!toNext) notificar("warning", "O Lote não foi informado", true);
                 inputLote.focus();
+                return false;
+            }
+
+            if (isEmpty(inputQtd.val())) {
+                if (!toNext) notificar("warning", "A quantidade não foi informada", true);
+                inputQtd.focus();
                 return false;
             }
 
@@ -721,12 +734,20 @@
 
         function isValidDate(s) {
             var bits = s.split('/');
-            var d = new Date(bits[2] + '/' + bits[1] + '/' + bits[0]);
+            var milenium = ((new Date()).getFullYear()).toString().substring(0, 2);
+            var d = new Date(milenium +''+ bits[2] + '/' + bits[1] + '/' + bits[0]);
             return !!(d && (d.getMonth() + 1) == bits[1] && d.getDate() == Number(bits[0]));
         }
 
         var registrar = function () {
             changeViewer("loader");
+
+            var validade = $("#validade").val();
+            if (!isEmpty(validade)) {
+                var bits = validade.split('/');
+                var milenium = ((new Date()).getFullYear()).toString().substring(0, 2);
+                validade = bits[0] + '/' + bits[1] + '/' + milenium + '' + bits[2];
+            }
             $.post(
                 "/mobile/inventario-novo/contagem-produto",
                 {
@@ -735,7 +756,7 @@
                     produto: elemBipado,
                     conferencia: {
                         qtd: $("#qtd").val(),
-                        validade: $("#validade").val(),
+                        validade: validade,
                         lote: $("#lote").val()
                     }
                 }

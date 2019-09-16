@@ -19,7 +19,7 @@ angular.module("wms").controller("previewerInventarioCtrl", function ($scope, $h
                     }
                 })
             } else {
-                uiDialogService.dialogAlert("Não foi encontrado nenhum modelo de inventário ativo!");
+                uiDialogService.dialogAlert("Não foi encontrado nenhum modelo de inventário ativo!<br>Vá em <b>Cadastros -> Modelo Inventário</b> e crie ao menos um modelo de inventário");
                 uiDialogService.close("previewer-inventario.html");
             }
         })

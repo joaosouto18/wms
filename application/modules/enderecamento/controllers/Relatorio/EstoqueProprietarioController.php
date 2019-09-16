@@ -10,9 +10,10 @@ class Enderecamento_Relatorio_EstoqueProprietarioController extends Action
         $form->init($this->getSystemParameterValue("UTILIZA_GRADE"));
         $values = $form->getParams();
         if (isset($values['imprimir'])){
+            /** @var \Wms\Domain\Entity\Enderecamento\EstoqueProprietarioRepository $estoqueRepo */
             $estoqueRepo = $this->getEntityManager()->getRepository('wms:Enderecamento\EstoqueProprietario');
             $result = $estoqueRepo->getHistoricoEstoqueProprietario($values['codPessoa'], $values['idProduto'], $values['grade']);
-            $this->exportPDF($result, 'HistoricoEstoqueProprietario.pdf', 'Relatório de Estoque Proprietário', 'P');
+            $this->exportPDF($result, 'EstoqueProprietario', 'Relatório de Estoque Proprietário', 'P');
         }
         $this->view->form = $form;
     }

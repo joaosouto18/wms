@@ -440,7 +440,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
         $volumes = $picking['volumes'];
         $embalagens = $picking['embalagens'];
         $controlaLote = $picking['controlaLote'];
-        $arrReservas = [];
 
         $idVolume = null;
         if (count($volumes) > 0) {
@@ -770,6 +769,11 @@ class OndaRessuprimentoRepository extends EntityRepository {
     public function getQueryRessuprimentoPreventivo($parametros) {
         ini_set('max_execution_time', 300);
         ini_set('memory_limit', '-1');
+
+        $caracteristicaPulmao = Endereco::PULMAO;
+        $caracteristicaPicking = Endereco::PICKING;
+        $caracteristicaPickingDinamico = Endereco::PICKING_DINAMICO;
+
         $SQL = "SELECT DISTINCT P.COD_PRODUTO,
                     P.DSC_GRADE,
                     DE.DSC_DEPOSITO_ENDERECO,
@@ -789,7 +793,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                                  E.DSC_GRADE
                             FROM ESTOQUE E
                             INNER JOIN DEPOSITO_ENDERECO DE2 ON (E.COD_DEPOSITO_ENDERECO = DE2.COD_DEPOSITO_ENDERECO)
-                            WHERE DE2.COD_CARACTERISTICA_ENDERECO != 38
+                            WHERE DE2.COD_CARACTERISTICA_ENDERECO IN ($caracteristicaPicking, $caracteristicaPickingDinamico)
                            GROUP BY E.COD_PRODUTO, E.DSC_GRADE, E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO_VOLUME) ESTOQUE_PICKING
                      ON ESTOQUE_PICKING.COD_DEPOSITO_ENDERECO = NVL(PE.COD_DEPOSITO_ENDERECO, PV.COD_DEPOSITO_ENDERECO)
                     AND ESTOQUE_PICKING.COD_PRODUTO = P.COD_PRODUTO
@@ -800,7 +804,7 @@ class OndaRessuprimentoRepository extends EntityRepository {
                                  E.DSC_GRADE
                             FROM ESTOQUE E
                             INNER JOIN DEPOSITO_ENDERECO DE2 ON (E.COD_DEPOSITO_ENDERECO = DE2.COD_DEPOSITO_ENDERECO)
-                            WHERE DE2.COD_CARACTERISTICA_ENDERECO = 38
+                            WHERE DE2.COD_CARACTERISTICA_ENDERECO = $caracteristicaPulmao
                            GROUP BY E.COD_PRODUTO, E.DSC_GRADE, E.COD_DEPOSITO_ENDERECO, E.COD_PRODUTO_VOLUME ORDER BY NVL(E.DTH_VALIDADE, E.DTH_PRIMEIRA_MOVIMENTACAO)) ESTOQUE_PULMAO
                     ON ESTOQUE_PULMAO.COD_PRODUTO = ESTOQUE_PICKING.COD_PRODUTO
                     AND ESTOQUE_PULMAO.DSC_GRADE = ESTOQUE_PICKING.DSC_GRADE

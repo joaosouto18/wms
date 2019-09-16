@@ -3,8 +3,7 @@
 use Wms\Module\Web\Page,
     Wms\Module\Web\Controller\Action,
     Wms\Module\Web\Form\Sistema\Configuracao as ConfiguracaoForm,
-    Wms\Domain\Entity\Sistema\Parametro\Valor as ValorEntity,
-    Wms\Domain\Repository\Sistema\Parametro\Valor as ValorRepository;
+    \Wms\Util\Endereco as EnderecoUtil;
 
 /**
  * Description of Web_ConfiguracaoController
@@ -49,21 +48,26 @@ class Web_ConfiguracaoController extends Action
 
     public function getMaskEnderecoAjaxAction()
     {
-        $arrQtdDigitos = \Wms\Util\Endereco::getQtdDigitos();
-        $mascara = \Wms\Util\Endereco::mascara($arrQtdDigitos,'9');
-        $arrMasc = \Wms\Util\Endereco::separar($mascara, $arrQtdDigitos);
-
-        $mask = implode('.', $arrMasc);
-
-        $result = array(
-            'mask' => $mask,
-            'enderecoRua' => $arrMasc['rua'],
-            'enderecoPredio' => $arrMasc['predio'],
-            'enderecoNivel' => $arrMasc['nivel'],
-            'enderecoApartamento' => $arrMasc['apartamento']
-        );
-
-        $this->_helper->json($result);
+        try {
+            $arrQtdDigitos = EnderecoUtil::getQtdDigitos();
+            $mascara = EnderecoUtil::mascara($arrQtdDigitos, '9', EnderecoUtil::FORMATO_MATRIZ_ASSOC);
+            $this->_helper->json([
+                'mask' => implode('.', $mascara),
+                'enderecoRua' => $mascara['rua'],
+                'enderecoPredio' => $mascara['predio'],
+                'enderecoNivel' => $mascara['nivel'],
+                'enderecoApartamento' => $mascara['apartamento']
+            ]);
+        } catch (Exception $e){
+            $this->_helper->messenger('error', "Problema na formatação da mascara de endereço: '". $e->getMessage(). "'. Um valor padrão foi atribuído. Notifique ao suporte da Imperium");
+            $this->_helper->json([
+                'mask' => '99.999.99.99',
+                'enderecoRua' => '99',
+                'enderecoPredio' => '999',
+                'enderecoNivel' => '99',
+                'enderecoApartamento' => '99'
+            ]);
+        }
     }
 
 }

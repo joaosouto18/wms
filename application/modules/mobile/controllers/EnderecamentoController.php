@@ -969,6 +969,7 @@ class Mobile_EnderecamentoController extends Action
             $this->view->qtd = $qtd;
             $this->view->qtdReal = $qtdReal;
             $this->view->qtdEmbalagem = $qtdEmbalagem;
+            $this->view->controlaLote = ($produtoEn->getIndControlaLote() == 'S');
 
             $idEndereco = $endereco->getId();
 
@@ -998,13 +999,12 @@ class Mobile_EnderecamentoController extends Action
         $params['uma'] = $this->_getParam('uma');
         $params['etiquetaProduto'] = $this->_getParam('etiquetaProduto');
         $params['idEstoque'] = $this->_getParam('cb');
+        $params['lote'] = $this->_getParam('lote');
         $enderecoNovo = $this->_getParam('novoEndereco');
         $nivelNovo = $this->_getParam('nivel');
         $enderecoAntigo = $this->_getParam('end');
         $nivelAntigo = $this->_getParam('nivelAntigo');
 
-        /** @var \Wms\Domain\Entity\Produto $produtoRepo */
-        $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
         /** @var \Wms\Domain\Entity\Produto\EmbalagemRepository $embalagemRepo */
         $embalagemRepo = $this->getEntityManager()->getRepository('wms:Produto\Embalagem');
         /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepo */

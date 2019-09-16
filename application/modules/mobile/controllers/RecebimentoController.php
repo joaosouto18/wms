@@ -427,6 +427,7 @@ class Mobile_RecebimentoController extends Action
     {
         $request = $this->getRequest();
         $params = $this->_getAllParams();
+        /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
         if (isset($params['conferenciaCega'])) {
             $this->view->idOrdemServico = $params['idOrdemServico'];
@@ -481,6 +482,14 @@ class Mobile_RecebimentoController extends Action
             if ($submit == 'semConferencia' || $submit == 'Autorizar Recebimento') {
                 if ($senhaDigitada == $senhaAutorizacao) {
                     if ($params['conferenciaCega'] == true) {
+
+                        $qtdBloqueada = $recebimentoRepo->getQuantidadeConferidaBloqueada($idRecebimento);
+                        if (count($qtdBloqueada))
+                            return array(
+                                'message' => 'Existem itens bloqueados por validade! Não é possível finalizar',
+                                'exception' => null,
+                                'concluido' => false);
+
                         $result = $recebimentoRepo->executarConferencia($idOrdemServico, $qtdNFs, $qtdAvarias, $qtdConferidas, $norma, $qtdUnidFracionavel, $idConferente, true, $unMedida, $dataValidade);
 
                         if ($result['exception'] != null) {

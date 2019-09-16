@@ -165,6 +165,16 @@ class VEtiquetaSeparacao
     protected $posVolume;
 
     /**
+     * @Column(name="POSENTREGA", type="integer", nullable=false)
+     */
+    protected $posEntrega;
+
+    /**
+     * @Column(name="TOTALENTREGA", type="integer", nullable=false)
+     */
+    protected $totalEntrega;
+
+    /**
      * @param mixed $cliente
      */
     public function setCliente($cliente)
@@ -642,6 +652,38 @@ class VEtiquetaSeparacao
     public function setPosVolume($posVolume)
     {
         $this->posVolume = $posVolume;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPosEntrega()
+    {
+        return $this->posEntrega;
+    }
+
+    /**
+     * @param mixed $posEntrega
+     */
+    public function setPosEntrega($posEntrega)
+    {
+        $this->posEntrega = $posEntrega;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTotalEntrega()
+    {
+        return $this->totalEntrega;
+    }
+
+    /**
+     * @param mixed $totalEntrega
+     */
+    public function setTotalEntrega($totalEntrega)
+    {
+        $this->totalEntrega = $totalEntrega;
     }
 
 }

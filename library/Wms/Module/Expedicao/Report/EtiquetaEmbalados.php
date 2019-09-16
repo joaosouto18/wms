@@ -294,60 +294,6 @@ class EtiquetaEmbalados extends eFPDF
         }
     }
 
-    /*
-    protected function layoutModelo12($volumes)
-    {
-        $this->SetMargins(3, 1.5, 0);
-
-        $strReimpressao = "";
-        if ($reimpressao == true) {$strReimpressao = "Reimpressão";}
-
-        $this->AddPage();
-        $this->currentEtq = $posEtiqueta;
-        $this->total=$countEtiquetas;
-        $this->modelo = $modelo;
-        $this->strReimpressao = $strReimpressao;
-
-        $this->SetX(30);
-        $this->SetFont('Arial', 'B', 11);
-        $impressao = utf8_decode(substr("$etiqueta[codClienteExterno] - $etiqueta[cliente] \n",0,50));
-        $this->MultiCell(78, 4.3, $impressao, 1, 'L');
-        $this->SetX(30);
-        $y1 = $this->getY();
-        $impressao = "EXP: $etiqueta[codExpedicao]";
-        $this->MultiCell(40, 5, $impressao, 1, 'L');
-        $this->SetY($y1);
-        $impressao = $posEtiqueta . '/' . $this->total;
-        $this->SetX(70);
-        $this->MultiCell(38, 5, $impressao, 1, 'L');
-        $this->SetX(3);
-        $y2 = $this->getY();
-        $this->SetFont('Arial', 'B', 17);
-        $impressao = "CARGA: $etiqueta[codCargaExterno] ";
-        $this->SetY($y2 + 1.5);
-        $this->MultiCell(105, 6.5, $impressao, 1, 'L');
-        $this->SetY($y2 + 1.5);
-        $impressao = $etiqueta['contadorCargas'][$etiqueta['codCargaExterno']] . '/' . $etiqueta['qtdCargaDist'];
-        $this->SetX(70);
-        $this->MultiCell(38, 6.5, $impressao, 1, 'L');
-        $this->SetFont('Arial', 'B', 17);
-        $impressao = utf8_decode("CODIGO: $etiqueta[codProduto]");
-        $this->MultiCell(105, 6, $impressao, 1, 'L');
-        $this->SetFont('Arial', '', 9);
-        $impressao = substr("$etiqueta[produto]",0,45);
-        $this->MultiCell(105, 4, $impressao, 1, 'L');
-        $this->SetFont('Arial', 'B', 17);
-        $y3 = $this->getY();
-        $impressao = str_replace('.','-',"$etiqueta[endereco]");
-        $this->MultiCell(50, 6, $impressao, 1, 'C');
-        $this->SetY($y3);
-        $impressao = $etiqueta['contadorProdutos'][$etiqueta['codProduto']][$etiqueta['idCaracteristica']] . '/' . $etiqueta['qtdProdDist'] . '-' . $etiqueta['dscBox'];
-        $this->SetX(53);
-        $this->MultiCell(55, 6, $impressao, 1, 'L');
-        $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 40, 41, 65, 17);
-    }
-    */
-
     private function bodyExpedicaoModelo5($volumes)
     {
 
@@ -373,7 +319,10 @@ class EtiquetaEmbalados extends eFPDF
             $this->SetFont('Arial', '', 7);
             $this->MultiCell(110, 3.9, "VOLUME: $volume[POS_VOLUME]/$volume[COUNT_VOLUMES]", 0, 'L');
 
-            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 6, 20 , 33, 9.5);
+            $this->SetFont('Arial', '', 7);
+            $this->MultiCell(110, 3.9, "VOL. ENTREGA: $volume[POS_ENTREGA] de $volume[TOTAL_ENTREGA]", 0, 'L');
+
+            $this->Image(@CodigoBarras::gerarNovo($volume['COD_MAPA_SEPARACAO_EMB_CLIENTE']), 35, 20 , 33, 9.5);
         }
     }
 }
