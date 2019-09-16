@@ -32,4 +32,6 @@ Insert into PARAMETRO (COD_PARAMETRO,COD_CONTEXTO_PARAMETRO,DSC_PARAMETRO,DSC_TI
     values (sq_parametro_01.nextval,'2','TIPO_INTEGRACAO_CORTE','Momento que Dispara o Corte para o ERP (Instantâneo(I)/Finalização(F))','S','A',null);
 
 
- 
+ alter table expedicao_andamento add (
+     ind_erro_processado char(1 byte)
+);
