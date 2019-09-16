@@ -163,7 +163,7 @@ class Integracao {
 
         $maxDate = null;
         foreach ($this->_dados as $row) {
-
+            $row = array_change_key_case($row,CASE_UPPER);
             if(isset($row['DTH'])) {
                 $data = \DateTime::createFromFormat('d/m/Y H:i:s', $row['DTH']);
                 $data = $data->format('Y-m-d H:i:s');
