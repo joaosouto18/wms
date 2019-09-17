@@ -61,6 +61,8 @@ class produto {
     /** @var string */
     public $quantidadeAtendida;
     /** @var string */
+    public $quantidadeConferida;
+    /** @var string */
     public $fatorEmbalagemVenda;
     /** @var string */
     public $proprietario;
@@ -77,6 +79,8 @@ class pedido {
     public $cliente;
     /** @var string */
     public $situacao;
+    /** @var string */
+    public $corteHabilitadoErp;
     /** @var string */
     public $tipo;
     /** @var  boolean */
@@ -754,6 +758,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $pedido->itinerario = $itinerario;
             $pedido->cliente = $cliente;
             $pedido->conferido = $pedidoRepo->getSituacaoPedido($pedidoEn->getId());
+            $pedido->corteHabilitadoErp = $pedidoEn->getCarga()->getExpedicao()->getCorteERPHabilitado();
             $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
             if(is_array($produtos)) {
                 foreach ($produtos as $item) {
@@ -763,6 +768,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
                     $produto->quantidade = $item['QTD_PEDIDO'];
                     $produto->proprietario = $item['CNPJ'];
                     $produto->lote = (isset($item['DSC_LOTE'])) ? $item['DSC_LOTE'] : null;
+                    $produto->quantidadeConferida = $item['QTD_CONFERIDA'];
                     if (is_null($item['ATENDIDA'])) {
                         $produto->quantidadeAtendida = 0;
                     } else {
@@ -841,6 +847,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
         $result->linhaEntrega = $pedidoEn->getLinhaEntrega();
         $result->situacao = $pedidoEn->getCarga()->getExpedicao()->getStatus()->getSigla();
         $result->conferido = $pedidoRepo->getSituacaoPedido($idPedido);
+        $result->corteHabilitadoErp = $pedidoEn->getCarga()->getExpedicao()->getCorteERPHabilitado();
         $produtos = $pedidoRepo->getQtdPedidaAtendidaByPedido($pedidoEn->getId());
         foreach ($produtos as $item) {
             $produto = new produto();
@@ -849,6 +856,7 @@ class Wms_WebService_Expedicao extends Wms_WebService
             $produto->quantidade = $item['QTD_PEDIDO'];
             $produto->proprietario = $item['CNPJ'];
             $produto->lote = (isset($item['DSC_LOTE'])) ? $item['DSC_LOTE'] : null;
+            $produto->quantidadeConferida = $item['QTD_CONFERIDA'];
             if (is_null($item['ATENDIDA'])) {
                 $produto->quantidadeAtendida = 0;
             } else {

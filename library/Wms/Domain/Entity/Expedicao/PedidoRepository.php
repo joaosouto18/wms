@@ -67,10 +67,27 @@ class PedidoRepository extends EntityRepository
                            PJ.NUM_CNPJ as CNPJ,
                            PP.QTD_EMBALAGEM_VENDA as QTD_PEDIDO_EMBALAGEM_VENDA,
                            NVL((EP.QTD * -1),0) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) as QTD_ATENDIDA_EMB_VENDA,
-                           NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA
+                           NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA,
+                           ETQ_C.QTD_CONFERIDA
                     FROM PEDIDO_PRODUTO PP 
                     LEFT JOIN ESTOQUE_PROPRIETARIO EP ON (PP.COD_PRODUTO = EP.COD_PRODUTO AND PP.DSC_GRADE = EP.DSC_GRADE AND PP.COD_PEDIDO = EP.COD_OPERACAO)
                     LEFT JOIN PESSOA_JURIDICA PJ ON PJ.COD_PESSOA = EP.COD_PESSOA
+                    LEFT JOIN (SELECT ES.COD_PRODUTO, 
+                                      ES.DSC_GRADE, 
+                                      MIN(NVL(ESC.QTD,0)) as QTD_CONFERIDA
+                                 FROM ETIQUETA_SEPARACAO ES
+                                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, NVL(DSC_LOTE,0) as LOTE, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
+                                              FROM ETIQUETA_SEPARACAO
+                                             WHERE COD_PEDIDO = '$codPedido'
+                                               AND COD_STATUS IN (526,531,532)
+                                             GROUP BY COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0),NVL(DSC_LOTE,0) ) ESC
+                                   ON ES.COD_PRODUTO = ESC.COD_PRODUTO
+                                  AND ES.DSC_GRADE = ESC.DSC_GRADE
+                                  AND NVL(ES.COD_PRODUTO_VOLUME,0) = ESC.VOLUME
+                                WHERE ES.COD_PEDIDO = '$codPedido'
+                                GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE,NVL(DSC_LOTE,0)) ETQ_C
+                      ON ETQ_C.COD_PRODUTO = PP.COD_PRODUTO
+                     AND ETQ_C.DSC_GRADE = PP.DSC_GRADE
                     WHERE PP.COD_PEDIDO = $codPedido";
         }else {
             $SQL = "SELECT '' as COD_PESSOA,
@@ -84,10 +101,30 @@ class PedidoRepository extends EntityRepository
                            NVL(PPL.QUANTIDADE, PP.QUANTIDADE) / NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as QTD_PEDIDO_EMBALAGEM_VENDA,
                            CASE WHEN (PPL.DSC_LOTE IS NOT NULL ) THEN (PPL.QUANTIDADE - NVL(PPL.QTD_CORTE,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1)
                                 ELSE (PP.QUANTIDADE - NVL(PP.QTD_CORTADA,0)) / NVL(PP.FATOR_EMBALAGEM_VENDA,1) END as QTD_ATENDIDA_EMB_VENDA,
-                           NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA                           
+                           NVL(PP.FATOR_EMBALAGEM_VENDA, 1) as FATOR_EMBALAGEM_VENDA,
+                           ETQ_C.QTD_CONFERIDA              
                     FROM PEDIDO_PRODUTO PP
                     LEFT JOIN PEDIDO_PRODUTO_LOTE PPL ON PPL.COD_PEDIDO_PRODUTO = PP.COD_PEDIDO_PRODUTO
-                    WHERE PP.COD_PEDIDO = '$codPedido'";
+                    LEFT JOIN (SELECT ES.COD_PRODUTO, 
+                                      ES.DSC_GRADE, 
+                                      NVL(ES.DSC_LOTE,0) as LOTE,
+                                      MIN(NVL(ESC.QTD,0)) as QTD_CONFERIDA
+                                 FROM ETIQUETA_SEPARACAO ES
+                                 LEFT JOIN (SELECT COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0) as VOLUME, NVL(DSC_LOTE,0) as LOTE, COUNT(COD_ETIQUETA_SEPARACAO) as QTD
+                                              FROM ETIQUETA_SEPARACAO
+                                             WHERE COD_PEDIDO = '$codPedido'
+                                               AND COD_STATUS IN (526,531,532)
+                                             GROUP BY COD_PRODUTO, DSC_GRADE, NVL(COD_PRODUTO_VOLUME,0),NVL(DSC_LOTE,0) ) ESC
+                                   ON ES.COD_PRODUTO = ESC.COD_PRODUTO
+                                  AND ES.DSC_GRADE = ESC.DSC_GRADE
+                                  AND NVL(ES.COD_PRODUTO_VOLUME,0) = ESC.VOLUME
+                                  AND NVL(ES.DSC_LOTE,0) = ESC.LOTE
+                                WHERE ES.COD_PEDIDO = '$codPedido'
+                                GROUP BY ES.COD_PRODUTO, ES.DSC_GRADE,NVL(DSC_LOTE,0)) ETQ_C
+                      ON ETQ_C.COD_PRODUTO = PP.COD_PRODUTO
+                     AND ETQ_C.DSC_GRADE = PP.DSC_GRADE
+                     AND ETQ_C.LOTE = NVL(PPL.DSC_LOTE,0) 
+                   WHERE PP.COD_PEDIDO = '$codPedido'";
         }
         $array = $this->getEntityManager()->getConnection()->query($SQL)->fetchAll(\PDO::FETCH_ASSOC);
         return $array;
