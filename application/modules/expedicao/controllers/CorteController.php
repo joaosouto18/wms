@@ -91,6 +91,51 @@ class Expedicao_CorteController extends Action {
         $this->_redirect('/expedicao/os/index/id/' . $idExpedicao);
     }
 
+    public function habilitaCorteErpAction () {
+        $idExpedicao = $this->_getParam('id');
+
+        try {
+
+            if ($idExpedicao == null) {
+                throw new \Exception("Expedição não informada");
+            }
+
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
+            $expedicaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao");
+
+            /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $andamentoRepo */
+            $andamentoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+
+            /** @var \Wms\Domain\Entity\Expedicao $expedicaoEn */
+            $expedicaoEn = $expedicaoRepo->find($idExpedicao);
+
+            if ($expedicaoEn == null) {
+                throw new \Exception("Expedição " . $idExpedicao . " não encontrada");
+            }
+
+            if ($expedicaoEn->getStatus()->getId() == \Wms\Domain\Entity\Expedicao::STATUS_FINALIZADO) {
+                throw new \Exception("Expedição " . $idExpedicao . " se encontra Finalizada");
+            }
+
+            if ($expedicaoEn->getCorteERPHabilitado() == "S") {
+                throw new \Exception("Expedição " . $idExpedicao . " ja está habilitada para cortes no ERP");
+            }
+
+            $expedicaoEn->setCorteERPHabilitado("S");
+            $andamentoRepo->save("Cortes Habilitados no ERP", $idExpedicao, false, false);
+            $this->getEntityManager()->persist($expedicaoEn);
+            $this->getEntityManager()->flush();
+
+            $this->addFlashMessage("success","Cortes Habilitados no ERP");
+
+        } catch (\Exception $e) {
+
+            $this->addFlashMessage('error',$e->getMessage());
+        }
+
+        $this->redirect('index','index','expedicao',array('idExpedicao'=> $idExpedicao));
+    }
+
     public function confirmaCorteTotalAjaxAction () {
 
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
