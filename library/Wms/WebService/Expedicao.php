@@ -499,6 +499,10 @@ class Wms_WebService_Expedicao extends Wms_WebService
             /** @var \Wms\Domain\Entity\Expedicao\Pedido $EntPedido */
             $EntPedido = $pedidoRepository->find($idPedido);
 
+            if ($EntPedido->getCarga()->getExpedicao()->getStatus()->getId() == Expedicao::STATUS_FINALIZADO) {
+                throw new \Exception("Pedido $codExterno se encontra em uma expedição finalizada e não pode ser cancelado");
+            }
+
             $pedidoRepository->cancelar($idPedido);
             /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepository  */
             $ExpedicaoRepository = $this->_em->getRepository('wms:Expedicao');
@@ -911,6 +915,14 @@ class Wms_WebService_Expedicao extends Wms_WebService
 
         $arrayCarga['idExpedicao'] = $entityExpedicao;
         $entityCarga = $this->findCargaByTipoCarga($repositorios, $arrayCarga);
+
+        if ($entityCarga->getExpedicao()->getStatus() == Expedicao::STATUS_FINALIZADO) {
+            throw new \Exception("Carga " . $entityCarga->getCodCargaExterno() . "ja se encontra em uma expedição finalizada");
+        }
+
+        if ($entityCarga->getExpedicao()->getStatus() == Expedicao::STATUS_CANCELADO) {
+            throw new \Exception("Carga " . $entityCarga->getCodCargaExterno() . "ja se encontra em uma expedição cancelada");
+        }
 
         $i = 0;
         $cargaRepository = $this->_em->getRepository('wms:Expedicao\Carga');
