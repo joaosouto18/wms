@@ -955,8 +955,8 @@ class PaleteRepository extends EntityRepository {
         $arrayTemp = array();
         foreach ($qtdRecebida as $key => $dados){
             if(isset($arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['QTD'])) {
-                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['QTD'] = Math::adicionar($dados['QTD'], $arrayTemp[0]['QTD']);
-                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['PESO'] = Math::adicionar($dados['PESO'], $arrayTemp[0]['PESO']);
+                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['QTD'] = Math::adicionar($dados['QTD'], $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['QTD']);
+                $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['PESO'] = Math::adicionar($dados['PESO'], $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['PESO']);
             }else{
                 $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['QTD'] = $dados['QTD'];
                 $arrayTemp[$dados['COD_NORMA_PALETIZACAO']]['PESO'] = $dados['PESO'];
@@ -997,9 +997,7 @@ class PaleteRepository extends EntityRepository {
                 $qtd = $unitizador['QTD'];
                 $peso = $unitizador['PESO'];
 
-                /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-                $notaFiscalRepo = $this->getEntityManager()->getRepository('wms:NotaFiscal');
-                $getDataValidadeUltimoProduto = $notaFiscalRepo->buscaRecebimentoProduto($recebimentoEn->getId(), null, $idProduto, $grade);
+                $getDataValidadeUltimoProduto = $nfRepo->buscaRecebimentoProduto($recebimentoEn->getId(), null, $idProduto, $grade);
 
                 if (isset($getDataValidadeUltimoProduto) && !empty($getDataValidadeUltimoProduto)) {
                     $dataValidade = $getDataValidadeUltimoProduto['dataValidade'];

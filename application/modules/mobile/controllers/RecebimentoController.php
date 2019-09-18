@@ -250,7 +250,6 @@ class Mobile_RecebimentoController extends Action
 
         /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
         $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
-        $notaFiscalItemRepo = $this->em->getRepository('wms:NotaFiscal\Item');
         /** @var \Wms\Domain\Entity\Recebimento\EmbalagemRepository $recebimentoEmbalagemRepository */
         $recebimentoEmbalagemRepository = $this->em->getRepository('wms:Recebimento\Embalagem');
 
@@ -268,11 +267,18 @@ class Mobile_RecebimentoController extends Action
             $retorno = $recebimentoRepo->checarOrdemServicoAberta($idRecebimento);
             $idOrdemServico = $retorno['id'];
 
-            // item conferido
-            /** @var \Wms\Domain\Entity\NotaFiscal\Item $notaFiscalItemEntity */
-            $notaFiscalItemEntity = $notaFiscalItemRepo->find($idItem);
             /** @var \Wms\Domain\Entity\Produto $produtoEn */
-            $produtoEn = $notaFiscalItemEntity->getProduto();
+            $produtoEn = null;
+            if (!empty($idProdutoEmbalagem)) {
+                $produtoEn = $this->em->find("wms:Produto\Embalagem", $idProdutoEmbalagem)->getProduto();
+            }
+            elseif (!empty($idProdutoVolume)) {
+                $produtoEn = $this->em->find("wms:Produto\Volume", $idProdutoVolume)->getProduto();
+            }
+            else {
+                throw new Exception("Elemento embalagem/volume não identificado!");
+            }
+
             $idProduto = $produtoEn->getId();
             $grade = $produtoEn->getGrade();
             $qtds = [];

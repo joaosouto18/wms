@@ -743,7 +743,7 @@ class NotaFiscalRepository extends EntityRepository {
     public function buscarItemPorCodigoBarras($idRecebimento, $codigoBarras) {
         // busco produto
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select("nfi.id idItem, p.grade, nfi.quantidade, p.id idProduto, p.descricao,
+                ->select("p.id idProduto, p.descricao, p.grade,
                         tc.id idTipoComercializacao, tc.descricao tipoComercializacao,
                         pe.id idEmbalagem, pv.id idVolume, p.validade, p.possuiPesoVariavel,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
@@ -763,6 +763,7 @@ class NotaFiscalRepository extends EntityRepository {
                         NVL(p.unidadeFracao, 'N') unidFracao,
                         NVL(p.indControlaLote, 'N') controlaLote
                         ")
+                ->distinct(true)
                 ->from('wms:NotaFiscal', 'nf')
                 ->innerJoin('nf.itens', 'nfi')
                 ->innerJoin('nfi.produto', 'p')

@@ -13,7 +13,6 @@ $lblQtd = ($this->indFracionavel == "S") ? \Wms\Domain\Entity\Produto::$listaUni
     <form method="post" id="recebimento-embalagem-quantidade-form" action="<?php echo $this->url(array('controller' => 'recebimento', 'action' => 'produto-conferencia')); ?>" accept-charset="UTF-8" enctype="application/x-www-form-urlencoded">
 
         <input type="hidden" id="idRecebimento" name="idRecebimento" value="<?php echo $this->recebimento->getId() ?>" />
-        <input type="hidden" id="idItem" name="idItem" value="<?php echo $this->itemNF['idItem'] ?>" />
         <input type="hidden" id="idProdutoEmbalagem" name="idProdutoEmbalagem" value="<?php echo $this->itemNF['idEmbalagem'] ?>" />
         <input type="hidden" id="unidadePorEmbalagem" name="unidadePorEmbalagem" value="<?php echo ($this->indFracionavel != "S") ? $this->itemNF['quantidadeEmbalagem'] : 1 ?>" />
         <input type="hidden" id="isEmbFracDefault" name="isEmbFracDefault" value="<?php echo $this->embFracionavelDefault ?>" />
