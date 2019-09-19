@@ -31,7 +31,7 @@
     <?php endif; ?>
     <div>
         <label>Novo Endereço:</label>
-        <input class="focus" type="text" name="novoEndereco" id="novoEndereco" onkeydown="nextInput(event)" />
+        <input type="text" name="novoEndereco" id="novoEndereco" onkeydown="nextInput(event)" />
     </div>
 
     <div>
@@ -52,6 +52,23 @@
     $('#qtd_fake').on('keyup', function (e) {
         var qtdEmbalagem = <?php echo $this->qtdEmbalagem ?>;
         $('#qtd').val(qtdEmbalagem * $(this).val());
+    });
+
+    $(document).ready(function () {
+        var inptLote = $("#lote");
+        var inptEnd = $("#novoEndereco");
+        var inptNivel = $("#nivel");
+        if (!isEmpty(inptLote)) {
+            inptLote.focus();
+            return;
+        }
+        if (!isEmpty(inptEnd)) {
+            inptEnd.focus();
+            return;
+        }
+        if (!isEmpty(inptNivel)) {
+            inptNivel.focus();
+        }
     });
 
     $("input:text").keydown(function (e) {
