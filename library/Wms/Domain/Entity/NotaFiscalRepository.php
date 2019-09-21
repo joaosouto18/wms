@@ -739,6 +739,8 @@ class NotaFiscalRepository extends EntityRepository {
      *
      * @param int $idRecebimento
      * @param string $codigoBarras
+     * @return mixed
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function buscarItemPorCodigoBarras($idRecebimento, $codigoBarras) {
         // busco produto
@@ -796,7 +798,7 @@ class NotaFiscalRepository extends EntityRepository {
                 )
         );
 
-        return $dql->getQuery()->getSingleResult(Query::HYDRATE_ARRAY);
+        return $dql->getQuery()->setMaxResults(1)->getOneOrNullResult(Query::HYDRATE_ARRAY);
     }
 
     public function buscaRecebimentoProduto($idRecebimento, $codigoBarras, $idProduto, $grade, $lote = null) {

@@ -448,9 +448,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
                         $produtoEntity->addEmbalagem($embalagemEntity);
 
-                        $values['embalagens'][$id]['id'] = $embalagemEntity->getId();
-
-
+                        $idEmbalagem = $embalagemEntity->getId();
+                        $values['embalagens'][$id]['id'] = $idEmbalagem;
+                        if (!empty($values['dadosLogisticos'])) {
+                            foreach ($values['dadosLogisticos'] as $key => $dadoLogistico) {
+                                $values['dadosLogisticos'][$key]['idEmbalagem'] = $idEmbalagem;
+                            }
+                        }
 
                         break;
                     case 'alterar':
