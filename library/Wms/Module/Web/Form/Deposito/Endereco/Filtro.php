@@ -92,6 +92,12 @@ class Filtro extends Form
                     'multiOptions' => array('firstOpt' => 'Todos', 'options' => array('B' => 'Bloqueado', 'D' => 'Desbloqueado')),
                     'label' => 'Situação',
                 ))
+                ->addElement('select', 'situacao', array(
+                    'mostrarSelecione' => false,
+                    'class' => 'medio',
+                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => array('B' => 'Bloqueado', 'D' => 'Desbloqueado')),
+                    'label' => 'Situação',
+                ))
                 ->addElement('select', 'status', array(
                     'mostrarSelecione' => false,
                     'class' => 'pequeno',

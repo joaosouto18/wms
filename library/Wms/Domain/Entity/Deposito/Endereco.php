@@ -57,9 +57,18 @@ class Endereco
     protected $apartamento;
 
     /**
-     * @Column(name="IND_SITUACAO", type="string", length=1, nullable=false)
+     * @var bool
+     *
+     * @Column(name="BLOQUEADA_ENTRADA", type="boolean", nullable=false)
      */
-    protected $situacao;
+    protected $bloqueadaEntrada;
+
+    /**
+     * @var bool
+     *
+     * @Column(name="BLOQUEADA_SAIDA", type="boolean", nullable=false)
+     */
+    protected $bloqueadaSaida;
 
     /**
      * @Column(name="IND_STATUS", type="string", length=1, nullable=false)
@@ -269,6 +278,39 @@ class Endereco
         return $this;
     }
 
+    /**
+     * @return bool
+     */
+    public function isBloqueadaEntrada()
+    {
+        return $this->bloqueadaEntrada;
+    }
+
+    /**
+     * @param bool $bloqueadaEntrada
+     */
+    public function setBloqueadaEntrada($bloqueadaEntrada)
+    {
+        $this->bloqueadaEntrada = $bloqueadaEntrada;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBloqueadaSaida()
+    {
+        return $this->bloqueadaSaida;
+    }
+
+    /**
+     * @param bool $bloqueadaSaida
+     */
+    public function setBloqueadaSaida($bloqueadaSaida)
+    {
+        $this->bloqueadaSaida = $bloqueadaSaida;
+    }
+
+    /*
     public function getSituacao()
     {
         return $this->situacao;
@@ -279,6 +321,8 @@ class Endereco
         $this->situacao = $situacao;
         return $this;
     }
+    */
+
 
     public function getIdCaracteristica()
     {
