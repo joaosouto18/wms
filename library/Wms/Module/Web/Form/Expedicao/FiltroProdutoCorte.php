@@ -1,10 +1,10 @@
 <?php
 
-namespace Wms\Module\Web\Form;
+namespace Wms\Module\Web\Form\Expedicao;
 
 use Wms\Module\Web\Form;
 
-class CortePedido extends Form
+class FiltroProdutoCorte extends Form
 {
     public function init()
     {
@@ -21,12 +21,12 @@ class CortePedido extends Form
                 'label' => 'Quebrar por endereços (Apenas se tiver mapas)',
                 'checkedValue' => 'true'
             ))
-            ->addElement('button', 'btnSubmitPedido', array(
+            ->addElement('button', 'btnSubmit', array(
                 'class' => 'btn',
                 'label' => 'Buscar',
                 'decorators' => array('ViewHelper'),
                 'attribs' => array('style' => 'margin-top:16px')
             ))
-            ->addDisplayGroup(array('codProduto', 'grade', 'quebraEndereco', 'btnSubmitPedido'), 'Buscar', array('legend' => 'Buscar por Produto'));
+            ->addDisplayGroup(array('codProduto', 'grade', 'quebraEndereco', 'btnSubmit'), 'Buscar', array('legend' => 'Buscar por Produto'));
     }
 }

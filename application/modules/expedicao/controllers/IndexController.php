@@ -822,48 +822,17 @@ class Expedicao_IndexController extends Action {
     public function cancelarExpedicaoAjaxAction() {
         $idExpedicao = $this->_getParam('id', 0);
 
-        /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
-        $expedicaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao');
-        /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepository */
-        $expedicaoAndamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
-        /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
-        $pedidoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
-        /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
-        $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
-        $NotaFiscalSaidaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
-        $ReentregaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Reentrega');
+        try{
+            $this->em->beginTransaction();
+            /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepository */
+            $expedicaoRepository = $this->getEntityManager()->getRepository('wms:Expedicao');
+            $expedicaoRepository->cancelarExpedicao($idExpedicao);
 
-        $expedicaoEn = $expedicaoRepository->find($idExpedicao);
-
-        /*
-         * Cancela Carga no ERP
-         */
-        if ($this->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S') {
-            $expedicaoRepository->executaIntegracaoBDCancelamentoCarga($expedicaoEn);
+            $this->em->commit();
+            $this->addFlashMessage('success', "cargas da expedicao $idExpedicao removidas com sucesso");
+        } catch (Exception $e) {
+            $this->addFlashMessage('error', "Houve uma falha ao cancelar a expedição $idExpedicao: " . $e->getMessage());
         }
-
-
-        $expedicaoEn = $expedicaoRepository->find($idExpedicao);
-        $cargasEn = $expedicaoEn->getCarga();
-
-        foreach ($cargasEn as $key => $cargaEn) {
-            $codCargaExterno = $cargaEn->getCodCargaExterno();
-
-            $pedidoEntities = $cargaRepository->getPedidos($cargaEn->getId());
-            foreach ($pedidoEntities as $rowPedido) {
-                $pedidoRepository->removeReservaEstoque($rowPedido->getId());
-                $pedidoRepository->remove($rowPedido, true);
-            }
-            $ReentregaRepository->removeReentrega($cargaEn->getId());
-            $NotaFiscalSaidaRepository->atualizaStatusNota(explode("-" , $codCargaExterno  )[0]);
-            $cargaRepository->removeCarga($cargaEn->getId());
-
-            $expedicaoAndamentoRepository->save("carga $codCargaExterno removida da expedicao $idExpedicao", $idExpedicao);
-        }
-
-        $expedicaoRepository->alteraStatus($expedicaoEn, Expedicao::STATUS_CANCELADO);
-
-        $this->addFlashMessage('success', "cargas da expedicao $idExpedicao removidas com sucesso");
         $this->_redirect('expedicao');
     }
 

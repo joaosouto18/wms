@@ -5866,4 +5866,64 @@ class ExpedicaoRepository extends EntityRepository {
 
         return true;
     }
+
+    public function getProdutosAtivosPedido($idExpedicao)
+    {
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("pp")
+            ->from("wms:Expedicao\PedidoProduto", "pp")
+            ->innerJoin("pp.pedido", "p")
+            ->innerJoin("p.carga", "c")
+            ->where("c.expedicao = $idExpedicao and pp.quantidade > NVL(pp.qtdCortada,0)");
+
+        return $dql->getQuery()->getResult();
+    }
+
+    /**
+     * @param $idExpedicao
+     * @throws \Exception
+     */
+    public function cancelarExpedicao ($idExpedicao)
+    {
+        try {
+            /** @var \Wms\Domain\Entity\Expedicao\AndamentoRepository $expedicaoAndamentoRepository */
+            $expedicaoAndamentoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Andamento');
+            /** @var \Wms\Domain\Entity\Expedicao\PedidoRepository $pedidoRepository */
+            $pedidoRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Pedido');
+            /** @var \Wms\Domain\Entity\Expedicao\CargaRepository $cargaRepository */
+            $cargaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Carga');
+            $NotaFiscalSaidaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\NotaFiscalSaida');
+            $ReentregaRepository = $this->getEntityManager()->getRepository('wms:Expedicao\Reentrega');
+            $expedicaoEn = $this->find($idExpedicao);
+
+            /*
+             * Cancela Carga no ERP
+             */
+            if ($this->getSystemParameterValue('IND_INFORMA_ERP_ETQ_MAPAS_IMPRESSOS_INTEGRACAO') == 'S') {
+                $this->executaIntegracaoBDCancelamentoCarga($expedicaoEn);
+            }
+
+            $expedicaoEn = $this->find($idExpedicao);
+            $cargasEn = $expedicaoEn->getCarga();
+
+            foreach ($cargasEn as $key => $cargaEn) {
+                $codCargaExterno = $cargaEn->getCodCargaExterno();
+
+                $pedidoEntities = $cargaRepository->getPedidos($cargaEn->getId());
+                foreach ($pedidoEntities as $rowPedido) {
+                    $pedidoRepository->removeReservaEstoque($rowPedido->getId());
+                    $pedidoRepository->remove($rowPedido, true);
+                }
+                $ReentregaRepository->removeReentrega($cargaEn->getId());
+                $NotaFiscalSaidaRepository->atualizaStatusNota(explode("-", $codCargaExterno)[0]);
+                $cargaRepository->removeCarga($cargaEn->getId());
+
+                $expedicaoAndamentoRepository->save("carga $codCargaExterno removida da expedicao $idExpedicao", $idExpedicao);
+            }
+
+            $this->alteraStatus($expedicaoEn, Expedicao::STATUS_CANCELADO);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
 }
