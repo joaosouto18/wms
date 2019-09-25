@@ -123,7 +123,7 @@ class VolumeRepository extends EntityRepository
 
     public function getProdutosVolumesByNorma($codNormaPaletizacao, $codProduto, $grade, $codDepositoEndereco = null, $returnEntity = false) {
 
-        $select = (!$returnEntity) ? "v.id COD_PRODUTO_VOLUME" : "v";
+        $select = (!$returnEntity) ? "v.id COD_PRODUTO_VOLUME, null COD_PRODUTO_EMBALAGEM" : "v";
 
         $dql = $this->getEntityManager()->createQueryBuilder()
             ->select($select)
