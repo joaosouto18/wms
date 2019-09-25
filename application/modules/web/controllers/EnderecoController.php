@@ -272,6 +272,9 @@ class Web_EnderecoController extends Crud
                 if ($this->getRequest()->isPost() && $form->isValid($parms)) {
                     $arrayParams = $this->getRequest()->getParams();
                     foreach ($massId as $id) {
+                        if ($arrayParams['identificacao']['ativo'] == 'N')
+                            $this->repository->validaInativacaoEndereco($id);
+
                         $arrayParams['identificacao']['id'] = $id;
                         $this->repository->save(null, $arrayParams);
                     }
@@ -347,10 +350,10 @@ class Web_EnderecoController extends Crud
             }
             $this->em->flush();
 
-            return $this->redirect('index');
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
+        $this->redirect('index');
     }
 
     /**
@@ -367,10 +370,10 @@ class Web_EnderecoController extends Crud
             }
             $this->em->flush();
 
-            return $this->redirect('index');
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
+        $this->redirect('index');
     }
 
     /**
@@ -436,17 +439,17 @@ class Web_EnderecoController extends Crud
         $massId = $this->_getParam('mass-id');
 
         try {
-        foreach ($massId as $id) {
-            $entity = $this->repository->findOneBy(array($this->pkField => $id));
-            $entity->setAtivo('S');
-            $this->em->persist($entity);
-        }
-        $this->em->flush();
+            foreach ($massId as $id) {
+                $entity = $this->repository->findOneBy(array($this->pkField => $id));
+                $entity->setAtivo('S');
+                $this->em->persist($entity);
+            }
+            $this->em->flush();
 
-        return $this->redirect('index');
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
+        $this->redirect('index');
     }
 
     /**
@@ -458,16 +461,17 @@ class Web_EnderecoController extends Crud
         try {
 
             foreach ($massId as $id) {
+                $this->repository->validaInativacaoEndereco($id);
                 $entity = $this->repository->findOneBy(array($this->pkField => $id));
                 $entity->setAtivo('N');
                 $this->em->persist($entity);
             }
             $this->em->flush();
 
-            return $this->redirect('index');
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
+        $this->redirect('index');
     }
 
     public function disponativarAction()
@@ -483,10 +487,10 @@ class Web_EnderecoController extends Crud
             $this->em->persist($entity);
             $this->em->flush();
 
-            return $this->redirect('index');
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
+        $this->redirect('index');
     }
 
     public function disponinativarAction()
@@ -497,19 +501,17 @@ class Web_EnderecoController extends Crud
             if ($id == null)
                 throw new \Exception('Id deve ser enviado pra desativar');
 
-            /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
-            $enderecoRepo = $this->getEntityManager()->getRepository('wms:Deposito\Endereco');
-            $enderecoRepo->validaInativacaoEndereco($id);
+            $this->repository->validaInativacaoEndereco($id);
 
             $entity = $this->repository->findOneBy(array($this->pkField => $id));
             $entity->setAtivo('N');
             $this->em->persist($entity);
             $this->em->flush();
 
-            return $this->redirect('index');
         } catch (\Exception $e) {
             $this->_helper->messenger('error', $e->getMessage());
         }
+        $this->redirect('index');
     }
 
     /*

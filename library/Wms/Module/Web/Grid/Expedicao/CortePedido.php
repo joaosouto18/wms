@@ -42,17 +42,7 @@ class CortePedido extends Grid
                     'index' => 'itinerario',
                 ));
         if ($permite) {
-            $source->
-            addAction(array(
-                'label' => 'Cortar Itens',
-                'moduleName' => 'expedicao',
-                'controllerName' => 'corte',
-                'actionName' => 'list',
-                'cssClass' => 'inside-modal',
-                'params' => array('expedicao' => $idExpedicao),
-                'pkIndex' => 'id'
-            ))
-                ->addAction(array(
+            $source->addAction(array(
                     'label' => 'Cortar Pedido',
                     'moduleName' => 'expedicao',
                     'controllerName' => 'corte-pedido',

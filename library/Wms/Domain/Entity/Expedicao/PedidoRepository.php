@@ -748,18 +748,18 @@ class PedidoRepository extends EntityRepository
                     NVL(PP.QTD_CORTADA,0) as \"qtdCorteTotal\",
                     PP.FATOR_EMBALAGEM_VENDA as \"fatorEmbalagemVenda\",
                     C.COD_CARGA_EXTERNO as \"carga\",";
-            }
 
-            if ($quebraEndereco) {
-                $sqlCampos .= "
+                if ($quebraEndereco) {
+                    $sqlCampos .= "
                     NVL((MSPROD.QTD_SEPARAR * MSPROD.QTD_EMBALAGEM), PP.QUANTIDADE) as \"quantidade\",
                     NVL(MSPROD.QTD_CORTADO, NVL(PP.QTD_CORTADA, 0)) as \"qtdCortada\",
                     DE.COD_DEPOSITO_ENDERECO as \"idEndereco\",
                     DE.DSC_DEPOSITO_ENDERECO as \"dscEndereco\"";
-            } else {
-                $sqlCampos .= "
+                } else {
+                    $sqlCampos .= "
                     NVL(MSP.QTD, PP.QUANTIDADE) as \"quantidade\",
                     NVL(MSP.QTD_CORTADA, NVL(PP.QTD_CORTADA, 0)) as \"qtdCortada\"";
+                }
             }
 
             $sql = "SELECT DISTINCT $sqlCampos FROM PEDIDO_PRODUTO PP

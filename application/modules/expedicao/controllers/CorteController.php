@@ -270,8 +270,7 @@ class Expedicao_CorteController extends Action {
             /** @var \Wms\Domain\Entity\Expedicao\ModeloSeparacao $modeloSeparacaoEn */
             $modeloSeparacaoEn = $this->em->getRepository("wms:Expedicao\ModeloSeparacao")->getModeloSeparacao($id);
             $this->view->forcaEmbVenda = $modeloSeparacaoEn->getForcarEmbVenda();
-            $form = new \Wms\Module\Web\Form\CortePedido(null, $id);
-            $this->view->form = $form;
+            $this->view->form = new \Wms\Module\Web\Form\Expedicao\FiltroProdutoCorte();
         } catch (\Exception $e) {
             $this->addFlashMessage("error", $e->getMessage());
         }
