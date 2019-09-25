@@ -423,11 +423,13 @@ class Mobile_Enderecamento_ManualController extends Action
     {
         /** @var \Wms\Domain\Entity\ProdutoRepository $produtoRepo */
         $produtoRepo    = $this->em->getRepository('wms:Produto');
+        /** @var \Wms\Domain\Entity\Produto\VolumeRepository $volumeRepository */
         $volumeRepository = $this->em->getRepository('wms:Produto\Volume');
 
         $idProduto = $produtoEn->getId();
         $grade = $produtoEn->getGrade();
         $tipoComercializacao = $produtoEn->getTipoComercializacao()->getId();
+        $volumes = [];
 
         if ($tipoComercializacao == \Wms\Domain\Entity\Produto::TIPO_COMPOSTO) {
             $volumeEntity = $volumeRepository->findOneBy(array('codigoBarras' => $codBarras));
@@ -460,6 +462,9 @@ class Mobile_Enderecamento_ManualController extends Action
             $result = $produtoRepo->getNormaPaletizacaoPadrao($idProduto, $grade);
             $idNorma = $result[0]['idNorma'];
             $volumes = $produtoRepo->getEmbalagensOrVolumesByProduto($idProduto, $grade);
+            $tmp[0]['COD_PRODUTO_EMBALAGEM'] = $volumes[0]['COD_PRODUTO_EMBALAGEM'];
+            $tmp[0]['COD_PRODUTO_VOLUME'] = NULL;
+            $volumes = $tmp;
         }
 
         if ($idNorma == null) {
@@ -469,14 +474,6 @@ class Mobile_Enderecamento_ManualController extends Action
         $uniRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
         $unitizadorEn  = $uniRepo->find($result[0]['idUnitizador']);
         $statusEn      = $this->getEntityManager()->getRepository('wms:Util\Sigla')->find(\Wms\Domain\Entity\Enderecamento\Palete::STATUS_RECEBIDO);
-
-
-
-        if ($produtoEn->getTipoComercializacao()->getId() == \Wms\Domain\Entity\Produto::TIPO_UNITARIO) {
-            $tmp[0]['COD_PRODUTO_EMBALAGEM'] = $volumes[0]['COD_PRODUTO_EMBALAGEM'];
-            $tmp[0]['COD_PRODUTO_VOLUME'] = NULL;
-            $volumes = $tmp;
-        }
 
         if (count($volumes) == 0) {
             throw new \Exception('Produto não possui volumes ou embalagem padrão definidas');
