@@ -86,15 +86,17 @@ class Filtro extends Form
                     'label' => 'Lado',
                     'class' => 'pequeno',
                 ))
-//                ->addElement('checkbox', 'bloqueado', array(
-//                    'class' => 'medio',
-//                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => array('B' => 'Bloqueado', 'D' => 'Desbloqueado')),
-//                    'label' => 'Bloqueado p/ Entrada',
-//                ))
-                ->addElement('multiCheckbox', 'bloqueado', array(
-                    'class' => 'disableSequenciaPraca',
-                    'multiOptions' => [ "E" => 'Entrada', "S" => 'Saída' ],
-                    'label' => 'Bloqueado Para:',
+                ->addElement('select', 'bloqueadaEntrada', array(
+                    'mostrarSelecione' => false,
+                    'class' => 'pequeno',
+                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => array(0 => 'Desbloqueada', 1 => 'Bloqueada')),
+                    'label' => 'Mov. Entrada',
+                ))
+                ->addElement('select', 'bloqueadaSaida', array(
+                    'mostrarSelecione' => false,
+                    'class' => 'pequeno',
+                    'multiOptions' => array('firstOpt' => 'Todos', 'options' => array(0 => 'Desbloqueada', 1 => 'Bloqueada')),
+                    'label' => 'Mov. Saída',
                 ))
                 ->addElement('select', 'status', array(
                     'mostrarSelecione' => false,
@@ -139,7 +141,7 @@ class Filtro extends Form
                     'attribs' => array('id' => 'btn-buscar-endereco')
                 ))
             ->addDisplayGroup(array('inicialRua', 'finalRua', 'inicialPredio', 'finalPredio', 'inicialNivel', 'finalNivel', 'inicialApartamento', 'finalApartamento'), 'endereco', array('legend' => 'Intervalo de Endereços'))
-            ->addDisplayGroup(array('idCaracteristica', 'idEstruturaArmazenagem', 'idTipoEndereco', 'lado', 'idAreaArmazenagem', 'bloqueado','status','ativo','btnBuscar'), 'caracteristica', array('legend' => 'Características'));
+            ->addDisplayGroup(array('idCaracteristica', 'idEstruturaArmazenagem', 'idTipoEndereco', 'lado', 'idAreaArmazenagem', 'bloqueadaEntrada', 'bloqueadaSaida','status','ativo','btnBuscar'), 'caracteristica', array('legend' => 'Características'));
 
 //        $formIdentificacao->addDisplayGroup(array(
 //            'inicialRua',

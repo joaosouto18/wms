@@ -81,12 +81,16 @@ class Web_EnderecoController extends Crud
                     if ($lado == "I")
                         $source->andWhere("MOD(e.predio,2) = 1");
                 }
-                if (!empty($bloqueado)) {
-                    if (!empty($bloqueado['E']))
-                        $source->andWhere("e.bloqueadaEntrada = 1");
-                    if (!empty($bloqueado['S']))
-                        $source->andWhere("e.bloqueadaSaida = 1");
-                }
+
+                if ($bloqueadaEntrada === "0")
+                    $source->andWhere("e.bloqueadaEntrada = 0");
+                if ($bloqueadaEntrada === "1")
+                    $source->andWhere("e.bloqueadaEntrada = 1");
+                if ($bloqueadaSaida === "0")
+                    $source->andWhere("e.bloqueadaSaida = 0");
+                if ($bloqueadaSaida === "1")
+                    $source->andWhere("e.bloqueadaSaida = 1");
+
                 if (!empty($status))
                     $source->andWhere("e.status = :status")
                         ->setParameter('status', $status);
@@ -109,8 +113,10 @@ class Web_EnderecoController extends Crud
                 $grid = new \Core\Grid(new \Core\Grid\Source\Doctrine($source));
                 $grid->addMassAction('edit', 'Editar');
                 $grid->addMassAction('mass-delete', 'Remover');
-                $grid->addMassAction('bloquear', 'Bloquear');
-                $grid->addMassAction('desbloquear', 'Desbloquear');
+                $grid->addMassAction('bloquear?destino=E', 'Bloquear Entrada');
+                $grid->addMassAction('desbloquear?destino=E', 'Desbloquear Entrada');
+                $grid->addMassAction('bloquear?destino=S', 'Bloquear Saída');
+                $grid->addMassAction('desbloquear?destino=S', 'Desbloquear Saída');
                 $grid->addMassAction('ativar', 'Ativar');
                 $grid->addMassAction('desativar', 'Desativar');
                 $grid->addColumn(array(
