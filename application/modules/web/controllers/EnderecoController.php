@@ -41,7 +41,11 @@ class Web_EnderecoController extends Crud
                 if (!empty($finalApartamento))
                     $WhereAptoF = "e.apartamento <= :finalApartamento";
                 $source = $this->em->createQueryBuilder()
-                    ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco, e.inventarioBloqueado")
+                    ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco, e.inventarioBloqueado
+                                    , CASE WHEN e.bloqueadaEntrada = 1 and e.bloqueadaSaida = 1 THEN 'Entrada/Saída' 
+                                           WHEN e.bloqueadaEntrada = 1 and e.bloqueadaSaida = 0 THEN 'Entrada' 
+                                           WHEN e.bloqueadaEntrada = 0 and e.bloqueadaSaida = 1 THEN 'Saída' 
+                                           ELSE 'Nada' END bloqueada")
                     ->from('wms:Deposito\Endereco', 'e')
                     ->innerJoin('e.caracteristica', 'c')
                     ->innerJoin('e.areaArmazenagem', 'a')
@@ -77,9 +81,12 @@ class Web_EnderecoController extends Crud
                     if ($lado == "I")
                         $source->andWhere("MOD(e.predio,2) = 1");
                 }
-                if (!empty($situacao))
-                    $source->andWhere("e.situacao = :situacao")
-                        ->setParameter('situacao', $situacao);
+                if (!empty($bloqueado)) {
+                    if (!empty($bloqueado['E']))
+                        $source->andWhere("e.bloqueadaEntrada = 1");
+                    if (!empty($bloqueado['S']))
+                        $source->andWhere("e.bloqueadaSaida = 1");
+                }
                 if (!empty($status))
                     $source->andWhere("e.status = :status")
                         ->setParameter('status', $status);
@@ -132,9 +139,8 @@ class Web_EnderecoController extends Crud
                         'render' => 'OcupadoOrDisponivel'
                     ))
                     ->addColumn(array(
-                        'label' => 'Situação',
-                        'index' => 'situacao',
-                        'render' => 'BloqueadoOrDesbloqueado'
+                        'label' => 'Bloqueado p/',
+                        'index' => 'bloqueada'
                     ))
                     ->addColumn(array(
                         'label' => 'Disponibilidade',
@@ -142,7 +148,7 @@ class Web_EnderecoController extends Crud
                         'render' => 'AtivoOrInativo'
                     ))
                     ->addcolumn(array(
-                        'label' => 'En Bloqueado',
+                        'label' => 'End Bloqueado',
                         'index' => 'inventarioBloqueado',
                         'render' => 'SimOrNao'
                     ))
@@ -152,19 +158,39 @@ class Web_EnderecoController extends Crud
                         'pkIndex' => 'id',
                     ))
                     ->addAction(array(
-                        'label' => 'Bloquear',
+                        'label' => 'Bloquear Entrada',
                         'actionName' => 'bloquear',
                         'pkIndex' => 'id',
+                        'params' => ['destino' => 'E'],
                         'condition' => function ($row) {
-                            return $row['situacao'] == 'D';
+                            return empty($row['bloqueadaEntrada']);
                         }
                     ))
                     ->addAction(array(
-                        'label' => 'Desbloquear',
+                        'label' => 'Desbloquear Entrada',
                         'actionName' => 'desbloquear',
                         'pkIndex' => 'id',
+                        'params' => ['destino' => 'E'],
                         'condition' => function ($row) {
-                            return $row['situacao'] == 'B';
+                            return !empty($row['bloqueadaEntrada']);
+                        }
+                    ))
+                    ->addAction(array(
+                        'label' => 'Bloquear Saída',
+                        'actionName' => 'bloquear',
+                        'pkIndex' => 'id',
+                        'params' => ['destino' => 'S'],
+                        'condition' => function ($row) {
+                            return empty($row['bloqueadaSaida']);
+                        }
+                    ))
+                    ->addAction(array(
+                        'label' => 'Desbloquear Saída',
+                        'actionName' => 'desbloquear',
+                        'pkIndex' => 'id',
+                        'params' => ['destino' => 'S'],
+                        'condition' => function ($row) {
+                            return !empty($row['bloqueadaSaida']);
                         }
                     ))
                     ->addAction(array(
@@ -342,10 +368,17 @@ class Web_EnderecoController extends Crud
     public function bloquearAction()
     {
         $massId = $this->_getParam('mass-id');
+        if (empty($massId)){
+            $id = $this->_getParam('id');
+            if (!empty($id)) $massId[] = $id;
+        }
+        $destino = $this->_getParam('destino');
         try {
             foreach ($massId as $id) {
+                /** @var Endereco $entity */
                 $entity = $this->repository->findOneBy(array($this->pkField => $id));
-                $entity->setSituacao('B');
+                if ($destino == 'E') $entity->setBloqueadaEntrada(true);
+                if ($destino == 'S') $entity->setBloqueadaSaida(true);
                 $this->em->persist($entity);
             }
             $this->em->flush();
@@ -362,10 +395,17 @@ class Web_EnderecoController extends Crud
     public function desbloquearAction()
     {
         $massId = $this->_getParam('mass-id');
+        if (empty($massId)){
+            $id = $this->_getParam('id');
+            if (!empty($id)) $massId[] = $id;
+        }
+        $destino = $this->_getParam('destino');
         try {
             foreach ($massId as $id) {
+                /** @var Endereco $entity */
                 $entity = $this->repository->findOneBy(array($this->pkField => $id));
-                $entity->setSituacao('D');
+                if ($destino == 'E') $entity->setBloqueadaEntrada(false);
+                if ($destino == 'S') $entity->setBloqueadaSaida(false);
                 $this->em->persist($entity);
             }
             $this->em->flush();
