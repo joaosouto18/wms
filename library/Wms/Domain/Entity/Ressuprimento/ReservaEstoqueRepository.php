@@ -2,9 +2,8 @@
 
 namespace Wms\Domain\Entity\Ressuprimento;
 
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
-use Symfony\Component\Console\Output\NullOutput;
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
 use Wms\Domain\Entity\Expedicao;
 use Wms\Domain\Entity\Produto;
@@ -23,7 +22,7 @@ class ReservaEstoqueRepository extends EntityRepository
      * produtos[0]['grade'] = 'Grade do Produto'
      * produtos[0]['qtd'] = '10' ou '-10'
     */
-    public function adicionaReservaEstoque ($endereco, $produtos = array(), $tipoReserva, $origemReserva, $idOrigem, $Os = null, $idUsuario = null, $observacao = "", $repositorios = null)
+    public function adicionaReservaEstoque ($endereco, $produtos, $tipoReserva, $origemReserva, $idOrigem, $Os = null, $idUsuario = null, $observacao = "", $repositorios = null)
     {
         if ($repositorios == null) {
             $enderecoRepo = $this->getEntityManager()->getRepository("wms:Deposito\Endereco");
@@ -36,6 +35,8 @@ class ReservaEstoqueRepository extends EntityRepository
         if ($idUsuario == null) {
             $idUsuario  = \Zend_Auth::getInstance()->getIdentity()->getId();
         }
+
+        /** @var Endereco $enderecoEn */
         if (!is_object($endereco)) {
             $enderecoEn = $enderecoRepo->findOneBy(array('id' => $endereco));
         } else {
@@ -46,6 +47,9 @@ class ReservaEstoqueRepository extends EntityRepository
         if ($enderecoEn == NULL) throw new \Exception("Endereço não encontrado");
         if ($usuarioEn == NULL) throw new \Exception("Usuário não encontrado");
         if (count($produtos) == 0) throw new \Exception("Nenhum volume informado");
+
+        if (($tipoReserva == "S") && $enderecoEn->isBloqueadaSaida()) throw new \Exception("Este endereço '".$enderecoEn->getDescricao()."' está bloqueado para movimentações de saída, por esse motivo não pode receber essa reserva!");
+        if (($tipoReserva == "E") && $enderecoEn->isBloqueadaEntrada()) throw new \Exception("Este endereço '".$enderecoEn->getDescricao()."' está bloqueado para movimentações de entrada, por esse motivo não pode receber essa reserva!");
 
         foreach ($produtos as $key => $produto) {
             if (($tipoReserva == "S") && ($produto['qtd'] > 0)) $produtos[$key]['qtd'] = $produto['qtd'] * -1;

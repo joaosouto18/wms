@@ -288,10 +288,12 @@ class Endereco
 
     /**
      * @param bool $bloqueadaEntrada
+     * @return $this
      */
     public function setBloqueadaEntrada($bloqueadaEntrada)
     {
         $this->bloqueadaEntrada = $bloqueadaEntrada;
+        return $this;
     }
 
     /**
@@ -304,25 +306,13 @@ class Endereco
 
     /**
      * @param bool $bloqueadaSaida
+     * @return $this
      */
     public function setBloqueadaSaida($bloqueadaSaida)
     {
         $this->bloqueadaSaida = $bloqueadaSaida;
-    }
-
-    /*
-    public function getSituacao()
-    {
-        return $this->situacao;
-    }
-
-    public function setSituacao($situacao)
-    {
-        $this->situacao = $situacao;
         return $this;
     }
-    */
-
 
     public function getIdCaracteristica()
     {

@@ -1030,7 +1030,7 @@ class InventarioService extends AbstractService
             "usuario" => $this->em->getReference('wms:Usuario', $idUsuario),
             "tipo" => HistoricoEstoque::TIPO_INVENTARIO,
             "dthEntrada" => $dthEntrada
-        ],false,false, $validade);
+        ],false,false, $validade, true);
     }
 
     /**

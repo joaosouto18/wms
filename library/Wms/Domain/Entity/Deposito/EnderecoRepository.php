@@ -83,9 +83,11 @@ class EnderecoRepository extends EntityRepository {
         //caso edicao
         
         if (!empty($id)) {
+            /** @var Endereco $enderecoEntity */
             $enderecoEntity = $em->getReference('wms:Deposito\Endereco', $id);
 
-            $enderecoEntity->setSituacao($situacao);
+            $enderecoEntity->setBloqueadaSaida(in_array('S', $bloqueada));
+            $enderecoEntity->setBloqueadaEntrada(in_array('E', $bloqueada));
             $enderecoEntity->setDeposito($deposito);
             $enderecoEntity->setCaracteristica($caracteristica);
             $enderecoEntity->setEstruturaArmazenagem($estruturaArmazenagem);
@@ -139,7 +141,8 @@ class EnderecoRepository extends EntityRepository {
                                     ->setPredio($auxPredio)
                                     ->setNivel($auxNivel)
                                     ->setApartamento($auxApto)
-                                    ->setSituacao($situacao)
+                                    ->setBloqueadaSaida(in_array('S', $bloqueada))
+                                    ->setBloqueadaEntrada(in_array('E', $bloqueada))
                                     ->setDeposito($deposito)
                                     ->setCaracteristica($caracteristica)
                                     ->setEstruturaArmazenagem($estruturaArmazenagem)
@@ -1141,5 +1144,29 @@ class EnderecoRepository extends EntityRepository {
         }
 
         return true;
+    }
+
+    public function validaEnderecosComReservas(array $arrIds)
+    {
+        $strIds = implode(", ", $arrIds);
+        $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO 
+                FROM DEPOSITO_ENDERECO DE 
+                INNER JOIN RESERVA_ESTOQUE RE on DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO AND RE.IND_ATENDIDA = 'N'
+                WHERE DE.COD_DEPOSITO_ENDERECO IN ($strIds)";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
+    }
+
+    public function validaEnderecosPicking(array $arrIds)
+    {
+        $strIds = implode(", ", $arrIds);
+        $sql = "SELECT DISTINCT DE.DSC_DEPOSITO_ENDERECO 
+                FROM PRODUTO P 
+                LEFT JOIN PRODUTO_EMBALAGEM PE ON P.COD_PRODUTO = PE.COD_PRODUTO and P.DSC_GRADE = PE.DSC_GRADE AND PE.COD_DEPOSITO_ENDERECO IS NOT NULL
+                LEFT JOIN PRODUTO_VOLUME PV ON P.COD_PRODUTO = PV.COD_PRODUTO and P.DSC_GRADE = PV.DSC_GRADE AND PV.COD_DEPOSITO_ENDERECO IS NOT NULL
+                INNER JOIN DEPOSITO_ENDERECO DE ON PE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO OR PV.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                WHERE DE.COD_DEPOSITO_ENDERECO IN ($strIds)";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 }

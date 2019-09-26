@@ -1492,7 +1492,7 @@ class ExpedicaoRepository extends EntityRepository {
                                              NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME, E.DSC_LOTE, 
                                              CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END END_CROSSDOCKING
                                         FROM ESTOQUE E
-                                       INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                                       INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO AND DE.BLOQUEADA_SAIDA = 0
                                        WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . "
                                        GROUP BY E.COD_PRODUTO, E.DSC_GRADE, E.DSC_LOTE, NVL(E.COD_PRODUTO_VOLUME,0), CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END) E
                                   ON E.COD_PRODUTO = P.COD_PRODUTO
@@ -1510,7 +1510,7 @@ class ExpedicaoRepository extends EntityRepository {
                                               NVL(E.COD_PRODUTO_VOLUME,0) AS VOLUME, 
                                               CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END END_CROSSDOCKING
                                         FROM ESTOQUE E
-                                       INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
+                                       INNER JOIN DEPOSITO_ENDERECO DE ON E.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO AND DE.BLOQUEADA_SAIDA = 0
                                        WHERE DE.COD_DEPOSITO = " . $sessao->idDepositoLogado . "
                                        GROUP BY E.COD_PRODUTO, E.DSC_GRADE, NVL(E.COD_PRODUTO_VOLUME,0), CASE WHEN DE.COD_CARACTERISTICA_ENDERECO = $caracEndCrossDocking THEN 1 ELSE 0 END) E
                                   ON E.COD_PRODUTO = P.COD_PRODUTO
@@ -1526,6 +1526,7 @@ class ExpedicaoRepository extends EntityRepository {
                                    FROM RESERVA_ESTOQUE_EXPEDICAO REE
                                   INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                                   INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                                  INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO AND DE.BLOQUEADA_SAIDA = 0
                                   WHERE RE.TIPO_RESERVA = 'S' AND RE.IND_ATENDIDA = 'N'
                                   GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0), REP.DSC_LOTE, CASE WHEN REE.TIPO_SAIDA = 4 THEN 1 ELSE 0 END) MAX_RES
                           ) REPL  ON PEDIDO.COD_PRODUTO = REPL.COD_PRODUTO 
@@ -1539,6 +1540,7 @@ class ExpedicaoRepository extends EntityRepository {
                                    FROM RESERVA_ESTOQUE_EXPEDICAO REE
                                   INNER JOIN RESERVA_ESTOQUE RE ON REE.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
                                   INNER JOIN RESERVA_ESTOQUE_PRODUTO REP ON REP.COD_RESERVA_ESTOQUE = RE.COD_RESERVA_ESTOQUE
+                                  INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = RE.COD_DEPOSITO_ENDERECO AND DE.BLOQUEADA_SAIDA = 0
                                   WHERE RE.TIPO_RESERVA = 'S' AND RE.IND_ATENDIDA = 'N'
                                   GROUP BY REP.COD_PRODUTO, REP.DSC_GRADE, NVL(REP.COD_PRODUTO_VOLUME,0), CASE WHEN REE.TIPO_SAIDA = 4 THEN 1 ELSE 0 END) MAX_RES
                           ) REP ON PEDIDO.COD_PRODUTO = REP.COD_PRODUTO 

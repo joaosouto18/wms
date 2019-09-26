@@ -169,7 +169,7 @@ class Web_EnderecoController extends Crud
                         'pkIndex' => 'id',
                         'params' => ['destino' => 'E'],
                         'condition' => function ($row) {
-                            return empty($row['bloqueadaEntrada']);
+                            return (empty($row['bloqueadaEntrada']) && !in_array($row['idCaracteristica'],[Endereco::PICKING, Endereco::PICKING_DINAMICO]));
                         }
                     ))
                     ->addAction(array(
@@ -187,7 +187,7 @@ class Web_EnderecoController extends Crud
                         'pkIndex' => 'id',
                         'params' => ['destino' => 'S'],
                         'condition' => function ($row) {
-                            return empty($row['bloqueadaSaida']);
+                            return (empty($row['bloqueadaSaida']) && !in_array($row['idCaracteristica'],[Endereco::PICKING, Endereco::PICKING_DINAMICO]));
                         }
                     ))
                     ->addAction(array(
@@ -380,16 +380,32 @@ class Web_EnderecoController extends Crud
         }
         $destino = $this->_getParam('destino');
         try {
+
+            $check = $this->repository->validaEnderecosComReservas($massId);
+            if (!empty($check)) {
+                $str = implode(", ", $check);
+                throw new Exception("Endereços com reservas pendentes não podem ser bloqueados: $str");
+            }
+
+            $check = $this->repository->validaEnderecosPicking($massId);
+            if (!empty($check)) {
+                $str = implode(", ", $check);
+                throw new Exception("Endereços do tipo Picking ou Picking Dinâmico não podem ser bloqueados: $str");
+            }
+
+            $this->em->beginTransaction();
             foreach ($massId as $id) {
                 /** @var Endereco $entity */
                 $entity = $this->repository->findOneBy(array($this->pkField => $id));
+
                 if ($destino == 'E') $entity->setBloqueadaEntrada(true);
                 if ($destino == 'S') $entity->setBloqueadaSaida(true);
                 $this->em->persist($entity);
             }
             $this->em->flush();
-
+            $this->em->commit();
         } catch (\Exception $e) {
+            $this->em->rollback();
             $this->_helper->messenger('error', $e->getMessage());
         }
         $this->redirect('index');

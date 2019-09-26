@@ -2,9 +2,7 @@
 
 namespace Wms\Module\Web\Form\Deposito;
 
-use Doctrine\ORM\EntityManager;
 use Wms\Domain\Entity\Deposito\EnderecoRepository;
-use Wms\Domain\EntityRepository;
 use Wms\Module\Web\Form,
     Core\Form\SubForm,
     Wms\Domain\Entity\Deposito\Endereco as EnderecoEntity;
@@ -22,14 +20,12 @@ class Endereco extends Form {
         $this->setAttribs(array('id' => 'deposito-endereco-form', 'class' => 'saveForm'));
 
         $em = $this->getEm();
-        $sessao = new \Zend_Session_Namespace('deposito');
-        $idDeposito = $sessao->idDepositoLogado;
+        $idDeposito = (new \Zend_Session_Namespace('deposito'))->idDepositoLogado;
         $repoCaracteristica = $em->getRepository('wms:Deposito\Endereco\Caracteristica');
         $repoEstrutura = $em->getRepository('wms:Armazenagem\Estrutura\Tipo');
         $repoTipo = $em->getRepository('wms:Deposito\Endereco\Tipo');
         $repoArea = $em->getRepository('wms:Deposito\AreaArmazenagem');
         $area = $repoArea->getIdValue(array('idDeposito' => $idDeposito));
-        $id = $this->getRequest()->getParam('id');
 
         //formulário
         $formIdentificacao = new SubForm;
@@ -97,14 +93,10 @@ class Endereco extends Form {
 
         //dados do endereço
         $formIdentificacao
-            ->addElement('checkbox', 'isBloqueadoEntrada', array(
+            ->addElement('multiCheckbox', 'bloqueada', array(
+                'multiOptions' => ['E' => 'Entrada', 'S' => 'Saída'],
                 'checkedValue' => true,
-                'label' => 'Entrada Bloqueada',
-                'required' => true,
-            ))
-            ->addElement('select', 'isBloqueadoSaida', array(
-                'checkedValue' => true,
-                'label' => 'Saída Bloqueada',
+                'label' => 'Bloquear Mov.',
                 'required' => true,
             ))
             ->addElement('hidden', 'status', array(
@@ -154,8 +146,7 @@ class Endereco extends Form {
                 'idTipoEndereco',
                 'idEstruturaArmazenagem',
                 'status',
-                'isBloqueadoEntrada',
-                'isBloqueadoSaida',
+                'bloqueada',
                 'ativo'
                     ), 'identificacao', array('legend' => 'Identificação'));
 
@@ -164,9 +155,9 @@ class Endereco extends Form {
 
     /**
      * Sets the values from entity
-     * @param \Wms\Domain\Entity\Deposito\Endereco
+     * @param $endereco EnderecoEntity
      */
-    public function setDefaultsFromEntity(\Wms\Domain\Entity\Deposito\Endereco $endereco)
+    public function setDefaultsFromEntity(EnderecoEntity $endereco)
     {
 
         $values = array(
@@ -180,8 +171,6 @@ class Endereco extends Form {
             'finalNivel' => $endereco->getNivel(),
             'inicialApartamento' => $endereco->getApartamento(),
             'finalApartamento' => $endereco->getApartamento(),
-            'isBloqueadoEntrada' => $endereco->isBloqueadaEntrada(),
-            'isBloqueadoSaida' => $endereco->isBloqueadaSaida(),
             'ativo' => $endereco->getAtivo(),
             'idCaracteristica' => $endereco->getIdCaracteristica(),
             'idEstruturaArmazenagem' => $endereco->getIdEstruturaArmazenagem(),
@@ -189,6 +178,12 @@ class Endereco extends Form {
             'status' => $endereco->getStatus(),
             'idAreaArmazenagem' => $endereco->getIdAreaArmazenagem()
         );
+        if ($endereco->isBloqueadaSaida()) {
+            $values['bloqueada'][] = 'S';
+        }
+        if ($endereco->isBloqueadaEntrada()) {
+            $values['bloqueada'][] = 'E';
+        }
 
         $this->setDefaults($values);
     }
@@ -200,13 +195,13 @@ class Endereco extends Form {
     public function setMassDefaultsFromEntity($mass_ids, $repo)
     {
         $ids = implode('-',$mass_ids);
-        /** @var \Wms\Domain\Entity\Deposito\Endereco $endInicio */
+        /** @var EnderecoEntity $endInicio */
         $endInicio = $repo->find($mass_ids[0]);
         if (count($mass_ids) > 1) {
-            /** @var \Wms\Domain\Entity\Deposito\Endereco $endFinal */
+            /** @var EnderecoEntity $endFinal */
             $endFinal = $repo->find($mass_ids[count($mass_ids) - 1]);
         } else {
-            /** @var \Wms\Domain\Entity\Deposito\Endereco $endFinal */
+            /** @var EnderecoEntity $endFinal */
             $endFinal = $endInicio;
         }
 
@@ -221,8 +216,6 @@ class Endereco extends Form {
             'finalNivel' => $endFinal->getNivel(),
             'inicialApartamento' => $endInicio->getApartamento(),
             'finalApartamento' => $endFinal->getApartamento(),
-            'isBloqueadoEntrada' => $endInicio->isBloqueadaEntrada(),
-            'isBloqueadoSaida' => $endInicio->isBloqueadaSaida(),
             'ativo' => $endInicio->getAtivo(),
             'idCaracteristica' => $endInicio->getIdCaracteristica(),
             'idEstruturaArmazenagem' => $endInicio->getIdEstruturaArmazenagem(),
@@ -230,6 +223,12 @@ class Endereco extends Form {
             'status' => $endInicio->getStatus(),
             'idAreaArmazenagem' => $endInicio->getIdAreaArmazenagem()
         );
+        if ($endInicio->isBloqueadaSaida()) {
+            $values['bloqueada'][] = 'S';
+        }
+        if ($endInicio->isBloqueadaEntrada()) {
+            $values['bloqueada'][] = 'E';
+        }
 
         $this->setDefaults($values);
     }
