@@ -69,7 +69,11 @@ class Coletor
 
         // Se o código começa com "8006", o sistema considera o código da posição 5 até 22.
         if(substr($codigoBarras, 0, 2) === '01') {
-            return substr($codigoBarras, 3, 13);
+            $codigoBarras = substr($codigoBarras, 3, 13);
+            if ($parametroEntity->getValor() == 'S') {
+                $codigoBarras = ltrim($codigoBarras, '0');
+            }
+            return $codigoBarras;
         }
 
         //if(substr($codigoBarras, 0, 2) == '01' || substr($codigoBarras, 0, 2) == '02') {

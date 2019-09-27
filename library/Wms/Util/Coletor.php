@@ -78,7 +78,11 @@ class Coletor
 //        }
 
         if(substr($codigoBarras, 0, 2) === '01') {
-            return substr($codigoBarras, 3, 13);
+            $codigoBarras = substr($codigoBarras, 3, 13);
+            if ($parametroEntity->getValor() == 'S') {
+                $codigoBarras = ltrim($codigoBarras, '0');
+            }
+            return $codigoBarras;
         }
 
         if (substr($codigoBarras, 0, 3) == '856') {
