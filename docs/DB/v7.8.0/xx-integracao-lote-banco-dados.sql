@@ -17,6 +17,7 @@ BEGIN
 ************************************************************************/
 
         EXECUTE IMMEDIATE 'alter table tr_nota_fiscal_entrada add (DSC_LOTE varchar2(64) null)';
+         EXECUTE IMMEDIATE 'alter table integracao_nf_entrada add (DSC_LOTE varchar2(64) null)';
 
 /************************************************************************
 **                 NÃO ALTERAR ABAIXO DESTA REGIÃO                     **

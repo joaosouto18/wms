@@ -952,6 +952,8 @@ class Integracao {
                     $nf->setQtdItem(str_replace(",", ".", $row['QTD_ITEM']));
                     $nf->setVlrTotal(str_replace(",", ".", $row['VALOR_TOTAL']));
                     $nf->setDth(new \DateTime());
+                    $nf->setLote($row['DSC_LOTE']);
+
                     $this->_em->persist($nf);
                     break;
                 case AcaoIntegracao::INTEGRACAO_PEDIDOS:
