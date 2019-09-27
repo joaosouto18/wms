@@ -8,7 +8,7 @@ update acao_integracao set dsc_query_bkp = dsc_query;
 update acao_integracao set dsc_query = null;
 
 ALTER TABLE ACAO_INTEGRACAO
-MODIFY (DSC_QUERY LONG );
+MODIFY (DSC_QUERY LONG NOT NULL );
 
 update acao_integracao set dsc_query = dsc_query_bkp;
 
@@ -17,5 +17,5 @@ drop column dsc_query_bkp;
 
 delete acao_integracao_andamento;
 
-alter table acao_integracao
-    modify (dsc_query long);
+alter table acao_integracao_andamento
+    modify (query long);
