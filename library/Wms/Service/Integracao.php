@@ -638,7 +638,6 @@ class Integracao {
 
         $itens = array();
         $notasFiscais = array();
-        $idProdutos = array();
 
 
         foreach ($dados as $key => $notaFiscal) {
@@ -664,13 +663,12 @@ class Integracao {
                 }
             }
 
-            /** OBTEM O CODIGO DO PRODUTO PARA CADASTRO */
-            $idProdutos[] = $notaFiscal['COD_PRODUTO'];
             $itens[] = array(
                 'idProduto' => $notaFiscal['COD_PRODUTO'],
                 'grade' => $notaFiscal['DSC_GRADE'],
                 'quantidade' => $notaFiscal['QTD_ITEM'],
-                'peso' => $notaFiscal['QTD_ITEM']
+                'peso' => $notaFiscal['QTD_ITEM'],
+                'lote' => $notaFiscal['DSC_LOTE']
             );
 
             $numNfAtual = $notaFiscal['NUM_NOTA_FISCAL'];
@@ -712,22 +710,6 @@ class Integracao {
                 }
             }
         }
-
-        /** CADASTRA OS PRODUTOS DAS NOTAS FISCAIS */
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepo */
-        $acaoIntegracaoRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracao');
-        $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
-        $idIntegracao = $parametroRepo->findOneBy(array('constante' => 'ID_INTEGRACAO_PRODUTOS'));
-        $acaoEn = null;
-        if (isset($idIntegracao) and !is_null($idIntegracao->getValor()))
-            $acaoEn = $acaoIntegracaoRepo->find($idIntegracao->getValor());
-
-        $produtos = implode(',', $idProdutos);
-        if ($produtos == "")
-            $produtos = "0";
-        $options[] = $produtos;
-//        $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
-//        $em->flush();
 
         if ($this->getTipoExecucao() == "L") {
             return $notasFiscais;

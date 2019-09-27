@@ -83,7 +83,7 @@ class Coletor
 
         if ($parametroEntity->getValor() == 'S') {
             if ($codigoBarras[0] == '0') {
-                return substr($codigoBarras, 1);
+                return ltrim($codigoBarras, '0');
             }
         }
         // retorna o codigo todo caso nenhuma situacao anterior adequar
