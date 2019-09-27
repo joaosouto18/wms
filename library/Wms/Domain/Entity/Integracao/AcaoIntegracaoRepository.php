@@ -69,7 +69,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                          DSC_PLACA_VEICULO,
                          QTD_ITEM,
                          VALOR_TOTAL,
-                         TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
+                         TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH,
+                         DSC_LOTE
                         FROM INTEGRACAO_NF_ENTRADA
                         $where
                   ORDER by NUM_NOTA_FISCAL, COD_SERIE_NOTA_FISCAL, COD_FORNECEDOR, TO_DATE(DAT_EMISSAO)
