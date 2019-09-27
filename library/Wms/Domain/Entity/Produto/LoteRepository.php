@@ -34,9 +34,9 @@ class LoteRepository extends EntityRepository
             $dsc = 'LI'.$idLote;
         } else {
             $lote->setCodProduto($codProduto);
+            $lote->setGrade($grade);
         }
 
-        $lote->setGrade($grade);
         $lote->setDescricao($dsc);
         $lote->setCodPessoaCriacao($codPessoa);
         $lote->setDthCriacao(new \DateTime);

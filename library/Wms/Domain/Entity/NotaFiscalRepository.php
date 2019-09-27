@@ -1080,6 +1080,7 @@ class NotaFiscalRepository extends EntityRepository {
                 /** @var LoteRepository $loteRepository */
                 $loteRepository = $em->getRepository('wms:Produto\Lote');
                 $notaFiscalItemLoteRepository = $em->getRepository('wms:NotaFiscal\NotaFiscalItemLote');
+                $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
                 foreach ($itens as $item) {
                     $idProduto = trim($item['idProduto']);
                     $idProduto = ProdutoUtil::formatar($idProduto);
@@ -1117,16 +1118,13 @@ class NotaFiscalRepository extends EntityRepository {
                     $itemEntity->setQuantidade($qtd);
                     $em->persist($itemEntity);
                     $notaFiscalEntity->getItens()->add($itemEntity);
-                    if(isset($item['lote']) && !empty($item['lote']) && $produtoEntity->getIndControlaLote() == 'S'){
-                        $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
-                        foreach ($item['lote'] as $lote) {
-                            if (!empty($lote['lote'])) {
-                                $loteEntity = $loteRepository->findOneBy(['descricao' => $lote['lote'], 'codProduto' => $codProduto, 'grade' => $grade]);
-                                if (empty($loteEntity)) {
-                                    $loteRepository->save($codProduto, $grade, trim($lote['lote']), $idPessoa);
-                                }
-                                $notaFiscalItemLoteRepository->save($loteEntity->getId(), $itemEntity->getId(), $lote['quantidade']);
+                    if(!empty($item['lotes']) && $produtoEntity->getIndControlaLote() == 'S'){
+                        foreach ($item['lotes'] as $lote => $itemLote) {
+                            $loteEntity = $loteRepository->findOneBy(['descricao' => $lote, 'codProduto' => $codProduto, 'grade' => $grade]);
+                            if (empty($loteEntity)) {
+                                $loteRepository->save($codProduto, $grade, trim($lote), $idPessoa);
                             }
+                            $notaFiscalItemLoteRepository->save(trim($lote), $itemEntity->getId(), $itemLote['quantidade']);
                         }
                     }
                 }
@@ -1150,26 +1148,28 @@ class NotaFiscalRepository extends EntityRepository {
         foreach ($itens as $key => $item){
             $lote = (isset($item["lote"]) && !empty($item["lote"])) ? $item["lote"] : null;
             $peso = (isset($item["peso"]) && !empty($item["peso"])) ? $item["peso"] : $item['quantidade'];
+            unset($item["lote"]);
 
             $idUniq = "$item[idProduto]-*-$item[grade]";
 
             if(isset($arrayItens[$idUniq])){
-               $arrayItens[$idUniq]['quantidade'] = Math::adicionar($item['quantidade'], $arrayItens[$idUniq]['quantidade']);
-               $arrayItens[$idUniq]['peso'] = Math::adicionar($peso, $arrayItens[$idUniq]['peso']);
-               if (!empty($lote) && isset($arrayItens[$idUniq]['lote'][$lote])) {
-                   $arrayItens[$idUniq]['lote'][$lote]['quantidade'] = Math::adicionar($item['quantidade'], $arrayItens[$idUniq]['lote'][$lote]['quantidade']);
-                   $arrayItens[$idUniq]['lote'][$lote]['peso'] = Math::adicionar($peso, $arrayItens[$idUniq]['lote'][$lote]['peso']);
-               } else {
-                   $arrayItens[$idUniq]['lote'][$lote]['quantidade'] = $item['quantidade'];
-                   $arrayItens[$idUniq]['lote'][$lote]['peso'] = $peso;
-               }
+                $arrayItens[$idUniq]['quantidade'] = Math::adicionar($item['quantidade'], $arrayItens[$idUniq]['quantidade']);
+                $arrayItens[$idUniq]['peso'] = Math::adicionar($peso, $arrayItens[$idUniq]['peso']);
+                if (!empty($lote) && isset($arrayItens[$idUniq]['lotes'][$lote])) {
+                    $arrayItens[$idUniq]['lotes'][$lote]['quantidade'] = Math::adicionar($item['quantidade'], $arrayItens[$idUniq]['lotes'][$lote]['quantidade']);
+                    $arrayItens[$idUniq]['lotes'][$lote]['peso'] = Math::adicionar($peso, $arrayItens[$idUniq]['lotes'][$lote]['peso']);
+                } else {
+                    $arrayItens[$idUniq]['lotes'][$lote]['quantidade'] = $item['quantidade'];
+                    $arrayItens[$idUniq]['lotes'][$lote]['peso'] = $peso;
+                }
             } else {
                 $arrayItens[$idUniq] = $item;
                 $arrayItens[$idUniq]['quantidade'] = $item['quantidade'];
                 $arrayItens[$idUniq]['peso'] = $peso;
                 if (!empty($lote)) {
-                    $arrayItens[$idUniq]['lote'][$lote]['quantidade'] = $item['quantidade'];
-                    $arrayItens[$idUniq]['lote'][$lote]['peso'] = $peso;
+                    $arrayItens[$idUniq]['lotes'] = [];
+                    $arrayItens[$idUniq]['lotes'][$lote]['quantidade'] = $item['quantidade'];
+                    $arrayItens[$idUniq]['lotes'][$lote]['peso'] = $peso;
                 }
             }
         }
@@ -1217,6 +1217,7 @@ class NotaFiscalRepository extends EntityRepository {
         $em = $this->getEntityManager();
         $em->beginTransaction();
         $itens = $this->unificarItens($itens);
+        $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
         try {
             /** @var LoteRepository $loteRepository */
             $loteRepository = $em->getRepository('wms:Produto\Lote');
@@ -1243,16 +1244,14 @@ class NotaFiscalRepository extends EntityRepository {
                 $itemEntity->setNumPeso($item['peso']);
                 $em->persist($itemEntity);
                 $notaFiscalEntity->getItens()->add($itemEntity);
-                if(isset($item['lote']) && !empty($item['lote']) && $produtoEntity->getIndControlaLote() == 'S'){
-                    $idPessoa = \Zend_Auth::getInstance()->getIdentity()->getId();
-                    foreach ($item['itemLote'] as $lote){
-                        $loteEntity = $loteRepository->findOneBy(['descricao' => $lote['lote'], 'codProduto' => $codProduto, 'grade' => $grade]);
-                        if(empty($loteEntity)) {
-                            $loteEntity = $loteRepository->save($codProduto, $grade, trim($lote['lote']), $idPessoa);
+                if(!empty($item['lotes']) && $produtoEntity->getIndControlaLote() == 'S'){
+                    foreach ($item['lotes'] as $lote => $itemLote) {
+                        $loteEntity = $loteRepository->findOneBy(['descricao' => $lote, 'codProduto' => $codProduto, 'grade' => $grade]);
+                        if (empty($loteEntity)) {
+                            $loteRepository->save($codProduto, $grade, trim($lote), $idPessoa);
                         }
-                        $notaFiscalItemLoteRepository->save($loteEntity->getId(), $itemEntity->getId(), $lote['quantidade']);
+                        $notaFiscalItemLoteRepository->save(trim($lote), $itemEntity->getId(), $itemLote['quantidade']);
                     }
-
                 }
             }
             $em->flush();
