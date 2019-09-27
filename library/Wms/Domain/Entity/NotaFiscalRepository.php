@@ -1148,13 +1148,13 @@ class NotaFiscalRepository extends EntityRepository {
         foreach ($itens as $key => $item){
             $lote = (isset($item["lote"]) && !empty($item["lote"])) ? $item["lote"] : null;
             $peso = (isset($item["peso"]) && !empty($item["peso"])) ? $item["peso"] : $item['quantidade'];
-
+            unset($item["lote"]);
             $idUniq = "$item[idProduto]-*-$item[grade]";
 
             if(isset($arrayItens[$idUniq])){
                 $arrayItens[$idUniq]['quantidade'] = Math::adicionar($item['quantidade'], $arrayItens[$idUniq]['quantidade']);
                 $arrayItens[$idUniq]['peso'] = Math::adicionar($peso, $arrayItens[$idUniq]['peso']);
-                if (!empty($lote) && isset($arrayItens[$idUniq]['lote'][$lote])) {
+                if (!empty($lote) && isset($arrayItens[$idUniq]['lotes'][$lote])) {
                     $arrayItens[$idUniq]['lotes'][$lote]['quantidade'] = Math::adicionar($item['quantidade'], $arrayItens[$idUniq]['lotes'][$lote]['quantidade']);
                     $arrayItens[$idUniq]['lotes'][$lote]['peso'] = Math::adicionar($peso, $arrayItens[$idUniq]['lotes'][$lote]['peso']);
                 } else {
