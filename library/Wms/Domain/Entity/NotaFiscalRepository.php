@@ -1154,20 +1154,21 @@ class NotaFiscalRepository extends EntityRepository {
             $idUniq = "$item[idProduto]-*-$item[grade]";
 
             if(isset($arrayItens[$idUniq])){
-               $arrayItens[$idUniq]['quantidade'] = Math::adicionar($item['quantidade'], $arrayItens[$idUniq]['quantidade']);
-               $arrayItens[$idUniq]['peso'] = Math::adicionar($peso, $arrayItens[$idUniq]['peso']);
-               if (!empty($lote) && isset($arrayItens[$idUniq]['lote'][$lote])) {
-                   $arrayItens[$idUniq]['lote'][$lote]['quantidade'] = Math::adicionar($item['quantidade'], $arrayItens[$idUniq]['lote'][$lote]['quantidade']);
-                   $arrayItens[$idUniq]['lote'][$lote]['peso'] = Math::adicionar($peso, $arrayItens[$idUniq]['lote'][$lote]['peso']);
-               } else {
-                   $arrayItens[$idUniq]['lote'][$lote]['quantidade'] = $item['quantidade'];
-                   $arrayItens[$idUniq]['lote'][$lote]['peso'] = $peso;
-               }
+                $arrayItens[$idUniq]['quantidade'] = Math::adicionar($item['quantidade'], $arrayItens[$idUniq]['quantidade']);
+                $arrayItens[$idUniq]['peso'] = Math::adicionar($peso, $arrayItens[$idUniq]['peso']);
+                if (!empty($lote) && isset($arrayItens[$idUniq]['lote'][$lote])) {
+                    $arrayItens[$idUniq]['lote'][$lote]['quantidade'] = Math::adicionar($item['quantidade'], $arrayItens[$idUniq]['lote'][$lote]['quantidade']);
+                    $arrayItens[$idUniq]['lote'][$lote]['peso'] = Math::adicionar($peso, $arrayItens[$idUniq]['lote'][$lote]['peso']);
+                } else {
+                    $arrayItens[$idUniq]['lote'][$lote]['quantidade'] = $item['quantidade'];
+                    $arrayItens[$idUniq]['lote'][$lote]['peso'] = $peso;
+                }
             } else {
                 $arrayItens[$idUniq] = $item;
                 $arrayItens[$idUniq]['quantidade'] = $item['quantidade'];
                 $arrayItens[$idUniq]['peso'] = $peso;
                 if (!empty($lote)) {
+                    $arrayItens[$idUniq]['lote'] = [];
                     $arrayItens[$idUniq]['lote'][$lote]['quantidade'] = $item['quantidade'];
                     $arrayItens[$idUniq]['lote'][$lote]['peso'] = $peso;
                 }
