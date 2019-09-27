@@ -380,6 +380,7 @@ class Web_EnderecoController extends Crud
         }
         $destino = $this->_getParam('destino');
         try {
+            $this->em->beginTransaction();
 
             $check = $this->repository->validaEnderecosComReservas($massId);
             if (!empty($check)) {
@@ -392,8 +393,6 @@ class Web_EnderecoController extends Crud
                 $str = implode(", ", $check);
                 throw new Exception("Endereços do tipo Picking ou Picking Dinâmico não podem ser bloqueados: $str");
             }
-
-            $this->em->beginTransaction();
             foreach ($massId as $id) {
                 /** @var Endereco $entity */
                 $entity = $this->repository->findOneBy(array($this->pkField => $id));
