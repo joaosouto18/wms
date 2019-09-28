@@ -33,6 +33,7 @@ class LoteRepository extends EntityRepository
         if ($origem == 'I' && empty($dsc)) {
             $dsc = 'LI'.$idLote;
         } else {
+            $lote->setProduto($this->_em->getReference("wms:Produto",["id" => $codProduto, "grade" => $grade]));
             $lote->setCodProduto($codProduto);
             $lote->setGrade($grade);
         }
