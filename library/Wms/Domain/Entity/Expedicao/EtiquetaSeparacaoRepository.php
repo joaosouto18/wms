@@ -2690,6 +2690,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                 $mapaPedidoEn->setMapaSeparacao($mapaSeparacaoEntity);
                 $mapaPedidoEn->setPedidoProduto($item['entity']);
                 $mapaPedidoEn->setQtd($item['qtd']);
+                $mapaPedidoEn->setQtdCortada(0);
             } else {
                 $mapaPedidoEn->setQtd(Math::adicionar($mapaPedidoEn->getQtd(), $item['qtd']));
             }
