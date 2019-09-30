@@ -834,12 +834,12 @@ class RecebimentoRepository extends EntityRepository
                 $qtdLoteNota = 0;
                 foreach ($qtdNfPorLote as $qtdLote) {
                     if ($qtdLote['DSC_LOTE'] == $lote) {
-                        $qtdLoteNota = $qtdLote['QTD'];
+                        $qtdLoteNota = Math::adicionar($qtdLoteNota, $qtdLote['QTD']);
                     }
                 }
-                $qtdDivergencia = ($qtdConferidaTotal - $qtdLoteNota);
+                $qtdDivergencia = Math::subtrair($qtdConferidaTotal, $qtdLoteNota);
 
-                if ($qtdDivergencia !== 0) {
+                if (!empty($qtdDivergencia)) {
                     $indDivergenciaLote = 'S';
                 }
             } else {
@@ -850,7 +850,7 @@ class RecebimentoRepository extends EntityRepository
         } elseif ($divergenciaPesoVariavel == 'S' || $produtoEntity->getPossuiPesoVariavel() == 'S') {
             $qtdDivergencia = 0;
         } else {
-            $qtdDivergencia = ($qtdConferidaTotal - $qtdNF);
+            $qtdDivergencia = Math::subtrair($qtdConferidaTotal, $qtdNF);
         }
 
         $dataValidade = null;
