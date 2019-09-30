@@ -17,6 +17,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Deposito\Endereco,
     Wms\Domain\Entity\Produto\Embalagem;
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Enderecamento\Modelo;
 use Wms\Math;
 
 /**
@@ -1840,11 +1841,18 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         return $result;
     }
 
+    /**
+     * @param $produtoEn Produto
+     * @param $modeloEnderecamentoEn Modelo
+     * @return Endereco|null
+     */
     public function getEnderecoReferencia($produtoEn, $modeloEnderecamentoEn) {
         $enderecoReferencia = null;
 
         //PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
         $enderecoReferencia = $produtoEn->getEnderecoReferencia();
+
+        if ($enderecoReferencia->isBloqueadaEntrada()) $enderecoReferencia = null;
 
         //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
         if ($enderecoReferencia == null) {
@@ -1870,6 +1878,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         if ($enderecoReferencia == null) {
             $enderecoReferencia = $modeloEnderecamentoEn->getCodReferencia();
         }
+
+        if ($enderecoReferencia->isBloqueadaEntrada()) $enderecoReferencia = null;
 
         return $enderecoReferencia;
     }

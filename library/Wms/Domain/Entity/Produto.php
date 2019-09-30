@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity;
 
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\ProdutoRepository,
     Wms\Domain\Entity\Fabricante,
     Wms\Domain\Entity\Produto\Classe,
@@ -159,6 +160,7 @@ class Produto
     protected $toleranciaNominal;
 
     /**
+     * @var Endereco
      * @ManyToOne(targetEntity="Wms\Domain\Entity\Deposito\Endereco", cascade={"persist"})
      * @JoinColumn(name="COD_ENDERECO_REF_END_AUTO", referencedColumnName="COD_DEPOSITO_ENDERECO")
      */
@@ -481,7 +483,7 @@ class Produto
     }
 
     /**
-     * @param mixed $enderecoReferencia
+     * @param $enderecoReferencia Endereco
      */
     public function setEnderecoReferencia($enderecoReferencia)
     {
@@ -491,7 +493,7 @@ class Produto
     }
 
     /**
-     * @return mixed
+     * @return Endereco
      */
     public function getEnderecoReferencia()
     {
