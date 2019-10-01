@@ -1517,6 +1517,11 @@ class Mobile_EnderecamentoController extends Action
                     $volumeRepo->setPickingVolume($codBarras, $enderecoEn, $capacidadePicking);
                     $volumeRepo->setNormaPaletizacaoVolume($codBarras, $lastro, $camada, $unitizador);
                 }
+                /** @var \Wms\Domain\Entity\Produto\AndamentoRepository $andamentoRepository */
+                $andamentoRepository = $this->em->getRepository('wms:Produto\Andamento');
+                $andamentoRepository->saveBarCode($codBarras);
+
+                $this->getEntityManager()->flush();
 
                 $this->addFlashMessage('success', 'Cadastrado com sucesso!');
                 $this->_redirect('/mobile/enderecamento/cadastro-produto-endereco');
