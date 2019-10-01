@@ -641,7 +641,7 @@ class Integracao {
 
 
         foreach ($dados as $key => $notaFiscal) {
-
+            $notaFiscal = array_change_key_case($notaFiscal,CASE_UPPER);
             $cpf_cnpj = String::retirarMaskCpfCnpj($notaFiscal['CPF_CNPJ']);
             if (strlen($cpf_cnpj) == 11) {
                 $tipoPessoa = 'F';
