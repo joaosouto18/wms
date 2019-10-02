@@ -1048,23 +1048,26 @@ class PaleteRepository extends EntityRepository {
                 if (isset($vetLote) && !empty($vetLote)) {
                     $palete = $newPalete();
                     foreach ($vetLote as $lote) {
-                        $incremento = Math::adicionar($palete['qtdTotal'], $lote['QTD']);
-                        if (Math::compare($incremento,$qtdNoPalete, '<=')){
-                            $palete['qtdTotal'] = $incremento;
-                            $palete['lotes'][$lote['LOTE']] = $lote['QTD'];
-                            if ($incremento == $qtdNoPalete) {
+                        $qtdLote = $lote['QTD'];
+                        while ($qtdLote > 0) {
+                            $incremento = Math::adicionar($palete['qtdTotal'], $qtdLote);
+                            if (Math::compare($incremento, $qtdNoPalete, '<=')) {
+                                $palete['qtdTotal'] = $incremento;
+                                $palete['lotes'][$lote['LOTE']] = $qtdLote;
+                                if ($incremento == $qtdNoPalete) {
+                                    $paletesCompletos[] = $palete;
+                                    $palete = $newPalete();
+                                }
+                                $ultimoPalete = $palete;
+                                $qtdLote = 0;
+                            } else {
+                                $excedente = Math::subtrair($incremento, $qtdNoPalete);
+                                $palete['qtdTotal'] = $qtdNoPalete;
+                                $palete['lotes'][$lote['LOTE']] = Math::subtrair($qtdLote, $excedente);
                                 $paletesCompletos[] = $palete;
+                                $qtdLote = $excedente;
                                 $palete = $newPalete();
                             }
-                            $ultimoPalete = $palete;
-                        } else {
-                            $excedente = Math::subtrair($incremento, $qtdNoPalete);
-                            $palete['qtdTotal'] = $qtdNoPalete;
-                            $palete['lotes'][$lote['LOTE']] = Math::subtrair($lote['QTD'], $excedente);
-                            $paletesCompletos[] = $palete;
-                            $palete = $newPalete();
-                            $palete['qtdTotal'] = $excedente;
-                            $palete['lotes'][$lote['LOTE']] = $excedente;
                         }
                     }
                 }

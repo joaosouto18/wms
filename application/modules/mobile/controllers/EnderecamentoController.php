@@ -909,6 +909,8 @@ class Mobile_EnderecamentoController extends Action
 
             $embalagemEn = null;
 
+            $produtoEn = null;
+
             if (!empty($codBarrasUma)) {
                 /** @var \Wms\Domain\Entity\Enderecamento\PaleteProdutoRepository $paleteProdutoRepo */
                 $paleteProdutoRepo = $this->em->getRepository('wms:Enderecamento\PaleteProduto');
@@ -919,17 +921,20 @@ class Mobile_EnderecamentoController extends Action
                 if (empty($paleteProduto))
                     throw new Exception("UMA $codBarrasUma não encontrada!");
 
+                $produtoEn = $paleteProduto->getProduto();
                 $codProduto = $paleteProduto->getCodProduto();
                 $grade = $paleteProduto->getGrade();
                 $produtoVolumeEntity = $produtoVolumeRepo->findOneBy(array('codProduto' => $codProduto, 'grade' => $grade));
 
-                if (!isset($produtoVolumeEntity) || empty($produtoVolumeEntity))
+                if (empty($produtoVolumeEntity))
                     $embalagemEn = $paleteProduto->getEmbalagemEn();
 
             } else if (!empty($codBarras)) {
                 $LeituraColetor = new \Wms\Service\Coletor();
                 $produtoRepo = $this->getEntityManager()->getRepository('wms:Produto');
                 $produtoEn = $produtoRepo->getProdutoByCodBarrasOrCodProduto($codBarras);
+
+                if (empty($produtoEn)) throw new Exception("Nenhum produto encontrado com esse código de barras: $codBarras");
 
                 $codProduto = $produtoEn->getId();
                 $grade = $produtoEn->getGrade();
