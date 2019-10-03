@@ -67,7 +67,6 @@ class EnderecoRepository extends EntityRepository {
     public function save(EnderecoEntity $enderecoEntity = null, array $values) {
         extract($values['identificacao']);
         $em = $this->getEntityManager();
-        $view = new \Zend_View;
 
         $paramsUrl = $values['identificacao'];
         $paramsUrl['controller'] = 'endereco';
@@ -86,8 +85,17 @@ class EnderecoRepository extends EntityRepository {
             /** @var Endereco $enderecoEntity */
             $enderecoEntity = $em->getReference('wms:Deposito\Endereco', $id);
 
-            $enderecoEntity->setBloqueadaSaida(in_array('S', $bloqueada));
-            $enderecoEntity->setBloqueadaEntrada(in_array('E', $bloqueada));
+            $bloquearSaida = in_array('S', $bloqueada);
+            $bloquearEntrada = in_array('E', $bloqueada);
+
+            if ($bloquearSaida || $bloquearEntrada) {
+                $dscEndereco = $enderecoEntity->getDescricao();
+                if (!empty(self::validaEnderecosPicking([$id]))) throw new \Exception("Esse endereço $dscEndereco está vinculado como picking em algum produto, por esse motivo não pode ser bloqueado!");
+                if (!empty(self::validaEnderecosComReservas([$id]))) throw new \Exception("Esse endereço $dscEndereco tem reservas pendentes, por esse motivo não pode ser bloqueado!");
+            }
+
+            $enderecoEntity->setBloqueadaSaida($bloquearSaida);
+            $enderecoEntity->setBloqueadaEntrada($bloquearEntrada);
             $enderecoEntity->setDeposito($deposito);
             $enderecoEntity->setCaracteristica($caracteristica);
             $enderecoEntity->setEstruturaArmazenagem($estruturaArmazenagem);
