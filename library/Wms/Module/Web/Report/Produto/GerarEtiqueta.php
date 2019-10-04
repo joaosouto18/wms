@@ -2,6 +2,7 @@
 
 namespace Wms\Module\Web\Report\Produto;
 
+use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\ProdutoRepository;
 use Wms\Util\Barcode\eFPDF,
     Wms\Util\Barcode\Barcode,
@@ -52,7 +53,13 @@ class GerarEtiqueta extends eFPDF
                     $grade = $produto['grade'];
                     $emb = (isset($produto['emb'])) ? $produto['emb'] : null;
                     $result = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento, $codProduto, $grade, $emb);
-                    $produtosEn[] = $result[0];
+
+                    /** @var Produto $prodEntity */
+                    $prodEntity = $em->getRepository('wms:Produto')->find(["id" => $codProduto, "grade" => $grade]);
+                    if ($prodEntity->getTipoComercializacao()->getId() == Produto::TIPO_UNITARIO)
+                        $produtosEn[] = $result[0];
+                    else
+                        $produtosEn = $result;
                 }
             } else {
                 $produtosEn = $notaFiscalRepo->buscarProdutosImprimirCodigoBarras($idRecebimento);
