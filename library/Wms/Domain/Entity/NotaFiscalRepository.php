@@ -893,22 +893,22 @@ class NotaFiscalRepository extends EntityRepository {
                           pv.id as idVolume, pv.codigoSequencial as codSequencialVolume, pv.descricao as dscVolume,
                           NVL(pe.codigoBarras, pv.codigoBarras) codigoBarras")
                 ->from('wms:NotaFiscal', 'nf')
-                ->leftJoin('nf.recebimento', 'r')
+                ->innerJoin('nf.recebimento', 'r')
                 ->innerJoin('nf.itens', 'nfi')
                 ->innerJoin('nf.fornecedor', 'f')
                 ->innerJoin('f.pessoa', 'pj')
-                ->leftJoin('nfi.produto', 'p')
+                ->innerJoin('nfi.produto', 'p')
                 ->innerJoin('p.tipoComercializacao', 'tc')
                 ->leftJoin('p.linhaSeparacao', 'ls')
                 ->leftJoin('p.fabricante', 'fb')
-                ->leftJoin('p.volumes', 'pv')
+                ->leftJoin('p.volumes', 'pv' ,'WITH', '(pv.codigoBarras IS NOT NULL and pv.dataInativacao IS NULL)')
                 ->where('nf.recebimento = :idRecebimento')
                 ->setParameter('idRecebimento', $idRecebimento);
 
         if (empty($emb)) {
-            $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.isPadrao = \'S\'');
+            $dql->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.isPadrao = \'S\' AND (pe.codigoBarras IS NOT NULL and pe.dataInativacao IS NULL)');
         } else {
-            $dql->leftJoin('p.embalagens', 'pe');
+            $dql->leftJoin('p.embalagens', 'pe', 'WITH', '(pe.codigoBarras IS NOT NULL and pe.dataInativacao IS NULL)');
         }
 
         if ($codProduto == null) {
@@ -923,6 +923,8 @@ class NotaFiscalRepository extends EntityRepository {
                     ->setParameter("idEmb", $emb);
             }
         }
+
+        $dql->orderBy("p.id, p.grade, pv.codigoSequencial")->addOrderBy('pe.quantidade', 'desc');
 
         return $dql->getQuery()->getResult();
     }
