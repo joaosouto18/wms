@@ -66,7 +66,7 @@ class Wms_WebService_Estoque extends Wms_WebService
         foreach ($produtos as $prod) {
             $implodeProd[] = $prod->codProduto;
         }
-        $produtosParam = implode(",", $implodeProd);
+        $produtosParam = "'".implode("','", $implodeProd)."'";
 
         $produtosResult = array();
 

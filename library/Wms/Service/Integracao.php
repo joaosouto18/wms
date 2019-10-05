@@ -1099,7 +1099,8 @@ class Integracao {
                 3 => $produtoConferido['qtdDivergencia'],
                 4 => $dataValidade,
                 5 => $dataConferencia,
-                6 => $produtoConferido['codigoBarras']
+                6 => $produtoConferido['codigoBarras'],
+                7 => $produtoConferido['lote']
             );
 
             //CONEXAO DE BANCO PARA ATUALIZAR AS QUANTIDADES
