@@ -304,6 +304,7 @@ class Mobile_RecebimentoController extends Action
                 }
             }
 
+            $i = 0;
             foreach ($qtds as $index) {
                 $lote = $index["lote"];
                 $qtdConferida = $index["qtd"];
@@ -330,8 +331,7 @@ class Mobile_RecebimentoController extends Action
                 }
 
                 $qtdBloqueada = 0;
-                if ($produtoEn->getValidade() == "S") {
-
+                if ($produtoEn->getValidade() == "S" && $i === 0) {
                     if (!isset($params['dataValidade']) || empty($params['dataValidade'])) {
                         $this->_helper->messenger('error', 'Informe uma data de validade correta');
                         $this->redirect('ler-codigo-barras', 'recebimento', null, array('idRecebimento' => $idRecebimento));
@@ -397,6 +397,7 @@ class Mobile_RecebimentoController extends Action
                 if ($this->_hasParam('idProdutoVolume')) {
                     $recebimentoRepo->gravarConferenciaItemVolume($idRecebimento, $idOrdemServico, $idProdutoVolume, $qtdConferida, $idNormaPaletizacao, $params, $params['numPeso'], $qtdBloqueada, null, $lote);
                 }
+                $i++;
             }
 
 
