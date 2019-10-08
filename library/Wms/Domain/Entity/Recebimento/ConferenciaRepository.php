@@ -317,13 +317,13 @@ class ConferenciaRepository extends EntityRepository
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
             ->select('1010101010 codigoBarras, p.id codProduto, p.grade, SUM(rc.qtdConferida) + SUM(rc.qtdDivergencia * -1) quantidade, 
-                            SUM(rc.qtdDivergencia * -1) qtdDivergencia, rc.dataValidade, rc.dataConferencia, lote')
+                            SUM(rc.qtdDivergencia * -1) qtdDivergencia, rc.dataValidade, rc.dataConferencia, rc.lote')
             ->from('wms:Recebimento\Conferencia', 'rc')
             ->innerJoin('rc.recebimento', 'r')
             ->innerJoin('wms:Produto','p', 'WITH', 'p.id = rc.codProduto and p.grade = rc.grade')
             ->where("r.id = $idRecebimento")
             ->andWhere('rc.qtdDivergencia = 0 OR rc.notaFiscal IS NOT NULL')
-            ->groupBy('p.id, p.grade, rc.dataValidade, rc.dataConferencia, lote');
+            ->groupBy('p.id, p.grade, rc.dataValidade, rc.dataConferencia, rc.lote');
 
         return $sql->getQuery()->getResult();
     }
