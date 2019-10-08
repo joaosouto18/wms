@@ -414,13 +414,17 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         //valida o endereco informado
                         if (!empty($endereco)) {
                             $endereco = EnderecoUtil::separar($endereco);
+                            /** @var Endereco $enderecoEntity */
                             $enderecoEntity = $enderecoRepo->findOneBy($endereco);
 
                             if (!$enderecoEntity) {
                                 throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
                             }
 
-                            $embalagemEntity->setEndereco($enderecoEntity);
+                            if ($enderecoEntity->liberadoPraSerPicking()) {
+                                $embalagemEntity->setEndereco($enderecoEntity);
+                            }
+
                         }
 
                         if (isset($itemEmbalagem['ativarDesativar']) && !empty($itemEmbalagem['ativarDesativar'])) {
@@ -485,7 +489,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                                 throw new \Exception('Não existe o Endereço informado na embalagem ' . $descricao);
                             }
 
-                            $embalagemEntity->setEndereco($enderecoEntity);
+                            if ($enderecoEntity->liberadoPraSerPicking()) {
+                                $embalagemEntity->setEndereco($enderecoEntity);
+                            }
                         }
 
                         // verifica se o codigo de barras é automatico

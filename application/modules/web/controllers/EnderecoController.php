@@ -596,10 +596,9 @@ class Web_EnderecoController extends Crud
         if (empty($depositoEnderecoEn)) {
             $arrayMensagens = array('status' => 'error', "msg" => "Endereço $endereco não encontrado!");
         } else{
-            if ($depositoEnderecoEn->isBloqueadaEntrada() || $depositoEnderecoEn->isBloqueadaSaida()) {
-                $str[] = ($depositoEnderecoEn->isBloqueadaEntrada()) ? "Entrada" : "";
-                $str[] = ($depositoEnderecoEn->isBloqueadaSaida()) ? "Saída" : "";
-                $arrayMensagens = array('status' => 'error', "msg" => "O endereço $endereco não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
+            $test = $depositoEnderecoEn->liberadoPraSerPicking(true);
+            if (is_string($test)) {
+                $arrayMensagens = array('status' => 'error', "msg" => $test);
             } else if ($depositoEnderecoEn->getCaracteristica()->getId() == Endereco::PICKING || $depositoEnderecoEn->getCaracteristica()->getId() == Endereco::PICKING_DINAMICO) {
                 if ($this->getSystemParameterValue('PERMITE_NPRODUTO_PICKING') == 'N') {
                     $produto = $depositoEnderecoRepo->getProdutoByEndereco($enderecoFormatado, true, true);

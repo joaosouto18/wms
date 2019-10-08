@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Domain\Entity\Atividade as AtividadeEntity,
     Wms\Domain\Entity\Recebimento;
 use Wms\Domain\Entity\Armazenagem\UnitizadorRepository;
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\Produto\EmbalagemRepository;
 use Wms\Domain\Entity\Ressuprimento\ReservaEstoque;
@@ -1718,7 +1719,11 @@ class PaleteRepository extends EntityRepository {
         $embalagem = $produtosPalete[0]->getEmbalagemEn();
         $qtdPaleteProduto = $produtosPalete[0]->getQtd();
 
+        /** @var Endereco $pickingEn */
         $pickingEn = $embalagem->getEndereco();
+
+        if ($pickingEn->isBloqueadaEntrada()) return null;
+
         $capacidadePicking = $embalagem->getCapacidadePicking();
 
         //VALIDO A CAPACIDADE DE PICKING SOMENTE SE O PRODUTO TIVER PICKING
@@ -1864,6 +1869,7 @@ class PaleteRepository extends EntityRepository {
                     AND ((DE.COD_CARACTERISTICA_ENDERECO  != 37) OR (DE.COD_TIPO_EST_ARMAZ = 26))
                     AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete)
                     AND DE.IND_DISPONIVEL = 'S'
+                    AND DE.BLOQUEADA_ENTRADA = 'N'
                ORDER BY CE.NUM_PRIORIDADE,
                         ET.NUM_PRIORIDADE,
                         AA.NUM_PRIORIDADE,

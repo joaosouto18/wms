@@ -3,6 +3,7 @@
 namespace Wms\Domain\Entity\Deposito;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Exception;
 
 /**
  * Endereco
@@ -481,4 +482,18 @@ class Endereco
         $this->inventarioBloqueado = $inventarioBloqueado;
     }
 
+
+    public function liberadoPraSerPicking($returnStrException = false)
+    {
+        if (self::isBloqueadaEntrada() || self::isBloqueadaSaida()) {
+            $str[] = (self::isBloqueadaEntrada()) ? "Entrada" : "";
+            $str[] = (self::isBloqueadaSaida()) ? "Saída" : "";
+            $msg = "O endereço ".self::getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str);
+            if ($returnStrException) {
+                return $msg;
+            }
+            throw new Exception('error', $msg);
+        }
+        return true;
+    }
 }

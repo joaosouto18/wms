@@ -1086,12 +1086,7 @@ class Mobile_EnderecamentoController extends Action
                         if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPicking) {
                             throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                         }
-                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                            if ($enderecoNovoEn->isBloqueadaEntrada() || $enderecoNovoEn->isBloqueadaSaida()) {
-                                $str[] = ($enderecoNovoEn->isBloqueadaEntrada()) ? "Entrada" : "";
-                                $str[] = ($enderecoNovoEn->isBloqueadaSaida()) ? "Saída" : "";
-                                throw new Exception('error', "O endereço ".$enderecoNovoEn->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
-                            }
+                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $enderecoNovoEn->liberadoPraSerPicking()) {
                             if (isset($embalagemEn)) {
                                 $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                                 foreach ($embalagens as $embalagemEn) {
@@ -1114,12 +1109,7 @@ class Mobile_EnderecamentoController extends Action
                         }
 
                         //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
-                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                            if ($enderecoNovoEn->isBloqueadaEntrada() || $enderecoNovoEn->isBloqueadaSaida()) {
-                                $str[] = ($enderecoNovoEn->isBloqueadaEntrada()) ? "Entrada" : "";
-                                $str[] = ($enderecoNovoEn->isBloqueadaSaida()) ? "Saída" : "";
-                                throw new Exception('error', "O endereço ".$enderecoNovoEn->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
-                            }
+                        if ($enderecoNovoEn->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $enderecoNovoEn->liberadoPraSerPicking()) {
                             if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
                                 $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                                 foreach ($embalagens as $embalagemEn) {
@@ -1226,12 +1216,7 @@ class Mobile_EnderecamentoController extends Action
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPicking) {
                             throw new \Exception("Só é permitido transferir de Picking para Picking Dinâmico!");
                         }
-                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-                            if ($endereco->isBloqueadaEntrada() || $endereco->isBloqueadaSaida()) {
-                                $str[] = ($endereco->isBloqueadaEntrada()) ? "Entrada" : "";
-                                $str[] = ($endereco->isBloqueadaSaida()) ? "Saída" : "";
-                                throw new Exception('error', "O endereço ".$endereco->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
-                            }
+                        if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo && $endereco->liberadoPraSerPicking()) {
                             $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                             foreach ($embalagens as $embalagemEn) {
                                 $embalagemEn->setEndereco($endereco);
@@ -1249,13 +1234,7 @@ class Mobile_EnderecamentoController extends Action
 
                         //VERIFICA SE O ENDEREÇO DE DESTINO É PICKING DINAMICO E SE O ENDERECO DO PRODUTO ESTÁ VAZIO E SALVA O ENDEREÇO DE DESTINO
                         if ($endereco->getIdCaracteristica() == $idCaracteristicaPickingRotativo) {
-
-                            if (isset($embalagemEn) && is_null($embalagemEn->getEndereco())) {
-                                if ($endereco->isBloqueadaEntrada() || $endereco->isBloqueadaSaida()) {
-                                    $str[] = ($endereco->isBloqueadaEntrada()) ? "Entrada" : "";
-                                    $str[] = ($endereco->isBloqueadaSaida()) ? "Saída" : "";
-                                    throw new Exception('error', "O endereço ".$endereco->getDescricao()." não pode ser atribuido como picking pois está bloqueado para: " . implode(" e ", $str));
-                                }
+                            if (isset($embalagemEn) && is_null($embalagemEn->getEndereco()) && $endereco->liberadoPraSerPicking()) {
                                 $embalagens = $embalagemRepo->findBy(array('codProduto' => $embalagemEn->getProduto(), 'grade' => $embalagemEn->getGrade()));
                                 foreach ($embalagens as $embalagemEn) {
                                     $embalagemEn->setEndereco($endereco);

@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityRepository,
     Wms\Util\CodigoBarras,
     Core\Util\Produto,
     Wms\Util\Endereco as EnderecoUtil;
+use Wms\Domain\Entity\Deposito\Endereco;
 use Wms\Util\Coletor;
 
 /**
@@ -60,13 +61,16 @@ class VolumeRepository extends EntityRepository
         if (!empty($endereco)) {
             $endereco = EnderecoUtil::separar($endereco);
             $enderecoRepo = $em->getRepository('wms:Deposito\Endereco');
+            /** @var Endereco $enderecoEntity */
             $enderecoEntity = $enderecoRepo->findOneBy($endereco);
 
             if (!$enderecoEntity) {
                 throw new \Exception('Não existe o Endereço informado no volume ' . $descricao);
             }
-            
-            $volumeEntity->setEndereco($enderecoEntity);
+
+            if ($enderecoEntity->liberadoPraSerPicking()) {
+                $volumeEntity->setEndereco($enderecoEntity);
+            }
         }
 
         if (!empty($idNormaPaletizacao)) {
