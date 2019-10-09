@@ -1869,7 +1869,7 @@ class PaleteRepository extends EntityRepository {
                     AND ((DE.COD_CARACTERISTICA_ENDERECO  != 37) OR (DE.COD_TIPO_EST_ARMAZ = 26))
                     AND ((LONGARINA.TAMANHO_LONGARINA - LONGARINA.OCUPADO) >= $tamanhoPalete)
                     AND DE.IND_DISPONIVEL = 'S'
-                    AND DE.BLOQUEADA_ENTRADA = 'N'
+                    AND DE.BLOQUEADA_ENTRADA = 0
                ORDER BY CE.NUM_PRIORIDADE,
                         ET.NUM_PRIORIDADE,
                         AA.NUM_PRIORIDADE,
