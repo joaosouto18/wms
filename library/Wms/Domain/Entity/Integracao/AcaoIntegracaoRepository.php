@@ -242,7 +242,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                 if ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
                     if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
                         $options[] = $data->format("Y-m-d");
-                    } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE) {
+                    } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE
+                        || $conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_POSTGRE) {
                         $options[] = $data->format("d/m/Y H:i:s");
                     } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MSSQL
                         || $conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_SQLSRV) {
