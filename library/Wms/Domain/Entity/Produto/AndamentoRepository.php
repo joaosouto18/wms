@@ -73,4 +73,31 @@ class AndamentoRepository extends EntityRepository {
         }
     }
 
+    public function saveBarCode($barCode)
+    {
+        $produtoEmbalagemRepository = $this->_em->getRepository('wms:Produto\Embalagem');
+        $produtoEmbalagem = $produtoEmbalagemRepository->findOneBy(array('codigoBarras' => $barCode));
+        $produto = $this->_em->getReference('wms:Produto', array('id' => $produtoEmbalagem->getCodProduto(), 'grade' => $produtoEmbalagem->getGrade()));
+
+        $usuario = null;
+        if (is_object(\Zend_Auth::getInstance())) {
+            if (is_object(\Zend_Auth::getInstance()->getIdentity())) {
+                $usuarioId = \Zend_Auth::getInstance()->getIdentity()->getId();
+                $usuario = $this->_em->getReference('wms:Usuario', (int) $usuarioId);
+            }
+        }
+
+        $andamento = new Andamento();
+        $observacao = 'Codigo de barras bipado: '.$barCode. ' quantidade embalagem: '.$produtoEmbalagem->getQuantidade();
+        $andamento->setProduto($produto);
+        $andamento->setUsuario($usuario);
+        $andamento->setCodProduto($produto->getId());
+        $andamento->setGrade($produto->getGrade());
+        $andamento->setDscObservacao($observacao);
+        $andamento->setDataAndamento(new \DateTime);
+
+        $this->_em->persist($andamento);
+
+    }
+
 }

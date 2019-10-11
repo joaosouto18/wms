@@ -69,7 +69,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                          DSC_PLACA_VEICULO,
                          QTD_ITEM,
                          VALOR_TOTAL,
-                         TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH
+                         TO_CHAR(DTH,'DD/MM/YYYY HH24:MI:SS') as DTH,
+                         DSC_LOTE
                         FROM INTEGRACAO_NF_ENTRADA
                         $where
                   ORDER by NUM_NOTA_FISCAL, COD_SERIE_NOTA_FISCAL, COD_FORNECEDOR, TO_DATE(DAT_EMISSAO)
@@ -241,7 +242,8 @@ class AcaoIntegracaoRepository extends EntityRepository
                 if ($filtro == AcaoIntegracaoFiltro::DATA_ESPECIFICA) {
                     if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MYSQL) {
                         $options[] = $data->format("Y-m-d");
-                    } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE) {
+                    } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_ORACLE
+                        || $conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_POSTGRE) {
                         $options[] = $data->format("d/m/Y H:i:s");
                     } else if ($conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_MSSQL
                         || $conexaoEn->getProvedor() == ConexaoIntegracao::PROVEDOR_SQLSRV) {

@@ -183,9 +183,22 @@ class EtiquetaEndereco extends Pdf
     }
 
     public function layoutModelo4($codBarras){
+        /** @var \Doctrine\ORM\EntityManager $em */
+        $em = \Zend_Registry::get('doctrine')->getEntityManager();
+
+        /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
+        $enderecoRepo   = $em->getRepository('wms:Deposito\Endereco');
+        $enderecoEntity = $enderecoRepo->findOneBy(array('descricao' => $codBarras));
+
+        $rua = $enderecoEntity->getRua();
+        $predio = $enderecoEntity->getPredio();
+        $nivel = $enderecoEntity->getNivel();
+        $apto = $enderecoEntity->getApartamento();
+
+
         $this->SetFont('Arial', 'B', 12);
         $this->Cell(5,13,"",0,0);
-        $this->Cell(26,13,utf8_decode("RUA"),0,0);
+        $this->Cell(23,13,utf8_decode("RUA"),0,0);
         $this->Cell(32,13,utf8_decode("PREDIO"),0,0);
         $this->Cell(24,13,utf8_decode("NIVEL"),0,0);
         $this->Cell(23,13,utf8_decode("APTO"),0,1);
@@ -195,10 +208,12 @@ class EtiquetaEndereco extends Pdf
         $this->Cell(0,0," ",0,1);
 
         $this->SetFont('Arial', 'B', 50);
-        //$this->Cell(5,8,"",0,0);
-        $this->Cell(95,8,$codBarras,0,0);
+        $this->Cell(26,8,"$rua",0,0);
+        $this->Cell(32,8,"$predio",0,0);
+        $this->Cell(24,8,"$nivel",0,0);
+        $this->Cell(23,8,"$apto",0,0);
 
-        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 5, 28 , 100);
+        $this->Image(@CodigoBarras::gerarNovo(str_replace(".","","$rua.$predio.$nivel.$apto")) , 5, 28 , 100);
     }
 
     public function layoutModelo13($codBarras){

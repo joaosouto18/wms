@@ -638,11 +638,10 @@ class Integracao {
 
         $itens = array();
         $notasFiscais = array();
-        $idProdutos = array();
 
 
         foreach ($dados as $key => $notaFiscal) {
-
+            $notaFiscal = array_change_key_case($notaFiscal,CASE_UPPER);
             $cpf_cnpj = String::retirarMaskCpfCnpj($notaFiscal['CPF_CNPJ']);
             if (strlen($cpf_cnpj) == 11) {
                 $tipoPessoa = 'F';
@@ -664,13 +663,12 @@ class Integracao {
                 }
             }
 
-            /** OBTEM O CODIGO DO PRODUTO PARA CADASTRO */
-            $idProdutos[] = $notaFiscal['COD_PRODUTO'];
             $itens[] = array(
                 'idProduto' => $notaFiscal['COD_PRODUTO'],
                 'grade' => $notaFiscal['DSC_GRADE'],
                 'quantidade' => $notaFiscal['QTD_ITEM'],
-                'peso' => $notaFiscal['QTD_ITEM']
+                'peso' => $notaFiscal['QTD_ITEM'],
+                'lote' => $notaFiscal['DSC_LOTE']
             );
 
             $numNfAtual = $notaFiscal['NUM_NOTA_FISCAL'];
@@ -712,22 +710,6 @@ class Integracao {
                 }
             }
         }
-
-        /** CADASTRA OS PRODUTOS DAS NOTAS FISCAIS */
-        /** @var \Wms\Domain\Entity\Integracao\AcaoIntegracaoRepository $acaoIntegracaoRepo */
-        $acaoIntegracaoRepo = $this->_em->getRepository('wms:Integracao\AcaoIntegracao');
-        $parametroRepo = $this->_em->getRepository('wms:Sistema\Parametro');
-        $idIntegracao = $parametroRepo->findOneBy(array('constante' => 'ID_INTEGRACAO_PRODUTOS'));
-        $acaoEn = null;
-        if (isset($idIntegracao) and !is_null($idIntegracao->getValor()))
-            $acaoEn = $acaoIntegracaoRepo->find($idIntegracao->getValor());
-
-        $produtos = implode(',', $idProdutos);
-        if ($produtos == "")
-            $produtos = "0";
-        $options[] = $produtos;
-//        $acaoIntegracaoRepo->processaAcao($acaoEn,$options,'E','P',null,AcaoIntegracaoFiltro::CONJUNTO_CODIGO);
-//        $em->flush();
 
         if ($this->getTipoExecucao() == "L") {
             return $notasFiscais;
@@ -970,6 +952,8 @@ class Integracao {
                     $nf->setQtdItem(str_replace(",", ".", $row['QTD_ITEM']));
                     $nf->setVlrTotal(str_replace(",", ".", $row['VALOR_TOTAL']));
                     $nf->setDth(new \DateTime());
+                    $nf->setLote($row['DSC_LOTE']);
+
                     $this->_em->persist($nf);
                     break;
                 case AcaoIntegracao::INTEGRACAO_PEDIDOS:
@@ -1115,7 +1099,8 @@ class Integracao {
                 3 => $produtoConferido['qtdDivergencia'],
                 4 => $dataValidade,
                 5 => $dataConferencia,
-                6 => $produtoConferido['codigoBarras']
+                6 => $produtoConferido['codigoBarras'],
+                7 => $produtoConferido['lote']
             );
 
             //CONEXAO DE BANCO PARA ATUALIZAR AS QUANTIDADES
