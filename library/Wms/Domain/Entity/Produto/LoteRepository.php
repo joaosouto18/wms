@@ -58,16 +58,25 @@ class LoteRepository extends EntityRepository
      */
     public function verificaLote($lote, $idProduto, $grade, $codPessoaNovaCriacao = null, $cine = false){
         /** @var Lote $loteEn */
-        $loteEn = $this->findOneBy(['descricao' => $lote, 'codProduto' => [$idProduto, null], 'grade' => [$grade, null]]);
+        $dql = $this->_em->createQueryBuilder();
+        $dql->select("l")
+            ->from("wms:Produto\Lote", "l")
+            ->where("l.descricao = :lote")
+            ->andWhere("((l.codProduto = :idProduto AND l.grade = :grade ) OR (l.codProduto IS NULL AND l.grade IS NULL))")
+            ->setParameters([":lote" => $lote, ":idProduto" => $idProduto, ":grade" => $grade]);
+
+        $loteEn = $dql->setMaxResults(1)->getQuery()->getOneOrNullResult();
 
         if (!empty($loteEn) && !empty($loteEn->getCodProduto())) {
             return $loteEn;
-        } elseif (!empty($loteEn) && $loteEn->getOrigem() == Lote::INTERNO && empty($loteEn->getCodProduto()) && $cine) {
+        } elseif (!empty($loteEn) && $loteEn->isInterno() && empty($loteEn->getCodProduto()) && $cine) {
             $loteEn->setCodProduto($idProduto)->setGrade($grade);
             $this->_em->persist($loteEn);
             return $loteEn;
-        } elseif (!empty($loteEn) && $loteEn->getOrigem() == Lote::INTERNO && $cine && ($loteEn->getCodProduto() != $idProduto || $loteEn->getGrade() != $grade)) {
-            return self::save($idProduto, $grade, $lote, (!empty($codPessoaNovaCriacao)) ? $codPessoaNovaCriacao : $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
+        } elseif (empty($loteEn)) {
+            $loteEn = $this->findOneBy(['descricao' => $lote]);
+            if (!empty($loteEn) && $loteEn->isInterno() && $cine)
+                return self::save($idProduto, $grade, $lote, (!empty($codPessoaNovaCriacao)) ? $codPessoaNovaCriacao : $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
         }
 
         return null;

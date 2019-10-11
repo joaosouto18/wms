@@ -515,9 +515,6 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 //GERA AS RESERVAS PARA OS PULMOES E PICKING
                 if ($qtdOnda > 0) {
                     $this->saveOs($produtoEn, $embalagens, $volumes, $qtdOnda, $ondaEn, $enderecoPulmaoEn, $idPicking, $repositorios, $validadeEstoque, true, $lotes);
-                    if ($controlaLote == 'S') {
-                        $reservaEstoqueRepo->updateReservaExpedicao($codProduto, $grade, $idPicking, $lotes);
-                    }
                     $qtdOsGerada ++;
                 }
 
@@ -528,6 +525,11 @@ class OndaRessuprimentoRepository extends EntityRepository {
                 }
             }
         }
+
+//        if ($controlaLote == 'S') {
+//            $reservaEstoqueRepo->updateReservaExpedicao($codProduto, $grade, $idPicking, $lotes);
+//        }
+
         return $qtdOsGerada;
     }
 

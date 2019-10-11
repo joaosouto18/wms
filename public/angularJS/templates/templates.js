@@ -19,7 +19,7 @@ templates.push({
         '<legend>Novo inventário por: {{lblCriterio}}</legend>' +
         '<div class="field">' +
         '<label for="dscNovoInv" class="field optional">Nome do novo inventário</label>' +
-        '<input type="text" name="dscNovoInv" id="dscNovoInv" ng-model="dscInventario" size="40" class="focus" placeholder="Ex.: Inventário da Rua 1">' +
+        '<input type="text" name="dscNovoInv" id="dscNovoInv" ng-model="dscInventario" ng-keypress="enterSubmit($event)" size="40" class="focus" placeholder="Ex.: Inventário da Rua 1">' +
         '</div>' +
         '<div class="field">' +
         '<label for="modelo" class="field optional">Modelo do Inventário</label>' +

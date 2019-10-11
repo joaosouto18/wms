@@ -394,7 +394,7 @@ class ReservaEstoqueRepository extends EntityRepository
                 }
                 if ($dataValidade) $reservaEstoqueProduto->setValidade($dataValidade);
             }
-            if (isset($produto['lote']) && !empty($produto['lote']) && !in_array($produto['lote'], [Produto\Lote::NCL, Produto\Lote::LND])){
+            if (!empty($produto['lote']) && !in_array($produto['lote'], [Produto\Lote::NCL, Produto\Lote::LND])){
                 $reservaEstoqueProduto->setLote($produto['lote']);
             }
             $reservaEstoqueProduto->setQtd(str_replace(",",".",$produto['qtd']));

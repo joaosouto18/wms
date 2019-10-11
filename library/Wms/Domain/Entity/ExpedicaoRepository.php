@@ -1195,7 +1195,7 @@ class ExpedicaoRepository extends EntityRepository {
                                     }
 
                                     foreach ($idsElementos as $id) {
-                                        $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$loteReservar][$id] = array(
+                                        $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica]["$lote*#*$loteReservar"][$id] = array(
                                             'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
                                             'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
                                             'codProduto' => $codProduto,
@@ -1268,7 +1268,6 @@ class ExpedicaoRepository extends EntityRepository {
             }
 
             if ($forcarSairDoPicking) {
-                $estoquePicking = 0;
                 $qtdReservarPicking = $qtdRestante;
 
                 if(empty($enderecoPicking)) {
@@ -1292,14 +1291,56 @@ class ExpedicaoRepository extends EntityRepository {
                     $saldoPicking = $repositorios['estoqueRepo']->getEstoqueByParams($params);
 
                     if (empty($saldoPicking)) {
+                        $estoquePicking = [Lote::LND => 0];
+                    } else {
+                        foreach($saldoPicking as $key => $estoque) {
+
+                            $loteReservar = ($lote == Lote::LND) ? $estoque['DSC_LOTE'] : $lote;
+
+                            $estoquePicking[$loteReservar] = $estoque['SALDO'];
+
+                            $lastKey = function ($saldo) {
+                                end($saldo);
+                                return key($saldo);
+                            };
+
+                            if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$idElemento])) {
+                                $reserva = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$idElemento];
+                                // SE FOR RESERVA DE UM LOTE ESPECÍFICO QUE NÃO ESTÁ NO PICKING DEVERÁ SAÍR DIRETO DO PULMÃO
+                                if ($reserva['estoqueReservado'] && $lote != Lote::LND) {
+                                    $forcarSeparacaoAerea = true;
+                                }
+                                // SE FOR RESERVAR DE QUALQUER LOTE
+                                elseif ($reserva['estoqueReservado']) {
+                                    // VERIFICA O PRÓXIMO LOTE NESSE ENDEREÇO, CASO TENHA
+                                    if ($key != $lastKey($saldoPicking)) {
+                                        continue;
+                                    }
+                                    // CASO NÃO, REGISTRA O SALDO ZERADO NO LOTE ATUAL
+                                    else {
+                                        $estoquePicking[$loteReservar] = 0;
+                                    }
+                                } else {
+                                    //ATUALIZA O SALDO DISPONIVEL NO PICKING PARA O LOTE ATUAL
+                                    $estoquePicking[$loteReservar] = Math::subtrair($estoquePicking[$loteReservar], $reserva['qtdReservada']);
+                                }
+                            }
+
+                            if ($forcarSeparacaoAerea) break;
+
+                        }
+
+                        if ($forcarSeparacaoAerea) continue;
+                    }
+                    /*if (empty($saldoPicking)) {
                         $forcarSeparacaoAerea = true;
                         continue;
                     } else {
                         foreach($saldoPicking as $key => $estoque) {
 
-                            $estoquePicking = $estoque['SALDO'];
-
                             $loteReservar = ($lote == Lote::LND) ? $estoque['DSC_LOTE'] : $lote;
+
+                            $estoquePicking[$loteReservar] = $estoque['SALDO'];
 
                             $lastKey = function ($saldo) {
                                 end($saldo);
@@ -1314,11 +1355,10 @@ class ExpedicaoRepository extends EntityRepository {
                                     if ($key != $lastKey($saldoPicking)) {
                                         continue;
                                     } else {
-                                        $estoquePicking = 0;
-                                        $loteReservar = $lote;
+                                        $estoquePicking[$loteReservar] = 0;
                                     }
                                 } else {
-                                    $estoquePicking = Math::subtrair($estoquePicking, $reserva['qtdReservada']);
+                                    $estoquePicking[$loteReservar] = Math::subtrair($estoquePicking[$loteReservar], $reserva['qtdReservada']);
                                 }
                             }
 
@@ -1327,77 +1367,82 @@ class ExpedicaoRepository extends EntityRepository {
                         }
 
                         if ($forcarSeparacaoAerea) continue;
-                    }
+                    }*/
+                } else {
+                    $estoquePicking = [Lote::NCL => 0];
                 }
 
-                if ( ($controlaLote == 'S' && !empty($estoquePicking)) ||
-                     ($controlaLote == 'S' && empty($estoquePicking) && $lote == Lote::LND) ||
+                if ( ($controlaLote == 'S' && !empty($saldoPicking)) ||
+                     ($controlaLote == 'S' && empty($saldoPicking) && $lote == Lote::LND) ||
                       $controlaLote == 'N' ) {
-                    if (!empty($estoquePicking)) {
-                        $zerouEstoque = false;
-                        if (Math::compare($qtdRestante, $estoquePicking, ">=")) {
-                            $qtdReservarPicking = $estoquePicking;
-                            $zerouEstoque = true;
-                        }
-
-                        foreach ($idsElementos as $id) {
-                            if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'])) {
-                                $qtdReservadaAtual = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'];
-                                $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'] = Math::adicionar($qtdReservadaAtual, $qtdReservarPicking);
-                            } else {
-                                $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'] = $qtdReservarPicking;
-                            }
-                            $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['estoqueReservado'] = $zerouEstoque;
-                        }
-
-                    }
-
-                    $qtdReservar = $qtdReservarPicking;
-
-                    foreach ($pedidos as $codPedido => $qtdItenPedido) {
-                        if ($qtdReservar > 0) {
-                            $qtdAtendida = (isset($elemento[$codPedido])) ? $elemento[$codPedido]['atendida'] : 0;
-                            if ($qtdAtendida == $qtdItenPedido['qtd']) {
-                                continue;
-                            } else {
-                                $qtdPendente = Math::subtrair($qtdItenPedido['qtd'], $qtdAtendida);
-                            }
-
-                            if (Math::compare($qtdReservar, $qtdPendente, ">=")) {
-                                $qtdReservada = $qtdPendente;
-                            } else {
-                                $qtdReservada = $qtdReservar;
-                            }
-
-                            $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PICKING;
-
-                            if ($enderecoPicking == null) {
-                                throw new \Exception("Produto $codProduto - $dscGrade sem endereço de picking definido");
+                    foreach ($estoquePicking as $loteReservar => $saldo) {
+                        if (!empty($saldo)) {
+                            $zerouEstoque = false;
+                            if (Math::compare($qtdRestante, $saldo, ">=")) {
+                                $qtdReservarPicking = $saldo;
+                                $zerouEstoque = true;
                             }
 
                             foreach ($idsElementos as $id) {
-                                $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica][$loteReservar][$id] = array(
-                                    'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
-                                    'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
-                                    'codProduto' => $codProduto,
-                                    'grade' => $dscGrade,
-                                    'qtd' => $qtdReservada,
-                                    'lote' => $loteReservar
-                                );
+                                if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'])) {
+                                    $qtdReservadaAtual = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'];
+                                    $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'] = Math::adicionar($qtdReservadaAtual, $qtdReservarPicking);
+                                } else {
+                                    $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['qtdReservada'] = $qtdReservarPicking;
+                                }
+                                $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$id]['estoqueReservado'] = $zerouEstoque;
                             }
 
-                            $elemento[$codPedido]['atendida'] = Math::adicionar($qtdAtendida, $qtdReservada);
-                            $qtdReservar = Math::subtrair($qtdReservar, $qtdReservada);
-                        } else {
-                            break;
                         }
-                    }
 
-                    $qtdRestante = Math::subtrair($qtdRestante, $qtdReservarPicking);
+                        $qtdReservar = $qtdReservarPicking;
+
+                        foreach ($pedidos as $codPedido => $qtdItenPedido) {
+                            if ($qtdReservar > 0) {
+                                $qtdAtendida = (isset($elemento[$codPedido])) ? $elemento[$codPedido]['atendida'] : 0;
+                                if ($qtdAtendida == $qtdItenPedido['qtd']) {
+                                    continue;
+                                } else {
+                                    $qtdPendente = Math::subtrair($qtdItenPedido['qtd'], $qtdAtendida);
+                                }
+
+                                if (Math::compare($qtdReservar, $qtdPendente, ">=")) {
+                                    $qtdReservada = $qtdPendente;
+                                } else {
+                                    $qtdReservada = $qtdReservar;
+                                }
+
+                                $tipoSaida = ReservaEstoqueExpedicao::SAIDA_PICKING;
+
+                                if ($enderecoPicking == null) {
+                                    throw new \Exception("Produto $codProduto - $dscGrade sem endereço de picking definido");
+                                }
+
+                                foreach ($idsElementos as $id) {
+                                    $enderecos[$tipoSaida]['enderecos'][$idEndereco][$codPedido][$caracteristica]["$lote*#*$loteReservar"][$id] = array(
+                                        'codProdutoEmbalagem' => ($caracteristica == "EMBALAGEM") ? $id : null,
+                                        'codProdutoVolume' => ($caracteristica == "VOLUMES") ? $id : null,
+                                        'codProduto' => $codProduto,
+                                        'grade' => $dscGrade,
+                                        'qtd' => $qtdReservada,
+                                        'lote' => $loteReservar
+                                    );
+                                }
+
+                                $elemento[$codPedido]['atendida'] = Math::adicionar($qtdAtendida, $qtdReservada);
+                                $qtdReservar = Math::subtrair($qtdReservar, $qtdReservada);
+                            } else {
+                                break;
+                            }
+                        }
+
+                        $qtdRestante = Math::subtrair($qtdRestante, $qtdReservarPicking);
+                        if (empty($qtdRestante)) break;
+                    }
                 }
             }
 
-            if ($qtdRestante == 0) {
+            if (empty($qtdRestante)) {
                 $reservou = true;
             }
         }

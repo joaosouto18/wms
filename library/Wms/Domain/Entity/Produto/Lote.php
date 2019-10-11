@@ -175,4 +175,14 @@ class Lote
         $this->origem = $origem;
         return $this;
     }
+
+    public function isInterno()
+    {
+        return ($this->origem === self::INTERNO);
+    }
+
+    public function isExterno()
+    {
+        return ($this->origem === self::EXTERNO);
+    }
 }

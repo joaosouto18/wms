@@ -63,6 +63,13 @@ angular.module("wms").controller("previewerInventarioCtrl", function ($scope, $h
         }
     };
 
+    $scope.enterSubmit = function (event) {
+        if ((event.keyCode === 13 || event.which === 13)) {
+            event.preventDefault();
+            $scope.criarInventario();
+        }
+    };
+
     let postInventario = function () {
         if ($scope.itens.length)
             $http.post(URL_MODULO + '/index/criar-inventario', {

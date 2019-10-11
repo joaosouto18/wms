@@ -202,11 +202,15 @@ $.Controller.extend('Wms.Controllers.Enderecamento',
 
             function getVolumes(idProduto,grade){
                 $.post("/enderecamento/movimentacao/get-validade/", {idproduto:idProduto, grade:grade}, function(data){
+                    var divValidade = $('#validade').parent();
+                    var divLote = $('#lote').parent();
+                    divValidade.hide();
+                    divLote.hide();
                     if (data.validade == 'S') {
-                        $('#validade').parent().show();
+                        divValidade.show();
                     }
                     if (data.lote == 'S') {
-                        $('#lote').parent().show();
+                        divLote.show();
                     }
 
                 });
