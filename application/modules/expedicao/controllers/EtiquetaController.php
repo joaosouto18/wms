@@ -252,6 +252,8 @@ class Expedicao_EtiquetaController  extends Action
                     $Etiqueta = new Etiqueta();
                 } elseif ($modelo == '10') {
                     $Etiqueta = new Etiqueta("L", 'mm', array(100, 60));
+                } elseif ($modelo == '14') {
+                    $Etiqueta = new Etiqueta("L", 'mm', array(110, 75));
                 } else {
                     $Etiqueta = new Etiqueta("L", 'mm', array(110, 60));
                 }
@@ -660,6 +662,10 @@ class Expedicao_EtiquetaController  extends Action
                     break;
                 case 5:
                     //LAYOUT ETIQUETAS AGRUPADAS BASEADO MODELO 1
+                    $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
+                    break;
+                case 6:
+                    //LAYOUT PLANETA
                     $gerarEtiqueta = new \Wms\Module\Expedicao\Report\EtiquetaEmbalados("P", 'mm', $xy);
                     break;
                 default:
