@@ -344,25 +344,29 @@ class EtiquetaEmbalados extends eFPDF
 
             $this->Cell(59, 18, '',1,1);
 
-            $this->SetXY(50,3);
+            $this->SetXY(48.5,3);
             $this->SetFont('Arial', null, 10);
             $this->Cell(15, 5, 'PEDIDO',0,1);
-            $this->SetXY(50,9);
+            $this->SetXY(48.5,9);
             $this->SetFont('Arial', 'B', 15);
             $this->Cell(15, 4, utf8_decode($volume['COD_PEDIDO']));
 
-            $this->SetXY(50,15);
+            $this->SetXY(48.5,15);
             $this->SetFont('Arial', null, 12);
             $this->Cell(27, 4, "SEQUENCIA:");
             $this->SetFont('Arial', 'B', 12);
             $this->Cell(15, 4, "$volume[SEQ_ROTA]-$volume[SEQ_PRACA]");
 
-            $this->SetxY(84,2);
+            $this->SetxY(84,1);
             $this->SetFont('Arial', '', 13);
             $this->MultiCell(25, 8, 'VOLUME', 0, 'L');
-            $this->SetxY(90,7);
-            $this->SetFont('Arial', 'B', 18);
+            $this->SetxY(90,6);
+            $this->SetFont('Arial', 'B', 17);
             $this->MultiCell(40, 10, "$volume[NUM_SEQUENCIA]/$totalEtiquetas", 0, 'L');
+
+            $this->SetXY(88,14);
+            $this->SetFont('Arial', 'B', 12);
+            $this->Cell(20, 5, $volume['DSC_BOX']);
 
             $this->SetY(20);
             $this->Cell(104, 14, '',1);
@@ -384,9 +388,9 @@ class EtiquetaEmbalados extends eFPDF
 
             $this->SetXY(5,41);
             $this->SetFont('Arial', 'B', 11);
-            $this->MultiCell(100, 4, utf8_decode("$volume[COD_REFERENCIA_SIGLA] - $volume[NOM_LOCALIDADE]"), 0, 'L');
+            $this->MultiCell(100, 4, $this->SetStringByMaxWidth(utf8_decode("$volume[COD_REFERENCIA_SIGLA] - $volume[NOM_LOCALIDADE]"),100), 0, 'L');
             $this->SetXY(5,45);
-            $this->MultiCell(100, 4, utf8_decode("$volume[DSC_ENDERECO] nº: $volume[NUM_ENDERECO] "), 0, 'L');
+            $this->MultiCell(100, 4, $this->SetStringByMaxWidth(utf8_decode("$volume[DSC_ENDERECO] nº: $volume[NUM_ENDERECO] "), 100), 0, 'L');
 
             $this->SetY(51);
             $this->Cell(104, 22, '',1);
