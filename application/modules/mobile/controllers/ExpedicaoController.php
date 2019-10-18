@@ -759,13 +759,18 @@ class Mobile_ExpedicaoController extends Action {
     public function finalizarAction() {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $ExpedicaoRepo */
         $ExpedicaoRepo = $this->em->getRepository('wms:Expedicao');
-        $sessao = new \Zend_Session_Namespace('coletor');
         $request = $this->getRequest();
         $idExpedicao = $request->getParam('idExpedicao');
         $idMapa = $request->getParam('idMapa');
-        $central = $sessao->centralSelecionada;
         $mapa = $request->getParam('mapa', "N");
         $checkout = $this->_getParam('checkout');
+
+        if (empty($checkout)) {
+            $sessao = new \Zend_Session_Namespace('coletor');
+            $central = $sessao->centralSelecionada;
+        } else {
+            $central = $this->_getParam('central');
+        }
 
         $modeloSeparacaoRepo = $this->getEntityManager()->getRepository("wms:Expedicao\ModeloSeparacao");
 
