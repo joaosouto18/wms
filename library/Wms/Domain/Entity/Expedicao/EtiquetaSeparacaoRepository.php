@@ -1320,18 +1320,22 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 throw new WMS_Exception($msg);
                             }
 
-                            if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == "P") {
-                                if ($embalagemAtual->getEmbalado() == "S") {
-                                    $embalado = true;
+                            if ($modeloSeparacaoEn->getSeparacaoPC() == 'S') {
+                                if ($modeloSeparacaoEn->getTipoDefaultEmbalado() == "P") {
+                                    if ($embalagemAtual->getEmbalado() == "S") {
+                                        $embalado = true;
+                                    } else {
+                                        $embalado = false;
+                                    }
                                 } else {
-                                    $embalado = false;
+                                    if ($embalagemAtual->getQuantidade() < $qtdEmbalagemPadraoRecebimento) {
+                                        $embalado = true;
+                                    } else {
+                                        $embalado = false;
+                                    }
                                 }
                             } else {
-                                if ($embalagemAtual->getQuantidade() < $qtdEmbalagemPadraoRecebimento) {
-                                    $embalado = true;
-                                } else {
-                                    $embalado = false;
-                                }
+                                $embalado = false;
                             }
 
                             if ($embalagemAtual->isEmbFracionavelDefault() != "S") {
