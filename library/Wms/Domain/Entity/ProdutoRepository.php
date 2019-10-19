@@ -803,7 +803,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
         $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
-        $normasExistentes = $dadoLogisticoRepo->getDadoNorma($values['id'], $values['grade']);
+        $normasExistentes = $dadoLogisticoRepo->getDadoNorma($produtoEntity->getId(), $produtoEntity->getGrade());
         // normas de paletizacao
         if (isset($normasPaletizacao)) {
             foreach ($normasPaletizacao as $id => $normaPaletizacao) {
