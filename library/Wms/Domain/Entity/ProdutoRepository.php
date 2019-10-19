@@ -844,7 +844,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         if ($en != $normaPaletizacaoEntity) {
                             $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:' . $normaPaletizacaoEntity->getUnitizador()->getDescricao() . ' Norma:' . $normaPaletizacaoEntity->getNumNorma());
                         }
-
+                        if (strpos($key, "-default") !== false) {
+                            $normasPaletizacao[$en->getId()] = $normasPaletizacao[$key];
+                        }
                         break;
                     case 'alterar':
                         $normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
