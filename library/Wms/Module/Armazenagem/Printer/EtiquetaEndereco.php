@@ -440,8 +440,7 @@ class EtiquetaEndereco extends Pdf
         $this->Cell(5,3,"",0,1);
         $arrEndereco = Endereco::separar($codBarras);
         $codBarras = implode('.',$arrEndereco);
-        $this->SetX(5);
-        $this->SetY(60);
+        $this->SetXY(5,1);
         $wRua = 19;
         $wPredio = 22;
         $wNivel = 18;
@@ -452,6 +451,7 @@ class EtiquetaEndereco extends Pdf
         else
             $tamanhoCodigo = 15;
 
+        $this->InFooter = true;
         $this->SetFont('Arial', 'B', $tamanhoCodigo);
         $this->MultiCell(0,6, reset($produto)['codProduto'].' - '.reset($produto)['descricao'],0,'C');
         $this->Cell(17,13,"",0,0);
@@ -469,6 +469,7 @@ class EtiquetaEndereco extends Pdf
         $this->Cell($wTotal,8,$codBarras,0,1);
 
         $this->Image(@CodigoBarras::gerarNovo(str_replace(".","",$codBarras)) , 14, $this->GetY()+3 , 90);
+        $this->InFooter = false;
     }
 
     public function layoutModelo7($produto, $codBarras)
