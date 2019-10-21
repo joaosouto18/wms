@@ -67,7 +67,8 @@ class Mobile_InventarioNovoController extends Action
                     $this->_getParam("id"),
                     $this->_getParam("sq"),
                     $this->_getParam("divrg"),
-                    $this->_getParam("end")
+                    $this->_getParam("end"),
+                    $this->_getParam("isPicking")
                     )
                 ]
             );

@@ -12,6 +12,8 @@ namespace Wms\Service;
 use Bisna\Base\Domain\Entity\EntityService;
 use Doctrine\Common\Collections\Criteria;
 use Wms\Domain\Entity\Atividade;
+use Wms\Domain\Entity\Deposito\Endereco;
+use Wms\Domain\Entity\Deposito\EnderecoRepository;
 use Wms\Domain\Entity\Enderecamento\EstoqueProprietarioRepository;
 use Wms\Domain\Entity\Enderecamento\EstoqueRepository;
 use Wms\Domain\Entity\Enderecamento\HistoricoEstoque;
@@ -799,10 +801,11 @@ class InventarioService extends AbstractService
      * @param $sequencia
      * @param $isDiverg
      * @param $endereco
+     * @param $isPicking
      * @return array
      * @throws \Exception
      */
-    public function getInfoEndereco($idInventario, $sequencia, $isDiverg, $endereco)
+    public function getInfoEndereco($idInventario, $sequencia, $isDiverg, $endereco, $isPicking)
     {
         /** @var InventarioNovo\InventarioEnderecoNovoRepository $invEndRepo */
         $invEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo");
@@ -813,6 +816,16 @@ class InventarioService extends AbstractService
             $result = $invEndRepo->getItensDiverg($idInventario, $sequencia, $endereco);
         } else {
             $result = $invEndRepo->getInfoEndereco($idInventario, $sequencia, $endereco);
+        }
+
+        $pickingsAssoc = [];
+        if (json_decode($isPicking)) {
+            /** @var EnderecoRepository $depEndRepo */
+            $depEndRepo = $this->em->getRepository("wms:Deposito\Endereco");
+
+            foreach ($depEndRepo->getProdutosPicking($endereco) as $val) {
+                $pickingsAssoc[] = "$val[COD_PRODUTO]--$val[DSC_GRADE]--$val[ID_NORMA]";
+            }
         }
 
         $agroup = [];
@@ -836,7 +849,7 @@ class InventarioService extends AbstractService
             }
         }
 
-        return $agroup;
+        return ["pickingOf" => $pickingsAssoc,"listItens" => $agroup];
     }
 
     /**

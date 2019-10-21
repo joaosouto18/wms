@@ -85,11 +85,11 @@
     <img src="/img/ajax-bar-loader.gif" alt="loading">
 </div>
 
-<div id="messenger"></div>
-
-<div style="display: none" id="divBtnBack">
+<div style="display: none; margin-bottom: 5px" id="divBtnBack">
     <button class="btn gradientBtn btn-spacing" id="btn-back-action">Voltar</button>
 </div>
+
+<div id="messenger"></div>
 
 <div id="headers" style="padding-top: 5px">
     <div class="lbl-headers" id="lbl-inventario"></div>
@@ -180,6 +180,7 @@
         var enderecos = [];
         var contEndSelecionado = null;
         var produtos = [];
+        var pickingOf = [];
         var elemBipado = {};
         var usaGrade = <?php echo ($this->usaGrade) ? "true" : "false"; ?>;
         var showing = 0;
@@ -321,7 +322,12 @@
         };
 
         $("#btn-back-action").click(function () {
-            changeViewer(views[(showing - 1)])
+            if ((showing - 1) === 1) {
+                changeViewer("loader");
+                location.reload();
+            } else {
+                changeViewer(views[(showing - 1)])
+            }
         });
 
         var prepareListInventarios = function () {
@@ -504,14 +510,17 @@
 
         var openEndereco = function () {
             changeViewer("loader");
+            var paramsUrl = ["id", invSelecioando.id, "sq", contSelecioando.sequencia, "divrg", contSelecioando.divergencia, "end", contEndSelecionado.idEnd, "isPicking", contEndSelecionado.isPicking];
             $.ajax({
-                url: "/mobile/inventario-novo/get-info-endereco/id/" + invSelecioando.id + "/sq/" + contSelecioando.sequencia + "/divrg/" + contSelecioando.divergencia + "/end/" + contEndSelecionado.idEnd,
+                url: "/mobile/inventario-novo/get-info-endereco/" + paramsUrl.join("/")  ,
                 success: function (result) {
                     produtos = [];
+                    pickingOf = [];
                     if (result.status === "ok") {
-                        for (var index in result.response) {
-                            produtos.push(result.response[index]);
+                        for (var index in result.response.listItens) {
+                            produtos.push(result.response.listItens[index]);
                         }
+                        pickingOf = result.response.pickingOf;
                         prepareListProdutos();
                     } else {
                         notificar("error", result.exception);
@@ -607,22 +616,6 @@
         });
 
         var processProduto = function (codBarras) {
-            var liberado = true;
-            /*if (invSelecioando.criterio === 'P' && produtos.length) {
-                var encontrou = false;
-                $.each(produtos, function (k,produto) {
-                    if (myIndexOf(produto.codBarras, codBarras) >= 0) encontrou = true;
-                });
-                if (!encontrou) {
-                    liberado = false;
-                    notificar("warning", "Este código de barras " + codBarras + " não pertence à nenhum produto esperado neste endereço", true)
-                }
-            }*/
-
-            if (!liberado) {
-                return;
-            }
-
             getInfoProduto(codBarras);
         };
 
@@ -636,6 +629,12 @@
                         if (elemBipado.idVolume === null) {
                             elemBipado.idVolume = "";
                         }
+
+                        if (contEndSelecionado.isPicking && pickingOf.indexOf(elemBipado.idProduto + "--" + elemBipado.grade + "--" + elemBipado.norma) < 0)
+                        {
+                            notificar("warning", "Este picking não está vinculado à esse produto!");
+                        }
+
                         prepareElement();
                     } else {
                         notificar("error", result.exception);

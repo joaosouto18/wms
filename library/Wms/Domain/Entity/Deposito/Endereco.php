@@ -337,6 +337,26 @@ class Endereco
         return $this;
     }
 
+    public function isPicking()
+    {
+        return ($this->idCaracteristica === self::PICKING);
+    }
+
+    public function isPulmao()
+    {
+        return ($this->idCaracteristica === self::PULMAO);
+    }
+
+    public function isPickingDimanico()
+    {
+        return ($this->idCaracteristica === self::PICKING_DINAMICO);
+    }
+
+    public function isCrossDocking()
+    {
+        return ($this->idCaracteristica === self::CROSS_DOCKING);
+    }
+
     public function getIdEstruturaArmazenagem()
     {
         return $this->idEstruturaArmazenagem;

@@ -10,6 +10,7 @@ namespace Wms\Domain\Entity\InventarioNovo;
 
 use Doctrine\ORM\EntityRepository;
 use Wms\Domain\Configurator;
+use Wms\Domain\Entity\Deposito\Endereco;
 
 class InventarioEnderecoNovoRepository extends EntityRepository
 {
@@ -34,6 +35,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
 
     public function getArrEnderecos($idInventario, $sequencia)
     {
+        $tipoPicking = Endereco::PICKING;
+        $tipoPickingDinamico = Endereco::PICKING_DINAMICO;
         $sql = "SELECT DISTINCT
                     DE.DSC_DEPOSITO_ENDERECO,
                     DE.COD_DEPOSITO_ENDERECO,
@@ -45,7 +48,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                     ICE.IND_CONTAGEM_DIVERGENCIA,
                     ICE.NUM_CONTAGEM,
                     ICE.COD_INVENTARIO_ENDERECO,
-                    EV.END_VAZIO
+                    EV.END_VAZIO,
+                    CASE WHEN DE.COD_CARACTERISTICA_ENDERECO IN ($tipoPicking, $tipoPickingDinamico) THEN 'S' ELSE 'N' END IS_PICKING
                 FROM INVENTARIO_CONT_END ICE
                 INNER JOIN INVENTARIO_ENDERECO_NOVO IEN ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO AND IEN.IND_ATIVO = 'S'
                 INNER JOIN DEPOSITO_ENDERECO DE on IEN.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO
@@ -83,6 +87,7 @@ class InventarioEnderecoNovoRepository extends EntityRepository
                 "indDivrg" => ($item["IND_CONTAGEM_DIVERGENCIA"] == "S"),
                 "sequencia" => $sequencia,
                 "contagem" => $item["NUM_CONTAGEM"],
+                "isPicking" => ($item["IS_PICKING"] === 'S'),
             ];
         }
         return $result;
