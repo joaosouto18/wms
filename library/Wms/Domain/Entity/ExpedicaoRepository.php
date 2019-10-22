@@ -5065,13 +5065,13 @@ class ExpedicaoRepository extends EntityRepository {
         $SQL = "SELECT C.COD_CARGA_EXTERNO,
                        C.DSC_PLACA_EXPEDICAO,
                        '' as MOTORISTA,
-                       L.DSC_LINHA_ENTREGA,
-                       SUM(P.NUM_PESO) as NUM_PESO,
-                       SUM(P.NUM_CUBAGEM) as NUM_CUBAGEM,
-                       SUM(P.VLR_CARGA) as VLR_CARGA,
-                       SUM(P.VOLUMES) as VOLUMES,
-                       COUNT(P.COD_PEDIDO) as QTD_PEDIDOS,
-                       COUNT(DISTINCT(P.COD_PESSOA)) as ENTREGAS,
+                       NVL(L.DSC_LINHA_ENTREGA,'NAO INFORMADO') as DSC_LINHA_ENTREGA,
+                       NVL(SUM(P.NUM_PESO),0) as NUM_PESO,
+                       NVL(SUM(P.NUM_CUBAGEM),0) as NUM_CUBAGEM,
+                       NVL(SUM(P.VLR_CARGA),0) as VLR_CARGA,
+                       NVL(SUM(P.VOLUMES),0) as VOLUMES,
+                       NVL(COUNT(P.COD_PEDIDO),0) as QTD_PEDIDOS,
+                       NVL(COUNT(DISTINCT(P.COD_PESSOA)),0) as ENTREGAS,
                        TO_CHAR(E.DTH_FINALIZACAO,'DD/MM/YYYY HH24:MI') as DTH_FINALIZACAO
                   FROM CARGA C
                   LEFT JOIN EXPEDICAO E ON E.COD_EXPEDICAO = C.COD_EXPEDICAO
