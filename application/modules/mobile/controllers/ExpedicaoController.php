@@ -484,16 +484,16 @@ class Mobile_ExpedicaoController extends Action {
                         $isLast = true;
                     }
                 }
-            } else {
-                if ($agrupaEtiquetas) {
-                    list($posVolume, $isLast, $posEntrega, $totalEntrega) = $checkAgrupamento();
-                    if (!empty($posVolume)) {
-                        $posVolume += 1;
-                        $posEntrega += 1;
-                        $embalados = $mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa], ['sequencia' => 'DESC']);
-                        $mapaSeparacaoEmbaladoEn = $criarEmbaladoFechado($idMapa, $idPessoa, $posVolume, $embalados[0], $posEntrega, $totalEntrega);
-                    }
+            } elseif ($agrupaEtiquetas) {
+                list($posVolume, $isLast, $posEntrega, $totalEntrega) = $checkAgrupamento();
+                if (!empty($posVolume)) {
+                    $posVolume += 1;
+                    $posEntrega += 1;
+                    $embalados = $mapaSeparacaoEmbaladoRepo->findBy(['mapaSeparacao' => $idMapa, 'pessoa' => $idPessoa], ['sequencia' => 'DESC']);
+                    $mapaSeparacaoEmbaladoEn = $criarEmbaladoFechado($idMapa, $idPessoa, $posVolume, $embalados[0], $posEntrega, $totalEntrega);
                 }
+            } else {
+                throw new Exception("Não há etiqueta para ser fechada");
             }
             $this->getEntityManager()->commit();
 
