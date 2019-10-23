@@ -326,6 +326,10 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 }
             };
 
+            $menorEmb = new \stdClass();
+            $menorEmb->id = null;
+            $menorEmb->qtd = 9999999999999;
+
             foreach ($values['embalagens'] as $id => $itemEmbalagem) {
                 if (isset($itemEmbalagem['quantidade']))
                     $itemEmbalagem['quantidade'] = str_replace(',', '.', $itemEmbalagem['quantidade']);
@@ -454,6 +458,11 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                             foreach ($values['dadosLogisticos'] as $key => $dadoLogistico) {
                                 $values['dadosLogisticos'][$key]['idEmbalagem'] = $idEmbalagem;
                             }
+                        }
+
+                        if ($embalagemEntity->getQuantidade() < $menorEmb->qtd) {
+                            $menorEmb->qtd = $embalagemEntity->getQuantidade();
+                            $menorEmb->id = $idEmbalagem;
                         }
 
                         break;
@@ -618,15 +627,19 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                 $unitizador = $this->_em->getRepository("wms:Armazenagem\Unitizador")->findBy([], ['capacidade' => 'DESC'])[0];
                 if (empty($unitizador)) throw new \Exception("Não foi encontrado nenhum unitizador para o cadastro de dado logistico padrão");
 
-                $embalagemEntity = $embalagemRepo->findBy(['codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade(), 'dataInativacao' => null], ['quantidade' => 'ASC'])[0];
+                $embsArray = $embalagemRepo->findBy(['codProduto' => $produtoEntity->getId(), 'grade' => $produtoEntity->getGrade(), 'dataInativacao' => null], ['quantidade' => 'ASC']);
+                if (!empty($embsArray)) {
+                    $menorEmb->id = $embsArray[0]->getId();
+                    $menorEmb->qtd = $embsArray[0]->getQuantidade();
+                }
 
-                $idDefaultPDL = "-defaul" . time();
-                $idDefaultNP = "-defaul" . time();
+                $idDefaultPDL = "-default" . time();
+                $idDefaultNP = "-default" . time();
                 $values['dadosLogisticos'][$idDefaultPDL] = [
                     'acao' => 'incluir',
                     'id' => $idDefaultPDL,
-                    'idEmbalagem' => $embalagemEntity->getId(),
-                    'qtdEmbalagem' => $embalagemEntity->getQuantidade(),
+                    'idEmbalagem' => $menorEmb->id,
+                    'qtdEmbalagem' => $menorEmb->qtd,
                     'idNormaPaletizacao' => $idDefaultNP,
                     'largura' => 0,
                     'altura' => 0,
@@ -783,7 +796,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
         $normaPaletizacaoRepo = $em->getRepository('wms:Produto\NormaPaletizacao');
         $dadoLogisticoRepo = $em->getRepository('wms:Produto\DadoLogistico');
-        $normasExistentes = $dadoLogisticoRepo->getDadoNorma($values['id'], $values['grade']);
+        $normasExistentes = $dadoLogisticoRepo->getDadoNorma($produtoEntity->getId(), $produtoEntity->getGrade());
         // normas de paletizacao
         if (isset($normasPaletizacao)) {
             foreach ($normasPaletizacao as $id => $normaPaletizacao) {
@@ -824,7 +837,9 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         if ($en != $normaPaletizacaoEntity) {
                             $andamentoRepo->save($idProduto, $grade, false, 'Norma de paletização incluida. Unitizador:' . $normaPaletizacaoEntity->getUnitizador()->getDescricao() . ' Norma:' . $normaPaletizacaoEntity->getNumNorma());
                         }
-
+                        if (strpos($key, "-default") !== false) {
+                            $normasPaletizacao[$en->getId()] = $normasPaletizacao[$key];
+                        }
                         break;
                     case 'alterar':
                         $normaPaletizacaoEntity = $em->getReference('wms:Produto\NormaPaletizacao', $id);
