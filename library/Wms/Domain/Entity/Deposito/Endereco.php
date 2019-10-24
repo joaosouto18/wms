@@ -293,7 +293,7 @@ class Endereco
      */
     public function setBloqueadaEntrada($bloqueadaEntrada)
     {
-        $this->bloqueadaEntrada = $bloqueadaEntrada;
+        $this->bloqueadaEntrada = ($bloqueadaEntrada) ? 1 : 0;
         return $this;
     }
 
@@ -311,7 +311,7 @@ class Endereco
      */
     public function setBloqueadaSaida($bloqueadaSaida)
     {
-        $this->bloqueadaSaida = $bloqueadaSaida;
+        $this->bloqueadaSaida = ($bloqueadaSaida) ? 1 : 0;
         return $this;
     }
 
