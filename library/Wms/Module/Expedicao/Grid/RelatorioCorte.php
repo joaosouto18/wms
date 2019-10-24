@@ -48,17 +48,17 @@ class RelatorioCorte extends Grid
                 ->addColumn(array(
                     'label' => 'Qtd.Pedido',
                     'index' => 'QUANTIDADE',
-                    'render'=> 'TEXT'
+                    'render'=> 'Text'
                 ))
                 ->addColumn(array(
                     'label' => 'Qtd.Cortada',
                     'index' => 'QTD_CORTADA',
-                    'render'=> 'TEXT'
+                    'render'=> 'Text'
                 ))
                 ->addColumn(array(
                     'label' => 'Qtd.Atendida',
                     'index' => 'QTD_ATENDIDA',
-                    'render'=> 'TEXT'
+                    'render'=> 'Text'
                 ))
                 ->addColumn(array(
                     'label' => 'Tipo Corte',
