@@ -89,7 +89,7 @@ class Mobile_VolumePatrimonioController  extends Action
             try {
                 $retorno = $expVolumePatrimonioRepo->confereExpedicaoVolume($volume, $idExpedicao);
                 if ($retorno['redirect'] == true) {
-                    $this->bloqueioOs($idExpedicao, $retorno['msg'], false);
+                    $this->bloqueioOs($idExpedicao, $retorno['msg'], \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
                     $this->createXml('error', $retorno['msg'],"/mobile/volume-patrimonio/liberar-os/idExpedicao/$idExpedicao/tipo-conferencia/volume");
                 }
                 $this->createXml('success', 'Volume '. $volume . ' conferido');

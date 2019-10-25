@@ -1322,7 +1322,7 @@ class MapaSeparacaoRepository extends EntityRepository {
 
         if (Math::compare($qtdRestante, 0, ">") && !$checkout) {
             $strLote = (!empty($lote)) ? " lote: '$lote'" : "";
-            throw new \Exception("A quantidade de $qtdInformada para o produto $codProduto / $dscGrade$strLote excede o solicitado!");
+            throw new \Exception("A quantidade de $qtdInformada para o produto $codProduto ($dscProduto) - $dscGrade$strLote excede o solicitado!");
         }
 
         //VERIFICO SE O PRODUTO JA FOI COMPELTAMENTE CONFERIDO NO MAPA OU NA EXPEDIÇÃO DE ACORDO COM O PARAMETRO DE UTILIZAR QUEBRA NA CONFERENCIA

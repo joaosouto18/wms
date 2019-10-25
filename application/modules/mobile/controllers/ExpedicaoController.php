@@ -25,8 +25,8 @@ class Mobile_ExpedicaoController extends Action {
         $expedicaoRepo->getExpedicaoByCliente();
     }
 
-    public function definirOperacaoAction() {
-
+    public function definirOperacaoAction()
+    {
         $codBarras = $this->_getParam('codigoBarras');
 
         $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
@@ -133,7 +133,13 @@ class Mobile_ExpedicaoController extends Action {
 
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
             $Expedicao->validacaoExpedicao();
-            $Expedicao->osLiberada();
+            if ($this->bloquearOs()) {
+                if (!$Expedicao->osLiberada()) {
+                    $this->addFlashMessage('error', $Expedicao->getMessage());
+                    $this->addFlashMessage('warning', $Expedicao->getOs()->getBloqueio());
+                    $this->_redirect($Expedicao->getRedirect());
+                }
+            }
             $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
             /** @var \Wms\Domain\Entity\Expedicao\MapaSeparacaoRepository $mapaSeparacaoRepo */
             $modeloSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\ModeloSeparacao');
@@ -203,6 +209,17 @@ class Mobile_ExpedicaoController extends Action {
         $idExpedicao = $this->_getParam("idExpedicao");
         $idVolume = $this->_getParam("idVolume");
         $checkout = $this->_getParam("chekcout");
+
+        if ($this->bloquearOs()) {
+            $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
+            $Expedicao->validacaoExpedicao();
+            if (!$Expedicao->osLiberada()) {
+                $this->addFlashMessage('error', $Expedicao->getMessage());
+                $this->addFlashMessage('warning', $Expedicao->getOs()->getBloqueio());
+                $this->_redirect($Expedicao->getRedirect());
+            }
+        }
+
         if($checkout == 'chekcout'){
             $chekcout = true;
             $cpfEmbalador = $this->_getParam("cpfEmbalador");
@@ -221,8 +238,6 @@ class Mobile_ExpedicaoController extends Action {
         $mapaSeparacaoRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacao');
         $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
-
-        $this->bloquearOs();
 
         $paramsModeloSeparacao = array(
             'tipoDefaultEmbalado' => $this->_getParam("tipoDefaultEmbalado"),
@@ -293,7 +308,8 @@ class Mobile_ExpedicaoController extends Action {
                 }
             } catch (\Exception $e) {
                 if ($this->bloquearOs == 'S') {
-                    $this->bloqueioOs($idExpedicao, $e->getMessage());
+                    $this->bloqueioOs($idExpedicao, $e->getMessage(), \Wms\Domain\Entity\OrdemServico::BLOCK_MAPA);
+                    $this->_redirect($Expedicao->getRedirect());
                 } else {
                     $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => '', 'volumePatrimonio' => ''));
                     $this->_helper->json($vetRetorno);
@@ -876,7 +892,7 @@ class Mobile_ExpedicaoController extends Action {
             $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
 
             if ($this->bloquearOs == 'S') {
-                $this->bloqueioOs($idExpedicao, $msg, false);
+                $this->bloqueioOs($idExpedicao, $msg, \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
                 if ($this->_request->isXmlHttpRequest()) {
                     $this->createXml("error", $msg, $this->createUrlMobile());
                 } else {
@@ -897,7 +913,7 @@ class Mobile_ExpedicaoController extends Action {
                 $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
 
                 if ($this->bloquearOs == 'S') {
-                    $this->bloqueioOs($idExpedicao, $msg, false);
+                    $this->bloqueioOs($idExpedicao, $msg, \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
                     if ($this->_request->isXmlHttpRequest()) {
                         $this->createXml('error', $msg, $this->createUrlMobile());
                     } else {
@@ -919,7 +935,7 @@ class Mobile_ExpedicaoController extends Action {
             $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
 
             if ($this->bloquearOs == 'S') {
-                $this->bloqueioOs($idExpedicao, $msg, false);
+                $this->bloqueioOs($idExpedicao, $msg, \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
 
                 if ($this->_request->isXmlHttpRequest()) {
                     $this->createXml('error', $msg, $this->createUrlMobile());
@@ -954,7 +970,7 @@ class Mobile_ExpedicaoController extends Action {
                 $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
 
                 if ($this->bloquearOs == 'S') {
-                    $this->bloqueioOs($idExpedicao, $msg, false);
+                    $this->bloqueioOs($idExpedicao, $msg, \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
                     if ($this->_request->isXmlHttpRequest()) {
                         $this->createXml('error', $msg, $this->createUrlMobile());
                     } else {
@@ -976,7 +992,7 @@ class Mobile_ExpedicaoController extends Action {
                 $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
 
                 if ($this->bloquearOs == 'S') {
-                    $this->bloqueioOs($idExpedicao, $msg, false);
+                    $this->bloqueioOs($idExpedicao, $msg, \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
                     if ($this->_request->isXmlHttpRequest()) {
                         $this->createXml('error', $msg, $this->createUrlMobile());
                     } else {
@@ -993,7 +1009,7 @@ class Mobile_ExpedicaoController extends Action {
                 $msg = 'Etiqueta não pertence a placa ' . $placa;
 
                 $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
-                $this->bloqueioOs($idExpedicao, $msg, false);
+                $this->bloqueioOs($idExpedicao, $msg, \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
                 if ($this->_request->isXmlHttpRequest()) {
                     $this->createXml('error', 'Etiqueta não pertence a placa ' . $placa, $this->createUrlMobile());
                 } else {
@@ -1006,7 +1022,7 @@ class Mobile_ExpedicaoController extends Action {
             if ($etiqueta[0]['codEstoque'] != $idCentral) {
                 $msg = 'Etiqueta não pertence a central ' . $idCentral;
                 $this->gravaAndamentoExpedicao($msg, $idExpedicao, $codigoBarras, null);
-                $this->bloqueioOs($idExpedicao, 'Etiqueta não pertence a central ' . $idCentral, false);
+                $this->bloqueioOs($idExpedicao, 'Etiqueta não pertence a central ' . $idCentral, \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
                 if ($this->_request->isXmlHttpRequest()) {
                     $this->createXml('error', 'Etiqueta não pertence a central ' . $idCentral, $this->createUrlMobile());
                 } else {
@@ -1102,7 +1118,7 @@ class Mobile_ExpedicaoController extends Action {
                     if ($obrigaRealizarRecebimento == 'S') {
                         $msg = 'Recebimento de transbordo da expedição ' . $idExpedicao . ' não concluido';
                         $this->gravaAndamentoExpedicao($msg, $idExpedicao, $etiqueta, null);
-                        $this->bloqueioOs($idExpedicao, 'Recebimento de transbordo da expedição ' . $idExpedicao . ' não concluido', false);
+                        $this->bloqueioOs($idExpedicao, 'Recebimento de transbordo da expedição ' . $idExpedicao . ' não concluido', \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
                         if ($this->_request->isXmlHttpRequest()) {
                             $this->createXml('error', 'Recebimento de transbordo da expedição ' . $idExpedicao . ' não concluido', $this->createUrlMobile());
                         } else {
@@ -1131,24 +1147,19 @@ class Mobile_ExpedicaoController extends Action {
         return $result;
     }
 
-    protected function bloqueioOs($idExpedicao, $motivo, $render = true) {
+    protected function bloqueioOs($idExpedicao, $motivo, $bloqDe) {
         $this->bloquearOs();
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\OrdemServico[] $osEntity */
         $osEntity = $expedicaoRepo->verificaOSUsuario($idExpedicao);
         $osEntity[0]->setBloqueio($motivo);
+        $osEntity[0]->setBloqDe($bloqDe);
         $this->_em->persist($osEntity[0]);
         $this->_em->flush();
 
         //$this->gravaAndamentoExpedicao($motivo,$idExpedicao);
         $this->_helper->messenger('error', $motivo);
-
-        if ($render == true) {
-            $form = new SenhaLiberacao();
-            $form->setDefault('idExpedicao', $idExpedicao);
-            $this->view->form = $form;
-            $this->render('bloqueio');
-        }
     }
 
     protected function gravaAndamentoExpedicao($motivo, $idExpedicao, $codEtiquetaSeparacao = null, $codBarrasProduto = null) {
@@ -1160,8 +1171,10 @@ class Mobile_ExpedicaoController extends Action {
     protected function desbloqueioOs($idExpedicao, $motivo) {
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->em->getRepository('wms:Expedicao');
+        /** @var \Wms\Domain\Entity\OrdemServico[] $osEntity */
         $osEntity = $expedicaoRepo->verificaOSUsuario($idExpedicao);
         $osEntity[0]->setBloqueio(NULL);
+        $osEntity[0]->setBloqDe(NULL);
         $this->_em->persist($osEntity[0]);
         $this->_em->flush();
 
@@ -1170,6 +1183,7 @@ class Mobile_ExpedicaoController extends Action {
 
         $andamentoRepo->save($motivo, $idExpedicao);
         $this->_helper->messenger('success', $motivo);
+        return $osEntity[0];
     }
 
     public function liberarOsAction() {
@@ -1186,8 +1200,12 @@ class Mobile_ExpedicaoController extends Action {
             $senhaDigitada = $request->getParam('senha');
 
             if ($EtiquetaRepo->checkAutorizacao($senhaDigitada)) {
-                $this->desbloqueioOs($idExpedicao, 'Ordem de serviço liberada');
-                $this->redirect('ler-codigo-barras', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa, 'tipo-conferencia' => $tipoConferencia, 'volume' => $volume, 'idTipoVolume' => $idTipoVolume));
+                $os = $this->desbloqueioOs($idExpedicao, 'Ordem de serviço liberada');
+                if ($os->bloqueioEtiqueta()) {
+                    $this->redirect('ler-codigo-barras', 'expedicao', 'mobile', array('idExpedicao' => $idExpedicao, 'placa' => $placa, 'tipo-conferencia' => $tipoConferencia, 'volume' => $volume, 'idTipoVolume' => $idTipoVolume));
+                } else {
+                    $this->redirect("index");
+                }
             } else {
                 $this->addFlashMessage('error', 'Senha informada não é válida');
             }
@@ -1317,7 +1335,7 @@ class Mobile_ExpedicaoController extends Action {
                 //$this->_helper->messenger('info', $msg);
 
                 if ($this->bloquearOs == 'S') {
-                    $this->bloqueioOs($idExpedicao, $msg, false);
+                    $this->bloqueioOs($idExpedicao, $msg, \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
                     if ($this->_request->isXmlHttpRequest()) {
                         $this->createXml("error", $msg, $this->createUrlMobile());
                     } else {
@@ -1411,7 +1429,7 @@ class Mobile_ExpedicaoController extends Action {
                 //$this->_helper->messenger('info', $msg);
 
                 if ($this->bloquearOs == 'S') {
-                    $this->bloqueioOs($idExpedicao, $msg, false);
+                    $this->bloqueioOs($idExpedicao, $msg, \Wms\Domain\Entity\OrdemServico::BLOCK_ETIQ);
                     if ($this->_request->isXmlHttpRequest()) {
                         $this->createXml("error", $msg, $this->createUrlMobile());
                     } else {
