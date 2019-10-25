@@ -222,6 +222,8 @@ class Mobile_ExpedicaoController extends Action {
         $volumePatrimonioRepo = $this->getEntityManager()->getRepository('wms:Expedicao\VolumePatrimonio');
         $mapaSeparacaoQuebraRepo = $this->getEntityManager()->getRepository('wms:Expedicao\MapaSeparacaoQuebra');
 
+        $this->bloquearOs();
+
         $paramsModeloSeparacao = array(
             'tipoDefaultEmbalado' => $this->_getParam("tipoDefaultEmbalado"),
             'utilizaQuebra' => $this->_getParam("utilizaQuebra"),
@@ -271,7 +273,8 @@ class Mobile_ExpedicaoController extends Action {
                     $msg['msg'] = "Volume $codBarrasProcessado vinculada a expedição";
                     $volume = ['idVolume' => $volumePatrimonioEn->getId(), 'dscVolume' => $volumePatrimonioEn->getDescricao()];
                     $msg['produto'] = "";
-                } else if ($tipoProvavelCodBarras === 'produto') {
+                }
+                else if ($tipoProvavelCodBarras === 'produto') {
                     $codBarras = ColetorUtil::adequaCodigoBarras($codBarras, true);
 
                     if (!empty($idVolume)) {
@@ -289,8 +292,12 @@ class Mobile_ExpedicaoController extends Action {
 
                 }
             } catch (\Exception $e) {
-                $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => '', 'volumePatrimonio' => ''));
-                $this->_helper->json($vetRetorno);
+                if ($this->bloquearOs == 'S') {
+                    $this->bloqueioOs($idExpedicao, $e->getMessage());
+                } else {
+                    $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => '', 'volumePatrimonio' => ''));
+                    $this->_helper->json($vetRetorno);
+                }
             }
         }
 
