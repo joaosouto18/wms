@@ -203,13 +203,13 @@ class Mobile_ExpedicaoController extends Action {
         $idExpedicao = $this->_getParam("idExpedicao");
         $idVolume = $this->_getParam("idVolume");
         $checkout = $this->_getParam("chekcout");
-        $cpfEmbalador = "";
         if($checkout == 'chekcout'){
             $chekcout = true;
             $cpfEmbalador = $this->_getParam("cpfEmbalador");
             $cpfEmbalador = str_replace(array('.', '-'), '', $cpfEmbalador);
         }else{
             $chekcout = false;
+            $cpfEmbalador = Zend_Auth::getInstance()->getIdentity()->getPessoa()->getCPF(false);
         }
 
         if ($codPessoa == "") {

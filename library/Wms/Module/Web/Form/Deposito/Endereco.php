@@ -96,8 +96,7 @@ class Endereco extends Form {
             ->addElement('multiCheckbox', 'bloqueada', array(
                 'multiOptions' => ['E' => 'Entrada', 'S' => 'Saída'],
                 'checkedValue' => true,
-                'label' => 'Bloquear Mov.',
-                'required' => true,
+                'label' => 'Bloquear Mov.'
             ))
             ->addElement('hidden', 'status', array(
                 'value' => 'D',
