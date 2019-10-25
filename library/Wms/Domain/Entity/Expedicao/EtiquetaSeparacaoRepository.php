@@ -419,9 +419,9 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->select(" es.codEntrega, es.codBarras, es.codCarga, es.linhaEntrega, es.itinerario, es.cliente, es.codProduto, es.produto,
                     es.grade, es.fornecedor, es.codStatus, s.sigla status, es.tipoComercializacao, es.endereco, es.linhaSeparacao, es.codEstoque, es.codExpedicao,
                     es.placaExpedicao, es.placaCarga, es.codClienteExterno, es.tipoCarga, es.codCargaExterno, es.tipoPedido, es.pontoTransbordo,
-                    emb.embalado, es.posVolume, es.posEntrega, es.totalEntrega, NVL(b.descricao, 'N/D') dscBox,
+                    emb.embalado, es.posVolume, es.posEntrega, es.totalEntrega,
                     exp.id as reentregaExpedicao,
-                    r.id as codReentrega, ro.numSeq seqRota, ro.nomeRota, pr.numSeq seqPraca, pr.nomePraca,
+                    r.id as codReentrega,
                     CASE WHEN emb.descricao    IS NULL THEN vol.descricao ELSE emb.descricao END as embalagem,
                     CASE WHEN emb.CBInterno    IS NULL THEN vol.CBInterno ELSE emb.CBInterno END as CBInterno,
                     CASE WHEN emb.codigoBarras IS NULL THEN vol.codigoBarras ELSE emb2.codigoBarras END as codBarrasProduto
@@ -429,11 +429,6 @@ class EtiquetaSeparacaoRepository extends EntityRepository
             ->from('wms:Expedicao\VEtiquetaSeparacao','es')
             ->innerJoin('wms:Util\Sigla', 's', 'WITH', 'es.codStatus = s.id')
             ->innerJoin('wms:Expedicao\EtiquetaSeparacao', 'etq', 'WITH', 'es.codBarras = etq.id')
-            ->innerJoin("wms:Pessoa\Papel\Cliente", "cl", "WITH", "cl.id = es.cliente")
-            ->innerJoin('wms:Expedicao', 'e', "WITH", "es.codExpedicao = e.id")
-            ->leftJoin("e.box", "b")
-            ->leftJoin("cl.rota", "ro")
-            ->leftJoin("cl.praca", "pr")
             ->leftJoin('etq.reentrega','r')
             ->leftJoin('r.carga','c')
             ->leftJoin('c.expedicao','exp')
