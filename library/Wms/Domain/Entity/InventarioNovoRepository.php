@@ -235,9 +235,35 @@ class InventarioNovoRepository extends EntityRepository
                 $query->andWhere("MOD(de.predio,2) = 1");
         }
 
-        if (!empty($params['situacao']))
-            $query->andWhere("de.situacao = :situacao")
-                ->setParameter('situacao', $params['situacao']);
+        if (!empty($params['bloqueada'])) {
+            $entrada = null;
+            $saida = null;
+            switch ($params['bloqueada']) {
+                case "E":
+                    $entrada = true;
+                    $saida = false;
+                    break;
+                case "S":
+                    $saida = true;
+                    $entrada = false;
+                    break;
+                case "ES":
+                    $entrada = true;
+                    $saida = true;
+                    break;
+                case "N":
+                    $entrada = false;
+                    $saida = false;
+                    break;
+            }
+            if (!is_null($entrada))
+                $query->andWhere("de.bloqueadaEntrada = :bloqE")
+                    ->setParameter('bloqE', (int)$entrada);
+
+            if (!is_null($saida))
+                $query->andWhere("de.bloqueadaSaida = :bloqS")
+                    ->setParameter('bloqS', (int)$saida);
+        }
 
         if (!empty($params['status']))
             $query->andWhere("de.status = :status")

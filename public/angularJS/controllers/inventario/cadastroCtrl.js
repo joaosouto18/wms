@@ -61,7 +61,7 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
             aptoInicial: undefined,
             aptoFinal: undefined,
             lado: undefined,
-            situacao: undefined,
+            bloqueada: undefined,
             status: undefined,
             ativo: undefined,
             idCarac: undefined,

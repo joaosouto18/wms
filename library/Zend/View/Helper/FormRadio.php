@@ -134,6 +134,18 @@ class Zend_View_Helper_FormRadio extends Zend_View_Helper_FormElement
         $filter = new Zend_Filter_Alnum();
         foreach ($options as $opt_value => $opt_label) {
 
+            if (is_array($opt_label)) {
+                if (empty($opt_label['attribs'])) throw new Zend_Form_Element_Exception("The attributes of option is not defined");
+                if (empty($opt_label['label'])) throw new Zend_Form_Element_Exception("The attributes of option is not defined");
+
+                $optConf = $opt_label;
+
+                $opt_label = $optConf['label'];
+                foreach ($optConf['attribs'] as $attribName => $attribOptionValue) {
+                    $attribs[$attribName] = $attribOptionValue;
+                }
+            }
+
             // Should the label be escaped?
             if ($escape) {
                 $opt_label = $this->view->escape($opt_label);
