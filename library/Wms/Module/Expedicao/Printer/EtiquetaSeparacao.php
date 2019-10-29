@@ -1203,11 +1203,11 @@ class EtiquetaSeparacao extends Pdf
         $this->total=$countEtiquetas;
         $this->modelo = $modelo;
         $this->strReimpressao = $strReimpressao;
+        $this->InFooter = true;
 
         $this->SetX(30);
         $this->SetFont('Arial', 'B', 11);
-        $impressao = utf8_decode(substr("$etiqueta[codClienteExterno] - $etiqueta[cliente] \n",0,50));
-        $this->MultiCell(78, 4.3, $impressao, 1, 'L');
+        $this->MultiCell(78, 4.3, $this->SetStringByMaxWidth("$etiqueta[codClienteExterno] - $etiqueta[cliente]",115), 1, 'L');
         $this->SetX(30);
         $y1 = $this->getY();
         $impressao = "EXP: $etiqueta[codExpedicao]";
@@ -1241,6 +1241,7 @@ class EtiquetaSeparacao extends Pdf
         $this->SetX(53);
         $this->MultiCell(55, 6, $impressao, 1, 'L');
         $this->Image(@CodigoBarras::gerarNovo($etiqueta['codBarras']), 40, 41, 65, 17);
+        $this->InFooter = false;
     }
 
 

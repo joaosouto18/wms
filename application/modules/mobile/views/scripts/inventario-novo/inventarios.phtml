@@ -74,6 +74,58 @@
         background-image: linear-gradient(to bottom, #781f08, #9e100b);
         text-decoration: none;
     }
+
+    .btn-toggle {
+        -moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
+        -webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
+        box-shadow:inset 0px 1px 0px 0px #ffffff;
+        background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffffff), color-stop(1, #f6f6f6));
+        background:-moz-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:-webkit-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:-o-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:-ms-linear-gradient(top, #ffffff 5%, #f6f6f6 100%);
+        background:linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f6f6f6',GradientType=0);
+        background-color:#ffffff;
+        -webkit-border-radius:6px;
+        -moz-border-radius:6px;
+        border-radius:6px;
+        border:1px solid #dcdcdc;
+        display:inline-block;
+        cursor:pointer;
+        color:#666666;
+        font-size:15px;
+        font-weight:bold;
+        padding:1px 24px 1px 16px;
+        text-decoration:none;
+        text-shadow:0px 1px 0px #ffffff;
+        width: auto;
+    }
+    .btn-toggle:hover {
+        background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #f6f6f6), color-stop(1, #ffffff));
+        background:-moz-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:-webkit-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:-o-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:-ms-linear-gradient(top, #f6f6f6 5%, #ffffff 100%);
+        background:linear-gradient(to bottom, #f6f6f6 5%, #ffffff 100%);
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f6f6f6', endColorstr='#ffffff',GradientType=0);
+        background-color:#f6f6f6;
+    }
+    .btn-toggle:active {
+        position:relative;
+        top:1px;
+    }
+
+    #arrow-info {
+        -moz-transition: transform 350ms;
+        -webkit-transition: transform 350ms;
+        transition: transform 350ms;
+    }
+
+    .flip {
+        transform: rotate(-180deg);
+    }
+
 </style>
 
 <div id="dummyy"></div>
@@ -91,12 +143,16 @@
 
 <div id="messenger"></div>
 
-<div id="headers" style="padding-top: 5px">
+<div id="headers" style="padding-top: 5px; display: none">
     <div class="lbl-headers" id="lbl-inventario"></div>
     <div class="lbl-headers" id="lbl-contagem"></div>
     <div class="lbl-headers" id="lbl-endereco"></div>
     <div class="lbl-headers" id="lbl-produto"></div>
     <div class="lbl-headers" id="lbl-embvol"></div>
+    <div class="lbl-headers" id="lbl-picking"></div>
+</div>
+<div id="btn-row" style="padding-top: 6px; display: none">
+    <button id="toggleInfo" class="btn-toggle"><img id="arrow-info" src="/img/icons/bullet_arrow_up.png" width="24" height="24" alt="Arrow direction"><span>Ocultar Info</span></button>
 </div>
 
 <div id="list-inventarios" style="display: none;">
@@ -295,6 +351,8 @@
 
             if (showing > 1) {
                 $("#divBtnBack").show();
+                $("#headers").show();
+                $("#btn-row").show();
             } else {
                 $("#divBtnBack").hide();
             }
@@ -328,6 +386,20 @@
             } else {
                 changeViewer(views[(showing - 1)])
             }
+        });
+
+        $("#toggleInfo").click(function () {
+            $(this).blur();
+            if ($(this).hasClass("hiddingInfo")) {
+                $("#headers").show(350);
+                $(this).children("span").text("Ocultar Info");
+            }
+            else {
+                $("#headers").hide(350);
+                $(this).children("span").text("Exibir Info");
+            }
+            $(this).toggleClass("hiddingInfo");
+            $(this).children("img").toggleClass("flip");
         });
 
         var prepareListInventarios = function () {
@@ -498,7 +570,7 @@
                 notificar("warning", "O código de barras não corresponde à um endereço", true);
             } else if ((enderecos[endFormated] !== undefined)) {
                 contEndSelecionado = enderecos[endFormated];
-                $("#lbl-endereco").text(endFormated);
+                $("#lbl-endereco").text("End. Atual: " + endFormated);
                 openEndereco()
             } else {
                 notificar("warning", "O endereço "+endFormated+" não está nesta contagem", true);
@@ -652,7 +724,7 @@
             ].join(" "));
 
             $("#lbl-embvol").text( elemBipado.descricaoEmbalagem + ((elemBipado.idEmbalagem !== null) ? "(" + elemBipado.quantidadeEmbalagem + ")" : "" ) );
-
+            $("#lbl-picking").text( "Picking: " + elemBipado.picking);
             $("#qtd").val("").focus();
             var focusOn = "qtd";
 

@@ -1728,7 +1728,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
     public function getEmbalagemByCodBarras($codigoBarras) {
         $dql = $this->getEntityManager()->createQueryBuilder()
-                ->select('  p.id idProduto, p.descricao, p.grade,
+                ->select("p.id idProduto, p.descricao, p.grade,
                         pe.id idEmbalagem, pv.id idVolume, p.numVolumes,
                         NVL(pv.codigoBarras, pe.codigoBarras) codigoBarras,
                         NVL(pe.descricao, pv.descricao) descricaoEmbalagem,
@@ -1736,11 +1736,13 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                         p.indControlaLote, 
                         p.indFracionavel, 
                         p.validade controlaValidade,
-                        NVL(pv.normaPaletizacao, 0) norma'
+                        NVL(pv.normaPaletizacao, 0) norma,
+                        NVL(de.descricao, 'N/D')  picking"
                 )
                 ->from('wms:Produto', 'p')
                 ->leftJoin('p.embalagens', 'pe', 'WITH', 'pe.grade = p.grade AND pe.dataInativacao is null')
                 ->leftJoin('p.volumes', 'pv', 'WITH', 'pv.grade = p.grade AND pv.dataInativacao is null')
+                ->leftJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de = pv.endereco OR de = pe.endereco')
                 ->where('(pe.codigoBarras = :codigoBarras OR pv.codigoBarras = :codigoBarras OR p.id = :codigoBarras)')
                 ->setParameters(array('codigoBarras' => $codigoBarras));
 
