@@ -1157,6 +1157,7 @@ class Mobile_ExpedicaoController extends Action {
         $osEntity[0]->setBloqDe($bloqDe);
         $this->_em->persist($osEntity[0]);
         $this->_em->flush();
+        $this->view->isOldBrowserVersion = $this->getOldBrowserVersion();
 
         //$this->gravaAndamentoExpedicao($motivo,$idExpedicao);
         $this->_helper->messenger('error', $motivo);
@@ -1186,6 +1187,20 @@ class Mobile_ExpedicaoController extends Action {
         return $osEntity[0];
     }
 
+    private function getOldBrowserVersion () {
+
+        $config = \Zend_Registry::get('config');
+        $isOldBrowserVersion = null;
+        $browserTag = $isOldBrowserVersion = $config->browser;
+        if ($browserTag != null) $isOldBrowserVersion = $config->browser->isOldBrowserVersion;
+        if ($isOldBrowserVersion == null) $isOldBrowserVersion = 'S';
+
+        return "'$isOldBrowserVersion'";
+    }
+
+
+
+
     public function liberarOsAction() {
         $request = $this->getRequest();
         $idExpedicao = $request->getParam('idExpedicao');
@@ -1193,7 +1208,7 @@ class Mobile_ExpedicaoController extends Action {
         $volume = $this->getRequest()->getParam('volume', null);
         $tipoConferencia = $this->getRequest()->getParam('tipo-conferencia', null);
         $idTipoVolume = $this->getRequest()->getParam('idTipoVolume', null);
-
+        $this->view->isOldBrowserVersion = $this->getOldBrowserVersion();
         /** @var \Wms\Domain\Entity\Expedicao\EtiquetaSeparacaoRepository $EtiquetaRepo */
         $EtiquetaRepo = $this->_em->getRepository('wms:Expedicao\EtiquetaSeparacao');
         if ($request->isPost()) {
