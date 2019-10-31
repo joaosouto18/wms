@@ -1873,7 +1873,8 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
         //PRIMEIRO VERIFICO SE O PRODUTO TEM ENDEREÇO DE REFERENCIA
         $enderecoReferencia = $produtoEn->getEnderecoReferencia();
 
-        if ($enderecoReferencia->isBloqueadaEntrada()) $enderecoReferencia = null;
+
+        if ($enderecoReferencia != null) if ($enderecoReferencia->isBloqueadaEntrada()) $enderecoReferencia = null;
 
         //SE NÂO TIVER ENDEREÇO DE REFERNECIA ENTÃO USO O PIKCING COMO ENDEREÇO DE REFERENCIA
         if ($enderecoReferencia == null) {
