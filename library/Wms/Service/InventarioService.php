@@ -324,7 +324,7 @@ class InventarioService extends AbstractService
 
                 $this->registrarConferencia(
                     $elements,
-                    $this->getOsUsuarioContagem($contEnd, $inventario, $tipoConferencia, true)->getInvContEnd(),
+                    $this->getOsUsuarioContagem($contEnd, $inventario, $tipoConferencia, true),
                     $conferencia,
                     $this->em->getReference("wms:Produto", ["id" => $produto['idProduto'], "grade" => $produto['grade']]),
                     $isEmb,
@@ -345,7 +345,7 @@ class InventarioService extends AbstractService
 
     /**
      * @param array $elements
-     * @param InventarioNovo\InventarioContEnd $contagem
+     * @param InventarioNovo\InventarioContEndOs $invContEndOs
      * @param array $conferencia
      * @param Produto $produto
      * @param bool $isEmb
@@ -354,12 +354,12 @@ class InventarioService extends AbstractService
      * @param null $divergente
      * @throws \Exception
      */
-    private function registrarConferencia($elements, $contagem, $conferencia, $produto, $isEmb, $qtdElem = 1, $codBarras = null, $divergente = null)
+    private function registrarConferencia($elements, $invContEndOs, $conferencia, $produto, $isEmb, $qtdElem = 1, $codBarras = null, $divergente = null)
     {
         try {
             foreach ($elements as $element) {
                 $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd")->save([
-                    "inventarioContEnd" => $contagem,
+                    "inventarioContEndOs" => $invContEndOs,
                     "produto" => $produto,
                     "lote" => $conferencia['lote'],
                     "qtdContada" => $conferencia['qtd'],
@@ -393,13 +393,13 @@ class InventarioService extends AbstractService
             /** @var InventarioNovo\InventarioContEndOsRepository $contagemEndOsRepo */
             $contagemEndOsRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndOs");
 
-            /** @var InventarioNovo\InventarioContEndOs $usrContOs */
-            $usrContOs = $contagemEndOsRepo->getOsContUsuario( $contEnd["idContEnd"],  $usuario->getId());
+            /** @var InventarioNovo\InventarioContEndOs $invContEndOs */
+            $invContEndOs = $contagemEndOsRepo->getOsContUsuario( $contEnd["idContEnd"],  $usuario->getId());
 
-            if (!empty($usrContOs) && !empty($usrContOs->getOrdemServico()->getDataFinal()))
-                throw new \Exception("Sua ordem de serviço já foi finalizada em: ". $usrContOs->getOrdemServico()->getDataFinal());
+            if (!empty($invContEndOs) && !empty($invContEndOs->getOrdemServico()->getDataFinal()))
+                throw new \Exception("Sua ordem de serviço já foi finalizada em: ". $invContEndOs->getOrdemServico()->getDataFinal());
 
-            if (empty($usrContOs)) {
+            if (empty($invContEndOs)) {
                 if (!$createIfNoExist)
                     throw new \Exception("Não existe O.S aberta para esse usuário");
 
@@ -408,10 +408,10 @@ class InventarioService extends AbstractService
                 if (!empty($osContagensAnteriores) && !json_decode($inventario['usuarioNContagens']))
                     throw new \Exception("Este usuário não tem permissão para iniciar uma nova contagem neste endereço");
 
-                $usrContOs = $this->addNewOsContagem($contEnd["idContEnd"], $usuario, $tipoConferencia);
+                $invContEndOs = $this->addNewOsContagem($contEnd["idContEnd"], $usuario, $tipoConferencia);
             }
 
-            return $usrContOs;
+            return $invContEndOs;
 
         } catch (\Exception $e) {
             throw $e;
@@ -465,13 +465,11 @@ class InventarioService extends AbstractService
 
             $result = ["code" => 1, "msg" => "Ordem de serviço finalizada com sucesso"];
 
-            if (empty($outrasOs)) {
-                $result = $this->compararContagens(
-                    $this->em->find("wms:InventarioNovo\InventarioContEnd", $contEnd['idContEnd']),
-                    $inventario);
-            }
-
             $osUsuarioCont = $this->getOsUsuarioContagem($contEnd, $inventario, $tipoConferencia,  empty($outrasOs));
+
+            if (empty($outrasOs)) {
+                $result = $this->compararContagens( $osUsuarioCont, $inventario);
+            }
 
             $osRepo->finalizar(null, "Contagem finalizada", $osUsuarioCont->getOrdemServico(), false);
 
@@ -487,16 +485,18 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $invContEnd InventarioNovo\InventarioContEnd
+     * @param $invContEndOs InventarioNovo\InventarioContEndOs
      * @param $inventario
      * @return array
      * @throws \Exception
      */
-    private function compararContagens($invContEnd, $inventario)
+    private function compararContagens($invContEndOs, $inventario)
     {
         try {
             /** @var InventarioNovo\InventarioContEndProdRepository $contEndProdRepo */
             $contEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd");
+
+            $invContEnd = $invContEndOs->getInvContEnd();
 
             $countQtdsIguais = [];
 
@@ -619,7 +619,7 @@ class InventarioService extends AbstractService
                     ];
                     $countQtdsIguais[implode($strConcat, $prod)][implode($strConcat, $elemCount)][] = $invContEnd->getSequencia();
 
-                    $this->zerarProduto( $invContEnd, $prod,true);
+                    $this->zerarProduto($invContEndOs, $prod,true);
                 }
             }
 
@@ -638,7 +638,7 @@ class InventarioService extends AbstractService
                 $strProd = implode($strConcat, $prod);
                 $countQtdsIguais[$strProd][implode($strConcat, $elemCount)][] = $invContEnd->getSequencia();
                 $itensRecontPendente[] = $strProd;
-                $this->zerarProduto($invContEnd, $prod,true);
+                $this->zerarProduto($invContEndOs, $prod,true);
             }
 
             $count = [];
@@ -681,12 +681,12 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $contEnd InventarioNovo\InventarioContEnd
+     * @param $invContEndOs InventarioNovo\InventarioContEndOs
      * @param $produto
      * @param $divergente
      * @throws \Exception
      */
-    private function zerarProduto($contEnd, $produto, $divergente)
+    private function zerarProduto($invContEndOs, $produto, $divergente)
     {
         try {
 
@@ -706,7 +706,7 @@ class InventarioService extends AbstractService
 
             $this->registrarConferencia(
                 $elements,
-                $contEnd,
+                $invContEndOs,
                 $produto,
                 $this->em->getReference("wms:Produto", ["id" => $produto['codProduto'], "grade" => $produto['grade']]),
                 $isEmb,
@@ -863,7 +863,7 @@ class InventarioService extends AbstractService
         try{
             $produto["idVolume"] = json_decode($produto["idVolume"]);
             $this->zerarProduto(
-                $this->getOsUsuarioContagem( $contEnd, $inventario, $tipoConferencia, true)->getInvContEnd(),
+                $this->getOsUsuarioContagem($contEnd, $inventario, $tipoConferencia, true),
                 $produto,
                 null
             );
@@ -1258,7 +1258,8 @@ class InventarioService extends AbstractService
                                FROM INVENTARIO_ENDERECO_NOVO IEN
                                INNER JOIN INVENTARIO_NOVO INVN ON INVN.COD_INVENTARIO = IEN.COD_INVENTARIO
                                INNER JOIN INVENTARIO_CONT_END ICE ON ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO
-                               LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICE.COD_INV_CONT_END = ICEP.COD_INV_CONT_END
+                               LEFT JOIN INVENTARIO_CONT_END_OS ICEO ON ICEO.COD_INV_CONT_END = ICE.COD_INV_CONT_END
+                               LEFT JOIN INVENTARIO_CONT_END_PROD ICEP ON ICEO.COD_INV_CONT_END_OS = ICEP.COD_INV_CONT_END_OS
                               WHERE IEN.COD_INVENTARIO = $idInventario AND INVN.COD_STATUS = $statusFinalizado AND ICEP.IND_DIVERGENTE = 'N') I
                     ON (I.COD_PRODUTO = P.COD_PRODUTO)
                    AND (I.DSC_GRADE = P.DSC_GRADE)";
