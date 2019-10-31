@@ -756,8 +756,10 @@ class Importacao
             $produto->setDescricao($descricao)
                     ->setFabricante($fabricante)
                     ->setClasse($classe)
-                    ->setReferencia($referencia)
                     ->setPossuiPesoVariavel($indPesoVariavel);
+
+            if (!empty($referencia))
+                $produto->setReferencia($referencia);
 
             if (is_null($possuiValidade)) {
                 $flagValidade = $produto->getValidade();

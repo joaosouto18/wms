@@ -808,7 +808,7 @@ class Integracao {
                 $embalagemAtiva = $linha['EMBALAGEM_ATIVA'];
                 $possuiValidade = (isset($linha['POSSUI_VALIDADE'])) ? $linha['POSSUI_VALIDADE'] : null;
                 $diasVidaUtil = (isset($linha['DIAS_VIDA_UTIL'])) ? (int) $linha['DIAS_VIDA_UTIL'] : null;
-                $refFornecedor = (isset($linha['REF_FORNECEDOR'])) ? (int) $linha['REF_FORNECEDOR'] : '';
+                $refFornecedor = (isset($linha['REF_FORNECEDOR']) && !is_null($linha['REF_FORNECEDOR'])) ? $linha['REF_FORNECEDOR'] : null;
 
                 $codClasseProduto = $codClasseNivel1;
                 if (empty($codClasseNivel1) AND ! empty($codClasseNivel2)) {
