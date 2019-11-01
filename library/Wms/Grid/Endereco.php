@@ -14,7 +14,11 @@ class Endereco extends Grid
         $qb = $this->getEntityManager()->createQueryBuilder();
         $this->setAttrib('title','Endereços');
         $source = $qb
-            ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco")
+            ->select("e, c.descricao as dscCaracteristica, a.descricao areaArmazenagem, ea.descricao estruturaArmazenagem, te.descricao as dscTipoEndereco, 
+            CASE WHEN e.bloqueadaEntrada = 1 and e.bloqueadaSaida = 1 THEN 'Entrada/Saída' 
+                                           WHEN e.bloqueadaEntrada = 1 and e.bloqueadaSaida = 0 THEN 'Entrada' 
+                                           WHEN e.bloqueadaEntrada = 0 and e.bloqueadaSaida = 1 THEN 'Saída' 
+                                           ELSE 'Disponivel' END bloqueada")
             ->from('wms:Deposito\Endereco', 'e')
             ->innerJoin('e.caracteristica', 'c')
             ->innerJoin('e.areaArmazenagem', 'a')
@@ -45,6 +49,14 @@ class Endereco extends Grid
                 ->setParameter('inicilaApartamento', $inicialApartamento)
                 ->setParameter('finalApartamento', $finalApartamento);
         }
+        if ($bloqueadaEntrada === "0")
+            $source->andWhere("e.bloqueadaEntrada = 0");
+        if ($bloqueadaEntrada === "1")
+            $source->andWhere("e.bloqueadaEntrada = 1");
+        if ($bloqueadaSaida === "0")
+            $source->andWhere("e.bloqueadaSaida = 0");
+        if ($bloqueadaSaida === "1")
+            $source->andWhere("e.bloqueadaSaida = 1");
 
         if (!empty($lado)) {
             if ($lado == "P")
@@ -104,9 +116,8 @@ class Endereco extends Grid
                 'render' => 'OcupadoOrDisponivel'
             ))
             ->addColumn(array(
-                'label' => 'Situação',
-                'index' => 'situacao',
-                'render' => 'BloqueadoOrDesbloqueado'
+                'label' => 'End. Bloqueado',
+                'index' => 'bloqueada',
             ))
             ->addColumn(array(
                 'label' => 'Disponibilidade',
