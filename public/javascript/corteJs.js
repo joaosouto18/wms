@@ -110,7 +110,7 @@ function getSaldoCorte(index, returnCorte) {
 
     if (!returnCorte) {
         let saldo = parseFloat((obj.qtd - parseFloat(obj.corte + obj.conf)) / fator);
-        return (saldo > 0 && totalCorte <= saldo);
+        return (saldo > 0 && (totalCorte / fator) <= saldo);
     } else {
         return parseFloat(item.quantidadeUnitaria - item.qtdCortadaUnitaria);
     }

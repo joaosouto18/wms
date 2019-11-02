@@ -2034,6 +2034,33 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 $qtdTemp = 0;
                             }
 
+                            $newArrPedProd = [];
+                            $qtdAbater = Math::multiplicar($qtdEmbs, $embalagemAtual->getQuantidade());
+                            while ($qtdAbater > 0) {
+                                foreach ($produto['arrPedProd'] as $idPedProd => $pedProd) {
+                                    if (Math::compare($pedProd['qtd'], $qtdAbater, "<=")) {
+                                        if (!isset($newArrPedProd[$idPedProd])) {
+                                            $newArrPedProd[$idPedProd] = $pedProd;
+                                        } else {
+                                            $newArrPedProd[$idPedProd]['qtd'] = Math::adicionar($newArrPedProd[$idPedProd]['qtd'], $pedProd['qtd']);
+                                        }
+                                        unset($produto['arrPedProd'][$idPedProd]);
+                                        $qtdAbater = Math::subtrair($qtdAbater, $pedProd['qtd']);
+                                    } else {
+                                        if (!isset($newArrPedProd[$idPedProd])) {
+                                            $newArrPedProd[$idPedProd] = $pedProd;
+                                            $newArrPedProd[$idPedProd]['qtd'] = $qtdAbater;
+                                        } else {
+                                            $newArrPedProd[$idPedProd]['qtd'] = Math::adicionar($newArrPedProd[$idPedProd]['qtd'], $qtdAbater);
+                                        }
+                                        $produto['arrPedProd'][$idPedProd]['qtd'] = Math::subtrair($pedProd['qtd'], $qtdAbater);
+                                        $qtdAbater = 0;
+                                    }
+
+                                    if (empty($qtdAbater)) break;
+                                }
+                            }
+
                             $enderecoId = (!empty($produto['enderecoEn'])) ? $produto['enderecoEn']->getId() : null;
                             $newArray[$strQuebrasConcat][$produtoGradeLote]['expedicaoEn'] = $produto['expedicaoEn'];
                             $newArray[$strQuebrasConcat][$produtoGradeLote]['enderecos'][$enderecoId][$embalagemAtual->getId()] = array(
@@ -2041,7 +2068,7 @@ class EtiquetaSeparacaoRepository extends EntityRepository
                                 'lote' => $produto['lote'],
                                 'consolidado' => "N",
                                 'cubagem' => null,
-                                'arrPedProd' => $produto['arrPedProd'],
+                                'arrPedProd' => $newArrPedProd,
                                 'embalagemEn' => $embalagemAtual,
                                 'produtoEn' => $produto['produtoEn'],
                                 'pedidoEn' => null,

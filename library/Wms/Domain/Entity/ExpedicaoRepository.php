@@ -1333,42 +1333,6 @@ class ExpedicaoRepository extends EntityRepository {
 
                         if ($forcarSeparacaoAerea) continue;
                     }
-                    /*if (empty($saldoPicking)) {
-                        $forcarSeparacaoAerea = true;
-                        continue;
-                    } else {
-                        foreach($saldoPicking as $key => $estoque) {
-
-                            $loteReservar = ($lote == Lote::LND) ? $estoque['DSC_LOTE'] : $lote;
-
-                            $estoquePicking[$loteReservar] = $estoque['SALDO'];
-
-                            $lastKey = function ($saldo) {
-                                end($saldo);
-                                return key($saldo);
-                            };
-
-                            if (isset($arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$idElemento])) {
-                                $reserva = $arrEstoqueReservado[$idEndereco][$codProduto][$dscGrade][$loteReservar][$caracteristica][$idElemento];
-                                if ($reserva['estoqueReservado'] && $lote != Lote::LND) {
-                                    $forcarSeparacaoAerea = true;
-                                } elseif ($reserva['estoqueReservado']) {
-                                    if ($key != $lastKey($saldoPicking)) {
-                                        continue;
-                                    } else {
-                                        $estoquePicking[$loteReservar] = 0;
-                                    }
-                                } else {
-                                    $estoquePicking[$loteReservar] = Math::subtrair($estoquePicking[$loteReservar], $reserva['qtdReservada']);
-                                }
-                            }
-
-                            if ($forcarSeparacaoAerea) break;
-
-                        }
-
-                        if ($forcarSeparacaoAerea) continue;
-                    }*/
                 } else {
                     $estoquePicking = [Lote::NCL => 0];
                 }
