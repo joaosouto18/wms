@@ -158,6 +158,12 @@ class NotaFiscal
      */
     protected $tipoNotaFiscal;
 
+    /**
+     * @Column(name="IND_DIVERGENCIA", nullable=true, type="string")
+     * @var string
+     */
+    protected $divergencia;
+
 
     public function __construct()
     {
@@ -385,5 +391,22 @@ class NotaFiscal
     {
         $this->tipoNotaFiscal = $tipoNotaFiscal;
     }
+
+    /**
+     * @return string
+     */
+    public function getDivergencia()
+    {
+        return $this->divergencia;
+    }
+
+    /**
+     * @param string $divergencia
+     */
+    public function setDivergencia($divergencia)
+    {
+        $this->divergencia = $divergencia;
+    }
+
 
 }

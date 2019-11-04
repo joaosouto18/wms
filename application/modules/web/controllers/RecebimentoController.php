@@ -717,6 +717,9 @@ class Web_RecebimentoController extends \Wms\Controller\Action {
                                     ->setNotaFiscal($notaFiscalEntity);
 
                             $this->em->persist($recebimentoConferenciaEntity);
+
+                            $notaFiscalEntity->setDivergencia('S');
+                            $this->em->persist($notaFiscalEntity);
                         }
 
                         $ordemServicoEntity->setDataFinal(new \DateTime());
