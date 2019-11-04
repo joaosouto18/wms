@@ -1961,13 +1961,17 @@ class RecebimentoRepository extends EntityRepository
         extract($params);
 
         $where = " ";
-        if (isset($dataInicial1) && (!empty($dataInicial1)) && (!empty($dataInicial2))) {
-            $where .= " AND ((R.DTH_INICIO_RECEB >= TO_DATE('$dataInicial1 00:00', 'DD-MM-YYYY HH24:MI'))
-                        AND (R.DTH_INICIO_RECEB <= TO_DATE('$dataInicial2 23:59', 'DD-MM-YYYY HH24:MI') OR R.DTH_INICIO_RECEB IS NULL))";
+        if (!empty($dataInicial1)) {
+            $where .= " AND (R.DTH_INICIO_RECEB >= TO_DATE('$dataInicial1 00:00', 'DD-MM-YYYY HH24:MI'))";
         }
-        if (isset($dataFinal1) && (!empty($dataFinal1)) && (!empty($dataFinal2))) {
-            $where .= " AND ((R.DTH_FINAL_RECEB >= TO_DATE('$DataFinal1 00:00', 'DD-MM-YYYY HH24:MI'))
-                        AND (R.DTH_FINAL_RECEB <= TO_DATE('$DataFinal2 23:59', 'DD-MM-YYYY HH24:MI') OR R.DTH_FINAL_RECEB IS NULL))";
+        if (!empty($dataInicial2)) {
+            $where .= " AND (R.DTH_INICIO_RECEB <= TO_DATE('$dataInicial2 23:59', 'DD-MM-YYYY HH24:MI'))";
+        }
+        if (!empty($dataFinal1)) {
+            $where .= " AND (R.DTH_FINAL_RECEB >= TO_DATE('$dataFinal1 00:00', 'DD-MM-YYYY HH24:MI'))";
+        }
+        if (!empty($dataFinal2)) {
+            $where .= " AND (R.DTH_FINAL_RECEB <= TO_DATE('$dataFinal2 00:00', 'DD-MM-YYYY HH24:MI'))";
         }
         if (isset($status) && (!empty($status))) {
             $where .= " AND R.COD_STATUS = " . $status;

@@ -1,19 +1,27 @@
 ﻿<script>
 
     function playSound(soundfile) {
-        document.getElementById("dummy").innerHTML=
-            "<embed src=\""+soundfile+"\" hidden=\"true\" autostart=\"true\" loop=\"false\" />";
+        if (<?php echo $this->isOldBrowserVersion ?> === 'S') {
+            document.getElementById("bgSoundId").src = soundfile;
+        } else {
+            var dummy = '<audio autoplay> <source src=' + soundfile + ' type="audio/mp3">' +
+                '<source src="' + soundfile + '" type="audio/mpeg"></audio>';
+            $('#dummy').html(dummy);
+
+        }
     }
 
     window.onload=function()
     {
-        //playSound('/alarme.mp3')
-        var audioElement = document.createElement('audio');
-        audioElement.setAttribute('src', '/alarme.mp3');
-        audioElement.play();
+        playSound('/alarme.mp3')
+//        var audioElement = document.createElement('audio');
+//        audioElement.setAttribute('src', '/alarme.mp3');
+//        audioElement.play();
     };
 
 </script>
 
-<span id="dummy"></span>
+<div id="dummy"></div>
+<bgsound id="bgSoundId" loop="0" volume="100" />
+
 <?php echo $this->form; ?>

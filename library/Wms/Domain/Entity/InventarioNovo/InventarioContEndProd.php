@@ -25,11 +25,11 @@ class InventarioContEndProd
     protected $id;
 
     /**
-     * @var InventarioContEnd $inventarioContEnd
-     * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioContEnd")
-     * @JoinColumn(name="COD_INV_CONT_END", referencedColumnName="COD_INV_CONT_END")
+     * @var InventarioContEndOs $inventarioContEndOs
+     * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioContEndOs")
+     * @JoinColumn(name="COD_INV_CONT_END_OS", referencedColumnName="COD_INV_CONT_END")
      */
-    protected $inventarioContEnd;
+    protected $inventarioContEndOs;
 
     /**
      * @var Produto
@@ -131,19 +131,19 @@ class InventarioContEndProd
     }
 
     /**
-     * @return InventarioContEnd
+     * @return InventarioContEndOs
      */
-    public function getInventarioContEnd()
+    public function getInventarioContEndOs()
     {
-        return $this->inventarioContEnd;
+        return $this->inventarioContEndOs;
     }
 
     /**
-     * @param InventarioContEnd $inventarioContEnd
+     * @param InventarioContEndOs $inventarioContEndOs
      */
-    public function setInventarioContEnd($inventarioContEnd)
+    public function setInventarioContEndOs($inventarioContEndOs)
     {
-        $this->inventarioContEnd = $inventarioContEnd;
+        $this->inventarioContEndOs = $inventarioContEndOs;
     }
 
     /**
@@ -337,10 +337,5 @@ class InventarioContEndProd
     private function setDthContagem()
     {
         $this->dthContagem = new \DateTime();
-    }
-
-    private function convertBoolean($param)
-    {
-        return ($param === 'S');
     }
 }
