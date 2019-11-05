@@ -48,7 +48,7 @@
 
     .div-loader {
         float:left;
-        z-index: 9000;
+        z-index: 99999;
         padding-top: 30px;
         position: absolute;
         background: #FFFFFF;
@@ -168,12 +168,12 @@
 
 <div id="bipagem-endereco" style="display: none">
     <div class="input-area">
-        <div class="field">
-            <form>
+        <form>
+            <div class="field">
                 <label for="cod-barras-end" class="field required"><div class="lbl-headers">Buscar Endereço</div></label>
                 <input type="text" name="cod-barras-end" id="cod-barras-end" value="" class=" required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
-            </form>
-        </div>
+            </div>
+        </form>
         <button id="btn-consultar-endereco" class="btn gradientBtn btn-spacing">Buscar</button>
     </div>
     <div class="list-area" id="list-enderecos"></div>
@@ -181,12 +181,12 @@
 
 <div id="bipagem-produto" style="display: none">
     <div class="input-area">
-        <div class="field">
-            <form>
+        <form>
+            <div class="field">
                 <label for="cod-barras-prod" class="field required"><div class="lbl-headers">Buscar Produto</div></label>
                 <input type="text" name="cod-barras-prod" id="cod-barras-prod" value="" class="required focus" size="40" maxlength="100" style="width: 99%" alt="numeric">
-            </form>
-        </div>
+            </div>
+        </form>
         <button id="btn-consultar-produto" class="btn gradientBtn btn-spacing">Buscar</button><br>
         <button id="btn-finalizar" class="btn btn-spacing gradientBtnSuccess"></button>
     </div>
@@ -241,7 +241,8 @@
         var usaGrade = <?php echo ($this->usaGrade) ? "true" : "false"; ?>;
         var showing = 0;
         var views = ["loader","list-inventarios","contagens-by-inventario","bipagem-endereco","bipagem-produto","conferencia"];
-        var headersArr = ["lbl-inventario", "lbl-contagem", "lbl-endereco", "lbl-produto", "lbl-embvol"];
+        var headersArr = ["lbl-inventario", "lbl-contagem", "lbl-endereco", "lbl-produto, #lbl-embvol, #lbl-picking"];
+        var onErrRedirectTo = {4000: "list-inventarios", 4001: "bipagem-endereco", 4002: "bipagem-produto" };
         var endConfig = <?php echo $this->endConfig; ?>;
         var msgShowed = true;
 
@@ -351,10 +352,11 @@
 
             if (showing > 1) {
                 $("#divBtnBack").show();
-                $("#headers").show();
+                if (!$("#toggleInfo").hasClass('hiddingInfo')) $("#headers").show();
                 $("#btn-row").show();
             } else {
                 $("#divBtnBack").hide();
+                $("#btn-row").hide();
             }
 
             $.each(headersArr, function (k,v) {
@@ -364,11 +366,6 @@
                     $("#" + v).show();
             });
 
-            if (showTo === "conferencia")
-                $("#lbl-embvol").show();
-            else
-                $("#lbl-embvol").hide();
-
             if (showTo !== "loader") {
                 if (msgShowed) {
                     $("#messenger").empty();
@@ -376,7 +373,12 @@
                     msgShowed = true;
                 }
             }
+
             $("#"+showTo).show();
+
+            if (showing > 2) {
+                $("#" + showTo + " div.input-area form div:visible:first input:text").val("").focus();
+            }
         };
 
         $("#btn-back-action").click(function () {
@@ -522,7 +524,11 @@
                         prepareListEnderecos()
                     } else {
                         notificar("error", result.exception);
-                        getContagens();
+                        if (result.errorCode === 4000) {
+                            getInventarios();
+                        } else {
+                            getContagens();
+                        }
                     }
                 }
             });
@@ -536,7 +542,6 @@
                     list.append('<div class="list-item">' + i + '</div>')
                 }
                 changeViewer("bipagem-endereco");
-                setTimeout(function () {$("#cod-barras-end").focus()},1);
             } else {
                 notificar("warning", "A " + contSelecioando.dsc + " não tem mais endereços! Selecione outra.");
                 getContagens();
@@ -596,7 +601,11 @@
                         prepareListProdutos();
                     } else {
                         notificar("error", result.exception);
-                        getEnderecos();
+                        if (result.errorCode === 4000) {
+                            getInventarios();
+                        } else if (result.errorCode === 4001) {
+                            getEnderecos();
+                        }
                     }
                 }
             })
@@ -607,7 +616,7 @@
             list.empty();
             if (produtos.length) {
                 $.each(produtos , function (k,v) {
-                    var dscProd = v.codProduto;
+                    var dscProd = v.idProduto;
                     if (usaGrade) {
                         dscProd += " - " + v.grade;
                     }
@@ -634,13 +643,12 @@
             }
 
             changeViewer("bipagem-produto");
-            $("#cod-barras-prod").focus();
         };
 
         $(".btn-zerarProduto").live("click", function (event) {
             disarmEvent(event);
             var produto = produtos[$(this).data("key")];
-            var descricao = produto.codProduto + " - " + produto.descricao + " " + produto.grade;
+            var descricao = produto.idProduto + " - " + produto.descricao + " " + produto.grade;
             if (!isEmpty(produto.idVol)) {
                 descricao += " - " + produto.dscVol;
             }
@@ -661,10 +669,17 @@
             ).done(function( result ) {
                 if (result.status === "ok") {
                     notificar("success", result.response);
+                    openEndereco();
                 } else {
-                    notificar("error", result.exception)
+                    notificar("error", result.exception);
+                    if (result.errorCode === 4000) {
+                        getInventarios();
+                    } else if (result.errorCode === 4001) {
+                        getEnderecos();
+                    } else {
+                        openEndereco();
+                    }
                 }
-                openEndereco();
             })
         };
 
@@ -672,7 +687,7 @@
             if (event.which === 13 || event.keyCode === 13) {
                 disarmEvent(event);
                 if (!isEmpty($(this).val())) {
-                    processProduto($(this).val());
+                    getInfoProduto($(this).val());
                     $(this).val("");
                 }
             }
@@ -682,19 +697,16 @@
             var input = $("#cod-barras-prod");
             disarmEvent(event);
             if (!isEmpty(input.val())) {
-                processProduto(input.val());
+                getInfoProduto(input.val());
                 input.val("");
             }
         });
 
-        var processProduto = function (codBarras) {
-            getInfoProduto(codBarras);
-        };
-
         var getInfoProduto = function (codBarras) {
             changeViewer("loader");
+            var paramsUrl = ["codbarras", encodeURIComponent(codBarras), "id", invSelecioando.id, "end", contEndSelecionado.idEnd];
             $.ajax({
-                url: "/mobile/inventario-novo/get-info-produto/codbarras/" + encodeURIComponent(codBarras) ,
+                url: "/mobile/inventario-novo/get-info-produto/" + paramsUrl.join("/") ,
                 success: function (result) {
                     if (result.status === "ok") {
                         elemBipado = result.response.produto;
@@ -710,7 +722,13 @@
                         prepareElement();
                     } else {
                         notificar("error", result.exception);
-                        openEndereco();
+                        if (result.errorCode === 4000) {
+                            getInventarios();
+                        } else if (result.errorCode === 4001) {
+                            getEnderecos();
+                        } else {
+                            openEndereco();
+                        }
                     }
                 }
             })
@@ -726,12 +744,10 @@
             $("#lbl-embvol").text( elemBipado.descricaoEmbalagem + ((elemBipado.idEmbalagem !== null) ? "(" + elemBipado.quantidadeEmbalagem + ")" : "" ) );
             $("#lbl-picking").text( "Picking: " + elemBipado.picking);
             $("#qtd").val("").focus();
-            var focusOn = "qtd";
 
             if (controlaLote()) {
                 $("#lote").val("");
                 $("#div-lote").show();
-                focusOn = "lote";
             } else {
                 $("#div-lote").hide();
             }
@@ -739,13 +755,11 @@
             if (controlaValidade()) {
                 $("#validade").val("");
                 $("#div-validade").show();
-                focusOn = "validade";
             } else {
                 $("#div-validade").hide();
             }
 
             changeViewer("conferencia");
-            $("#"+focusOn).focus();
         };
 
         $("#qtd, #validade, #lote").keypress(function( event ) {
@@ -835,10 +849,17 @@
                 if (result.status === "ok") {
                     contEndSelecionado.vazio = false;
                     notificar("success", result.response);
+                    openEndereco();
                 } else {
-                    notificar("error", result.exception)
+                    notificar("error", result.exception);
+                    if (result.errorCode === 4000) {
+                        getInventarios();
+                    } else if (result.errorCode === 4001) {
+                        getEnderecos();
+                    } else {
+                        openEndereco();
+                    }
                 }
-                openEndereco();
             })
         };
 
@@ -860,7 +881,13 @@
                     }
                 } else {
                     notificar("error", result.exception);
-                    openEndereco()
+                    if (result.errorCode === 4000) {
+                        getInventarios();
+                    } else if (result.errorCode === 4001) {
+                        getEnderecos();
+                    } else {
+                        openEndereco();
+                    }
                 }
             })
         });

@@ -39,7 +39,7 @@ use Core\Util\Converter;
             var URL_SISTEMA = "<?php echo $this->serverUrl($this->baseUrl()); ?>";
             var URL_BASE = "<?php echo $this->baseUrl(); ?>";
             var URL_MODULO = URL_SISTEMA + "/<?php echo $this->request->getModuleName(); ?>";
-            var URL = URL_SISTEMA + "<?php echo getenv("REQUEST_URI"); ?>";
+            //var URL = URL_SISTEMA + "<?php //echo getenv("REQUEST_URI"); ?>//";
         </script>
         <?php if('production' == APPLICATION_ENV): ?>
         <link rel="stylesheet" type="text/css" href="<?php echo $this->baseUrl('wms/production.css'); ?>" />

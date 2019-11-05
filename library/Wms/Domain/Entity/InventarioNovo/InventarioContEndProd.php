@@ -25,11 +25,11 @@ class InventarioContEndProd
     protected $id;
 
     /**
-     * @var InventarioContEndOs $inventarioContEndOs
+     * @var InventarioContEndOs $invContEndOs
      * @ManyToOne(targetEntity="Wms\Domain\Entity\InventarioNovo\InventarioContEndOs")
-     * @JoinColumn(name="COD_INV_CONT_END_OS", referencedColumnName="COD_INV_CONT_END")
+     * @JoinColumn(name="COD_INV_CONT_END_OS", referencedColumnName="COD_INV_CONT_END_OS")
      */
-    protected $inventarioContEndOs;
+    protected $invContEndOs;
 
     /**
      * @var Produto
@@ -133,17 +133,17 @@ class InventarioContEndProd
     /**
      * @return InventarioContEndOs
      */
-    public function getInventarioContEndOs()
+    public function getInvContEndOs()
     {
-        return $this->inventarioContEndOs;
+        return $this->invContEndOs;
     }
 
     /**
-     * @param InventarioContEndOs $inventarioContEndOs
+     * @param InventarioContEndOs $invContEndOs
      */
-    public function setInventarioContEndOs($inventarioContEndOs)
+    public function setInvContEndOs($invContEndOs)
     {
-        $this->inventarioContEndOs = $inventarioContEndOs;
+        $this->invContEndOs = $invContEndOs;
     }
 
     /**
