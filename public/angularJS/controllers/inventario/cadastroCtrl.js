@@ -7,6 +7,7 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
     $scope.showPaginatorElements = false;
     $scope.resultForm = [];
     $scope.elements = [];
+    $scope.typeSensitiveComparator = typeSensitiveComparatorFn();
 
     let rotasRequest = {
         E:  "/index/get-enderecos-criar-ajax",
@@ -200,18 +201,6 @@ angular.module("wms").controller("cadastroInventarioCtrl", function($scope, $htt
     $scope.selectAll = function (grid, undo, onlyPaginator) {
         if (!onlyPaginator) angular.forEach($scope[grid], function (obj) { obj.checked = !undo; });
         angular.forEach($scope[grid + 'Paginator'], function (obj) { obj.selectedAll = !undo; })
-    };
-
-    $scope.typeSensitiveComparator = function(v1, v2) {
-        // If we don't get strings, just compare by index
-        if (angular.isNumber(Number(v1.value)) && angular.isNumber(Number(v2.value))) {
-            return (Number(v1.value) < Number(v2.value)) ? -1 : 1;
-        } else if (v1.type !== 'string' || v2.type !== 'string') {
-            return (v1.index < v2.index) ? -1 : 1;
-        }
-
-        // Compare strings alphabetically, taking locale into account
-        return v1.value.localeCompare(v2.value);
     };
 
     $scope.showPreviewer = function() {

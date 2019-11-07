@@ -68,7 +68,6 @@ class InventarioService extends AbstractService
                     $inventarioEnderecoEn = $inventarioEnderecoRepo->save([
                         'inventario' => $inventarioEn,
                         'depositoEndereco' => $this->em->getReference('wms:Deposito\Endereco', $item['id']),
-                        'contagem' => 1,
                         'ativo' => 'S'
                     ]);
 
@@ -225,42 +224,38 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param InventarioNovo\InventarioEnderecoNovo $inventarioEnderecoEn
-     * @param int $ultimaSequencia
+     * @param InventarioNovo\InventarioEnderecoNovo $invEndEn
+     * @param int $proximaSequencia
      * @param int $contagem
      * @param bool $divergencia
      * @return InventarioNovo\InventarioContEnd
      * @throws \Exception
      */
-    public function addNovaContagem(InventarioNovo\InventarioEnderecoNovo $inventarioEnderecoEn, $ultimaSequencia = 1, $contagem = 1, $divergencia = false)
+    public function addNovaContagem(InventarioNovo\InventarioEnderecoNovo $invEndEn, $proximaSequencia = 1, $contagem = 1, $divergencia = false)
     {
         try {
             /** @var InventarioNovo\InventarioContEndRepository $inventContEndRepo */
             $inventContEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEnd");
 
-            //echo $inventarioEnderecoEn->getInventario();
-
-            /** @var InventarioNovo\InventarioEnderecoNovo[] $endereco */
-            $endereco = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->findOneBy(["inventario" => $inventarioEnderecoEn->getInventario()]);
-
-            if($endereco->getStatus() == InventarioNovo\InventarioEnderecoNovo::STATUS_PENDENTE){
-                $endereco->setConferencia();
-                $this->em->persist($endereco);
-                $this->em->flush($endereco);
-            }
-            elseif($divergencia && $endereco->getStatus() == InventarioNovo\InventarioEnderecoNovo::STATUS_CONFERENCIA){
-                    $endereco->setDivergencia();
-                    $this->em->persist($endereco);
-                    $this->em->flush($endereco);
-                }
-
-            return $inventContEndRepo->save([
-                "inventarioEndereco" => $inventarioEnderecoEn,
-                "sequencia" => $ultimaSequencia,
+            $invContEndEn = $inventContEndRepo->save([
+                "inventarioEndereco" => $invEndEn,
+                "sequencia" => $proximaSequencia,
                 "contagem" => $contagem,
                 "contagemDivergencia" => $divergencia
             ], false);
 
+            if($invEndEn->getStatus() == InventarioNovo\InventarioEnderecoNovo::STATUS_PENDENTE){
+                $invEndEn->setConferencia();
+            }
+            elseif($divergencia && $invEndEn->getStatus() == InventarioNovo\InventarioEnderecoNovo::STATUS_CONFERENCIA){
+                $invEndEn->setDivergencia();
+            }
+
+            $invEndEn->setContagem($proximaSequencia);
+
+            $this->em->persist($invEndEn);
+
+            return $invContEndEn;
         } catch (\Exception $e) {
             throw $e;
         }
@@ -359,7 +354,7 @@ class InventarioService extends AbstractService
         try {
             foreach ($elements as $element) {
                 $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd")->save([
-                    "inventarioContEndOs" => $invContEndOs,
+                    "invContEndOs" => $invContEndOs,
                     "produto" => $produto,
                     "lote" => $conferencia['lote'],
                     "qtdContada" => $conferencia['qtd'],
@@ -658,7 +653,7 @@ class InventarioService extends AbstractService
                 if ($contsIguais < $nContagensNecessarias || in_array($strProd, $itensRecontPendente)) {
                     $temDivergencia = $divergente = true;
                 }
-                $this->updateFlagContagensProdutos($invContEnd, $prodX[0], $prodX[1], $prodX[2], $prodX[3], $divergente);
+                $this->updateFlagContagensProdutos($invContEndOs, $prodX[0], $prodX[1], $prodX[2], $prodX[3], $divergente);
             }
 
             if ($temDivergencia || (empty($count) && $invContEnd->getSequencia() < $inventario['numContagens'])) {
@@ -708,7 +703,7 @@ class InventarioService extends AbstractService
                 $elements,
                 $invContEndOs,
                 $produto,
-                $this->em->getReference("wms:Produto", ["id" => $produto['codProduto'], "grade" => $produto['grade']]),
+                $this->em->getReference("wms:Produto", ["id" => $produto['idProduto'], "grade" => $produto['grade']]),
                 $isEmb,
                 0,
                 null,
@@ -720,7 +715,7 @@ class InventarioService extends AbstractService
     }
 
     /**
-     * @param $contEnd InventarioNovo\InventarioContEnd
+     * @param $contEndOs InventarioNovo\InventarioContEndOs
      * @param $produto
      * @param $grade
      * @param $lote
@@ -728,20 +723,29 @@ class InventarioService extends AbstractService
      * @param $isDiverg bool
      * @throws \Exception
      */
-    private function updateFlagContagensProdutos($contEnd, $produto, $grade, $lote, $vol, $isDiverg)
+    private function updateFlagContagensProdutos($contEndOs, $produto, $grade, $lote, $vol, $isDiverg)
     {
         try {
-            /** @var InventarioNovo\InventarioContEndProd $contProd */
-            foreach ($this->em->getRepository("wms:InventarioNovo\InventarioContEndProd")->findBy([
-                "inventarioContEnd" => $contEnd,
-                "codProduto" => $produto,
-                "grade" => $grade,
-                "lote" => (!empty($lote)) ? $lote : null,
-                "produtoVolume" => (!empty($vol)) ? $vol : null
-            ]) as $contProd) {
+            /** @var InventarioNovo\InventarioContEndOsRepository $invContEndOsRepo */
+            $invContEndOsRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndOS");
+            /** @var InventarioNovo\InventarioContEndProdRepository $invContEndProdRepo */
+            $invContEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioContEndProd");
 
-                $contProd->setDivergente($isDiverg);
-                $this->em->persist($contProd);
+            foreach ($invContEndOsRepo->findBy(['invContEnd' => $contEndOs->getInvContEnd()]) as $osContEnd) {
+
+                $arg = [
+                    "invContEndOs" => $osContEnd,
+                    "codProduto" => $produto,
+                    "grade" => $grade,
+                    "lote" => (!empty($lote)) ? $lote : null,
+                    "produtoVolume" => (!empty($vol)) ? $vol : null
+                ];
+
+                /** @var InventarioNovo\InventarioContEndProd $contProd */
+                foreach ($invContEndProdRepo->findBy($arg) as $contProd) {
+                    $contProd->setDivergente($isDiverg);
+                    $this->em->persist($contProd);
+                }
             }
         } catch (\Exception $e) {
             throw $e;
@@ -807,49 +811,52 @@ class InventarioService extends AbstractService
      */
     public function getInfoEndereco($idInventario, $sequencia, $isDiverg, $endereco, $isPicking)
     {
-        /** @var InventarioNovo\InventarioEnderecoNovoRepository $invEndRepo */
-        $invEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo");
-        $check = $invEndRepo->checkContEndOsFinalizada($idInventario, $sequencia, $endereco, \Zend_Auth::getInstance()->getIdentity()->getId());
-        if (!empty($check)) throw new \Exception("Este usuário já finalizou essa contagem neste endereço");
+        try {
+            /** @var InventarioNovo\InventarioEnderecoNovoRepository $invEndRepo */
+            $invEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo");
+            $check = $invEndRepo->checkContEndOsFinalizada($idInventario, $sequencia, $endereco, \Zend_Auth::getInstance()->getIdentity()->getId());
+            if (!empty($check)) throw new \Exception("Este usuário já finalizou essa contagem neste endereço");
 
-        if ($isDiverg == "S") {
-            $result = $invEndRepo->getItensDiverg($idInventario, $sequencia, $endereco);
-        } else {
-            $result = $invEndRepo->getInfoEndereco($idInventario, $sequencia, $endereco);
-        }
-
-        $pickingsAssoc = [];
-        if (json_decode($isPicking)) {
-            /** @var EnderecoRepository $depEndRepo */
-            $depEndRepo = $this->em->getRepository("wms:Deposito\Endereco");
-
-            foreach ($depEndRepo->getProdutosPicking($endereco) as $val) {
-                $pickingsAssoc[] = "$val[COD_PRODUTO]--$val[DSC_GRADE]--$val[ID_NORMA]";
+            if ($isDiverg == "S") {
+                $result = $invEndRepo->getItensDiverg($idInventario, $sequencia, $endereco);
+            } else {
+                $result = $invEndRepo->getInfoEndereco($idInventario, $sequencia, $endereco);
             }
-        }
 
-        $agroup = [];
-        foreach( $result as $item) {
-            $strConcat = "$item[codProduto]--$item[grade]--$item[idVol]--$item[lote]";
-            if (!isset($agroup[$strConcat])) {
-                $agroup[$strConcat] = [
-                    "codProduto" => $item['codProduto'],
-                    "grade" => $item['grade'],
-                    "descricao" => $item['descricao'],
-                    "codBarras" => [$item["codBarras"]],
-                    "lote" => (isset($item['lote'])) ? $item['lote'] : null,
-                    "idVolume" => (isset($item['idVol'])) ? $item['idVol'] : null,
-                    "dscVolume" => (isset($item['dscVol'])) ? $item['dscVol'] : null,
-                    "zerado" => (isset($item['qtdContada']) && empty($item['qtdContada']))
-                ];
-            }
-            else {
-                if (!in_array($item["codBarras"], $agroup[$strConcat]["codBarras"]))
-                    $agroup[$strConcat]["codBarras"][] = $item["codBarras"];
-            }
-        }
+            $pickingsAssoc = [];
+            if (json_decode($isPicking)) {
+                /** @var EnderecoRepository $depEndRepo */
+                $depEndRepo = $this->em->getRepository("wms:Deposito\Endereco");
 
-        return ["pickingOf" => $pickingsAssoc,"listItens" => $agroup];
+                foreach ($depEndRepo->getProdutosPicking($endereco) as $val) {
+                    $pickingsAssoc[] = "$val[COD_PRODUTO]--$val[DSC_GRADE]--$val[ID_NORMA]";
+                }
+            }
+
+            $agroup = [];
+            foreach ($result as $item) {
+                $strConcat = "$item[codProduto]--$item[grade]--$item[idVol]--$item[lote]";
+                if (!isset($agroup[$strConcat])) {
+                    $agroup[$strConcat] = [
+                        "idProduto" => $item['codProduto'],
+                        "grade" => $item['grade'],
+                        "descricao" => $item['descricao'],
+                        "codBarras" => [$item["codBarras"]],
+                        "lote" => (isset($item['lote'])) ? $item['lote'] : null,
+                        "idVolume" => (isset($item['idVol'])) ? $item['idVol'] : null,
+                        "dscVolume" => (isset($item['dscVol'])) ? $item['dscVol'] : null,
+                        "zerado" => (isset($item['qtdContada']) && empty($item['qtdContada']))
+                    ];
+                } else {
+                    if (!in_array($item["codBarras"], $agroup[$strConcat]["codBarras"]))
+                        $agroup[$strConcat]["codBarras"][] = $item["codBarras"];
+                }
+            }
+
+            return ["pickingOf" => $pickingsAssoc, "listItens" => $agroup];
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -909,6 +916,31 @@ class InventarioService extends AbstractService
 
     }
 
+    public function getDivergenciasInventario($id)
+    {
+        $results = $this->getRepository()->getListDivergencias($id);
+        $return = [];
+        foreach ($results as $result) {
+            $obj = new \stdClass;
+            $obj->endereco         = $result["DSC_DEPOSITO_ENDERECO"];
+            $obj->contagem         = $result["NUM_CONTAGEM"];
+            $obj->codProduto       = $result["COD_PRODUTO"];
+            $obj->dscProduto       = $result["DSC_PRODUTO"];
+            $obj->grade            = $result["DSC_GRADE"];
+            $obj->loteEstq         = (empty($result["DSC_LOTE"])) ? "--" : $result["DSC_LOTE"];
+            $obj->loteConf         = (empty($result["DSC_LOTE"])) ? "--" : $result["DSC_LOTE"];
+            $obj->qtdEstq          = $result["QTD_ESTQ"];
+            $obj->qtdConf          = $result["QTD_CONF"];
+            $obj->validadeEstq     = $result["VALIDADE_ESTQ"];
+            $obj->validadeConf     = $result["VALIDADE_CONF"];
+
+            $return[] = $obj;
+        }
+
+        return $return;
+
+    }
+
     /**
      * @param $id
      * @throws \Exception
@@ -920,7 +952,7 @@ class InventarioService extends AbstractService
             /** @var InventarioNovo $invEn */
             $invEn = $this->find($id);
 
-            if (!($invEn->isConcluido() || $invEn->isInterrompido())) throw new \Exception("Impossível finalizar este inventário $id pois está: " . $invEn->getDscStatus());
+            if (!($invEn->isConcluido() || $invEn->isInterrompido())) throw new \Exception("Impossível atualizar o estoque com este inventário $id pois está: " . $invEn->getDscStatus());
 
             $resultInv = $this->getRepository()->getResultInventario($id);
 
@@ -1341,5 +1373,46 @@ class InventarioService extends AbstractService
             "codAcao" => $acao,
             "descricao" => $dscAcao
         ]);
+    }
+
+    /**
+     * @param $idInventario
+     * @param null $idEndereco
+     * @param null $idProduto
+     * @param null $dscGrade
+     * @return bool
+     * @throws \Exception
+     */
+    public function verificarRequisicaoColetor($idInventario, $idEndereco = null, $idProduto = null, $dscGrade = null)
+    {
+        /** @var InventarioNovo $inventarioEn */
+        $inventarioEn = $this->getRepository()->find($idInventario);
+
+        if (empty($inventarioEn)) throw new \Exception("Ação negada. Este inventário $idInventario não foi encontrao!", 4000);
+
+        if (!$inventarioEn->isLiberado()) throw new \Exception("Ação negada. Este inventário $idInventario está " . $inventarioEn->getDscStatus(), 4000);
+
+        if (!empty($idInvEnd)) {
+            /** @var InventarioNovo\InventarioEnderecoNovoRepository $invEndRepo */
+            $invEndRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo");
+
+            /** @var InventarioNovo\InventarioEnderecoNovo $invEndEn */
+            $invEndEn = $invEndRepo->findOneBy(["inventario" => $idInventario, "depositoEndereco" => $idEndereco]);
+
+            if (!$invEndEn->isAtivo()) throw new \Exception("Ação negada. Este endereço '".$invEndEn->getDepositoEndereco()->getDescricao()."' foi removido do inventário!", 4001);
+
+            if ($invEndEn->isFinalizado()) throw new \Exception("Ação negada. Este endereço '".$invEndEn->getDepositoEndereco()->getDescricao()."' já está finalizado!", 4001);
+        }
+
+        if (!empty($idInvEnd) && !empty($idProduto) && !empty($dscGrade) && $inventarioEn->isPorProduto()) {
+            /** @var InventarioNovo\InventarioEndProdRepository $invEndProdRepo */
+            $invEndProdRepo = $this->em->getRepository("wms:InventarioNovo\InventarioEndProd");
+            /** @var InventarioNovo\InventarioEndProd $invEndProdEn */
+            $invEndProdEn = $invEndProdRepo->findOneBy(["inventarioEndereco" => $invEndEn, "codProduto" => $idProduto, "grade" => $dscGrade]);
+            if (!$invEndProdEn->isAtivo())
+                throw new \Exception("Ação negada. Este produto $idProduto grade $dscGrade foi removido do inventário neste endereço ".$invEndProdEn->getInventarioEndereco()->getDepositoEndereco()->getDescricao() ."!", 4002);
+        }
+
+        return true;
     }
 }

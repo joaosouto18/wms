@@ -1,6 +1,7 @@
 <span ng-controller="listGridInventarioCtrl">
     <script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/listGridCtrl.js') ?>"></script>
     <script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/previewerResultCtrl.js') ?>"></script>
+    <script src="<?php echo $this->baseUrl('angularJS/controllers/inventario/divergenciaGridCtrl.js') ?>"></script>
     <form id="cadastro-movimentacao" class="filtro">
         <dt id="identificacao-label">&nbsp;</dt>
         <dd id="identificacao-element" >
@@ -133,9 +134,9 @@
                                     <ul>
                                         <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_GERADO ?>"><a href="/inventario_novo/index/liberar/id/{{inventario.id}}" >Liberar</a></li>
                                         <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CONCLUIDO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_INTERROMPIDO ?>] | contains:inventario.status:false"><a href="" ng-click="showPreviewerResult(inventario.id)" class="" title="Visualizar resultado do inventário" target="_self">Resultado do Inventário</a></li>
-                                        <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO ?>] | contains:inventario.status"><a href="" ng-click="interromper(inventario.id)" class="" title="Interromper este inventário" target="_self">Interromper Inventário</a></li>
+                                        <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO ?>"><a href="" ng-click="interromper(inventario.id)" title="Interromper este inventário" target="_self">Interromper Inventário</a></li>
                                         <li ng-if="[<?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?>, <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>] | contains:inventario.status:true"><a href="" ng-click="cancelar(inventario.id)" class="confirm" title="Cancelar inventário" target="_self">Cancelar</a></li>
-<!--                                        <li ng-if="inventario.status != --><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_GERADO ?><!--"><a href="/inventario_novo/relatorio-divergencia/index/id/{{inventario.id}}" class="pdf" title="" target="_self">Relatório Divergências</a></li>-->
+                                        <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO ?>"><a href="" ng-click="showDivergencias(inventario.id)" title="Exibir divergências" target="_self">Relatório Divergências</a></li>
 <!--                                        <li ng-if="[--><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_CANCELADO ?><!--, --><?php //echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?><!--] | contains:inventario.status:true"><a href="/inventario/parcial/endereco/id/{{inventario.id}}" class="confirm" title="Adicionar novos endereços" target="_self">Adicionar endereços</a></li>-->
                                         <li ><a href="/inventario_novo/index/view-andamento-ajax/id/{{inventario.id}}" class="view-andamento dialogAjax" data-dialog-width="75%" title="Andamento do Inventário" target="_self">Visualizar Andamento</a></li>
                                         <li ng-if="inventario.status == <?php echo \Wms\Domain\Entity\InventarioNovo::STATUS_FINALIZADO ?>"><a href="/inventario_novo/index/view-movimentacoes-ajax/id/{{inventario.id}}" class="pdf" title="Movimentações no estoque" target="_self">Movimentações no Estoque</a></li>

@@ -8,6 +8,7 @@
 
 namespace Wms\Domain\Entity\InventarioNovo;
 
+use Wms\Domain\Configurator;
 use Wms\Domain\Entity\Produto;
 
 /**
@@ -57,8 +58,6 @@ class InventarioEndProd
      * @Column(name="IND_ATIVO", type="string" )
      */
     protected $ativo;
-
-
 
     /**
      * @return mixed
@@ -156,5 +155,13 @@ class InventarioEndProd
         $this->ativo = ((is_bool($ativo) && $ativo) || (is_string($ativo) && $ativo == 'S') ) ? 'S' : 'N';
     }
 
+    public function isAtivo()
+    {
+        return ($this->ativo === 'S');
+    }
 
+    public function toArray()
+    {
+        return Configurator::configureToArray($this);
+    }
 }

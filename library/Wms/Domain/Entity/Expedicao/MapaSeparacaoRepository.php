@@ -1487,7 +1487,10 @@ class MapaSeparacaoRepository extends EntityRepository {
                     MSP.COD_PRODUTO,
                     MSP.DSC_GRADE,
                     MSP.QTD_SEPARAR as QTD_TOTAL,
-                    CASE WHEN MSP.QTD_SEPARAR = 0 THEN '100%' WHEN SMS.TOTAL_SEPARADO = 0 THEN '0%' ELSE CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' END PERCENTUAL_SEPARACAO,
+                    CASE WHEN MSP.QTD_SEPARAR = 0 THEN '100%' 
+                         WHEN SMS.TOTAL_SEPARADO = 0 THEN '0%' 
+                         WHEN CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) >= 100 THEN '100%'
+                         ELSE CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)) || '%' END PERCENTUAL_SEPARACAO,
                     MS.COD_EXPEDICAO,
                     CASE WHEN MSP.QTD_SEPARAR = 0 THEN 100 WHEN SMS.TOTAL_SEPARADO = 0 THEN 0 ELSE NVL(CAST((SMS.TOTAL_SEPARADO/MSP.QTD_SEPARAR) * 100 as NUMBER(6,2)),0) END PERCENTUAL
                 

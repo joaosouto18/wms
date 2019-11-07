@@ -20,6 +20,20 @@ angular.module("wms", ['uiDialogService', 'ui.mask'])
     };
 });
 
+function typeSensitiveComparatorFn () {
+    return function(v1, v2) {
+        // If we don't get strings, just compare by index
+        if (angular.isNumber(Number(v1.value)) && angular.isNumber(Number(v2.value))) {
+            return (Number(v1.value) < Number(v2.value)) ? -1 : 1;
+        } else if (v1.type !== 'string' || v2.type !== 'string') {
+            return (v1.index < v2.index) ? -1 : 1;
+        }
+
+        // Compare strings alphabetically, taking locale into account
+        return v1.value.localeCompare(v2.value);
+    }
+}
+
 function isEmpty( val ) {
 
     // test results

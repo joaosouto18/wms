@@ -11,6 +11,7 @@ namespace Wms\Domain\Entity;
 
 use Wms\Domain\Entity\Inventario;
 use Wms\Domain\Entity\InventarioNovo\InventarioEnderecoNovo;
+use Wms\Domain\Entity\Produto\Lote;
 use Wms\Domain\EntityRepository;
 
 class InventarioNovoRepository extends EntityRepository
@@ -549,7 +550,7 @@ class InventarioNovoRepository extends EntityRepository
 
         $sql = "SELECT DISTINCT
                     INVN.COD_INVENTARIO \"INVENTÁRIO\",
-                    INVN.DSC_INVENTARIO \"DESCRIÇÃO\",
+                    NVL(INVN.DSC_INVENTARIO, '') \"DESCRIÇÃO\",
                     DE.DSC_DEPOSITO_ENDERECO \"ENDEREÇO\",
                     CASE WHEN INVN.IND_CRITERIO = 'P' THEN 'PRODUTO' ELSE 'ENDEREÇO' END \"INVENTÁRIO POR\",
                     NVL(IEP.COD_PRODUTO, '-') \"CÓDIGO\",
@@ -601,5 +602,56 @@ class InventarioNovoRepository extends EntityRepository
             ->where("ien.inventario = $idInventario and ien.ativo = 'S' and iep.ativo = 'S'");
 
         return $dql->getQuery()->getResult();
+    }
+
+    public function getListDivergencias($idInventario)
+    {
+        $statusEndereco = InventarioEnderecoNovo::STATUS_FINALIZADO;
+        $criterioInventario = InventarioNovo::CRITERIO_PRODUTO;
+        $naoControlaLote = Lote::NCL;
+
+        $sql = "SELECT
+                    DE.DSC_DEPOSITO_ENDERECO,
+                    ICE.NUM_CONTAGEM,
+                    ICEP.COD_PRODUTO,
+                    P.DSC_PRODUTO,
+                    ICEP.DSC_GRADE,
+                    SUM(NVL(E.QTD,0)) QTD_ESTQ,
+                    SUM(ICEP.QTD_CONTADA * ICEP.QTD_EMBALAGEM) QTD_CONF,
+                    TO_CHAR(E.DTH_VALIDADE, 'DD/MM/YYYY') VALIDADE_ESTQ,
+                    TO_CHAR(ICEP.DTH_VALIDADE, 'DD/MM/YYYY') VALIDADE_CONF,
+                    NVL(ICEP.DSC_LOTE, '') LOTE_CONF,
+                    NVL(E.DSC_LOTE, '') LOTE_ESTQ
+                FROM INVENTARIO_CONT_END_PROD ICEP
+                     INNER JOIN PRODUTO P ON P.COD_PRODUTO = ICEP.COD_PRODUTO AND P.DSC_GRADE = ICEP.DSC_GRADE
+                     INNER JOIN INVENTARIO_CONT_END_OS ICEO ON ICEP.COD_INV_CONT_END_OS = ICEO.COD_INV_CONT_END_OS
+                     INNER JOIN INVENTARIO_CONT_END ICE ON ICEO.COD_INV_CONT_END = ICE.COD_INV_CONT_END
+                     INNER JOIN INVENTARIO_ENDERECO_NOVO IEN on ICE.COD_INVENTARIO_ENDERECO = IEN.COD_INVENTARIO_ENDERECO AND ICE.NUM_SEQUENCIA = (IEN.NUM_CONTAGEM - 1)
+                     INNER JOIN INVENTARIO_NOVO INV on INV.COD_INVENTARIO = IEN.COD_INVENTARIO
+                     INNER JOIN DEPOSITO_ENDERECO DE ON DE.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO
+                      LEFT JOIN INVENTARIO_END_PROD IEP ON IEN.COD_INVENTARIO_ENDERECO = IEP.COD_INVENTARIO_ENDERECO AND IEP.COD_PRODUTO = ICEP.COD_PRODUTO AND IEP.DSC_GRADE = ICEP.DSC_GRADE
+                      LEFT JOIN ESTOQUE E
+                             ON E.COD_PRODUTO = ICEP.COD_PRODUTO
+                            AND E.DSC_GRADE = ICEP.DSC_GRADE
+                            AND E.COD_DEPOSITO_ENDERECO = IEN.COD_DEPOSITO_ENDERECO
+                            AND NVL(ICEP.COD_PRODUTO_VOLUME, 0) = NVL(E.COD_PRODUTO_VOLUME, 0)
+                            AND NVL(ICEP.DSC_LOTE, '$naoControlaLote') = NVL(E.DSC_LOTE, '$naoControlaLote')
+                WHERE IEN.IND_ATIVO = 'S'
+                  AND CASE WHEN (INV.IND_CRITERIO = '$criterioInventario') THEN IEP.IND_ATIVO ELSE 'S' END = 'S'
+                  AND IEN.COD_STATUS != $statusEndereco
+                  AND ICEP.IND_DIVERGENTE = 'S'
+                  AND INV.COD_INVENTARIO = $idInventario
+                GROUP BY DE.DSC_DEPOSITO_ENDERECO,
+                         ICE.NUM_CONTAGEM,
+                         ICEP.COD_PRODUTO,
+                         P.DSC_PRODUTO,
+                         ICEP.DSC_GRADE,
+                         ICEP.DTH_VALIDADE,
+                         TO_CHAR(E.DTH_VALIDADE, 'DD/MM/YYYY'),
+                         TO_CHAR(ICEP.DTH_VALIDADE, 'DD/MM/YYYY'),
+                         NVL(ICEP.DSC_LOTE, ''),
+                         NVL(E.DSC_LOTE, '')";
+
+        return $this->_em->getConnection()->query($sql)->fetchAll();
     }
 }

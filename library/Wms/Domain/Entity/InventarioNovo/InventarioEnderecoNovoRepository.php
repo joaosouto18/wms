@@ -117,7 +117,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
         $dql = $this->_em->createQueryBuilder();
         $dql->select("p.id codProduto, p.grade, p.descricao, v.id idVol, v.descricao dscVol, NVL(e.codigoBarras, v.codigoBarras) codBarras, icep.qtdContada, icep.lote")
             ->from("wms:InventarioNovo\InventarioContEndProd", "icep")
-            ->innerJoin("icep.inventarioContEnd", "ice", "WITH", "ice.sequencia = ($sequencia - 1)")
+            ->innerJoin("icep.invContEndOs", "iceo")
+            ->innerJoin("iceo.invContEnd", "ice", "WITH", "ice.sequencia = ($sequencia - 1)")
             ->innerJoin("ice.inventarioEndereco", "ie", "WITH", "ie.ativo = 'S' and ie.inventario = $idInventario and ie.depositoEndereco = $endereco")
             ->innerJoin("icep.produto", "p")
             ->leftJoin("icep.produtoEmbalagem", "e")
@@ -132,7 +133,8 @@ class InventarioEnderecoNovoRepository extends EntityRepository
             ->andWhere("NOT EXISTS(
                     SELECT 'x'
                     FROM wms:InventarioNovo\InventarioContEndProd icep2
-                    INNER JOIN icep2.inventarioContEnd ice2 WITH ice2.sequencia = $sequencia
+                    INNER JOIN icep2.invContEndOs iceo2
+                    INNER JOIN iceo2.invContEnd ice2 WITH ice2.sequencia = $sequencia
                     INNER JOIN ice2.inventarioEndereco ie3 WITH ie3.ativo = 'S'
                     WHERE ie = ie3 and icep2.codProduto = icep.codProduto and icep2.grade = icep.grade 
                          and NVL(icep2.lote,0) = NVL(icep.lote,0) and NVL(icep2.produtoVolume,0) = NVL(icep.produtoVolume,0) 

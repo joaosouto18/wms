@@ -583,6 +583,14 @@ class Produto
     }
 
     /**
+     * @return bool
+     */
+    public function isFracionavel()
+    {
+        return ($this->indFracionavel == 'S');
+    }
+
+    /**
      * @param mixed $indFracionavel
      * @return Produto
      */
