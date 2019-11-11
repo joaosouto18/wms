@@ -213,10 +213,19 @@ class Mobile_ExpedicaoController extends Action {
         if ($this->bloquearOs()) {
             $Expedicao = new \Wms\Coletor\Expedicao($this->getRequest(), $this->em);
             $Expedicao->validacaoExpedicao();
-            if (!$Expedicao->osLiberada()) {
-                $this->addFlashMessage('error', $Expedicao->getMessage());
-                $this->addFlashMessage('warning', $Expedicao->getOs()->getBloqueio());
-                $this->_redirect($Expedicao->getRedirect());
+            if ($this->bloquearOs() && !$Expedicao->osLiberada()) {
+                $form = new SenhaLiberacao();
+                $form->setDefault('idExpedicao', $idExpedicao);
+
+                $response = [
+                    'resposta' => 'bloqued_os',
+                    'errorMsg' => $Expedicao->getMessage(),
+                    'warningMsg' => $Expedicao->getOs()->getBloqueio(),
+                    'blockOsForm' => $form->render()
+                ];
+
+                $vetRetorno = array('retorno' => $response);
+                $this->_helper->json($vetRetorno);
             }
         }
 
@@ -309,7 +318,19 @@ class Mobile_ExpedicaoController extends Action {
             } catch (\Exception $e) {
                 if ($this->bloquearOs == 'S') {
                     $this->bloqueioOs($idExpedicao, $e->getMessage(), \Wms\Domain\Entity\OrdemServico::BLOCK_MAPA);
-                    $this->_redirect($Expedicao->getRedirect());
+                    $form = new SenhaLiberacao();
+                    $form->setDefault('idExpedicao', $idExpedicao);
+                    $htmlForm = $form->render();
+
+                    $response = [
+                        'resposta' => 'bloqued_os',
+                        'errorMsg' => "OS bloqueada",
+                        'warningMsg' => $e->getMessage(),
+                        'blockOsForm' => $htmlForm
+                    ];
+
+                    $vetRetorno = array('retorno' => $response);
+                    $this->_helper->json($vetRetorno);
                 } else {
                     $vetRetorno = array('retorno' => array('resposta' => 'error', 'message' => $e->getMessage(), 'produto' => '', 'volumePatrimonio' => ''));
                     $this->_helper->json($vetRetorno);
@@ -1148,6 +1169,9 @@ class Mobile_ExpedicaoController extends Action {
     }
 
     protected function bloqueioOs($idExpedicao, $motivo, $bloqDe) {
+        if ($this->_em->isOpen() == false) {
+            $this->_em = $this->_em->create($this->_em->getConnection(),$this->_em->getConfiguration());
+        }
         $this->bloquearOs();
         /** @var \Wms\Domain\Entity\ExpedicaoRepository $expedicaoRepo */
         $expedicaoRepo = $this->em->getRepository('wms:Expedicao');
