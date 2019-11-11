@@ -90,6 +90,7 @@
 </div>
 
 <div id="messenger"></div>
+<a href="#messenger" style="display: none" id="anchorMsg"></a>
 
 <div id="headers" style="padding-top: 5px">
     <div class="lbl-headers" id="lbl-inventario"></div>
@@ -250,6 +251,7 @@
 
             if (type === "error") alert(msg);
             msgShowed = instantShowed;
+            $("#anchorMsg").click();
         };
 
         $(".fmBtnClose").live("click", function () {
