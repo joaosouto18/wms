@@ -1211,20 +1211,6 @@ class Mobile_ExpedicaoController extends Action {
         return $osEntity[0];
     }
 
-    private function getOldBrowserVersion () {
-
-        $config = \Zend_Registry::get('config');
-        $isOldBrowserVersion = null;
-        $browserTag = $isOldBrowserVersion = $config->browser;
-        if ($browserTag != null) $isOldBrowserVersion = $config->browser->isOldBrowserVersion;
-        if ($isOldBrowserVersion == null) $isOldBrowserVersion = 'S';
-
-        return "'$isOldBrowserVersion'";
-    }
-
-
-
-
     public function liberarOsAction() {
         $request = $this->getRequest();
         $idExpedicao = $request->getParam('idExpedicao');
