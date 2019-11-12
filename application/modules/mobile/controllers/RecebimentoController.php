@@ -57,6 +57,15 @@ class Mobile_RecebimentoController extends Action
             /** @var \Wms\Domain\Entity\RecebimentoRepository $recebimentoRepo */
             $recebimentoRepo = $this->em->getRepository('wms:Recebimento');
 
+            /** @var \Wms\Domain\Entity\Recebimento $recebimentoEntity */
+            $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
+
+            if (!$recebimentoEntity)
+                throw new \Exception("Recebimento $idRecebimento não encontrado");
+
+            if (!$recebimentoEntity->inOperacao())
+                throw new Exception("Não pode iniciar a conferênca deste recebimento, ele está " . $recebimentoEntity->getDscStatus());
+
             $result = $recebimentoRepo->conferenciaColetor($idRecebimento, $idOS);
 
             if ($result['exception'] != null) {
@@ -93,15 +102,18 @@ class Mobile_RecebimentoController extends Action
 
             $recebimentoEntity = $recebimentoRepo->find($idRecebimento);
 
+            if (!$recebimentoEntity)
+                throw new \Exception("Recebimento $idRecebimento não encontrado");
+
+            if (!$recebimentoEntity->inOperacao())
+                throw new Exception("Não pode iniciar a conferênca deste recebimento, ele está " . $recebimentoEntity->getDscStatus());
+
             $notaFiscalEntity = $notaFiscalRepo->findOneBy(array('recebimento' => $idRecebimento));
 
             if ($notaFiscalEntity) {
                 $this->view->placaVeiculo   = $notaFiscalEntity->getPlaca();
                 $this->view->fornecedor     = $notaFiscalEntity->getFornecedor()->getPessoa()->getNome();
             }
-
-            if (!$recebimentoEntity)
-                throw new \Exception('Recebimento não encontrado');
 
             // verifica se tem ordem de servico aberto
             $retorno = $recebimentoRepo->checarOrdemServicoAberta($idRecebimento);
@@ -151,14 +163,17 @@ class Mobile_RecebimentoController extends Action
 
             $form = new ProdutoQuantidadeForm;
 
-            $recebimentoEntity = null;
-
-            $recebimentoEntity = $this->em->getReference('wms:Recebimento', $idRecebimento);
-            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
-            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
+            /** @var \Wms\Domain\Entity\Recebimento $recebimentoEntity */
+            $recebimentoEntity = $this->em->find('wms:Recebimento', $idRecebimento);
 
             if (!$recebimentoEntity)
-                throw new \Exception('Recebimento não encontrado');
+                throw new \Exception("Recebimento $idRecebimento não encontrado");
+
+            if (!$recebimentoEntity->inOperacao())
+                throw new Exception("Não pode iniciar a conferênca deste recebimento, ele está " . $recebimentoEntity->getDscStatus());
+
+            /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
+            $notaFiscalRepo = $this->em->getRepository('wms:NotaFiscal');
 
             $itemNF = $notaFiscalRepo->buscarItemPorCodigoBarras($idRecebimento, $codigoBarras);
 
@@ -258,6 +273,15 @@ class Mobile_RecebimentoController extends Action
             // data has been sent
             if (!$this->getRequest()->isPost())
                 throw new \Exception('Escaneie o volume/embalagem novamente.');
+
+            /** @var \Wms\Domain\Entity\Recebimento $recebimentoEn */
+            $recebimentoEn = $recebimentoRepo->find($idRecebimento);
+
+            if (!$recebimentoEn)
+                throw new \Exception("Recebimento $idRecebimento não encontrado");
+
+            if (!$recebimentoEn->inOperacao())
+                throw new Exception("Não pode iniciar a conferênca deste recebimento, ele está " . $recebimentoEn->getDscStatus());
 
             if (!isset($qtdUnidFracionavel)) {
                 $qtdUnidFracionavel = 1;
