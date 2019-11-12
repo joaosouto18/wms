@@ -154,8 +154,18 @@ class Expedicao extends Grid
                 'condition' => function ($row) {
                     return $row['status'] != "FINALIZADO" AND $row['status'] != "INTEGRADO";
                 }
-            ))
-                ->addAction(array(
+            ))->addAction(array(
+                'label' => 'Habilitar Corte ERP',
+                'moduleName' => 'expedicao',
+                'controllerName' => 'corte',
+                'actionName' => 'habilita-corte-erp',
+                'pkIndex' => 'id',
+                'cssClass' => 'cancelar',
+                'params' => array('origin' => 'expedicao'),
+                'condition' => function ($row) {
+                    return $row['status'] != "FINALIZADO";
+                }
+            ))->addAction(array(
                 'label' => 'Cortar Pedido',
                 'moduleName' => 'expedicao',
                 'controllerName' => 'corte',
