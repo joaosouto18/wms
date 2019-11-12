@@ -1722,12 +1722,13 @@ class PaleteRepository extends EntityRepository {
         /** @var Endereco $pickingEn */
         $pickingEn = $embalagem->getEndereco();
 
-        if ($pickingEn->isBloqueadaEntrada()) return null;
-
         $capacidadePicking = $embalagem->getCapacidadePicking();
 
         //VALIDO A CAPACIDADE DE PICKING SOMENTE SE O PRODUTO TIVER PICKING
         if ($pickingEn != null) {
+
+            if ($pickingEn->isBloqueadaEntrada()) return null;
+
             $idVolume = null;
             $volumes = array();
             if ($produtosPalete[0]->getCodProdutoVolume() != NULL) {

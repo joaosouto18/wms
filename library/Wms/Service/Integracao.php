@@ -203,18 +203,14 @@ class Integracao {
                 case AcaoIntegracao::INTEGRACAO_RECEBIMENTO:
                 case AcaoIntegracao::INTEGRACAO_CANCELAMENTO_CARGA:
                     return $this->_dados;
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PEDIDO:
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGA:
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_CARGAS:
-                case AcaoIntegracao::INTEGRACAO_FINALIZACAO_CARGA_RETORNO_PRODUTO:
-                case AcaoIntegracao::INTEGRACAO_IMPRESSAO_ETIQUETA_MAPA:
-                    return true;
                 case AcaoIntegracao::INTEGRACAO_NOTA_FISCAL_SAIDA:
                     return $this->processaNotaFiscalSaida($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_VERIFICA_CARGA_FINALIZADA:
                     return $this->verificaCargasFaturadas($this->_dados);
                 case AcaoIntegracao::INTEGRACAO_PEDIDO_VENDA:
                     return $this->processaPedidoAcumulado($this->_dados);
+                default:
+                    return true;
             }
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode(), $e);
