@@ -460,7 +460,7 @@ class UMA extends Pdf {
 
         $this->SetFont('Arial', 'B', 35);
         $this->setXY(200,140);
-        $this->Cell(0, 1, "Recebimento: $params[idRecebimento]", 0, 1, 'R');
+        $this->Cell(0, 1, "Receb.: $params[idRecebimento]", 0, 1, 'R');
 
     }
 
