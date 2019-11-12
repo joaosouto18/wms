@@ -2403,7 +2403,7 @@ class RecebimentoRepository extends EntityRepository
                         1 => $notaFiscalEntity->getSerie(),
                         2 => $notaFiscalEntity->getFornecedor()->getIdExterno(),
                         3 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj(),
-                        4 => $notaFiscalEntity->getDataEmissao(),
+                        4 => $notaFiscalEntity->getDataEmissao()->format('Y-m-d H:i:s'),
                         5 => $notaFiscalEntity->getCodRecebimentoErp(),
                         6 => $notaFiscalEntity->getDivergencia()
                     );
