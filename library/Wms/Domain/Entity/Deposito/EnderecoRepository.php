@@ -129,9 +129,10 @@ class EnderecoRepository extends EntityRepository {
                             ));
 
                             //cria um objeto caso n encontre->get
-                            if ($enderecoEntity == null)
+                            if ($enderecoEntity == null) {
                                 $enderecoEntity = new EnderecoEntity;
-                            else {
+                                $enderecoEntity->setDisponivel("S");
+                            } else {
                                 //enderecosExistentes
                                 if (!in_array($enderecoEntity->getId(), $enderecosSobrepor))
                                     continue;
