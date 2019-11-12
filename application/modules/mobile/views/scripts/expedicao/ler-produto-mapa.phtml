@@ -13,7 +13,6 @@
             var dummy = '<audio autoplay> <source src=' + soundfile + ' type="audio/mp3">' +
                 '<source src="' + soundfile + '" type="audio/mpeg"></audio>';
             $('#dummy').html(dummy);
-
         }
     }
 
@@ -118,73 +117,75 @@
     </tr>
 </table>
 
-<form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
-    <input type="hidden" name="uma" value="" id="uma">
-    <dt id="identification-label">&nbsp;</dt>
-    <dd id="identification-element">
+<div id="div-principal">
+    <form id="formulario" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" method="post">
+        <input type="hidden" name="uma" value="" id="uma">
+        <dt id="identification-label">&nbsp;</dt>
+        <dd id="identification-element">
 
-        <fieldset id="fieldset-identification">
-            <legend>Ler Código de Barras</legend>
-            <dl>
-                <div class="field">
-                    <input type="hidden" name="idVolume" id="idVolume" value="<?php echo $this->idVolume ?>" size="40" maxlength="100" style="width: 99%">
-                    <input type="hidden" name="idMapa" id="idMapa" value="<?php echo $this->idMapa ?>" size="40" maxlength="100" style="width: 99%">
-                    <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>" size="40" maxlength="100" style="width: 99%">
-                    <input type="hidden" name="cliente" id="cliente" value="<?php echo $this->idPessoa ?>" >
-                    <input type="hidden" name="exibeQtd" id="confereQtd" value="<?php echo $this->confereQtd ?>" >
-                    <input type="hidden" name="tipoDefaultEmbalado" id="tipoDefaultEmbalado" value="<?php echo $this->tipoDefaultEmbalado ?>" >
-                    <input type="hidden" name="utilizaQuebra" id="utilizaQuebra" value="<?php echo $this->utilizaQuebra ?>" >
-                    <input type="hidden" name="utilizaVolumePatrimonio" id="utilizaVolumePatrimonio" value="<?php echo $this->utilizaVolumePatrimonio ?>" >
-                    <input type="hidden" name="tipoQuebraVolume" id="tipoQuebraVolume" value="<?php echo $this->tipoQuebraVolume ?>" >
-                    <input type="hidden" name="agrupContEtiquetas" id="agrupContEtiquetas" value="<?php echo $this->agrupContEtiquetas ?>" >
-                    <table>
-                        <tr>
-                            <?php if ($this->confereQtd) : ?>
-                                <td align="center"><label for="qtd" id="label-qtd" class="field required">*Qtd</label></td>
-                            <?php endif; ?>
-                            <td align="center"><label for="codigoBarras" class="field required">*Código de Barras</label></td>
-                            <?php if (!$this->confereQtd) : ?>
-                                <td align="center"><label for="qtd" id="label-qtd" class="field required hidden">*Qtd</label></td>
-                            <?php endif; ?>
-                        </tr>
-                        <tr>
-                            <?php if ($this->confereQtd) : ?>
-                                <td><input name="qtd" id="qtd" size="7" maxlength="100" value="1" onclick="selecionar()" onkeydown="nextInput(event)" style="width: 80%"></td>
-                                <td><input name="codigoBarras" id="codigoBarras" class="required focus"  size="40" <?php if ($temLote) { ?> onkeydown="goToLote(event)" <?php } ?>  maxlength="100" style="width: 99%"></td>
-                            <?php else : ?>
-                                <td><input name="codigoBarras" id="codigoBarras" <?php if ($temLote) { ?> onkeydown="goToLote(event)" <?php } else { ?> onkeydown="exibirQtd(event)" <?php } ?> class="required focus" size="40" maxlength="100" style="width: 99%"></td>
-                                <td><input name="qtd" id="qtd" size="7" maxlength="100" style="width: 80%" class="hidden"></td>
-                            <?php endif; ?>
-                        </tr>
-                        <?php if ($temLote) { ?>
-                        <tr>
-                            <td colspan="2" align="center">
-                                <label for="lote" class="field required">*Lote</label>
-                                <input name="lote" id="lote" class="required"  onkeydown="redirectTo(event)" size="40" maxlength="100" style="width: 99%">
-                            </td>
-                        </tr>
-                        <?php } ?>
-                    </table>
+            <fieldset id="fieldset-identification">
+                <legend>Ler Código de Barras</legend>
+                <dl>
+                    <div class="field">
+                        <input type="hidden" name="idVolume" id="idVolume" value="<?php echo $this->idVolume ?>" size="40" maxlength="100" style="width: 99%">
+                        <input type="hidden" name="idMapa" id="idMapa" value="<?php echo $this->idMapa ?>" size="40" maxlength="100" style="width: 99%">
+                        <input type="hidden" name="idExpedicao" id="idExpedicao" value="<?php echo $this->idExpedicao ?>" size="40" maxlength="100" style="width: 99%">
+                        <input type="hidden" name="cliente" id="cliente" value="<?php echo $this->idPessoa ?>" >
+                        <input type="hidden" name="exibeQtd" id="confereQtd" value="<?php echo $this->confereQtd ?>" >
+                        <input type="hidden" name="tipoDefaultEmbalado" id="tipoDefaultEmbalado" value="<?php echo $this->tipoDefaultEmbalado ?>" >
+                        <input type="hidden" name="utilizaQuebra" id="utilizaQuebra" value="<?php echo $this->utilizaQuebra ?>" >
+                        <input type="hidden" name="utilizaVolumePatrimonio" id="utilizaVolumePatrimonio" value="<?php echo $this->utilizaVolumePatrimonio ?>" >
+                        <input type="hidden" name="tipoQuebraVolume" id="tipoQuebraVolume" value="<?php echo $this->tipoQuebraVolume ?>" >
+                        <input type="hidden" name="agrupContEtiquetas" id="agrupContEtiquetas" value="<?php echo $this->agrupContEtiquetas ?>" >
+                        <table>
+                            <tr>
+                                <?php if ($this->confereQtd) : ?>
+                                    <td align="center"><label for="qtd" id="label-qtd" class="field required">*Qtd</label></td>
+                                <?php endif; ?>
+                                <td align="center"><label for="codigoBarras" class="field required">*Código de Barras</label></td>
+                                <?php if (!$this->confereQtd) : ?>
+                                    <td align="center"><label for="qtd" id="label-qtd" class="field required hidden">*Qtd</label></td>
+                                <?php endif; ?>
+                            </tr>
+                            <tr>
+                                <?php if ($this->confereQtd) : ?>
+                                    <td><input name="qtd" id="qtd" size="7" maxlength="100" value="1" onclick="selecionar()" onkeydown="nextInput(event)" style="width: 80%"></td>
+                                    <td><input name="codigoBarras" id="codigoBarras" class="required focus"  size="40" <?php if ($temLote) { ?> onkeydown="goToLote(event)" <?php } ?>  maxlength="100" style="width: 99%"></td>
+                                <?php else : ?>
+                                    <td><input name="codigoBarras" id="codigoBarras" <?php if ($temLote) { ?> onkeydown="goToLote(event)" <?php } else { ?> onkeydown="exibirQtd(event)" <?php } ?> class="required focus" size="40" maxlength="100" style="width: 99%"></td>
+                                    <td><input name="qtd" id="qtd" size="7" maxlength="100" style="width: 80%" class="hidden"></td>
+                                <?php endif; ?>
+                            </tr>
+                            <?php if ($temLote) { ?>
+                            <tr>
+                                <td colspan="2" align="center">
+                                    <label for="lote" class="field required">*Lote</label>
+                                    <input name="lote" id="lote" class="required"  onkeydown="redirectTo(event)" size="40" maxlength="100" style="width: 99%">
+                                </td>
+                            </tr>
+                            <?php } ?>
+                        </table>
+                    </div>
+                    <br />
+                    <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
+                </dl>
+                <div id="divBtnFechaVolume" <?php echo ($this->idVolume == "")? 'style="display: none"' : '' ?>>
+                    <legend>Volume: <span id="spnDscVolume"><?php echo $this->dscVolume ?></span></legend>
+                    <td><a id="btnFechaVolume" class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/var_id_volume' ?>" >Fechar</a></td>
                 </div>
-                <br />
-                <input type="submit" name="submit" id="submit" value="Buscar" class="btn">
-            </dl>
-            <div id="divBtnFechaVolume" <?php echo ($this->idVolume == "")? 'style="display: none"' : '' ?>>
-                <legend>Volume: <span id="spnDscVolume"><?php echo $this->dscVolume ?></span></legend>
-                <td><a id="btnFechaVolume" class="finalizar" href="<?php echo '/mobile/expedicao/fecha-volume-patrimonio-mapa/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/idVolume/var_id_volume' ?>" >Fechar</a></td>
-            </div>
 
-            <?php if ($this->separacaoEmbalado) :         ?>
-            <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>" >Fechar Caixa</a></td>
-            <?php endif; ?>
+                <?php if ($this->separacaoEmbalado) :         ?>
+                <td><a class="finalizar" href="<?php echo '/mobile/expedicao/fecha-mapa-embalado/idMapa/' . $this->idMapa . '/idExpedicao/' . $this->idExpedicao . '/cliente/' . $this->idPessoa ?>" >Fechar Caixa</a></td>
+                <?php endif; ?>
 
-        </fieldset>
-    </dd>
-    <?php if (!$this->separacaoEmbalado) : ?>
-        <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/' . $this->idExpedicao . '/idMapa/' . $this->idMapa . '/mapa/S' ?>" >Finalizar</a></td>
-        <td><a class="finalizarAmarelo" href="<?php echo '/mobile/expedicao/index/idCentral/' . $this->central ?>" >Alt. Mapa</a></td>
-    <?php endif; ?>
-</form>
+            </fieldset>
+        </dd>
+        <?php if (!$this->separacaoEmbalado) : ?>
+            <td><a class="finalizar" href="<?php echo '/mobile/expedicao/finalizar/idExpedicao/' . $this->idExpedicao . '/idMapa/' . $this->idMapa . '/mapa/S' ?>" >Finalizar</a></td>
+            <td><a class="finalizarAmarelo" href="<?php echo '/mobile/expedicao/index/idCentral/' . $this->central ?>" >Alt. Mapa</a></td>
+        <?php endif; ?>
+    </form>
+</div>
 
 
 <script type="text/javascript">
@@ -321,6 +322,12 @@
                             success = "";
                             song = "/alarme.mp3";
                             volumePatrimonio = data.retorno.volumePatrimonio;
+                        } else if (data.retorno.resposta == 'bloqued_os') {
+                            error = data.retorno.errorMsg + " " + data.retorno.warningMsg;
+                            success = "";
+                            song = "/alarme.mp3";
+                            volumePatrimonio = '';
+                            $("#div-principal").html(data.retorno.blockOsForm);
                         } else {
                             success = data.retorno.message;
                             error = "";
