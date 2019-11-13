@@ -1759,12 +1759,16 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
                        DE.COD_DEPOSITO_ENDERECO as \"codigo\",
                        DE.COD_AREA_ARMAZENAGEM as \"areaArmazenagem\",
                        DE.IND_ATIVO  as \"ativo\",
-                       DE.IND_SITUACAO  as \"status\"
+                       CASE 
+                       WHEN DE.BLOQUEADA_ENTRADA = 1 and DE.BLOQUEADA_SAIDA = 1 THEN 'Entrada/Saída' 
+                       WHEN DE.BLOQUEADA_ENTRADA = 1 and DE.BLOQUEADA_SAIDA = 0 THEN 'Entrada' 
+                       WHEN DE.BLOQUEADA_ENTRADA = 0 and DE.BLOQUEADA_SAIDA = 1 THEN 'Saída' 
+                       ELSE 'Nada' END as \"bloqueada\"
                 FROM DEPOSITO_ENDERECO DE
                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_DEPOSITO_ENDERECO=DE.COD_DEPOSITO_ENDERECO
                 LEFT JOIN PRODUTO_VOLUME    PV ON PV.COD_DEPOSITO_ENDERECO=DE.COD_DEPOSITO_ENDERECO
                 WHERE (PV.COD_DEPOSITO_ENDERECO IS NULL AND PE.COD_DEPOSITO_ENDERECO IS NULL)
-                    AND DE.COD_CARACTERISTICA_ENDERECO <> 37 AND DE.IND_SITUACAO = 'D' $cond
+                    AND DE.COD_CARACTERISTICA_ENDERECO <> 37 AND DE.BLOQUEADA_SAIDADE = 0 AND DE.BLOQUEADA_ENTRADA = 0 $cond
                 ORDER BY \"descricao\"";
 
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
