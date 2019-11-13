@@ -448,8 +448,6 @@ class EnderecoRepository extends EntityRepository {
                 $query = $query . " AND MOD(DE.NUM_PREDIO,2) = 1";
         }
 
-        if (!empty($situacao))
-            $query = $query . " AND DE.IND_SITUACAO = $situacao";
         if (!empty($status))
             $query = $query . " AND DE.IND_STATUS = $status";
         if (!empty($idCaracteristica))
@@ -920,10 +918,34 @@ class EnderecoRepository extends EntityRepository {
             $query = $query . " AND DEP.NUM_APARTAMENTO <= " . $params['aptoFinal'];
         }
 
+        if (!empty($params['bloqueada'])) {
+            $entrada = null;
+            $saida = null;
+            switch ($params['bloqueada']) {
+                case "E":
+                    $entrada = true;
+                    $saida = false;
+                    break;
+                case "S":
+                    $saida = true;
+                    $entrada = false;
+                    break;
+                case "ES":
+                    $entrada = true;
+                    $saida = true;
+                    break;
+                case "N":
+                    $entrada = false;
+                    $saida = false;
+                    break;
+            }
+            if (!is_null($entrada))
+                $query = $query . " AND DEP.BLOQUEADA_ENTRADA = " . (int)$entrada;
 
-        if (!empty($params['situacao']) && $params['situacao'] != '') {
-            $query = $query . " AND DEP.IND_SITUACAO = '" . $params['situacao'] . "'";
+            if (!is_null($saida))
+                $query = $query . " AND DEP.BLOQUEADA_SAIDA = " . (int)$saida;
         }
+
         if (!empty($params['status']) && $params['status'] != '') {
             $query = $query . " AND DEP.IND_STATUS = '" . $params['status'] . "'";
         }
