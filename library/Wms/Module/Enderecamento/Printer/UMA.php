@@ -457,6 +457,11 @@ class UMA extends Pdf {
 
         $this->SetFont('Arial', 'B', 72);
         $this->Cell(95, 40, $palete['endereco'], 0, 1);
+
+        $this->SetFont('Arial', 'B', 35);
+        $this->setXY(200,140);
+        $this->Cell(0, 1, "Receb.: $params[idRecebimento]", 0, 1, 'R');
+
     }
 
     private function getPicking($produtoEn) {

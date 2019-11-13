@@ -32,7 +32,7 @@ class Enderecamento_MovimentacaoController extends Action
             'validade' => (!empty($data['validade'])) ? str_replace('/', '-', $data['validade']) : null,
             'quantidade' => $quantidade,
             'lote' => (!empty($data['lote']))? $data['lote'] : null,
-            'idNormaPaletizacao' => (!empty($data['idNormaPaletizacao']))? : null,
+            'idNormaPaletizacao' => (!empty($data['idNormaPaletizacao'])) ? $data['idNormaPaletizacao'] : null,
             'codProprietario' => (!empty($data['codPessoa']))? $data['codPessoa'] : null,
             'obsUsuario' => (!empty($obsUserTrimmed))? $obsUserTrimmed : null,
             'idMotMov' => (!empty($data['idMotMov']))? $data['idMotMov'] : null
@@ -230,6 +230,8 @@ class Enderecamento_MovimentacaoController extends Action
 
         /** @var \Wms\Domain\Entity\Deposito\EnderecoRepository $enderecoRepo */
         $enderecoRepo = $this->em->getRepository("wms:Deposito\Endereco");
+        /** @var \Wms\Domain\Entity\Enderecamento\EstoqueRepository $EstoqueRepository */
+        $EstoqueRepository   = $this->_em->getRepository('wms:Enderecamento\Estoque');
 
         try {
             $this->getEntityManager()->beginTransaction();
@@ -265,6 +267,26 @@ class Enderecamento_MovimentacaoController extends Action
 
             $dthEntrada = new \DateTime();
             $data['dthEntrada'] = $dthEntrada;
+
+
+            $estoqueEn = $EstoqueRepository->findOneBy(array('depositoEndereco' => $enderecoEn->getId(),
+                'codProduto' => $data['idProduto'], 'grade' => $data['grade']));
+
+            $unitizadorEn = null;
+            $unitizadorEstoque = null;
+            if ($estoqueEn != null) {
+                $unitizadorEstoque = $estoqueEn->getUnitizador();
+            }
+            if ((!isset($data['idNormaPaletizacao']) || ($data['idNormaPaletizacao'] == NULL)) && ($unitizadorEstoque == NULL)) {
+                $this->addFlashMessage('error','É necessário informar o Unitizador!');
+                $this->_redirect('/enderecamento/movimentacao');
+            } else if (isset($data['idNormaPaletizacao']) && $data['idNormaPaletizacao'] != NULL) {
+                $idUnitizador = $data['idNormaPaletizacao'];
+                $unitizadorRepo = $this->getEntityManager()->getRepository("wms:Armazenagem\Unitizador");
+                $unitizadorEn = $unitizadorRepo->findOneBy(array('id'=>$idUnitizador));
+            }
+
+            $data['unitizador'] = $unitizadorEn;
 
             if (isset($data['embalagem']) && !empty($data['embalagem'])) {
                 /** @var \Wms\Domain\Entity\Enderecamento\Estoque $estoqueEn */

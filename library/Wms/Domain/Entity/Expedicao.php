@@ -106,6 +106,11 @@ class Expedicao
      */
     protected $countVolumes;
 
+    /**
+     * @var string
+     * @Column(name="IND_HABILITADO_CORTE_ERP", type="string")
+     */
+    protected $corteERPHabilitado;
 
 	public function setCarga($carga)
     {
@@ -280,6 +285,22 @@ class Expedicao
     {
         $this->countVolumes = $countVolumes;
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCorteERPHabilitado()
+    {
+        return $this->corteERPHabilitado;
+    }
+
+    /**
+     * @param string $corteERPHabilitado
+     */
+    public function setCorteERPHabilitado($corteERPHabilitado)
+    {
+        $this->corteERPHabilitado = $corteERPHabilitado;
     }
 
 }
