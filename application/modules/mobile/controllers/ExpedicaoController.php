@@ -182,6 +182,7 @@ class Mobile_ExpedicaoController extends Action {
             $this->view->utilizaVolumePatrimonio = $modeloSeparacaoEn->getUtilizaVolumePatrimonio();
             $this->view->agrupContEtiquetas = $modeloSeparacaoEn->getAgrupContEtiquetas();
             $this->view->tipoQuebraVolume = $modeloSeparacaoEn->getTipoQuebraVolume();
+            $this->view->arrCodBarras = $mapaSepProdRepo->getCodBarrasAtivosByMapa($idMapa);
             $this->view->idVolume = $idVolume;
             $this->view->idMapa = $idMapa;
             $this->view->idExpedicao = $idExpedicao;
