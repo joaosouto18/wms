@@ -384,7 +384,7 @@
             if (showing > 2) {
                 $("#" + showTo + " div.input-area form div:visible:first input:text").val("").focus();
             }
-            if ($("#messenger").children().length > 0)
+            if ($("#messenger > ul > li.warning_message, #messenger > ul >li.error_message").length > 0)
                 $("#anchorMsg")[0].click();
         };
 
