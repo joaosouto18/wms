@@ -923,8 +923,12 @@ class RecebimentoRepository extends EntityRepository
 
         $recebimentoEntity = $this->find($idRecebimento);
         $ordemServicoEntity = $this->getEntityManager()->getReference('wms:OrdemServico', $idOrdemServico);
-        if ($produtoEmbalagemEntity == null) {
+        $qtdEmbalagem = 0;
+        if ($produtoEmbalagemEntity == null && !empty($idProdutoEmbalagem)) {
             $produtoEmbalagemEntity = $this->getEntityManager()->find('wms:Produto\Embalagem', $idProdutoEmbalagem);
+            $qtdEmbalagem = $produtoEmbalagemEntity->getQuantidade();
+        } elseif (!empty($produtoEmbalagemEntity)) {
+            $qtdEmbalagem = $produtoEmbalagemEntity->getQuantidade();
         }
 
         if (isset($params['dataValidade']) && !empty($params['dataValidade'])) {
@@ -932,7 +936,6 @@ class RecebimentoRepository extends EntityRepository
         } else {
             $validade = null;
         }
-        $qtdEmbalagem = $produtoEmbalagemEntity->getQuantidade();
 
         $recebimentoEmbalagemEntity->setRecebimento($recebimentoEntity);
         $recebimentoEmbalagemEntity->setOrdemServico($ordemServicoEntity);

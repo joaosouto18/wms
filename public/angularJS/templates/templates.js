@@ -13,6 +13,11 @@ templates.push({
     name: 'previewer-inventario.html',
     template:
         '<div id="wms-dialog-modal" ng-controller="previewerInventarioCtrl" style="font-size: 12px;" class="ui-dialog-content ui-widget-content">' +
+        '<div id="sending" class="sending">' +
+        '<p>Criando inventário</p>' +
+        '<img height="150%" src="/img/ajax-bar-loader.gif" width="50%">' +
+        '</div>' +
+        '<div id="div-form">' +
         '<form id="mainForm" enctype="application/x-www-form-urlencoded" accept-charset="UTF-8" action="" method="post">' +
         '<div>' +
         '<fieldset id="fieldset-Buscar">' +
@@ -85,6 +90,7 @@ templates.push({
         '</div>' +
         '</div>' +
         '</fieldset>' +
+        '</div>' +
         '</div>'
 });
 
@@ -155,7 +161,7 @@ templates.push({
         '</td>' +
         '</tr>' +
         '<tr>' +
-        '<td colspan="100%" align="center" ng-show="noResults" >Nenhum produto/endereço teve a contagem finalizada</td>' +
+        '<td colspan="100%" align="center" ng-show="noResults" >Nenhum produto/endereço para atualizar estoque</td>' +
         '</tr>' +
         '</table>' +
         '</div>' +
