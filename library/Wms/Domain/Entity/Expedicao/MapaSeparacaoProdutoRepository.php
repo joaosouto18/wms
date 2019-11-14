@@ -524,8 +524,6 @@ class MapaSeparacaoProdutoRepository extends EntityRepository
                 LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_PRODUTO_VOLUME = MSP.COD_PRODUTO_VOLUME AND PV.DTH_INATIVACAO IS NULL AND PV.COD_BARRAS IS NOT NULL
                 WHERE MSP.COD_MAPA_SEPARACAO = $idMapa $andWhere";
 
-        if (!empty($codCliente)) $sql .= " AND MSP.COD";
-
         $result = [];
         foreach ($this->getEntityManager()->getConnection()->query($sql)->fetchAll() as $r)
         {
