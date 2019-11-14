@@ -689,18 +689,22 @@ class PaleteRepository extends EntityRepository {
                 if (Math::compare($espacoDisponivel, $item['QTD'], ">")) {
                     $qtdEnderecar = $item['QTD'];
                 } else {
-                    /** @var Produto\Embalagem $embalagenDefault */
-                    $embalagenDefault = $produtoEn->getEmbalagens()->filter(
-                        function($item) {
-                            return (is_null($item->getDataInativacao()) && $item->getIsPadrao() == 'S');
-                        }
-                    )->first();
+                    if ($tipo == "V") {
+                        $qtdEnderecar = $espacoDisponivel;
+                    } else {
+                        /** @var Produto\Embalagem $embalagenDefault */
+                        $embalagenDefault = $produtoEn->getEmbalagens()->filter(
+                            function($item) {
+                                return (is_null($item->getDataInativacao()) && $item->getIsPadrao() == 'S');
+                            }
+                        )->first();
 
-                    $resto = Math::resto($item['QTD'], $embalagenDefault->getQuantidade());
-                    if ($resto > 0) {
-                        $qtdEnderecar = $resto;
+                        $resto = Math::resto($item['QTD'], $embalagenDefault->getQuantidade());
+                        if ($resto > 0) {
+                            $qtdEnderecar = $resto;
+                        }
+                        $qtdEnderecar += Math::multiplicar((int) Math::dividir(Math::subtrair($espacoDisponivel, $resto), $embalagenDefault->getQuantidade()), $embalagenDefault->getQuantidade());
                     }
-                    $qtdEnderecar += Math::multiplicar((int) Math::dividir(Math::subtrair($espacoDisponivel, $resto), $embalagenDefault->getQuantidade()), $embalagenDefault->getQuantidade());
                 }
 
                 if ($qtdEnderecar <= 0)
