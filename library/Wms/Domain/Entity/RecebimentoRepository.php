@@ -230,6 +230,7 @@ class RecebimentoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
         $produtoVolumeRepo = $this->_em->getRepository('wms:Produto\Volume');
+        $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
         $qtdBloqueada = $this->getQuantidadeConferidaBloqueada($idRecebimento);
         if (count($qtdBloqueada))
@@ -287,7 +288,13 @@ class RecebimentoRepository extends EntityRepository
                     foreach ($qtdConferida as $lote => $value) {
                         //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
                         if ($value == 0) {
-                            $this->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, null, $value);
+
+                            $idProdutoEmbalagem = null;
+                            $produtoEmbalagemEn = $produtoEmbalagemRepo->findOneBy(array('codProduto'=> $item['produto'], 'grade' => $item['grade'], 'dataInativacao' => null));
+                            if ($produtoEmbalagemEn != null) {
+                                $idProdutoEmbalagem = $produtoEmbalagemEn->getId()
+                            }
+                            $this->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $value);
                         }
                         $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
                     }
