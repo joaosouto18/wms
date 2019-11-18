@@ -292,7 +292,7 @@ class RecebimentoRepository extends EntityRepository
                             $idProdutoEmbalagem = null;
                             $produtoEmbalagemEn = $produtoEmbalagemRepo->findOneBy(array('codProduto'=> $item['produto'], 'grade' => $item['grade'], 'dataInativacao' => null));
                             if ($produtoEmbalagemEn != null) {
-                                $idProdutoEmbalagem = $produtoEmbalagemEn->getId()
+                                $idProdutoEmbalagem = $produtoEmbalagemEn->getId();
                             }
                             $this->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $value);
                         }

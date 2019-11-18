@@ -1874,6 +1874,7 @@ class PaleteRepository extends EntityRepository {
                         ET.NUM_PRIORIDADE,
                         AA.NUM_PRIORIDADE,
                         TE.NUM_PRIORIDADE,
+                        LARG_DISPONIVEL,
                         DIF_RUA,
                         DIF_PREDIO,
                         DIF_NIVEL,
