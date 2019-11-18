@@ -106,12 +106,12 @@ class Mobile_InventarioNovoController extends Action
 			$codbarrasAdequado = \Wms\Util\Coletor::adequaCodigoBarras($codBarras);
             $elemento = $this->_em->getRepository('wms:Produto')->getEmbalagemByCodBarras($codbarrasAdequado);
 
+            if (empty($elemento))
+                throw new Exception("Nenhuma embalagem/volume ativo foi encontrado com esse código de barras ". $codBarras);
+
             $id = $this->_getParam("id");
             $idEndereco = $this->_getParam("end");
             $this->getServiceLocator()->getService("Inventario")->verificarRequisicaoColetor($id, $idEndereco, $elemento[0]['idProduto'], $elemento[0]['grade']);
-
-            if (empty($elemento))
-                throw new Exception("Nenhuma embalagem/volume ativo foi encontrado com esse código de barras ". $codBarras);
 
             $this->_helper->json(
                 [

@@ -181,7 +181,7 @@ class ModeloInventario
     }
 
     /**
-     * @param string $ativo
+     * @param bool $ativo
      */
     public function setAtivo($ativo)
     {

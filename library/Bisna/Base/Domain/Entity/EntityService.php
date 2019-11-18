@@ -99,9 +99,9 @@ class EntityService extends BaseService\Service
 	    return $this->getRepository($this->options['entityManagerRead'])->find($id);
     }
 
-    public function findBy(array $criteria)
+    public function findBy(array $criteria, array $orderBy = [])
     {
-        return $this->getRepository($this->options['entityManagerRead'])->findBy($criteria);
+        return $this->getRepository($this->options['entityManagerRead'])->findBy($criteria, $orderBy);
     }
     
     public function findOneBy(array $criteria)

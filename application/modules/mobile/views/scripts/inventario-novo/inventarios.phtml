@@ -128,8 +128,7 @@
 
 </style>
 
-<div id="dummyy"></div>
-<span id="dummy"></span>
+<div id="dummy"></div>
 <bgsound id="bgSoundId" loop="0" volume="100" />
 
 <div id="loader" class="div-loader">
@@ -294,8 +293,6 @@
         var notificar = function (type, msg, instantShowed) {
             if (type === undefined) type = "success";
 
-            dispareSound(type);
-
             $("#messenger").html(
                 '<ul class="flashMessenger">' +
                 '    <li class="' + type + '_message" id="">' +
@@ -305,6 +302,8 @@
                 '        <div style="display: block;" id="msg-text">' + msg + '</div>' +
                 '    </li>' +
                 '</ul>');
+
+            dispareSound(type);
 
             if (type === "error") alert(msg);
             msgShowed = instantShowed;
@@ -385,6 +384,8 @@
             if (showing > 2) {
                 $("#" + showTo + " div.input-area form div:visible:first input:text").val("").focus();
             }
+            if ($("#messenger > ul > li.warning_message, #messenger > ul >li.error_message").length > 0)
+                $("#anchorMsg")[0].click();
         };
 
         $("#btn-back-action").click(function () {
@@ -749,7 +750,7 @@
 
             $("#lbl-embvol").text( elemBipado.descricaoEmbalagem + ((elemBipado.idEmbalagem !== null) ? "(" + elemBipado.quantidadeEmbalagem + ")" : "" ) );
             $("#lbl-picking").text( "Picking: " + elemBipado.picking);
-            $("#qtd").val("").focus();
+            $("#qtd").val("");
 
             if (controlaLote()) {
                 $("#lote").val("");

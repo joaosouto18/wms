@@ -66,12 +66,14 @@ angular.module("wms").controller("previewerInventarioCtrl", function ($scope, $h
     $scope.enterSubmit = function (event) {
         if ((event.keyCode === 13 || event.which === 13)) {
             event.preventDefault();
-            $scope.criarInventario();
+            criarInventario();
         }
     };
 
     let postInventario = function () {
-        if ($scope.itens.length)
+        if ($scope.itens.length) {
+            $("#sending").show();
+            $("#div-form").hide();
             $http.post(URL_MODULO + '/index/criar-inventario', {
                 criterio: $scope.criterio,
                 descricao: $scope.dscInventario,
@@ -81,6 +83,7 @@ angular.module("wms").controller("previewerInventarioCtrl", function ($scope, $h
                 $window.location.href = URL_MODULO
             }).catch(function (err) {
                 uiDialogService.dialogAlert(err.data);
-            })
+            });
+        }
     };
 });

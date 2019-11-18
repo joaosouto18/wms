@@ -68,7 +68,8 @@ class InventarioService extends AbstractService
                     $inventarioEnderecoEn = $inventarioEnderecoRepo->save([
                         'inventario' => $inventarioEn,
                         'depositoEndereco' => $this->em->getReference('wms:Deposito\Endereco', $item['id']),
-                        'ativo' => 'S'
+                        'ativo' => 'S',
+                        'contagem' => 0
                     ]);
 
                 if ($inventarioEn->isPorProduto()) {
