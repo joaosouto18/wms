@@ -2408,7 +2408,8 @@ class RecebimentoRepository extends EntityRepository
                         3 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj(),
                         4 => $notaFiscalEntity->getDataEmissao()->format('Y-m-d H:i:s'),
                         5 => $notaFiscalEntity->getCodRecebimentoErp(),
-                        6 => $notaFiscalEntity->getDivergencia()
+                        6 => $notaFiscalEntity->getDivergencia(),
+                        7 => $notaFiscalEntity->getRecebimento()->getId()
                     );
                     $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                     if (!$resultAcao === true) {
