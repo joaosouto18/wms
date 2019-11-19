@@ -705,14 +705,15 @@ class RecebimentoRepository extends EntityRepository
 
                 $em->persist($recebimentoEntity);
 
+                $em->flush();
+                $em->commit();
+
                 //$this->atualizaRecebimentoBenner($idRecebimento);
 
                 if ($this->getSystemParameterValue('UTILIZA_INTEGRACAO_RECEBIMENTO_ERP') == 'S') {
                     $this->executaIntegracaoBDFinalizacaoConferencia($idRecebimento);
                 }
 
-                $em->flush();
-                $em->commit();
                 return array('exception' => null);
             } catch (\Exception $e) {
                 $em->rollback();
