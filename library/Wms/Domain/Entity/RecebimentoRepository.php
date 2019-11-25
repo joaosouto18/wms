@@ -230,6 +230,7 @@ class RecebimentoRepository extends EntityRepository
         /** @var \Wms\Domain\Entity\NotaFiscalRepository $notaFiscalRepo */
         $notaFiscalRepo = $this->_em->getRepository('wms:NotaFiscal');
         $produtoVolumeRepo = $this->_em->getRepository('wms:Produto\Volume');
+        $produtoEmbalagemRepo = $this->_em->getRepository('wms:Produto\Embalagem');
 
         $qtdBloqueada = $this->getQuantidadeConferidaBloqueada($idRecebimento);
         if (count($qtdBloqueada))
@@ -287,7 +288,13 @@ class RecebimentoRepository extends EntityRepository
                     foreach ($qtdConferida as $lote => $value) {
                         //Caso não tenha sido conferido, grava uma conferẽncia com quantidade 0;
                         if ($value == 0) {
-                            $this->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, null, $value);
+
+                            $idProdutoEmbalagem = null;
+                            $produtoEmbalagemEn = $produtoEmbalagemRepo->findOneBy(array('codProduto'=> $item['produto'], 'grade' => $item['grade'], 'dataInativacao' => null));
+                            if ($produtoEmbalagemEn != null) {
+                                $idProdutoEmbalagem = $produtoEmbalagemEn->getId();
+                            }
+                            $this->gravarConferenciaItemEmbalagem($idRecebimento, $idOrdemServico, $idProdutoEmbalagem, $value);
                         }
                         $qtdConferidas[$item['produto']][$item['grade']][$lote] = $value;
                     }
@@ -698,14 +705,15 @@ class RecebimentoRepository extends EntityRepository
 
                 $em->persist($recebimentoEntity);
 
+                $em->flush();
+                $em->commit();
+
                 //$this->atualizaRecebimentoBenner($idRecebimento);
 
                 if ($this->getSystemParameterValue('UTILIZA_INTEGRACAO_RECEBIMENTO_ERP') == 'S') {
                     $this->executaIntegracaoBDFinalizacaoConferencia($idRecebimento);
                 }
 
-                $em->flush();
-                $em->commit();
                 return array('exception' => null);
             } catch (\Exception $e) {
                 $em->rollback();
@@ -2408,7 +2416,8 @@ class RecebimentoRepository extends EntityRepository
                         3 => $notaFiscalEntity->getFornecedor()->getPessoa()->getCnpj(),
                         4 => $notaFiscalEntity->getDataEmissao()->format('Y-m-d H:i:s'),
                         5 => $notaFiscalEntity->getCodRecebimentoErp(),
-                        6 => $notaFiscalEntity->getDivergencia()
+                        6 => $notaFiscalEntity->getDivergencia(),
+                        7 => $notaFiscalEntity->getRecebimento()->getId()
                     );
                     $resultAcao = $acaoIntRepo->processaAcao($acaoEn, $options, 'R', "P", null, 612);
                     if (!$resultAcao === true) {
