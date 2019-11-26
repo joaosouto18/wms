@@ -893,8 +893,7 @@ class ProdutoRepository extends EntityRepository implements ObjectRepository {
 
             switch ($acao) {
                 case 'incluir':
-                    if($normasPaletizacao[$itemDadoLogistico['idNormaPaletizacao']]['acao'] == 'incluir' xor
-                        $dadoLogisticoRepo->verificaDadoLogistico($itemDadoLogistico)) {
+                    if($dadoLogisticoRepo->verificaDadoLogistico($itemDadoLogistico)) {
                         $dadoLogisticoRepo->save($itemDadoLogistico);
                     }
                     break;
