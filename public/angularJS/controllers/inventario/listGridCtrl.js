@@ -1,4 +1,6 @@
 angular.module("wms").controller("listGridInventarioCtrl", function($scope, $rootScope, $http, $filter, $window, uiDialogService, shareDataService){
+
+    $scope.typeSensitiveComparator = typeSensitiveComparatorFn();
     $scope.maxPerPage = 15;
     $scope.inventarios = [];
     $scope.showLoading = true;
@@ -125,18 +127,6 @@ angular.module("wms").controller("listGridInventarioCtrl", function($scope, $roo
         $scope.paginator.size = nPages;
     };
 
-    $scope.typeSensitiveComparator = function(v1, v2) {
-        // If we don't get strings, just compare by index
-        if (angular.isNumber(Number(v1.value)) && angular.isNumber(Number(v2.value))) {
-            return (Number(v1.value) < Number(v2.value)) ? -1 : 1;
-        } else if (v1.type !== 'string' || v2.type !== 'string') {
-            return (v1.index < v2.index) ? -1 : 1;
-        }
-
-        // Compare strings alphabetically, taking locale into account
-        return v1.value.localeCompare(v2.value);
-    };
-
     $scope.checkSelected = function (inventario) {
         $scope.inventarios[$scope.inventarios.findIndex(function (el) {
             return (el === inventario)
@@ -177,6 +167,11 @@ angular.module("wms").controller("listGridInventarioCtrl", function($scope, $roo
     $scope.showPreviewerResult = function (id) {
         shareDataService.addNewData("idInventario", id);
         uiDialogService.dialogModal("previewer-result-inventario.html", true, "Resultado do inventário",1080,null,'false',['center', 80]);
+    };
+
+    $scope.showDivergencias = function (id) {
+        shareDataService.addNewData("idInventario", id);
+        uiDialogService.dialogModal("divergencia-grid.html", true, "Divergências do inventário",1200,null,'false',['center', 80]);
     };
 
     getInventarios({});

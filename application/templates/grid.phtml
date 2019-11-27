@@ -85,7 +85,7 @@ $attribs = $grid->getAttribs();
   
             // submit
             $('#formGrid')
-                .attr('action', URL + '/' + select.val())
+                .attr('action', window.location.href + '/' + select.val())
                 .attr('target', '_self')
                 .submit();
         });

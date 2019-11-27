@@ -332,6 +332,31 @@ class Inventario_Novo_IndexController  extends Action
         $this->_helper->json(["inventario" => $stdClassInventario, "results" => $results, "mask" => $mask]);
     }
 
+    public function getDivergenciasAjaxAction()
+    {
+        $idInventario = $this->_getParam('id');
+        /** @var \Wms\Domain\Entity\InventarioNovoRepository $inventarioRepo */
+        $inventarioRepo = $this->getEntityManager()->getRepository('wms:InventarioNovo');
+
+        $stdClassInventario = $inventarioRepo->getInventarios('stdClass', [ "id" => $idInventario ])[0];
+
+        /** @var \Wms\Service\InventarioService $inventarioService */
+        $inventarioService =  $this->getServiceLocator()->getService("Inventario");
+
+        $results = $inventarioService->getDivergenciasInventario($idInventario);
+
+        $this->_helper->json(["inventario" => $stdClassInventario, "results" => $results]);
+    }
+
+    public function exportDivergenciasAjaxAction()
+    {
+        $params = json_decode($this->getRequest()->getRawBody(),true);
+        if ($params['destino'] == 'pdf')
+            $this->exportPDF($params['divergencias'], 'Relatório Divergências Inventário', 'Inventário', 'L');
+        if ($params['destino'] == 'csv')
+            $this->exportCSV($params['divergencias'], 'Relatório Divergências Inventário', true);
+    }
+
     public function digitacaoInventarioAjaxAction()
     {
         $em = $this->getEntityManager();

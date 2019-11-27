@@ -1209,7 +1209,7 @@ class EnderecoRepository extends EntityRepository {
                 FROM DEPOSITO_ENDERECO DE
                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO AND PE.DTH_INATIVACAO IS NULL
                 LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO AND PV.DTH_INATIVACAO IS NULL
-                WHERE DE.COD_DEPOSITO_ENDERECO = $idEndereco";
+                WHERE DE.COD_DEPOSITO_ENDERECO = $idEndereco AND NVL(PE.COD_PRODUTO, PV.COD_PRODUTO) IS NOT NULL";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();
     }

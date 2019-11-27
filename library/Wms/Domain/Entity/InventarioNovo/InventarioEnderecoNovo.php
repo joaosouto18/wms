@@ -158,9 +158,19 @@ class InventarioEnderecoNovo
         $this->setStatus(self::STATUS_PENDENTE);
     }
 
+    public function isPendente()
+    {
+        return ($this->status == self::STATUS_PENDENTE);
+    }
+
     public function setConferencia()
     {
         $this->setStatus(self::STATUS_CONFERENCIA);
+    }
+
+    public function isConferencia()
+    {
+        return ($this->status == self::STATUS_CONFERENCIA);
     }
 
     public function setDivergencia()
@@ -168,9 +178,19 @@ class InventarioEnderecoNovo
         $this->setStatus(self::STATUS_DIVERGENCIA);
     }
 
+    public function isDivergencia()
+    {
+        return ($this->status == self::STATUS_DIVERGENCIA);
+    }
+
     public function setFinalizado()
     {
         $this->setStatus(self::STATUS_FINALIZADO);
+    }
+
+    public function isFinalizado()
+    {
+        return ($this->status == self::STATUS_FINALIZADO);
     }
 
     /**
@@ -191,16 +211,11 @@ class InventarioEnderecoNovo
 
     public function isAtivo()
     {
-        return self::convertBoolean($this->ativo);
+        return ($this->ativo === 'S');
     }
 
     public function toArray()
     {
         return Configurator::configureToArray($this);
-    }
-
-    private function convertBoolean($param)
-    {
-        return ($param === 'S');
     }
 }

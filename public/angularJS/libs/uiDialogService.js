@@ -55,9 +55,9 @@ angular.module('uiDialogService', []).service('uiDialogService',
 
                 return this.open(id, template, true, { msg: msg }, config).then(function (result) {
                     if (result) {
-                        if (angular.isFunction(confirmCallback)) { confirmCallback.call(); }
+                        if (angular.isFunction(confirmCallback)) { return confirmCallback.call(); }
                     } else {
-                        if (angular.isFunction(rejectCallback)) { rejectCallback.call(); }
+                        if (angular.isFunction(rejectCallback)) { return rejectCallback.call(); }
                     }
                 })
             };
