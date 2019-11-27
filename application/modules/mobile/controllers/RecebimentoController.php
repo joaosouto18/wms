@@ -318,7 +318,7 @@ class Mobile_RecebimentoController extends Action
 
                     /** @var \Wms\Domain\Entity\Produto\LoteRepository $loteRepo */
                     $loteRepo = $this->em->getRepository("wms:Produto\Lote");
-                    if (empty($loteRepo->getLoteRecebimento($lote, $idProduto, $grade)))
+                    if (empty($loteRepo->verificaLote($lote, $idProduto, $grade)))
                         throw new Exception("O lote $lote não foi encontrado");
 
                     $qtds["$lote--$i"] = [
