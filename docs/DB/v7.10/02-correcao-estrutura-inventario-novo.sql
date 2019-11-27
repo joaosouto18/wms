@@ -6,7 +6,7 @@
  */
 
 INSERT INTO VERSAO (DTH, NUMERO_VERSAO, SCRIPT)
-VALUES (SYSDATE, '7.11', 'x-correcao-estrutura-inventario-novo.sql');
+VALUES (SYSDATE, '7.10', '02-correcao-estrutura-inventario-novo.sql');
 
 ALTER TABLE INVENTARIO_CONT_END_PROD ADD (COD_INV_CONT_END_OS NUMBER(8));
 
