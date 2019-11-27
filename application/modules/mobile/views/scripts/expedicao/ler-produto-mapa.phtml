@@ -24,7 +24,7 @@
 
     function exibirQtd(event) {
         if (event.which === 13 || event.keyCode === 13) {
-            var codBarras = $('#codigoBarras').val();
+            var codBarras = $('#codigoBarras');
 
             if (checkCodBarrasMapa(codBarras, event)) {
                 var qtd = $("#qtd");
@@ -42,7 +42,7 @@
 
                 dadosProdutos = '';
                 $.ajax({
-                    url: '/mobile/expedicao/consulta-produto/codigoBarras/' + codBarras,
+                    url: '/mobile/expedicao/consulta-produto/codigoBarras/' + codBarras.val(),
                     type: 'get',
                     success: function (data) {
 
@@ -303,20 +303,21 @@
     
     <?php  } ?>
 
-    function checkCodBarrasMapa(codBarras, event) {
+    function checkCodBarrasMapa(codBarrasInput, event) {
         if (event.preventDefault) {
             event.preventDefault();
         } else {
             event.returnValue = false;
         }
-        if ($.inArray(codBarras, codigosDeBarras) > -1) return true;
+        if ($.inArray(codBarrasInput.val(), codigosDeBarras) > -1) return true;
+        codBarrasInput.val("").focus();
         alert("Código de barras inválido para esse mapa");
         return false;
     }
 
     function requestAjax(event, inputQtd, inputCodBarras) {
         <?php if ($temLote) { ?> var lote = $("#lote"); <?php } ?>
-        if (checkCodBarrasMapa(inputCodBarras.val(), event))
+        if (checkCodBarrasMapa(inputCodBarras, event))
             if (inputQtd.val() !== '' && inputCodBarras.val() !== "" <?php if ($temLote) { ?> && verificacao(inputCodBarras, lote) <?php } ?>) {
                 $.ajax({
                     url: '<?php echo $this->url(array('controller' => 'expedicao', 'action' => 'confere-produto-ajax')) ?>',
