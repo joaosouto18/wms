@@ -28,8 +28,8 @@ class Mobile_InventarioNovoController extends Action
         try {
             $this->_helper->json(
                 [
-                    "status" => "ok",
-                    "response" => $this->em->getRepository('wms:InventarioNovo')->getInventarios('stdClass', ['status' => \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO], ["id" => "DESC"])
+                "status" => "ok",
+                "response" => $this->em->getRepository('wms:InventarioNovo')->getInventarios('stdClass', ['status' => \Wms\Domain\Entity\InventarioNovo::STATUS_LIBERADO], ["id" => "DESC"])
                 ]
             );
         } catch (Exception $e) {
@@ -45,7 +45,7 @@ class Mobile_InventarioNovoController extends Action
 
             $this->_helper->json(
                 [
-                    "status" => "ok",
+                "status" => "ok",
                     "response" => $this->em->getRepository('wms:InventarioNovo\InventarioContEnd')->getContagens($id)
                 ]
             );
@@ -62,7 +62,7 @@ class Mobile_InventarioNovoController extends Action
 
             $this->_helper->json(
                 [
-                    "status" => "ok",
+                "status" => "ok",
                     "response" => $this->em->getRepository("wms:InventarioNovo\InventarioEnderecoNovo")->getArrEnderecos($id, $this->_getParam("sq"))
                 ]
             );
@@ -84,13 +84,13 @@ class Mobile_InventarioNovoController extends Action
 
             $this->_helper->json(
                 [
-                    "status" => "ok",
+                "status" => "ok",
                     "response" => $inventarioSrvc->getInfoEndereco(
                         $id,
-                        $this->_getParam("sq"),
-                        $this->_getParam("divrg"),
+                    $this->_getParam("sq"),
+                    $this->_getParam("divrg"),
                         $idEndereco,
-                        $this->_getParam("isPicking")
+                    $this->_getParam("isPicking")
                     )
                 ]
             );
