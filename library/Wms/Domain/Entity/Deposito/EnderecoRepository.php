@@ -1203,12 +1203,14 @@ class EnderecoRepository extends EntityRepository {
     public function getProdutosPicking($idEndereco)
     {
         $sql = "SELECT DISTINCT 
-                    NVL(PE.COD_PRODUTO, PV.COD_PRODUTO) AS COD_PRODUTO,
-                    NVL(PE.DSC_GRADE, PV.DSC_GRADE) AS DSC_GRADE,
+                    P.COD_PRODUTO,
+                    P.DSC_GRADE,
+                    P.DSC_PRODUTO,
                     NVL(0, PV.COD_NORMA_PALETIZACAO) AS ID_NORMA
                 FROM DEPOSITO_ENDERECO DE
                 LEFT JOIN PRODUTO_EMBALAGEM PE ON PE.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO AND PE.DTH_INATIVACAO IS NULL
                 LEFT JOIN PRODUTO_VOLUME PV ON PV.COD_DEPOSITO_ENDERECO = DE.COD_DEPOSITO_ENDERECO AND PV.DTH_INATIVACAO IS NULL
+                INNER JOIN PRODUTO P ON P.COD_PRODUTO = NVL(PE.COD_PRODUTO, PV.COD_PRODUTO) AND P.DSC_GRADE = NVL(PE.DSC_GRADE, PV.DSC_GRADE)
                 WHERE DE.COD_DEPOSITO_ENDERECO = $idEndereco AND NVL(PE.COD_PRODUTO, PV.COD_PRODUTO) IS NOT NULL";
 
         return $this->_em->getConnection()->query($sql)->fetchAll();

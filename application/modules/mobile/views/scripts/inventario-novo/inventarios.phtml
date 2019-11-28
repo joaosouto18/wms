@@ -147,6 +147,7 @@
     <div class="lbl-headers" id="lbl-inventario"></div>
     <div class="lbl-headers" id="lbl-contagem"></div>
     <div class="lbl-headers" id="lbl-endereco"></div>
+    <div class="lbl-headers" id="lbl-pickingOf"></div>
     <div class="lbl-headers" id="lbl-produto"></div>
     <div class="lbl-headers" id="lbl-embvol"></div>
     <div class="lbl-headers" id="lbl-picking"></div>
@@ -614,6 +615,21 @@
                             produtos.push(result.response.listItens[index]);
                         }
                         pickingOf = result.response.pickingOf;
+                        if (contEndSelecionado.isPicking && !isEmpty(pickingOf.itens)) {
+                            var strProd = "Picking de:<br>";
+                            $.each(pickingOf.itens, function(k, v){
+                                strProd = strProd + v.idProduto + " - " + v.dscProduto;
+                                if (usaGrade) {
+                                    strProd = strProd + " - " + v.grade;
+                                }
+                                if (k < (pickingOf.itens.length - 1)) {
+                                    strProd = strProd + "<br>";
+                                }
+                            });
+                            $("#lbl-pickingOf").html(strProd).show();
+                        } else {
+                            $("#lbl-pickingOf").hide();
+                        }
                         prepareListProdutos();
                     } else {
                         notificar("error", result.exception);
@@ -730,7 +746,7 @@
                             elemBipado.idVolume = "";
                         }
 
-                        if (contEndSelecionado.isPicking && myIndexOf(pickingOf, elemBipado.idProduto + "--" + elemBipado.grade + "--" + elemBipado.norma) < 0)
+                        if (contEndSelecionado.isPicking && myIndexOf(pickingOf.uniKey, elemBipado.idProduto + "--" + elemBipado.grade + "--" + elemBipado.norma) < 0)
                         {
                             notificar("warning", "Este produto não está vinculado à esse picking!");
                         }

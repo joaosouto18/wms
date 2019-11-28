@@ -830,7 +830,12 @@ class InventarioService extends AbstractService
                 $depEndRepo = $this->em->getRepository("wms:Deposito\Endereco");
 
                 foreach ($depEndRepo->getProdutosPicking($endereco) as $val) {
-                    $pickingsAssoc[] = "$val[COD_PRODUTO]--$val[DSC_GRADE]--$val[ID_NORMA]";
+                    $pickingsAssoc['uniKey'][] = "$val[COD_PRODUTO]--$val[DSC_GRADE]--$val[ID_NORMA]";
+                    $pickingsAssoc['itens'][] = [
+                        'idProduto' => $val['COD_PRODUTO'],
+                        'dscProduto' => $val['DSC_PRODUTO'],
+                        'grade' => $val['DSC_GRADE']
+                    ];
                 }
             }
 
