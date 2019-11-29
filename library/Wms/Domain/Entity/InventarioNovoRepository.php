@@ -344,7 +344,59 @@ class InventarioNovoRepository extends EntityRepository
 
         $query->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
 
-        return $query->getQuery()->getResult();
+        $arr = $query->getQuery()->getResult();
+
+        if (!empty($params['incluirPicking'])) {
+            $query = $this->_em->createQueryBuilder()
+                ->select("
+                    de.id,
+                    de.descricao as dscEndereco, 
+                    c.descricao as caracEnd,
+                    p.id as codProduto,
+                    p.grade,
+                    p.descricao as dscProduto,
+                    de.rua, de.predio, de.nivel, de.apartamento")
+                ->from("wms:Produto", 'p')
+                ->innerJoin('p.classe', 'cl')
+                ->innerJoin('p.fabricante', 'f')
+                ->innerJoin('p.linhaSeparacao', 'ls')
+                ->leftJoin('p.embalagens', 'pe')
+                ->leftJoin('p.volumes', 'pv')
+                ->innerJoin('wms:Deposito\Endereco', 'de', 'WITH', 'de = NVL(pe.endereco, pv.endereco')
+                ->innerJoin('de.caracteristica', 'c');
+
+            $query->distinct(true);
+
+            if (!empty($params['fabricante']))
+                $query->andWhere("f.id = ?6")
+                    ->setParameter(6, $params['fabricante']);
+
+            if (!empty($params['descricao']))
+                $query->andWhere("p.descricao like ?7")
+                    ->setParameter(7, "%$params[descricao]%");
+
+            if (!empty($params['codProduto']))
+                $query->andWhere("p.id = ?8")
+                    ->setParameter(8, $params['codProduto']);
+
+            if (!empty($params['grade']))
+                $query->andWhere("p.grade = ?9")
+                    ->setParameter(9, $params['grade']);
+
+            if (!empty($params['classe']))
+                $query->andWhere("cl.id = ?10")
+                    ->setParameter(10, $params['classe']);
+
+            if (!empty($params['linhaSep']))
+                $query->andWhere("ls.id = ?11")
+                    ->setParameter(11, $params['linhaSep']);
+
+            $query->orderBy('p.id, p.descricao, p.grade, de.rua, de.predio, de.nivel, de.apartamento');
+
+            $arr = array_unique(array_merge($arr, $query->getQuery()->getResult()), SORT_REGULAR);
+        }
+
+        return $arr;
     }
 
     public function findImpedimentosLiberacao($id)

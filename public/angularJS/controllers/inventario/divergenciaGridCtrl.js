@@ -62,15 +62,15 @@ angular.module("wms").controller("divergenciaGridCtrl", function ($scope, $http,
 
         $http.post(URL_MODULO + '/index/export-divergencias-ajax', params, config)
             .then(function (response) {
-                try {
-                    var blob = new Blob([response.data], { type: 'application/'+destino });
-                    var url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
-                } catch (ex) {
-                    console.log(ex);
+                    try {
+                        var blob = new Blob([response.data], { type: 'application/'+destino });
+                        var url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                    } catch (ex) {
+                        console.log(ex);
+                    }
                 }
-            }
-        )
+            )
     };
 
     $scope.ordenarPor("contagem");
