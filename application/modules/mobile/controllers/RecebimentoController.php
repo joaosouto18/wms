@@ -306,7 +306,7 @@ class Mobile_RecebimentoController extends Action
             $idProduto = $produtoEn->getId();
             $grade = $produtoEn->getGrade();
             $qtds = [];
-            if ($produtoEn->getIndControlaLote() == 'S' && (!isset($params['lotes']) || empty($params['lotes']))) {
+            if ($produtoEn->getIndControlaLote() == 'S' && empty($params['lotes'])) {
                 throw new Exception("Nenhum lote foi definido para esta contagem!");
             } elseif ($produtoEn->getIndControlaLote() == 'N'){
                 $qtds[\Wms\Domain\Entity\Produto\Lote::NCL] = [
@@ -315,12 +315,6 @@ class Mobile_RecebimentoController extends Action
                 ];
             } else {
                 foreach ($params["lotes"] as $i => $lote){
-
-                    /** @var \Wms\Domain\Entity\Produto\LoteRepository $loteRepo */
-                    $loteRepo = $this->em->getRepository("wms:Produto\Lote");
-                    if (empty($loteRepo->verificaLote($lote, $idProduto, $grade)))
-                        throw new Exception("O lote $lote não foi encontrado");
-
                     $qtds["$lote--$i"] = [
                         "lote" => $lote,
                         "qtd" => (isset($isEmbFracDefault) && $isEmbFracDefault == 'S') ? (float) $qtdConferida[$i] : (int) $qtdConferida[$i]

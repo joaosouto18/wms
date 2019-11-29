@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityRepository,
 use Wms\Domain\Entity\NotaFiscal\Item;
 use Wms\Domain\Entity\NotaFiscal\NotaFiscalItemLoteRepository;
 use Wms\Domain\Entity\NotaFiscalRepository;
+use Wms\Domain\Entity\Pessoa;
 use Wms\Domain\Entity\Produto;
 use Wms\Domain\Entity\ProdutoRepository;
 use Wms\Math;
@@ -75,8 +76,14 @@ class LoteRepository extends EntityRepository
             return $loteEn;
         } elseif (empty($loteEn)) {
             $loteEn = $this->findOneBy(['descricao' => $lote]);
-            if (!empty($loteEn) && $loteEn->isInterno() && $cine)
+            if ((!empty($loteEn) && $loteEn->isInterno() && $cine) || (empty($loteEn) && $cine)) {
+                if (empty($codPessoaNovaCriacao) && !empty($loteEn)) {
+                    $codPessoaNovaCriacao = $loteEn->getCodPessoaCriacao();
+                } else {
+                    $codPessoaNovaCriacao = \Zend_Auth::getInstance()->getIdentity()->getId();
+                }
                 return self::save($idProduto, $grade, $lote, (!empty($codPessoaNovaCriacao)) ? $codPessoaNovaCriacao : $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
+            }
         }
 
         return null;
@@ -124,7 +131,13 @@ class LoteRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function reorderNFItensLoteByRecebimento($idRecebimento, $itensConferidos)
+    /**
+     * @param $idRecebimento
+     * @param $itensConferidos
+     * @param Pessoa $conferente
+     * @throws \Doctrine\ORM\ORMException
+     */
+    public function reorderNFItensLoteByRecebimento($idRecebimento, $itensConferidos, $conferente)
     {
 
         $dqlNota = $this->_em->createQueryBuilder()
@@ -195,22 +208,11 @@ class LoteRepository extends EntityRepository
             }
         }
 
-        /* REPLICA O LOTE INTERNO CASO ESTEJA VINCULADO À MAIS DE 1 PRODUTO */
+        /* CRIA NOVOS REGISTROS DE LOTE INTERNO E REPLICA CASO ESTEJA VINCULADO À MAIS DE 1 PRODUTO */
         foreach ($arrLotes as $lote => $produtos) {
-            /** @var Lote $loteEn */
-            $loteEn = $this->findOneBy(["descricao" => $lote, "codProduto" => null, "grade" => null, 'origem' => Lote::INTERNO]);
-            end($produtos);
-            $last = key($produtos);
-            reset($produtos);
             foreach ($produtos as $prodGrade => $var) {
                 list($codigo, $grade) = explode($strLink, $prodGrade);
-                if ($prodGrade == $last) {
-                    $ref = $this->_em->getReference("wms:Produto", ['id' => $codigo, 'grade' => $grade]);
-                    $loteEn->setProduto($ref)->setCodProduto($codigo)->setGrade($grade);
-                    $this->_em->persist($loteEn);
-                } else {
-                    self::save($codigo, $grade, $lote, $loteEn->getCodPessoaCriacao(), Lote::INTERNO);
-                }
+                self::verificaLote($lote, $codigo, $grade, $conferente->getId(), true);
             }
         }
 

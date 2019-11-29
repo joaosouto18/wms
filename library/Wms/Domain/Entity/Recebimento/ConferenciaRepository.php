@@ -331,12 +331,34 @@ class ConferenciaRepository extends EntityRepository
     public function getProdutosConferidosLoteInterno($idRecebimento)
     {
         $sql = $this->getEntityManager()->createQueryBuilder()
-            ->select('p.id codProduto, p.grade, rc.qtdConferida, rc.qtdDivergencia, NVL(rc.lote, 0) lote')
+            ->select('p.id codProduto, p.grade, rc.qtdConferida, rc.qtdDivergencia, rc.lote')
             ->from('wms:Recebimento\Conferencia', 'rc')
             ->innerJoin('rc.recebimento', 'r')
             ->innerJoin('wms:Produto','p', 'WITH', 'p.id = rc.codProduto and p.grade = rc.grade')
             ->where("r.id = $idRecebimento AND rc.lote LIKE 'LI%'")
-            ->andWhere('rc.qtdDivergencia = 0 OR rc.notaFiscal IS NOT NULL');
+            ->andWhere('rc.qtdDivergencia = 0')
+            ->andWhere("rc.divergenciaPeso = 'N'")
+            ->andWhere("rc.indDivergVolumes = 'N'")
+            ->andWhere("rc.indDivergLote = 'N'")
+        ;
+
+        return $sql->getQuery()->getResult();
+    }
+
+    public function getProdutosConferidosLoteNaoRegistrado($idRecebimento)
+    {
+        $sql = $this->getEntityManager()->createQueryBuilder()
+            ->select('p.id codProduto, p.grade, rc.qtdConferida, rc.qtdDivergencia, rc.lote')
+            ->from('wms:Recebimento\Conferencia', 'rc')
+            ->innerJoin('rc.recebimento', 'r')
+            ->innerJoin('wms:Produto','p', 'WITH', 'p.id = rc.codProduto and p.grade = rc.grade')
+            ->where("r.id = $idRecebimento")
+            ->andWhere("NOT EXISTS (SELECT 'x' FROM wms:Produto\Lote l WHERE l.descricao = rc.lote AND l.codProduto = rc.codProduto and l.grade = rc.grade)")
+            ->andWhere('rc.qtdDivergencia = 0')
+            ->andWhere("rc.divergenciaPeso = 'N'")
+            ->andWhere("rc.indDivergVolumes = 'N'")
+            ->andWhere("rc.indDivergLote = 'N'")
+        ;
 
         return $sql->getQuery()->getResult();
     }
